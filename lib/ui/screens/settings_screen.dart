@@ -1,6 +1,5 @@
-// lib/ui/screens/settings_screen.dart
-
 import 'package:flutter/material.dart';
+import 'package:gdar/providers/settings_provider.dart';
 import 'package:gdar/providers/theme_provider.dart';
 import 'package:gdar/ui/screens/about_screen.dart';
 import 'package:provider/provider.dart';
@@ -10,8 +9,8 @@ class SettingsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Use 'watch' to listen for theme changes and rebuild the UI.
     final themeProvider = context.watch<ThemeProvider>();
+    final settingsProvider = context.watch<SettingsProvider>();
 
     return Scaffold(
       appBar: AppBar(
@@ -24,16 +23,27 @@ class SettingsScreen extends StatelessWidget {
             subtitle: const Text('Enable the true black theme'),
             value: themeProvider.isDarkMode,
             onChanged: (value) {
-              // Use 'read' inside a callback to call a method on the provider.
               context.read<ThemeProvider>().toggleTheme();
             },
             secondary: Icon(
-              themeProvider.isDarkMode ? Icons.dark_mode : Icons.light_mode,
+              themeProvider.isDarkMode
+                  ? Icons.dark_mode_rounded
+                  : Icons.light_mode_rounded,
             ),
           ),
           const Divider(),
+          SwitchListTile(
+            title: const Text('Show Track Numbers'),
+            subtitle: const Text('Display the track number in the player'),
+            value: settingsProvider.showTrackNumbers,
+            onChanged: (value) {
+              context.read<SettingsProvider>().toggleShowTrackNumbers();
+            },
+            secondary: const Icon(Icons.pin_rounded),
+          ),
+          const Divider(),
           ListTile(
-            leading: const Icon(Icons.info_outline),
+            leading: const Icon(Icons.info_outline_rounded),
             title: const Text('About'),
             onTap: () {
               Navigator.of(context).push(
