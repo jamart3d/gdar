@@ -1,7 +1,7 @@
 name: gdar
-description: A new Flutter project.
+description: gapless playback of select grateful dead shows from archive.org
 publish_to: 'none'
-version: 1.0.0+1
+version: 1.0.1+2
 
 environment:
   sdk: '>=3.0.0 <4.0.0'
@@ -13,7 +13,7 @@ dependencies:
   scrollable_positioned_list: ^0.3.8
 
   # For Audio Playback
-  just_audio: ^0.9.36
+  just_audio: ^0.10.5
   just_audio_background: ^0.0.1-beta.11
 
   # For State Management (Theme)
@@ -23,7 +23,7 @@ dependencies:
   shared_preferences: ^2.2.2
 
   # For Date Formatting
-  intl: ^0.18.1
+  intl: ^0.20.2
 
   # For better logging - NEW
   logger: ^2.0.2
@@ -33,7 +33,7 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^2.0.0
+  flutter_lints: ^6.0.0
 
 flutter:
   uses-material-design: true

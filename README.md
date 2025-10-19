@@ -1,6 +1,6 @@
 # gdar
 
-play garteful dead archive org mp3
+play garteful dead archive org url mp3
 
 ## Getting Started
 

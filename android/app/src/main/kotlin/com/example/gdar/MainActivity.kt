@@ -1,4 +1,4 @@
-package com.example.gdar
+package com.jamart3d.gdar
 
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
