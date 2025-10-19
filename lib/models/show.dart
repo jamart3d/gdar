@@ -8,6 +8,7 @@ class Show {
   final String year;
   final String venue;
   final List<Source> sources;
+  bool hasFeaturedTrack; // Our new property
 
   Show({
     required this.name,
@@ -16,13 +17,16 @@ class Show {
     required this.year,
     required this.venue,
     required this.sources,
+    this.hasFeaturedTrack = false, // Default to false
   });
 
   String get formattedDate {
     try {
+      // Use the 'date' field from the model for parsing
       final dateTime = DateTime.parse(date);
       return DateFormat.yMMMMd().format(dateTime);
     } catch (e) {
+      // Fallback to the original date string if parsing fails
       return date;
     }
   }

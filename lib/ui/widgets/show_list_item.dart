@@ -5,8 +5,11 @@ import 'package:gdar/models/source.dart';
 import 'package:gdar/models/track.dart';
 import 'package:gdar/providers/audio_provider.dart';
 import 'package:gdar/providers/settings_provider.dart';
+import 'package:gdar/utils/logger.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:provider/provider.dart';
+import 'package:gdar/utils/utils.dart';
+
 
 class ShowListItem extends StatelessWidget {
   final Show show;
@@ -32,6 +35,9 @@ class ShowListItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    logger.v(
+        'Building ShowListItem for ${show.name} | isExpanded: $isExpanded | isPlaying: $isPlaying | expandedSourceId: $expandedSourceId');
+
     final colorScheme = Theme.of(context).colorScheme;
     final hasMultipleSources = show.sources.length > 1;
 
@@ -47,8 +53,12 @@ class ShowListItem extends StatelessWidget {
       ),
       child: InkWell(
         borderRadius: BorderRadius.circular(16),
-        onTap: onToggleExpand,
+        onTap: () {
+          logger.d('Tapped on header for ${show.name}. Calling onToggleExpand.');
+          onToggleExpand();
+        },
         onLongPress: () {
+          logger.i('Long-pressed on header for ${show.name}. Playing entire show.');
           HapticFeedback.mediumImpact();
           context.read<AudioProvider>().playShow(show);
         },
@@ -82,11 +92,6 @@ class ShowListItem extends StatelessWidget {
                         const SizedBox(height: 4),
                         Row(
                           children: [
-                            Icon(
-                              Icons.calendar_today_rounded,
-                              size: 14,
-                              color: colorScheme.onSurfaceVariant,
-                            ),
                             const SizedBox(width: 6),
                             Text(
                               show.formattedDate,
@@ -180,6 +185,15 @@ class ShowListItem extends StatelessWidget {
           return Column(
             children: [
               ListTile(
+                leading: AnimatedRotation(
+                  turns: isSourceExpanded ? 0.5 : 0,
+                  duration: const Duration(milliseconds: 300),
+                  curve: Curves.easeInOutCubicEmphasized,
+                  child: Icon(
+                    Icons.keyboard_arrow_down_rounded,
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+                ),
                 title: Text(
                   source.id,
                   style: TextStyle(
@@ -193,8 +207,14 @@ class ShowListItem extends StatelessWidget {
                     color: colorScheme.onSurfaceVariant,
                   ),
                 ),
-                onTap: () => onToggleSourceExpand(source.id),
+                onTap: () {
+                  logger.d(
+                      'Tapped on source ${source.id}. Calling onToggleSourceExpand.');
+                  onToggleSourceExpand(source.id);
+                },
                 onLongPress: () {
+                  logger.i(
+                      'Long-pressed on source ${source.id}. Calling onPlaySource.');
                   HapticFeedback.lightImpact();
                   onPlaySource(source);
                 },
@@ -221,8 +241,9 @@ class ShowListItem extends StatelessWidget {
           ? Theme.of(context).colorScheme.surfaceContainerLowest
           : Colors.transparent,
       child: Column(
-        children:
-        source.tracks.map((track) => _buildTrackItem(context, track, source)).toList(),
+        children: source.tracks
+            .map((track) => _buildTrackItem(context, track, source))
+            .toList(),
       ),
     );
   }
@@ -240,8 +261,8 @@ class ShowListItem extends StatelessWidget {
           builder: (context, stateSnapshot) {
             final isCurrentlyPlayingSource =
                 audioProvider.currentSource?.id == source.id;
-            final isPlayingTrack =
-                isCurrentlyPlayingSource && indexSnapshot.data == track.trackNumber - 1;
+            final isPlayingTrack = isCurrentlyPlayingSource &&
+                indexSnapshot.data == track.trackNumber - 1;
 
             final titleText = settingsProvider.showTrackNumbers
                 ? '${track.trackNumber}. ${track.title}'
@@ -270,7 +291,7 @@ class ShowListItem extends StatelessWidget {
                   ),
                 ),
                 trailing: Text(
-                  _formatDuration(Duration(seconds: track.duration)),
+                  formatDuration(Duration(seconds: track.duration)),
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     color: colorScheme.onSurfaceVariant,
                     fontWeight: FontWeight.w500,
@@ -278,8 +299,12 @@ class ShowListItem extends StatelessWidget {
                 ),
                 onTap: () {
                   if (isCurrentlyPlayingSource) {
+                    logger.d(
+                        'Tapped on track ${track.trackNumber} while source is playing. Seeking.');
                     audioProvider.seekToTrack(track.trackNumber - 1);
                   } else {
+                    logger.d(
+                        'Tapped on track ${track.trackNumber} while source is NOT playing. Calling onPlaySource.');
                     onPlaySource(source);
                   }
                 },
@@ -291,16 +316,5 @@ class ShowListItem extends StatelessWidget {
     );
   }
 
-  String _formatDuration(Duration d) {
-    String twoDigits(int n) => n.toString().padLeft(2, '0');
-    final hours = d.inHours;
-    final minutes = twoDigits(d.inMinutes.remainder(60));
-    final seconds = twoDigits(d.inSeconds.remainder(60));
-
-    if (hours > 0) {
-      return '$hours:$minutes:$seconds';
-    }
-    return '$hours:$minutes:$seconds';
-  }
 }
 

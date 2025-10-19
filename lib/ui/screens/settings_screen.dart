@@ -42,6 +42,7 @@ class SettingsScreen extends StatelessWidget {
             secondary: const Icon(Icons.pin_rounded),
           ),
           const Divider(),
+          // The "Hide gd*" SwitchListTile has been removed.
           ListTile(
             leading: const Icon(Icons.info_outline_rounded),
             title: const Text('About'),
@@ -56,3 +57,4 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 }
+
