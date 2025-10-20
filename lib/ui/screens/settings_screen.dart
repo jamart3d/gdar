@@ -42,7 +42,17 @@ class SettingsScreen extends StatelessWidget {
             secondary: const Icon(Icons.pin_rounded),
           ),
           const Divider(),
-          // The "Hide gd*" SwitchListTile has been removed.
+          // New SwitchListTile for toggling the view
+          SwitchListTile(
+            title: const Text('Use Sliver View'),
+            subtitle: const Text('Enable the experimental sliver-based layout'),
+            value: settingsProvider.useSliverView,
+            onChanged: (value) {
+              context.read<SettingsProvider>().toggleSliverView();
+            },
+            secondary: const Icon(Icons.view_day_outlined),
+          ),
+          const Divider(),
           ListTile(
             leading: const Icon(Icons.info_outline_rounded),
             title: const Text('About'),
