@@ -7,7 +7,7 @@ import 'package:just_audio/just_audio.dart';
 import 'package:just_audio_background/just_audio_background.dart';
 
 class AudioProvider with ChangeNotifier {
-  final AudioPlayer _audioPlayer = AudioPlayer();
+  late final AudioPlayer _audioPlayer;
 
   AudioPlayer get audioPlayer => _audioPlayer;
 
@@ -21,6 +21,10 @@ class AudioProvider with ChangeNotifier {
   Stream<int?> get currentIndexStream => _audioPlayer.currentIndexStream;
   Stream<Duration?> get durationStream => _audioPlayer.durationStream;
   Stream<Duration> get positionStream => _audioPlayer.positionStream;
+
+  AudioProvider() {
+    _audioPlayer = AudioPlayer();
+  }
 
   @override
   void dispose() {
@@ -36,13 +40,17 @@ class AudioProvider with ChangeNotifier {
     }
   }
 
-  Future<void> playSource(Show show, Source source) async {
+  Future<void> playSource(Show show, Source source,
+      {int initialIndex = 0}) async {
     _currentShow = show;
-    _currentSource = source; // Keep track of the current source
-    logger.i('Loading show: ${show.name}, source: ${source.id}');
+    _currentSource = source;
+    logger.i(
+        'Loading show: ${show.name}, source: ${source.id}, starting at index: $initialIndex');
 
     try {
       final playlist = ConcatenatingAudioSource(
+        useLazyPreparation: false,
+        shuffleOrder: DefaultShuffleOrder(),
         children: source.tracks.asMap().entries.map((entry) {
           int index = entry.key;
           Track track = entry.value;
@@ -61,7 +69,12 @@ class AudioProvider with ChangeNotifier {
         }).toList(),
       );
 
-      await _audioPlayer.setAudioSource(playlist, initialIndex: 0, preload: false);
+      await _audioPlayer.setAudioSource(
+        playlist,
+        initialIndex: initialIndex,
+        preload: true,
+      );
+
       _audioPlayer.play();
 
       notifyListeners();
@@ -78,9 +91,13 @@ class AudioProvider with ChangeNotifier {
   }
 
   void play() => _audioPlayer.play();
+
   void pause() => _audioPlayer.pause();
+
   void seekToNext() => _audioPlayer.seekToNext();
+
   void seekToPrevious() => _audioPlayer.seekToPrevious();
+
   void seek(Duration position) => _audioPlayer.seek(position);
 
   void seekToTrack(int index) {
@@ -90,4 +107,3 @@ class AudioProvider with ChangeNotifier {
     }
   }
 }
-

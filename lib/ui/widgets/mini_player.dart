@@ -30,10 +30,12 @@ class MiniPlayer extends StatelessWidget {
       child: Material(
         color: Colors.transparent,
         child: Container(
-          margin: const EdgeInsets.all(12),
+          // Adjusted margin to align with show list items
+          margin: const EdgeInsets.fromLTRB(16, 6, 16, 12),
           decoration: BoxDecoration(
             color: colorScheme.surfaceContainerHigh,
-            borderRadius: BorderRadius.circular(24),
+            // Adjusted border radius to match show list items
+            borderRadius: BorderRadius.circular(28),
             boxShadow: [
               BoxShadow(
                 color: colorScheme.shadow.withOpacity(0.1),
@@ -43,7 +45,8 @@ class MiniPlayer extends StatelessWidget {
             ],
           ),
           child: ClipRRect(
-            borderRadius: BorderRadius.circular(24),
+            // Adjusted border radius to match show list items
+            borderRadius: BorderRadius.circular(28),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -77,10 +80,9 @@ class MiniPlayer extends StatelessWidget {
                               builder: (context, stateSnapshot) {
                                 final processingState =
                                     stateSnapshot.data?.processingState;
-                                final isBuffering =
-                                    processingState == ProcessingState.buffering ||
-                                        processingState ==
-                                            ProcessingState.loading;
+                                final isBuffering = processingState ==
+                                    ProcessingState.buffering ||
+                                    processingState == ProcessingState.loading;
 
                                 return SizedBox(
                                   height: 4,
@@ -136,9 +138,11 @@ class MiniPlayer extends StatelessWidget {
                                                   begin: Alignment.centerLeft,
                                                   end: Alignment.centerRight,
                                                   stops: [
-                                                    (value - 0.3).clamp(0.0, 1.0),
+                                                    (value - 0.3)
+                                                        .clamp(0.0, 1.0),
                                                     value,
-                                                    (value + 0.3).clamp(0.0, 1.0),
+                                                    (value + 0.3)
+                                                        .clamp(0.0, 1.0),
                                                   ],
                                                   colors: [
                                                     Colors.transparent,
@@ -172,7 +176,8 @@ class MiniPlayer extends StatelessWidget {
                 InkWell(
                   onTap: onTap,
                   child: Padding(
-                    padding: const EdgeInsets.all(16.0),
+                    // Adjusted padding to match show list items
+                    padding: const EdgeInsets.all(20.0),
                     child: Row(
                       children: [
                         Expanded(
@@ -187,28 +192,30 @@ class MiniPlayer extends StatelessWidget {
 
                               return Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
-                                mainAxisSize: MainAxisSize.min,
+                                mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
                                   Text(
                                     track.title,
                                     style: Theme.of(context)
                                         .textTheme
-                                        .titleSmall
+                                        .titleLarge
                                         ?.copyWith(
                                       fontWeight: FontWeight.w600,
+                                      letterSpacing: 0.1,
                                       color: colorScheme.onSurface,
                                     ),
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                   ),
-                                  const SizedBox(height: 2),
+                                  const SizedBox(height: 6),
                                   Text(
                                     currentShow.venue,
                                     style: Theme.of(context)
                                         .textTheme
-                                        .bodySmall
+                                        .bodyLarge
                                         ?.copyWith(
                                       color: colorScheme.onSurfaceVariant,
+                                      letterSpacing: 0.15,
                                     ),
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
@@ -224,14 +231,15 @@ class MiniPlayer extends StatelessWidget {
                           builder: (context, snapshot) {
                             final index = snapshot.data ?? 0;
                             final isFirstTrack = index == 0;
-                            final isLastTrack = index >= currentSource.tracks.length - 1;
+                            final isLastTrack =
+                                index >= currentSource.tracks.length - 1;
 
                             return Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 IconButton(
-                                  icon:
-                                  const Icon(Icons.skip_previous_rounded),
+                                  icon: const Icon(
+                                      Icons.skip_previous_rounded),
                                   iconSize: 28,
                                   color: colorScheme.onSurfaceVariant,
                                   onPressed: isFirstTrack

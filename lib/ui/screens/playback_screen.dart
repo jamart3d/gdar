@@ -5,15 +5,49 @@ import 'package:gdar/models/track.dart';
 import 'package:gdar/providers/audio_provider.dart';
 import 'package:gdar/providers/settings_provider.dart';
 import 'package:gdar/ui/screens/settings_screen.dart';
+import 'package:gdar/utils/utils.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:provider/provider.dart';
 
-class PlaybackScreen extends StatelessWidget {
+class PlaybackScreen extends StatefulWidget {
   const PlaybackScreen({super.key});
+
+  @override
+  State<PlaybackScreen> createState() => _PlaybackScreenState();
+}
+
+class _PlaybackScreenState extends State<PlaybackScreen> {
+  final Map<int, GlobalKey> _trackKeys = {};
+
+  @override
+  void initState() {
+    super.initState();
+    // After the first frame is rendered, scroll to the current track.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _scrollToCurrentTrack();
+    });
+  }
+
+  void _scrollToCurrentTrack() {
+    final audioProvider = context.read<AudioProvider>();
+    final currentIndex = audioProvider.audioPlayer.currentIndex;
+    if (currentIndex != null) {
+      final key = _trackKeys[currentIndex];
+      if (key != null && key.currentContext != null) {
+        Scrollable.ensureVisible(
+          key.currentContext!,
+          duration: const Duration(milliseconds: 600),
+          curve: Curves.easeInOutCubicEmphasized,
+          alignment: 0.5, // Center the item in the viewport
+        );
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final audioProvider = context.watch<AudioProvider>();
+    final settingsProvider = context.watch<SettingsProvider>(); // Get settings
     final Show? currentShow = audioProvider.currentShow;
     final Source? currentSource = audioProvider.currentSource;
 
@@ -26,7 +60,108 @@ class PlaybackScreen extends StatelessWidget {
       );
     }
 
+    for (int i = 0; i < currentSource.tracks.length; i++) {
+      _trackKeys.putIfAbsent(i, () => GlobalKey());
+    }
+
     final colorScheme = Theme.of(context).colorScheme;
+
+    // Determine if SHNID badge should be shown based on count or setting
+    final bool shouldShowShnidBadge = currentShow.sources.length > 1 ||
+        (currentShow.sources.length == 1 && settingsProvider.showSingleShnid);
+
+    final controlsWidget = Material(
+      color: colorScheme.surface,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(24.0, 24.0, 24.0, 0),
+        child: Column(
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  padding:
+                  const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: colorScheme.secondaryContainer,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.calendar_today_rounded,
+                        size: 16,
+                        color: colorScheme.onSecondaryContainer,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        currentShow.formattedDate,
+                        style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                          color: colorScheme.onSecondaryContainer,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 8),
+                // Use the conditional flag here
+                if (shouldShowShnidBadge)
+                  Container(
+                    padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: colorScheme.tertiaryContainer,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          currentSource.id,
+                          style:
+                          Theme.of(context).textTheme.labelLarge?.copyWith(
+                            color: colorScheme.onTertiaryContainer,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 24),
+            StreamBuilder<int?>(
+              stream: audioProvider.currentIndexStream,
+              initialData: audioProvider.audioPlayer.currentIndex,
+              builder: (context, snapshot) {
+                final index = snapshot.data ?? 0;
+                if (index >= currentSource.tracks.length) {
+                  return const SizedBox.shrink();
+                }
+                final track = currentSource.tracks[index];
+                return Text(
+                  track.title,
+                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                    fontWeight: FontWeight.w600,
+                    color: colorScheme.onSurface,
+                  ),
+                  textAlign: TextAlign.center,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                );
+              },
+            ),
+            const SizedBox(height: 20),
+            _buildProgressBar(context, audioProvider),
+            const SizedBox(height: 24),
+            _buildControls(context, audioProvider, currentSource),
+            const SizedBox(height: 16),
+          ],
+        ),
+      ),
+    );
 
     return Hero(
       tag: 'player',
@@ -34,8 +169,8 @@ class PlaybackScreen extends StatelessWidget {
         backgroundColor: colorScheme.surface,
         body: CustomScrollView(
           slivers: [
-            SliverAppBar.large(
-              expandedHeight: 200,
+            SliverAppBar(
+              expandedHeight: 250.0,
               pinned: true,
               actions: [
                 IconButton(
@@ -55,6 +190,8 @@ class PlaybackScreen extends StatelessWidget {
                     color: colorScheme.onSurface,
                     fontWeight: FontWeight.w600,
                   ),
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
                 ),
                 background: Container(
                   decoration: BoxDecoration(
@@ -71,123 +208,28 @@ class PlaybackScreen extends StatelessWidget {
                 ),
               ),
             ),
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.all(24.0),
-                child: Column(
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 16, vertical: 8),
-                          decoration: BoxDecoration(
-                            color: colorScheme.secondaryContainer,
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                Icons.calendar_today_rounded,
-                                size: 16,
-                                color: colorScheme.onSecondaryContainer,
-                              ),
-                              const SizedBox(width: 8),
-                              Text(
-                                currentShow.formattedDate,
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .labelLarge
-                                    ?.copyWith(
-                                  color: colorScheme.onSecondaryContainer,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        if (currentShow.sources.length > 1)
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 16, vertical: 8),
-                            decoration: BoxDecoration(
-                              color: colorScheme.tertiaryContainer,
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(
-                                  Icons.source_rounded,
-                                  size: 16,
-                                  color: colorScheme.onTertiaryContainer,
-                                ),
-                                const SizedBox(width: 8),
-                                Text(
-                                  currentSource.id,
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .labelLarge
-                                      ?.copyWith(
-                                    color: colorScheme.onTertiaryContainer,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                      ],
-                    ),
-                    const SizedBox(height: 32),
-                    StreamBuilder<int?>(
-                      stream: audioProvider.currentIndexStream,
-                      initialData: audioProvider.audioPlayer.currentIndex,
-                      builder: (context, snapshot) {
-                        final index = snapshot.data ?? 0;
-                        if (index >= currentSource.tracks.length) {
-                          return const SizedBox.shrink();
-                        }
-                        final track = currentSource.tracks[index];
-                        return Text(
-                          track.title,
-                          style: Theme.of(context)
-                              .textTheme
-                              .headlineSmall
-                              ?.copyWith(
-                            fontWeight: FontWeight.w600,
-                            color: colorScheme.onSurface,
-                          ),
-                          textAlign: TextAlign.center,
-                        );
-                      },
-                    ),
-                    const SizedBox(height: 40),
-                    _buildProgressBar(context, audioProvider),
-                    const SizedBox(height: 32),
-                    _buildControls(context, audioProvider, currentSource),
-                    const SizedBox(height: 48),
-                  ],
+            SliverPersistentHeader(
+              pinned: true,
+              delegate: _PlayerControlsHeaderDelegate(
+                height: 356,
+                child: controlsWidget,
+              ),
+            ),
+            SliverPadding(
+              padding: const EdgeInsets.only(top: 24, bottom: 24),
+              sliver: SliverList(
+                delegate: SliverChildBuilderDelegate(
+                      (context, index) {
+                    return _buildTrackItem(
+                      context,
+                      audioProvider,
+                      currentSource.tracks[index],
+                      index,
+                    );
+                  },
+                  childCount: currentSource.tracks.length,
                 ),
               ),
-            ),
-            SliverList(
-              delegate: SliverChildBuilderDelegate(
-                    (context, index) {
-                  return _buildTrackItem(
-                    context,
-                    audioProvider,
-                    currentSource.tracks[index],
-                    index,
-                  );
-                },
-                childCount: currentSource.tracks.length,
-              ),
-            ),
-            const SliverToBoxAdapter(
-              child: SizedBox(height: 24),
             ),
           ],
         ),
@@ -277,9 +319,8 @@ class PlaybackScreen extends StatelessWidget {
                       ),
                       iconSize: 40,
                       color: colorScheme.onPrimary,
-                      onPressed: playing
-                          ? audioProvider.pause
-                          : audioProvider.play,
+                      onPressed:
+                      playing ? audioProvider.pause : audioProvider.play,
                     ),
                   ),
                   Container(
@@ -321,7 +362,7 @@ class PlaybackScreen extends StatelessWidget {
 
             return StreamBuilder<Duration?>(
               stream: audioPlayer.bufferedPositionStream,
-              initialData: audioProvider.audioPlayer.bufferedPosition,
+              initialData: audioPlayer.bufferedPosition,
               builder: (context, bufferedSnapshot) {
                 final bufferedPosition =
                     bufferedSnapshot.data ?? Duration.zero;
@@ -516,7 +557,7 @@ class PlaybackScreen extends StatelessWidget {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text(
-                                _formatDuration(position),
+                                formatDuration(position),
                                 style: Theme.of(context)
                                     .textTheme
                                     .bodySmall
@@ -529,7 +570,7 @@ class PlaybackScreen extends StatelessWidget {
                                 ),
                               ),
                               Text(
-                                _formatDuration(totalDuration),
+                                formatDuration(totalDuration),
                                 style: Theme.of(context)
                                     .textTheme
                                     .bodySmall
@@ -572,68 +613,74 @@ class PlaybackScreen extends StatelessWidget {
         final currentIndex = snapshot.data;
         final isPlaying = currentIndex == index;
 
-        return StreamBuilder<PlayerState>(
-          stream: audioProvider.playerStateStream,
-          initialData: audioProvider.audioPlayer.playerState,
-          builder: (context, stateSnapshot) {
-            final titleText = settingsProvider.showTrackNumbers
-                ? '${track.trackNumber}. ${track.title}'
-                : track.title;
-
-            return Container(
-              margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 4),
-              decoration: BoxDecoration(
+        return Container(
+          key: _trackKeys[index],
+          margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 4),
+          decoration: BoxDecoration(
+            color: isPlaying
+                ? colorScheme.primaryContainer.withOpacity(0.5)
+                : Colors.transparent,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: ListTile(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            contentPadding:
+            const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+            title: Text(
+              settingsProvider.showTrackNumbers
+                  ? '${track.trackNumber}. ${track.title}'
+                  : track.title,
+              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                fontWeight:
+                isPlaying ? FontWeight.w600 : FontWeight.normal,
                 color: isPlaying
-                    ? colorScheme.primaryContainer.withOpacity(0.5)
-                    : Colors.transparent,
-                borderRadius: BorderRadius.circular(12),
+                    ? colorScheme.primary
+                    : colorScheme.onSurface,
               ),
-              child: ListTile(
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                contentPadding:
-                const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                title: Text(
-                  titleText,
-                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                    fontWeight:
-                    isPlaying ? FontWeight.w600 : FontWeight.normal,
-                    color: isPlaying
-                        ? colorScheme.primary
-                        : colorScheme.onSurface,
-                  ),
-                ),
-                trailing: Text(
-                  _formatDuration(Duration(seconds: track.duration)),
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: colorScheme.onSurfaceVariant,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                onTap: () {
-                  if (currentIndex != index) {
-                    audioProvider.seekToTrack(index);
-                  }
-                },
+            ),
+            trailing: Text(
+              formatDuration(Duration(seconds: track.duration)),
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+                fontWeight: FontWeight.w500,
               ),
-            );
-          },
+            ),
+            onTap: () {
+              if (currentIndex != index) {
+                audioProvider.seekToTrack(index);
+              }
+            },
+          ),
         );
       },
     );
   }
+}
 
-  String _formatDuration(Duration d) {
-    String twoDigits(int n) => n.toString().padLeft(2, '0');
-    final hours = d.inHours;
-    final minutes = twoDigits(d.inMinutes.remainder(60));
-    final seconds = twoDigits(d.inSeconds.remainder(60));
+// A helper class to create a persistent header for the player controls.
+class _PlayerControlsHeaderDelegate extends SliverPersistentHeaderDelegate {
+  final double height;
+  final Widget child;
 
-    if (hours > 0) {
-      return '$hours:$minutes:$seconds';
-    }
-    return '$minutes:$seconds';
+  _PlayerControlsHeaderDelegate({required this.height, required this.child});
+
+  @override
+  double get minExtent => height;
+
+  @override
+  double get maxExtent => height;
+
+  @override
+  Widget build(
+      BuildContext context, double shrinkOffset, bool overlapsContent) {
+    return child;
+  }
+
+  @override
+  bool shouldRebuild(_PlayerControlsHeaderDelegate oldDelegate) {
+    return height != oldDelegate.height || child != oldDelegate.child;
   }
 }
 

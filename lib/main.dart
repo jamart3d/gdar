@@ -3,7 +3,6 @@ import 'package:gdar/providers/audio_provider.dart';
 import 'package:gdar/providers/settings_provider.dart';
 import 'package:gdar/providers/theme_provider.dart';
 import 'package:gdar/ui/screens/show_list_screen.dart';
-import 'package:gdar/ui/screens/show_list_screen_slivers.dart'; // Import the slivers screen
 import 'package:gdar/utils/app_themes.dart';
 import 'package:gdar/utils/logger.dart'; // Import the logger
 import 'package:just_audio_background/just_audio_background.dart';
@@ -45,20 +44,10 @@ class GdarApp extends StatelessWidget {
             theme: AppThemes.lightTheme,
             darkTheme: AppThemes.darkTheme,
             themeMode: themeProvider.isDarkMode ? ThemeMode.dark : ThemeMode.light,
-            // Use a Consumer to dynamically switch the home screen based on settings
-            home: Consumer<SettingsProvider>(
-              builder: (context, settingsProvider, child) {
-                if (settingsProvider.useSliverView) {
-                  return const ShowListScreenSlivers();
-                } else {
-                  return const ShowListScreen();
-                }
-              },
-            ),
+            home: const ShowListScreen(),
           );
         },
       ),
     );
   }
 }
-
