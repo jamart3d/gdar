@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:gdar/models/show.dart';
 import 'package:gdar/models/source.dart';
 import 'package:gdar/providers/audio_provider.dart';
@@ -80,7 +81,8 @@ class MiniPlayer extends StatelessWidget {
 
                             return StreamBuilder<PlayerState>(
                               stream: audioProvider.playerStateStream,
-                              initialData: audioProvider.audioPlayer.playerState,
+                              initialData:
+                              audioProvider.audioPlayer.playerState,
                               builder: (context, stateSnapshot) {
                                 final processingState =
                                     stateSnapshot.data?.processingState;
@@ -263,42 +265,48 @@ class MiniPlayer extends StatelessWidget {
                                     final playing =
                                         playerState?.playing ?? false;
 
-                                    return Container(
-                                      width: 48,
-                                      height: 48,
-                                      decoration: BoxDecoration(
-                                        color: colorScheme.primary,
-                                        shape: BoxShape.circle,
-                                      ),
-                                      child: processingState ==
-                                          ProcessingState.loading ||
-                                          processingState ==
-                                              ProcessingState.buffering
-                                          ? Padding(
-                                        padding:
-                                        const EdgeInsets.all(12.0),
-                                        child:
-                                        CircularProgressIndicator(
-                                          strokeWidth: 2.5,
-                                          valueColor:
-                                          AlwaysStoppedAnimation<
-                                              Color>(
-                                            colorScheme.onPrimary,
+                                    return GestureDetector(
+                                      onLongPress: () {
+                                        HapticFeedback.heavyImpact();
+                                        audioProvider.stopAndClear();
+                                      },
+                                      child: Container(
+                                        width: 48,
+                                        height: 48,
+                                        decoration: BoxDecoration(
+                                          color: colorScheme.primary,
+                                          shape: BoxShape.circle,
+                                        ),
+                                        child: processingState ==
+                                            ProcessingState.loading ||
+                                            processingState ==
+                                                ProcessingState.buffering
+                                            ? Padding(
+                                          padding: const EdgeInsets.all(
+                                              12.0),
+                                          child:
+                                          CircularProgressIndicator(
+                                            strokeWidth: 2.5,
+                                            valueColor:
+                                            AlwaysStoppedAnimation<
+                                                Color>(
+                                              colorScheme.onPrimary,
+                                            ),
                                           ),
+                                        )
+                                            : IconButton(
+                                          icon: Icon(
+                                            playing
+                                                ? Icons.pause_rounded
+                                                : Icons
+                                                .play_arrow_rounded,
+                                          ),
+                                          iconSize: 28,
+                                          color: colorScheme.onPrimary,
+                                          onPressed: playing
+                                              ? audioProvider.pause
+                                              : audioProvider.play,
                                         ),
-                                      )
-                                          : IconButton(
-                                        icon: Icon(
-                                          playing
-                                              ? Icons.pause_rounded
-                                              : Icons
-                                              .play_arrow_rounded,
-                                        ),
-                                        iconSize: 28,
-                                        color: colorScheme.onPrimary,
-                                        onPressed: playing
-                                            ? audioProvider.pause
-                                            : audioProvider.play,
                                       ),
                                     );
                                   },

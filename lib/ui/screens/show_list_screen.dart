@@ -214,7 +214,8 @@ class _ShowListScreenState extends State<ShowListScreen>
 
     if (!mounted) return;
 
-    logger.i('Returned from PlaybackScreen. Initiating scroll-to-playing sequence...');
+    logger.i(
+        'Returned from PlaybackScreen. Initiating scroll-to-playing sequence...');
     final audioProvider = context.read<AudioProvider>();
     final showListProvider = context.read<ShowListProvider>();
     final currentShow = audioProvider.currentShow;
@@ -291,9 +292,11 @@ class _ShowListScreenState extends State<ShowListScreen>
         title: const Text('gdar'),
         actions: [
           IconButton(
-              icon: const Icon(Icons.search_rounded),
-              tooltip: 'Search',
-              onPressed: _toggleSearch),
+            icon: const Icon(Icons.search_rounded),
+            tooltip: 'Search',
+            isSelected: _isSearchVisible,
+            onPressed: _toggleSearch,
+          ),
           IconButton(
             icon: const Icon(Icons.settings_rounded),
             tooltip: 'Settings',

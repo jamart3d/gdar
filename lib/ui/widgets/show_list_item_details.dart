@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/painting.dart';
 import 'package:gdar/models/show.dart';
 import 'package:gdar/models/source.dart';
 import 'package:gdar/models/track.dart';
@@ -190,7 +191,8 @@ class ShowListItemDetails extends StatelessWidget {
       ),
       child: ListView.builder(
         controller: controller,
-        padding: isNested ? const EdgeInsets.only(bottom: 8.0) : EdgeInsets.zero,
+        padding:
+        isNested ? const EdgeInsets.only(bottom: 8.0) : EdgeInsets.zero,
         itemCount: source.tracks.length,
         itemBuilder: (context, index) {
           return _buildTrackItem(
@@ -264,68 +266,92 @@ class ShowListItemDetails extends StatelessWidget {
                             horizontal: 16, vertical: 14),
                         child: Row(
                           children: [
-                            if (isPlayingTrack)
-                              Container(
-                                margin: const EdgeInsets.only(right: 12),
-                                width: 24,
-                                height: 24,
-                                child: Center(
-                                  child: (stateSnapshot.data?.processingState ==
-                                      ProcessingState.buffering ||
-                                      stateSnapshot.data?.processingState ==
-                                          ProcessingState.loading)
-                                      ? const SizedBox(
-                                      width: 16,
-                                      height: 16,
-                                      child: CircularProgressIndicator(
-                                          strokeWidth: 2.0))
-                                      : Container(
-                                      padding: const EdgeInsets.all(4),
-                                      decoration: BoxDecoration(
-                                          color: colorScheme.primary,
-                                          borderRadius:
-                                          BorderRadius.circular(8)),
-                                      child: Icon(Icons.play_arrow_rounded,
-                                          size: 16,
-                                          color: colorScheme.onPrimary)),
-                                ),
-                              ),
                             Expanded(
-                              child: Text(titleText,
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .bodyLarge
-                                      ?.copyWith(
-                                      color: isPlayingTrack
-                                          ? colorScheme.primary
-                                          : colorScheme.onSurface,
-                                      fontWeight: isPlayingTrack
-                                          ? FontWeight.w700
-                                          : FontWeight.w500,
-                                      letterSpacing: 0.1)),
+                              child: Text(
+                                titleText,
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodyLarge
+                                    ?.copyWith(
+                                    color: isPlayingTrack
+                                        ? colorScheme.primary
+                                        : colorScheme.onSurface,
+                                    fontWeight: isPlayingTrack
+                                        ? FontWeight.w700
+                                        : FontWeight.w500,
+                                    letterSpacing: 0.1),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            Container(
+                              width: 52,
+                              alignment: Alignment.centerRight,
+                              child: isPlayingTrack
+                                  ? (stateSnapshot.data?.processingState ==
+                                  ProcessingState.buffering ||
+                                  stateSnapshot.data?.processingState ==
+                                      ProcessingState.loading)
+                                  ? const SizedBox(
+                                  width: 16,
+                                  height: 16,
+                                  child: CircularProgressIndicator(
+                                      strokeWidth: 2.0))
+                                  : StreamBuilder<Duration>(
+                                stream: audioProvider.positionStream,
+                                builder: (context, snapshot) {
+                                  final position =
+                                      snapshot.data ?? Duration.zero;
+                                  return Text(
+                                    formatDuration(position),
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .labelMedium
+                                        ?.copyWith(
+                                      color: colorScheme.primary,
+                                      fontWeight: FontWeight.bold,
+                                      fontFeatures: [
+                                        const FontFeature
+                                            .tabularFigures()
+                                      ],
+                                    ),
+                                    maxLines: 1,
+                                  );
+                                },
+                              )
+                                  : null,
                             ),
                             const SizedBox(width: 8),
                             Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 8, vertical: 4),
-                              decoration: BoxDecoration(
-                                color: isPlayingTrack
-                                    ? colorScheme.primary.withOpacity(0.2)
-                                    : colorScheme.surfaceContainerHighest,
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Text(
+                              width: 52,
+                              alignment: Alignment.centerRight,
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 8, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: isPlayingTrack
+                                      ? colorScheme.primary.withOpacity(0.2)
+                                      : colorScheme.surfaceContainerHighest,
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Text(
                                   formatDuration(
                                       Duration(seconds: track.duration)),
                                   style: Theme.of(context)
                                       .textTheme
                                       .labelMedium
                                       ?.copyWith(
-                                      color: isPlayingTrack
-                                          ? colorScheme.primary
-                                          : colorScheme.onSurfaceVariant,
-                                      fontWeight: FontWeight.w600,
-                                      letterSpacing: 0.5)),
+                                    color: isPlayingTrack
+                                        ? colorScheme.primary
+                                        : colorScheme.onSurfaceVariant,
+                                    fontWeight: FontWeight.w600,
+                                    letterSpacing: 0.5,
+                                    fontFeatures: [
+                                      const FontFeature.tabularFigures()
+                                    ],
+                                  ),
+                                ),
+                              ),
                             ),
                           ],
                         ),
