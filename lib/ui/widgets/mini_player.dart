@@ -52,10 +52,12 @@ class MiniPlayer extends StatelessWidget {
               children: [
                 StreamBuilder<Duration>(
                   stream: audioProvider.audioPlayer.positionStream,
+                  initialData: audioProvider.audioPlayer.position,
                   builder: (context, positionSnapshot) {
                     final position = positionSnapshot.data ?? Duration.zero;
                     return StreamBuilder<Duration?>(
                       stream: audioProvider.audioPlayer.durationStream,
+                      initialData: audioProvider.audioPlayer.duration,
                       builder: (context, durationSnapshot) {
                         final duration = durationSnapshot.data ?? Duration.zero;
                         final progress = duration.inMilliseconds > 0
@@ -63,9 +65,10 @@ class MiniPlayer extends StatelessWidget {
                             duration.inMilliseconds
                             : 0.0;
 
-                        return StreamBuilder<Duration?>(
-                          stream: audioProvider
-                              .audioPlayer.bufferedPositionStream,
+                        return StreamBuilder<Duration>(
+                          stream: audioProvider.bufferedPositionStream,
+                          initialData:
+                          audioProvider.audioPlayer.bufferedPosition,
                           builder: (context, bufferedSnapshot) {
                             final bufferedPosition =
                                 bufferedSnapshot.data ?? Duration.zero;
@@ -77,6 +80,7 @@ class MiniPlayer extends StatelessWidget {
 
                             return StreamBuilder<PlayerState>(
                               stream: audioProvider.playerStateStream,
+                              initialData: audioProvider.audioPlayer.playerState,
                               builder: (context, stateSnapshot) {
                                 final processingState =
                                     stateSnapshot.data?.processingState;
@@ -183,6 +187,7 @@ class MiniPlayer extends StatelessWidget {
                         Expanded(
                           child: StreamBuilder<int?>(
                             stream: audioProvider.currentIndexStream,
+                            initialData: audioProvider.audioPlayer.currentIndex,
                             builder: (context, snapshot) {
                               final index = snapshot.data ?? 0;
                               if (index >= currentSource.tracks.length) {
@@ -228,6 +233,7 @@ class MiniPlayer extends StatelessWidget {
                         const SizedBox(width: 12),
                         StreamBuilder<int?>(
                           stream: audioProvider.currentIndexStream,
+                          initialData: audioProvider.audioPlayer.currentIndex,
                           builder: (context, snapshot) {
                             final index = snapshot.data ?? 0;
                             final isFirstTrack = index == 0;
@@ -248,6 +254,8 @@ class MiniPlayer extends StatelessWidget {
                                 ),
                                 StreamBuilder<PlayerState>(
                                   stream: audioProvider.playerStateStream,
+                                  initialData:
+                                  audioProvider.audioPlayer.playerState,
                                   builder: (context, snapshot) {
                                     final playerState = snapshot.data;
                                     final processingState =

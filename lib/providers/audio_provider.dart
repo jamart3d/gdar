@@ -21,6 +21,8 @@ class AudioProvider with ChangeNotifier {
   Stream<int?> get currentIndexStream => _audioPlayer.currentIndexStream;
   Stream<Duration?> get durationStream => _audioPlayer.durationStream;
   Stream<Duration> get positionStream => _audioPlayer.positionStream;
+  Stream<Duration> get bufferedPositionStream =>
+      _audioPlayer.bufferedPositionStream;
 
   AudioProvider() {
     _audioPlayer = AudioPlayer();

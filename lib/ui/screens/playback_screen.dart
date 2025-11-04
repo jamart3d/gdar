@@ -5,6 +5,7 @@ import 'package:gdar/models/track.dart';
 import 'package:gdar/providers/audio_provider.dart';
 import 'package:gdar/providers/settings_provider.dart';
 import 'package:gdar/ui/screens/settings_screen.dart';
+import 'package:gdar/utils/logger.dart';
 import 'package:gdar/utils/utils.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:provider/provider.dart';
@@ -17,37 +18,76 @@ class PlaybackScreen extends StatefulWidget {
 }
 
 class _PlaybackScreenState extends State<PlaybackScreen> {
-  final Map<int, GlobalKey> _trackKeys = {};
+  late final ScrollController _scrollController;
+
+  // This is a fixed, predictable height for each track item.
+  // It's used for calculating the scroll offset.
+  static const double _trackItemHeight = 64.0;
 
   @override
   void initState() {
     super.initState();
-    // After the first frame is rendered, scroll to the current track.
+    _scrollController = ScrollController();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _scrollToCurrentTrack();
     });
   }
 
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
   void _scrollToCurrentTrack() {
+    logger.d('[PlaybackScreen] Attempting to scroll to current track...');
     final audioProvider = context.read<AudioProvider>();
     final currentIndex = audioProvider.audioPlayer.currentIndex;
-    if (currentIndex != null) {
-      final key = _trackKeys[currentIndex];
-      if (key != null && key.currentContext != null) {
-        Scrollable.ensureVisible(
-          key.currentContext!,
-          duration: const Duration(milliseconds: 600),
-          curve: Curves.easeInOutCubicEmphasized,
-          alignment: 0.5, // Center the item in the viewport
-        );
-      }
+
+    if (currentIndex == null) {
+      logger.w('[PlaybackScreen] Scroll failed: currentIndex is null.');
+      return;
     }
+
+    logger.i('[PlaybackScreen] Current track index is $currentIndex.');
+
+    if (!_scrollController.hasClients) {
+      logger.w(
+          '[PlaybackScreen] Scroll controller has no clients yet. Deferring scroll.');
+      // If the controller isn't ready, try again in a moment.
+      Future.delayed(const Duration(milliseconds: 100), () {
+        if (mounted) {
+          _scrollToCurrentTrack();
+        }
+      });
+      return;
+    }
+
+    final viewportHeight = _scrollController.position.viewportDimension;
+    final maxScroll = _scrollController.position.maxScrollExtent;
+
+    // Calculate the position of the item's top edge.
+    final itemPosition = _trackItemHeight * currentIndex;
+
+    // Calculate the offset required to center the item in the viewport.
+    final targetOffset =
+    (itemPosition - (viewportHeight / 2) + (_trackItemHeight / 2))
+        .clamp(0.0, maxScroll);
+
+    logger.i(
+        '[PlaybackScreen] Scrolling to offset $targetOffset for index $currentIndex. Viewport height: $viewportHeight, Max scroll: $maxScroll.');
+
+    _scrollController.animateTo(
+      targetOffset,
+      duration: const Duration(milliseconds: 600),
+      curve: Curves.easeInOutCubicEmphasized,
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     final audioProvider = context.watch<AudioProvider>();
-    final settingsProvider = context.watch<SettingsProvider>(); // Get settings
+    final settingsProvider = context.watch<SettingsProvider>();
     final Show? currentShow = audioProvider.currentShow;
     final Source? currentSource = audioProvider.currentSource;
 
@@ -60,13 +100,7 @@ class _PlaybackScreenState extends State<PlaybackScreen> {
       );
     }
 
-    for (int i = 0; i < currentSource.tracks.length; i++) {
-      _trackKeys.putIfAbsent(i, () => GlobalKey());
-    }
-
     final colorScheme = Theme.of(context).colorScheme;
-
-    // Determine if SHNID badge should be shown based on count or setting
     final bool shouldShowShnidBadge = currentShow.sources.length > 1 ||
         (currentShow.sources.length == 1 && settingsProvider.showSingleShnid);
 
@@ -106,7 +140,6 @@ class _PlaybackScreenState extends State<PlaybackScreen> {
                   ),
                 ),
                 const SizedBox(width: 8),
-                // Use the conditional flag here
                 if (shouldShowShnidBadge)
                   Container(
                     padding:
@@ -167,71 +200,71 @@ class _PlaybackScreenState extends State<PlaybackScreen> {
       tag: 'player',
       child: Scaffold(
         backgroundColor: colorScheme.surface,
-        body: CustomScrollView(
-          slivers: [
-            SliverAppBar(
-              expandedHeight: 250.0,
-              pinned: true,
-              actions: [
-                IconButton(
-                  icon: const Icon(Icons.settings_rounded),
-                  tooltip: 'Settings',
-                  onPressed: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(builder: (_) => const SettingsScreen()),
-                    );
-                  },
-                ),
-              ],
-              flexibleSpace: FlexibleSpaceBar(
-                title: Text(
-                  currentShow.venue,
-                  style: TextStyle(
-                    color: colorScheme.onSurface,
-                    fontWeight: FontWeight.w600,
+        body: NestedScrollView(
+          headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
+            return <Widget>[
+              SliverAppBar(
+                expandedHeight: 250.0,
+                pinned: true,
+                actions: [
+                  IconButton(
+                    icon: const Icon(Icons.settings_rounded),
+                    tooltip: 'Settings',
+                    onPressed: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                            builder: (_) => const SettingsScreen()),
+                      );
+                    },
                   ),
-                  overflow: TextOverflow.ellipsis,
-                  maxLines: 1,
-                ),
-                background: Container(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [
-                        colorScheme.primaryContainer,
-                        colorScheme.secondaryContainer,
-                        colorScheme.tertiaryContainer,
-                      ],
+                ],
+                flexibleSpace: FlexibleSpaceBar(
+                  title: Text(
+                    currentShow.venue,
+                    style: TextStyle(
+                      color: colorScheme.onSurface,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
+                  ),
+                  background: Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          colorScheme.primaryContainer,
+                          colorScheme.secondaryContainer,
+                          colorScheme.tertiaryContainer,
+                        ],
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
-            SliverPersistentHeader(
-              pinned: true,
-              delegate: _PlayerControlsHeaderDelegate(
-                height: 356,
-                child: controlsWidget,
-              ),
-            ),
-            SliverPadding(
-              padding: const EdgeInsets.only(top: 24, bottom: 24),
-              sliver: SliverList(
-                delegate: SliverChildBuilderDelegate(
-                      (context, index) {
-                    return _buildTrackItem(
-                      context,
-                      audioProvider,
-                      currentSource.tracks[index],
-                      index,
-                    );
-                  },
-                  childCount: currentSource.tracks.length,
+              SliverPersistentHeader(
+                pinned: true,
+                delegate: _PlayerControlsHeaderDelegate(
+                  height: 356,
+                  child: controlsWidget,
                 ),
               ),
-            ),
-          ],
+            ];
+          },
+          body: ListView.builder(
+            controller: _scrollController,
+            padding: const EdgeInsets.only(top: 24, bottom: 24),
+            itemCount: currentSource.tracks.length,
+            itemBuilder: (context, index) {
+              return _buildTrackItem(
+                context,
+                audioProvider,
+                currentSource.tracks[index],
+                index,
+              );
+            },
+          ),
         ),
       ),
     );
@@ -346,23 +379,22 @@ class _PlaybackScreenState extends State<PlaybackScreen> {
 
   Widget _buildProgressBar(BuildContext context, AudioProvider audioProvider) {
     final colorScheme = Theme.of(context).colorScheme;
-    final audioPlayer = audioProvider.audioPlayer;
 
     return StreamBuilder<Duration>(
-      stream: audioPlayer.positionStream,
-      initialData: audioPlayer.position,
+      stream: audioProvider.positionStream,
+      initialData: audioProvider.audioPlayer.position,
       builder: (context, positionSnapshot) {
         final position = positionSnapshot.data ?? Duration.zero;
 
         return StreamBuilder<Duration?>(
-          stream: audioPlayer.durationStream,
-          initialData: audioPlayer.duration,
+          stream: audioProvider.durationStream,
+          initialData: audioProvider.audioPlayer.duration,
           builder: (context, durationSnapshot) {
             final totalDuration = durationSnapshot.data ?? Duration.zero;
 
-            return StreamBuilder<Duration?>(
-              stream: audioPlayer.bufferedPositionStream,
-              initialData: audioPlayer.bufferedPosition,
+            return StreamBuilder<Duration>(
+              stream: audioProvider.bufferedPositionStream,
+              initialData: audioProvider.audioPlayer.bufferedPosition,
               builder: (context, bufferedSnapshot) {
                 final bufferedPosition =
                     bufferedSnapshot.data ?? Duration.zero;
@@ -613,45 +645,47 @@ class _PlaybackScreenState extends State<PlaybackScreen> {
         final currentIndex = snapshot.data;
         final isPlaying = currentIndex == index;
 
-        return Container(
-          key: _trackKeys[index],
-          margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 4),
-          decoration: BoxDecoration(
-            color: isPlaying
-                ? colorScheme.primaryContainer.withOpacity(0.5)
-                : Colors.transparent,
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: ListTile(
-            shape: RoundedRectangleBorder(
+        return SizedBox(
+          height: _trackItemHeight,
+          child: Container(
+            margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 4),
+            decoration: BoxDecoration(
+              color: isPlaying
+                  ? colorScheme.primaryContainer.withOpacity(0.5)
+                  : Colors.transparent,
               borderRadius: BorderRadius.circular(12),
             ),
-            contentPadding:
-            const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-            title: Text(
-              settingsProvider.showTrackNumbers
-                  ? '${track.trackNumber}. ${track.title}'
-                  : track.title,
-              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                fontWeight:
-                isPlaying ? FontWeight.w600 : FontWeight.normal,
-                color: isPlaying
-                    ? colorScheme.primary
-                    : colorScheme.onSurface,
+            child: ListTile(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
               ),
-            ),
-            trailing: Text(
-              formatDuration(Duration(seconds: track.duration)),
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: colorScheme.onSurfaceVariant,
-                fontWeight: FontWeight.w500,
+              contentPadding:
+              const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+              title: Text(
+                settingsProvider.showTrackNumbers
+                    ? '${track.trackNumber}. ${track.title}'
+                    : track.title,
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                  fontWeight:
+                  isPlaying ? FontWeight.w600 : FontWeight.normal,
+                  color: isPlaying
+                      ? colorScheme.primary
+                      : colorScheme.onSurface,
+                ),
               ),
+              trailing: Text(
+                formatDuration(Duration(seconds: track.duration)),
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              onTap: () {
+                if (currentIndex != index) {
+                  audioProvider.seekToTrack(index);
+                }
+              },
             ),
-            onTap: () {
-              if (currentIndex != index) {
-                audioProvider.seekToTrack(index);
-              }
-            },
           ),
         );
       },
@@ -683,4 +717,3 @@ class _PlayerControlsHeaderDelegate extends SliverPersistentHeaderDelegate {
     return height != oldDelegate.height || child != oldDelegate.child;
   }
 }
-

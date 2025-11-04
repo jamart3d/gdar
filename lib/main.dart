@@ -1,16 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:gdar/providers/audio_provider.dart';
 import 'package:gdar/providers/settings_provider.dart';
+import 'package:gdar/providers/show_list_provider.dart';
 import 'package:gdar/providers/theme_provider.dart';
 import 'package:gdar/ui/screens/show_list_screen.dart';
 import 'package:gdar/utils/app_themes.dart';
-import 'package:gdar/utils/logger.dart'; // Import the logger
+import 'package:gdar/utils/logger.dart';
 import 'package:just_audio_background/just_audio_background.dart';
 import 'package:provider/provider.dart';
 
 Future<void> main() async {
   // Ensure Flutter bindings are initialized
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Lock device orientation to portrait
+  await SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown,
+  ]);
 
   // Initialize your logger
   initLogger();
@@ -35,6 +43,7 @@ class GdarApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
         ChangeNotifierProvider(create: (_) => SettingsProvider()),
         ChangeNotifierProvider(create: (_) => AudioProvider()),
+        ChangeNotifierProvider(create: (_) => ShowListProvider()),
       ],
       child: Consumer<ThemeProvider>(
         builder: (context, themeProvider, child) {
@@ -43,7 +52,8 @@ class GdarApp extends StatelessWidget {
             debugShowCheckedModeBanner: false,
             theme: AppThemes.lightTheme,
             darkTheme: AppThemes.darkTheme,
-            themeMode: themeProvider.isDarkMode ? ThemeMode.dark : ThemeMode.light,
+            themeMode:
+            themeProvider.isDarkMode ? ThemeMode.dark : ThemeMode.light,
             home: const ShowListScreen(),
           );
         },

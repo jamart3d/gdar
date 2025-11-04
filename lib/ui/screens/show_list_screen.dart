@@ -1,21 +1,18 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:gdar/api/show_service.dart';
 import 'package:gdar/models/show.dart';
 import 'package:gdar/models/source.dart';
-import 'package:gdar/models/track.dart';
 import 'package:gdar/providers/audio_provider.dart';
-import 'package:gdar/providers/settings_provider.dart';
+import 'package:gdar/providers/show_list_provider.dart';
 import 'package:gdar/ui/screens/playback_screen.dart';
 import 'package:gdar/ui/screens/settings_screen.dart';
 import 'package:gdar/ui/widgets/mini_player.dart';
+import 'package:gdar/ui/widgets/show_list_card.dart';
+import 'package:gdar/ui/widgets/show_list_item_details.dart';
 import 'package:gdar/utils/logger.dart';
-import 'package:gdar/utils/utils.dart';
-import 'package:just_audio/just_audio.dart';
 import 'package:provider/provider.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
-import 'dart:collection'; // Import for Queue
 
 class ShowListScreen extends StatefulWidget {
   const ShowListScreen({super.key});
@@ -32,30 +29,18 @@ class _ShowListScreenState extends State<ShowListScreen>
   ItemPositionsListener.create();
   final Map<String, ScrollController> _trackScrollControllers = {};
 
-  List<Show> _allShows = [];
-  bool _isLoading = true;
-  String? _error;
-
-  String? _expandedShowName;
-  String? _expandedShnid;
-  bool _isSearchVisible = false;
-  String? _loadingShowName;
-
   late final AnimationController _animationController;
   late final Animation<double> _animation;
 
-  // Queue to store recent scroll target indices for logging position
-  final Queue<int> _scrollTargetQueue = Queue<int>();
-  Timer? _positionLogTimer;
+  bool _isSearchVisible = false;
 
   static const Duration _animationDuration = Duration(milliseconds: 300);
 
   // Height constants for calculation
-  // Use the original source header height
   static const double _sourceHeaderHeight = 72.0;
-  static const double _trackItemHeight = 75.0;
+  static const double _trackItemHeight = 64.0; // Corrected constant
   static const double _shnidLabelHeight = 0.0;
-  static const double _sourcePadding = 16.0; // Corresponds to vertical: 8 margin * 2
+  static const double _sourcePadding = 16.0;
   static const double _maxShnidListHeight = 400.0;
   static const double _maxTrackListHeight = 500.0;
 
@@ -71,9 +56,11 @@ class _ShowListScreenState extends State<ShowListScreen>
       curve: Curves.easeInOutCubicEmphasized,
     );
 
-    _fetchShows();
-    _searchController.addListener(() => setState(() {}));
-    _itemPositionsListener.itemPositions.addListener(_logItemPositionAfterScroll);
+    _searchController.addListener(() {
+      context
+          .read<ShowListProvider>()
+          .setSearchQuery(_searchController.text);
+    });
   }
 
   @override
@@ -83,141 +70,49 @@ class _ShowListScreenState extends State<ShowListScreen>
     for (var controller in _trackScrollControllers.values) {
       controller.dispose();
     }
-    _itemPositionsListener.itemPositions.removeListener(_logItemPositionAfterScroll);
-    _positionLogTimer?.cancel();
     super.dispose();
-  }
-
-  void _logItemPositionAfterScroll() {
-    if (_scrollTargetQueue.isNotEmpty) {
-      _positionLogTimer?.cancel();
-      _positionLogTimer = Timer(const Duration(milliseconds: 500), () {
-        if (_scrollTargetQueue.isNotEmpty && mounted) {
-          final targetIndex = _scrollTargetQueue.removeFirst();
-          final positions = _itemPositionsListener.itemPositions.value;
-          final targetPosition = positions.firstWhere(
-                (pos) => pos.index == targetIndex,
-            orElse: () =>
-                ItemPosition(index: -1, itemLeadingEdge: -1, itemTrailingEdge: -1),
-          );
-
-          if (targetPosition.index != -1) {
-            logger.i(
-                'Item at index $targetIndex settled. Leading Edge: ${targetPosition.itemLeadingEdge.toStringAsFixed(2)}');
-          } else {
-            logger.w(
-                'Item at index $targetIndex not found in visible positions after scroll.');
-          }
-        }
-        if (_scrollTargetQueue.isNotEmpty) {
-          _scrollTargetQueue.clear();
-          logger.d("Cleared scroll target queue due to rapid scrolls.");
-        }
-      });
-    }
-  }
-
-  Future<void> _fetchShows() async {
-    try {
-      final shows = await ShowService.instance.getShows();
-      if (mounted) {
-        setState(() {
-          _allShows = shows;
-          _isLoading = false;
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          _error = "Failed to load shows. Please restart the app.";
-          _isLoading = false;
-        });
-      }
-    }
-  }
-
-  List<Show> _getFilteredShows() {
-    const bool hideGdShowsInternally = true;
-    return _allShows.where((show) {
-      if (hideGdShowsInternally && show.hasFeaturedTrack) return false;
-      final query = _searchController.text.toLowerCase();
-      if (query.isEmpty) return true;
-      return show.venue.toLowerCase().contains(query) ||
-          show.formattedDate.toLowerCase().contains(query);
-    }).toList();
   }
 
   void _toggleSearch() => setState(() => _isSearchVisible = !_isSearchVisible);
 
-  void _collapseCurrentShow() {
-    if (_expandedShowName == null) return;
-    setState(() {
-      _expandedShowName = null;
-      _expandedShnid = null;
-    });
-    _animationController.reverse();
-  }
-
-  void _expandShow(Show show, {String? specificShnid}) {
-    setState(() {
-      _expandedShowName = show.name;
-      if (specificShnid != null) {
-        _expandedShnid = specificShnid;
-      } else if (show.sources.length > 1) {
-        _expandedShnid = null;
-      } else {
-        _expandedShnid = null;
-      }
-    });
-    _animationController.forward(from: 0.0);
-  }
-
-
-  double _calculateExpandedHeight(Show show) {
+  double _calculateExpandedHeight(Show show, String? expandedShnid) {
     double totalHeight = 0.0;
     final hasMultipleSources = show.sources.length > 1;
 
     if (hasMultipleSources) {
       totalHeight += _shnidLabelHeight;
-      // Use the actual number of sources for height calculation
       totalHeight += show.sources.length * _sourceHeaderHeight;
-      // Add padding for the top/bottom of the source list itself
       totalHeight += 16;
-      if (_expandedShnid != null) {
+      if (expandedShnid != null) {
         final expandedSource = show.sources.firstWhere(
-                (s) => s.id == _expandedShnid,
+                (s) => s.id == expandedShnid,
             orElse: () => show.sources.first);
         totalHeight += expandedSource.tracks.length * _trackItemHeight;
-        // Add padding for the top/bottom within the nested track list container
         totalHeight += _sourcePadding;
-        // Clamp total height (sources + tracks + paddings)
-        // Ensure we don't exceed the max track height *plus* the space already taken by sources
-        return totalHeight.clamp(0.0, _maxTrackListHeight + (show.sources.length * _sourceHeaderHeight) + 16.0);
+        return totalHeight.clamp(
+            0.0,
+            _maxTrackListHeight +
+                (show.sources.length * _sourceHeaderHeight) +
+                16.0);
       }
-      // Clamp height for just the source list + padding
       return totalHeight.clamp(0, _maxShnidListHeight);
     } else {
-      // Single source show
       totalHeight += show.sources.first.tracks.length * _trackItemHeight;
-      // Add padding for the top/bottom within the track list container
       totalHeight += _sourcePadding;
       return totalHeight.clamp(0, _maxTrackListHeight);
     }
   }
 
-
-
-
   Future<void> _scrollToShowTop(
       Show show, List<Show> currentlyVisibleShows) async {
     final targetIndex = currentlyVisibleShows.indexOf(show);
+    logger.i('Attempting to scroll to "${show.name}" at index $targetIndex.');
+
     if (targetIndex == -1) {
       logger.w('Show "${show.name}" not found in filtered list for scrolling.');
       return;
     }
 
-    logger.i('Initiating scroll for item at index $targetIndex to top.');
-    _scrollTargetQueue.addLast(targetIndex);
     try {
       await _itemScrollController.scrollTo(
         index: targetIndex,
@@ -225,47 +120,81 @@ class _ShowListScreenState extends State<ShowListScreen>
         curve: Curves.easeInOutCubicEmphasized,
         alignment: 0.0,
       );
-      logger.i(
-          'Scroll animation initiated for item at index $targetIndex likely completed (await returned).');
+      logger.i('Scroll animation initiated for item at index $targetIndex.');
     } catch (e) {
       logger.e('Error during scroll to show: $e');
-      _scrollTargetQueue.remove(targetIndex);
     }
   }
-
-
-  Future<void> _bringShowIntoView(Show show, {String? specificShnid}) async {
-    final isAnotherShowExpanded =
-        _expandedShowName != null && _expandedShowName != show.name;
-
-    if (isAnotherShowExpanded) {
-      logger.i('Collapsing previous show before expanding new one');
-      _collapseCurrentShow();
-      await Future.delayed(_animationDuration);
-    }
-
-    logger.i('Expanding show: "${show.name}"');
-    _expandShow(show, specificShnid: specificShnid);
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        _scrollToShowTop(show, _getFilteredShows());
-      }
-    });
-  }
-
 
   Future<void> _onShowTapped(Show show) async {
-    if (_expandedShowName == show.name) {
-      logger.i('Collapsing the same show: "${show.name}"');
-      _collapseCurrentShow();
+    logger.d('Tapped on show: ${show.name}');
+    final showListProvider = context.read<ShowListProvider>();
+    final previouslyExpanded = showListProvider.expandedShowName;
+    final isExpandingNewShow = previouslyExpanded != show.name;
+
+    if (previouslyExpanded != null && isExpandingNewShow) {
+      logger.i('Collapsing previous show: $previouslyExpanded');
+      await _animationController.reverse();
+      if (!mounted) return;
+    }
+
+    showListProvider.onShowTapped(show);
+
+    if (isExpandingNewShow) {
+      logger.i('Expanding new show: ${show.name}');
+      await _animationController.forward(from: 0.0);
+      if (!mounted) return;
+      await Future.delayed(const Duration(milliseconds: 50));
+      if (!mounted) return;
+
+      logger.d('Animation complete: Scrolling to ${show.name}');
+      _scrollToShowTop(show, showListProvider.filteredShows);
     } else {
-      await _bringShowIntoView(show);
+      logger.i('Collapsing show: ${show.name}');
+      _animationController.reverse();
     }
   }
 
-  void _onShnidTapped(String shnid) {
-    setState(() => _expandedShnid = (_expandedShnid == shnid) ? null : shnid);
+  Future<void> _onSourceLongPressed(Show show, Source source) async {
+    logger.d('Long pressed on source: ${source.id} for show: ${show.name}');
+    final showListProvider = context.read<ShowListProvider>();
+    final audioProvider = context.read<AudioProvider>();
+
+    final previouslyExpandedShow = showListProvider.expandedShowName;
+    final isDifferentShow = previouslyExpandedShow != show.name;
+    final wasAlreadyExpanded = previouslyExpandedShow == show.name;
+
+    showListProvider.setLoadingShow(show.name);
+
+    if (previouslyExpandedShow != null && isDifferentShow) {
+      logger.i('Collapsing previous show: $previouslyExpandedShow');
+      await _animationController.reverse();
+      if (!mounted) return;
+    }
+
+    showListProvider.expandShowAndSource(show.name, source.id);
+
+    // This is the function that will be called to scroll.
+    Future<void> scrollShow() async {
+      await Future.delayed(const Duration(milliseconds: 50));
+      if (mounted) {
+        logger.d('Animation/Action complete: Scrolling to ${show.name}');
+        await _scrollToShowTop(show, showListProvider.filteredShows);
+      }
+    }
+
+    if (!wasAlreadyExpanded) {
+      logger.i('Expanding show container for ${show.name}');
+      await _animationController.forward(from: 0.0);
+      await scrollShow();
+    } else {
+      await scrollShow();
+    }
+
+    await audioProvider.playSource(show, source);
+    if (mounted) {
+      showListProvider.setLoadingShow(null);
+    }
   }
 
   Future<void> _openPlaybackScreen() async {
@@ -276,44 +205,86 @@ class _ShowListScreenState extends State<ShowListScreen>
         const begin = Offset(0.0, 1.0);
         const end = Offset.zero;
         const curve = Curves.easeInOutCubicEmphasized;
-        var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+        var tween =
+        Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
         return SlideTransition(position: animation.drive(tween), child: child);
       },
       transitionDuration: const Duration(milliseconds: 500),
     ));
 
     if (!mounted) return;
+
+    logger.i('Returned from PlaybackScreen. Initiating scroll-to-playing sequence...');
     final audioProvider = context.read<AudioProvider>();
+    final showListProvider = context.read<ShowListProvider>();
     final currentShow = audioProvider.currentShow;
     final currentSource = audioProvider.currentSource;
 
-    if (currentShow != null && currentSource != null) {
-      final specificShnidToPass = currentShow.sources.length > 1 ? currentSource.id : null;
-      await _bringShowIntoView(currentShow, specificShnid: specificShnidToPass);
+    if (currentShow == null || currentSource == null) {
+      logger.i('No show is currently playing. Aborting sequence.');
+      return;
+    }
 
-      await Future.delayed(_animationDuration);
+    final trackIndex = audioProvider.audioPlayer.currentIndex ?? 0;
+    final specificShnid =
+    currentShow.sources.length > 1 ? currentSource.id : null;
+    final isAlreadyExpanded =
+        showListProvider.expandedShowName == currentShow.name;
+
+    logger.d(
+        'Target: Show="${currentShow.name}", Source="${currentSource.id}", Track=$trackIndex. Show already expanded: $isAlreadyExpanded');
+
+    // Step 1: Set the provider state. This will trigger a rebuild in the background.
+    showListProvider.expandToShow(currentShow, specificShnid: specificShnid);
+
+    // Step 2: Use a post-frame callback to ensure the rebuild has happened.
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (!mounted) return;
 
-      final trackIndex = audioProvider.audioPlayer.currentIndex ?? 0;
+      // Step 3: If the show wasn't open, animate it open and wait.
+      if (!isAlreadyExpanded) {
+        logger.i('Show was not expanded. Animating it open...');
+        await _animationController.forward(from: 0.0);
+        if (!mounted) return;
+      }
+
+      // Step 4: Now that it's open, scroll the main list to the show and wait.
+      await _scrollToShowTop(currentShow, showListProvider.filteredShows);
+      if (!mounted) return;
+
+      // Step 5: After a brief delay for layout, scroll the inner track list to the center.
+      await Future.delayed(const Duration(milliseconds: 100));
+      if (!mounted) return;
+
       final controller = _trackScrollControllers[currentSource.id];
       if (controller != null && controller.hasClients) {
-        final offset = trackIndex * _trackItemHeight;
-        if (offset <= controller.position.maxScrollExtent) {
-          controller.animateTo(offset,
-              duration: const Duration(milliseconds: 400),
-              curve: Curves.easeInOut);
-        }
-      }
-    }
-  }
+        final viewportHeight = controller.position.viewportDimension;
+        final maxScroll = controller.position.maxScrollExtent;
+        final itemTopPosition = _trackItemHeight * trackIndex;
 
+        final targetOffset =
+        (itemTopPosition - (viewportHeight / 2) + (_trackItemHeight / 2))
+            .clamp(0.0, maxScroll);
+
+        logger.i(
+            'Centering inner list on track $trackIndex. Target offset: $targetOffset, Viewport: $viewportHeight, MaxScroll: $maxScroll');
+
+        controller.animateTo(
+          targetOffset,
+          duration: const Duration(milliseconds: 400),
+          curve: Curves.easeInOut,
+        );
+      } else {
+        logger.w(
+            'Could not scroll track list: Controller for ${currentSource.id} not found or has no clients.');
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     final audioProvider = context.watch<AudioProvider>();
-    // ignore: unused_local_variable
-    final settingsProvider = context.watch<SettingsProvider>(); // Needed for watch
-    final filteredShows = _getFilteredShows();
+    final showListProvider = context.watch<ShowListProvider>();
 
     return Scaffold(
       appBar: AppBar(
@@ -349,7 +320,8 @@ class _ShowListScreenState extends State<ShowListScreen>
                         ? [
                       IconButton(
                           icon: const Icon(Icons.clear_rounded),
-                          onPressed: () => _searchController.clear())
+                          onPressed: () =>
+                              _searchController.clear())
                     ]
                         : null,
                     elevation: const WidgetStatePropertyAll(0),
@@ -362,7 +334,7 @@ class _ShowListScreenState extends State<ShowListScreen>
                 )
                     : const SizedBox.shrink(),
               ),
-              Expanded(child: _buildBody(filteredShows)),
+              Expanded(child: _buildBody(showListProvider, audioProvider)),
             ],
           ),
           if (audioProvider.currentShow != null)
@@ -377,526 +349,70 @@ class _ShowListScreenState extends State<ShowListScreen>
     );
   }
 
-  Widget _buildBody(List<Show> filteredShows) {
-    if (_isLoading) return const Center(child: CircularProgressIndicator());
-    if (_error != null) return Center(child: Text(_error!));
-    if (filteredShows.isEmpty) {
-      return const Center(child: Text('No shows match your search or filters.'));
+  Widget _buildBody(
+      ShowListProvider showListProvider, AudioProvider audioProvider) {
+    if (showListProvider.isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    if (showListProvider.error != null) {
+      return Center(child: Text(showListProvider.error!));
+    }
+    if (showListProvider.filteredShows.isEmpty) {
+      return const Center(
+          child: Text('No shows match your search or filters.'));
     }
 
     return ScrollablePositionedList.builder(
       itemScrollController: _itemScrollController,
       itemPositionsListener: _itemPositionsListener,
       padding: const EdgeInsets.only(bottom: 100),
-      itemCount: filteredShows.length,
+      itemCount: showListProvider.filteredShows.length,
       itemBuilder: (context, index) {
-        final show = filteredShows[index];
-        final audioProvider = context.watch<AudioProvider>();
+        final show = showListProvider.filteredShows[index];
+        final isExpanded = showListProvider.expandedShowName == show.name;
+
         return Column(
           key: ValueKey(show.name),
           children: [
-            _buildShowHeader(context, show, _expandedShowName == show.name,
-                audioProvider.currentShow?.name == show.name),
-            SizeTransition(
-              sizeFactor: _animation,
-              axisAlignment: -1.0,
-              child: _expandedShowName == show.name
-                  ? _buildExpandedContent(
-                  context, show, audioProvider.currentSource?.id)
-                  : const SizedBox.shrink(),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  Widget _buildShowHeader(
-      BuildContext context, Show show, bool isExpanded, bool isPlaying) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final settingsProvider = context.watch<SettingsProvider>();
-    final isLoading = _loadingShowName == show.name;
-    final cardBorderColor = isPlaying
-        ? colorScheme.primary
-        : show.hasFeaturedTrack
-        ? colorScheme.tertiary
-        : colorScheme.outlineVariant;
-    final bool shouldShowBadge = show.sources.length > 1 ||
-        (show.sources.length == 1 && settingsProvider.showSingleShnid);
-
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-      child: Card(
-        margin: EdgeInsets.zero,
-        elevation: isExpanded ? 2 : 0,
-        shadowColor: colorScheme.shadow.withOpacity(0.1),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(28),
-          side: BorderSide(
-              color: cardBorderColor,
-              width: (isPlaying || show.hasFeaturedTrack) ? 2 : 1),
-        ),
-        child: AnimatedContainer(
-          duration: _animationDuration,
-          curve: Curves.easeInOutCubicEmphasized,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(28),
-            color: isExpanded
-                ? colorScheme.primaryContainer.withOpacity(0.3)
-                : colorScheme.surface,
-          ),
-          child: Material(
-            color: Colors.transparent,
-            child: InkWell(
-              borderRadius: BorderRadius.circular(28),
+            ShowListCard(
+              show: show,
+              isExpanded: isExpanded,
+              isPlaying: audioProvider.currentShow?.name == show.name,
+              isLoading: showListProvider.loadingShowName == show.name,
               onTap: () => _onShowTapped(show),
               onLongPress: () {
                 HapticFeedback.mediumImpact();
-                setState(() => _loadingShowName = show.name);
-                _bringShowIntoView(show);
-                context.read<AudioProvider>().playShow(show).whenComplete(() {
-                  if (mounted && _loadingShowName == show.name) {
-                    setState(() => _loadingShowName = null);
+                showListProvider.setLoadingShow(show.name);
+                if (showListProvider.expandedShowName != show.name) {
+                  _onShowTapped(show);
+                }
+                audioProvider.playShow(show).whenComplete(() {
+                  if (mounted) {
+                    showListProvider.setLoadingShow(null);
                   }
                 });
               },
-              child: Padding(
-                padding: const EdgeInsets.all(20.0),
-                child: Row(
-                  // UPDATED: Align children to the bottom
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    // Keep icon aligned conceptually with the top line of text
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 4.0), // Adjust padding slightly if needed
-                      child: AnimatedSwitcher(
-                        duration: _animationDuration,
-                        child: isLoading
-                            ? Container(
-                          key: ValueKey('loader_${show.name}'),
-                          width: 36,
-                          height: 36,
-                          padding: const EdgeInsets.all(8),
-                          child: const CircularProgressIndicator(strokeWidth: 2.5),
-                        )
-                            : AnimatedRotation(
-                          key: ValueKey('icon_${show.name}'),
-                          turns: isExpanded ? 0.5 : 0,
-                          duration: _animationDuration,
-                          curve: Curves.easeInOutCubicEmphasized,
-                          child: Container(
-                            padding: const EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              color: isExpanded
-                                  ? colorScheme.primaryContainer
-                                  : colorScheme.surfaceContainerHighest,
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Icon(Icons.keyboard_arrow_down_rounded,
-                                color: isExpanded
-                                    ? colorScheme.onPrimaryContainer
-                                    : colorScheme.onSurfaceVariant,
-                                size: 20),
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.end, // Align text towards bottom
-                        children: [
-                          Text(show.venue,
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .titleLarge
-                                  ?.copyWith(
-                                  fontWeight: FontWeight.w600,
-                                  letterSpacing: 0.1,
-                                  color: colorScheme.onSurface),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis),
-                          const SizedBox(height: 6),
-                          Text(show.formattedDate,
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .bodyLarge
-                                  ?.copyWith(
-                                  color: colorScheme.onSurfaceVariant,
-                                  letterSpacing: 0.15)),
-                        ],
-                      ),
-                    ),
-                    // Badge is already aligned bottom-right implicitly by the Row's CrossAxisAlignment.end
-                    if (shouldShowBadge)
-                      Padding(
-                        padding: const EdgeInsets.only(left: 8.0), // Keep padding for spacing
-                        child: _buildBadge(context, show),
-                      ),
-                  ],
-                ),
-              ),
             ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildBadge(BuildContext context, Show show) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final settingsProvider = context.read<SettingsProvider>();
-
-    final String badgeText;
-    if (show.sources.length == 1 && settingsProvider.showSingleShnid) {
-      badgeText = show.sources.first.id.replaceAll(RegExp(r'[^0-9]'), '');
-    } else {
-      badgeText = '${show.sources.length}';
-    }
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      constraints: const BoxConstraints(maxWidth: 80),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            colorScheme.secondaryContainer.withOpacity(0.7),
-            colorScheme.secondaryContainer.withOpacity(0.5),
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-              color: colorScheme.shadow.withOpacity(0.05),
-              blurRadius: 2,
-              offset: const Offset(0, 1))
-        ],
-      ),
-      child: Text(
-        badgeText,
-        style: Theme.of(context).textTheme.labelMedium?.copyWith(
-            color: colorScheme.onSecondaryContainer,
-            fontWeight: FontWeight.w600,
-            letterSpacing: 0.2),
-        overflow: TextOverflow.ellipsis,
-        maxLines: 1,
-        textAlign: TextAlign.center,
-      ),
-    );
-  }
-
-
-  Widget _buildExpandedContent(
-      BuildContext context, Show show, String? playingSourceId) {
-    // UPDATED: Always show source list if > 1 source, otherwise show tracks directly.
-    if (show.sources.isEmpty) {
-      return const SizedBox(
-          height: 100, child: Center(child: Text('No tracks available.')));
-    }
-
-    return SizedBox(
-      height: _calculateExpandedHeight(show),
-      child: show.sources.length > 1
-          ? _buildSourceSelection(context, show, playingSourceId) // Show source list if multiple
-          : _buildTrackList(context, show, show.sources.first), // Show tracks if single
-    );
-  }
-
-
-
-  Widget _buildSourceSelection(
-      BuildContext context, Show show, String? playingSourceId) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final settingsProvider = context.watch<SettingsProvider>(); // Need settings here
-
-    return ListView.builder(
-      // UPDATED: Removed vertical padding from ListView
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      itemCount: show.sources.length,
-      itemBuilder: (context, index) {
-        final source = show.sources[index];
-        final isSourceExpanded = _expandedShnid == source.id;
-        final isSourcePlaying = playingSourceId == source.id;
-        return Column(
-          key: ValueKey(source.id),
-          children: [
-            Padding(
-              // Keep vertical padding on individual items
-              padding: const EdgeInsets.symmetric(vertical: 4),
-              child: Material(
-                color: Colors.transparent,
-                borderRadius: BorderRadius.circular(20),
-                child: InkWell(
-                  borderRadius: BorderRadius.circular(20),
-                  onTap: () => _onShnidTapped(source.id),
-                  onLongPress: () {
-                    HapticFeedback.mediumImpact();
-                    setState(() => _loadingShowName = show.name);
-                    _bringShowIntoView(show, specificShnid: source.id);
-                    context
-                        .read<AudioProvider>()
-                        .playSource(show, source)
-                        .whenComplete(() {
-                      if (mounted && _loadingShowName == show.name) {
-                        setState(() => _loadingShowName = null);
-                      }
-                    });
-                  },
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          isSourcePlaying
-                              ? colorScheme.tertiaryContainer.withOpacity(0.7)
-                              : colorScheme.secondaryContainer,
-                          isSourcePlaying
-                              ? colorScheme.tertiaryContainer.withOpacity(0.5)
-                              : colorScheme.secondaryContainer.withOpacity(0.8),
-                        ],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      borderRadius: BorderRadius.circular(20),
-                      boxShadow: [
-                        BoxShadow(
-                          color: colorScheme.shadow.withOpacity(0.1),
-                          blurRadius: 4,
-                          offset: const Offset(0, 2),
-                        )
-                      ],
-                      border: isSourceExpanded ? Border.all(color: colorScheme.primary, width: 1.5) : null,
-                    ),
-                    child: Row(
-                      children: [
-                        AnimatedRotation(
-                          turns: isSourceExpanded ? 0.5 : 0,
-                          duration: _animationDuration,
-                          curve: Curves.easeInOutCubicEmphasized,
-                          child: Icon(
-                              Icons.keyboard_arrow_down_rounded,
-                              size: 18,
-                              color: isSourceExpanded
-                                  ? colorScheme.onPrimaryContainer
-                                  : isSourcePlaying
-                                  ? colorScheme.onTertiaryContainer
-                                  : colorScheme.onSecondaryContainer),
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: Text(
-                              source.id,
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .titleSmall
-                                  ?.copyWith(
-                                  color: isSourcePlaying
-                                      ? colorScheme.onTertiaryContainer
-                                      : colorScheme.onSecondaryContainer,
-                                  fontWeight: isSourcePlaying
-                                      ? FontWeight.w700
-                                      : FontWeight.w600,
-                                  letterSpacing: 0.1)),
-                        ),
-                        if (!settingsProvider.hideTrackCountInSourceList)
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 10, vertical: 6),
-                            decoration: BoxDecoration(
-                              color: isSourcePlaying
-                                  ? colorScheme.tertiary.withOpacity(0.1)
-                                  : colorScheme.secondary.withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Text('${source.tracks.length}',
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .labelSmall
-                                    ?.copyWith(
-                                    color: isSourcePlaying
-                                        ? colorScheme.onTertiaryContainer
-                                        : colorScheme.onSecondaryContainer,
-                                    fontWeight: FontWeight.w600)),
-                          ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            AnimatedSize(
-              duration: _animationDuration,
-              curve: Curves.easeInOutCubicEmphasized,
-              child: isSourceExpanded
-                  ? _buildTrackList(context, show, source, isNested: true)
+            SizeTransition(
+              sizeFactor: _animation,
+              axisAlignment: -1.0,
+              child: isExpanded
+                  ? ShowListItemDetails(
+                show: show,
+                playingSourceId: audioProvider.currentSource?.id,
+                expandedShnid: showListProvider.expandedShnid,
+                height: _calculateExpandedHeight(
+                    show, showListProvider.expandedShnid),
+                trackScrollControllers: _trackScrollControllers,
+                onOpenPlayback: _openPlaybackScreen,
+                onSourceLongPress: (source) =>
+                    _onSourceLongPressed(show, source),
+              )
                   : const SizedBox.shrink(),
             ),
           ],
-        );
-      },
-    );
-  }
-
-  Widget _buildTrackList(BuildContext context, Show show, Source source,
-      {bool isNested = false}) {
-    final controller = _trackScrollControllers.putIfAbsent(
-        source.id, () => ScrollController());
-    // UPDATED: Calculate height differently based on context
-    double listHeight;
-    if (isNested) {
-      // Calculate height for nested list + padding and clamp
-      listHeight = ((source.tracks.length * _trackItemHeight) + _sourcePadding).clamp(0.0, _maxTrackListHeight);
-    } else {
-      // Use the main calculation for single-source shows (already includes padding and clamping)
-      listHeight = _calculateExpandedHeight(show);
-    }
-
-
-    return Container(
-      height: listHeight, // Use calculated height
-      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        // UPDATED: Always transparent background
-        color: Colors.transparent,
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: ListView.builder(
-        controller: controller,
-        // Add padding only if nested to ensure spacing below last item
-        padding: isNested ? const EdgeInsets.only(bottom: 8.0) : EdgeInsets.zero,
-        itemCount: source.tracks.length,
-        itemBuilder: (context, index) {
-          return _buildTrackItem(context, show, source.tracks[index], source, index);
-        },
-      ),
-    );
-  }
-
-
-
-
-  Widget _buildTrackItem(
-      BuildContext context, Show show, Track track, Source source, int index) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final audioProvider = context.watch<AudioProvider>();
-    final settingsProvider = context.watch<SettingsProvider>();
-
-    return StreamBuilder<int?>(
-      stream: audioProvider.currentIndexStream,
-      builder: (context, indexSnapshot) {
-        return StreamBuilder<PlayerState>(
-          stream: audioProvider.playerStateStream,
-          builder: (context, stateSnapshot) {
-            final isCurrentlyPlayingSource =
-                audioProvider.currentSource?.id == source.id;
-            final isPlayingTrack =
-                isCurrentlyPlayingSource && indexSnapshot.data == index;
-            final titleText = settingsProvider.showTrackNumbers
-                ? '${track.trackNumber}. ${track.title}'
-                : track.title;
-
-            return AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-              decoration: BoxDecoration(
-                gradient: isPlayingTrack
-                    ? LinearGradient(colors: [
-                  colorScheme.primaryContainer.withOpacity(0.6),
-                  colorScheme.primaryContainer.withOpacity(0.3)
-                ], begin: Alignment.centerLeft, end: Alignment.centerRight)
-                    : null,
-                color: isPlayingTrack ? null : Colors.transparent,
-                borderRadius: BorderRadius.circular(16),
-                border: isPlayingTrack
-                    ? Border.all(
-                    color: colorScheme.primary.withOpacity(0.3), width: 1.5)
-                    : null,
-              ),
-              child: Material(
-                color: Colors.transparent,
-                child: InkWell(
-                  borderRadius: BorderRadius.circular(16),
-                  onTap: () {
-                    final audioProvider = context.read<AudioProvider>();
-                    if (isPlayingTrack) {
-                      _openPlaybackScreen();
-                    } else if (isCurrentlyPlayingSource) {
-                      audioProvider.seekToTrack(index);
-                    } else if (context.read<SettingsProvider>().playOnTap) {
-                      HapticFeedback.lightImpact();
-                      audioProvider.playSource(show, source, initialIndex: index);
-                    }
-                  },
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                    child: Row(
-                      children: [
-                        if (isPlayingTrack)
-                          Container(
-                            margin: const EdgeInsets.only(right: 12),
-                            width: 24,
-                            height: 24,
-                            child: Center(
-                              child: (stateSnapshot.data?.processingState ==
-                                  ProcessingState.buffering ||
-                                  stateSnapshot.data?.processingState ==
-                                      ProcessingState.loading)
-                                  ? const SizedBox(
-                                  width: 16,
-                                  height: 16,
-                                  child: CircularProgressIndicator(strokeWidth: 2.0))
-                                  : Container(
-                                  padding: const EdgeInsets.all(4),
-                                  decoration: BoxDecoration(
-                                      color: colorScheme.primary,
-                                      borderRadius: BorderRadius.circular(8)),
-                                  child: Icon(Icons.play_arrow_rounded,
-                                      size: 16, color: colorScheme.onPrimary)),
-                            ),
-                          ),
-                        Expanded(
-                          child: Text(titleText,
-                              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                                  color: isPlayingTrack
-                                      ? colorScheme.primary
-                                      : colorScheme.onSurface,
-                                  fontWeight: isPlayingTrack
-                                      ? FontWeight.w700
-                                      : FontWeight.w500,
-                                  letterSpacing: 0.1)),
-                        ),
-                        const SizedBox(width: 8),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: isPlayingTrack
-                                ? colorScheme.primary.withOpacity(0.2)
-                                : colorScheme.surfaceContainerHighest,
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Text(
-                              formatDuration(Duration(seconds: track.duration)),
-                              style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                                  color: isPlayingTrack
-                                      ? colorScheme.primary
-                                      : colorScheme.onSurfaceVariant,
-                                  fontWeight: FontWeight.w600,
-                                  letterSpacing: 0.5)),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            );
-          },
         );
       },
     );
   }
 }
-
