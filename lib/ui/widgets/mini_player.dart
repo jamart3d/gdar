@@ -6,13 +6,40 @@ import 'package:gdar/providers/audio_provider.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:provider/provider.dart';
 
-class MiniPlayer extends StatelessWidget {
+class MiniPlayer extends StatefulWidget {
   final VoidCallback onTap;
 
   const MiniPlayer({
     super.key,
     required this.onTap,
   });
+
+  @override
+  State<MiniPlayer> createState() => _MiniPlayerState();
+}
+
+class _MiniPlayerState extends State<MiniPlayer>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _pulseController;
+  late final Animation<double> _scaleAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _pulseController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 800),
+    );
+    _scaleAnimation = Tween<double>(begin: 1.0, end: 1.1).animate(
+      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _pulseController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -31,11 +58,9 @@ class MiniPlayer extends StatelessWidget {
       child: Material(
         color: Colors.transparent,
         child: Container(
-          // Adjusted margin to align with show list items
           margin: const EdgeInsets.fromLTRB(16, 6, 16, 12),
           decoration: BoxDecoration(
             color: colorScheme.surfaceContainerHigh,
-            // Adjusted border radius to match show list items
             borderRadius: BorderRadius.circular(28),
             boxShadow: [
               BoxShadow(
@@ -46,30 +71,24 @@ class MiniPlayer extends StatelessWidget {
             ],
           ),
           child: ClipRRect(
-            // Adjusted border radius to match show list items
             borderRadius: BorderRadius.circular(28),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 StreamBuilder<Duration>(
                   stream: audioProvider.audioPlayer.positionStream,
-                  initialData: audioProvider.audioPlayer.position,
                   builder: (context, positionSnapshot) {
                     final position = positionSnapshot.data ?? Duration.zero;
                     return StreamBuilder<Duration?>(
                       stream: audioProvider.audioPlayer.durationStream,
-                      initialData: audioProvider.audioPlayer.duration,
                       builder: (context, durationSnapshot) {
                         final duration = durationSnapshot.data ?? Duration.zero;
                         final progress = duration.inMilliseconds > 0
                             ? position.inMilliseconds /
                             duration.inMilliseconds
                             : 0.0;
-
                         return StreamBuilder<Duration>(
                           stream: audioProvider.bufferedPositionStream,
-                          initialData:
-                          audioProvider.audioPlayer.bufferedPosition,
                           builder: (context, bufferedSnapshot) {
                             final bufferedPosition =
                                 bufferedSnapshot.data ?? Duration.zero;
@@ -78,18 +97,14 @@ class MiniPlayer extends StatelessWidget {
                                 ? bufferedPosition.inMilliseconds /
                                 duration.inMilliseconds
                                 : 0.0;
-
                             return StreamBuilder<PlayerState>(
                               stream: audioProvider.playerStateStream,
-                              initialData:
-                              audioProvider.audioPlayer.playerState,
                               builder: (context, stateSnapshot) {
                                 final processingState =
                                     stateSnapshot.data?.processingState;
                                 final isBuffering = processingState ==
                                     ProcessingState.buffering ||
                                     processingState == ProcessingState.loading;
-
                                 return SizedBox(
                                   height: 4,
                                   child: Stack(
@@ -103,7 +118,6 @@ class MiniPlayer extends StatelessWidget {
                                       FractionallySizedBox(
                                         widthFactor:
                                         bufferedProgress.clamp(0.0, 1.0),
-                                        alignment: Alignment.centerLeft,
                                         child: Container(
                                           decoration: BoxDecoration(
                                             gradient: LinearGradient(
@@ -119,7 +133,6 @@ class MiniPlayer extends StatelessWidget {
                                       ),
                                       FractionallySizedBox(
                                         widthFactor: progress.clamp(0.0, 1.0),
-                                        alignment: Alignment.centerLeft,
                                         child: Container(
                                           decoration: BoxDecoration(
                                             gradient: LinearGradient(
@@ -141,14 +154,10 @@ class MiniPlayer extends StatelessWidget {
                                             return Container(
                                               decoration: BoxDecoration(
                                                 gradient: LinearGradient(
-                                                  begin: Alignment.centerLeft,
-                                                  end: Alignment.centerRight,
                                                   stops: [
-                                                    (value - 0.3)
-                                                        .clamp(0.0, 1.0),
+                                                    (value - 0.3).clamp(0.0, 1.0),
                                                     value,
-                                                    (value + 0.3)
-                                                        .clamp(0.0, 1.0),
+                                                    (value + 0.3).clamp(0.0, 1.0),
                                                   ],
                                                   colors: [
                                                     Colors.transparent,
@@ -159,13 +168,6 @@ class MiniPlayer extends StatelessWidget {
                                                 ),
                                               ),
                                             );
-                                          },
-                                          onEnd: () {
-                                            if (isBuffering &&
-                                                context.mounted) {
-                                              (context as Element)
-                                                  .markNeedsBuild();
-                                            }
                                           },
                                         ),
                                     ],
@@ -180,23 +182,20 @@ class MiniPlayer extends StatelessWidget {
                   },
                 ),
                 InkWell(
-                  onTap: onTap,
+                  onTap: widget.onTap,
                   child: Padding(
-                    // Adjusted padding to match show list items
                     padding: const EdgeInsets.all(20.0),
                     child: Row(
                       children: [
                         Expanded(
                           child: StreamBuilder<int?>(
                             stream: audioProvider.currentIndexStream,
-                            initialData: audioProvider.audioPlayer.currentIndex,
                             builder: (context, snapshot) {
                               final index = snapshot.data ?? 0;
                               if (index >= currentSource.tracks.length) {
                                 return const SizedBox.shrink();
                               }
                               final track = currentSource.tracks[index];
-
                               return Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 mainAxisAlignment: MainAxisAlignment.center,
@@ -235,13 +234,11 @@ class MiniPlayer extends StatelessWidget {
                         const SizedBox(width: 12),
                         StreamBuilder<int?>(
                           stream: audioProvider.currentIndexStream,
-                          initialData: audioProvider.audioPlayer.currentIndex,
                           builder: (context, snapshot) {
                             final index = snapshot.data ?? 0;
                             final isFirstTrack = index == 0;
                             final isLastTrack =
                                 index >= currentSource.tracks.length - 1;
-
                             return Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
@@ -256,8 +253,6 @@ class MiniPlayer extends StatelessWidget {
                                 ),
                                 StreamBuilder<PlayerState>(
                                   stream: audioProvider.playerStateStream,
-                                  initialData:
-                                  audioProvider.audioPlayer.playerState,
                                   builder: (context, snapshot) {
                                     final playerState = snapshot.data;
                                     final processingState =
@@ -265,47 +260,60 @@ class MiniPlayer extends StatelessWidget {
                                     final playing =
                                         playerState?.playing ?? false;
 
-                                    return GestureDetector(
-                                      onLongPress: () {
-                                        HapticFeedback.heavyImpact();
-                                        audioProvider.stopAndClear();
-                                      },
-                                      child: Container(
-                                        width: 48,
-                                        height: 48,
-                                        decoration: BoxDecoration(
-                                          color: colorScheme.primary,
-                                          shape: BoxShape.circle,
-                                        ),
-                                        child: processingState ==
-                                            ProcessingState.loading ||
-                                            processingState ==
-                                                ProcessingState.buffering
-                                            ? Padding(
-                                          padding: const EdgeInsets.all(
-                                              12.0),
-                                          child:
-                                          CircularProgressIndicator(
-                                            strokeWidth: 2.5,
-                                            valueColor:
-                                            AlwaysStoppedAnimation<
-                                                Color>(
-                                              colorScheme.onPrimary,
+                                    if (playing && !_pulseController.isAnimating) {
+                                      _pulseController.repeat(reverse: true);
+                                    } else if (!playing && _pulseController.isAnimating) {
+                                      _pulseController.stop();
+                                      _pulseController.animateTo(0.0, duration: const Duration(milliseconds: 200), curve: Curves.easeOut);
+                                    }
+
+                                    return ScaleTransition(
+                                      scale: _scaleAnimation,
+                                      child: GestureDetector(
+                                        onLongPress: () {
+                                          HapticFeedback.heavyImpact();
+                                          audioProvider.stopAndClear();
+                                        },
+                                        child: Container(
+                                          width: 48,
+                                          height: 48,
+                                          decoration: BoxDecoration(
+                                            color: colorScheme.primary,
+                                            shape: BoxShape.circle,
+                                          ),
+                                          child: processingState ==
+                                              ProcessingState
+                                                  .loading ||
+                                              processingState ==
+                                                  ProcessingState
+                                                      .buffering
+                                              ? Padding(
+                                            padding:
+                                            const EdgeInsets.all(
+                                                12.0),
+                                            child:
+                                            CircularProgressIndicator(
+                                              strokeWidth: 2.5,
+                                              valueColor:
+                                              AlwaysStoppedAnimation<
+                                                  Color>(
+                                                colorScheme.onPrimary,
+                                              ),
                                             ),
+                                          )
+                                              : IconButton(
+                                            icon: Icon(
+                                              playing
+                                                  ? Icons.pause_rounded
+                                                  : Icons
+                                                  .play_arrow_rounded,
+                                            ),
+                                            iconSize: 28,
+                                            color: colorScheme.onPrimary,
+                                            onPressed: playing
+                                                ? audioProvider.pause
+                                                : audioProvider.play,
                                           ),
-                                        )
-                                            : IconButton(
-                                          icon: Icon(
-                                            playing
-                                                ? Icons.pause_rounded
-                                                : Icons
-                                                .play_arrow_rounded,
-                                          ),
-                                          iconSize: 28,
-                                          color: colorScheme.onPrimary,
-                                          onPressed: playing
-                                              ? audioProvider.pause
-                                              : audioProvider.play,
                                         ),
                                       ),
                                     );

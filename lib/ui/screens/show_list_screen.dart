@@ -38,7 +38,7 @@ class _ShowListScreenState extends State<ShowListScreen>
 
   // Height constants for calculation
   static const double _sourceHeaderHeight = 72.0;
-  static const double _trackItemHeight = 64.0; // Corrected constant
+  static const double _trackItemHeight = 64.0;
   static const double _shnidLabelHeight = 0.0;
   static const double _sourcePadding = 16.0;
   static const double _maxShnidListHeight = 400.0;
@@ -213,9 +213,17 @@ class _ShowListScreenState extends State<ShowListScreen>
     ));
 
     if (!mounted) return;
+    _scrollToPlayingShow(isReturning: true);
+  }
 
-    logger.i(
-        'Returned from PlaybackScreen. Initiating scroll-to-playing sequence...');
+  Future<void> _scrollToPlayingShow({bool isReturning = false}) async {
+    if (isReturning) {
+      logger.i(
+          'Returned from PlaybackScreen. Initiating scroll-to-playing sequence...');
+    } else {
+      logger.i('Miniplayer tapped. Initiating scroll-to-playing sequence...');
+    }
+
     final audioProvider = context.read<AudioProvider>();
     final showListProvider = context.read<ShowListProvider>();
     final currentShow = audioProvider.currentShow;
@@ -235,25 +243,20 @@ class _ShowListScreenState extends State<ShowListScreen>
     logger.d(
         'Target: Show="${currentShow.name}", Source="${currentSource.id}", Track=$trackIndex. Show already expanded: $isAlreadyExpanded');
 
-    // Step 1: Set the provider state. This will trigger a rebuild in the background.
     showListProvider.expandToShow(currentShow, specificShnid: specificShnid);
 
-    // Step 2: Use a post-frame callback to ensure the rebuild has happened.
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (!mounted) return;
 
-      // Step 3: If the show wasn't open, animate it open and wait.
       if (!isAlreadyExpanded) {
         logger.i('Show was not expanded. Animating it open...');
         await _animationController.forward(from: 0.0);
         if (!mounted) return;
       }
 
-      // Step 4: Now that it's open, scroll the main list to the show and wait.
       await _scrollToShowTop(currentShow, showListProvider.filteredShows);
       if (!mounted) return;
 
-      // Step 5: After a brief delay for layout, scroll the inner track list to the center.
       await Future.delayed(const Duration(milliseconds: 100));
       if (!mounted) return;
 
@@ -345,7 +348,7 @@ class _ShowListScreenState extends State<ShowListScreen>
               left: 0,
               right: 0,
               bottom: 0,
-              child: MiniPlayer(onTap: _openPlaybackScreen),
+              child: MiniPlayer(onTap: _scrollToPlayingShow),
             ),
         ],
       ),

@@ -20,19 +20,31 @@ class PlaybackScreen extends StatefulWidget {
   State<PlaybackScreen> createState() => _PlaybackScreenState();
 }
 
-class _PlaybackScreenState extends State<PlaybackScreen> {
+class _PlaybackScreenState extends State<PlaybackScreen>
+    with SingleTickerProviderStateMixin {
   late final ScrollController _scrollController;
+  late final AnimationController _pulseController;
+  late final Animation<double> _scaleAnimation;
+
   static const double _trackItemHeight = 64.0;
 
   @override
   void initState() {
     super.initState();
     _scrollController = ScrollController();
+    _pulseController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 800),
+    );
+    _scaleAnimation = Tween<double>(begin: 1.0, end: 1.1).animate(
+      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
+    );
   }
 
   @override
   void dispose() {
     _scrollController.dispose();
+    _pulseController.dispose();
     super.dispose();
   }
 
@@ -217,7 +229,7 @@ class _PlaybackScreenState extends State<PlaybackScreen> {
       AudioProvider audioProvider, Source currentSource) {
     return Container(
       padding: EdgeInsets.fromLTRB(
-          16, 12, 16, 20 + MediaQuery.of(context).viewPadding.bottom),
+          16, 12, 16, 16 + MediaQuery.of(context).viewPadding.bottom),
       decoration: BoxDecoration(
           color: Theme.of(context).colorScheme.surfaceContainer,
           borderRadius: const BorderRadius.only(
@@ -261,6 +273,15 @@ class _PlaybackScreenState extends State<PlaybackScreen> {
             final processingState = playerState?.processingState;
             final playing = playerState?.playing ?? false;
 
+            if (playing && !_pulseController.isAnimating) {
+              _pulseController.repeat(reverse: true);
+            } else if (!playing && _pulseController.isAnimating) {
+              _pulseController.stop();
+              _pulseController.animateTo(0.0,
+                  duration: const Duration(milliseconds: 200),
+                  curve: Curves.easeOut);
+            }
+
             return Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
@@ -271,57 +292,60 @@ class _PlaybackScreenState extends State<PlaybackScreen> {
                   onPressed:
                   isFirstTrack ? null : audioProvider.seekToPrevious,
                 ),
-                GestureDetector(
-                  onLongPress: () {
-                    HapticFeedback.heavyImpact();
-                    audioProvider.stopAndClear();
-                    if (context.mounted) {
-                      Navigator.of(context).pop();
-                    }
-                  },
-                  child: Container(
-                    width: 64,
-                    height: 64,
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [
-                          colorScheme.primary,
-                          colorScheme.tertiary,
+                ScaleTransition(
+                  scale: _scaleAnimation,
+                  child: GestureDetector(
+                    onLongPress: () {
+                      HapticFeedback.heavyImpact();
+                      audioProvider.stopAndClear();
+                      if (context.mounted) {
+                        Navigator.of(context).pop();
+                      }
+                    },
+                    child: Container(
+                      width: 60,
+                      height: 60,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [
+                            colorScheme.primary,
+                            colorScheme.tertiary,
+                          ],
+                        ),
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: colorScheme.primary.withOpacity(0.4),
+                            blurRadius: 16,
+                            offset: const Offset(0, 4),
+                          ),
                         ],
                       ),
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: colorScheme.primary.withOpacity(0.4),
-                          blurRadius: 16,
-                          offset: const Offset(0, 4),
+                      child: processingState == ProcessingState.loading ||
+                          processingState == ProcessingState.buffering
+                          ? Padding(
+                        padding: const EdgeInsets.all(14.0),
+                        child: CircularProgressIndicator(
+                          strokeWidth: 3,
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            colorScheme.onPrimary,
+                          ),
                         ),
-                      ],
-                    ),
-                    child: processingState == ProcessingState.loading ||
-                        processingState == ProcessingState.buffering
-                        ? Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: CircularProgressIndicator(
-                        strokeWidth: 3,
-                        valueColor: AlwaysStoppedAnimation<Color>(
-                          colorScheme.onPrimary,
+                      )
+                          : IconButton(
+                        icon: Icon(
+                          playing
+                              ? Icons.pause_rounded
+                              : Icons.play_arrow_rounded,
                         ),
+                        iconSize: 36,
+                        color: colorScheme.onPrimary,
+                        onPressed: playing
+                            ? audioProvider.pause
+                            : audioProvider.play,
                       ),
-                    )
-                        : IconButton(
-                      icon: Icon(
-                        playing
-                            ? Icons.pause_rounded
-                            : Icons.play_arrow_rounded,
-                      ),
-                      iconSize: 40,
-                      color: colorScheme.onPrimary,
-                      onPressed: playing
-                          ? audioProvider.pause
-                          : audioProvider.play,
                     ),
                   ),
                 ),
@@ -390,7 +414,8 @@ class _PlaybackScreenState extends State<PlaybackScreen> {
                               activeTrackColor: Colors.transparent,
                               inactiveTrackColor: Colors.transparent,
                               thumbColor: colorScheme.primary,
-                              overlayColor: colorScheme.primary.withOpacity(0.2),
+                              overlayColor:
+                              colorScheme.primary.withOpacity(0.2),
                             ),
                             child: Stack(
                               alignment: Alignment.center,
@@ -415,8 +440,10 @@ class _PlaybackScreenState extends State<PlaybackScreen> {
                                       decoration: BoxDecoration(
                                         gradient: LinearGradient(
                                           colors: [
-                                            colorScheme.tertiary.withOpacity(0.3),
-                                            colorScheme.tertiary.withOpacity(0.5),
+                                            colorScheme.tertiary
+                                                .withOpacity(0.3),
+                                            colorScheme.tertiary
+                                                .withOpacity(0.5),
                                           ],
                                         ),
                                         borderRadius: BorderRadius.circular(3),
@@ -443,7 +470,8 @@ class _PlaybackScreenState extends State<PlaybackScreen> {
                                                 colorScheme.secondary,
                                               ],
                                             ),
-                                            borderRadius: BorderRadius.circular(3),
+                                            borderRadius:
+                                            BorderRadius.circular(3),
                                           ),
                                         ),
                                         if (isBuffering)
@@ -461,9 +489,11 @@ class _PlaybackScreenState extends State<PlaybackScreen> {
                                                     begin: Alignment.centerLeft,
                                                     end: Alignment.centerRight,
                                                     stops: [
-                                                      (value - 0.2).clamp(0.0, 1.0),
+                                                      (value - 0.2)
+                                                          .clamp(0.0, 1.0),
                                                       value,
-                                                      (value + 0.2).clamp(0.0, 1.0),
+                                                      (value + 0.2)
+                                                          .clamp(0.0, 1.0),
                                                     ],
                                                     colors: [
                                                       Colors.transparent,
@@ -494,7 +524,8 @@ class _PlaybackScreenState extends State<PlaybackScreen> {
                                       : 1.0,
                                   value: position.inSeconds
                                       .toDouble()
-                                      .clamp(0.0, totalDuration.inSeconds.toDouble()),
+                                      .clamp(0.0,
+                                      totalDuration.inSeconds.toDouble()),
                                   onChanged: totalDuration.inSeconds > 0
                                       ? (value) {
                                     audioProvider.seek(
