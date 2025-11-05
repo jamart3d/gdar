@@ -12,6 +12,7 @@ dependencies:
 
   scrollable_positioned_list: ^0.3.8
   sliding_up_panel: ^2.0.0+1
+  marquee: ^2.2.3
 
   # For Audio Playback
   just_audio: ^0.10.5

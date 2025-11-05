@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:gdar/models/show.dart';
 import 'package:gdar/providers/settings_provider.dart';
+import 'package:gdar/ui/widgets/conditional_marquee.dart';
 import 'package:provider/provider.dart';
 
 class ShowListCard extends StatelessWidget {
@@ -26,6 +27,7 @@ class ShowListCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
     final settingsProvider = context.watch<SettingsProvider>();
     final cardBorderColor = isPlaying
         ? colorScheme.primary
@@ -67,39 +69,36 @@ class ShowListCard extends StatelessWidget {
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 4.0),
-                      child: AnimatedSwitcher(
+                    AnimatedSwitcher(
+                      duration: _animationDuration,
+                      child: isLoading
+                          ? Container(
+                        key: ValueKey('loader_${show.name}'),
+                        width: 36,
+                        height: 36,
+                        padding: const EdgeInsets.all(8),
+                        child: const CircularProgressIndicator(
+                            strokeWidth: 2.5),
+                      )
+                          : AnimatedRotation(
+                        key: ValueKey('icon_${show.name}'),
+                        turns: isExpanded ? 0.5 : 0,
                         duration: _animationDuration,
-                        child: isLoading
-                            ? Container(
-                          key: ValueKey('loader_${show.name}'),
-                          width: 36,
-                          height: 36,
+                        curve: Curves.easeInOutCubicEmphasized,
+                        child: Container(
                           padding: const EdgeInsets.all(8),
-                          child: const CircularProgressIndicator(
-                              strokeWidth: 2.5),
-                        )
-                            : AnimatedRotation(
-                          key: ValueKey('icon_${show.name}'),
-                          turns: isExpanded ? 0.5 : 0,
-                          duration: _animationDuration,
-                          curve: Curves.easeInOutCubicEmphasized,
-                          child: Container(
-                            padding: const EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              color: isExpanded
-                                  ? colorScheme.primaryContainer
-                                  : colorScheme.surfaceContainerHighest,
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Icon(
-                                Icons.keyboard_arrow_down_rounded,
-                                color: isExpanded
-                                    ? colorScheme.onPrimaryContainer
-                                    : colorScheme.onSurfaceVariant,
-                                size: 20),
+                          decoration: BoxDecoration(
+                            color: isExpanded
+                                ? colorScheme.primaryContainer
+                                : colorScheme.surfaceContainerHighest,
+                            borderRadius: BorderRadius.circular(12),
                           ),
+                          child: Icon(
+                              Icons.keyboard_arrow_down_rounded,
+                              color: isExpanded
+                                  ? colorScheme.onPrimaryContainer
+                                  : colorScheme.onSurfaceVariant,
+                              size: 20),
                         ),
                       ),
                     ),
@@ -109,22 +108,21 @@ class ShowListCard extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: [
-                          Text(show.venue,
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .titleLarge
-                                  ?.copyWith(
+                          SizedBox(
+                            height: textTheme.titleLarge?.fontSize != null
+                                ? textTheme.titleLarge!.fontSize! * 1.3
+                                : 28.0,
+                            child: ConditionalMarquee(
+                              text: show.venue,
+                              style: textTheme.titleLarge?.copyWith(
                                   fontWeight: FontWeight.w600,
                                   letterSpacing: 0.1,
                                   color: colorScheme.onSurface),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis),
+                            ),
+                          ),
                           const SizedBox(height: 6),
                           Text(show.formattedDate,
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .bodyLarge
-                                  ?.copyWith(
+                              style: textTheme.bodyLarge?.copyWith(
                                   color: colorScheme.onSurfaceVariant,
                                   letterSpacing: 0.15)),
                         ],

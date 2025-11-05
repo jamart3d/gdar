@@ -1,13 +1,20 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:gdar/models/show.dart';
 import 'package:gdar/models/source.dart';
 import 'package:gdar/models/track.dart';
+import 'package:gdar/providers/settings_provider.dart';
+import 'package:gdar/providers/show_list_provider.dart';
 import 'package:gdar/utils/logger.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:just_audio_background/just_audio_background.dart';
 
 class AudioProvider with ChangeNotifier {
   late final AudioPlayer _audioPlayer;
+
+  ShowListProvider? _showListProvider;
+  SettingsProvider? _settingsProvider;
 
   AudioPlayer get audioPlayer => _audioPlayer;
 
@@ -26,6 +33,26 @@ class AudioProvider with ChangeNotifier {
 
   AudioProvider() {
     _audioPlayer = AudioPlayer();
+    _listenForCompletion();
+  }
+
+  void update(
+      ShowListProvider showListProvider,
+      SettingsProvider settingsProvider,
+      ) {
+    _showListProvider = showListProvider;
+    _settingsProvider = settingsProvider;
+  }
+
+  void _listenForCompletion() {
+    _audioPlayer.processingStateStream.listen((state) {
+      if (state == ProcessingState.completed) {
+        if (_settingsProvider?.playRandomOnCompletion ?? false) {
+          logger.i('Playlist completed, playing random show.');
+          playRandomShow();
+        }
+      }
+    });
   }
 
   @override
@@ -34,21 +61,37 @@ class AudioProvider with ChangeNotifier {
     super.dispose();
   }
 
-  Future<void> playShow(Show show) async {
+  void playShow(Show show) {
     if (show.sources.isNotEmpty) {
-      await playSource(show, show.sources.first);
+      playSource(show, show.sources.first);
     } else {
       logger.w('Show ${show.name} has no sources to play.');
     }
   }
 
-  Future<void> playSource(Show show, Source source,
-      {int initialIndex = 0}) async {
+  Show? playRandomShow() {
+    final shows = _showListProvider?.filteredShows;
+    if (shows == null || shows.isEmpty) {
+      logger.w('Cannot play random show, no shows available.');
+      return null;
+    }
+    final randomShow = shows[Random().nextInt(shows.length)];
+    playShow(randomShow);
+    return randomShow;
+  }
+
+  void playSource(Show show, Source source, {int initialIndex = 0}) {
     _currentShow = show;
     _currentSource = source;
-    logger.i(
-        'Loading show: ${show.name}, source: ${source.id}, starting at index: $initialIndex');
+    notifyListeners(); // Notify immediately so the UI can update
 
+    // Start audio loading in the background
+    _loadAndPlayAudio(source, initialIndex: initialIndex);
+  }
+
+  Future<void> _loadAndPlayAudio(Source source, {int initialIndex = 0}) async {
+    logger.i(
+        'Loading show: ${_currentShow!.name}, source: ${source.id}, starting at index: $initialIndex');
     try {
       final playlist = ConcatenatingAudioSource(
         useLazyPreparation: false,
@@ -60,10 +103,10 @@ class AudioProvider with ChangeNotifier {
           return AudioSource.uri(
             Uri.parse(track.url),
             tag: MediaItem(
-              id: '${show.name}_${source.id}_$index',
-              album: show.venue,
+              id: '${_currentShow!.name}_${source.id}_$index',
+              album: _currentShow!.venue,
               title: track.title,
-              artist: show.artist,
+              artist: _currentShow!.artist,
               duration: Duration(seconds: track.duration),
               extras: {'source_id': source.id},
             ),
@@ -78,10 +121,9 @@ class AudioProvider with ChangeNotifier {
       );
 
       _audioPlayer.play();
-
-      notifyListeners();
     } catch (e, stackTrace) {
       logger.e('Error playing source', error: e, stackTrace: stackTrace);
+      stopAndClear(); // Clear state on error
     }
   }
 

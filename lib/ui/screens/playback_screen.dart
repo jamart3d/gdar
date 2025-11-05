@@ -1,4 +1,3 @@
-import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -8,6 +7,7 @@ import 'package:gdar/models/track.dart';
 import 'package:gdar/providers/audio_provider.dart';
 import 'package:gdar/providers/settings_provider.dart';
 import 'package:gdar/ui/screens/settings_screen.dart';
+import 'package:gdar/ui/widgets/conditional_marquee.dart';
 import 'package:gdar/utils/utils.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:provider/provider.dart';
@@ -136,6 +136,7 @@ class _PlaybackScreenState extends State<PlaybackScreen>
   Widget _buildPlaybackInfo(BuildContext context, AudioProvider audioProvider,
       Show currentShow, Source currentSource) {
     final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
     final settingsProvider = context.watch<SettingsProvider>();
     final bool shouldShowShnidBadge = currentShow.sources.length > 1 ||
         (currentShow.sources.length == 1 && settingsProvider.showSingleShnid);
@@ -165,7 +166,7 @@ class _PlaybackScreenState extends State<PlaybackScreen>
                     const SizedBox(width: 8),
                     Text(
                       currentShow.formattedDate,
-                      style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                      style: textTheme.labelLarge?.copyWith(
                         color: colorScheme.onSecondaryContainer,
                         fontWeight: FontWeight.w600,
                       ),
@@ -187,8 +188,7 @@ class _PlaybackScreenState extends State<PlaybackScreen>
                     children: [
                       Text(
                         currentSource.id,
-                        style:
-                        Theme.of(context).textTheme.labelLarge?.copyWith(
+                        style: textTheme.labelLarge?.copyWith(
                           color: colorScheme.onTertiaryContainer,
                           fontWeight: FontWeight.w600,
                         ),
@@ -208,15 +208,18 @@ class _PlaybackScreenState extends State<PlaybackScreen>
                 return const SizedBox.shrink();
               }
               final track = currentSource.tracks[index];
-              return Text(
-                track.title,
-                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.w600,
-                  color: colorScheme.onSurface,
+              return SizedBox(
+                height: textTheme.headlineSmall!.fontSize! * 1.3,
+                child: ConditionalMarquee(
+                  text: track.title,
+                  style: textTheme.headlineSmall?.copyWith(
+                    fontWeight: FontWeight.w600,
+                    color: colorScheme.onSurface,
+                  ),
+                  textAlign: TextAlign.center,
+                  pauseAfterRound: const Duration(seconds: 3),
+                  blankSpace: 60.0,
                 ),
-                textAlign: TextAlign.center,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
               );
             },
           ),
@@ -524,8 +527,10 @@ class _PlaybackScreenState extends State<PlaybackScreen>
                                       : 1.0,
                                   value: position.inSeconds
                                       .toDouble()
-                                      .clamp(0.0,
-                                      totalDuration.inSeconds.toDouble()),
+                                      .clamp(
+                                      0.0,
+                                      totalDuration.inSeconds
+                                          .toDouble()),
                                   onChanged: totalDuration.inSeconds > 0
                                       ? (value) {
                                     audioProvider.seek(
@@ -565,6 +570,7 @@ class _PlaybackScreenState extends State<PlaybackScreen>
       int index,
       ) {
     final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
     final settingsProvider = context.watch<SettingsProvider>();
 
     return StreamBuilder<int?>(
@@ -590,21 +596,24 @@ class _PlaybackScreenState extends State<PlaybackScreen>
               ),
               contentPadding:
               const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-              title: Text(
-                settingsProvider.showTrackNumbers
-                    ? '${track.trackNumber}. ${track.title}'
-                    : track.title,
-                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                  fontWeight:
-                  isPlaying ? FontWeight.w600 : FontWeight.normal,
-                  color: isPlaying
-                      ? colorScheme.primary
-                      : colorScheme.onSurface,
+              title: SizedBox(
+                height: textTheme.bodyLarge!.fontSize! * 1.3,
+                child: ConditionalMarquee(
+                  text: settingsProvider.showTrackNumbers
+                      ? '${track.trackNumber}. ${track.title}'
+                      : track.title,
+                  style: textTheme.bodyLarge?.copyWith(
+                    fontWeight:
+                    isPlaying ? FontWeight.w600 : FontWeight.normal,
+                    color: isPlaying
+                        ? colorScheme.primary
+                        : colorScheme.onSurface,
+                  ),
                 ),
               ),
               trailing: Text(
                 formatDuration(Duration(seconds: track.duration)),
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                style: textTheme.bodyMedium?.copyWith(
                   color: colorScheme.onSurfaceVariant,
                   fontWeight: FontWeight.w500,
                 ),

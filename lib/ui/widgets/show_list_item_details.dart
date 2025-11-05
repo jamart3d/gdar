@@ -6,6 +6,7 @@ import 'package:gdar/models/track.dart';
 import 'package:gdar/providers/audio_provider.dart';
 import 'package:gdar/providers/settings_provider.dart';
 import 'package:gdar/providers/show_list_provider.dart';
+import 'package:gdar/ui/widgets/conditional_marquee.dart';
 import 'package:gdar/utils/utils.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:provider/provider.dart';
@@ -29,6 +30,10 @@ class ShowListItemDetails extends StatelessWidget {
     required this.onOpenPlayback,
     required this.onSourceLongPress,
   });
+
+  // Hardcoded option to disable navigation to playback screen.
+  // Set this to `false` to prevent opening the full player on tap.
+  static const bool _navigateToPlaybackScreenOnTap = true;
 
   static const Duration _animationDuration = Duration(milliseconds: 300);
   static const double _trackItemHeight = 64.0; // Matches the SizedBox height
@@ -85,7 +90,8 @@ class ShowListItemDetails extends StatelessWidget {
                               : colorScheme.secondaryContainer,
                           isSourcePlaying
                               ? colorScheme.tertiaryContainer.withOpacity(0.5)
-                              : colorScheme.secondaryContainer.withOpacity(0.8),
+                              : colorScheme.secondaryContainer
+                              .withOpacity(0.8),
                         ],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
@@ -125,7 +131,8 @@ class ShowListItemDetails extends StatelessWidget {
                                   ?.copyWith(
                                   color: isSourcePlaying
                                       ? colorScheme.onTertiaryContainer
-                                      : colorScheme.onSecondaryContainer,
+                                      : colorScheme
+                                      .onSecondaryContainer,
                                   fontWeight: isSourcePlaying
                                       ? FontWeight.w700
                                       : FontWeight.w600,
@@ -147,8 +154,10 @@ class ShowListItemDetails extends StatelessWidget {
                                     .labelSmall
                                     ?.copyWith(
                                     color: isSourcePlaying
-                                        ? colorScheme.onTertiaryContainer
-                                        : colorScheme.onSecondaryContainer,
+                                        ? colorScheme
+                                        .onTertiaryContainer
+                                        : colorScheme
+                                        .onSecondaryContainer,
                                     fontWeight: FontWeight.w600)),
                           ),
                       ],
@@ -205,6 +214,7 @@ class ShowListItemDetails extends StatelessWidget {
   Widget _buildTrackItem(
       BuildContext context, Track track, Source source, int index) {
     final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
     final audioProvider = context.watch<AudioProvider>();
     final settingsProvider = context.watch<SettingsProvider>();
 
@@ -253,7 +263,9 @@ class ShowListItemDetails extends StatelessWidget {
                       borderRadius: BorderRadius.circular(16),
                       onTap: () {
                         if (isPlayingTrack) {
-                          onOpenPlayback();
+                          if (_navigateToPlaybackScreenOnTap) {
+                            onOpenPlayback();
+                          }
                         } else if (isCurrentlyPlayingSource) {
                           audioProvider.seekToTrack(index);
                         } else if (settingsProvider.playOnTap) {
@@ -267,21 +279,19 @@ class ShowListItemDetails extends StatelessWidget {
                         child: Row(
                           children: [
                             Expanded(
-                              child: Text(
-                                titleText,
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .bodyLarge
-                                    ?.copyWith(
-                                    color: isPlayingTrack
-                                        ? colorScheme.primary
-                                        : colorScheme.onSurface,
-                                    fontWeight: isPlayingTrack
-                                        ? FontWeight.w700
-                                        : FontWeight.w500,
-                                    letterSpacing: 0.1),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
+                              child: SizedBox(
+                                height: textTheme.bodyLarge!.fontSize! * 1.3,
+                                child: ConditionalMarquee(
+                                  text: titleText,
+                                  style: textTheme.bodyLarge?.copyWith(
+                                      color: isPlayingTrack
+                                          ? colorScheme.primary
+                                          : colorScheme.onSurface,
+                                      fontWeight: isPlayingTrack
+                                          ? FontWeight.w700
+                                          : FontWeight.w500,
+                                      letterSpacing: 0.1),
+                                ),
                               ),
                             ),
                             Container(
@@ -290,7 +300,8 @@ class ShowListItemDetails extends StatelessWidget {
                               child: isPlayingTrack
                                   ? (stateSnapshot.data?.processingState ==
                                   ProcessingState.buffering ||
-                                  stateSnapshot.data?.processingState ==
+                                  stateSnapshot
+                                      .data?.processingState ==
                                       ProcessingState.loading)
                                   ? const SizedBox(
                                   width: 16,
@@ -304,9 +315,7 @@ class ShowListItemDetails extends StatelessWidget {
                                       snapshot.data ?? Duration.zero;
                                   return Text(
                                     formatDuration(position),
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .labelMedium
+                                    style: textTheme.labelMedium
                                         ?.copyWith(
                                       color: colorScheme.primary,
                                       fontWeight: FontWeight.bold,
@@ -337,10 +346,8 @@ class ShowListItemDetails extends StatelessWidget {
                                 child: Text(
                                   formatDuration(
                                       Duration(seconds: track.duration)),
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .labelMedium
-                                      ?.copyWith(
+                                  style:
+                                  textTheme.labelMedium?.copyWith(
                                     color: isPlayingTrack
                                         ? colorScheme.primary
                                         : colorScheme.onSurfaceVariant,

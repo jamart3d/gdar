@@ -11,6 +11,7 @@ import 'package:gdar/ui/widgets/mini_player.dart';
 import 'package:gdar/ui/widgets/show_list_card.dart';
 import 'package:gdar/ui/widgets/show_list_item_details.dart';
 import 'package:gdar/utils/logger.dart';
+import 'package:just_audio/just_audio.dart';
 import 'package:provider/provider.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
@@ -31,8 +32,10 @@ class _ShowListScreenState extends State<ShowListScreen>
 
   late final AnimationController _animationController;
   late final Animation<double> _animation;
+  StreamSubscription<PlayerState>? _playerStateSubscription;
 
   bool _isSearchVisible = false;
+  bool _isRandomShowLoading = false;
 
   static const Duration _animationDuration = Duration(milliseconds: 300);
 
@@ -61,12 +64,43 @@ class _ShowListScreenState extends State<ShowListScreen>
           .read<ShowListProvider>()
           .setSearchQuery(_searchController.text);
     });
+
+    // Listen to player state to manage loading indicators
+    final audioProvider = context.read<AudioProvider>();
+    _playerStateSubscription =
+        audioProvider.playerStateStream.listen((state) {
+          if (!mounted) return;
+          final processingState = state.processingState;
+
+          // Handle AppBar's random play indicator
+          if (_isRandomShowLoading) {
+            // If the player is ready, has completed, or has stopped (idle),
+            // we can consider the loading phase over.
+            if (processingState == ProcessingState.ready ||
+                processingState == ProcessingState.completed ||
+                processingState == ProcessingState.idle) {
+              setState(() => _isRandomShowLoading = false);
+            }
+          }
+
+          // Handle ShowListCard's loading indicator
+          final showListProvider = context.read<ShowListProvider>();
+          if (showListProvider.loadingShowName != null &&
+              showListProvider.loadingShowName == audioProvider.currentShow?.name) {
+            // When player is ready or has failed, remove indicator
+            if (processingState == ProcessingState.ready ||
+                processingState == ProcessingState.idle) {
+              showListProvider.setLoadingShow(null);
+            }
+          }
+        });
   }
 
   @override
   void dispose() {
     _searchController.dispose();
     _animationController.dispose();
+    _playerStateSubscription?.cancel();
     for (var controller in _trackScrollControllers.values) {
       controller.dispose();
     }
@@ -191,10 +225,7 @@ class _ShowListScreenState extends State<ShowListScreen>
       await scrollShow();
     }
 
-    await audioProvider.playSource(show, source);
-    if (mounted) {
-      showListProvider.setLoadingShow(null);
-    }
+    audioProvider.playSource(show, source);
   }
 
   Future<void> _openPlaybackScreen() async {
@@ -285,19 +316,56 @@ class _ShowListScreenState extends State<ShowListScreen>
     });
   }
 
+  void _handlePlayRandomShow() {
+    setState(() => _isRandomShowLoading = true);
+
+    final show = context.read<AudioProvider>().playRandomShow();
+    if (show != null) {
+      // The provider immediately sets the current show, so we can scroll to it
+      // while the audio loads in the background.
+      _scrollToPlayingShow();
+    } else {
+      // No show was found/played, so stop loading.
+      setState(() => _isRandomShowLoading = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final audioProvider = context.watch<AudioProvider>();
     final showListProvider = context.watch<ShowListProvider>();
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('gdar'),
         actions: [
+          if (_isRandomShowLoading)
+            const Padding(
+              padding: EdgeInsets.all(12.0),
+              child: SizedBox(
+                  width: 24,
+                  height: 24,
+                  child: CircularProgressIndicator(strokeWidth: 2.5)),
+            )
+          else
+            IconButton(
+              icon: const Icon(Icons.question_mark_rounded),
+              tooltip: 'Play Random Show',
+              onPressed: _handlePlayRandomShow,
+            ),
           IconButton(
             icon: const Icon(Icons.search_rounded),
             tooltip: 'Search',
             isSelected: _isSearchVisible,
+            style: _isSearchVisible
+                ? IconButton.styleFrom(
+              backgroundColor: colorScheme.surfaceContainer,
+              shape: CircleBorder(
+                side: BorderSide(color: colorScheme.outline),
+              ),
+            )
+                : null,
             onPressed: _toggleSearch,
           ),
           IconButton(
@@ -392,11 +460,7 @@ class _ShowListScreenState extends State<ShowListScreen>
                 if (showListProvider.expandedShowName != show.name) {
                   _onShowTapped(show);
                 }
-                audioProvider.playShow(show).whenComplete(() {
-                  if (mounted) {
-                    showListProvider.setLoadingShow(null);
-                  }
-                });
+                audioProvider.playShow(show);
               },
             ),
             SizeTransition(

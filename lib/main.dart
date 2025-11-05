@@ -42,8 +42,17 @@ class GdarApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
         ChangeNotifierProvider(create: (_) => SettingsProvider()),
-        ChangeNotifierProvider(create: (_) => AudioProvider()),
         ChangeNotifierProvider(create: (_) => ShowListProvider()),
+        ChangeNotifierProxyProvider2<ShowListProvider, SettingsProvider,
+            AudioProvider>(
+          create: (_) => AudioProvider(),
+          update: (_, showListProvider, settingsProvider, audioProvider) =>
+          audioProvider!
+            ..update(
+              showListProvider,
+              settingsProvider,
+            ),
+        ),
       ],
       child: Consumer<ThemeProvider>(
         builder: (context, themeProvider, child) {

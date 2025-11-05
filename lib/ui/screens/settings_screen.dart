@@ -33,6 +33,16 @@ class SettingsScreen extends StatelessWidget {
           ),
           const Divider(),
           SwitchListTile(
+            title: const Text('Play Random Show on Completion'),
+            subtitle: const Text('When a show ends, play another one randomly'),
+            value: settingsProvider.playRandomOnCompletion,
+            onChanged: (value) {
+              context.read<SettingsProvider>().togglePlayRandomOnCompletion();
+            },
+            secondary: const Icon(Icons.shuffle_rounded),
+          ),
+          const Divider(),
+          SwitchListTile(
             title: const Text('Show Track Numbers'),
             subtitle: const Text('Display track numbers in lists'),
             value: settingsProvider.showTrackNumbers,
@@ -54,7 +64,8 @@ class SettingsScreen extends StatelessWidget {
           const Divider(),
           SwitchListTile(
             title: const Text('Show SHNID Badge (Single Source)'),
-            subtitle: const Text('Display SHNID number on card if only one source'),
+            subtitle:
+            const Text('Display SHNID number on card if only one source'),
             value: settingsProvider.showSingleShnid,
             onChanged: (value) {
               context.read<SettingsProvider>().toggleShowSingleShnid();
@@ -65,12 +76,15 @@ class SettingsScreen extends StatelessWidget {
           // New SwitchListTile for hiding track count
           SwitchListTile(
             title: const Text('Hide Track Count in Source List'),
-            subtitle: const Text('Hide "X tracks" next to SHNID in expanded view'),
+            subtitle:
+            const Text('Hide "X tracks" next to SHNID in expanded view'),
             value: settingsProvider.hideTrackCountInSourceList,
             onChanged: (value) {
-              context.read<SettingsProvider>().toggleHideTrackCountInSourceList();
+              context
+                  .read<SettingsProvider>()
+                  .toggleHideTrackCountInSourceList();
             },
-            secondary: const Icon(Icons.format_list_numbered_rtl_rounded), // Example icon
+            secondary: const Icon(Icons.format_list_numbered_rtl_rounded),
           ),
           const Divider(),
           ListTile(
@@ -87,4 +101,3 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 }
-

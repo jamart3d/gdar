@@ -11,7 +11,7 @@ class AppThemes {
     appBarTheme: const AppBarTheme(
       backgroundColor: Colors.white,
       elevation: 0,
-      foregroundColor: Colors.black, // For title and icons
+      // foregroundColor: Colors.black, // This was overriding the isSelected state color
     ),
     cardColor: Colors.white,
   );

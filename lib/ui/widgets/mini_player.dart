@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:gdar/models/show.dart';
 import 'package:gdar/models/source.dart';
 import 'package:gdar/providers/audio_provider.dart';
+import 'package:gdar/ui/widgets/conditional_marquee.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:provider/provider.dart';
 
@@ -52,6 +53,7 @@ class _MiniPlayerState extends State<MiniPlayer>
     }
 
     final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
 
     return Hero(
       tag: 'player',
@@ -82,7 +84,8 @@ class _MiniPlayerState extends State<MiniPlayer>
                     return StreamBuilder<Duration?>(
                       stream: audioProvider.audioPlayer.durationStream,
                       builder: (context, durationSnapshot) {
-                        final duration = durationSnapshot.data ?? Duration.zero;
+                        final duration =
+                            durationSnapshot.data ?? Duration.zero;
                         final progress = duration.inMilliseconds > 0
                             ? position.inMilliseconds /
                             duration.inMilliseconds
@@ -104,7 +107,8 @@ class _MiniPlayerState extends State<MiniPlayer>
                                     stateSnapshot.data?.processingState;
                                 final isBuffering = processingState ==
                                     ProcessingState.buffering ||
-                                    processingState == ProcessingState.loading;
+                                    processingState ==
+                                        ProcessingState.loading;
                                 return SizedBox(
                                   height: 4,
                                   child: Stack(
@@ -155,9 +159,11 @@ class _MiniPlayerState extends State<MiniPlayer>
                                               decoration: BoxDecoration(
                                                 gradient: LinearGradient(
                                                   stops: [
-                                                    (value - 0.3).clamp(0.0, 1.0),
+                                                    (value - 0.3)
+                                                        .clamp(0.0, 1.0),
                                                     value,
-                                                    (value + 0.3).clamp(0.0, 1.0),
+                                                    (value + 0.3)
+                                                        .clamp(0.0, 1.0),
                                                   ],
                                                   colors: [
                                                     Colors.transparent,
@@ -197,29 +203,26 @@ class _MiniPlayerState extends State<MiniPlayer>
                               }
                               final track = currentSource.tracks[index];
                               return Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                                crossAxisAlignment:
+                                CrossAxisAlignment.start,
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  Text(
-                                    track.title,
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .titleLarge
-                                        ?.copyWith(
-                                      fontWeight: FontWeight.w600,
-                                      letterSpacing: 0.1,
-                                      color: colorScheme.onSurface,
+                                  SizedBox(
+                                    height: textTheme.titleLarge!.fontSize! *
+                                        1.3,
+                                    child: ConditionalMarquee(
+                                      text: track.title,
+                                      style: textTheme.titleLarge?.copyWith(
+                                        fontWeight: FontWeight.w600,
+                                        letterSpacing: 0.1,
+                                        color: colorScheme.onSurface,
+                                      ),
                                     ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
                                   ),
                                   const SizedBox(height: 6),
                                   Text(
                                     currentShow.venue,
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .bodyLarge
-                                        ?.copyWith(
+                                    style: textTheme.bodyLarge?.copyWith(
                                       color: colorScheme.onSurfaceVariant,
                                       letterSpacing: 0.15,
                                     ),
@@ -260,11 +263,16 @@ class _MiniPlayerState extends State<MiniPlayer>
                                     final playing =
                                         playerState?.playing ?? false;
 
-                                    if (playing && !_pulseController.isAnimating) {
+                                    if (playing &&
+                                        !_pulseController.isAnimating) {
                                       _pulseController.repeat(reverse: true);
-                                    } else if (!playing && _pulseController.isAnimating) {
+                                    } else if (!playing &&
+                                        _pulseController.isAnimating) {
                                       _pulseController.stop();
-                                      _pulseController.animateTo(0.0, duration: const Duration(milliseconds: 200), curve: Curves.easeOut);
+                                      _pulseController.animateTo(0.0,
+                                          duration: const Duration(
+                                              milliseconds: 200),
+                                          curve: Curves.easeOut);
                                     }
 
                                     return ScaleTransition(
@@ -304,12 +312,14 @@ class _MiniPlayerState extends State<MiniPlayer>
                                               : IconButton(
                                             icon: Icon(
                                               playing
-                                                  ? Icons.pause_rounded
+                                                  ? Icons
+                                                  .pause_rounded
                                                   : Icons
                                                   .play_arrow_rounded,
                                             ),
                                             iconSize: 28,
-                                            color: colorScheme.onPrimary,
+                                            color:
+                                            colorScheme.onPrimary,
                                             onPressed: playing
                                                 ? audioProvider.pause
                                                 : audioProvider.play,
@@ -320,7 +330,8 @@ class _MiniPlayerState extends State<MiniPlayer>
                                   },
                                 ),
                                 IconButton(
-                                  icon: const Icon(Icons.skip_next_rounded),
+                                  icon:
+                                  const Icon(Icons.skip_next_rounded),
                                   iconSize: 28,
                                   color: colorScheme.onSurfaceVariant,
                                   onPressed: isLastTrack
