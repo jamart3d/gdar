@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:gdar/models/show.dart';
@@ -48,6 +47,27 @@ class _PlaybackScreenState extends State<PlaybackScreen>
     super.dispose();
   }
 
+  void _scrollToCurrentTrack() {
+    final audioProvider = context.read<AudioProvider>();
+    final index = audioProvider.audioPlayer.currentIndex;
+
+    if (index != null && _scrollController.hasClients) {
+      final viewportHeight = _scrollController.position.viewportDimension;
+      final maxScroll = _scrollController.position.maxScrollExtent;
+      final itemTopPosition = _trackItemHeight * index;
+
+      final targetOffset =
+      (itemTopPosition - (viewportHeight / 2) + (_trackItemHeight / 2))
+          .clamp(0.0, maxScroll);
+
+      _scrollController.animateTo(
+        targetOffset,
+        duration: const Duration(milliseconds: 500),
+        curve: Curves.easeInOut,
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final audioProvider = context.watch<AudioProvider>();
@@ -65,193 +85,208 @@ class _PlaybackScreenState extends State<PlaybackScreen>
 
     final colorScheme = Theme.of(context).colorScheme;
 
-    return Hero(
-      tag: 'player',
-      child: Material(
-        type: MaterialType.transparency,
-        child: Scaffold(
-          backgroundColor: colorScheme.surface,
-          appBar: AppBar(
-            title: Text(
-              currentShow.venue,
-              overflow: TextOverflow.ellipsis,
-              maxLines: 1,
+    return Scaffold(
+      backgroundColor: colorScheme.surface,
+      appBar: AppBar(
+        title: null,
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                colorScheme.primaryContainer,
+                colorScheme.secondaryContainer,
+              ],
             ),
-            flexibleSpace: Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    colorScheme.primaryContainer,
-                    colorScheme.secondaryContainer,
-                  ],
-                ),
-              ),
-            ),
-            actions: [
-              IconButton(
-                icon: const Icon(Icons.settings_rounded),
-                tooltip: 'Settings',
-                onPressed: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(builder: (_) => const SettingsScreen()),
+          ),
+        ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.settings_rounded),
+            tooltip: 'Settings',
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const SettingsScreen()),
+              );
+            },
+          ),
+        ],
+      ),
+      body: CustomScrollView(
+        controller: _scrollController,
+        slivers: [
+          SliverPadding(
+            padding: const EdgeInsets.only(top: 16.0, left: 8.0, right: 8.0),
+            sliver: SliverList(
+              delegate: SliverChildBuilderDelegate(
+                    (context, index) {
+                  return _buildTrackItem(
+                    context,
+                    audioProvider,
+                    currentSource.tracks[index],
+                    index,
                   );
                 },
+                childCount: currentSource.tracks.length,
               ),
-            ],
+            ),
           ),
-          body: CustomScrollView(
-            controller: _scrollController,
-            slivers: [
-              SliverToBoxAdapter(
-                child: _buildPlaybackInfo(
-                    context, audioProvider, currentShow, currentSource),
-              ),
-              SliverPadding(
-                padding: const EdgeInsets.only(bottom: 24.0),
-                sliver: SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                        (context, index) {
-                      return _buildTrackItem(
-                        context,
-                        audioProvider,
-                        currentSource.tracks[index],
-                        index,
-                      );
-                    },
-                    childCount: currentSource.tracks.length,
-                  ),
-                ),
-              ),
-            ],
+        ],
+      ),
+      bottomNavigationBar: Hero(
+        tag: 'player',
+        child: Material(
+          color: Theme.of(context).colorScheme.surfaceContainer,
+          borderRadius: const BorderRadius.only(
+            topLeft: Radius.circular(28),
+            topRight: Radius.circular(28),
           ),
-          bottomNavigationBar:
-          _buildBottomControlsPanel(context, audioProvider, currentSource),
+          clipBehavior: Clip.antiAlias,
+          elevation: 4.0,
+          shadowColor: Theme.of(context).colorScheme.shadow.withOpacity(0.1),
+          child: _buildBottomControlsPanel(
+              context, audioProvider, currentShow, currentSource),
         ),
       ),
     );
   }
 
-  Widget _buildPlaybackInfo(BuildContext context, AudioProvider audioProvider,
-      Show currentShow, Source currentSource) {
+  Widget _buildBottomControlsPanel(BuildContext context,
+      AudioProvider audioProvider, Show currentShow, Source currentSource) {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
     final settingsProvider = context.watch<SettingsProvider>();
     final bool shouldShowShnidBadge = currentShow.sources.length > 1 ||
         (currentShow.sources.length == 1 && settingsProvider.showSingleShnid);
 
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(24, 16, 24, 16),
-      child: Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                padding:
-                const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                decoration: BoxDecoration(
-                  color: colorScheme.secondaryContainer,
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      Icons.calendar_today_rounded,
-                      size: 16,
-                      color: colorScheme.onSecondaryContainer,
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      currentShow.formattedDate,
-                      style: textTheme.labelLarge?.copyWith(
-                        color: colorScheme.onSecondaryContainer,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 8),
-              if (shouldShowShnidBadge)
-                Container(
-                  padding:
-                  const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: colorScheme.tertiaryContainer,
-                    borderRadius: BorderRadius.circular(20),
+    return SingleChildScrollView(
+      physics: const ClampingScrollPhysics(),
+      child: Padding(
+        padding: EdgeInsets.fromLTRB(
+            16, 12, 16, 16 + MediaQuery.of(context).viewPadding.bottom),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(8, 0, 8, 12),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  StreamBuilder<int?>(
+                    stream: audioProvider.currentIndexStream,
+                    initialData: audioProvider.audioPlayer.currentIndex,
+                    builder: (context, snapshot) {
+                      final index = snapshot.data ?? 0;
+                      if (index >= currentSource.tracks.length) {
+                        return const SizedBox.shrink();
+                      }
+                      final track = currentSource.tracks[index];
+                      return AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 300),
+                        transitionBuilder:
+                            (Widget child, Animation<double> animation) {
+                          return FadeTransition(
+                            opacity: animation,
+                            child: child,
+                          );
+                        },
+                        child: GestureDetector(
+                          key: ValueKey<String>(track.title),
+                          onTap: _scrollToCurrentTrack,
+                          child: SizedBox(
+                            height: textTheme.titleLarge!.fontSize! * 1.3,
+                            child: Material(
+                              type: MaterialType.transparency,
+                              child: ConditionalMarquee(
+                                text: track.title,
+                                style: textTheme.titleLarge?.copyWith(
+                                  fontWeight: FontWeight.w600,
+                                  color: colorScheme.onSurface,
+                                ),
+                                textAlign: TextAlign.center,
+                                pauseAfterRound: const Duration(seconds: 3),
+                                blankSpace: 60.0,
+                              ),
+                            ),
+                          ),
+                        ),
+                      );
+                    },
                   ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
+                  const SizedBox(height: 4),
+                  Text(
+                    currentShow.venue,
+                    style: textTheme.bodyMedium?.copyWith(
+                      color: colorScheme.onSurfaceVariant,
+                    ),
+                    textAlign: TextAlign.center,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    alignment: WrapAlignment.center,
+                    spacing: 8.0,
+                    runSpacing: 8.0,
                     children: [
-                      Text(
-                        currentSource.id,
-                        style: textTheme.labelLarge?.copyWith(
-                          color: colorScheme.onTertiaryContainer,
-                          fontWeight: FontWeight.w600,
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: colorScheme.secondaryContainer,
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.calendar_today_rounded,
+                              size: 16,
+                              color: colorScheme.onSecondaryContainer,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              currentShow.formattedDate,
+                              style: textTheme.labelLarge?.copyWith(
+                                color: colorScheme.onSecondaryContainer,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
+                      if (shouldShowShnidBadge)
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 8),
+                          decoration: BoxDecoration(
+                            color: colorScheme.tertiaryContainer,
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                currentSource.id,
+                                style: textTheme.labelLarge?.copyWith(
+                                  color: colorScheme.onTertiaryContainer,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                     ],
                   ),
-                ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          StreamBuilder<int?>(
-            stream: audioProvider.currentIndexStream,
-            initialData: audioProvider.audioPlayer.currentIndex,
-            builder: (context, snapshot) {
-              final index = snapshot.data ?? 0;
-              if (index >= currentSource.tracks.length) {
-                return const SizedBox.shrink();
-              }
-              final track = currentSource.tracks[index];
-              return SizedBox(
-                height: textTheme.headlineSmall!.fontSize! * 1.3,
-                child: ConditionalMarquee(
-                  text: track.title,
-                  style: textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.w600,
-                    color: colorScheme.onSurface,
-                  ),
-                  textAlign: TextAlign.center,
-                  pauseAfterRound: const Duration(seconds: 3),
-                  blankSpace: 60.0,
-                ),
-              );
-            },
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildBottomControlsPanel(BuildContext context,
-      AudioProvider audioProvider, Source currentSource) {
-    return Container(
-      padding: EdgeInsets.fromLTRB(
-          16, 12, 16, 16 + MediaQuery.of(context).viewPadding.bottom),
-      decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surfaceContainer,
-          borderRadius: const BorderRadius.only(
-            topLeft: Radius.circular(28),
-            topRight: Radius.circular(28),
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Theme.of(context).colorScheme.shadow.withOpacity(0.1),
-              blurRadius: 16,
-              offset: const Offset(0, -4),
-            )
-          ]),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          _buildProgressBar(context, audioProvider),
-          _buildControls(context, audioProvider, currentSource),
-        ],
+                ],
+              ),
+            ),
+            _buildProgressBar(context, audioProvider),
+            const SizedBox(height: 8),
+            _buildControls(context, audioProvider, currentSource),
+          ],
+        ),
       ),
     );
   }
@@ -489,7 +524,8 @@ class _PlaybackScreenState extends State<PlaybackScreen>
                                                   borderRadius:
                                                   BorderRadius.circular(3),
                                                   gradient: LinearGradient(
-                                                    begin: Alignment.centerLeft,
+                                                    begin:
+                                                    Alignment.centerLeft,
                                                     end: Alignment.centerRight,
                                                     stops: [
                                                       (value - 0.2)
@@ -583,7 +619,7 @@ class _PlaybackScreenState extends State<PlaybackScreen>
         return SizedBox(
           height: _trackItemHeight,
           child: Container(
-            margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 4),
+            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
             decoration: BoxDecoration(
               color: isPlaying
                   ? colorScheme.primaryContainer.withOpacity(0.5)

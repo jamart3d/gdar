@@ -6,8 +6,8 @@ class Show {
   final String artist;
   final String date;
   final String year;
-  final String venue;
-  final List<Source> sources;
+  String venue; // Changed from final to allow modification
+  List<Source> sources; // Changed from final to allow modification
   bool hasFeaturedTrack; // Our new property
 
   Show({
@@ -59,4 +59,3 @@ class Show {
     );
   }
 }
-

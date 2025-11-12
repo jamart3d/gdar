@@ -11,6 +11,7 @@ class SettingsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final themeProvider = context.watch<ThemeProvider>();
     final settingsProvider = context.watch<SettingsProvider>();
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
       appBar: AppBar(
@@ -18,6 +19,7 @@ class SettingsScreen extends StatelessWidget {
       ),
       body: ListView(
         children: [
+          // General Settings
           SwitchListTile(
             title: const Text('Dark Mode'),
             subtitle: const Text('Enable the true black theme'),
@@ -32,6 +34,15 @@ class SettingsScreen extends StatelessWidget {
             ),
           ),
           const Divider(),
+          // Playback Settings
+          ListTile(
+            contentPadding: const EdgeInsets.only(left: 16, right: 16, top: 8),
+            title: Text(
+              'Playback',
+              style: TextStyle(
+                  color: colorScheme.primary, fontWeight: FontWeight.bold),
+            ),
+          ),
           SwitchListTile(
             title: const Text('Play Random Show on Completion'),
             subtitle: const Text('When a show ends, play another one randomly'),
@@ -41,17 +52,6 @@ class SettingsScreen extends StatelessWidget {
             },
             secondary: const Icon(Icons.shuffle_rounded),
           ),
-          const Divider(),
-          SwitchListTile(
-            title: const Text('Show Track Numbers'),
-            subtitle: const Text('Display track numbers in lists'),
-            value: settingsProvider.showTrackNumbers,
-            onChanged: (value) {
-              context.read<SettingsProvider>().toggleShowTrackNumbers();
-            },
-            secondary: const Icon(Icons.pin_rounded),
-          ),
-          const Divider(),
           SwitchListTile(
             title: const Text('Play on Tap'),
             subtitle: const Text('Tap track in inactive source to play'),
@@ -62,6 +62,24 @@ class SettingsScreen extends StatelessWidget {
             secondary: const Icon(Icons.touch_app_rounded),
           ),
           const Divider(),
+          // UI Settings
+          ListTile(
+            contentPadding: const EdgeInsets.only(left: 16, right: 16, top: 8),
+            title: Text(
+              'Interface',
+              style: TextStyle(
+                  color: colorScheme.primary, fontWeight: FontWeight.bold),
+            ),
+          ),
+          SwitchListTile(
+            title: const Text('Show Track Numbers'),
+            subtitle: const Text('Display track numbers in lists'),
+            value: settingsProvider.showTrackNumbers,
+            onChanged: (value) {
+              context.read<SettingsProvider>().toggleShowTrackNumbers();
+            },
+            secondary: const Icon(Icons.pin_rounded),
+          ),
           SwitchListTile(
             title: const Text('Show SHNID Badge (Single Source)'),
             subtitle:
@@ -72,8 +90,6 @@ class SettingsScreen extends StatelessWidget {
             },
             secondary: const Icon(Icons.looks_one_rounded),
           ),
-          const Divider(),
-          // New SwitchListTile for hiding track count
           SwitchListTile(
             title: const Text('Hide Track Count in Source List'),
             subtitle:
@@ -87,6 +103,7 @@ class SettingsScreen extends StatelessWidget {
             secondary: const Icon(Icons.format_list_numbered_rtl_rounded),
           ),
           const Divider(),
+          // About Section
           ListTile(
             leading: const Icon(Icons.info_outline_rounded),
             title: const Text('About'),

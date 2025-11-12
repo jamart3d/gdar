@@ -8,6 +8,9 @@ class SettingsProvider with ChangeNotifier {
   static const String _hideTrackCountKey = 'hide_track_count_in_source_list';
   static const String _playRandomOnCompletionKey = 'play_random_on_completion';
 
+  // Hard-coded setting, as requested.
+  static const bool showExpandIcon = false;
+
   bool _showTrackNumbers = true;
   bool _playOnTap = false;
   bool _showSingleShnid = false;

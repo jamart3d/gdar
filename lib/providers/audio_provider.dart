@@ -61,23 +61,39 @@ class AudioProvider with ChangeNotifier {
     super.dispose();
   }
 
-  void playShow(Show show) {
-    if (show.sources.isNotEmpty) {
-      playSource(show, show.sources.first);
-    } else {
-      logger.w('Show ${show.name} has no sources to play.');
-    }
-  }
-
   Show? playRandomShow() {
     final shows = _showListProvider?.filteredShows;
     if (shows == null || shows.isEmpty) {
       logger.w('Cannot play random show, no shows available.');
       return null;
     }
-    final randomShow = shows[Random().nextInt(shows.length)];
-    playShow(randomShow);
-    return randomShow;
+
+    // Create a flat list of all possible sources (SHNIDs), each paired with its parent show.
+    final List<(Show, Source)> allSources = [];
+    for (final show in shows) {
+      for (final source in show.sources) {
+        allSources.add((show, source));
+      }
+    }
+
+    if (allSources.isEmpty) {
+      logger.w('Cannot play random source, no sources found in filtered shows.');
+      return null;
+    }
+
+    // Pick a random (Show, Source) pair.
+    final randomPair = allSources[Random().nextInt(allSources.length)];
+    final Show showToPlay = randomPair.$1;
+    final Source sourceToPlay = randomPair.$2;
+
+    logger.i(
+        'Playing random source ${sourceToPlay.id} from show ${showToPlay.name}');
+
+    // Play the randomly selected source.
+    playSource(showToPlay, sourceToPlay);
+
+    // Return the parent show so the UI can scroll to it.
+    return showToPlay;
   }
 
   void playSource(Show show, Source source, {int initialIndex = 0}) {

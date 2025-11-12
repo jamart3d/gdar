@@ -65,72 +65,88 @@ class ShowListCard extends StatelessWidget {
               onTap: onTap,
               onLongPress: onLongPress,
               child: Padding(
-                padding: const EdgeInsets.all(20.0),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.end,
+                padding: const EdgeInsets.all(10.0),
+                child: Stack(
                   children: [
-                    AnimatedSwitcher(
-                      duration: _animationDuration,
-                      child: isLoading
-                          ? Container(
-                        key: ValueKey('loader_${show.name}'),
-                        width: 36,
-                        height: 36,
-                        padding: const EdgeInsets.all(8),
-                        child: const CircularProgressIndicator(
-                            strokeWidth: 2.5),
-                      )
-                          : AnimatedRotation(
-                        key: ValueKey('icon_${show.name}'),
-                        turns: isExpanded ? 0.5 : 0,
-                        duration: _animationDuration,
-                        curve: Curves.easeInOutCubicEmphasized,
-                        child: Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: isExpanded
-                                ? colorScheme.primaryContainer
-                                : colorScheme.surfaceContainerHighest,
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Icon(
-                              Icons.keyboard_arrow_down_rounded,
-                              color: isExpanded
-                                  ? colorScheme.onPrimaryContainer
-                                  : colorScheme.onSurfaceVariant,
-                              size: 20),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          SizedBox(
-                            height: textTheme.titleLarge?.fontSize != null
-                                ? textTheme.titleLarge!.fontSize! * 1.3
-                                : 28.0,
-                            child: ConditionalMarquee(
-                              text: show.venue,
-                              style: textTheme.titleLarge?.copyWith(
-                                  fontWeight: FontWeight.w600,
-                                  letterSpacing: 0.1,
-                                  color: colorScheme.onSurface),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Expanded(
+                          child: Padding(
+                            padding: EdgeInsets.only(
+                                left: SettingsProvider.showExpandIcon ? 32 : 0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: [
+                                SizedBox(
+                                  height: textTheme.titleLarge?.fontSize != null
+                                      ? textTheme.titleLarge!.fontSize! * 1.3
+                                      : 28.0,
+                                  child: ConditionalMarquee(
+                                    text: show.venue,
+                                    style: textTheme.titleLarge?.copyWith(
+                                        fontWeight: FontWeight.w600,
+                                        letterSpacing: 0.1,
+                                        color: colorScheme.onSurface),
+                                  ),
+                                ),
+                                const SizedBox(height: 6),
+                                Padding(
+                                  padding: const EdgeInsets.only(left: 8.0),
+                                  child: Text(show.formattedDate,
+                                      style: textTheme.bodyLarge?.copyWith(
+                                          color: colorScheme.onSurfaceVariant,
+                                          letterSpacing: 0.15)),
+                                ),
+                              ],
                             ),
                           ),
-                          const SizedBox(height: 6),
-                          Text(show.formattedDate,
-                              style: textTheme.bodyLarge?.copyWith(
-                                  color: colorScheme.onSurfaceVariant,
-                                  letterSpacing: 0.15)),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
+                    if (SettingsProvider.showExpandIcon)
+                      Positioned(
+                        left: 0,
+                        bottom: 0,
+                        child: AnimatedSwitcher(
+                          duration: _animationDuration,
+                          child: isLoading
+                              ? Container(
+                            key: ValueKey('loader_${show.name}'),
+                            width: 28,
+                            height: 28,
+                            padding: const EdgeInsets.all(4),
+                            child: const CircularProgressIndicator(
+                                strokeWidth: 2.5),
+                          )
+                              : AnimatedRotation(
+                            key: ValueKey('icon_${show.name}'),
+                            turns: isExpanded ? 0.5 : 0,
+                            duration: _animationDuration,
+                            curve: Curves.easeInOutCubicEmphasized,
+                            child: Container(
+                              padding: const EdgeInsets.all(4),
+                              decoration: BoxDecoration(
+                                color: isExpanded
+                                    ? colorScheme.primaryContainer
+                                    : colorScheme.surfaceContainerHighest,
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Icon(
+                                  Icons.keyboard_arrow_down_rounded,
+                                  color: isExpanded
+                                      ? colorScheme.onPrimaryContainer
+                                      : colorScheme.onSurfaceVariant,
+                                  size: 20),
+                            ),
+                          ),
+                        ),
+                      ),
                     if (shouldShowBadge)
-                      Padding(
-                        padding: const EdgeInsets.only(left: 8.0),
+                      Positioned(
+                        right: 0,
+                        bottom: 0,
                         child: _buildBadge(context, show),
                       ),
                   ],
@@ -155,8 +171,8 @@ class ShowListCard extends StatelessWidget {
     }
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      constraints: const BoxConstraints(maxWidth: 80),
+      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+      constraints: const BoxConstraints(maxWidth: 70),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
@@ -166,7 +182,7 @@ class ShowListCard extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(10),
         boxShadow: [
           BoxShadow(
               color: colorScheme.shadow.withOpacity(0.05),

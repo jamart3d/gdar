@@ -9,7 +9,6 @@ class ShowListProvider with ChangeNotifier {
   String? _error;
   String _searchQuery = '';
   String? _expandedShowName;
-  String? _expandedShnid;
   String? _loadingShowName;
 
   // Public getters
@@ -17,7 +16,6 @@ class ShowListProvider with ChangeNotifier {
   String? get error => _error;
   String get searchQuery => _searchQuery;
   String? get expandedShowName => _expandedShowName;
-  String? get expandedShnid => _expandedShnid;
   String? get loadingShowName => _loadingShowName;
 
   List<Show> get filteredShows {
@@ -56,26 +54,13 @@ class ShowListProvider with ChangeNotifier {
     }
   }
 
-  void onShowTapped(Show show) {
+  void onShowTap(Show show) {
     if (_expandedShowName == show.name) {
       // Collapse the current show
       _expandedShowName = null;
-      _expandedShnid = null;
     } else {
       // Expand the new show
       _expandedShowName = show.name;
-      _expandedShnid = null; // Always collapse sources when expanding a new show
-    }
-    notifyListeners();
-  }
-
-  void onShnidTapped(String shnid) {
-    if (_expandedShnid == shnid) {
-      // Collapse the source
-      _expandedShnid = null;
-    } else {
-      // Expand the source
-      _expandedShnid = shnid;
     }
     notifyListeners();
   }
@@ -87,23 +72,14 @@ class ShowListProvider with ChangeNotifier {
     }
   }
 
-  // Used when returning from playback screen to re-expand the correct show/source
-  void expandToShow(Show show, {String? specificShnid}) {
+  // Used to expand a show, e.g., when the current playing show is tapped.
+  void expandShow(Show show) {
     _expandedShowName = show.name;
-    _expandedShnid = specificShnid;
-    notifyListeners();
-  }
-
-  // Directly sets the expanded show and source, e.g., on long-press play
-  void expandShowAndSource(String showName, String sourceId) {
-    _expandedShowName = showName;
-    _expandedShnid = sourceId;
     notifyListeners();
   }
 
   void collapseCurrentShow() {
     _expandedShowName = null;
-    _expandedShnid = null;
     notifyListeners();
   }
 }

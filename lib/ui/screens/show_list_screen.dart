@@ -7,6 +7,7 @@ import 'package:gdar/providers/audio_provider.dart';
 import 'package:gdar/providers/show_list_provider.dart';
 import 'package:gdar/ui/screens/playback_screen.dart';
 import 'package:gdar/ui/screens/settings_screen.dart';
+import 'package:gdar/ui/screens/track_list_screen.dart';
 import 'package:gdar/ui/widgets/mini_player.dart';
 import 'package:gdar/ui/widgets/show_list_card.dart';
 import 'package:gdar/ui/widgets/show_list_item_details.dart';
@@ -28,7 +29,6 @@ class _ShowListScreenState extends State<ShowListScreen>
   final ItemScrollController _itemScrollController = ItemScrollController();
   final ItemPositionsListener _itemPositionsListener =
   ItemPositionsListener.create();
-  final Map<String, ScrollController> _trackScrollControllers = {};
 
   late final AnimationController _animationController;
   late final Animation<double> _animation;
@@ -40,12 +40,8 @@ class _ShowListScreenState extends State<ShowListScreen>
   static const Duration _animationDuration = Duration(milliseconds: 300);
 
   // Height constants for calculation
-  static const double _sourceHeaderHeight = 72.0;
-  static const double _trackItemHeight = 64.0;
-  static const double _shnidLabelHeight = 0.0;
-  static const double _sourcePadding = 16.0;
-  static const double _maxShnidListHeight = 400.0;
-  static const double _maxTrackListHeight = 500.0;
+  static const double _sourceHeaderHeight = 64.0;
+  static const double _listVerticalPadding = 16.0;
 
   @override
   void initState() {
@@ -60,9 +56,7 @@ class _ShowListScreenState extends State<ShowListScreen>
     );
 
     _searchController.addListener(() {
-      context
-          .read<ShowListProvider>()
-          .setSearchQuery(_searchController.text);
+      context.read<ShowListProvider>().setSearchQuery(_searchController.text);
     });
 
     // Listen to player state to manage loading indicators
@@ -74,8 +68,6 @@ class _ShowListScreenState extends State<ShowListScreen>
 
           // Handle AppBar's random play indicator
           if (_isRandomShowLoading) {
-            // If the player is ready, has completed, or has stopped (idle),
-            // we can consider the loading phase over.
             if (processingState == ProcessingState.ready ||
                 processingState == ProcessingState.completed ||
                 processingState == ProcessingState.idle) {
@@ -86,8 +78,8 @@ class _ShowListScreenState extends State<ShowListScreen>
           // Handle ShowListCard's loading indicator
           final showListProvider = context.read<ShowListProvider>();
           if (showListProvider.loadingShowName != null &&
-              showListProvider.loadingShowName == audioProvider.currentShow?.name) {
-            // When player is ready or has failed, remove indicator
+              showListProvider.loadingShowName ==
+                  audioProvider.currentShow?.name) {
             if (processingState == ProcessingState.ready ||
                 processingState == ProcessingState.idle) {
               showListProvider.setLoadingShow(null);
@@ -101,45 +93,20 @@ class _ShowListScreenState extends State<ShowListScreen>
     _searchController.dispose();
     _animationController.dispose();
     _playerStateSubscription?.cancel();
-    for (var controller in _trackScrollControllers.values) {
-      controller.dispose();
-    }
     super.dispose();
   }
 
   void _toggleSearch() => setState(() => _isSearchVisible = !_isSearchVisible);
 
-  double _calculateExpandedHeight(Show show, String? expandedShnid) {
-    double totalHeight = 0.0;
-    final hasMultipleSources = show.sources.length > 1;
-
-    if (hasMultipleSources) {
-      totalHeight += _shnidLabelHeight;
-      totalHeight += show.sources.length * _sourceHeaderHeight;
-      totalHeight += 16;
-      if (expandedShnid != null) {
-        final expandedSource = show.sources.firstWhere(
-                (s) => s.id == expandedShnid,
-            orElse: () => show.sources.first);
-        totalHeight += expandedSource.tracks.length * _trackItemHeight;
-        totalHeight += _sourcePadding;
-        return totalHeight.clamp(
-            0.0,
-            _maxTrackListHeight +
-                (show.sources.length * _sourceHeaderHeight) +
-                16.0);
-      }
-      return totalHeight.clamp(0, _maxShnidListHeight);
-    } else {
-      totalHeight += show.sources.first.tracks.length * _trackItemHeight;
-      totalHeight += _sourcePadding;
-      return totalHeight.clamp(0, _maxTrackListHeight);
-    }
+  double _calculateExpandedHeight(Show show) {
+    if (show.sources.length <= 1) return 0.0;
+    return (show.sources.length * _sourceHeaderHeight) + _listVerticalPadding;
   }
 
-  Future<void> _scrollToShowTop(
-      Show show, List<Show> currentlyVisibleShows) async {
-    final targetIndex = currentlyVisibleShows.indexOf(show);
+  /// Scrolls a show into view, centering it in the viewport.
+  Future<void> _reliablyScrollToShow(Show show) async {
+    final showListProvider = context.read<ShowListProvider>();
+    final targetIndex = showListProvider.filteredShows.indexOf(show);
     logger.i('Attempting to scroll to "${show.name}" at index $targetIndex.');
 
     if (targetIndex == -1) {
@@ -147,12 +114,15 @@ class _ShowListScreenState extends State<ShowListScreen>
       return;
     }
 
+    // Align to center, or slightly above center for multi-source shows.
+    final alignment = show.sources.length > 1 ? 0.4 : 0.5;
+
     try {
       await _itemScrollController.scrollTo(
         index: targetIndex,
         duration: _animationDuration,
         curve: Curves.easeInOutCubicEmphasized,
-        alignment: 0.0,
+        alignment: alignment,
       );
       logger.i('Scroll animation initiated for item at index $targetIndex.');
     } catch (e) {
@@ -160,71 +130,125 @@ class _ShowListScreenState extends State<ShowListScreen>
     }
   }
 
+  /// Handles tapping on a show card based on the current playback state and show structure.
   Future<void> _onShowTapped(Show show) async {
-    logger.d('Tapped on show: ${show.name}');
+    final audioProvider = context.read<AudioProvider>();
     final showListProvider = context.read<ShowListProvider>();
-    final previouslyExpanded = showListProvider.expandedShowName;
-    final isExpandingNewShow = previouslyExpanded != show.name;
+    final isPlayingThisShow = audioProvider.currentShow?.name == show.name;
+    final isExpanded = showListProvider.expandedShowName == show.name;
 
-    if (previouslyExpanded != null && isExpandingNewShow) {
-      logger.i('Collapsing previous show: $previouslyExpanded');
-      await _animationController.reverse();
-      if (!mounted) return;
-    }
-
-    showListProvider.onShowTapped(show);
-
-    if (isExpandingNewShow) {
-      logger.i('Expanding new show: ${show.name}');
-      await _animationController.forward(from: 0.0);
-      if (!mounted) return;
-      await Future.delayed(const Duration(milliseconds: 50));
-      if (!mounted) return;
-
-      logger.d('Animation complete: Scrolling to ${show.name}');
-      _scrollToShowTop(show, showListProvider.filteredShows);
+    if (isPlayingThisShow) {
+      if (isExpanded) {
+        // If it's the current show and it's already expanded, go to the player.
+        await _openPlaybackScreen();
+      } else {
+        // If it's the current show and it's collapsed, expand it.
+        await _handleShowExpansion(show);
+      }
     } else {
-      logger.i('Collapsing show: ${show.name}');
-      _animationController.reverse();
+      // If it's a different show...
+      if (show.sources.length > 1) {
+        // ...with multiple SHNIDs, expand it in place.
+        await _handleShowExpansion(show);
+      } else {
+        // ...with only one SHNID, go to the dedicated track list screen.
+        final shouldOpenPlayer = await Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => TrackListScreen(show: show),
+          ),
+        );
+        if (shouldOpenPlayer == true && mounted) {
+          await _openPlaybackScreen();
+        }
+      }
     }
   }
 
-  Future<void> _onSourceLongPressed(Show show, Source source) async {
-    logger.d('Long pressed on source: ${source.id} for show: ${show.name}');
+  /// Manages the logic for expanding and collapsing a show card.
+  Future<void> _handleShowExpansion(Show show) async {
+    final showListProvider = context.read<ShowListProvider>();
+    final previouslyExpanded = showListProvider.expandedShowName;
+    final isCollapsingCurrent = previouslyExpanded == show.name;
+
+    // If tapping an already expanded show, collapse it.
+    if (isCollapsingCurrent) {
+      showListProvider.collapseCurrentShow();
+      _animationController.reverse();
+      return;
+    }
+
+    // If tapping a new or collapsed show, expand it.
+    final wasSomethingExpanded = previouslyExpanded != null;
+    showListProvider.onShowTap(show);
+
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!mounted) return;
+      // Animate it open. If another was open, it closes instantly and this one opens.
+      if (wasSomethingExpanded) {
+        await _animationController.forward(from: 0.0);
+      } else {
+        await _animationController.forward();
+      }
+      if (!mounted) return;
+      await _reliablyScrollToShow(show);
+    });
+  }
+
+  /// Handles tapping a source row inside an expanded show card.
+  Future<void> _onSourceTapped(Show show, Source source) async {
+    final audioProvider = context.read<AudioProvider>();
+    final isPlayingThisSource = audioProvider.currentSource?.id == source.id;
+
+    if (isPlayingThisSource) {
+      await _openPlaybackScreen();
+    } else {
+      // Create a "virtual" show containing only the selected source to pass
+      // to the track list screen.
+      final singleSourceShow = Show(
+        name: show.name,
+        artist: show.artist,
+        date: show.date,
+        year: show.year,
+        venue: show.venue,
+        sources: [source],
+        hasFeaturedTrack: show.hasFeaturedTrack,
+      );
+      final shouldOpenPlayer = await Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => TrackListScreen(show: singleSourceShow),
+        ),
+      );
+      if (shouldOpenPlayer == true && mounted) {
+        await _openPlaybackScreen();
+      }
+    }
+  }
+
+  /// Plays the first source of a show on long press.
+  Future<void> _onCardLongPressed(Show show) async {
+    logger.d('Long pressed on show card: ${show.name}');
+    if (show.sources.isEmpty) return;
+    _playSource(show, show.sources.first);
+  }
+
+  /// Plays a specific source from a show on long press inside an expanded card.
+  void _onSourceLongPressed(Show show, Source source) {
+    logger.d('Long pressed on source row: ${source.id}');
+    _playSource(show, source);
+  }
+
+  /// Common logic to play a source and update the UI.
+  void _playSource(Show show, Source source) {
+    HapticFeedback.mediumImpact();
     final showListProvider = context.read<ShowListProvider>();
     final audioProvider = context.read<AudioProvider>();
 
-    final previouslyExpandedShow = showListProvider.expandedShowName;
-    final isDifferentShow = previouslyExpandedShow != show.name;
-    final wasAlreadyExpanded = previouslyExpandedShow == show.name;
-
     showListProvider.setLoadingShow(show.name);
-
-    if (previouslyExpandedShow != null && isDifferentShow) {
-      logger.i('Collapsing previous show: $previouslyExpandedShow');
-      await _animationController.reverse();
-      if (!mounted) return;
+    // Expand the parent show if it's not already.
+    if (showListProvider.expandedShowName != show.name) {
+      showListProvider.expandShow(show);
+      _animationController.forward(from: 0.0);
     }
-
-    showListProvider.expandShowAndSource(show.name, source.id);
-
-    // This is the function that will be called to scroll.
-    Future<void> scrollShow() async {
-      await Future.delayed(const Duration(milliseconds: 50));
-      if (mounted) {
-        logger.d('Animation/Action complete: Scrolling to ${show.name}');
-        await _scrollToShowTop(show, showListProvider.filteredShows);
-      }
-    }
-
-    if (!wasAlreadyExpanded) {
-      logger.i('Expanding show container for ${show.name}');
-      await _animationController.forward(from: 0.0);
-      await scrollShow();
-    } else {
-      await scrollShow();
-    }
-
     audioProvider.playSource(show, source);
   }
 
@@ -233,99 +257,56 @@ class _ShowListScreenState extends State<ShowListScreen>
       pageBuilder: (context, animation, secondaryAnimation) =>
       const PlaybackScreen(),
       transitionsBuilder: (context, animation, secondaryAnimation, child) {
-        const begin = Offset(0.0, 1.0);
-        const end = Offset.zero;
-        const curve = Curves.easeInOutCubicEmphasized;
-        var tween =
-        Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-        return SlideTransition(position: animation.drive(tween), child: child);
+        return FadeTransition(opacity: animation, child: child);
       },
       transitionDuration: const Duration(milliseconds: 500),
     ));
 
+    // This code runs *after* the PlaybackScreen is popped.
     if (!mounted) return;
-    _scrollToPlayingShow(isReturning: true);
+    _collapseAndScrollOnReturn();
   }
 
-  Future<void> _scrollToPlayingShow({bool isReturning = false}) async {
-    if (isReturning) {
-      logger.i(
-          'Returned from PlaybackScreen. Initiating scroll-to-playing sequence...');
-    } else {
-      logger.i('Miniplayer tapped. Initiating scroll-to-playing sequence...');
-    }
-
-    final audioProvider = context.read<AudioProvider>();
+  /// Collapses any expanded show and scrolls to the current show.
+  void _collapseAndScrollOnReturn() {
     final showListProvider = context.read<ShowListProvider>();
-    final currentShow = audioProvider.currentShow;
-    final currentSource = audioProvider.currentSource;
+    final audioProvider = context.read<AudioProvider>();
 
-    if (currentShow == null || currentSource == null) {
-      logger.i('No show is currently playing. Aborting sequence.');
-      return;
+    // If a show is expanded, collapse it.
+    if (showListProvider.expandedShowName != null) {
+      showListProvider.collapseCurrentShow();
+      _animationController.reverse();
     }
 
-    final trackIndex = audioProvider.audioPlayer.currentIndex ?? 0;
-    final specificShnid =
-    currentShow.sources.length > 1 ? currentSource.id : null;
-    final isAlreadyExpanded =
-        showListProvider.expandedShowName == currentShow.name;
-
-    logger.d(
-        'Target: Show="${currentShow.name}", Source="${currentSource.id}", Track=$trackIndex. Show already expanded: $isAlreadyExpanded');
-
-    showListProvider.expandToShow(currentShow, specificShnid: specificShnid);
-
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      if (!mounted) return;
-
-      if (!isAlreadyExpanded) {
-        logger.i('Show was not expanded. Animating it open...');
-        await _animationController.forward(from: 0.0);
-        if (!mounted) return;
-      }
-
-      await _scrollToShowTop(currentShow, showListProvider.filteredShows);
-      if (!mounted) return;
-
-      await Future.delayed(const Duration(milliseconds: 100));
-      if (!mounted) return;
-
-      final controller = _trackScrollControllers[currentSource.id];
-      if (controller != null && controller.hasClients) {
-        final viewportHeight = controller.position.viewportDimension;
-        final maxScroll = controller.position.maxScrollExtent;
-        final itemTopPosition = _trackItemHeight * trackIndex;
-
-        final targetOffset =
-        (itemTopPosition - (viewportHeight / 2) + (_trackItemHeight / 2))
-            .clamp(0.0, maxScroll);
-
-        logger.i(
-            'Centering inner list on track $trackIndex. Target offset: $targetOffset, Viewport: $viewportHeight, MaxScroll: $maxScroll');
-
-        controller.animateTo(
-          targetOffset,
-          duration: const Duration(milliseconds: 400),
-          curve: Curves.easeInOut,
-        );
-      } else {
-        logger.w(
-            'Could not scroll track list: Controller for ${currentSource.id} not found or has no clients.');
+    // After a short delay to allow the collapse animation to start,
+    // scroll to the currently playing show.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && audioProvider.currentShow != null) {
+        _reliablyScrollToShow(audioProvider.currentShow!);
       }
     });
   }
 
   void _handlePlayRandomShow() {
+    final showListProvider = context.read<ShowListProvider>();
+
+    // Check if a show is currently expanded and collapse it first.
+    if (showListProvider.expandedShowName != null) {
+      showListProvider.collapseCurrentShow();
+      _animationController.reverse();
+    }
+
     setState(() => _isRandomShowLoading = true);
 
     final show = context.read<AudioProvider>().playRandomShow();
     if (show != null) {
-      // The provider immediately sets the current show, so we can scroll to it
-      // while the audio loads in the background.
-      _scrollToPlayingShow();
+      // Use addPostFrameCallback to ensure collapse animation has started
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          _reliablyScrollToShow(show);
+        }
+      });
     } else {
-      // No show was found/played, so stop loading.
       setState(() => _isRandomShowLoading = false);
     }
   }
@@ -371,8 +352,8 @@ class _ShowListScreenState extends State<ShowListScreen>
           IconButton(
             icon: const Icon(Icons.settings_rounded),
             tooltip: 'Settings',
-            onPressed: () => Navigator.of(context)
-                .push(MaterialPageRoute(builder: (_) => const SettingsScreen())),
+            onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const SettingsScreen())),
           ),
         ],
       ),
@@ -402,7 +383,8 @@ class _ShowListScreenState extends State<ShowListScreen>
                     shape: WidgetStatePropertyAll(RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(28),
                       side: BorderSide(
-                          color: Theme.of(context).colorScheme.outline),
+                          color:
+                          Theme.of(context).colorScheme.outline),
                     )),
                   ),
                 )
@@ -416,7 +398,12 @@ class _ShowListScreenState extends State<ShowListScreen>
               left: 0,
               right: 0,
               bottom: 0,
-              child: MiniPlayer(onTap: _scrollToPlayingShow),
+              child: Hero(
+                tag: 'player',
+                child: MiniPlayer(
+                  onTap: _openPlaybackScreen,
+                ),
+              ),
             ),
         ],
       ),
@@ -454,14 +441,7 @@ class _ShowListScreenState extends State<ShowListScreen>
               isPlaying: audioProvider.currentShow?.name == show.name,
               isLoading: showListProvider.loadingShowName == show.name,
               onTap: () => _onShowTapped(show),
-              onLongPress: () {
-                HapticFeedback.mediumImpact();
-                showListProvider.setLoadingShow(show.name);
-                if (showListProvider.expandedShowName != show.name) {
-                  _onShowTapped(show);
-                }
-                audioProvider.playShow(show);
-              },
+              onLongPress: () => _onCardLongPressed(show),
             ),
             SizeTransition(
               sizeFactor: _animation,
@@ -470,11 +450,9 @@ class _ShowListScreenState extends State<ShowListScreen>
                   ? ShowListItemDetails(
                 show: show,
                 playingSourceId: audioProvider.currentSource?.id,
-                expandedShnid: showListProvider.expandedShnid,
-                height: _calculateExpandedHeight(
-                    show, showListProvider.expandedShnid),
-                trackScrollControllers: _trackScrollControllers,
-                onOpenPlayback: _openPlaybackScreen,
+                height: _calculateExpandedHeight(show),
+                onSourceTapped: (source) =>
+                    _onSourceTapped(show, source),
                 onSourceLongPress: (source) =>
                     _onSourceLongPressed(show, source),
               )

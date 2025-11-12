@@ -1,0 +1,266 @@
+import 'dart:ui';
+
+import 'package:flutter/material.dart';
+import 'package:gdar/models/show.dart';
+import 'package:gdar/models/source.dart';
+import 'package:gdar/models/track.dart';
+import 'package:gdar/providers/audio_provider.dart';
+import 'package:gdar/providers/settings_provider.dart';
+import 'package:gdar/ui/widgets/conditional_marquee.dart';
+import 'package:gdar/ui/widgets/mini_player.dart';
+import 'package:gdar/utils/utils.dart';
+import 'package:provider/provider.dart';
+
+class TrackListScreen extends StatefulWidget {
+  final Show show;
+  const TrackListScreen({super.key, required this.show});
+
+  @override
+  State<TrackListScreen> createState() => _TrackListScreenState();
+}
+
+class _TrackListScreenState extends State<TrackListScreen> {
+  static const double _trackItemHeight = 64.0;
+
+  /// Plays the selected track and pops this screen, returning `true` to
+  /// signal the ShowListScreen to open the player.
+  void _onTrackTapped(Source source, int initialIndex) {
+    final audioProvider = context.read<AudioProvider>();
+    audioProvider.playSource(widget.show, source, initialIndex: initialIndex);
+
+    if (mounted) {
+      Navigator.of(context).pop(true);
+    }
+  }
+
+  /// Navigates to the appropriate screen when a source is tapped.
+  Future<void> _onSourceTapped(Source source) async {
+    final audioProvider = context.read<AudioProvider>();
+    final isPlayingThisSource = audioProvider.currentSource?.id == source.id;
+
+    if (isPlayingThisSource) {
+      // If the tapped source is already playing, pop and signal to open the player.
+      if (mounted) {
+        Navigator.of(context).pop(true);
+      }
+    } else {
+      // If it's a new source, create a "virtual" show with only that source
+      // and navigate to a new TrackListScreen for it.
+      final singleSourceShow = Show(
+        name: widget.show.name,
+        artist: widget.show.artist,
+        date: widget.show.date,
+        year: widget.show.year,
+        venue: widget.show.venue,
+        sources: [source],
+        hasFeaturedTrack: widget.show.hasFeaturedTrack,
+      );
+      final result = await Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => TrackListScreen(show: singleSourceShow),
+        ),
+      );
+      // If the nested screen started playback, propagate the signal up.
+      if (result == true && mounted) {
+        Navigator.of(context).pop(true);
+      }
+    }
+  }
+
+  /// Opens the full player screen for the currently playing item.
+  Future<void> _openPlaybackScreen() async {
+    // This screen should not push a new player, but pop and let the main
+    // screen handle it to ensure a clean navigation stack.
+    if (mounted) {
+      Navigator.of(context).pop(true);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final audioProvider = context.watch<AudioProvider>();
+    // Show the mini player only if a different show is currently playing.
+    final isDifferentShowPlaying = audioProvider.currentShow != null &&
+        audioProvider.currentShow!.name != widget.show.name;
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(widget.show.venue, overflow: TextOverflow.ellipsis),
+            const SizedBox(height: 2),
+            Text(
+              widget.show.formattedDate,
+              style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant),
+            ),
+          ],
+        ),
+      ),
+      body: Stack(
+        children: [
+          _buildBody(),
+          if (isDifferentShowPlaying)
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: MiniPlayer(onTap: _openPlaybackScreen),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBody() {
+    final audioProvider = context.watch<AudioProvider>();
+    final isDifferentShowPlaying = audioProvider.currentShow != null &&
+        audioProvider.currentShow!.name != widget.show.name;
+    final bottomPadding = isDifferentShowPlaying ? 100.0 : 16.0;
+
+    if (widget.show.sources.isEmpty) {
+      return const Center(child: Text('No tracks available for this show.'));
+    }
+
+    // If the show has only one source, display its track list directly.
+    // Otherwise, display the list of sources for the user to choose from.
+    if (widget.show.sources.length == 1) {
+      return _buildTrackList(context, widget.show.sources.first, bottomPadding);
+    } else {
+      return _buildSourceSelection(context, bottomPadding);
+    }
+  }
+
+  Widget _buildSourceSelection(BuildContext context, double bottomPadding) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final audioProvider = context.watch<AudioProvider>();
+
+    return ListView.builder(
+      padding: EdgeInsets.fromLTRB(16, 8, 16, bottomPadding),
+      itemCount: widget.show.sources.length,
+      itemBuilder: (context, index) {
+        final source = widget.show.sources[index];
+        final isPlayingThisSource =
+            audioProvider.currentSource?.id == source.id;
+
+        return Padding(
+          padding: const EdgeInsets.symmetric(vertical: 4),
+          child: Material(
+            color: isPlayingThisSource
+                ? colorScheme.tertiaryContainer
+                : colorScheme.secondaryContainer,
+            borderRadius: BorderRadius.circular(20),
+            child: InkWell(
+              borderRadius: BorderRadius.circular(20),
+              onTap: () => _onSourceTapped(source),
+              child: Container(
+                padding:
+                const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        source.id,
+                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                            color: isPlayingThisSource
+                                ? colorScheme.onTertiaryContainer
+                                : colorScheme.onSecondaryContainer,
+                            fontWeight: FontWeight.w600,
+                            letterSpacing: 0.1),
+                      ),
+                    ),
+                    Icon(
+                      Icons.chevron_right_rounded,
+                      color: isPlayingThisSource
+                          ? colorScheme.onTertiaryContainer
+                          : colorScheme.onSecondaryContainer,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildTrackList(
+      BuildContext context, Source source, double bottomPadding) {
+    return ListView.builder(
+      padding: EdgeInsets.fromLTRB(12, 8, 12, bottomPadding),
+      itemCount: source.tracks.length,
+      itemBuilder: (context, index) {
+        return _buildTrackItem(context, source.tracks[index], source, index);
+      },
+    );
+  }
+
+  Widget _buildTrackItem(
+      BuildContext context, Track track, Source source, int index) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+    final settingsProvider = context.watch<SettingsProvider>();
+
+    final titleText = settingsProvider.showTrackNumbers
+        ? '${track.trackNumber}. ${track.title}'
+        : track.title;
+
+    return SizedBox(
+      height: _trackItemHeight,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 3),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(16),
+            onTap: () => _onTrackTapped(source, index),
+            child: Padding(
+              padding:
+              const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: SizedBox(
+                      height: textTheme.bodyLarge!.fontSize! * 1.3,
+                      child: ConditionalMarquee(
+                        text: titleText,
+                        style: textTheme.bodyLarge?.copyWith(
+                            color: colorScheme.onSurface,
+                            fontWeight: FontWeight.w500,
+                            letterSpacing: 0.1),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Container(
+                    width: 52,
+                    alignment: Alignment.centerRight,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: colorScheme.surfaceContainerHighest,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        formatDuration(Duration(seconds: track.duration)),
+                        style: textTheme.labelMedium?.copyWith(
+                          color: colorScheme.onSurfaceVariant,
+                          fontWeight: FontWeight.w600,
+                          letterSpacing: 0.5,
+                          fontFeatures: [const FontFeature.tabularFigures()],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}

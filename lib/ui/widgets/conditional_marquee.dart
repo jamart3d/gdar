@@ -38,14 +38,16 @@ class ConditionalMarquee extends StatelessWidget {
 
         // If the text width is greater than the available width, show Marquee
         if (textPainter.width > constraints.maxWidth) {
-          return Marquee(
-            text: text,
-            style: style,
-            velocity: velocity,
-            pauseAfterRound: pauseAfterRound,
-            blankSpace: blankSpace,
-            fadingEdgeStartFraction: fadingEdgeStartFraction,
-            fadingEdgeEndFraction: fadingEdgeEndFraction,
+          return ClipRect(
+            child: Marquee(
+              text: text,
+              style: style,
+              velocity: velocity,
+              pauseAfterRound: pauseAfterRound,
+              blankSpace: blankSpace,
+              fadingEdgeStartFraction: fadingEdgeStartFraction,
+              fadingEdgeEndFraction: fadingEdgeEndFraction,
+            ),
           );
         } else {
           // Otherwise, show a standard Text widget

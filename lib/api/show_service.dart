@@ -3,6 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:gdar/models/show.dart';
 import 'package:gdar/utils/logger.dart';
 
+import '../models/source.dart';
+
 class ShowService {
   ShowService._privateConstructor();
   static final ShowService instance = ShowService._privateConstructor();
@@ -22,21 +24,55 @@ class ShowService {
       final List<Show> loadedShows =
       jsonList.map((jsonItem) => Show.fromJson(jsonItem)).toList();
 
-      // ** Logic to find and flag featured shows **
-      // This now runs only once, before the data is cached.
+      // ** Post-processing Step 1: Unify venues for shows on the same date. **
+      final Map<String, String> dateToFirstVenue = {};
       for (final show in loadedShows) {
-        final bool isFeatured = show.sources.any((source) => source.tracks
-            .any((track) => track.title.toLowerCase().startsWith('gd')));
-
-        if (isFeatured) {
-          show.hasFeaturedTrack = true;
+        if (dateToFirstVenue.containsKey(show.date)) {
+          show.venue = dateToFirstVenue[show.date]!;
+        } else {
+          dateToFirstVenue[show.date] = show.venue;
         }
       }
 
-      // Cache the processed list of shows.
-      _shows = loadedShows;
+      // ** Post-processing Step 2: Merge shows with the same date **
+      // This groups multiple JSON entries for the same date into a single Show object,
+      // aggregating all their sources.
+      final Map<String, Show> showsByDate = {};
+      for (final show in loadedShows) {
+        if (showsByDate.containsKey(show.date)) {
+          // Date exists, so add this show's sources to the existing entry.
+          showsByDate[show.date]!.sources.addAll(show.sources);
+        } else {
+          // First time seeing this date, create a new Show object in the map.
+          // We create a copy to avoid issues with object references.
+          showsByDate[show.date] = Show(
+            name: show.name,
+            artist: show.artist,
+            date: show.date,
+            year: show.year,
+            venue: show.venue,
+            sources: List<Source>.from(show.sources), // Create a copy of the list
+            hasFeaturedTrack: show.hasFeaturedTrack,
+          );
+        }
+      }
+      final List<Show> finalShowList = showsByDate.values.toList();
 
-      logger.i('Successfully loaded and parsed ${_shows!.length} shows.');
+      // ** Post-processing Step 3: Final cleanup on the merged list **
+      for (final show in finalShowList) {
+        // a) Re-evaluate and set hasFeaturedTrack on the final merged show.
+        show.hasFeaturedTrack = show.sources.any((source) => source.tracks
+            .any((track) => track.title.toLowerCase().startsWith('gd')));
+
+        // b) Sort sources by ID to ensure a consistent and predictable order in the UI.
+        show.sources.sort((a, b) => a.id.compareTo(b.id));
+      }
+
+      // Cache the processed list of shows.
+      _shows = finalShowList;
+
+      logger.i(
+          'Successfully loaded and processed ${_shows!.length} shows from ${loadedShows.length} entries.');
 
       return _shows!;
     } catch (e, stackTrace) {
@@ -45,4 +81,3 @@ class ShowService {
     }
   }
 }
-
