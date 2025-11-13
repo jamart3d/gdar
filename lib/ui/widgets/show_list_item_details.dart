@@ -38,6 +38,7 @@ class ShowListItemDetails extends StatelessWidget {
   Widget _buildSourceSelection(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final settingsProvider = context.watch<SettingsProvider>();
+    final scaleFactor = settingsProvider.scaleTrackList ? 1.4 : 1.0;
 
     return ListView.builder(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -58,8 +59,8 @@ class ShowListItemDetails extends StatelessWidget {
               onTap: () => onSourceTapped(source),
               onLongPress: () => onSourceLongPress(source),
               child: Container(
-                padding:
-                const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                padding: EdgeInsets.symmetric(
+                    horizontal: 16, vertical: 12 * scaleFactor),
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(20),
                   boxShadow: [
@@ -75,7 +76,11 @@ class ShowListItemDetails extends StatelessWidget {
                     Expanded(
                       child: Text(
                         source.id,
-                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                        style: Theme.of(context)
+                            .textTheme
+                            .titleSmall
+                            ?.apply(fontSizeFactor: scaleFactor)
+                            .copyWith(
                           color: isSourcePlaying
                               ? colorScheme.onTertiaryContainer
                               : colorScheme.onSecondaryContainer,

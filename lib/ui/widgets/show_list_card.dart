@@ -37,6 +37,22 @@ class ShowListCard extends StatelessWidget {
     final bool shouldShowBadge = show.sources.length > 1 ||
         (show.sources.length == 1 && settingsProvider.showSingleShnid);
 
+    final double scaleFactor = settingsProvider.scaleShowList ? 1.3 : 1.0;
+
+    final baseVenueStyle =
+        textTheme.titleLarge ?? const TextStyle(fontSize: 22.0);
+    final venueStyle = baseVenueStyle
+        .copyWith(
+        fontWeight: FontWeight.w600,
+        letterSpacing: 0.1,
+        color: colorScheme.onSurface)
+        .apply(fontSizeFactor: scaleFactor);
+
+    final baseDateStyle = textTheme.bodyLarge ?? const TextStyle(fontSize: 16.0);
+    final dateStyle = baseDateStyle
+        .copyWith(color: colorScheme.onSurfaceVariant, letterSpacing: 0.15)
+        .apply(fontSizeFactor: scaleFactor);
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
       child: Card(
@@ -65,7 +81,7 @@ class ShowListCard extends StatelessWidget {
               onTap: onTap,
               onLongPress: onLongPress,
               child: Padding(
-                padding: const EdgeInsets.all(10.0),
+                padding: EdgeInsets.all(10.0 * scaleFactor),
                 child: Stack(
                   children: [
                     Row(
@@ -80,24 +96,17 @@ class ShowListCard extends StatelessWidget {
                               mainAxisAlignment: MainAxisAlignment.end,
                               children: [
                                 SizedBox(
-                                  height: textTheme.titleLarge?.fontSize != null
-                                      ? textTheme.titleLarge!.fontSize! * 1.3
-                                      : 28.0,
+                                  height: venueStyle.fontSize! * 1.3,
                                   child: ConditionalMarquee(
                                     text: show.venue,
-                                    style: textTheme.titleLarge?.copyWith(
-                                        fontWeight: FontWeight.w600,
-                                        letterSpacing: 0.1,
-                                        color: colorScheme.onSurface),
+                                    style: venueStyle,
                                   ),
                                 ),
-                                const SizedBox(height: 6),
+                                SizedBox(height: 6 * scaleFactor),
                                 Padding(
                                   padding: const EdgeInsets.only(left: 8.0),
                                   child: Text(show.formattedDate,
-                                      style: textTheme.bodyLarge?.copyWith(
-                                          color: colorScheme.onSurfaceVariant,
-                                          letterSpacing: 0.15)),
+                                      style: dateStyle),
                                 ),
                               ],
                             ),

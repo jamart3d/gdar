@@ -1,9 +1,11 @@
 import 'dart:async';
+import 'package:animations/animations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:gdar/models/show.dart';
 import 'package:gdar/models/source.dart';
 import 'package:gdar/providers/audio_provider.dart';
+import 'package:gdar/providers/settings_provider.dart';
 import 'package:gdar/providers/show_list_provider.dart';
 import 'package:gdar/ui/screens/playback_screen.dart';
 import 'package:gdar/ui/screens/settings_screen.dart';
@@ -40,7 +42,7 @@ class _ShowListScreenState extends State<ShowListScreen>
   static const Duration _animationDuration = Duration(milliseconds: 300);
 
   // Height constants for calculation
-  static const double _sourceHeaderHeight = 64.0;
+  static const double _baseSourceHeaderHeight = 64.0;
   static const double _listVerticalPadding = 16.0;
 
   @override
@@ -100,7 +102,10 @@ class _ShowListScreenState extends State<ShowListScreen>
 
   double _calculateExpandedHeight(Show show) {
     if (show.sources.length <= 1) return 0.0;
-    return (show.sources.length * _sourceHeaderHeight) + _listVerticalPadding;
+    final settingsProvider = context.read<SettingsProvider>();
+    final sourceHeaderHeight =
+        _baseSourceHeaderHeight * (settingsProvider.scaleTrackList ? 1.25 : 1.0);
+    return (show.sources.length * sourceHeaderHeight) + _listVerticalPadding;
   }
 
   /// Scrolls a show into view, centering it in the viewport.
@@ -138,12 +143,17 @@ class _ShowListScreenState extends State<ShowListScreen>
     final isExpanded = showListProvider.expandedShowName == show.name;
 
     if (isPlayingThisShow) {
-      if (isExpanded) {
-        // If it's the current show and it's already expanded, go to the player.
-        await _openPlaybackScreen();
+      // If the show can be expanded (multi-source), toggle its state.
+      // If it's already expanded, go to the player.
+      if (show.sources.length > 1) {
+        if (isExpanded) {
+          await _openPlaybackScreen();
+        } else {
+          await _handleShowExpansion(show);
+        }
       } else {
-        // If it's the current show and it's collapsed, expand it.
-        await _handleShowExpansion(show);
+        // If it's a single-source show (can't expand), go directly to player.
+        await _openPlaybackScreen();
       }
     } else {
       // If it's a different show...
@@ -253,10 +263,20 @@ class _ShowListScreenState extends State<ShowListScreen>
   }
 
   Future<void> _openPlaybackScreen() async {
+    final settingsProvider = context.read<SettingsProvider>();
     await Navigator.of(context).push(PageRouteBuilder(
       pageBuilder: (context, animation, secondaryAnimation) =>
       const PlaybackScreen(),
       transitionsBuilder: (context, animation, secondaryAnimation, child) {
+        if (settingsProvider.useSharedAxisTransition) {
+          return SharedAxisTransition(
+            animation: animation,
+            secondaryAnimation: secondaryAnimation,
+            transitionType: SharedAxisTransitionType.vertical,
+            child: child,
+          );
+        }
+        // Default to the fade transition
         return FadeTransition(opacity: animation, child: child);
       },
       transitionDuration: const Duration(milliseconds: 500),
@@ -313,85 +333,139 @@ class _ShowListScreenState extends State<ShowListScreen>
 
   @override
   Widget build(BuildContext context) {
+    final settingsProvider = context.watch<SettingsProvider>();
+
+    if (settingsProvider.useSliverAppBar) {
+      return _buildSliverLayout();
+    } else {
+      return _buildStandardLayout();
+    }
+  }
+
+  List<Widget> _buildAppBarActions() {
+    final colorScheme = Theme.of(context).colorScheme;
+    return [
+      if (_isRandomShowLoading)
+        const Padding(
+          padding: EdgeInsets.all(12.0),
+          child: SizedBox(
+              width: 24,
+              height: 24,
+              child: CircularProgressIndicator(strokeWidth: 2.5)),
+        )
+      else
+        IconButton(
+          icon: const Icon(Icons.question_mark_rounded),
+          tooltip: 'Play Random Show',
+          onPressed: _handlePlayRandomShow,
+        ),
+      IconButton(
+        icon: const Icon(Icons.search_rounded),
+        tooltip: 'Search',
+        isSelected: _isSearchVisible,
+        style: _isSearchVisible
+            ? IconButton.styleFrom(
+          backgroundColor: colorScheme.surfaceContainer,
+          shape: CircleBorder(
+            side: BorderSide(color: colorScheme.outline),
+          ),
+        )
+            : null,
+        onPressed: _toggleSearch,
+      ),
+      IconButton(
+        icon: const Icon(Icons.settings_rounded),
+        tooltip: 'Settings',
+        onPressed: () => Navigator.of(context)
+            .push(MaterialPageRoute(builder: (_) => const SettingsScreen())),
+      ),
+    ];
+  }
+
+  Widget _buildSearchBar() {
+    return AnimatedSize(
+      duration: _animationDuration,
+      curve: Curves.easeInOutCubicEmphasized,
+      child: _isSearchVisible
+          ? Padding(
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+        child: SearchBar(
+          controller: _searchController,
+          hintText: 'Search by venue or date',
+          leading: const Icon(Icons.search_rounded),
+          trailing: _searchController.text.isNotEmpty
+              ? [
+            IconButton(
+                icon: const Icon(Icons.clear_rounded),
+                onPressed: () => _searchController.clear())
+          ]
+              : null,
+          elevation: const WidgetStatePropertyAll(0),
+          shape: WidgetStatePropertyAll(RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(28),
+            side: BorderSide(color: Theme.of(context).colorScheme.outline),
+          )),
+        ),
+      )
+          : const SizedBox.shrink(),
+    );
+  }
+
+  Widget _buildStandardLayout() {
     final audioProvider = context.watch<AudioProvider>();
     final showListProvider = context.watch<ShowListProvider>();
-    final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('gdar'),
-        actions: [
-          if (_isRandomShowLoading)
-            const Padding(
-              padding: EdgeInsets.all(12.0),
-              child: SizedBox(
-                  width: 24,
-                  height: 24,
-                  child: CircularProgressIndicator(strokeWidth: 2.5)),
-            )
-          else
-            IconButton(
-              icon: const Icon(Icons.question_mark_rounded),
-              tooltip: 'Play Random Show',
-              onPressed: _handlePlayRandomShow,
-            ),
-          IconButton(
-            icon: const Icon(Icons.search_rounded),
-            tooltip: 'Search',
-            isSelected: _isSearchVisible,
-            style: _isSearchVisible
-                ? IconButton.styleFrom(
-              backgroundColor: colorScheme.surfaceContainer,
-              shape: CircleBorder(
-                side: BorderSide(color: colorScheme.outline),
-              ),
-            )
-                : null,
-            onPressed: _toggleSearch,
-          ),
-          IconButton(
-            icon: const Icon(Icons.settings_rounded),
-            tooltip: 'Settings',
-            onPressed: () => Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const SettingsScreen())),
-          ),
-        ],
+        actions: _buildAppBarActions(),
       ),
       body: Stack(
         children: [
           Column(
             children: [
-              AnimatedSize(
-                duration: _animationDuration,
-                curve: Curves.easeInOutCubicEmphasized,
-                child: _isSearchVisible
-                    ? Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-                  child: SearchBar(
-                    controller: _searchController,
-                    hintText: 'Search by venue or date',
-                    leading: const Icon(Icons.search_rounded),
-                    trailing: _searchController.text.isNotEmpty
-                        ? [
-                      IconButton(
-                          icon: const Icon(Icons.clear_rounded),
-                          onPressed: () =>
-                              _searchController.clear())
-                    ]
-                        : null,
-                    elevation: const WidgetStatePropertyAll(0),
-                    shape: WidgetStatePropertyAll(RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(28),
-                      side: BorderSide(
-                          color:
-                          Theme.of(context).colorScheme.outline),
-                    )),
-                  ),
-                )
-                    : const SizedBox.shrink(),
-              ),
+              _buildSearchBar(),
               Expanded(child: _buildBody(showListProvider, audioProvider)),
             ],
+          ),
+          if (audioProvider.currentShow != null)
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: Hero(
+                tag: 'player',
+                child: MiniPlayer(
+                  onTap: _openPlaybackScreen,
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSliverLayout() {
+    final audioProvider = context.watch<AudioProvider>();
+    final showListProvider = context.watch<ShowListProvider>();
+
+    return Scaffold(
+      body: Stack(
+        children: [
+          NestedScrollView(
+            headerSliverBuilder: (context, innerBoxIsScrolled) {
+              return [
+                SliverAppBar(
+                  title: const Text('gdar'),
+                  actions: _buildAppBarActions(),
+                  floating: true,
+                  snap: true,
+                  forceElevated: innerBoxIsScrolled,
+                ),
+                SliverToBoxAdapter(child: _buildSearchBar()),
+              ];
+            },
+            body: _buildBody(showListProvider, audioProvider),
           ),
           if (audioProvider.currentShow != null)
             Positioned(
@@ -429,38 +503,42 @@ class _ShowListScreenState extends State<ShowListScreen>
       padding: const EdgeInsets.only(bottom: 100),
       itemCount: showListProvider.filteredShows.length,
       itemBuilder: (context, index) {
-        final show = showListProvider.filteredShows[index];
-        final isExpanded = showListProvider.expandedShowName == show.name;
-
-        return Column(
-          key: ValueKey(show.name),
-          children: [
-            ShowListCard(
-              show: show,
-              isExpanded: isExpanded,
-              isPlaying: audioProvider.currentShow?.name == show.name,
-              isLoading: showListProvider.loadingShowName == show.name,
-              onTap: () => _onShowTapped(show),
-              onLongPress: () => _onCardLongPressed(show),
-            ),
-            SizeTransition(
-              sizeFactor: _animation,
-              axisAlignment: -1.0,
-              child: isExpanded
-                  ? ShowListItemDetails(
-                show: show,
-                playingSourceId: audioProvider.currentSource?.id,
-                height: _calculateExpandedHeight(show),
-                onSourceTapped: (source) =>
-                    _onSourceTapped(show, source),
-                onSourceLongPress: (source) =>
-                    _onSourceLongPressed(show, source),
-              )
-                  : const SizedBox.shrink(),
-            ),
-          ],
-        );
+        return _buildShowListItem(showListProvider, audioProvider, index);
       },
+    );
+  }
+
+  Widget _buildShowListItem(
+      ShowListProvider showListProvider, AudioProvider audioProvider, int index) {
+    final show = showListProvider.filteredShows[index];
+    final isExpanded = showListProvider.expandedShowName == show.name;
+
+    return Column(
+      key: ValueKey(show.name),
+      children: [
+        ShowListCard(
+          show: show,
+          isExpanded: isExpanded,
+          isPlaying: audioProvider.currentShow?.name == show.name,
+          isLoading: showListProvider.loadingShowName == show.name,
+          onTap: () => _onShowTapped(show),
+          onLongPress: () => _onCardLongPressed(show),
+        ),
+        SizeTransition(
+          sizeFactor: _animation,
+          axisAlignment: -1.0,
+          child: isExpanded
+              ? ShowListItemDetails(
+            show: show,
+            playingSourceId: audioProvider.currentSource?.id,
+            height: _calculateExpandedHeight(show),
+            onSourceTapped: (source) => _onSourceTapped(show, source),
+            onSourceLongPress: (source) =>
+                _onSourceLongPressed(show, source),
+          )
+              : const SizedBox.shrink(),
+        ),
+      ],
     );
   }
 }

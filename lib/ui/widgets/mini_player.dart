@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:gdar/models/show.dart';
 import 'package:gdar/models/source.dart';
 import 'package:gdar/providers/audio_provider.dart';
+import 'package:gdar/providers/settings_provider.dart';
 import 'package:gdar/ui/widgets/conditional_marquee.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:provider/provider.dart';
@@ -45,6 +46,7 @@ class _MiniPlayerState extends State<MiniPlayer>
   @override
   Widget build(BuildContext context) {
     final audioProvider = context.watch<AudioProvider>();
+    final settingsProvider = context.watch<SettingsProvider>();
     final Show? currentShow = audioProvider.currentShow;
     final Source? currentSource = audioProvider.currentSource;
 
@@ -54,6 +56,10 @@ class _MiniPlayerState extends State<MiniPlayer>
 
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
+
+    final double scaleFactor = settingsProvider.scalePlayer ? 1.25 : 1.0;
+    final double iconSize = 28 * scaleFactor;
+    final double buttonSize = 48 * scaleFactor;
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 6, 16, 12),
@@ -177,7 +183,7 @@ class _MiniPlayerState extends State<MiniPlayer>
             InkWell(
               onTap: widget.onTap,
               child: Padding(
-                padding: const EdgeInsets.all(20.0),
+                padding: EdgeInsets.all(20.0 * scaleFactor),
                 child: Row(
                   children: [
                     Expanded(
@@ -190,32 +196,44 @@ class _MiniPlayerState extends State<MiniPlayer>
                             return const SizedBox.shrink();
                           }
                           final track = currentSource.tracks[index];
+
+                          final baseTitleStyle = textTheme.titleLarge ??
+                              const TextStyle(fontSize: 22.0);
+                          final titleStyle = baseTitleStyle
+                              .apply(fontSizeFactor: scaleFactor)
+                              .copyWith(
+                            fontWeight: FontWeight.w600,
+                            letterSpacing: 0.1,
+                            color: colorScheme.onSurface,
+                          );
+
+                          final baseVenueStyle = textTheme.bodyLarge ??
+                              const TextStyle(fontSize: 16.0);
+                          final venueStyle = baseVenueStyle
+                              .apply(fontSizeFactor: scaleFactor)
+                              .copyWith(
+                            color: colorScheme.onSurfaceVariant,
+                            letterSpacing: 0.15,
+                          );
+
                           return Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               SizedBox(
-                                height:
-                                textTheme.titleLarge!.fontSize! * 1.3,
+                                height: titleStyle.fontSize! * 1.3,
                                 child: Material(
                                   type: MaterialType.transparency,
                                   child: ConditionalMarquee(
                                     text: track.title,
-                                    style: textTheme.titleLarge?.copyWith(
-                                      fontWeight: FontWeight.w600,
-                                      letterSpacing: 0.1,
-                                      color: colorScheme.onSurface,
-                                    ),
+                                    style: titleStyle,
                                   ),
                                 ),
                               ),
-                              const SizedBox(height: 6),
+                              SizedBox(height: 6 * scaleFactor),
                               Text(
                                 currentShow.venue,
-                                style: textTheme.bodyLarge?.copyWith(
-                                  color: colorScheme.onSurfaceVariant,
-                                  letterSpacing: 0.15,
-                                ),
+                                style: venueStyle,
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                               ),
@@ -238,7 +256,7 @@ class _MiniPlayerState extends State<MiniPlayer>
                           children: [
                             IconButton(
                               icon: const Icon(Icons.skip_previous_rounded),
-                              iconSize: 28,
+                              iconSize: iconSize,
                               color: colorScheme.onSurfaceVariant,
                               onPressed: isFirstTrack
                                   ? null
@@ -274,8 +292,8 @@ class _MiniPlayerState extends State<MiniPlayer>
                                       audioProvider.stopAndClear();
                                     },
                                     child: Container(
-                                      width: 48,
-                                      height: 48,
+                                      width: buttonSize,
+                                      height: buttonSize,
                                       decoration: BoxDecoration(
                                         color: colorScheme.primary,
                                         shape: BoxShape.circle,
@@ -304,7 +322,7 @@ class _MiniPlayerState extends State<MiniPlayer>
                                               : Icons
                                               .play_arrow_rounded,
                                         ),
-                                        iconSize: 28,
+                                        iconSize: iconSize,
                                         color: colorScheme.onPrimary,
                                         onPressed: playing
                                             ? audioProvider.pause
@@ -317,7 +335,7 @@ class _MiniPlayerState extends State<MiniPlayer>
                             ),
                             IconButton(
                               icon: const Icon(Icons.skip_next_rounded),
-                              iconSize: 28,
+                              iconSize: iconSize,
                               color: colorScheme.onSurfaceVariant,
                               onPressed: isLastTrack
                                   ? null

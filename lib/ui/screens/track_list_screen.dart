@@ -20,7 +20,7 @@ class TrackListScreen extends StatefulWidget {
 }
 
 class _TrackListScreenState extends State<TrackListScreen> {
-  static const double _trackItemHeight = 64.0;
+  static const double _trackItemHeight = 52.0;
 
   /// Plays the selected track and pops this screen, returning `true` to
   /// signal the ShowListScreen to open the player.
@@ -203,14 +203,37 @@ class _TrackListScreenState extends State<TrackListScreen> {
     final textTheme = Theme.of(context).textTheme;
     final settingsProvider = context.watch<SettingsProvider>();
 
+    final scaleFactor = settingsProvider.scaleTrackList ? 1.4 : 1.0;
+
+    // Safely create a non-nullable base style with a fallback font size.
+    final baseTitleStyle =
+        textTheme.bodyLarge ?? const TextStyle(fontSize: 16.0);
+    final titleStyle = baseTitleStyle
+        .copyWith(
+        color: colorScheme.onSurface,
+        fontWeight: FontWeight.w500,
+        letterSpacing: 0.1)
+        .apply(fontSizeFactor: scaleFactor);
+
+    final baseDurationStyle =
+        textTheme.labelMedium ?? const TextStyle(fontSize: 12.0);
+    final durationStyle = baseDurationStyle
+        .copyWith(
+      color: colorScheme.onSurfaceVariant,
+      fontWeight: FontWeight.w600,
+      letterSpacing: 0.5,
+      fontFeatures: [const FontFeature.tabularFigures()],
+    )
+        .apply(fontSizeFactor: scaleFactor);
+
     final titleText = settingsProvider.showTrackNumbers
         ? '${track.trackNumber}. ${track.title}'
         : track.title;
 
     return SizedBox(
-      height: _trackItemHeight,
+      height: _trackItemHeight * scaleFactor,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 3),
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
         child: Material(
           color: Colors.transparent,
           child: InkWell(
@@ -218,25 +241,21 @@ class _TrackListScreenState extends State<TrackListScreen> {
             onTap: () => _onTrackTapped(source, index),
             child: Padding(
               padding:
-              const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               child: Row(
                 children: [
                   Expanded(
                     child: SizedBox(
-                      height: textTheme.bodyLarge!.fontSize! * 1.3,
+                      height: titleStyle.fontSize! * 1.2,
                       child: ConditionalMarquee(
                         text: titleText,
-                        style: textTheme.bodyLarge?.copyWith(
-                            color: colorScheme.onSurface,
-                            fontWeight: FontWeight.w500,
-                            letterSpacing: 0.1),
+                        style: titleStyle,
                       ),
                     ),
                   ),
                   const SizedBox(width: 8),
-                  Container(
-                    width: 52,
-                    alignment: Alignment.centerRight,
+                  SizedBox(
+                    width: 52 * scaleFactor,
                     child: Container(
                       padding: const EdgeInsets.symmetric(
                           horizontal: 8, vertical: 4),
@@ -246,12 +265,8 @@ class _TrackListScreenState extends State<TrackListScreen> {
                       ),
                       child: Text(
                         formatDuration(Duration(seconds: track.duration)),
-                        style: textTheme.labelMedium?.copyWith(
-                          color: colorScheme.onSurfaceVariant,
-                          fontWeight: FontWeight.w600,
-                          letterSpacing: 0.5,
-                          fontFeatures: [const FontFeature.tabularFigures()],
-                        ),
+                        style: durationStyle,
+                        textAlign: TextAlign.center,
                       ),
                     ),
                   ),

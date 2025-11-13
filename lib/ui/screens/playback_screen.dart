@@ -10,7 +10,6 @@ import 'package:gdar/ui/widgets/conditional_marquee.dart';
 import 'package:gdar/utils/utils.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:provider/provider.dart';
-import 'dart:ui';
 
 class PlaybackScreen extends StatefulWidget {
   const PlaybackScreen({super.key});
@@ -25,7 +24,7 @@ class _PlaybackScreenState extends State<PlaybackScreen>
   late final AnimationController _pulseController;
   late final Animation<double> _scaleAnimation;
 
-  static const double _trackItemHeight = 64.0;
+  static const double _trackItemHeight = 52.0;
 
   @override
   void initState() {
@@ -47,17 +46,17 @@ class _PlaybackScreenState extends State<PlaybackScreen>
     super.dispose();
   }
 
-  void _scrollToCurrentTrack() {
+  void _scrollToCurrentTrack(double trackItemHeight) {
     final audioProvider = context.read<AudioProvider>();
     final index = audioProvider.audioPlayer.currentIndex;
 
     if (index != null && _scrollController.hasClients) {
       final viewportHeight = _scrollController.position.viewportDimension;
       final maxScroll = _scrollController.position.maxScrollExtent;
-      final itemTopPosition = _trackItemHeight * index;
+      final itemTopPosition = trackItemHeight * index;
 
       final targetOffset =
-      (itemTopPosition - (viewportHeight / 2) + (_trackItemHeight / 2))
+      (itemTopPosition - (viewportHeight / 2) + (trackItemHeight / 2))
           .clamp(0.0, maxScroll);
 
       _scrollController.animateTo(
@@ -71,6 +70,7 @@ class _PlaybackScreenState extends State<PlaybackScreen>
   @override
   Widget build(BuildContext context) {
     final audioProvider = context.watch<AudioProvider>();
+    final settingsProvider = context.watch<SettingsProvider>();
     final currentShow = audioProvider.currentShow;
     final currentSource = audioProvider.currentSource;
 
@@ -84,6 +84,8 @@ class _PlaybackScreenState extends State<PlaybackScreen>
     }
 
     final colorScheme = Theme.of(context).colorScheme;
+    final double trackItemHeight =
+        _trackItemHeight * (settingsProvider.scaleTrackList ? 1.4 : 1.0);
 
     return Scaffold(
       backgroundColor: colorScheme.surface,
@@ -126,6 +128,7 @@ class _PlaybackScreenState extends State<PlaybackScreen>
                     audioProvider,
                     currentSource.tracks[index],
                     index,
+                    trackItemHeight,
                   );
                 },
                 childCount: currentSource.tracks.length,
@@ -146,19 +149,21 @@ class _PlaybackScreenState extends State<PlaybackScreen>
           elevation: 4.0,
           shadowColor: Theme.of(context).colorScheme.shadow.withOpacity(0.1),
           child: _buildBottomControlsPanel(
-              context, audioProvider, currentShow, currentSource),
+              context, audioProvider, currentShow, currentSource, trackItemHeight),
         ),
       ),
     );
   }
 
   Widget _buildBottomControlsPanel(BuildContext context,
-      AudioProvider audioProvider, Show currentShow, Source currentSource) {
+      AudioProvider audioProvider, Show currentShow, Source currentSource, double trackItemHeight) {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
     final settingsProvider = context.watch<SettingsProvider>();
     final bool shouldShowShnidBadge = currentShow.sources.length > 1 ||
         (currentShow.sources.length == 1 && settingsProvider.showSingleShnid);
+
+    final double scaleFactor = settingsProvider.scalePlayer ? 1.25 : 1.0;
 
     return SingleChildScrollView(
       physics: const ClampingScrollPhysics(),
@@ -193,14 +198,19 @@ class _PlaybackScreenState extends State<PlaybackScreen>
                         },
                         child: GestureDetector(
                           key: ValueKey<String>(track.title),
-                          onTap: _scrollToCurrentTrack,
+                          onTap: () => _scrollToCurrentTrack(trackItemHeight),
                           child: SizedBox(
-                            height: textTheme.titleLarge!.fontSize! * 1.3,
+                            height: textTheme.titleLarge!
+                                .apply(fontSizeFactor: scaleFactor)
+                                .fontSize! *
+                                1.3,
                             child: Material(
                               type: MaterialType.transparency,
                               child: ConditionalMarquee(
                                 text: track.title,
-                                style: textTheme.titleLarge?.copyWith(
+                                style: textTheme.titleLarge
+                                    ?.apply(fontSizeFactor: scaleFactor)
+                                    .copyWith(
                                   fontWeight: FontWeight.w600,
                                   color: colorScheme.onSurface,
                                 ),
@@ -217,7 +227,9 @@ class _PlaybackScreenState extends State<PlaybackScreen>
                   const SizedBox(height: 4),
                   Text(
                     currentShow.venue,
-                    style: textTheme.bodyMedium?.copyWith(
+                    style: textTheme.bodyMedium
+                        ?.apply(fontSizeFactor: scaleFactor)
+                        .copyWith(
                       color: colorScheme.onSurfaceVariant,
                     ),
                     textAlign: TextAlign.center,
@@ -294,6 +306,11 @@ class _PlaybackScreenState extends State<PlaybackScreen>
   Widget _buildControls(
       BuildContext context, AudioProvider audioProvider, Source currentSource) {
     final colorScheme = Theme.of(context).colorScheme;
+    final settingsProvider = context.watch<SettingsProvider>();
+    final double scaleFactor = settingsProvider.scalePlayer ? 1.25 : 1.0;
+    final double iconSize = 32 * scaleFactor;
+    final double playButtonSize = 60 * scaleFactor;
+    final double playIconSize = 36 * scaleFactor;
 
     return StreamBuilder<int?>(
       stream: audioProvider.currentIndexStream,
@@ -325,7 +342,7 @@ class _PlaybackScreenState extends State<PlaybackScreen>
               children: [
                 IconButton(
                   icon: const Icon(Icons.skip_previous_rounded),
-                  iconSize: 32,
+                  iconSize: iconSize,
                   color: colorScheme.onSurface,
                   onPressed:
                   isFirstTrack ? null : audioProvider.seekToPrevious,
@@ -341,8 +358,8 @@ class _PlaybackScreenState extends State<PlaybackScreen>
                       }
                     },
                     child: Container(
-                      width: 60,
-                      height: 60,
+                      width: playButtonSize,
+                      height: playButtonSize,
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
                           begin: Alignment.topLeft,
@@ -378,7 +395,7 @@ class _PlaybackScreenState extends State<PlaybackScreen>
                               ? Icons.pause_rounded
                               : Icons.play_arrow_rounded,
                         ),
-                        iconSize: 36,
+                        iconSize: playIconSize,
                         color: colorScheme.onPrimary,
                         onPressed: playing
                             ? audioProvider.pause
@@ -389,7 +406,7 @@ class _PlaybackScreenState extends State<PlaybackScreen>
                 ),
                 IconButton(
                   icon: const Icon(Icons.skip_next_rounded),
-                  iconSize: 32,
+                  iconSize: iconSize,
                   color: colorScheme.onSurface,
                   onPressed: isLastTrack ? null : audioProvider.seekToNext,
                 ),
@@ -403,6 +420,8 @@ class _PlaybackScreenState extends State<PlaybackScreen>
 
   Widget _buildProgressBar(BuildContext context, AudioProvider audioProvider) {
     final colorScheme = Theme.of(context).colorScheme;
+    final settingsProvider = context.watch<SettingsProvider>();
+    final double scaleFactor = settingsProvider.scalePlayer ? 1.25 : 1.0;
 
     return StreamBuilder<Duration>(
       stream: audioProvider.positionStream,
@@ -418,7 +437,11 @@ class _PlaybackScreenState extends State<PlaybackScreen>
               children: [
                 Text(
                   formatDuration(position),
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  style: Theme.of(context)
+                      .textTheme
+                      .bodySmall
+                      ?.apply(fontSizeFactor: scaleFactor)
+                      .copyWith(
                     color: colorScheme.onSurfaceVariant,
                     fontWeight: FontWeight.w600,
                     fontFeatures: [const FontFeature.tabularFigures()],
@@ -444,11 +467,11 @@ class _PlaybackScreenState extends State<PlaybackScreen>
 
                           return SliderTheme(
                             data: SliderTheme.of(context).copyWith(
-                              trackHeight: 6,
-                              thumbShape: const RoundSliderThumbShape(
-                                  enabledThumbRadius: 8),
-                              overlayShape: const RoundSliderOverlayShape(
-                                  overlayRadius: 18),
+                              trackHeight: 6 * scaleFactor,
+                              thumbShape: RoundSliderThumbShape(
+                                  enabledThumbRadius: 8 * scaleFactor),
+                              overlayShape: RoundSliderOverlayShape(
+                                  overlayRadius: 18 * scaleFactor),
                               activeTrackColor: Colors.transparent,
                               inactiveTrackColor: Colors.transparent,
                               thumbColor: colorScheme.primary,
@@ -459,7 +482,7 @@ class _PlaybackScreenState extends State<PlaybackScreen>
                               alignment: Alignment.center,
                               children: [
                                 Container(
-                                  height: 6,
+                                  height: 6 * scaleFactor,
                                   decoration: BoxDecoration(
                                     color: colorScheme.surfaceContainerHighest,
                                     borderRadius: BorderRadius.circular(3),
@@ -474,7 +497,7 @@ class _PlaybackScreenState extends State<PlaybackScreen>
                                         : 0.0)
                                         .clamp(0.0, 1.0),
                                     child: Container(
-                                      height: 6,
+                                      height: 6 * scaleFactor,
                                       decoration: BoxDecoration(
                                         gradient: LinearGradient(
                                           colors: [
@@ -500,7 +523,7 @@ class _PlaybackScreenState extends State<PlaybackScreen>
                                     child: Stack(
                                       children: [
                                         Container(
-                                          height: 6,
+                                          height: 6 * scaleFactor,
                                           decoration: BoxDecoration(
                                             gradient: LinearGradient(
                                               colors: [
@@ -519,7 +542,7 @@ class _PlaybackScreenState extends State<PlaybackScreen>
                                                 milliseconds: 1500),
                                             builder: (context, value, child) {
                                               return Container(
-                                                height: 6,
+                                                height: 6 * scaleFactor,
                                                 decoration: BoxDecoration(
                                                   borderRadius:
                                                   BorderRadius.circular(3),
@@ -585,7 +608,11 @@ class _PlaybackScreenState extends State<PlaybackScreen>
                 const SizedBox(width: 12),
                 Text(
                   formatDuration(totalDuration),
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  style: Theme.of(context)
+                      .textTheme
+                      .bodySmall
+                      ?.apply(fontSizeFactor: scaleFactor)
+                      .copyWith(
                     color: colorScheme.onSurfaceVariant,
                     fontWeight: FontWeight.w600,
                     fontFeatures: [const FontFeature.tabularFigures()],
@@ -604,10 +631,12 @@ class _PlaybackScreenState extends State<PlaybackScreen>
       AudioProvider audioProvider,
       Track track,
       int index,
+      double trackItemHeight,
       ) {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
     final settingsProvider = context.watch<SettingsProvider>();
+    final double scaleFactor = settingsProvider.scaleTrackList ? 1.4 : 1.0;
 
     return StreamBuilder<int?>(
       stream: audioProvider.currentIndexStream,
@@ -616,10 +645,19 @@ class _PlaybackScreenState extends State<PlaybackScreen>
         final currentIndex = snapshot.data;
         final isPlaying = currentIndex == index;
 
+        final baseTitleStyle =
+            textTheme.bodyLarge ?? const TextStyle(fontSize: 16.0);
+        final titleStyle = baseTitleStyle
+            .apply(fontSizeFactor: scaleFactor)
+            .copyWith(
+          fontWeight: isPlaying ? FontWeight.w600 : FontWeight.normal,
+          color: isPlaying ? colorScheme.primary : colorScheme.onSurface,
+        );
+
         return SizedBox(
-          height: _trackItemHeight,
+          height: trackItemHeight,
           child: Container(
-            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 1),
             decoration: BoxDecoration(
               color: isPlaying
                   ? colorScheme.primaryContainer.withOpacity(0.5)
@@ -631,25 +669,21 @@ class _PlaybackScreenState extends State<PlaybackScreen>
                 borderRadius: BorderRadius.circular(12),
               ),
               contentPadding:
-              const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+              const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
               title: SizedBox(
-                height: textTheme.bodyLarge!.fontSize! * 1.3,
+                height: titleStyle.fontSize! * 1.2,
                 child: ConditionalMarquee(
                   text: settingsProvider.showTrackNumbers
                       ? '${track.trackNumber}. ${track.title}'
                       : track.title,
-                  style: textTheme.bodyLarge?.copyWith(
-                    fontWeight:
-                    isPlaying ? FontWeight.w600 : FontWeight.normal,
-                    color: isPlaying
-                        ? colorScheme.primary
-                        : colorScheme.onSurface,
-                  ),
+                  style: titleStyle,
                 ),
               ),
               trailing: Text(
                 formatDuration(Duration(seconds: track.duration)),
-                style: textTheme.bodyMedium?.copyWith(
+                style: textTheme.bodyMedium
+                    ?.apply(fontSizeFactor: scaleFactor)
+                    .copyWith(
                   color: colorScheme.onSurfaceVariant,
                   fontWeight: FontWeight.w500,
                 ),
