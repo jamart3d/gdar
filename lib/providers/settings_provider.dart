@@ -8,6 +8,8 @@ class SettingsProvider with ChangeNotifier {
   static const String _showSingleShnidKey = 'show_single_shnid';
   static const String _hideTrackCountKey = 'hide_track_count_in_source_list';
   static const String _playRandomOnCompletionKey = 'play_random_on_completion';
+  static const String _playRandomOnStartupKey = 'play_random_on_startup';
+  static const String _dateFirstInShowCardKey = 'date_first_in_show_card';
   static const String _useDynamicColorKey = 'use_dynamic_color';
   static const String _useSliverAppBarKey = 'use_sliver_app_bar';
   static const String _useSharedAxisTransitionKey = 'use_shared_axis_transition';
@@ -15,6 +17,7 @@ class SettingsProvider with ChangeNotifier {
   static const String _scaleShowListKey = 'scale_show_list';
   static const String _scaleTrackListKey = 'scale_track_list';
   static const String _scalePlayerKey = 'scale_player';
+  static const String _seedColorKey = 'seed_color';
 
   // Hard-coded setting.
   static const bool showExpandIcon = false;
@@ -23,15 +26,18 @@ class SettingsProvider with ChangeNotifier {
   bool _showTrackNumbers = true;
   bool _playOnTap = false;
   bool _showSingleShnid = false;
-  bool _hideTrackCountInSourceList = false;
+  bool _hideTrackCountInSourceList = true;
   bool _playRandomOnCompletion = false;
-  bool _useDynamicColor = false;
-  bool _useSliverAppBar = false;
-  bool _useSharedAxisTransition = false;
-  bool _useHandwritingFont = false;
-  bool _scaleShowList = false;
-  bool _scaleTrackList = false;
-  bool _scalePlayer = false;
+  bool _playRandomOnStartup = false;
+  bool _dateFirstInShowCard = true;
+  bool _useDynamicColor = true;
+  bool _useSliverAppBar = true;
+  bool _useSharedAxisTransition = true;
+  bool _useHandwritingFont = true;
+  bool _scaleShowList = true;
+  bool _scaleTrackList = true;
+  bool _scalePlayer = true;
+  Color? _seedColor;
 
   // Public getters
   bool get showTrackNumbers => _showTrackNumbers;
@@ -39,6 +45,8 @@ class SettingsProvider with ChangeNotifier {
   bool get showSingleShnid => _showSingleShnid;
   bool get hideTrackCountInSourceList => _hideTrackCountInSourceList;
   bool get playRandomOnCompletion => _playRandomOnCompletion;
+  bool get playRandomOnStartup => _playRandomOnStartup;
+  bool get dateFirstInShowCard => _dateFirstInShowCard;
   bool get useDynamicColor => _useDynamicColor;
   bool get useSliverAppBar => _useSliverAppBar;
   bool get useSharedAxisTransition => _useSharedAxisTransition;
@@ -46,6 +54,7 @@ class SettingsProvider with ChangeNotifier {
   bool get scaleShowList => _scaleShowList;
   bool get scaleTrackList => _scaleTrackList;
   bool get scalePlayer => _scalePlayer;
+  Color? get seedColor => _seedColor;
 
   SettingsProvider() {
     _loadPreferences();
@@ -62,6 +71,10 @@ class SettingsProvider with ChangeNotifier {
       _hideTrackCountKey, _hideTrackCountInSourceList = !_hideTrackCountInSourceList);
   void togglePlayRandomOnCompletion() => _updatePreference(
       _playRandomOnCompletionKey, _playRandomOnCompletion = !_playRandomOnCompletion);
+  void togglePlayRandomOnStartup() => _updatePreference(
+      _playRandomOnStartupKey, _playRandomOnStartup = !_playRandomOnStartup);
+  void toggleDateFirstInShowCard() => _updatePreference(
+      _dateFirstInShowCardKey, _dateFirstInShowCard = !_dateFirstInShowCard);
   void toggleUseDynamicColor() =>
       _updatePreference(_useDynamicColorKey, _useDynamicColor = !_useDynamicColor);
   void toggleUseSliverAppBar() =>
@@ -76,6 +89,17 @@ class SettingsProvider with ChangeNotifier {
       _updatePreference(_scaleTrackListKey, _scaleTrackList = !_scaleTrackList);
   void toggleScalePlayer() =>
       _updatePreference(_scalePlayerKey, _scalePlayer = !_scalePlayer);
+
+  Future<void> setSeedColor(Color? color) async {
+    _seedColor = color;
+    final prefs = await SharedPreferences.getInstance();
+    if (color == null) {
+      await prefs.remove(_seedColorKey);
+    } else {
+      await prefs.setInt(_seedColorKey, color.value);
+    }
+    notifyListeners();
+  }
 
   // Persistence
   Future<void> _updatePreference(String key, bool value) async {
@@ -92,6 +116,8 @@ class SettingsProvider with ChangeNotifier {
     _hideTrackCountInSourceList = prefs.getBool(_hideTrackCountKey) ?? false;
     _playRandomOnCompletion =
         prefs.getBool(_playRandomOnCompletionKey) ?? false;
+    _playRandomOnStartup = prefs.getBool(_playRandomOnStartupKey) ?? false;
+    _dateFirstInShowCard = prefs.getBool(_dateFirstInShowCardKey) ?? false;
     _useDynamicColor = prefs.getBool(_useDynamicColorKey) ?? false;
     _useSliverAppBar = prefs.getBool(_useSliverAppBarKey) ?? false;
     _useSharedAxisTransition =
@@ -100,6 +126,12 @@ class SettingsProvider with ChangeNotifier {
     _scaleShowList = prefs.getBool(_scaleShowListKey) ?? false;
     _scaleTrackList = prefs.getBool(_scaleTrackListKey) ?? false;
     _scalePlayer = prefs.getBool(_scalePlayerKey) ?? false;
+    final seedColorValue = prefs.getInt(_seedColorKey);
+    if (seedColorValue != null) {
+      _seedColor = Color(seedColorValue);
+    } else {
+      _seedColor = null;
+    }
 
     notifyListeners();
   }

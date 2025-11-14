@@ -98,15 +98,21 @@ class ShowListCard extends StatelessWidget {
                                 SizedBox(
                                   height: venueStyle.fontSize! * 1.3,
                                   child: ConditionalMarquee(
-                                    text: show.venue,
+                                    text: settingsProvider.dateFirstInShowCard
+                                        ? show.formattedDate
+                                        : show.venue,
                                     style: venueStyle,
                                   ),
                                 ),
                                 SizedBox(height: 6 * scaleFactor),
                                 Padding(
                                   padding: const EdgeInsets.only(left: 8.0),
-                                  child: Text(show.formattedDate,
-                                      style: dateStyle),
+                                  child: Text(
+                                    settingsProvider.dateFirstInShowCard
+                                        ? show.venue
+                                        : show.formattedDate,
+                                    style: dateStyle,
+                                  ),
                                 ),
                               ],
                             ),

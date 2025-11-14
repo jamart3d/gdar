@@ -38,6 +38,7 @@ class _ShowListScreenState extends State<ShowListScreen>
 
   bool _isSearchVisible = false;
   bool _isRandomShowLoading = false;
+  bool _randomShowPlayed = false;
 
   static const Duration _animationDuration = Duration(milliseconds: 300);
 
@@ -56,6 +57,36 @@ class _ShowListScreenState extends State<ShowListScreen>
       parent: _animationController,
       curve: Curves.easeInOutCubicEmphasized,
     );
+
+    // Play random show on startup if enabled
+    final settingsProvider = context.read<SettingsProvider>();
+    if (settingsProvider.playRandomOnStartup) {
+      final showListProvider = context.read<ShowListProvider>();
+      final audioProvider = context.read<AudioProvider>();
+
+      void playRandomShowAndRemoveListener() {
+        if (!_randomShowPlayed &&
+            !showListProvider.isLoading &&
+            showListProvider.error == null) {
+          setState(() {
+            _randomShowPlayed = true;
+          });
+          logger.i('Startup setting enabled, playing random show.');
+          audioProvider.playRandomShow();
+          showListProvider.removeListener(playRandomShowAndRemoveListener);
+        } else if (!showListProvider.isLoading) {
+          // If loading is finished but we couldn't play, still remove the listener
+          showListProvider.removeListener(playRandomShowAndRemoveListener);
+        }
+      }
+
+      // If shows are already loaded, play immediately. Otherwise, add a listener.
+      if (!showListProvider.isLoading) {
+        playRandomShowAndRemoveListener();
+      } else {
+        showListProvider.addListener(playRandomShowAndRemoveListener);
+      }
+    }
 
     _searchController.addListener(() {
       context.read<ShowListProvider>().setSearchQuery(_searchController.text);

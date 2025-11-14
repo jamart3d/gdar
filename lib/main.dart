@@ -30,6 +30,7 @@ Future<void> main() async {
     androidNotificationChannelId: 'com.jamart3d.gdar.channel.audio',
     androidNotificationChannelName: 'Audio Playback',
     androidNotificationOngoing: true,
+    androidNotificationIcon: 'mipmap/ic_launcher',
   );
 
   runApp(const GdarApp());
@@ -85,9 +86,28 @@ class GdarApp extends StatelessWidget {
                       : null,
                 );
               } else {
-                // Otherwise, use the predefined static themes
-                lightTheme = AppThemes.lightTheme(settingsProvider.useHandwritingFont);
-                darkTheme = AppThemes.darkTheme(settingsProvider.useHandwritingFont);
+                // If dynamic color is off, first get the base static themes.
+                lightTheme =
+                    AppThemes.lightTheme(settingsProvider.useHandwritingFont);
+                darkTheme =
+                    AppThemes.darkTheme(settingsProvider.useHandwritingFont);
+
+                // Then, check for a user-defined seed color to override the color scheme.
+                final seedColor = settingsProvider.seedColor;
+                if (seedColor != null) {
+                  lightTheme = lightTheme.copyWith(
+                    colorScheme: ColorScheme.fromSeed(
+                      seedColor: seedColor,
+                      brightness: Brightness.light,
+                    ),
+                  );
+                  darkTheme = darkTheme.copyWith(
+                    colorScheme: ColorScheme.fromSeed(
+                      seedColor: seedColor,
+                      brightness: Brightness.dark,
+                    ),
+                  );
+                }
               }
 
               return MaterialApp(
