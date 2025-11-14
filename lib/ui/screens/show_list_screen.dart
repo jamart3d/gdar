@@ -170,36 +170,47 @@ class _ShowListScreenState extends State<ShowListScreen>
   Future<void> _onShowTapped(Show show) async {
     final audioProvider = context.read<AudioProvider>();
     final showListProvider = context.read<ShowListProvider>();
+    final settingsProvider = context.read<SettingsProvider>();
     final isPlayingThisShow = audioProvider.currentShow?.name == show.name;
     final isExpanded = showListProvider.expandedShowName == show.name;
 
-    if (isPlayingThisShow) {
-      // If the show can be expanded (multi-source), toggle its state.
-      // If it's already expanded, go to the player.
-      if (show.sources.length > 1) {
-        if (isExpanded) {
-          await _openPlaybackScreen();
-        } else {
-          await _handleShowExpansion(show);
-        }
+    if (settingsProvider.playOnTap) {
+      // If playOnTap is true, tapping always leads to playback or player screen.
+      if (isPlayingThisShow) {
+        await _openPlaybackScreen(); // Go to player if already playing
       } else {
-        // If it's a single-source show (can't expand), go directly to player.
-        await _openPlaybackScreen();
+        // Play the tapped show (first source)
+        if (show.sources.isNotEmpty) {
+          _playSource(show, show.sources.first);
+          await _openPlaybackScreen();
+        }
       }
     } else {
-      // If it's a different show...
-      if (show.sources.length > 1) {
-        // ...with multiple SHNIDs, expand it in place.
-        await _handleShowExpansion(show);
+      // If playOnTap is false, tapping never directly plays a show.
+      // It either expands, navigates to track list, or goes to player if already playing.
+      if (isPlayingThisShow) {
+        if (show.sources.length > 1) {
+          if (isExpanded) {
+            await _openPlaybackScreen(); // Go to player if already playing and expanded
+          } else {
+            await _handleShowExpansion(show); // Expand if playing and not expanded
+          }
+        } else {
+          await _openPlaybackScreen(); // Go to player if playing single source show
+        }
       } else {
-        // ...with only one SHNID, go to the dedicated track list screen.
-        final shouldOpenPlayer = await Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (_) => TrackListScreen(show: show),
-          ),
-        );
-        if (shouldOpenPlayer == true && mounted) {
-          await _openPlaybackScreen();
+        // Not playing this show, so expand or go to track list.
+        if (show.sources.length > 1) {
+          await _handleShowExpansion(show);
+        } else {
+          final shouldOpenPlayer = await Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (_) => TrackListScreen(show: show),
+            ),
+          );
+          if (shouldOpenPlayer == true && mounted) {
+            await _openPlaybackScreen();
+          }
         }
       }
     }
@@ -238,9 +249,13 @@ class _ShowListScreenState extends State<ShowListScreen>
   /// Handles tapping a source row inside an expanded show card.
   Future<void> _onSourceTapped(Show show, Source source) async {
     final audioProvider = context.read<AudioProvider>();
+    final settingsProvider = context.read<SettingsProvider>(); // Get settingsProvider
     final isPlayingThisSource = audioProvider.currentSource?.id == source.id;
 
-    if (isPlayingThisSource) {
+    if (settingsProvider.playOnTap) {
+      _playSource(show, source);
+      await _openPlaybackScreen();
+    } else if (isPlayingThisSource) {
       await _openPlaybackScreen();
     } else {
       // Create a "virtual" show containing only the selected source to pass
@@ -419,28 +434,32 @@ class _ShowListScreenState extends State<ShowListScreen>
   }
 
   Widget _buildSearchBar() {
+    final settingsProvider = context.watch<SettingsProvider>();
     return AnimatedSize(
       duration: _animationDuration,
       curve: Curves.easeInOutCubicEmphasized,
       child: _isSearchVisible
-          ? Padding(
-        padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-        child: SearchBar(
-          controller: _searchController,
-          hintText: 'Search by venue or date',
-          leading: const Icon(Icons.search_rounded),
-          trailing: _searchController.text.isNotEmpty
-              ? [
-            IconButton(
-                icon: const Icon(Icons.clear_rounded),
-                onPressed: () => _searchController.clear())
-          ]
-              : null,
-          elevation: const WidgetStatePropertyAll(0),
-          shape: WidgetStatePropertyAll(RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(28),
-            side: BorderSide(color: Theme.of(context).colorScheme.outline),
-          )),
+          ? Transform.scale(
+        scale: settingsProvider.scaleShowList ? 1.1 : 1.0,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+          child: SearchBar(
+            controller: _searchController,
+            hintText: 'Search by venue or date',
+            leading: const Icon(Icons.search_rounded),
+            trailing: _searchController.text.isNotEmpty
+                ? [
+              IconButton(
+                  icon: const Icon(Icons.clear_rounded),
+                  onPressed: () => _searchController.clear())
+            ]
+                : null,
+            elevation: const WidgetStatePropertyAll(0),
+            shape: WidgetStatePropertyAll(RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(28),
+              side: BorderSide(color: Theme.of(context).colorScheme.outline),
+            )),
+          ),
         ),
       )
           : const SizedBox.shrink(),

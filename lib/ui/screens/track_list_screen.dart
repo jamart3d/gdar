@@ -25,10 +25,23 @@ class _TrackListScreenState extends State<TrackListScreen> {
   /// signal the ShowListScreen to open the player.
   void _onTrackTapped(Source source, int initialIndex) {
     final audioProvider = context.read<AudioProvider>();
-    audioProvider.playSource(widget.show, source, initialIndex: initialIndex);
+    final settingsProvider = context.read<SettingsProvider>();
 
-    if (mounted) {
-      Navigator.of(context).pop(true);
+    if (settingsProvider.playOnTap) {
+      audioProvider.playSource(widget.show, source, initialIndex: initialIndex);
+      if (mounted) {
+        Navigator.of(context).pop(true);
+      }
+    } else {
+      // If playOnTap is false, only play if it's the current show.
+      if (audioProvider.currentShow?.name == widget.show.name) {
+        audioProvider.playSource(widget.show, source,
+            initialIndex: initialIndex);
+        if (mounted) {
+          Navigator.of(context).pop(true);
+        }
+      }
+      // If it's not the current show, do nothing on tap.
     }
   }
 

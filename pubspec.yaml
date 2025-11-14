@@ -47,4 +47,4 @@ flutter:
   uses-material-design: true
 
   assets:
-    - assets/data/shows1.json
+    - assets/data/shows.json

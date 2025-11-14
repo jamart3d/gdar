@@ -23,10 +23,10 @@ class SettingsProvider with ChangeNotifier {
   static const bool showExpandIcon = false;
 
   // Private state
-  bool _showTrackNumbers = true;
+  bool _showTrackNumbers = false;
   bool _playOnTap = false;
   bool _showSingleShnid = false;
-  bool _hideTrackCountInSourceList = true;
+  bool _hideTrackCountInSourceList = false;
   bool _playRandomOnCompletion = false;
   bool _playRandomOnStartup = false;
   bool _dateFirstInShowCard = true;
@@ -110,7 +110,7 @@ class SettingsProvider with ChangeNotifier {
 
   Future<void> _loadPreferences() async {
     final prefs = await SharedPreferences.getInstance();
-    _showTrackNumbers = prefs.getBool(_trackNumberKey) ?? true;
+    _showTrackNumbers = prefs.getBool(_trackNumberKey) ?? false;
     _playOnTap = prefs.getBool(_playOnTapKey) ?? false;
     _showSingleShnid = prefs.getBool(_showSingleShnidKey) ?? false;
     _hideTrackCountInSourceList = prefs.getBool(_hideTrackCountKey) ?? false;
@@ -119,13 +119,13 @@ class SettingsProvider with ChangeNotifier {
     _playRandomOnStartup = prefs.getBool(_playRandomOnStartupKey) ?? false;
     _dateFirstInShowCard = prefs.getBool(_dateFirstInShowCardKey) ?? false;
     _useDynamicColor = prefs.getBool(_useDynamicColorKey) ?? false;
-    _useSliverAppBar = prefs.getBool(_useSliverAppBarKey) ?? false;
+    _useSliverAppBar = prefs.getBool(_useSliverAppBarKey) ?? true;
     _useSharedAxisTransition =
         prefs.getBool(_useSharedAxisTransitionKey) ?? false;
-    _useHandwritingFont = prefs.getBool(_useHandwritingFontKey) ?? false;
-    _scaleShowList = prefs.getBool(_scaleShowListKey) ?? false;
-    _scaleTrackList = prefs.getBool(_scaleTrackListKey) ?? false;
-    _scalePlayer = prefs.getBool(_scalePlayerKey) ?? false;
+    _useHandwritingFont = prefs.getBool(_useHandwritingFontKey) ?? true;
+    _scaleShowList = prefs.getBool(_scaleShowListKey) ?? true;
+    _scaleTrackList = prefs.getBool(_scaleTrackListKey) ?? true;
+    _scalePlayer = prefs.getBool(_scalePlayerKey) ?? true;
     final seedColorValue = prefs.getInt(_seedColorKey);
     if (seedColorValue != null) {
       _seedColor = Color(seedColorValue);
