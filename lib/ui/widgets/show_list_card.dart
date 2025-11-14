@@ -65,9 +65,7 @@ class ShowListCard extends StatelessWidget {
               color: cardBorderColor,
               width: (isPlaying || show.hasFeaturedTrack) ? 2 : 1),
         ),
-        child: AnimatedContainer(
-          duration: _animationDuration,
-          curve: Curves.easeInOutCubicEmphasized,
+        child: Container(
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(28),
             color: isExpanded

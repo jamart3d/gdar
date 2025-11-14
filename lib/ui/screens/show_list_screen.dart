@@ -407,8 +407,13 @@ class _ShowListScreenState extends State<ShowListScreen>
       IconButton(
         icon: const Icon(Icons.settings_rounded),
         tooltip: 'Settings',
-        onPressed: () => Navigator.of(context)
-            .push(MaterialPageRoute(builder: (_) => const SettingsScreen())),
+        onPressed: () => Navigator.of(context).push(
+          PageRouteBuilder(
+            pageBuilder: (context, animation, secondaryAnimation) =>
+                const SettingsScreen(),
+            transitionDuration: Duration.zero,
+          ),
+        ),
       ),
     ];
   }
