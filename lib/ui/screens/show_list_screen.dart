@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 import 'package:animations/animations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -170,47 +171,33 @@ class _ShowListScreenState extends State<ShowListScreen>
   Future<void> _onShowTapped(Show show) async {
     final audioProvider = context.read<AudioProvider>();
     final showListProvider = context.read<ShowListProvider>();
-    final settingsProvider = context.read<SettingsProvider>();
     final isPlayingThisShow = audioProvider.currentShow?.name == show.name;
     final isExpanded = showListProvider.expandedShowName == show.name;
 
-    if (settingsProvider.playOnTap) {
-      // If playOnTap is true, tapping always leads to playback or player screen.
-      if (isPlayingThisShow) {
-        await _openPlaybackScreen(); // Go to player if already playing
-      } else {
-        // Play the tapped show (first source)
-        if (show.sources.isNotEmpty) {
-          _playSource(show, show.sources.first);
-          await _openPlaybackScreen();
+    // Tapping never directly plays a show.
+    // It either expands, navigates to track list, or goes to player if already playing.
+    if (isPlayingThisShow) {
+      if (show.sources.length > 1) {
+        if (isExpanded) {
+          await _openPlaybackScreen(); // Go to player if already playing and expanded
+        } else {
+          await _handleShowExpansion(show); // Expand if playing and not expanded
         }
+      } else {
+        await _openPlaybackScreen(); // Go to player if playing single source show
       }
     } else {
-      // If playOnTap is false, tapping never directly plays a show.
-      // It either expands, navigates to track list, or goes to player if already playing.
-      if (isPlayingThisShow) {
-        if (show.sources.length > 1) {
-          if (isExpanded) {
-            await _openPlaybackScreen(); // Go to player if already playing and expanded
-          } else {
-            await _handleShowExpansion(show); // Expand if playing and not expanded
-          }
-        } else {
-          await _openPlaybackScreen(); // Go to player if playing single source show
-        }
+      // Not playing this show, so expand or go to track list.
+      if (show.sources.length > 1) {
+        await _handleShowExpansion(show);
       } else {
-        // Not playing this show, so expand or go to track list.
-        if (show.sources.length > 1) {
-          await _handleShowExpansion(show);
-        } else {
-          final shouldOpenPlayer = await Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (_) => TrackListScreen(show: show),
-            ),
-          );
-          if (shouldOpenPlayer == true && mounted) {
-            await _openPlaybackScreen();
-          }
+        final shouldOpenPlayer = await Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => TrackListScreen(show: show),
+          ),
+        );
+        if (shouldOpenPlayer == true && mounted) {
+          await _openPlaybackScreen();
         }
       }
     }
@@ -249,13 +236,9 @@ class _ShowListScreenState extends State<ShowListScreen>
   /// Handles tapping a source row inside an expanded show card.
   Future<void> _onSourceTapped(Show show, Source source) async {
     final audioProvider = context.read<AudioProvider>();
-    final settingsProvider = context.read<SettingsProvider>(); // Get settingsProvider
     final isPlayingThisSource = audioProvider.currentSource?.id == source.id;
 
-    if (settingsProvider.playOnTap) {
-      _playSource(show, source);
-      await _openPlaybackScreen();
-    } else if (isPlayingThisSource) {
+    if (isPlayingThisSource) {
       await _openPlaybackScreen();
     } else {
       // Create a "virtual" show containing only the selected source to pass
@@ -280,11 +263,22 @@ class _ShowListScreenState extends State<ShowListScreen>
     }
   }
 
-  /// Plays the first source of a show on long press.
+  /// Plays a random source on long press if the show has multiple sources,
+  /// otherwise plays the first source.
   Future<void> _onCardLongPressed(Show show) async {
     logger.d('Long pressed on show card: ${show.name}');
     if (show.sources.isEmpty) return;
-    _playSource(show, show.sources.first);
+
+    Source sourceToPlay;
+    if (show.sources.length > 1) {
+      final random = Random();
+      final index = random.nextInt(show.sources.length);
+      sourceToPlay = show.sources[index];
+      logger.i('Multiple sources found. Playing random source: ${sourceToPlay.id}');
+    } else {
+      sourceToPlay = show.sources.first;
+    }
+    _playSource(show, sourceToPlay);
   }
 
   /// Plays a specific source from a show on long press inside an expanded card.
@@ -442,7 +436,7 @@ class _ShowListScreenState extends State<ShowListScreen>
           ? Transform.scale(
         scale: settingsProvider.scaleShowList ? 1.1 : 1.0,
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+          padding: const EdgeInsets.fromLTRB(24, 8, 24, 8),
           child: SearchBar(
             controller: _searchController,
             hintText: 'Search by venue or date',
