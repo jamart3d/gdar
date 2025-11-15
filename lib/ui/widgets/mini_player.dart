@@ -231,11 +231,15 @@ class _MiniPlayerState extends State<MiniPlayer>
                                 ),
                               ),
                               SizedBox(height: 6 * scaleFactor),
-                              Text(
-                                currentShow.venue,
-                                style: venueStyle,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
+                              SizedBox(
+                                height: venueStyle.fontSize! * 1.3,
+                                child: Material(
+                                  type: MaterialType.transparency,
+                                  child: ConditionalMarquee(
+                                    text: currentShow.venue,
+                                    style: venueStyle,
+                                  ),
+                                ),
                               ),
                             ],
                           );

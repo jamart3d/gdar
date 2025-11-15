@@ -90,18 +90,47 @@ class _PlaybackScreenState extends State<PlaybackScreen>
     return Scaffold(
       backgroundColor: colorScheme.surface,
       appBar: AppBar(
-        title: null,
-        flexibleSpace: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                colorScheme.primaryContainer,
-                colorScheme.secondaryContainer,
+        backgroundColor: colorScheme.surface,
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SizedBox(
+              height: Theme.of(context).textTheme.titleMedium!.fontSize! * 1.2,
+              child: ConditionalMarquee(
+                text: currentShow.venue,
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    color: Theme.of(context).colorScheme.onSurface),
+                blankSpace: 60.0,
+                pauseAfterRound: const Duration(seconds: 3),
+              ),
+            ),
+            const SizedBox(height: 2),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  currentShow.formattedDate,
+                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant),
+                ),
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: colorScheme.tertiaryContainer.withOpacity(0.7),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    currentSource.id,
+                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                          color: colorScheme.onTertiaryContainer,
+                          fontWeight: FontWeight.bold,
+                        ),
+                  ),
+                ),
               ],
             ),
-          ),
+          ],
         ),
         actions: [
           IconButton(
@@ -223,73 +252,6 @@ class _PlaybackScreenState extends State<PlaybackScreen>
                         ),
                       );
                     },
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    currentShow.venue,
-                    style: textTheme.bodyMedium
-                        ?.apply(fontSizeFactor: scaleFactor)
-                        .copyWith(
-                      color: colorScheme.onSurfaceVariant,
-                    ),
-                    textAlign: TextAlign.center,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 8),
-                  Wrap(
-                    alignment: WrapAlignment.center,
-                    spacing: 8.0,
-                    runSpacing: 8.0,
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 8),
-                        decoration: BoxDecoration(
-                          color: colorScheme.secondaryContainer,
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              Icons.calendar_today_rounded,
-                              size: 16,
-                              color: colorScheme.onSecondaryContainer,
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              currentShow.formattedDate,
-                              style: textTheme.labelLarge?.copyWith(
-                                color: colorScheme.onSecondaryContainer,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      if (shouldShowShnidBadge)
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 16, vertical: 8),
-                          decoration: BoxDecoration(
-                            color: colorScheme.tertiaryContainer,
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(
-                                currentSource.id,
-                                style: textTheme.labelLarge?.copyWith(
-                                  color: colorScheme.onTertiaryContainer,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                    ],
                   ),
                 ],
               ),

@@ -1,5 +1,7 @@
 import 'dart:async';
 import 'dart:math';
+import 'package:http/http.dart' as http;
+import 'dart:io';
 import 'package:animations/animations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -58,6 +60,8 @@ class _ShowListScreenState extends State<ShowListScreen>
       parent: _animationController,
       curve: Curves.easeInOutCubicEmphasized,
     );
+
+    WidgetsBinding.instance.addPostFrameCallback((_) => _checkArchiveStatus());
 
     // Play random show on startup if enabled
     final settingsProvider = context.read<SettingsProvider>();
@@ -368,6 +372,47 @@ class _ShowListScreenState extends State<ShowListScreen>
       });
     } else {
       setState(() => _isRandomShowLoading = false);
+    }
+  }
+
+  Future<void> _checkArchiveStatus() async {
+    bool isArchiveDown = false;
+    try {
+      logger.i('Checking archive.org status...');
+      final response = await http.head(Uri.parse('https://archive.org'));
+      if (response.statusCode < 200 || response.statusCode >= 400) {
+        isArchiveDown = true;
+        logger.w('archive.org returned status code: ${response.statusCode}');
+      } else {
+        logger.i('archive.org is reachable.');
+      }
+    } on SocketException catch (e) {
+      isArchiveDown = true;
+      logger.e('Failed to connect to archive.org: $e');
+    } catch (e) {
+      isArchiveDown = true;
+      logger.e('An unexpected error occurred while checking archive.org: $e');
+    }
+
+    if (isArchiveDown && mounted) {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text('Connection Issue'),
+            content: const Text(
+                'gdar could not connect to archive.org. The service may be temporarily unavailable. You may experience issues with playback.'),
+            actions: <Widget>[
+              TextButton(
+                child: const Text('OK'),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          );
+        },
+      );
     }
   }
 
