@@ -20,7 +20,7 @@ class SettingsProvider with ChangeNotifier {
   static const String _seedColorKey = 'seed_color';
 
   // Hard-coded setting.
-  static const bool showExpandIcon = false;
+  bool showExpandIcon = false;
 
   // Private state
   bool _showTrackNumbers = false;

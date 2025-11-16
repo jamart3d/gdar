@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
@@ -12,6 +13,7 @@ import 'package:just_audio_background/just_audio_background.dart';
 
 class AudioProvider with ChangeNotifier {
   late final AudioPlayer _audioPlayer;
+  StreamSubscription<ProcessingState>? _processingStateSubscription;
 
   ShowListProvider? _showListProvider;
   SettingsProvider? _settingsProvider;
@@ -31,25 +33,26 @@ class AudioProvider with ChangeNotifier {
   Stream<Duration> get bufferedPositionStream =>
       _audioPlayer.bufferedPositionStream;
 
-  AudioProvider() {
-    _audioPlayer = AudioPlayer();
+  AudioProvider({AudioPlayer? audioPlayer}) {
+    _audioPlayer = audioPlayer ?? AudioPlayer();
     _listenForCompletion();
   }
 
   void update(
-      ShowListProvider showListProvider,
-      SettingsProvider settingsProvider,
-      ) {
+    ShowListProvider showListProvider,
+    SettingsProvider settingsProvider,
+  ) {
     _showListProvider = showListProvider;
     _settingsProvider = settingsProvider;
   }
 
   void _listenForCompletion() {
-    _audioPlayer.processingStateStream.listen((state) {
+    _processingStateSubscription =
+        _audioPlayer.processingStateStream.listen((state) async {
       if (state == ProcessingState.completed) {
         if (_settingsProvider?.playRandomOnCompletion ?? false) {
           logger.i('Playlist completed, playing random show.');
-          playRandomShow();
+          await playRandomShow();
         }
       }
     });
@@ -57,11 +60,12 @@ class AudioProvider with ChangeNotifier {
 
   @override
   void dispose() {
+    _processingStateSubscription?.cancel();
     _audioPlayer.dispose();
     super.dispose();
   }
 
-  Show? playRandomShow() {
+  Future<Show?> playRandomShow() async {
     final shows = _showListProvider?.filteredShows;
     if (shows == null || shows.isEmpty) {
       logger.w('Cannot play random show, no shows available.');
@@ -90,19 +94,26 @@ class AudioProvider with ChangeNotifier {
         'Playing random source ${sourceToPlay.id} from show ${showToPlay.name}');
 
     // Play the randomly selected source.
-    playSource(showToPlay, sourceToPlay);
+    await playSource(showToPlay, sourceToPlay);
 
     // Return the parent show so the UI can scroll to it.
     return showToPlay;
   }
 
-  void playSource(Show show, Source source, {int initialIndex = 0}) {
+  Future<void> playSource(Show show, Source source, {int initialIndex = 0}) async {
     _currentShow = show;
     _currentSource = source;
     notifyListeners(); // Notify immediately so the UI can update
 
     // Start audio loading in the background
-    _loadAndPlayAudio(source, initialIndex: initialIndex);
+    await _loadAndPlayAudio(source, initialIndex: initialIndex);
+  }
+
+  String? _error;
+  String? get error => _error;
+
+  void clearError() {
+    _error = null;
   }
 
   Future<void> _loadAndPlayAudio(Source source, {int initialIndex = 0}) async {
@@ -139,6 +150,8 @@ class AudioProvider with ChangeNotifier {
       _audioPlayer.play();
     } catch (e, stackTrace) {
       logger.e('Error playing source', error: e, stackTrace: stackTrace);
+      _error = 'Error playing source: ${e.toString()}';
+      notifyListeners();
       stopAndClear(); // Clear state on error
     }
   }

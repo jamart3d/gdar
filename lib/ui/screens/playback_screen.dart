@@ -95,10 +95,10 @@ class _PlaybackScreenState extends State<PlaybackScreen>
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             SizedBox(
-              height: Theme.of(context).textTheme.titleMedium!.fontSize! * 1.2,
+              height: Theme.of(context).textTheme.titleLarge!.fontSize! * 1.2,
               child: ConditionalMarquee(
                 text: currentShow.venue,
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
                     color: Theme.of(context).colorScheme.onSurface),
                 blankSpace: 60.0,
                 pauseAfterRound: const Duration(seconds: 3),
@@ -189,8 +189,6 @@ class _PlaybackScreenState extends State<PlaybackScreen>
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
     final settingsProvider = context.watch<SettingsProvider>();
-    final bool shouldShowShnidBadge = currentShow.sources.length > 1 ||
-        (currentShow.sources.length == 1 && settingsProvider.showSingleShnid);
 
     final double scaleFactor = settingsProvider.scalePlayer ? 1.25 : 1.0;
 

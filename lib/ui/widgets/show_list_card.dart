@@ -88,7 +88,7 @@ class ShowListCard extends StatelessWidget {
                         Expanded(
                           child: Padding(
                             padding: EdgeInsets.only(
-                                left: SettingsProvider.showExpandIcon ? 32 : 0),
+                                left: settingsProvider.showExpandIcon ? 32 : 0),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               mainAxisAlignment: MainAxisAlignment.end,
@@ -118,7 +118,7 @@ class ShowListCard extends StatelessWidget {
                         ),
                       ],
                     ),
-                    if (SettingsProvider.showExpandIcon)
+                    if (settingsProvider.showExpandIcon)
                       Positioned(
                         left: 0,
                         bottom: 0,

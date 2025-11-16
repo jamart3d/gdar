@@ -3,6 +3,8 @@ import 'package:gdar/api/show_service.dart';
 import 'package:gdar/models/show.dart';
 
 class ShowListProvider with ChangeNotifier {
+  final ShowService _showService;
+
   // Private state
   List<Show> _allShows = [];
   bool _isLoading = true;
@@ -30,14 +32,17 @@ class ShowListProvider with ChangeNotifier {
   }
 
   // Constructor
-  ShowListProvider() {
-    fetchShows();
+  ShowListProvider({ShowService? showService})
+      : _showService = showService ?? ShowService();
+
+  Future<void> init() async {
+    await fetchShows();
   }
 
   // Methods
   Future<void> fetchShows() async {
     try {
-      final shows = await ShowService.instance.getShows();
+      final shows = await _showService.getShows();
       _allShows = shows;
     } catch (e) {
       _error = "Failed to load shows. Please restart the app.";

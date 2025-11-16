@@ -99,6 +99,23 @@ class _ShowListScreenState extends State<ShowListScreen>
 
     // Listen to player state to manage loading indicators
     final audioProvider = context.read<AudioProvider>();
+    audioProvider.addListener(() {
+      if (audioProvider.error != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(audioProvider.error!),
+            action: SnackBarAction(
+              label: 'Dismiss',
+              onPressed: () {
+                ScaffoldMessenger.of(context).hideCurrentSnackBar();
+              },
+            ),
+          ),
+        );
+        audioProvider.clearError();
+      }
+    });
+
     _playerStateSubscription =
         audioProvider.playerStateStream.listen((state) {
           if (!mounted) return;
@@ -351,7 +368,7 @@ class _ShowListScreenState extends State<ShowListScreen>
     });
   }
 
-  void _handlePlayRandomShow() {
+  Future<void> _handlePlayRandomShow() async {
     final showListProvider = context.read<ShowListProvider>();
 
     // Check if a show is currently expanded and collapse it first.
@@ -362,7 +379,7 @@ class _ShowListScreenState extends State<ShowListScreen>
 
     setState(() => _isRandomShowLoading = true);
 
-    final show = context.read<AudioProvider>().playRandomShow();
+    final show = await context.read<AudioProvider>().playRandomShow();
     if (show != null) {
       // Use addPostFrameCallback to ensure collapse animation has started
       WidgetsBinding.instance.addPostFrameCallback((_) {

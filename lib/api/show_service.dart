@@ -6,9 +6,6 @@ import 'package:gdar/utils/logger.dart';
 import '../models/source.dart';
 
 class ShowService {
-  ShowService._privateConstructor();
-  static final ShowService instance = ShowService._privateConstructor();
-
   List<Show>? _shows;
 
   Future<List<Show>> getShows() async {
