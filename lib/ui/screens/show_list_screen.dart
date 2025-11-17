@@ -392,23 +392,38 @@ class _ShowListScreenState extends State<ShowListScreen>
     }
   }
 
+  static const int _maxRetries = 3;
+  static const Duration _retryDelay = Duration(seconds: 2);
+  static const Duration _timeout = Duration(seconds: 5);
+
   Future<void> _checkArchiveStatus() async {
     bool isArchiveDown = false;
-    try {
-      logger.i('Checking archive.org status...');
-      final response = await http.head(Uri.parse('https://archive.org'));
-      if (response.statusCode < 200 || response.statusCode >= 400) {
+    for (int i = 0; i < _maxRetries; i++) {
+      try {
+        logger.i('Checking archive.org status (Attempt ${i + 1}/$_maxRetries)...');
+        final response = await http.head(Uri.parse('https://archive.org')).timeout(_timeout);
+        if (response.statusCode >= 200 && response.statusCode < 400) {
+          logger.i('archive.org is reachable.');
+          isArchiveDown = false;
+          break; // Exit loop on success
+        } else {
+          logger.w('archive.org returned status code: ${response.statusCode} (Attempt ${i + 1}/$_maxRetries)');
+          isArchiveDown = true;
+        }
+      } on TimeoutException {
+        logger.w('archive.org check timed out (Attempt ${i + 1}/$_maxRetries)');
         isArchiveDown = true;
-        logger.w('archive.org returned status code: ${response.statusCode}');
-      } else {
-        logger.i('archive.org is reachable.');
+      } on SocketException catch (e) {
+        logger.e('Failed to connect to archive.org: $e (Attempt ${i + 1}/$_maxRetries)');
+        isArchiveDown = true;
+      } catch (e) {
+        logger.e('An unexpected error occurred while checking archive.org: $e (Attempt ${i + 1}/$_maxRetries)');
+        isArchiveDown = true;
       }
-    } on SocketException catch (e) {
-      isArchiveDown = true;
-      logger.e('Failed to connect to archive.org: $e');
-    } catch (e) {
-      isArchiveDown = true;
-      logger.e('An unexpected error occurred while checking archive.org: $e');
+
+      if (isArchiveDown && i < _maxRetries - 1) {
+        await Future.delayed(_retryDelay);
+      }
     }
 
     if (isArchiveDown && mounted) {
@@ -418,7 +433,7 @@ class _ShowListScreenState extends State<ShowListScreen>
           return AlertDialog(
             title: const Text('Connection Issue'),
             content: const Text(
-                'gdar could not connect to archive.org. The service may be temporarily unavailable. You may experience issues with playback.'),
+                'gdar could not connect to archive.org after multiple attempts. The service may be temporarily unavailable. You may experience issues with playback.'),
             actions: <Widget>[
               TextButton(
                 child: const Text('OK'),
