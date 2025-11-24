@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:gdar/models/show.dart';
 import 'package:gdar/providers/settings_provider.dart';
+import 'package:gdar/ui/widgets/animated_gradient_border.dart';
 import 'package:gdar/ui/widgets/conditional_marquee.dart';
 import 'package:provider/provider.dart';
 
@@ -32,8 +33,8 @@ class ShowListCard extends StatelessWidget {
     final cardBorderColor = isPlaying
         ? colorScheme.primary
         : show.hasFeaturedTrack
-        ? colorScheme.tertiary
-        : colorScheme.outlineVariant;
+            ? colorScheme.tertiary
+            : colorScheme.outlineVariant;
     final bool shouldShowBadge = show.sources.length > 1 ||
         (show.sources.length == 1 && settingsProvider.showSingleShnid);
 
@@ -43,15 +44,157 @@ class ShowListCard extends StatelessWidget {
         textTheme.titleLarge ?? const TextStyle(fontSize: 22.0);
     final venueStyle = baseVenueStyle
         .copyWith(
-        fontWeight: FontWeight.w600,
-        letterSpacing: 0.1,
-        color: colorScheme.onSurface)
+            fontWeight: FontWeight.w600,
+            letterSpacing: 0.1,
+            color: colorScheme.onSurface)
         .apply(fontSizeFactor: scaleFactor);
 
-    final baseDateStyle = textTheme.bodyLarge ?? const TextStyle(fontSize: 16.0);
+    final baseDateStyle =
+        textTheme.bodyLarge ?? const TextStyle(fontSize: 16.0);
     final dateStyle = baseDateStyle
         .copyWith(color: colorScheme.onSurfaceVariant, letterSpacing: 0.15)
         .apply(fontSizeFactor: scaleFactor);
+
+    Widget cardContent = Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(28),
+        color: isExpanded
+            ? colorScheme.primaryContainer.withOpacity(0.3)
+            : colorScheme.surface,
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(28),
+          onTap: onTap,
+          onLongPress: onLongPress,
+          child: Padding(
+            padding: EdgeInsets.all(10.0 * scaleFactor),
+            child: Stack(
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Expanded(
+                      child: Padding(
+                        padding: EdgeInsets.only(
+                            left: settingsProvider.showExpandIcon ? 32 : 0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            SizedBox(
+                              height: venueStyle.fontSize! * 1.3,
+                              child: ConditionalMarquee(
+                                text: settingsProvider.dateFirstInShowCard
+                                    ? show.formattedDate
+                                    : show.venue,
+                                style: venueStyle,
+                              ),
+                            ),
+                            SizedBox(height: 6 * scaleFactor),
+                            Padding(
+                              padding: const EdgeInsets.only(left: 8.0),
+                              child: Text(
+                                settingsProvider.dateFirstInShowCard
+                                    ? show.venue
+                                    : show.formattedDate,
+                                style: dateStyle,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                if (settingsProvider.showExpandIcon)
+                  Positioned(
+                    left: 0,
+                    bottom: 0,
+                    child: AnimatedSwitcher(
+                      duration: _animationDuration,
+                      child: isLoading
+                          ? Container(
+                              key: ValueKey('loader_${show.name}'),
+                              width: 28,
+                              height: 28,
+                              padding: const EdgeInsets.all(4),
+                              child: const CircularProgressIndicator(
+                                  strokeWidth: 2.5),
+                            )
+                          : AnimatedRotation(
+                              key: ValueKey('icon_${show.name}'),
+                              turns: isExpanded ? 0.5 : 0,
+                              duration: _animationDuration,
+                              curve: Curves.easeInOutCubicEmphasized,
+                              child: Container(
+                                padding: const EdgeInsets.all(4),
+                                decoration: BoxDecoration(
+                                  color: isExpanded
+                                      ? colorScheme.primaryContainer
+                                      : colorScheme.surfaceContainerHighest,
+                                  borderRadius: BorderRadius.circular(10),
+                                  border: Border.all(
+                                    color: isExpanded
+                                        ? colorScheme.primary
+                                        : Colors.transparent,
+                                    width: 1,
+                                  ),
+                                ),
+                                child: Icon(Icons.keyboard_arrow_down_rounded,
+                                    color: isExpanded
+                                        ? colorScheme.onPrimaryContainer
+                                        : colorScheme.onSurfaceVariant,
+                                    size: 20),
+                              ),
+                            ),
+                    ),
+                  ),
+                if (shouldShowBadge)
+                  Positioned(
+                    right: 0,
+                    bottom: 0,
+                    child: _buildBadge(context, show),
+                  ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+
+    bool showGlow = settingsProvider.showGlowBorder;
+
+    bool useRgb = false;
+
+    if (settingsProvider.highlightPlayingWithRgb && isPlaying) {
+      useRgb = true;
+    }
+
+    if (showGlow) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+        child: AnimatedGradientBorder(
+          showGlow: true,
+          borderRadius: 28,
+          borderWidth: 2,
+          colors: useRgb
+              ? const [
+                  Colors.red,
+                  Colors.orange,
+                  Colors.yellow,
+                  Colors.green,
+                  Colors.blue,
+                  Colors.indigo,
+                  Colors.purple,
+                  Colors.red, // Repeat first color for smooth loop
+                ]
+              : null,
+          child: cardContent,
+        ),
+      );
+    }
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
@@ -65,109 +208,7 @@ class ShowListCard extends StatelessWidget {
               color: cardBorderColor,
               width: (isPlaying || show.hasFeaturedTrack) ? 2 : 1),
         ),
-        child: Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(28),
-            color: isExpanded
-                ? colorScheme.primaryContainer.withOpacity(0.3)
-                : colorScheme.surface,
-          ),
-          child: Material(
-            color: Colors.transparent,
-            child: InkWell(
-              borderRadius: BorderRadius.circular(28),
-              onTap: onTap,
-              onLongPress: onLongPress,
-              child: Padding(
-                padding: EdgeInsets.all(10.0 * scaleFactor),
-                child: Stack(
-                  children: [
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Expanded(
-                          child: Padding(
-                            padding: EdgeInsets.only(
-                                left: settingsProvider.showExpandIcon ? 32 : 0),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              children: [
-                                SizedBox(
-                                  height: venueStyle.fontSize! * 1.3,
-                                  child: ConditionalMarquee(
-                                    text: settingsProvider.dateFirstInShowCard
-                                        ? show.formattedDate
-                                        : show.venue,
-                                    style: venueStyle,
-                                  ),
-                                ),
-                                SizedBox(height: 6 * scaleFactor),
-                                Padding(
-                                  padding: const EdgeInsets.only(left: 8.0),
-                                  child: Text(
-                                    settingsProvider.dateFirstInShowCard
-                                        ? show.venue
-                                        : show.formattedDate,
-                                    style: dateStyle,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    if (settingsProvider.showExpandIcon)
-                      Positioned(
-                        left: 0,
-                        bottom: 0,
-                        child: AnimatedSwitcher(
-                          duration: _animationDuration,
-                          child: isLoading
-                              ? Container(
-                            key: ValueKey('loader_${show.name}'),
-                            width: 28,
-                            height: 28,
-                            padding: const EdgeInsets.all(4),
-                            child: const CircularProgressIndicator(
-                                strokeWidth: 2.5),
-                          )
-                              : AnimatedRotation(
-                            key: ValueKey('icon_${show.name}'),
-                            turns: isExpanded ? 0.5 : 0,
-                            duration: _animationDuration,
-                            curve: Curves.easeInOutCubicEmphasized,
-                            child: Container(
-                              padding: const EdgeInsets.all(4),
-                              decoration: BoxDecoration(
-                                color: isExpanded
-                                    ? colorScheme.primaryContainer
-                                    : colorScheme.surfaceContainerHighest,
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              child: Icon(
-                                  Icons.keyboard_arrow_down_rounded,
-                                  color: isExpanded
-                                      ? colorScheme.onPrimaryContainer
-                                      : colorScheme.onSurfaceVariant,
-                                  size: 20),
-                            ),
-                          ),
-                        ),
-                      ),
-                    if (shouldShowBadge)
-                      Positioned(
-                        right: 0,
-                        bottom: 0,
-                        child: _buildBadge(context, show),
-                      ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ),
+        child: cardContent,
       ),
     );
   }

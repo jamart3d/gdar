@@ -33,7 +33,7 @@ class _ShowListScreenState extends State<ShowListScreen>
   final TextEditingController _searchController = TextEditingController();
   final ItemScrollController _itemScrollController = ItemScrollController();
   final ItemPositionsListener _itemPositionsListener =
-  ItemPositionsListener.create();
+      ItemPositionsListener.create();
 
   late final AnimationController _animationController;
   late final Animation<double> _animation;
@@ -46,7 +46,7 @@ class _ShowListScreenState extends State<ShowListScreen>
   static const Duration _animationDuration = Duration(milliseconds: 300);
 
   // Height constants for calculation
-  static const double _baseSourceHeaderHeight = 64.0;
+  static const double _baseSourceHeaderHeight = 59.0;
   static const double _listVerticalPadding = 16.0;
 
   @override
@@ -116,31 +116,29 @@ class _ShowListScreenState extends State<ShowListScreen>
       }
     });
 
-    _playerStateSubscription =
-        audioProvider.playerStateStream.listen((state) {
-          if (!mounted) return;
-          final processingState = state.processingState;
+    _playerStateSubscription = audioProvider.playerStateStream.listen((state) {
+      if (!mounted) return;
+      final processingState = state.processingState;
 
-          // Handle AppBar's random play indicator
-          if (_isRandomShowLoading) {
-            if (processingState == ProcessingState.ready ||
-                processingState == ProcessingState.completed ||
-                processingState == ProcessingState.idle) {
-              setState(() => _isRandomShowLoading = false);
-            }
-          }
+      // Handle AppBar's random play indicator
+      if (_isRandomShowLoading) {
+        if (processingState == ProcessingState.ready ||
+            processingState == ProcessingState.completed ||
+            processingState == ProcessingState.idle) {
+          setState(() => _isRandomShowLoading = false);
+        }
+      }
 
-          // Handle ShowListCard's loading indicator
-          final showListProvider = context.read<ShowListProvider>();
-          if (showListProvider.loadingShowName != null &&
-              showListProvider.loadingShowName ==
-                  audioProvider.currentShow?.name) {
-            if (processingState == ProcessingState.ready ||
-                processingState == ProcessingState.idle) {
-              showListProvider.setLoadingShow(null);
-            }
-          }
-        });
+      // Handle ShowListCard's loading indicator
+      final showListProvider = context.read<ShowListProvider>();
+      if (showListProvider.loadingShowName != null &&
+          showListProvider.loadingShowName == audioProvider.currentShow?.name) {
+        if (processingState == ProcessingState.ready ||
+            processingState == ProcessingState.idle) {
+          showListProvider.setLoadingShow(null);
+        }
+      }
+    });
   }
 
   @override
@@ -156,8 +154,8 @@ class _ShowListScreenState extends State<ShowListScreen>
   double _calculateExpandedHeight(Show show) {
     if (show.sources.length <= 1) return 0.0;
     final settingsProvider = context.read<SettingsProvider>();
-    final sourceHeaderHeight =
-        _baseSourceHeaderHeight * (settingsProvider.scaleTrackList ? 1.25 : 1.0);
+    final sourceHeaderHeight = _baseSourceHeaderHeight *
+        (settingsProvider.scaleTrackList ? 1.25 : 1.0);
     return (show.sources.length * sourceHeaderHeight) + _listVerticalPadding;
   }
 
@@ -172,8 +170,20 @@ class _ShowListScreenState extends State<ShowListScreen>
       return;
     }
 
-    // Align to center, or slightly above center for multi-source shows.
-    final alignment = show.sources.length > 1 ? 0.4 : 0.5;
+    // Align to (0.4) if collapsed.
+    // If expanded, adjust alignment based on number of sources to show more context.
+    final isExpanded = showListProvider.expandedShowName == show.name;
+    double alignment = 0.4;
+
+    if (isExpanded) {
+      if (show.sources.length > 4) {
+        alignment = 0.02; // Top (approx 3 cards above center)
+      } else if (show.sources.length > 2) {
+        alignment = 0.20; // Upper third (approx 2 cards above center)
+      } else if (show.sources.length > 1) {
+        alignment = 0.35; // Slightly above center (approx 1 card above center)
+      }
+    }
 
     try {
       await _itemScrollController.scrollTo(
@@ -202,7 +212,8 @@ class _ShowListScreenState extends State<ShowListScreen>
         if (isExpanded) {
           await _openPlaybackScreen(); // Go to player if already playing and expanded
         } else {
-          await _handleShowExpansion(show); // Expand if playing and not expanded
+          await _handleShowExpansion(
+              show); // Expand if playing and not expanded
         }
       } else {
         await _openPlaybackScreen(); // Go to player if playing single source show
@@ -295,7 +306,8 @@ class _ShowListScreenState extends State<ShowListScreen>
       final random = Random();
       final index = random.nextInt(show.sources.length);
       sourceToPlay = show.sources[index];
-      logger.i('Multiple sources found. Playing random source: ${sourceToPlay.id}');
+      logger.i(
+          'Multiple sources found. Playing random source: ${sourceToPlay.id}');
     } else {
       sourceToPlay = show.sources.first;
     }
@@ -327,7 +339,7 @@ class _ShowListScreenState extends State<ShowListScreen>
     final settingsProvider = context.read<SettingsProvider>();
     await Navigator.of(context).push(PageRouteBuilder(
       pageBuilder: (context, animation, secondaryAnimation) =>
-      const PlaybackScreen(),
+          const PlaybackScreen(),
       transitionsBuilder: (context, animation, secondaryAnimation, child) {
         if (settingsProvider.useSharedAxisTransition) {
           return SharedAxisTransition(
@@ -348,22 +360,33 @@ class _ShowListScreenState extends State<ShowListScreen>
     _collapseAndScrollOnReturn();
   }
 
-  /// Collapses any expanded show and scrolls to the current show.
+  /// Collapses/Expands show and scrolls to the current show on return.
   void _collapseAndScrollOnReturn() {
     final showListProvider = context.read<ShowListProvider>();
     final audioProvider = context.read<AudioProvider>();
+    final currentShow = audioProvider.currentShow;
 
-    // If a show is expanded, collapse it.
-    if (showListProvider.expandedShowName != null) {
-      showListProvider.collapseCurrentShow();
-      _animationController.reverse();
+    if (currentShow == null) return;
+
+    // If multi-source, ensure it's expanded.
+    if (currentShow.sources.length > 1) {
+      if (showListProvider.expandedShowName != currentShow.name) {
+        showListProvider.expandShow(currentShow);
+        _animationController.forward(from: 0.0);
+      }
+    } else {
+      // If single source (or no sources), collapse any expanded show.
+      if (showListProvider.expandedShowName != null) {
+        showListProvider.collapseCurrentShow();
+        _animationController.reverse();
+      }
     }
 
-    // After a short delay to allow the collapse animation to start,
+    // After a short delay to allow the animation to start,
     // scroll to the currently playing show.
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted && audioProvider.currentShow != null) {
-        _reliablyScrollToShow(audioProvider.currentShow!);
+      if (mounted) {
+        _reliablyScrollToShow(currentShow);
       }
     });
   }
@@ -381,6 +404,12 @@ class _ShowListScreenState extends State<ShowListScreen>
 
     final show = await context.read<AudioProvider>().playRandomShow();
     if (show != null) {
+      // If the random show has multiple sources, expand it.
+      if (show.sources.length > 1) {
+        showListProvider.expandShow(show);
+        _animationController.forward(from: 0.0);
+      }
+
       // Use addPostFrameCallback to ensure collapse animation has started
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) {
@@ -400,24 +429,29 @@ class _ShowListScreenState extends State<ShowListScreen>
     bool isArchiveDown = false;
     for (int i = 0; i < _maxRetries; i++) {
       try {
-        logger.i('Checking archive.org status (Attempt ${i + 1}/$_maxRetries)...');
-        final response = await http.head(Uri.parse('https://archive.org')).timeout(_timeout);
+        logger.i(
+            'Checking archive.org status (Attempt ${i + 1}/$_maxRetries)...');
+        final response =
+            await http.head(Uri.parse('https://archive.org')).timeout(_timeout);
         if (response.statusCode >= 200 && response.statusCode < 400) {
           logger.i('archive.org is reachable.');
           isArchiveDown = false;
           break; // Exit loop on success
         } else {
-          logger.w('archive.org returned status code: ${response.statusCode} (Attempt ${i + 1}/$_maxRetries)');
+          logger.w(
+              'archive.org returned status code: ${response.statusCode} (Attempt ${i + 1}/$_maxRetries)');
           isArchiveDown = true;
         }
       } on TimeoutException {
         logger.w('archive.org check timed out (Attempt ${i + 1}/$_maxRetries)');
         isArchiveDown = true;
       } on SocketException catch (e) {
-        logger.e('Failed to connect to archive.org: $e (Attempt ${i + 1}/$_maxRetries)');
+        logger.e(
+            'Failed to connect to archive.org: $e (Attempt ${i + 1}/$_maxRetries)');
         isArchiveDown = true;
       } catch (e) {
-        logger.e('An unexpected error occurred while checking archive.org: $e (Attempt ${i + 1}/$_maxRetries)');
+        logger.e(
+            'An unexpected error occurred while checking archive.org: $e (Attempt ${i + 1}/$_maxRetries)');
         isArchiveDown = true;
       }
 
@@ -482,11 +516,11 @@ class _ShowListScreenState extends State<ShowListScreen>
         isSelected: _isSearchVisible,
         style: _isSearchVisible
             ? IconButton.styleFrom(
-          backgroundColor: colorScheme.surfaceContainer,
-          shape: CircleBorder(
-            side: BorderSide(color: colorScheme.outline),
-          ),
-        )
+                backgroundColor: colorScheme.surfaceContainer,
+                shape: CircleBorder(
+                  side: BorderSide(color: colorScheme.outline),
+                ),
+              )
             : null,
         onPressed: _toggleSearch,
       ),
@@ -511,28 +545,29 @@ class _ShowListScreenState extends State<ShowListScreen>
       curve: Curves.easeInOutCubicEmphasized,
       child: _isSearchVisible
           ? Transform.scale(
-        scale: settingsProvider.scaleShowList ? 1.1 : 1.0,
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(24, 8, 24, 8),
-          child: SearchBar(
-            controller: _searchController,
-            hintText: 'Search by venue or date',
-            leading: const Icon(Icons.search_rounded),
-            trailing: _searchController.text.isNotEmpty
-                ? [
-              IconButton(
-                  icon: const Icon(Icons.clear_rounded),
-                  onPressed: () => _searchController.clear())
-            ]
-                : null,
-            elevation: const WidgetStatePropertyAll(0),
-            shape: WidgetStatePropertyAll(RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(28),
-              side: BorderSide(color: Theme.of(context).colorScheme.outline),
-            )),
-          ),
-        ),
-      )
+              scale: settingsProvider.scaleShowList ? 1.1 : 1.0,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(24, 8, 24, 8),
+                child: SearchBar(
+                  controller: _searchController,
+                  hintText: 'Search by venue or date',
+                  leading: const Icon(Icons.search_rounded),
+                  trailing: _searchController.text.isNotEmpty
+                      ? [
+                          IconButton(
+                              icon: const Icon(Icons.clear_rounded),
+                              onPressed: () => _searchController.clear())
+                        ]
+                      : null,
+                  elevation: const WidgetStatePropertyAll(0),
+                  shape: WidgetStatePropertyAll(RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(28),
+                    side: BorderSide(
+                        color: Theme.of(context).colorScheme.outline),
+                  )),
+                ),
+              ),
+            )
           : const SizedBox.shrink(),
     );
   }
@@ -626,7 +661,7 @@ class _ShowListScreenState extends State<ShowListScreen>
     return ScrollablePositionedList.builder(
       itemScrollController: _itemScrollController,
       itemPositionsListener: _itemPositionsListener,
-      padding: const EdgeInsets.only(bottom: 100),
+      padding: const EdgeInsets.only(bottom: 160),
       itemCount: showListProvider.filteredShows.length,
       itemBuilder: (context, index) {
         return _buildShowListItem(showListProvider, audioProvider, index);
@@ -634,8 +669,8 @@ class _ShowListScreenState extends State<ShowListScreen>
     );
   }
 
-  Widget _buildShowListItem(
-      ShowListProvider showListProvider, AudioProvider audioProvider, int index) {
+  Widget _buildShowListItem(ShowListProvider showListProvider,
+      AudioProvider audioProvider, int index) {
     final show = showListProvider.filteredShows[index];
     final isExpanded = showListProvider.expandedShowName == show.name;
 
@@ -655,13 +690,13 @@ class _ShowListScreenState extends State<ShowListScreen>
           axisAlignment: -1.0,
           child: isExpanded
               ? ShowListItemDetails(
-            show: show,
-            playingSourceId: audioProvider.currentSource?.id,
-            height: _calculateExpandedHeight(show),
-            onSourceTapped: (source) => _onSourceTapped(show, source),
-            onSourceLongPress: (source) =>
-                _onSourceLongPressed(show, source),
-          )
+                  show: show,
+                  playingSourceId: audioProvider.currentSource?.id,
+                  height: _calculateExpandedHeight(show),
+                  onSourceTapped: (source) => _onSourceTapped(show, source),
+                  onSourceLongPress: (source) =>
+                      _onSourceLongPressed(show, source),
+                )
               : const SizedBox.shrink(),
         ),
       ],

@@ -9,9 +9,9 @@ This file tracks planned features, enhancements, and bug fixes for the gdar appl
 
 ## Medium Priority
 - [ ] **Search Filtering:** Add filter chips to the search experience (e.g., filter by year).
-- [ ] **Search icon indicator toggle:** toggle indicator visble state , tied to search box
+
 - [ ] **UI Polish:** Refine animations and transitions for an even smoother feel.
-- [ ] **"Now Playing" Indicator:** Add a more prominent "Now Playing" indicator (like an animated equalizer icon) to the currently playing show/track in the main list.
+
 - [ ] **Accessibility:** Review the app for accessibility improvements (e.g., screen reader labels).
 
 ## Low Priority / Ideas

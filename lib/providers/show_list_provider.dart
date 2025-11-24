@@ -19,6 +19,7 @@ class ShowListProvider with ChangeNotifier {
   String get searchQuery => _searchQuery;
   String? get expandedShowName => _expandedShowName;
   String? get loadingShowName => _loadingShowName;
+  List<Show> get allShows => _allShows;
 
   List<Show> get filteredShows {
     const bool hideGdShowsInternally = true;

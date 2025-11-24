@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:gdar/models/show.dart';
 import 'package:gdar/models/source.dart';
 import 'package:gdar/providers/settings_provider.dart';
+import 'package:gdar/ui/widgets/animated_gradient_border.dart';
 import 'package:provider/provider.dart';
 
 /// A widget that displays a list of sources (SHNIDs) for a given show.
@@ -49,76 +50,101 @@ class ShowListItemDetails extends StatelessWidget {
 
         return Padding(
           padding: const EdgeInsets.symmetric(vertical: 4),
-          child: Material(
-            color: isSourcePlaying
-                ? colorScheme.tertiaryContainer.withOpacity(0.7)
-                : colorScheme.secondaryContainer,
-            borderRadius: BorderRadius.circular(20),
-            child: InkWell(
-              borderRadius: BorderRadius.circular(20),
-              onTap: () => onSourceTapped(source),
-              onLongPress: () => onSourceLongPress(source),
-              child: Container(
-                padding: EdgeInsets.symmetric(
-                    horizontal: 16, vertical: 12 * scaleFactor),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: [
-                    BoxShadow(
-                      color: colorScheme.shadow.withOpacity(0.1),
-                      blurRadius: 4,
-                      offset: const Offset(0, 2),
-                    )
+          child: (isSourcePlaying && settingsProvider.highlightPlayingWithRgb)
+              ? AnimatedGradientBorder(
+                  showGlow: true,
+                  borderRadius: 20,
+                  borderWidth: 2,
+                  colors: const [
+                    Colors.red,
+                    Colors.orange,
+                    Colors.yellow,
+                    Colors.green,
+                    Colors.blue,
+                    Colors.indigo,
+                    Colors.purple,
+                    Colors.red,
                   ],
+                  backgroundColor: colorScheme.tertiaryContainer,
+                  child: _buildSourceItem(
+                      context, source, isSourcePlaying, scaleFactor),
+                )
+              : _buildSourceItem(context, source, isSourcePlaying, scaleFactor),
+        );
+      },
+    );
+  }
+
+  Widget _buildSourceItem(BuildContext context, Source source,
+      bool isSourcePlaying, double scaleFactor) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final settingsProvider = context.watch<SettingsProvider>();
+
+    return Material(
+      color: isSourcePlaying
+          ? colorScheme.tertiaryContainer
+          : colorScheme.secondaryContainer,
+      borderRadius: BorderRadius.circular(20),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(20),
+        onTap: () => onSourceTapped(source),
+        onLongPress: () => onSourceLongPress(source),
+        child: Container(
+          padding:
+              EdgeInsets.symmetric(horizontal: 16, vertical: 12 * scaleFactor),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: colorScheme.shadow.withOpacity(0.1),
+                blurRadius: 4,
+                offset: const Offset(0, 2),
+              )
+            ],
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  source.id,
+                  style: Theme.of(context)
+                      .textTheme
+                      .titleSmall
+                      ?.apply(fontSizeFactor: scaleFactor)
+                      .copyWith(
+                        color: isSourcePlaying
+                            ? colorScheme.onTertiaryContainer
+                            : colorScheme.onSecondaryContainer,
+                        fontWeight:
+                            isSourcePlaying ? FontWeight.w700 : FontWeight.w600,
+                        letterSpacing: 0.1,
+                      ),
                 ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        source.id,
-                        style: Theme.of(context)
-                            .textTheme
-                            .titleSmall
-                            ?.apply(fontSizeFactor: scaleFactor)
-                            .copyWith(
+              ),
+              if (!settingsProvider.hideTrackCountInSourceList)
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: isSourcePlaying
+                        ? colorScheme.tertiary.withOpacity(0.1)
+                        : colorScheme.secondary.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    '${source.tracks.length}',
+                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
                           color: isSourcePlaying
                               ? colorScheme.onTertiaryContainer
                               : colorScheme.onSecondaryContainer,
-                          fontWeight: isSourcePlaying
-                              ? FontWeight.w700
-                              : FontWeight.w600,
-                          letterSpacing: 0.1,
+                          fontWeight: FontWeight.w600,
                         ),
-                      ),
-                    ),
-                    if (!settingsProvider.hideTrackCountInSourceList)
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 10, vertical: 6),
-                        decoration: BoxDecoration(
-                          color: isSourcePlaying
-                              ? colorScheme.tertiary.withOpacity(0.1)
-                              : colorScheme.secondary.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Text(
-                          '${source.tracks.length}',
-                          style:
-                          Theme.of(context).textTheme.labelSmall?.copyWith(
-                            color: isSourcePlaying
-                                ? colorScheme.onTertiaryContainer
-                                : colorScheme.onSecondaryContainer,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                  ],
+                  ),
                 ),
-              ),
-            ),
+            ],
           ),
-        );
-      },
+        ),
+      ),
     );
   }
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:ui'; // For WidgetsBinding
 
 class SettingsProvider with ChangeNotifier {
   // Preference Keys
@@ -18,7 +19,13 @@ class SettingsProvider with ChangeNotifier {
   static const String _scaleShowListKey = 'scale_show_list';
   static const String _scaleTrackListKey = 'scale_track_list';
   static const String _scalePlayerKey = 'scale_player';
+  static const String _scaleSettingsScreenKey = 'scale_settings_screen';
   static const String _seedColorKey = 'seed_color';
+  static const String _showGlowBorderKey = 'show_glow_border';
+
+  static const String _highlightPlayingWithRgbKey =
+      'highlight_playing_with_rgb';
+  static const String _showPlaybackMessagesKey = 'show_playback_messages';
 
   // Hard-coded setting.
   bool showExpandIcon = false;
@@ -38,6 +45,12 @@ class SettingsProvider with ChangeNotifier {
   bool _scaleShowList = true;
   bool _scaleTrackList = true;
   bool _scalePlayer = true;
+  bool _scaleSettingsScreen = false;
+  bool _showGlowBorder = false;
+
+  bool _highlightPlayingWithRgb = false;
+  bool _showPlaybackMessages = false;
+
   Color? _seedColor;
 
   // Public getters
@@ -55,6 +68,12 @@ class SettingsProvider with ChangeNotifier {
   bool get scaleShowList => _scaleShowList;
   bool get scaleTrackList => _scaleTrackList;
   bool get scalePlayer => _scalePlayer;
+  bool get scaleSettingsScreen => _scaleSettingsScreen;
+  bool get showGlowBorder => _showGlowBorder;
+
+  bool get highlightPlayingWithRgb => _highlightPlayingWithRgb;
+  bool get showPlaybackMessages => _showPlaybackMessages;
+
   Color? get seedColor => _seedColor;
 
   SettingsProvider() {
@@ -93,6 +112,17 @@ class SettingsProvider with ChangeNotifier {
       _updatePreference(_scaleTrackListKey, _scaleTrackList = !_scaleTrackList);
   void toggleScalePlayer() =>
       _updatePreference(_scalePlayerKey, _scalePlayer = !_scalePlayer);
+  void toggleScaleSettingsScreen() => _updatePreference(
+      _scaleSettingsScreenKey, _scaleSettingsScreen = !_scaleSettingsScreen);
+  void toggleShowGlowBorder() =>
+      _updatePreference(_showGlowBorderKey, _showGlowBorder = !_showGlowBorder);
+
+  void toggleHighlightPlayingWithRgb() => _updatePreference(
+      _highlightPlayingWithRgbKey,
+      _highlightPlayingWithRgb = !_highlightPlayingWithRgb);
+
+  void toggleShowPlaybackMessages() => _updatePreference(
+      _showPlaybackMessagesKey, _showPlaybackMessages = !_showPlaybackMessages);
 
   Future<void> setSeedColor(Color? color) async {
     _seedColor = color;
@@ -164,6 +194,12 @@ class SettingsProvider with ChangeNotifier {
     _scaleShowList = prefs.getBool(_scaleShowListKey) ?? true;
     _scaleTrackList = prefs.getBool(_scaleTrackListKey) ?? true;
     _scalePlayer = prefs.getBool(_scalePlayerKey) ?? true;
+    _scaleSettingsScreen = prefs.getBool(_scaleSettingsScreenKey) ?? false;
+    _showGlowBorder = prefs.getBool(_showGlowBorderKey) ?? false;
+
+    _highlightPlayingWithRgb =
+        prefs.getBool(_highlightPlayingWithRgbKey) ?? false;
+    _showPlaybackMessages = prefs.getBool(_showPlaybackMessagesKey) ?? false;
 
     final seedColorValue = prefs.getInt(_seedColorKey);
     if (seedColorValue != null) {
