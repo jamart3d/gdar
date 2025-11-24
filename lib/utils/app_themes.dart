@@ -4,13 +4,14 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class AppThemes {
-  static ThemeData lightTheme(bool useHandwritingFont) {
+  static ThemeData lightTheme(bool useHandwritingFont,
+      {bool useMaterial3 = true}) {
     final textTheme = useHandwritingFont
         ? GoogleFonts.caveatTextTheme(ThemeData.light().textTheme)
         : null; // Use default M3 typography
 
     return ThemeData(
-      useMaterial3: true,
+      useMaterial3: useMaterial3,
       brightness: Brightness.light,
       primarySwatch: Colors.blue,
       scaffoldBackgroundColor: const Color(0xFFF5F5F5), // A cool white
@@ -23,13 +24,14 @@ class AppThemes {
     );
   }
 
-  static ThemeData darkTheme(bool useHandwritingFont) {
+  static ThemeData darkTheme(bool useHandwritingFont,
+      {bool useMaterial3 = true}) {
     final textTheme = useHandwritingFont
         ? GoogleFonts.caveatTextTheme(ThemeData.dark().textTheme)
         : null; // Use default M3 typography
 
     return ThemeData(
-      useMaterial3: true,
+      useMaterial3: useMaterial3,
       brightness: Brightness.dark,
       primarySwatch: Colors.blue,
       scaffoldBackgroundColor: Colors.black, // True black for OLED

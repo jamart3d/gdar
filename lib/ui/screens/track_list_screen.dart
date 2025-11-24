@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:gdar/models/show.dart';
 import 'package:gdar/models/source.dart';
@@ -168,7 +167,7 @@ class _TrackListScreenState extends State<TrackListScreen> {
               onTap: () => _onSourceTapped(source),
               child: Container(
                 padding:
-                const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
                 child: Row(
                   children: [
                     Expanded(
@@ -215,28 +214,26 @@ class _TrackListScreenState extends State<TrackListScreen> {
     final textTheme = Theme.of(context).textTheme;
     final settingsProvider = context.watch<SettingsProvider>();
 
-    final scaleFactor = settingsProvider.scaleTrackList ? 1.4 : 1.0;
+    final double scaleFactor = settingsProvider.uiScale ? 1.25 : 1.0;
 
     // Safely create a non-nullable base style with a fallback font size.
     final baseTitleStyle =
         textTheme.bodyLarge ?? const TextStyle(fontSize: 16.0);
     final titleStyle = baseTitleStyle
         .copyWith(
-        color: colorScheme.onSurface,
-        fontWeight: FontWeight.w500,
-        letterSpacing: 0.1)
+            color: colorScheme.onSurface,
+            fontWeight: FontWeight.w500,
+            letterSpacing: 0.1)
         .apply(fontSizeFactor: scaleFactor);
 
     final baseDurationStyle =
         textTheme.labelMedium ?? const TextStyle(fontSize: 12.0);
-    final durationStyle = baseDurationStyle
-        .copyWith(
+    final durationStyle = baseDurationStyle.copyWith(
       color: colorScheme.onSurfaceVariant,
       fontWeight: FontWeight.w600,
       letterSpacing: 0.5,
       fontFeatures: [const FontFeature.tabularFigures()],
-    )
-        .apply(fontSizeFactor: scaleFactor);
+    ).apply(fontSizeFactor: scaleFactor);
 
     final titleText = settingsProvider.showTrackNumbers
         ? '${track.trackNumber}. ${track.title}'
@@ -252,8 +249,7 @@ class _TrackListScreenState extends State<TrackListScreen> {
             borderRadius: BorderRadius.circular(16),
             onTap: () => _onTrackTapped(source, index),
             child: Padding(
-              padding:
-              const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               child: Row(
                 children: [
                   Expanded(

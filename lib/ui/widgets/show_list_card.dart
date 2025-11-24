@@ -5,10 +5,13 @@ import 'package:gdar/ui/widgets/animated_gradient_border.dart';
 import 'package:gdar/ui/widgets/conditional_marquee.dart';
 import 'package:provider/provider.dart';
 
+import 'package:gdar/utils/color_generator.dart';
+
 class ShowListCard extends StatelessWidget {
   final Show show;
   final bool isExpanded;
   final bool isPlaying;
+  final String? playingSourceId; // New field
   final bool isLoading;
   final VoidCallback onTap;
   final VoidCallback onLongPress;
@@ -18,6 +21,7 @@ class ShowListCard extends StatelessWidget {
     required this.show,
     required this.isExpanded,
     required this.isPlaying,
+    this.playingSourceId, // New parameter
     required this.isLoading,
     required this.onTap,
     required this.onLongPress,
@@ -38,7 +42,7 @@ class ShowListCard extends StatelessWidget {
     final bool shouldShowBadge = show.sources.length > 1 ||
         (show.sources.length == 1 && settingsProvider.showSingleShnid);
 
-    final double scaleFactor = settingsProvider.scaleShowList ? 1.3 : 1.0;
+    final double scaleFactor = settingsProvider.uiScale ? 1.5 : 1.0;
 
     final baseVenueStyle =
         textTheme.titleLarge ?? const TextStyle(fontSize: 22.0);
@@ -55,12 +59,20 @@ class ShowListCard extends StatelessWidget {
         .copyWith(color: colorScheme.onSurfaceVariant, letterSpacing: 0.15)
         .apply(fontSizeFactor: scaleFactor);
 
+    Color backgroundColor = colorScheme.surface;
+    if (isPlaying && settingsProvider.highlightCurrentShowCard) {
+      String seed = show.name;
+      if (show.sources.length > 1 && playingSourceId != null) {
+        seed = playingSourceId!;
+      }
+      backgroundColor = ColorGenerator.getColor(seed,
+          brightness: Theme.of(context).brightness);
+    }
+
     Widget cardContent = Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(28),
-        color: isExpanded
-            ? colorScheme.primaryContainer.withOpacity(0.3)
-            : colorScheme.surface,
+        color: backgroundColor,
       ),
       child: Material(
         color: Colors.transparent,
@@ -191,6 +203,7 @@ class ShowListCard extends StatelessWidget {
                   Colors.red, // Repeat first color for smooth loop
                 ]
               : null,
+          backgroundColor: Colors.transparent,
           child: cardContent,
         ),
       );

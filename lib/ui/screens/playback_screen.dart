@@ -9,6 +9,7 @@ import 'package:gdar/ui/screens/settings_screen.dart';
 import 'package:gdar/ui/widgets/conditional_marquee.dart';
 import 'package:gdar/ui/widgets/animated_gradient_border.dart';
 import 'package:gdar/utils/utils.dart';
+import 'package:gdar/utils/color_generator.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:provider/provider.dart';
 import 'dart:async';
@@ -105,55 +106,22 @@ class _PlaybackScreenState extends State<PlaybackScreen>
 
     final colorScheme = Theme.of(context).colorScheme;
     final double trackItemHeight =
-        _trackItemHeight * (settingsProvider.scaleTrackList ? 1.4 : 1.0);
+        _trackItemHeight * (settingsProvider.uiScale ? 1.4 : 1.0);
+
+    Color backgroundColor = colorScheme.surface;
+    if (settingsProvider.highlightCurrentShowCard) {
+      String seed = currentShow.name;
+      if (currentShow.sources.length > 1) {
+        seed = currentSource.id;
+      }
+      backgroundColor = ColorGenerator.getColor(seed,
+          brightness: Theme.of(context).brightness);
+    }
 
     return Scaffold(
-      backgroundColor: colorScheme.surface,
+      backgroundColor: backgroundColor,
       appBar: AppBar(
-        backgroundColor: colorScheme.surface,
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            SizedBox(
-              height: Theme.of(context).textTheme.titleLarge!.fontSize! * 1.2,
-              child: ConditionalMarquee(
-                text: currentShow.venue,
-                style: Theme.of(context)
-                    .textTheme
-                    .titleLarge
-                    ?.copyWith(color: Theme.of(context).colorScheme.onSurface),
-                blankSpace: 60.0,
-                pauseAfterRound: const Duration(seconds: 3),
-              ),
-            ),
-            const SizedBox(height: 2),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  currentShow.formattedDate,
-                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant),
-                ),
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                  decoration: BoxDecoration(
-                    color: colorScheme.tertiaryContainer.withOpacity(0.7),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Text(
-                    currentSource.id,
-                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                          color: colorScheme.onTertiaryContainer,
-                          fontWeight: FontWeight.bold,
-                        ),
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
+        backgroundColor: backgroundColor,
         actions: [
           IconButton(
             icon: const Icon(Icons.settings_rounded),
@@ -216,7 +184,7 @@ class _PlaybackScreenState extends State<PlaybackScreen>
     final textTheme = Theme.of(context).textTheme;
     final settingsProvider = context.watch<SettingsProvider>();
 
-    final double scaleFactor = settingsProvider.scalePlayer ? 1.25 : 1.0;
+    final double scaleFactor = settingsProvider.uiScale ? 1.25 : 1.0;
 
     return SingleChildScrollView(
       physics: const ClampingScrollPhysics(),
@@ -231,51 +199,61 @@ class _PlaybackScreenState extends State<PlaybackScreen>
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  StreamBuilder<int?>(
-                    stream: audioProvider.currentIndexStream,
-                    initialData: audioProvider.audioPlayer.currentIndex,
-                    builder: (context, snapshot) {
-                      final index = snapshot.data ?? 0;
-                      if (index >= currentSource.tracks.length) {
-                        return const SizedBox.shrink();
-                      }
-                      final track = currentSource.tracks[index];
-                      return AnimatedSwitcher(
-                        duration: const Duration(milliseconds: 300),
-                        transitionBuilder:
-                            (Widget child, Animation<double> animation) {
-                          return FadeTransition(
-                            opacity: animation,
-                            child: child,
-                          );
-                        },
-                        child: GestureDetector(
-                          key: ValueKey<String>(track.title),
-                          onTap: () => _scrollToCurrentTrack(trackItemHeight),
-                          child: SizedBox(
-                            height: textTheme.titleLarge!
-                                    .apply(fontSizeFactor: scaleFactor)
-                                    .fontSize! *
-                                1.3,
-                            child: Material(
-                              type: MaterialType.transparency,
-                              child: ConditionalMarquee(
-                                text: track.title,
-                                style: textTheme.titleLarge
-                                    ?.apply(fontSizeFactor: scaleFactor)
-                                    .copyWith(
-                                      fontWeight: FontWeight.w600,
-                                      color: colorScheme.onSurface,
-                                    ),
-                                textAlign: TextAlign.center,
-                                pauseAfterRound: const Duration(seconds: 3),
-                                blankSpace: 60.0,
-                              ),
+                  const SizedBox(height: 8),
+                  GestureDetector(
+                    onTap: () => _scrollToCurrentTrack(trackItemHeight),
+                    child: Container(
+                      width: double.infinity,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          SizedBox(
+                            height: textTheme.headlineSmall!.fontSize! *
+                                scaleFactor *
+                                1.2,
+                            child: ConditionalMarquee(
+                              text: currentShow.venue,
+                              style: textTheme.headlineSmall
+                                  ?.apply(fontSizeFactor: scaleFactor)
+                                  .copyWith(
+                                    color: colorScheme.onSurface,
+                                  ),
+                              blankSpace: 60.0,
+                              pauseAfterRound: const Duration(seconds: 3),
                             ),
                           ),
-                        ),
-                      );
-                    },
+                          Row(
+                            children: [
+                              Text(
+                                currentShow.formattedDate,
+                                style: textTheme.titleMedium
+                                    ?.apply(fontSizeFactor: scaleFactor)
+                                    .copyWith(
+                                      color: colorScheme.onSurfaceVariant,
+                                    ),
+                              ),
+                              const SizedBox(width: 8),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 6, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: colorScheme.tertiaryContainer
+                                      .withOpacity(0.7),
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                child: Text(
+                                  currentSource.id,
+                                  style: textTheme.labelSmall?.copyWith(
+                                    color: colorScheme.onTertiaryContainer,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
                 ],
               ),
@@ -359,7 +337,7 @@ class _PlaybackScreenState extends State<PlaybackScreen>
       BuildContext context, AudioProvider audioProvider, Source currentSource) {
     final colorScheme = Theme.of(context).colorScheme;
     final settingsProvider = context.watch<SettingsProvider>();
-    final double scaleFactor = settingsProvider.scalePlayer ? 1.25 : 1.0;
+    final double scaleFactor = settingsProvider.uiScale ? 1.25 : 1.0;
     final double iconSize = 32 * scaleFactor;
     final double playButtonSize = 60 * scaleFactor;
     final double playIconSize = 36 * scaleFactor;
@@ -472,7 +450,7 @@ class _PlaybackScreenState extends State<PlaybackScreen>
   Widget _buildProgressBar(BuildContext context, AudioProvider audioProvider) {
     final colorScheme = Theme.of(context).colorScheme;
     final settingsProvider = context.watch<SettingsProvider>();
-    final double scaleFactor = settingsProvider.scalePlayer ? 1.25 : 1.0;
+    final double scaleFactor = settingsProvider.uiScale ? 1.25 : 1.0;
 
     return StreamBuilder<Duration>(
       stream: audioProvider.positionStream,
@@ -681,7 +659,7 @@ class _PlaybackScreenState extends State<PlaybackScreen>
   ) {
     final colorScheme = Theme.of(context).colorScheme;
     final settingsProvider = context.watch<SettingsProvider>();
-    final double scaleFactor = settingsProvider.scaleTrackList ? 1.4 : 1.0;
+    final double scaleFactor = settingsProvider.uiScale ? 1.4 : 1.0;
 
     return StreamBuilder<int?>(
       stream: audioProvider.currentIndexStream,

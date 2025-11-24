@@ -8,6 +8,7 @@ import 'package:gdar/ui/widgets/conditional_marquee.dart';
 
 import 'package:just_audio/just_audio.dart';
 import 'package:provider/provider.dart';
+import 'package:gdar/utils/color_generator.dart';
 
 class MiniPlayer extends StatefulWidget {
   final VoidCallback onTap;
@@ -58,12 +59,22 @@ class _MiniPlayerState extends State<MiniPlayer>
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
-    final double scaleFactor = settingsProvider.scalePlayer ? 1.25 : 1.0;
+    final double scaleFactor = settingsProvider.uiScale ? 1.25 : 1.0;
     final double iconSize = 28 * scaleFactor;
     final double buttonSize = 48 * scaleFactor;
 
+    Color backgroundColor = colorScheme.surfaceContainerHigh;
+    if (settingsProvider.highlightCurrentShowCard) {
+      String seed = currentShow.name;
+      if (currentShow.sources.length > 1) {
+        seed = currentSource.id;
+      }
+      backgroundColor = ColorGenerator.getColor(seed,
+          brightness: Theme.of(context).brightness);
+    }
+
     Widget miniPlayerContent = Material(
-      color: colorScheme.surfaceContainerHigh,
+      color: backgroundColor,
       borderRadius: BorderRadius.circular(28),
       clipBehavior: Clip.antiAlias,
       elevation: 4.0,

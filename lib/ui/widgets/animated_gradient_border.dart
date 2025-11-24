@@ -44,7 +44,13 @@ class _AnimatedGradientBorderState extends State<AnimatedGradientBorder>
   @override
   Widget build(BuildContext context) {
     if (!widget.showGlow) {
-      return widget.child;
+      return Container(
+        decoration: BoxDecoration(
+          color: widget.backgroundColor ?? Theme.of(context).cardColor,
+          borderRadius: BorderRadius.circular(widget.borderRadius),
+        ),
+        child: widget.child,
+      );
     }
 
     final colors = widget.colors ??
@@ -58,21 +64,12 @@ class _AnimatedGradientBorderState extends State<AnimatedGradientBorder>
     return AnimatedBuilder(
       animation: _controller,
       builder: (context, child) {
-        return Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(widget.borderRadius),
-            gradient: SweepGradient(
-              colors: colors,
-              // stops: null, // Let Flutter distribute colors evenly
-              transform: GradientRotation(_controller.value * 2 * 3.14159),
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: colors[0].withOpacity(0.5),
-                blurRadius: 10,
-                spreadRadius: 1,
-              ),
-            ],
+        return CustomPaint(
+          painter: _GradientBorderPainter(
+            colors: colors,
+            borderRadius: widget.borderRadius,
+            borderWidth: widget.borderWidth,
+            rotation: _controller.value * 2 * 3.14159,
           ),
           child: Padding(
             padding: EdgeInsets.all(widget.borderWidth),
@@ -88,5 +85,71 @@ class _AnimatedGradientBorderState extends State<AnimatedGradientBorder>
         );
       },
     );
+  }
+}
+
+class _GradientBorderPainter extends CustomPainter {
+  final List<Color> colors;
+  final double borderRadius;
+  final double borderWidth;
+  final double rotation;
+
+  _GradientBorderPainter({
+    required this.colors,
+    required this.borderRadius,
+    required this.borderWidth,
+    required this.rotation,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final rect = Rect.fromLTWH(0, 0, size.width, size.height);
+    final rrect = RRect.fromRectAndRadius(rect, Radius.circular(borderRadius));
+
+    // 1. Draw Shadow
+    final shadowPaint = Paint()
+      ..color = colors[0].withOpacity(0.5)
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 10);
+
+    canvas.drawRRect(rrect.shift(const Offset(0, 1)), shadowPaint);
+
+    // 2. Draw Gradient Border
+    final innerRect = rect.deflate(borderWidth);
+    final innerRRect = RRect.fromRectAndRadius(
+        innerRect, Radius.circular(borderRadius - borderWidth));
+
+    // Use Path.combine for robust difference operation
+    final borderPath = Path.combine(
+      PathOperation.difference,
+      Path()..addRRect(rrect),
+      Path()..addRRect(innerRRect),
+    );
+
+    canvas.save();
+    canvas.clipPath(borderPath);
+
+    final center = rect.center;
+    canvas.translate(center.dx, center.dy);
+    canvas.rotate(rotation);
+    canvas.translate(-center.dx, -center.dy);
+
+    final maxDim = (size.width > size.height ? size.width : size.height) * 2;
+    final bigRect =
+        Rect.fromCenter(center: center, width: maxDim, height: maxDim);
+
+    final gradientPaint = Paint()
+      ..shader = SweepGradient(colors: colors).createShader(bigRect);
+
+    canvas.drawRect(bigRect, gradientPaint);
+
+    canvas.restore();
+  }
+
+  @override
+  bool shouldRepaint(covariant _GradientBorderPainter oldDelegate) {
+    return oldDelegate.rotation != rotation ||
+        oldDelegate.colors != colors ||
+        oldDelegate.borderRadius != borderRadius ||
+        oldDelegate.borderWidth != borderWidth;
   }
 }

@@ -370,24 +370,6 @@ class MockSettingsProvider extends _i1.Mock implements _i6.SettingsProvider {
       ) as bool);
 
   @override
-  bool get scaleShowList => (super.noSuchMethod(
-        Invocation.getter(#scaleShowList),
-        returnValue: false,
-      ) as bool);
-
-  @override
-  bool get scaleTrackList => (super.noSuchMethod(
-        Invocation.getter(#scaleTrackList),
-        returnValue: false,
-      ) as bool);
-
-  @override
-  bool get scalePlayer => (super.noSuchMethod(
-        Invocation.getter(#scalePlayer),
-        returnValue: false,
-      ) as bool);
-
-  @override
   set showExpandIcon(bool? value) => super.noSuchMethod(
         Invocation.setter(
           #showExpandIcon,
@@ -430,15 +412,6 @@ class MockSettingsProvider extends _i1.Mock implements _i6.SettingsProvider {
       );
 
   @override
-  void toggleHideTrackCountInSourceList() => super.noSuchMethod(
-        Invocation.method(
-          #toggleHideTrackCountInSourceList,
-          [],
-        ),
-        returnValueForMissingStub: null,
-      );
-
-  @override
   void togglePlayRandomOnCompletion() => super.noSuchMethod(
         Invocation.method(
           #togglePlayRandomOnCompletion,
@@ -475,54 +448,9 @@ class MockSettingsProvider extends _i1.Mock implements _i6.SettingsProvider {
       );
 
   @override
-  void toggleUseSliverAppBar() => super.noSuchMethod(
-        Invocation.method(
-          #toggleUseSliverAppBar,
-          [],
-        ),
-        returnValueForMissingStub: null,
-      );
-
-  @override
-  void toggleUseSharedAxisTransition() => super.noSuchMethod(
-        Invocation.method(
-          #toggleUseSharedAxisTransition,
-          [],
-        ),
-        returnValueForMissingStub: null,
-      );
-
-  @override
   void toggleUseHandwritingFont() => super.noSuchMethod(
         Invocation.method(
           #toggleUseHandwritingFont,
-          [],
-        ),
-        returnValueForMissingStub: null,
-      );
-
-  @override
-  void toggleScaleShowList() => super.noSuchMethod(
-        Invocation.method(
-          #toggleScaleShowList,
-          [],
-        ),
-        returnValueForMissingStub: null,
-      );
-
-  @override
-  void toggleScaleTrackList() => super.noSuchMethod(
-        Invocation.method(
-          #toggleScaleTrackList,
-          [],
-        ),
-        returnValueForMissingStub: null,
-      );
-
-  @override
-  void toggleScalePlayer() => super.noSuchMethod(
-        Invocation.method(
-          #toggleScalePlayer,
           [],
         ),
         returnValueForMissingStub: null,

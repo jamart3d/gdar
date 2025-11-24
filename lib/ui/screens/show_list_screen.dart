@@ -16,6 +16,7 @@ import 'package:gdar/ui/screens/track_list_screen.dart';
 import 'package:gdar/ui/widgets/mini_player.dart';
 import 'package:gdar/ui/widgets/show_list_card.dart';
 import 'package:gdar/ui/widgets/show_list_item_details.dart';
+import 'package:gdar/utils/color_generator.dart';
 import 'package:gdar/utils/logger.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:provider/provider.dart';
@@ -154,8 +155,8 @@ class _ShowListScreenState extends State<ShowListScreen>
   double _calculateExpandedHeight(Show show) {
     if (show.sources.length <= 1) return 0.0;
     final settingsProvider = context.read<SettingsProvider>();
-    final sourceHeaderHeight = _baseSourceHeaderHeight *
-        (settingsProvider.scaleTrackList ? 1.25 : 1.0);
+    final double scaleFactor = settingsProvider.uiScale ? 1.25 : 1.0;
+    final sourceHeaderHeight = _baseSourceHeaderHeight * scaleFactor;
     return (show.sources.length * sourceHeaderHeight) + _listVerticalPadding;
   }
 
@@ -360,7 +361,7 @@ class _ShowListScreenState extends State<ShowListScreen>
     _collapseAndScrollOnReturn();
   }
 
-  /// Collapses/Expands show and scrolls to the current show on return.
+  /// Collapses/Adds show and scrolls to the current show on return.
   void _collapseAndScrollOnReturn() {
     final showListProvider = context.read<ShowListProvider>();
     final audioProvider = context.read<AudioProvider>();
@@ -545,7 +546,7 @@ class _ShowListScreenState extends State<ShowListScreen>
       curve: Curves.easeInOutCubicEmphasized,
       child: _isSearchVisible
           ? Transform.scale(
-              scale: settingsProvider.scaleShowList ? 1.1 : 1.0,
+              scale: settingsProvider.uiScale ? 1.1 : 1.0,
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(24, 8, 24, 8),
                 child: SearchBar(
@@ -575,9 +576,24 @@ class _ShowListScreenState extends State<ShowListScreen>
   Widget _buildStandardLayout() {
     final audioProvider = context.watch<AudioProvider>();
     final showListProvider = context.watch<ShowListProvider>();
+    final settingsProvider = context.watch<SettingsProvider>();
+
+    Color? backgroundColor;
+    if (settingsProvider.highlightCurrentShowCard &&
+        audioProvider.currentShow != null) {
+      String seed = audioProvider.currentShow!.name;
+      if (audioProvider.currentShow!.sources.length > 1 &&
+          audioProvider.currentSource != null) {
+        seed = audioProvider.currentSource!.id;
+      }
+      backgroundColor = ColorGenerator.getColor(seed,
+          brightness: Theme.of(context).brightness);
+    }
 
     return Scaffold(
+      backgroundColor: backgroundColor,
       appBar: AppBar(
+        backgroundColor: backgroundColor,
         title: const Text('gdar'),
         actions: _buildAppBarActions(),
       ),
@@ -609,14 +625,29 @@ class _ShowListScreenState extends State<ShowListScreen>
   Widget _buildSliverLayout() {
     final audioProvider = context.watch<AudioProvider>();
     final showListProvider = context.watch<ShowListProvider>();
+    final settingsProvider = context.watch<SettingsProvider>();
+
+    Color? backgroundColor;
+    if (settingsProvider.highlightCurrentShowCard &&
+        audioProvider.currentShow != null) {
+      String seed = audioProvider.currentShow!.name;
+      if (audioProvider.currentShow!.sources.length > 1 &&
+          audioProvider.currentSource != null) {
+        seed = audioProvider.currentSource!.id;
+      }
+      backgroundColor = ColorGenerator.getColor(seed,
+          brightness: Theme.of(context).brightness);
+    }
 
     return Scaffold(
+      backgroundColor: backgroundColor,
       body: Stack(
         children: [
           NestedScrollView(
             headerSliverBuilder: (context, innerBoxIsScrolled) {
               return [
                 SliverAppBar(
+                  backgroundColor: backgroundColor,
                   title: const Text('gdar'),
                   actions: _buildAppBarActions(),
                   floating: true,
@@ -681,6 +712,7 @@ class _ShowListScreenState extends State<ShowListScreen>
           show: show,
           isExpanded: isExpanded,
           isPlaying: audioProvider.currentShow?.name == show.name,
+          playingSourceId: audioProvider.currentSource?.id,
           isLoading: showListProvider.loadingShowName == show.name,
           onTap: () => _onShowTapped(show),
           onLongPress: () => _onCardLongPressed(show),

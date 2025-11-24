@@ -45,17 +45,16 @@ class GdarApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
         ChangeNotifierProvider(create: (_) => SettingsProvider()),
-        ChangeNotifierProvider(
-            create: (_) => ShowListProvider()..init()),
+        ChangeNotifierProvider(create: (_) => ShowListProvider()..init()),
         ChangeNotifierProxyProvider2<ShowListProvider, SettingsProvider,
             AudioProvider>(
           create: (_) => AudioProvider(),
           update: (_, showListProvider, settingsProvider, audioProvider) =>
-          audioProvider!
-            ..update(
-              showListProvider,
-              settingsProvider,
-            ),
+              audioProvider!
+                ..update(
+                  showListProvider,
+                  settingsProvider,
+                ),
         ),
       ],
       child: Consumer2<ThemeProvider, SettingsProvider>(
@@ -70,28 +69,30 @@ class GdarApp extends StatelessWidget {
                   darkDynamic != null) {
                 // Use dynamic colors if the setting is on and they are available
                 lightTheme = ThemeData(
-                  useMaterial3: true,
+                  useMaterial3: settingsProvider.useMaterial3,
                   colorScheme: lightDynamic,
                   textTheme: settingsProvider.useHandwritingFont
                       ? GoogleFonts.caveatTextTheme(
-                      ThemeData(colorScheme: lightDynamic).textTheme)
+                          ThemeData(colorScheme: lightDynamic).textTheme)
                       : null,
                 );
                 darkTheme = ThemeData(
-                  useMaterial3: true,
+                  useMaterial3: settingsProvider.useMaterial3,
                   colorScheme: darkDynamic,
                   brightness: Brightness.dark,
                   textTheme: settingsProvider.useHandwritingFont
                       ? GoogleFonts.caveatTextTheme(
-                      ThemeData(colorScheme: darkDynamic).textTheme)
+                          ThemeData(colorScheme: darkDynamic).textTheme)
                       : null,
                 );
               } else {
                 // If dynamic color is off, first get the base static themes.
-                lightTheme =
-                    AppThemes.lightTheme(settingsProvider.useHandwritingFont);
-                darkTheme =
-                    AppThemes.darkTheme(settingsProvider.useHandwritingFont);
+                lightTheme = AppThemes.lightTheme(
+                    settingsProvider.useHandwritingFont,
+                    useMaterial3: settingsProvider.useMaterial3);
+                darkTheme = AppThemes.darkTheme(
+                    settingsProvider.useHandwritingFont,
+                    useMaterial3: settingsProvider.useMaterial3);
 
                 // Then, check for a user-defined seed color to override the color scheme.
                 final seedColor = settingsProvider.seedColor;
@@ -117,7 +118,7 @@ class GdarApp extends StatelessWidget {
                 theme: lightTheme,
                 darkTheme: darkTheme,
                 themeMode:
-                themeProvider.isDarkMode ? ThemeMode.dark : ThemeMode.light,
+                    themeProvider.isDarkMode ? ThemeMode.dark : ThemeMode.light,
                 home: const ShowListScreen(),
               );
             },

@@ -39,7 +39,7 @@ class ShowListItemDetails extends StatelessWidget {
   Widget _buildSourceSelection(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final settingsProvider = context.watch<SettingsProvider>();
-    final scaleFactor = settingsProvider.scaleTrackList ? 1.4 : 1.0;
+    final double scaleFactor = settingsProvider.uiScale ? 1.25 : 1.0;
 
     return ListView.builder(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -94,6 +94,9 @@ class ShowListItemDetails extends StatelessWidget {
               EdgeInsets.symmetric(horizontal: 16, vertical: 12 * scaleFactor),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(20),
+            border: isSourcePlaying
+                ? Border.all(color: colorScheme.tertiary, width: 2)
+                : null,
             boxShadow: [
               BoxShadow(
                 color: colorScheme.shadow.withOpacity(0.1),

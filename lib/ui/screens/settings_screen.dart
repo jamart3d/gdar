@@ -91,7 +91,7 @@ class SettingsScreen extends StatelessWidget {
       duration: const Duration(milliseconds: 500),
       child: MediaQuery(
         data: MediaQuery.of(context).copyWith(
-          textScaler: settingsProvider.scaleSettingsScreen
+          textScaler: settingsProvider.uiScale
               ? const TextScaler.linear(1.2)
               : const TextScaler.linear(1.0),
         ),
@@ -173,27 +173,6 @@ class SettingsScreen extends StatelessWidget {
                     },
                     secondary: const Icon(Icons.edit_rounded),
                   ),
-                  SwitchListTile(
-                    title: const Text('Expressive Scrolling'),
-                    subtitle: const Text("Make the app bar react to scrolling"),
-                    value: settingsProvider.useSliverAppBar,
-                    onChanged: (value) {
-                      context.read<SettingsProvider>().toggleUseSliverAppBar();
-                    },
-                    secondary: const Icon(Icons.view_day_outlined),
-                  ),
-                  SwitchListTile(
-                    title: const Text('Expressive Transitions'),
-                    subtitle: const Text(
-                        "Use Material 3's shared axis screen transitions"),
-                    value: settingsProvider.useSharedAxisTransition,
-                    onChanged: (value) {
-                      context
-                          .read<SettingsProvider>()
-                          .toggleUseSharedAxisTransition();
-                    },
-                    secondary: const Icon(Icons.open_in_new_rounded),
-                  ),
                 ],
               ),
 
@@ -236,17 +215,13 @@ class SettingsScreen extends StatelessWidget {
                     secondary: const Icon(Icons.looks_one_rounded),
                   ),
                   SwitchListTile(
-                    title: const Text('Hide Track Count in Source List'),
-                    subtitle: const Text(
-                        'Hide "X tracks" next to SHNID in expanded view'),
-                    value: settingsProvider.hideTrackCountInSourceList,
+                    title: const Text('UI Scale'),
+                    subtitle: const Text('Increase text size across the app'),
+                    value: settingsProvider.uiScale,
                     onChanged: (value) {
-                      context
-                          .read<SettingsProvider>()
-                          .toggleHideTrackCountInSourceList();
+                      context.read<SettingsProvider>().toggleUiScale();
                     },
-                    secondary:
-                        const Icon(Icons.format_list_numbered_rtl_rounded),
+                    secondary: const Icon(Icons.text_fields_rounded),
                   ),
                 ],
               ),
@@ -304,56 +279,6 @@ class SettingsScreen extends StatelessWidget {
                           .toggleShowPlaybackMessages();
                     },
                     secondary: const Icon(Icons.message_rounded),
-                  ),
-                ],
-              ),
-
-              // Accessibility
-              ExpansionTile(
-                title: Text(
-                  'Accessibility',
-                  style: TextStyle(
-                      color: colorScheme.primary, fontWeight: FontWeight.bold),
-                ),
-                children: [
-                  SwitchListTile(
-                    title: const Text('Scale Show List'),
-                    subtitle:
-                        const Text('Increase size of show cards and fonts'),
-                    value: settingsProvider.scaleShowList,
-                    onChanged: (value) {
-                      context.read<SettingsProvider>().toggleScaleShowList();
-                    },
-                    secondary: const Icon(Icons.zoom_in_map_rounded),
-                  ),
-                  SwitchListTile(
-                    title: const Text('Scale Track Lists'),
-                    subtitle: const Text('Increase size of track list items'),
-                    value: settingsProvider.scaleTrackList,
-                    onChanged: (value) {
-                      context.read<SettingsProvider>().toggleScaleTrackList();
-                    },
-                    secondary: const Icon(Icons.format_list_bulleted_rounded),
-                  ),
-                  SwitchListTile(
-                    title: const Text('Scale Player Controls'),
-                    subtitle: const Text('Increase size of player UI elements'),
-                    value: settingsProvider.scalePlayer,
-                    onChanged: (value) {
-                      context.read<SettingsProvider>().toggleScalePlayer();
-                    },
-                    secondary: const Icon(Icons.play_circle_outline_rounded),
-                  ),
-                  SwitchListTile(
-                    title: const Text('Scale Settings Screen'),
-                    subtitle: const Text('Increase text size in this screen'),
-                    value: settingsProvider.scaleSettingsScreen,
-                    onChanged: (value) {
-                      context
-                          .read<SettingsProvider>()
-                          .toggleScaleSettingsScreen();
-                    },
-                    secondary: const Icon(Icons.text_fields_rounded),
                   ),
                 ],
               ),
