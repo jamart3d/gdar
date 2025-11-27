@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'dart:ui'; // For WidgetsBinding
 
 class SettingsProvider with ChangeNotifier {
   // Preference Keys
@@ -18,6 +17,13 @@ class SettingsProvider with ChangeNotifier {
   static const String _highlightPlayingWithRgbKey =
       'highlight_playing_with_rgb';
   static const String _showPlaybackMessagesKey = 'show_playback_messages';
+
+  static const String _showSplashScreenKey = 'show_splash_screen';
+  bool _showSplashScreen = true;
+  bool get showSplashScreen => _showSplashScreen;
+
+  void toggleShowSplashScreen() => _updatePreference(
+      _showSplashScreenKey, _showSplashScreen = !_showSplashScreen);
 
   // Hard-coded setting.
   bool showExpandIcon = false;
@@ -90,6 +96,17 @@ class SettingsProvider with ChangeNotifier {
       _highlightPlayingWithRgb = !_highlightPlayingWithRgb);
   void toggleShowPlaybackMessages() => _updatePreference(
       _showPlaybackMessagesKey, _showPlaybackMessages = !_showPlaybackMessages);
+  static const String _halfGlowDynamicKey = 'half_glow_dynamic';
+  bool _halfGlowDynamic = false;
+  bool get halfGlowDynamic => _halfGlowDynamic;
+  void toggleHalfGlowDynamic() => _updatePreference(
+      _halfGlowDynamicKey, _halfGlowDynamic = !_halfGlowDynamic);
+
+  static const String _rgbAnimationSpeedKey = 'rgb_animation_speed';
+  double _rgbAnimationSpeed = 1.0;
+  double get rgbAnimationSpeed => _rgbAnimationSpeed;
+  void setRgbAnimationSpeed(double speed) => _updateDoublePreference(
+      _rgbAnimationSpeedKey, _rgbAnimationSpeed = speed);
 
   Future<void> setSeedColor(Color? color) async {
     _seedColor = color;
@@ -153,6 +170,10 @@ class SettingsProvider with ChangeNotifier {
     _showGlowBorder = prefs.getBool(_showGlowBorderKey) ?? false;
     _highlightPlayingWithRgb =
         prefs.getBool(_highlightPlayingWithRgbKey) ?? false;
+    _halfGlowDynamic = prefs.getBool(_halfGlowDynamicKey) ?? false;
+    _rgbAnimationSpeed = prefs.getDouble(_rgbAnimationSpeedKey) ?? 1.0;
+
+    _showSplashScreen = prefs.getBool(_showSplashScreenKey) ?? true;
 
     final seedColorValue = prefs.getInt(_seedColorKey);
     if (seedColorValue != null) {
@@ -161,6 +182,12 @@ class SettingsProvider with ChangeNotifier {
       _seedColor = null;
     }
 
+    notifyListeners();
+  }
+
+  Future<void> _updateDoublePreference(String key, double value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setDouble(key, value);
     notifyListeners();
   }
 }

@@ -16,10 +16,10 @@ class ShowService {
 
     try {
       final String jsonString =
-      await rootBundle.loadString('assets/data/shows.json');
+          await rootBundle.loadString('assets/data/shows.json');
       final List<dynamic> jsonList = json.decode(jsonString);
       final List<Show> loadedShows =
-      jsonList.map((jsonItem) => Show.fromJson(jsonItem)).toList();
+          jsonList.map((jsonItem) => Show.fromJson(jsonItem)).toList();
 
       // ** Post-processing Step 1: Unify venues for shows on the same date. **
       final Map<String, String> dateToFirstVenue = {};

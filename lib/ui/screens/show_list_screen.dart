@@ -1,8 +1,6 @@
 import 'dart:async';
 import 'dart:math';
-import 'package:http/http.dart' as http;
-import 'dart:io';
-import 'package:animations/animations.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:gdar/models/show.dart';
@@ -61,8 +59,6 @@ class _ShowListScreenState extends State<ShowListScreen>
       parent: _animationController,
       curve: Curves.easeInOutCubicEmphasized,
     );
-
-    WidgetsBinding.instance.addPostFrameCallback((_) => _checkArchiveStatus());
 
     // Play random show on startup if enabled
     final settingsProvider = context.read<SettingsProvider>();
@@ -337,23 +333,23 @@ class _ShowListScreenState extends State<ShowListScreen>
   }
 
   Future<void> _openPlaybackScreen() async {
-    final settingsProvider = context.read<SettingsProvider>();
     await Navigator.of(context).push(PageRouteBuilder(
       pageBuilder: (context, animation, secondaryAnimation) =>
           const PlaybackScreen(),
       transitionsBuilder: (context, animation, secondaryAnimation, child) {
-        if (settingsProvider.useSharedAxisTransition) {
-          return SharedAxisTransition(
-            animation: animation,
-            secondaryAnimation: secondaryAnimation,
-            transitionType: SharedAxisTransitionType.vertical,
-            child: child,
-          );
-        }
-        // Default to the fade transition
-        return FadeTransition(opacity: animation, child: child);
+        const begin = Offset(0.0, 1.0);
+        const end = Offset.zero;
+        const curve = Curves.easeInOut;
+
+        var tween =
+            Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+
+        return SlideTransition(
+          position: animation.drive(tween),
+          child: child,
+        );
       },
-      transitionDuration: const Duration(milliseconds: 500),
+      transitionDuration: const Duration(milliseconds: 300),
     ));
 
     // This code runs *after* the PlaybackScreen is popped.
@@ -419,67 +415,6 @@ class _ShowListScreenState extends State<ShowListScreen>
       });
     } else {
       setState(() => _isRandomShowLoading = false);
-    }
-  }
-
-  static const int _maxRetries = 3;
-  static const Duration _retryDelay = Duration(seconds: 2);
-  static const Duration _timeout = Duration(seconds: 5);
-
-  Future<void> _checkArchiveStatus() async {
-    bool isArchiveDown = false;
-    for (int i = 0; i < _maxRetries; i++) {
-      try {
-        logger.i(
-            'Checking archive.org status (Attempt ${i + 1}/$_maxRetries)...');
-        final response =
-            await http.head(Uri.parse('https://archive.org')).timeout(_timeout);
-        if (response.statusCode >= 200 && response.statusCode < 400) {
-          logger.i('archive.org is reachable.');
-          isArchiveDown = false;
-          break; // Exit loop on success
-        } else {
-          logger.w(
-              'archive.org returned status code: ${response.statusCode} (Attempt ${i + 1}/$_maxRetries)');
-          isArchiveDown = true;
-        }
-      } on TimeoutException {
-        logger.w('archive.org check timed out (Attempt ${i + 1}/$_maxRetries)');
-        isArchiveDown = true;
-      } on SocketException catch (e) {
-        logger.e(
-            'Failed to connect to archive.org: $e (Attempt ${i + 1}/$_maxRetries)');
-        isArchiveDown = true;
-      } catch (e) {
-        logger.e(
-            'An unexpected error occurred while checking archive.org: $e (Attempt ${i + 1}/$_maxRetries)');
-        isArchiveDown = true;
-      }
-
-      if (isArchiveDown && i < _maxRetries - 1) {
-        await Future.delayed(_retryDelay);
-      }
-    }
-
-    if (isArchiveDown && mounted) {
-      showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: const Text('Connection Issue'),
-            content: const Text(
-                'gdar could not connect to archive.org after multiple attempts. The service may be temporarily unavailable. You may experience issues with playback.'),
-            actions: <Widget>[
-              TextButton(
-                child: const Text('OK'),
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-              ),
-            ],
-          );
-        },
-      );
     }
   }
 
@@ -579,7 +514,14 @@ class _ShowListScreenState extends State<ShowListScreen>
     final settingsProvider = context.watch<SettingsProvider>();
 
     Color? backgroundColor;
-    if (settingsProvider.highlightCurrentShowCard &&
+    // Only apply custom background color if NOT in "True Black" mode.
+    // True Black mode = Dark Mode + Custom Seed + No Dynamic Color.
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final isTrueBlackMode = isDarkMode &&
+        (!settingsProvider.useDynamicColor || settingsProvider.halfGlowDynamic);
+
+    if (!isTrueBlackMode &&
+        settingsProvider.highlightCurrentShowCard &&
         audioProvider.currentShow != null) {
       String seed = audioProvider.currentShow!.name;
       if (audioProvider.currentShow!.sources.length > 1 &&
@@ -594,7 +536,16 @@ class _ShowListScreenState extends State<ShowListScreen>
       backgroundColor: backgroundColor,
       appBar: AppBar(
         backgroundColor: backgroundColor,
-        title: const Text('gdar'),
+        title: GestureDetector(
+          onTap: () => Navigator.of(context).push(
+            PageRouteBuilder(
+              pageBuilder: (context, animation, secondaryAnimation) =>
+                  const SettingsScreen(),
+              transitionDuration: Duration.zero,
+            ),
+          ),
+          child: const Text('gdar'),
+        ),
         actions: _buildAppBarActions(),
       ),
       body: Stack(
@@ -610,11 +561,8 @@ class _ShowListScreenState extends State<ShowListScreen>
               left: 0,
               right: 0,
               bottom: 0,
-              child: Hero(
-                tag: 'player',
-                child: MiniPlayer(
-                  onTap: _openPlaybackScreen,
-                ),
+              child: MiniPlayer(
+                onTap: _openPlaybackScreen,
               ),
             ),
         ],
@@ -623,57 +571,9 @@ class _ShowListScreenState extends State<ShowListScreen>
   }
 
   Widget _buildSliverLayout() {
-    final audioProvider = context.watch<AudioProvider>();
-    final showListProvider = context.watch<ShowListProvider>();
-    final settingsProvider = context.watch<SettingsProvider>();
-
-    Color? backgroundColor;
-    if (settingsProvider.highlightCurrentShowCard &&
-        audioProvider.currentShow != null) {
-      String seed = audioProvider.currentShow!.name;
-      if (audioProvider.currentShow!.sources.length > 1 &&
-          audioProvider.currentSource != null) {
-        seed = audioProvider.currentSource!.id;
-      }
-      backgroundColor = ColorGenerator.getColor(seed,
-          brightness: Theme.of(context).brightness);
-    }
-
-    return Scaffold(
-      backgroundColor: backgroundColor,
-      body: Stack(
-        children: [
-          NestedScrollView(
-            headerSliverBuilder: (context, innerBoxIsScrolled) {
-              return [
-                SliverAppBar(
-                  backgroundColor: backgroundColor,
-                  title: const Text('gdar'),
-                  actions: _buildAppBarActions(),
-                  floating: true,
-                  snap: true,
-                  forceElevated: innerBoxIsScrolled,
-                ),
-                SliverToBoxAdapter(child: _buildSearchBar()),
-              ];
-            },
-            body: _buildBody(showListProvider, audioProvider),
-          ),
-          if (audioProvider.currentShow != null)
-            Positioned(
-              left: 0,
-              right: 0,
-              bottom: 0,
-              child: Hero(
-                tag: 'player',
-                child: MiniPlayer(
-                  onTap: _openPlaybackScreen,
-                ),
-              ),
-            ),
-        ],
-      ),
-    );
+    // Reverting to a standard layout as requested ("revert to before messing with appbar").
+    // This removes the custom floating/hiding/transparency logic.
+    return _buildStandardLayout();
   }
 
   Widget _buildBody(

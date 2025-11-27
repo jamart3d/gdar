@@ -64,7 +64,14 @@ class _MiniPlayerState extends State<MiniPlayer>
     final double buttonSize = 48 * scaleFactor;
 
     Color backgroundColor = colorScheme.surfaceContainerHigh;
-    if (settingsProvider.highlightCurrentShowCard) {
+
+    // Only apply custom background color if NOT in "True Black" mode.
+    // Check for True Black mode
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final isTrueBlackMode = isDarkMode &&
+        (!settingsProvider.useDynamicColor || settingsProvider.halfGlowDynamic);
+
+    if (!isTrueBlackMode && settingsProvider.highlightCurrentShowCard) {
       String seed = currentShow.name;
       if (currentShow.sources.length > 1) {
         seed = currentSource.id;
@@ -73,290 +80,318 @@ class _MiniPlayerState extends State<MiniPlayer>
           brightness: Theme.of(context).brightness);
     }
 
-    Widget miniPlayerContent = Material(
-      color: backgroundColor,
-      borderRadius: BorderRadius.circular(28),
-      clipBehavior: Clip.antiAlias,
-      elevation: 4.0,
-      shadowColor: colorScheme.shadow.withOpacity(0.1),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          StreamBuilder<Duration>(
-            stream: audioProvider.positionStream,
-            initialData: audioProvider.audioPlayer.position,
-            builder: (context, positionSnapshot) {
-              final position = positionSnapshot.data ?? Duration.zero;
-              return StreamBuilder<Duration?>(
-                stream: audioProvider.durationStream,
-                initialData: audioProvider.audioPlayer.duration,
-                builder: (context, durationSnapshot) {
-                  final duration = durationSnapshot.data ?? Duration.zero;
-                  final progress = duration.inMilliseconds > 0
-                      ? position.inMilliseconds / duration.inMilliseconds
-                      : 0.0;
-                  return StreamBuilder<Duration>(
-                    stream: audioProvider.bufferedPositionStream,
-                    initialData: audioProvider.audioPlayer.bufferedPosition,
-                    builder: (context, bufferedSnapshot) {
-                      final bufferedPosition =
-                          bufferedSnapshot.data ?? Duration.zero;
-                      final bufferedProgress = duration.inMilliseconds > 0
-                          ? bufferedPosition.inMilliseconds /
-                              duration.inMilliseconds
+    Widget miniPlayerContent = Stack(
+      children: [
+        Positioned.fill(
+          child: Hero(
+            tag: 'player',
+            child: Material(
+              color: backgroundColor,
+              borderRadius: BorderRadius.zero,
+              clipBehavior: Clip.antiAlias,
+              elevation: 4.0,
+              shadowColor: colorScheme.shadow.withOpacity(0.1),
+              child: Container(), // Empty container for background
+            ),
+          ),
+        ),
+        SafeArea(
+          top: false,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              StreamBuilder<Duration>(
+                stream: audioProvider.positionStream,
+                initialData: audioProvider.audioPlayer.position,
+                builder: (context, positionSnapshot) {
+                  final position = positionSnapshot.data ?? Duration.zero;
+                  return StreamBuilder<Duration?>(
+                    stream: audioProvider.durationStream,
+                    initialData: audioProvider.audioPlayer.duration,
+                    builder: (context, durationSnapshot) {
+                      final duration = durationSnapshot.data ?? Duration.zero;
+                      final progress = duration.inMilliseconds > 0
+                          ? position.inMilliseconds / duration.inMilliseconds
                           : 0.0;
-                      return StreamBuilder<PlayerState>(
-                        stream: audioProvider.playerStateStream,
-                        initialData: audioProvider.audioPlayer.playerState,
-                        builder: (context, stateSnapshot) {
-                          final processingState =
-                              stateSnapshot.data?.processingState;
-                          final isBuffering =
-                              processingState == ProcessingState.buffering ||
+                      return StreamBuilder<Duration>(
+                        stream: audioProvider.bufferedPositionStream,
+                        initialData: audioProvider.audioPlayer.bufferedPosition,
+                        builder: (context, bufferedSnapshot) {
+                          final bufferedPosition =
+                              bufferedSnapshot.data ?? Duration.zero;
+                          final bufferedProgress = duration.inMilliseconds > 0
+                              ? bufferedPosition.inMilliseconds /
+                                  duration.inMilliseconds
+                              : 0.0;
+                          return StreamBuilder<PlayerState>(
+                            stream: audioProvider.playerStateStream,
+                            initialData: audioProvider.audioPlayer.playerState,
+                            builder: (context, stateSnapshot) {
+                              final processingState =
+                                  stateSnapshot.data?.processingState;
+                              final isBuffering = processingState ==
+                                      ProcessingState.buffering ||
                                   processingState == ProcessingState.loading;
-                          return SizedBox(
-                            height: 4,
-                            child: Stack(
-                              children: [
-                                Container(
-                                  decoration: BoxDecoration(
-                                    color: colorScheme.surfaceContainerHighest,
-                                  ),
-                                ),
-                                FractionallySizedBox(
-                                  widthFactor: bufferedProgress.clamp(0.0, 1.0),
-                                  child: Container(
-                                    decoration: BoxDecoration(
-                                      gradient: LinearGradient(
-                                        colors: [
-                                          colorScheme.tertiary.withOpacity(0.3),
-                                          colorScheme.tertiary.withOpacity(0.5),
-                                        ],
+                              return SizedBox(
+                                height: 4,
+                                child: Stack(
+                                  children: [
+                                    Container(
+                                      decoration: BoxDecoration(
+                                        color: isTrueBlackMode
+                                            ? Colors.white24
+                                            : colorScheme
+                                                .surfaceContainerHighest,
                                       ),
                                     ),
-                                  ),
-                                ),
-                                FractionallySizedBox(
-                                  widthFactor: progress.clamp(0.0, 1.0),
-                                  child: Container(
-                                    decoration: BoxDecoration(
-                                      gradient: LinearGradient(
-                                        colors: [
-                                          colorScheme.primary,
-                                          colorScheme.primary.withOpacity(0.8),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                if (isBuffering)
-                                  TweenAnimationBuilder<double>(
-                                    tween: Tween(begin: 0.0, end: 1.0),
-                                    duration:
-                                        const Duration(milliseconds: 1500),
-                                    builder: (context, value, child) {
-                                      return Container(
+                                    FractionallySizedBox(
+                                      widthFactor:
+                                          bufferedProgress.clamp(0.0, 1.0),
+                                      child: Container(
                                         decoration: BoxDecoration(
                                           gradient: LinearGradient(
-                                            stops: [
-                                              (value - 0.3).clamp(0.0, 1.0),
-                                              value,
-                                              (value + 0.3).clamp(0.0, 1.0),
-                                            ],
                                             colors: [
-                                              Colors.transparent,
                                               colorScheme.tertiary
-                                                  .withOpacity(0.4),
-                                              Colors.transparent,
+                                                  .withOpacity(0.3),
+                                              colorScheme.tertiary
+                                                  .withOpacity(0.5),
                                             ],
                                           ),
                                         ),
-                                      );
-                                    },
-                                  ),
-                              ],
-                            ),
+                                      ),
+                                    ),
+                                    FractionallySizedBox(
+                                      widthFactor: progress.clamp(0.0, 1.0),
+                                      child: Container(
+                                        decoration: BoxDecoration(
+                                          gradient: LinearGradient(
+                                            colors: [
+                                              colorScheme.primary,
+                                              colorScheme.primary
+                                                  .withOpacity(0.8),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    if (isBuffering)
+                                      TweenAnimationBuilder<double>(
+                                        tween: Tween(begin: 0.0, end: 1.0),
+                                        duration:
+                                            const Duration(milliseconds: 1500),
+                                        builder: (context, value, child) {
+                                          return Container(
+                                            decoration: BoxDecoration(
+                                              gradient: LinearGradient(
+                                                stops: [
+                                                  (value - 0.3).clamp(0.0, 1.0),
+                                                  value,
+                                                  (value + 0.3).clamp(0.0, 1.0),
+                                                ],
+                                                colors: [
+                                                  Colors.transparent,
+                                                  colorScheme.tertiary
+                                                      .withOpacity(0.4),
+                                                  Colors.transparent,
+                                                ],
+                                              ),
+                                            ),
+                                          );
+                                        },
+                                      ),
+                                  ],
+                                ),
+                              );
+                            },
                           );
                         },
                       );
                     },
                   );
                 },
-              );
-            },
-          ),
-          InkWell(
-            onTap: widget.onTap,
-            child: Padding(
-              padding: EdgeInsets.all(20.0 * scaleFactor),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: StreamBuilder<int?>(
-                      stream: audioProvider.currentIndexStream,
-                      initialData: audioProvider.audioPlayer.currentIndex,
-                      builder: (context, snapshot) {
-                        final index = snapshot.data ?? 0;
-                        if (index >= currentSource.tracks.length) {
-                          return const SizedBox.shrink();
-                        }
-                        final track = currentSource.tracks[index];
+              ),
+              InkWell(
+                onTap: widget.onTap,
+                child: Padding(
+                  padding: EdgeInsets.all(20.0 * scaleFactor),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: StreamBuilder<int?>(
+                          stream: audioProvider.currentIndexStream,
+                          initialData: audioProvider.audioPlayer.currentIndex,
+                          builder: (context, snapshot) {
+                            final index = snapshot.data ?? 0;
+                            if (index >= currentSource.tracks.length) {
+                              return const SizedBox.shrink();
+                            }
+                            final track = currentSource.tracks[index];
 
-                        final baseTitleStyle = textTheme.titleLarge ??
-                            const TextStyle(fontSize: 22.0);
-                        final titleStyle = baseTitleStyle
-                            .apply(fontSizeFactor: scaleFactor)
-                            .copyWith(
-                              fontWeight: FontWeight.w600,
-                              letterSpacing: 0.1,
-                              color: colorScheme.onSurface,
-                            );
+                            final baseTitleStyle = textTheme.titleLarge ??
+                                const TextStyle(fontSize: 22.0);
+                            final titleStyle = baseTitleStyle
+                                .apply(fontSizeFactor: scaleFactor)
+                                .copyWith(
+                                  fontWeight: FontWeight.w600,
+                                  letterSpacing: 0.1,
+                                  color: colorScheme.onSurface,
+                                );
 
-                        final baseVenueStyle = textTheme.bodyLarge ??
-                            const TextStyle(fontSize: 16.0);
-                        final venueStyle = baseVenueStyle
-                            .apply(fontSizeFactor: scaleFactor)
-                            .copyWith(
-                              color: colorScheme.onSurfaceVariant,
-                              letterSpacing: 0.15,
-                            );
+                            final baseVenueStyle = textTheme.bodyLarge ??
+                                const TextStyle(fontSize: 16.0);
+                            final venueStyle = baseVenueStyle
+                                .apply(fontSizeFactor: scaleFactor)
+                                .copyWith(
+                                  color: colorScheme.onSurfaceVariant,
+                                  letterSpacing: 0.15,
+                                );
 
-                        return Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            SizedBox(
-                              height: titleStyle.fontSize! * 1.3,
-                              child: Material(
-                                type: MaterialType.transparency,
-                                child: ConditionalMarquee(
-                                  text: track.title,
-                                  style: titleStyle,
-                                ),
-                              ),
-                            ),
-                            SizedBox(height: 6 * scaleFactor),
-                            SizedBox(
-                              height: venueStyle.fontSize! * 1.3,
-                              child: Material(
-                                type: MaterialType.transparency,
-                                child: ConditionalMarquee(
-                                  text: currentShow.venue,
-                                  style: venueStyle,
-                                ),
-                              ),
-                            ),
-                          ],
-                        );
-                      },
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  StreamBuilder<int?>(
-                    stream: audioProvider.currentIndexStream,
-                    initialData: audioProvider.audioPlayer.currentIndex,
-                    builder: (context, snapshot) {
-                      final index = snapshot.data ?? 0;
-                      final isFirstTrack = index == 0;
-                      final isLastTrack =
-                          index >= currentSource.tracks.length - 1;
-                      return Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          IconButton(
-                            icon: const Icon(Icons.skip_previous_rounded),
-                            iconSize: iconSize,
-                            color: colorScheme.onSurfaceVariant,
-                            onPressed: isFirstTrack
-                                ? null
-                                : audioProvider.seekToPrevious,
-                          ),
-                          StreamBuilder<PlayerState>(
-                            stream: audioProvider.playerStateStream,
-                            initialData: audioProvider.audioPlayer.playerState,
-                            builder: (context, snapshot) {
-                              final playerState = snapshot.data;
-                              final processingState =
-                                  playerState?.processingState;
-                              final playing = playerState?.playing ?? false;
-
-                              if (playing && !_pulseController.isAnimating) {
-                                _pulseController.repeat(reverse: true);
-                              } else if (!playing &&
-                                  _pulseController.isAnimating) {
-                                _pulseController.stop();
-                                _pulseController.animateTo(0.0,
-                                    duration: const Duration(milliseconds: 200),
-                                    curve: Curves.easeOut);
-                              }
-
-                              return ScaleTransition(
-                                scale: _scaleAnimation,
-                                child: GestureDetector(
-                                  onLongPress: () {
-                                    HapticFeedback.heavyImpact();
-                                    audioProvider.stopAndClear();
-                                  },
-                                  child: Container(
-                                    width: buttonSize,
-                                    height: buttonSize,
-                                    decoration: BoxDecoration(
-                                      color: colorScheme.primary,
-                                      shape: BoxShape.circle,
+                            return Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                SizedBox(
+                                  height: titleStyle.fontSize! * 1.3,
+                                  child: Material(
+                                    type: MaterialType.transparency,
+                                    child: ConditionalMarquee(
+                                      text: track.title,
+                                      style: titleStyle,
                                     ),
-                                    child: processingState ==
-                                                ProcessingState.loading ||
-                                            processingState ==
-                                                ProcessingState.buffering
-                                        ? Padding(
-                                            padding: const EdgeInsets.all(12.0),
-                                            child: CircularProgressIndicator(
-                                              strokeWidth: 2.5,
-                                              valueColor:
-                                                  AlwaysStoppedAnimation<Color>(
-                                                colorScheme.onPrimary,
-                                              ),
-                                            ),
-                                          )
-                                        : IconButton(
-                                            icon: Icon(
-                                              playing
-                                                  ? Icons.pause_rounded
-                                                  : Icons.play_arrow_rounded,
-                                            ),
-                                            iconSize: iconSize,
-                                            color: colorScheme.onPrimary,
-                                            onPressed: playing
-                                                ? audioProvider.pause
-                                                : audioProvider.play,
-                                          ),
                                   ),
                                 ),
-                              );
-                            },
-                          ),
-                          IconButton(
-                            icon: const Icon(Icons.skip_next_rounded),
-                            iconSize: iconSize,
-                            color: colorScheme.onSurfaceVariant,
-                            onPressed:
-                                isLastTrack ? null : audioProvider.seekToNext,
-                          ),
-                        ],
-                      );
-                    },
+                                SizedBox(height: 6 * scaleFactor),
+                                SizedBox(
+                                  height: venueStyle.fontSize! * 1.3,
+                                  child: Material(
+                                    type: MaterialType.transparency,
+                                    child: ConditionalMarquee(
+                                      text: currentShow.venue,
+                                      style: venueStyle,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            );
+                          },
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      StreamBuilder<int?>(
+                        stream: audioProvider.currentIndexStream,
+                        initialData: audioProvider.audioPlayer.currentIndex,
+                        builder: (context, snapshot) {
+                          final index = snapshot.data ?? 0;
+                          final isFirstTrack = index == 0;
+                          final isLastTrack =
+                              index >= currentSource.tracks.length - 1;
+                          return Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              IconButton(
+                                icon: const Icon(Icons.skip_previous_rounded),
+                                iconSize: iconSize,
+                                color: colorScheme.onSurfaceVariant,
+                                onPressed: isFirstTrack
+                                    ? null
+                                    : audioProvider.seekToPrevious,
+                              ),
+                              StreamBuilder<PlayerState>(
+                                stream: audioProvider.playerStateStream,
+                                initialData:
+                                    audioProvider.audioPlayer.playerState,
+                                builder: (context, snapshot) {
+                                  final playerState = snapshot.data;
+                                  final processingState =
+                                      playerState?.processingState;
+                                  final playing = playerState?.playing ?? false;
+
+                                  if (playing &&
+                                      !_pulseController.isAnimating) {
+                                    _pulseController.repeat(reverse: true);
+                                  } else if (!playing &&
+                                      _pulseController.isAnimating) {
+                                    _pulseController.stop();
+                                    _pulseController.animateTo(0.0,
+                                        duration:
+                                            const Duration(milliseconds: 200),
+                                        curve: Curves.easeOut);
+                                  }
+
+                                  return ScaleTransition(
+                                    scale: _scaleAnimation,
+                                    child: GestureDetector(
+                                      onLongPress: () {
+                                        HapticFeedback.heavyImpact();
+                                        audioProvider.stopAndClear();
+                                      },
+                                      child: Hero(
+                                        tag: 'play_pause_button',
+                                        child: Container(
+                                          width: buttonSize,
+                                          height: buttonSize,
+                                          decoration: BoxDecoration(
+                                            color: colorScheme.primary,
+                                            shape: BoxShape.circle,
+                                          ),
+                                          child: processingState ==
+                                                      ProcessingState.loading ||
+                                                  processingState ==
+                                                      ProcessingState.buffering
+                                              ? Padding(
+                                                  padding: const EdgeInsets.all(
+                                                      12.0),
+                                                  child:
+                                                      CircularProgressIndicator(
+                                                    strokeWidth: 2.5,
+                                                    valueColor:
+                                                        AlwaysStoppedAnimation<
+                                                            Color>(
+                                                      colorScheme.onPrimary,
+                                                    ),
+                                                  ),
+                                                )
+                                              : IconButton(
+                                                  icon: Icon(
+                                                    playing
+                                                        ? Icons.pause_rounded
+                                                        : Icons
+                                                            .play_arrow_rounded,
+                                                  ),
+                                                  iconSize: iconSize,
+                                                  color: colorScheme.onPrimary,
+                                                  onPressed: playing
+                                                      ? audioProvider.pause
+                                                      : audioProvider.play,
+                                                ),
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.skip_next_rounded),
+                                iconSize: iconSize,
+                                color: colorScheme.onSurfaceVariant,
+                                onPressed: isLastTrack
+                                    ? null
+                                    : audioProvider.seekToNext,
+                              ),
+                            ],
+                          );
+                        },
+                      ),
+                    ],
                   ),
-                ],
+                ),
               ),
-            ),
+            ],
           ),
-        ],
-      ),
+        ),
+      ],
     );
 
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 6, 16, 12),
-      child: miniPlayerContent,
-    );
+    return miniPlayerContent;
   }
 }

@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:gdar/ui/widgets/animated_gradient_border.dart';
 import 'package:gdar/models/show.dart';
 import 'package:gdar/models/source.dart';
 import 'package:gdar/providers/settings_provider.dart';
-import 'package:gdar/ui/widgets/animated_gradient_border.dart';
 import 'package:provider/provider.dart';
 
 /// A widget that displays a list of sources (SHNIDs) for a given show.
 /// This is used within an expanded [ShowListCard] on the main screen.
-class ShowListItemDetails extends StatelessWidget {
+class ShowListItemDetails extends StatefulWidget {
   final Show show;
   final String? playingSourceId;
   final double height;
@@ -24,86 +24,156 @@ class ShowListItemDetails extends StatelessWidget {
   });
 
   @override
+  State<ShowListItemDetails> createState() => _ShowListItemDetailsState();
+}
+
+class _ShowListItemDetailsState extends State<ShowListItemDetails> {
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
     // This widget should only be built for shows with multiple sources.
-    if (show.sources.length <= 1) {
+    if (widget.show.sources.length <= 1) {
       return const SizedBox.shrink();
     }
 
     return SizedBox(
-      height: height,
+      height: widget.height,
       child: _buildSourceSelection(context),
     );
   }
 
   Widget _buildSourceSelection(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
     final settingsProvider = context.watch<SettingsProvider>();
     final double scaleFactor = settingsProvider.uiScale ? 1.25 : 1.0;
 
+    final colorScheme = Theme.of(context).colorScheme;
+
+    // Check for True Black mode
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final isTrueBlackMode = isDarkMode &&
+        (!settingsProvider.useDynamicColor || settingsProvider.halfGlowDynamic);
+
     return ListView.builder(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      itemCount: show.sources.length,
+      itemCount: widget.show.sources.length,
       itemBuilder: (context, index) {
-        final source = show.sources[index];
-        final isSourcePlaying = playingSourceId == source.id;
+        final source = widget.show.sources[index];
+        final isPlaying = widget.playingSourceId == source.id;
+
+        // Shadow Visibility:
+        // 1. Strict True Black (!useDynamicColor): NO Shadow.
+        // 2. Half Glow (useDynamicColor && halfGlowDynamic): YES Shadow (Half Opacity).
+        // 3. Standard Dark (useDynamicColor && !halfGlowDynamic): YES Shadow (Full Opacity).
+        bool showShadow = !(isDarkMode && !settingsProvider.useDynamicColor);
+        double glowOpacity = settingsProvider.halfGlowDynamic ? 0.5 : 1.0;
+
+        if (isPlaying && settingsProvider.highlightPlayingWithRgb) {
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 8.0),
+            child: AnimatedGradientBorder(
+              borderRadius: 20,
+              borderWidth: 4,
+              colors: const [
+                Colors.red,
+                Colors.yellow,
+                Colors.green,
+                Colors.cyan,
+                Colors.blue,
+                Colors.purple,
+                Colors.red,
+              ],
+              showGlow: true,
+              showShadow: showShadow,
+              glowOpacity: glowOpacity,
+              animationSpeed: settingsProvider.rgbAnimationSpeed,
+              backgroundColor: isTrueBlackMode
+                  ? Colors.black
+                  : colorScheme.tertiaryContainer,
+              child: _buildSourceItem(
+                context,
+                source,
+                isPlaying,
+                scaleFactor,
+                16,
+                showBorder: false,
+              ),
+            ),
+          );
+        }
 
         return Padding(
           padding: const EdgeInsets.symmetric(vertical: 4),
-          child: (isSourcePlaying && settingsProvider.highlightPlayingWithRgb)
-              ? AnimatedGradientBorder(
-                  showGlow: true,
-                  borderRadius: 20,
-                  borderWidth: 2,
-                  colors: const [
-                    Colors.red,
-                    Colors.orange,
-                    Colors.yellow,
-                    Colors.green,
-                    Colors.blue,
-                    Colors.indigo,
-                    Colors.purple,
-                    Colors.red,
-                  ],
-                  backgroundColor: colorScheme.tertiaryContainer,
-                  child: _buildSourceItem(
-                      context, source, isSourcePlaying, scaleFactor),
-                )
-              : _buildSourceItem(context, source, isSourcePlaying, scaleFactor),
+          child: _buildSourceItem(
+            context,
+            source,
+            isPlaying,
+            scaleFactor,
+            20,
+          ),
         );
       },
     );
   }
 
-  Widget _buildSourceItem(BuildContext context, Source source,
-      bool isSourcePlaying, double scaleFactor) {
+  Widget _buildSourceItem(
+    BuildContext context,
+    Source source,
+    bool isSourcePlaying,
+    double scaleFactor,
+    double borderRadius, {
+    bool showBorder = true,
+  }) {
     final colorScheme = Theme.of(context).colorScheme;
     final settingsProvider = context.watch<SettingsProvider>();
 
-    return Material(
-      color: isSourcePlaying
+    // Check for True Black mode
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final isTrueBlackMode = isDarkMode &&
+        (!settingsProvider.useDynamicColor || settingsProvider.halfGlowDynamic);
+
+    Color itemBackgroundColor;
+    if (isTrueBlackMode) {
+      // In True Black mode, background is always black
+      itemBackgroundColor = Colors.black;
+    } else {
+      // Standard behavior
+      itemBackgroundColor = isSourcePlaying
           ? colorScheme.tertiaryContainer
-          : colorScheme.secondaryContainer,
-      borderRadius: BorderRadius.circular(20),
+          : colorScheme.secondaryContainer;
+    }
+
+    return Material(
+      color: itemBackgroundColor,
+      borderRadius: BorderRadius.circular(borderRadius),
       child: InkWell(
-        borderRadius: BorderRadius.circular(20),
-        onTap: () => onSourceTapped(source),
-        onLongPress: () => onSourceLongPress(source),
+        borderRadius: BorderRadius.circular(borderRadius),
+        onTap: () => widget.onSourceTapped(source),
+        onLongPress: () => widget.onSourceLongPress(source),
         child: Container(
           padding:
               EdgeInsets.symmetric(horizontal: 16, vertical: 12 * scaleFactor),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(20),
-            border: isSourcePlaying
-                ? Border.all(color: colorScheme.tertiary, width: 2)
+            borderRadius: BorderRadius.circular(borderRadius),
+            border: (showBorder && (isSourcePlaying || isTrueBlackMode))
+                ? Border.all(
+                    color: isSourcePlaying
+                        ? colorScheme.tertiary
+                        : colorScheme.outlineVariant,
+                    width: isSourcePlaying ? 2 : 1)
                 : null,
-            boxShadow: [
-              BoxShadow(
-                color: colorScheme.shadow.withOpacity(0.1),
-                blurRadius: 4,
-                offset: const Offset(0, 2),
-              )
-            ],
+            boxShadow: (isTrueBlackMode && !isSourcePlaying)
+                ? []
+                : [
+                    BoxShadow(
+                      color: colorScheme.shadow.withOpacity(0.1),
+                      blurRadius: 4,
+                      offset: const Offset(0, 2),
+                    )
+                  ],
           ),
           child: Row(
             children: [

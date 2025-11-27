@@ -1,6 +1,10 @@
+import 'dart:async';
+import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:gdar/api/show_service.dart';
 import 'package:gdar/models/show.dart';
+import 'package:gdar/utils/logger.dart';
+import 'package:http/http.dart' as http;
 
 class ShowListProvider with ChangeNotifier {
   final ShowService _showService;
@@ -12,6 +16,7 @@ class ShowListProvider with ChangeNotifier {
   String _searchQuery = '';
   String? _expandedShowName;
   String? _loadingShowName;
+  bool _isArchiveChecked = false;
 
   // Public getters
   bool get isLoading => _isLoading;
@@ -20,6 +25,15 @@ class ShowListProvider with ChangeNotifier {
   String? get expandedShowName => _expandedShowName;
   String? get loadingShowName => _loadingShowName;
   List<Show> get allShows => _allShows;
+  bool get isArchiveChecked => _isArchiveChecked;
+
+  int get totalShnids =>
+      _allShows.fold(0, (sum, show) => sum + show.sources.length);
+
+  void setArchiveChecked(bool value) {
+    _isArchiveChecked = value;
+    notifyListeners();
+  }
 
   List<Show> get filteredShows {
     const bool hideGdShowsInternally = true;
@@ -37,7 +51,10 @@ class ShowListProvider with ChangeNotifier {
       : _showService = showService ?? ShowService();
 
   Future<void> init() async {
-    await fetchShows();
+    await Future.wait([
+      fetchShows(),
+      checkArchiveStatus(),
+    ]);
   }
 
   // Methods
@@ -51,6 +68,46 @@ class ShowListProvider with ChangeNotifier {
       _isLoading = false;
       notifyListeners();
     }
+  }
+
+  Future<void> checkArchiveStatus() async {
+    const int maxRetries = 3;
+    const Duration retryDelay = Duration(seconds: 2);
+    const Duration timeout = Duration(seconds: 5);
+    bool isArchiveDown = false;
+    for (int i = 0; i < maxRetries; i++) {
+      try {
+        logger.i(
+            'Checking archive.org status (Attempt ${i + 1}/$maxRetries)...');
+        final response =
+            await http.head(Uri.parse('https://archive.org')).timeout(timeout);
+        if (response.statusCode >= 200 && response.statusCode < 400) {
+          logger.i('archive.org is reachable.');
+          isArchiveDown = false;
+          break; // Exit loop on success
+        } else {
+          logger.w(
+              'archive.org returned status code: ${response.statusCode} (Attempt ${i + 1}/$maxRetries)');
+          isArchiveDown = true;
+        }
+      } on TimeoutException {
+        logger.w('archive.org check timed out (Attempt ${i + 1}/$maxRetries)');
+        isArchiveDown = true;
+      } on SocketException catch (e) {
+        logger.e(
+            'Failed to connect to archive.org: $e (Attempt ${i + 1}/$maxRetries)');
+        isArchiveDown = true;
+      } catch (e) {
+        logger.e(
+            'An unexpected error occurred while checking archive.org: $e (Attempt ${i + 1}/$maxRetries)');
+        isArchiveDown = true;
+      }
+
+      if (isArchiveDown && i < maxRetries - 1) {
+        await Future.delayed(retryDelay);
+      }
+    }
+    setArchiveChecked(!isArchiveDown);
   }
 
   void setSearchQuery(String query) {

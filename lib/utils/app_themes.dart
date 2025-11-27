@@ -36,10 +36,10 @@ class AppThemes {
       primarySwatch: Colors.blue,
       scaffoldBackgroundColor: Colors.black, // True black for OLED
       appBarTheme: const AppBarTheme(
-        backgroundColor: Color(0xFF121212),
+        backgroundColor: Colors.black,
         elevation: 0,
       ),
-      cardColor: const Color(0xFF1E1E1E),
+      cardColor: Colors.black,
       textTheme: textTheme,
     );
   }

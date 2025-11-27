@@ -86,34 +86,26 @@ class AudioProvider with ChangeNotifier {
       return null;
     }
 
-    // Create a flat list of all possible sources (SHNIDs), each paired with its parent show.
-    final List<(Show, Source)> allSources = [];
-    for (final show in shows) {
-      for (final source in show.sources) {
-        allSources.add((show, source));
-      }
-    }
-
-    if (allSources.isEmpty) {
-      logger
-          .w('Cannot play random source, no sources found in filtered shows.');
+    final nonEmptyShows =
+        shows.where((show) => show.sources.isNotEmpty).toList();
+    if (nonEmptyShows.isEmpty) {
+      logger.w('Cannot play random show, no shows with sources available.');
       return null;
     }
 
-    // Pick a random (Show, Source) pair.
-    final randomPair = allSources[Random().nextInt(allSources.length)];
-    final Show showToPlay = randomPair.$1;
-    final Source sourceToPlay = randomPair.$2;
+    final randomShow = nonEmptyShows[Random().nextInt(nonEmptyShows.length)];
+    final randomSource =
+        randomShow.sources[Random().nextInt(randomShow.sources.length)];
 
     logger.i(
-        'Playing random source ${sourceToPlay.id} from show ${showToPlay.name}');
+        'Playing random source ${randomSource.id} from show ${randomShow.name}');
 
     // Play the randomly selected source.
     // Don't await here so the UI can scroll immediately while audio loads.
-    playSource(showToPlay, sourceToPlay);
+    playSource(randomShow, randomSource);
 
     // Return the parent show so the UI can scroll to it.
-    return showToPlay;
+    return randomShow;
   }
 
   Future<void> playSource(Show show, Source source,

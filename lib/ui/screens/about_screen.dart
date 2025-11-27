@@ -53,10 +53,8 @@ class AboutScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 32),
-              const Divider(),
-              const SizedBox(height: 24),
               Text(
-                'A simple, accessible music player for grateful dead shows from Archive.org .',
+                'A simple, lightweight music player for select live grateful dead shows from Archive.org, featuring gapless playback and random show selection.',
                 style: textTheme.bodyLarge,
                 textAlign: TextAlign.center,
               ),
@@ -67,14 +65,6 @@ class AboutScreen extends StatelessWidget {
                 title: 'Powered by Archive.org',
                 description: 'All audio is streamed directly from Archive.org.',
               ),
-              const SizedBox(height: 16),
-              _buildInfoCard(
-                context,
-                icon: Icons.code_rounded,
-                title: 'Open Source',
-                description:
-                    'Built with Flutter. Designed for simplicity and performance.',
-              ),
               const SizedBox(height: 24),
               _buildClickableLink(
                 context,
@@ -83,64 +73,31 @@ class AboutScreen extends StatelessWidget {
                 icon: Icons.gavel,
               ),
               const SizedBox(height: 24),
-              _buildSectionTitle(context, 'Contact'),
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: colorScheme.surfaceContainer,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: colorScheme.outlineVariant),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+              // _buildSectionTitle(context, 'Contact'),
+              ListTile(
+                leading: Icon(Icons.email, color: colorScheme.primary),
+                title: Row(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      'Slapped together by',
-                      style:
-                          TextStyle(fontSize: 16, color: colorScheme.onSurface),
-                    ),
-                    const SizedBox(height: 8),
-                    InkWell(
-                      onTap: () {
-                        Clipboard.setData(
-                            const ClipboardData(text: 'jamart3d@gmail.com'));
-                        _showEmailCopiedSnackBar(context);
-                      },
-                      borderRadius: BorderRadius.circular(8),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 8, horizontal: 4),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(Icons.email,
-                                color: colorScheme.primary, size: 20),
-                            const SizedBox(width: 8),
-                            Text(
-                              'jamart3d@gmail.com',
-                              style: TextStyle(
-                                fontSize: 16,
-                                color: colorScheme.primary,
-                                decoration: TextDecoration.underline,
-                              ),
-                            ),
-                            const SizedBox(width: 4),
-                            Icon(Icons.content_copy,
-                                color: colorScheme.primary, size: 16),
-                          ],
-                        ),
+                      'jamart3d@gmail.com',
+                      style: TextStyle(
+                        color: colorScheme.primary,
+                        decoration: TextDecoration.underline,
                       ),
                     ),
+                    const SizedBox(width: 8),
+                    Icon(Icons.content_copy,
+                        color: colorScheme.primary, size: 16),
                   ],
                 ),
+                onTap: () {
+                  Clipboard.setData(
+                      const ClipboardData(text: 'jamart3d@gmail.com'));
+                  _showEmailCopiedSnackBar(context);
+                },
               ),
               const SizedBox(height: 48),
-              Text(
-                '© 2024 gdar',
-                style: textTheme.labelMedium?.copyWith(
-                  color: colorScheme.outline,
-                ),
-              ),
             ],
           ),
         ),
@@ -155,11 +112,11 @@ class AboutScreen extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: colorScheme.surfaceContainer,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: colorScheme.outlineVariant),
-      ),
+      // decoration: BoxDecoration(
+      //   color: colorScheme.surfaceContainer,
+      //   borderRadius: BorderRadius.circular(16),
+      //   border: Border.all(color: colorScheme.outlineVariant),
+      // ),
       child: Row(
         children: [
           Icon(icon, size: 32, color: colorScheme.primary),
@@ -187,20 +144,6 @@ class AboutScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSectionTitle(BuildContext context, String title) {
-    return Align(
-      alignment: Alignment.centerLeft,
-      child: Padding(
-        padding: const EdgeInsets.only(bottom: 8.0),
-        child: Text(
-          title,
-          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
-        ),
-      ),
-    );
-  }
 
   Future<void> _launchUrl(String url) async {
     if (!await launchUrl(Uri.parse(url))) {

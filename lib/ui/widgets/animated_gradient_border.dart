@@ -6,7 +6,10 @@ class AnimatedGradientBorder extends StatefulWidget {
   final double borderWidth;
   final List<Color>? colors;
   final bool showGlow;
+  final bool showShadow;
   final Color? backgroundColor;
+  final double glowOpacity;
+  final double animationSpeed;
 
   const AnimatedGradientBorder({
     super.key,
@@ -15,7 +18,10 @@ class AnimatedGradientBorder extends StatefulWidget {
     this.borderWidth = 2.0,
     this.colors,
     this.showGlow = true,
+    this.showShadow = true,
     this.backgroundColor,
+    this.glowOpacity = 0.5,
+    this.animationSpeed = 1.0,
   });
 
   @override
@@ -31,8 +37,18 @@ class _AnimatedGradientBorderState extends State<AnimatedGradientBorder>
     super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 3),
+      duration: Duration(milliseconds: (3000 / widget.animationSpeed).round()),
     )..repeat();
+  }
+
+  @override
+  void didUpdateWidget(AnimatedGradientBorder oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.animationSpeed != oldWidget.animationSpeed) {
+      _controller.duration =
+          Duration(milliseconds: (3000 / widget.animationSpeed).round());
+      _controller.repeat();
+    }
   }
 
   @override
@@ -70,6 +86,8 @@ class _AnimatedGradientBorderState extends State<AnimatedGradientBorder>
             borderRadius: widget.borderRadius,
             borderWidth: widget.borderWidth,
             rotation: _controller.value * 2 * 3.14159,
+            showShadow: widget.showShadow,
+            glowOpacity: widget.glowOpacity,
           ),
           child: Padding(
             padding: EdgeInsets.all(widget.borderWidth),
@@ -93,12 +111,16 @@ class _GradientBorderPainter extends CustomPainter {
   final double borderRadius;
   final double borderWidth;
   final double rotation;
+  final bool showShadow;
+  final double glowOpacity;
 
   _GradientBorderPainter({
     required this.colors,
     required this.borderRadius,
     required this.borderWidth,
     required this.rotation,
+    this.showShadow = true,
+    this.glowOpacity = 0.5,
   });
 
   @override
@@ -107,11 +129,13 @@ class _GradientBorderPainter extends CustomPainter {
     final rrect = RRect.fromRectAndRadius(rect, Radius.circular(borderRadius));
 
     // 1. Draw Shadow
-    final shadowPaint = Paint()
-      ..color = colors[0].withOpacity(0.5)
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 10);
+    if (showShadow) {
+      final shadowPaint = Paint()
+        ..color = colors[0].withOpacity(glowOpacity)
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 10);
 
-    canvas.drawRRect(rrect.shift(const Offset(0, 1)), shadowPaint);
+      canvas.drawRRect(rrect.shift(const Offset(0, 1)), shadowPaint);
+    }
 
     // 2. Draw Gradient Border
     final innerRect = rect.deflate(borderWidth);

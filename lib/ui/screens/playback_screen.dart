@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:gdar/ui/widgets/animated_gradient_border.dart';
 import 'package:gdar/models/show.dart';
 import 'package:gdar/models/source.dart';
 import 'package:gdar/models/track.dart';
@@ -7,7 +8,6 @@ import 'package:gdar/providers/audio_provider.dart';
 import 'package:gdar/providers/settings_provider.dart';
 import 'package:gdar/ui/screens/settings_screen.dart';
 import 'package:gdar/ui/widgets/conditional_marquee.dart';
-import 'package:gdar/ui/widgets/animated_gradient_border.dart';
 import 'package:gdar/utils/utils.dart';
 import 'package:gdar/utils/color_generator.dart';
 import 'package:just_audio/just_audio.dart';
@@ -109,7 +109,13 @@ class _PlaybackScreenState extends State<PlaybackScreen>
         _trackItemHeight * (settingsProvider.uiScale ? 1.4 : 1.0);
 
     Color backgroundColor = colorScheme.surface;
-    if (settingsProvider.highlightCurrentShowCard) {
+
+    // Check for True Black mode
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final isTrueBlackMode = isDarkMode &&
+        (!settingsProvider.useDynamicColor || settingsProvider.halfGlowDynamic);
+
+    if (!isTrueBlackMode && settingsProvider.highlightCurrentShowCard) {
       String seed = currentShow.name;
       if (currentShow.sources.length > 1) {
         seed = currentSource.id;
@@ -148,6 +154,7 @@ class _PlaybackScreenState extends State<PlaybackScreen>
                     currentSource.tracks[index],
                     index,
                     trackItemHeight,
+                    isTrueBlackMode,
                   );
                 },
                 childCount: currentSource.tracks.length,
@@ -156,20 +163,33 @@ class _PlaybackScreenState extends State<PlaybackScreen>
           ),
         ],
       ),
-      bottomNavigationBar: Hero(
-        tag: 'player',
-        child: Material(
-          color: Theme.of(context).colorScheme.surfaceContainer,
-          borderRadius: const BorderRadius.only(
-            topLeft: Radius.circular(28),
-            topRight: Radius.circular(28),
+      bottomNavigationBar: Stack(
+        children: [
+          Positioned.fill(
+            child: Hero(
+              tag: 'player',
+              child: Material(
+                color: isTrueBlackMode
+                    ? Colors.black
+                    : Theme.of(context).colorScheme.surfaceContainer,
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(28),
+                  topRight: Radius.circular(28),
+                ),
+                clipBehavior: Clip.antiAlias,
+                elevation: 4.0,
+                shadowColor:
+                    Theme.of(context).colorScheme.shadow.withOpacity(0.1),
+                child: Container(),
+              ),
+            ),
           ),
-          clipBehavior: Clip.antiAlias,
-          elevation: 4.0,
-          shadowColor: Theme.of(context).colorScheme.shadow.withOpacity(0.1),
-          child: _buildBottomControlsPanel(context, audioProvider, currentShow,
-              currentSource, trackItemHeight),
-        ),
+          Material(
+            type: MaterialType.transparency,
+            child: _buildBottomControlsPanel(context, audioProvider,
+                currentShow, currentSource, trackItemHeight),
+          ),
+        ],
       ),
     );
   }
@@ -190,7 +210,7 @@ class _PlaybackScreenState extends State<PlaybackScreen>
       physics: const ClampingScrollPhysics(),
       child: Padding(
         padding: EdgeInsets.fromLTRB(
-            16, 12, 16, 16 + MediaQuery.of(context).viewPadding.bottom),
+            16, 12, 16, 32 + MediaQuery.of(context).viewPadding.bottom),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -202,7 +222,7 @@ class _PlaybackScreenState extends State<PlaybackScreen>
                   const SizedBox(height: 8),
                   GestureDetector(
                     onTap: () => _scrollToCurrentTrack(trackItemHeight),
-                    child: Container(
+                    child: SizedBox(
                       width: double.infinity,
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -386,50 +406,53 @@ class _PlaybackScreenState extends State<PlaybackScreen>
                         Navigator.of(context).pop();
                       }
                     },
-                    child: Container(
-                      width: playButtonSize,
-                      height: playButtonSize,
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [
-                            colorScheme.primary,
-                            colorScheme.tertiary,
+                    child: Hero(
+                      tag: 'play_pause_button',
+                      child: Container(
+                        width: playButtonSize,
+                        height: playButtonSize,
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [
+                              colorScheme.primary,
+                              colorScheme.tertiary,
+                            ],
+                          ),
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: colorScheme.primary.withOpacity(0.4),
+                              blurRadius: 16,
+                              offset: const Offset(0, 4),
+                            ),
                           ],
                         ),
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: colorScheme.primary.withOpacity(0.4),
-                            blurRadius: 16,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      child: processingState == ProcessingState.loading ||
-                              processingState == ProcessingState.buffering
-                          ? Padding(
-                              padding: const EdgeInsets.all(14.0),
-                              child: CircularProgressIndicator(
-                                strokeWidth: 3,
-                                valueColor: AlwaysStoppedAnimation<Color>(
-                                  colorScheme.onPrimary,
+                        child: processingState == ProcessingState.loading ||
+                                processingState == ProcessingState.buffering
+                            ? Padding(
+                                padding: const EdgeInsets.all(14.0),
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 3,
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                    colorScheme.onPrimary,
+                                  ),
                                 ),
+                              )
+                            : IconButton(
+                                icon: Icon(
+                                  playing
+                                      ? Icons.pause_rounded
+                                      : Icons.play_arrow_rounded,
+                                ),
+                                iconSize: playIconSize,
+                                color: colorScheme.onPrimary,
+                                onPressed: playing
+                                    ? audioProvider.pause
+                                    : audioProvider.play,
                               ),
-                            )
-                          : IconButton(
-                              icon: Icon(
-                                playing
-                                    ? Icons.pause_rounded
-                                    : Icons.play_arrow_rounded,
-                              ),
-                              iconSize: playIconSize,
-                              color: colorScheme.onPrimary,
-                              onPressed: playing
-                                  ? audioProvider.pause
-                                  : audioProvider.play,
-                            ),
+                      ),
                     ),
                   ),
                 ),
@@ -451,6 +474,11 @@ class _PlaybackScreenState extends State<PlaybackScreen>
     final colorScheme = Theme.of(context).colorScheme;
     final settingsProvider = context.watch<SettingsProvider>();
     final double scaleFactor = settingsProvider.uiScale ? 1.25 : 1.0;
+
+    // Check for True Black mode
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final isTrueBlackMode = isDarkMode &&
+        (!settingsProvider.useDynamicColor || settingsProvider.halfGlowDynamic);
 
     return StreamBuilder<Duration>(
       stream: audioProvider.positionStream,
@@ -513,7 +541,9 @@ class _PlaybackScreenState extends State<PlaybackScreen>
                                 Container(
                                   height: 6 * scaleFactor,
                                   decoration: BoxDecoration(
-                                    color: colorScheme.surfaceContainerHighest,
+                                    color: isTrueBlackMode
+                                        ? Colors.white24
+                                        : colorScheme.surfaceContainerHighest,
                                     borderRadius: BorderRadius.circular(3),
                                   ),
                                 ),
@@ -656,6 +686,7 @@ class _PlaybackScreenState extends State<PlaybackScreen>
     Track track,
     int index,
     double trackItemHeight,
+    bool isTrueBlackMode,
   ) {
     final colorScheme = Theme.of(context).colorScheme;
     final settingsProvider = context.watch<SettingsProvider>();
@@ -668,37 +699,66 @@ class _PlaybackScreenState extends State<PlaybackScreen>
         final currentIndex = snapshot.data;
         final isPlaying = currentIndex == index;
 
-        return SizedBox(
-          height: trackItemHeight,
-          child: Container(
-            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 1),
-            decoration: BoxDecoration(
-              color:
-                  isPlaying ? colorScheme.primaryContainer : Colors.transparent,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: (isPlaying && settingsProvider.highlightPlayingWithRgb)
-                ? AnimatedGradientBorder(
-                    showGlow: true,
+        return Container(
+          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 1),
+          decoration: BoxDecoration(
+            color: (isPlaying && settingsProvider.highlightPlayingWithRgb)
+                ? Colors.transparent
+                : isPlaying
+                    ? (isTrueBlackMode
+                        ? Colors.black
+                        : colorScheme.primaryContainer)
+                    : Colors.transparent,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: (isPlaying && settingsProvider.highlightPlayingWithRgb)
+              ? Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: isTrueBlackMode
+                        ? []
+                        : [
+                            BoxShadow(
+                              color: Colors.red.withOpacity(0.4 *
+                                  (settingsProvider.halfGlowDynamic
+                                      ? 0.5
+                                      : 1.0)),
+                              blurRadius: 8,
+                              spreadRadius: 1,
+                            ),
+                          ],
+                  ),
+                  padding: const EdgeInsets.all(4), // Increased padding
+                  child: AnimatedGradientBorder(
                     borderRadius: 12,
-                    borderWidth: 2,
+                    borderWidth: 4,
                     colors: const [
                       Colors.red,
-                      Colors.orange,
                       Colors.yellow,
                       Colors.green,
+                      Colors.cyan,
                       Colors.blue,
-                      Colors.indigo,
                       Colors.purple,
                       Colors.red,
                     ],
-                    backgroundColor: colorScheme.primaryContainer,
-                    child: _buildTrackListTile(context, audioProvider, track,
-                        index, currentIndex, scaleFactor),
-                  )
-                : _buildTrackListTile(context, audioProvider, track, index,
-                    currentIndex, scaleFactor),
-          ),
+                    showGlow: true,
+                    showShadow: !isTrueBlackMode,
+                    glowOpacity:
+                        0.5 * (settingsProvider.halfGlowDynamic ? 0.5 : 1.0),
+                    animationSpeed: settingsProvider.rgbAnimationSpeed,
+                    child: Material(
+                      color: isTrueBlackMode
+                          ? Colors.black
+                          : colorScheme.primaryContainer,
+                      borderRadius: BorderRadius.circular(8),
+                      clipBehavior: Clip.antiAlias,
+                      child: _buildTrackListTile(context, audioProvider, track,
+                          index, currentIndex, scaleFactor),
+                    ),
+                  ),
+                )
+              : _buildTrackListTile(context, audioProvider, track, index,
+                  currentIndex, scaleFactor),
         );
       },
     );

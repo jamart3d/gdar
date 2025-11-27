@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
+import 'package:gdar/providers/audio_provider.dart';
 import 'package:gdar/providers/settings_provider.dart';
 import 'package:gdar/providers/show_list_provider.dart';
 import 'package:gdar/providers/theme_provider.dart';
 import 'package:gdar/ui/screens/about_screen.dart';
+import 'package:gdar/utils/color_generator.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -23,9 +25,10 @@ class SettingsScreen extends StatelessWidget {
             child: ColorPicker(
               pickerColor: pickerColor,
               onColorChanged: (color) => pickerColor = color,
-              pickerAreaHeightPercent: 0.8,
-              enableAlpha: false, // Hide alpha slider
-              showLabel: false, // Hide RGB/Hex labels
+              paletteType: PaletteType.hsl,
+              pickerAreaHeightPercent: 0.0,
+              enableAlpha: false,
+              showLabel: false,
             ),
           ),
           actions: <Widget>[
@@ -84,7 +87,27 @@ class SettingsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final themeProvider = context.watch<ThemeProvider>();
     final settingsProvider = context.watch<SettingsProvider>();
+    final audioProvider = context.watch<AudioProvider>();
     final colorScheme = Theme.of(context).colorScheme;
+
+    Color? backgroundColor;
+    // Only apply custom background color if NOT in "True Black" mode.
+    // True Black mode = Dark Mode + Custom Seed + No Dynamic Color.
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final isTrueBlackMode = isDarkMode &&
+        (!settingsProvider.useDynamicColor || settingsProvider.halfGlowDynamic);
+
+    if (!isTrueBlackMode &&
+        settingsProvider.highlightCurrentShowCard &&
+        audioProvider.currentShow != null) {
+      String seed = audioProvider.currentShow!.name;
+      if (audioProvider.currentShow!.sources.length > 1 &&
+          audioProvider.currentSource != null) {
+        seed = audioProvider.currentSource!.id;
+      }
+      backgroundColor = ColorGenerator.getColor(seed,
+          brightness: Theme.of(context).brightness);
+    }
 
     return AnimatedTheme(
       data: Theme.of(context),
@@ -96,7 +119,9 @@ class SettingsScreen extends StatelessWidget {
               : const TextScaler.linear(1.0),
         ),
         child: Scaffold(
+          backgroundColor: backgroundColor,
           appBar: AppBar(
+            backgroundColor: backgroundColor,
             title: const Text('Settings'),
           ),
           body: ListView(
@@ -133,27 +158,39 @@ class SettingsScreen extends StatelessWidget {
                     secondary: const Icon(Icons.color_lens_rounded),
                   ),
                   ListTile(
+                    leading: const Icon(Icons.palette_rounded),
                     title: const Text('Custom Theme Color'),
                     subtitle: const Text('Overrides the default theme color'),
                     enabled: !settingsProvider.useDynamicColor,
                     onTap: () => _showColorPickerDialog(context),
-                    trailing: settingsProvider.seedColor != null
-                        ? Container(
-                            width: 24,
-                            height: 24,
-                            decoration: BoxDecoration(
-                              color: settingsProvider.seedColor,
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: colorScheme.outline,
-                                width: 2,
-                              ),
-                            ),
-                          )
-                        : const Icon(Icons.color_lens_outlined),
+                    trailing: Container(
+                      width: 24,
+                      height: 24,
+                      decoration: BoxDecoration(
+                        color: settingsProvider.seedColor ?? Colors.purple,
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: colorScheme.outline,
+                          width: 2,
+                        ),
+                      ),
+                    ),
                   ),
+                  if (settingsProvider.useDynamicColor)
+                    SwitchListTile(
+                      title: const Text('Half Glow'),
+                      subtitle: const Text(
+                          'Use true black background with reduced glow'),
+                      value: settingsProvider.halfGlowDynamic,
+                      onChanged: (value) {
+                        context
+                            .read<SettingsProvider>()
+                            .toggleHalfGlowDynamic();
+                      },
+                      secondary: const Icon(Icons.light_mode_outlined),
+                    ),
                   SwitchListTile(
-                    title: const Text('Animated Glow Border'),
+                    title: const Text('Glow Border'),
                     subtitle:
                         const Text('Show a glowing gradient border on cards'),
                     value: settingsProvider.showGlowBorder,
@@ -162,6 +199,60 @@ class SettingsScreen extends StatelessWidget {
                     },
                     secondary: const Icon(Icons.blur_on_rounded),
                   ),
+                  SwitchListTile(
+                    title: const Text('Highlight Playing with RGB'),
+                    subtitle: const Text('Animate border with RGB colors'),
+                    value: settingsProvider.highlightPlayingWithRgb,
+                    onChanged: (value) {
+                      context
+                          .read<SettingsProvider>()
+                          .toggleHighlightPlayingWithRgb();
+                    },
+                    secondary: const Icon(Icons.animation_rounded),
+                  ),
+                  if (settingsProvider.highlightPlayingWithRgb)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16.0, vertical: 8.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'RGB Animation Speed',
+                            style: Theme.of(context).textTheme.bodyMedium,
+                          ),
+                          const SizedBox(height: 8),
+                          SegmentedButton<double>(
+                            segments: const [
+                              ButtonSegment(
+                                value: 1.0,
+                                label: Text('1x'),
+                                icon: Icon(Icons.speed),
+                              ),
+                              ButtonSegment(
+                                value: 0.5,
+                                label: Text('0.5x'),
+                              ),
+                              ButtonSegment(
+                                value: 0.25,
+                                label: Text('0.25x'),
+                              ),
+                              ButtonSegment(
+                                value: 0.1,
+                                label: Text('0.1x'),
+                              ),
+                            ],
+                            selected: {settingsProvider.rgbAnimationSpeed},
+                            onSelectionChanged: (Set<double> newSelection) {
+                              context
+                                  .read<SettingsProvider>()
+                                  .setRgbAnimationSpeed(newSelection.first);
+                            },
+                            showSelectedIcon: false,
+                          ),
+                        ],
+                      ),
+                    ),
                   SwitchListTile(
                     title: const Text('Handwriting Font'),
                     subtitle: const Text('Use a handwritten style font'),
@@ -222,6 +313,15 @@ class SettingsScreen extends StatelessWidget {
                       context.read<SettingsProvider>().toggleUiScale();
                     },
                     secondary: const Icon(Icons.text_fields_rounded),
+                  ),
+                  SwitchListTile(
+                    title: const Text('Show Splash Screen'),
+                    subtitle: const Text('Show a loading screen on startup'),
+                    value: settingsProvider.showSplashScreen,
+                    onChanged: (value) {
+                      context.read<SettingsProvider>().toggleShowSplashScreen();
+                    },
+                    secondary: const Icon(Icons.rocket_launch_rounded),
                   ),
                 ],
               ),
@@ -289,6 +389,12 @@ class SettingsScreen extends StatelessWidget {
                 title: const Text('Usage Instructions'),
                 children: [
                   ListTile(
+                    leading: const Icon(Icons.play_circle_outline_rounded),
+                    title: const Text('Player Controls'),
+                    subtitle: const Text(
+                        'Tap the ? icon in the app bar to play a random show from the collection. Long-press a show card to play a random source from that show.'),
+                  ),
+                  ListTile(
                     leading: const Icon(Icons.search_rounded),
                     title: const Text('Search'),
                     subtitle: const Text(
@@ -298,13 +404,7 @@ class SettingsScreen extends StatelessWidget {
                     leading: const Icon(Icons.touch_app_rounded),
                     title: const Text('Expand Show'),
                     subtitle: const Text(
-                        'Tap a show card to see available sources (SHNIDs) and tracks.'),
-                  ),
-                  ListTile(
-                    leading: const Icon(Icons.help_outline),
-                    title: const Text('Random Playback'),
-                    subtitle: const Text(
-                        'Long-press a show card to play a random source from that show. Tap the ? icon in the app bar to play a random show from the entire collection.'),
+                        'Tap a show card to see available sources (SHNIDs).'),
                   ),
                   ListTile(
                     leading: const Icon(Icons.play_circle_outline_rounded),

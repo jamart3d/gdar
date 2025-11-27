@@ -1,7 +1,7 @@
 name: gdar
 description: gapless playback of select grateful dead shows from archive.org
 publish_to: 'none'
-version: 1.0.1+2
+version: 1.0.4+5
 
 environment:
   sdk: '>=3.0.0 <4.0.0'
@@ -40,6 +40,7 @@ dependencies:
   http: ^1.2.1
   url_launcher: ^6.2.5
 
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -52,3 +53,4 @@ flutter:
 
   assets:
     - assets/data/shows.json
+    - assets/images/drip_scaled_clear.png

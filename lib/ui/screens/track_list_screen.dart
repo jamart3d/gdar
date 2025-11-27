@@ -6,6 +6,7 @@ import 'package:gdar/providers/audio_provider.dart';
 import 'package:gdar/providers/settings_provider.dart';
 import 'package:gdar/ui/widgets/conditional_marquee.dart';
 import 'package:gdar/ui/widgets/mini_player.dart';
+import 'package:gdar/utils/color_generator.dart';
 import 'package:gdar/utils/utils.dart';
 import 'package:provider/provider.dart';
 
@@ -90,12 +91,39 @@ class _TrackListScreenState extends State<TrackListScreen> {
   @override
   Widget build(BuildContext context) {
     final audioProvider = context.watch<AudioProvider>();
+    final settingsProvider = context.watch<SettingsProvider>();
     // Show the mini player only if a different show is currently playing.
     final isDifferentShowPlaying = audioProvider.currentShow != null &&
         audioProvider.currentShow!.name != widget.show.name;
 
+    // Logic to match ShowListCard exactly
+    final isPlaying = audioProvider.currentShow?.name == widget.show.name;
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final isTrueBlackMode = isDarkMode &&
+        !settingsProvider.useDynamicColor &&
+        settingsProvider.seedColor != null;
+
+    // Start with surface color (matches ShowListCard default)
+    Color backgroundColor = Theme.of(context).colorScheme.surface;
+
+    if (!isTrueBlackMode &&
+        isPlaying &&
+        settingsProvider.highlightCurrentShowCard) {
+      String seed = widget.show.name;
+      // If multi-source and playing, use the playing source ID as seed
+      if (widget.show.sources.length > 1 &&
+          audioProvider.currentSource?.id != null) {
+        seed = audioProvider.currentSource!.id;
+      }
+      backgroundColor = ColorGenerator.getColor(seed,
+          brightness: Theme.of(context).brightness);
+    }
+    // In True Black mode, surface is already black, so no need for explicit check.
+
     return Scaffold(
+      backgroundColor: backgroundColor,
       appBar: AppBar(
+        backgroundColor: backgroundColor,
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
