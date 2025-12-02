@@ -906,6 +906,24 @@ class MockShowListProvider extends _i1.Mock implements _i6.ShowListProvider {
       ) as String);
 
   @override
+  List<_i7.Show> get allShows => (super.noSuchMethod(
+        Invocation.getter(#allShows),
+        returnValue: <_i7.Show>[],
+      ) as List<_i7.Show>);
+
+  @override
+  bool get isArchiveChecked => (super.noSuchMethod(
+        Invocation.getter(#isArchiveChecked),
+        returnValue: false,
+      ) as bool);
+
+  @override
+  int get totalShnids => (super.noSuchMethod(
+        Invocation.getter(#totalShnids),
+        returnValue: 0,
+      ) as int);
+
+  @override
   List<_i7.Show> get filteredShows => (super.noSuchMethod(
         Invocation.getter(#filteredShows),
         returnValue: <_i7.Show>[],
@@ -916,6 +934,15 @@ class MockShowListProvider extends _i1.Mock implements _i6.ShowListProvider {
         Invocation.getter(#hasListeners),
         returnValue: false,
       ) as bool);
+
+  @override
+  void setArchiveChecked(bool? value) => super.noSuchMethod(
+        Invocation.method(
+          #setArchiveChecked,
+          [value],
+        ),
+        returnValueForMissingStub: null,
+      );
 
   @override
   _i3.Future<void> init() => (super.noSuchMethod(
@@ -931,6 +958,16 @@ class MockShowListProvider extends _i1.Mock implements _i6.ShowListProvider {
   _i3.Future<void> fetchShows() => (super.noSuchMethod(
         Invocation.method(
           #fetchShows,
+          [],
+        ),
+        returnValue: _i3.Future<void>.value(),
+        returnValueForMissingStub: _i3.Future<void>.value(),
+      ) as _i3.Future<void>);
+
+  @override
+  _i3.Future<void> checkArchiveStatus() => (super.noSuchMethod(
+        Invocation.method(
+          #checkArchiveStatus,
           [],
         ),
         returnValue: _i3.Future<void>.value(),
@@ -1028,6 +1065,12 @@ class MockSettingsProvider extends _i1.Mock implements _i9.SettingsProvider {
   }
 
   @override
+  bool get showSplashScreen => (super.noSuchMethod(
+        Invocation.getter(#showSplashScreen),
+        returnValue: false,
+      ) as bool);
+
+  @override
   bool get showExpandIcon => (super.noSuchMethod(
         Invocation.getter(#showExpandIcon),
         returnValue: false,
@@ -1100,6 +1143,54 @@ class MockSettingsProvider extends _i1.Mock implements _i9.SettingsProvider {
       ) as bool);
 
   @override
+  bool get uiScale => (super.noSuchMethod(
+        Invocation.getter(#uiScale),
+        returnValue: false,
+      ) as bool);
+
+  @override
+  bool get showGlowBorder => (super.noSuchMethod(
+        Invocation.getter(#showGlowBorder),
+        returnValue: false,
+      ) as bool);
+
+  @override
+  bool get highlightPlayingWithRgb => (super.noSuchMethod(
+        Invocation.getter(#highlightPlayingWithRgb),
+        returnValue: false,
+      ) as bool);
+
+  @override
+  bool get showPlaybackMessages => (super.noSuchMethod(
+        Invocation.getter(#showPlaybackMessages),
+        returnValue: false,
+      ) as bool);
+
+  @override
+  bool get highlightCurrentShowCard => (super.noSuchMethod(
+        Invocation.getter(#highlightCurrentShowCard),
+        returnValue: false,
+      ) as bool);
+
+  @override
+  bool get useMaterial3 => (super.noSuchMethod(
+        Invocation.getter(#useMaterial3),
+        returnValue: false,
+      ) as bool);
+
+  @override
+  bool get halfGlowDynamic => (super.noSuchMethod(
+        Invocation.getter(#halfGlowDynamic),
+        returnValue: false,
+      ) as bool);
+
+  @override
+  double get rgbAnimationSpeed => (super.noSuchMethod(
+        Invocation.getter(#rgbAnimationSpeed),
+        returnValue: 0.0,
+      ) as double);
+
+  @override
   set showExpandIcon(bool? value) => super.noSuchMethod(
         Invocation.setter(
           #showExpandIcon,
@@ -1113,6 +1204,15 @@ class MockSettingsProvider extends _i1.Mock implements _i9.SettingsProvider {
         Invocation.getter(#hasListeners),
         returnValue: false,
       ) as bool);
+
+  @override
+  void toggleShowSplashScreen() => super.noSuchMethod(
+        Invocation.method(
+          #toggleShowSplashScreen,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
 
   @override
   void toggleShowTrackNumbers() => super.noSuchMethod(
@@ -1182,6 +1282,60 @@ class MockSettingsProvider extends _i1.Mock implements _i9.SettingsProvider {
         Invocation.method(
           #toggleUseHandwritingFont,
           [],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void toggleUiScale() => super.noSuchMethod(
+        Invocation.method(
+          #toggleUiScale,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void toggleShowGlowBorder() => super.noSuchMethod(
+        Invocation.method(
+          #toggleShowGlowBorder,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void toggleHighlightPlayingWithRgb() => super.noSuchMethod(
+        Invocation.method(
+          #toggleHighlightPlayingWithRgb,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void toggleShowPlaybackMessages() => super.noSuchMethod(
+        Invocation.method(
+          #toggleShowPlaybackMessages,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void toggleHalfGlowDynamic() => super.noSuchMethod(
+        Invocation.method(
+          #toggleHalfGlowDynamic,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void setRgbAnimationSpeed(double? speed) => super.noSuchMethod(
+        Invocation.method(
+          #setRgbAnimationSpeed,
+          [speed],
         ),
         returnValueForMissingStub: null,
       );

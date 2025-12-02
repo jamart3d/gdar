@@ -139,6 +139,12 @@ class MockAudioProvider extends _i1.Mock implements _i3.AudioProvider {
       ) as _i4.Stream<Duration>);
 
   @override
+  _i4.Stream<String> get playbackErrorStream => (super.noSuchMethod(
+        Invocation.getter(#playbackErrorStream),
+        returnValue: _i4.Stream<String>.empty(),
+      ) as _i4.Stream<String>);
+
+  @override
   bool get hasListeners => (super.noSuchMethod(
         Invocation.getter(#hasListeners),
         returnValue: false,
@@ -196,6 +202,15 @@ class MockAudioProvider extends _i1.Mock implements _i3.AudioProvider {
         returnValue: _i4.Future<void>.value(),
         returnValueForMissingStub: _i4.Future<void>.value(),
       ) as _i4.Future<void>);
+
+  @override
+  void clearError() => super.noSuchMethod(
+        Invocation.method(
+          #clearError,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
 
   @override
   _i4.Future<void> stopAndClear() => (super.noSuchMethod(
@@ -298,6 +313,12 @@ class MockSettingsProvider extends _i1.Mock implements _i6.SettingsProvider {
   }
 
   @override
+  bool get showSplashScreen => (super.noSuchMethod(
+        Invocation.getter(#showSplashScreen),
+        returnValue: false,
+      ) as bool);
+
+  @override
   bool get showExpandIcon => (super.noSuchMethod(
         Invocation.getter(#showExpandIcon),
         returnValue: false,
@@ -370,6 +391,54 @@ class MockSettingsProvider extends _i1.Mock implements _i6.SettingsProvider {
       ) as bool);
 
   @override
+  bool get uiScale => (super.noSuchMethod(
+        Invocation.getter(#uiScale),
+        returnValue: false,
+      ) as bool);
+
+  @override
+  bool get showGlowBorder => (super.noSuchMethod(
+        Invocation.getter(#showGlowBorder),
+        returnValue: false,
+      ) as bool);
+
+  @override
+  bool get highlightPlayingWithRgb => (super.noSuchMethod(
+        Invocation.getter(#highlightPlayingWithRgb),
+        returnValue: false,
+      ) as bool);
+
+  @override
+  bool get showPlaybackMessages => (super.noSuchMethod(
+        Invocation.getter(#showPlaybackMessages),
+        returnValue: false,
+      ) as bool);
+
+  @override
+  bool get highlightCurrentShowCard => (super.noSuchMethod(
+        Invocation.getter(#highlightCurrentShowCard),
+        returnValue: false,
+      ) as bool);
+
+  @override
+  bool get useMaterial3 => (super.noSuchMethod(
+        Invocation.getter(#useMaterial3),
+        returnValue: false,
+      ) as bool);
+
+  @override
+  bool get halfGlowDynamic => (super.noSuchMethod(
+        Invocation.getter(#halfGlowDynamic),
+        returnValue: false,
+      ) as bool);
+
+  @override
+  double get rgbAnimationSpeed => (super.noSuchMethod(
+        Invocation.getter(#rgbAnimationSpeed),
+        returnValue: 0.0,
+      ) as double);
+
+  @override
   set showExpandIcon(bool? value) => super.noSuchMethod(
         Invocation.setter(
           #showExpandIcon,
@@ -383,6 +452,15 @@ class MockSettingsProvider extends _i1.Mock implements _i6.SettingsProvider {
         Invocation.getter(#hasListeners),
         returnValue: false,
       ) as bool);
+
+  @override
+  void toggleShowSplashScreen() => super.noSuchMethod(
+        Invocation.method(
+          #toggleShowSplashScreen,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
 
   @override
   void toggleShowTrackNumbers() => super.noSuchMethod(
@@ -452,6 +530,60 @@ class MockSettingsProvider extends _i1.Mock implements _i6.SettingsProvider {
         Invocation.method(
           #toggleUseHandwritingFont,
           [],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void toggleUiScale() => super.noSuchMethod(
+        Invocation.method(
+          #toggleUiScale,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void toggleShowGlowBorder() => super.noSuchMethod(
+        Invocation.method(
+          #toggleShowGlowBorder,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void toggleHighlightPlayingWithRgb() => super.noSuchMethod(
+        Invocation.method(
+          #toggleHighlightPlayingWithRgb,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void toggleShowPlaybackMessages() => super.noSuchMethod(
+        Invocation.method(
+          #toggleShowPlaybackMessages,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void toggleHalfGlowDynamic() => super.noSuchMethod(
+        Invocation.method(
+          #toggleHalfGlowDynamic,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void setRgbAnimationSpeed(double? speed) => super.noSuchMethod(
+        Invocation.method(
+          #setRgbAnimationSpeed,
+          [speed],
         ),
         returnValueForMissingStub: null,
       );

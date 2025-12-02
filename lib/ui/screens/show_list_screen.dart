@@ -74,7 +74,24 @@ class _ShowListScreenState extends State<ShowListScreen>
             _randomShowPlayed = true;
           });
           logger.i('Startup setting enabled, playing random show.');
-          audioProvider.playRandomShow();
+
+          audioProvider.playRandomShow().then((show) {
+            if (show != null && mounted) {
+              // If the random show has multiple sources, expand it.
+              if (show.sources.length > 1) {
+                showListProvider.expandShow(show);
+                _animationController.forward(from: 0.0);
+              }
+
+              // Use addPostFrameCallback to ensure collapse animation has started
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                if (mounted) {
+                  _reliablyScrollToShow(show);
+                }
+              });
+            }
+          });
+
           showListProvider.removeListener(playRandomShowAndRemoveListener);
         } else if (!showListProvider.isLoading) {
           // If loading is finished but we couldn't play, still remove the listener

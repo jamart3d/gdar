@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class SettingsProvider with ChangeNotifier {
+  final SharedPreferences _prefs;
+
   // Preference Keys
   static const String _trackNumberKey = 'show_track_numbers';
   static const String _playOnTapKey = 'play_on_tap';
@@ -19,7 +21,7 @@ class SettingsProvider with ChangeNotifier {
   static const String _showPlaybackMessagesKey = 'show_playback_messages';
 
   static const String _showSplashScreenKey = 'show_splash_screen';
-  bool _showSplashScreen = true;
+  late bool _showSplashScreen;
   bool get showSplashScreen => _showSplashScreen;
 
   void toggleShowSplashScreen() => _updatePreference(
@@ -29,18 +31,18 @@ class SettingsProvider with ChangeNotifier {
   bool showExpandIcon = false;
 
   // Private state
-  bool _showTrackNumbers = false;
-  bool _playOnTap = false;
-  bool _showSingleShnid = false;
-  bool _playRandomOnCompletion = false;
-  bool _playRandomOnStartup = false;
-  bool _dateFirstInShowCard = true;
-  bool _useDynamicColor = true;
-  bool _useHandwritingFont = true;
-  bool _uiScale = false;
-  bool _showGlowBorder = false;
-  bool _highlightPlayingWithRgb = false;
-  bool _showPlaybackMessages = false;
+  late bool _showTrackNumbers;
+  late bool _playOnTap;
+  late bool _showSingleShnid;
+  late bool _playRandomOnCompletion;
+  late bool _playRandomOnStartup;
+  late bool _dateFirstInShowCard;
+  late bool _useDynamicColor;
+  late bool _useHandwritingFont;
+  late bool _uiScale;
+  late bool _showGlowBorder;
+  late bool _highlightPlayingWithRgb;
+  late bool _showPlaybackMessages;
 
   Color? _seedColor;
 
@@ -65,8 +67,59 @@ class SettingsProvider with ChangeNotifier {
 
   Color? get seedColor => _seedColor;
 
-  SettingsProvider() {
-    _loadPreferences();
+  SettingsProvider(this._prefs) {
+    _init();
+  }
+
+  void _init() {
+    // Check if this is the first run (or if we haven't checked screen size yet)
+    bool firstRunCheckDone = _prefs.getBool('first_run_check_done') ?? false;
+
+    // Default values
+    _uiScale = _prefs.getBool(_uiScaleKey) ?? false;
+
+    if (!firstRunCheckDone) {
+      // Get physical screen size
+      // We use the first view, which is standard for mobile apps
+      final view = WidgetsBinding.instance.platformDispatcher.views.first;
+      final physicalWidth = view.physicalSize.width;
+
+      if (physicalWidth <= 720) {
+        // Small screen: Default scale settings to false
+        _uiScale = false;
+        // Save these defaults immediately so they persist
+        _prefs.setBool(_uiScaleKey, false);
+      }
+
+      // Mark check as done
+      _prefs.setBool('first_run_check_done', true);
+    }
+
+    _showTrackNumbers = _prefs.getBool(_trackNumberKey) ?? false;
+    _playOnTap = _prefs.getBool(_playOnTapKey) ?? false;
+    _showSingleShnid = _prefs.getBool(_showSingleShnidKey) ?? false;
+    _playRandomOnCompletion =
+        _prefs.getBool(_playRandomOnCompletionKey) ?? false;
+    _playRandomOnStartup = _prefs.getBool(_playRandomOnStartupKey) ?? false;
+    _dateFirstInShowCard = _prefs.getBool(_dateFirstInShowCardKey) ?? true;
+    _useDynamicColor = _prefs.getBool(_useDynamicColorKey) ?? true;
+    _useHandwritingFont = _prefs.getBool(_useHandwritingFontKey) ?? true;
+
+    _showGlowBorder = _prefs.getBool(_showGlowBorderKey) ?? false;
+    _highlightPlayingWithRgb =
+        _prefs.getBool(_highlightPlayingWithRgbKey) ?? false;
+    _halfGlowDynamic = _prefs.getBool(_halfGlowDynamicKey) ?? false;
+    _rgbAnimationSpeed = _prefs.getDouble(_rgbAnimationSpeedKey) ?? 1.0;
+
+    _showSplashScreen = _prefs.getBool(_showSplashScreenKey) ?? true;
+    _showPlaybackMessages = _prefs.getBool(_showPlaybackMessagesKey) ?? false;
+
+    final seedColorValue = _prefs.getInt(_seedColorKey);
+    if (seedColorValue != null) {
+      _seedColor = Color(seedColorValue);
+    } else {
+      _seedColor = null;
+    }
   }
 
   // Toggle methods
@@ -110,84 +163,22 @@ class SettingsProvider with ChangeNotifier {
 
   Future<void> setSeedColor(Color? color) async {
     _seedColor = color;
-    final prefs = await SharedPreferences.getInstance();
     if (color == null) {
-      await prefs.remove(_seedColorKey);
+      await _prefs.remove(_seedColorKey);
     } else {
-      await prefs.setInt(_seedColorKey, color.value);
+      await _prefs.setInt(_seedColorKey, color.value);
     }
     notifyListeners();
   }
 
   // Persistence
   Future<void> _updatePreference(String key, bool value) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool(key, value);
-    notifyListeners();
-  }
-
-  Future<void> _loadPreferences() async {
-    final prefs = await SharedPreferences.getInstance();
-
-    // Check if this is the first run (or if we haven't checked screen size yet)
-    bool firstRunCheckDone = prefs.getBool('first_run_check_done') ?? false;
-
-    if (!firstRunCheckDone) {
-      // Get physical screen size
-      // We use the first view, which is standard for mobile apps
-      final view = WidgetsBinding.instance.platformDispatcher.views.first;
-      final physicalWidth = view.physicalSize.width;
-
-      if (physicalWidth <= 720) {
-        // Small screen: Default scale settings to false
-        _uiScale = false;
-
-        // Save these defaults immediately so they persist
-        await prefs.setBool(_uiScaleKey, false);
-      } else {
-        // Normal/Large screen: Default to false (as requested)
-      }
-
-      // Mark check as done
-      await prefs.setBool('first_run_check_done', true);
-    }
-
-    _showTrackNumbers = prefs.getBool(_trackNumberKey) ?? false;
-    _playOnTap = prefs.getBool(_playOnTapKey) ?? false;
-    _showSingleShnid = prefs.getBool(_showSingleShnidKey) ?? false;
-    _showSingleShnid = prefs.getBool(_showSingleShnidKey) ?? false;
-    _playRandomOnCompletion =
-        prefs.getBool(_playRandomOnCompletionKey) ?? false;
-    _playRandomOnStartup = prefs.getBool(_playRandomOnStartupKey) ?? false;
-    _dateFirstInShowCard = prefs.getBool(_dateFirstInShowCardKey) ?? true;
-    _useDynamicColor = prefs.getBool(_useDynamicColorKey) ?? true;
-    _useHandwritingFont = prefs.getBool(_useHandwritingFontKey) ?? true;
-
-    // Load scale settings. If they were set above during first run, these will pick up the saved values.
-    // If it's a large screen first run, they won't be in prefs, so they default to true.
-    // Load scale settings.
-    _uiScale = prefs.getBool(_uiScaleKey) ?? false;
-    _showGlowBorder = prefs.getBool(_showGlowBorderKey) ?? false;
-    _highlightPlayingWithRgb =
-        prefs.getBool(_highlightPlayingWithRgbKey) ?? false;
-    _halfGlowDynamic = prefs.getBool(_halfGlowDynamicKey) ?? false;
-    _rgbAnimationSpeed = prefs.getDouble(_rgbAnimationSpeedKey) ?? 1.0;
-
-    _showSplashScreen = prefs.getBool(_showSplashScreenKey) ?? true;
-
-    final seedColorValue = prefs.getInt(_seedColorKey);
-    if (seedColorValue != null) {
-      _seedColor = Color(seedColorValue);
-    } else {
-      _seedColor = null;
-    }
-
+    await _prefs.setBool(key, value);
     notifyListeners();
   }
 
   Future<void> _updateDoublePreference(String key, double value) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setDouble(key, value);
+    await _prefs.setDouble(key, value);
     notifyListeners();
   }
 }

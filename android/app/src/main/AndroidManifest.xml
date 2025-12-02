@@ -12,7 +12,7 @@
         android:label="gdar"
         android:name="${applicationName}"
         android:roundIcon="@mipmap/ic_launcher_round"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/ic_launcher1">
         <activity
             android:name="com.ryanheise.audioservice.AudioServiceActivity"
             android:exported="true"
