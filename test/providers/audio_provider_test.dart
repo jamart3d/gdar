@@ -29,22 +29,47 @@ void main() {
   late StreamController<ProcessingState> processingStateController;
 
   setUp(() {
-    mockAudioPlayer = MockAudioPlayerRelaxed();
-    mockShowListProvider = MockShowListProvider();
     mockSettingsProvider = MockSettingsProvider();
+    mockShowListProvider = MockShowListProvider();
+    mockAudioPlayer = MockAudioPlayerRelaxed();
     processingStateController = StreamController<ProcessingState>.broadcast();
 
-    audioProvider = AudioProvider(audioPlayer: mockAudioPlayer);
-    audioProvider.update(mockShowListProvider, mockSettingsProvider);
+    // Stub SettingsProvider methods FIRST
+    // Stub for specific shows used in tests (id 1 and 2)
+    // for (var i = 1; i <= 2; i++) {
+    //   final name = 'Grateful Dead at Venue $i on 2025-11-15';
+    //   when(mockSettingsProvider.getRating(name)).thenReturn(0);
+    //   when(mockSettingsProvider.isPlayed(name)).thenReturn(false);
+    // }
+
+    when(mockSettingsProvider.randomOnlyUnplayed).thenReturn(false);
+    when(mockSettingsProvider.randomOnlyHighRated).thenReturn(false);
+    when(mockSettingsProvider.playRandomOnCompletion).thenReturn(false);
+    when(mockSettingsProvider.markAsPlayed(any)).thenAnswer((_) async {});
 
     when(mockAudioPlayer.processingStateStream)
         .thenAnswer((_) => processingStateController.stream);
+    when(mockAudioPlayer.playbackEventStream)
+        .thenAnswer((_) => const Stream.empty());
+    when(mockAudioPlayer.currentIndexStream)
+        .thenAnswer((_) => const Stream.empty());
+    when(mockAudioPlayer.durationStream)
+        .thenAnswer((_) => const Stream.empty());
+    when(mockAudioPlayer.positionStream)
+        .thenAnswer((_) => const Stream.empty());
+    when(mockAudioPlayer.bufferedPositionStream)
+        .thenAnswer((_) => const Stream.empty());
+
     when(mockAudioPlayer.play()).thenAnswer((_) async {});
     when(mockAudioPlayer.stop()).thenAnswer((_) async {});
     when(mockAudioPlayer.setAudioSource(any,
             initialIndex: anyNamed('initialIndex'),
             preload: anyNamed('preload')))
         .thenAnswer((_) async => const Duration(seconds: 100));
+
+    // Create AudioProvider AFTER stubbing
+    audioProvider = AudioProvider(audioPlayer: mockAudioPlayer);
+    audioProvider.update(mockShowListProvider, mockSettingsProvider);
   });
 
   tearDown(() {
@@ -81,10 +106,25 @@ void main() {
   }
 
   group('AudioProvider Tests', () {
-    testWidgets(
-        'playRandomShow plays a random source when shows are available',
+    testWidgets('playRandomShow plays a random source when shows are available',
         (WidgetTester tester) async {
       await tester.runAsync(() async {
+        // Stub SettingsProvider methods
+        for (var i = 1; i <= 2; i++) {
+          final name = 'Grateful Dead at Venue $i on 2025-11-15';
+          when(mockSettingsProvider.getRating(name)).thenReturn(0);
+          when(mockSettingsProvider.isPlayed(name)).thenReturn(false);
+        }
+        when(mockSettingsProvider.randomOnlyUnplayed).thenReturn(false);
+        when(mockSettingsProvider.randomOnlyHighRated).thenReturn(false);
+
+        // Stub AudioPlayer methods
+        when(mockAudioPlayer.setAudioSource(any,
+                initialIndex: anyNamed('initialIndex'),
+                preload: anyNamed('preload')))
+            .thenAnswer((_) async => const Duration(seconds: 100));
+        when(mockAudioPlayer.play()).thenAnswer((_) async {});
+
         final shows = [createDummyShow(1), createDummyShow(2)];
         when(mockShowListProvider.filteredShows).thenReturn(shows);
 
@@ -166,6 +206,23 @@ void main() {
 
         verifyNever(mockAudioPlayer.setAudioSource(any));
         verifyNever(mockAudioPlayer.play());
+      });
+    });
+
+    testWidgets('Marks show as played on completion',
+        (WidgetTester tester) async {
+      await tester.runAsync(() async {
+        final show = createDummyShow(1);
+        final source = show.sources.first;
+
+        // Setup current show/source
+        await audioProvider.playSource(show, source);
+
+        // Simulate completion
+        processingStateController.add(ProcessingState.completed);
+        await Future.delayed(const Duration(milliseconds: 10));
+
+        verify(mockSettingsProvider.markAsPlayed(show.name)).called(1);
       });
     });
 

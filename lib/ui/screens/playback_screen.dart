@@ -13,6 +13,7 @@ import 'package:gdar/utils/color_generator.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:provider/provider.dart';
 import 'dart:async';
+import 'package:gdar/ui/widgets/rating_control.dart';
 
 class PlaybackScreen extends StatefulWidget {
   const PlaybackScreen({super.key});
@@ -227,20 +228,55 @@ class _PlaybackScreenState extends State<PlaybackScreen>
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          SizedBox(
-                            height: textTheme.headlineSmall!.fontSize! *
-                                scaleFactor *
-                                1.2,
-                            child: ConditionalMarquee(
-                              text: currentShow.venue,
-                              style: textTheme.headlineSmall
-                                  ?.apply(fontSizeFactor: scaleFactor)
-                                  .copyWith(
-                                    color: colorScheme.onSurface,
+                          Row(
+                            children: [
+                              Expanded(
+                                child: SizedBox(
+                                  height: textTheme.headlineSmall!.fontSize! *
+                                      scaleFactor *
+                                      1.2,
+                                  child: ConditionalMarquee(
+                                    text: currentShow.venue,
+                                    style: textTheme.headlineSmall
+                                        ?.apply(fontSizeFactor: scaleFactor)
+                                        .copyWith(
+                                          color: colorScheme.onSurface,
+                                        ),
+                                    blankSpace: 60.0,
+                                    pauseAfterRound: const Duration(seconds: 3),
                                   ),
-                              blankSpace: 60.0,
-                              pauseAfterRound: const Duration(seconds: 3),
-                            ),
+                                ),
+                              ),
+                              IconButton(
+                                icon: Icon(Icons.copy_rounded,
+                                    size: 20 * scaleFactor,
+                                    color: colorScheme.onSurfaceVariant),
+                                tooltip: 'Copy Show Details',
+                                onPressed: () {
+                                  final track = currentSource.tracks[
+                                      audioProvider.audioPlayer.currentIndex ??
+                                          0];
+                                  final info =
+                                      "${currentShow.venue} - ${currentShow.formattedDate} - ${currentSource.id}\n${track.title}\n${track.url.replaceAll('/download/', '/details/').split('/').sublist(0, 5).join('/')}";
+                                  Clipboard.setData(ClipboardData(text: info));
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                          'Show details copied to clipboard',
+                                          style: TextStyle(
+                                              color: colorScheme
+                                                  .onSecondaryContainer)),
+                                      behavior: SnackBarBehavior.floating,
+                                      backgroundColor:
+                                          colorScheme.secondaryContainer,
+                                      showCloseIcon: true,
+                                      closeIconColor:
+                                          colorScheme.onSecondaryContainer,
+                                    ),
+                                  );
+                                },
+                              ),
+                            ],
                           ),
                           Row(
                             children: [
@@ -252,21 +288,46 @@ class _PlaybackScreenState extends State<PlaybackScreen>
                                       color: colorScheme.onSurfaceVariant,
                                     ),
                               ),
-                              const SizedBox(width: 8),
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 6, vertical: 2),
-                                decoration: BoxDecoration(
-                                  color: colorScheme.tertiaryContainer
-                                      .withOpacity(0.7),
-                                  borderRadius: BorderRadius.circular(4),
-                                ),
-                                child: Text(
-                                  currentSource.id,
-                                  style: textTheme.labelSmall?.copyWith(
-                                    color: colorScheme.onTertiaryContainer,
-                                    fontWeight: FontWeight.bold,
-                                  ),
+                              const Spacer(),
+                              IntrinsicWidth(
+                                child: Column(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.stretch,
+                                  children: [
+                                    _buildRatingButton(context, currentShow,
+                                        currentSource, settingsProvider),
+                                    const SizedBox(height: 8),
+                                    InkWell(
+                                      onTap: () {
+                                        if (currentSource.tracks.isNotEmpty) {
+                                          launchArchivePage(
+                                              currentSource.tracks.first.url);
+                                        }
+                                      },
+                                      borderRadius: BorderRadius.circular(6),
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 10, vertical: 6),
+                                        decoration: BoxDecoration(
+                                          color: colorScheme.tertiaryContainer
+                                              .withOpacity(0.7),
+                                          borderRadius:
+                                              BorderRadius.circular(6),
+                                        ),
+                                        alignment: Alignment.center,
+                                        child: Text(
+                                          currentSource.id,
+                                          style: textTheme.bodyMedium?.copyWith(
+                                            color:
+                                                colorScheme.onTertiaryContainer,
+                                            fontWeight: FontWeight.bold,
+                                            decoration:
+                                                TextDecoration.underline,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
                             ],
@@ -805,6 +866,36 @@ class _PlaybackScreenState extends State<PlaybackScreen>
         if (currentIndex != index) {
           audioProvider.seekToTrack(index);
         }
+      },
+    );
+  }
+
+  Widget _buildRatingButton(BuildContext context, Show show, Source source,
+      SettingsProvider settings) {
+    // Determine the key for rating:
+    // If multiple sources, rate the specific source ID.
+    // If single source, rate the show name (consistent with ShowListCard).
+    final String ratingKey = show.sources.length > 1 ? source.id : show.name;
+    final rating = settings.getRating(ratingKey);
+
+    return RatingControl(
+      rating: rating,
+      isPlayed: settings.isPlayed(ratingKey),
+      size: 20,
+      onTap: () async {
+        await showDialog(
+          context: context,
+          builder: (context) => RatingDialog(
+            initialRating: rating,
+            sourceId: show.sources.length > 1 ? source.id : null,
+            sourceUrl: show.sources.length > 1 && source.tracks.isNotEmpty
+                ? source.tracks.first.url
+                : null,
+            onRatingChanged: (newRating) {
+              settings.setRating(ratingKey, newRating);
+            },
+          ),
+        );
       },
     );
   }

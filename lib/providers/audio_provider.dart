@@ -54,6 +54,18 @@ class AudioProvider with ChangeNotifier {
     _processingStateSubscription =
         _audioPlayer.processingStateStream.listen((state) async {
       if (state == ProcessingState.completed) {
+        // Mark as played
+        if (_currentShow != null) {
+          final show = _currentShow!;
+          final source = _currentSource;
+          // Determine key: if multiple sources, rate source ID, else show name
+          final ratingKey = (show.sources.length > 1 && source != null)
+              ? source.id
+              : show.name;
+
+          await _settingsProvider?.markAsPlayed(ratingKey);
+        }
+
         if (_settingsProvider?.playRandomOnCompletion ?? false) {
           logger.i('Playlist completed, playing random show.');
           await playRandomShow();
@@ -93,19 +105,89 @@ class AudioProvider with ChangeNotifier {
       return null;
     }
 
-    final randomShow = nonEmptyShows[Random().nextInt(nonEmptyShows.length)];
+    // Filter and Weighting Logic
+    final settings = _settingsProvider;
+    if (settings == null) {
+      // Fallback to simple random if settings not available
+      final randomShow = nonEmptyShows[Random().nextInt(nonEmptyShows.length)];
+      final randomSource =
+          randomShow.sources[Random().nextInt(randomShow.sources.length)];
+      playSource(randomShow, randomSource);
+      return randomShow;
+    }
+
+    final List<Show> candidates = [];
+    final Map<Show, int> weights = {};
+
+    for (final show in nonEmptyShows) {
+      final rating = settings.getRating(show.name);
+      final isPlayed = settings.isPlayed(show.name);
+
+      // 1. Exclude Red Star (-1)
+      if (rating == -1) continue;
+
+      // 2. Filter by Settings
+      if (settings.randomOnlyUnplayed && isPlayed) continue;
+      if (settings.randomOnlyHighRated && rating < 2) continue;
+
+      // 3. Calculate Weight
+      int weight = 10; // Default weight (1 Star or Unrated)
+
+      if (rating == 3) {
+        weight = 30;
+      } else if (rating == 2) {
+        weight = 20;
+      } else if (rating == 1) {
+        weight = 10;
+      } else if (rating == 0) {
+        if (!isPlayed) {
+          weight = 50; // Unplayed priority
+        } else {
+          weight = 5; // Played but unrated (low priority)
+        }
+      }
+
+      candidates.add(show);
+      weights[show] = weight;
+    }
+
+    if (candidates.isEmpty) {
+      logger.w('No shows match the current random playback criteria.');
+      // Optional: Show a toast or message to the user?
+      // For now, fallback to playing *any* non-red-star show to avoid silence,
+      // or just return null. Let's return null and maybe the UI can handle it.
+      // Actually, let's try to relax criteria if strict ones fail?
+      // No, user asked for "Only...", so we should respect it.
+      return null;
+    }
+
+    // Weighted Random Selection
+    int totalWeight = weights.values.fold(0, (sum, w) => sum + w);
+    int randomWeight = Random().nextInt(totalWeight);
+    int currentWeight = 0;
+    Show? selectedShow;
+
+    for (final show in candidates) {
+      currentWeight += weights[show]!;
+      if (randomWeight < currentWeight) {
+        selectedShow = show;
+        break;
+      }
+    }
+
+    selectedShow ??= candidates.first; // Should not happen if logic is correct
+
     final randomSource =
-        randomShow.sources[Random().nextInt(randomShow.sources.length)];
+        selectedShow.sources[Random().nextInt(selectedShow.sources.length)];
 
     logger.i(
-        'Playing random source ${randomSource.id} from show ${randomShow.name}');
+        'Playing random show: ${selectedShow.name} (Rating: ${settings.getRating(selectedShow.name)}, Played: ${settings.isPlayed(selectedShow.name)}, Weight: ${weights[selectedShow]})');
 
     // Play the randomly selected source.
-    // Don't await here so the UI can scroll immediately while audio loads.
-    playSource(randomShow, randomSource);
+    playSource(selectedShow, randomSource);
 
     // Return the parent show so the UI can scroll to it.
-    return randomShow;
+    return selectedShow;
   }
 
   Future<void> playSource(Show show, Source source,

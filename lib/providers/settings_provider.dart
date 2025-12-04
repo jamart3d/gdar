@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -46,6 +47,17 @@ class SettingsProvider with ChangeNotifier {
 
   Color? _seedColor;
 
+  // Ratings & Played Status
+  static const String _showRatingsKey = 'show_ratings';
+  static const String _playedShowsKey = 'played_shows';
+  static const String _randomOnlyUnplayedKey = 'random_only_unplayed';
+  static const String _randomOnlyHighRatedKey = 'random_only_high_rated';
+
+  Map<String, int> _showRatings = {};
+  Set<String> _playedShows = {};
+  bool _randomOnlyUnplayed = false;
+  bool _randomOnlyHighRated = false;
+
   // Public getters
   bool get showTrackNumbers => _showTrackNumbers;
   bool get playOnTap => _playOnTap;
@@ -66,6 +78,11 @@ class SettingsProvider with ChangeNotifier {
   bool get useMaterial3 => true;
 
   Color? get seedColor => _seedColor;
+
+  Map<String, int> get showRatings => _showRatings;
+  Set<String> get playedShows => _playedShows;
+  bool get randomOnlyUnplayed => _randomOnlyUnplayed;
+  bool get randomOnlyHighRated => _randomOnlyHighRated;
 
   SettingsProvider(this._prefs) {
     _init();
@@ -120,6 +137,29 @@ class SettingsProvider with ChangeNotifier {
     } else {
       _seedColor = null;
     }
+
+    _initRatings();
+  }
+
+  void _initRatings() {
+    final String? ratingsJson = _prefs.getString(_showRatingsKey);
+    if (ratingsJson != null) {
+      try {
+        final Map<String, dynamic> decoded = json.decode(ratingsJson);
+        _showRatings = decoded.map((key, value) => MapEntry(key, value as int));
+      } catch (e) {
+        // Handle error or ignore
+        _showRatings = {};
+      }
+    }
+
+    final List<String>? playedList = _prefs.getStringList(_playedShowsKey);
+    if (playedList != null) {
+      _playedShows = playedList.toSet();
+    }
+
+    _randomOnlyUnplayed = _prefs.getBool(_randomOnlyUnplayedKey) ?? false;
+    _randomOnlyHighRated = _prefs.getBool(_randomOnlyHighRatedKey) ?? false;
   }
 
   // Toggle methods
@@ -171,7 +211,46 @@ class SettingsProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  // Persistence
+  // Ratings & Played Methods
+  int getRating(String showName) {
+    return _showRatings[showName] ?? 0;
+  }
+
+  bool isPlayed(String showName) {
+    return _playedShows.contains(showName);
+  }
+
+  Future<void> setRating(String showName, int rating) async {
+    _showRatings[showName] = rating;
+    notifyListeners();
+    await _saveRatings();
+  }
+
+  Future<void> togglePlayed(String showName) async {
+    if (_playedShows.contains(showName)) {
+      _playedShows.remove(showName);
+    } else {
+      _playedShows.add(showName);
+    }
+    notifyListeners();
+    await _savePlayedShows();
+  }
+
+  Future<void> markAsPlayed(String showName) async {
+    if (!_playedShows.contains(showName)) {
+      _playedShows.add(showName);
+      notifyListeners();
+      await _savePlayedShows();
+    }
+  }
+
+  void toggleRandomOnlyUnplayed() => _updatePreference(
+      _randomOnlyUnplayedKey, _randomOnlyUnplayed = !_randomOnlyUnplayed);
+
+  void toggleRandomOnlyHighRated() => _updatePreference(
+      _randomOnlyHighRatedKey, _randomOnlyHighRated = !_randomOnlyHighRated);
+
+  // Persistence Helpers
   Future<void> _updatePreference(String key, bool value) async {
     await _prefs.setBool(key, value);
     notifyListeners();
@@ -180,5 +259,14 @@ class SettingsProvider with ChangeNotifier {
   Future<void> _updateDoublePreference(String key, double value) async {
     await _prefs.setDouble(key, value);
     notifyListeners();
+  }
+
+  Future<void> _saveRatings() async {
+    final String encoded = json.encode(_showRatings);
+    await _prefs.setString(_showRatingsKey, encoded);
+  }
+
+  Future<void> _savePlayedShows() async {
+    await _prefs.setStringList(_playedShowsKey, _playedShows.toList());
   }
 }

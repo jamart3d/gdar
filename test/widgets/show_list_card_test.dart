@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gdar/models/show.dart';
 import 'package:gdar/models/source.dart';
 import 'package:gdar/providers/settings_provider.dart';
 import 'package:gdar/providers/theme_provider.dart';
+import 'package:gdar/ui/widgets/rating_control.dart';
 import 'package:gdar/ui/widgets/show_list_card.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -148,5 +150,106 @@ void main() {
 
     await tester.longPress(find.byType(ShowListCard));
     expect(longPressed, isTrue);
+  });
+
+  testWidgets('ShowListCard displays rating control for single source show',
+      (WidgetTester tester) async {
+    await tester.pumpWidget(createTestableWidget(show: dummyShow));
+
+    // Should find RatingControl widget
+    expect(find.byType(RatingControl), findsOneWidget);
+    // And it should contain empty stars (RatingBar uses Icons.star_border for empty)
+    expect(find.byIcon(Icons.star_border), findsWidgets);
+  });
+
+  testWidgets('ShowListCard hides rating control for multi-source show',
+      (WidgetTester tester) async {
+    final showWithMultipleSources = createDummyShow('Show B', '2025-01-01');
+    showWithMultipleSources.sources.add(Source(id: 'source2', tracks: []));
+
+    await tester
+        .pumpWidget(createTestableWidget(show: showWithMultipleSources));
+
+    // Should NOT find RatingControl
+    expect(find.byType(RatingControl), findsNothing);
+  });
+
+  testWidgets('Tapping rating control opens dialog when playing',
+      (WidgetTester tester) async {
+    final show = createDummyShow('Show C', '2025-01-01');
+    await tester.pumpWidget(createTestableWidget(show: show, isPlaying: true));
+
+    // Find the rating control
+    final ratingControl = find.byType(RatingControl);
+    expect(ratingControl, findsOneWidget);
+
+    // Tap it
+    await tester.tap(ratingControl);
+    await tester.pumpAndSettle();
+
+    // Verify dialog is open
+    expect(find.text('Rate Show'), findsOneWidget);
+
+    // Verify RatingBar is present (might find 2, one in card, one in dialog)
+    expect(find.byType(RatingBar), findsWidgets);
+
+    // Verify Block and Clear options
+    expect(find.text('Block (Red Star)'), findsOneWidget);
+    expect(find.text('Clear Rating'), findsOneWidget);
+  });
+
+  testWidgets('ShowListCard displays grey star for played but unrated show',
+      (WidgetTester tester) async {
+    final show = createDummyShow('Played Show', '2025-01-01');
+    final settingsProvider = SettingsProvider(prefs);
+    await settingsProvider.markAsPlayed(show.name);
+
+    await tester.pumpWidget(createTestableWidget(
+      show: show,
+      settingsProvider: settingsProvider,
+    ));
+
+    // Should find RatingControl
+    expect(find.byType(RatingControl), findsOneWidget);
+
+    // Should find 1 grey star (filled)
+    expect(find.byIcon(Icons.star), findsOneWidget);
+    // Should find 2 empty stars (borders)
+    expect(find.byIcon(Icons.star_border), findsNWidgets(2));
+  });
+
+  testWidgets('ShowListCard displays empty stars for unplayed and unrated show',
+      (WidgetTester tester) async {
+    final show = createDummyShow('Unplayed Show', '2025-01-02');
+    // No played status set
+
+    await tester.pumpWidget(createTestableWidget(
+      show: show,
+    ));
+
+    // Should find RatingControl
+    expect(find.byType(RatingControl), findsOneWidget);
+
+    // Should find 3 empty stars (borders)
+    expect(find.byIcon(Icons.star_border), findsNWidgets(3));
+    // Should NOT find any filled stars
+    expect(find.byIcon(Icons.star), findsNothing);
+  });
+
+  testWidgets('Tapping rating control does NOT open dialog when NOT playing',
+      (WidgetTester tester) async {
+    await tester
+        .pumpWidget(createTestableWidget(show: dummyShow, isPlaying: false));
+
+    // Find the rating control
+    final ratingControl = find.byType(RatingControl);
+    expect(ratingControl, findsOneWidget);
+
+    // Tap it
+    await tester.tap(ratingControl);
+    await tester.pumpAndSettle();
+
+    // Verify dialog is NOT open
+    expect(find.text('Rate Show'), findsNothing);
   });
 }

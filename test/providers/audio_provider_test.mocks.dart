@@ -912,8 +912,14 @@ class MockShowListProvider extends _i1.Mock implements _i6.ShowListProvider {
       ) as List<_i7.Show>);
 
   @override
-  bool get isArchiveChecked => (super.noSuchMethod(
-        Invocation.getter(#isArchiveChecked),
+  bool get isArchiveReachable => (super.noSuchMethod(
+        Invocation.getter(#isArchiveReachable),
+        returnValue: false,
+      ) as bool);
+
+  @override
+  bool get hasCheckedArchive => (super.noSuchMethod(
+        Invocation.getter(#hasCheckedArchive),
         returnValue: false,
       ) as bool);
 
@@ -936,10 +942,10 @@ class MockShowListProvider extends _i1.Mock implements _i6.ShowListProvider {
       ) as bool);
 
   @override
-  void setArchiveChecked(bool? value) => super.noSuchMethod(
+  void setArchiveStatus(bool? isReachable) => super.noSuchMethod(
         Invocation.method(
-          #setArchiveChecked,
-          [value],
+          #setArchiveStatus,
+          [isReachable],
         ),
         returnValueForMissingStub: null,
       );
@@ -1179,6 +1185,30 @@ class MockSettingsProvider extends _i1.Mock implements _i9.SettingsProvider {
       ) as bool);
 
   @override
+  Map<String, int> get showRatings => (super.noSuchMethod(
+        Invocation.getter(#showRatings),
+        returnValue: <String, int>{},
+      ) as Map<String, int>);
+
+  @override
+  Set<String> get playedShows => (super.noSuchMethod(
+        Invocation.getter(#playedShows),
+        returnValue: <String>{},
+      ) as Set<String>);
+
+  @override
+  bool get randomOnlyUnplayed => (super.noSuchMethod(
+        Invocation.getter(#randomOnlyUnplayed),
+        returnValue: false,
+      ) as bool);
+
+  @override
+  bool get randomOnlyHighRated => (super.noSuchMethod(
+        Invocation.getter(#randomOnlyHighRated),
+        returnValue: false,
+      ) as bool);
+
+  @override
   bool get halfGlowDynamic => (super.noSuchMethod(
         Invocation.getter(#halfGlowDynamic),
         returnValue: false,
@@ -1349,6 +1379,79 @@ class MockSettingsProvider extends _i1.Mock implements _i9.SettingsProvider {
         returnValue: _i3.Future<void>.value(),
         returnValueForMissingStub: _i3.Future<void>.value(),
       ) as _i3.Future<void>);
+
+  @override
+  int getRating(String? showName) => (super.noSuchMethod(
+        Invocation.method(
+          #getRating,
+          [showName],
+        ),
+        returnValue: 0,
+      ) as int);
+
+  @override
+  bool isPlayed(String? showName) => (super.noSuchMethod(
+        Invocation.method(
+          #isPlayed,
+          [showName],
+        ),
+        returnValue: false,
+      ) as bool);
+
+  @override
+  _i3.Future<void> setRating(
+    String? showName,
+    int? rating,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #setRating,
+          [
+            showName,
+            rating,
+          ],
+        ),
+        returnValue: _i3.Future<void>.value(),
+        returnValueForMissingStub: _i3.Future<void>.value(),
+      ) as _i3.Future<void>);
+
+  @override
+  _i3.Future<void> togglePlayed(String? showName) => (super.noSuchMethod(
+        Invocation.method(
+          #togglePlayed,
+          [showName],
+        ),
+        returnValue: _i3.Future<void>.value(),
+        returnValueForMissingStub: _i3.Future<void>.value(),
+      ) as _i3.Future<void>);
+
+  @override
+  _i3.Future<void> markAsPlayed(String? showName) => (super.noSuchMethod(
+        Invocation.method(
+          #markAsPlayed,
+          [showName],
+        ),
+        returnValue: _i3.Future<void>.value(),
+        returnValueForMissingStub: _i3.Future<void>.value(),
+      ) as _i3.Future<void>);
+
+  @override
+  void toggleRandomOnlyUnplayed() => super.noSuchMethod(
+        Invocation.method(
+          #toggleRandomOnlyUnplayed,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void toggleRandomOnlyHighRated() => super.noSuchMethod(
+        Invocation.method(
+          #toggleRandomOnlyHighRated,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
 
   @override
   void addListener(_i8.VoidCallback? listener) => super.noSuchMethod(

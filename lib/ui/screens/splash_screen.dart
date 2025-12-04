@@ -120,7 +120,7 @@ class _SplashScreenState extends State<SplashScreen>
 
     if (_minTimeElapsed &&
         !_showListProvider.isLoading &&
-        _showListProvider.isArchiveChecked &&
+        _showListProvider.hasCheckedArchive &&
         countDone) {
       _navigateToHome();
     }
@@ -218,10 +218,12 @@ class _SplashScreenState extends State<SplashScreen>
 
               // 3. Archive Check
               _buildChecklistItem(
-                label: showListProvider.isArchiveChecked
-                    ? 'Archive.org reachable'
+                label: showListProvider.hasCheckedArchive
+                    ? (showListProvider.isArchiveReachable
+                        ? 'Archive.org reachable'
+                        : 'Archive.org unreachable (offline mode)')
                     : 'Checking archive.org...',
-                isDone: showListProvider.isArchiveChecked,
+                isDone: showListProvider.hasCheckedArchive,
               ),
 
               // 4. Random Play (Conditional)

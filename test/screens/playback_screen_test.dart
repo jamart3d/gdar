@@ -95,6 +95,30 @@ class FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
   void setRgbAnimationSpeed(double speed) {}
   @override
   Future<void> setSeedColor(Color? color) async {}
+
+  @override
+  Map<String, int> get showRatings => {};
+  @override
+  Set<String> get playedShows => {};
+  @override
+  bool get randomOnlyUnplayed => false;
+  @override
+  bool get randomOnlyHighRated => false;
+
+  @override
+  int getRating(String showName) => 0;
+  @override
+  bool isPlayed(String showName) => false;
+  @override
+  Future<void> setRating(String showName, int rating) async {}
+  @override
+  Future<void> togglePlayed(String showName) async {}
+  @override
+  Future<void> markAsPlayed(String showName) async {}
+  @override
+  void toggleRandomOnlyUnplayed() {}
+  @override
+  void toggleRandomOnlyHighRated() {}
 }
 
 @GenerateMocks([AudioProvider, AudioPlayer])
@@ -232,5 +256,17 @@ void main() {
     verify(mockAudioProvider.play()).called(1);
 
     playerStateController.close();
+  });
+
+  testWidgets('PlaybackScreen displays rating control',
+      (WidgetTester tester) async {
+    when(mockAudioProvider.currentShow).thenReturn(dummyShow);
+    when(mockAudioProvider.currentSource).thenReturn(dummySource);
+
+    await tester
+        .pumpWidget(createTestableWidget(child: const PlaybackScreen()));
+
+    // Should find 3 star_border icons (RatingControl default is 0)
+    expect(find.byIcon(Icons.star_border), findsNWidgets(3));
   });
 }

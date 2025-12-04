@@ -39,6 +39,7 @@ dependencies:
   flutter_colorpicker: ^1.1.0
   http: ^1.2.1
   url_launcher: ^6.2.5
+  flutter_rating_bar: ^4.0.1
 
 
 dev_dependencies:
@@ -52,5 +53,4 @@ flutter:
   uses-material-design: true
 
   assets:
-    - assets/data/shows.json
-    - assets/images/drip_scaled_clear.png
+    - assets/data/shows2.json

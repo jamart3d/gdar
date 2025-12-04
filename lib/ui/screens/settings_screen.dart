@@ -369,6 +369,30 @@ class SettingsScreen extends StatelessWidget {
                     secondary: const Icon(Icons.play_circle_filled_rounded),
                   ),
                   SwitchListTile(
+                    title: const Text('Only Select Unplayed Shows'),
+                    subtitle: const Text(
+                        'Random playback will prefer unplayed shows'),
+                    value: settingsProvider.randomOnlyUnplayed,
+                    onChanged: (value) {
+                      context
+                          .read<SettingsProvider>()
+                          .toggleRandomOnlyUnplayed();
+                    },
+                    secondary: const Icon(Icons.new_releases_rounded),
+                  ),
+                  SwitchListTile(
+                    title: const Text('Only Select High Rated Shows'),
+                    subtitle: const Text(
+                        'Random playback will prefer shows rated 2+ stars'),
+                    value: settingsProvider.randomOnlyHighRated,
+                    onChanged: (value) {
+                      context
+                          .read<SettingsProvider>()
+                          .toggleRandomOnlyHighRated();
+                    },
+                    secondary: const Icon(Icons.star_rounded),
+                  ),
+                  SwitchListTile(
                     title: const Text('Show Playback Messages'),
                     subtitle: const Text(
                         'Display detailed status, buffered time, and errors'),
@@ -440,6 +464,22 @@ class SettingsScreen extends StatelessWidget {
                 final hours = duration.inHours % 24;
                 final minutes = duration.inMinutes % 60;
 
+                // Rating Stats
+                int playedCount = settingsProvider.playedShows.length;
+                int unplayedCount = totalShows - playedCount; // Approximate
+                int rated3 = settingsProvider.showRatings.values
+                    .where((r) => r == 3)
+                    .length;
+                int rated2 = settingsProvider.showRatings.values
+                    .where((r) => r == 2)
+                    .length;
+                int rated1 = settingsProvider.showRatings.values
+                    .where((r) => r == 1)
+                    .length;
+                int ratedBlock = settingsProvider.showRatings.values
+                    .where((r) => r == -1)
+                    .length;
+
                 return ExpansionTile(
                   leading: const Icon(Icons.bar_chart_rounded),
                   title: const Text('Collection Statistics'),
@@ -462,6 +502,38 @@ class SettingsScreen extends StatelessWidget {
                     ListTile(
                       title: const Text('Total Runtime'),
                       trailing: Text('${days}d ${hours}h ${minutes}m',
+                          style: Theme.of(context).textTheme.titleMedium),
+                    ),
+                    const Divider(),
+                    ListTile(
+                      title: const Text('Played Shows'),
+                      trailing: Text('$playedCount',
+                          style: Theme.of(context).textTheme.titleMedium),
+                    ),
+                    ListTile(
+                      title: const Text('Unplayed Shows (Approx)'),
+                      trailing: Text('$unplayedCount',
+                          style: Theme.of(context).textTheme.titleMedium),
+                    ),
+                    const Divider(),
+                    ListTile(
+                      title: const Text('3 Star Ratings'),
+                      trailing: Text('$rated3',
+                          style: Theme.of(context).textTheme.titleMedium),
+                    ),
+                    ListTile(
+                      title: const Text('2 Star Ratings'),
+                      trailing: Text('$rated2',
+                          style: Theme.of(context).textTheme.titleMedium),
+                    ),
+                    ListTile(
+                      title: const Text('1 Star Ratings'),
+                      trailing: Text('$rated1',
+                          style: Theme.of(context).textTheme.titleMedium),
+                    ),
+                    ListTile(
+                      title: const Text('Blocked (Red Star)'),
+                      trailing: Text('$ratedBlock',
                           style: Theme.of(context).textTheme.titleMedium),
                     ),
                   ],

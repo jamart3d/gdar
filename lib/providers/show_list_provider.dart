@@ -16,7 +16,8 @@ class ShowListProvider with ChangeNotifier {
   String _searchQuery = '';
   String? _expandedShowName;
   String? _loadingShowName;
-  bool _isArchiveChecked = false;
+  bool _isArchiveReachable = false;
+  bool _hasCheckedArchive = false;
 
   // Public getters
   bool get isLoading => _isLoading;
@@ -25,13 +26,15 @@ class ShowListProvider with ChangeNotifier {
   String? get expandedShowName => _expandedShowName;
   String? get loadingShowName => _loadingShowName;
   List<Show> get allShows => _allShows;
-  bool get isArchiveChecked => _isArchiveChecked;
+  bool get isArchiveReachable => _isArchiveReachable;
+  bool get hasCheckedArchive => _hasCheckedArchive;
 
   int get totalShnids =>
       _allShows.fold(0, (sum, show) => sum + show.sources.length);
 
-  void setArchiveChecked(bool value) {
-    _isArchiveChecked = value;
+  void setArchiveStatus(bool isReachable) {
+    _isArchiveReachable = isReachable;
+    _hasCheckedArchive = true;
     notifyListeners();
   }
 
@@ -77,8 +80,8 @@ class ShowListProvider with ChangeNotifier {
     bool isArchiveDown = false;
     for (int i = 0; i < maxRetries; i++) {
       try {
-        logger.i(
-            'Checking archive.org status (Attempt ${i + 1}/$maxRetries)...');
+        logger
+            .i('Checking archive.org status (Attempt ${i + 1}/$maxRetries)...');
         final response =
             await http.head(Uri.parse('https://archive.org')).timeout(timeout);
         if (response.statusCode >= 200 && response.statusCode < 400) {
@@ -107,7 +110,7 @@ class ShowListProvider with ChangeNotifier {
         await Future.delayed(retryDelay);
       }
     }
-    setArchiveChecked(!isArchiveDown);
+    setArchiveStatus(!isArchiveDown);
   }
 
   void setSearchQuery(String query) {
