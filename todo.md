@@ -32,7 +32,7 @@ This file tracks planned features, enhancements, and bug fixes for the gdar appl
 - [ ] **Clipboard Playback:** Feature to parse a shared show/track string from the clipboard and instantly play that specific track/position.
 
 - [ ] **Set Lists:** Organize tracks into sets (Set 1, Set 2, Encore) in the track list view.
-  - *Implementation Note:* Update `shows.json` to include set list attributes. Update `Show` or `Track` models to support this structure.
+  - *Implementation Note:* `shows2.json` now includes a `setlist` attribute. Update `Show` or `Track` models to support this structure and parse it from the new JSON.
 
 - [ ] **UI Polish:** Refine animations and transitions for an even smoother feel.
 

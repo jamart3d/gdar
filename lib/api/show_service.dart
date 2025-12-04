@@ -16,7 +16,7 @@ class ShowService {
 
     try {
       final String jsonString =
-          await rootBundle.loadString('assets/data/shows2.json');
+          await rootBundle.loadString('assets/data/shows.json');
       final List<dynamic> jsonList = json.decode(jsonString);
       final List<Show> loadedShows =
           jsonList.map((jsonItem) => Show.fromJson(jsonItem)).toList();
