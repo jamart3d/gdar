@@ -16,6 +16,7 @@ class ShowListCard extends StatefulWidget {
   final bool isLoading;
   final VoidCallback onTap;
   final VoidCallback onLongPress;
+  final bool alwaysShowRatingInteraction;
 
   const ShowListCard({
     super.key,
@@ -26,6 +27,7 @@ class ShowListCard extends StatefulWidget {
     required this.isLoading,
     required this.onTap,
     required this.onLongPress,
+    this.alwaysShowRatingInteraction = false,
   });
 
   @override
@@ -408,24 +410,13 @@ class _ShowListCardState extends State<ShowListCard> {
         rating: rating,
         isPlayed: settings.isPlayed(show.name),
         size: 20,
-        onTap: widget.isPlaying
+        onTap: (widget.isPlaying || widget.alwaysShowRatingInteraction)
             ? () async {
                 await showDialog(
                   context: context,
                   builder: (context) => RatingDialog(
                     initialRating: rating,
-                    sourceId:
-                        null, // Single source shows don't need badge in dialog usually, or we can pass show.sources.first.id if we want.
-                    // Actually, for single source shows, the "source ID" might be redundant or useful.
-                    // Let's pass null as per plan "Pass show.sources.first.id (if single source) or handle appropriately".
-                    // If it's a single source show, the source ID is usually not the main identifier, the show is.
-                    // But wait, the user said "add shnid badge".
-                    // If I pass null, no badge.
-                    // If I pass show.sources.first.id, badge appears.
-                    // Let's pass show.sources.first.id just in case the user wants to see it.
-                    // But wait, the previous code I wrote was: sourceId: show.sources.length > 1 ? show.sources.first.id : null
-                    // Since this widget returns shrink if length > 1, this logic always returns null.
-                    // So I will pass null.
+                    sourceId: null,
                     onRatingChanged: (newRating) {
                       settings.setRating(show.name, newRating);
                     },

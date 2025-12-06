@@ -38,7 +38,12 @@ This file tracks planned features, enhancements, and bug fixes for the gdar appl
 
 - [x] **Sort Order:** Added "Sort Oldest First" setting to control show list order (defaulting to chronological).
 
-- [ ] **Rated Shows Library:** Create a dedicated screen to view and manage shows filtered by rating (Blocked, 1, 2, 3 stars). This allows users to review blocked shows or see their favorites.
+- [x] **Rated Shows Library:**
+  - [x] Create a new screen to view shows by rating
+  - [x] Accessible from collection stats
+  - [x] Blocked shows visible and editable
+  - [x] Playback from library (long press)
+  - *Description:* Create a dedicated screen to view and manage shows filtered by rating (Blocked, 1, 2, 3 stars). This allows users to review blocked shows or see their favorites.
 
 - [ ] **UI Polish:** Refine animations and transitions for an even smoother feel.
 

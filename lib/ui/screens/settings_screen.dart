@@ -6,6 +6,7 @@ import 'package:gdar/providers/show_list_provider.dart';
 import 'package:gdar/providers/theme_provider.dart';
 import 'package:gdar/ui/screens/about_screen.dart';
 import 'package:gdar/utils/color_generator.dart';
+import 'package:gdar/ui/screens/rated_shows_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -422,10 +423,16 @@ class SettingsScreen extends StatelessWidget {
                 title: const Text('Usage Instructions'),
                 children: [
                   ListTile(
+                    leading: const Icon(Icons.shuffle_rounded),
+                    title: const Text('Random Selection'),
+                    subtitle: const Text(
+                        'Tap the ? icon in the app bar to play a random show from the collection. Long-press a show card to play a random source from that show.'),
+                  ),
+                  ListTile(
                     leading: const Icon(Icons.play_circle_outline_rounded),
                     title: const Text('Player Controls'),
                     subtitle: const Text(
-                        'Tap the ? icon in the app bar to play a random show from the collection. Long-press a show card to play a random source from that show.'),
+                        'Tap the mini-player to open the full playback screen. Long-press the mini-player to stop playback and clear the queue.'),
                   ),
                   ListTile(
                     leading: const Icon(Icons.search_rounded),
@@ -434,16 +441,28 @@ class SettingsScreen extends StatelessWidget {
                         'Tap the search icon in the app bar to filter shows by venue or date.'),
                   ),
                   ListTile(
+                    leading: const Icon(Icons.star_rate_rounded),
+                    title: const Text('Rate Show'),
+                    subtitle: const Text(
+                        'Tap the stars icon on a show card to rate it.'),
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.block_rounded),
+                    title: const Text('Quick Block'),
+                    subtitle: const Text(
+                        'Swipe left on a show card (or source) to quickly block it (-1 rating).'),
+                  ),
+                  ListTile(
                     leading: const Icon(Icons.touch_app_rounded),
                     title: const Text('Expand Show'),
                     subtitle: const Text(
                         'Tap a show card to see available sources (SHNIDs).'),
                   ),
                   ListTile(
-                    leading: const Icon(Icons.play_circle_outline_rounded),
-                    title: const Text('Player Controls'),
+                    leading: const Icon(Icons.open_in_new_rounded),
+                    title: const Text('View Source Page'),
                     subtitle: const Text(
-                        'Tap the mini-player to open the full playback screen. Long-press the mini-player to stop playback and clear the queue.'),
+                        'Tap a source ID (SHNID) to open the Internet Archive page.'),
                   ),
                 ],
               ),
@@ -544,6 +563,20 @@ class SettingsScreen extends StatelessWidget {
                       title: const Text('Blocked (Red Star)'),
                       trailing: Text('$ratedBlock',
                           style: Theme.of(context).textTheme.titleMedium),
+                    ),
+                    const Divider(),
+                    ListTile(
+                      leading: const Icon(Icons.library_books_rounded),
+                      title: const Text('Manage Rated Shows'),
+                      subtitle: const Text('View and unblock shows'),
+                      trailing:
+                          const Icon(Icons.arrow_forward_ios_rounded, size: 16),
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                              builder: (_) => const RatedShowsScreen()),
+                        );
+                      },
                     ),
                   ],
                 );

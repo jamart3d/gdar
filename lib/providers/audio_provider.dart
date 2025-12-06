@@ -218,6 +218,10 @@ class AudioProvider with ChangeNotifier {
           int index = entry.key;
           Track track = entry.value;
 
+          // Log the metadata to verify what is being passed to just_audio_background
+          logger.i(
+              'Creating MediaItem - Title: "${track.title}", Album: "${_currentShow!.venue}", Artist: "${_currentShow!.artist}"');
+
           return AudioSource.uri(
             Uri.parse(track.url),
             tag: MediaItem(

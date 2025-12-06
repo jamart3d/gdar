@@ -12,6 +12,7 @@ A Flutter application for browsing and playing concert recordings of the Gratefu
 - **Collection Management**:
   - Rate shows (1-3 stars) or block them (Red star).
   - Block specific sources (SHNIDs) for multi-source shows by swiping left on the source item.
+  - **Rated Shows Library**: View and manage shows filtered by rating (including blocked shows).
   - Track played/unplayed status.
   - Sort shows by date (Oldest First / Newest First).
 - **Rich Details**:

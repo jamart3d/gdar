@@ -1,5 +1,6 @@
 // lib/utils/utils.dart
 
+import 'package:gdar/utils/logger.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 String formatDuration(Duration d) {
@@ -42,11 +43,11 @@ Future<void> launchArchivePage(String firstTrackUrl) async {
       if (await canLaunchUrl(uri)) {
         await launchUrl(uri);
       } else {
-        print('Could not launch $targetUrl');
+        logger.w('Could not launch $targetUrl');
       }
     }
   } catch (e) {
-    print('Error parsing URL or launching archive page: $e');
+    logger.e('Error parsing URL or launching archive page: $e');
   }
 }
 
@@ -58,9 +59,9 @@ Future<void> launchArchiveDetails(String identifier) async {
     if (await canLaunchUrl(detailsUri)) {
       await launchUrl(detailsUri);
     } else {
-      print('Could not launch $detailsUrl');
+      logger.w('Could not launch $detailsUrl');
     }
   } catch (e) {
-    print('Error launching archive details page: $e');
+    logger.e('Error launching archive details page: $e');
   }
 }
