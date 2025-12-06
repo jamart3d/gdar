@@ -9,7 +9,9 @@ class SettingsProvider with ChangeNotifier {
   static const String _trackNumberKey = 'show_track_numbers';
   static const String _playOnTapKey = 'play_on_tap';
   static const String _showSingleShnidKey = 'show_single_shnid';
+  static const String _hideTrackDurationKey = 'hide_track_duration';
   static const String _playRandomOnCompletionKey = 'play_random_on_completion';
+
   static const String _playRandomOnStartupKey = 'play_random_on_startup';
   static const String _dateFirstInShowCardKey = 'date_first_in_show_card';
   static const String _useDynamicColorKey = 'use_dynamic_color';
@@ -34,6 +36,7 @@ class SettingsProvider with ChangeNotifier {
 
   // Private state
   late bool _showTrackNumbers;
+  late bool _hideTrackDuration;
   late bool _playOnTap;
   late bool _showSingleShnid;
   late bool _playRandomOnCompletion;
@@ -62,6 +65,7 @@ class SettingsProvider with ChangeNotifier {
 
   // Public getters
   bool get showTrackNumbers => _showTrackNumbers;
+  bool get hideTrackDuration => _hideTrackDuration;
   bool get playOnTap => _playOnTap;
   bool get showSingleShnid => _showSingleShnid;
   bool get hideTrackCountInSourceList => true;
@@ -115,7 +119,8 @@ class SettingsProvider with ChangeNotifier {
       _prefs.setBool('first_run_check_done', true);
     }
 
-    _showTrackNumbers = _prefs.getBool(_trackNumberKey) ?? false;
+    _showTrackNumbers = _prefs.getBool(_trackNumberKey) ?? true;
+    _hideTrackDuration = _prefs.getBool(_hideTrackDurationKey) ?? false;
     _playOnTap = _prefs.getBool(_playOnTapKey) ?? false;
     _showSingleShnid = _prefs.getBool(_showSingleShnidKey) ?? false;
     _playRandomOnCompletion =
@@ -169,6 +174,10 @@ class SettingsProvider with ChangeNotifier {
   // Toggle methods
   void toggleShowTrackNumbers() => _updatePreference(
       _trackNumberKey, _showTrackNumbers = !_showTrackNumbers);
+
+  void toggleHideTrackDuration() => _updatePreference(
+      _hideTrackDurationKey, _hideTrackDuration = !_hideTrackDuration);
+
   void togglePlayOnTap() =>
       _updatePreference(_playOnTapKey, _playOnTap = !_playOnTap);
   void toggleShowSingleShnid() => _updatePreference(

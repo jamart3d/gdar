@@ -1,11 +1,14 @@
 import 'dart:math';
 
+import 'package:flutter/services.dart';
+
 import 'package:flutter/material.dart';
 import 'package:gdar/models/show.dart';
 import 'package:gdar/providers/audio_provider.dart';
 import 'package:gdar/providers/settings_provider.dart';
 import 'package:gdar/providers/show_list_provider.dart';
 import 'package:gdar/ui/widgets/show_list_card.dart';
+import 'package:gdar/ui/widgets/source_list_item.dart';
 import 'package:provider/provider.dart';
 
 class RatedShowsScreen extends StatefulWidget {
@@ -86,14 +89,18 @@ class _RatedShowListState extends State<_RatedShowList> {
       // OR shows that have any blocked source.
       if (widget.rating == -1) {
         if (showRating == -1) return true;
-        // Check sources for blocked status
         for (var source in show.sources) {
           if (settingsProvider.getRating(source.id) == -1) return true;
         }
         return false;
       }
 
-      return showRating == widget.rating;
+      // for positive ratings, check show OR any source
+      if (showRating == widget.rating) return true;
+      for (var source in show.sources) {
+        if (settingsProvider.getRating(source.id) == widget.rating) return true;
+      }
+      return false;
     }).toList();
 
     if (filteredShows.isEmpty) {
@@ -122,6 +129,7 @@ class _RatedShowListState extends State<_RatedShowList> {
                 isLoading: false,
                 alwaysShowRatingInteraction: true,
                 onTap: () {
+                  if (show.sources.length <= 1) return;
                   setState(() {
                     if (_expandedShowName == show.name) {
                       _expandedShowName = null;
@@ -155,6 +163,7 @@ class _RatedShowListState extends State<_RatedShowList> {
                   // Pick random source
                   final source =
                       validSources[Random().nextInt(validSources.length)];
+                  HapticFeedback.mediumImpact();
                   audioProvider.playSource(show, source);
                 },
               ),
@@ -170,6 +179,9 @@ class _RatedShowListState extends State<_RatedShowList> {
 
   Widget _buildSourceList(BuildContext context, Show show,
       AudioProvider audioProvider, SettingsProvider settingsProvider) {
+    // Determine scale factor for SourceListItem, matching ShowListItemDetails logic
+    final double scaleFactor = settingsProvider.uiScale ? 1.25 : 1.0;
+
     return Container(
       color: Theme.of(context)
           .colorScheme
@@ -178,33 +190,33 @@ class _RatedShowListState extends State<_RatedShowList> {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Column(
         children: show.sources.map((source) {
+          final isPlaying = audioProvider.currentSource?.id == source.id;
           final sourceRating = settingsProvider.getRating(source.id);
           final isBlocked = sourceRating == -1;
 
-          return ListTile(
-            title: Text('Source: ${source.id}',
-                style: const TextStyle(fontSize: 12)),
-            onLongPress: () {
-              if (isBlocked) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Cannot play blocked source')),
-                );
-                return;
-              }
-              audioProvider.playSource(show, source);
-            },
-            trailing: isBlocked
-                ? IconButton(
-                    icon: const Icon(Icons.block, color: Colors.red),
-                    onPressed: () {
-                      // Unblock
-                      settingsProvider.setRating(source.id, 0);
-                    },
-                    tooltip: 'Unblock Source',
-                  )
-                : const Icon(Icons.check_circle_outline,
-                    size: 16, color: Colors.grey),
-            dense: true,
+          return Padding(
+            padding: const EdgeInsets.symmetric(vertical: 4),
+            child: SourceListItem(
+              source: source,
+              isSourcePlaying: isPlaying,
+              scaleFactor: scaleFactor,
+              borderRadius: 20, // Match ShowListItemDetails default
+              alwaysShowRatingInteraction: true,
+              onTap: () {
+                // User requested single tap should not play.
+                // Playback is handled via long-press only for this screen.
+              },
+              onLongPress: () {
+                if (isBlocked) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Cannot play blocked source')),
+                  );
+                  return;
+                }
+                HapticFeedback.mediumImpact();
+                audioProvider.playSource(show, source);
+              },
+            ),
           );
         }).toList(),
       ),

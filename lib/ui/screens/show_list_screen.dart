@@ -13,6 +13,7 @@ import 'package:gdar/ui/screens/settings_screen.dart';
 import 'package:gdar/ui/screens/track_list_screen.dart';
 import 'package:gdar/ui/widgets/mini_player.dart';
 import 'package:gdar/ui/widgets/show_list_card.dart';
+import 'package:gdar/ui/widgets/swipe_action_background.dart';
 import 'package:gdar/ui/widgets/show_list_item_details.dart';
 import 'package:gdar/utils/color_generator.dart';
 import 'package:gdar/utils/logger.dart';
@@ -396,11 +397,15 @@ class _ShowListScreenState extends State<ShowListScreen>
       }
     }
 
-    // After a short delay to allow the animation to start,
+    // After a short delay to allow the animation to start and layout to settle,
     // scroll to the currently playing show.
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (mounted) {
-        _reliablyScrollToShow(currentShow);
+        // yield to ensure layout pass is complete
+        await Future.delayed(const Duration(milliseconds: 100));
+        if (mounted) {
+          _reliablyScrollToShow(currentShow);
+        }
       }
     });
   }
@@ -638,11 +643,8 @@ class _ShowListScreenState extends State<ShowListScreen>
           direction: show.sources.length > 1
               ? DismissDirection.none
               : DismissDirection.endToStart,
-          background: Container(
-            color: Colors.red,
-            alignment: Alignment.centerRight,
-            padding: const EdgeInsets.only(right: 24.0),
-            child: const Icon(Icons.block, color: Colors.white, size: 28),
+          background: const SwipeActionBackground(
+            borderRadius: 12.0, // Matching Card's border radius
           ),
           onDismissed: (direction) {
             // Stop playback if this specific show is playing

@@ -58,4 +58,16 @@ class Show {
       sources: sources,
     );
   }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is Show &&
+          runtimeType == other.runtimeType &&
+          name == other.name &&
+          date == other.date &&
+          venue == other.venue;
+
+  @override
+  int get hashCode => name.hashCode ^ date.hashCode ^ venue.hashCode;
 }

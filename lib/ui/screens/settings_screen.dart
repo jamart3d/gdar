@@ -286,6 +286,18 @@ class SettingsScreen extends StatelessWidget {
                     secondary: const Icon(Icons.pin_rounded),
                   ),
                   SwitchListTile(
+                    title: const Text('Hide Track Duration'),
+                    subtitle:
+                        const Text('Hide duration and center track titles'),
+                    value: settingsProvider.hideTrackDuration,
+                    onChanged: (value) {
+                      context
+                          .read<SettingsProvider>()
+                          .toggleHideTrackDuration();
+                    },
+                    secondary: const Icon(Icons.timer_off_rounded),
+                  ),
+                  SwitchListTile(
                     title: const Text('Sort Oldest First'),
                     subtitle: const Text('Show earliest shows at the top'),
                     value: settingsProvider.sortOldestFirst,

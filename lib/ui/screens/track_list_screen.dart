@@ -324,26 +324,31 @@ class _TrackListScreenState extends State<TrackListScreen> {
                       child: ConditionalMarquee(
                         text: titleText,
                         style: titleStyle,
+                        textAlign: settingsProvider.hideTrackDuration
+                            ? TextAlign.center
+                            : TextAlign.left,
                       ),
                     ),
                   ),
-                  const SizedBox(width: 8),
-                  SizedBox(
-                    width: 52 * scaleFactor,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: colorScheme.surfaceContainerHighest,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Text(
-                        formatDuration(Duration(seconds: track.duration)),
-                        style: durationStyle,
-                        textAlign: TextAlign.center,
+                  if (!settingsProvider.hideTrackDuration) ...[
+                    const SizedBox(width: 8),
+                    SizedBox(
+                      width: 52 * scaleFactor,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: colorScheme.surfaceContainerHighest,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          formatDuration(Duration(seconds: track.duration)),
+                          style: durationStyle,
+                          textAlign: TextAlign.center,
+                        ),
                       ),
                     ),
-                  ),
+                  ],
                 ],
               ),
             ),

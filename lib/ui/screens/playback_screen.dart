@@ -896,16 +896,22 @@ class _PlaybackScreenState extends State<PlaybackScreen>
               ? '${track.trackNumber}. ${track.title}'
               : track.title,
           style: titleStyle,
+          textAlign: settingsProvider.hideTrackDuration
+              ? TextAlign.center
+              : TextAlign.start,
         ),
       ),
-      trailing: Text(
-        formatDuration(Duration(seconds: track.duration)),
-        style:
-            textTheme.bodyMedium?.apply(fontSizeFactor: scaleFactor).copyWith(
-                  color: colorScheme.onSurfaceVariant,
-                  fontWeight: FontWeight.w500,
-                ),
-      ),
+      trailing: settingsProvider.hideTrackDuration
+          ? null
+          : Text(
+              formatDuration(Duration(seconds: track.duration)),
+              style: textTheme.bodyMedium
+                  ?.apply(fontSizeFactor: scaleFactor)
+                  .copyWith(
+                    color: colorScheme.onSurfaceVariant,
+                    fontWeight: FontWeight.w500,
+                  ),
+            ),
       onTap: () {
         if (currentIndex != index) {
           audioProvider.seekToTrack(index);

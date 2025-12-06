@@ -43,7 +43,16 @@ This file tracks planned features, enhancements, and bug fixes for the gdar appl
   - [x] Accessible from collection stats
   - [x] Blocked shows visible and editable
   - [x] Playback from library (long press)
-  - *Description:* Create a dedicated screen to view and manage shows filtered by rating (Blocked, 1, 2, 3 stars). This allows users to review blocked shows or see their favorites.
+  - [x] **Enhancements:**
+    - [x] Consistent styling with main list (SourceListItem)
+    - [x] Disable single-source expansion
+    - [x] Disable single-tap playback on sources (safety)
+    - [x] Long-press to play random/specific source with haptic feedback
+
+- [x] **Visual & UX Polish:**
+  - [x] **Swipe to Block:** Replaced red background with expressive "Swipe to Block" widget (Material 3 style).
+  - [x] **Hide Track Duration:** Added setting to hide duration and center titles in track lists.
+  - [x] **Scroll Fix:** Fixed bug where scrolling to current show failed on return (implemented model equality).
 
 - [ ] **UI Polish:** Refine animations and transitions for an even smoother feel.
 
