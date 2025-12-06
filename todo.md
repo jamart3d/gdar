@@ -27,12 +27,18 @@ This file tracks planned features, enhancements, and bug fixes for the gdar appl
 - [x] **SHNID Badge Size:** Increase the size of the SHNID badge in the Playback Screen (it's too small).
 - [x] **Clipboard Icon:** Add a clipboard icon next to the venue name in Playback Screen to copy show/track info.
 
-- [ ] **Quick Block:** Left drag on a Show Card or SHNID to instantly mark it as "Red Star" (Blocked) and remove it from the list.
+- [x] **Quick Block:** Left swipe on a Show Card (for single source shows) or an individual Source Item (for multi-source shows) to instantly mark it as "Red Star" (Blocked). Handles stopping playback and provides undo options.
 
 - [ ] **Clipboard Playback:** Feature to parse a shared show/track string from the clipboard and instantly play that specific track/position.
 
-- [ ] **Set Lists:** Organize tracks into sets (Set 1, Set 2, Encore) in the track list view.
+- [x] **Set Lists:** Organize tracks into sets (Set 1, Set 2, Encore) in the track list view.
   - *Implementation Note:* `shows2.json` now includes a `setlist` attribute. Update `Show` or `Track` models to support this structure and parse it from the new JSON.
+
+- [ ] **Recording Type Metadata:** Add an attribute to `shows.json` identifying the recording type (e.g., "Ultramatrix", "Betty Board"). Update the `Source` model to parse and display this information.
+
+- [x] **Sort Order:** Added "Sort Oldest First" setting to control show list order (defaulting to chronological).
+
+- [ ] **Rated Shows Library:** Create a dedicated screen to view and manage shows filtered by rating (Blocked, 1, 2, 3 stars). This allows users to review blocked shows or see their favorites.
 
 - [ ] **UI Polish:** Refine animations and transitions for an even smoother feel.
 

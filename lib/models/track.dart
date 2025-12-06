@@ -3,12 +3,14 @@ class Track {
   final String title;
   final int duration; // in seconds
   final String url;
+  final String setName;
 
   Track({
     required this.trackNumber,
     required this.title,
     required this.duration,
     required this.url,
+    required this.setName,
   });
 
   // A 'factory constructor' that creates a Track from a JSON object.
@@ -22,7 +24,7 @@ class Track {
       title: title,
       duration: json['d'] ?? 0,
       url: json['u'] ?? '',
+      setName: json['s'] ?? 'Unknown Set',
     );
   }
 }
-

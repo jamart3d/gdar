@@ -48,12 +48,16 @@ class ShowService {
             date: show.date,
             year: show.year,
             venue: show.venue,
-            sources: List<Source>.from(show.sources), // Create a copy of the list
+            sources:
+                List<Source>.from(show.sources), // Create a copy of the list
             hasFeaturedTrack: show.hasFeaturedTrack,
           );
         }
       }
       final List<Show> finalShowList = showsByDate.values.toList();
+
+      // Sort by date (oldest first)
+      finalShowList.sort((a, b) => a.date.compareTo(b.date));
 
       // ** Post-processing Step 3: Final cleanup on the merged list **
       for (final show in finalShowList) {

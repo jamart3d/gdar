@@ -20,6 +20,7 @@ class SettingsProvider with ChangeNotifier {
   static const String _highlightPlayingWithRgbKey =
       'highlight_playing_with_rgb';
   static const String _showPlaybackMessagesKey = 'show_playback_messages';
+  static const String _sortOldestFirstKey = 'sort_oldest_first';
 
   static const String _showSplashScreenKey = 'show_splash_screen';
   late bool _showSplashScreen;
@@ -44,6 +45,7 @@ class SettingsProvider with ChangeNotifier {
   late bool _showGlowBorder;
   late bool _highlightPlayingWithRgb;
   late bool _showPlaybackMessages;
+  late bool _sortOldestFirst;
 
   Color? _seedColor;
 
@@ -74,6 +76,7 @@ class SettingsProvider with ChangeNotifier {
   bool get showGlowBorder => _showGlowBorder;
   bool get highlightPlayingWithRgb => _highlightPlayingWithRgb;
   bool get showPlaybackMessages => _showPlaybackMessages;
+  bool get sortOldestFirst => _sortOldestFirst;
   bool get highlightCurrentShowCard => true;
   bool get useMaterial3 => true;
 
@@ -130,6 +133,7 @@ class SettingsProvider with ChangeNotifier {
 
     _showSplashScreen = _prefs.getBool(_showSplashScreenKey) ?? true;
     _showPlaybackMessages = _prefs.getBool(_showPlaybackMessagesKey) ?? false;
+    _sortOldestFirst = _prefs.getBool(_sortOldestFirstKey) ?? true;
 
     final seedColorValue = _prefs.getInt(_seedColorKey);
     if (seedColorValue != null) {
@@ -189,6 +193,8 @@ class SettingsProvider with ChangeNotifier {
       _highlightPlayingWithRgb = !_highlightPlayingWithRgb);
   void toggleShowPlaybackMessages() => _updatePreference(
       _showPlaybackMessagesKey, _showPlaybackMessages = !_showPlaybackMessages);
+  void toggleSortOldestFirst() => _updatePreference(
+      _sortOldestFirstKey, _sortOldestFirst = !_sortOldestFirst);
   static const String _halfGlowDynamicKey = 'half_glow_dynamic';
   bool _halfGlowDynamic = false;
   bool get halfGlowDynamic => _halfGlowDynamic;

@@ -156,7 +156,7 @@ class _TrackListScreenState extends State<TrackListScreen> {
     final audioProvider = context.watch<AudioProvider>();
     final isDifferentShowPlaying = audioProvider.currentShow != null &&
         audioProvider.currentShow!.name != widget.show.name;
-    final bottomPadding = isDifferentShowPlaying ? 100.0 : 16.0;
+    final bottomPadding = isDifferentShowPlaying ? 140.0 : 16.0;
 
     if (widget.show.sources.isEmpty) {
       return const Center(child: Text('No tracks available for this show.'));
@@ -227,12 +227,50 @@ class _TrackListScreenState extends State<TrackListScreen> {
 
   Widget _buildTrackList(
       BuildContext context, Source source, double bottomPadding) {
+    // Group tracks by set name
+    final Map<String, List<Track>> tracksBySet = {};
+    for (var track in source.tracks) {
+      if (!tracksBySet.containsKey(track.setName)) {
+        tracksBySet[track.setName] = [];
+      }
+      tracksBySet[track.setName]!.add(track);
+    }
+
+    // Flatten the list with headers
+    final List<dynamic> listItems = [];
+    tracksBySet.forEach((setName, tracks) {
+      listItems.add(setName); // Add header
+      listItems.addAll(tracks); // Add tracks
+    });
+
     return ListView.builder(
       padding: EdgeInsets.fromLTRB(12, 8, 12, bottomPadding),
-      itemCount: source.tracks.length,
+      itemCount: listItems.length,
       itemBuilder: (context, index) {
-        return _buildTrackItem(context, source.tracks[index], source, index);
+        final item = listItems[index];
+        if (item is String) {
+          return _buildSetHeader(context, item);
+        } else if (item is Track) {
+          // Find the original index of this track in the source.tracks list
+          // This is needed for playback to work correctly with the full list
+          final originalIndex = source.tracks.indexOf(item);
+          return _buildTrackItem(context, item, source, originalIndex);
+        }
+        return const SizedBox.shrink();
       },
+    );
+  }
+
+  Widget _buildSetHeader(BuildContext context, String setName) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
+      child: Text(
+        setName,
+        style: Theme.of(context).textTheme.titleSmall?.copyWith(
+              color: Theme.of(context).colorScheme.primary,
+              fontWeight: FontWeight.bold,
+            ),
+      ),
     );
   }
 

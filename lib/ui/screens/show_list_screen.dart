@@ -570,7 +570,9 @@ class _ShowListScreenState extends State<ShowListScreen>
           Column(
             children: [
               _buildSearchBar(),
-              Expanded(child: _buildBody(showListProvider, audioProvider)),
+              Expanded(
+                  child: _buildBody(
+                      showListProvider, audioProvider, settingsProvider)),
             ],
           ),
           if (audioProvider.currentShow != null)
@@ -593,8 +595,8 @@ class _ShowListScreenState extends State<ShowListScreen>
     return _buildStandardLayout();
   }
 
-  Widget _buildBody(
-      ShowListProvider showListProvider, AudioProvider audioProvider) {
+  Widget _buildBody(ShowListProvider showListProvider,
+      AudioProvider audioProvider, SettingsProvider settingsProvider) {
     if (showListProvider.isLoading) {
       return const Center(child: CircularProgressIndicator());
     }
@@ -612,27 +614,68 @@ class _ShowListScreenState extends State<ShowListScreen>
       padding: const EdgeInsets.only(bottom: 160),
       itemCount: showListProvider.filteredShows.length,
       itemBuilder: (context, index) {
-        return _buildShowListItem(showListProvider, audioProvider, index);
+        return _buildShowListItem(
+            showListProvider, audioProvider, settingsProvider, index);
       },
     );
   }
 
-  Widget _buildShowListItem(ShowListProvider showListProvider,
-      AudioProvider audioProvider, int index) {
+  Widget _buildShowListItem(
+      ShowListProvider showListProvider,
+      AudioProvider audioProvider,
+      SettingsProvider settingsProvider,
+      int index) {
     final show = showListProvider.filteredShows[index];
     final isExpanded = showListProvider.expandedShowName == show.name;
 
     return Column(
       key: ValueKey(show.name),
       children: [
-        ShowListCard(
-          show: show,
-          isExpanded: isExpanded,
-          isPlaying: audioProvider.currentShow?.name == show.name,
-          playingSourceId: audioProvider.currentSource?.id,
-          isLoading: showListProvider.loadingShowName == show.name,
-          onTap: () => _onShowTapped(show),
-          onLongPress: () => _onCardLongPressed(show),
+        Dismissible(
+          key: ValueKey(show.name),
+          // Disable swipe on the main card if there are multiple sources.
+          // Sources must be blocked individually in the expanded view.
+          direction: show.sources.length > 1
+              ? DismissDirection.none
+              : DismissDirection.endToStart,
+          background: Container(
+            color: Colors.red,
+            alignment: Alignment.centerRight,
+            padding: const EdgeInsets.only(right: 24.0),
+            child: const Icon(Icons.block, color: Colors.white, size: 28),
+          ),
+          onDismissed: (direction) {
+            // Stop playback if this specific show is playing
+            if (audioProvider.currentShow?.name == show.name) {
+              audioProvider.stopAndClear();
+            }
+
+            // Mark as Blocked (Red Star / -1)
+            settingsProvider.setRating(show.name, -1);
+
+            // Show Undo Snackbar
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Blocked "${show.venue}"'),
+                action: SnackBarAction(
+                  label: 'UNDO',
+                  onPressed: () {
+                    // Restore rating
+                    settingsProvider.setRating(show.name, 0);
+                  },
+                ),
+              ),
+            );
+          },
+          child: ShowListCard(
+            show: show,
+            isExpanded: isExpanded,
+            isPlaying: audioProvider.currentShow?.name == show.name,
+            playingSourceId: audioProvider.currentSource?.id,
+            isLoading: showListProvider.loadingShowName == show.name,
+            onTap: () => _onShowTapped(show),
+            onLongPress: () => _onCardLongPressed(show),
+          ),
         ),
         SizeTransition(
           sizeFactor: _animation,

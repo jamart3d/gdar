@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:gdar/ui/widgets/animated_gradient_border.dart';
 import 'package:gdar/models/show.dart';
 import 'package:gdar/models/source.dart';
+import 'package:gdar/providers/audio_provider.dart';
 import 'package:gdar/providers/settings_provider.dart';
 import 'package:gdar/ui/widgets/rating_control.dart';
 import 'package:provider/provider.dart';
@@ -75,45 +76,111 @@ class _ShowListItemDetailsState extends State<ShowListItemDetails> {
         if (isPlaying && settingsProvider.highlightPlayingWithRgb) {
           return Padding(
             padding: const EdgeInsets.only(bottom: 8.0),
-            child: AnimatedGradientBorder(
-              borderRadius: 20,
-              borderWidth: 4,
-              colors: const [
-                Colors.red,
-                Colors.yellow,
-                Colors.green,
-                Colors.cyan,
-                Colors.blue,
-                Colors.purple,
-                Colors.red,
-              ],
-              showGlow: true,
-              showShadow: showShadow,
-              glowOpacity: glowOpacity,
-              animationSpeed: settingsProvider.rgbAnimationSpeed,
-              backgroundColor: isTrueBlackMode
-                  ? Colors.black
-                  : colorScheme.tertiaryContainer,
-              child: _buildSourceItem(
-                context,
-                source,
-                isPlaying,
-                scaleFactor,
-                16,
-                showBorder: false,
+            child: Dismissible(
+              key: ValueKey(source.id),
+              direction: DismissDirection.endToStart,
+              background: Container(
+                alignment: Alignment.centerRight,
+                padding: const EdgeInsets.only(right: 16.0),
+                decoration: BoxDecoration(
+                  color: Colors.red,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: const Icon(Icons.block, color: Colors.white, size: 24),
+              ),
+              onDismissed: (direction) {
+                final audioProvider = context.read<AudioProvider>();
+                audioProvider.stopAndClear();
+                settingsProvider.setRating(source.id, -1);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Blocked Source "${source.id}"'),
+                    action: SnackBarAction(
+                      label: 'UNDO',
+                      onPressed: () {
+                        settingsProvider.setRating(source.id, 0);
+                      },
+                    ),
+                  ),
+                );
+              },
+              child: AnimatedGradientBorder(
+                borderRadius: 20,
+                borderWidth: 4,
+                colors: const [
+                  Colors.red,
+                  Colors.yellow,
+                  Colors.green,
+                  Colors.cyan,
+                  Colors.blue,
+                  Colors.purple,
+                  Colors.red,
+                ],
+                showGlow: true,
+                showShadow: showShadow,
+                glowOpacity: glowOpacity,
+                animationSpeed: settingsProvider.rgbAnimationSpeed,
+                backgroundColor: isTrueBlackMode
+                    ? Colors.black
+                    : colorScheme.tertiaryContainer,
+                child: _buildSourceItem(
+                  context,
+                  source,
+                  isPlaying,
+                  scaleFactor,
+                  16,
+                  showBorder: false,
+                ),
               ),
             ),
           );
         }
 
+        // Wrap the item in Dismissible for swipe-to-block functionality.
         return Padding(
           padding: const EdgeInsets.symmetric(vertical: 4),
-          child: _buildSourceItem(
-            context,
-            source,
-            isPlaying,
-            scaleFactor,
-            20,
+          child: Dismissible(
+            key: ValueKey(source.id),
+            direction: DismissDirection.endToStart,
+            background: Container(
+              alignment: Alignment.centerRight,
+              padding: const EdgeInsets.only(right: 16.0),
+              decoration: BoxDecoration(
+                color: Colors.red,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: const Icon(Icons.block, color: Colors.white, size: 24),
+            ),
+            onDismissed: (direction) {
+              // Stop playback if this specific source is playing
+              if (isPlaying) {
+                final audioProvider = context.read<AudioProvider>();
+                audioProvider.stopAndClear();
+              }
+
+              // Mark as Blocked (Red Star / -1)
+              settingsProvider.setRating(source.id, -1);
+
+              // Show Undo Snackbar
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Blocked Source "${source.id}"'),
+                  action: SnackBarAction(
+                    label: 'UNDO',
+                    onPressed: () {
+                      settingsProvider.setRating(source.id, 0);
+                    },
+                  ),
+                ),
+              );
+            },
+            child: _buildSourceItem(
+              context,
+              source,
+              isPlaying,
+              scaleFactor,
+              20,
+            ),
           ),
         );
       },

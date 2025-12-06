@@ -285,6 +285,15 @@ class SettingsScreen extends StatelessWidget {
                     secondary: const Icon(Icons.pin_rounded),
                   ),
                   SwitchListTile(
+                    title: const Text('Sort Oldest First'),
+                    subtitle: const Text('Show earliest shows at the top'),
+                    value: settingsProvider.sortOldestFirst,
+                    onChanged: (value) {
+                      context.read<SettingsProvider>().toggleSortOldestFirst();
+                    },
+                    secondary: const Icon(Icons.sort_rounded),
+                  ),
+                  SwitchListTile(
                     title: const Text('Show date first in show cards'),
                     subtitle: const Text('Display the date before the venue'),
                     value: settingsProvider.dateFirstInShowCard,

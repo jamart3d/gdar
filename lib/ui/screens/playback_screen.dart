@@ -149,16 +149,42 @@ class _PlaybackScreenState extends State<PlaybackScreen>
             sliver: SliverList(
               delegate: SliverChildBuilderDelegate(
                 (context, index) {
-                  return _buildTrackItem(
-                    context,
-                    audioProvider,
-                    currentSource.tracks[index],
-                    index,
-                    trackItemHeight,
-                    isTrueBlackMode,
-                  );
+                  // Group tracks by set name
+                  final Map<String, List<Track>> tracksBySet = {};
+                  for (var track in currentSource.tracks) {
+                    if (!tracksBySet.containsKey(track.setName)) {
+                      tracksBySet[track.setName] = [];
+                    }
+                    tracksBySet[track.setName]!.add(track);
+                  }
+
+                  // Flatten the list with headers
+                  final List<dynamic> listItems = [];
+                  tracksBySet.forEach((setName, tracks) {
+                    listItems.add(setName); // Add header
+                    listItems.addAll(tracks); // Add tracks
+                  });
+
+                  if (index >= listItems.length) return null;
+
+                  final item = listItems[index];
+                  if (item is String) {
+                    return _buildSetHeader(context, item);
+                  } else if (item is Track) {
+                    // Find the original index of this track in the source.tracks list
+                    final originalIndex = currentSource.tracks.indexOf(item);
+                    return _buildTrackItem(
+                      context,
+                      audioProvider,
+                      item,
+                      originalIndex,
+                      trackItemHeight,
+                      isTrueBlackMode,
+                    );
+                  }
+                  return const SizedBox.shrink();
                 },
-                childCount: currentSource.tracks.length,
+                childCount: _calculateListItemCount(currentSource),
               ),
             ),
           ),
@@ -738,6 +764,24 @@ class _PlaybackScreenState extends State<PlaybackScreen>
           },
         );
       },
+    );
+  }
+
+  int _calculateListItemCount(Source source) {
+    final Set<String> sets = source.tracks.map((t) => t.setName).toSet();
+    return source.tracks.length + sets.length;
+  }
+
+  Widget _buildSetHeader(BuildContext context, String setName) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
+      child: Text(
+        setName,
+        style: Theme.of(context).textTheme.titleSmall?.copyWith(
+              color: Theme.of(context).colorScheme.primary,
+              fontWeight: FontWeight.bold,
+            ),
+      ),
     );
   }
 

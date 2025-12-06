@@ -78,9 +78,13 @@ class _GdarAppState extends State<GdarApp> {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider.value(value: _showListProvider),
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
         ChangeNotifierProvider.value(value: _settingsProvider),
+        ChangeNotifierProxyProvider<SettingsProvider, ShowListProvider>(
+          create: (_) => _showListProvider,
+          update: (_, settingsProvider, showListProvider) =>
+              showListProvider!..update(settingsProvider),
+        ),
         ChangeNotifierProxyProvider2<ShowListProvider, SettingsProvider,
             AudioProvider>(
           create: (_) => AudioProvider(),

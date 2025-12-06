@@ -15,7 +15,12 @@ import 'package:provider/provider.dart';
 
 import 'playback_screen_test.mocks.dart';
 
-class FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
+class MockSettingsProvider extends Mock implements SettingsProvider {
+  @override
+  bool get sortOldestFirst => true;
+  @override
+  void toggleSortOldestFirst() {}
+
   @override
   bool get uiScale => false;
   @override
@@ -124,14 +129,22 @@ class FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
 @GenerateMocks([AudioProvider, AudioPlayer])
 void main() {
   late MockAudioProvider mockAudioProvider;
-  late FakeSettingsProvider fakeSettingsProvider;
+  late MockSettingsProvider mockSettingsProvider;
   late MockAudioPlayer mockAudioPlayer;
 
   // Dummy data
-  final dummyTrack1 =
-      Track(trackNumber: 1, title: 'Track 1', duration: 100, url: '');
-  final dummyTrack2 =
-      Track(trackNumber: 2, title: 'Track 2', duration: 120, url: '');
+  final dummyTrack1 = Track(
+      trackNumber: 1,
+      title: 'Track 1',
+      duration: 100,
+      url: '',
+      setName: 'Set 1');
+  final dummyTrack2 = Track(
+      trackNumber: 2,
+      title: 'Track 2',
+      duration: 120,
+      url: '',
+      setName: 'Set 1');
   final dummySource = Source(id: 'source1', tracks: [dummyTrack1, dummyTrack2]);
   final dummyShow = Show(
     name: 'Venue A on 2025-01-15',
@@ -144,7 +157,7 @@ void main() {
 
   setUp(() {
     mockAudioProvider = MockAudioProvider();
-    fakeSettingsProvider = FakeSettingsProvider();
+    mockSettingsProvider = MockSettingsProvider();
     mockAudioPlayer = MockAudioPlayer();
 
     // Stub the audio player on the audio provider
@@ -176,7 +189,7 @@ void main() {
       providers: [
         ChangeNotifierProvider<AudioProvider>.value(value: mockAudioProvider),
         ChangeNotifierProvider<SettingsProvider>.value(
-            value: fakeSettingsProvider),
+            value: mockSettingsProvider),
       ],
       child: MaterialApp(
         home: child,
