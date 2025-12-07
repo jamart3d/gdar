@@ -58,6 +58,11 @@ This file tracks planned features, enhancements, and bug fixes for the gdar appl
     - [x] "Mark as Played" toggle with confirmation dialog.
     - [x] Mutual exclusivity between Blocked (Red) and Rated (Gold) stars.
     - [x] Block confirmation for rated shows.
+    - [x] **Rated Shows Library**: Added dynamic counts to each tab label (e.g., "Played (5)").
+
+- [x] **Smart Random Playback**:
+  - Manual Random (Button) respects search filter.
+  - Automated Random (Continuous Play) ignores search filter to pick from full library.
 
 - [ ] **UI Polish:** Refine animations and transitions for an even smoother feel.
 
@@ -74,4 +79,8 @@ This file tracks planned features, enhancements, and bug fixes for the gdar appl
 
 - [ ] **Calendar Feature:** View shows by date on a calendar interface (e.g., "On This Day").
 
-- [ ] **Play Count & History:** Consider how to track and display how many times a show has been played. Display only in Rate Dialog or Rated Shows Library (not in Playback Controls).
+- [ ] **Play Count & History**: Consider how to track and display how many times a show has been played. Display only in Rate Dialog or Rated Shows Library (not in Playback Controls).
+
+- [ ] **Smart Random Setting**: Add a setting to toggle the "Ignore search results for random when screen is not on" behavior (currently enabled by default).
+
+- [ ] **Search Help**: Add functionality to help users enter month names in the search field (e.g., autocomplete or chips).

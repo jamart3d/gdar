@@ -137,7 +137,7 @@ class SettingsScreen extends StatelessWidget {
                 children: [
                   SwitchListTile(
                     title: const Text('Dark Mode'),
-                    subtitle: const Text('Enable the true black theme'),
+                    subtitle: const Text('Enable Dark Mode'),
                     value: themeProvider.isDarkMode,
                     onChanged: (value) {
                       context.read<ThemeProvider>().toggleTheme();
@@ -179,7 +179,7 @@ class SettingsScreen extends StatelessWidget {
                   ),
                   if (settingsProvider.useDynamicColor)
                     SwitchListTile(
-                      title: const Text('Half Glow'),
+                      title: const Text('True Black And Half Glow'),
                       subtitle: const Text(
                           'Use true black background with reduced glow'),
                       value: settingsProvider.halfGlowDynamic,

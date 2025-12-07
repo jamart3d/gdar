@@ -30,6 +30,8 @@ A Flutter application for browsing and playing concert recordings of the Gratefu
   - **Smart Rating Dialog**: Toggle "Played" status, confirmation dialogs for safety, and mutually exclusive rating/blocking logic.
   - **Expressive Swipe to Block**: Polished Material 3 design for blocking shows/sources.
   - **Single Source Cleanliness**: Simplified view for shows with only one source.
+  - **Rated Shows Library**: Dynamic counts on tabs (e.g., "Played (5)") and easier navigation.
+  - **Smart Random**: Manual triggers respect search filters; automated playback picks from the full library to keep music fresh.
 
 ## Project Structure
 

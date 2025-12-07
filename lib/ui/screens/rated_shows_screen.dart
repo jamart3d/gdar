@@ -41,15 +41,56 @@ class _RatedShowsScreenState extends State<RatedShowsScreen>
     super.dispose();
   }
 
-  String _getTabLabel(int rating) {
-    if (rating == -1) return 'Blocked';
-    if (rating == -2) return 'Played';
-    return '$rating Star${rating > 1 ? 's' : ''}';
+  int _getShowCount(int rating, SettingsProvider settingsProvider,
+      ShowListProvider showListProvider) {
+    if (showListProvider.allShows.isEmpty) return 0;
+
+    return showListProvider.allShows.where((show) {
+      final showRating = settingsProvider.getRating(show.name);
+
+      // Blocked (-1)
+      if (rating == -1) {
+        if (showRating == -1) return true;
+        for (var source in show.sources) {
+          if (settingsProvider.getRating(source.id) == -1) return true;
+        }
+        return false;
+      }
+
+      // Played (-2)
+      if (rating == -2) {
+        if (settingsProvider.isPlayed(show.name)) return true;
+        for (var source in show.sources) {
+          if (settingsProvider.isPlayed(source.id)) return true;
+        }
+        return false;
+      }
+
+      // Stars
+      if (showRating == rating) return true;
+      for (var source in show.sources) {
+        if (settingsProvider.getRating(source.id) == rating) return true;
+      }
+      return false;
+    }).length;
+  }
+
+  String _getTabLabel(int rating, int count) {
+    String baseLabel;
+    if (rating == -1) {
+      baseLabel = 'Blocked';
+    } else if (rating == -2) {
+      baseLabel = 'Played';
+    } else {
+      baseLabel = '$rating Star${rating > 1 ? 's' : ''}';
+    }
+    return '$baseLabel ($count)';
   }
 
   @override
   Widget build(BuildContext context) {
     final settingsProvider = context.watch<SettingsProvider>();
+    final showListProvider = context.watch<ShowListProvider>();
     final scaleFactor = settingsProvider.uiScale ? 1.5 : 1.0;
     final textTheme = Theme.of(context).textTheme;
 
@@ -71,7 +112,10 @@ class _RatedShowsScreenState extends State<RatedShowsScreen>
           isScrollable: true,
           labelStyle: tabLabelStyle,
           unselectedLabelStyle: tabLabelStyle,
-          tabs: _tabs.map((r) => Tab(text: _getTabLabel(r))).toList(),
+          tabs: _tabs.map((r) {
+            final count = _getShowCount(r, settingsProvider, showListProvider);
+            return Tab(text: _getTabLabel(r, count));
+          }).toList(),
         ),
       ),
       body: TabBarView(

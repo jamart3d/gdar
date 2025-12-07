@@ -150,12 +150,63 @@ void main() {
         (WidgetTester tester) async {
       await tester.runAsync(() async {
         when(mockShowListProvider.filteredShows).thenReturn([]);
+        when(mockShowListProvider.allShows)
+            .thenReturn([]); // Ensure allShows is also empty
 
         final playedShow = await audioProvider.playRandomShow();
 
         expect(playedShow, isNull);
         verifyNever(mockAudioPlayer.setAudioSource(any));
         verifyNever(mockAudioPlayer.play());
+      });
+    });
+
+    testWidgets(
+        'playRandomShow(filterBySearch: false) uses allShows and ignores search filter',
+        (WidgetTester tester) async {
+      await tester.runAsync(() async {
+        // Stub SettingsProvider
+        for (var i = 1; i <= 2; i++) {
+          final name = 'Grateful Dead at Venue $i on 2025-11-15';
+          when(mockSettingsProvider.getRating(name)).thenReturn(0);
+          when(mockSettingsProvider.isPlayed(name)).thenReturn(false);
+          // Stub source rating
+          when(mockSettingsProvider.getRating('source0'))
+              .thenReturn(0); // Dummy sources start at source0
+        }
+        when(mockSettingsProvider.randomOnlyUnplayed).thenReturn(false);
+        when(mockSettingsProvider.randomOnlyHighRated).thenReturn(false);
+
+        // Stub AudioPlayer
+        when(mockAudioPlayer.setAudioSource(any,
+                initialIndex: anyNamed('initialIndex'),
+                preload: anyNamed('preload')))
+            .thenAnswer((_) async => const Duration(seconds: 100));
+        when(mockAudioPlayer.play()).thenAnswer((_) async {});
+
+        final show1 = createDummyShow(1); // filtered show
+        final show2 = createDummyShow(2); // unfiltered show
+
+        // filterBySearch=true uses filteredShows
+        when(mockShowListProvider.filteredShows).thenReturn([show1]);
+        // filterBySearch=false uses allShows
+        when(mockShowListProvider.allShows).thenReturn([show1, show2]);
+
+        // 1. Default (filterBySearch: true) should only pick show1
+        final playedShow1 = await audioProvider.playRandomShow();
+        expect(playedShow1, equals(show1));
+
+        // 2. filterBySearch: false should pick from allShows.
+        // To verify it CAN pick show2, we'll force filteredShows to be empty
+        // and allShows to have show2.
+        when(mockShowListProvider.filteredShows).thenReturn([]);
+        when(mockShowListProvider.allShows).thenReturn([show2]);
+
+        final playedShow2 =
+            await audioProvider.playRandomShow(filterBySearch: false);
+        expect(playedShow2, equals(show2));
+
+        verify(mockAudioPlayer.play()).called(2);
       });
     });
 

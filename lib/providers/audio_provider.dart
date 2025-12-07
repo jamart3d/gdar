@@ -68,7 +68,7 @@ class AudioProvider with ChangeNotifier {
 
         if (_settingsProvider?.playRandomOnCompletion ?? false) {
           logger.i('Playlist completed, playing random show.');
-          await playRandomShow();
+          await playRandomShow(filterBySearch: false);
         }
       }
     });
@@ -91,46 +91,48 @@ class AudioProvider with ChangeNotifier {
     super.dispose();
   }
 
-  Future<Show?> playRandomShow() async {
-    final shows = _showListProvider?.filteredShows;
-    if (shows == null || shows.isEmpty) {
+  Future<Show?> playRandomShow({bool filterBySearch = true}) async {
+    final settings = _settingsProvider;
+    if (settings == null) return null; // Should not happen
+
+    List<Show>? sourceList;
+    if (filterBySearch) {
+      sourceList = _showListProvider?.filteredShows;
+    } else {
+      sourceList = _showListProvider?.allShows;
+    }
+
+    if (sourceList == null || sourceList.isEmpty) {
       logger.w('Cannot play random show, no shows available.');
       return null;
     }
 
-    final nonEmptyShows =
-        shows.where((show) => show.sources.isNotEmpty).toList();
-    if (nonEmptyShows.isEmpty) {
-      logger.w('Cannot play random show, no shows with sources available.');
-      return null;
-    }
-
     // Filter and Weighting Logic
-    final settings = _settingsProvider;
-    if (settings == null) {
-      // Fallback to simple random if settings not available
-      final randomShow = nonEmptyShows[Random().nextInt(nonEmptyShows.length)];
-      final randomSource =
-          randomShow.sources[Random().nextInt(randomShow.sources.length)];
-      playSource(randomShow, randomSource);
-      return randomShow;
-    }
-
     final List<Show> candidates = [];
     final Map<Show, int> weights = {};
 
-    for (final show in nonEmptyShows) {
+    for (final show in sourceList) {
       final rating = settings.getRating(show.name);
       final isPlayed = settings.isPlayed(show.name);
 
-      // 1. Exclude Red Star (-1)
+      // 1. Exclude Red Star Shows (-1)
       if (rating == -1) continue;
 
-      // 2. Filter by Settings
+      // 2. Check for at least one unblocked source
+      bool hasUnblockedSource = false;
+      for (final source in show.sources) {
+        if (settings.getRating(source.id) != -1) {
+          hasUnblockedSource = true;
+          break;
+        }
+      }
+      if (!hasUnblockedSource) continue;
+
+      // 3. Filter by Settings
       if (settings.randomOnlyUnplayed && isPlayed) continue;
       if (settings.randomOnlyHighRated && rating < 2) continue;
 
-      // 3. Calculate Weight
+      // 4. Calculate Weight
       int weight = 10; // Default weight (1 Star or Unrated)
 
       if (rating == 3) {
@@ -153,11 +155,6 @@ class AudioProvider with ChangeNotifier {
 
     if (candidates.isEmpty) {
       logger.w('No shows match the current random playback criteria.');
-      // Optional: Show a toast or message to the user?
-      // For now, fallback to playing *any* non-red-star show to avoid silence,
-      // or just return null. Let's return null and maybe the UI can handle it.
-      // Actually, let's try to relax criteria if strict ones fail?
-      // No, user asked for "Only...", so we should respect it.
       return null;
     }
 
@@ -177,8 +174,18 @@ class AudioProvider with ChangeNotifier {
 
     selectedShow ??= candidates.first; // Should not happen if logic is correct
 
-    final randomSource =
-        selectedShow.sources[Random().nextInt(selectedShow.sources.length)];
+    // Filter valid sources (neither blocked themselves, nor in a blocked show - though show is already checked)
+    final validSources = selectedShow.sources.where((s) {
+      return settings.getRating(s.id) != -1;
+    }).toList();
+
+    if (validSources.isEmpty) {
+      // This technically shouldn't happen because we checked for at least one unblocked source above
+      logger.w('Selected show has no unblocked sources. Skipping.');
+      return null;
+    }
+
+    final randomSource = validSources[Random().nextInt(validSources.length)];
 
     logger.i(
         'Playing random show: ${selectedShow.name} (Rating: ${settings.getRating(selectedShow.name)}, Played: ${settings.isPlayed(selectedShow.name)}, Weight: ${weights[selectedShow]})');

@@ -192,11 +192,11 @@ class _ShowListScreenState extends State<ShowListScreen>
 
     if (isExpanded) {
       if (show.sources.length > 4) {
-        alignment = 0.02; // Top (approx 3 cards above center)
+        alignment = 0.05; // Was 0.02 - Top but with more breathing room
       } else if (show.sources.length > 2) {
-        alignment = 0.20; // Upper third (approx 2 cards above center)
+        alignment = 0.15; // Was 0.20 - Upper area
       } else if (show.sources.length > 1) {
-        alignment = 0.35; // Slightly above center (approx 1 card above center)
+        alignment = 0.25; // Was 0.35 - Above center
       }
     }
 
