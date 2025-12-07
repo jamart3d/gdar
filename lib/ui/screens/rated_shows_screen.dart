@@ -49,12 +49,28 @@ class _RatedShowsScreenState extends State<RatedShowsScreen>
 
   @override
   Widget build(BuildContext context) {
+    final settingsProvider = context.watch<SettingsProvider>();
+    final scaleFactor = settingsProvider.uiScale ? 1.5 : 1.0;
+    final textTheme = Theme.of(context).textTheme;
+
+    final appBarTitleStyle = textTheme.titleLarge?.copyWith(
+      fontSize: (textTheme.titleLarge?.fontSize ?? 22.0) * scaleFactor,
+    );
+    final tabLabelStyle = textTheme.labelLarge?.copyWith(
+      fontSize: (textTheme.labelLarge?.fontSize ?? 14.0) * scaleFactor,
+    );
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Rated Shows Library'),
+        title: Text(
+          'Rated Shows Library',
+          style: appBarTitleStyle,
+        ),
         bottom: TabBar(
           controller: _tabController,
           isScrollable: true,
+          labelStyle: tabLabelStyle,
+          unselectedLabelStyle: tabLabelStyle,
           tabs: _tabs.map((r) => Tab(text: _getTabLabel(r))).toList(),
         ),
       ),

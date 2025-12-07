@@ -22,9 +22,12 @@ A Flutter application for browsing and playing concert recordings of the Gratefu
 - **Customization**:
   - Light and Dark theme support with dynamic color options.
   - "True Black" mode for OLED screens.
+  - **Accessibility**: Semantic labels for screen readers.
   - **Hide Track Duration** option for a minimalist interface.
-  - Customizable UI scale and font options.
+  - **Hide Track Duration** option for a minimalist interface.
+  - **Global UI Scale**: Consistent text scaling across all screens.
 - **Enhanced UX**:
+  - **Smart Rating Dialog**: Toggle "Played" status, confirmation dialogs for safety, and mutually exclusive rating/blocking logic.
   - **Expressive Swipe to Block**: Polished Material 3 design for blocking shows/sources.
   - **Single Source Cleanliness**: Simplified view for shows with only one source.
 

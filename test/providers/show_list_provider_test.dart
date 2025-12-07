@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gdar/api/show_service.dart';
 import 'package:gdar/models/show.dart';
+import 'package:gdar/models/source.dart';
 import 'package:gdar/providers/show_list_provider.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
@@ -13,14 +14,20 @@ void main() {
   late MockShowService mockShowService;
 
   // Helper function to create a dummy show
-  Show createDummyShow(String name, String date, {bool hasFeaturedTrack = false}) {
+  Show createDummyShow(String name, String date,
+      {bool hasFeaturedTrack = false}) {
     return Show(
       name: name,
       artist: 'Grateful Dead',
       date: date,
       year: date.split('-').first,
       venue: name,
-      sources: [],
+      sources: [
+        Source(
+          id: 'source1',
+          tracks: [], // Empty tracks for now, as provider doesn't strictly check them for list filtering
+        ),
+      ],
       hasFeaturedTrack: hasFeaturedTrack,
     );
   }
@@ -28,7 +35,8 @@ void main() {
   final dummyShows = [
     createDummyShow('Venue A on 2025-01-15', '2025-01-15'),
     createDummyShow('Venue B on 2025-02-20', '2025-02-20'),
-    createDummyShow('Venue C on 2025-03-25', '2025-03-25', hasFeaturedTrack: true),
+    createDummyShow('Venue C on 2025-03-25', '2025-03-25',
+        hasFeaturedTrack: true),
   ];
 
   setUp(() {
@@ -83,13 +91,15 @@ void main() {
 
       showListProvider.setSearchQuery('Venue A');
       expect(showListProvider.filteredShows.length, 1);
-      expect(showListProvider.filteredShows.first.name, 'Venue A on 2025-01-15');
+      expect(
+          showListProvider.filteredShows.first.name, 'Venue A on 2025-01-15');
 
       showListProvider.setSearchQuery('2025-02-20');
       expect(showListProvider.filteredShows.length, 1);
-      expect(showListProvider.filteredShows.first.name, 'Venue B on 2025-02-20');
+      expect(
+          showListProvider.filteredShows.first.name, 'Venue B on 2025-02-20');
     });
-    
+
     test('filteredShows hides featured tracks', () async {
       when(mockShowService.getShows()).thenAnswer((_) async => dummyShows);
       await showListProvider.fetchShows();
@@ -101,7 +111,7 @@ void main() {
       when(mockShowService.getShows()).thenAnswer((_) async => dummyShows);
       await showListProvider.fetchShows();
       final show = showListProvider.filteredShows.first;
-      
+
       showListProvider.onShowTap(show);
       expect(showListProvider.expandedShowName, show.name);
 

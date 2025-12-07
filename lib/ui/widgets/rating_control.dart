@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
+import 'package:gdar/providers/settings_provider.dart';
 import 'package:gdar/utils/utils.dart';
+import 'package:provider/provider.dart';
 
 class RatingControl extends StatelessWidget {
   final int rating;
@@ -22,44 +24,53 @@ class RatingControl extends StatelessWidget {
 
     if (rating == -1) {
       // Blocked (Red Star)
-      content = Icon(
-        Icons.star,
-        size: size,
-        color: Colors.red,
+      content = Semantics(
+        label: 'Blocked show',
+        child: Icon(
+          Icons.star,
+          size: size,
+          color: Colors.red,
+        ),
       );
     } else if (rating == 0 && isPlayed) {
       // Played but unrated (1 Grey Star, 2 Empty)
-      content = RatingBar(
-        initialRating: 1,
-        minRating: 1,
-        direction: Axis.horizontal,
-        allowHalfRating: false,
-        itemCount: 3,
-        itemSize: size,
-        ignoreGestures: true,
-        ratingWidget: RatingWidget(
-          full: const Icon(Icons.star, color: Colors.grey),
-          half: const Icon(Icons.star_half, color: Colors.grey),
-          empty: const Icon(Icons.star_border, color: Colors.grey),
+      content = Semantics(
+        label: 'Played, unrated',
+        child: RatingBar(
+          initialRating: 1,
+          minRating: 1,
+          direction: Axis.horizontal,
+          allowHalfRating: false,
+          itemCount: 3,
+          itemSize: size,
+          ignoreGestures: true,
+          ratingWidget: RatingWidget(
+            full: const Icon(Icons.star, color: Colors.grey),
+            half: const Icon(Icons.star_half, color: Colors.grey),
+            empty: const Icon(Icons.star_border, color: Colors.grey),
+          ),
+          onRatingUpdate: (_) {},
         ),
-        onRatingUpdate: (_) {},
       );
     } else {
       // 0-3 Stars (Amber or Empty)
-      content = RatingBar(
-        initialRating: rating.toDouble(),
-        minRating: 1,
-        direction: Axis.horizontal,
-        allowHalfRating: false,
-        itemCount: 3,
-        itemSize: size,
-        ignoreGestures: true,
-        ratingWidget: RatingWidget(
-          full: const Icon(Icons.star, color: Colors.amber),
-          half: const Icon(Icons.star_half, color: Colors.amber),
-          empty: const Icon(Icons.star_border, color: Colors.grey),
+      content = Semantics(
+        label: 'Rated $rating stars',
+        child: RatingBar(
+          initialRating: rating.toDouble(),
+          minRating: 1,
+          direction: Axis.horizontal,
+          allowHalfRating: false,
+          itemCount: 3,
+          itemSize: size,
+          ignoreGestures: true,
+          ratingWidget: RatingWidget(
+            full: const Icon(Icons.star, color: Colors.amber),
+            half: const Icon(Icons.star_half, color: Colors.amber),
+            empty: const Icon(Icons.star_border, color: Colors.grey),
+          ),
+          onRatingUpdate: (_) {},
         ),
-        onRatingUpdate: (_) {},
       );
     }
 
@@ -75,11 +86,13 @@ class RatingControl extends StatelessWidget {
   }
 }
 
-class RatingDialog extends StatelessWidget {
+class RatingDialog extends StatefulWidget {
   final int initialRating;
   final ValueChanged<int> onRatingChanged;
   final String? sourceId;
   final String? sourceUrl;
+  final bool isPlayed;
+  final ValueChanged<bool>? onPlayedChanged;
 
   const RatingDialog({
     super.key,
@@ -87,7 +100,24 @@ class RatingDialog extends StatelessWidget {
     required this.onRatingChanged,
     this.sourceId,
     this.sourceUrl,
+    this.isPlayed = false,
+    this.onPlayedChanged,
   });
+
+  @override
+  State<RatingDialog> createState() => _RatingDialogState();
+}
+
+class _RatingDialogState extends State<RatingDialog> {
+  late bool _isPlayed;
+  late int _currentRating;
+
+  @override
+  void initState() {
+    super.initState();
+    _isPlayed = widget.isPlayed;
+    _currentRating = widget.initialRating;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -97,17 +127,17 @@ class RatingDialog extends StatelessWidget {
     return SimpleDialog(
       titlePadding: const EdgeInsets.fromLTRB(24.0, 24.0, 24.0, 0.0),
       title: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
         children: [
           const Text('Rate Show'),
-          if (sourceId != null && sourceId!.isNotEmpty) ...[
+          if (widget.sourceId != null && widget.sourceId!.isNotEmpty) ...[
             const SizedBox(width: 16),
             InkWell(
               onTap: () {
-                if (sourceUrl != null && sourceUrl!.isNotEmpty) {
-                  launchArchivePage(sourceUrl!);
+                if (widget.sourceUrl != null && widget.sourceUrl!.isNotEmpty) {
+                  launchArchivePage(widget.sourceUrl!);
                 } else {
-                  launchArchiveDetails(sourceId!);
+                  launchArchiveDetails(widget.sourceId!);
                 }
               },
               borderRadius: BorderRadius.circular(8),
@@ -119,8 +149,8 @@ class RatingDialog extends StatelessWidget {
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
-                  sourceId!,
-                  style: textTheme.titleLarge?.copyWith(
+                  widget.sourceId!,
+                  style: textTheme.titleMedium?.copyWith(
                     color: colorScheme.onTertiaryContainer,
                     fontWeight: FontWeight.bold,
                     decoration: TextDecoration.underline,
@@ -134,25 +164,63 @@ class RatingDialog extends StatelessWidget {
       contentPadding: const EdgeInsets.fromLTRB(0.0, 12.0, 0.0, 16.0),
       children: [
         Padding(
-          padding: const EdgeInsets.symmetric(vertical: 16.0),
+          padding: const EdgeInsets.symmetric(vertical: 8.0),
           child: Center(
-            child: RatingBar.builder(
-              initialRating: initialRating > 0 ? initialRating.toDouble() : 0.0,
-              minRating: 1,
-              direction: Axis.horizontal,
-              allowHalfRating: false,
-              itemCount: 3,
-              itemPadding: const EdgeInsets.symmetric(horizontal: 4.0),
-              itemBuilder: (context, _) => const Icon(
-                Icons.star,
-                color: Colors.amber,
+            child: IgnorePointer(
+              ignoring: _currentRating == -1,
+              child: Opacity(
+                opacity: _currentRating == -1 ? 0.3 : 1.0,
+                child: RatingBar.builder(
+                  initialRating:
+                      _currentRating > 0 ? _currentRating.toDouble() : 0.0,
+                  minRating: 1,
+                  direction: Axis.horizontal,
+                  allowHalfRating: false,
+                  itemCount: 3,
+                  itemPadding: const EdgeInsets.symmetric(horizontal: 4.0),
+                  itemBuilder: (context, _) => const Icon(
+                    Icons.star,
+                    color: Colors.amber,
+                  ),
+                  onRatingUpdate: (rating) {
+                    setState(() {
+                      _currentRating = rating.toInt();
+                    });
+                    widget.onRatingChanged(rating.toInt());
+                  },
+                ),
               ),
-              onRatingUpdate: (rating) {
-                onRatingChanged(rating.toInt());
-              },
             ),
           ),
         ),
+        if (widget.onPlayedChanged != null) ...[
+          const Divider(),
+          SwitchListTile(
+            title: const Text('Mark as Played'),
+            secondary: Icon(
+              _isPlayed ? Icons.check_circle_rounded : Icons.circle_outlined,
+              color: _isPlayed ? colorScheme.primary : colorScheme.outline,
+            ),
+            value: _isPlayed,
+            onChanged: (value) async {
+              if (!value && _isPlayed) {
+                // Confirm before un-marking
+                final confirmed = await _showScaledConfirmationDialog(
+                  context,
+                  'Mark as Unplayed?',
+                  'This will remove the show from your played list.',
+                );
+
+                if (confirmed != true) return;
+              }
+
+              setState(() {
+                _isPlayed = value;
+              });
+              widget.onPlayedChanged?.call(value);
+            },
+          ),
+        ],
         const Divider(),
         _buildActionOption(
           context,
@@ -176,9 +244,31 @@ class RatingDialog extends StatelessWidget {
   Widget _buildActionOption(BuildContext context, String text, IconData icon,
       Color color, int rating) {
     return SimpleDialogOption(
-      onPressed: () {
-        onRatingChanged(rating);
-        Navigator.pop(context);
+      onPressed: () async {
+        // Confirmation Logic
+        if (rating == -1 && _currentRating > 0) {
+          // Confirm before blocking a rated show
+          final confirmed = await _showScaledConfirmationDialog(
+            context,
+            'Block Show?',
+            'This show has a rating. Blocking it will remove the rating.',
+          );
+          if (confirmed != true) return;
+        } else if (rating == 0 && _currentRating > 0) {
+          // Confirm before clearing a rating
+          final confirmed = await _showScaledConfirmationDialog(
+            context,
+            'Clear Rating?',
+            'Are you sure you want to remove the rating for this show?',
+          );
+          if (confirmed != true) return;
+        }
+
+        setState(() {
+          _currentRating = rating;
+        });
+        widget.onRatingChanged(rating);
+        if (mounted) Navigator.pop(context);
       },
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 8.0),
@@ -187,10 +277,39 @@ class RatingDialog extends StatelessWidget {
             Icon(icon, color: color),
             const SizedBox(width: 12),
             Text(text),
-            if (initialRating == rating) ...[
+            if (_currentRating == rating) ...[
               const Spacer(),
               const Icon(Icons.check, size: 16),
             ]
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<bool?> _showScaledConfirmationDialog(
+      BuildContext context, String title, String content) {
+    final settingsProvider = context.read<SettingsProvider>();
+    final double scaleFactor = settingsProvider.uiScale ? 1.5 : 1.0;
+
+    return showDialog<bool>(
+      context: context,
+      builder: (context) => MediaQuery(
+        data: MediaQuery.of(context).copyWith(
+          textScaler: TextScaler.linear(scaleFactor),
+        ),
+        child: AlertDialog(
+          title: Text(title),
+          content: Text(content),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text('Confirm'),
+            ),
           ],
         ),
       ),

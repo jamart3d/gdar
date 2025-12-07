@@ -127,9 +127,19 @@ class SourceListItem extends StatelessWidget {
                                     sourceUrl: source.tracks.isNotEmpty
                                         ? source.tracks.first.url
                                         : null,
+                                    isPlayed:
+                                        settingsProvider.isPlayed(source.id),
                                     onRatingChanged: (newRating) {
                                       settingsProvider.setRating(
                                           source.id, newRating);
+                                    },
+                                    onPlayedChanged: (bool isPlayed) {
+                                      if (isPlayed !=
+                                          settingsProvider
+                                              .isPlayed(source.id)) {
+                                        settingsProvider
+                                            .togglePlayed(source.id);
+                                      }
                                     },
                                   ),
                                 );

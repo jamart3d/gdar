@@ -54,3 +54,4 @@ flutter:
 
   assets:
     - assets/data/shows.json
+    - assets/images/

@@ -566,7 +566,13 @@ class _ShowListScreenState extends State<ShowListScreen>
               transitionDuration: Duration.zero,
             ),
           ),
-          child: const Text('gdar'),
+          child: Text(
+            'gdar',
+            style: Theme.of(context)
+                .textTheme
+                .titleLarge
+                ?.apply(fontSizeFactor: settingsProvider.uiScale ? 1.5 : 1.0),
+          ),
         ),
         actions: _buildAppBarActions(),
       ),

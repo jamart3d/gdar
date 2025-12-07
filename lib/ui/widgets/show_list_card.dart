@@ -225,103 +225,112 @@ class _ShowListCardState extends State<ShowListCard> {
       ),
       child: Stack(
         children: [
-          Material(
-            color: Colors.transparent,
-            child: InkWell(
-              borderRadius: BorderRadius.circular(borderRadius),
-              onTap: widget.onTap,
-              onLongPress: widget.onLongPress,
-              child: Padding(
-                padding: EdgeInsets.all(10.0 * scaleFactor),
-                child: Stack(
-                  children: [
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Expanded(
-                          child: Padding(
-                            padding: EdgeInsets.only(
-                                left: settingsProvider.showExpandIcon ? 32 : 0),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              children: [
-                                SizedBox(
-                                  height: venueStyle.fontSize! * 1.3,
-                                  child: ConditionalMarquee(
-                                    text: settingsProvider.dateFirstInShowCard
-                                        ? widget.show.formattedDate
-                                        : widget.show.venue,
-                                    style: venueStyle,
+          Semantics(
+            label:
+                '${widget.show.venue} on ${widget.show.formattedDate}. ${widget.isPlaying ? "Playing" : ""}',
+            hint: widget.isExpanded
+                ? 'Double tap to collapse'
+                : 'Double tap to expand',
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                borderRadius: BorderRadius.circular(borderRadius),
+                onTap: widget.onTap,
+                onLongPress: widget.onLongPress,
+                child: Padding(
+                  padding: EdgeInsets.all(10.0 * scaleFactor),
+                  child: Stack(
+                    children: [
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Expanded(
+                            child: Padding(
+                              padding: EdgeInsets.only(
+                                  left:
+                                      settingsProvider.showExpandIcon ? 32 : 0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                children: [
+                                  SizedBox(
+                                    height: venueStyle.fontSize! * 1.3,
+                                    child: ConditionalMarquee(
+                                      text: settingsProvider.dateFirstInShowCard
+                                          ? widget.show.formattedDate
+                                          : widget.show.venue,
+                                      style: venueStyle,
+                                    ),
                                   ),
-                                ),
-                                SizedBox(height: 6 * scaleFactor),
-                                Padding(
-                                  padding: const EdgeInsets.only(left: 8.0),
-                                  child: Text(
-                                    settingsProvider.dateFirstInShowCard
-                                        ? widget.show.venue
-                                        : widget.show.formattedDate,
-                                    style: dateStyle,
+                                  SizedBox(height: 6 * scaleFactor),
+                                  Padding(
+                                    padding: const EdgeInsets.only(left: 8.0),
+                                    child: Text(
+                                      settingsProvider.dateFirstInShowCard
+                                          ? widget.show.venue
+                                          : widget.show.formattedDate,
+                                      style: dateStyle,
+                                    ),
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
                           ),
-                        ),
-                      ],
-                    ),
-                    if (settingsProvider.showExpandIcon)
-                      Positioned(
-                        left: 0,
-                        bottom: 0,
-                        child: AnimatedSwitcher(
-                          duration: _animationDuration,
-                          child: widget.isLoading
-                              ? Container(
-                                  key: ValueKey('loader_${widget.show.name}'),
-                                  width: 28,
-                                  height: 28,
-                                  padding: const EdgeInsets.all(4),
-                                  child: const CircularProgressIndicator(
-                                      strokeWidth: 2.5),
-                                )
-                              : AnimatedRotation(
-                                  key: ValueKey('icon_${widget.show.name}'),
-                                  turns: widget.isExpanded ? 0.5 : 0,
-                                  duration: _animationDuration,
-                                  curve: Curves.easeInOutCubicEmphasized,
-                                  child: Container(
+                        ],
+                      ),
+                      if (settingsProvider.showExpandIcon)
+                        Positioned(
+                          left: 0,
+                          bottom: 0,
+                          child: AnimatedSwitcher(
+                            duration: _animationDuration,
+                            child: widget.isLoading
+                                ? Container(
+                                    key: ValueKey('loader_${widget.show.name}'),
+                                    width: 28,
+                                    height: 28,
                                     padding: const EdgeInsets.all(4),
-                                    decoration: BoxDecoration(
-                                      color: widget.isExpanded
-                                          ? colorScheme.primaryContainer
-                                          : colorScheme.surfaceContainerHighest,
-                                      borderRadius: BorderRadius.circular(10),
-                                      border: Border.all(
+                                    child: const CircularProgressIndicator(
+                                        strokeWidth: 2.5),
+                                  )
+                                : AnimatedRotation(
+                                    key: ValueKey('icon_${widget.show.name}'),
+                                    turns: widget.isExpanded ? 0.5 : 0,
+                                    duration: _animationDuration,
+                                    curve: Curves.easeInOutCubicEmphasized,
+                                    child: Container(
+                                      padding: const EdgeInsets.all(4),
+                                      decoration: BoxDecoration(
                                         color: widget.isExpanded
-                                            ? colorScheme.primary
-                                            : Colors.transparent,
-                                        width: 1,
+                                            ? colorScheme.primaryContainer
+                                            : colorScheme
+                                                .surfaceContainerHighest,
+                                        borderRadius: BorderRadius.circular(10),
+                                        border: Border.all(
+                                          color: widget.isExpanded
+                                              ? colorScheme.primary
+                                              : Colors.transparent,
+                                          width: 1,
+                                        ),
                                       ),
+                                      child: Icon(
+                                          Icons.keyboard_arrow_down_rounded,
+                                          color: widget.isExpanded
+                                              ? colorScheme.onPrimaryContainer
+                                              : colorScheme.onSurfaceVariant,
+                                          size: 20),
                                     ),
-                                    child: Icon(
-                                        Icons.keyboard_arrow_down_rounded,
-                                        color: widget.isExpanded
-                                            ? colorScheme.onPrimaryContainer
-                                            : colorScheme.onSurfaceVariant,
-                                        size: 20),
                                   ),
-                                ),
+                          ),
                         ),
-                      ),
-                    if (shouldShowBadge)
-                      Positioned(
-                        right: 0,
-                        bottom: 0,
-                        child: _buildBadge(context, widget.show),
-                      ),
-                  ],
+                      if (shouldShowBadge)
+                        Positioned(
+                          right: 0,
+                          bottom: 0,
+                          child: _buildBadge(context, widget.show),
+                        ),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -417,8 +426,14 @@ class _ShowListCardState extends State<ShowListCard> {
                   builder: (context) => RatingDialog(
                     initialRating: rating,
                     sourceId: null,
+                    isPlayed: settings.isPlayed(show.name),
                     onRatingChanged: (newRating) {
                       settings.setRating(show.name, newRating);
+                    },
+                    onPlayedChanged: (bool isPlayed) {
+                      if (isPlayed != settings.isPlayed(show.name)) {
+                        settings.togglePlayed(show.name);
+                      }
                     },
                   ),
                 );

@@ -26,7 +26,6 @@ class _PlaybackScreenState extends State<PlaybackScreen>
     with SingleTickerProviderStateMixin {
   late final ScrollController _scrollController;
   late final AnimationController _pulseController;
-  late final Animation<double> _scaleAnimation;
   StreamSubscription? _errorSubscription;
 
   static const double _trackItemHeight = 52.0;
@@ -38,9 +37,6 @@ class _PlaybackScreenState extends State<PlaybackScreen>
     _pulseController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1500),
-    );
-    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.95).animate(
-      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
     );
 
     // Listen for errors
@@ -446,8 +442,6 @@ class _PlaybackScreenState extends State<PlaybackScreen>
     final settingsProvider = context.watch<SettingsProvider>();
     final double scaleFactor = settingsProvider.uiScale ? 1.25 : 1.0;
     final double iconSize = 32 * scaleFactor;
-    final double playButtonSize = 60 * scaleFactor;
-    final double playIconSize = 36 * scaleFactor;
 
     return StreamBuilder<int?>(
       stream: audioProvider.currentIndexStream,
@@ -465,15 +459,6 @@ class _PlaybackScreenState extends State<PlaybackScreen>
             final processingState = playerState?.processingState;
             final playing = playerState?.playing ?? false;
 
-            if (playing && !_pulseController.isAnimating) {
-              _pulseController.repeat(reverse: true);
-            } else if (!playing && _pulseController.isAnimating) {
-              _pulseController.stop();
-              _pulseController.animateTo(0.0,
-                  duration: const Duration(milliseconds: 200),
-                  curve: Curves.easeOut);
-            }
-
             return Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
@@ -482,72 +467,40 @@ class _PlaybackScreenState extends State<PlaybackScreen>
                   iconSize: iconSize,
                   color: colorScheme.onSurface,
                   onPressed: isFirstTrack ? null : audioProvider.seekToPrevious,
+                  tooltip: 'Previous Track',
                 ),
-                ScaleTransition(
-                  scale: _scaleAnimation,
-                  child: GestureDetector(
-                    onLongPress: () {
-                      HapticFeedback.heavyImpact();
-                      audioProvider.stopAndClear();
-                      if (context.mounted) {
-                        Navigator.of(context).pop();
+                if (processingState == ProcessingState.loading ||
+                    processingState == ProcessingState.buffering)
+                  SizedBox(
+                    width: 56.0 * scaleFactor,
+                    height: 56.0 * scaleFactor,
+                    child: const CircularProgressIndicator(),
+                  )
+                else
+                  IconButton(
+                    key: const ValueKey('play_pause_button'),
+                    iconSize: 56.0 * scaleFactor,
+                    onPressed: () {
+                      if (playing) {
+                        audioProvider.pause();
+                      } else {
+                        audioProvider.play();
                       }
                     },
-                    child: Hero(
-                      tag: 'play_pause_button',
-                      child: Container(
-                        width: playButtonSize,
-                        height: playButtonSize,
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                            colors: [
-                              colorScheme.primary,
-                              colorScheme.tertiary,
-                            ],
-                          ),
-                          shape: BoxShape.circle,
-                          boxShadow: [
-                            BoxShadow(
-                              color: colorScheme.primary.withOpacity(0.4),
-                              blurRadius: 16,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
-                        ),
-                        child: processingState == ProcessingState.loading ||
-                                processingState == ProcessingState.buffering
-                            ? Padding(
-                                padding: const EdgeInsets.all(14.0),
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 3,
-                                  valueColor: AlwaysStoppedAnimation<Color>(
-                                    colorScheme.onPrimary,
-                                  ),
-                                ),
-                              )
-                            : IconButton(
-                                icon: Icon(
-                                  playing
-                                      ? Icons.pause_rounded
-                                      : Icons.play_arrow_rounded,
-                                ),
-                                iconSize: playIconSize,
-                                color: colorScheme.onPrimary,
-                                onPressed: playing
-                                    ? audioProvider.pause
-                                    : audioProvider.play,
-                              ),
-                      ),
+                    icon: Icon(
+                      playing
+                          ? Icons.pause_circle_filled_rounded
+                          : Icons.play_circle_fill_rounded,
+                      color: colorScheme.primary,
                     ),
+                    tooltip: playing ? 'Pause' : 'Play',
                   ),
-                ),
                 IconButton(
                   icon: const Icon(Icons.skip_next_rounded),
                   iconSize: iconSize,
                   color: colorScheme.onSurface,
                   onPressed: isLastTrack ? null : audioProvider.seekToNext,
+                  tooltip: 'Next Track',
                 ),
               ],
             );
@@ -941,8 +894,14 @@ class _PlaybackScreenState extends State<PlaybackScreen>
             sourceUrl: show.sources.length > 1 && source.tracks.isNotEmpty
                 ? source.tracks.first.url
                 : null,
+            isPlayed: settings.isPlayed(ratingKey),
             onRatingChanged: (newRating) {
               settings.setRating(ratingKey, newRating);
+            },
+            onPlayedChanged: (bool isPlayed) {
+              if (isPlayed != settings.isPlayed(ratingKey)) {
+                settings.togglePlayed(ratingKey);
+              }
             },
           ),
         );

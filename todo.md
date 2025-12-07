@@ -53,10 +53,18 @@ This file tracks planned features, enhancements, and bug fixes for the gdar appl
   - [x] **Swipe to Block:** Replaced red background with expressive "Swipe to Block" widget (Material 3 style).
   - [x] **Hide Track Duration:** Added setting to hide duration and center titles in track lists.
   - [x] **Scroll Fix:** Fixed bug where scrolling to current show failed on return (implemented model equality).
+  - [x] **UI Scale Compliance:** Audited and fixed UI scaling across all screens (About, ShowList AppBar, TrackList Headers).
+  - [x] **Rating Dialog Improvements:**
+    - [x] "Mark as Played" toggle with confirmation dialog.
+    - [x] Mutual exclusivity between Blocked (Red) and Rated (Gold) stars.
+    - [x] Block confirmation for rated shows.
 
 - [ ] **UI Polish:** Refine animations and transitions for an even smoother feel.
 
-- [ ] **Accessibility:** Review the app for accessibility improvements (e.g., screen reader labels).
+- [x] **Accessibility:** Review and improve app accessibility.
+  - Added semantic labels to `ShowListCard`.
+  - Added semantic labels to `PlaybackScreen` controls.
+  - Added semantic labels to `RatingControl`.
 
 ## Low Priority / Ideas
 
@@ -65,3 +73,5 @@ This file tracks planned features, enhancements, and bug fixes for the gdar appl
 - [ ] **Google Assistant Integration:** Add support for voice commands (e.g., "Hey Google, play a random show on gdar") using App Actions.
 
 - [ ] **Calendar Feature:** View shows by date on a calendar interface (e.g., "On This Day").
+
+- [ ] **Play Count & History:** Consider how to track and display how many times a show has been played. Display only in Rate Dialog or Rated Shows Library (not in Playback Controls).

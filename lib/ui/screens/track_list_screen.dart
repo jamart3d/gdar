@@ -127,12 +127,21 @@ class _TrackListScreenState extends State<TrackListScreen> {
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(widget.show.venue, overflow: TextOverflow.ellipsis),
+            Text(
+              widget.show.venue,
+              overflow: TextOverflow.ellipsis,
+              style: Theme.of(context).textTheme.titleLarge?.apply(
+                  fontSizeFactor: settingsProvider.uiScale ? 1.25 : 1.0),
+            ),
             const SizedBox(height: 2),
             Text(
               widget.show.formattedDate,
-              style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant),
+              style: Theme.of(context)
+                  .textTheme
+                  .titleSmall
+                  ?.copyWith(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant)
+                  .apply(fontSizeFactor: settingsProvider.uiScale ? 1.25 : 1.0),
             ),
           ],
         ),
@@ -262,14 +271,19 @@ class _TrackListScreenState extends State<TrackListScreen> {
   }
 
   Widget _buildSetHeader(BuildContext context, String setName) {
+    final settingsProvider = context.watch<SettingsProvider>();
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
       child: Text(
         setName,
-        style: Theme.of(context).textTheme.titleSmall?.copyWith(
+        style: Theme.of(context)
+            .textTheme
+            .titleSmall
+            ?.copyWith(
               color: Theme.of(context).colorScheme.primary,
               fontWeight: FontWeight.bold,
-            ),
+            )
+            .apply(fontSizeFactor: settingsProvider.uiScale ? 1.25 : 1.0),
       ),
     );
   }
