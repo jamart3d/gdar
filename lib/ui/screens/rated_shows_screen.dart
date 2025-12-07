@@ -21,7 +21,13 @@ class RatedShowsScreen extends StatefulWidget {
 class _RatedShowsScreenState extends State<RatedShowsScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
-  final List<int> _tabs = [3, 2, 1, -1]; // 3 Stars, 2 Stars, 1 Star, Blocked
+  final List<int> _tabs = [
+    -2,
+    3,
+    2,
+    1,
+    -1
+  ]; // Played, 3 Stars, 2 Stars, 1 Star, Blocked
 
   @override
   void initState() {
@@ -37,6 +43,7 @@ class _RatedShowsScreenState extends State<RatedShowsScreen>
 
   String _getTabLabel(int rating) {
     if (rating == -1) return 'Blocked';
+    if (rating == -2) return 'Played';
     return '$rating Star${rating > 1 ? 's' : ''}';
   }
 
@@ -91,6 +98,16 @@ class _RatedShowListState extends State<_RatedShowList> {
         if (showRating == -1) return true;
         for (var source in show.sources) {
           if (settingsProvider.getRating(source.id) == -1) return true;
+        }
+        return false;
+      }
+
+      // If filtering for Played (-2), include shows that are marked played
+      // OR shows that have any played source.
+      if (widget.rating == -2) {
+        if (settingsProvider.isPlayed(show.name)) return true;
+        for (var source in show.sources) {
+          if (settingsProvider.isPlayed(source.id)) return true;
         }
         return false;
       }
@@ -225,6 +242,7 @@ class _RatedShowListState extends State<_RatedShowList> {
 
   String _getTabLabel(int rating) {
     if (rating == -1) return 'Blocked';
+    if (rating == -2) return 'Played';
     return '$rating Star${rating > 1 ? 's' : ''}';
   }
 }
