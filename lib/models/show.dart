@@ -5,7 +5,6 @@ class Show {
   final String name;
   final String artist;
   final String date;
-  final String year;
   String venue; // Changed from final to allow modification
   List<Source> sources; // Changed from final to allow modification
   bool hasFeaturedTrack; // Our new property
@@ -14,7 +13,6 @@ class Show {
     required this.name,
     required this.artist,
     required this.date,
-    required this.year,
     required this.venue,
     required this.sources,
     this.hasFeaturedTrack = false, // Default to false
@@ -32,8 +30,9 @@ class Show {
   }
 
   factory Show.fromJson(Map<String, dynamic> json) {
+    final String? src = json['src'];
     final List<Source> sources = (json['sources'] as List<dynamic>? ?? [])
-        .map((sourceJson) => Source.fromJson(sourceJson))
+        .map((sourceJson) => Source.fromJson(sourceJson, src: src))
         .toList();
 
     String parseVenue(String name) {
@@ -48,12 +47,12 @@ class Show {
     }
 
     final String showName = json['name'] ?? 'Unknown Show';
+    final String date = json['date'] ?? '';
 
     return Show(
       name: showName,
-      artist: json['artist'] ?? 'Unknown Artist',
-      date: json['date'] ?? '',
-      year: json['year'] ?? '',
+      artist: 'Grateful Dead',
+      date: date,
       venue: parseVenue(showName),
       sources: sources,
     );

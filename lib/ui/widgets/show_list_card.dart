@@ -6,6 +6,7 @@ import 'package:gdar/ui/widgets/conditional_marquee.dart';
 import 'package:provider/provider.dart';
 
 import 'package:gdar/ui/widgets/rating_control.dart';
+import 'package:gdar/ui/widgets/src_badge.dart';
 import 'package:gdar/utils/color_generator.dart';
 
 class ShowListCard extends StatefulWidget {
@@ -415,30 +416,39 @@ class _ShowListCardState extends State<ShowListCard> {
 
     return Padding(
       padding: const EdgeInsets.all(8.0),
-      child: RatingControl(
-        rating: rating,
-        isPlayed: settings.isPlayed(show.name),
-        size: 20,
-        onTap: (widget.isPlaying || widget.alwaysShowRatingInteraction)
-            ? () async {
-                await showDialog(
-                  context: context,
-                  builder: (context) => RatingDialog(
-                    initialRating: rating,
-                    sourceId: null,
-                    isPlayed: settings.isPlayed(show.name),
-                    onRatingChanged: (newRating) {
-                      settings.setRating(show.name, newRating);
-                    },
-                    onPlayedChanged: (bool isPlayed) {
-                      if (isPlayed != settings.isPlayed(show.name)) {
-                        settings.togglePlayed(show.name);
-                      }
-                    },
-                  ),
-                );
-              }
-            : null,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          RatingControl(
+            rating: rating,
+            isPlayed: settings.isPlayed(show.name),
+            size: 20,
+            onTap: (widget.isPlaying || widget.alwaysShowRatingInteraction)
+                ? () async {
+                    await showDialog(
+                      context: context,
+                      builder: (context) => RatingDialog(
+                        initialRating: rating,
+                        sourceId: null,
+                        isPlayed: settings.isPlayed(show.name),
+                        onRatingChanged: (newRating) {
+                          settings.setRating(show.name, newRating);
+                        },
+                        onPlayedChanged: (bool isPlayed) {
+                          if (isPlayed != settings.isPlayed(show.name)) {
+                            settings.togglePlayed(show.name);
+                          }
+                        },
+                      ),
+                    );
+                  }
+                : null,
+          ),
+          if (show.sources.first.src != null) ...[
+            const SizedBox(height: 4),
+            SrcBadge(src: show.sources.first.src!),
+          ],
+        ],
       ),
     );
   }

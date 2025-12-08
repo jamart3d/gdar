@@ -25,7 +25,6 @@ void main() {
       name: name,
       artist: 'Grateful Dead',
       date: date,
-      year: date.split('-').first,
       venue: name.split(' on ').first,
       sources:
           List.generate(sourceCount, (i) => Source(id: 'source$i', tracks: [])),

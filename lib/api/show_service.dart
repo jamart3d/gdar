@@ -46,7 +46,6 @@ class ShowService {
             name: show.name,
             artist: show.artist,
             date: show.date,
-            year: show.year,
             venue: show.venue,
             sources:
                 List<Source>.from(show.sources), // Create a copy of the list

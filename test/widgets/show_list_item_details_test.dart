@@ -21,7 +21,6 @@ void main() {
       name: name,
       artist: 'Grateful Dead',
       date: '2025-01-01',
-      year: '2025',
       venue: 'Venue',
       sources:
           List.generate(sourceCount, (i) => Source(id: 'source$i', tracks: [])),

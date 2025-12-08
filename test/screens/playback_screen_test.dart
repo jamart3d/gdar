@@ -150,7 +150,6 @@ void main() {
     name: 'Venue A on 2025-01-15',
     artist: 'Grateful Dead',
     date: '2025-01-15',
-    year: '2025',
     venue: 'Venue A',
     sources: [dummySource],
   );

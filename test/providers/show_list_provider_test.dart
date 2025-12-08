@@ -20,7 +20,6 @@ void main() {
       name: name,
       artist: 'Grateful Dead',
       date: date,
-      year: date.split('-').first,
       venue: name,
       sources: [
         Source(

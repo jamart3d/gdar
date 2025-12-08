@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:gdar/models/source.dart';
 import 'package:gdar/providers/settings_provider.dart';
 import 'package:gdar/ui/widgets/rating_control.dart';
+import 'package:gdar/ui/widgets/src_badge.dart';
 
 import 'package:provider/provider.dart';
 
@@ -112,39 +113,49 @@ class SourceListItem extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(horizontal: 8.0),
                     child: Container(
                       color: Colors.transparent,
-                      child: RatingControl(
-                        rating: settingsProvider.getRating(source.id),
-                        size: 18 * scaleFactor,
-                        onTap: (isSourcePlaying || alwaysShowRatingInteraction)
-                            ? () async {
-                                final currentRating =
-                                    settingsProvider.getRating(source.id);
-                                await showDialog(
-                                  context: context,
-                                  builder: (context) => RatingDialog(
-                                    initialRating: currentRating,
-                                    sourceId: source.id,
-                                    sourceUrl: source.tracks.isNotEmpty
-                                        ? source.tracks.first.url
-                                        : null,
-                                    isPlayed:
-                                        settingsProvider.isPlayed(source.id),
-                                    onRatingChanged: (newRating) {
-                                      settingsProvider.setRating(
-                                          source.id, newRating);
-                                    },
-                                    onPlayedChanged: (bool isPlayed) {
-                                      if (isPlayed !=
-                                          settingsProvider
-                                              .isPlayed(source.id)) {
-                                        settingsProvider
-                                            .togglePlayed(source.id);
-                                      }
-                                    },
-                                  ),
-                                );
-                              }
-                            : null,
+                      child: Row(
+                        children: [
+                          if (source.src != null) ...[
+                            SrcBadge(
+                                src: source.src!, isPlaying: isSourcePlaying),
+                            const SizedBox(width: 8),
+                          ],
+                          RatingControl(
+                            rating: settingsProvider.getRating(source.id),
+                            size: 18 * scaleFactor,
+                            onTap: (isSourcePlaying ||
+                                    alwaysShowRatingInteraction)
+                                ? () async {
+                                    final currentRating =
+                                        settingsProvider.getRating(source.id);
+                                    await showDialog(
+                                      context: context,
+                                      builder: (context) => RatingDialog(
+                                        initialRating: currentRating,
+                                        sourceId: source.id,
+                                        sourceUrl: source.tracks.isNotEmpty
+                                            ? source.tracks.first.url
+                                            : null,
+                                        isPlayed: settingsProvider
+                                            .isPlayed(source.id),
+                                        onRatingChanged: (newRating) {
+                                          settingsProvider.setRating(
+                                              source.id, newRating);
+                                        },
+                                        onPlayedChanged: (bool isPlayed) {
+                                          if (isPlayed !=
+                                              settingsProvider
+                                                  .isPlayed(source.id)) {
+                                            settingsProvider
+                                                .togglePlayed(source.id);
+                                          }
+                                        },
+                                      ),
+                                    );
+                                  }
+                                : null,
+                          ),
+                        ],
                       ),
                     ),
                   ),

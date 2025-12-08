@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:gdar/ui/widgets/animated_gradient_border.dart';
+import 'package:gdar/ui/widgets/src_badge.dart';
 import 'package:gdar/models/show.dart';
 import 'package:gdar/models/source.dart';
 import 'package:gdar/models/track.dart';
@@ -125,9 +126,98 @@ class _PlaybackScreenState extends State<PlaybackScreen>
       backgroundColor: backgroundColor,
       appBar: AppBar(
         backgroundColor: backgroundColor,
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              currentShow.formattedDate,
+              style: Theme.of(context).textTheme.titleLarge?.apply(
+                  fontSizeFactor: settingsProvider.uiScale ? 1.25 : 1.0),
+            ),
+            const SizedBox(height: 2),
+            Text(
+              currentShow.venue,
+              overflow: TextOverflow.ellipsis,
+              style: Theme.of(context)
+                  .textTheme
+                  .titleSmall
+                  ?.copyWith(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant)
+                  .apply(fontSizeFactor: settingsProvider.uiScale ? 1.25 : 1.0),
+            ),
+          ],
+        ),
         actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 16.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                RatingControl(
+                  rating: settingsProvider.getRating(currentSource.id),
+                  size: 16 * (settingsProvider.uiScale ? 1.25 : 1.0),
+                  onTap: () async {
+                    final sourceId = currentSource.id;
+                    final currentRating = settingsProvider.getRating(sourceId);
+                    await showDialog(
+                      context: context,
+                      builder: (context) => RatingDialog(
+                        initialRating: currentRating,
+                        sourceId: sourceId,
+                        sourceUrl: currentSource.tracks.isNotEmpty
+                            ? currentSource.tracks.first.url
+                            : null,
+                        isPlayed: settingsProvider.isPlayed(sourceId),
+                        onRatingChanged: (newRating) {
+                          settingsProvider.setRating(sourceId, newRating);
+                        },
+                        onPlayedChanged: (bool isPlayed) {
+                          if (isPlayed != settingsProvider.isPlayed(sourceId)) {
+                            settingsProvider.togglePlayed(sourceId);
+                          }
+                        },
+                      ),
+                    );
+                  },
+                ),
+                const SizedBox(height: 2),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (currentSource.src != null) ...[
+                      SrcBadge(src: currentSource.src!),
+                      const SizedBox(width: 4),
+                    ],
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context)
+                            .colorScheme
+                            .secondaryContainer
+                            .withOpacity(0.5),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Text(
+                        currentSource.id,
+                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .onSecondaryContainer,
+                              fontSize:
+                                  10 * (settingsProvider.uiScale ? 1.25 : 1.0),
+                            ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
           IconButton(
             icon: const Icon(Icons.settings_rounded),
+            iconSize: 24 * (settingsProvider.uiScale ? 1.25 : 1.0),
             tooltip: 'Settings',
             onPressed: () {
               Navigator.of(context).push(
@@ -327,26 +417,41 @@ class _PlaybackScreenState extends State<PlaybackScreen>
                                         }
                                       },
                                       borderRadius: BorderRadius.circular(6),
-                                      child: Container(
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 10, vertical: 6),
-                                        decoration: BoxDecoration(
-                                          color: colorScheme.tertiaryContainer
-                                              .withOpacity(0.7),
-                                          borderRadius:
-                                              BorderRadius.circular(6),
-                                        ),
-                                        alignment: Alignment.center,
-                                        child: Text(
-                                          currentSource.id,
-                                          style: textTheme.bodyMedium?.copyWith(
-                                            color:
-                                                colorScheme.onTertiaryContainer,
-                                            fontWeight: FontWeight.bold,
-                                            decoration:
-                                                TextDecoration.underline,
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          if (currentSource.src != null) ...[
+                                            SrcBadge(
+                                                src: currentSource.src!,
+                                                isPlaying: true),
+                                            const SizedBox(width: 6),
+                                          ],
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 10, vertical: 6),
+                                            decoration: BoxDecoration(
+                                              color: colorScheme
+                                                  .tertiaryContainer
+                                                  .withOpacity(0.7),
+                                              borderRadius:
+                                                  BorderRadius.circular(6),
+                                            ),
+                                            alignment: Alignment.center,
+                                            child: Text(
+                                              currentSource.id,
+                                              style: textTheme.bodyMedium
+                                                  ?.copyWith(
+                                                color: colorScheme
+                                                    .onTertiaryContainer,
+                                                fontWeight: FontWeight.bold,
+                                                decoration:
+                                                    TextDecoration.underline,
+                                              ),
+                                            ),
                                           ),
-                                        ),
+                                        ],
                                       ),
                                     ),
                                   ],

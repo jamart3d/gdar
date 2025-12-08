@@ -34,7 +34,7 @@ This file tracks planned features, enhancements, and bug fixes for the gdar appl
 - [x] **Set Lists:** Organize tracks into sets (Set 1, Set 2, Encore) in the track list view.
   - *Implementation Note:* `shows2.json` now includes a `setlist` attribute. Update `Show` or `Track` models to support this structure and parse it from the new JSON.
 
-- [ ] **Recording Type Metadata:** Add an attribute to `shows.json` identifying the recording type (e.g., "Ultramatrix", "Betty Board"). Update the `Source` model to parse and display this information.
+- [x] **Recording Type Metadata:** Add an attribute to `shows.json` identifying the recording type (e.g., "Ultramatrix", "Betty Board"). Update the `Source` model to parse and display this information.
 
 - [x] **Sort Order:** Added "Sort Oldest First" setting to control show list order (defaulting to chronological).
 
@@ -71,6 +71,20 @@ This file tracks planned features, enhancements, and bug fixes for the gdar appl
   - Added semantic labels to `PlaybackScreen` controls.
   - Added semantic labels to `RatingControl`.
 
+  - [ ] **Source Filtering:** Add setting to only list the latest source (SHNID) for each show date, if multiple sources exist.
+
+  - [ ] **Source Category Filtering:**
+    - Add setting to filter which `src` types are shown in the show list.
+    - **Categories:**
+      - **Betty:** [betty, betty board, bbd]
+      - **Ultra:** [ultramatrix, miller.pearson.healy, ultra]
+      - **Matrix:** [mtx, matrix] (Default Active)
+      - **DSBD:** [dsbd]
+      - **FM:** [fm, prefm, pre-fm]
+      - **SBD:** [sbd, sdb, sby, sbeok]
+    - **UI:** List of source badges that can be activated/deactivated.
+    - **Constraint:** At least one category must remain active.
+
 ## Low Priority / Ideas
 
 - [ ] **Google TV Support:** Create a dedicated screen/layout optimized for Google TV and Android TV.
@@ -81,6 +95,12 @@ This file tracks planned features, enhancements, and bug fixes for the gdar appl
 
 - [ ] **Play Count & History**: Consider how to track and display how many times a show has been played. Display only in Rate Dialog or Rated Shows Library (not in Playback Controls).
 
-- [ ] **Smart Random Setting**: Add a setting to toggle the "Ignore search results for random when screen is not on" behavior (currently enabled by default).
+- [ ] **Smart Random Setting**: Add a setting to toggle whether "Automated Random (Continuous Play) ignores search filter to pick from full library" (currently enabled by default).
 
 - [ ] **Search Help**: Add functionality to help users enter month names in the search field (e.g., autocomplete or chips).
+
+- [ ] **Compact Player Mode:** Add setting to minimize the playback screen player (showing only duration/progress) and move the play/pause control to an icon on the currently playing track in the list.
+
+- [ ] **Swipe to Block Follow-up:** When using "Swipe to Block" to remove a show, provide an option (or setting) to immediately trigger a new random selection.
+
+

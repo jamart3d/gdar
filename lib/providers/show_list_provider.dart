@@ -71,7 +71,6 @@ class ShowListProvider with ChangeNotifier {
             name: show.name,
             artist: show.artist,
             date: show.date,
-            year: show.year,
             venue: show.venue,
             sources: validSources,
             hasFeaturedTrack: show.hasFeaturedTrack,
@@ -113,13 +112,8 @@ class ShowListProvider with ChangeNotifier {
       if (_expandedShowName != null) {
         final expandedShow = _filteredShowsCache.firstWhere(
             (s) => s.name == _expandedShowName,
-            orElse: () => Show(
-                name: '',
-                artist: '',
-                date: '',
-                year: '',
-                venue: '',
-                sources: []));
+            orElse: () =>
+                Show(name: '', artist: '', date: '', venue: '', sources: []));
         if (expandedShow.sources.length <= 1) {
           _expandedShowName = null;
         }

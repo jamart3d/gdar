@@ -82,7 +82,6 @@ void main() {
       name: 'Grateful Dead at Venue $id on 2025-11-15',
       artist: 'Grateful Dead',
       date: '2025-11-15',
-      year: '2025',
       venue: 'Venue $id',
       sources: List.generate(
         sourceCount,

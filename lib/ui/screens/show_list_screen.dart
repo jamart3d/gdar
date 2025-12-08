@@ -294,7 +294,6 @@ class _ShowListScreenState extends State<ShowListScreen>
         name: show.name,
         artist: show.artist,
         date: show.date,
-        year: show.year,
         venue: show.venue,
         sources: [source],
         hasFeaturedTrack: show.hasFeaturedTrack,

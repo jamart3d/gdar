@@ -4,8 +4,11 @@ import 'package:gdar/models/source.dart';
 import 'package:gdar/models/track.dart';
 import 'package:gdar/providers/audio_provider.dart';
 import 'package:gdar/providers/settings_provider.dart';
+import 'package:gdar/ui/screens/settings_screen.dart';
 import 'package:gdar/ui/widgets/conditional_marquee.dart';
 import 'package:gdar/ui/widgets/mini_player.dart';
+import 'package:gdar/ui/widgets/rating_control.dart';
+import 'package:gdar/ui/widgets/src_badge.dart';
 import 'package:gdar/utils/color_generator.dart';
 import 'package:gdar/utils/utils.dart';
 import 'package:provider/provider.dart';
@@ -42,40 +45,6 @@ class _TrackListScreenState extends State<TrackListScreen> {
         }
       }
       // If it's not the current show, do nothing on tap.
-    }
-  }
-
-  /// Navigates to the appropriate screen when a source is tapped.
-  Future<void> _onSourceTapped(Source source) async {
-    final audioProvider = context.read<AudioProvider>();
-    final isPlayingThisSource = audioProvider.currentSource?.id == source.id;
-
-    if (isPlayingThisSource) {
-      // If the tapped source is already playing, pop and signal to open the player.
-      if (mounted) {
-        Navigator.of(context).pop(true);
-      }
-    } else {
-      // If it's a new source, create a "virtual" show with only that source
-      // and navigate to a new TrackListScreen for it.
-      final singleSourceShow = Show(
-        name: widget.show.name,
-        artist: widget.show.artist,
-        date: widget.show.date,
-        year: widget.show.year,
-        venue: widget.show.venue,
-        sources: [source],
-        hasFeaturedTrack: widget.show.hasFeaturedTrack,
-      );
-      final result = await Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (_) => TrackListScreen(show: singleSourceShow),
-        ),
-      );
-      // If the nested screen started playback, propagate the signal up.
-      if (result == true && mounted) {
-        Navigator.of(context).pop(true);
-      }
     }
   }
 
@@ -128,14 +97,14 @@ class _TrackListScreenState extends State<TrackListScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              widget.show.venue,
-              overflow: TextOverflow.ellipsis,
+              widget.show.formattedDate,
               style: Theme.of(context).textTheme.titleLarge?.apply(
                   fontSizeFactor: settingsProvider.uiScale ? 1.25 : 1.0),
             ),
             const SizedBox(height: 2),
             Text(
-              widget.show.formattedDate,
+              widget.show.venue,
+              overflow: TextOverflow.ellipsis,
               style: Theme.of(context)
                   .textTheme
                   .titleSmall
@@ -145,6 +114,90 @@ class _TrackListScreenState extends State<TrackListScreen> {
             ),
           ],
         ),
+        actions: [
+          if (widget.show.sources.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(right: 16.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  RatingControl(
+                    rating: settingsProvider
+                        .getRating(widget.show.sources.first.id),
+                    size: 16 * (settingsProvider.uiScale ? 1.25 : 1.0),
+                    onTap: () async {
+                      final sourceId = widget.show.sources.first.id;
+                      final currentRating =
+                          settingsProvider.getRating(sourceId);
+                      await showDialog(
+                        context: context,
+                        builder: (context) => RatingDialog(
+                          initialRating: currentRating,
+                          sourceId: sourceId,
+                          sourceUrl: widget.show.sources.first.tracks.isNotEmpty
+                              ? widget.show.sources.first.tracks.first.url
+                              : null,
+                          isPlayed: settingsProvider.isPlayed(sourceId),
+                          onRatingChanged: (newRating) {
+                            settingsProvider.setRating(sourceId, newRating);
+                          },
+                          onPlayedChanged: (bool isPlayed) {
+                            if (isPlayed !=
+                                settingsProvider.isPlayed(sourceId)) {
+                              settingsProvider.togglePlayed(sourceId);
+                            }
+                          },
+                        ),
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 2),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (widget.show.sources.first.src != null) ...[
+                        SrcBadge(src: widget.show.sources.first.src!),
+                        const SizedBox(width: 4),
+                      ],
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: Theme.of(context)
+                              .colorScheme
+                              .secondaryContainer
+                              .withOpacity(0.5),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Text(
+                          widget.show.sources.first.id,
+                          style:
+                              Theme.of(context).textTheme.labelSmall?.copyWith(
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .onSecondaryContainer,
+                                    fontSize: 10 *
+                                        (settingsProvider.uiScale ? 1.25 : 1.0),
+                                  ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          IconButton(
+            icon: const Icon(Icons.settings_rounded),
+            iconSize: 24 * (settingsProvider.uiScale ? 1.25 : 1.0),
+            tooltip: 'Settings',
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const SettingsScreen()),
+              );
+            },
+          ),
+        ],
       ),
       body: Stack(
         children: [
@@ -162,6 +215,7 @@ class _TrackListScreenState extends State<TrackListScreen> {
   }
 
   Widget _buildBody() {
+    // Determine bottom padding based on whether the mini player is visible.
     final audioProvider = context.watch<AudioProvider>();
     final isDifferentShowPlaying = audioProvider.currentShow != null &&
         audioProvider.currentShow!.name != widget.show.name;
@@ -171,67 +225,9 @@ class _TrackListScreenState extends State<TrackListScreen> {
       return const Center(child: Text('No tracks available for this show.'));
     }
 
-    // If the show has only one source, display its track list directly.
-    // Otherwise, display the list of sources for the user to choose from.
-    if (widget.show.sources.length == 1) {
-      return _buildTrackList(context, widget.show.sources.first, bottomPadding);
-    } else {
-      return _buildSourceSelection(context, bottomPadding);
-    }
-  }
-
-  Widget _buildSourceSelection(BuildContext context, double bottomPadding) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final audioProvider = context.watch<AudioProvider>();
-
-    return ListView.builder(
-      padding: EdgeInsets.fromLTRB(16, 8, 16, bottomPadding),
-      itemCount: widget.show.sources.length,
-      itemBuilder: (context, index) {
-        final source = widget.show.sources[index];
-        final isPlayingThisSource =
-            audioProvider.currentSource?.id == source.id;
-
-        return Padding(
-          padding: const EdgeInsets.symmetric(vertical: 4),
-          child: Material(
-            color: isPlayingThisSource
-                ? colorScheme.tertiaryContainer
-                : colorScheme.secondaryContainer,
-            borderRadius: BorderRadius.circular(20),
-            child: InkWell(
-              borderRadius: BorderRadius.circular(20),
-              onTap: () => _onSourceTapped(source),
-              child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        source.id,
-                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                            color: isPlayingThisSource
-                                ? colorScheme.onTertiaryContainer
-                                : colorScheme.onSecondaryContainer,
-                            fontWeight: FontWeight.w600,
-                            letterSpacing: 0.1),
-                      ),
-                    ),
-                    Icon(
-                      Icons.chevron_right_rounded,
-                      color: isPlayingThisSource
-                          ? colorScheme.onTertiaryContainer
-                          : colorScheme.onSecondaryContainer,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        );
-      },
-    );
+    // Since this screen is only ever pushed with a single-source "virtual" show,
+    // we can directly build the track list.
+    return _buildTrackList(context, widget.show.sources.first, bottomPadding);
   }
 
   Widget _buildTrackList(
