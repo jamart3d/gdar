@@ -252,4 +252,21 @@ void main() {
     // Verify dialog is NOT open
     expect(find.text('Rate Show'), findsNothing);
   });
+
+  testWidgets('ShowListCard meets accessibility guidelines',
+      (WidgetTester tester) async {
+    final SemanticsHandle handle = tester.ensureSemantics();
+    await tester.pumpWidget(createTestableWidget(show: dummyShow));
+
+    // Checks that tap targets satisfy a minimum size of 48x48.
+    await expectLater(tester, meetsGuideline(androidTapTargetGuideline));
+
+    // Checks that text and background color contrast is sufficient.
+    await expectLater(tester, meetsGuideline(textContrastGuideline));
+
+    // Checks that interactive elements have labels.
+    await expectLater(tester, meetsGuideline(labeledTapTargetGuideline));
+
+    handle.dispose();
+  });
 }
