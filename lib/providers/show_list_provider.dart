@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:gdar/api/show_service.dart';
 import 'package:gdar/models/show.dart';
+import 'package:gdar/models/source.dart';
 import 'package:gdar/providers/settings_provider.dart';
 import 'package:gdar/utils/logger.dart';
 import 'package:http/http.dart' as http;
@@ -44,41 +45,7 @@ class ShowListProvider with ChangeNotifier {
   List<Show> _filteredShowsCache = [];
   List<Show> get filteredShows => _filteredShowsCache;
 
-  void _updateFilteredShows() {
-    const bool hideGdShowsInternally = true;
-    _filteredShowsCache = _allShows
-        .where((show) {
-          // 1. Filter out internal GD shows if flag is set
-          if (hideGdShowsInternally && show.hasFeaturedTrack) return false;
-
-          // 2. Filter out Blocked Shows (Rating == -1)
-          if (_showRatings[show.name] == -1) return false;
-
-          final query = _searchQuery.toLowerCase();
-          if (query.isEmpty) return true;
-          return show.venue.toLowerCase().contains(query) ||
-              show.formattedDate.toLowerCase().contains(query);
-        })
-        .map((show) {
-          // 3. Filter out Blocked Sources (Rating == -1) within the show
-          // We create a new Show instance with only the valid sources.
-          // This allows the UI to react to blocked sources (e.g. collapse if only 1 remains).
-          final validSources = show.sources.where((source) {
-            return _showRatings[source.id] != -1;
-          }).toList();
-
-          return Show(
-            name: show.name,
-            artist: show.artist,
-            date: show.date,
-            venue: show.venue,
-            sources: validSources,
-            hasFeaturedTrack: show.hasFeaturedTrack,
-          );
-        })
-        .where((show) => show.sources.isNotEmpty)
-        .toList();
-  }
+  // _updateFilteredShows moved below to access new settings
 
   // Constructor
   ShowListProvider({ShowService? showService})
@@ -92,6 +59,8 @@ class ShowListProvider with ChangeNotifier {
   }
 
   Map<String, int> _showRatings = {};
+  bool _filterHighestShnid = false;
+  Map<String, bool> _sourceCategoryFilters = {};
 
   void update(SettingsProvider settings) {
     bool shouldNotify = false;
@@ -102,19 +71,44 @@ class ShowListProvider with ChangeNotifier {
       shouldNotify = true;
     }
 
+    // Sync Source Filtering settings
+    bool filtersChanged = false;
+    if (_filterHighestShnid != settings.filterHighestShnid) {
+      _filterHighestShnid = settings.filterHighestShnid;
+      filtersChanged = true;
+    }
+    if (!mapEquals(_sourceCategoryFilters, settings.sourceCategoryFilters)) {
+      _sourceCategoryFilters = Map.from(settings.sourceCategoryFilters);
+      filtersChanged = true;
+    }
+
     // Check if ratings have changed
     if (!mapEquals(_showRatings, settings.showRatings)) {
       _showRatings = Map.from(settings.showRatings);
-      _updateFilteredShows(); // Update cache when ratings change
+      filtersChanged = true;
+    }
 
-      // Check if the currently expanded show still exists and has multiple sources.
-      // If not, collapse it.
+    if (filtersChanged) {
+      _updateFilteredShows();
+
+      // Collapse expanded show if it becomes invalid or has few sources loop
       if (_expandedShowName != null) {
         final expandedShow = _filteredShowsCache.firstWhere(
             (s) => s.name == _expandedShowName,
             orElse: () =>
                 Show(name: '', artist: '', date: '', venue: '', sources: []));
-        if (expandedShow.sources.length <= 1) {
+
+        // If hidden entirely
+        if (expandedShow.name.isEmpty) {
+          _expandedShowName = null;
+        } else if (expandedShow.sources.length <= 1 && !_filterHighestShnid) {
+          // Original logic: collapse if single source.
+          // But with filtering we might force it to single source.
+          // If it's single source due to filtering, maybe we still show it?
+          // The UI usually auto-expands single source shows in some flows,
+          // but here the logic was likely "don't keep it expanded if it's simpler now"?
+          // Actually, the original logic was: "if expandedShow.sources.length <= 1 ... _expandedShowName = null".
+          // This implies standard behavior for single-source shows is collapsed/inline.
           _expandedShowName = null;
         }
       }
@@ -135,11 +129,131 @@ class ShowListProvider with ChangeNotifier {
     _updateFilteredShows(); // Update cache when sort order changes
   }
 
+  Set<String> _getCategoriesForSource(Source source) {
+    final Set<String> categories = {};
+    final url =
+        source.tracks.isNotEmpty ? source.tracks.first.url.toLowerCase() : '';
+    final srcType = source.src?.toLowerCase() ?? '';
+
+    // Check for "Unknown" shows (featured tracks starting with 'gd')
+    bool hasFeatTrack = source.tracks
+        .any((track) => track.title.toLowerCase().startsWith('gd'));
+    if (hasFeatTrack) {
+      categories.add('unk');
+    }
+
+    if (srcType == 'ultra' ||
+        url.contains('ultra') ||
+        url.contains('healy') ||
+        url.contains('sbd-matrix')) {
+      categories.add('ultra');
+    }
+
+    if (url.contains('betty') || url.contains('bbd')) categories.add('betty');
+
+    // Matrix (Strict: Exclude Ultra variations)
+    if (srcType == 'mtx' ||
+        srcType == 'matrix' ||
+        url.contains('mtx') ||
+        url.contains('matrix')) {
+      bool isExcluded = url.contains('sbd-matrix') ||
+          url.contains('ultramatrix') ||
+          url.contains('ultra.mtx') ||
+          url.contains('ultra.matrix');
+
+      if (!isExcluded) {
+        categories.add('matrix');
+      }
+    }
+    if (url.contains('dsbd')) categories.add('dsbd');
+    if (url.contains('fm') || url.contains('prefm') || url.contains('pre-fm'))
+      categories.add('fm');
+    if (srcType == 'sbd' || url.contains('sbd')) categories.add('sbd');
+
+    return categories;
+  }
+
+  bool _isSourceAllowed(Source source) {
+    if (_sourceCategoryFilters.isEmpty) return true;
+
+    final categories = _getCategoriesForSource(source);
+
+    // If no categories detected, we allow it (fail open for AUD etc)
+    if (categories.isEmpty) return true;
+
+    // Standard "OR" filtering. Match ANY enabled category.
+    for (var cat in categories) {
+      if (_sourceCategoryFilters[cat] == true) return true;
+    }
+
+    return false;
+  }
+
+  Set<String> _availableCategories = {};
+  Set<String> get availableCategories => _availableCategories;
+
+  void _scanAvailableCategories() {
+    _availableCategories = {};
+    for (var show in _allShows) {
+      for (var source in show.sources) {
+        _availableCategories.addAll(_getCategoriesForSource(source));
+      }
+    }
+    notifyListeners();
+  }
+
+  void _updateFilteredShows() {
+    _filteredShowsCache = _allShows
+        .where((show) {
+          // 1. Filter out Blocked Shows (Rating == -1)
+          if (_showRatings[show.name] == -1) return false;
+
+          // 3. Search Query
+          final query = _searchQuery.toLowerCase();
+          if (query.isNotEmpty) {
+            if (!show.venue.toLowerCase().contains(query) &&
+                !show.formattedDate.toLowerCase().contains(query)) {
+              return false;
+            }
+          }
+          return true;
+        })
+        .map((show) {
+          // 4. Source Filtering
+
+          // A. Category & Rating Filtering
+          var validSources = show.sources.where((source) {
+            // Blocked
+            if (_showRatings[source.id] == -1) return false;
+            // Category
+            return _isSourceAllowed(source);
+          }).toList();
+
+          // B. Highest SHNID Filtering
+          if (_filterHighestShnid && validSources.length > 1) {
+            // Find source with max ID
+            // IDs are strings, parse as int
+            validSources.sort((a, b) {
+              int idA = int.tryParse(a.id) ?? 0;
+              int idB = int.tryParse(b.id) ?? 0;
+              return idB.compareTo(idA); // Descending
+            });
+            validSources = [validSources.first];
+          }
+
+          // Use copyWith
+          return show.copyWith(sources: validSources);
+        })
+        .where((show) => show.sources.isNotEmpty)
+        .toList();
+  }
+
   // Methods
   Future<void> fetchShows() async {
     try {
       final shows = await _showService.getShows();
       _allShows = shows;
+      _scanAvailableCategories(); // Polulate categories
       _sortShows();
       // _sortShows calls _updateFilteredShows, so no need to call it again
     } catch (e) {

@@ -169,6 +169,8 @@ class SettingsProvider with ChangeNotifier {
 
     _randomOnlyUnplayed = _prefs.getBool(_randomOnlyUnplayedKey) ?? false;
     _randomOnlyHighRated = _prefs.getBool(_randomOnlyHighRatedKey) ?? false;
+
+    _initSourceFilters();
   }
 
   // Toggle methods
@@ -264,6 +266,74 @@ class SettingsProvider with ChangeNotifier {
 
   void toggleRandomOnlyHighRated() => _updatePreference(
       _randomOnlyHighRatedKey, _randomOnlyHighRated = !_randomOnlyHighRated);
+
+  // Source Filtering
+  static const String _filterHighestShnidKey = 'filter_highest_shnid';
+  static const String _sourceCategoryFiltersKey = 'source_category_filters';
+
+  bool _filterHighestShnid = false;
+  Map<String, bool> _sourceCategoryFilters = {
+    'matrix': true,
+    'ultra': true,
+    'betty': true,
+    'sbd': true,
+    'fm': true,
+    'dsbd': true,
+    'unk': false, // Default to FALSE for Unknown
+  };
+
+  bool get filterHighestShnid => _filterHighestShnid;
+  Map<String, bool> get sourceCategoryFilters => _sourceCategoryFilters;
+
+  void toggleFilterHighestShnid() => _updatePreference(
+      _filterHighestShnidKey, _filterHighestShnid = !_filterHighestShnid);
+
+  Future<void> setSourceCategoryFilter(String category, bool isActive) async {
+    _sourceCategoryFilters[category] = isActive;
+
+    // Ensure at least one is active
+    if (!_sourceCategoryFilters.containsValue(true)) {
+      _sourceCategoryFilters[category] = true; // Revert
+    }
+
+    notifyListeners();
+    await _saveSourceCategoryFilters();
+  }
+
+  Future<void> _saveSourceCategoryFilters() async {
+    final String encoded = json.encode(_sourceCategoryFilters);
+    await _prefs.setString(_sourceCategoryFiltersKey, encoded);
+  }
+
+  // ... existing methods ...
+
+  // Update _init or create _initSourceFilters called by it.
+  // Since I can't easily inject into _init with replace_file_content without context,
+  // I will append these helper methods and manually update _init in a separate call
+  // or try to fit it all here if I can match the end of the class.
+
+  // Actually, I should update _init in a separate chunk to avoid overwriting too much.
+  // This chunk will be for adding the fields and methods.
+  // I will place them before "Persistence Helpers".
+
+  Future<void> _initSourceFilters() async {
+    _filterHighestShnid = _prefs.getBool(_filterHighestShnidKey) ?? false;
+
+    final String? catsJson = _prefs.getString(_sourceCategoryFiltersKey);
+    if (catsJson != null) {
+      try {
+        final Map<String, dynamic> decoded = json.decode(catsJson);
+        // Merge with defaults to handle any new keys in future
+        decoded.forEach((key, value) {
+          if (_sourceCategoryFilters.containsKey(key) && value is bool) {
+            _sourceCategoryFilters[key] = value;
+          }
+        });
+      } catch (e) {
+        // use defaults
+      }
+    }
+  }
 
   // Persistence Helpers
   Future<void> _updatePreference(String key, bool value) async {

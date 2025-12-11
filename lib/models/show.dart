@@ -58,6 +58,24 @@ class Show {
     );
   }
 
+  Show copyWith({
+    String? name,
+    String? artist,
+    String? date,
+    String? venue,
+    List<Source>? sources,
+    bool? hasFeaturedTrack,
+  }) {
+    return Show(
+      name: name ?? this.name,
+      artist: artist ?? this.artist,
+      date: date ?? this.date,
+      venue: venue ?? this.venue,
+      sources: sources ?? this.sources,
+      hasFeaturedTrack: hasFeaturedTrack ?? this.hasFeaturedTrack,
+    );
+  }
+
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||

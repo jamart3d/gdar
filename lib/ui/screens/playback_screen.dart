@@ -15,6 +15,7 @@ import 'package:just_audio/just_audio.dart';
 import 'package:provider/provider.dart';
 import 'dart:async';
 import 'package:gdar/ui/widgets/rating_control.dart';
+import 'package:sliding_up_panel/sliding_up_panel.dart';
 
 class PlaybackScreen extends StatefulWidget {
   const PlaybackScreen({super.key});
@@ -27,6 +28,8 @@ class _PlaybackScreenState extends State<PlaybackScreen>
     with SingleTickerProviderStateMixin {
   late final ScrollController _scrollController;
   late final AnimationController _pulseController;
+  final PanelController _panelController = PanelController();
+  final ValueNotifier<double> _panelPositionNotifier = ValueNotifier(0.0);
   StreamSubscription? _errorSubscription;
 
   static const double _trackItemHeight = 52.0;
@@ -61,6 +64,7 @@ class _PlaybackScreenState extends State<PlaybackScreen>
   void dispose() {
     _scrollController.dispose();
     _pulseController.dispose();
+    _panelPositionNotifier.dispose();
     _errorSubscription?.cancel();
     super.dispose();
   }
@@ -122,30 +126,30 @@ class _PlaybackScreenState extends State<PlaybackScreen>
           brightness: Theme.of(context).brightness);
     }
 
+    final panelColor = isTrueBlackMode
+        ? Colors.black
+        : Theme.of(context).colorScheme.surfaceContainer;
+
+    final double scaleFactor = settingsProvider.uiScale ? 1.25 : 1.0;
+
+    // minHeight covering the drag handle + Venue/Copy row.
+    // Matching correct MiniPlayer height (approx 88 with padding)
+    // User wants height to match MiniPlayer.
+    final double minPanelHeight = 88.0 * scaleFactor;
+
+    // maxHeight constraint to ~40% of screen
+    final double maxPanelHeight = MediaQuery.of(context).size.height * 0.40;
+
     return Scaffold(
       backgroundColor: backgroundColor,
       appBar: AppBar(
         backgroundColor: backgroundColor,
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              currentShow.formattedDate,
-              style: Theme.of(context).textTheme.titleLarge?.apply(
-                  fontSizeFactor: settingsProvider.uiScale ? 1.25 : 1.0),
-            ),
-            const SizedBox(height: 2),
-            Text(
-              currentShow.venue,
-              overflow: TextOverflow.ellipsis,
-              style: Theme.of(context)
-                  .textTheme
-                  .titleSmall
-                  ?.copyWith(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant)
-                  .apply(fontSizeFactor: settingsProvider.uiScale ? 1.25 : 1.0),
-            ),
-          ],
+        title: Text(
+          currentShow.formattedDate,
+          style: Theme.of(context)
+              .textTheme
+              .titleLarge
+              ?.apply(fontSizeFactor: settingsProvider.uiScale ? 1.25 : 1.0),
         ),
         actions: [
           Padding(
@@ -227,82 +231,102 @@ class _PlaybackScreenState extends State<PlaybackScreen>
           ),
         ],
       ),
-      body: CustomScrollView(
-        controller: _scrollController,
-        slivers: [
-          SliverPadding(
-            padding: const EdgeInsets.only(top: 16.0, left: 8.0, right: 8.0),
-            sliver: SliverList(
-              delegate: SliverChildBuilderDelegate(
-                (context, index) {
-                  // Group tracks by set name
-                  final Map<String, List<Track>> tracksBySet = {};
-                  for (var track in currentSource.tracks) {
-                    if (!tracksBySet.containsKey(track.setName)) {
-                      tracksBySet[track.setName] = [];
-                    }
-                    tracksBySet[track.setName]!.add(track);
-                  }
+      body: SlidingUpPanel(
+        controller: _panelController,
+        color: panelColor,
+        borderRadius: const BorderRadius.only(
+          topLeft: Radius.circular(24.0),
+          topRight: Radius.circular(24.0),
+        ),
+        boxShadow: isTrueBlackMode
+            ? []
+            : [
+                BoxShadow(
+                  blurRadius: 20.0,
+                  color: Colors.black.withOpacity(0.2),
+                )
+              ],
+        minHeight: minPanelHeight,
+        maxHeight: maxPanelHeight,
+        margin: EdgeInsets.zero,
+        onPanelSlide: (position) {
+          _panelPositionNotifier.value = position;
+        },
+        panel: _buildBottomControlsPanel(
+          context,
+          audioProvider,
+          currentShow,
+          currentSource,
+          trackItemHeight,
+          minPanelHeight,
+        ),
+        body: ValueListenableBuilder<double>(
+          valueListenable: _panelPositionNotifier,
+          builder: (context, panelPosition, _) {
+            // dynamic padding calculation
+            // min: minPanelHeight + 120 (when collapsed)
+            // max: maxPanelHeight + 120 (when expanded)
+            final double dynamicBottomPadding = minPanelHeight +
+                120.0 +
+                ((maxPanelHeight - minPanelHeight) * panelPosition);
 
-                  // Flatten the list with headers
-                  final List<dynamic> listItems = [];
-                  tracksBySet.forEach((setName, tracks) {
-                    listItems.add(setName); // Add header
-                    listItems.addAll(tracks); // Add tracks
-                  });
+            return CustomScrollView(
+              controller: _scrollController,
+              slivers: [
+                SliverPadding(
+                  padding: EdgeInsets.only(
+                    top: 16.0,
+                    left: 8.0,
+                    right: 8.0,
+                    bottom: dynamicBottomPadding,
+                  ),
+                  sliver: SliverList(
+                    delegate: SliverChildBuilderDelegate(
+                      (context, index) {
+                        // Group tracks by set name
+                        final Map<String, List<Track>> tracksBySet = {};
+                        for (var track in currentSource.tracks) {
+                          if (!tracksBySet.containsKey(track.setName)) {
+                            tracksBySet[track.setName] = [];
+                          }
+                          tracksBySet[track.setName]!.add(track);
+                        }
 
-                  if (index >= listItems.length) return null;
+                        // Flatten the list with headers
+                        final List<dynamic> listItems = [];
+                        tracksBySet.forEach((setName, tracks) {
+                          listItems.add(setName); // Add header
+                          listItems.addAll(tracks); // Add tracks
+                        });
 
-                  final item = listItems[index];
-                  if (item is String) {
-                    return _buildSetHeader(context, item);
-                  } else if (item is Track) {
-                    // Find the original index of this track in the source.tracks list
-                    final originalIndex = currentSource.tracks.indexOf(item);
-                    return _buildTrackItem(
-                      context,
-                      audioProvider,
-                      item,
-                      originalIndex,
-                      trackItemHeight,
-                      isTrueBlackMode,
-                    );
-                  }
-                  return const SizedBox.shrink();
-                },
-                childCount: _calculateListItemCount(currentSource),
-              ),
-            ),
-          ),
-        ],
-      ),
-      bottomNavigationBar: Stack(
-        children: [
-          Positioned.fill(
-            child: Hero(
-              tag: 'player',
-              child: Material(
-                color: isTrueBlackMode
-                    ? Colors.black
-                    : Theme.of(context).colorScheme.surfaceContainer,
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(28),
-                  topRight: Radius.circular(28),
+                        if (index >= listItems.length) return null;
+
+                        final item = listItems[index];
+                        if (item is String) {
+                          return _buildSetHeader(context, item);
+                        } else if (item is Track) {
+                          // Find the original index of this track in the source.tracks list
+                          final originalIndex =
+                              currentSource.tracks.indexOf(item);
+                          return _buildTrackItem(
+                            context,
+                            audioProvider,
+                            item,
+                            originalIndex,
+                            trackItemHeight,
+                            isTrueBlackMode,
+                          );
+                        }
+                        return const SizedBox.shrink();
+                      },
+                      childCount: _calculateListItemCount(currentSource),
+                    ),
+                  ),
                 ),
-                clipBehavior: Clip.antiAlias,
-                elevation: 4.0,
-                shadowColor:
-                    Theme.of(context).colorScheme.shadow.withOpacity(0.1),
-                child: Container(),
-              ),
-            ),
-          ),
-          Material(
-            type: MaterialType.transparency,
-            child: _buildBottomControlsPanel(context, audioProvider,
-                currentShow, currentSource, trackItemHeight),
-          ),
-        ],
+              ],
+            );
+          },
+        ),
       ),
     );
   }
@@ -312,170 +336,191 @@ class _PlaybackScreenState extends State<PlaybackScreen>
       AudioProvider audioProvider,
       Show currentShow,
       Source currentSource,
-      double trackItemHeight) {
-    final colorScheme = Theme.of(context).colorScheme;
+      double trackItemHeight,
+      double minHeight) {
     final textTheme = Theme.of(context).textTheme;
+    final colorScheme = Theme.of(context).colorScheme;
     final settingsProvider = context.watch<SettingsProvider>();
+    final scaleFactor = settingsProvider.uiScale ? 1.25 : 1.0;
 
-    final double scaleFactor = settingsProvider.uiScale ? 1.25 : 1.0;
+    // Check for True Black mode for mini-player styling
+    // final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    // final isTrueBlackMode = isDarkMode &&
+    //    (!settingsProvider.useDynamicColor || settingsProvider.halfGlowDynamic);
 
-    return SingleChildScrollView(
-      physics: const ClampingScrollPhysics(),
-      child: Padding(
-        padding: EdgeInsets.fromLTRB(
-            16, 12, 16, 32 + MediaQuery.of(context).viewPadding.bottom),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(8, 0, 8, 12),
-              child: Column(
+    return Column(
+      children: [
+        // Collapsed / Header Area
+        SizedBox(
+          height: minHeight,
+          child: Column(
+            mainAxisAlignment:
+                MainAxisAlignment.spaceBetween, // Push content to edges
+            children: [
+              Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   const SizedBox(height: 8),
-                  GestureDetector(
-                    onTap: () => _scrollToCurrentTrack(trackItemHeight),
-                    child: SizedBox(
-                      width: double.infinity,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Expanded(
-                                child: SizedBox(
-                                  height: textTheme.headlineSmall!.fontSize! *
-                                      scaleFactor *
-                                      1.2,
-                                  child: ConditionalMarquee(
-                                    text: currentShow.venue,
-                                    style: textTheme.headlineSmall
-                                        ?.apply(fontSizeFactor: scaleFactor)
-                                        .copyWith(
-                                          color: colorScheme.onSurface,
-                                        ),
-                                    blankSpace: 60.0,
-                                    pauseAfterRound: const Duration(seconds: 3),
-                                  ),
-                                ),
-                              ),
-                              IconButton(
-                                icon: Icon(Icons.copy_rounded,
-                                    size: 20 * scaleFactor,
-                                    color: colorScheme.onSurfaceVariant),
-                                tooltip: 'Copy Show Details',
-                                onPressed: () {
-                                  final track = currentSource.tracks[
-                                      audioProvider.audioPlayer.currentIndex ??
-                                          0];
-                                  final info =
-                                      "${currentShow.venue} - ${currentShow.formattedDate} - ${currentSource.id}\n${track.title}\n${track.url.replaceAll('/download/', '/details/').split('/').sublist(0, 5).join('/')}";
-                                  Clipboard.setData(ClipboardData(text: info));
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text(
-                                          'Show details copied to clipboard',
-                                          style: TextStyle(
-                                              color: colorScheme
-                                                  .onSecondaryContainer)),
-                                      behavior: SnackBarBehavior.floating,
-                                      backgroundColor:
-                                          colorScheme.secondaryContainer,
-                                      showCloseIcon: true,
-                                      closeIconColor:
-                                          colorScheme.onSecondaryContainer,
-                                    ),
-                                  );
-                                },
-                              ),
-                            ],
-                          ),
-                          Row(
-                            children: [
-                              Text(
-                                currentShow.formattedDate,
-                                style: textTheme.titleMedium
-                                    ?.apply(fontSizeFactor: scaleFactor)
-                                    .copyWith(
-                                      color: colorScheme.onSurfaceVariant,
-                                    ),
-                              ),
-                              const Spacer(),
-                              IntrinsicWidth(
-                                child: Column(
-                                  crossAxisAlignment:
-                                      CrossAxisAlignment.stretch,
-                                  children: [
-                                    _buildRatingButton(context, currentShow,
-                                        currentSource, settingsProvider),
-                                    const SizedBox(height: 8),
-                                    InkWell(
-                                      onTap: () {
-                                        if (currentSource.tracks.isNotEmpty) {
-                                          launchArchivePage(
-                                              currentSource.tracks.first.url);
-                                        }
-                                      },
-                                      borderRadius: BorderRadius.circular(6),
-                                      child: Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: [
-                                          if (currentSource.src != null) ...[
-                                            SrcBadge(
-                                                src: currentSource.src!,
-                                                isPlaying: true),
-                                            const SizedBox(width: 6),
-                                          ],
-                                          Container(
-                                            padding: const EdgeInsets.symmetric(
-                                                horizontal: 10, vertical: 6),
-                                            decoration: BoxDecoration(
-                                              color: colorScheme
-                                                  .tertiaryContainer
-                                                  .withOpacity(0.7),
-                                              borderRadius:
-                                                  BorderRadius.circular(6),
-                                            ),
-                                            alignment: Alignment.center,
-                                            child: Text(
-                                              currentSource.id,
-                                              style: textTheme.bodyMedium
-                                                  ?.copyWith(
-                                                color: colorScheme
-                                                    .onTertiaryContainer,
-                                                fontWeight: FontWeight.bold,
-                                                decoration:
-                                                    TextDecoration.underline,
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
+                  Container(
+                    width: 32,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: colorScheme.onSurfaceVariant.withOpacity(0.4),
+                      borderRadius: BorderRadius.circular(2),
                     ),
                   ),
                 ],
               ),
-            ),
-            _buildProgressBar(context, audioProvider),
-            const SizedBox(height: 8),
-            _buildControls(context, audioProvider, currentSource),
-            if (settingsProvider.showPlaybackMessages) ...[
-              const SizedBox(height: 16),
-              _buildStatusMessages(context, audioProvider),
+              // Venue + Copy
+              GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: () {
+                  _scrollToCurrentTrack(trackItemHeight);
+                  if (_panelController.isAttached) {
+                    if (_panelController.isPanelClosed) {
+                      _panelController.open();
+                    }
+                  }
+                },
+                child: Padding(
+                  padding: const EdgeInsets.only(
+                      left: 16.0,
+                      right: 16.0,
+                      bottom: 20.0), // Increased to 20.0
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: SizedBox(
+                          height: textTheme.headlineSmall!.fontSize! *
+                              scaleFactor *
+                              1.5, // Increased height for better fit
+                          child: ConditionalMarquee(
+                            text: currentShow.venue,
+                            style: textTheme.headlineSmall
+                                ?.apply(fontSizeFactor: scaleFactor)
+                                .copyWith(
+                                  color: colorScheme.onSurface,
+                                ),
+                            blankSpace: 60.0,
+                            pauseAfterRound: const Duration(seconds: 3),
+                          ),
+                        ),
+                      ),
+                      IconButton(
+                        icon: Icon(Icons.copy_rounded,
+                            size: 20 * scaleFactor,
+                            color: colorScheme.onSurfaceVariant),
+                        tooltip: 'Copy Show Details',
+                        onPressed: () {
+                          final track = currentSource.tracks[
+                              audioProvider.audioPlayer.currentIndex ?? 0];
+                          final info =
+                              "${currentShow.venue} - ${currentShow.formattedDate} - ${currentSource.id}\n${track.title}\n${track.url.replaceAll('/download/', '/details/').split('/').sublist(0, 5).join('/')}";
+                          Clipboard.setData(ClipboardData(text: info));
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('Show details copied to clipboard',
+                                  style: TextStyle(
+                                      color: colorScheme.onSecondaryContainer)),
+                              behavior: SnackBarBehavior.floating,
+                              backgroundColor: colorScheme.secondaryContainer,
+                              showCloseIcon: true,
+                              closeIconColor: colorScheme.onSecondaryContainer,
+                            ),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              ),
             ],
-          ],
+          ),
         ),
-      ),
+        // Expanded Content
+        Expanded(
+          child: SingleChildScrollView(
+            physics: const ClampingScrollPhysics(),
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 32),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  children: [
+                    Text(
+                      currentShow.formattedDate,
+                      style: textTheme.titleMedium
+                          ?.apply(fontSizeFactor: scaleFactor)
+                          .copyWith(
+                            color: colorScheme.onSurfaceVariant,
+                          ),
+                    ),
+                    const Spacer(),
+                    IntrinsicWidth(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Align(
+                            alignment: Alignment.centerRight,
+                            child: _buildRatingButton(context, currentShow,
+                                currentSource, settingsProvider),
+                          ),
+                          const SizedBox(height: 8),
+                          InkWell(
+                            onTap: () {
+                              if (currentSource.tracks.isNotEmpty) {
+                                launchArchivePage(
+                                    currentSource.tracks.first.url);
+                              }
+                            },
+                            borderRadius: BorderRadius.circular(6),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                if (currentSource.src != null) ...[
+                                  SrcBadge(
+                                      src: currentSource.src!, isPlaying: true),
+                                  const SizedBox(width: 6),
+                                ],
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 10, vertical: 6),
+                                  decoration: BoxDecoration(
+                                    color: colorScheme.tertiaryContainer
+                                        .withOpacity(0.7),
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  alignment: Alignment.center,
+                                  child: Text(
+                                    currentSource.id,
+                                    style: textTheme.bodyMedium?.copyWith(
+                                      color: colorScheme.onTertiaryContainer,
+                                      fontWeight: FontWeight.bold,
+                                      decoration: TextDecoration.underline,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                _buildProgressBar(context, audioProvider),
+                const SizedBox(height: 8),
+                _buildControls(context, audioProvider, currentSource),
+                if (settingsProvider.showPlaybackMessages) ...[
+                  const SizedBox(height: 16),
+                  _buildStatusMessages(context, audioProvider),
+                ],
+              ],
+            ),
+          ),
+        ),
+      ],
     );
   }
 

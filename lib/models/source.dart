@@ -12,8 +12,14 @@ class Source {
   });
 
   factory Source.fromJson(Map<String, dynamic> json, {String? src}) {
+    String? baseDir = json['_d'];
+    String? baseUrl;
+    if (baseDir != null) {
+      baseUrl = 'https://archive.org/download/$baseDir/';
+    }
+
     final List<Track> tracks = (json['tracks'] as List<dynamic>? ?? [])
-        .map((trackJson) => Track.fromJson(trackJson))
+        .map((trackJson) => Track.fromJson(trackJson, baseUrl: baseUrl))
         .toList();
 
     return Source(

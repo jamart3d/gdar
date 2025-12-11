@@ -103,4 +103,6 @@ This file tracks planned features, enhancements, and bug fixes for the gdar appl
 
 - [ ] **Swipe to Block Follow-up:** When using "Swipe to Block" to remove a show, provide an option (or setting) to immediately trigger a new random selection.
 
+- [ ] **Rename Category:** Rename category 'unk'/'unknown' to 'fix'/'fix needed'.
 
+- [ ] **Move Encore Tracks:** Create a Python script to identify and move end tracks into an 'Encore' set.

@@ -236,15 +236,15 @@ class _MiniPlayerState extends State<MiniPlayer>
                                   letterSpacing: 0.1,
                                   color: colorScheme.onSurface,
                                 );
-
-                            final baseVenueStyle = textTheme.bodyLarge ??
-                                const TextStyle(fontSize: 16.0);
-                            final venueStyle = baseVenueStyle
-                                .apply(fontSizeFactor: scaleFactor)
-                                .copyWith(
-                                  color: colorScheme.onSurfaceVariant,
-                                  letterSpacing: 0.15,
-                                );
+                            // Venue style removed as it's no longer used
+                            // final baseVenueStyle = textTheme.bodyLarge ??
+                            //     const TextStyle(fontSize: 16.0);
+                            // final venueStyle = baseVenueStyle
+                            //     .apply(fontSizeFactor: scaleFactor)
+                            //     .copyWith(
+                            //       color: colorScheme.onSurfaceVariant,
+                            //       letterSpacing: 0.15,
+                            //     );
 
                             return Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -260,17 +260,8 @@ class _MiniPlayerState extends State<MiniPlayer>
                                     ),
                                   ),
                                 ),
-                                SizedBox(height: 6 * scaleFactor),
-                                SizedBox(
-                                  height: venueStyle.fontSize! * 1.3,
-                                  child: Material(
-                                    type: MaterialType.transparency,
-                                    child: ConditionalMarquee(
-                                      text: currentShow.venue,
-                                      style: venueStyle,
-                                    ),
-                                  ),
-                                ),
+                                // Venue removed as per user request
+                                // SizedBox(height: 6 * scaleFactor),
                               ],
                             );
                           },
