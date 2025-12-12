@@ -109,7 +109,18 @@ def analyze_encores(input_json_path, report_output_path):
 
 if __name__ == "__main__":
     base_dir = os.path.dirname(os.path.abspath(__file__))
+    
+    # Default path
     input_json = os.path.join(base_dir, 'assets/data/output.optimized.json')
+    
+    # Override if argument provided
+    if len(sys.argv) > 1:
+        input_json = sys.argv[1]
+
+    # Adjust output filename based on input filename
+    input_basename = os.path.basename(input_json)
+    report_filename = f"report_missing_encores_{input_basename}.md"
+    # Or just keep it simple if user didn't specify output
     report_file = os.path.join(base_dir, 'report_missing_encores.md')
     
     analyze_encores(input_json, report_file)

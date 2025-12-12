@@ -133,104 +133,15 @@ class _PlaybackScreenState extends State<PlaybackScreen>
     final double scaleFactor = settingsProvider.uiScale ? 1.25 : 1.0;
 
     // minHeight covering the drag handle + Venue/Copy row.
-    // Matching correct MiniPlayer height (approx 88 with padding)
+    // Matching correct MiniPlayer height (approx 92 with padding)
     // User wants height to match MiniPlayer.
-    final double minPanelHeight = 88.0 * scaleFactor;
+    final double minPanelHeight = 92.0 * scaleFactor;
 
     // maxHeight constraint to ~40% of screen
     final double maxPanelHeight = MediaQuery.of(context).size.height * 0.40;
 
     return Scaffold(
       backgroundColor: backgroundColor,
-      appBar: AppBar(
-        backgroundColor: backgroundColor,
-        title: Text(
-          currentShow.formattedDate,
-          style: Theme.of(context)
-              .textTheme
-              .titleLarge
-              ?.apply(fontSizeFactor: settingsProvider.uiScale ? 1.25 : 1.0),
-        ),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 16.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                RatingControl(
-                  rating: settingsProvider.getRating(currentSource.id),
-                  size: 16 * (settingsProvider.uiScale ? 1.25 : 1.0),
-                  onTap: () async {
-                    final sourceId = currentSource.id;
-                    final currentRating = settingsProvider.getRating(sourceId);
-                    await showDialog(
-                      context: context,
-                      builder: (context) => RatingDialog(
-                        initialRating: currentRating,
-                        sourceId: sourceId,
-                        sourceUrl: currentSource.tracks.isNotEmpty
-                            ? currentSource.tracks.first.url
-                            : null,
-                        isPlayed: settingsProvider.isPlayed(sourceId),
-                        onRatingChanged: (newRating) {
-                          settingsProvider.setRating(sourceId, newRating);
-                        },
-                        onPlayedChanged: (bool isPlayed) {
-                          if (isPlayed != settingsProvider.isPlayed(sourceId)) {
-                            settingsProvider.togglePlayed(sourceId);
-                          }
-                        },
-                      ),
-                    );
-                  },
-                ),
-                const SizedBox(height: 2),
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    if (currentSource.src != null) ...[
-                      SrcBadge(src: currentSource.src!),
-                      const SizedBox(width: 4),
-                    ],
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 6, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: Theme.of(context)
-                            .colorScheme
-                            .secondaryContainer
-                            .withOpacity(0.5),
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: Text(
-                        currentSource.id,
-                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                              color: Theme.of(context)
-                                  .colorScheme
-                                  .onSecondaryContainer,
-                              fontSize:
-                                  10 * (settingsProvider.uiScale ? 1.25 : 1.0),
-                            ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          IconButton(
-            icon: const Icon(Icons.settings_rounded),
-            iconSize: 24 * (settingsProvider.uiScale ? 1.25 : 1.0),
-            tooltip: 'Settings',
-            onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const SettingsScreen()),
-              );
-            },
-          ),
-        ],
-      ),
       body: SlidingUpPanel(
         controller: _panelController,
         color: panelColor,
@@ -264,65 +175,183 @@ class _PlaybackScreenState extends State<PlaybackScreen>
           valueListenable: _panelPositionNotifier,
           builder: (context, panelPosition, _) {
             // dynamic padding calculation
-            // min: minPanelHeight + 120 (when collapsed)
-            // max: maxPanelHeight + 120 (when expanded)
+            // min: minPanelHeight + 60 (when collapsed)
+            // max: maxPanelHeight + 60 (when expanded)
             final double dynamicBottomPadding = minPanelHeight +
-                120.0 +
+                60.0 +
                 ((maxPanelHeight - minPanelHeight) * panelPosition);
 
             return CustomScrollView(
               controller: _scrollController,
               slivers: [
-                SliverPadding(
-                  padding: EdgeInsets.only(
-                    top: 16.0,
-                    left: 8.0,
-                    right: 8.0,
-                    bottom: dynamicBottomPadding,
+                SliverAppBar(
+                  backgroundColor: backgroundColor,
+                  pinned: true,
+                  title: Text(
+                    currentShow.formattedDate,
+                    style: Theme.of(context).textTheme.titleLarge?.apply(
+                        fontSizeFactor: settingsProvider.uiScale ? 1.25 : 1.0),
                   ),
-                  sliver: SliverList(
-                    delegate: SliverChildBuilderDelegate(
-                      (context, index) {
-                        // Group tracks by set name
-                        final Map<String, List<Track>> tracksBySet = {};
-                        for (var track in currentSource.tracks) {
-                          if (!tracksBySet.containsKey(track.setName)) {
-                            tracksBySet[track.setName] = [];
-                          }
-                          tracksBySet[track.setName]!.add(track);
-                        }
+                  actions: [
+                    Padding(
+                      padding: const EdgeInsets.only(right: 16.0),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Consumer<SettingsProvider>(
+                            builder: (context, settings, _) {
+                              // Use consistent logic with ShowListCard:
+                              // If single source, use show name. If multi-source, use source ID.
+                              final String ratingKey =
+                                  currentShow.sources.length > 1
+                                      ? currentSource.id
+                                      : currentShow.name;
 
-                        // Flatten the list with headers
-                        final List<dynamic> listItems = [];
-                        tracksBySet.forEach((setName, tracks) {
-                          listItems.add(setName); // Add header
-                          listItems.addAll(tracks); // Add tracks
-                        });
+                              final isPlayed = settings.isPlayed(ratingKey) ||
+                                  (currentShow.sources.length == 1 &&
+                                      settings.isPlayed(currentShow.name)) ||
+                                  settings.isPlayed(currentSource.id);
 
-                        if (index >= listItems.length) return null;
-
-                        final item = listItems[index];
-                        if (item is String) {
-                          return _buildSetHeader(context, item);
-                        } else if (item is Track) {
-                          // Find the original index of this track in the source.tracks list
-                          final originalIndex =
-                              currentSource.tracks.indexOf(item);
-                          return _buildTrackItem(
-                            context,
-                            audioProvider,
-                            item,
-                            originalIndex,
-                            trackItemHeight,
-                            isTrueBlackMode,
-                          );
-                        }
-                        return const SizedBox.shrink();
-                      },
-                      childCount: _calculateListItemCount(currentSource),
+                              return RatingControl(
+                                key: ValueKey(
+                                    '${ratingKey}_${settings.getRating(ratingKey)}_$isPlayed'),
+                                rating: settings.getRating(ratingKey),
+                                size: 16 * (settings.uiScale ? 1.25 : 1.0),
+                                isPlayed: isPlayed,
+                                onTap: () async {
+                                  final currentRating =
+                                      settings.getRating(ratingKey);
+                                  await showDialog(
+                                    context: context,
+                                    builder: (context) => RatingDialog(
+                                      initialRating: currentRating,
+                                      sourceId: currentShow.sources.length > 1
+                                          ? currentSource.id
+                                          : null,
+                                      sourceUrl: currentSource.tracks.isNotEmpty
+                                          ? currentSource.tracks.first.url
+                                          : null,
+                                      isPlayed: settings.isPlayed(ratingKey),
+                                      onRatingChanged: (newRating) {
+                                        settings.setRating(
+                                            ratingKey, newRating);
+                                      },
+                                      onPlayedChanged: (bool newIsPlayed) {
+                                        if (newIsPlayed !=
+                                            settings.isPlayed(ratingKey)) {
+                                          settings.togglePlayed(ratingKey);
+                                        }
+                                      },
+                                    ),
+                                  );
+                                },
+                              );
+                            },
+                          ),
+                          const SizedBox(height: 2),
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              if (currentSource.src != null) ...[
+                                SrcBadge(src: currentSource.src!),
+                                const SizedBox(width: 4),
+                              ],
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 6, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .secondaryContainer
+                                      .withOpacity(0.5),
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                child: Text(
+                                  currentSource.id,
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .labelSmall
+                                      ?.copyWith(
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .onSecondaryContainer,
+                                        fontSize: 10 *
+                                            (settingsProvider.uiScale
+                                                ? 1.25
+                                                : 1.0),
+                                      ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
+                    IconButton(
+                      icon: const Icon(Icons.settings_rounded),
+                      iconSize: 24 * (settingsProvider.uiScale ? 1.25 : 1.0),
+                      tooltip: 'Settings',
+                      onPressed: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                              builder: (_) => const SettingsScreen()),
+                        );
+                      },
+                    ),
+                  ],
                 ),
+                const SliverToBoxAdapter(child: SizedBox(height: 16)),
+                ...(() {
+                  final Map<String, List<Track>> tracksBySet = {};
+                  for (var track in currentSource.tracks) {
+                    if (!tracksBySet.containsKey(track.setName)) {
+                      tracksBySet[track.setName] = [];
+                    }
+                    tracksBySet[track.setName]!.add(track);
+                  }
+
+                  final List<Widget> slivers = [];
+                  tracksBySet.forEach((setName, tracks) {
+                    slivers.add(
+                      SliverPersistentHeader(
+                        pinned: true,
+                        delegate: _SetHeaderDelegate(
+                          setName,
+                          Theme.of(context),
+                          settingsProvider.uiScale,
+                          backgroundColor,
+                        ),
+                      ),
+                    );
+                    slivers.add(
+                      SliverPadding(
+                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                        sliver: SliverList(
+                          delegate: SliverChildBuilderDelegate(
+                            (context, index) {
+                              final track = tracks[index];
+                              final originalIndex =
+                                  currentSource.tracks.indexOf(track);
+                              return _buildTrackItem(
+                                context,
+                                audioProvider,
+                                track,
+                                originalIndex,
+                                trackItemHeight,
+                                isTrueBlackMode,
+                              );
+                            },
+                            childCount: tracks.length,
+                          ),
+                        ),
+                      ),
+                    );
+                  });
+                  return slivers;
+                })(),
+                SliverPadding(
+                    padding: EdgeInsets.only(bottom: dynamicBottomPadding)),
               ],
             );
           },
@@ -386,7 +415,7 @@ class _PlaybackScreenState extends State<PlaybackScreen>
                   padding: const EdgeInsets.only(
                       left: 16.0,
                       right: 16.0,
-                      bottom: 20.0), // Increased to 20.0
+                      bottom: 45.0), // Increased to 45.0
                   child: Row(
                     children: [
                       Expanded(
@@ -870,24 +899,6 @@ class _PlaybackScreenState extends State<PlaybackScreen>
     );
   }
 
-  int _calculateListItemCount(Source source) {
-    final Set<String> sets = source.tracks.map((t) => t.setName).toSet();
-    return source.tracks.length + sets.length;
-  }
-
-  Widget _buildSetHeader(BuildContext context, String setName) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
-      child: Text(
-        setName,
-        style: Theme.of(context).textTheme.titleSmall?.copyWith(
-              color: Theme.of(context).colorScheme.primary,
-              fontWeight: FontWeight.bold,
-            ),
-      ),
-    );
-  }
-
   Widget _buildTrackItem(
     BuildContext context,
     AudioProvider audioProvider,
@@ -1057,5 +1068,59 @@ class _PlaybackScreenState extends State<PlaybackScreen>
         );
       },
     );
+  }
+}
+
+class _SetHeaderDelegate extends SliverPersistentHeaderDelegate {
+  final String setName;
+  final ThemeData theme;
+  final bool uiScale;
+  final Color backgroundColor;
+
+  _SetHeaderDelegate(
+      this.setName, this.theme, this.uiScale, this.backgroundColor);
+
+  @override
+  Widget build(
+      BuildContext context, double shrinkOffset, bool overlapsContent) {
+    // Determine background color based on theme
+    // We want it to be opaque to hide the scrolling content
+    // final backgroundColor = theme.scaffoldBackgroundColor; // Removed
+
+    double scaleFactor = uiScale ? 1.25 : 1.0;
+
+    return Container(
+      color: backgroundColor,
+      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+      alignment: Alignment.centerLeft,
+      child: Text(
+        setName,
+        style: theme.textTheme.titleSmall?.copyWith(
+          color: theme.colorScheme.primary,
+          fontWeight: FontWeight.bold,
+          fontSize:
+              (theme.textTheme.titleSmall?.fontSize ?? 14.0) * scaleFactor,
+        ),
+      ),
+    );
+  }
+
+  @override
+  double get maxExtent {
+    double scaleFactor = uiScale ? 1.25 : 1.0;
+    // Estimate height: 16 (padding) + ~20 (text) + 4 (padding) -> ~40
+    // Previous _buildSetHeader had padding: fromLTRB(16, 16, 16, 4)
+    // So top 16 + bottom 4 = 20 vertical padding + text height.
+    return 24.0 + (20.0 * scaleFactor);
+  }
+
+  @override
+  double get minExtent => maxExtent;
+
+  @override
+  bool shouldRebuild(_SetHeaderDelegate oldDelegate) {
+    return oldDelegate.setName != setName ||
+        oldDelegate.theme != theme ||
+        oldDelegate.uiScale != uiScale;
   }
 }

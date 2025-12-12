@@ -35,6 +35,7 @@ class RatingControl extends StatelessWidget {
     } else if (rating == 0 && isPlayed) {
       // Played but unrated (1 Grey Star, 2 Empty)
       content = Semantics(
+        key: ValueKey('rating_0_played_$isPlayed'),
         label: 'Played, unrated',
         child: RatingBar(
           initialRating: 1,
@@ -55,6 +56,7 @@ class RatingControl extends StatelessWidget {
     } else {
       // 0-3 Stars (Amber or Empty)
       content = Semantics(
+        key: ValueKey('rating_$rating'),
         label: 'Rated $rating stars',
         child: RatingBar(
           initialRating: rating.toDouble(),
@@ -170,17 +172,29 @@ class _RatingDialogState extends State<RatingDialog> {
               ignoring: _currentRating == -1,
               child: Opacity(
                 opacity: _currentRating == -1 ? 0.3 : 1.0,
-                child: RatingBar.builder(
-                  initialRating:
-                      _currentRating > 0 ? _currentRating.toDouble() : 0.0,
+                child: RatingBar(
+                  initialRating: (_currentRating == 0 && _isPlayed)
+                      ? 1.0
+                      : (_currentRating > 0 ? _currentRating.toDouble() : 0.0),
                   minRating: 1,
                   direction: Axis.horizontal,
                   allowHalfRating: false,
                   itemCount: 3,
                   itemPadding: const EdgeInsets.symmetric(horizontal: 4.0),
-                  itemBuilder: (context, _) => const Icon(
-                    Icons.star,
-                    color: Colors.amber,
+                  ratingWidget: RatingWidget(
+                    full: Icon(
+                      Icons.star,
+                      color: (_currentRating == 0 && _isPlayed)
+                          ? Colors.grey
+                          : Colors.amber,
+                    ),
+                    half: Icon(
+                      Icons.star_half,
+                      color: (_currentRating == 0 && _isPlayed)
+                          ? Colors.grey
+                          : Colors.amber,
+                    ),
+                    empty: const Icon(Icons.star_border, color: Colors.grey),
                   ),
                   onRatingUpdate: (rating) {
                     setState(() {

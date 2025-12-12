@@ -123,6 +123,7 @@ class SourceListItem extends StatelessWidget {
                           RatingControl(
                             rating: settingsProvider.getRating(source.id),
                             size: 18 * scaleFactor,
+                            isPlayed: settingsProvider.isPlayed(source.id),
                             onTap: (isSourcePlaying ||
                                     alwaysShowRatingInteraction)
                                 ? () async {

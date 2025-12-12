@@ -413,6 +413,13 @@ class _ShowListCardState extends State<ShowListCard> {
     }
 
     final rating = settings.getRating(show.name);
+    // Check if show is played OR if the single source is played
+    bool isPlayed = settings.isPlayed(show.name);
+    if (!isPlayed &&
+        show.sources.length == 1 &&
+        settings.isPlayed(show.sources.first.id)) {
+      isPlayed = true;
+    }
 
     return Padding(
       padding: const EdgeInsets.all(8.0),
@@ -421,7 +428,7 @@ class _ShowListCardState extends State<ShowListCard> {
         children: [
           RatingControl(
             rating: rating,
-            isPlayed: settings.isPlayed(show.name),
+            isPlayed: isPlayed,
             size: 20,
             onTap: (widget.isPlaying || widget.alwaysShowRatingInteraction)
                 ? () async {
@@ -430,7 +437,7 @@ class _ShowListCardState extends State<ShowListCard> {
                       builder: (context) => RatingDialog(
                         initialRating: rating,
                         sourceId: null,
-                        isPlayed: settings.isPlayed(show.name),
+                        isPlayed: isPlayed,
                         onRatingChanged: (newRating) {
                           settings.setRating(show.name, newRating);
                         },
