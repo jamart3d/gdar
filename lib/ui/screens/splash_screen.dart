@@ -164,6 +164,18 @@ class _SplashScreenState extends State<SplashScreen>
               ),
               const SizedBox(height: 40),
 
+              if (settingsProvider.isFirstRun)
+                _buildChecklistItem(
+                  label: 'Hey Now!',
+                  isDone: true,
+                )
+              else
+                _buildChecklistItem(
+                  label: 'Reading settings...',
+                  isDone: true,
+                ),
+              const SizedBox(height: 12),
+
               // 1. Shnids Count
               AnimatedBuilder(
                   animation: _countController,

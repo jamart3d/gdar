@@ -54,5 +54,5 @@ flutter:
 
   assets:
     
-    - assets/data/output.optimized.json
+    - assets/data/output.optimized_src.json
     - assets/images/

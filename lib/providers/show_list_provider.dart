@@ -60,6 +60,7 @@ class ShowListProvider with ChangeNotifier {
 
   Map<String, int> _showRatings = {};
   bool _filterHighestShnid = false;
+  bool _useStrictSrcCategorization = true; // Default
   Map<String, bool> _sourceCategoryFilters = {};
 
   void update(SettingsProvider settings) {
@@ -76,6 +77,12 @@ class ShowListProvider with ChangeNotifier {
     if (_filterHighestShnid != settings.filterHighestShnid) {
       _filterHighestShnid = settings.filterHighestShnid;
       filtersChanged = true;
+    }
+    if (_useStrictSrcCategorization != settings.useStrictSrcCategorization) {
+      _useStrictSrcCategorization = settings.useStrictSrcCategorization;
+      filtersChanged = true;
+      // Also need to re-scan categories because categorization logic changed
+      _scanAvailableCategories();
     }
     if (!mapEquals(_sourceCategoryFilters, settings.sourceCategoryFilters)) {
       _sourceCategoryFilters = Map.from(settings.sourceCategoryFilters);
@@ -140,6 +147,20 @@ class ShowListProvider with ChangeNotifier {
         .any((track) => track.title.toLowerCase().startsWith('gd'));
     if (hasFeatTrack) {
       categories.add('unk');
+    }
+
+    // Strict Mode: Use only the 'src' attribute
+    if (_useStrictSrcCategorization) {
+      if (srcType == 'sbd') categories.add('sbd');
+      if (srcType == 'mtx' || srcType == 'matrix') categories.add('matrix');
+      if (srcType == 'ultra') categories.add('ultra');
+
+      // Extended strict mode to support additional types present in optimized_src.json
+      if (srcType == 'betty') categories.add('betty');
+      if (srcType == 'dsbd') categories.add('dsbd');
+      if (srcType == 'fm') categories.add('fm');
+
+      return categories;
     }
 
     if (srcType == 'ultra' ||

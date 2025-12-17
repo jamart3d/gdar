@@ -51,15 +51,13 @@ class ConditionalMarquee extends StatelessWidget {
           );
         } else {
           // Otherwise, show a standard Text widget
-          return SizedBox(
-            width: double.infinity,
-            child: Text(
-              text,
-              style: style,
-              textAlign: textAlign,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
+          // Otherwise, show a standard Text widget
+          return Text(
+            text,
+            style: style,
+            textAlign: textAlign,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           );
         }
       },

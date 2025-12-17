@@ -71,9 +71,9 @@ This file tracks planned features, enhancements, and bug fixes for the gdar appl
   - Added semantic labels to `PlaybackScreen` controls.
   - Added semantic labels to `RatingControl`.
 
-  - [ ] **Source Filtering:** Add setting to only list the latest source (SHNID) for each show date, if multiple sources exist.
+  - [x] **Source Filtering:** Add setting to only list the latest source (SHNID) for each show date, if multiple sources exist.
 
-  - [ ] **Source Category Filtering:**
+  - [x] **Source Category Filtering:**
     - Add setting to filter which `src` types are shown in the show list.
     - **Categories:**
       - **Betty:** [betty, betty board, bbd]
@@ -84,6 +84,8 @@ This file tracks planned features, enhancements, and bug fixes for the gdar appl
       - **SBD:** [sbd, sdb, sby, sbeok]
     - **UI:** List of source badges that can be activated/deactivated.
     - **Constraint:** At least one category must remain active.
+
+- [ ] **Miniplayer Fix:** Fix miniplayer rebuild when navigating between shows screen and track list screen, or integrate it better with the playback controls from the playback screen.
 
 ## Low Priority / Ideas
 
@@ -106,3 +108,4 @@ This file tracks planned features, enhancements, and bug fixes for the gdar appl
 - [ ] **Rename Category:** Rename category 'unk'/'unknown' to 'fix'/'fix needed'.
 
 - [ ] **Move Encore Tracks:** Create a Python script to identify and move end tracks into an 'Encore' set.
+- [ ] **Rated Shows Export/Import:** Allow exporting/importing the library of rated shows (dates, shnids, played status, star ratings), possibly via a calendar format or JSON file.

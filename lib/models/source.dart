@@ -24,7 +24,7 @@ class Source {
 
     return Source(
       id: json['id'] as String? ?? '',
-      src: src,
+      src: json['src'] ?? src,
       tracks: tracks,
     );
   }

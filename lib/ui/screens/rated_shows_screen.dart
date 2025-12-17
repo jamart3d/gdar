@@ -1,14 +1,16 @@
-import 'dart:math';
-
 import 'package:flutter/services.dart';
 
 import 'package:flutter/material.dart';
 import 'package:gdar/models/show.dart';
+import 'package:gdar/models/source.dart';
 import 'package:gdar/providers/audio_provider.dart';
 import 'package:gdar/providers/settings_provider.dart';
 import 'package:gdar/providers/show_list_provider.dart';
-import 'package:gdar/ui/widgets/show_list_card.dart';
-import 'package:gdar/ui/widgets/source_list_item.dart';
+import 'package:gdar/ui/screens/playback_screen.dart';
+import 'package:gdar/ui/screens/track_list_screen.dart';
+import 'package:gdar/ui/widgets/rating_control.dart';
+
+import 'package:gdar/ui/widgets/src_badge.dart';
 import 'package:provider/provider.dart';
 
 class RatedShowsScreen extends StatefulWidget {
@@ -48,30 +50,53 @@ class _RatedShowsScreenState extends State<RatedShowsScreen>
     return showListProvider.allShows.where((show) {
       final showRating = settingsProvider.getRating(show.name);
 
-      // Blocked (-1)
-      if (rating == -1) {
-        if (showRating == -1) return true;
-        for (var source in show.sources) {
-          if (settingsProvider.getRating(source.id) == -1) return true;
-        }
-        return false;
-      }
-
-      // Played (-2)
-      if (rating == -2) {
-        if (settingsProvider.isPlayed(show.name)) return true;
-        for (var source in show.sources) {
-          if (settingsProvider.isPlayed(source.id)) return true;
-        }
-        return false;
-      }
-
-      // Stars
-      if (showRating == rating) return true;
+      // Check if ANY effective source matches the criteria
+      bool anyMatch = false;
       for (var source in show.sources) {
-        if (settingsProvider.getRating(source.id) == rating) return true;
+        final sourceRating = settingsProvider.getRating(source.id);
+
+        int effectiveRating;
+        if (sourceRating != 0) {
+          effectiveRating = sourceRating;
+        } else {
+          effectiveRating = showRating;
+        }
+
+        // Blocked (-1)
+        if (rating == -1) {
+          // Original logic for blocked check was:
+          // if show is blocked OR source is blocked.
+          if (showRating == -1 || sourceRating == -1) {
+            anyMatch = true;
+            break;
+          }
+          // In strict mode: effectiveRating == -1
+          // If showRating is -1 -> effectiveRating is -1.
+          // If sourceRating is -1 -> effectiveRating is -1.
+          if (effectiveRating == -1) {
+            anyMatch = true;
+            break;
+          }
+        }
+
+        // Played (-2)
+        else if (rating == -2) {
+          if (settingsProvider.isPlayed(show.name) ||
+              settingsProvider.isPlayed(source.id)) {
+            anyMatch = true;
+            break;
+          }
+        }
+
+        // Stars (1, 2, 3)
+        else {
+          if (effectiveRating == rating) {
+            anyMatch = true;
+            break;
+          }
+        }
       }
-      return false;
+      return anyMatch;
     }).length;
   }
 
@@ -137,8 +162,6 @@ class _RatedShowList extends StatefulWidget {
 }
 
 class _RatedShowListState extends State<_RatedShowList> {
-  String? _expandedShowName;
-
   @override
   Widget build(BuildContext context) {
     final showListProvider = context.read<ShowListProvider>();
@@ -148,39 +171,59 @@ class _RatedShowListState extends State<_RatedShowList> {
     // 1. Get all shows
     final allShows = showListProvider.allShows;
 
-    // 2. Filter by rating
-    final filteredShows = allShows.where((show) {
+    // 2. Flatten relevant sources into a single list
+    final List<({Show show, Source source})> flatSources = [];
+
+    for (var show in allShows) {
       final showRating = settingsProvider.getRating(show.name);
 
-      // If filtering for Blocked (-1), include shows that are blocked
-      // OR shows that have any blocked source.
-      if (widget.rating == -1) {
-        if (showRating == -1) return true;
-        for (var source in show.sources) {
-          if (settingsProvider.getRating(source.id) == -1) return true;
-        }
-        return false;
-      }
-
-      // If filtering for Played (-2), include shows that are marked played
-      // OR shows that have any played source.
-      if (widget.rating == -2) {
-        if (settingsProvider.isPlayed(show.name)) return true;
-        for (var source in show.sources) {
-          if (settingsProvider.isPlayed(source.id)) return true;
-        }
-        return false;
-      }
-
-      // for positive ratings, check show OR any source
-      if (showRating == widget.rating) return true;
       for (var source in show.sources) {
-        if (settingsProvider.getRating(source.id) == widget.rating) return true;
-      }
-      return false;
-    }).toList();
+        final sourceRating = settingsProvider.getRating(source.id);
 
-    if (filteredShows.isEmpty) {
+        // Calculate Effective Rating
+        int effectiveRating;
+        if (sourceRating != 0) {
+          effectiveRating = sourceRating;
+        } else {
+          // Fallback Logic
+          if (showRating == -1) {
+            // Always inherit blocking
+            effectiveRating = -1;
+          } else if (show.sources.length == 1) {
+            // Inherit positive rating ONLY for single-source
+            effectiveRating = showRating;
+          } else {
+            effectiveRating = 0;
+          }
+        }
+
+        bool match = false;
+
+        // Blocked (-1)
+        if (widget.rating == -1) {
+          // Strict check: Is this specific source effectively blocked?
+          if (effectiveRating == -1) match = true;
+        }
+        // Played (-2)
+        else if (widget.rating == -2) {
+          // Check if show or source is played
+          if (settingsProvider.isPlayed(show.name) ||
+              settingsProvider.isPlayed(source.id)) {
+            match = true;
+          }
+        }
+        // Stars (1, 2, 3)
+        else {
+          if (effectiveRating == widget.rating) match = true;
+        }
+
+        if (match) {
+          flatSources.add((show: show, source: source));
+        }
+      }
+    }
+
+    if (flatSources.isEmpty) {
       return Center(
         child:
             Text('No shows found with rating: ${_getTabLabel(widget.rating)}'),
@@ -188,114 +231,151 @@ class _RatedShowListState extends State<_RatedShowList> {
     }
 
     return ListView.builder(
-      itemCount: filteredShows.length,
+      itemCount: flatSources.length,
       padding: const EdgeInsets.all(16),
       itemBuilder: (context, index) {
-        final show = filteredShows[index];
-        final isExpanded = _expandedShowName == show.name;
+        final item = flatSources[index];
+        final show = item.show;
+        final source = item.source;
 
+        final isPlaying = audioProvider.currentSource?.id == source.id;
+        final rating = settingsProvider.getRating(source.id);
+
+        // Customize the item presentation
         return Padding(
           padding: const EdgeInsets.only(bottom: 8.0),
-          child: Column(
-            children: [
-              ShowListCard(
-                show: show,
-                isExpanded: isExpanded,
-                isPlaying: audioProvider.currentShow?.name == show.name,
-                playingSourceId: audioProvider.currentSource?.id,
-                isLoading: false,
-                alwaysShowRatingInteraction: true,
-                onTap: () {
-                  if (show.sources.length <= 1) return;
-                  setState(() {
-                    if (_expandedShowName == show.name) {
-                      _expandedShowName = null;
-                    } else {
-                      _expandedShowName = show.name;
-                    }
-                  });
-                },
-                onLongPress: () {
-                  final showRating = settingsProvider.getRating(show.name);
-                  if (showRating == -1) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Cannot play blocked show')),
-                    );
-                    return;
-                  }
-
-                  // Filter out blocked sources
-                  final validSources = show.sources.where((s) {
-                    return settingsProvider.getRating(s.id) != -1;
-                  }).toList();
-
-                  if (validSources.isEmpty) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                          content: Text('No unblocked sources available')),
-                    );
-                    return;
-                  }
-
-                  // Pick random source
-                  final source =
-                      validSources[Random().nextInt(validSources.length)];
-                  HapticFeedback.mediumImpact();
-                  audioProvider.playSource(show, source);
-                },
-              ),
-              if (isExpanded)
-                _buildSourceList(
-                    context, show, audioProvider, settingsProvider),
-            ],
+          child: _buildRatedSourceItem(
+            context,
+            show,
+            source,
+            isPlaying,
+            rating,
+            settingsProvider,
+            audioProvider,
           ),
         );
       },
     );
   }
 
-  Widget _buildSourceList(BuildContext context, Show show,
-      AudioProvider audioProvider, SettingsProvider settingsProvider) {
-    // Determine scale factor for SourceListItem, matching ShowListItemDetails logic
-    final double scaleFactor = settingsProvider.uiScale ? 1.25 : 1.0;
+  Widget _buildRatedSourceItem(
+      BuildContext context,
+      Show show,
+      Source source,
+      bool isPlaying,
+      int rating,
+      SettingsProvider settingsProvider,
+      AudioProvider audioProvider) {
+    final scaleFactor = settingsProvider.uiScale ? 1.25 : 1.0;
+    final colorScheme = Theme.of(context).colorScheme;
 
-    return Container(
-      color: Theme.of(context)
-          .colorScheme
-          .surfaceContainerHighest
-          .withOpacity(0.3),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: Column(
-        children: show.sources.map((source) {
-          final isPlaying = audioProvider.currentSource?.id == source.id;
-          final sourceRating = settingsProvider.getRating(source.id);
-          final isBlocked = sourceRating == -1;
-
-          return Padding(
-            padding: const EdgeInsets.symmetric(vertical: 4),
-            child: SourceListItem(
-              source: source,
-              isSourcePlaying: isPlaying,
-              scaleFactor: scaleFactor,
-              borderRadius: 20, // Match ShowListItemDetails default
-              alwaysShowRatingInteraction: true,
-              onTap: () {
-                // User requested single tap should not play.
-                // Playback is handled via long-press only for this screen.
-              },
-              onLongPress: () {
-                if (isBlocked) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Cannot play blocked source')),
+    // Use SourceListItem logic but wrapped with Show info
+    return Material(
+      color: isPlaying
+          ? colorScheme.tertiaryContainer
+          : colorScheme.surfaceContainerHighest,
+      borderRadius: BorderRadius.circular(12),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(12),
+        onTap: () {
+          if (isPlaying) {
+            Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const PlaybackScreen()),
+            );
+          } else {
+            final singleSourceShow = show.copyWith(sources: [source]);
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                  builder: (_) => TrackListScreen(show: singleSourceShow)),
+            );
+          }
+        },
+        onLongPress: () {
+          HapticFeedback.mediumImpact();
+          audioProvider.playSource(show, source);
+        },
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
+          child: Row(
+            children: [
+              // Badge
+              if (source.src != null) ...[
+                SrcBadge(src: source.src!, isPlaying: isPlaying),
+                const SizedBox(width: 12),
+              ],
+              // Content
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Title: SHNID
+                    Text(
+                      source.id,
+                      style: Theme.of(context)
+                          .textTheme
+                          .titleSmall
+                          ?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: isPlaying
+                                ? colorScheme.onTertiaryContainer
+                                : colorScheme.onSurface,
+                          )
+                          .apply(fontSizeFactor: scaleFactor),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 2),
+                    // Subtitle: Date • Venue
+                    Text(
+                      '${show.formattedDate} • ${show.venue}',
+                      style: Theme.of(context)
+                          .textTheme
+                          .bodySmall
+                          ?.copyWith(
+                            color: isPlaying
+                                ? colorScheme.onTertiaryContainer
+                                    .withOpacity(0.8)
+                                : colorScheme.onSurfaceVariant,
+                          )
+                          .apply(fontSizeFactor: scaleFactor),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              // Rating
+              RatingControl(
+                rating: settingsProvider.getRating(source.id),
+                size: 18 * scaleFactor,
+                isPlayed: settingsProvider.isPlayed(source.id),
+                onTap: () async {
+                  final currentRating = settingsProvider.getRating(source.id);
+                  await showDialog(
+                    context: context,
+                    builder: (context) => RatingDialog(
+                      initialRating: currentRating,
+                      sourceId: source.id,
+                      sourceUrl: source.tracks.isNotEmpty
+                          ? source.tracks.first.url
+                          : null,
+                      isPlayed: settingsProvider.isPlayed(source.id),
+                      onRatingChanged: (newRating) {
+                        settingsProvider.setRating(source.id, newRating);
+                      },
+                      onPlayedChanged: (bool isPlayed) {
+                        if (isPlayed != settingsProvider.isPlayed(source.id)) {
+                          settingsProvider.togglePlayed(source.id);
+                        }
+                      },
+                    ),
                   );
-                  return;
-                }
-                HapticFeedback.mediumImpact();
-                audioProvider.playSource(show, source);
-              },
-            ),
-          );
-        }).toList(),
+                },
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

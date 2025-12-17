@@ -23,10 +23,13 @@ class SettingsProvider with ChangeNotifier {
       'highlight_playing_with_rgb';
   static const String _showPlaybackMessagesKey = 'show_playback_messages';
   static const String _sortOldestFirstKey = 'sort_oldest_first';
+  static const String _useStrictSrcCategorizationKey =
+      'use_strict_src_categorization';
 
   static const String _showSplashScreenKey = 'show_splash_screen';
   late bool _showSplashScreen;
   bool get showSplashScreen => _showSplashScreen;
+  bool get isFirstRun => _isFirstRun;
 
   void toggleShowSplashScreen() => _updatePreference(
       _showSplashScreenKey, _showSplashScreen = !_showSplashScreen);
@@ -37,6 +40,7 @@ class SettingsProvider with ChangeNotifier {
   // Private state
   late bool _showTrackNumbers;
   late bool _hideTrackDuration;
+  bool _isFirstRun = false; // Initialize explicitly
   late bool _playOnTap;
   late bool _showSingleShnid;
   late bool _playRandomOnCompletion;
@@ -49,6 +53,7 @@ class SettingsProvider with ChangeNotifier {
   late bool _highlightPlayingWithRgb;
   late bool _showPlaybackMessages;
   late bool _sortOldestFirst;
+  late bool _useStrictSrcCategorization;
 
   Color? _seedColor;
 
@@ -81,6 +86,7 @@ class SettingsProvider with ChangeNotifier {
   bool get highlightPlayingWithRgb => _highlightPlayingWithRgb;
   bool get showPlaybackMessages => _showPlaybackMessages;
   bool get sortOldestFirst => _sortOldestFirst;
+  bool get useStrictSrcCategorization => _useStrictSrcCategorization;
   bool get highlightCurrentShowCard => true;
   bool get useMaterial3 => true;
 
@@ -115,12 +121,14 @@ class SettingsProvider with ChangeNotifier {
         _prefs.setBool(_uiScaleKey, false);
       }
 
+      _isFirstRun = true; // Mark as first run for Splash Screen
+
       // Mark check as done
       _prefs.setBool('first_run_check_done', true);
     }
 
-    _showTrackNumbers = _prefs.getBool(_trackNumberKey) ?? true;
-    _hideTrackDuration = _prefs.getBool(_hideTrackDurationKey) ?? false;
+    _showTrackNumbers = _prefs.getBool(_trackNumberKey) ?? false;
+    _hideTrackDuration = _prefs.getBool(_hideTrackDurationKey) ?? true;
     _playOnTap = _prefs.getBool(_playOnTapKey) ?? false;
     _showSingleShnid = _prefs.getBool(_showSingleShnidKey) ?? false;
     _playRandomOnCompletion =
@@ -139,6 +147,8 @@ class SettingsProvider with ChangeNotifier {
     _showSplashScreen = _prefs.getBool(_showSplashScreenKey) ?? true;
     _showPlaybackMessages = _prefs.getBool(_showPlaybackMessagesKey) ?? false;
     _sortOldestFirst = _prefs.getBool(_sortOldestFirstKey) ?? true;
+    _useStrictSrcCategorization =
+        _prefs.getBool(_useStrictSrcCategorizationKey) ?? true;
 
     final seedColorValue = _prefs.getInt(_seedColorKey);
     if (seedColorValue != null) {
@@ -206,6 +216,9 @@ class SettingsProvider with ChangeNotifier {
       _showPlaybackMessagesKey, _showPlaybackMessages = !_showPlaybackMessages);
   void toggleSortOldestFirst() => _updatePreference(
       _sortOldestFirstKey, _sortOldestFirst = !_sortOldestFirst);
+  void toggleUseStrictSrcCategorization() => _updatePreference(
+      _useStrictSrcCategorizationKey,
+      _useStrictSrcCategorization = !_useStrictSrcCategorization);
   static const String _halfGlowDynamicKey = 'half_glow_dynamic';
   bool _halfGlowDynamic = false;
   bool get halfGlowDynamic => _halfGlowDynamic;
@@ -317,7 +330,7 @@ class SettingsProvider with ChangeNotifier {
   // I will place them before "Persistence Helpers".
 
   Future<void> _initSourceFilters() async {
-    _filterHighestShnid = _prefs.getBool(_filterHighestShnidKey) ?? false;
+    _filterHighestShnid = _prefs.getBool(_filterHighestShnidKey) ?? true;
 
     final String? catsJson = _prefs.getString(_sourceCategoryFiltersKey);
     if (catsJson != null) {
@@ -332,6 +345,17 @@ class SettingsProvider with ChangeNotifier {
       } catch (e) {
         // use defaults
       }
+    } else {
+      // First run or no saved filters: Default to ONLY Matrix enabled
+      _sourceCategoryFilters = {
+        'matrix': true,
+        'ultra': false,
+        'betty': false,
+        'sbd': false,
+        'fm': false,
+        'dsbd': false,
+        'unk': false,
+      };
     }
   }
 
