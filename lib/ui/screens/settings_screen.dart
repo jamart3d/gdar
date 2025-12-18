@@ -87,6 +87,45 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
+  Widget _buildWeightRow(BuildContext context, String label, String weight,
+      {required bool isActive, bool isBest = false}) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textStyle = Theme.of(context).textTheme.bodyMedium;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 2.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            label,
+            style: textStyle?.copyWith(
+              color: isActive
+                  ? (isBest ? colorScheme.primary : colorScheme.onSurface)
+                  : colorScheme.outline,
+              decoration: isActive ? null : TextDecoration.lineThrough,
+              fontWeight:
+                  isBest && isActive ? FontWeight.bold : FontWeight.normal,
+            ),
+          ),
+          Text(
+            isActive ? weight : 'Excluded',
+            style: textStyle?.copyWith(
+              color: isActive
+                  ? (isBest
+                      ? colorScheme.primary
+                      : colorScheme.onSurfaceVariant)
+                  : colorScheme.outline,
+              fontWeight:
+                  isBest && isActive ? FontWeight.bold : FontWeight.normal,
+              fontSize: isActive ? null : 12,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final themeProvider = context.watch<ThemeProvider>();
@@ -140,44 +179,144 @@ class SettingsScreen extends StatelessWidget {
                       ListTile(
                         leading: const Icon(Icons.shuffle_rounded),
                         title: const Text('Random Selection'),
-                        subtitle: const Text(
-                            'Tap the ? icon in the app bar to play a random show from the collection. Long-press a show card to play a random source from that show.'),
+                        subtitle: Text.rich(
+                          TextSpan(
+                            style: Theme.of(context).textTheme.bodyMedium,
+                            children: const [
+                              TextSpan(
+                                  text: 'Tap',
+                                  style:
+                                      TextStyle(fontWeight: FontWeight.bold)),
+                              TextSpan(
+                                  text:
+                                      ' the ? icon in the app bar to play a random show. Selection respects "Random\u00A0Playback"\u00A0settings. '),
+                              TextSpan(
+                                  text: 'Long-press',
+                                  style:
+                                      TextStyle(fontWeight: FontWeight.bold)),
+                              TextSpan(
+                                  text:
+                                      ' a show card to play a random source from\u00A0that\u00A0show.'),
+                            ],
+                          ),
+                        ),
+                        isThreeLine: true,
                       ),
                       ListTile(
                         leading: const Icon(Icons.play_circle_outline_rounded),
                         title: const Text('Player Controls'),
-                        subtitle: const Text(
-                            'Tap the mini-player to open the full playback screen. Long-press the mini-player to stop playback and clear the queue.'),
+                        subtitle: Text.rich(
+                          TextSpan(
+                            style: Theme.of(context).textTheme.bodyMedium,
+                            children: const [
+                              TextSpan(
+                                  text: 'Tap',
+                                  style:
+                                      TextStyle(fontWeight: FontWeight.bold)),
+                              TextSpan(
+                                  text:
+                                      ' the mini-player to open the full playback\u00A0screen. '),
+                              TextSpan(
+                                  text: 'Long-press',
+                                  style:
+                                      TextStyle(fontWeight: FontWeight.bold)),
+                              TextSpan(
+                                  text:
+                                      ' the mini-player to stop playback and clear\u00A0the\u00A0queue.'),
+                            ],
+                          ),
+                        ),
+                        isThreeLine: true,
                       ),
                       ListTile(
                         leading: const Icon(Icons.search_rounded),
                         title: const Text('Search'),
-                        subtitle: const Text(
-                            'Tap the search icon in the app bar to filter shows by venue or date.'),
+                        subtitle: Text.rich(
+                          TextSpan(
+                            style: Theme.of(context).textTheme.bodyMedium,
+                            children: const [
+                              TextSpan(
+                                  text: 'Tap',
+                                  style:
+                                      TextStyle(fontWeight: FontWeight.bold)),
+                              TextSpan(
+                                  text:
+                                      ' the search icon in the app bar to filter shows by venue\u00A0or\u00A0date.'),
+                            ],
+                          ),
+                        ),
                       ),
                       ListTile(
                         leading: const Icon(Icons.star_rate_rounded),
                         title: const Text('Rate Show'),
-                        subtitle: const Text(
-                            'Tap the stars icon on a show card to rate it.'),
+                        subtitle: Text.rich(
+                          TextSpan(
+                            style: Theme.of(context).textTheme.bodyMedium,
+                            children: const [
+                              TextSpan(
+                                  text: 'Tap',
+                                  style:
+                                      TextStyle(fontWeight: FontWeight.bold)),
+                              TextSpan(
+                                  text:
+                                      ' the stars icon on a show card to\u00A0rate\u00A0it.'),
+                            ],
+                          ),
+                        ),
                       ),
                       ListTile(
                         leading: const Icon(Icons.block_rounded),
                         title: const Text('Quick Block'),
-                        subtitle: const Text(
-                            'Swipe left on a show card (or source) to quickly block it (-1 rating).'),
+                        subtitle: Text.rich(
+                          TextSpan(
+                            style: Theme.of(context).textTheme.bodyMedium,
+                            children: const [
+                              TextSpan(
+                                  text: 'Swipe left',
+                                  style:
+                                      TextStyle(fontWeight: FontWeight.bold)),
+                              TextSpan(
+                                  text:
+                                      ' on a show card (or source) to quickly block it\u00A0(-1\u00A0rating).'),
+                            ],
+                          ),
+                        ),
                       ),
                       ListTile(
                         leading: const Icon(Icons.touch_app_rounded),
                         title: const Text('Expand Show'),
-                        subtitle: const Text(
-                            'Tap a show card to see available sources (SHNIDs).'),
+                        subtitle: Text.rich(
+                          TextSpan(
+                            style: Theme.of(context).textTheme.bodyMedium,
+                            children: const [
+                              TextSpan(
+                                  text: 'Tap',
+                                  style:
+                                      TextStyle(fontWeight: FontWeight.bold)),
+                              TextSpan(
+                                  text:
+                                      ' a show card to see available sources (SHNIDs) (if Source Filtering\u00A0-\u00A0Highest\u00A0SHNID\u00A0is\u00A0off).'),
+                            ],
+                          ),
+                        ),
                       ),
                       ListTile(
                         leading: const Icon(Icons.open_in_new_rounded),
                         title: const Text('View Source Page'),
-                        subtitle: const Text(
-                            'Tap a source ID (SHNID) to open the Internet Archive page.'),
+                        subtitle: Text.rich(
+                          TextSpan(
+                            style: Theme.of(context).textTheme.bodyMedium,
+                            children: const [
+                              TextSpan(
+                                  text: 'Tap',
+                                  style:
+                                      TextStyle(fontWeight: FontWeight.bold)),
+                              TextSpan(
+                                  text:
+                                      ' a source ID (SHNID) to open the Internet Archive\u00A0page.'),
+                            ],
+                          ),
+                        ),
                       ),
                     ],
                   ),
@@ -414,19 +553,9 @@ class SettingsScreen extends StatelessWidget {
                   const SourceFilterSettings(),
 
                   SectionCard(
-                    title: 'Playback',
-                    icon: Icons.play_circle_outline,
+                    title: 'Random Playback',
+                    icon: Icons.shuffle_rounded,
                     children: [
-                      SwitchListTile(
-                        title: const Text('Play on Tap'),
-                        subtitle:
-                            const Text('Tap track in inactive source to play'),
-                        value: settingsProvider.playOnTap,
-                        onChanged: (value) {
-                          context.read<SettingsProvider>().togglePlayOnTap();
-                        },
-                        secondary: const Icon(Icons.touch_app_rounded),
-                      ),
                       SwitchListTile(
                         title: const Text('Play Random Show on Completion'),
                         subtitle: const Text(
@@ -437,7 +566,7 @@ class SettingsScreen extends StatelessWidget {
                               .read<SettingsProvider>()
                               .togglePlayRandomOnCompletion();
                         },
-                        secondary: const Icon(Icons.shuffle_rounded),
+                        secondary: const Icon(Icons.repeat_rounded),
                       ),
                       SwitchListTile(
                         title: const Text('Play Random Show on Startup'),
@@ -449,7 +578,7 @@ class SettingsScreen extends StatelessWidget {
                               .read<SettingsProvider>()
                               .togglePlayRandomOnStartup();
                         },
-                        secondary: const Icon(Icons.play_circle_filled_rounded),
+                        secondary: const Icon(Icons.start_rounded),
                       ),
                       SwitchListTile(
                         title: const Text('Only Select Unplayed Shows'),
@@ -474,6 +603,64 @@ class SettingsScreen extends StatelessWidget {
                               .toggleRandomOnlyHighRated();
                         },
                         secondary: const Icon(Icons.star_rounded),
+                      ),
+                      Card(
+                        margin: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+                        elevation: 0,
+                        color: Theme.of(context).colorScheme.surfaceContainer,
+                        child: Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Selection Probability',
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .labelLarge
+                                    ?.copyWith(
+                                      color:
+                                          Theme.of(context).colorScheme.primary,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                              ),
+                              const SizedBox(height: 8),
+                              _buildWeightRow(context, 'Unplayed', '50x',
+                                  isActive: true, // Always active
+                                  isBest: true),
+                              _buildWeightRow(context, '3 Stars', '30x',
+                                  isActive:
+                                      !settingsProvider.randomOnlyUnplayed),
+                              _buildWeightRow(context, '2 Stars', '20x',
+                                  isActive:
+                                      !settingsProvider.randomOnlyUnplayed),
+                              _buildWeightRow(context, '1 Star', '10x',
+                                  isActive: !settingsProvider
+                                          .randomOnlyUnplayed &&
+                                      !settingsProvider.randomOnlyHighRated),
+                              _buildWeightRow(context, 'Played', '5x',
+                                  isActive:
+                                      !settingsProvider.randomOnlyUnplayed),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  SectionCard(
+                    title: 'Playback',
+                    icon: Icons.play_circle_outline,
+                    children: [
+                      SwitchListTile(
+                        title: const Text('Play on Tap'),
+                        subtitle:
+                            const Text('Tap track in inactive source to play'),
+                        value: settingsProvider.playOnTap,
+                        onChanged: (value) {
+                          context.read<SettingsProvider>().togglePlayOnTap();
+                        },
+                        secondary: const Icon(Icons.touch_app_rounded),
                       ),
                       SwitchListTile(
                         title: const Text('Show Playback Messages'),

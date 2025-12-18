@@ -107,5 +107,12 @@ This file tracks planned features, enhancements, and bug fixes for the gdar appl
 
 - [ ] **Rename Category:** Rename category 'unk'/'unknown' to 'fix'/'fix needed'.
 
-- [ ] **Move Encore Tracks:** Create a Python script to identify and move end tracks into an 'Encore' set.
+- [x] **Move Encore Tracks:** Create a Python script to identify and move end tracks into an 'Encore' set.
+  - [x] `remove_encore_prefix.py` handles prefix removal and moving misplaced tracks.
+- [x] **Data Cleaning Scripts:**
+  - [x] `fix2_with_database.py`: Clean setlist data and generate review lists.
+  - [x] `report_review_shnids.py`: Generate lexicographically sorted SHNID lists for review.
+- [x] **Refined Usage Instructions:**
+  - [x] Improved line breaking (no widows/orphans).
+  - [x] Enhanced typography (bold keywords).
 - [ ] **Rated Shows Export/Import:** Allow exporting/importing the library of rated shows (dates, shnids, played status, star ratings), possibly via a calendar format or JSON file.

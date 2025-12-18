@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:gdar/ui/widgets/animated_gradient_border.dart';
 import 'package:gdar/models/show.dart';
+import 'package:gdar/models/source.dart';
 import 'package:gdar/providers/settings_provider.dart';
 import 'package:gdar/ui/widgets/conditional_marquee.dart';
 import 'package:provider/provider.dart';
@@ -13,7 +14,7 @@ class ShowListCard extends StatefulWidget {
   final Show show;
   final bool isExpanded;
   final bool isPlaying;
-  final String? playingSourceId;
+  final Source? playingSource;
   final bool isLoading;
   final VoidCallback onTap;
   final VoidCallback onLongPress;
@@ -24,7 +25,7 @@ class ShowListCard extends StatefulWidget {
     required this.show,
     required this.isExpanded,
     required this.isPlaying,
-    this.playingSourceId,
+    this.playingSource,
     required this.isLoading,
     required this.onTap,
     required this.onLongPress,
@@ -53,7 +54,8 @@ class _ShowListCardState extends State<ShowListCard> {
             ? colorScheme.tertiary
             : colorScheme.outlineVariant;
     final bool shouldShowBadge = widget.show.sources.length > 1 ||
-        (widget.show.sources.length == 1 && settingsProvider.showSingleShnid);
+        (widget.show.sources.length == 1 && settingsProvider.showSingleShnid) ||
+        (widget.isPlaying && widget.playingSource != null);
 
     final double scaleFactor = settingsProvider.uiScale ? 1.5 : 1.0;
 
@@ -86,8 +88,8 @@ class _ShowListCardState extends State<ShowListCard> {
         widget.isPlaying &&
         settingsProvider.highlightCurrentShowCard) {
       String seed = widget.show.name;
-      if (widget.show.sources.length > 1 && widget.playingSourceId != null) {
-        seed = widget.playingSourceId!;
+      if (widget.playingSource != null) {
+        seed = widget.playingSource!.id;
       }
       backgroundColor = ColorGenerator.getColor(seed,
           brightness: Theme.of(context).brightness);
@@ -351,7 +353,9 @@ class _ShowListCardState extends State<ShowListCard> {
     final settingsProvider = context.watch<SettingsProvider>();
 
     final String badgeText;
-    if (show.sources.length == 1 && settingsProvider.showSingleShnid) {
+    if (widget.isPlaying && widget.playingSource != null) {
+      badgeText = widget.playingSource!.id.replaceAll(RegExp(r'[^0-9]'), '');
+    } else if (show.sources.length == 1 && settingsProvider.showSingleShnid) {
       badgeText = show.sources.first.id.replaceAll(RegExp(r'[^0-9]'), '');
     } else {
       badgeText = '${show.sources.length}';
@@ -407,7 +411,53 @@ class _ShowListCardState extends State<ShowListCard> {
 
   Widget _buildRatingButton(
       BuildContext context, Show show, SettingsProvider settings) {
-    // If multiple sources, ratings are handled on the individual source items.
+    if (widget.isPlaying && widget.playingSource != null) {
+      final source = widget.playingSource!;
+      final rating = settings.getRating(source.id);
+      bool isPlayed =
+          settings.isPlayed(source.id) || settings.isPlayed(show.name);
+
+      // determine badge string
+      String? badgeSrc = source.src;
+
+      return Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            RatingControl(
+              rating: rating,
+              isPlayed: isPlayed,
+              size: 20,
+              onTap: () async {
+                await showDialog(
+                  context: context,
+                  builder: (context) => RatingDialog(
+                    initialRating: rating,
+                    sourceId: source.id,
+                    isPlayed: isPlayed,
+                    onRatingChanged: (newRating) {
+                      settings.setRating(source.id, newRating);
+                    },
+                    onPlayedChanged: (bool isPlayed) {
+                      if (isPlayed != settings.isPlayed(source.id)) {
+                        settings.togglePlayed(source.id);
+                      }
+                    },
+                  ),
+                );
+              },
+            ),
+            if (badgeSrc != null) ...[
+              const SizedBox(height: 4),
+              SrcBadge(src: badgeSrc),
+            ],
+          ],
+        ),
+      );
+    }
+
+    // Standard Logic
     if (show.sources.length > 1) {
       return const SizedBox.shrink();
     }

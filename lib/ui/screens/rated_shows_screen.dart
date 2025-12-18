@@ -47,57 +47,60 @@ class _RatedShowsScreenState extends State<RatedShowsScreen>
       ShowListProvider showListProvider) {
     if (showListProvider.allShows.isEmpty) return 0;
 
-    return showListProvider.allShows.where((show) {
+    int count = 0;
+
+    for (var show in showListProvider.allShows) {
       final showRating = settingsProvider.getRating(show.name);
 
-      // Check if ANY effective source matches the criteria
-      bool anyMatch = false;
-      for (var source in show.sources) {
-        final sourceRating = settingsProvider.getRating(source.id);
+      // Played (-2) - Match deduplication logic
+      if (rating == -2) {
+        final showIsPlayed = settingsProvider.isPlayed(show.name);
 
-        int effectiveRating;
-        if (sourceRating != 0) {
-          effectiveRating = sourceRating;
-        } else {
-          effectiveRating = showRating;
-        }
-
-        // Blocked (-1)
-        if (rating == -1) {
-          // Original logic for blocked check was:
-          // if show is blocked OR source is blocked.
-          if (showRating == -1 || sourceRating == -1) {
-            anyMatch = true;
-            break;
-          }
-          // In strict mode: effectiveRating == -1
-          // If showRating is -1 -> effectiveRating is -1.
-          // If sourceRating is -1 -> effectiveRating is -1.
-          if (effectiveRating == -1) {
-            anyMatch = true;
-            break;
+        int explicitCount = 0;
+        for (var source in show.sources) {
+          if (settingsProvider.isPlayed(source.id)) {
+            explicitCount++;
           }
         }
 
-        // Played (-2)
-        else if (rating == -2) {
-          if (settingsProvider.isPlayed(show.name) ||
-              settingsProvider.isPlayed(source.id)) {
-            anyMatch = true;
-            break;
-          }
+        if (explicitCount > 0) {
+          count += explicitCount;
+        } else if (showIsPlayed) {
+          count += 1;
         }
+      }
+      // Other Ratings
+      else {
+        for (var source in show.sources) {
+          final sourceRating = settingsProvider.getRating(source.id);
+          int effectiveRating;
+          if (sourceRating != 0) {
+            effectiveRating = sourceRating;
+          } else {
+            if (showRating == -1) {
+              effectiveRating = -1;
+            } else if (show.sources.length == 1) {
+              effectiveRating = showRating;
+            } else {
+              effectiveRating = 0;
+            }
+          }
 
-        // Stars (1, 2, 3)
-        else {
-          if (effectiveRating == rating) {
-            anyMatch = true;
-            break;
+          // Match check
+          bool match = false;
+          if (rating == -1) {
+            if (effectiveRating == -1) match = true;
+          } else {
+            if (effectiveRating == rating) match = true;
+          }
+
+          if (match) {
+            count++;
           }
         }
       }
-      return anyMatch;
-    }).length;
+    }
+    return count;
   }
 
   String _getTabLabel(int rating, int count) {
@@ -177,6 +180,38 @@ class _RatedShowListState extends State<_RatedShowList> {
     for (var show in allShows) {
       final showRating = settingsProvider.getRating(show.name);
 
+      // Special handling for "Played" tab to avoid duplicates
+      if (widget.rating == -2) {
+        final showIsPlayed = settingsProvider.isPlayed(show.name);
+
+        // 1. Find sources explicitly marked as played
+        final explicitlyPlayedSources =
+            show.sources.where((s) => settingsProvider.isPlayed(s.id)).toList();
+
+        if (explicitlyPlayedSources.isNotEmpty) {
+          // If we have specific sources played, list them
+          for (var source in explicitlyPlayedSources) {
+            flatSources.add((show: show, source: source));
+          }
+        } else if (showIsPlayed) {
+          // 2. If show is played but no specific source, pick ONE representative
+          // Pick highest rated source, then fallback to first
+          var bestSource = show.sources.first;
+          int highestRating = -20; // Lower than any possible rating
+
+          for (var source in show.sources) {
+            final r = settingsProvider.getRating(source.id);
+            if (r > highestRating) {
+              highestRating = r;
+              bestSource = source;
+            }
+          }
+          flatSources.add((show: show, source: bestSource));
+        }
+        continue; // Done with this show for Played tab
+      }
+
+      // Logic for Ratings (-1, 1, 2, 3)
       for (var source in show.sources) {
         final sourceRating = settingsProvider.getRating(source.id);
 
@@ -203,14 +238,6 @@ class _RatedShowListState extends State<_RatedShowList> {
         if (widget.rating == -1) {
           // Strict check: Is this specific source effectively blocked?
           if (effectiveRating == -1) match = true;
-        }
-        // Played (-2)
-        else if (widget.rating == -2) {
-          // Check if show or source is played
-          if (settingsProvider.isPlayed(show.name) ||
-              settingsProvider.isPlayed(source.id)) {
-            match = true;
-          }
         }
         // Stars (1, 2, 3)
         else {
@@ -349,7 +376,8 @@ class _RatedShowListState extends State<_RatedShowList> {
               RatingControl(
                 rating: settingsProvider.getRating(source.id),
                 size: 18 * scaleFactor,
-                isPlayed: settingsProvider.isPlayed(source.id),
+                isPlayed: settingsProvider.isPlayed(source.id) ||
+                    settingsProvider.isPlayed(show.name),
                 onTap: () async {
                   final currentRating = settingsProvider.getRating(source.id);
                   await showDialog(
@@ -360,7 +388,8 @@ class _RatedShowListState extends State<_RatedShowList> {
                       sourceUrl: source.tracks.isNotEmpty
                           ? source.tracks.first.url
                           : null,
-                      isPlayed: settingsProvider.isPlayed(source.id),
+                      isPlayed: settingsProvider.isPlayed(source.id) ||
+                          settingsProvider.isPlayed(show.name),
                       onRatingChanged: (newRating) {
                         settingsProvider.setRating(source.id, newRating);
                       },

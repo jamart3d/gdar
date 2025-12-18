@@ -223,11 +223,24 @@ class ShowListProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  // Tracking playing state to ensure visibility
+  String? _playingShowName;
+  String? _playingSourceId;
+
+  void setPlayingShow(String? showName, String? sourceId) {
+    if (_playingShowName != showName || _playingSourceId != sourceId) {
+      _playingShowName = showName;
+      _playingSourceId = sourceId;
+      _updateFilteredShows();
+      notifyListeners();
+    }
+  }
+
   void _updateFilteredShows() {
     _filteredShowsCache = _allShows
         .where((show) {
           // 1. Filter out Blocked Shows (Rating == -1)
-          if (_showRatings[show.name] == -1) return false;
+          // Removed as per user request (source-only blocking)
 
           // 3. Search Query
           final query = _searchQuery.toLowerCase();
@@ -244,6 +257,11 @@ class ShowListProvider with ChangeNotifier {
 
           // A. Category & Rating Filtering
           var validSources = show.sources.where((source) {
+            // Force include if playing
+            if (_playingSourceId != null && source.id == _playingSourceId) {
+              return true;
+            }
+
             // Blocked
             if (_showRatings[source.id] == -1) return false;
             // Category
@@ -252,14 +270,20 @@ class ShowListProvider with ChangeNotifier {
 
           // B. Highest SHNID Filtering
           if (_filterHighestShnid && validSources.length > 1) {
-            // Find source with max ID
-            // IDs are strings, parse as int
-            validSources.sort((a, b) {
-              int idA = int.tryParse(a.id) ?? 0;
-              int idB = int.tryParse(b.id) ?? 0;
-              return idB.compareTo(idA); // Descending
-            });
-            validSources = [validSources.first];
+            // If playing source is present, prioritize it
+            final playingSourceIndex =
+                validSources.indexWhere((s) => s.id == _playingSourceId);
+            if (playingSourceIndex != -1) {
+              validSources = [validSources[playingSourceIndex]];
+            } else {
+              // Find source with max ID
+              validSources.sort((a, b) {
+                int idA = int.tryParse(a.id) ?? 0;
+                int idB = int.tryParse(b.id) ?? 0;
+                return idB.compareTo(idA); // Descending
+              });
+              validSources = [validSources.first];
+            }
           }
 
           // Use copyWith

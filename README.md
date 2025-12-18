@@ -32,6 +32,8 @@ A Flutter application for browsing and playing concert recordings of the Gratefu
   - **Single Source Cleanliness**: Simplified view for shows with only one source.
   - **Rated Shows Library**: Dynamic counts on tabs (e.g., "Played (5)") and easier navigation.
   - **Smart Random**: Manual triggers respect search filters; automated playback picks from the full library to keep music fresh.
+  - **Refined Settings**: dedicated "Random Playback" section and clearer usage instructions with improved typography.
+  - **Source-Only Blocking**: Blocking now applies specifically to Source IDs rather than the entire Show, allowing for finer curation.
 
 ## Project Structure
 

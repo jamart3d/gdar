@@ -359,6 +359,8 @@ class SettingsProvider with ChangeNotifier {
     }
   }
 
+  // Toggles
+
   // Persistence Helpers
   Future<void> _updatePreference(String key, bool value) async {
     await _prefs.setBool(key, value);

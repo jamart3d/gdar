@@ -658,7 +658,7 @@ class _ShowListScreenState extends State<ShowListScreen>
             }
 
             // Mark as Blocked (Red Star / -1)
-            settingsProvider.setRating(show.name, -1);
+            settingsProvider.setRating(show.sources.first.id, -1);
 
             // Show Undo Snackbar
             ScaffoldMessenger.of(context).showSnackBar(
@@ -668,7 +668,7 @@ class _ShowListScreenState extends State<ShowListScreen>
                   label: 'UNDO',
                   onPressed: () {
                     // Restore rating
-                    settingsProvider.setRating(show.name, 0);
+                    settingsProvider.setRating(show.sources.first.id, 0);
                   },
                 ),
               ),
@@ -678,7 +678,7 @@ class _ShowListScreenState extends State<ShowListScreen>
             show: show,
             isExpanded: isExpanded,
             isPlaying: audioProvider.currentShow?.name == show.name,
-            playingSourceId: audioProvider.currentSource?.id,
+            playingSource: audioProvider.currentSource,
             isLoading: showListProvider.loadingShowName == show.name,
             onTap: () => _onShowTapped(show),
             onLongPress: () => _onCardLongPressed(show),

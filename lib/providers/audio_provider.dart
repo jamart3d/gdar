@@ -116,7 +116,8 @@ class AudioProvider with ChangeNotifier {
       final isPlayed = settings.isPlayed(show.name);
 
       // 1. Exclude Red Star Shows (-1)
-      if (rating == -1) continue;
+      // 1. Exclude Red Star Shows (-1)
+      // Removed check as per user request (source-only blocking)
 
       // 2. Check for at least one unblocked source
       bool hasUnblockedSource = false;
@@ -201,6 +202,8 @@ class AudioProvider with ChangeNotifier {
       {int initialIndex = 0}) async {
     _currentShow = show;
     _currentSource = source;
+    // Notify ShowListProvider to ensuring visibility
+    _showListProvider?.setPlayingShow(show.name, source.id);
     notifyListeners(); // Notify immediately so the UI can update
 
     // Start audio loading in the background
@@ -263,6 +266,7 @@ class AudioProvider with ChangeNotifier {
     await _audioPlayer.stop();
     _currentShow = null;
     _currentSource = null;
+    _showListProvider?.setPlayingShow(null, null);
     notifyListeners();
   }
 
