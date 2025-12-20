@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:gdar/providers/audio_provider.dart';
 import 'package:gdar/providers/settings_provider.dart';
 import 'package:just_audio/just_audio.dart';
@@ -55,23 +56,29 @@ class PlaybackControls extends StatelessWidget {
                     child: const CircularProgressIndicator(),
                   )
                 else
-                  IconButton(
-                    key: const ValueKey('play_pause_button'),
-                    iconSize: 56.0 * scaleFactor,
-                    onPressed: () {
-                      if (playing) {
-                        audioProvider.pause();
-                      } else {
-                        audioProvider.play();
-                      }
+                  GestureDetector(
+                    onLongPress: () {
+                      HapticFeedback.heavyImpact();
+                      audioProvider.stopAndClear();
                     },
-                    icon: Icon(
-                      playing
-                          ? Icons.pause_circle_filled_rounded
-                          : Icons.play_circle_fill_rounded,
-                      color: colorScheme.primary,
+                    child: IconButton(
+                      key: const ValueKey('play_pause_button'),
+                      iconSize: 56.0 * scaleFactor,
+                      onPressed: () {
+                        if (playing) {
+                          audioProvider.pause();
+                        } else {
+                          audioProvider.play();
+                        }
+                      },
+                      icon: Icon(
+                        playing
+                            ? Icons.pause_circle_filled_rounded
+                            : Icons.play_circle_fill_rounded,
+                        color: colorScheme.primary,
+                      ),
+                      tooltip: playing ? 'Pause' : 'Play',
                     ),
-                    tooltip: playing ? 'Pause' : 'Play',
                   ),
                 IconButton(
                   icon: const Icon(Icons.skip_next_rounded),

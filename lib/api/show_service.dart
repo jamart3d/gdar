@@ -37,8 +37,17 @@ class ShowService {
       final Map<String, Show> showsByDate = {};
       for (final show in loadedShows) {
         if (showsByDate.containsKey(show.date)) {
-          // Date exists, so add this show's sources to the existing entry.
-          showsByDate[show.date]!.sources.addAll(show.sources);
+          // Date exists, so add this show's sources to the existing entry, avoiding duplicates.
+          final existingShow = showsByDate[show.date]!;
+          final existingIds = existingShow.sources.map((s) => s.id).toSet();
+
+          for (final source in show.sources) {
+            if (!existingIds.contains(source.id)) {
+              existingShow.sources.add(source);
+              existingIds.add(
+                  source.id); // Add to set to prevent dupes in the same batch
+            }
+          }
         } else {
           // First time seeing this date, create a new Show object in the map.
           // We create a copy to avoid issues with object references.

@@ -31,6 +31,7 @@ class ShowListScreen extends StatefulWidget {
 class _ShowListScreenState extends State<ShowListScreen>
     with SingleTickerProviderStateMixin {
   final TextEditingController _searchController = TextEditingController();
+  final FocusNode _searchFocusNode = FocusNode();
   final ItemScrollController _itemScrollController = ItemScrollController();
   final ItemPositionsListener _itemPositionsListener =
       ItemPositionsListener.create();
@@ -112,6 +113,11 @@ class _ShowListScreenState extends State<ShowListScreen>
       context.read<ShowListProvider>().setSearchQuery(_searchController.text);
     });
 
+    _searchFocusNode.addListener(() {
+      // Rebuild when focus changes to hide/show MiniPlayer
+      setState(() {});
+    });
+
     // Listen to player state to manage loading indicators
     final audioProvider = context.read<AudioProvider>();
     audioProvider.addListener(() {
@@ -159,6 +165,7 @@ class _ShowListScreenState extends State<ShowListScreen>
   @override
   void dispose() {
     _searchController.dispose();
+    _searchFocusNode.dispose();
     _animationController.dispose();
     _playerStateSubscription?.cancel();
     super.dispose();
@@ -507,6 +514,7 @@ class _ShowListScreenState extends State<ShowListScreen>
                 padding: const EdgeInsets.fromLTRB(24, 8, 24, 8),
                 child: SearchBar(
                   controller: _searchController,
+                  focusNode: _searchFocusNode,
                   hintText: 'Search by venue or date',
                   leading: const Icon(Icons.search_rounded),
                   trailing: _searchController.text.isNotEmpty
@@ -585,7 +593,9 @@ class _ShowListScreenState extends State<ShowListScreen>
                       showListProvider, audioProvider, settingsProvider)),
             ],
           ),
-          if (audioProvider.currentShow != null)
+          // Hide MiniPlayer if search is active AND has focus (keyboard likely open)
+          if (audioProvider.currentShow != null &&
+              !(_isSearchVisible && _searchFocusNode.hasFocus))
             Positioned(
               left: 0,
               right: 0,

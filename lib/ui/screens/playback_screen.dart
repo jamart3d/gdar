@@ -203,17 +203,10 @@ class _PlaybackScreenState extends State<PlaybackScreen>
                         children: [
                           Consumer<SettingsProvider>(
                             builder: (context, settings, _) {
-                              // Use consistent logic with ShowListCard:
-                              // If single source, use show name. If multi-source, use source ID.
-                              final String ratingKey =
-                                  currentShow.sources.length > 1
-                                      ? currentSource.id
-                                      : currentShow.name;
+                              // Always use Source ID for ratings.
+                              final String ratingKey = currentSource.id;
 
-                              final isPlayed = settings.isPlayed(ratingKey) ||
-                                  (currentShow.sources.length == 1 &&
-                                      settings.isPlayed(currentShow.name)) ||
-                                  settings.isPlayed(currentSource.id);
+                              final isPlayed = settings.isPlayed(ratingKey);
 
                               return RatingControl(
                                 key: ValueKey(
@@ -228,9 +221,7 @@ class _PlaybackScreenState extends State<PlaybackScreen>
                                     context: context,
                                     builder: (context) => RatingDialog(
                                       initialRating: currentRating,
-                                      sourceId: currentShow.sources.length > 1
-                                          ? currentSource.id
-                                          : null,
+                                      sourceId: currentSource.id,
                                       sourceUrl: currentSource.tracks.isNotEmpty
                                           ? currentSource.tracks.first.url
                                           : null,
@@ -756,10 +747,8 @@ class _PlaybackScreenState extends State<PlaybackScreen>
 
   Widget _buildRatingButton(BuildContext context, Show show, Source source,
       SettingsProvider settings) {
-    // Determine the key for rating:
-    // If multiple sources, rate the specific source ID.
-    // If single source, rate the show name (consistent with ShowListCard).
-    final String ratingKey = show.sources.length > 1 ? source.id : show.name;
+    // Always use Source ID for rating.
+    final String ratingKey = source.id;
     final rating = settings.getRating(ratingKey);
 
     return RatingControl(
@@ -771,10 +760,9 @@ class _PlaybackScreenState extends State<PlaybackScreen>
           context: context,
           builder: (context) => RatingDialog(
             initialRating: rating,
-            sourceId: show.sources.length > 1 ? source.id : null,
-            sourceUrl: show.sources.length > 1 && source.tracks.isNotEmpty
-                ? source.tracks.first.url
-                : null,
+            sourceId: source.id,
+            sourceUrl:
+                source.tracks.isNotEmpty ? source.tracks.first.url : null,
             isPlayed: settings.isPlayed(ratingKey),
             onRatingChanged: (newRating) {
               settings.setRating(ratingKey, newRating);

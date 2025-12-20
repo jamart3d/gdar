@@ -457,19 +457,17 @@ class _ShowListCardState extends State<ShowListCard> {
       );
     }
 
-    // Standard Logic
+    // If there are multiple sources visible (not filtered to 1), we don't show the rating on the card.
     if (show.sources.length > 1) {
       return const SizedBox.shrink();
     }
 
-    final rating = settings.getRating(show.name);
-    // Check if show is played OR if the single source is played
-    bool isPlayed = settings.isPlayed(show.name);
-    if (!isPlayed &&
-        show.sources.length == 1 &&
-        settings.isPlayed(show.sources.first.id)) {
-      isPlayed = true;
-    }
+    // Always use the SOURCE ID for ratings/played status, even if only one source exists.
+    final source = show.sources.first;
+    final ratingKey = source.id;
+
+    final rating = settings.getRating(ratingKey);
+    bool isPlayed = settings.isPlayed(ratingKey);
 
     return Padding(
       padding: const EdgeInsets.all(8.0),
@@ -486,14 +484,14 @@ class _ShowListCardState extends State<ShowListCard> {
                       context: context,
                       builder: (context) => RatingDialog(
                         initialRating: rating,
-                        sourceId: null,
+                        sourceId: ratingKey, // Always pass Source ID
                         isPlayed: isPlayed,
                         onRatingChanged: (newRating) {
-                          settings.setRating(show.name, newRating);
+                          settings.setRating(ratingKey, newRating);
                         },
-                        onPlayedChanged: (bool isPlayed) {
-                          if (isPlayed != settings.isPlayed(show.name)) {
-                            settings.togglePlayed(show.name);
+                        onPlayedChanged: (bool newIsPlayed) {
+                          if (newIsPlayed != settings.isPlayed(ratingKey)) {
+                            settings.togglePlayed(ratingKey);
                           }
                         },
                       ),
@@ -501,9 +499,9 @@ class _ShowListCardState extends State<ShowListCard> {
                   }
                 : null,
           ),
-          if (show.sources.first.src != null) ...[
+          if (source.src != null) ...[
             const SizedBox(height: 4),
-            SrcBadge(src: show.sources.first.src!),
+            SrcBadge(src: source.src!),
           ],
         ],
       ),

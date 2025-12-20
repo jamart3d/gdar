@@ -112,6 +112,7 @@ This file tracks planned features, enhancements, and bug fixes for the gdar appl
 - [x] **Data Cleaning Scripts:**
   - [x] `fix2_with_database.py`: Clean setlist data and generate review lists.
   - [x] `report_review_shnids.py`: Generate lexicographically sorted SHNID lists for review.
+  - [ ] **Investigate Sequences Following 'Tuning':** Analyze tracks appearing after "Tuning" to identify potential encores or separation issues.
 - [x] **Refined Usage Instructions:**
   - [x] Improved line breaking (no widows/orphans).
   - [x] Enhanced typography (bold keywords).
