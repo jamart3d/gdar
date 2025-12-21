@@ -1,6 +1,9 @@
 import 'dart:async';
 import 'dart:math';
 
+import 'dart:io';
+import 'package:flutter/services.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:gdar/models/show.dart';
 import 'package:gdar/models/source.dart';
@@ -220,6 +223,13 @@ class AudioProvider with ChangeNotifier {
   Future<void> _loadAndPlayAudio(Source source, {int initialIndex = 0}) async {
     logger.i(
         'Loading show: ${_currentShow!.name}, source: ${source.id}, starting at index: $initialIndex');
+    Uri? artUri;
+    try {
+      artUri = await _getAlbumArtUri();
+    } catch (e) {
+      logger.w('Failed to get album art URI: $e');
+    }
+
     try {
       final playlist = ConcatenatingAudioSource(
         useLazyPreparation: false,
@@ -240,6 +250,7 @@ class AudioProvider with ChangeNotifier {
               title: track.title,
               artist: _currentShow!.artist,
               duration: Duration(seconds: track.duration),
+              artUri: artUri,
               extras: {'source_id': source.id},
             ),
           );
@@ -284,6 +295,32 @@ class AudioProvider with ChangeNotifier {
     _audioPlayer.seek(Duration.zero, index: index);
     if (!_audioPlayer.playing) {
       _audioPlayer.play();
+    }
+  }
+
+  Future<Uri?> _getAlbumArtUri() async {
+    // Check internal setting first
+    if (_settingsProvider?.showGlobalAlbumArt != true) {
+      return null;
+    }
+
+    try {
+      final docsDir = await getApplicationDocumentsDirectory();
+      final file = File('${docsDir.path}/album_art.png');
+
+      if (!await file.exists()) {
+        // Load from assets and write to file
+        final byteData = await rootBundle.load('assets/images/t_steal.webp');
+        await file.writeAsBytes(byteData.buffer.asUint8List(
+          byteData.offsetInBytes,
+          byteData.lengthInBytes,
+        ));
+      }
+
+      return Uri.file(file.path);
+    } catch (e) {
+      logger.e('Error preparing album art', error: e);
+      return null;
     }
   }
 }

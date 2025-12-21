@@ -187,8 +187,9 @@ class ShowListProvider with ChangeNotifier {
       }
     }
     if (url.contains('dsbd')) categories.add('dsbd');
-    if (url.contains('fm') || url.contains('prefm') || url.contains('pre-fm'))
+    if (url.contains('fm') || url.contains('prefm') || url.contains('pre-fm')) {
       categories.add('fm');
+    }
     if (srcType == 'sbd' || url.contains('sbd')) categories.add('sbd');
 
     return categories;

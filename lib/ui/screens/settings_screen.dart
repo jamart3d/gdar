@@ -350,26 +350,27 @@ class SettingsScreen extends StatelessWidget {
                         },
                         secondary: const Icon(Icons.color_lens_rounded),
                       ),
-                      ListTile(
-                        leading: const Icon(Icons.palette_rounded),
-                        title: const Text('Custom Theme Color'),
-                        subtitle:
-                            const Text('Overrides the default theme color'),
-                        enabled: !settingsProvider.useDynamicColor,
-                        onTap: () => _showColorPickerDialog(context),
-                        trailing: Container(
-                          width: 24,
-                          height: 24,
-                          decoration: BoxDecoration(
-                            color: settingsProvider.seedColor ?? Colors.purple,
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: colorScheme.outline,
-                              width: 2,
+                      if (!settingsProvider.useDynamicColor)
+                        ListTile(
+                          leading: const Icon(Icons.palette_rounded),
+                          title: const Text('Custom Theme Color'),
+                          subtitle:
+                              const Text('Overrides the default theme color'),
+                          onTap: () => _showColorPickerDialog(context),
+                          trailing: Container(
+                            width: 24,
+                            height: 24,
+                            decoration: BoxDecoration(
+                              color:
+                                  settingsProvider.seedColor ?? Colors.purple,
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: colorScheme.outline,
+                                width: 2,
+                              ),
                             ),
                           ),
                         ),
-                      ),
                       if (settingsProvider.useDynamicColor)
                         SwitchListTile(
                           title: const Text('True Black And Half Glow'),

@@ -57,6 +57,9 @@ This file tracks planned features, enhancements, and bug fixes for the gdar appl
   - [x] **Rating Dialog Improvements:**
     - [x] "Mark as Played" toggle with confirmation dialog.
     - [x] Mutual exclusivity between Blocked (Red) and Rated (Gold) stars.
+    - [ ] **Show List Scrollbar:** Implement a custom scrollbar for the Show List.
+      - [ ] **Settings:** Option for "Always Visible" vs "Auto Hide".
+      - [ ] **Thumb Details:** Large, scalable thumb (respects UI Scale) that displays the year's last two digits (e.g., '77).
     - [x] Block confirmation for rated shows.
     - [x] **Rated Shows Library**: Added dynamic counts to each tab label (e.g., "Played (5)").
 
@@ -65,6 +68,20 @@ This file tracks planned features, enhancements, and bug fixes for the gdar appl
   - Automated Random (Continuous Play) ignores search filter to pick from full library.
 
 - [ ] **UI Polish:** Refine animations and transitions for an even smoother feel.
+- [ ] **3D Rotating Stars:** Animate rating stars by rotating them around their Y-axis to give a 3D effect.
+- [ ] **Font Selection:** Add setting to choose the handwriting font. Options: Caveat, Permanent Marker, Lacquer, Rock Salt.
+- [ ] **Improved Highlight:** Enhance the "currently playing" highlight visibility when in Dark Mode with Dynamic Color and Glow Border enabled.
+- [ ] **Improve Playback Controls:** Enhance the layout and interactivity of controls in the Playback Screen.
+  - [ ] **Venue Name Positioning:**
+    - [ ] Add setting to display venue name under the date in Playback Screen appbar.
+    - [ ] Move venue name in Playback Controls (expanded) to just above the date.
+    - [ ] Hide venue name in Playback Controls when collapsed.
+- [ ] **Haptic Feedback Idetified Improvements:**
+  - [ ] Add `HapticFeedback.mediumImpact()` to Source Filter "Solo" Mode (Long Press).
+  - [ ] **Polish:** Add subtle feedback (`selectionClick`) to:
+    - [ ] Play/Pause and Next/Prev buttons.
+    - [ ] Expand/Collapse Show Card.
+    - [ ] Star Rating taps.
 
 - [x] **Accessibility:** Review and improve app accessibility.
   - Added semantic labels to `ShowListCard`.
@@ -87,6 +104,13 @@ This file tracks planned features, enhancements, and bug fixes for the gdar appl
 
 - [ ] **Miniplayer Fix:** Fix miniplayer rebuild when navigating between shows screen and track list screen, or integrate it better with the playback controls from the playback screen.
 
+- [ ] **Volume Control:**
+  - Add volume slider/control to Playback Screen controls.
+  - Add setting in Playback Settings to toggle visibility of volume control.
+
+- [ ] **Smart Random Setting**: Add a setting to toggle whether "Automated Random (Continuous Play) ignores search filter to pick from full library" (currently enabled by default).
+- [ ] **Hide Forward/Reverse Controls:** Add setting to hide Next/Previous track buttons in the player interfaces for a minimalist look.
+
 ## Low Priority / Ideas
 
 - [ ] **Google TV Support:** Create a dedicated screen/layout optimized for Google TV and Android TV.
@@ -97,13 +121,13 @@ This file tracks planned features, enhancements, and bug fixes for the gdar appl
 
 - [ ] **Play Count & History**: Consider how to track and display how many times a show has been played. Display only in Rate Dialog or Rated Shows Library (not in Playback Controls).
 
-- [ ] **Smart Random Setting**: Add a setting to toggle whether "Automated Random (Continuous Play) ignores search filter to pick from full library" (currently enabled by default).
-
 - [ ] **Search Help**: Add functionality to help users enter month names in the search field (e.g., autocomplete or chips).
 
-- [ ] **Compact Player Mode:** Add setting to minimize the playback screen player (showing only duration/progress) and move the play/pause control to an icon on the currently playing track in the list.
+- [ ] **Compact Player Mode:** Move the play/pause control to an icon on the currently playing track in the list. When enabled and expanded, do not show any playback controls.
+- [ ] **Track Progress Indicator:** Add setting to show a progress indicator on the currently playing track list item. Should not show time labels and must respect the "Hide Track Duration" setting.
 
 - [ ] **Swipe to Block Follow-up:** When using "Swipe to Block" to remove a show, provide an option (or setting) to immediately trigger a new random selection.
+- [ ] **RGB Glow Setting:** Add a setting to control/boost the "glow" intensity of the RGB border effect.
 
 - [ ] **Rename Category:** Rename category 'unk'/'unknown' to 'fix'/'fix needed'.
 
@@ -112,8 +136,11 @@ This file tracks planned features, enhancements, and bug fixes for the gdar appl
 - [x] **Data Cleaning Scripts:**
   - [x] `fix2_with_database.py`: Clean setlist data and generate review lists.
   - [x] `report_review_shnids.py`: Generate lexicographically sorted SHNID lists for review.
-  - [ ] **Investigate Sequences Following 'Tuning':** Analyze tracks appearing after "Tuning" to identify potential encores or separation issues.
+  - [x] **Investigate Sequences Following 'Tuning':** Analyze tracks appearing after "Tuning" to identify potential encores or separation issues.
 - [x] **Refined Usage Instructions:**
   - [x] Improved line breaking (no widows/orphans).
   - [x] Enhanced typography (bold keywords).
+  - [ ] Ensure "Long-press" starts on a new line in usage instructions.
 - [ ] **Rated Shows Export/Import:** Allow exporting/importing the library of rated shows (dates, shnids, played status, star ratings), possibly via a calendar format or JSON file.
+- [ ] **Storage Mechanism Investigation:** Investigate possible better ways to store settings and rated shows (e.g., Hive, drift/SQLite) instead of SharedPreferences/JSON files for scalability.
+  - [ ] **Pre-populated Database:** converting `shows.json` to a pre-built database (Hive/Drift) shipped in assets to eliminate first-run JSON parsing lag.

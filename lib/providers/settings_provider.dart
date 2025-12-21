@@ -97,6 +97,9 @@ class SettingsProvider with ChangeNotifier {
   bool get randomOnlyUnplayed => _randomOnlyUnplayed;
   bool get randomOnlyHighRated => _randomOnlyHighRated;
 
+  // Internal setting: Global Album Art
+  bool get showGlobalAlbumArt => true;
+
   SettingsProvider(this._prefs) {
     _init();
   }
@@ -308,6 +311,15 @@ class SettingsProvider with ChangeNotifier {
     if (!_sourceCategoryFilters.containsValue(true)) {
       _sourceCategoryFilters[category] = true; // Revert
     }
+
+    notifyListeners();
+    await _saveSourceCategoryFilters();
+  }
+
+  Future<void> setSoloSourceCategoryFilter(String category) async {
+    _sourceCategoryFilters.forEach((key, value) {
+      _sourceCategoryFilters[key] = (key == category);
+    });
 
     notifyListeners();
     await _saveSourceCategoryFilters();

@@ -27,7 +27,7 @@ class SourceFilterSettings extends StatelessWidget {
         ),
         const ListTile(
           title: Text('Source Categories'),
-          subtitle: Text('Tap to filter'),
+          subtitle: const Text('Tap to toggle, Long press to solo'),
           leading: Icon(Icons.category_rounded),
         ),
         Padding(
@@ -45,6 +45,8 @@ class SourceFilterSettings extends StatelessWidget {
                       'betty',
                       !(settingsProvider.sourceCategoryFilters['betty'] ??
                           true)),
+                  onLongPress: () =>
+                      settingsProvider.setSoloSourceCategoryFilter('betty'),
                 ),
               if (showListProvider.availableCategories.contains('ultra'))
                 _buildFilterBadge(
@@ -55,6 +57,8 @@ class SourceFilterSettings extends StatelessWidget {
                       'ultra',
                       !(settingsProvider.sourceCategoryFilters['ultra'] ??
                           true)),
+                  onLongPress: () =>
+                      settingsProvider.setSoloSourceCategoryFilter('ultra'),
                 ),
               if (showListProvider.availableCategories.contains('matrix'))
                 _buildFilterBadge(
@@ -65,6 +69,8 @@ class SourceFilterSettings extends StatelessWidget {
                       'matrix',
                       !(settingsProvider.sourceCategoryFilters['matrix'] ??
                           true)),
+                  onLongPress: () =>
+                      settingsProvider.setSoloSourceCategoryFilter('matrix'),
                 ),
               if (showListProvider.availableCategories.contains('dsbd'))
                 _buildFilterBadge(
@@ -75,6 +81,8 @@ class SourceFilterSettings extends StatelessWidget {
                       'dsbd',
                       !(settingsProvider.sourceCategoryFilters['dsbd'] ??
                           true)),
+                  onLongPress: () =>
+                      settingsProvider.setSoloSourceCategoryFilter('dsbd'),
                 ),
               if (showListProvider.availableCategories.contains('fm'))
                 _buildFilterBadge(
@@ -83,6 +91,8 @@ class SourceFilterSettings extends StatelessWidget {
                   settingsProvider.sourceCategoryFilters['fm'] ?? true,
                   () => settingsProvider.setSourceCategoryFilter('fm',
                       !(settingsProvider.sourceCategoryFilters['fm'] ?? true)),
+                  onLongPress: () =>
+                      settingsProvider.setSoloSourceCategoryFilter('fm'),
                 ),
               if (showListProvider.availableCategories.contains('sbd'))
                 _buildFilterBadge(
@@ -91,6 +101,8 @@ class SourceFilterSettings extends StatelessWidget {
                   settingsProvider.sourceCategoryFilters['sbd'] ?? true,
                   () => settingsProvider.setSourceCategoryFilter('sbd',
                       !(settingsProvider.sourceCategoryFilters['sbd'] ?? true)),
+                  onLongPress: () =>
+                      settingsProvider.setSoloSourceCategoryFilter('sbd'),
                 ),
               // Special case for 'unk' (Unknown) to ensure it's displayed if present
               if (showListProvider.availableCategories.contains('unk'))
@@ -105,6 +117,8 @@ class SourceFilterSettings extends StatelessWidget {
                       !(settingsProvider.sourceCategoryFilters['unk'] ?? false),
                     );
                   },
+                  onLongPress: () =>
+                      settingsProvider.setSoloSourceCategoryFilter('unk'),
                 ),
             ],
           ),
@@ -114,7 +128,8 @@ class SourceFilterSettings extends StatelessWidget {
   }
 
   Widget _buildFilterBadge(
-      BuildContext context, String label, bool isActive, VoidCallback onTap) {
+      BuildContext context, String label, bool isActive, VoidCallback onTap,
+      {VoidCallback? onLongPress}) {
     final colorScheme = Theme.of(context).colorScheme;
     final settingsProvider = context.watch<SettingsProvider>();
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
@@ -124,6 +139,7 @@ class SourceFilterSettings extends StatelessWidget {
 
     return InkWell(
       onTap: onTap,
+      onLongPress: onLongPress,
       borderRadius: BorderRadius.circular(10),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),

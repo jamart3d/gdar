@@ -54,8 +54,7 @@ class _ShowListCardState extends State<ShowListCard> {
             ? colorScheme.tertiary
             : colorScheme.outlineVariant;
     final bool shouldShowBadge = widget.show.sources.length > 1 ||
-        (widget.show.sources.length == 1 && settingsProvider.showSingleShnid) ||
-        (widget.isPlaying && widget.playingSource != null);
+        (widget.show.sources.length == 1 && settingsProvider.showSingleShnid);
 
     final double scaleFactor = settingsProvider.uiScale ? 1.5 : 1.0;
 
@@ -330,7 +329,12 @@ class _ShowListCardState extends State<ShowListCard> {
                         Positioned(
                           right: 0,
                           bottom: 0,
-                          child: _buildBadge(context, widget.show),
+                          child: _buildBottomBadgeArea(
+                            context,
+                            widget.show,
+                            settingsProvider,
+                            scaleFactor,
+                          ),
                         ),
                     ],
                   ),
@@ -341,11 +345,42 @@ class _ShowListCardState extends State<ShowListCard> {
           Positioned(
             right: 10.0 * scaleFactor,
             top: 10.0 * scaleFactor,
-            child: _buildRatingButton(context, widget.show, settingsProvider),
+            child: _buildRatingButton(context, widget.show, settingsProvider,
+                showSrcBadge: !(!settingsProvider.uiScale && shouldShowBadge)),
           ),
         ],
       ),
     );
+  }
+
+  Widget _buildBottomBadgeArea(BuildContext context, Show show,
+      SettingsProvider settingsProvider, double scaleFactor) {
+    // Calculate if we should show the src badge here
+    String? badgeSrc;
+    if (widget.isPlaying && widget.playingSource != null) {
+      badgeSrc = widget.playingSource!.src;
+    } else if (show.sources.length == 1) {
+      badgeSrc = show.sources.first.src;
+    }
+
+    final bool placeSrcBadgeAtBottom =
+        !settingsProvider.uiScale && badgeSrc != null;
+
+    if (placeSrcBadgeAtBottom) {
+      return Row(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(bottom: 2.0, right: 4.0),
+            child: SrcBadge(src: badgeSrc!),
+          ),
+          _buildBadge(context, show),
+        ],
+      );
+    }
+
+    return _buildBadge(context, show);
   }
 
   Widget _buildBadge(BuildContext context, Show show) {
@@ -353,7 +388,9 @@ class _ShowListCardState extends State<ShowListCard> {
     final settingsProvider = context.watch<SettingsProvider>();
 
     final String badgeText;
-    if (widget.isPlaying && widget.playingSource != null) {
+    if (widget.isPlaying &&
+        widget.playingSource != null &&
+        settingsProvider.showSingleShnid) {
       badgeText = widget.playingSource!.id.replaceAll(RegExp(r'[^0-9]'), '');
     } else if (show.sources.length == 1 && settingsProvider.showSingleShnid) {
       badgeText = show.sources.first.id.replaceAll(RegExp(r'[^0-9]'), '');
@@ -410,7 +447,8 @@ class _ShowListCardState extends State<ShowListCard> {
   }
 
   Widget _buildRatingButton(
-      BuildContext context, Show show, SettingsProvider settings) {
+      BuildContext context, Show show, SettingsProvider settings,
+      {bool showSrcBadge = true}) {
     if (widget.isPlaying && widget.playingSource != null) {
       final source = widget.playingSource!;
       final rating = settings.getRating(source.id);
@@ -448,7 +486,7 @@ class _ShowListCardState extends State<ShowListCard> {
                 );
               },
             ),
-            if (badgeSrc != null) ...[
+            if (badgeSrc != null && showSrcBadge) ...[
               const SizedBox(height: 4),
               SrcBadge(src: badgeSrc),
             ],
@@ -499,7 +537,7 @@ class _ShowListCardState extends State<ShowListCard> {
                   }
                 : null,
           ),
-          if (source.src != null) ...[
+          if (source.src != null && showSrcBadge) ...[
             const SizedBox(height: 4),
             SrcBadge(src: source.src!),
           ],
