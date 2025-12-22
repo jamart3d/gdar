@@ -201,7 +201,7 @@ void main() {
       (WidgetTester tester) async {
     final show = createDummyShow('Played Show', '2025-01-01');
     final settingsProvider = SettingsProvider(prefs);
-    await settingsProvider.markAsPlayed(show.name);
+    await settingsProvider.markAsPlayed('source0');
 
     await tester.pumpWidget(createTestableWidget(
       show: show,

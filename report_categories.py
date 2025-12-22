@@ -99,7 +99,7 @@ def get_categories(source):
     return categories
 
 def main():
-    file_path = 'assets/data/output.optimized.json'
+    file_path = 'assets/data/output.optimized_src.json'
     report_path = 'report.md'
     
     if not os.path.exists(file_path):

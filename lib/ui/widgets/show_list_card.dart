@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:gdar/ui/widgets/animated_gradient_border.dart';
 import 'package:gdar/models/show.dart';
 import 'package:gdar/models/source.dart';
@@ -120,7 +121,10 @@ class _ShowListCardState extends State<ShowListCard> {
     bool showShadow = !(isDarkMode &&
         !settingsProvider.useDynamicColor); // Only hide in strict true black
 
-    double glowOpacity = settingsProvider.halfGlowDynamic ? 0.5 : 1.0;
+    // Glow Strength Logic:
+    // Playing: Full Opacity (1.0)
+    // Not Playing: Quarter Opacity (0.25)
+    double glowOpacity = widget.isPlaying ? 1.0 : 0.25;
 
     if ((showGlow || useRgb) && !suppressOuterGlow) {
       return Padding(
@@ -237,7 +241,10 @@ class _ShowListCardState extends State<ShowListCard> {
               color: Colors.transparent,
               child: InkWell(
                 borderRadius: BorderRadius.circular(borderRadius),
-                onTap: widget.onTap,
+                onTap: () {
+                  HapticFeedback.selectionClick();
+                  widget.onTap();
+                },
                 onLongPress: widget.onLongPress,
                 child: Padding(
                   padding: EdgeInsets.all(10.0 * scaleFactor),
@@ -256,7 +263,7 @@ class _ShowListCardState extends State<ShowListCard> {
                                 mainAxisAlignment: MainAxisAlignment.end,
                                 children: [
                                   SizedBox(
-                                    height: venueStyle.fontSize! * 1.3,
+                                    height: venueStyle.fontSize! * 1.6,
                                     child: ConditionalMarquee(
                                       text: settingsProvider.dateFirstInShowCard
                                           ? widget.show.formattedDate

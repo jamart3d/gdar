@@ -351,9 +351,15 @@ class _MiniPlayerState extends State<MiniPlayer>
                                                   ),
                                                   iconSize: iconSize,
                                                   color: colorScheme.onPrimary,
-                                                  onPressed: playing
-                                                      ? audioProvider.pause
-                                                      : audioProvider.play,
+                                                  onPressed: () {
+                                                    HapticFeedback
+                                                        .selectionClick();
+                                                    if (playing) {
+                                                      audioProvider.pause();
+                                                    } else {
+                                                      audioProvider.play();
+                                                    }
+                                                  },
                                                 ),
                                         ),
                                       ),

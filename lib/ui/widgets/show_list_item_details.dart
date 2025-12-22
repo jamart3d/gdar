@@ -90,9 +90,21 @@ class _ShowListItemDetailsState extends State<ShowListItemDetails> {
                 settingsProvider.setRating(source.id, -1);
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text('Blocked Source "${source.id}"'),
+                    content: Text(
+                      'Blocked Source "${source.id}"',
+                      style: TextStyle(
+                          color:
+                              Theme.of(context).colorScheme.onInverseSurface),
+                    ),
+                    backgroundColor:
+                        Theme.of(context).colorScheme.inverseSurface,
+                    behavior: SnackBarBehavior.floating,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12)),
+                    margin: const EdgeInsets.all(12),
                     action: SnackBarAction(
                       label: 'UNDO',
+                      textColor: Theme.of(context).colorScheme.inversePrimary,
                       onPressed: () {
                         settingsProvider.setRating(source.id, 0);
                       },
@@ -154,9 +166,19 @@ class _ShowListItemDetailsState extends State<ShowListItemDetails> {
               // Show Undo Snackbar
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text('Blocked Source "${source.id}"'),
+                  content: Text(
+                    'Blocked Source "${source.id}"',
+                    style: TextStyle(
+                        color: Theme.of(context).colorScheme.onInverseSurface),
+                  ),
+                  backgroundColor: Theme.of(context).colorScheme.inverseSurface,
+                  behavior: SnackBarBehavior.floating,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12)),
+                  margin: const EdgeInsets.all(12),
                   action: SnackBarAction(
                     label: 'UNDO',
+                    textColor: Theme.of(context).colorScheme.inversePrimary,
                     onPressed: () {
                       settingsProvider.setRating(source.id, 0);
                     },

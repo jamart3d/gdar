@@ -45,8 +45,12 @@ class PlaybackControls extends StatelessWidget {
                   icon: const Icon(Icons.skip_previous_rounded),
                   iconSize: iconSize,
                   color: colorScheme.onSurface,
-                  onPressed: isFirstTrack ? null : audioProvider.seekToPrevious,
-                  tooltip: 'Previous Track',
+                  onPressed: isFirstTrack
+                      ? null
+                      : () {
+                          HapticFeedback.selectionClick();
+                          audioProvider.seekToPrevious();
+                        },
                 ),
                 if (processingState == ProcessingState.loading ||
                     processingState == ProcessingState.buffering)
@@ -65,6 +69,7 @@ class PlaybackControls extends StatelessWidget {
                       key: const ValueKey('play_pause_button'),
                       iconSize: 56.0 * scaleFactor,
                       onPressed: () {
+                        HapticFeedback.selectionClick();
                         if (playing) {
                           audioProvider.pause();
                         } else {
@@ -77,15 +82,18 @@ class PlaybackControls extends StatelessWidget {
                             : Icons.play_circle_fill_rounded,
                         color: colorScheme.primary,
                       ),
-                      tooltip: playing ? 'Pause' : 'Play',
                     ),
                   ),
                 IconButton(
                   icon: const Icon(Icons.skip_next_rounded),
                   iconSize: iconSize,
                   color: colorScheme.onSurface,
-                  onPressed: isLastTrack ? null : audioProvider.seekToNext,
-                  tooltip: 'Next Track',
+                  onPressed: isLastTrack
+                      ? null
+                      : () {
+                          HapticFeedback.selectionClick();
+                          audioProvider.seekToNext();
+                        },
                 ),
               ],
             );

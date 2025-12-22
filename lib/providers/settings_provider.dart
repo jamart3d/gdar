@@ -15,7 +15,14 @@ class SettingsProvider with ChangeNotifier {
   static const String _playRandomOnStartupKey = 'play_random_on_startup';
   static const String _dateFirstInShowCardKey = 'date_first_in_show_card';
   static const String _useDynamicColorKey = 'use_dynamic_color';
-  static const String _useHandwritingFontKey = 'use_handwriting_font';
+  static const String _appFontKey = 'app_font';
+  String _appFont = 'default';
+  String get appFont => _appFont;
+  void setAppFont(String font) =>
+      _updateStringPreference(_appFontKey, _appFont = font);
+
+  // Deprecated key for migration
+  // static const String _useHandwritingFontKey = 'use_handwriting_font';
   static const String _uiScaleKey = 'ui_scale';
   static const String _seedColorKey = 'seed_color';
   static const String _showGlowBorderKey = 'show_glow_border';
@@ -47,7 +54,7 @@ class SettingsProvider with ChangeNotifier {
   late bool _playRandomOnStartup;
   late bool _dateFirstInShowCard;
   late bool _useDynamicColor;
-  late bool _useHandwritingFont;
+  // late bool _useHandwritingFont; // Removed
   late bool _uiScale;
   late bool _showGlowBorder;
   late bool _highlightPlayingWithRgb;
@@ -80,7 +87,7 @@ class SettingsProvider with ChangeNotifier {
   bool get useDynamicColor => _useDynamicColor;
   bool get useSliverAppBar => true;
   bool get useSharedAxisTransition => true;
-  bool get useHandwritingFont => _useHandwritingFont;
+  // bool get useHandwritingFont => _useHandwritingFont; // Removed
   bool get uiScale => _uiScale;
   bool get showGlowBorder => _showGlowBorder;
   bool get highlightPlayingWithRgb => _highlightPlayingWithRgb;
@@ -139,7 +146,19 @@ class SettingsProvider with ChangeNotifier {
     _playRandomOnStartup = _prefs.getBool(_playRandomOnStartupKey) ?? false;
     _dateFirstInShowCard = _prefs.getBool(_dateFirstInShowCardKey) ?? true;
     _useDynamicColor = _prefs.getBool(_useDynamicColorKey) ?? true;
-    _useHandwritingFont = _prefs.getBool(_useHandwritingFontKey) ?? true;
+    // Font Migration Logic
+    if (_prefs.containsKey('use_handwriting_font')) {
+      bool oldHandwriting = _prefs.getBool('use_handwriting_font') ?? false;
+      if (oldHandwriting) {
+        _appFont = 'caveat';
+        _prefs.setString(_appFontKey, 'caveat');
+      } else {
+        _appFont = 'default';
+      }
+      _prefs.remove('use_handwriting_font');
+    } else {
+      _appFont = _prefs.getString(_appFontKey) ?? 'default';
+    }
 
     _showGlowBorder = _prefs.getBool(_showGlowBorderKey) ?? false;
     _highlightPlayingWithRgb =
@@ -207,8 +226,7 @@ class SettingsProvider with ChangeNotifier {
       _dateFirstInShowCardKey, _dateFirstInShowCard = !_dateFirstInShowCard);
   void toggleUseDynamicColor() => _updatePreference(
       _useDynamicColorKey, _useDynamicColor = !_useDynamicColor);
-  void toggleUseHandwritingFont() => _updatePreference(
-      _useHandwritingFontKey, _useHandwritingFont = !_useHandwritingFont);
+  // void toggleUseHandwritingFont() => ... // Removed
   void toggleUiScale() => _updatePreference(_uiScaleKey, _uiScale = !_uiScale);
   void toggleShowGlowBorder() =>
       _updatePreference(_showGlowBorderKey, _showGlowBorder = !_showGlowBorder);
@@ -376,6 +394,11 @@ class SettingsProvider with ChangeNotifier {
   // Persistence Helpers
   Future<void> _updatePreference(String key, bool value) async {
     await _prefs.setBool(key, value);
+    notifyListeners();
+  }
+
+  Future<void> _updateStringPreference(String key, String value) async {
+    await _prefs.setString(key, value);
     notifyListeners();
   }
 

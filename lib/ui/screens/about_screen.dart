@@ -179,9 +179,17 @@ class AboutScreen extends StatelessWidget {
 
   void _showEmailCopiedSnackBar(BuildContext context) {
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Email address copied to clipboard'),
-        duration: Duration(seconds: 2),
+      SnackBar(
+        content: Text(
+          'Email address copied to clipboard',
+          style:
+              TextStyle(color: Theme.of(context).colorScheme.onInverseSurface),
+        ),
+        duration: const Duration(seconds: 2),
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: Theme.of(context).colorScheme.inverseSurface,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        margin: const EdgeInsets.all(12),
       ),
     );
   }

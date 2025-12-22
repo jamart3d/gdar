@@ -16,8 +16,8 @@ class ShowListProvider with ChangeNotifier {
   bool _isLoading = true;
   String? _error;
   String _searchQuery = '';
-  String? _expandedShowName;
-  String? _loadingShowName;
+  String? _expandedShowKey;
+  String? _loadingShowKey;
   bool _isArchiveReachable = false;
   bool _hasCheckedArchive = false;
   bool _sortOldestFirst = true;
@@ -26,14 +26,16 @@ class ShowListProvider with ChangeNotifier {
   bool get isLoading => _isLoading;
   String? get error => _error;
   String get searchQuery => _searchQuery;
-  String? get expandedShowName => _expandedShowName;
-  String? get loadingShowName => _loadingShowName;
+  String? get expandedShowKey => _expandedShowKey;
+  String? get loadingShowKey => _loadingShowKey;
   List<Show> get allShows => _allShows;
   bool get isArchiveReachable => _isArchiveReachable;
   bool get hasCheckedArchive => _hasCheckedArchive;
 
   int get totalShnids =>
       _allShows.fold(0, (sum, show) => sum + show.sources.length);
+
+  String getShowKey(Show show) => '${show.name}_${show.date}';
 
   void setArchiveStatus(bool isReachable) {
     _isArchiveReachable = isReachable;
@@ -99,15 +101,15 @@ class ShowListProvider with ChangeNotifier {
       _updateFilteredShows();
 
       // Collapse expanded show if it becomes invalid or has few sources loop
-      if (_expandedShowName != null) {
+      if (_expandedShowKey != null) {
         final expandedShow = _filteredShowsCache.firstWhere(
-            (s) => s.name == _expandedShowName,
+            (s) => getShowKey(s) == _expandedShowKey,
             orElse: () =>
                 Show(name: '', artist: '', date: '', venue: '', sources: []));
 
         // If hidden entirely
         if (expandedShow.name.isEmpty) {
-          _expandedShowName = null;
+          _expandedShowKey = null;
         } else if (expandedShow.sources.length <= 1 && !_filterHighestShnid) {
           // Original logic: collapse if single source.
           // But with filtering we might force it to single source.
@@ -116,7 +118,7 @@ class ShowListProvider with ChangeNotifier {
           // but here the logic was likely "don't keep it expanded if it's simpler now"?
           // Actually, the original logic was: "if expandedShow.sources.length <= 1 ... _expandedShowName = null".
           // This implies standard behavior for single-source shows is collapsed/inline.
-          _expandedShowName = null;
+          _expandedShowKey = null;
         }
       }
       shouldNotify = true;
@@ -360,31 +362,33 @@ class ShowListProvider with ChangeNotifier {
   }
 
   void onShowTap(Show show) {
-    if (_expandedShowName == show.name) {
+    final key = getShowKey(show);
+    if (_expandedShowKey == key) {
       // Collapse the current show
-      _expandedShowName = null;
+      _expandedShowKey = null;
     } else {
       // Expand the new show
-      _expandedShowName = show.name;
+      _expandedShowKey = key;
     }
     notifyListeners();
   }
 
-  void setLoadingShow(String? showName) {
-    if (_loadingShowName != showName) {
-      _loadingShowName = showName;
+  void setLoadingShow(Show? show) {
+    final key = show != null ? getShowKey(show) : null;
+    if (_loadingShowKey != key) {
+      _loadingShowKey = key;
       notifyListeners();
     }
   }
 
   // Used to expand a show, e.g., when the current playing show is tapped.
   void expandShow(Show show) {
-    _expandedShowName = show.name;
+    _expandedShowKey = getShowKey(show);
     notifyListeners();
   }
 
   void collapseCurrentShow() {
-    _expandedShowName = null;
+    _expandedShowKey = null;
     notifyListeners();
   }
 }

@@ -10,7 +10,11 @@ import 'package:provider/provider.dart';
 
 import 'splash_screen_test.mocks.dart';
 
-@GenerateMocks([ShowListProvider, SettingsProvider, AudioProvider])
+@GenerateNiceMocks([
+  MockSpec<ShowListProvider>(),
+  MockSpec<SettingsProvider>(),
+  MockSpec<AudioProvider>()
+])
 void main() {
   late MockShowListProvider mockShowListProvider;
   late MockSettingsProvider mockSettingsProvider;
@@ -21,6 +25,7 @@ void main() {
     mockSettingsProvider = MockSettingsProvider();
     mockAudioProvider = MockAudioProvider();
 
+    when(mockSettingsProvider.isFirstRun).thenReturn(false);
     when(mockSettingsProvider.showSplashScreen).thenReturn(true);
     when(mockSettingsProvider.playRandomOnStartup).thenReturn(false);
     when(mockSettingsProvider.useSliverAppBar).thenReturn(false);

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:gdar/models/show.dart';
 import 'package:gdar/providers/show_list_provider.dart';
 import 'package:gdar/ui/widgets/section_card.dart';
 import 'package:provider/provider.dart';
@@ -25,13 +26,13 @@ class CollectionStatistics extends StatelessWidget {
     int catSbdSources = 0;
     int catUnkSources = 0;
 
-    Set<String> catBettyShows = {};
-    Set<String> catUltraShows = {};
-    Set<String> catMatrixShows = {};
-    Set<String> catDsbdShows = {};
-    Set<String> catFmShows = {};
-    Set<String> catSbdShows = {};
-    Set<String> catUnkShows = {};
+    Set<Show> catBettyShows = {};
+    Set<Show> catUltraShows = {};
+    Set<Show> catMatrixShows = {};
+    Set<Show> catDsbdShows = {};
+    Set<Show> catFmShows = {};
+    Set<Show> catSbdShows = {};
+    Set<Show> catUnkShows = {};
 
     for (var show in allShows) {
       totalSources += show.sources.length;
@@ -82,31 +83,31 @@ class CollectionStatistics extends StatelessWidget {
 
         if (cats.contains('betty')) {
           catBettySources++;
-          catBettyShows.add(show.name);
+          catBettyShows.add(show);
         }
         if (cats.contains('ultra')) {
           catUltraSources++;
-          catUltraShows.add(show.name);
+          catUltraShows.add(show);
         }
         if (cats.contains('matrix')) {
           catMatrixSources++;
-          catMatrixShows.add(show.name);
+          catMatrixShows.add(show);
         }
         if (cats.contains('dsbd')) {
           catDsbdSources++;
-          catDsbdShows.add(show.name);
+          catDsbdShows.add(show);
         }
         if (cats.contains('fm')) {
           catFmSources++;
-          catFmShows.add(show.name);
+          catFmShows.add(show);
         }
         if (cats.contains('sbd')) {
           catSbdSources++;
-          catSbdShows.add(show.name);
+          catSbdShows.add(show);
         }
         if (cats.contains('unk')) {
           catUnkSources++;
-          catUnkShows.add(show.name);
+          catUnkShows.add(show);
         }
       }
     }

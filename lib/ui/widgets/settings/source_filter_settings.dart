@@ -1,3 +1,4 @@
+import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:gdar/providers/settings_provider.dart';
 import 'package:gdar/providers/show_list_provider.dart';
@@ -27,7 +28,7 @@ class SourceFilterSettings extends StatelessWidget {
         ),
         const ListTile(
           title: Text('Source Categories'),
-          subtitle: const Text('Tap to toggle, Long press to solo'),
+          subtitle: Text('Tap to toggle, Long press to solo'),
           leading: Icon(Icons.category_rounded),
         ),
         Padding(
@@ -139,7 +140,12 @@ class SourceFilterSettings extends StatelessWidget {
 
     return InkWell(
       onTap: onTap,
-      onLongPress: onLongPress,
+      onLongPress: onLongPress != null
+          ? () {
+              HapticFeedback.mediumImpact();
+              onLongPress();
+            }
+          : null,
       borderRadius: BorderRadius.circular(10),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),

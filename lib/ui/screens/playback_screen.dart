@@ -52,9 +52,16 @@ class _PlaybackScreenState extends State<PlaybackScreen>
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Playback Error: $error'),
-              backgroundColor: Theme.of(context).colorScheme.error,
+              content: Text(
+                'Playback Error: $error',
+                style: TextStyle(
+                    color: Theme.of(context).colorScheme.onErrorContainer),
+              ),
+              backgroundColor: Theme.of(context).colorScheme.errorContainer,
               behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12)),
+              margin: const EdgeInsets.all(12),
             ),
           );
         }
@@ -189,10 +196,17 @@ class _PlaybackScreenState extends State<PlaybackScreen>
                 SliverAppBar(
                   backgroundColor: backgroundColor,
                   pinned: true,
-                  title: Text(
-                    currentShow.formattedDate,
-                    style: Theme.of(context).textTheme.titleLarge?.apply(
-                        fontSizeFactor: settingsProvider.uiScale ? 1.25 : 1.0),
+                  title: SizedBox(
+                    height: (Theme.of(context).textTheme.titleLarge?.fontSize ??
+                            22.0) *
+                        (settingsProvider.uiScale ? 1.25 : 1.0) *
+                        1.6,
+                    child: ConditionalMarquee(
+                      text: currentShow.formattedDate,
+                      style: Theme.of(context).textTheme.titleLarge?.apply(
+                          fontSizeFactor:
+                              settingsProvider.uiScale ? 1.25 : 1.0),
+                    ),
                   ),
                   actions: [
                     Padding(
@@ -284,7 +298,6 @@ class _PlaybackScreenState extends State<PlaybackScreen>
                     IconButton(
                       icon: const Icon(Icons.settings_rounded),
                       iconSize: 24 * (settingsProvider.uiScale ? 1.25 : 1.0),
-                      tooltip: 'Settings',
                       onPressed: () {
                         Navigator.of(context).push(
                           MaterialPageRoute(
@@ -415,7 +428,7 @@ class _PlaybackScreenState extends State<PlaybackScreen>
                         child: SizedBox(
                           height: textTheme.headlineSmall!.fontSize! *
                               scaleFactor *
-                              1.5, // Increased height for better fit
+                              1.6, // Increased height for better fit with Rock Salt
                           child: ConditionalMarquee(
                             text: currentShow.venue,
                             style: textTheme.headlineSmall
@@ -459,7 +472,6 @@ class _PlaybackScreenState extends State<PlaybackScreen>
                       icon: Icon(Icons.copy_rounded,
                           size: 20 * scaleFactor,
                           color: colorScheme.onSurfaceVariant),
-                      tooltip: 'Copy Show Details',
                       onPressed: () {
                         final track = currentSource.tracks[
                             audioProvider.audioPlayer.currentIndex ?? 0];
@@ -470,11 +482,18 @@ class _PlaybackScreenState extends State<PlaybackScreen>
                           SnackBar(
                             content: Text('Show details copied to clipboard',
                                 style: TextStyle(
-                                    color: colorScheme.onSecondaryContainer)),
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .onInverseSurface)),
                             behavior: SnackBarBehavior.floating,
-                            backgroundColor: colorScheme.secondaryContainer,
+                            backgroundColor:
+                                Theme.of(context).colorScheme.inverseSurface,
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12)),
+                            margin: const EdgeInsets.all(12),
                             showCloseIcon: true,
-                            closeIconColor: colorScheme.onSecondaryContainer,
+                            closeIconColor:
+                                Theme.of(context).colorScheme.onInverseSurface,
                           ),
                         );
                       },
@@ -715,7 +734,7 @@ class _PlaybackScreenState extends State<PlaybackScreen>
       ),
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
       title: SizedBox(
-        height: titleStyle.fontSize! * 1.2,
+        height: titleStyle.fontSize! * 1.6,
         child: ConditionalMarquee(
           text: settingsProvider.showTrackNumbers
               ? '${track.trackNumber}. ${track.title}'

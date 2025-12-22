@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/services.dart';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gdar/models/show.dart';
@@ -13,13 +14,11 @@ import 'package:mockito/mockito.dart';
 
 import 'audio_provider_test.mocks.dart';
 
-@GenerateMocks([
-  AudioPlayer,
-  ShowListProvider,
-  SettingsProvider,
-], customMocks: [
+@GenerateNiceMocks([
   MockSpec<AudioPlayer>(
-      as: #MockAudioPlayerRelaxed, onMissingStub: OnMissingStub.returnDefault)
+      as: #MockAudioPlayerRelaxed, onMissingStub: OnMissingStub.returnDefault),
+  MockSpec<ShowListProvider>(),
+  MockSpec<SettingsProvider>(),
 ])
 void main() {
   late AudioProvider audioProvider;
@@ -29,23 +28,25 @@ void main() {
   late StreamController<ProcessingState> processingStateController;
 
   setUp(() {
+    const channel = MethodChannel('plugins.flutter.io/path_provider');
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(channel, (MethodCall methodCall) async {
+      return '.';
+    });
+
     mockSettingsProvider = MockSettingsProvider();
     mockShowListProvider = MockShowListProvider();
     mockAudioPlayer = MockAudioPlayerRelaxed();
     processingStateController = StreamController<ProcessingState>.broadcast();
 
     // Stub SettingsProvider methods FIRST
-    // Stub for specific shows used in tests (id 1 and 2)
-    // for (var i = 1; i <= 2; i++) {
-    //   final name = 'Grateful Dead at Venue $i on 2025-11-15';
-    //   when(mockSettingsProvider.getRating(name)).thenReturn(0);
-    //   when(mockSettingsProvider.isPlayed(name)).thenReturn(false);
-    // }
-
     when(mockSettingsProvider.randomOnlyUnplayed).thenReturn(false);
     when(mockSettingsProvider.randomOnlyHighRated).thenReturn(false);
     when(mockSettingsProvider.playRandomOnCompletion).thenReturn(false);
     when(mockSettingsProvider.markAsPlayed(any)).thenAnswer((_) async {});
+    when(mockSettingsProvider.showGlobalAlbumArt).thenReturn(true);
+    when(mockSettingsProvider.getRating(any)).thenReturn(0);
+    when(mockSettingsProvider.isPlayed(any)).thenReturn(false);
 
     when(mockAudioPlayer.processingStateStream)
         .thenAnswer((_) => processingStateController.stream);
@@ -135,8 +136,7 @@ void main() {
         expect(shows.contains(playedShow), isTrue);
 
         verify(mockAudioPlayer.setAudioSource(any,
-                initialIndex: anyNamed('initialIndex'),
-                preload: anyNamed('preload')))
+                initialIndex: 0, preload: true))
             .called(1);
         verify(mockAudioPlayer.play()).called(1);
 
@@ -221,7 +221,7 @@ void main() {
         expect(audioProvider.currentSource, equals(source));
 
         verify(mockAudioPlayer.setAudioSource(any,
-                initialIndex: 0, preload: anyNamed('preload')))
+                initialIndex: 0, preload: true))
             .called(1);
         verify(mockAudioPlayer.play()).called(1);
       });

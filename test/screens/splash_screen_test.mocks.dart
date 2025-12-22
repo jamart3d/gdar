@@ -44,14 +44,11 @@ class _FakeAudioPlayer_0 extends _i1.SmartFake implements _i2.AudioPlayer {
 ///
 /// See the documentation for Mockito's code generation for more information.
 class MockShowListProvider extends _i1.Mock implements _i3.ShowListProvider {
-  MockShowListProvider() {
-    _i1.throwOnMissingStub(this);
-  }
-
   @override
   bool get isLoading => (super.noSuchMethod(
         Invocation.getter(#isLoading),
         returnValue: false,
+        returnValueForMissingStub: false,
       ) as bool);
 
   @override
@@ -61,42 +58,59 @@ class MockShowListProvider extends _i1.Mock implements _i3.ShowListProvider {
           this,
           Invocation.getter(#searchQuery),
         ),
+        returnValueForMissingStub: _i4.dummyValue<String>(
+          this,
+          Invocation.getter(#searchQuery),
+        ),
       ) as String);
 
   @override
   List<_i5.Show> get allShows => (super.noSuchMethod(
         Invocation.getter(#allShows),
         returnValue: <_i5.Show>[],
+        returnValueForMissingStub: <_i5.Show>[],
       ) as List<_i5.Show>);
 
   @override
   bool get isArchiveReachable => (super.noSuchMethod(
         Invocation.getter(#isArchiveReachable),
         returnValue: false,
+        returnValueForMissingStub: false,
       ) as bool);
 
   @override
   bool get hasCheckedArchive => (super.noSuchMethod(
         Invocation.getter(#hasCheckedArchive),
         returnValue: false,
+        returnValueForMissingStub: false,
       ) as bool);
 
   @override
   int get totalShnids => (super.noSuchMethod(
         Invocation.getter(#totalShnids),
         returnValue: 0,
+        returnValueForMissingStub: 0,
       ) as int);
 
   @override
   List<_i5.Show> get filteredShows => (super.noSuchMethod(
         Invocation.getter(#filteredShows),
         returnValue: <_i5.Show>[],
+        returnValueForMissingStub: <_i5.Show>[],
       ) as List<_i5.Show>);
+
+  @override
+  Set<String> get availableCategories => (super.noSuchMethod(
+        Invocation.getter(#availableCategories),
+        returnValue: <String>{},
+        returnValueForMissingStub: <String>{},
+      ) as Set<String>);
 
   @override
   bool get hasListeners => (super.noSuchMethod(
         Invocation.getter(#hasListeners),
         returnValue: false,
+        returnValueForMissingStub: false,
       ) as bool);
 
   @override
@@ -123,6 +137,22 @@ class MockShowListProvider extends _i1.Mock implements _i3.ShowListProvider {
         Invocation.method(
           #update,
           [settings],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void setPlayingShow(
+    String? showName,
+    String? sourceId,
+  ) =>
+      super.noSuchMethod(
+        Invocation.method(
+          #setPlayingShow,
+          [
+            showName,
+            sourceId,
+          ],
         ),
         returnValueForMissingStub: null,
       );
@@ -233,171 +263,235 @@ class MockShowListProvider extends _i1.Mock implements _i3.ShowListProvider {
 ///
 /// See the documentation for Mockito's code generation for more information.
 class MockSettingsProvider extends _i1.Mock implements _i7.SettingsProvider {
-  MockSettingsProvider() {
-    _i1.throwOnMissingStub(this);
-  }
+  @override
+  String get appFont => (super.noSuchMethod(
+        Invocation.getter(#appFont),
+        returnValue: _i4.dummyValue<String>(
+          this,
+          Invocation.getter(#appFont),
+        ),
+        returnValueForMissingStub: _i4.dummyValue<String>(
+          this,
+          Invocation.getter(#appFont),
+        ),
+      ) as String);
 
   @override
   bool get showSplashScreen => (super.noSuchMethod(
         Invocation.getter(#showSplashScreen),
         returnValue: false,
+        returnValueForMissingStub: false,
+      ) as bool);
+
+  @override
+  bool get isFirstRun => (super.noSuchMethod(
+        Invocation.getter(#isFirstRun),
+        returnValue: false,
+        returnValueForMissingStub: false,
       ) as bool);
 
   @override
   bool get showExpandIcon => (super.noSuchMethod(
         Invocation.getter(#showExpandIcon),
         returnValue: false,
+        returnValueForMissingStub: false,
       ) as bool);
 
   @override
   bool get showTrackNumbers => (super.noSuchMethod(
         Invocation.getter(#showTrackNumbers),
         returnValue: false,
+        returnValueForMissingStub: false,
       ) as bool);
 
   @override
   bool get hideTrackDuration => (super.noSuchMethod(
         Invocation.getter(#hideTrackDuration),
         returnValue: false,
+        returnValueForMissingStub: false,
       ) as bool);
 
   @override
   bool get playOnTap => (super.noSuchMethod(
         Invocation.getter(#playOnTap),
         returnValue: false,
+        returnValueForMissingStub: false,
       ) as bool);
 
   @override
   bool get showSingleShnid => (super.noSuchMethod(
         Invocation.getter(#showSingleShnid),
         returnValue: false,
+        returnValueForMissingStub: false,
       ) as bool);
 
   @override
   bool get hideTrackCountInSourceList => (super.noSuchMethod(
         Invocation.getter(#hideTrackCountInSourceList),
         returnValue: false,
+        returnValueForMissingStub: false,
       ) as bool);
 
   @override
   bool get playRandomOnCompletion => (super.noSuchMethod(
         Invocation.getter(#playRandomOnCompletion),
         returnValue: false,
+        returnValueForMissingStub: false,
       ) as bool);
 
   @override
   bool get playRandomOnStartup => (super.noSuchMethod(
         Invocation.getter(#playRandomOnStartup),
         returnValue: false,
+        returnValueForMissingStub: false,
       ) as bool);
 
   @override
   bool get dateFirstInShowCard => (super.noSuchMethod(
         Invocation.getter(#dateFirstInShowCard),
         returnValue: false,
+        returnValueForMissingStub: false,
       ) as bool);
 
   @override
   bool get useDynamicColor => (super.noSuchMethod(
         Invocation.getter(#useDynamicColor),
         returnValue: false,
+        returnValueForMissingStub: false,
       ) as bool);
 
   @override
   bool get useSliverAppBar => (super.noSuchMethod(
         Invocation.getter(#useSliverAppBar),
         returnValue: false,
+        returnValueForMissingStub: false,
       ) as bool);
 
   @override
   bool get useSharedAxisTransition => (super.noSuchMethod(
         Invocation.getter(#useSharedAxisTransition),
         returnValue: false,
-      ) as bool);
-
-  @override
-  bool get useHandwritingFont => (super.noSuchMethod(
-        Invocation.getter(#useHandwritingFont),
-        returnValue: false,
+        returnValueForMissingStub: false,
       ) as bool);
 
   @override
   bool get uiScale => (super.noSuchMethod(
         Invocation.getter(#uiScale),
         returnValue: false,
+        returnValueForMissingStub: false,
       ) as bool);
 
   @override
   bool get showGlowBorder => (super.noSuchMethod(
         Invocation.getter(#showGlowBorder),
         returnValue: false,
+        returnValueForMissingStub: false,
       ) as bool);
 
   @override
   bool get highlightPlayingWithRgb => (super.noSuchMethod(
         Invocation.getter(#highlightPlayingWithRgb),
         returnValue: false,
+        returnValueForMissingStub: false,
       ) as bool);
 
   @override
   bool get showPlaybackMessages => (super.noSuchMethod(
         Invocation.getter(#showPlaybackMessages),
         returnValue: false,
+        returnValueForMissingStub: false,
       ) as bool);
 
   @override
   bool get sortOldestFirst => (super.noSuchMethod(
         Invocation.getter(#sortOldestFirst),
         returnValue: false,
+        returnValueForMissingStub: false,
+      ) as bool);
+
+  @override
+  bool get useStrictSrcCategorization => (super.noSuchMethod(
+        Invocation.getter(#useStrictSrcCategorization),
+        returnValue: false,
+        returnValueForMissingStub: false,
       ) as bool);
 
   @override
   bool get highlightCurrentShowCard => (super.noSuchMethod(
         Invocation.getter(#highlightCurrentShowCard),
         returnValue: false,
+        returnValueForMissingStub: false,
       ) as bool);
 
   @override
   bool get useMaterial3 => (super.noSuchMethod(
         Invocation.getter(#useMaterial3),
         returnValue: false,
+        returnValueForMissingStub: false,
       ) as bool);
 
   @override
   Map<String, int> get showRatings => (super.noSuchMethod(
         Invocation.getter(#showRatings),
         returnValue: <String, int>{},
+        returnValueForMissingStub: <String, int>{},
       ) as Map<String, int>);
 
   @override
   Set<String> get playedShows => (super.noSuchMethod(
         Invocation.getter(#playedShows),
         returnValue: <String>{},
+        returnValueForMissingStub: <String>{},
       ) as Set<String>);
 
   @override
   bool get randomOnlyUnplayed => (super.noSuchMethod(
         Invocation.getter(#randomOnlyUnplayed),
         returnValue: false,
+        returnValueForMissingStub: false,
       ) as bool);
 
   @override
   bool get randomOnlyHighRated => (super.noSuchMethod(
         Invocation.getter(#randomOnlyHighRated),
         returnValue: false,
+        returnValueForMissingStub: false,
+      ) as bool);
+
+  @override
+  bool get showGlobalAlbumArt => (super.noSuchMethod(
+        Invocation.getter(#showGlobalAlbumArt),
+        returnValue: false,
+        returnValueForMissingStub: false,
       ) as bool);
 
   @override
   bool get halfGlowDynamic => (super.noSuchMethod(
         Invocation.getter(#halfGlowDynamic),
         returnValue: false,
+        returnValueForMissingStub: false,
       ) as bool);
 
   @override
   double get rgbAnimationSpeed => (super.noSuchMethod(
         Invocation.getter(#rgbAnimationSpeed),
         returnValue: 0.0,
+        returnValueForMissingStub: 0.0,
       ) as double);
+
+  @override
+  bool get filterHighestShnid => (super.noSuchMethod(
+        Invocation.getter(#filterHighestShnid),
+        returnValue: false,
+        returnValueForMissingStub: false,
+      ) as bool);
+
+  @override
+  Map<String, bool> get sourceCategoryFilters => (super.noSuchMethod(
+        Invocation.getter(#sourceCategoryFilters),
+        returnValue: <String, bool>{},
+        returnValueForMissingStub: <String, bool>{},
+      ) as Map<String, bool>);
 
   @override
   set showExpandIcon(bool? value) => super.noSuchMethod(
@@ -412,7 +506,17 @@ class MockSettingsProvider extends _i1.Mock implements _i7.SettingsProvider {
   bool get hasListeners => (super.noSuchMethod(
         Invocation.getter(#hasListeners),
         returnValue: false,
+        returnValueForMissingStub: false,
       ) as bool);
+
+  @override
+  void setAppFont(String? font) => super.noSuchMethod(
+        Invocation.method(
+          #setAppFont,
+          [font],
+        ),
+        returnValueForMissingStub: null,
+      );
 
   @override
   void toggleShowSplashScreen() => super.noSuchMethod(
@@ -496,15 +600,6 @@ class MockSettingsProvider extends _i1.Mock implements _i7.SettingsProvider {
       );
 
   @override
-  void toggleUseHandwritingFont() => super.noSuchMethod(
-        Invocation.method(
-          #toggleUseHandwritingFont,
-          [],
-        ),
-        returnValueForMissingStub: null,
-      );
-
-  @override
   void toggleUiScale() => super.noSuchMethod(
         Invocation.method(
           #toggleUiScale,
@@ -550,6 +645,15 @@ class MockSettingsProvider extends _i1.Mock implements _i7.SettingsProvider {
       );
 
   @override
+  void toggleUseStrictSrcCategorization() => super.noSuchMethod(
+        Invocation.method(
+          #toggleUseStrictSrcCategorization,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
   void toggleHalfGlowDynamic() => super.noSuchMethod(
         Invocation.method(
           #toggleHalfGlowDynamic,
@@ -584,6 +688,7 @@ class MockSettingsProvider extends _i1.Mock implements _i7.SettingsProvider {
           [showName],
         ),
         returnValue: 0,
+        returnValueForMissingStub: 0,
       ) as int);
 
   @override
@@ -593,6 +698,7 @@ class MockSettingsProvider extends _i1.Mock implements _i7.SettingsProvider {
           [showName],
         ),
         returnValue: false,
+        returnValueForMissingStub: false,
       ) as bool);
 
   @override
@@ -651,6 +757,43 @@ class MockSettingsProvider extends _i1.Mock implements _i7.SettingsProvider {
       );
 
   @override
+  void toggleFilterHighestShnid() => super.noSuchMethod(
+        Invocation.method(
+          #toggleFilterHighestShnid,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  _i6.Future<void> setSourceCategoryFilter(
+    String? category,
+    bool? isActive,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #setSourceCategoryFilter,
+          [
+            category,
+            isActive,
+          ],
+        ),
+        returnValue: _i6.Future<void>.value(),
+        returnValueForMissingStub: _i6.Future<void>.value(),
+      ) as _i6.Future<void>);
+
+  @override
+  _i6.Future<void> setSoloSourceCategoryFilter(String? category) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #setSoloSourceCategoryFilter,
+          [category],
+        ),
+        returnValue: _i6.Future<void>.value(),
+        returnValueForMissingStub: _i6.Future<void>.value(),
+      ) as _i6.Future<void>);
+
+  @override
   void addListener(_i8.VoidCallback? listener) => super.noSuchMethod(
         Invocation.method(
           #addListener,
@@ -691,14 +834,14 @@ class MockSettingsProvider extends _i1.Mock implements _i7.SettingsProvider {
 ///
 /// See the documentation for Mockito's code generation for more information.
 class MockAudioProvider extends _i1.Mock implements _i9.AudioProvider {
-  MockAudioProvider() {
-    _i1.throwOnMissingStub(this);
-  }
-
   @override
   _i2.AudioPlayer get audioPlayer => (super.noSuchMethod(
         Invocation.getter(#audioPlayer),
         returnValue: _FakeAudioPlayer_0(
+          this,
+          Invocation.getter(#audioPlayer),
+        ),
+        returnValueForMissingStub: _FakeAudioPlayer_0(
           this,
           Invocation.getter(#audioPlayer),
         ),
@@ -708,42 +851,49 @@ class MockAudioProvider extends _i1.Mock implements _i9.AudioProvider {
   _i6.Stream<_i2.PlayerState> get playerStateStream => (super.noSuchMethod(
         Invocation.getter(#playerStateStream),
         returnValue: _i6.Stream<_i2.PlayerState>.empty(),
+        returnValueForMissingStub: _i6.Stream<_i2.PlayerState>.empty(),
       ) as _i6.Stream<_i2.PlayerState>);
 
   @override
   _i6.Stream<int?> get currentIndexStream => (super.noSuchMethod(
         Invocation.getter(#currentIndexStream),
         returnValue: _i6.Stream<int?>.empty(),
+        returnValueForMissingStub: _i6.Stream<int?>.empty(),
       ) as _i6.Stream<int?>);
 
   @override
   _i6.Stream<Duration?> get durationStream => (super.noSuchMethod(
         Invocation.getter(#durationStream),
         returnValue: _i6.Stream<Duration?>.empty(),
+        returnValueForMissingStub: _i6.Stream<Duration?>.empty(),
       ) as _i6.Stream<Duration?>);
 
   @override
   _i6.Stream<Duration> get positionStream => (super.noSuchMethod(
         Invocation.getter(#positionStream),
         returnValue: _i6.Stream<Duration>.empty(),
+        returnValueForMissingStub: _i6.Stream<Duration>.empty(),
       ) as _i6.Stream<Duration>);
 
   @override
   _i6.Stream<Duration> get bufferedPositionStream => (super.noSuchMethod(
         Invocation.getter(#bufferedPositionStream),
         returnValue: _i6.Stream<Duration>.empty(),
+        returnValueForMissingStub: _i6.Stream<Duration>.empty(),
       ) as _i6.Stream<Duration>);
 
   @override
   _i6.Stream<String> get playbackErrorStream => (super.noSuchMethod(
         Invocation.getter(#playbackErrorStream),
         returnValue: _i6.Stream<String>.empty(),
+        returnValueForMissingStub: _i6.Stream<String>.empty(),
       ) as _i6.Stream<String>);
 
   @override
   bool get hasListeners => (super.noSuchMethod(
         Invocation.getter(#hasListeners),
         returnValue: false,
+        returnValueForMissingStub: false,
       ) as bool);
 
   @override
@@ -780,6 +930,7 @@ class MockAudioProvider extends _i1.Mock implements _i9.AudioProvider {
           {#filterBySearch: filterBySearch},
         ),
         returnValue: _i6.Future<_i5.Show?>.value(),
+        returnValueForMissingStub: _i6.Future<_i5.Show?>.value(),
       ) as _i6.Future<_i5.Show?>);
 
   @override

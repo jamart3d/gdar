@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:gdar/models/source.dart';
+import 'package:gdar/ui/widgets/animated_gradient_border.dart';
 import 'package:gdar/providers/settings_provider.dart';
 import 'package:gdar/ui/widgets/rating_control.dart';
 import 'package:gdar/ui/widgets/src_badge.dart';
@@ -49,28 +50,48 @@ class SourceListItem extends StatelessWidget {
           : colorScheme.secondaryContainer;
     }
 
-    return Material(
-      color: itemBackgroundColor,
-      borderRadius: BorderRadius.circular(borderRadius),
-      child: Container(
+    // Glow Logic
+    bool showGlow = settingsProvider.showGlowBorder;
+    bool useRgb = false;
+
+    if (settingsProvider.highlightPlayingWithRgb && isSourcePlaying) {
+      useRgb = true;
+    }
+
+    // Strict Black Mode Check
+    if (isDarkMode && !settingsProvider.useDynamicColor && !isSourcePlaying) {
+      showGlow = false;
+    }
+
+    // Shadow Visibility
+    bool showShadow = !(isTrueBlackMode && !isSourcePlaying);
+
+    double glowOpacity = isSourcePlaying ? 1.0 : 0.25;
+
+    Widget buildContent() {
+      return Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(borderRadius),
-          border: (showBorder && (isSourcePlaying || isTrueBlackMode))
+          color: itemBackgroundColor,
+          border: (!showGlow &&
+                  !useRgb &&
+                  showBorder &&
+                  (isSourcePlaying || isTrueBlackMode))
               ? Border.all(
                   color: isSourcePlaying
                       ? colorScheme.tertiary
                       : colorScheme.outlineVariant,
                   width: isSourcePlaying ? 2 : 1)
               : null,
-          boxShadow: (isTrueBlackMode && !isSourcePlaying)
-              ? []
-              : [
+          boxShadow: (!showGlow && !useRgb && showShadow)
+              ? [
                   BoxShadow(
                     color: colorScheme.shadow.withOpacity(0.1),
                     blurRadius: 4,
                     offset: const Offset(0, 2),
                   )
-                ],
+                ]
+              : [],
         ),
         child: Stack(
           children: [
@@ -188,6 +209,60 @@ class SourceListItem extends StatelessWidget {
             ),
           ],
         ),
+      );
+    }
+
+    if (showGlow || useRgb) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 4),
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(borderRadius),
+            boxShadow: showShadow
+                ? [
+                    BoxShadow(
+                      color: (useRgb ? Colors.red : colorScheme.primary)
+                          .withOpacity((useRgb ? 0.4 : 0.2) * glowOpacity),
+                      blurRadius: 8,
+                      spreadRadius: 1,
+                    ),
+                  ]
+                : [],
+          ),
+          child: AnimatedGradientBorder(
+            borderRadius: borderRadius,
+            borderWidth: useRgb ? 3 : 2,
+            colors: useRgb
+                ? const [
+                    Colors.red,
+                    Colors.yellow,
+                    Colors.green,
+                    Colors.cyan,
+                    Colors.blue,
+                    Colors.purple,
+                    Colors.red,
+                  ]
+                : [
+                    colorScheme.primary,
+                    colorScheme.tertiary,
+                    colorScheme.secondary,
+                    colorScheme.primary,
+                  ],
+            showGlow: true,
+            showShadow: false, // Handled by outer container
+            glowOpacity: 0.5 * glowOpacity,
+            animationSpeed: settingsProvider.rgbAnimationSpeed,
+            child: buildContent(),
+          ),
+        ),
+      );
+    }
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Material(
+        color: Colors.transparent,
+        child: buildContent(),
       ),
     );
   }

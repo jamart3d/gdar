@@ -11,6 +11,7 @@ This file tracks planned features, enhancements, and bug fixes for the gdar appl
 - [x] **Random Show:** Ensure app scrolls to and expands the random show when "Play Random Show on Startup" is enabled.
 - [x] **App Icon:** Update application icon.
 - [x] **Bug Investigation:** Check into why RGB border is not visible on Android 16 vs 15.
+- [x] **Album Art:** Update default album art to `assets/images/t_steal.webp`.
 
 ## Medium Priority
 
@@ -70,7 +71,7 @@ This file tracks planned features, enhancements, and bug fixes for the gdar appl
 - [ ] **UI Polish:** Refine animations and transitions for an even smoother feel.
 - [ ] **3D Rotating Stars:** Animate rating stars by rotating them around their Y-axis to give a 3D effect.
 - [ ] **Font Selection:** Add setting to choose the handwriting font. Options: Caveat, Permanent Marker, Lacquer, Rock Salt.
-- [ ] **Improved Highlight:** Enhance the "currently playing" highlight visibility when in Dark Mode with Dynamic Color and Glow Border enabled.
+- [ ] **Fix highlight:** With Dark Mode + Dynamic Color + Glow Border: Fix issue where glow is uniform on all shows, and missing when expanded. Implement "half glow" for all, and "regular glow" for current show/shnid.
 - [ ] **Improve Playback Controls:** Enhance the layout and interactivity of controls in the Playback Screen.
   - [ ] **Venue Name Positioning:**
     - [ ] Add setting to display venue name under the date in Playback Screen appbar.
@@ -108,6 +109,7 @@ This file tracks planned features, enhancements, and bug fixes for the gdar appl
   - Add volume slider/control to Playback Screen controls.
   - Add setting in Playback Settings to toggle visibility of volume control.
 
+- [ ] **Investigate ConcatenatingAudioSource:** explore using `ConcatenatingAudioSource` in `just_audio` for better gapless playback and playlist management.
 - [ ] **Smart Random Setting**: Add a setting to toggle whether "Automated Random (Continuous Play) ignores search filter to pick from full library" (currently enabled by default).
 - [ ] **Hide Forward/Reverse Controls:** Add setting to hide Next/Previous track buttons in the player interfaces for a minimalist look.
 
@@ -144,3 +146,5 @@ This file tracks planned features, enhancements, and bug fixes for the gdar appl
 - [ ] **Rated Shows Export/Import:** Allow exporting/importing the library of rated shows (dates, shnids, played status, star ratings), possibly via a calendar format or JSON file.
 - [ ] **Storage Mechanism Investigation:** Investigate possible better ways to store settings and rated shows (e.g., Hive, drift/SQLite) instead of SharedPreferences/JSON files for scalability.
   - [ ] **Pre-populated Database:** converting `shows.json` to a pre-built database (Hive/Drift) shipped in assets to eliminate first-run JSON parsing lag.
+- [x] **Venue Name Cleaning:** Trim venue name by "," or " - ", keeping the name as `venue` and moving the trimmed part to a new `location` attribute.
+- [x] **"Grateful Dead at" Cleanup:** Create a script to report shows starting with "Grateful Dead at", then investigate trimming this prefix in the database.

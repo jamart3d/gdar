@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:gdar/providers/settings_provider.dart';
 import 'package:gdar/utils/utils.dart';
@@ -82,7 +83,10 @@ class RatingControl extends StatelessWidget {
 
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
-      onTap: onTap,
+      onTap: () {
+        HapticFeedback.selectionClick();
+        onTap!();
+      },
       child: content,
     );
   }
@@ -197,6 +201,7 @@ class _RatingDialogState extends State<RatingDialog> {
                     empty: const Icon(Icons.star_border, color: Colors.grey),
                   ),
                   onRatingUpdate: (rating) {
+                    HapticFeedback.selectionClick();
                     setState(() {
                       _currentRating = rating.toInt();
                     });

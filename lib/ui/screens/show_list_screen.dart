@@ -124,9 +124,19 @@ class _ShowListScreenState extends State<ShowListScreen>
       if (audioProvider.error != null) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(audioProvider.error!),
+            content: Text(
+              audioProvider.error!,
+              style: TextStyle(
+                  color: Theme.of(context).colorScheme.onErrorContainer),
+            ),
+            backgroundColor: Theme.of(context).colorScheme.errorContainer,
+            behavior: SnackBarBehavior.floating,
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            margin: const EdgeInsets.all(12),
             action: SnackBarAction(
               label: 'Dismiss',
+              textColor: Theme.of(context).colorScheme.onErrorContainer,
               onPressed: () {
                 ScaffoldMessenger.of(context).hideCurrentSnackBar();
               },
@@ -152,8 +162,11 @@ class _ShowListScreenState extends State<ShowListScreen>
 
       // Handle ShowListCard's loading indicator
       final showListProvider = context.read<ShowListProvider>();
-      if (showListProvider.loadingShowName != null &&
-          showListProvider.loadingShowName == audioProvider.currentShow?.name) {
+      if (showListProvider.loadingShowKey != null &&
+          showListProvider.loadingShowKey ==
+              (audioProvider.currentShow != null
+                  ? showListProvider.getShowKey(audioProvider.currentShow!)
+                  : null)) {
         if (processingState == ProcessingState.ready ||
             processingState == ProcessingState.idle) {
           showListProvider.setLoadingShow(null);
@@ -194,7 +207,8 @@ class _ShowListScreenState extends State<ShowListScreen>
 
     // Align to (0.4) if collapsed.
     // If expanded, adjust alignment based on number of sources to show more context.
-    final isExpanded = showListProvider.expandedShowName == show.name;
+    final key = showListProvider.getShowKey(show);
+    final isExpanded = showListProvider.expandedShowKey == key;
     double alignment = 0.4;
 
     if (isExpanded) {
@@ -224,8 +238,9 @@ class _ShowListScreenState extends State<ShowListScreen>
   Future<void> _onShowTapped(Show show) async {
     final audioProvider = context.read<AudioProvider>();
     final showListProvider = context.read<ShowListProvider>();
-    final isPlayingThisShow = audioProvider.currentShow?.name == show.name;
-    final isExpanded = showListProvider.expandedShowName == show.name;
+    final isPlayingThisShow = audioProvider.currentShow == show;
+    final key = showListProvider.getShowKey(show);
+    final isExpanded = showListProvider.expandedShowKey == key;
 
     // Tapping never directly plays a show.
     // It either expands, navigates to track list, or goes to player if already playing.
@@ -260,8 +275,9 @@ class _ShowListScreenState extends State<ShowListScreen>
   /// Manages the logic for expanding and collapsing a show card.
   Future<void> _handleShowExpansion(Show show) async {
     final showListProvider = context.read<ShowListProvider>();
-    final previouslyExpanded = showListProvider.expandedShowName;
-    final isCollapsingCurrent = previouslyExpanded == show.name;
+    final previouslyExpanded = showListProvider.expandedShowKey;
+    final key = showListProvider.getShowKey(show);
+    final isCollapsingCurrent = previouslyExpanded == key;
 
     // If tapping an already expanded show, collapse it.
     if (isCollapsingCurrent) {
@@ -347,9 +363,10 @@ class _ShowListScreenState extends State<ShowListScreen>
     final showListProvider = context.read<ShowListProvider>();
     final audioProvider = context.read<AudioProvider>();
 
-    showListProvider.setLoadingShow(show.name);
+    showListProvider.setLoadingShow(show);
     // Expand the parent show if it's not already.
-    if (showListProvider.expandedShowName != show.name) {
+    final key = showListProvider.getShowKey(show);
+    if (showListProvider.expandedShowKey != key) {
       showListProvider.expandShow(show);
       _animationController.forward(from: 0.0);
     }
@@ -391,13 +408,14 @@ class _ShowListScreenState extends State<ShowListScreen>
 
     // If multi-source, ensure it's expanded.
     if (currentShow.sources.length > 1) {
-      if (showListProvider.expandedShowName != currentShow.name) {
+      final key = showListProvider.getShowKey(currentShow);
+      if (showListProvider.expandedShowKey != key) {
         showListProvider.expandShow(currentShow);
         _animationController.forward(from: 0.0);
       }
     } else {
       // If single source (or no sources), collapse any expanded show.
-      if (showListProvider.expandedShowName != null) {
+      if (showListProvider.expandedShowKey != null) {
         showListProvider.collapseCurrentShow();
         _animationController.reverse();
       }
@@ -420,7 +438,7 @@ class _ShowListScreenState extends State<ShowListScreen>
     final showListProvider = context.read<ShowListProvider>();
 
     // Check if a show is currently expanded and collapse it first.
-    if (showListProvider.expandedShowName != null) {
+    if (showListProvider.expandedShowKey != null) {
       showListProvider.collapseCurrentShow();
       _animationController.reverse();
     }
@@ -471,12 +489,10 @@ class _ShowListScreenState extends State<ShowListScreen>
       else
         IconButton(
           icon: const Icon(Icons.question_mark_rounded),
-          tooltip: 'Play Random Show',
           onPressed: _handlePlayRandomShow,
         ),
       IconButton(
         icon: const Icon(Icons.search_rounded),
-        tooltip: 'Search',
         isSelected: _isSearchVisible,
         style: _isSearchVisible
             ? IconButton.styleFrom(
@@ -490,7 +506,6 @@ class _ShowListScreenState extends State<ShowListScreen>
       ),
       IconButton(
         icon: const Icon(Icons.settings_rounded),
-        tooltip: 'Settings',
         onPressed: () => Navigator.of(context).push(
           PageRouteBuilder(
             pageBuilder: (context, animation, secondaryAnimation) =>
@@ -646,13 +661,14 @@ class _ShowListScreenState extends State<ShowListScreen>
       SettingsProvider settingsProvider,
       int index) {
     final show = showListProvider.filteredShows[index];
-    final isExpanded = showListProvider.expandedShowName == show.name;
+    final key = showListProvider.getShowKey(show);
+    final isExpanded = showListProvider.expandedShowKey == key;
 
     return Column(
-      key: ValueKey(show.name),
+      key: ValueKey('${show.name}_${show.date}'),
       children: [
         Dismissible(
-          key: ValueKey(show.name),
+          key: ValueKey('${show.name}_${show.date}'),
           // Disable swipe on the main card if there are multiple sources.
           // Sources must be blocked individually in the expanded view.
           direction: show.sources.length > 1
@@ -663,7 +679,7 @@ class _ShowListScreenState extends State<ShowListScreen>
           ),
           onDismissed: (direction) {
             // Stop playback if this specific show is playing
-            if (audioProvider.currentShow?.name == show.name) {
+            if (audioProvider.currentShow == show) {
               audioProvider.stopAndClear();
             }
 
@@ -673,9 +689,19 @@ class _ShowListScreenState extends State<ShowListScreen>
             // Show Undo Snackbar
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text('Blocked "${show.venue}"'),
+                content: Text(
+                  'Blocked "${show.venue}"',
+                  style: TextStyle(
+                      color: Theme.of(context).colorScheme.onInverseSurface),
+                ),
+                backgroundColor: Theme.of(context).colorScheme.inverseSurface,
+                behavior: SnackBarBehavior.floating,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
+                margin: const EdgeInsets.all(12),
                 action: SnackBarAction(
                   label: 'UNDO',
+                  textColor: Theme.of(context).colorScheme.inversePrimary,
                   onPressed: () {
                     // Restore rating
                     settingsProvider.setRating(show.sources.first.id, 0);
@@ -687,9 +713,10 @@ class _ShowListScreenState extends State<ShowListScreen>
           child: ShowListCard(
             show: show,
             isExpanded: isExpanded,
-            isPlaying: audioProvider.currentShow?.name == show.name,
+            isPlaying: audioProvider.currentShow == show,
             playingSource: audioProvider.currentSource,
-            isLoading: showListProvider.loadingShowName == show.name,
+            isLoading: showListProvider.loadingShowKey ==
+                key, // TODO: Update ShowListProvider to use ID/Key
             onTap: () => _onShowTapped(show),
             onLongPress: () => _onCardLongPressed(show),
           ),

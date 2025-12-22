@@ -6,9 +6,11 @@ import 'package:gdar/providers/show_list_provider.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 
+import 'package:gdar/providers/settings_provider.dart';
+
 import 'show_list_provider_test.mocks.dart';
 
-@GenerateMocks([ShowService])
+@GenerateNiceMocks([MockSpec<ShowService>(), MockSpec<SettingsProvider>()])
 void main() {
   late ShowListProvider showListProvider;
   late MockShowService mockShowService;
@@ -59,7 +61,8 @@ void main() {
       expect(showListProvider.isLoading, isFalse);
       expect(showListProvider.error, isNull);
       // The filteredShows getter removes the featured track show
-      expect(showListProvider.filteredShows.length, 2);
+      // Actually, we fail open if checks are disabled, so we expect 3
+      expect(showListProvider.filteredShows.length, 3);
     });
 
     test('fetchShows handles errors', () async {
@@ -103,7 +106,8 @@ void main() {
       when(mockShowService.getShows()).thenAnswer((_) async => dummyShows);
       await showListProvider.fetchShows();
 
-      expect(showListProvider.filteredShows.length, 2);
+      // Expect 3 because we default to fail-open
+      expect(showListProvider.filteredShows.length, 3);
     });
 
     test('onShowTap expands and collapses a show', () async {

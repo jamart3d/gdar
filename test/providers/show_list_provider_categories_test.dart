@@ -10,10 +10,21 @@ void main() {
   group('ShowListProvider Category Detection', () {
     late ShowListProvider provider;
     late MockShowService mockShowService;
+    late MockSettingsProvider mockSettingsProvider;
 
     setUp(() {
       mockShowService = MockShowService();
+      mockSettingsProvider = MockSettingsProvider();
       provider = ShowListProvider(showService: mockShowService);
+
+      // Disable strict mode to test URL parsing
+      when(mockSettingsProvider.useStrictSrcCategorization).thenReturn(false);
+      when(mockSettingsProvider.sortOldestFirst).thenReturn(true);
+      when(mockSettingsProvider.filterHighestShnid).thenReturn(false);
+      when(mockSettingsProvider.sourceCategoryFilters).thenReturn({});
+      when(mockSettingsProvider.showRatings).thenReturn({});
+
+      provider.update(mockSettingsProvider);
     });
 
     test('should detect categories from sources', () async {

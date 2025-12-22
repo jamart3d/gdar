@@ -4,10 +4,13 @@
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'dart:async' as _i3;
+import 'dart:ui' as _i7;
 
 import 'package:gdar/api/show_service.dart' as _i2;
 import 'package:gdar/models/show.dart' as _i4;
+import 'package:gdar/providers/settings_provider.dart' as _i5;
 import 'package:mockito/mockito.dart' as _i1;
+import 'package:mockito/src/dummies.dart' as _i6;
 
 // ignore_for_file: type=lint
 // ignore_for_file: avoid_redundant_argument_values
@@ -28,10 +31,6 @@ import 'package:mockito/mockito.dart' as _i1;
 ///
 /// See the documentation for Mockito's code generation for more information.
 class MockShowService extends _i1.Mock implements _i2.ShowService {
-  MockShowService() {
-    _i1.throwOnMissingStub(this);
-  }
-
   @override
   _i3.Future<List<_i4.Show>> getShows() => (super.noSuchMethod(
         Invocation.method(
@@ -39,5 +38,578 @@ class MockShowService extends _i1.Mock implements _i2.ShowService {
           [],
         ),
         returnValue: _i3.Future<List<_i4.Show>>.value(<_i4.Show>[]),
+        returnValueForMissingStub:
+            _i3.Future<List<_i4.Show>>.value(<_i4.Show>[]),
       ) as _i3.Future<List<_i4.Show>>);
+}
+
+/// A class which mocks [SettingsProvider].
+///
+/// See the documentation for Mockito's code generation for more information.
+class MockSettingsProvider extends _i1.Mock implements _i5.SettingsProvider {
+  @override
+  String get appFont => (super.noSuchMethod(
+        Invocation.getter(#appFont),
+        returnValue: _i6.dummyValue<String>(
+          this,
+          Invocation.getter(#appFont),
+        ),
+        returnValueForMissingStub: _i6.dummyValue<String>(
+          this,
+          Invocation.getter(#appFont),
+        ),
+      ) as String);
+
+  @override
+  bool get showSplashScreen => (super.noSuchMethod(
+        Invocation.getter(#showSplashScreen),
+        returnValue: false,
+        returnValueForMissingStub: false,
+      ) as bool);
+
+  @override
+  bool get isFirstRun => (super.noSuchMethod(
+        Invocation.getter(#isFirstRun),
+        returnValue: false,
+        returnValueForMissingStub: false,
+      ) as bool);
+
+  @override
+  bool get showExpandIcon => (super.noSuchMethod(
+        Invocation.getter(#showExpandIcon),
+        returnValue: false,
+        returnValueForMissingStub: false,
+      ) as bool);
+
+  @override
+  bool get showTrackNumbers => (super.noSuchMethod(
+        Invocation.getter(#showTrackNumbers),
+        returnValue: false,
+        returnValueForMissingStub: false,
+      ) as bool);
+
+  @override
+  bool get hideTrackDuration => (super.noSuchMethod(
+        Invocation.getter(#hideTrackDuration),
+        returnValue: false,
+        returnValueForMissingStub: false,
+      ) as bool);
+
+  @override
+  bool get playOnTap => (super.noSuchMethod(
+        Invocation.getter(#playOnTap),
+        returnValue: false,
+        returnValueForMissingStub: false,
+      ) as bool);
+
+  @override
+  bool get showSingleShnid => (super.noSuchMethod(
+        Invocation.getter(#showSingleShnid),
+        returnValue: false,
+        returnValueForMissingStub: false,
+      ) as bool);
+
+  @override
+  bool get hideTrackCountInSourceList => (super.noSuchMethod(
+        Invocation.getter(#hideTrackCountInSourceList),
+        returnValue: false,
+        returnValueForMissingStub: false,
+      ) as bool);
+
+  @override
+  bool get playRandomOnCompletion => (super.noSuchMethod(
+        Invocation.getter(#playRandomOnCompletion),
+        returnValue: false,
+        returnValueForMissingStub: false,
+      ) as bool);
+
+  @override
+  bool get playRandomOnStartup => (super.noSuchMethod(
+        Invocation.getter(#playRandomOnStartup),
+        returnValue: false,
+        returnValueForMissingStub: false,
+      ) as bool);
+
+  @override
+  bool get dateFirstInShowCard => (super.noSuchMethod(
+        Invocation.getter(#dateFirstInShowCard),
+        returnValue: false,
+        returnValueForMissingStub: false,
+      ) as bool);
+
+  @override
+  bool get useDynamicColor => (super.noSuchMethod(
+        Invocation.getter(#useDynamicColor),
+        returnValue: false,
+        returnValueForMissingStub: false,
+      ) as bool);
+
+  @override
+  bool get useSliverAppBar => (super.noSuchMethod(
+        Invocation.getter(#useSliverAppBar),
+        returnValue: false,
+        returnValueForMissingStub: false,
+      ) as bool);
+
+  @override
+  bool get useSharedAxisTransition => (super.noSuchMethod(
+        Invocation.getter(#useSharedAxisTransition),
+        returnValue: false,
+        returnValueForMissingStub: false,
+      ) as bool);
+
+  @override
+  bool get uiScale => (super.noSuchMethod(
+        Invocation.getter(#uiScale),
+        returnValue: false,
+        returnValueForMissingStub: false,
+      ) as bool);
+
+  @override
+  bool get showGlowBorder => (super.noSuchMethod(
+        Invocation.getter(#showGlowBorder),
+        returnValue: false,
+        returnValueForMissingStub: false,
+      ) as bool);
+
+  @override
+  bool get highlightPlayingWithRgb => (super.noSuchMethod(
+        Invocation.getter(#highlightPlayingWithRgb),
+        returnValue: false,
+        returnValueForMissingStub: false,
+      ) as bool);
+
+  @override
+  bool get showPlaybackMessages => (super.noSuchMethod(
+        Invocation.getter(#showPlaybackMessages),
+        returnValue: false,
+        returnValueForMissingStub: false,
+      ) as bool);
+
+  @override
+  bool get sortOldestFirst => (super.noSuchMethod(
+        Invocation.getter(#sortOldestFirst),
+        returnValue: false,
+        returnValueForMissingStub: false,
+      ) as bool);
+
+  @override
+  bool get useStrictSrcCategorization => (super.noSuchMethod(
+        Invocation.getter(#useStrictSrcCategorization),
+        returnValue: false,
+        returnValueForMissingStub: false,
+      ) as bool);
+
+  @override
+  bool get highlightCurrentShowCard => (super.noSuchMethod(
+        Invocation.getter(#highlightCurrentShowCard),
+        returnValue: false,
+        returnValueForMissingStub: false,
+      ) as bool);
+
+  @override
+  bool get useMaterial3 => (super.noSuchMethod(
+        Invocation.getter(#useMaterial3),
+        returnValue: false,
+        returnValueForMissingStub: false,
+      ) as bool);
+
+  @override
+  Map<String, int> get showRatings => (super.noSuchMethod(
+        Invocation.getter(#showRatings),
+        returnValue: <String, int>{},
+        returnValueForMissingStub: <String, int>{},
+      ) as Map<String, int>);
+
+  @override
+  Set<String> get playedShows => (super.noSuchMethod(
+        Invocation.getter(#playedShows),
+        returnValue: <String>{},
+        returnValueForMissingStub: <String>{},
+      ) as Set<String>);
+
+  @override
+  bool get randomOnlyUnplayed => (super.noSuchMethod(
+        Invocation.getter(#randomOnlyUnplayed),
+        returnValue: false,
+        returnValueForMissingStub: false,
+      ) as bool);
+
+  @override
+  bool get randomOnlyHighRated => (super.noSuchMethod(
+        Invocation.getter(#randomOnlyHighRated),
+        returnValue: false,
+        returnValueForMissingStub: false,
+      ) as bool);
+
+  @override
+  bool get showGlobalAlbumArt => (super.noSuchMethod(
+        Invocation.getter(#showGlobalAlbumArt),
+        returnValue: false,
+        returnValueForMissingStub: false,
+      ) as bool);
+
+  @override
+  bool get halfGlowDynamic => (super.noSuchMethod(
+        Invocation.getter(#halfGlowDynamic),
+        returnValue: false,
+        returnValueForMissingStub: false,
+      ) as bool);
+
+  @override
+  double get rgbAnimationSpeed => (super.noSuchMethod(
+        Invocation.getter(#rgbAnimationSpeed),
+        returnValue: 0.0,
+        returnValueForMissingStub: 0.0,
+      ) as double);
+
+  @override
+  bool get filterHighestShnid => (super.noSuchMethod(
+        Invocation.getter(#filterHighestShnid),
+        returnValue: false,
+        returnValueForMissingStub: false,
+      ) as bool);
+
+  @override
+  Map<String, bool> get sourceCategoryFilters => (super.noSuchMethod(
+        Invocation.getter(#sourceCategoryFilters),
+        returnValue: <String, bool>{},
+        returnValueForMissingStub: <String, bool>{},
+      ) as Map<String, bool>);
+
+  @override
+  set showExpandIcon(bool? value) => super.noSuchMethod(
+        Invocation.setter(
+          #showExpandIcon,
+          value,
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  bool get hasListeners => (super.noSuchMethod(
+        Invocation.getter(#hasListeners),
+        returnValue: false,
+        returnValueForMissingStub: false,
+      ) as bool);
+
+  @override
+  void setAppFont(String? font) => super.noSuchMethod(
+        Invocation.method(
+          #setAppFont,
+          [font],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void toggleShowSplashScreen() => super.noSuchMethod(
+        Invocation.method(
+          #toggleShowSplashScreen,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void toggleShowTrackNumbers() => super.noSuchMethod(
+        Invocation.method(
+          #toggleShowTrackNumbers,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void toggleHideTrackDuration() => super.noSuchMethod(
+        Invocation.method(
+          #toggleHideTrackDuration,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void togglePlayOnTap() => super.noSuchMethod(
+        Invocation.method(
+          #togglePlayOnTap,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void toggleShowSingleShnid() => super.noSuchMethod(
+        Invocation.method(
+          #toggleShowSingleShnid,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void togglePlayRandomOnCompletion() => super.noSuchMethod(
+        Invocation.method(
+          #togglePlayRandomOnCompletion,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void togglePlayRandomOnStartup() => super.noSuchMethod(
+        Invocation.method(
+          #togglePlayRandomOnStartup,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void toggleDateFirstInShowCard() => super.noSuchMethod(
+        Invocation.method(
+          #toggleDateFirstInShowCard,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void toggleUseDynamicColor() => super.noSuchMethod(
+        Invocation.method(
+          #toggleUseDynamicColor,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void toggleUiScale() => super.noSuchMethod(
+        Invocation.method(
+          #toggleUiScale,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void toggleShowGlowBorder() => super.noSuchMethod(
+        Invocation.method(
+          #toggleShowGlowBorder,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void toggleHighlightPlayingWithRgb() => super.noSuchMethod(
+        Invocation.method(
+          #toggleHighlightPlayingWithRgb,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void toggleShowPlaybackMessages() => super.noSuchMethod(
+        Invocation.method(
+          #toggleShowPlaybackMessages,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void toggleSortOldestFirst() => super.noSuchMethod(
+        Invocation.method(
+          #toggleSortOldestFirst,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void toggleUseStrictSrcCategorization() => super.noSuchMethod(
+        Invocation.method(
+          #toggleUseStrictSrcCategorization,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void toggleHalfGlowDynamic() => super.noSuchMethod(
+        Invocation.method(
+          #toggleHalfGlowDynamic,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void setRgbAnimationSpeed(double? speed) => super.noSuchMethod(
+        Invocation.method(
+          #setRgbAnimationSpeed,
+          [speed],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  _i3.Future<void> setSeedColor(_i7.Color? color) => (super.noSuchMethod(
+        Invocation.method(
+          #setSeedColor,
+          [color],
+        ),
+        returnValue: _i3.Future<void>.value(),
+        returnValueForMissingStub: _i3.Future<void>.value(),
+      ) as _i3.Future<void>);
+
+  @override
+  int getRating(String? showName) => (super.noSuchMethod(
+        Invocation.method(
+          #getRating,
+          [showName],
+        ),
+        returnValue: 0,
+        returnValueForMissingStub: 0,
+      ) as int);
+
+  @override
+  bool isPlayed(String? showName) => (super.noSuchMethod(
+        Invocation.method(
+          #isPlayed,
+          [showName],
+        ),
+        returnValue: false,
+        returnValueForMissingStub: false,
+      ) as bool);
+
+  @override
+  _i3.Future<void> setRating(
+    String? showName,
+    int? rating,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #setRating,
+          [
+            showName,
+            rating,
+          ],
+        ),
+        returnValue: _i3.Future<void>.value(),
+        returnValueForMissingStub: _i3.Future<void>.value(),
+      ) as _i3.Future<void>);
+
+  @override
+  _i3.Future<void> togglePlayed(String? showName) => (super.noSuchMethod(
+        Invocation.method(
+          #togglePlayed,
+          [showName],
+        ),
+        returnValue: _i3.Future<void>.value(),
+        returnValueForMissingStub: _i3.Future<void>.value(),
+      ) as _i3.Future<void>);
+
+  @override
+  _i3.Future<void> markAsPlayed(String? showName) => (super.noSuchMethod(
+        Invocation.method(
+          #markAsPlayed,
+          [showName],
+        ),
+        returnValue: _i3.Future<void>.value(),
+        returnValueForMissingStub: _i3.Future<void>.value(),
+      ) as _i3.Future<void>);
+
+  @override
+  void toggleRandomOnlyUnplayed() => super.noSuchMethod(
+        Invocation.method(
+          #toggleRandomOnlyUnplayed,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void toggleRandomOnlyHighRated() => super.noSuchMethod(
+        Invocation.method(
+          #toggleRandomOnlyHighRated,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void toggleFilterHighestShnid() => super.noSuchMethod(
+        Invocation.method(
+          #toggleFilterHighestShnid,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  _i3.Future<void> setSourceCategoryFilter(
+    String? category,
+    bool? isActive,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #setSourceCategoryFilter,
+          [
+            category,
+            isActive,
+          ],
+        ),
+        returnValue: _i3.Future<void>.value(),
+        returnValueForMissingStub: _i3.Future<void>.value(),
+      ) as _i3.Future<void>);
+
+  @override
+  _i3.Future<void> setSoloSourceCategoryFilter(String? category) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #setSoloSourceCategoryFilter,
+          [category],
+        ),
+        returnValue: _i3.Future<void>.value(),
+        returnValueForMissingStub: _i3.Future<void>.value(),
+      ) as _i3.Future<void>);
+
+  @override
+  void addListener(_i7.VoidCallback? listener) => super.noSuchMethod(
+        Invocation.method(
+          #addListener,
+          [listener],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void removeListener(_i7.VoidCallback? listener) => super.noSuchMethod(
+        Invocation.method(
+          #removeListener,
+          [listener],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void dispose() => super.noSuchMethod(
+        Invocation.method(
+          #dispose,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void notifyListeners() => super.noSuchMethod(
+        Invocation.method(
+          #notifyListeners,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
 }

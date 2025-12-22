@@ -195,7 +195,7 @@ class AudioProvider with ChangeNotifier {
         'Playing random show: ${selectedShow.name} (Rating: ${settings.getRating(selectedShow.name)}, Played: ${settings.isPlayed(selectedShow.name)}, Weight: ${weights[selectedShow]})');
 
     // Play the randomly selected source.
-    playSource(selectedShow, randomSource);
+    await playSource(selectedShow, randomSource);
 
     // Return the parent show so the UI can scroll to it.
     return selectedShow;

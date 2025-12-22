@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:gdar/providers/audio_provider.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:gdar/providers/settings_provider.dart';
 
 import 'package:gdar/providers/theme_provider.dart';
@@ -63,6 +64,81 @@ class SettingsScreen extends StatelessWidget {
         );
       },
     );
+  }
+
+  void _showFontSelectionDialog(BuildContext context) {
+    final settingsProvider = context.read<SettingsProvider>();
+    // Map of internal value to display name and TextStyle
+    final Map<String, TextStyle?> fonts = {
+      'default': null,
+      'caveat': GoogleFonts.caveat(),
+      'permanent_marker': GoogleFonts.permanentMarker(),
+      'lacquer': GoogleFonts.lacquer(),
+      'rock_salt': GoogleFonts.rockSalt(),
+    };
+
+    final Map<String, String> displayNames = {
+      'default': 'Default (Roboto)',
+      'caveat': 'Caveat',
+      'permanent_marker': 'Permanent Marker',
+      'lacquer': 'Lacquer',
+      'rock_salt': 'Rock Salt',
+    };
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Select App Font'),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: fonts.entries.map((entry) {
+                return RadioListTile<String>(
+                  title: Text(
+                    displayNames[entry.key]!,
+                    style: entry.value?.copyWith(
+                      fontSize: 18,
+                    ),
+                  ),
+                  value: entry.key,
+                  groupValue: settingsProvider.appFont,
+                  onChanged: (String? value) {
+                    if (value != null) {
+                      settingsProvider.setAppFont(value);
+                      Navigator.of(context).pop();
+                    }
+                  },
+                );
+              }).toList(),
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Cancel'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  String _getFontDisplayName(String fontKey) {
+    switch (fontKey) {
+      case 'caveat':
+        return 'Caveat';
+      case 'permanent_marker':
+        return 'Permanent Marker';
+      case 'lacquer':
+        return 'Lacquer';
+      case 'rock_salt':
+        return 'Rock Salt';
+      default:
+        return 'Default (Roboto)';
+    }
   }
 
   Future<void> _launchUrl(String url) async {
@@ -153,9 +229,24 @@ class SettingsScreen extends StatelessWidget {
           brightness: Theme.of(context).brightness);
     }
 
+    // Create a theme that includes the background color override if applicable
+    final baseTheme = Theme.of(context);
+    final effectiveBackgroundColor =
+        backgroundColor ?? baseTheme.scaffoldBackgroundColor;
+
+    final effectiveTheme = baseTheme.copyWith(
+      scaffoldBackgroundColor: effectiveBackgroundColor,
+      appBarTheme: baseTheme.appBarTheme.copyWith(
+        backgroundColor: effectiveBackgroundColor,
+        surfaceTintColor:
+            Colors.transparent, // Disable tint to align with scaffold
+      ),
+    );
+
     return AnimatedTheme(
-      data: Theme.of(context),
+      data: effectiveTheme,
       duration: const Duration(milliseconds: 500),
+      curve: Curves.easeInOut,
       child: MediaQuery(
         data: MediaQuery.of(context).copyWith(
           textScaler: settingsProvider.uiScale
@@ -163,12 +254,12 @@ class SettingsScreen extends StatelessWidget {
               : const TextScaler.linear(1.0),
         ),
         child: Scaffold(
-          backgroundColor: backgroundColor,
+          // No explicit background color needed; inherits from Theme
           body: CustomScrollView(
             slivers: [
-              SliverAppBar.large(
-                backgroundColor: backgroundColor,
-                title: const Text('Settings'),
+              const SliverAppBar.large(
+                title: Text('Settings'),
+                // No explicit background color needed
               ),
               SliverList(
                 delegate: SliverChildListDelegate([
@@ -189,7 +280,7 @@ class SettingsScreen extends StatelessWidget {
                                       TextStyle(fontWeight: FontWeight.bold)),
                               TextSpan(
                                   text:
-                                      ' the ? icon in the app bar to play a random show. Selection respects "Random\u00A0Playback"\u00A0settings. '),
+                                      ' the ? icon in the app bar to play a random show. Selection respects "Random\u00A0Playback"\u00A0settings.\n'),
                               TextSpan(
                                   text: 'Long-press',
                                   style:
@@ -215,7 +306,7 @@ class SettingsScreen extends StatelessWidget {
                                       TextStyle(fontWeight: FontWeight.bold)),
                               TextSpan(
                                   text:
-                                      ' the mini-player to open the full playback\u00A0screen. '),
+                                      ' the mini-player to open the full playback\u00A0screen.\n'),
                               TextSpan(
                                   text: 'Long-press',
                                   style:
@@ -371,7 +462,8 @@ class SettingsScreen extends StatelessWidget {
                             ),
                           ),
                         ),
-                      if (settingsProvider.useDynamicColor)
+                      if (settingsProvider.useDynamicColor &&
+                          themeProvider.isDarkMode)
                         SwitchListTile(
                           title: const Text('True Black And Half Glow'),
                           subtitle: const Text(
@@ -450,16 +542,12 @@ class SettingsScreen extends StatelessWidget {
                             ],
                           ),
                         ),
-                      SwitchListTile(
-                        title: const Text('Handwriting Font'),
-                        subtitle: const Text('Use a handwritten style font'),
-                        value: settingsProvider.useHandwritingFont,
-                        onChanged: (value) {
-                          context
-                              .read<SettingsProvider>()
-                              .toggleUseHandwritingFont();
-                        },
-                        secondary: const Icon(Icons.edit_rounded),
+                      ListTile(
+                        leading: const Icon(Icons.text_format_rounded),
+                        title: const Text('App Font'),
+                        subtitle:
+                            Text(_getFontDisplayName(settingsProvider.appFont)),
+                        onTap: () => _showFontSelectionDialog(context),
                       ),
                     ],
                   ),

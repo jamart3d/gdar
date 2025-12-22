@@ -35,17 +35,6 @@ class Show {
         .map((sourceJson) => Source.fromJson(sourceJson, src: src))
         .toList();
 
-    String parseVenue(String name) {
-      if (name.contains(' at ') && name.contains(' on ')) {
-        try {
-          return name.split(' at ')[1].split(' on ')[0];
-        } catch (e) {
-          return 'Unknown Venue';
-        }
-      }
-      return 'Unknown Venue';
-    }
-
     final String showName = json['name'] ?? 'Unknown Show';
     final String date = json['date'] ?? '';
 
@@ -53,7 +42,7 @@ class Show {
       name: showName,
       artist: 'Grateful Dead',
       date: date,
-      venue: parseVenue(showName),
+      venue: showName,
       sources: sources,
     );
   }

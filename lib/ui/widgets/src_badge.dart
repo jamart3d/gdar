@@ -63,8 +63,11 @@ class SrcBadge extends StatelessWidget {
         style: Theme.of(context).textTheme.labelSmall?.copyWith(
               color: colorScheme.onSecondaryContainer,
               fontWeight: FontWeight.w700,
-              fontSize: 9 * (settingsProvider.uiScale ? 1.25 : 1.0),
-              letterSpacing: 0.5,
+              fontSize: 9 *
+                  (settingsProvider.uiScale ? 1.25 : 1.0) *
+                  (settingsProvider.appFont == 'rock_salt' ? 0.7 : 1.0),
+              letterSpacing:
+                  settingsProvider.appFont == 'rock_salt' ? 0.0 : 0.5,
             ),
         textAlign: TextAlign.center,
       ),

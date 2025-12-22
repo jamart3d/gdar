@@ -9,7 +9,7 @@ import 'package:gdar/ui/screens/show_list_screen.dart';
 import 'package:gdar/ui/screens/splash_screen.dart';
 import 'package:gdar/utils/app_themes.dart';
 import 'package:gdar/utils/logger.dart';
-import 'package:google_fonts/google_fonts.dart';
+// import 'package:google_fonts/google_fonts.dart'; // Removed
 import 'package:just_audio_background/just_audio_background.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -107,21 +107,23 @@ class _GdarAppState extends State<GdarApp> {
                   lightDynamic != null &&
                   darkDynamic != null) {
                 // Use dynamic colors if the setting is on and they are available
-                lightTheme = ThemeData(
+                // Use dynamic colors if the setting is on and they are available
+                final baseLight = ThemeData(
                   useMaterial3: settingsProvider.useMaterial3,
                   colorScheme: lightDynamic,
-                  textTheme: settingsProvider.useHandwritingFont
-                      ? GoogleFonts.caveatTextTheme(
-                          ThemeData(colorScheme: lightDynamic).textTheme)
-                      : null,
                 );
-                darkTheme = ThemeData(
+                final baseDark = ThemeData(
                   useMaterial3: settingsProvider.useMaterial3,
                   colorScheme: darkDynamic,
-                  textTheme: settingsProvider.useHandwritingFont
-                      ? GoogleFonts.caveatTextTheme(
-                          ThemeData(colorScheme: darkDynamic).textTheme)
-                      : null,
+                );
+
+                lightTheme = baseLight.copyWith(
+                  textTheme: AppThemes.getTextTheme(
+                      settingsProvider.appFont, baseLight.textTheme),
+                );
+                darkTheme = baseDark.copyWith(
+                  textTheme: AppThemes.getTextTheme(
+                      settingsProvider.appFont, baseDark.textTheme),
                 );
 
                 if (settingsProvider.halfGlowDynamic) {
@@ -148,11 +150,9 @@ class _GdarAppState extends State<GdarApp> {
                 }
               } else {
                 // If dynamic color is off, first get the base static themes.
-                lightTheme = AppThemes.lightTheme(
-                    settingsProvider.useHandwritingFont,
+                lightTheme = AppThemes.lightTheme(settingsProvider.appFont,
                     useMaterial3: settingsProvider.useMaterial3);
-                darkTheme = AppThemes.darkTheme(
-                    settingsProvider.useHandwritingFont,
+                darkTheme = AppThemes.darkTheme(settingsProvider.appFont,
                     useMaterial3: settingsProvider.useMaterial3);
 
                 // Then, check for a user-defined seed color to override the color scheme.
@@ -207,6 +207,8 @@ class _GdarAppState extends State<GdarApp> {
                 darkTheme: darkTheme,
                 themeMode:
                     themeProvider.isDarkMode ? ThemeMode.dark : ThemeMode.light,
+                themeAnimationDuration: const Duration(milliseconds: 500),
+                themeAnimationCurve: Curves.easeInOut,
                 home: settingsProvider.showSplashScreen
                     ? const SplashScreen()
                     : const ShowListScreen(),

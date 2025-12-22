@@ -33,8 +33,7 @@ class MockSettingsProvider extends Mock implements SettingsProvider {
   bool get highlightPlayingWithRgb => false;
   @override
   bool get showPlaybackMessages => false;
-  @override
-  bool get useHandwritingFont => false;
+  // useHandwritingFont removed
   @override
   bool get useDynamicColor => false;
   @override
@@ -85,7 +84,9 @@ class MockSettingsProvider extends Mock implements SettingsProvider {
   @override
   void toggleUseDynamicColor() {}
   @override
-  void toggleUseHandwritingFont() {}
+  String get appFont => 'default';
+  @override
+  void setAppFont(String font) {}
   @override
   void toggleUiScale() {}
   @override

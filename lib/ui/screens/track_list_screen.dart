@@ -22,8 +22,6 @@ class TrackListScreen extends StatefulWidget {
 }
 
 class _TrackListScreenState extends State<TrackListScreen> {
-  static const double _trackItemHeight = 52.0;
-
   /// Plays the selected track and pops this screen, returning `true` to
   /// signal the ShowListScreen to open the player.
   void _onTrackTapped(Source source, int initialIndex) {
@@ -96,21 +94,33 @@ class _TrackListScreenState extends State<TrackListScreen> {
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              widget.show.formattedDate,
-              style: Theme.of(context).textTheme.titleLarge?.apply(
-                  fontSizeFactor: settingsProvider.uiScale ? 1.25 : 1.0),
+            SizedBox(
+              height:
+                  (Theme.of(context).textTheme.titleLarge?.fontSize ?? 22.0) *
+                      (settingsProvider.uiScale ? 1.25 : 1.0) *
+                      1.6,
+              child: ConditionalMarquee(
+                text: widget.show.formattedDate,
+                style: Theme.of(context).textTheme.titleLarge?.apply(
+                    fontSizeFactor: settingsProvider.uiScale ? 1.25 : 1.0),
+              ),
             ),
             const SizedBox(height: 2),
-            Text(
-              widget.show.venue,
-              overflow: TextOverflow.ellipsis,
-              style: Theme.of(context)
-                  .textTheme
-                  .titleSmall
-                  ?.copyWith(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant)
-                  .apply(fontSizeFactor: settingsProvider.uiScale ? 1.25 : 1.0),
+            SizedBox(
+              height:
+                  (Theme.of(context).textTheme.titleSmall?.fontSize ?? 14.0) *
+                      (settingsProvider.uiScale ? 1.25 : 1.0) *
+                      1.6,
+              child: ConditionalMarquee(
+                text: widget.show.venue,
+                style: Theme.of(context)
+                    .textTheme
+                    .titleSmall
+                    ?.copyWith(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant)
+                    .apply(
+                        fontSizeFactor: settingsProvider.uiScale ? 1.25 : 1.0),
+              ),
             ),
           ],
         ),
@@ -190,7 +200,6 @@ class _TrackListScreenState extends State<TrackListScreen> {
           IconButton(
             icon: const Icon(Icons.settings_rounded),
             iconSize: 24 * (settingsProvider.uiScale ? 1.25 : 1.0),
-            tooltip: 'Settings',
             onPressed: () {
               Navigator.of(context).push(
                 MaterialPageRoute(builder: (_) => const SettingsScreen()),
@@ -315,52 +324,50 @@ class _TrackListScreenState extends State<TrackListScreen> {
         ? '${track.trackNumber}. ${track.title}'
         : track.title;
 
-    return SizedBox(
-      height: _trackItemHeight * scaleFactor,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
-        child: Material(
-          color: Colors.transparent,
-          child: InkWell(
-            borderRadius: BorderRadius.circular(16),
-            onTap: () => _onTrackTapped(source, index),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: SizedBox(
-                      height: titleStyle.fontSize! * 1.2,
-                      child: ConditionalMarquee(
-                        text: titleText,
-                        style: titleStyle,
-                        textAlign: settingsProvider.hideTrackDuration
-                            ? TextAlign.center
-                            : TextAlign.left,
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(16),
+          onTap: () => _onTrackTapped(source, index),
+          child: Padding(
+            padding:
+                EdgeInsets.symmetric(horizontal: 16, vertical: 8 * scaleFactor),
+            child: Row(
+              children: [
+                Expanded(
+                  child: SizedBox(
+                    height: titleStyle.fontSize! * 1.5,
+                    child: ConditionalMarquee(
+                      text: titleText,
+                      style: titleStyle,
+                      textAlign: settingsProvider.hideTrackDuration
+                          ? TextAlign.center
+                          : TextAlign.left,
+                    ),
+                  ),
+                ),
+                if (!settingsProvider.hideTrackDuration) ...[
+                  const SizedBox(width: 8),
+                  SizedBox(
+                    width: 52 * scaleFactor,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: colorScheme.surfaceContainerHighest,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        formatDuration(Duration(seconds: track.duration)),
+                        style: durationStyle,
+                        textAlign: TextAlign.center,
                       ),
                     ),
                   ),
-                  if (!settingsProvider.hideTrackDuration) ...[
-                    const SizedBox(width: 8),
-                    SizedBox(
-                      width: 52 * scaleFactor,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: colorScheme.surfaceContainerHighest,
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Text(
-                          formatDuration(Duration(seconds: track.duration)),
-                          style: durationStyle,
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
-                    ),
-                  ],
                 ],
-              ),
+              ],
             ),
           ),
         ),
