@@ -1030,6 +1030,28 @@ class MockShowListProvider extends _i1.Mock implements _i6.ShowListProvider {
       ) as bool);
 
   @override
+  String getShowKey(_i7.Show? show) => (super.noSuchMethod(
+        Invocation.method(
+          #getShowKey,
+          [show],
+        ),
+        returnValue: _i4.dummyValue<String>(
+          this,
+          Invocation.method(
+            #getShowKey,
+            [show],
+          ),
+        ),
+        returnValueForMissingStub: _i4.dummyValue<String>(
+          this,
+          Invocation.method(
+            #getShowKey,
+            [show],
+          ),
+        ),
+      ) as String);
+
+  @override
   void setArchiveStatus(bool? isReachable) => super.noSuchMethod(
         Invocation.method(
           #setArchiveStatus,
@@ -1112,10 +1134,10 @@ class MockShowListProvider extends _i1.Mock implements _i6.ShowListProvider {
       );
 
   @override
-  void setLoadingShow(String? showName) => super.noSuchMethod(
+  void setLoadingShow(_i7.Show? show) => super.noSuchMethod(
         Invocation.method(
           #setLoadingShow,
-          [showName],
+          [show],
         ),
         returnValueForMissingStub: null,
       );

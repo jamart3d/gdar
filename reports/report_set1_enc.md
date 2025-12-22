@@ -1,0 +1,732 @@
+# Analysis Report: Set 1 Analysis
+Criteria: >12 Tracks, Single Set (or no set info)
+
+## 1. Matches with 'Encore' in Track Title (3)
+- **1984-04-07** - Irvine Meadows (Source: 146012)
+  - Tracks: 27
+  - Sets found: Set 1
+- **1987-09-11** - Capital Centre (Source: 140925)
+  - Tracks: 14
+  - Sets found: Set 2
+- **1990-10-17** - GrugaHalle (Source: 143496)
+  - Tracks: 24
+  - Sets found: Set 1
+
+## 2. Matches with 'Tuning' in Middle Tracks (88)
+*(Index 3 to Length-3)*
+- **1966-01-01** - Viola Lee Blues Reahearsals (Source: 18846)
+  - Tracks: 20
+  - Sets found: Set 1
+- **1966-02-05** - The Questing Beast (Source: 136661)
+  - Tracks: 20
+  - Sets found: Set 1
+- **1966-03-19** - Carthay Studios (Source: 81951)
+  - Tracks: 17
+  - Sets found: Set 1
+- **1967-08-05** - O'Keefe Center (Source: 169430)
+  - Tracks: 14
+  - Sets found: Set 1
+- **1969-02-06** - Kiel Auditorium (Source: 137394)
+  - Tracks: 13
+  - Sets found: Set 1
+- **1969-02-07** - Stanley Theater (Early (Source: 137392)
+  - Tracks: 20
+  - Sets found: Set 1
+- **1969-04-05** - Avalon Ballroom (Source: 136650)
+  - Tracks: 19
+  - Sets found: Set 1
+- **1969-06-27** - Veterans Auditorium (Source: 166576)
+  - Tracks: 19
+  - Sets found: Set 1
+- **1969-07-11** - NY State Pavilion (Source: 123417)
+  - Tracks: 17
+  - Sets found: Set 1
+- **1969-12-04** - Fillmore West (Source: 141723)
+  - Tracks: 15
+  - Sets found: Set 1
+- **1970-01-02** - Fillmore East (show b- Late?) (Source: 137375)
+  - Tracks: 27
+  - Sets found: Set 1
+- **1970-01-10** - Golden Hall (Source: 89614)
+  - Tracks: 15
+  - Sets found: Set 1
+- **1970-02-14** - Fillmore East (Source: 141007)
+  - Tracks: 25
+  - Sets found: Set 1
+- **1970-02-23** - The Auditorium (Source: 172477)
+  - Tracks: 13
+  - Sets found: Set 1
+- **1970-05-02** - Harpur College (Source: 108955)
+  - Tracks: 41
+  - Sets found: Set 1
+- **1970-09-20** - Fillmore East (Source: 135798)
+  - Tracks: 29
+  - Sets found: Set 1
+- **1970-10-30** - Gym (Source: 121126)
+  - Tracks: 46
+  - Sets found: Set 1
+- **1971-02-23** - Capitol Theater (Source: 113)
+  - Tracks: 25
+  - Sets found: Set 1
+- **1971-02-24** - Capitol Theater (Source: 114)
+  - Tracks: 23
+  - Sets found: Set 1
+- **1971-03-03** - Fillmore West (Source: 149685)
+  - Tracks: 27
+  - Sets found: Set 1
+- **1971-04-06** - Manhattan Center (Source: 109026)
+  - Tracks: 29
+  - Sets found: Set 1
+- **1971-04-07** - Music Hall (Source: 136892)
+  - Tracks: 24
+  - Sets found: Set 1
+- **1971-04-07** - Music Hall (Source: 141029)
+  - Tracks: 21
+  - Sets found: Set 1
+- **1971-04-17** - Dillon Gym (Source: 138033)
+  - Tracks: 23
+  - Sets found: Set 1
+- **1971-09-29** - Studio Rehearsals with Keith Godchaux (Source: 16891)
+  - Tracks: 13
+  - Sets found: Set 1
+- **1971-11-12** - San Antonio Civic Auditorium (Source: 137396)
+  - Tracks: 23
+  - Sets found: Set 1
+- **1972-03-21** - Academy Of Music (Source: 136670)
+  - Tracks: 34
+  - Sets found: Set 1
+- **1972-03-22** - Academy of Music (Source: 136682)
+  - Tracks: 32
+  - Sets found: Set 1
+- **1972-03-25** - Academy of Music (Source: 136684)
+  - Tracks: 42
+  - Sets found: Set 1
+- **1972-08-12** - Memorial Auditorium (Source: 104168)
+  - Tracks: 38
+  - Sets found: Set 1
+- **1972-08-12** - Memorial Auditorium (Source: 105132)
+  - Tracks: 38
+  - Sets found: Set 1
+- **1972-08-12** - Memorial Auditorium (Source: 127433)
+  - Tracks: 38
+  - Sets found: Set 1
+- **1972-08-12** - Memorial Auditorium (Source: 127465)
+  - Tracks: 38
+  - Sets found: Set 1
+- **1972-09-26** - Stanley Theatre (Source: 136691)
+  - Tracks: 25
+  - Sets found: Set 1
+- **1972-11-19** - Hofheinz Pavilion (Source: 132969)
+  - Tracks: 30
+  - Sets found: Set 1
+- **1972-11-19** - Hofheinz Pavilion (Source: 132970)
+  - Tracks: 30
+  - Sets found: Set 1
+- **1972-11-19** - Hofheinz Pavilion (Source: 142329)
+  - Tracks: 30
+  - Sets found: Set 1
+- **1972-12-11** - Winterland Ballroom (Source: 107885)
+  - Tracks: 35
+  - Sets found: Set 1
+- **1973-03-15** - Nassau Coliseum (Source: 136652)
+  - Tracks: 28
+  - Sets found: Set 1
+- **1973-09-21** - The Spectrum (Source: 143101)
+  - Tracks: 24
+  - Sets found: Set 1
+- **1974-05-25** - Campus Stadium (Source: 111432)
+  - Tracks: 33
+  - Sets found: Set 1
+- **1974-06-16** - Des Moines State Fair Grandstand (Source: 143135)
+  - Tracks: 15
+  - Sets found: Set 1
+- **1974-06-28** - Boston Garden (Source: 10984)
+  - Tracks: 14
+  - Sets found: Set 1
+- **1974-09-11** - Alexandra Palace (Source: 132458)
+  - Tracks: 25
+  - Sets found: Set 1
+- **1975-03-01** - Bob Weir's Studio (Source: 145786)
+  - Tracks: 58
+  - Sets found: Set 1
+- **1975-03-17** - Ace's (Source: 145773)
+  - Tracks: 15
+  - Sets found: Set 1
+- **1975-04-02** - Ace's Studio (Source: 14290)
+  - Tracks: 28
+  - Sets found: Set 1
+- **1977-04-25** - Capitol Theater (Source: 141715)
+  - Tracks: 14
+  - Sets found: Set 1
+- **1977-04-25** - Capitol Theater (Source: 141903)
+  - Tracks: 14
+  - Sets found: Set 1
+- **1977-05-19** - Fox Theater (Source: 139377)
+  - Tracks: 25
+  - Sets found: Set 1
+- **1977-05-21** - Lakeland Civic Center (Source: 139573)
+  - Tracks: 25
+  - Sets found: Set 1
+- **1978-04-06** - Curtis Hixon Convention Hall (Source: 140694)
+  - Tracks: 20
+  - Sets found: Set 1
+- **1978-04-10** - Fox Theater (Source: 140836)
+  - Tracks: 23
+  - Sets found: Set 1
+- **1978-04-11** - Fox Theater (Source: 141775)
+  - Tracks: 22
+  - Sets found: Set 1
+- **1978-04-12** - Cameron Indoor Stadium (Source: 141776)
+  - Tracks: 23
+  - Sets found: Set 1
+- **1978-11-24** - Capitol Theatre (Source: 150970)
+  - Tracks: 36
+  - Sets found: Set 1
+- **1978-11-24** - Capitol Theatre (Source: 151616)
+  - Tracks: 36
+  - Sets found: Set 1
+- **1979-04-16** - Studio Rehersal (Source: 157228)
+  - Tracks: 30
+  - Sets found: Set 1
+- **1980-05-12** - Boston Garden (Source: 127287)
+  - Tracks: 27
+  - Sets found: Set 1
+- **1980-09-27** - Warfield Theater (Source: 156572)
+  - Tracks: 17
+  - Sets found: Set 1
+- **1980-10-03** - Warfield Theater (Source: 163612)
+  - Tracks: 15
+  - Sets found: Set 1
+- **1980-10-03** - Warfield Theater (Source: 165795)
+  - Tracks: 15
+  - Sets found: Set 1
+- **1980-10-30** - Radio City Music Hall (Source: 139599)
+  - Tracks: 46
+  - Sets found: Set 1
+- **1980-12-31** - Oakland Auditorium Arena (Source: 163454)
+  - Tracks: 41
+  - Sets found: Set 1
+- **1980-12-31** - Oakland Auditorium Arena (Source: 163455)
+  - Tracks: 41
+  - Sets found: Set 1
+- **1981-10-06** - Rainbow Theater (Source: 137268)
+  - Tracks: 26
+  - Sets found: Set 1
+- **1982-03-14** - Recreation Hall (Source: 139382)
+  - Tracks: 24
+  - Sets found: Set 1
+- **1984-04-07** - Irvine Meadows (Source: 146012)
+  - Tracks: 27
+  - Sets found: Set 1
+- **1985-11-04** - The Centrum (Source: 150099)
+  - Tracks: 23
+  - Sets found: Set 1
+- **1985-11-05** - The Centrum (Source: 143430)
+  - Tracks: 23
+  - Sets found: Set 1
+- **1985-11-05** - The Centrum (Source: 150100)
+  - Tracks: 26
+  - Sets found: Set 1
+- **1985-11-08** - Community War Memorial Auditorium (Source: 142749)
+  - Tracks: 19
+  - Sets found: Set 1
+- **1986-03-19** - Hampton Coliseum (Source: 109838)
+  - Tracks: 15
+  - Sets found: Set 1
+- **1986-03-19** - Hampton Coliseum (Source: 109882)
+  - Tracks: 15
+  - Sets found: Set 1
+- **1986-07-04** - Rich Stadium (Source: 117033)
+  - Tracks: 20
+  - Sets found: Set 1
+- **1987-03-01** - Henry J. Kaiser Convention Center (Source: 18118)
+  - Tracks: 24
+  - Sets found: Set 1
+- **1987-03-23** - Hampton Coliseum (Source: 141284)
+  - Tracks: 22
+  - Sets found: Set 1
+- **1987-07-19** - Autzen Stadium (Source: 13023)
+  - Tracks: 20
+  - Sets found: Set 1
+- **1987-08-16** - Town Park (Source: 4170)
+  - Tracks: 20
+  - Sets found: Set 1
+- **1987-11-07** - Henry J Kaiser Convention Center (Source: 138156)
+  - Tracks: 26
+  - Sets found: Set 1
+- **1988-12-29** - Oakland-Alameda County Coliseum (Source: 137692)
+  - Tracks: 26
+  - Sets found: Set 1
+- **1989-02-10** - Great Western LA Forum (Source: 13060)
+  - Tracks: 21
+  - Sets found: Set 1
+- **1989-10-20** - The Spectrum (Source: 111527)
+  - Tracks: 28
+  - Sets found: Set 1
+- **1990-10-17** - GrugaHalle (Source: 143496)
+  - Tracks: 24
+  - Sets found: Set 1
+- **1991-09-20** - Boston Garden (Source: 138147)
+  - Tracks: 20
+  - Sets found: Set 1
+- **1992-06-15** - Giants Stadium (Source: 122576)
+  - Tracks: 20
+  - Sets found: Set 1
+- **1993-09-16** - Madison Square Garden (Source: 140487)
+  - Tracks: 20
+  - Sets found: Set 1
+- **1994-04-01** - The Omni (Source: 142364)
+  - Tracks: 20
+  - Sets found: Set 1
+
+## 3. Matches with NO 'Encore' and NO 'Tuning' in Middle (150)
+- **1966-01-08** - Fillmore Auditorium (Source: 106505)
+  - Tracks: 52
+  - Sets found: Set 1
+- **1966-01-08** - Fillmore Auditorium (Source: 5406)
+  - Tracks: 41
+  - Sets found: Set 1
+- **1966-03-12** - Danish Center (Source: 9514)
+  - Tracks: 28
+  - Sets found: Set 1
+- **1966-05-19** - Avalon Ballroom (Source: 106683)
+  - Tracks: 17
+  - Sets found: Set 1
+- **1966-05-19** - Avalon Ballroom (Source: 106828)
+  - Tracks: 17
+  - Sets found: Set 1
+- **1966-05-19** - Avalon Ballroom (Source: 82844)
+  - Tracks: 17
+  - Sets found: Set 1
+- **1966-06-01** - Unknown Location (possibly Owsley’s house in Watts) (Source: 9513)
+  - Tracks: 30
+  - Sets found: Set 1
+- **1966-07-30** - P.N.E. Garden Auditorium (Source: 94631)
+  - Tracks: 13
+  - Sets found: Set 1
+- **1966-10-02** - San Francisco State University (Source: 5413)
+  - Tracks: 15
+  - Sets found: Set 1
+- **1966-10-02** - San Francisco State University (Source: 9517)
+  - Tracks: 16
+  - Sets found: Set 1
+- **1966-11-29** - The Matrix (Source: 106497)
+  - Tracks: 14
+  - Sets found: Set 1
+- **1966-11-29** - The Matrix (Source: 4940)
+  - Tracks: 13
+  - Sets found: Set 1
+- **1968-01-22** - Eagles Auditorium (Source: 8583)
+  - Tracks: 13
+  - Sets found: Set 1
+- **1968-11-06** - Pacific High Recording (Source: 12618)
+  - Tracks: 18
+  - Sets found: Set 1
+- **1969-02-07** - Stanley Theater (Early (Source: 14471)
+  - Tracks: 13
+  - Sets found: Set 1
+- **1969-05-29** - Robertson Gym (Source: 14018)
+  - Tracks: 13
+  - Sets found: Set 1
+- **1969-07-11** - NY State Pavilion (Source: 136663)
+  - Tracks: 16
+  - Sets found: Set 1
+- **1969-10-31** - San Jose State University (Source: 131863)
+  - Tracks: 15
+  - Sets found: Set 1
+- **1969-12-12** - Thelma Theater (Source: 141917)
+  - Tracks: 24
+  - Sets found: Set 1
+- **1969-12-29** - Boston Tea Party (Source: 8044)
+  - Tracks: 17
+  - Sets found: Set 1
+- **1970-00-00** - Studio (Source: 91324)
+  - Tracks: 14
+  - Sets found: Set 1
+- **1970-01-02** - Fillmore East (show b- Late?) (Source: 12624)
+  - Tracks: 14
+  - Sets found: Set 1
+- **1970-01-03** - Fillmore East (Early Show) (Source: 137559)
+  - Tracks: 26
+  - Sets found: Set 1
+- **1970-01-10** - Golden Hall (Source: 127227)
+  - Tracks: 13
+  - Sets found: Set 1
+- **1970-02-05** - Fillmore West (Source: 9184)
+  - Tracks: 13
+  - Sets found: Set 1
+- **1970-02-14** - Fillmore East (Source: 166928)
+  - Tracks: 24
+  - Sets found: Set 1
+- **1970-03-01** - the Great Highway (Source: 136666)
+  - Tracks: 19
+  - Sets found: Set 1
+- **1970-04-15** - Winterland Arena (Source: 132734)
+  - Tracks: 16
+  - Sets found: Set 1
+- **1970-04-15** - Winterland Arena (Source: 6644)
+  - Tracks: 26
+  - Sets found: Set 1
+- **1970-05-14** - Meramec Community College (Source: 7604)
+  - Tracks: 15
+  - Sets found: Set 2
+- **1970-05-24** - Newcastle-Under-Lyme (Source: 135716)
+  - Tracks: 17
+  - Sets found: Set 1
+- **1970-05-24** - Newcastle-Under-Lyme (Source: 135803)
+  - Tracks: 17
+  - Sets found: Set 1
+- **1970-05-24** - Newcastle-Under-Lyme (Source: 136669)
+  - Tracks: 18
+  - Sets found: Set 1
+- **1970-08-05** - Golden Hall (Source: 17271)
+  - Tracks: 15
+  - Sets found: Set 1
+- **1970-08-05** - Golden Hall (Source: 4941)
+  - Tracks: 15
+  - Sets found: Set 1
+- **1970-10-31** - Gym (Source: 122042)
+  - Tracks: 46
+  - Sets found: Set 1
+- **1970-10-31** - Gym (Source: 122043)
+  - Tracks: 46
+  - Sets found: Set 1
+- **1970-10-31** - Gym (Source: 29192)
+  - Tracks: 26
+  - Sets found: Set 1
+- **1970-10-31** - Gym (Source: 6517)
+  - Tracks: 13
+  - Sets found: Set 1
+- **1970-11-23** - Anderson Theatre (Source: 4734)
+  - Tracks: 13
+  - Sets found: Set 1
+- **1971-02-01** - Unknown (Source: 120486)
+  - Tracks: 13
+  - Sets found: Set 1
+- **1971-02-18** - Capitol Theater (Source: 107)
+  - Tracks: 24
+  - Sets found: Set 1
+- **1971-02-18** - Capitol Theater (Source: 143183)
+  - Tracks: 19
+  - Sets found: Set 1
+- **1971-02-21** - Capitol Theater (Source: 1980)
+  - Tracks: 23
+  - Sets found: Set 1
+- **1971-10-01** - Studio (Source: 16896)
+  - Tracks: 15
+  - Sets found: Set 1
+- **1971-10-01** - Studio (Source: 16897)
+  - Tracks: 16
+  - Sets found: Set 1
+- **1971-10-29** - Allan Theater (Source: 4090)
+  - Tracks: 13
+  - Sets found: Set 1
+- **1972-04-26** - Jahrhundert Halle (Source: 12849)
+  - Tracks: 14
+  - Sets found: Set 1
+- **1972-05-04** - Olympia Theater (Source: 20562)
+  - Tracks: 14
+  - Sets found: Set 1
+- **1972-05-07** - Bickershaw Festival (Source: 133598)
+  - Tracks: 13
+  - Sets found: Set 1
+- **1972-10-27** - Veterans' Memorial Hall (Source: 18849)
+  - Tracks: 13
+  - Sets found: Set 1
+- **1973-02-15** - Dane County Coliseum (Source: 150175)
+  - Tracks: 30
+  - Sets found: Set 1
+- **1973-03-19** - Nassau Veterans Memorial Coliseum (Source: 9987)
+  - Tracks: 13
+  - Sets found: Set 1
+- **1973-08-01** - Record Plant (Source: 113751)
+  - Tracks: 14
+  - Sets found: Set 1
+- **1973-09-21** - The Spectrum (Source: 127554)
+  - Tracks: 22
+  - Sets found: Set 1
+- **1973-10-23** - Metropolitan Sports Center (Source: 18899)
+  - Tracks: 14
+  - Sets found: Set 1
+- **1974-02-24** - Winterland Arena (Source: 199)
+  - Tracks: 28
+  - Sets found: Set 1
+- **1974-05-12** - University of Nevada (Source: 22248)
+  - Tracks: 50
+  - Sets found: Set 1
+- **1974-07-31** - Dillon Stadium (Source: 121836)
+  - Tracks: 32
+  - Sets found: Set 1
+- **1974-09-11** - Alexandra Palace (Source: 135802)
+  - Tracks: 20
+  - Sets found: Set 1
+- **1974-09-11** - Alexandra Palace (Source: 135883)
+  - Tracks: 20
+  - Sets found: Set 1
+- **1974-10-16** - Winterland Arena (Source: 12577)
+  - Tracks: 22
+  - Sets found: Set 1
+- **1974-10-16** - Winterland Arena (Source: 131539)
+  - Tracks: 25
+  - Sets found: Set 1
+- **1974-10-17** - Winterland Arena (Source: 99032)
+  - Tracks: 26
+  - Sets found: Set 1
+- **1974-10-19** - Winterland Arena (Source: 112791)
+  - Tracks: 13
+  - Sets found: Set 1
+- **1974-10-19** - Winterland Arena (Source: 116341)
+  - Tracks: 32
+  - Sets found: Set 1
+- **1974-10-19** - Winterland Arena (Source: 131694)
+  - Tracks: 32
+  - Sets found: Set 1
+- **1974-10-19** - Winterland Arena (Source: 131704)
+  - Tracks: 32
+  - Sets found: Set 1
+- **1974-10-19** - Winterland Arena (Source: 139578)
+  - Tracks: 32
+  - Sets found: Set 1
+- **1974-10-19** - Winterland Arena (Source: 140626)
+  - Tracks: 32
+  - Sets found: Set 1
+- **1975-03-23** - Kezar Stadium (Source: 18525)
+  - Tracks: 13
+  - Sets found: Set 1
+- **1975-04-17** - Ace's Studio (Source: 14291)
+  - Tracks: 29
+  - Sets found: Set 1
+- **1975-06-05** - Ace's Studio (Source: 14292)
+  - Tracks: 43
+  - Sets found: Set 1
+- **1975-07-07** - Ace's Studio (Source: 14293)
+  - Tracks: 25
+  - Sets found: Set 1
+- **1975-07-07** - Ace's Studio (Source: 145780)
+  - Tracks: 16
+  - Sets found: Set 1
+- **1976-05-28** - Le Club Front Studios (Source: 9769)
+  - Tracks: 21
+  - Sets found: Set 1
+- **1976-06-24** - The Tower Theatre (Source: 140031)
+  - Tracks: 19
+  - Sets found: Set 1
+- **1976-07-16** - Orpheum Theatre (Source: 28042)
+  - Tracks: 14
+  - Sets found: Set 1
+- **1977-03-01** - Multiple (Source: 150848)
+  - Tracks: 14
+  - Sets found: Set 1
+- **1977-05-28** - Hartford Civic Center (Source: 31952)
+  - Tracks: 35
+  - Sets found: Set 1
+- **1978-02-01** - Uptown Theater (Source: 138451)
+  - Tracks: 18
+  - Sets found: Set 1
+- **1978-04-08** - Veterans Memorial Coliseum (Source: 140789)
+  - Tracks: 19
+  - Sets found: Set 1
+- **1978-04-08** - Veterans Memorial Coliseum (Source: 140922)
+  - Tracks: 19
+  - Sets found: Set 1
+- **1978-04-08** - Veterans Memorial Coliseum (Source: 148006)
+  - Tracks: 20
+  - Sets found: Set 1
+- **1978-04-16** - Huntington Civic Center (Source: 148386)
+  - Tracks: 21
+  - Sets found: Set 1
+- **1978-11-21** - Community War Memorial Auditorium (Source: 30116)
+  - Tracks: 17
+  - Sets found: Set 1
+- **1978-11-23** - Capital Centre (Source: 9846)
+  - Tracks: 16
+  - Sets found: Set 1
+- **1979-01-17** - New Haven Coliseum (Source: 91784)
+  - Tracks: 22
+  - Sets found: Set 1
+- **1979-01-17** - New Haven Coliseum (Source: 91788)
+  - Tracks: 19
+  - Sets found: Set 1
+- **1979-10-31** - Nassau Veterans Memorial Coliseum (Source: 7921)
+  - Tracks: 16
+  - Sets found: Set 2
+- **1979-11-08** - Capital Centre (Source: 3901)
+  - Tracks: 16
+  - Sets found: Set 2
+- **1979-11-08** - Capital Centre (Source: 8546)
+  - Tracks: 22
+  - Sets found: Set 2
+- **1980-08-31** - Capital Centre (Source: 174993)
+  - Tracks: 13
+  - Sets found: Set 2
+- **1980-09-26** - Warfield Theater (Source: 155411)
+  - Tracks: 13
+  - Sets found: Set 1
+- **1980-09-26** - Warfield Theater (Source: 155426)
+  - Tracks: 13
+  - Sets found: Set 1
+- **1980-10-01** - Warfield Theatre & Radio City Music Hall (Source: 150795)
+  - Tracks: 27
+  - Sets found: Set 1
+- **1980-10-04** - Warfield Theater (Source: 151266)
+  - Tracks: 15
+  - Sets found: Set 1
+- **1980-10-04** - Warfield Theater (Source: 19147)
+  - Tracks: 15
+  - Sets found: Set 1
+- **1980-10-04** - Warfield Theater (Source: 8778)
+  - Tracks: 15
+  - Sets found: Set 1
+- **1980-10-06** - Warfield Theater (Source: 151267)
+  - Tracks: 14
+  - Sets found: Set 1
+- **1980-10-10** - Warfield Theater (Source: 73820)
+  - Tracks: 15
+  - Sets found: Set 1
+- **1980-10-11** - Warfield Theater (Source: 6198)
+  - Tracks: 20
+  - Sets found: Set 1
+- **1980-12-31** - Oakland Auditorium Arena (Source: 155390)
+  - Tracks: 36
+  - Sets found: Set 1
+- **1981-03-04** - Club Front (Source: 142326)
+  - Tracks: 16
+  - Sets found: Set 1
+- **1981-09-30** - Playhouse Theater (Source: 123231)
+  - Tracks: 22
+  - Sets found: Set 1
+- **1981-10-04** - Rainbow Theater (Source: 118248)
+  - Tracks: 25
+  - Sets found: Set 1
+- **1981-12-12** - Fiesta Hall (Source: 83462)
+  - Tracks: 13
+  - Sets found: Set 1
+- **1982-01-01** - Mickey's ranch studio (Source: 19808)
+  - Tracks: 24
+  - Sets found: Set 1
+- **1982-04-19** - Baltimore Civic Center (Source: 89384)
+  - Tracks: 22
+  - Sets found: Set 1
+- **1982-04-19** - Baltimore Civic Center (Source: 89389)
+  - Tracks: 22
+  - Sets found: Set 1
+- **1982-05-22** - Greek Theatre (Source: 82532)
+  - Tracks: 15
+  - Sets found: Set 2
+- **1982-05-28** - Moscone Convention Center (Source: 131808)
+  - Tracks: 14
+  - Sets found: Set 1
+- **1982-05-28** - Moscone Convention Center (Source: 131809)
+  - Tracks: 14
+  - Sets found: Set 1
+- **1982-08-04** - Kiel Auditorium (Source: 7388)
+  - Tracks: 21
+  - Sets found: Set 1
+- **1982-12-30** - Oakland Auditorium (Source: 95955)
+  - Tracks: 15
+  - Sets found: Set 2
+- **1983-03-14** - Club Front (Source: 21269)
+  - Tracks: 16
+  - Sets found: Set 1
+- **1983-10-31** - Marin County Veterans Auditorium (Source: 151222)
+  - Tracks: 19
+  - Sets found: Set 1
+- **1984-07-21** - Ventura County Fairgrounds (Source: 14329)
+  - Tracks: 20
+  - Sets found: Set 1
+- **1985-02-18** - Henry J. Kaiser Convention Center (Source: 170268)
+  - Tracks: 20
+  - Sets found: Set 1
+- **1985-04-21** - Marin Veterans Memorial Auditorium (Source: 121757)
+  - Tracks: 17
+  - Sets found: Set 1
+- **1985-04-27** - Frost Amphitheatre (Source: 20683)
+  - Tracks: 13
+  - Sets found: Set 2
+- **1985-04-27** - Frost Amphitheatre (Source: 78681)
+  - Tracks: 25
+  - Sets found: Set 1
+- **1985-06-21** - Alpine Valley Music Theatre (Source: 120969)
+  - Tracks: 13
+  - Sets found: Set 1
+- **1985-09-02** - Zoo Amphitheater (Source: 142181)
+  - Tracks: 22
+  - Sets found: Set 1
+- **1985-10-29** - Fox Theater (Source: 12182)
+  - Tracks: 38
+  - Sets found: Set 2
+- **1986-03-28** - Cumberland County Civic Center (Source: 95598)
+  - Tracks: 13
+  - Sets found: Set 2
+- **1986-12-16** - Oakland-Alameda County Coliseum (Source: 4094)
+  - Tracks: 22
+  - Sets found: Set 2
+- **1986-12-17** - Oakland-Alameda County Coliseum (Source: 141745)
+  - Tracks: 23
+  - Sets found: Set 1
+- **1987-03-24** - Hampton Coliseum (Source: 142041)
+  - Tracks: 19
+  - Sets found: Set 1
+- **1987-07-19** - Autzen Stadium (Source: 97492)
+  - Tracks: 15
+  - Sets found: Set 2
+- **1987-07-26** - Anaheim Stadium (Source: 97495)
+  - Tracks: 15
+  - Sets found: Set 2
+- **1988-04-09** - The Centrum (Source: 140490)
+  - Tracks: 22
+  - Sets found: Set 1
+- **1988-06-01** - Unknown (Source: 20606)
+  - Tracks: 14
+  - Sets found: Set 1
+- **1988-07-30** - Laguna Seca Recreation Area (Source: 131102)
+  - Tracks: 13
+  - Sets found: Set 1
+- **1988-09-11** - The Spectrum (Source: 17408)
+  - Tracks: 13
+  - Sets found: Set 1
+- **1989-03-01** - Club Front (Source: 113358)
+  - Tracks: 39
+  - Sets found: Set 1
+- **1989-07-12** - Robert F. Kennedy Stadium (Source: 141908)
+  - Tracks: 21
+  - Sets found: Set 1
+- **1990-10-22** - Festhalle (Source: 13466)
+  - Tracks: 19
+  - Sets found: Set 1
+- **1991-03-17** - Capital Centre (Source: 8745)
+  - Tracks: 21
+  - Sets found: Set 1
+- **1991-03-31** - Greensboro Coliseum (Source: 99386)
+  - Tracks: 17
+  - Sets found: Set 1
+- **1991-09-24** - Boston Garden (Source: 138150)
+  - Tracks: 22
+  - Sets found: Set 1
+- **1991-10-31** - Oakland-Alameda County Coliseum (Source: 30699)
+  - Tracks: 15
+  - Sets found: Set 2
+- **1992-02-21** - Club Front Studio (Source: 8189)
+  - Tracks: 13
+  - Sets found: Set 1
+- **1992-03-05** - Hampton Coliseum (Source: 5240)
+  - Tracks: 18
+  - Sets found: Set 1
+- **1993-09-13** - The Spectrum (Source: 12755)
+  - Tracks: 22
+  - Sets found: Set 1
+- **1994-03-05** - Desert Sky Pavilion (Source: 152012)
+  - Tracks: 21
+  - Sets found: Set 1
+- **1994-03-06** - Desert Sky Pavilion (Source: 152013)
+  - Tracks: 22
+  - Sets found: Set 1
+- **1994-07-23** - Soldier Field (Source: 14839)
+  - Tracks: 34
+  - Sets found: Set 1
+- **1995-03-17** - The Spectrum (Source: 17951)
+  - Tracks: 29
+  - Sets found: Set 1
+- **1995-03-28** - The Omni (Source: 80018)
+  - Tracks: 18
+  - Sets found: Set 1

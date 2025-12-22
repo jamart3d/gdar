@@ -70,19 +70,19 @@ This file tracks planned features, enhancements, and bug fixes for the gdar appl
 
 - [ ] **UI Polish:** Refine animations and transitions for an even smoother feel.
 - [ ] **3D Rotating Stars:** Animate rating stars by rotating them around their Y-axis to give a 3D effect.
-- [ ] **Font Selection:** Add setting to choose the handwriting font. Options: Caveat, Permanent Marker, Lacquer, Rock Salt.
-- [ ] **Fix highlight:** With Dark Mode + Dynamic Color + Glow Border: Fix issue where glow is uniform on all shows, and missing when expanded. Implement "half glow" for all, and "regular glow" for current show/shnid.
+- [x] **Font Selection:** Add setting to choose the handwriting font. Options: Caveat, Permanent Marker, Lacquer, Rock Salt.
+- [x] **Fix highlight:** With Dark Mode + Dynamic Color + Glow Border: Fix issue where glow is uniform on all shows, and missing when expanded. Implement "half glow" for all, and "regular glow" for current show/shnid.
 - [ ] **Improve Playback Controls:** Enhance the layout and interactivity of controls in the Playback Screen.
   - [ ] **Venue Name Positioning:**
     - [ ] Add setting to display venue name under the date in Playback Screen appbar.
     - [ ] Move venue name in Playback Controls (expanded) to just above the date.
     - [ ] Hide venue name in Playback Controls when collapsed.
-- [ ] **Haptic Feedback Idetified Improvements:**
-  - [ ] Add `HapticFeedback.mediumImpact()` to Source Filter "Solo" Mode (Long Press).
-  - [ ] **Polish:** Add subtle feedback (`selectionClick`) to:
-    - [ ] Play/Pause and Next/Prev buttons.
-    - [ ] Expand/Collapse Show Card.
-    - [ ] Star Rating taps.
+- [x] **Haptic Feedback Idetified Improvements:**
+  - [x] Add `HapticFeedback.mediumImpact()` to Source Filter "Solo" Mode (Long Press).
+  - [x] **Polish:** Add subtle feedback (`selectionClick`) to:
+    - [x] Play/Pause and Next/Prev buttons.
+    - [x] Expand/Collapse Show Card.
+    - [x] Star Rating taps.
 
 - [x] **Accessibility:** Review and improve app accessibility.
   - Added semantic labels to `ShowListCard`.
@@ -131,7 +131,7 @@ This file tracks planned features, enhancements, and bug fixes for the gdar appl
 - [ ] **Swipe to Block Follow-up:** When using "Swipe to Block" to remove a show, provide an option (or setting) to immediately trigger a new random selection.
 - [ ] **RGB Glow Setting:** Add a setting to control/boost the "glow" intensity of the RGB border effect.
 
-- [ ] **Rename Category:** Rename category 'unk'/'unknown' to 'fix'/'fix needed'.
+
 
 - [x] **Move Encore Tracks:** Create a Python script to identify and move end tracks into an 'Encore' set.
   - [x] `remove_encore_prefix.py` handles prefix removal and moving misplaced tracks.
@@ -139,6 +139,11 @@ This file tracks planned features, enhancements, and bug fixes for the gdar appl
   - [x] `fix2_with_database.py`: Clean setlist data and generate review lists.
   - [x] `report_review_shnids.py`: Generate lexicographically sorted SHNID lists for review.
   - [x] **Investigate Sequences Following 'Tuning':** Analyze tracks appearing after "Tuning" to identify potential encores or separation issues.
+  - [x] **Set 1 Analysis Script:** Created script (`find_set1_encore.py`) to find single-set shows with >12 tracks.
+    - [x] Categorized matches into: (1) "Encore" in title, (2) "Tuning" in middle, (3) Neither.
+    - [x] Generated categorized report `report_set1_enc.md`.
+    - [x] Generated single minified JSON output `set1_matches.json`.
+  - [ ] **Review Set 1 Candidates:** Manually review `set1_matches.json` and split sets where appropriate.
 - [x] **Refined Usage Instructions:**
   - [x] Improved line breaking (no widows/orphans).
   - [x] Enhanced typography (bold keywords).

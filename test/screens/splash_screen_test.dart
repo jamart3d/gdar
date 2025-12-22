@@ -38,8 +38,8 @@ void main() {
     when(mockShowListProvider.filteredShows).thenReturn([]);
     when(mockShowListProvider.totalShnids).thenReturn(0);
     when(mockShowListProvider.error).thenReturn(null);
-    when(mockShowListProvider.expandedShowName).thenReturn(null);
-    when(mockShowListProvider.loadingShowName).thenReturn(null);
+    when(mockShowListProvider.expandedShowKey).thenReturn(null);
+    when(mockShowListProvider.loadingShowKey).thenReturn(null);
     // Simulate check completed but failed
     when(mockShowListProvider.hasCheckedArchive).thenReturn(true);
     when(mockShowListProvider.isArchiveReachable).thenReturn(false);

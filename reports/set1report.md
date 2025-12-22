@@ -1,0 +1,252 @@
+# Report: Long Single-Set Sources (>12 Tracks)
+
+## Criteria
+- Exactly 1 Set detected.
+- More than 12 tracks.
+
+## 1. Sources with "Encore" in Title (3)
+- 1984-04-07 - Grateful Dead Live at Irvine Meadows on 1984-04-07 (ID: 146012) [27 tracks]
+- 1987-09-11 - Grateful Dead Live at Capital Centre on 1987-09-11 (ID: 140925) [14 tracks]
+- 1990-10-17 - Grateful Dead Live at GrugaHalle on 1990-10-17 (ID: 143496) [24 tracks]
+
+## 2. Sources with "Tuning" in Middle (Index 3 to -3) (88)
+- 1966-01-01 - Grateful Dead Live at Viola Lee Blues Reahearsals on 1966-01-01 (ID: 18846) [20 tracks] - Found: 'talk & tunings'
+- 1966-02-05 - Grateful Dead Live at The Questing Beast on 1966-02-05 (ID: 136661) [20 tracks] - Found: 'Talk Tunings'
+- 1966-03-19 - Grateful Dead Live at Carthay Studios on 1966-03-19 (ID: 81951) [17 tracks] - Found: 'PA and "tasting" and tuning stage talk'
+- 1967-08-05 - Grateful Dead Live at O'Keefe Center on 1967-08-05 (ID: 169430) [14 tracks] - Found: '{Tuning - Stage Banter}'
+- 1969-02-06 - Grateful Dead Live at Kiel Auditorium on 1969-02-06 (ID: 137394) [13 tracks] - Found: 'crowd/tuning'
+- 1969-02-07 - Grateful Dead Live at Stanley Theater (Early, Late) on 1969-02-07 (ID: 137392) [20 tracks] - Found: 'tuning'
+- 1969-04-05 - Grateful Dead Live at Avalon Ballroom on 1969-04-05 (ID: 136650) [19 tracks] - Found: 'tuning'
+- 1969-06-27 - Grateful Dead Live at Veterans Auditorium on 1969-06-27 (ID: 166576) [19 tracks] - Found: 'tuning'
+- 1969-07-11 - Grateful Dead Live at NY State Pavilion, Flushing Meadow Park on 1969-07-11 (ID: 123417) [17 tracks] - Found: 'tuning'
+- 1969-12-04 - Grateful Dead Live at Fillmore West on 1969-12-04 (ID: 141723) [15 tracks] - Found: 'more about the show/tuning'
+- 1970-01-02 - Grateful Dead Live at Fillmore East (show b- Late?) on 1970-01-02 (ID: 137375) [27 tracks] - Found: 'tuning/banter'
+- 1970-01-10 - Grateful Dead Live at Golden Hall on 1970-01-10 (ID: 89614) [15 tracks] - Found: 'Bobby's Got A Broken String -> Tuning'
+- 1970-02-14 - Grateful Dead Live at Fillmore East on 1970-02-14 (ID: 141007) [25 tracks] - Found: 'Tuning_Banter'
+- 1970-02-23 - Grateful Dead Live at The Auditorium on 1970-02-23 (ID: 172477) [13 tracks] - Found: 'tuning / banter (incl. Yellow Dog Story)'
+- 1970-05-02 - Grateful Dead Live at Harpur College on 1970-05-02 (ID: 108955) [41 tracks] - Found: 'tuning'
+- 1970-09-20 - Grateful Dead Live at Fillmore East on 1970-09-20 (ID: 135798) [29 tracks] - Found: 'tuning/tune'
+- 1970-10-30 - Grateful Dead Live at Gym, SUNY (Early Show) on 1970-10-30 (ID: 121126) [46 tracks] - Found: 'Tuning'
+- 1971-02-23 - Grateful Dead Live at Capitol Theater on 1971-02-23 (ID: 113) [25 tracks] - Found: 'Tuning'
+- 1971-02-24 - Grateful Dead Live at Capitol Theater on 1971-02-24 (ID: 114) [23 tracks] - Found: 'Tuning'
+- 1971-03-03 - Grateful Dead Live at Fillmore West on 1971-03-03 (ID: 149685) [27 tracks] - Found: 'tuning'
+- 1971-04-06 - Grateful Dead Live at Manhattan Center on 1971-04-06 (ID: 109026) [29 tracks] - Found: 'Tuning'
+- 1971-04-07 - Grateful Dead Live at Music Hall on 1971-04-07 (ID: 136892) [24 tracks] - Found: 'tuning'
+- 1971-04-07 - Grateful Dead Live at Music Hall on 1971-04-07 (ID: 141029) [21 tracks] - Found: 'tuning'
+- 1971-04-17 - Grateful Dead Live at Dillon Gym, Princeton University on 1971-04-17 (ID: 138033) [23 tracks] - Found: 'tuning - Sugar Magnolia (aborted due to technical problems)'
+- 1971-09-29 - Grateful Dead Live at Studio Rehearsals with Keith Godchaux on 1971-09-29 (ID: 16891) [13 tracks] - Found: 'Banter & Tuning'
+- 1971-11-12 - Grateful Dead Live at San Antonio Civic Auditorium on 1971-11-12 (ID: 137396) [23 tracks] - Found: 'chat/tuning'
+- 1972-03-21 - Grateful Dead Live at Academy Of Music on 1972-03-21 (ID: 136670) [34 tracks] - Found: 'tuning'
+- 1972-03-22 - Grateful Dead Live at Academy of Music on 1972-03-22 (ID: 136682) [32 tracks] - Found: 'tuning'
+- 1972-03-25 - Grateful Dead Live at Academy of Music on 1972-03-25 (ID: 136684) [42 tracks] - Found: 'tuning/banter'
+- 1972-08-12 - Grateful Dead Live at Memorial Auditorium on 1972-08-12 (ID: 104168) [38 tracks] - Found: 'tuning'
+- 1972-08-12 - Grateful Dead Live at Memorial Auditorium on 1972-08-12 (ID: 105132) [38 tracks] - Found: 'tuning'
+- 1972-08-12 - Grateful Dead Live at Memorial Auditorium on 1972-08-12 (ID: 127433) [38 tracks] - Found: 'tuning'
+- 1972-08-12 - Grateful Dead Live at Memorial Auditorium on 1972-08-12 (ID: 127465) [38 tracks] - Found: 'tuning'
+- 1972-09-26 - Grateful Dead Live at Stanley Theatre on 1972-09-26 (ID: 136691) [25 tracks] - Found: 'Miles Tuning'
+- 1972-11-19 - Grateful Dead Live at Hofheinz Pavilion on 1972-11-19 (ID: 132969) [30 tracks] - Found: 'Stars And Stripes Forever tuning'
+- 1972-11-19 - Grateful Dead Live at Hofheinz Pavilion on 1972-11-19 (ID: 132970) [30 tracks] - Found: 'Stars And Stripes Forever tuning'
+- 1972-11-19 - Grateful Dead Live at Hofheinz Pavilion on 1972-11-19 (ID: 142329) [30 tracks] - Found: 'Stars and Stripes Forever tuning'
+- 1972-12-11 - Grateful Dead Live at Winterland Ballroom on 1972-12-11 (ID: 107885) [35 tracks] - Found: 'Tuning/Crowd'
+- 1973-03-15 - Grateful Dead Live at Nassau Coliseum on 1973-03-15 (ID: 136652) [28 tracks] - Found: 'tuning'
+- 1973-09-21 - Grateful Dead Live at The Spectrum on 1973-09-21 (ID: 143101) [24 tracks] - Found: 'tuning'
+- 1974-05-25 - Grateful Dead Live at Campus Stadium, UC Santa Barbara on 1974-05-25 (ID: 111432) [33 tracks] - Found: 'crowd/tuning'
+- 1974-06-16 - Grateful Dead Live at Des Moines State Fair Grandstand on 1974-06-16 (ID: 143135) [15 tracks] - Found: 'banter/tuning'
+- 1974-06-28 - Grateful Dead Live at Boston Garden on 1974-06-28 (ID: 10984) [14 tracks] - Found: 'Tuning'
+- 1974-09-11 - Grateful Dead Live at Alexandra Palace on 1974-09-11 (ID: 132458) [25 tracks] - Found: 'Tuning'
+- 1975-03-01 - Grateful Dead Live at Bob Weir's Studio on 1975-03-01 (ID: 145786) [58 tracks] - Found: 'tuning/changes (Phil/acoustic)'
+- 1975-03-17 - Grateful Dead Live at Ace's on 1975-03-17 (ID: 145773) [15 tracks] - Found: 'tuning -> jam (fades out)'
+- 1975-04-02 - Grateful Dead Live at Ace's Studio on 1975-04-02 (ID: 14290) [28 tracks] - Found: 'tuning'
+- 1977-04-25 - Grateful Dead Live at Capitol Theater on 1977-04-25 (ID: 141715) [14 tracks] - Found: 'Tuning'
+- 1977-04-25 - Grateful Dead Live at Capitol Theater on 1977-04-25 (ID: 141903) [14 tracks] - Found: 'Tuning'
+- 1977-05-19 - Grateful Dead Live at Fox Theater on 1977-05-19 (ID: 139377) [25 tracks] - Found: 'tuning/banter'
+- 1977-05-21 - Grateful Dead Live at Lakeland Civic Center on 1977-05-21 (ID: 139573) [25 tracks] - Found: 'tuning/banter'
+- 1978-04-06 - Grateful Dead Live at Curtis Hixon Convention Hall on 1978-04-06 (ID: 140694) [20 tracks] - Found: 'tuning'
+- 1978-04-10 - Grateful Dead Live at Fox Theater on 1978-04-10 (ID: 140836) [23 tracks] - Found: 'tuning'
+- 1978-04-11 - Grateful Dead Live at Fox Theater on 1978-04-11 (ID: 141775) [22 tracks] - Found: 'tuning'
+- 1978-04-12 - Grateful Dead Live at Cameron Indoor Stadium on 1978-04-12 (ID: 141776) [23 tracks] - Found: 'tuning'
+- 1978-11-24 - Grateful Dead Live at Capitol Theatre on 1978-11-24 (ID: 150970) [36 tracks] - Found: 'Tuning'
+- 1978-11-24 - Grateful Dead Live at Capitol Theatre on 1978-11-24 (ID: 151616) [36 tracks] - Found: '. Tuning'
+- 1979-04-16 - Grateful Dead Live at Studio Rehersal, Club Front on 1979-04-16 (ID: 157228) [30 tracks] - Found: 'tuning and talk'
+- 1980-05-12 - Grateful Dead Live at Boston Garden on 1980-05-12 (ID: 127287) [27 tracks] - Found: 'crowd/tuning'
+- 1980-09-27 - Grateful Dead Live at Warfield Theater on 1980-09-27 (ID: 156572) [17 tracks] - Found: 'Tuning'
+- 1980-10-03 - Grateful Dead Live at Warfield Theater on 1980-10-03 (ID: 163612) [15 tracks] - Found: 'Tuning'
+- 1980-10-03 - Grateful Dead Live at Warfield Theater on 1980-10-03 (ID: 165795) [15 tracks] - Found: 'Tuning'
+- 1980-10-30 - Grateful Dead Live at Radio City Music Hall on 1980-10-30 (ID: 139599) [46 tracks] - Found: 'banter & tuning'
+- 1980-12-31 - Grateful Dead Live at Oakland Auditorium Arena on 1980-12-31 (ID: 163454) [41 tracks] - Found: 'tuning'
+- 1980-12-31 - Grateful Dead Live at Oakland Auditorium Arena on 1980-12-31 (ID: 163455) [41 tracks] - Found: 'tuning'
+- 1981-10-06 - Grateful Dead Live at Rainbow Theater on 1981-10-06 (ID: 137268) [26 tracks] - Found: 'tuning'
+- 1982-03-14 - Grateful Dead Live at Recreation Hall, UC Davis on 1982-03-14 (ID: 139382) [24 tracks] - Found: 'tuning'
+- 1984-04-07 - Grateful Dead Live at Irvine Meadows on 1984-04-07 (ID: 146012) [27 tracks] - Found: 'tuning'
+- 1985-11-04 - Grateful Dead Live at The Centrum on 1985-11-04 (ID: 150099) [23 tracks] - Found: 'tuning'
+- 1985-11-05 - Grateful Dead Live at The Centrum on 1985-11-05 (ID: 143430) [23 tracks] - Found: 'Happy Birthday Bill Walton > tuning'
+- 1985-11-05 - Grateful Dead Live at The Centrum on 1985-11-05 (ID: 150100) [26 tracks] - Found: 'tuning'
+- 1985-11-08 - Grateful Dead Live at Community War Memorial Auditorium on 1985-11-08 (ID: 142749) [19 tracks] - Found: 'Tuning'
+- 1986-03-19 - Grateful Dead Live at Hampton Coliseum on 1986-03-19 (ID: 109838) [15 tracks] - Found: 'tuning'
+- 1986-03-19 - Grateful Dead Live at Hampton Coliseum on 1986-03-19 (ID: 109882) [15 tracks] - Found: 'tuning'
+- 1986-07-04 - Grateful Dead Live at Rich Stadium on 1986-07-04 (ID: 117033) [20 tracks] - Found: 'crowd & tuning'
+- 1987-03-01 - Grateful Dead Live at Henry J. Kaiser Convention Center on 1987-03-01 (ID: 18118) [24 tracks] - Found: 'Tuning/crowd'
+- 1987-03-23 - Grateful Dead Live at Hampton Coliseum on 1987-03-23 (ID: 141284) [22 tracks] - Found: 'Tuning'
+- 1987-07-19 - Grateful Dead Live at Autzen Stadium, University Of Oregon on 1987-07-19 (ID: 13023) [20 tracks] - Found: 'Crowd/tuning'
+- 1987-08-16 - Grateful Dead Live at Town Park on 1987-08-16 (ID: 4170) [20 tracks] - Found: 'Beer Barrel Polka Tuning'
+- 1987-11-07 - Grateful Dead Live at Henry J Kaiser Convention Center on 1987-11-07 (ID: 138156) [26 tracks] - Found: 'tuning'
+- 1988-12-29 - Grateful Dead Live at Oakland-Alameda County Coliseum on 1988-12-29 (ID: 137692) [26 tracks] - Found: 'tuning'
+- 1989-02-10 - Grateful Dead Live at Great Western LA Forum on 1989-02-10 (ID: 13060) [21 tracks] - Found: 'Tuning/crowd'
+- 1989-10-20 - Grateful Dead Live at The Spectrum on 1989-10-20 (ID: 111527) [28 tracks] - Found: ':16.63| Tuning'
+- 1990-10-17 - Grateful Dead Live at GrugaHalle on 1990-10-17 (ID: 143496) [24 tracks] - Found: 'tuning'
+- 1991-09-20 - Grateful Dead Live at Boston Garden on 1991-09-20 (ID: 138147) [20 tracks] - Found: 'tuning'
+- 1992-06-15 - Grateful Dead Live at Giants Stadium on 1992-06-15 (ID: 122576) [20 tracks] - Found: 'tuning'
+- 1993-09-16 - Grateful Dead Live at Madison Square Garden on 1993-09-16 (ID: 140487) [20 tracks] - Found: 'Tuning'
+- 1994-04-01 - Grateful Dead Live at The Omni on 1994-04-01 (ID: 142364) [20 tracks] - Found: 'tuning'
+
+## 3. Sources with NO "Encore" and NO "Tuning" in Middle (150)
+- 1966-01-08 - Grateful Dead Live at Fillmore Auditorium on 1966-01-08 (ID: 106505) [52 tracks]
+- 1966-01-08 - Grateful Dead Live at Fillmore Auditorium on 1966-01-08 (ID: 5406) [41 tracks]
+- 1966-03-12 - Grateful Dead Live at Danish Center on 1966-03-12 (ID: 9514) [28 tracks]
+- 1966-05-19 - Grateful Dead Live at Avalon Ballroom on 1966-05-19 (ID: 106683) [17 tracks]
+- 1966-05-19 - Grateful Dead Live at Avalon Ballroom on 1966-05-19 (ID: 106828) [17 tracks]
+- 1966-05-19 - Grateful Dead Live at Avalon Ballroom on 1966-05-19 (ID: 82844) [17 tracks]
+- 1966-06-01 - Grateful Dead Live at Unknown Location (possibly Owsley’s house in Watts) on 1966-06-01 (ID: 9513) [30 tracks]
+- 1966-07-30 - Grateful Dead Live at P.N.E. Garden Auditorium on 1966-07-30 (ID: 94631) [13 tracks]
+- 1966-10-02 - Grateful Dead Live at San Francisco State University on 1966-10-02 (ID: 5413) [15 tracks]
+- 1966-10-02 - Grateful Dead Live at San Francisco State University on 1966-10-02 (ID: 9517) [16 tracks]
+- 1966-11-29 - Grateful Dead Live at The Matrix on 1966-11-29 (ID: 106497) [14 tracks]
+- 1966-11-29 - Grateful Dead Live at The Matrix on 1966-11-29 (ID: 4940) [13 tracks]
+- 1968-01-22 - Grateful Dead Live at Eagles Auditorium on 1968-01-22 (ID: 8583) [13 tracks]
+- 1968-11-06 - Grateful Dead Live at Pacific High Recording on 1968-11-06 (ID: 12618) [18 tracks]
+- 1969-02-07 - Grateful Dead Live at Stanley Theater (Early, Late) on 1969-02-07 (ID: 14471) [13 tracks]
+- 1969-05-29 - Grateful Dead Live at Robertson Gym, U.C.S.B. on 1969-05-29 (ID: 14018) [13 tracks]
+- 1969-07-11 - Grateful Dead Live at NY State Pavilion, Flushing Meadow Park on 1969-07-11 (ID: 136663) [16 tracks]
+- 1969-10-31 - Grateful Dead Live at San Jose State University on 1969-10-31 (ID: 131863) [15 tracks]
+- 1969-12-12 - Grateful Dead Live at Thelma Theater on 1969-12-12 (ID: 141917) [24 tracks]
+- 1969-12-29 - Grateful Dead Live at Boston Tea Party on 1969-12-29 (ID: 8044) [17 tracks]
+- 1970-00-00 - Grateful Dead Live at Studio on 1970-00-00 (ID: 91324) [14 tracks]
+- 1970-01-02 - Grateful Dead Live at Fillmore East (show b- Late?) on 1970-01-02 (ID: 12624) [14 tracks]
+- 1970-01-03 - Grateful Dead Live at Fillmore East (Early Show) on 1970-01-03 (ID: 137559) [26 tracks]
+- 1970-01-10 - Grateful Dead Live at Golden Hall on 1970-01-10 (ID: 127227) [13 tracks]
+- 1970-02-05 - Grateful Dead Live at Fillmore West on 1970-02-05 (ID: 9184) [13 tracks]
+- 1970-02-14 - Grateful Dead Live at Fillmore East on 1970-02-14 (ID: 166928) [24 tracks]
+- 1970-03-01 - Grateful Dead Live at Family Dog at the Great Highway on 1970-03-01 (ID: 136666) [19 tracks]
+- 1970-04-15 - Grateful Dead Live at Winterland Arena on 1970-04-15 (ID: 132734) [16 tracks]
+- 1970-04-15 - Grateful Dead Live at Winterland Arena on 1970-04-15 (ID: 6644) [26 tracks]
+- 1970-05-14 - Grateful Dead Live at Meramec Community College on 1970-05-14 (ID: 7604) [15 tracks]
+- 1970-05-24 - Grateful Dead Live at Newcastle-Under-Lyme on 1970-05-24 (ID: 135716) [17 tracks]
+- 1970-05-24 - Grateful Dead Live at Newcastle-Under-Lyme on 1970-05-24 (ID: 135803) [17 tracks]
+- 1970-05-24 - Grateful Dead Live at Newcastle-Under-Lyme on 1970-05-24 (ID: 136669) [18 tracks]
+- 1970-08-05 - Grateful Dead Live at Golden Hall - San Diego Community Concourse on 1970-08-05 (ID: 17271) [15 tracks]
+- 1970-08-05 - Grateful Dead Live at Golden Hall - San Diego Community Concourse on 1970-08-05 (ID: 4941) [15 tracks]
+- 1970-10-31 - Grateful Dead Live at Gym, S.U.N.Y. (early) on 1970-10-31 (ID: 122042) [46 tracks]
+- 1970-10-31 - Grateful Dead Live at Gym, S.U.N.Y. (early) on 1970-10-31 (ID: 122043) [46 tracks]
+- 1970-10-31 - Grateful Dead Live at Gym, S.U.N.Y. (early) on 1970-10-31 (ID: 29192) [26 tracks]
+- 1970-10-31 - Grateful Dead Live at Gym, S.U.N.Y. (early) on 1970-10-31 (ID: 6517) [13 tracks]
+- 1970-11-23 - Grateful Dead Live at Anderson Theatre on 1970-11-23 (ID: 4734) [13 tracks]
+- 1971-02-01 - Grateful Dead Live at Unknown on 1971-02-01 (ID: 120486) [13 tracks]
+- 1971-02-18 - Grateful Dead Live at Capitol Theater on 1971-02-18 (ID: 107) [24 tracks]
+- 1971-02-18 - Grateful Dead Live at Capitol Theater on 1971-02-18 (ID: 143183) [19 tracks]
+- 1971-02-21 - Grateful Dead Live at Capitol Theater on 1971-02-21 (ID: 1980) [23 tracks]
+- 1971-10-01 - Grateful Dead Live at Studio on 1971-10-01 (ID: 16896) [15 tracks]
+- 1971-10-01 - Grateful Dead Live at Studio on 1971-10-01 (ID: 16897) [16 tracks]
+- 1971-10-29 - Grateful Dead Live at Allan Theater on 1971-10-29 (ID: 4090) [13 tracks]
+- 1972-04-26 - Grateful Dead Live at Jahrhundert Halle on 1972-04-26 (ID: 12849) [14 tracks]
+- 1972-05-04 - Grateful Dead Live at Olympia Theater on 1972-05-04 (ID: 20562) [14 tracks]
+- 1972-05-07 - Grateful Dead Live at Bickershaw Festival on 1972-05-07 (ID: 133598) [13 tracks]
+- 1972-10-27 - Grateful Dead Live at Veterans' Memorial Hall on 1972-10-27 (ID: 18849) [13 tracks]
+- 1973-02-15 - Grateful Dead Live at Dane County Coliseum on 1973-02-15 (ID: 150175) [30 tracks]
+- 1973-03-19 - Grateful Dead Live at Nassau Veterans Memorial Coliseum on 1973-03-19 (ID: 9987) [13 tracks]
+- 1973-08-01 - Grateful Dead Live at Record Plant on 1973-08-01 (ID: 113751) [14 tracks]
+- 1973-09-21 - Grateful Dead Live at The Spectrum on 1973-09-21 (ID: 127554) [22 tracks]
+- 1973-10-23 - Grateful Dead Live at Metropolitan Sports Center on 1973-10-23 (ID: 18899) [14 tracks]
+- 1974-02-24 - Grateful Dead Live at Winterland Arena on 1974-02-24 (ID: 199) [28 tracks]
+- 1974-05-12 - Grateful Dead Live at University of Nevada on 1974-05-12 (ID: 22248) [50 tracks]
+- 1974-07-31 - Grateful Dead Live at Dillon Stadium on 1974-07-31 (ID: 121836) [32 tracks]
+- 1974-09-11 - Grateful Dead Live at Alexandra Palace on 1974-09-11 (ID: 135802) [20 tracks]
+- 1974-09-11 - Grateful Dead Live at Alexandra Palace on 1974-09-11 (ID: 135883) [20 tracks]
+- 1974-10-16 - Grateful Dead Live at Winterland Arena on 1974-10-16 (ID: 12577) [22 tracks]
+- 1974-10-16 - Grateful Dead Live at Winterland Arena on 1974-10-16 (ID: 131539) [25 tracks]
+- 1974-10-17 - Grateful Dead Live at Winterland Arena on 1974-10-17 (ID: 99032) [26 tracks]
+- 1974-10-19 - Grateful Dead Live at Winterland Arena on 1974-10-19 (ID: 112791) [13 tracks]
+- 1974-10-19 - Grateful Dead Live at Winterland Arena on 1974-10-19 (ID: 116341) [32 tracks]
+- 1974-10-19 - Grateful Dead Live at Winterland Arena on 1974-10-19 (ID: 131694) [32 tracks]
+- 1974-10-19 - Grateful Dead Live at Winterland Arena on 1974-10-19 (ID: 131704) [32 tracks]
+- 1974-10-19 - Grateful Dead Live at Winterland Arena on 1974-10-19 (ID: 139578) [32 tracks]
+- 1974-10-19 - Grateful Dead Live at Winterland Arena on 1974-10-19 (ID: 140626) [32 tracks]
+- 1975-03-23 - Grateful Dead Live at Kezar Stadium on 1975-03-23 (ID: 18525) [13 tracks]
+- 1975-04-17 - Grateful Dead Live at Ace's Studio on 1975-04-17 (ID: 14291) [29 tracks]
+- 1975-06-05 - Grateful Dead Live at Ace's Studio on 1975-06-05 (ID: 14292) [43 tracks]
+- 1975-07-07 - Grateful Dead Live at Ace's Studio on 1975-07-07 (ID: 14293) [25 tracks]
+- 1975-07-07 - Grateful Dead Live at Ace's Studio on 1975-07-07 (ID: 145780) [16 tracks]
+- 1976-05-28 - Grateful Dead Live at Le Club Front Studios on 1976-05-28 (ID: 9769) [21 tracks]
+- 1976-06-24 - Grateful Dead Live at The Tower Theatre on 1976-06-24 (ID: 140031) [19 tracks]
+- 1976-07-16 - Grateful Dead Live at Orpheum Theatre on 1976-07-16 (ID: 28042) [14 tracks]
+- 1977-03-01 - Grateful Dead Live at Multiple on 1977-03-01 (ID: 150848) [14 tracks]
+- 1977-05-28 - Grateful Dead Live at Hartford Civic Center on 1977-05-28 (ID: 31952) [35 tracks]
+- 1978-02-01 - Grateful Dead Live at Uptown Theater on 1978-02-01 (ID: 138451) [18 tracks]
+- 1978-04-08 - Grateful Dead Live at Veterans Memorial Coliseum on 1978-04-08 (ID: 140789) [19 tracks]
+- 1978-04-08 - Grateful Dead Live at Veterans Memorial Coliseum on 1978-04-08 (ID: 140922) [19 tracks]
+- 1978-04-08 - Grateful Dead Live at Veterans Memorial Coliseum on 1978-04-08 (ID: 148006) [20 tracks]
+- 1978-04-16 - Grateful Dead Live at Huntington Civic Center on 1978-04-16 (ID: 148386) [21 tracks]
+- 1978-11-21 - Grateful Dead Live at Community War Memorial Auditorium on 1978-11-21 (ID: 30116) [17 tracks]
+- 1978-11-23 - Grateful Dead Live at Capital Centre on 1978-11-23 (ID: 9846) [16 tracks]
+- 1979-01-17 - Grateful Dead Live at New Haven Coliseum on 1979-01-17 (ID: 91784) [22 tracks]
+- 1979-01-17 - Grateful Dead Live at New Haven Coliseum on 1979-01-17 (ID: 91788) [19 tracks]
+- 1979-10-31 - Grateful Dead Live at Nassau Veterans Memorial Coliseum on 1979-10-31 (ID: 7921) [16 tracks]
+- 1979-11-08 - Grateful Dead Live at Capital Centre on 1979-11-08 (ID: 3901) [16 tracks]
+- 1979-11-08 - Grateful Dead Live at Capital Centre on 1979-11-08 (ID: 8546) [22 tracks]
+- 1980-08-31 - Grateful Dead Live at Capital Centre on 1980-08-31 (ID: 174993) [13 tracks]
+- 1980-09-26 - Grateful Dead Live at Warfield Theater on 1980-09-26 (ID: 155411) [13 tracks]
+- 1980-09-26 - Grateful Dead Live at Warfield Theater on 1980-09-26 (ID: 155426) [13 tracks]
+- 1980-10-01 - Grateful Dead Live at Warfield Theatre & Radio City Music Hall on 1980-10-01 (ID: 150795) [27 tracks]
+- 1980-10-04 - Grateful Dead Live at Warfield Theater on 1980-10-04 (ID: 151266) [15 tracks]
+- 1980-10-04 - Grateful Dead Live at Warfield Theater on 1980-10-04 (ID: 19147) [15 tracks]
+- 1980-10-04 - Grateful Dead Live at Warfield Theater on 1980-10-04 (ID: 8778) [15 tracks]
+- 1980-10-06 - Grateful Dead Live at Warfield Theater on 1980-10-06 (ID: 151267) [14 tracks]
+- 1980-10-10 - Grateful Dead Live at Warfield Theater on 1980-10-10 (ID: 73820) [15 tracks]
+- 1980-10-11 - Grateful Dead Live at Warfield Theater on 1980-10-11 (ID: 6198) [20 tracks]
+- 1980-12-31 - Grateful Dead Live at Oakland Auditorium Arena on 1980-12-31 (ID: 155390) [36 tracks]
+- 1981-03-04 - Grateful Dead Live at Club Front on 1981-03-04 (ID: 142326) [16 tracks]
+- 1981-09-30 - Grateful Dead Live at Playhouse Theater on 1981-09-30 (ID: 123231) [22 tracks]
+- 1981-10-04 - Grateful Dead Live at Rainbow Theater on 1981-10-04 (ID: 118248) [25 tracks]
+- 1981-12-12 - Grateful Dead Live at Fiesta Hall - San Mateo County Fairgrounds on 1981-12-12 (ID: 83462) [13 tracks]
+- 1982-01-01 - Grateful Dead Live at Mickey's ranch studio on 1982-01-01 (ID: 19808) [24 tracks]
+- 1982-04-19 - Grateful Dead Live at Baltimore Civic Center on 1982-04-19 (ID: 89384) [22 tracks]
+- 1982-04-19 - Grateful Dead Live at Baltimore Civic Center on 1982-04-19 (ID: 89389) [22 tracks]
+- 1982-05-22 - Grateful Dead Live at Greek Theatre, U. Of California on 1982-05-22 (ID: 82532) [15 tracks]
+- 1982-05-28 - Grateful Dead Live at Moscone Convention Center on 1982-05-28 (ID: 131808) [14 tracks]
+- 1982-05-28 - Grateful Dead Live at Moscone Convention Center on 1982-05-28 (ID: 131809) [14 tracks]
+- 1982-08-04 - Grateful Dead Live at Kiel Auditorium on 1982-08-04 (ID: 7388) [21 tracks]
+- 1982-12-30 - Grateful Dead Live at Oakland Auditorium on 1982-12-30 (ID: 95955) [15 tracks]
+- 1983-03-14 - Grateful Dead Live at Club Front - Rehearsals on 1983-03-14 (ID: 21269) [16 tracks]
+- 1983-10-31 - Grateful Dead Live at Marin County Veterans Auditorium on 1983-10-31 (ID: 151222) [19 tracks]
+- 1984-07-21 - Grateful Dead Live at Ventura County Fairgrounds on 1984-07-21 (ID: 14329) [20 tracks]
+- 1985-02-18 - Grateful Dead Live at Henry J. Kaiser Convention Center on 1985-02-18 (ID: 170268) [20 tracks]
+- 1985-04-21 - Grateful Dead Live at Marin Veterans Memorial Auditorium on 1985-04-21 (ID: 121757) [17 tracks]
+- 1985-04-27 - Grateful Dead Live at Frost Amphitheatre on 1985-04-27 (ID: 20683) [13 tracks]
+- 1985-04-27 - Grateful Dead Live at Frost Amphitheatre on 1985-04-27 (ID: 78681) [25 tracks]
+- 1985-06-21 - Grateful Dead Live at Alpine Valley Music Theatre on 1985-06-21 (ID: 120969) [13 tracks]
+- 1985-09-02 - Grateful Dead Live at Zoo Amphitheater on 1985-09-02 (ID: 142181) [22 tracks]
+- 1985-10-29 - Grateful Dead Live at Fox Theater on 1985-10-29 (ID: 12182) [38 tracks]
+- 1986-03-28 - Grateful Dead Live at Cumberland County Civic Center on 1986-03-28 (ID: 95598) [13 tracks]
+- 1986-12-16 - Grateful Dead Live at Oakland-Alameda County Coliseum on 1986-12-16 (ID: 4094) [22 tracks]
+- 1986-12-17 - Grateful Dead Live at Oakland-Alameda County Coliseum on 1986-12-17 (ID: 141745) [23 tracks]
+- 1987-03-24 - Grateful Dead Live at Hampton Coliseum on 1987-03-24 (ID: 142041) [19 tracks]
+- 1987-07-19 - Grateful Dead Live at Autzen Stadium, University Of Oregon on 1987-07-19 (ID: 97492) [15 tracks]
+- 1987-07-26 - Grateful Dead Live at Anaheim Stadium on 1987-07-26 (ID: 97495) [15 tracks]
+- 1988-04-09 - Grateful Dead Live at The Centrum on 1988-04-09 (ID: 140490) [22 tracks]
+- 1988-06-01 - Grateful Dead Live at Unknown on 1988-06-01 (ID: 20606) [14 tracks]
+- 1988-07-30 - Grateful Dead Live at Laguna Seca Recreation Area on 1988-07-30 (ID: 131102) [13 tracks]
+- 1988-09-11 - Grateful Dead Live at The Spectrum on 1988-09-11 (ID: 17408) [13 tracks]
+- 1989-03-01 - The Grateful Dead Live at Club Front - Grateful Dead Studio on 1989-03-01 (ID: 113358) [39 tracks]
+- 1989-07-12 - Grateful Dead Live at Robert F. Kennedy Stadium on 1989-07-12 (ID: 141908) [21 tracks]
+- 1990-10-22 - Grateful Dead Live at Festhalle on 1990-10-22 (ID: 13466) [19 tracks]
+- 1991-03-17 - Grateful Dead Live at Capital Centre on 1991-03-17 (ID: 8745) [21 tracks]
+- 1991-03-31 - Grateful Dead Live at Greensboro Coliseum on 1991-03-31 (ID: 99386) [17 tracks]
+- 1991-09-24 - Grateful Dead Live at Boston Garden on 1991-09-24 (ID: 138150) [22 tracks]
+- 1991-10-31 - Grateful Dead Live at Oakland-Alameda County Coliseum on 1991-10-31 (ID: 30699) [15 tracks]
+- 1992-02-21 - Grateful Dead Live at Club Front Studio on 1992-02-21 (ID: 8189) [13 tracks]
+- 1992-03-05 - Grateful Dead Live at Hampton Coliseum on 1992-03-05 (ID: 5240) [18 tracks]
+- 1993-09-13 - Grateful Dead Live at The Spectrum on 1993-09-13 (ID: 12755) [22 tracks]
+- 1994-03-05 - Grateful Dead Live at Desert Sky Pavilion on 1994-03-05 (ID: 152012) [21 tracks]
+- 1994-03-06 - Grateful Dead Live at Desert Sky Pavilion on 1994-03-06 (ID: 152013) [22 tracks]
+- 1994-07-23 - Grateful Dead Live at Soldier Field on 1994-07-23 (ID: 14839) [34 tracks]
+- 1995-03-17 - Grateful Dead Live at The Spectrum on 1995-03-17 (ID: 17951) [29 tracks]
+- 1995-03-28 - Grateful Dead Live at The Omni on 1995-03-28 (ID: 80018) [18 tracks]

@@ -116,16 +116,18 @@ void main() {
       final show = showListProvider.filteredShows.first;
 
       showListProvider.onShowTap(show);
-      expect(showListProvider.expandedShowName, show.name);
+      expect(
+          showListProvider.expandedShowKey, showListProvider.getShowKey(show));
 
       showListProvider.onShowTap(show);
-      expect(showListProvider.expandedShowName, isNull);
+      expect(showListProvider.expandedShowKey, isNull);
     });
 
     test('setLoadingShow updates the loading show name', () {
-      const showName = 'show1';
-      showListProvider.setLoadingShow(showName);
-      expect(showListProvider.loadingShowName, showName);
+      final show = dummyShows.first;
+      showListProvider.setLoadingShow(show);
+      expect(
+          showListProvider.loadingShowKey, showListProvider.getShowKey(show));
     });
 
     test('expandShow expands the given show', () async {
@@ -133,7 +135,8 @@ void main() {
       await showListProvider.fetchShows();
       final show = showListProvider.filteredShows.first;
       showListProvider.expandShow(show);
-      expect(showListProvider.expandedShowName, show.name);
+      expect(
+          showListProvider.expandedShowKey, showListProvider.getShowKey(show));
     });
 
     test('collapseCurrentShow collapses the current show', () async {
@@ -141,10 +144,11 @@ void main() {
       await showListProvider.fetchShows();
       final show = showListProvider.filteredShows.first;
       showListProvider.expandShow(show);
-      expect(showListProvider.expandedShowName, show.name);
+      expect(
+          showListProvider.expandedShowKey, showListProvider.getShowKey(show));
 
       showListProvider.collapseCurrentShow();
-      expect(showListProvider.expandedShowName, isNull);
+      expect(showListProvider.expandedShowKey, isNull);
     });
   });
 }

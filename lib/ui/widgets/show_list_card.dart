@@ -380,7 +380,7 @@ class _ShowListCardState extends State<ShowListCard> {
         children: [
           Padding(
             padding: const EdgeInsets.only(bottom: 2.0, right: 4.0),
-            child: SrcBadge(src: badgeSrc!),
+            child: SrcBadge(src: badgeSrc),
           ),
           _buildBadge(context, show),
         ],
