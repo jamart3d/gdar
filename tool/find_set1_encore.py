@@ -68,6 +68,7 @@ def main():
                 'source_id': source.get('id', 'Unknown ID'),
                 'track_count': len(tracks),
                 'set_names': list(set_names),
+                'tracks': tracks,
                 'reasons': []
             }
             
@@ -128,28 +129,31 @@ def main():
         json.dump(json_matches, f, separators=(',', ':'))
     print(f"JSON matches written to {json_output_path}")
 
+    def write_match_to_report(f, m):
+        f.write(f"- **{m['date']}** - {m['venue']} (Source: {m['source_id']})\n")
+        f.write(f"  - Tracks: {m['track_count']}\n")
+        f.write(f"  - Sets found: {', '.join(m['set_names']) if m['set_names'] else 'None (Implicit Set 1)'}\n")
+        f.write(f"  <details><summary>View Track List</summary>\n\n")
+        for i, t in enumerate(m['tracks'], 1):
+             f.write(f"    {i}. {t.get('t', 'Unknown Track')} [{t.get('s', 'N/A')}]\n")
+        f.write("\n  </details>\n")
+
     with open(report_path, 'w', encoding='utf-8') as f:
         f.write(f"# Analysis Report: Set 1 Analysis\n")
         f.write(f"Criteria: >12 Tracks, Single Set (or no set info)\n\n")
         
         f.write(f"## 1. Matches with 'Encore' in Track Title ({len(matches_encore)})\n")
         for m in matches_encore:
-             f.write(f"- **{m['date']}** - {m['venue']} (Source: {m['source_id']})\n")
-             f.write(f"  - Tracks: {m['track_count']}\n")
-             f.write(f"  - Sets found: {', '.join(m['set_names']) if m['set_names'] else 'None (Implicit Set 1)'}\n")
+             write_match_to_report(f, m)
 
         f.write(f"\n## 2. Matches with 'Tuning' in Middle Tracks ({len(matches_tuning)})\n")
         f.write(f"*(Index 3 to Length-3)*\n")
         for m in matches_tuning:
-             f.write(f"- **{m['date']}** - {m['venue']} (Source: {m['source_id']})\n")
-             f.write(f"  - Tracks: {m['track_count']}\n")
-             f.write(f"  - Sets found: {', '.join(m['set_names']) if m['set_names'] else 'None (Implicit Set 1)'}\n")
+             write_match_to_report(f, m)
 
         f.write(f"\n## 3. Matches with NO 'Encore' and NO 'Tuning' in Middle ({len(matches_neither)})\n")
         for m in matches_neither:
-             f.write(f"- **{m['date']}** - {m['venue']} (Source: {m['source_id']})\n")
-             f.write(f"  - Tracks: {m['track_count']}\n")
-             f.write(f"  - Sets found: {', '.join(m['set_names']) if m['set_names'] else 'None (Implicit Set 1)'}\n")
+             write_match_to_report(f, m)
 
     print(f"Report written to {report_path}")
 

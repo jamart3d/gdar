@@ -116,10 +116,15 @@ class _ShowListCardState extends State<ShowListCard> {
 
     // Shadow Visibility:
     // 1. Strict True Black (!useDynamicColor): NO Shadow.
-    // 2. Half Glow (useDynamicColor && halfGlowDynamic): YES Shadow (Half Opacity).
-    // 3. Standard Dark (useDynamicColor && !halfGlowDynamic): YES Shadow (Full Opacity).
-    bool showShadow = !(isDarkMode &&
-        !settingsProvider.useDynamicColor); // Only hide in strict true black
+    // 2. Settings "Glow Border" OFF: NO Shadow.
+    // 3. Otherwise: YES Shadow.
+    // Shadow Visibility:
+    // 1. Strict True Black (!useDynamicColor): NO Shadow.
+    // 2. Settings "Glow Border" OFF (unless "Half Glow" forces it): NO Shadow.
+    // 3. Otherwise: YES Shadow.
+    bool showShadow =
+        (settingsProvider.showGlowBorder || settingsProvider.halfGlowDynamic) &&
+            !(isDarkMode && !settingsProvider.useDynamicColor);
 
     // Glow Strength Logic:
     // Playing: Full Opacity (1.0)
@@ -132,11 +137,13 @@ class _ShowListCardState extends State<ShowListCard> {
         child: Container(
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(28),
-            boxShadow: showShadow
+            boxShadow: (showShadow &&
+                    !useRgb) // Only use standard shadow if NOT using RGB
                 ? [
                     BoxShadow(
-                      color: (useRgb ? Colors.red : colorScheme.primary)
-                          .withOpacity((useRgb ? 0.4 : 0.2) * glowOpacity),
+                      // Cut non-RGB glow by 80% (so utilize 20% of original strength)
+                      color: colorScheme.primary
+                          .withOpacity(0.2 * 0.2 * glowOpacity),
                       blurRadius: 12,
                       spreadRadius: 2,
                     ),
@@ -164,7 +171,13 @@ class _ShowListCardState extends State<ShowListCard> {
                   ],
             showGlow: true,
             showShadow: showShadow,
-            glowOpacity: 0.5 * glowOpacity, // Base 0.5 * factor
+            // Cut RGB glow by 50% (factor of 0.5)
+            // Cut RGB glow by 50% (factor of 0.5)
+            // Cut Non-RGB glow by 80% (factor of 0.2)
+            // Apply Half Glow reduction if active
+            glowOpacity: (useRgb ? 0.5 : 0.2) *
+                (settingsProvider.halfGlowDynamic ? 0.5 : 1.0) *
+                glowOpacity,
             animationSpeed: settingsProvider.rgbAnimationSpeed,
             child: _buildCardContent(
               context: context,

@@ -11,6 +11,7 @@ import 'package:gdar/ui/widgets/section_card.dart';
 import 'package:gdar/ui/widgets/settings/source_filter_settings.dart';
 import 'package:gdar/ui/widgets/settings/collection_statistics.dart';
 import 'package:gdar/ui/screens/rated_shows_screen.dart';
+import 'package:gdar/ui/widgets/animated_gradient_border.dart'; // Add import
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -73,7 +74,6 @@ class SettingsScreen extends StatelessWidget {
       'default': null,
       'caveat': GoogleFonts.caveat(),
       'permanent_marker': GoogleFonts.permanentMarker(),
-      'lacquer': GoogleFonts.lacquer(),
       'rock_salt': GoogleFonts.rockSalt(),
     };
 
@@ -81,7 +81,6 @@ class SettingsScreen extends StatelessWidget {
       'default': 'Default (Roboto)',
       'caveat': 'Caveat',
       'permanent_marker': 'Permanent Marker',
-      'lacquer': 'Lacquer',
       'rock_salt': 'Rock Salt',
     };
 
@@ -132,8 +131,7 @@ class SettingsScreen extends StatelessWidget {
         return 'Caveat';
       case 'permanent_marker':
         return 'Permanent Marker';
-      case 'lacquer':
-        return 'Lacquer';
+
       case 'rock_salt':
         return 'Rock Salt';
       default:
@@ -476,18 +474,20 @@ class SettingsScreen extends StatelessWidget {
                           },
                           secondary: const Icon(Icons.light_mode_outlined),
                         ),
-                      SwitchListTile(
-                        title: const Text('Glow Border'),
-                        subtitle: const Text(
-                            'Show a glowing gradient border on cards'),
-                        value: settingsProvider.showGlowBorder,
-                        onChanged: (value) {
-                          context
-                              .read<SettingsProvider>()
-                              .toggleShowGlowBorder();
-                        },
-                        secondary: const Icon(Icons.blur_on_rounded),
-                      ),
+                      // "Glow Border" setting is hidden if "Half Glow" is active, as that mode enforces its own glow state.
+                      if (!settingsProvider.halfGlowDynamic)
+                        SwitchListTile(
+                          title: const Text('Glow Border'),
+                          subtitle: const Text(
+                              'Show a glowing gradient border on cards'),
+                          value: settingsProvider.showGlowBorder,
+                          onChanged: (value) {
+                            context
+                                .read<SettingsProvider>()
+                                .toggleShowGlowBorder();
+                          },
+                          secondary: const Icon(Icons.blur_on_rounded),
+                        ),
                       SwitchListTile(
                         title: const Text('Highlight Playing with RGB'),
                         subtitle: const Text('Animate border with RGB colors'),
@@ -511,33 +511,108 @@ class SettingsScreen extends StatelessWidget {
                                 style: Theme.of(context).textTheme.bodyMedium,
                               ),
                               const SizedBox(height: 8),
-                              SegmentedButton<double>(
-                                segments: const [
-                                  ButtonSegment(
-                                    value: 1.0,
-                                    label: Text('1x'),
-                                    icon: Icon(Icons.speed),
+                              AnimatedGradientBorder(
+                                child: SegmentedButton<double>(
+                                  segments: const [
+                                    ButtonSegment(
+                                      value: 1.0,
+                                      label: Text('1x'),
+                                      icon: Icon(Icons.speed),
+                                    ),
+                                    ButtonSegment(
+                                      value: 0.5,
+                                      label: Text('0.5x'),
+                                    ),
+                                    ButtonSegment(
+                                      value: 0.25,
+                                      label: Text('0.25x'),
+                                    ),
+                                    ButtonSegment(
+                                      value: 0.1,
+                                      label: Text('0.1x'),
+                                    ),
+                                  ],
+                                  selected: {
+                                    settingsProvider.rgbAnimationSpeed
+                                  },
+                                  onSelectionChanged:
+                                      (Set<double> newSelection) {
+                                    context
+                                        .read<SettingsProvider>()
+                                        .setRgbAnimationSpeed(
+                                            newSelection.first);
+                                  },
+                                  showSelectedIcon: false,
+                                  style: ButtonStyle(
+                                    // Match proper inner radius (24 - 3 = 21)
+                                    shape: WidgetStateProperty.all(
+                                      RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(21)),
+                                    ),
+                                    // Make border transparent to let gradient show
+                                    side: WidgetStateProperty.all(
+                                        BorderSide.none),
+                                    backgroundColor:
+                                        WidgetStateProperty.resolveWith<Color?>(
+                                      (states) {
+                                        // Always use transparent background for a cleaner look
+                                        // Rely on text color to show selection
+                                        return Colors.transparent;
+                                      },
+                                    ),
+                                    foregroundColor:
+                                        WidgetStateProperty.resolveWith<Color?>(
+                                      (states) {
+                                        if (states
+                                            .contains(WidgetState.selected)) {
+                                          return Theme.of(context)
+                                              .colorScheme
+                                              .primary;
+                                        }
+                                        // Unselected: Use white70 in dark mode for contrast, or default grey
+                                        final isDark =
+                                            Theme.of(context).brightness ==
+                                                Brightness.dark;
+                                        return isDark ? Colors.white70 : null;
+                                      },
+                                    ),
+                                    textStyle: WidgetStateProperty.resolveWith<
+                                        TextStyle?>(
+                                      (states) {
+                                        // Rock Salt doesn't support bold well, and we rely on color for highlight.
+                                        // Returning null allows it to inherit the Theme's labelLarge (which has the correct font).
+                                        return null;
+                                      },
+                                    ),
                                   ),
-                                  ButtonSegment(
-                                    value: 0.5,
-                                    label: Text('0.5x'),
-                                  ),
-                                  ButtonSegment(
-                                    value: 0.25,
-                                    label: Text('0.25x'),
-                                  ),
-                                  ButtonSegment(
-                                    value: 0.1,
-                                    label: Text('0.1x'),
-                                  ),
+                                ),
+                                borderRadius:
+                                    24, // Matches standard SegmentedButton radius
+                                borderWidth: 3,
+                                colors: const [
+                                  Colors.red,
+                                  Colors.yellow,
+                                  Colors.green,
+                                  Colors.cyan,
+                                  Colors.blue,
+                                  Colors.purple,
+                                  Colors.red,
                                 ],
-                                selected: {settingsProvider.rgbAnimationSpeed},
-                                onSelectionChanged: (Set<double> newSelection) {
-                                  context
-                                      .read<SettingsProvider>()
-                                      .setRgbAnimationSpeed(newSelection.first);
-                                },
-                                showSelectedIcon: false,
+                                showGlow: true,
+                                // Glow mirrors the global logic:
+                                // If "Glow Border" is ON OR "Half Glow" is ON, we show shadow.
+                                showShadow: settingsProvider.showGlowBorder ||
+                                    settingsProvider.halfGlowDynamic,
+                                // Apply 50% reduction for Half Glow mode, on top of base 0.5 opacity
+                                glowOpacity: 0.5 *
+                                    (settingsProvider.halfGlowDynamic
+                                        ? 0.5
+                                        : 1.0),
+                                animationSpeed:
+                                    settingsProvider.rgbAnimationSpeed,
+                                // Transparent background to blend with SectionCard
+                                backgroundColor: Colors.transparent,
                               ),
                             ],
                           ),

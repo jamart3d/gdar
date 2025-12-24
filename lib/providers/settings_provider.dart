@@ -348,6 +348,14 @@ class SettingsProvider with ChangeNotifier {
     await _prefs.setString(_sourceCategoryFiltersKey, encoded);
   }
 
+  Future<void> enableAllSourceCategories() async {
+    for (var key in _sourceCategoryFilters.keys) {
+      _sourceCategoryFilters[key] = true;
+    }
+    notifyListeners();
+    await _saveSourceCategoryFilters();
+  }
+
   // ... existing methods ...
 
   // Update _init or create _initSourceFilters called by it.

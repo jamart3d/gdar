@@ -26,10 +26,16 @@ class SourceFilterSettings extends StatelessWidget {
           },
           secondary: const Icon(Icons.filter_list_rounded),
         ),
-        const ListTile(
-          title: Text('Source Categories'),
-          subtitle: Text('Tap to toggle, Long press to solo'),
-          leading: Icon(Icons.category_rounded),
+        ListTile(
+          title: const Text('Source Categories'),
+          subtitle: const Text('Tap to toggle, Long press to solo'),
+          leading: const Icon(Icons.category_rounded),
+          trailing: TextButton(
+            onPressed: () {
+              context.read<SettingsProvider>().enableAllSourceCategories();
+            },
+            child: const Text('All'),
+          ),
         ),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),

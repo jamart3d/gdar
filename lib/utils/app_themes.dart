@@ -10,8 +10,7 @@ class AppThemes {
         return GoogleFonts.caveatTextTheme(baseTextTheme);
       case 'permanent_marker':
         return GoogleFonts.permanentMarkerTextTheme(baseTextTheme);
-      case 'lacquer':
-        return GoogleFonts.lacquerTextTheme(baseTextTheme);
+
       case 'rock_salt':
         final theme = GoogleFonts.rockSaltTextTheme(baseTextTheme);
         // Rock Salt is huge/wide and has tall ascenders/descenders.

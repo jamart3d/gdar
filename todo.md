@@ -141,7 +141,7 @@ This file tracks planned features, enhancements, and bug fixes for the gdar appl
   - [x] **Investigate Sequences Following 'Tuning':** Analyze tracks appearing after "Tuning" to identify potential encores or separation issues.
   - [x] **Set 1 Analysis Script:** Created script (`find_set1_encore.py`) to find single-set shows with >12 tracks.
     - [x] Categorized matches into: (1) "Encore" in title, (2) "Tuning" in middle, (3) Neither.
-    - [x] Generated categorized report `report_set1_enc.md`.
+    - [x] Generated detailed report `report_set1_enc.md` including full track lists and set names.
     - [x] Generated single minified JSON output `set1_matches.json`.
   - [ ] **Review Set 1 Candidates:** Manually review `set1_matches.json` and split sets where appropriate.
 - [x] **Refined Usage Instructions:**
@@ -153,3 +153,17 @@ This file tracks planned features, enhancements, and bug fixes for the gdar appl
   - [ ] **Pre-populated Database:** converting `shows.json` to a pre-built database (Hive/Drift) shipped in assets to eliminate first-run JSON parsing lag.
 - [x] **Venue Name Cleaning:** Trim venue name by "," or " - ", keeping the name as `venue` and moving the trimmed part to a new `location` attribute.
 - [x] **"Grateful Dead at" Cleanup:** Create a script to report shows starting with "Grateful Dead at", then investigate trimming this prefix in the database.
+- [x] **Duplicate Track Cleanup:**
+  - [x] Created `fix_duplicate_tracks.py` to identify and remove highly redundant tracks (1.5x ratio).
+  - [x] Refined logic to check **Name + Duration** for accuracy.
+  - [x] Implemented robust normalization (unescaping, stripping transition markers like `-`, `\`, `;`).
+  - [x] Automated exclusion of **VBR tracks** from fixed sources.
+  - [x] Generated detailed audit reports (`dup_fix_report.md`).
+- [x] **VBR Track Audit:**
+  - [x] Created `find_vbr_tracks.py` to globally report on remaining `_vbr.mp3` usage.
+  - [x] Generated `vbr_report.md` for baseline analysis.
+- [x] **Mixed VBR Cleanup:**
+  - [x] Created `clean_mixed_vbr_sources.py` to strip VBR tracks from 128 "mixed quality" sources.
+  - [x] Removed 2,388 VBR tracks and saved to `output.optimized_src_vbr_cleaned.json`.
+  - [x] Generated `vbr_cleaning_report.md` with detailed counts.
+

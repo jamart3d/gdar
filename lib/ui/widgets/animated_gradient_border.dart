@@ -128,13 +128,29 @@ class _GradientBorderPainter extends CustomPainter {
     final rect = Rect.fromLTWH(0, 0, size.width, size.height);
     final rrect = RRect.fromRectAndRadius(rect, Radius.circular(borderRadius));
 
-    // 1. Draw Shadow
+    // 1. Draw RGB Shadow
     if (showShadow) {
-      final shadowPaint = Paint()
-        ..color = colors[0].withOpacity(glowOpacity)
-        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 10);
+      // Create a gradient that rotates internally
+      // We assume the gradient is centered in the rect
+      final gradient = SweepGradient(
+        colors:
+            colors.map((c) => c.withOpacity(c.opacity * glowOpacity)).toList(),
+        transform: GradientRotation(rotation),
+      );
 
-      canvas.drawRRect(rrect.shift(const Offset(0, 1)), shadowPaint);
+      final shadowPaint = Paint()
+        ..shader = gradient.createShader(rect)
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 12)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth =
+            borderWidth + 8.0; // Slightly wider than border for glow
+
+      // We draw the shadow slightly larger to ensure it peeks out
+      // Using the exact RRect of the border (plus a bit of inflate)
+      final shadowRRect = RRect.fromRectAndRadius(
+          rect.inflate(2.0), Radius.circular(borderRadius + 2.0));
+
+      canvas.drawRRect(shadowRRect, shadowPaint);
     }
 
     // 2. Draw Gradient Border
@@ -174,6 +190,8 @@ class _GradientBorderPainter extends CustomPainter {
     return oldDelegate.rotation != rotation ||
         oldDelegate.colors != colors ||
         oldDelegate.borderRadius != borderRadius ||
-        oldDelegate.borderWidth != borderWidth;
+        oldDelegate.borderWidth != borderWidth ||
+        oldDelegate.showShadow != showShadow ||
+        oldDelegate.glowOpacity != glowOpacity;
   }
 }

@@ -154,12 +154,22 @@ class _RatingDialogState extends State<RatingDialog> {
                   color: colorScheme.tertiaryContainer.withOpacity(0.7),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: Text(
-                  widget.sourceId!,
-                  style: textTheme.titleMedium?.copyWith(
-                    color: colorScheme.onTertiaryContainer,
-                    fontWeight: FontWeight.bold,
-                    decoration: TextDecoration.underline,
+                child: Container(
+                  decoration: BoxDecoration(
+                    border: Border(
+                      bottom: BorderSide(
+                        color: colorScheme.onTertiaryContainer,
+                        width: 1.5,
+                      ),
+                    ),
+                  ),
+                  padding: const EdgeInsets.only(bottom: 2.0),
+                  child: Text(
+                    widget.sourceId!,
+                    style: textTheme.titleMedium?.copyWith(
+                      color: colorScheme.onTertiaryContainer,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
               ),
