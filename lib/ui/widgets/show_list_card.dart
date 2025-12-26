@@ -101,7 +101,8 @@ class _ShowListCardState extends State<ShowListCard> {
     bool suppressOuterGlow =
         widget.isExpanded && widget.show.sources.length > 1;
 
-    bool showGlow = settingsProvider.showGlowBorder;
+    bool showGlow =
+        settingsProvider.showGlowBorder || settingsProvider.halfGlowDynamic;
     bool useRgb = false;
 
     if (settingsProvider.highlightPlayingWithRgb && widget.isPlaying) {
@@ -472,8 +473,7 @@ class _ShowListCardState extends State<ShowListCard> {
     if (widget.isPlaying && widget.playingSource != null) {
       final source = widget.playingSource!;
       final rating = settings.getRating(source.id);
-      bool isPlayed =
-          settings.isPlayed(source.id) || settings.isPlayed(show.name);
+      bool isPlayed = settings.isPlayed(source.id);
 
       // determine badge string
       String? badgeSrc = source.src;

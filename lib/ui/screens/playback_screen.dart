@@ -14,10 +14,12 @@ import 'package:gdar/utils/color_generator.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:provider/provider.dart';
 import 'dart:async';
+import 'dart:ui';
 import 'package:gdar/ui/widgets/rating_control.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 import 'package:gdar/ui/widgets/playback/playback_progress_bar.dart';
 import 'package:gdar/ui/widgets/playback/playback_controls.dart';
+import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
 class PlaybackScreen extends StatefulWidget {
   const PlaybackScreen({super.key});
@@ -28,18 +30,20 @@ class PlaybackScreen extends StatefulWidget {
 
 class _PlaybackScreenState extends State<PlaybackScreen>
     with SingleTickerProviderStateMixin {
-  late final ScrollController _scrollController;
+  final ItemScrollController _itemScrollController = ItemScrollController();
+  final ItemPositionsListener _itemPositionsListener =
+      ItemPositionsListener.create();
   late final AnimationController _pulseController;
   final PanelController _panelController = PanelController();
   final ValueNotifier<double> _panelPositionNotifier = ValueNotifier(0.0);
   StreamSubscription? _errorSubscription;
-
-  static const double _trackItemHeight = 52.0;
+  String? _lastTrackTitle;
 
   @override
   void initState() {
     super.initState();
-    _scrollController = ScrollController();
+    final audioProvider = context.read<AudioProvider>();
+    _lastTrackTitle = audioProvider.currentTrack?.title;
     _pulseController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1500),
@@ -66,36 +70,67 @@ class _PlaybackScreenState extends State<PlaybackScreen>
           );
         }
       });
+      _scrollToCurrentTrack(animate: false);
     });
   }
 
   @override
   void dispose() {
-    _scrollController.dispose();
     _pulseController.dispose();
     _panelPositionNotifier.dispose();
     _errorSubscription?.cancel();
     super.dispose();
   }
 
-  void _scrollToCurrentTrack(double trackItemHeight) {
+  void _scrollToCurrentTrack({bool animate = true}) {
+    if (!mounted) return;
     final audioProvider = context.read<AudioProvider>();
-    final index = audioProvider.audioPlayer.currentIndex;
+    final currentTrack = audioProvider.currentTrack;
+    if (currentTrack == null) return;
 
-    if (index != null && _scrollController.hasClients) {
-      final viewportHeight = _scrollController.position.viewportDimension;
-      final maxScroll = _scrollController.position.maxScrollExtent;
-      final itemTopPosition = trackItemHeight * index;
+    final currentSource = audioProvider.currentSource;
+    if (currentSource == null) return;
 
-      final targetOffset =
-          (itemTopPosition - (viewportHeight / 2) + (trackItemHeight / 2))
-              .clamp(0.0, maxScroll);
+    // Build the list structure to find the index
+    final Map<String, List<Track>> tracksBySet = {};
+    for (var track in currentSource.tracks) {
+      if (!tracksBySet.containsKey(track.setName)) {
+        tracksBySet[track.setName] = [];
+      }
+      tracksBySet[track.setName]!.add(track);
+    }
 
-      _scrollController.animateTo(
-        targetOffset,
-        duration: const Duration(milliseconds: 500),
-        curve: Curves.easeInOut,
-      );
+    final List<dynamic> listItems = [];
+    tracksBySet.forEach((setName, tracks) {
+      listItems.add(setName);
+      listItems.addAll(tracks);
+    });
+
+    int targetIndex = -1;
+    for (int i = 0; i < listItems.length; i++) {
+      final item = listItems[i];
+      if (item is Track &&
+          item.title == currentTrack.title &&
+          item.trackNumber == currentTrack.trackNumber) {
+        targetIndex = i;
+        break;
+      }
+    }
+
+    if (targetIndex != -1 && _itemScrollController.isAttached) {
+      if (animate) {
+        _itemScrollController.scrollTo(
+          index: targetIndex,
+          duration: const Duration(milliseconds: 500),
+          curve: Curves.easeInOutCubic,
+          alignment: 0.3,
+        );
+      } else {
+        _itemScrollController.jumpTo(
+          index: targetIndex,
+          alignment: 0.3,
+        );
+      }
     }
   }
 
@@ -115,10 +150,15 @@ class _PlaybackScreenState extends State<PlaybackScreen>
       );
     }
 
-    final colorScheme = Theme.of(context).colorScheme;
-    final double trackItemHeight =
-        _trackItemHeight * (settingsProvider.uiScale ? 1.4 : 1.0);
+    // Auto-scroll when track changes
+    if (audioProvider.currentTrack?.title != _lastTrackTitle) {
+      _lastTrackTitle = audioProvider.currentTrack?.title;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _scrollToCurrentTrack();
+      });
+    }
 
+    final colorScheme = Theme.of(context).colorScheme;
     Color backgroundColor = colorScheme.surface;
 
     // Check for True Black mode
@@ -142,8 +182,6 @@ class _PlaybackScreenState extends State<PlaybackScreen>
     final double scaleFactor = settingsProvider.uiScale ? 1.25 : 1.0;
 
     // minHeight covering the drag handle + Venue/Copy row.
-    // Matching correct MiniPlayer height (approx 92 with padding)
-    // User wants height to match MiniPlayer.
     final double minPanelHeight = 92.0 * scaleFactor;
 
     // maxHeight constraint to ~40% of screen
@@ -177,187 +215,23 @@ class _PlaybackScreenState extends State<PlaybackScreen>
           audioProvider,
           currentShow,
           currentSource,
-          trackItemHeight,
           minPanelHeight,
         ),
         body: ValueListenableBuilder<double>(
           valueListenable: _panelPositionNotifier,
           builder: (context, panelPosition, _) {
-            // dynamic padding calculation
-            // min: minPanelHeight + 60 (when collapsed)
-            // max: maxPanelHeight + 60 (when expanded)
             final double dynamicBottomPadding = minPanelHeight +
                 60.0 +
                 ((maxPanelHeight - minPanelHeight) * panelPosition);
 
-            return CustomScrollView(
-              controller: _scrollController,
-              slivers: [
-                SliverAppBar(
-                  backgroundColor: backgroundColor,
-                  pinned: true,
-                  title: SizedBox(
-                    height: (Theme.of(context).textTheme.titleLarge?.fontSize ??
-                            22.0) *
-                        (settingsProvider.uiScale ? 1.25 : 1.0) *
-                        1.6,
-                    child: ConditionalMarquee(
-                      text: currentShow.formattedDate,
-                      style: Theme.of(context).textTheme.titleLarge?.apply(
-                          fontSizeFactor:
-                              settingsProvider.uiScale ? 1.25 : 1.0),
-                    ),
-                  ),
-                  actions: [
-                    Padding(
-                      padding: const EdgeInsets.only(right: 16.0),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          Consumer<SettingsProvider>(
-                            builder: (context, settings, _) {
-                              // Always use Source ID for ratings.
-                              final String ratingKey = currentSource.id;
-
-                              final isPlayed = settings.isPlayed(ratingKey);
-
-                              return RatingControl(
-                                key: ValueKey(
-                                    '${ratingKey}_${settings.getRating(ratingKey)}_$isPlayed'),
-                                rating: settings.getRating(ratingKey),
-                                size: 16 * (settings.uiScale ? 1.25 : 1.0),
-                                isPlayed: isPlayed,
-                                onTap: () async {
-                                  final currentRating =
-                                      settings.getRating(ratingKey);
-                                  await showDialog(
-                                    context: context,
-                                    builder: (context) => RatingDialog(
-                                      initialRating: currentRating,
-                                      sourceId: currentSource.id,
-                                      sourceUrl: currentSource.tracks.isNotEmpty
-                                          ? currentSource.tracks.first.url
-                                          : null,
-                                      isPlayed: settings.isPlayed(ratingKey),
-                                      onRatingChanged: (newRating) {
-                                        settings.setRating(
-                                            ratingKey, newRating);
-                                      },
-                                      onPlayedChanged: (bool newIsPlayed) {
-                                        if (newIsPlayed !=
-                                            settings.isPlayed(ratingKey)) {
-                                          settings.togglePlayed(ratingKey);
-                                        }
-                                      },
-                                    ),
-                                  );
-                                },
-                              );
-                            },
-                          ),
-                          const SizedBox(height: 2),
-                          Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              if (currentSource.src != null) ...[
-                                SrcBadge(src: currentSource.src!),
-                                const SizedBox(width: 4),
-                              ],
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 6, vertical: 2),
-                                decoration: BoxDecoration(
-                                  color: Theme.of(context)
-                                      .colorScheme
-                                      .secondaryContainer
-                                      .withOpacity(0.5),
-                                  borderRadius: BorderRadius.circular(4),
-                                ),
-                                child: Text(
-                                  currentSource.id,
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .labelSmall
-                                      ?.copyWith(
-                                        color: Theme.of(context)
-                                            .colorScheme
-                                            .onSecondaryContainer,
-                                        fontSize: 10 *
-                                            (settingsProvider.uiScale
-                                                ? 1.25
-                                                : 1.0),
-                                      ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.settings_rounded),
-                      iconSize: 24 * (settingsProvider.uiScale ? 1.25 : 1.0),
-                      onPressed: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                              builder: (_) => const SettingsScreen()),
-                        );
-                      },
-                    ),
-                  ],
+            return Column(
+              children: [
+                _buildAppBar(
+                    context, currentShow, currentSource, backgroundColor),
+                Expanded(
+                  child: _buildTrackList(context, audioProvider, currentSource,
+                      dynamicBottomPadding, isTrueBlackMode),
                 ),
-                const SliverToBoxAdapter(child: SizedBox(height: 16)),
-                ...(() {
-                  final Map<String, List<Track>> tracksBySet = {};
-                  for (var track in currentSource.tracks) {
-                    if (!tracksBySet.containsKey(track.setName)) {
-                      tracksBySet[track.setName] = [];
-                    }
-                    tracksBySet[track.setName]!.add(track);
-                  }
-
-                  final List<Widget> slivers = [];
-                  tracksBySet.forEach((setName, tracks) {
-                    slivers.add(
-                      SliverPersistentHeader(
-                        pinned: true,
-                        delegate: _SetHeaderDelegate(
-                          setName,
-                          Theme.of(context),
-                          settingsProvider.uiScale,
-                          backgroundColor,
-                        ),
-                      ),
-                    );
-                    slivers.add(
-                      SliverPadding(
-                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                        sliver: SliverList(
-                          delegate: SliverChildBuilderDelegate(
-                            (context, index) {
-                              final track = tracks[index];
-                              final originalIndex =
-                                  currentSource.tracks.indexOf(track);
-                              return _buildTrackItem(
-                                context,
-                                audioProvider,
-                                track,
-                                originalIndex,
-                                trackItemHeight,
-                                isTrueBlackMode,
-                              );
-                            },
-                            childCount: tracks.length,
-                          ),
-                        ),
-                      ),
-                    );
-                  });
-                  return slivers;
-                })(),
-                SliverPadding(
-                    padding: EdgeInsets.only(bottom: dynamicBottomPadding)),
               ],
             );
           },
@@ -366,19 +240,308 @@ class _PlaybackScreenState extends State<PlaybackScreen>
     );
   }
 
+  Widget _buildAppBar(
+      BuildContext context, Show show, Source source, Color backgroundColor) {
+    final settingsProvider = context.watch<SettingsProvider>();
+    return AppBar(
+      backgroundColor: backgroundColor,
+      elevation: 0,
+      title: SizedBox(
+        height: (Theme.of(context).textTheme.titleLarge?.fontSize ?? 22.0) *
+            (settingsProvider.uiScale ? 1.25 : 1.0) *
+            1.6,
+        child: ConditionalMarquee(
+          text: show.formattedDate,
+          style: Theme.of(context)
+              .textTheme
+              .titleLarge
+              ?.apply(fontSizeFactor: settingsProvider.uiScale ? 1.25 : 1.0),
+        ),
+      ),
+      actions: [
+        Padding(
+          padding: const EdgeInsets.only(right: 16.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Consumer<SettingsProvider>(
+                builder: (context, settings, _) {
+                  final String ratingKey = source.id;
+                  final isPlayed = settings.isPlayed(ratingKey);
+
+                  return RatingControl(
+                    key: ValueKey(
+                        '${ratingKey}_${settings.getRating(ratingKey)}_$isPlayed'),
+                    rating: settings.getRating(ratingKey),
+                    size: 16 * (settings.uiScale ? 1.25 : 1.0),
+                    isPlayed: isPlayed,
+                    onTap: () async {
+                      final currentRating = settings.getRating(ratingKey);
+                      await showDialog(
+                        context: context,
+                        builder: (context) => RatingDialog(
+                          initialRating: currentRating,
+                          sourceId: source.id,
+                          sourceUrl: source.tracks.isNotEmpty
+                              ? source.tracks.first.url
+                              : null,
+                          isPlayed: settings.isPlayed(ratingKey),
+                          onRatingChanged: (newRating) {
+                            settings.setRating(ratingKey, newRating);
+                          },
+                          onPlayedChanged: (bool newIsPlayed) {
+                            if (newIsPlayed != settings.isPlayed(ratingKey)) {
+                              settings.togglePlayed(ratingKey);
+                            }
+                          },
+                        ),
+                      );
+                    },
+                  );
+                },
+              ),
+              const SizedBox(height: 2),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (source.src != null) ...[
+                    SrcBadge(src: source.src!),
+                    const SizedBox(width: 4),
+                  ],
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context)
+                          .colorScheme
+                          .secondaryContainer
+                          .withOpacity(0.5),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Text(
+                      source.id,
+                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                            color: Theme.of(context)
+                                .colorScheme
+                                .onSecondaryContainer,
+                            fontSize:
+                                10 * (settingsProvider.uiScale ? 1.25 : 1.0),
+                          ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+        IconButton(
+          icon: const Icon(Icons.settings_rounded),
+          iconSize: 24 * (settingsProvider.uiScale ? 1.25 : 1.0),
+          onPressed: () {
+            Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const SettingsScreen()),
+            );
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTrackList(BuildContext context, AudioProvider audioProvider,
+      Source source, double bottomPadding, bool isTrueBlackMode) {
+    final Map<String, List<Track>> tracksBySet = {};
+    for (var track in source.tracks) {
+      if (!tracksBySet.containsKey(track.setName)) {
+        tracksBySet[track.setName] = [];
+      }
+      tracksBySet[track.setName]!.add(track);
+    }
+
+    final List<dynamic> listItems = [];
+    final Map<int, int> listItemToTrackIndex = {};
+    int currentTrackIndex = 0;
+
+    tracksBySet.forEach((setName, tracks) {
+      listItems.add(setName);
+      for (var track in tracks) {
+        listItemToTrackIndex[listItems.length] = currentTrackIndex++;
+        listItems.add(track);
+      }
+    });
+
+    return ScrollablePositionedList.builder(
+      itemScrollController: _itemScrollController,
+      itemPositionsListener: _itemPositionsListener,
+      padding: EdgeInsets.fromLTRB(8, 16, 8, bottomPadding),
+      itemCount: listItems.length,
+      itemBuilder: (context, index) {
+        final item = listItems[index];
+        if (item is String) {
+          return _buildSetHeader(context, item);
+        } else if (item is Track) {
+          final trackIndex = listItemToTrackIndex[index] ?? 0;
+          return _buildTrackItem(
+              context, audioProvider, item, trackIndex, isTrueBlackMode);
+        }
+        return const SizedBox.shrink();
+      },
+    );
+  }
+
+  Widget _buildSetHeader(BuildContext context, String setName) {
+    final settingsProvider = context.watch<SettingsProvider>();
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
+      child: Text(
+        setName,
+        style: Theme.of(context)
+            .textTheme
+            .titleSmall
+            ?.copyWith(
+              color: Theme.of(context).colorScheme.primary,
+              fontWeight: FontWeight.bold,
+            )
+            .apply(fontSizeFactor: settingsProvider.uiScale ? 1.25 : 1.0),
+      ),
+    );
+  }
+
+  Widget _buildTrackItem(
+    BuildContext context,
+    AudioProvider audioProvider,
+    Track track,
+    int index,
+    bool isTrueBlackMode,
+  ) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final settingsProvider = context.watch<SettingsProvider>();
+
+    return StreamBuilder<int?>(
+      stream: audioProvider.currentIndexStream,
+      initialData: audioProvider.audioPlayer.currentIndex,
+      builder: (context, snapshot) {
+        final currentIndex = snapshot.data;
+        final isPlaying = currentIndex == index;
+
+        final double scaleFactor = settingsProvider.uiScale ? 1.25 : 1.0;
+
+        return Container(
+          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 1),
+          decoration: BoxDecoration(
+            color: (isPlaying && settingsProvider.highlightPlayingWithRgb)
+                ? Colors.transparent
+                : isPlaying
+                    ? (isTrueBlackMode
+                        ? Colors.black
+                        : colorScheme.primaryContainer)
+                    : Colors.transparent,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: (isPlaying && settingsProvider.highlightPlayingWithRgb)
+              ? Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: const [],
+                  ),
+                  padding: const EdgeInsets.all(4),
+                  child: AnimatedGradientBorder(
+                    borderRadius: 12,
+                    borderWidth: 4,
+                    colors: const [
+                      Colors.red,
+                      Colors.yellow,
+                      Colors.green,
+                      Colors.cyan,
+                      Colors.blue,
+                      Colors.purple,
+                      Colors.red,
+                    ],
+                    showGlow: true,
+                    showShadow: settingsProvider.showGlowBorder,
+                    glowOpacity:
+                        0.5 * (settingsProvider.halfGlowDynamic ? 0.5 : 1.0),
+                    animationSpeed: settingsProvider.rgbAnimationSpeed,
+                    child: Material(
+                      color: isTrueBlackMode
+                          ? Colors.black
+                          : colorScheme.primaryContainer,
+                      borderRadius: BorderRadius.circular(8),
+                      clipBehavior: Clip.antiAlias,
+                      child: _buildTrackListTile(context, audioProvider, track,
+                          index, currentIndex, scaleFactor),
+                    ),
+                  ),
+                )
+              : _buildTrackListTile(context, audioProvider, track, index,
+                  currentIndex, scaleFactor),
+        );
+      },
+    );
+  }
+
+  Widget _buildTrackListTile(BuildContext context, AudioProvider audioProvider,
+      Track track, int index, int? currentIndex, double scaleFactor) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+    final settingsProvider = context.watch<SettingsProvider>();
+    final isPlaying = currentIndex == index;
+
+    final baseTitleStyle =
+        textTheme.bodyLarge ?? const TextStyle(fontSize: 16.0);
+    final titleStyle =
+        baseTitleStyle.apply(fontSizeFactor: scaleFactor).copyWith(
+              fontWeight: isPlaying ? FontWeight.w600 : FontWeight.normal,
+              color: isPlaying ? colorScheme.primary : colorScheme.onSurface,
+            );
+
+    return ListTile(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
+      title: SizedBox(
+        height: titleStyle.fontSize! * 1.6,
+        child: ConditionalMarquee(
+          text: settingsProvider.showTrackNumbers
+              ? '${track.trackNumber}. ${track.title}'
+              : track.title,
+          style: titleStyle,
+          textAlign: settingsProvider.hideTrackDuration
+              ? TextAlign.center
+              : TextAlign.start,
+        ),
+      ),
+      trailing: settingsProvider.hideTrackDuration
+          ? null
+          : Text(
+              formatDuration(Duration(seconds: track.duration)),
+              style: textTheme.bodyMedium
+                  ?.apply(fontSizeFactor: scaleFactor)
+                  .copyWith(
+                    color: colorScheme.onSurfaceVariant,
+                    fontWeight: FontWeight.w500,
+                  ),
+            ),
+      onTap: () {
+        if (!isPlaying) {
+          audioProvider.seekToTrack(index);
+        }
+      },
+    );
+  }
+
   Widget _buildBottomControlsPanel(
       BuildContext context,
       AudioProvider audioProvider,
       Show currentShow,
       Source currentSource,
-      double trackItemHeight,
       double minHeight) {
     final textTheme = Theme.of(context).textTheme;
     final colorScheme = Theme.of(context).colorScheme;
     final settingsProvider = context.watch<SettingsProvider>();
     final scaleFactor = settingsProvider.uiScale ? 1.25 : 1.0;
 
-    // Check for True Black mode for mini-player styling
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     final isTrueBlackMode = isDarkMode &&
         (!settingsProvider.useDynamicColor || settingsProvider.halfGlowDynamic);
@@ -400,12 +563,10 @@ class _PlaybackScreenState extends State<PlaybackScreen>
       ),
       child: Column(
         children: [
-          // Collapsed / Header Area
           SizedBox(
             height: minHeight,
             child: Column(
-              mainAxisAlignment:
-                  MainAxisAlignment.spaceBetween, // Push content to edges
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Column(
                   mainAxisSize: MainAxisSize.min,
@@ -421,11 +582,10 @@ class _PlaybackScreenState extends State<PlaybackScreen>
                     ),
                   ],
                 ),
-                // Venue + Copy
                 GestureDetector(
                   behavior: HitTestBehavior.opaque,
                   onTap: () {
-                    _scrollToCurrentTrack(trackItemHeight);
+                    _scrollToCurrentTrack();
                     if (_panelController.isAttached) {
                       if (_panelController.isPanelClosed) {
                         _panelController.open();
@@ -434,16 +594,14 @@ class _PlaybackScreenState extends State<PlaybackScreen>
                   },
                   child: Padding(
                     padding: const EdgeInsets.only(
-                        left: 16.0,
-                        right: 16.0,
-                        bottom: 30.0), // Reduced to 30.0 to prevent overflow
+                        left: 16.0, right: 16.0, bottom: 30.0),
                     child: Row(
                       children: [
                         Flexible(
                           child: SizedBox(
                             height: textTheme.headlineSmall!.fontSize! *
                                 scaleFactor *
-                                1.6, // Increased height for better fit with Rock Salt
+                                1.6,
                             child: ConditionalMarquee(
                               text: currentShow.venue,
                               style: textTheme.headlineSmall
@@ -464,7 +622,6 @@ class _PlaybackScreenState extends State<PlaybackScreen>
               ],
             ),
           ),
-          // Expanded Content
           Expanded(
             child: SingleChildScrollView(
               physics: const ClampingScrollPhysics(),
@@ -472,6 +629,21 @@ class _PlaybackScreenState extends State<PlaybackScreen>
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
+                  if (currentSource.location != null) ...[
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        currentSource.location!,
+                        style: textTheme.titleSmall
+                            ?.apply(fontSizeFactor: scaleFactor)
+                            .copyWith(
+                              color: colorScheme.secondary,
+                              fontWeight: FontWeight.w500,
+                            ),
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                  ],
                   Row(
                     children: [
                       Text(
@@ -490,8 +662,11 @@ class _PlaybackScreenState extends State<PlaybackScreen>
                         onPressed: () {
                           final track = currentSource.tracks[
                               audioProvider.audioPlayer.currentIndex ?? 0];
+                          final locationStr = currentSource.location != null
+                              ? " - ${currentSource.location}"
+                              : "";
                           final info =
-                              "${currentShow.venue} - ${currentShow.formattedDate} - ${currentSource.id}\n${track.title}\n${track.url.replaceAll('/download/', '/details/').split('/').sublist(0, 5).join('/')}";
+                              "${currentShow.venue}$locationStr - ${currentShow.formattedDate} - ${currentSource.id}\n${track.title}\n${track.url.replaceAll('/download/', '/details/').split('/').sublist(0, 5).join('/')}";
                           Clipboard.setData(ClipboardData(text: info));
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
@@ -660,141 +835,8 @@ class _PlaybackScreenState extends State<PlaybackScreen>
     );
   }
 
-  Widget _buildTrackItem(
-    BuildContext context,
-    AudioProvider audioProvider,
-    Track track,
-    int index,
-    double trackItemHeight,
-    bool isTrueBlackMode,
-  ) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final settingsProvider = context.watch<SettingsProvider>();
-    final double scaleFactor = settingsProvider.uiScale ? 1.4 : 1.0;
-
-    return StreamBuilder<int?>(
-      stream: audioProvider.currentIndexStream,
-      initialData: audioProvider.audioPlayer.currentIndex,
-      builder: (context, snapshot) {
-        final currentIndex = snapshot.data;
-        final isPlaying = currentIndex == index;
-
-        return Container(
-          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 1),
-          decoration: BoxDecoration(
-            color: (isPlaying && settingsProvider.highlightPlayingWithRgb)
-                ? Colors.transparent
-                : isPlaying
-                    ? (isTrueBlackMode
-                        ? Colors.black
-                        : colorScheme.primaryContainer)
-                    : Colors.transparent,
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: (isPlaying && settingsProvider.highlightPlayingWithRgb)
-              ? Container(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(12),
-                    // Only show static shadow if NOT using RGB (RGB handled by AnimatedGradientBorder)
-                    // But here we ARE using RGB, so static shadow should be empty or minimal if we want dual glow?
-                    // AnimatedGradientBorder now handles RGB glow. We should remove static shadow here.
-                    boxShadow: [],
-                  ),
-                  padding: const EdgeInsets.all(4), // Increased padding
-                  child: AnimatedGradientBorder(
-                    borderRadius: 12,
-                    borderWidth: 4,
-                    colors: const [
-                      Colors.red,
-                      Colors.yellow,
-                      Colors.green,
-                      Colors.cyan,
-                      Colors.blue,
-                      Colors.purple,
-                      Colors.red,
-                    ],
-                    showGlow: true,
-                    // Show shadow if Glow Border is ON, regardless of True Black (if that's what user wants for RGB)
-                    // Or follow standard logic: show if !isTrueBlackMode OR (users implies 'glow the rgb' override)
-                    // User said: "if rgb and glow is on , glow the rgb".
-                    // So: settingsProvider.showGlowBorder is key.
-                    showShadow: settingsProvider.showGlowBorder,
-                    // Opacity: 0.5 factor for RGB, matching ShowListCard
-                    glowOpacity:
-                        0.5 * (settingsProvider.halfGlowDynamic ? 0.5 : 1.0),
-                    animationSpeed: settingsProvider.rgbAnimationSpeed,
-                    child: Material(
-                      color: isTrueBlackMode
-                          ? Colors.black
-                          : colorScheme.primaryContainer,
-                      borderRadius: BorderRadius.circular(8),
-                      clipBehavior: Clip.antiAlias,
-                      child: _buildTrackListTile(context, audioProvider, track,
-                          index, currentIndex, scaleFactor),
-                    ),
-                  ),
-                )
-              : _buildTrackListTile(context, audioProvider, track, index,
-                  currentIndex, scaleFactor),
-        );
-      },
-    );
-  }
-
-  Widget _buildTrackListTile(BuildContext context, AudioProvider audioProvider,
-      Track track, int index, int? currentIndex, double scaleFactor) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
-    final settingsProvider = context.watch<SettingsProvider>();
-    final isPlaying = currentIndex == index;
-
-    final baseTitleStyle =
-        textTheme.bodyLarge ?? const TextStyle(fontSize: 16.0);
-    final titleStyle =
-        baseTitleStyle.apply(fontSizeFactor: scaleFactor).copyWith(
-              fontWeight: isPlaying ? FontWeight.w600 : FontWeight.normal,
-              color: isPlaying ? colorScheme.primary : colorScheme.onSurface,
-            );
-
-    return ListTile(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
-      title: SizedBox(
-        height: titleStyle.fontSize! * 1.6,
-        child: ConditionalMarquee(
-          text: settingsProvider.showTrackNumbers
-              ? '${track.trackNumber}. ${track.title}'
-              : track.title,
-          style: titleStyle,
-          textAlign: settingsProvider.hideTrackDuration
-              ? TextAlign.center
-              : TextAlign.start,
-        ),
-      ),
-      trailing: settingsProvider.hideTrackDuration
-          ? null
-          : Text(
-              formatDuration(Duration(seconds: track.duration)),
-              style: textTheme.bodyMedium
-                  ?.apply(fontSizeFactor: scaleFactor)
-                  .copyWith(
-                    color: colorScheme.onSurfaceVariant,
-                    fontWeight: FontWeight.w500,
-                  ),
-            ),
-      onTap: () {
-        if (currentIndex != index) {
-          audioProvider.seekToTrack(index);
-        }
-      },
-    );
-  }
-
   Widget _buildRatingButton(BuildContext context, Show show, Source source,
       SettingsProvider settings) {
-    // Always use Source ID for rating.
     final String ratingKey = source.id;
     final rating = settings.getRating(ratingKey);
 
@@ -823,59 +865,5 @@ class _PlaybackScreenState extends State<PlaybackScreen>
         );
       },
     );
-  }
-}
-
-class _SetHeaderDelegate extends SliverPersistentHeaderDelegate {
-  final String setName;
-  final ThemeData theme;
-  final bool uiScale;
-  final Color backgroundColor;
-
-  _SetHeaderDelegate(
-      this.setName, this.theme, this.uiScale, this.backgroundColor);
-
-  @override
-  Widget build(
-      BuildContext context, double shrinkOffset, bool overlapsContent) {
-    // Determine background color based on theme
-    // We want it to be opaque to hide the scrolling content
-    // final backgroundColor = theme.scaffoldBackgroundColor; // Removed
-
-    double scaleFactor = uiScale ? 1.25 : 1.0;
-
-    return Container(
-      color: backgroundColor,
-      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-      alignment: Alignment.centerLeft,
-      child: Text(
-        setName,
-        style: theme.textTheme.titleSmall?.copyWith(
-          color: theme.colorScheme.primary,
-          fontWeight: FontWeight.bold,
-          fontSize:
-              (theme.textTheme.titleSmall?.fontSize ?? 14.0) * scaleFactor,
-        ),
-      ),
-    );
-  }
-
-  @override
-  double get maxExtent {
-    double scaleFactor = uiScale ? 1.25 : 1.0;
-    // Estimate height: 16 (padding) + ~20 (text) + 4 (padding) -> ~40
-    // Previous _buildSetHeader had padding: fromLTRB(16, 16, 16, 4)
-    // So top 16 + bottom 4 = 20 vertical padding + text height.
-    return 24.0 + (20.0 * scaleFactor);
-  }
-
-  @override
-  double get minExtent => maxExtent;
-
-  @override
-  bool shouldRebuild(_SetHeaderDelegate oldDelegate) {
-    return oldDelegate.setName != setName ||
-        oldDelegate.theme != theme ||
-        oldDelegate.uiScale != uiScale;
   }
 }

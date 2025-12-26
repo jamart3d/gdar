@@ -1,9 +1,10 @@
 import json
+import os
 
 def main():
-    input_file = 'assets/data/output.optimized_src_strict.json'
-    output_file = 'assets/data/output.optimized_final.json'
-    report_file = 'venue_location_report.md'
+    input_file = 'assets/data/output.optimized_oldder_src_cleaned_name1chop.json'
+    output_file = 'assets/data/output.optimized_oldder_src_cleaned_name2chop.json'
+    report_file = 'venue_location_clean_report.md'
     
     try:
         with open(input_file, 'r') as f:
@@ -19,12 +20,22 @@ def main():
 
     print(f"Processing {total_shows} shows for location extraction...")
 
+    # Load Original Source Data for Fallback
+    src_file = 'assets/data/output.optimized_src.json'
+    src_venues = {}
+    if os.path.exists(src_file):
+        with open(src_file, 'r', encoding='utf-8') as f:
+            src_data = json.load(f)
+            for show in src_data:
+                d = show.get('date')
+                n = show.get('name')
+                if d and n:
+                    src_venues[d] = n
+    else:
+        print(f"Warning: {src_file} not found. Fallback to original source names unavailable.")
+
     for show in data:
         raw_venue = show.get('name', 'Unknown Venue')
-        # We process 'name' as that is what holds the venue now (after prefix cleaning)
-        # Note: The 'v' attribute might still exist and be stale, but we should probably sync them or just update 'name' and 'v'?
-        # The prompt implies we are working on the 'name', effectively.
-        # But wait, earlier we decided to use 'name' as the primary venue source in Show.dart.
         
         # Strip date from venue first, before splitting location
         date_str = show.get('date', '')
@@ -69,31 +80,91 @@ def main():
             clean_venue = raw_venue[:split_index].strip()
             location = raw_venue[split_index + separator_len:].strip()
             
-            if clean_venue and location:
-                show['name'] = clean_venue
-                show['l'] = location # 'l' for location (optimized)
+            # Heuristic: Avoid cleaning to ANY single word if requested
+            # User request: "if result will be single word, don't clean"
+            # This is a strict rule to prevent losing context.
+            
+            is_single_word = ' ' not in clean_venue
+            has_on = " on " in clean_venue.lower()
+            
+            if is_single_word or has_on:
+                # Reject the split!
+                split_index = -1
                 
-                if 'v' in show:
-                     show['v'] = clean_venue
-                
-                updated_count += 1
-                report_entries.append({
-                    'original': show.get('name', ''), # Original name from file
-                    'venue': clean_venue,
-                    'location': location
-                })
-        else:
-            # If no split happened, but we DID remove the date, we should still update the name!
-            # e.g. "Venue on Date" with no location.
-            if raw_venue != show.get('name', ''):
-                 show['name'] = raw_venue
+                # Try fallback to Source Original if available
+                if date_str in src_venues:
+                    clean_venue = src_venues[date_str]
+                    location = "" # No location extracted if we revert
+                    # We treat this as a "fix" but not a "split"
+                    # But we need to apply it below if we want to save it.
+                    # Let's set split_index back to -1 to fall through to the 'else' logic?
+                    # No, let's handle it here.
+                    
+                    show['name'] = clean_venue
+                    show['l'] = "" # Clear location if we revert
+                    if 'v' in show: show['v'] = clean_venue
+                    
+                    updated_count += 1
+                    report_entries.append({
+                        'original': show.get('name', ''), 
+                        'venue': clean_venue + " (Reverted to Source)",
+                        'location': '[Reverted]'
+                    })
+                    continue # Skip the standard apply block
+                else:
+                    # No fallback, just revert to input implicitly by doing nothing?
+                    # Or explicit revert?
+                    clean_venue = ""
+                    location = ""
+            
+            if split_index != -1 and clean_venue and location:
+                # Check strict single word rule again for the final candidate (redundant but safe)
+                if ' ' not in clean_venue:
+                     # This shouldn't be reached if logic above is correct, but for safety:
+                     split_index = -1
+                else:
+                    show['name'] = clean_venue
+                    show['l'] = location
+                    
+                    if 'v' in show:
+                        show['v'] = clean_venue
+                    
+                    updated_count += 1
+                    report_entries.append({
+                        'original': show.get('name', ''), 
+                        'venue': clean_venue,
+                        'location': location
+                    })
+
+        # Check for date-only cleaned cases (no split) or fallback logic
+        if split_index == -1:
+            candidate_name = raw_venue
+            original_input_name = show.get('name', '')
+            
+            # Check for bad outcome: Single Word OR " on "
+            is_single_word = ' ' not in candidate_name
+            has_on = " on " in candidate_name.lower()
+            
+            if (is_single_word or has_on) and date_str in src_venues:
+                 # Fallback to Source
+                 candidate_name = src_venues[date_str]
+            elif (is_single_word or has_on):
+                 # Revert to input if no source available (better than single word 'Gym')
+                 # But input might be 'Gym'... assume input is 'Pritchard Gym'? No..
+                 # If input was 'Ballroom on 1969', and we stripped it to 'Ballroom'.
+                 # We revert to 'Ballroom on 1969'.
+                 candidate_name = original_input_name
+
+            # Apply if still different
+            if candidate_name != original_input_name:
+                 show['name'] = candidate_name
                  if 'v' in show:
-                     show['v'] = raw_venue
+                     show['v'] = candidate_name
                  updated_count += 1
                  # Add to report as "Date Cleaned Only" (no location extracted)
                  report_entries.append({
-                    'original': show.get('name') + " (Date Cleaned)",
-                    'venue': raw_venue,
+                    'original': original_input_name + " (Date Cleaned/Fallback)",
+                    'venue': candidate_name,
                     'location': '[None]'
                  })
 

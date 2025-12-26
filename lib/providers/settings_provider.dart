@@ -69,11 +69,13 @@ class SettingsProvider with ChangeNotifier {
   static const String _playedShowsKey = 'played_shows';
   static const String _randomOnlyUnplayedKey = 'random_only_unplayed';
   static const String _randomOnlyHighRatedKey = 'random_only_high_rated';
+  static const String _randomExcludePlayedKey = 'random_exclude_played';
 
   Map<String, int> _showRatings = {};
   Set<String> _playedShows = {};
   bool _randomOnlyUnplayed = false;
   bool _randomOnlyHighRated = false;
+  bool _randomExcludePlayed = false;
 
   // Public getters
   bool get showTrackNumbers => _showTrackNumbers;
@@ -103,6 +105,7 @@ class SettingsProvider with ChangeNotifier {
   Set<String> get playedShows => _playedShows;
   bool get randomOnlyUnplayed => _randomOnlyUnplayed;
   bool get randomOnlyHighRated => _randomOnlyHighRated;
+  bool get randomExcludePlayed => _randomExcludePlayed;
 
   // Internal setting: Global Album Art
   bool get showGlobalAlbumArt => true;
@@ -201,6 +204,7 @@ class SettingsProvider with ChangeNotifier {
 
     _randomOnlyUnplayed = _prefs.getBool(_randomOnlyUnplayedKey) ?? false;
     _randomOnlyHighRated = _prefs.getBool(_randomOnlyHighRatedKey) ?? false;
+    _randomExcludePlayed = _prefs.getBool(_randomExcludePlayedKey) ?? false;
 
     _initSourceFilters();
   }
@@ -300,6 +304,9 @@ class SettingsProvider with ChangeNotifier {
 
   void toggleRandomOnlyHighRated() => _updatePreference(
       _randomOnlyHighRatedKey, _randomOnlyHighRated = !_randomOnlyHighRated);
+
+  void toggleRandomExcludePlayed() => _updatePreference(
+      _randomExcludePlayedKey, _randomExcludePlayed = !_randomExcludePlayed);
 
   // Source Filtering
   static const String _filterHighestShnidKey = 'filter_highest_shnid';

@@ -262,7 +262,8 @@ class _ShowListScreenState extends State<ShowListScreen>
       } else {
         final shouldOpenPlayer = await Navigator.of(context).push(
           MaterialPageRoute(
-            builder: (_) => TrackListScreen(show: show),
+            builder: (_) =>
+                TrackListScreen(show: show, source: show.sources.first),
           ),
         );
         if (shouldOpenPlayer == true && mounted) {
@@ -323,7 +324,8 @@ class _ShowListScreenState extends State<ShowListScreen>
       );
       final shouldOpenPlayer = await Navigator.of(context).push(
         MaterialPageRoute(
-          builder: (_) => TrackListScreen(show: singleSourceShow),
+          builder: (_) => TrackListScreen(
+              show: singleSourceShow, source: singleSourceShow.sources.first),
         ),
       );
       if (shouldOpenPlayer == true && mounted) {
@@ -460,6 +462,8 @@ class _ShowListScreenState extends State<ShowListScreen>
         }
       });
     } else {
+      // If we failed, wait a moment before hiding the loading indicator to prevent flicker
+      await Future.delayed(const Duration(milliseconds: 300));
       setState(() => _isRandomShowLoading = false);
     }
   }

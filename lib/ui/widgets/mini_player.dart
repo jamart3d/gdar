@@ -227,8 +227,9 @@ class _MiniPlayerState extends State<MiniPlayer>
                             }
                             final track = currentSource.tracks[index];
 
-                            final baseTitleStyle = textTheme.titleLarge ??
-                                const TextStyle(fontSize: 22.0);
+                            final baseTitleStyle = textTheme.titleMedium
+                                    ?.copyWith(fontSize: 19.0) ??
+                                const TextStyle(fontSize: 19.0);
                             final titleStyle = baseTitleStyle
                                 .apply(fontSizeFactor: scaleFactor)
                                 .copyWith(
@@ -251,7 +252,7 @@ class _MiniPlayerState extends State<MiniPlayer>
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 SizedBox(
-                                  height: titleStyle.fontSize! * 1.3,
+                                  height: titleStyle.fontSize! * 1.5,
                                   child: Material(
                                     type: MaterialType.transparency,
                                     child: ConditionalMarquee(

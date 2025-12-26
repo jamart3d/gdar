@@ -128,7 +128,11 @@ class MockSettingsProvider extends Mock implements SettingsProvider {
   @override
   bool get hideTrackDuration => false;
   @override
-  void toggleHideTrackDuration() {}
+  bool get randomExcludePlayed => false;
+  @override
+  void toggleRandomExcludePlayed() {}
+  @override
+  bool get showGlobalAlbumArt => true;
 }
 
 @GenerateMocks([AudioProvider, AudioPlayer])
@@ -186,6 +190,7 @@ void main() {
         .thenAnswer((_) => Stream.value(Duration.zero));
     when(mockAudioProvider.playbackErrorStream)
         .thenAnswer((_) => Stream.value(''));
+    when(mockAudioProvider.currentTrack).thenReturn(null);
   });
 
   Widget createTestableWidget({required Widget child}) {
@@ -217,6 +222,7 @@ void main() {
       (WidgetTester tester) async {
     when(mockAudioProvider.currentShow).thenReturn(dummyShow);
     when(mockAudioProvider.currentSource).thenReturn(dummySource);
+    when(mockAudioProvider.currentTrack).thenReturn(dummyTrack1);
 
     await tester
         .pumpWidget(createTestableWidget(child: const PlaybackScreen()));
@@ -242,6 +248,7 @@ void main() {
     when(mockAudioProvider.currentSource).thenReturn(dummySource);
     when(mockAudioPlayer.currentIndex)
         .thenReturn(0); // Currently playing the first track
+    when(mockAudioProvider.currentTrack).thenReturn(dummyTrack1);
 
     await tester
         .pumpWidget(createTestableWidget(child: const PlaybackScreen()));
@@ -255,6 +262,7 @@ void main() {
       (WidgetTester tester) async {
     when(mockAudioProvider.currentShow).thenReturn(dummyShow);
     when(mockAudioProvider.currentSource).thenReturn(dummySource);
+    when(mockAudioProvider.currentTrack).thenReturn(dummyTrack1);
 
     await tester
         .pumpWidget(createTestableWidget(child: const PlaybackScreen()));

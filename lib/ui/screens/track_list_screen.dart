@@ -4,199 +4,225 @@ import 'package:gdar/models/source.dart';
 import 'package:gdar/models/track.dart';
 import 'package:gdar/providers/audio_provider.dart';
 import 'package:gdar/providers/settings_provider.dart';
+import 'package:gdar/ui/screens/playback_screen.dart';
 import 'package:gdar/ui/screens/settings_screen.dart';
-import 'package:gdar/ui/widgets/conditional_marquee.dart';
 import 'package:gdar/ui/widgets/mini_player.dart';
-import 'package:gdar/ui/widgets/rating_control.dart';
 import 'package:gdar/ui/widgets/src_badge.dart';
-import 'package:gdar/utils/color_generator.dart';
+import 'package:gdar/ui/widgets/rating_control.dart';
+import 'package:gdar/ui/widgets/conditional_marquee.dart';
 import 'package:gdar/utils/utils.dart';
 import 'package:provider/provider.dart';
+import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
+import 'dart:ui';
 
 class TrackListScreen extends StatefulWidget {
   final Show show;
-  const TrackListScreen({super.key, required this.show});
+  final Source source;
+
+  const TrackListScreen({
+    super.key,
+    required this.show,
+    required this.source,
+  });
 
   @override
   State<TrackListScreen> createState() => _TrackListScreenState();
 }
 
 class _TrackListScreenState extends State<TrackListScreen> {
-  /// Plays the selected track and pops this screen, returning `true` to
-  /// signal the ShowListScreen to open the player.
-  void _onTrackTapped(Source source, int initialIndex) {
-    final audioProvider = context.read<AudioProvider>();
-    final settingsProvider = context.read<SettingsProvider>();
+  final ItemScrollController _itemScrollController = ItemScrollController();
+  final ItemPositionsListener _itemPositionsListener =
+      ItemPositionsListener.create();
+  String? _lastTrackTitle;
 
-    if (settingsProvider.playOnTap) {
-      audioProvider.playSource(widget.show, source, initialIndex: initialIndex);
-      if (mounted) {
-        Navigator.of(context).pop(true);
+  @override
+  void initState() {
+    super.initState();
+    final audioProvider = context.read<AudioProvider>();
+    _lastTrackTitle = audioProvider.currentTrack?.title;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _scrollToCurrentTrack(animate: false);
+    });
+  }
+
+  void _scrollToCurrentTrack({bool animate = true}) {
+    if (!mounted) return;
+    final audioProvider = context.read<AudioProvider>();
+
+    final isCurrentShow = audioProvider.currentShow?.name == widget.show.name;
+    if (!isCurrentShow) return;
+
+    final currentTrack = audioProvider.currentTrack;
+    if (currentTrack == null) return;
+
+    // Build the list structure to find the index
+    final Map<String, List<Track>> tracksBySet = {};
+    for (var track in widget.source.tracks) {
+      if (!tracksBySet.containsKey(track.setName)) {
+        tracksBySet[track.setName] = [];
       }
-    } else {
-      // If playOnTap is false, only play if it's the current show.
-      if (audioProvider.currentShow?.name == widget.show.name) {
-        audioProvider.playSource(widget.show, source,
-            initialIndex: initialIndex);
-        if (mounted) {
-          Navigator.of(context).pop(true);
-        }
+      tracksBySet[track.setName]!.add(track);
+    }
+
+    final List<dynamic> listItems = [];
+    tracksBySet.forEach((setName, tracks) {
+      listItems.add(setName);
+      listItems.addAll(tracks);
+    });
+
+    int targetIndex = -1;
+    for (int i = 0; i < listItems.length; i++) {
+      final item = listItems[i];
+      if (item is Track &&
+          item.title == currentTrack.title &&
+          item.trackNumber == currentTrack.trackNumber) {
+        targetIndex = i;
+        break;
       }
-      // If it's not the current show, do nothing on tap.
+    }
+
+    if (targetIndex != -1 && _itemScrollController.isAttached) {
+      if (animate) {
+        _itemScrollController.scrollTo(
+          index: targetIndex,
+          duration: const Duration(milliseconds: 500),
+          curve: Curves.easeInOutCubic,
+          alignment: 0.3,
+        );
+      } else {
+        _itemScrollController.jumpTo(
+          index: targetIndex,
+          alignment: 0.3,
+        );
+      }
     }
   }
 
-  /// Opens the full player screen for the currently playing item.
-  Future<void> _openPlaybackScreen() async {
-    // This screen should not push a new player, but pop and let the main
-    // screen handle it to ensure a clean navigation stack.
-    if (mounted) {
-      Navigator.of(context).pop(true);
-    }
+  void _onTrackTapped(Source source, int trackIndex) {
+    final audioProvider = context.read<AudioProvider>();
+    audioProvider.playSource(widget.show, source, initialIndex: trackIndex);
+  }
+
+  void _openPlaybackScreen() {
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => const PlaybackScreen()),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     final audioProvider = context.watch<AudioProvider>();
-    final settingsProvider = context.watch<SettingsProvider>();
-    // Show the mini player only if a different show is currently playing.
     final isDifferentShowPlaying = audioProvider.currentShow != null &&
         audioProvider.currentShow!.name != widget.show.name;
+    final settingsProvider = context.watch<SettingsProvider>();
 
-    // Logic to match ShowListCard exactly
-    final isPlaying = audioProvider.currentShow?.name == widget.show.name;
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    final isTrueBlackMode = isDarkMode &&
-        !settingsProvider.useDynamicColor &&
-        settingsProvider.seedColor != null;
-
-    // Start with surface color (matches ShowListCard default)
-    Color backgroundColor = Theme.of(context).colorScheme.surface;
-
-    if (!isTrueBlackMode &&
-        isPlaying &&
-        settingsProvider.highlightCurrentShowCard) {
-      String seed = widget.show.name;
-      // If multi-source and playing, use the playing source ID as seed
-      if (widget.show.sources.length > 1 &&
-          audioProvider.currentSource?.id != null) {
-        seed = audioProvider.currentSource!.id;
-      }
-      backgroundColor = ColorGenerator.getColor(seed,
-          brightness: Theme.of(context).brightness);
+    // Auto-scroll when track changes while viewing this show
+    if (audioProvider.currentShow?.name == widget.show.name &&
+        audioProvider.currentTrack?.title != _lastTrackTitle) {
+      _lastTrackTitle = audioProvider.currentTrack?.title;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _scrollToCurrentTrack();
+      });
     }
-    // In True Black mode, surface is already black, so no need for explicit check.
 
     return Scaffold(
-      backgroundColor: backgroundColor,
       appBar: AppBar(
-        backgroundColor: backgroundColor,
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            SizedBox(
-              height:
-                  (Theme.of(context).textTheme.titleLarge?.fontSize ?? 22.0) *
-                      (settingsProvider.uiScale ? 1.25 : 1.0) *
-                      1.6,
-              child: ConditionalMarquee(
-                text: widget.show.formattedDate,
-                style: Theme.of(context).textTheme.titleLarge?.apply(
-                    fontSizeFactor: settingsProvider.uiScale ? 1.25 : 1.0),
-              ),
+            Text(
+              widget.show.formattedDate,
+              style: Theme.of(context).textTheme.titleLarge?.apply(
+                  fontSizeFactor: settingsProvider.uiScale ? 1.25 : 1.0),
             ),
-            const SizedBox(height: 2),
-            SizedBox(
-              height:
-                  (Theme.of(context).textTheme.titleSmall?.fontSize ?? 14.0) *
-                      (settingsProvider.uiScale ? 1.25 : 1.0) *
-                      1.6,
-              child: ConditionalMarquee(
-                text: widget.show.venue,
-                style: Theme.of(context)
-                    .textTheme
-                    .titleSmall
-                    ?.copyWith(
-                        color: Theme.of(context).colorScheme.onSurfaceVariant)
-                    .apply(
-                        fontSizeFactor: settingsProvider.uiScale ? 1.25 : 1.0),
-              ),
+            Text(
+              widget.show.venue,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Theme.of(context).colorScheme.primary,
+                    fontSize: 12 * (settingsProvider.uiScale ? 1.25 : 1.0),
+                  ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
           ],
         ),
         actions: [
-          if (widget.show.sources.isNotEmpty)
-            Padding(
-              padding: const EdgeInsets.only(right: 16.0),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  RatingControl(
-                    rating: settingsProvider
-                        .getRating(widget.show.sources.first.id),
-                    size: 16 * (settingsProvider.uiScale ? 1.25 : 1.0),
-                    onTap: () async {
-                      final sourceId = widget.show.sources.first.id;
-                      final currentRating =
-                          settingsProvider.getRating(sourceId);
-                      await showDialog(
-                        context: context,
-                        builder: (context) => RatingDialog(
-                          initialRating: currentRating,
-                          sourceId: sourceId,
-                          sourceUrl: widget.show.sources.first.tracks.isNotEmpty
-                              ? widget.show.sources.first.tracks.first.url
-                              : null,
-                          isPlayed: settingsProvider.isPlayed(sourceId),
-                          onRatingChanged: (newRating) {
-                            settingsProvider.setRating(sourceId, newRating);
-                          },
-                          onPlayedChanged: (bool isPlayed) {
-                            if (isPlayed !=
-                                settingsProvider.isPlayed(sourceId)) {
-                              settingsProvider.togglePlayed(sourceId);
-                            }
-                          },
-                        ),
-                      );
-                    },
-                  ),
-                  const SizedBox(height: 2),
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      if (widget.show.sources.first.src != null) ...[
-                        SrcBadge(src: widget.show.sources.first.src!),
-                        const SizedBox(width: 4),
-                      ],
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 6, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: Theme.of(context)
-                              .colorScheme
-                              .secondaryContainer
-                              .withOpacity(0.5),
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: Text(
-                          widget.show.sources.first.id,
-                          style:
-                              Theme.of(context).textTheme.labelSmall?.copyWith(
-                                    color: Theme.of(context)
-                                        .colorScheme
-                                        .onSecondaryContainer,
-                                    fontSize: 10 *
-                                        (settingsProvider.uiScale ? 1.25 : 1.0),
-                                  ),
-                        ),
-                      ),
+          Padding(
+            padding: const EdgeInsets.only(right: 16.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Consumer<SettingsProvider>(
+                  builder: (context, settings, _) {
+                    final String ratingKey = widget.source.id;
+                    final isPlayed = settings.isPlayed(ratingKey);
+
+                    return RatingControl(
+                      key: ValueKey(
+                          '${ratingKey}_${settings.getRating(ratingKey)}_$isPlayed'),
+                      rating: settings.getRating(ratingKey),
+                      size: 16 * (settings.uiScale ? 1.25 : 1.0),
+                      isPlayed: isPlayed,
+                      onTap: () async {
+                        final currentRating = settings.getRating(ratingKey);
+                        await showDialog(
+                          context: context,
+                          builder: (context) => RatingDialog(
+                            initialRating: currentRating,
+                            sourceId: widget.source.id,
+                            sourceUrl: widget.source.tracks.isNotEmpty
+                                ? widget.source.tracks.first.url
+                                : null,
+                            isPlayed: settings.isPlayed(ratingKey),
+                            onRatingChanged: (newRating) {
+                              settings.setRating(ratingKey, newRating);
+                            },
+                            onPlayedChanged: (bool newIsPlayed) {
+                              if (newIsPlayed != settings.isPlayed(ratingKey)) {
+                                settings.togglePlayed(ratingKey);
+                              }
+                            },
+                          ),
+                        );
+                      },
+                    );
+                  },
+                ),
+                const SizedBox(height: 2),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (widget.source.src != null) ...[
+                      SrcBadge(src: widget.source.src!),
+                      const SizedBox(width: 4),
                     ],
-                  ),
-                ],
-              ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context)
+                            .colorScheme
+                            .secondaryContainer
+                            .withOpacity(0.5),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Text(
+                        widget.source.id,
+                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .onSecondaryContainer,
+                              fontSize:
+                                  10 * (settingsProvider.uiScale ? 1.25 : 1.0),
+                            ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ),
+          ),
           IconButton(
             icon: const Icon(Icons.settings_rounded),
             iconSize: 24 * (settingsProvider.uiScale ? 1.25 : 1.0),
@@ -224,7 +250,6 @@ class _TrackListScreenState extends State<TrackListScreen> {
   }
 
   Widget _buildBody() {
-    // Determine bottom padding based on whether the mini player is visible.
     final audioProvider = context.watch<AudioProvider>();
     final isDifferentShowPlaying = audioProvider.currentShow != null &&
         audioProvider.currentShow!.name != widget.show.name;
@@ -234,14 +259,7 @@ class _TrackListScreenState extends State<TrackListScreen> {
       return const Center(child: Text('No tracks available for this show.'));
     }
 
-    // Since this screen is only ever pushed with a single-source "virtual" show,
-    // we can directly build the track list.
-    return _buildTrackList(context, widget.show.sources.first, bottomPadding);
-  }
-
-  Widget _buildTrackList(
-      BuildContext context, Source source, double bottomPadding) {
-    // Group tracks by set name
+    final source = widget.source;
     final Map<String, List<Track>> tracksBySet = {};
     for (var track in source.tracks) {
       if (!tracksBySet.containsKey(track.setName)) {
@@ -250,14 +268,21 @@ class _TrackListScreenState extends State<TrackListScreen> {
       tracksBySet[track.setName]!.add(track);
     }
 
-    // Flatten the list with headers
     final List<dynamic> listItems = [];
+    final Map<int, int> listItemToTrackIndex = {};
+    int currentTrackIndex = 0;
+
     tracksBySet.forEach((setName, tracks) {
-      listItems.add(setName); // Add header
-      listItems.addAll(tracks); // Add tracks
+      listItems.add(setName);
+      for (var track in tracks) {
+        listItemToTrackIndex[listItems.length] = currentTrackIndex++;
+        listItems.add(track);
+      }
     });
 
-    return ListView.builder(
+    return ScrollablePositionedList.builder(
+      itemScrollController: _itemScrollController,
+      itemPositionsListener: _itemPositionsListener,
       padding: EdgeInsets.fromLTRB(12, 8, 12, bottomPadding),
       itemCount: listItems.length,
       itemBuilder: (context, index) {
@@ -265,10 +290,8 @@ class _TrackListScreenState extends State<TrackListScreen> {
         if (item is String) {
           return _buildSetHeader(context, item);
         } else if (item is Track) {
-          // Find the original index of this track in the source.tracks list
-          // This is needed for playback to work correctly with the full list
-          final originalIndex = source.tracks.indexOf(item);
-          return _buildTrackItem(context, item, source, originalIndex);
+          final trackIndex = listItemToTrackIndex[index] ?? 0;
+          return _buildTrackItem(context, item, source, trackIndex);
         }
         return const SizedBox.shrink();
       },
@@ -295,83 +318,108 @@ class _TrackListScreenState extends State<TrackListScreen> {
 
   Widget _buildTrackItem(
       BuildContext context, Track track, Source source, int index) {
+    final audioProvider = context.watch<AudioProvider>();
+    final settingsProvider = context.watch<SettingsProvider>();
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
-    final settingsProvider = context.watch<SettingsProvider>();
 
-    final double scaleFactor = settingsProvider.uiScale ? 1.25 : 1.0;
+    return StreamBuilder<int?>(
+      stream: audioProvider.currentIndexStream,
+      initialData: audioProvider.audioPlayer.currentIndex,
+      builder: (context, snapshot) {
+        final currentIndex = snapshot.data;
+        final isCurrentTrack =
+            audioProvider.currentShow?.name == widget.show.name &&
+                currentIndex == index;
 
-    // Safely create a non-nullable base style with a fallback font size.
-    final baseTitleStyle =
-        textTheme.bodyLarge ?? const TextStyle(fontSize: 16.0);
-    final titleStyle = baseTitleStyle
-        .copyWith(
-            color: colorScheme.onSurface,
-            fontWeight: FontWeight.w500,
-            letterSpacing: 0.1)
-        .apply(fontSizeFactor: scaleFactor);
+        final double scaleFactor = settingsProvider.uiScale ? 1.25 : 1.0;
 
-    final baseDurationStyle =
-        textTheme.labelMedium ?? const TextStyle(fontSize: 12.0);
-    final durationStyle = baseDurationStyle.copyWith(
-      color: colorScheme.onSurfaceVariant,
-      fontWeight: FontWeight.w600,
-      letterSpacing: 0.5,
-      fontFeatures: [const FontFeature.tabularFigures()],
-    ).apply(fontSizeFactor: scaleFactor);
+        final baseTitleStyle =
+            textTheme.bodyLarge ?? const TextStyle(fontSize: 16.0);
+        final titleStyle = baseTitleStyle
+            .copyWith(
+                color: isCurrentTrack
+                    ? colorScheme.primary
+                    : colorScheme.onSurface,
+                fontWeight: isCurrentTrack ? FontWeight.bold : FontWeight.w500,
+                letterSpacing: 0.1)
+            .apply(fontSizeFactor: scaleFactor);
 
-    final titleText = settingsProvider.showTrackNumbers
-        ? '${track.trackNumber}. ${track.title}'
-        : track.title;
+        final baseDurationStyle =
+            textTheme.labelMedium ?? const TextStyle(fontSize: 12.0);
+        final durationStyle = baseDurationStyle.copyWith(
+          color: isCurrentTrack
+              ? colorScheme.primary.withOpacity(0.8)
+              : colorScheme.onSurfaceVariant,
+          fontWeight: FontWeight.w600,
+          letterSpacing: 0.5,
+          fontFeatures: [const FontFeature.tabularFigures()],
+        ).apply(fontSizeFactor: scaleFactor);
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(16),
-          onTap: () => _onTrackTapped(source, index),
-          child: Padding(
-            padding:
-                EdgeInsets.symmetric(horizontal: 16, vertical: 8 * scaleFactor),
-            child: Row(
-              children: [
-                Expanded(
-                  child: SizedBox(
-                    height: titleStyle.fontSize! * 1.5,
-                    child: ConditionalMarquee(
-                      text: titleText,
-                      style: titleStyle,
-                      textAlign: settingsProvider.hideTrackDuration
-                          ? TextAlign.center
-                          : TextAlign.left,
+        final titleText = settingsProvider.showTrackNumbers
+            ? '${track.trackNumber}. ${track.title}'
+            : track.title;
+
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+          child: Material(
+            color: isCurrentTrack
+                ? colorScheme.primaryContainer.withOpacity(0.3)
+                : Colors.transparent,
+            borderRadius: BorderRadius.circular(12),
+            child: InkWell(
+              borderRadius: BorderRadius.circular(12),
+              onTap: () => _onTrackTapped(source, index),
+              child: Padding(
+                padding: EdgeInsets.symmetric(
+                    horizontal: 16, vertical: 8 * scaleFactor),
+                child: Row(
+                  children: [
+                    if (isCurrentTrack) ...[
+                      Icon(Icons.play_arrow_rounded,
+                          color: colorScheme.primary, size: 20 * scaleFactor),
+                      const SizedBox(width: 8),
+                    ],
+                    Expanded(
+                      child: SizedBox(
+                        height: titleStyle.fontSize! * 1.5,
+                        child: ConditionalMarquee(
+                          text: titleText,
+                          style: titleStyle,
+                          textAlign: settingsProvider.hideTrackDuration
+                              ? TextAlign.center
+                              : TextAlign.left,
+                        ),
+                      ),
                     ),
-                  ),
+                    if (!settingsProvider.hideTrackDuration) ...[
+                      const SizedBox(width: 8),
+                      SizedBox(
+                        width: 52 * scaleFactor,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: isCurrentTrack
+                                ? colorScheme.primaryContainer.withOpacity(0.5)
+                                : colorScheme.surfaceContainerHighest,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            formatDuration(Duration(seconds: track.duration)),
+                            style: durationStyle,
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ],
                 ),
-                if (!settingsProvider.hideTrackDuration) ...[
-                  const SizedBox(width: 8),
-                  SizedBox(
-                    width: 52 * scaleFactor,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: colorScheme.surfaceContainerHighest,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Text(
-                        formatDuration(Duration(seconds: track.duration)),
-                        style: durationStyle,
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
-                  ),
-                ],
-              ],
+              ),
             ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 }

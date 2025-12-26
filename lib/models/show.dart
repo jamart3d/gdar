@@ -20,11 +20,18 @@ class Show {
 
   String get formattedDate {
     try {
-      // Use the 'date' field from the model for parsing
       final dateTime = DateTime.parse(date);
       return DateFormat.yMMMMd().format(dateTime);
     } catch (e) {
-      // Fallback to the original date string if parsing fails
+      return date;
+    }
+  }
+
+  String get formattedDateYearFirst {
+    try {
+      final dateTime = DateTime.parse(date);
+      return DateFormat('yyyy, MMMM d').format(dateTime);
+    } catch (e) {
       return date;
     }
   }

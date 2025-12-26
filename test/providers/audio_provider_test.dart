@@ -42,6 +42,7 @@ void main() {
     // Stub SettingsProvider methods FIRST
     when(mockSettingsProvider.randomOnlyUnplayed).thenReturn(false);
     when(mockSettingsProvider.randomOnlyHighRated).thenReturn(false);
+    when(mockSettingsProvider.randomExcludePlayed).thenReturn(false);
     when(mockSettingsProvider.playRandomOnCompletion).thenReturn(false);
     when(mockSettingsProvider.markAsPlayed(any)).thenAnswer((_) async {});
     when(mockSettingsProvider.showGlobalAlbumArt).thenReturn(true);
@@ -274,7 +275,7 @@ void main() {
         processingStateController.add(ProcessingState.completed);
         await Future.delayed(const Duration(milliseconds: 10));
 
-        verify(mockSettingsProvider.markAsPlayed(show.name)).called(1);
+        verify(mockSettingsProvider.markAsPlayed('source0')).called(1);
       });
     });
 

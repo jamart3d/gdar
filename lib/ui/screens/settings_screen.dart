@@ -768,6 +768,18 @@ class SettingsScreen extends StatelessWidget {
                         },
                         secondary: const Icon(Icons.star_rounded),
                       ),
+                      SwitchListTile(
+                        title: const Text('Exclude Played from Random'),
+                        subtitle: const Text(
+                            'Removes played shows from the selection pool'),
+                        value: settingsProvider.randomExcludePlayed,
+                        onChanged: (value) {
+                          context
+                              .read<SettingsProvider>()
+                              .toggleRandomExcludePlayed();
+                        },
+                        secondary: const Icon(Icons.history_toggle_off_rounded),
+                      ),
                       Card(
                         margin: const EdgeInsets.fromLTRB(16, 8, 16, 16),
                         elevation: 0,
@@ -803,8 +815,9 @@ class SettingsScreen extends StatelessWidget {
                                           .randomOnlyUnplayed &&
                                       !settingsProvider.randomOnlyHighRated),
                               _buildWeightRow(context, 'Played', '5x',
-                                  isActive:
-                                      !settingsProvider.randomOnlyUnplayed),
+                                  isActive: !settingsProvider
+                                          .randomOnlyUnplayed &&
+                                      !settingsProvider.randomExcludePlayed),
                             ],
                           ),
                         ),

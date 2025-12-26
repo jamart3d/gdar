@@ -3,7 +3,7 @@ import 'package:gdar/models/show.dart';
 import 'package:gdar/models/source.dart';
 import 'package:gdar/providers/audio_provider.dart';
 import 'package:gdar/providers/settings_provider.dart';
-import 'package:gdar/ui/widgets/animated_gradient_border.dart';
+
 import 'package:gdar/ui/widgets/source_list_item.dart';
 import 'package:gdar/ui/widgets/swipe_action_background.dart';
 import 'package:provider/provider.dart';
@@ -48,13 +48,6 @@ class _ShowListItemDetailsState extends State<ShowListItemDetails> {
     final settingsProvider = context.watch<SettingsProvider>();
     final double scaleFactor = settingsProvider.uiScale ? 1.25 : 1.0;
 
-    final colorScheme = Theme.of(context).colorScheme;
-
-    // Check for True Black mode
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    final isTrueBlackMode = isDarkMode &&
-        (!settingsProvider.useDynamicColor || settingsProvider.halfGlowDynamic);
-
     return ListView.builder(
       physics: const NeverScrollableScrollPhysics(),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -62,10 +55,6 @@ class _ShowListItemDetailsState extends State<ShowListItemDetails> {
       itemBuilder: (context, index) {
         final source = widget.show.sources[index];
         final isPlaying = widget.playingSourceId == source.id;
-
-        // Shadow Visibility
-        bool showShadow = !(isDarkMode && !settingsProvider.useDynamicColor);
-        double glowOpacity = settingsProvider.halfGlowDynamic ? 0.5 : 1.0;
 
         if (isPlaying && settingsProvider.highlightPlayingWithRgb) {
           return Padding(
@@ -113,34 +102,14 @@ class _ShowListItemDetailsState extends State<ShowListItemDetails> {
                 );
                 return false; // Don't actually dismiss from tree, provider update will refresh list
               },
-              child: AnimatedGradientBorder(
-                borderRadius: 20,
-                borderWidth: 4,
-                colors: const [
-                  Colors.red,
-                  Colors.yellow,
-                  Colors.green,
-                  Colors.cyan,
-                  Colors.blue,
-                  Colors.purple,
-                  Colors.red,
-                ],
-                showGlow: true,
-                showShadow: showShadow,
-                glowOpacity: glowOpacity,
-                animationSpeed: settingsProvider.rgbAnimationSpeed,
-                backgroundColor: isTrueBlackMode
-                    ? Colors.black
-                    : colorScheme.tertiaryContainer,
-                child: SourceListItem(
-                  source: source,
-                  isSourcePlaying: isPlaying,
-                  scaleFactor: scaleFactor,
-                  borderRadius: 16,
-                  showBorder: false,
-                  onTap: () => widget.onSourceTapped(source),
-                  onLongPress: () => widget.onSourceLongPress(source),
-                ),
+              child: SourceListItem(
+                source: source,
+                isSourcePlaying: isPlaying,
+                scaleFactor: scaleFactor,
+                borderRadius: 20, // Match the Dismissible background radius
+                showBorder: false,
+                onTap: () => widget.onSourceTapped(source),
+                onLongPress: () => widget.onSourceLongPress(source),
               ),
             ),
           );

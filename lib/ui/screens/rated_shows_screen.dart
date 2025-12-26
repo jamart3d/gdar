@@ -54,20 +54,13 @@ class _RatedShowsScreenState extends State<RatedShowsScreen>
 
       // Played (-2) - Match deduplication logic
       if (rating == -2) {
-        final showIsPlayed = settingsProvider.isPlayed(show.name);
-
         int explicitCount = 0;
         for (var source in show.sources) {
           if (settingsProvider.isPlayed(source.id)) {
             explicitCount++;
           }
         }
-
-        if (explicitCount > 0) {
-          count += explicitCount;
-        } else if (showIsPlayed) {
-          count += 1;
-        }
+        count += explicitCount;
       }
       // Other Ratings
       else {
@@ -182,31 +175,12 @@ class _RatedShowListState extends State<_RatedShowList> {
 
       // Special handling for "Played" tab to avoid duplicates
       if (widget.rating == -2) {
-        final showIsPlayed = settingsProvider.isPlayed(show.name);
-
         // 1. Find sources explicitly marked as played
         final explicitlyPlayedSources =
             show.sources.where((s) => settingsProvider.isPlayed(s.id)).toList();
 
-        if (explicitlyPlayedSources.isNotEmpty) {
-          // If we have specific sources played, list them
-          for (var source in explicitlyPlayedSources) {
-            flatSources.add((show: show, source: source));
-          }
-        } else if (showIsPlayed) {
-          // 2. If show is played but no specific source, pick ONE representative
-          // Pick highest rated source, then fallback to first
-          var bestSource = show.sources.first;
-          int highestRating = -20; // Lower than any possible rating
-
-          for (var source in show.sources) {
-            final r = settingsProvider.getRating(source.id);
-            if (r > highestRating) {
-              highestRating = r;
-              bestSource = source;
-            }
-          }
-          flatSources.add((show: show, source: bestSource));
+        for (var source in explicitlyPlayedSources) {
+          flatSources.add((show: show, source: source));
         }
         continue; // Done with this show for Played tab
       }
@@ -313,7 +287,9 @@ class _RatedShowListState extends State<_RatedShowList> {
             final singleSourceShow = show.copyWith(sources: [source]);
             Navigator.of(context).push(
               MaterialPageRoute(
-                  builder: (_) => TrackListScreen(show: singleSourceShow)),
+                  builder: (_) => TrackListScreen(
+                      show: singleSourceShow,
+                      source: singleSourceShow.sources.first)),
             );
           }
         },
@@ -325,59 +301,11 @@ class _RatedShowListState extends State<_RatedShowList> {
           padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
           child: Row(
             children: [
-              // Badge
-              if (source.src != null) ...[
-                SrcBadge(src: source.src!, isPlaying: isPlaying),
-                const SizedBox(width: 12),
-              ],
-              // Content
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Title: SHNID
-                    Text(
-                      source.id,
-                      style: Theme.of(context)
-                          .textTheme
-                          .titleSmall
-                          ?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            color: isPlaying
-                                ? colorScheme.onTertiaryContainer
-                                : colorScheme.onSurface,
-                          )
-                          .apply(fontSizeFactor: scaleFactor),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 2),
-                    // Subtitle: Date • Venue
-                    Text(
-                      '${show.formattedDate} • ${show.venue}',
-                      style: Theme.of(context)
-                          .textTheme
-                          .bodySmall
-                          ?.copyWith(
-                            color: isPlaying
-                                ? colorScheme.onTertiaryContainer
-                                    .withOpacity(0.8)
-                                : colorScheme.onSurfaceVariant,
-                          )
-                          .apply(fontSizeFactor: scaleFactor),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 8),
               // Rating
               RatingControl(
                 rating: settingsProvider.getRating(source.id),
                 size: 18 * scaleFactor,
-                isPlayed: settingsProvider.isPlayed(source.id) ||
-                    settingsProvider.isPlayed(show.name),
+                isPlayed: settingsProvider.isPlayed(source.id),
                 onTap: () async {
                   final currentRating = settingsProvider.getRating(source.id);
                   await showDialog(
@@ -388,8 +316,7 @@ class _RatedShowListState extends State<_RatedShowList> {
                       sourceUrl: source.tracks.isNotEmpty
                           ? source.tracks.first.url
                           : null,
-                      isPlayed: settingsProvider.isPlayed(source.id) ||
-                          settingsProvider.isPlayed(show.name),
+                      isPlayed: settingsProvider.isPlayed(source.id),
                       onRatingChanged: (newRating) {
                         settingsProvider.setRating(source.id, newRating);
                       },
@@ -402,6 +329,30 @@ class _RatedShowListState extends State<_RatedShowList> {
                   );
                 },
               ),
+              const SizedBox(width: 12),
+              // Content: Just the Date
+              Expanded(
+                child: Text(
+                  show.formattedDateYearFirst,
+                  style: Theme.of(context)
+                      .textTheme
+                      .titleMedium
+                      ?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: isPlaying
+                            ? colorScheme.onTertiaryContainer
+                            : colorScheme.onSurface,
+                      )
+                      .apply(fontSizeFactor: scaleFactor),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              // Badge
+              if (source.src != null) ...[
+                const SizedBox(width: 8),
+                SrcBadge(src: source.src!, isPlaying: isPlaying),
+              ],
             ],
           ),
         ),

@@ -18,6 +18,7 @@ class AudioProvider with ChangeNotifier {
   late final AudioPlayer _audioPlayer;
   StreamSubscription<ProcessingState>? _processingStateSubscription;
   StreamSubscription<PlaybackEvent>? _playbackEventSubscription;
+  StreamSubscription<int?>? _indexSubscription;
   final _errorController = StreamController<String>.broadcast();
 
   ShowListProvider? _showListProvider;
@@ -31,6 +32,15 @@ class AudioProvider with ChangeNotifier {
   Source? _currentSource;
   Source? get currentSource => _currentSource;
 
+  Track? get currentTrack {
+    if (_currentSource == null) return null;
+    final index = _audioPlayer.currentIndex;
+    if (index == null || index < 0 || index >= _currentSource!.tracks.length) {
+      return null;
+    }
+    return _currentSource!.tracks[index];
+  }
+
   Stream<PlayerState> get playerStateStream => _audioPlayer.playerStateStream;
   Stream<int?> get currentIndexStream => _audioPlayer.currentIndexStream;
   Stream<Duration?> get durationStream => _audioPlayer.durationStream;
@@ -43,6 +53,7 @@ class AudioProvider with ChangeNotifier {
     _audioPlayer = audioPlayer ?? AudioPlayer();
     _listenForCompletion();
     _listenForErrors();
+    _listenForIndexChanges();
   }
 
   void update(
@@ -59,14 +70,11 @@ class AudioProvider with ChangeNotifier {
       if (state == ProcessingState.completed) {
         // Mark as played
         if (_currentShow != null) {
-          final show = _currentShow!;
           final source = _currentSource;
-          // Determine key: if multiple sources, rate source ID, else show name
-          final ratingKey = (show.sources.length > 1 && source != null)
-              ? source.id
-              : show.name;
-
-          await _settingsProvider?.markAsPlayed(ratingKey);
+          // Always use the source ID.
+          if (source != null) {
+            await _settingsProvider?.markAsPlayed(source.id);
+          }
         }
 
         if (_settingsProvider?.playRandomOnCompletion ?? false) {
@@ -85,10 +93,17 @@ class AudioProvider with ChangeNotifier {
     });
   }
 
+  void _listenForIndexChanges() {
+    _indexSubscription = _audioPlayer.currentIndexStream.listen((index) {
+      notifyListeners();
+    });
+  }
+
   @override
   void dispose() {
     _processingStateSubscription?.cancel();
     _playbackEventSubscription?.cancel();
+    _indexSubscription?.cancel();
     _errorController.close();
     _audioPlayer.dispose();
     super.dispose();
@@ -96,7 +111,7 @@ class AudioProvider with ChangeNotifier {
 
   Future<Show?> playRandomShow({bool filterBySearch = true}) async {
     final settings = _settingsProvider;
-    if (settings == null) return null; // Should not happen
+    if (settings == null) return null;
 
     List<Show>? sourceList;
     if (filterBySearch) {
@@ -106,59 +121,80 @@ class AudioProvider with ChangeNotifier {
     }
 
     if (sourceList == null || sourceList.isEmpty) {
-      logger.w('Cannot play random show, no shows available.');
+      _setError('No shows available for random playback.');
       return null;
     }
 
-    // Filter and Weighting Logic
     final List<Show> candidates = [];
     final Map<Show, int> weights = {};
+    final Map<Show, Source> selectedSourceMap = {};
+
+    // For better feedback
+    int totalCount = sourceList.length;
+    int blockedCount = 0;
+    int unplayedFilterCount = 0;
+    int highRatedFilterCount = 0;
 
     for (final show in sourceList) {
-      final rating = settings.getRating(show.name);
-      final isPlayed = settings.isPlayed(show.name);
+      // Find valid sources for this show
+      final validSources = show.sources.where((s) {
+        return settings.getRating(s.id) != -1;
+      }).toList();
 
-      // 1. Exclude Red Star Shows (-1)
-      // 1. Exclude Red Star Shows (-1)
-      // Removed check as per user request (source-only blocking)
-
-      // 2. Check for at least one unblocked source
-      bool hasUnblockedSource = false;
-      for (final source in show.sources) {
-        if (settings.getRating(source.id) != -1) {
-          hasUnblockedSource = true;
-          break;
-        }
+      if (validSources.isEmpty) {
+        blockedCount++;
+        continue;
       }
-      if (!hasUnblockedSource) continue;
 
-      // 3. Filter by Settings
-      if (settings.randomOnlyUnplayed && isPlayed) continue;
-      if (settings.randomOnlyHighRated && rating < 2) continue;
+      // If Highest SHNID is on, it's already filtered by ShowListProvider.
+      // We pick the first valid source as the representative for weighting.
+      final source = validSources.first;
+      final rating = settings.getRating(source.id);
+      final isPlayed = settings.isPlayed(source.id);
 
-      // 4. Calculate Weight
-      int weight = 10; // Default weight (1 Star or Unrated)
+      // Filter by Settings
+      if (settings.randomOnlyUnplayed && isPlayed) {
+        unplayedFilterCount++;
+        continue;
+      }
+      if (settings.randomOnlyHighRated && rating < 2) {
+        highRatedFilterCount++;
+        continue;
+      }
 
-      if (rating == 3) {
+      // Calculate Weight based on Source ID
+      int weight = 10;
+      if (settings.randomExcludePlayed && isPlayed) {
+        weight = 0;
+      } else if (rating == 3) {
         weight = 30;
       } else if (rating == 2) {
         weight = 20;
       } else if (rating == 1) {
         weight = 10;
       } else if (rating == 0) {
-        if (!isPlayed) {
-          weight = 50; // Unplayed priority
-        } else {
-          weight = 5; // Played but unrated (low priority)
-        }
+        weight = isPlayed ? 5 : 50;
       }
 
-      candidates.add(show);
-      weights[show] = weight;
+      if (weight > 0) {
+        candidates.add(show);
+        weights[show] = weight;
+        selectedSourceMap[show] = source;
+      }
     }
 
     if (candidates.isEmpty) {
-      logger.w('No shows match the current random playback criteria.');
+      String msg = 'No shows match criteria.';
+      if (highRatedFilterCount > 0 &&
+          highRatedFilterCount + blockedCount == totalCount) {
+        msg = 'No shows match "High Rated" filter.';
+      } else if (unplayedFilterCount > 0 &&
+          unplayedFilterCount + blockedCount == totalCount) {
+        msg = 'No unplayed shows available.';
+      } else if (blockedCount == totalCount) {
+        msg = 'All available shows are blocked.';
+      }
+      _setError(msg);
       return null;
     }
 
@@ -176,28 +212,13 @@ class AudioProvider with ChangeNotifier {
       }
     }
 
-    selectedShow ??= candidates.first; // Should not happen if logic is correct
-
-    // Filter valid sources (neither blocked themselves, nor in a blocked show - though show is already checked)
-    final validSources = selectedShow.sources.where((s) {
-      return settings.getRating(s.id) != -1;
-    }).toList();
-
-    if (validSources.isEmpty) {
-      // This technically shouldn't happen because we checked for at least one unblocked source above
-      logger.w('Selected show has no unblocked sources. Skipping.');
-      return null;
-    }
-
-    final randomSource = validSources[Random().nextInt(validSources.length)];
+    selectedShow ??= candidates.first;
+    final sourceToPlay = selectedSourceMap[selectedShow]!;
 
     logger.i(
-        'Playing random show: ${selectedShow.name} (Rating: ${settings.getRating(selectedShow.name)}, Played: ${settings.isPlayed(selectedShow.name)}, Weight: ${weights[selectedShow]})');
+        'Playing random source: ${sourceToPlay.id} (Rating: ${settings.getRating(sourceToPlay.id)}, Played: ${settings.isPlayed(sourceToPlay.id)}, Weight: ${weights[selectedShow]})');
 
-    // Play the randomly selected source.
-    await playSource(selectedShow, randomSource);
-
-    // Return the parent show so the UI can scroll to it.
+    await playSource(selectedShow, sourceToPlay);
     return selectedShow;
   }
 
@@ -216,8 +237,15 @@ class AudioProvider with ChangeNotifier {
   String? _error;
   String? get error => _error;
 
+  void _setError(String message) {
+    _error = message;
+    _errorController.add(message);
+    notifyListeners();
+  }
+
   void clearError() {
     _error = null;
+    notifyListeners();
   }
 
   Future<void> _loadAndPlayAudio(Source source, {int initialIndex = 0}) async {

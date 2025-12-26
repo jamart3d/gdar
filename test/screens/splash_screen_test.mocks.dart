@@ -481,6 +481,13 @@ class MockSettingsProvider extends _i1.Mock implements _i7.SettingsProvider {
       ) as bool);
 
   @override
+  bool get randomExcludePlayed => (super.noSuchMethod(
+        Invocation.getter(#randomExcludePlayed),
+        returnValue: false,
+        returnValueForMissingStub: false,
+      ) as bool);
+
+  @override
   bool get showGlobalAlbumArt => (super.noSuchMethod(
         Invocation.getter(#showGlobalAlbumArt),
         returnValue: false,
@@ -779,6 +786,15 @@ class MockSettingsProvider extends _i1.Mock implements _i7.SettingsProvider {
       );
 
   @override
+  void toggleRandomExcludePlayed() => super.noSuchMethod(
+        Invocation.method(
+          #toggleRandomExcludePlayed,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
   void toggleFilterHighestShnid() => super.noSuchMethod(
         Invocation.method(
           #toggleFilterHighestShnid,
@@ -810,6 +826,16 @@ class MockSettingsProvider extends _i1.Mock implements _i7.SettingsProvider {
         Invocation.method(
           #setSoloSourceCategoryFilter,
           [category],
+        ),
+        returnValue: _i6.Future<void>.value(),
+        returnValueForMissingStub: _i6.Future<void>.value(),
+      ) as _i6.Future<void>);
+
+  @override
+  _i6.Future<void> enableAllSourceCategories() => (super.noSuchMethod(
+        Invocation.method(
+          #enableAllSourceCategories,
+          [],
         ),
         returnValue: _i6.Future<void>.value(),
         returnValueForMissingStub: _i6.Future<void>.value(),
