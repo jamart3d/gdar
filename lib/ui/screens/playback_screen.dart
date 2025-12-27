@@ -185,8 +185,9 @@ class _PlaybackScreenState extends State<PlaybackScreen>
     final double bottomPadding = MediaQuery.of(context).padding.bottom;
     final double minPanelHeight = (92.0 * scaleFactor) + bottomPadding;
 
-    // maxHeight constraint to ~40% of screen
-    final double maxPanelHeight = MediaQuery.of(context).size.height * 0.40;
+    // maxHeight constraint to ~40% of screen (0.45 if scaled)
+    final double maxPanelHeight = MediaQuery.of(context).size.height *
+        (settingsProvider.uiScale ? 0.45 : 0.40);
 
     return Scaffold(
       backgroundColor: backgroundColor,
@@ -218,6 +219,7 @@ class _PlaybackScreenState extends State<PlaybackScreen>
           currentSource,
           minPanelHeight,
           bottomPadding,
+          _panelPositionNotifier,
         ),
         body: ValueListenableBuilder<double>(
           valueListenable: _panelPositionNotifier,
@@ -539,7 +541,8 @@ class _PlaybackScreenState extends State<PlaybackScreen>
       Show currentShow,
       Source currentSource,
       double minHeight,
-      double bottomPadding) {
+      double bottomPadding,
+      ValueNotifier<double> panelPositionNotifier) {
     final textTheme = Theme.of(context).textTheme;
     final colorScheme = Theme.of(context).colorScheme;
     final settingsProvider = context.watch<SettingsProvider>();
@@ -633,128 +636,150 @@ class _PlaybackScreenState extends State<PlaybackScreen>
             ),
           ),
           Expanded(
-            child: SingleChildScrollView(
-              physics: const ClampingScrollPhysics(),
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 32),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      currentSource.location ?? 'Location N/A',
-                      style: textTheme.titleSmall
-                          ?.apply(fontSizeFactor: scaleFactor)
-                          .copyWith(
-                            color: colorScheme.secondary,
-                            fontWeight: FontWeight.w500,
+            child: ValueListenableBuilder<double>(
+              valueListenable: panelPositionNotifier,
+              builder: (context, value, child) {
+                // Closed (0.0): +100 (Hidden down)
+                // Open (1.0): -24 (Up to reduce gap)
+                final double yOffset = (100.0 - 124.0 * value) * scaleFactor;
+                return Transform.translate(
+                  offset: Offset(0, yOffset),
+                  child: SingleChildScrollView(
+                    physics: const ClampingScrollPhysics(),
+                    padding: EdgeInsets.fromLTRB(16, 0, 16, 32 * scaleFactor),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            currentSource.location ?? 'Location N/A',
+                            style: textTheme.titleSmall
+                                ?.apply(fontSizeFactor: scaleFactor)
+                                .copyWith(
+                                  color: colorScheme.secondary,
+                                  fontWeight: FontWeight.w500,
+                                ),
                           ),
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Row(
-                    children: [
-                      Text(
-                        currentShow.formattedDate,
-                        style: textTheme.titleMedium
-                            ?.apply(fontSizeFactor: scaleFactor)
-                            .copyWith(
-                              color: colorScheme.onSurfaceVariant,
-                            ),
-                      ),
-                      const SizedBox(width: 8),
-                      IconButton(
-                        icon: Icon(Icons.copy_rounded,
-                            size: 20 * scaleFactor,
-                            color: colorScheme.onSurfaceVariant),
-                        onPressed: () {
-                          final track = currentSource.tracks[
-                              audioProvider.audioPlayer.currentIndex ?? 0];
-                          final locationStr = currentSource.location != null
-                              ? " - ${currentSource.location}"
-                              : "";
-                          final info =
-                              "${currentShow.venue}$locationStr - ${currentShow.formattedDate} - ${currentSource.id}\n${track.title}\n${track.url.replaceAll('/download/', '/details/').split('/').sublist(0, 5).join('/')}";
-                          Clipboard.setData(ClipboardData(text: info));
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('Show details copied to clipboard',
-                                  style: TextStyle(
-                                      color: Theme.of(context)
-                                          .colorScheme
-                                          .onInverseSurface)),
-                              behavior: SnackBarBehavior.floating,
-                              backgroundColor:
-                                  Theme.of(context).colorScheme.inverseSurface,
-                              shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12)),
-                              margin: const EdgeInsets.all(12),
-                              showCloseIcon: true,
-                              closeIconColor: Theme.of(context)
-                                  .colorScheme
-                                  .onInverseSurface,
-                            ),
-                          );
-                        },
-                      ),
-                      const Spacer(),
-                      IntrinsicWidth(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                        ),
+                        const SizedBox(height: 4),
+                        Row(
                           children: [
-                            Align(
-                              alignment: Alignment.centerRight,
-                              child: _buildRatingButton(context, currentShow,
-                                  currentSource, settingsProvider),
+                            Text(
+                              currentShow.formattedDate,
+                              style: textTheme.titleMedium
+                                  ?.apply(fontSizeFactor: scaleFactor)
+                                  .copyWith(
+                                    color: colorScheme.onSurfaceVariant,
+                                  ),
                             ),
-                            const SizedBox(height: 8),
-                            InkWell(
-                              onTap: () {
-                                if (currentSource.tracks.isNotEmpty) {
-                                  launchArchivePage(
-                                      currentSource.tracks.first.url);
-                                }
+                            const SizedBox(width: 8),
+                            IconButton(
+                              icon: Icon(Icons.copy_rounded,
+                                  size: 20 * scaleFactor,
+                                  color: colorScheme.onSurfaceVariant),
+                              onPressed: () {
+                                final track = currentSource.tracks[
+                                    audioProvider.audioPlayer.currentIndex ??
+                                        0];
+                                final locationStr =
+                                    currentSource.location != null
+                                        ? " - ${currentSource.location}"
+                                        : "";
+                                final info =
+                                    "${currentShow.venue}$locationStr - ${currentShow.formattedDate} - ${currentSource.id}\n${track.title}\n${track.url.replaceAll('/download/', '/details/').split('/').sublist(0, 5).join('/')}";
+                                Clipboard.setData(ClipboardData(text: info));
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                        'Show details copied to clipboard',
+                                        style: TextStyle(
+                                            color: Theme.of(context)
+                                                .colorScheme
+                                                .onInverseSurface)),
+                                    behavior: SnackBarBehavior.floating,
+                                    backgroundColor: Theme.of(context)
+                                        .colorScheme
+                                        .inverseSurface,
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(12)),
+                                    margin: const EdgeInsets.all(12),
+                                    showCloseIcon: true,
+                                    closeIconColor: Theme.of(context)
+                                        .colorScheme
+                                        .onInverseSurface,
+                                  ),
+                                );
                               },
-                              borderRadius: BorderRadius.circular(6),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                mainAxisAlignment: MainAxisAlignment.center,
+                            ),
+                            const Spacer(),
+                            IntrinsicWidth(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
                                 children: [
-                                  if (currentSource.src != null) ...[
-                                    SrcBadge(
-                                        src: currentSource.src!,
-                                        isPlaying: true),
-                                    const SizedBox(width: 6),
-                                  ],
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 10, vertical: 6),
-                                    decoration: BoxDecoration(
-                                      color: colorScheme.tertiaryContainer
-                                          .withOpacity(0.7),
-                                      borderRadius: BorderRadius.circular(6),
-                                    ),
-                                    alignment: Alignment.center,
-                                    child: Container(
-                                      decoration: BoxDecoration(
-                                        border: Border(
-                                          bottom: BorderSide(
-                                            color:
-                                                colorScheme.onTertiaryContainer,
-                                            width: 1.5,
+                                  Align(
+                                    alignment: Alignment.centerRight,
+                                    child: _buildRatingButton(
+                                        context,
+                                        currentShow,
+                                        currentSource,
+                                        settingsProvider),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  InkWell(
+                                    onTap: () {
+                                      if (currentSource.tracks.isNotEmpty) {
+                                        launchArchivePage(
+                                            currentSource.tracks.first.url);
+                                      }
+                                    },
+                                    borderRadius: BorderRadius.circular(6),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        if (currentSource.src != null) ...[
+                                          SrcBadge(
+                                              src: currentSource.src!,
+                                              isPlaying: true),
+                                          const SizedBox(width: 6),
+                                        ],
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 10, vertical: 6),
+                                          decoration: BoxDecoration(
+                                            color: colorScheme.tertiaryContainer
+                                                .withOpacity(0.7),
+                                            borderRadius:
+                                                BorderRadius.circular(6),
+                                          ),
+                                          alignment: Alignment.center,
+                                          child: Container(
+                                            decoration: BoxDecoration(
+                                              border: Border(
+                                                bottom: BorderSide(
+                                                  color: colorScheme
+                                                      .onTertiaryContainer,
+                                                  width: 1.5,
+                                                ),
+                                              ),
+                                            ),
+                                            padding: const EdgeInsets.only(
+                                                bottom: 2.0),
+                                            child: Text(
+                                              currentSource.id,
+                                              style: textTheme.bodyMedium
+                                                  ?.copyWith(
+                                                color: colorScheme
+                                                    .onTertiaryContainer,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
                                           ),
                                         ),
-                                      ),
-                                      padding:
-                                          const EdgeInsets.only(bottom: 2.0),
-                                      child: Text(
-                                        currentSource.id,
-                                        style: textTheme.bodyMedium?.copyWith(
-                                          color:
-                                              colorScheme.onTertiaryContainer,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
+                                      ],
                                     ),
                                   ),
                                 ],
@@ -762,18 +787,18 @@ class _PlaybackScreenState extends State<PlaybackScreen>
                             ),
                           ],
                         ),
-                      ),
-                    ],
+                        const PlaybackProgressBar(),
+                        const SizedBox(height: 8),
+                        const PlaybackControls(),
+                        if (settingsProvider.showPlaybackMessages) ...[
+                          const SizedBox(height: 16),
+                          _buildStatusMessages(context, audioProvider),
+                        ],
+                      ],
+                    ),
                   ),
-                  const PlaybackProgressBar(),
-                  const SizedBox(height: 8),
-                  const PlaybackControls(),
-                  if (settingsProvider.showPlaybackMessages) ...[
-                    const SizedBox(height: 16),
-                    _buildStatusMessages(context, audioProvider),
-                  ],
-                ],
-              ),
+                );
+              },
             ),
           ),
         ],
