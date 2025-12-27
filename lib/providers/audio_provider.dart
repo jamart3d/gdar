@@ -109,7 +109,7 @@ class AudioProvider with ChangeNotifier {
     super.dispose();
   }
 
-  Future<Show?> playRandomShow({bool filterBySearch = true}) async {
+  ({Show show, Source source})? pickRandomShow({bool filterBySearch = true}) {
     final settings = _settingsProvider;
     if (settings == null) return null;
 
@@ -215,11 +215,22 @@ class AudioProvider with ChangeNotifier {
     selectedShow ??= candidates.first;
     final sourceToPlay = selectedSourceMap[selectedShow]!;
 
-    logger.i(
-        'Playing random source: ${sourceToPlay.id} (Rating: ${settings.getRating(sourceToPlay.id)}, Played: ${settings.isPlayed(sourceToPlay.id)}, Weight: ${weights[selectedShow]})');
+    return (show: selectedShow, source: sourceToPlay);
+  }
 
-    await playSource(selectedShow, sourceToPlay);
-    return selectedShow;
+  Future<Show?> playRandomShow({bool filterBySearch = true}) async {
+    final selection = pickRandomShow(filterBySearch: filterBySearch);
+    if (selection == null) return null;
+
+    final show = selection.show;
+    final source = selection.source;
+    final settings = _settingsProvider!;
+
+    logger.i(
+        'Playing random source: ${source.id} (Rating: ${settings.getRating(source.id)}, Played: ${settings.isPlayed(source.id)})');
+
+    await playSource(show, source);
+    return show;
   }
 
   Future<void> playSource(Show show, Source source,

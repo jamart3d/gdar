@@ -182,7 +182,8 @@ class _PlaybackScreenState extends State<PlaybackScreen>
     final double scaleFactor = settingsProvider.uiScale ? 1.25 : 1.0;
 
     // minHeight covering the drag handle + Venue/Copy row.
-    final double minPanelHeight = 92.0 * scaleFactor;
+    final double bottomPadding = MediaQuery.of(context).padding.bottom;
+    final double minPanelHeight = (92.0 * scaleFactor) + bottomPadding;
 
     // maxHeight constraint to ~40% of screen
     final double maxPanelHeight = MediaQuery.of(context).size.height * 0.40;
@@ -216,6 +217,7 @@ class _PlaybackScreenState extends State<PlaybackScreen>
           currentShow,
           currentSource,
           minPanelHeight,
+          bottomPadding,
         ),
         body: ValueListenableBuilder<double>(
           valueListenable: _panelPositionNotifier,
@@ -536,7 +538,8 @@ class _PlaybackScreenState extends State<PlaybackScreen>
       AudioProvider audioProvider,
       Show currentShow,
       Source currentSource,
-      double minHeight) {
+      double minHeight,
+      double bottomPadding) {
     final textTheme = Theme.of(context).textTheme;
     final colorScheme = Theme.of(context).colorScheme;
     final settingsProvider = context.watch<SettingsProvider>();
@@ -593,9 +596,12 @@ class _PlaybackScreenState extends State<PlaybackScreen>
                     }
                   },
                   child: Padding(
-                    padding: const EdgeInsets.only(
-                        left: 16.0, right: 16.0, bottom: 30.0),
+                    padding: EdgeInsets.only(
+                        left: 16.0, right: 16.0, bottom: 30.0 + bottomPadding),
                     child: Row(
+                      mainAxisAlignment: settingsProvider.hideTrackDuration
+                          ? MainAxisAlignment.center
+                          : MainAxisAlignment.start,
                       children: [
                         Flexible(
                           child: SizedBox(
@@ -611,10 +617,14 @@ class _PlaybackScreenState extends State<PlaybackScreen>
                                   ),
                               blankSpace: 60.0,
                               pauseAfterRound: const Duration(seconds: 3),
+                              textAlign: settingsProvider.hideTrackDuration
+                                  ? TextAlign.center
+                                  : TextAlign.start,
                             ),
                           ),
                         ),
-                        const SizedBox(width: 8),
+                        if (!settingsProvider.hideTrackDuration)
+                          const SizedBox(width: 8),
                       ],
                     ),
                   ),
@@ -629,21 +639,19 @@ class _PlaybackScreenState extends State<PlaybackScreen>
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  if (currentSource.location != null) ...[
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        currentSource.location!,
-                        style: textTheme.titleSmall
-                            ?.apply(fontSizeFactor: scaleFactor)
-                            .copyWith(
-                              color: colorScheme.secondary,
-                              fontWeight: FontWeight.w500,
-                            ),
-                      ),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      currentSource.location ?? 'Location N/A',
+                      style: textTheme.titleSmall
+                          ?.apply(fontSizeFactor: scaleFactor)
+                          .copyWith(
+                            color: colorScheme.secondary,
+                            fontWeight: FontWeight.w500,
+                          ),
                     ),
-                    const SizedBox(height: 4),
-                  ],
+                  ),
+                  const SizedBox(height: 4),
                   Row(
                     children: [
                       Text(

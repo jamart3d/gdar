@@ -195,7 +195,8 @@ class _ShowListScreenState extends State<ShowListScreen>
   }
 
   /// Scrolls a show into view, centering it in the viewport.
-  Future<void> _reliablyScrollToShow(Show show) async {
+  Future<void> _reliablyScrollToShow(Show show,
+      {Duration duration = _animationDuration}) async {
     final showListProvider = context.read<ShowListProvider>();
     final targetIndex = showListProvider.filteredShows.indexOf(show);
     logger.i('Attempting to scroll to "${show.name}" at index $targetIndex.');
@@ -224,11 +225,12 @@ class _ShowListScreenState extends State<ShowListScreen>
     try {
       await _itemScrollController.scrollTo(
         index: targetIndex,
-        duration: _animationDuration,
+        duration: duration,
         curve: Curves.easeInOutCubicEmphasized,
         alignment: alignment,
       );
-      logger.i('Scroll animation initiated for item at index $targetIndex.');
+      logger.i(
+          'Scroll animation initiated for item at index $targetIndex with duration ${duration.inMilliseconds}ms.');
     } catch (e) {
       logger.e('Error during scroll to show: $e');
     }
@@ -438,6 +440,7 @@ class _ShowListScreenState extends State<ShowListScreen>
 
   Future<void> _handlePlayRandomShow() async {
     final showListProvider = context.read<ShowListProvider>();
+    final audioProvider = context.read<AudioProvider>();
 
     // Check if a show is currently expanded and collapse it first.
     if (showListProvider.expandedShowKey != null) {
@@ -447,20 +450,30 @@ class _ShowListScreenState extends State<ShowListScreen>
 
     setState(() => _isRandomShowLoading = true);
 
-    final show = await context.read<AudioProvider>().playRandomShow();
-    if (show != null) {
-      // If the random show has multiple sources, expand it.
+    // 1. Pick the show logic first (synchronous-like, no async wait for audio)
+    final selection = audioProvider.pickRandomShow();
+
+    if (selection != null) {
+      final show = selection.show;
+      final source = selection.source;
+
+      // 2. Expand UI if needed
       if (show.sources.length > 1) {
         showListProvider.expandShow(show);
         _animationController.forward(from: 0.0);
       }
 
-      // Use addPostFrameCallback to ensure collapse animation has started
+      // 3. Initiate Scroll IMMEDIATELY with a longer, expressive duration
+      // Use addPostFrameCallback to ensure layout (expansion) is registered
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) {
-          _reliablyScrollToShow(show);
+          _reliablyScrollToShow(show,
+              duration: const Duration(milliseconds: 1000));
         }
       });
+
+      // 4. Start Playback (this happens in parallel with the scroll now)
+      await audioProvider.playSource(show, source);
     } else {
       // If we failed, wait a moment before hiding the loading indicator to prevent flicker
       await Future.delayed(const Duration(milliseconds: 300));
