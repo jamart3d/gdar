@@ -33,19 +33,24 @@ class PlaybackProgressBar extends StatelessWidget {
             final totalDuration = durationSnapshot.data ?? Duration.zero;
             return Row(
               children: [
-                Text(
-                  formatDuration(position),
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodySmall
-                      ?.apply(fontSizeFactor: scaleFactor)
-                      .copyWith(
-                    color: colorScheme.onSurfaceVariant,
-                    fontWeight: FontWeight.w600,
-                    fontFeatures: [const FontFeature.tabularFigures()],
+                SizedBox(
+                  width: 56 * scaleFactor,
+                  child: Text(
+                    formatDuration(position),
+                    textAlign: TextAlign.right,
+                    style: Theme.of(context)
+                        .textTheme
+                        .bodySmall
+                        ?.apply(fontSizeFactor: scaleFactor)
+                        .copyWith(
+                      color: colorScheme.onSurfaceVariant,
+                      fontWeight: FontWeight.w600,
+                      fontFamily: 'Roboto',
+                      fontFeatures: [const FontFeature.tabularFigures()],
+                    ),
                   ),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: 8),
                 Expanded(
                   child: StreamBuilder<Duration>(
                     stream: audioProvider.bufferedPositionStream,
@@ -62,14 +67,26 @@ class PlaybackProgressBar extends StatelessWidget {
                           final isBuffering =
                               processingState == ProcessingState.buffering ||
                                   processingState == ProcessingState.loading;
+                          final bufferingPercentage =
+                              (totalDuration.inSeconds > 0
+                                      ? bufferedPosition.inSeconds /
+                                          totalDuration.inSeconds
+                                      : 0.0)
+                                  .clamp(0.0, 1.0);
+                          final positionPercentage = (totalDuration.inSeconds >
+                                      0
+                                  ? position.inSeconds / totalDuration.inSeconds
+                                  : 0.0)
+                              .clamp(0.0, 1.0);
 
                           return SliderTheme(
                             data: SliderTheme.of(context).copyWith(
-                              trackHeight: 6 * scaleFactor,
+                              trackHeight:
+                                  12 * scaleFactor, // Expressive height
                               thumbShape: RoundSliderThumbShape(
-                                  enabledThumbRadius: 8 * scaleFactor),
+                                  enabledThumbRadius: 10 * scaleFactor),
                               overlayShape: RoundSliderOverlayShape(
-                                  overlayRadius: 18 * scaleFactor),
+                                  overlayRadius: 22 * scaleFactor),
                               activeTrackColor: Colors.transparent,
                               inactiveTrackColor: Colors.transparent,
                               thumbColor: colorScheme.primary,
@@ -79,60 +96,53 @@ class PlaybackProgressBar extends StatelessWidget {
                             child: Stack(
                               alignment: Alignment.center,
                               children: [
+                                // Background Track
                                 Container(
-                                  height: 6 * scaleFactor,
+                                  height: 12 * scaleFactor,
                                   decoration: BoxDecoration(
                                     color: isTrueBlackMode
-                                        ? Colors.white24
-                                        : colorScheme.surfaceContainerHighest,
-                                    borderRadius: BorderRadius.circular(3),
+                                        ? Colors.white12
+                                        : colorScheme.onSurface
+                                            .withValues(alpha: 0.2),
+                                    borderRadius:
+                                        BorderRadius.circular(6 * scaleFactor),
                                   ),
                                 ),
+                                // Buffered Progress
                                 Align(
                                   alignment: Alignment.centerLeft,
                                   child: FractionallySizedBox(
-                                    widthFactor: (totalDuration.inSeconds > 0
-                                            ? bufferedPosition.inSeconds /
-                                                totalDuration.inSeconds
-                                            : 0.0)
-                                        .clamp(0.0, 1.0),
+                                    widthFactor: bufferingPercentage,
                                     child: Container(
-                                      height: 6 * scaleFactor,
+                                      height: 12 * scaleFactor,
                                       decoration: BoxDecoration(
-                                        gradient: LinearGradient(
-                                          colors: [
-                                            colorScheme.tertiary
-                                                .withValues(alpha: 0.3),
-                                            colorScheme.tertiary
-                                                .withValues(alpha: 0.5),
-                                          ],
-                                        ),
-                                        borderRadius: BorderRadius.circular(3),
+                                        color: colorScheme.tertiary
+                                            .withValues(alpha: 0.35),
+                                        borderRadius: BorderRadius.circular(
+                                            6 * scaleFactor),
                                       ),
                                     ),
                                   ),
                                 ),
+                                // Active Progress
                                 Align(
                                   alignment: Alignment.centerLeft,
                                   child: FractionallySizedBox(
-                                    widthFactor: (totalDuration.inSeconds > 0
-                                            ? position.inSeconds /
-                                                totalDuration.inSeconds
-                                            : 0.0)
-                                        .clamp(0.0, 1.0),
+                                    widthFactor: positionPercentage,
                                     child: Stack(
                                       children: [
                                         Container(
-                                          height: 6 * scaleFactor,
+                                          height: 12 * scaleFactor,
                                           decoration: BoxDecoration(
                                             gradient: LinearGradient(
                                               colors: [
                                                 colorScheme.primary,
-                                                colorScheme.secondary,
+                                                colorScheme
+                                                    .tertiary, // Expressive gradient
                                               ],
                                             ),
-                                            borderRadius:
-                                                BorderRadius.circular(3),
+                                            borderRadius: BorderRadius.circular(
+                                                6 * scaleFactor),
                                           ),
                                         ),
                                         if (isBuffering)
@@ -142,10 +152,11 @@ class PlaybackProgressBar extends StatelessWidget {
                                                 milliseconds: 1500),
                                             builder: (context, value, child) {
                                               return Container(
-                                                height: 6 * scaleFactor,
+                                                height: 12 * scaleFactor,
                                                 decoration: BoxDecoration(
                                                   borderRadius:
-                                                      BorderRadius.circular(3),
+                                                      BorderRadius.circular(
+                                                          6 * scaleFactor),
                                                   gradient: LinearGradient(
                                                     begin: Alignment.centerLeft,
                                                     end: Alignment.centerRight,
@@ -179,6 +190,7 @@ class PlaybackProgressBar extends StatelessWidget {
                                     ),
                                   ),
                                 ),
+                                // Interactive Slider (Transparent Overlay)
                                 Slider(
                                   min: 0.0,
                                   max: totalDuration.inSeconds > 0
@@ -201,17 +213,22 @@ class PlaybackProgressBar extends StatelessWidget {
                     },
                   ),
                 ),
-                const SizedBox(width: 12),
-                Text(
-                  formatDuration(totalDuration),
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodySmall
-                      ?.apply(fontSizeFactor: scaleFactor)
-                      .copyWith(
-                    color: colorScheme.onSurfaceVariant,
-                    fontWeight: FontWeight.w600,
-                    fontFeatures: [const FontFeature.tabularFigures()],
+                const SizedBox(width: 8),
+                SizedBox(
+                  width: 56 * scaleFactor,
+                  child: Text(
+                    formatDuration(totalDuration),
+                    textAlign: TextAlign.left,
+                    style: Theme.of(context)
+                        .textTheme
+                        .bodySmall
+                        ?.apply(fontSizeFactor: scaleFactor)
+                        .copyWith(
+                      color: colorScheme.onSurfaceVariant,
+                      fontWeight: FontWeight.w600,
+                      fontFamily: 'Roboto',
+                      fontFeatures: [const FontFeature.tabularFigures()],
+                    ),
                   ),
                 ),
               ],

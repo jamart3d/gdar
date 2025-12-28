@@ -100,6 +100,34 @@ class _TrackListScreenState extends State<TrackListScreen> {
 
   void _onTrackTapped(Source source, int trackIndex) {
     final audioProvider = context.read<AudioProvider>();
+    final settingsProvider = context.read<SettingsProvider>();
+
+    final isCurrentSource = audioProvider.currentSource?.id == source.id;
+
+    // If Play on Tap is disabled, prevent switching sources by tap
+    if (!isCurrentSource && !settingsProvider.playOnTap) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Play on Tap is disabled. Enable it in Settings to play from other sources.',
+            style: TextStyle(
+                color: Theme.of(context).colorScheme.onInverseSurface),
+          ),
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: Theme.of(context).colorScheme.inverseSurface,
+          action: SnackBarAction(
+            label: 'Settings',
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const SettingsScreen()),
+              );
+            },
+          ),
+        ),
+      );
+      return;
+    }
+
     audioProvider.playSource(widget.show, source, initialIndex: trackIndex);
   }
 
