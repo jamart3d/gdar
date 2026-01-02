@@ -14,7 +14,8 @@ class Source {
     this.location,
   });
 
-  factory Source.fromJson(Map<String, dynamic> json, {String? src}) {
+  factory Source.fromJson(Map<String, dynamic> json,
+      {String? src, String? showLocation}) {
     String? baseDir = json['_d'];
     String? baseUrl;
     if (baseDir != null) {
@@ -46,7 +47,7 @@ class Source {
       id: json['id'] as String? ?? '',
       src: json['src'] ?? src,
       tracks: tracks,
-      location: json['l'] as String?,
+      location: (json['l'] as String?) ?? showLocation,
     );
   }
 

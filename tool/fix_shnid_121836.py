@@ -26,7 +26,32 @@ def fix_shnid_121836(input_file, output_file):
         print(f"Error: SHNID {target_id} not found.")
         return
 
+    report_lines = []
+    report_lines.append(f"# Fix Report for SHNID {target_id}\n")
     print(f"Found SHNID {target_id}. Processing...")
+
+    def print_sets(label, sets):
+        header = f"\n### {label}\n"
+        print(header.strip())
+        report_lines.append(header)
+        
+        for s in sets:
+            set_header = f"**[{s.get('n', 'Unknown Set')}]**\n"
+            print(f"[{s.get('n', 'Unknown Set')}]")
+            report_lines.append(set_header)
+            
+            for i, t in enumerate(s.get('t', [])):
+                line = f"{i+1}. {t.get('t', 'Unknown Title')}"
+                print(f"  {line}")
+                report_lines.append(f"{i+1}. {t.get('t', 'Unknown Title')}\n")
+            report_lines.append("\n")
+        
+        sep = "---\n"
+        print("------------------\n")
+        report_lines.append(sep)
+
+    # Report Before
+    print_sets("BEFORE FIX", target_source.get('sets', []))
 
     # 1. Flatten all tracks to work with them easily
     all_tracks = []
@@ -43,13 +68,17 @@ def fix_shnid_121836(input_file, output_file):
         # Move Title at 31 (originally "Phil & Ned Jam...") to 20 (originally "El Paso")
         moved_title = titles.pop(31)
         titles.insert(20, moved_title)
-        print("Applied Title Shift: Moved title at index 31 to index 20.")
+        msg = f"Applied Title Shift: Moved '{moved_title}' (Index 31) to Index 20."
+        print(msg)
+        report_lines.append(f"\n> {msg}\n")
         
         # Write titles back to the track objects
         for i, title in enumerate(titles):
             all_tracks[i]['t'] = title
     else:
-        print(f"Error: Not enough tracks ({len(titles)}) to perform shift.")
+        err = f"Error: Not enough tracks ({len(titles)}) to perform shift."
+        print(err)
+        report_lines.append(f"\n> **{err}**\n")
         return
 
     # 3. Restructure Sets based on Triggers
@@ -90,9 +119,18 @@ def fix_shnid_121836(input_file, output_file):
     if current_set_tracks:
         new_sets.append({"n": current_set_name, "t": current_set_tracks})
         
+    # Report After
+    print_sets("AFTER FIX", new_sets)
+
     # 4. Update Source
     target_source['sets'] = new_sets
     
+    # Save Report
+    report_file = "fix_shnid_121836_report.md"
+    print(f"Saving report to {report_file}...")
+    with open(report_file, 'w', encoding='utf-8') as f:
+        f.writelines(report_lines)
+
     # Save Output
     print(f"Saving modified data to {output_file}...")
     with open(output_file, 'w', encoding='utf-8') as f:
@@ -101,8 +139,8 @@ def fix_shnid_121836(input_file, output_file):
     print("Done. Fix applied.")
 
 if __name__ == "__main__":
-    input_path = 'assets/data/output.optimized_src_encore_fix.json'
-    output_path = 'assets/data/output.optimized_src_121836_fix.json'
+    input_path = 'assets/data/output.optimized_src_api.json'
+    output_path = 'assets/data/output.optimized.json'
     
     # Fallback input for testing
     if not os.path.exists(input_path):

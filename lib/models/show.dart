@@ -38,8 +38,11 @@ class Show {
 
   factory Show.fromJson(Map<String, dynamic> json) {
     final String? src = json['src'];
+    final String? showLocation = json['l']; // Extract show-level location
+
     final List<Source> sources = (json['sources'] as List<dynamic>? ?? [])
-        .map((sourceJson) => Source.fromJson(sourceJson, src: src))
+        .map((sourceJson) =>
+            Source.fromJson(sourceJson, src: src, showLocation: showLocation))
         .toList();
 
     final String showName = json['name'] ?? 'Unknown Show';

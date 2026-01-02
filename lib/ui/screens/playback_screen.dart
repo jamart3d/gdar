@@ -14,7 +14,7 @@ import 'package:gdar/utils/color_generator.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:provider/provider.dart';
 import 'dart:async';
-import 'dart:ui';
+
 import 'package:gdar/ui/widgets/rating_control.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 import 'package:gdar/ui/widgets/playback/playback_progress_bar.dart';
@@ -203,7 +203,7 @@ class _PlaybackScreenState extends State<PlaybackScreen>
             : [
                 BoxShadow(
                   blurRadius: 20.0,
-                  color: Colors.black.withOpacity(0.2),
+                  color: Colors.black.withValues(alpha: 0.2),
                 )
               ],
         minHeight: minPanelHeight,
@@ -320,7 +320,7 @@ class _PlaybackScreenState extends State<PlaybackScreen>
                       color: Theme.of(context)
                           .colorScheme
                           .secondaryContainer
-                          .withOpacity(0.5),
+                          .withValues(alpha: 0.5),
                       borderRadius: BorderRadius.circular(4),
                     ),
                     child: Text(
@@ -562,7 +562,7 @@ class _PlaybackScreenState extends State<PlaybackScreen>
             : null,
         border: isTrueBlackMode
             ? Border.all(
-                color: colorScheme.outlineVariant.withOpacity(0.3),
+                color: colorScheme.onSurface.withValues(alpha: 0.2),
                 width: 1.0,
               )
             : null,
@@ -582,7 +582,8 @@ class _PlaybackScreenState extends State<PlaybackScreen>
                       width: 32,
                       height: 4,
                       decoration: BoxDecoration(
-                        color: colorScheme.onSurfaceVariant.withOpacity(0.4),
+                        color:
+                            colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
                         borderRadius: BorderRadius.circular(2),
                       ),
                     ),
@@ -751,7 +752,7 @@ class _PlaybackScreenState extends State<PlaybackScreen>
                                               horizontal: 10, vertical: 6),
                                           decoration: BoxDecoration(
                                             color: colorScheme.tertiaryContainer
-                                                .withOpacity(0.7),
+                                                .withValues(alpha: 0.7),
                                             borderRadius:
                                                 BorderRadius.circular(6),
                                           ),

@@ -63,6 +63,8 @@ This file tracks planned features, enhancements, and bug fixes for the gdar appl
       - [ ] **Thumb Details:** Large, scalable thumb (respects UI Scale) that displays the year's last two digits (e.g., '77).
     - [x] Block confirmation for rated shows.
     - [x] **Rated Shows Library**: Added dynamic counts to each tab label (e.g., "Played (5)").
+    - [ ] **Data Sharding:** Split the monolithic JSON data by year (e.g., `years/1972.json`) and use a lightweight master index to improve app startup performance and reduce memory usage.
+    - [ ] **Venue Normalization:** Implement fuzzy matching to standardize venue names (e.g., merging "Fillmore East" and "Fillmore East, NYC") for reliable grouping and filtering.
 
 - [x] **Smart Random Playback**:
   - Manual Random (Button) respects search filter.
@@ -109,7 +111,7 @@ This file tracks planned features, enhancements, and bug fixes for the gdar appl
   - Add volume slider/control to Playback Screen controls.
   - Add setting in Playback Settings to toggle visibility of volume control.
 
-- [ ] **Investigate ConcatenatingAudioSource:** explore using `ConcatenatingAudioSource` in `just_audio` for better gapless playback and playlist management.
+- [ ] **Gapless Playback:** Implement `ConcatenatingAudioSource` to enable true gapless playback by default for all shows, ensuring seamless transitions between tracks.
 - [ ] **Smart Random Setting**: Add a setting to toggle whether "Automated Random (Continuous Play) ignores search filter to pick from full library" (currently enabled by default).
 - [ ] **Hide Forward/Reverse Controls:** Add setting to hide Next/Previous track buttons in the player interfaces for a minimalist look.
 
@@ -130,8 +132,6 @@ This file tracks planned features, enhancements, and bug fixes for the gdar appl
 
 - [ ] **Swipe to Block Follow-up:** When using "Swipe to Block" to remove a show, provide an option (or setting) to immediately trigger a new random selection.
 - [ ] **RGB Glow Setting:** Add a setting to control/boost the "glow" intensity of the RGB border effect.
-
-
 
 - [x] **Move Encore Tracks:** Create a Python script to identify and move end tracks into an 'Encore' set.
   - [x] `remove_encore_prefix.py` handles prefix removal and moving misplaced tracks.
@@ -166,4 +166,3 @@ This file tracks planned features, enhancements, and bug fixes for the gdar appl
   - [x] Created `clean_mixed_vbr_sources.py` to strip VBR tracks from 128 "mixed quality" sources.
   - [x] Removed 2,388 VBR tracks and saved to `output.optimized_src_vbr_cleaned.json`.
   - [x] Generated `vbr_cleaning_report.md` with detailed counts.
-
