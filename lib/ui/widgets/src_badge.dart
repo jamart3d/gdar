@@ -32,8 +32,8 @@ class SrcBadge extends StatelessWidget {
       ];
     } else {
       gradientColors = [
-        colorScheme.secondaryContainer.withOpacity(0.7),
-        colorScheme.secondaryContainer.withOpacity(0.5),
+        colorScheme.secondaryContainer.withValues(alpha: 0.7),
+        colorScheme.secondaryContainer.withValues(alpha: 0.5),
       ];
     }
 
@@ -53,7 +53,7 @@ class SrcBadge extends StatelessWidget {
             ? []
             : [
                 BoxShadow(
-                    color: colorScheme.shadow.withOpacity(0.05),
+                    color: colorScheme.shadow.withValues(alpha: 0.05),
                     blurRadius: 2,
                     offset: const Offset(0, 1))
               ],

@@ -90,7 +90,7 @@ class _MiniPlayerState extends State<MiniPlayer>
               borderRadius: BorderRadius.zero,
               clipBehavior: Clip.antiAlias,
               elevation: 4.0,
-              shadowColor: colorScheme.shadow.withOpacity(0.1),
+              shadowColor: colorScheme.shadow.withValues(alpha: 0.1),
               child: Container(), // Empty container for background
             ),
           ),
@@ -152,9 +152,9 @@ class _MiniPlayerState extends State<MiniPlayer>
                                           gradient: LinearGradient(
                                             colors: [
                                               colorScheme.tertiary
-                                                  .withOpacity(0.3),
+                                                  .withValues(alpha: 0.3),
                                               colorScheme.tertiary
-                                                  .withOpacity(0.5),
+                                                  .withValues(alpha: 0.5),
                                             ],
                                           ),
                                         ),
@@ -168,7 +168,7 @@ class _MiniPlayerState extends State<MiniPlayer>
                                             colors: [
                                               colorScheme.primary,
                                               colorScheme.primary
-                                                  .withOpacity(0.8),
+                                                  .withValues(alpha: 0.8),
                                             ],
                                           ),
                                         ),
@@ -191,7 +191,7 @@ class _MiniPlayerState extends State<MiniPlayer>
                                                 colors: [
                                                   Colors.transparent,
                                                   colorScheme.tertiary
-                                                      .withOpacity(0.4),
+                                                      .withValues(alpha: 0.4),
                                                   Colors.transparent,
                                                 ],
                                               ),

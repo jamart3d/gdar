@@ -430,10 +430,17 @@ class _PlaybackScreenState extends State<PlaybackScreen>
 
         final double scaleFactor = settingsProvider.uiScale ? 1.25 : 1.0;
 
+        // Determine if we should use the fancy border
+        final bool useRgb = settingsProvider.highlightPlayingWithRgb;
+        final bool showFancyBorder = isPlaying &&
+            (useRgb ||
+                settingsProvider.showGlowBorder ||
+                settingsProvider.halfGlowDynamic);
+
         return Container(
           margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 1),
           decoration: BoxDecoration(
-            color: (isPlaying && settingsProvider.highlightPlayingWithRgb)
+            color: showFancyBorder
                 ? Colors.transparent
                 : isPlaying
                     ? (isTrueBlackMode
@@ -442,7 +449,7 @@ class _PlaybackScreenState extends State<PlaybackScreen>
                     : Colors.transparent,
             borderRadius: BorderRadius.circular(12),
           ),
-          child: (isPlaying && settingsProvider.highlightPlayingWithRgb)
+          child: showFancyBorder
               ? Container(
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(12),
@@ -451,20 +458,27 @@ class _PlaybackScreenState extends State<PlaybackScreen>
                   padding: const EdgeInsets.all(4),
                   child: AnimatedGradientBorder(
                     borderRadius: 12,
-                    borderWidth: 4,
-                    colors: const [
-                      Colors.red,
-                      Colors.yellow,
-                      Colors.green,
-                      Colors.cyan,
-                      Colors.blue,
-                      Colors.purple,
-                      Colors.red,
-                    ],
+                    borderWidth: useRgb ? 4 : 2,
+                    colors: useRgb
+                        ? const [
+                            Colors.red,
+                            Colors.yellow,
+                            Colors.green,
+                            Colors.cyan,
+                            Colors.blue,
+                            Colors.purple,
+                            Colors.red,
+                          ]
+                        : [
+                            colorScheme.primary,
+                            colorScheme.tertiary,
+                            colorScheme.secondary,
+                            colorScheme.primary,
+                          ],
                     showGlow: true,
                     showShadow: settingsProvider.showGlowBorder,
-                    glowOpacity:
-                        0.5 * (settingsProvider.halfGlowDynamic ? 0.5 : 1.0),
+                    glowOpacity: (useRgb ? 0.5 : 0.2) *
+                        (settingsProvider.halfGlowDynamic ? 0.5 : 1.0),
                     animationSpeed: settingsProvider.rgbAnimationSpeed,
                     child: Material(
                       color: isTrueBlackMode
@@ -651,20 +665,28 @@ class _PlaybackScreenState extends State<PlaybackScreen>
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Align(
-                          alignment: Alignment.centerLeft,
-                          child: Text(
-                            currentSource.location ?? 'Location N/A',
-                            style: textTheme.titleSmall
-                                ?.apply(fontSizeFactor: scaleFactor)
-                                .copyWith(
-                                  color: colorScheme.secondary,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                          ),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Expanded(
+                              child: Text(
+                                currentSource.location ?? 'Location N/A',
+                                style: textTheme.titleSmall
+                                    ?.apply(fontSizeFactor: scaleFactor * 1.2)
+                                    .copyWith(
+                                      color: colorScheme.secondary,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            _buildRatingButton(context, currentShow,
+                                currentSource, settingsProvider),
+                          ],
                         ),
                         const SizedBox(height: 4),
                         Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
                             Text(
                               currentShow.formattedDate,
@@ -715,72 +737,53 @@ class _PlaybackScreenState extends State<PlaybackScreen>
                               },
                             ),
                             const Spacer(),
-                            IntrinsicWidth(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                            InkWell(
+                              onTap: () {
+                                if (currentSource.tracks.isNotEmpty) {
+                                  launchArchivePage(
+                                      currentSource.tracks.first.url);
+                                }
+                              },
+                              borderRadius: BorderRadius.circular(6),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  Align(
-                                    alignment: Alignment.centerRight,
-                                    child: _buildRatingButton(
-                                        context,
-                                        currentShow,
-                                        currentSource,
-                                        settingsProvider),
-                                  ),
-                                  const SizedBox(height: 8),
-                                  InkWell(
-                                    onTap: () {
-                                      if (currentSource.tracks.isNotEmpty) {
-                                        launchArchivePage(
-                                            currentSource.tracks.first.url);
-                                      }
-                                    },
-                                    borderRadius: BorderRadius.circular(6),
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        if (currentSource.src != null) ...[
-                                          SrcBadge(
-                                              src: currentSource.src!,
-                                              isPlaying: true),
-                                          const SizedBox(width: 6),
-                                        ],
-                                        Container(
-                                          padding: const EdgeInsets.symmetric(
-                                              horizontal: 10, vertical: 6),
-                                          decoration: BoxDecoration(
-                                            color: colorScheme.tertiaryContainer
-                                                .withValues(alpha: 0.7),
-                                            borderRadius:
-                                                BorderRadius.circular(6),
-                                          ),
-                                          alignment: Alignment.center,
-                                          child: Container(
-                                            decoration: BoxDecoration(
-                                              border: Border(
-                                                bottom: BorderSide(
-                                                  color: colorScheme
-                                                      .onTertiaryContainer,
-                                                  width: 1.5,
-                                                ),
-                                              ),
-                                            ),
-                                            padding: const EdgeInsets.only(
-                                                bottom: 2.0),
-                                            child: Text(
-                                              currentSource.id,
-                                              style: textTheme.bodyMedium
-                                                  ?.copyWith(
-                                                color: colorScheme
-                                                    .onTertiaryContainer,
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                            ),
+                                  if (currentSource.src != null) ...[
+                                    SrcBadge(
+                                        src: currentSource.src!,
+                                        isPlaying: true),
+                                    const SizedBox(width: 6),
+                                  ],
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 10, vertical: 6),
+                                    decoration: BoxDecoration(
+                                      color: colorScheme.tertiaryContainer
+                                          .withValues(alpha: 0.7),
+                                      borderRadius: BorderRadius.circular(6),
+                                    ),
+                                    alignment: Alignment.center,
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        border: Border(
+                                          bottom: BorderSide(
+                                            color:
+                                                colorScheme.onTertiaryContainer,
+                                            width: 1.5,
                                           ),
                                         ),
-                                      ],
+                                      ),
+                                      padding:
+                                          const EdgeInsets.only(bottom: 2.0),
+                                      child: Text(
+                                        currentSource.id,
+                                        style: textTheme.bodyMedium?.copyWith(
+                                          color:
+                                              colorScheme.onTertiaryContainer,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
                                     ),
                                   ),
                                 ],

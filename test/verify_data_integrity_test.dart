@@ -13,8 +13,6 @@ void main() {
     final jsonString = await file.readAsString();
     final List<dynamic> jsonList = json.decode(jsonString);
 
-    print('Found ${jsonList.length} shows in JSON.');
-
     int successCount = 0;
 
     for (var i = 0; i < jsonList.length; i++) {
@@ -36,7 +34,6 @@ void main() {
       }
     }
 
-    print('Successfully parsed $successCount shows.');
     expect(successCount, equals(jsonList.length));
   });
 }

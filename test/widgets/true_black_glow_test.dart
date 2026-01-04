@@ -90,10 +90,6 @@ void main() {
 
     final borderWidget = tester.widget<AnimatedGradientBorder>(borderFinder);
 
-    print('DEBUG: showShadow=${borderWidget.showShadow}');
-    print('DEBUG: glowOpacity=${borderWidget.glowOpacity}');
-    print('DEBUG: halfGlowDynamic=${settingsProvider.halfGlowDynamic}');
-
     // ASCERTION 1: Shadow should be TRUE (forced by halfGlowDynamic)
     expect(borderWidget.showShadow, isTrue,
         reason: 'Shadow should be forced ON when Half Glow is active');
@@ -138,8 +134,6 @@ void main() {
 
     final borderWidget = tester
         .widget<AnimatedGradientBorder>(find.byType(AnimatedGradientBorder));
-
-    print('DEBUG TEST 2: glowOpacity=${borderWidget.glowOpacity}');
 
     // Calculation: 1.0 * 0.2 * 0.5 = 0.1
     // expect(borderWidget.glowOpacity, closeTo(0.1, 0.0001), ...

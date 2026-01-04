@@ -270,34 +270,30 @@ class AudioProvider with ChangeNotifier {
     }
 
     try {
-      final playlist = ConcatenatingAudioSource(
-        useLazyPreparation: false,
-        shuffleOrder: DefaultShuffleOrder(),
-        children: source.tracks.asMap().entries.map((entry) {
-          int index = entry.key;
-          Track track = entry.value;
+      final children = source.tracks.asMap().entries.map((entry) {
+        int index = entry.key;
+        Track track = entry.value;
 
-          // Log the metadata to verify what is being passed to just_audio_background
-          logger.i(
-              'Creating MediaItem - Title: "${track.title}", Album: "${_currentShow!.venue}", Artist: "${_currentShow!.artist}"');
+        // Log the metadata to verify what is being passed to just_audio_background
+        logger.i(
+            'Creating MediaItem - Title: "${track.title}", Album: "${_currentShow!.venue}", Artist: "${_currentShow!.artist}"');
 
-          return AudioSource.uri(
-            Uri.parse(track.url),
-            tag: MediaItem(
-              id: '${_currentShow!.name}_${source.id}_$index',
-              album: _currentShow!.venue,
-              title: track.title,
-              artist: _currentShow!.artist,
-              duration: Duration(seconds: track.duration),
-              artUri: artUri,
-              extras: {'source_id': source.id},
-            ),
-          );
-        }).toList(),
-      );
+        return AudioSource.uri(
+          Uri.parse(track.url),
+          tag: MediaItem(
+            id: '${_currentShow!.name}_${source.id}_$index',
+            album: _currentShow!.venue,
+            title: track.title,
+            artist: _currentShow!.artist,
+            duration: Duration(seconds: track.duration),
+            artUri: artUri,
+            extras: {'source_id': source.id},
+          ),
+        );
+      }).toList();
 
-      await _audioPlayer.setAudioSource(
-        playlist,
+      await _audioPlayer.setAudioSources(
+        children,
         initialIndex: initialIndex,
         preload: true,
       );

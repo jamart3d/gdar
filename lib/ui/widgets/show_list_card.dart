@@ -84,7 +84,7 @@ class _ShowListCardState extends State<ShowListCard> {
     final isTrueBlackMode = isDarkMode &&
         (!settingsProvider.useDynamicColor || settingsProvider.halfGlowDynamic);
 
-    if (!isTrueBlackMode &&
+    if ((!isTrueBlackMode || settingsProvider.halfGlowDynamic) &&
         widget.isPlaying &&
         settingsProvider.highlightCurrentShowCard) {
       String seed = widget.show.name;
@@ -144,7 +144,7 @@ class _ShowListCardState extends State<ShowListCard> {
                     BoxShadow(
                       // Cut non-RGB glow by 80% (so utilize 20% of original strength)
                       color: colorScheme.primary
-                          .withOpacity(0.2 * 0.2 * glowOpacity),
+                          .withValues(alpha: 0.2 * 0.2 * glowOpacity),
                       blurRadius: 12,
                       spreadRadius: 2,
                     ),
@@ -201,7 +201,7 @@ class _ShowListCardState extends State<ShowListCard> {
       child: Card(
         margin: EdgeInsets.zero,
         elevation: widget.isExpanded ? 2 : 0,
-        shadowColor: colorScheme.shadow.withOpacity(0.1),
+        shadowColor: colorScheme.shadow.withValues(alpha: 0.1),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(28),
           side: (isTrueBlackMode && !widget.isPlaying)
@@ -432,8 +432,8 @@ class _ShowListCardState extends State<ShowListCard> {
       ];
     } else {
       gradientColors = [
-        colorScheme.secondaryContainer.withOpacity(0.7),
-        colorScheme.secondaryContainer.withOpacity(0.5),
+        colorScheme.secondaryContainer.withValues(alpha: 0.7),
+        colorScheme.secondaryContainer.withValues(alpha: 0.5),
       ];
     }
 
@@ -449,7 +449,7 @@ class _ShowListCardState extends State<ShowListCard> {
         borderRadius: BorderRadius.circular(10),
         boxShadow: [
           BoxShadow(
-              color: colorScheme.shadow.withOpacity(0.05),
+              color: colorScheme.shadow.withValues(alpha: 0.05),
               blurRadius: 2,
               offset: const Offset(0, 1))
         ],

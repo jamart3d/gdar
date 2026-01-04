@@ -90,26 +90,28 @@ class SettingsScreen extends StatelessWidget {
         return AlertDialog(
           title: const Text('Select App Font'),
           content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: fonts.entries.map((entry) {
-                return RadioListTile<String>(
-                  title: Text(
-                    displayNames[entry.key]!,
-                    style: entry.value?.copyWith(
-                      fontSize: 18,
+            child: RadioGroup<String>(
+              groupValue: settingsProvider.appFont,
+              onChanged: (String? value) {
+                if (value != null) {
+                  settingsProvider.setAppFont(value);
+                  Navigator.of(context).pop();
+                }
+              },
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: fonts.entries.map((entry) {
+                  return RadioListTile<String>(
+                    title: Text(
+                      displayNames[entry.key]!,
+                      style: entry.value?.copyWith(
+                        fontSize: 18,
+                      ),
                     ),
-                  ),
-                  value: entry.key,
-                  groupValue: settingsProvider.appFont,
-                  onChanged: (String? value) {
-                    if (value != null) {
-                      settingsProvider.setAppFont(value);
-                      Navigator.of(context).pop();
-                    }
-                  },
-                );
-              }).toList(),
+                    value: entry.key,
+                  );
+                }).toList(),
+              ),
             ),
           ),
           actions: <Widget>[
@@ -512,6 +514,32 @@ class SettingsScreen extends StatelessWidget {
                               ),
                               const SizedBox(height: 8),
                               AnimatedGradientBorder(
+                                borderRadius:
+                                    24, // Matches standard SegmentedButton radius
+                                borderWidth: 3,
+                                colors: const [
+                                  Colors.red,
+                                  Colors.yellow,
+                                  Colors.green,
+                                  Colors.cyan,
+                                  Colors.blue,
+                                  Colors.purple,
+                                  Colors.red,
+                                ],
+                                showGlow: true,
+                                // Glow mirrors the global logic:
+                                // If "Glow Border" is ON OR "Half Glow" is ON, we show shadow.
+                                showShadow: settingsProvider.showGlowBorder ||
+                                    settingsProvider.halfGlowDynamic,
+                                // Apply 50% reduction for Half Glow mode, on top of base 0.5 opacity
+                                glowOpacity: 0.5 *
+                                    (settingsProvider.halfGlowDynamic
+                                        ? 0.5
+                                        : 1.0),
+                                animationSpeed:
+                                    settingsProvider.rgbAnimationSpeed,
+                                // Transparent background to blend with SectionCard
+                                backgroundColor: Colors.transparent,
                                 child: SegmentedButton<double>(
                                   segments: const [
                                     ButtonSegment(
@@ -587,32 +615,6 @@ class SettingsScreen extends StatelessWidget {
                                     ),
                                   ),
                                 ),
-                                borderRadius:
-                                    24, // Matches standard SegmentedButton radius
-                                borderWidth: 3,
-                                colors: const [
-                                  Colors.red,
-                                  Colors.yellow,
-                                  Colors.green,
-                                  Colors.cyan,
-                                  Colors.blue,
-                                  Colors.purple,
-                                  Colors.red,
-                                ],
-                                showGlow: true,
-                                // Glow mirrors the global logic:
-                                // If "Glow Border" is ON OR "Half Glow" is ON, we show shadow.
-                                showShadow: settingsProvider.showGlowBorder ||
-                                    settingsProvider.halfGlowDynamic,
-                                // Apply 50% reduction for Half Glow mode, on top of base 0.5 opacity
-                                glowOpacity: 0.5 *
-                                    (settingsProvider.halfGlowDynamic
-                                        ? 0.5
-                                        : 1.0),
-                                animationSpeed:
-                                    settingsProvider.rgbAnimationSpeed,
-                                // Transparent background to blend with SectionCard
-                                backgroundColor: Colors.transparent,
                               ),
                             ],
                           ),
@@ -866,7 +868,7 @@ class SettingsScreen extends StatelessWidget {
                     color: Theme.of(context)
                         .colorScheme
                         .surfaceContainerHighest
-                        .withOpacity(0.3),
+                        .withValues(alpha: 0.3),
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(24)),
                     child: ListTile(
@@ -900,7 +902,7 @@ class SettingsScreen extends StatelessWidget {
                     color: Theme.of(context)
                         .colorScheme
                         .surfaceContainerHighest
-                        .withOpacity(0.3),
+                        .withValues(alpha: 0.3),
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(24)),
                     child: Column(

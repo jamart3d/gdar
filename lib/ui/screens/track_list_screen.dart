@@ -13,7 +13,6 @@ import 'package:gdar/ui/widgets/conditional_marquee.dart';
 import 'package:gdar/utils/utils.dart';
 import 'package:provider/provider.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
-import 'dart:ui';
 
 class TrackListScreen extends StatefulWidget {
   final Show show;
@@ -232,7 +231,7 @@ class _TrackListScreenState extends State<TrackListScreen> {
                         color: Theme.of(context)
                             .colorScheme
                             .secondaryContainer
-                            .withOpacity(0.5),
+                            .withValues(alpha: 0.5),
                         borderRadius: BorderRadius.circular(4),
                       ),
                       child: Text(
@@ -377,7 +376,7 @@ class _TrackListScreenState extends State<TrackListScreen> {
             textTheme.labelMedium ?? const TextStyle(fontSize: 12.0);
         final durationStyle = baseDurationStyle.copyWith(
           color: isCurrentTrack
-              ? colorScheme.primary.withOpacity(0.8)
+              ? colorScheme.primary.withValues(alpha: 0.8)
               : colorScheme.onSurfaceVariant,
           fontWeight: FontWeight.w600,
           letterSpacing: 0.5,
@@ -392,7 +391,7 @@ class _TrackListScreenState extends State<TrackListScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
           child: Material(
             color: isCurrentTrack
-                ? colorScheme.primaryContainer.withOpacity(0.3)
+                ? colorScheme.primaryContainer.withValues(alpha: 0.3)
                 : Colors.transparent,
             borderRadius: BorderRadius.circular(12),
             child: InkWell(
@@ -429,7 +428,8 @@ class _TrackListScreenState extends State<TrackListScreen> {
                               horizontal: 8, vertical: 4),
                           decoration: BoxDecoration(
                             color: isCurrentTrack
-                                ? colorScheme.primaryContainer.withOpacity(0.5)
+                                ? colorScheme.primaryContainer
+                                    .withValues(alpha: 0.5)
                                 : colorScheme.surfaceContainerHighest,
                             borderRadius: BorderRadius.circular(8),
                           ),

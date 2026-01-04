@@ -261,7 +261,7 @@ class SettingsProvider with ChangeNotifier {
     if (color == null) {
       await _prefs.remove(_seedColorKey);
     } else {
-      await _prefs.setInt(_seedColorKey, color.value);
+      await _prefs.setInt(_seedColorKey, color.toARGB32());
     }
     notifyListeners();
   }

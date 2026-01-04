@@ -151,7 +151,7 @@ class _RatingDialogState extends State<RatingDialog> {
                 padding:
                     const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
-                  color: colorScheme.tertiaryContainer.withOpacity(0.7),
+                  color: colorScheme.tertiaryContainer.withValues(alpha: 0.7),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Container(
@@ -297,7 +297,7 @@ class _RatingDialogState extends State<RatingDialog> {
           _currentRating = rating;
         });
         widget.onRatingChanged(rating);
-        if (mounted) Navigator.pop(context);
+        if (context.mounted) Navigator.pop(context);
       },
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 8.0),

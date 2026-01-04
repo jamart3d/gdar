@@ -134,7 +134,7 @@ class _GradientBorderPainter extends CustomPainter {
       // We assume the gradient is centered in the rect
       final gradient = SweepGradient(
         colors:
-            colors.map((c) => c.withOpacity(c.opacity * glowOpacity)).toList(),
+            colors.map((c) => c.withValues(alpha: c.a * glowOpacity)).toList(),
         transform: GradientRotation(rotation),
       );
 
