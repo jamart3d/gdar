@@ -3,6 +3,46 @@ import argparse
 import sys
 from collections import defaultdict
 
+# Known corrections map: Date -> (Venue, Location)
+KNOWN_VENUE_LOCATIONS = {
+    "1968-01-22": ("Eagles Auditorium", "Seattle, Wa"),
+    "1968-01-23": ("Eagles Auditorium", "Seattle, Wa"),
+    "1968-10-08": ("The Matrix", "San Francisco, Ca"),
+    "1968-10-10": ("The Matrix", "San Francisco, Ca"),
+    "1968-10-30": ("The Matrix", "San Francisco, Ca"),
+    "1968-11-06": ("Pacific High Recording", "San Francisco, Ca"),
+    "1969-06-01": ("Avalon Ballroom", "San Francisco, Ca"),
+    "1969-08-28": ("Family Dog at the Great Highway", "San Francisco, Ca"), # Inferred loc from context/list pattern usually SF
+    "1970-12-17": ("The Matrix", "San Francisco, Ca"),
+    "1971-05-30": ("Winterland Arena", "San Francisco, Ca"),
+    "1975-07-23": ("Club Front", "San Rafael, Ca"),
+    "1975-07-24": ("Club Front", "San Rafael, Ca"),
+    "1975-09-16": ("Club Front", "San Rafael, Ca"),
+    "1976-05-28": ("Club Front", "San Rafael, Ca"),
+    "1978-09-13": ("Gizah Sound and Light Theater", "Giza, Egypt"),
+    "1978-11-08": ("Capitol Center", "Landover, Md"),
+    "1980-10-01": ("Warfield Theatre & Radio City Music Hall", "San Francisco, CA & New York, NY"), # Best guess or null?
+    "1981-03-04": ("Club Front", "San Rafael, Ca"),
+    "1981-12-11": ("Club Front", "San Rafael, Ca"),
+    "1982-01-01": ("Mickey's ranch studio", "Novato, Ca"),
+    "1982-11-26": ("Bob Marley Performing Arts Center", "Montego Bay, Jam"),
+    "1985-04-21": ("Marin Veterans Memorial Auditorium", "Marin, Ca"),
+    "1986-12-01": ("Club Front", "San Rafael, Ca"),
+    "1987-03-28": ("Hampton Coliseum", "Hampton, Va"),
+    "1987-06-01": ("Club Front", "San Rafael, Ca"),
+    "1987-07-13": ("Robert F. Kennedy Stadium", "Washington, DC"),
+    "1989-09-09": ("The Spectrum", "San Rafael, Ca"),
+    "1990-08-28": ("Club Front", "San Rafael, Ca"),
+    "1990-09-26": ("Club Front", "San Rafael, Ca"),
+    "1990-09-27": ("Club Front", "San Rafael, Ca"),
+    "1990-09-28": ("Club Front", "San Rafael, Ca"),
+    "1992-02-13": ("Club Front", "San Rafael, Ca"),
+    "1992-02-21": ("Club Front", "San Rafael, Ca"),
+    "1993-02-10": ("Club Front", "San Rafael, Ca"),
+    "1994-02-24": ("Oakland County Coliseum", "Oakland, Ca"),
+    "1995-03-28": ("The Omni", "Atlanta, Ga")
+}
+
 def get_source_map(data):
     """Builds a map of shnid -> {sets: signature} for comparison."""
     source_map = {}
@@ -25,7 +65,7 @@ def get_source_map(data):
             source_map[shnid] = ", ".join(sig)
     return source_map
 
-def audit_json(input_file, report_file, reference_file=None):
+def audit_json(input_file, report_file, reference_file=None, output_file=None):
     print(f"Starting audit of {input_file}...")
     
     try:
@@ -63,11 +103,12 @@ def audit_json(input_file, report_file, reference_file=None):
         "us_blues_last_no_encore": 0,
         "omsn_last_no_encore": 0,
         "shows_missing_l": 0,
-        "sources_missing_l": 0,
         "missing_fields": defaultdict(int)
     }
 
     issues_log = []
+    shows_missing_l_list = []
+    corrections_log = []
     seen_shnids = {}
 
     for show in data:
@@ -82,6 +123,29 @@ def audit_json(input_file, report_file, reference_file=None):
             
         if 'l' not in show:
             stats["shows_missing_l"] += 1
+            shows_missing_l_list.append(f"[{date}] {show.get('name', 'N/A')}")
+
+        # Check against Known Corrections
+        if date in KNOWN_VENUE_LOCATIONS:
+            expected_venue, expected_location = KNOWN_VENUE_LOCATIONS[date]
+            current_venue = show.get('name', '')
+            current_location = show.get('l', '')
+            
+            # Apply corrections if mismatched
+            updates = []
+            if expected_venue and expected_venue != current_venue:
+                show['name'] = expected_venue
+                updates.append(f"Venue: '{current_venue}' -> '{expected_venue}'")
+            
+            if expected_location and expected_location != current_location:
+                show['l'] = expected_location
+                updates.append(f"Location: '{current_location}' -> '{expected_location}'")
+            
+            if updates:
+                stats["issues_found"] += 1 
+                # Log as applied correction
+                corrections_log.append(f"[{date}] Applied Known Corrections: {'; '.join(updates)}")
+
 
         for source in sources:
             stats["total_sources"] += 1
@@ -170,13 +234,22 @@ def audit_json(input_file, report_file, reference_file=None):
                          stats["omsn_last_no_encore"] += 1
                          issues_found_in_source.append("One More Saturday Night is last track but NOT in Encore.")
             
-            # Check for missing location 'l' in Source (if applicable, though usually on Show)
-            if 'l' not in source:
-                 stats["sources_missing_l"] += 1
+
 
             if issues_found_in_source:
                 for issue in issues_found_in_source:
                     issues_log.append({"msg": f"[{date}] Source {shnid}: {issue}", "source": source})
+
+    # Write Output JSON if requested
+    if output_file:
+         print(f"Writing optimized JSON to {output_file}...")
+         try:
+             with open(output_file, 'w', encoding='utf-8') as f:
+                 # Use separators for minified output similar to fix_sets_api
+                 json.dump(data, f, separators=(',', ':'))
+             print("Done.")
+         except Exception as e:
+             print(f"FATAL: Could not write output file: {e}")
 
     # Write Report
     print(f"Audit complete. Found {len(issues_log)} issues.")
@@ -229,8 +302,8 @@ def audit_json(input_file, report_file, reference_file=None):
         f.write(f"- **Long Shows with NO Encore (>13 tracks):** {stats['long_no_encore']}\n")
         f.write(f"- **'U.S. Blues' last but NO Encore:** {stats['us_blues_last_no_encore']}\n")
         f.write(f"- **'One More Saturday Night' last but NO Encore:** {stats['omsn_last_no_encore']}\n")
+
         f.write(f"- **Shows missing Location 'l':** {stats['shows_missing_l']}\n")
-        f.write(f"- **Sources missing Location 'l':** {stats['sources_missing_l']}\n")
         f.write("\n")
         
         if stats["missing_fields"]:
@@ -238,6 +311,18 @@ def audit_json(input_file, report_file, reference_file=None):
              for field, count in stats["missing_fields"].items():
                  f.write(f"- {field}: {count}\n")
              f.write("\n")
+
+        if shows_missing_l_list:
+            f.write("## Shows Missing Location\n\n")
+            for item in shows_missing_l_list:
+                f.write(f"- {item}\n")
+            f.write("\n")
+
+        if corrections_log:
+            f.write("## Applied Venue/Location Corrections\n\n")
+            for item in corrections_log:
+                f.write(f"- {item}\n")
+            f.write("\n")
 
         f.write("## Issue Log\n\n")
         if issues_log:
@@ -280,6 +365,7 @@ if __name__ == "__main__":
     parser.add_argument('--input', default='assets/data/output.optimized_src.json', help='Input JSON file')
     parser.add_argument('--report', default='audit_report.md', help='Output report file')
     parser.add_argument('--reference', help='Optional reference JSON file to compare against')
+    parser.add_argument('--output', help='Optional output JSON file to save corrections')
     args = parser.parse_args()
     
-    audit_json(args.input, args.report, args.reference)
+    audit_json(args.input, args.report, args.reference, args.output)

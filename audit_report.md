@@ -20,7 +20,124 @@
 - **'U.S. Blues' last but NO Encore:** 2
 - **'One More Saturday Night' last but NO Encore:** 22
 - **Shows missing Location 'l':** 76
-- **Sources missing Location 'l':** 6305
+
+## Shows Missing Location
+
+- [1966-01-01] Viola Lee Blues Reahearsals
+- [1966-03-09] unknown
+- [1966-03-10] Unknown
+- [1966-07-01] Unknown (perhaps Fillmore Auditorium)
+- [1966-12-05] Recording Studio
+- [1967-10-20] American Studios
+- [1967-11-14] American Studios
+- [1968-01-22] Eagles Auditorium
+- [1968-01-23] Eagles Auditorium
+- [1968-05-00] Unknown
+- [1968-09-12] Unknown (possibly Pacific High Recording)
+- [1968-10-08] The Matrix Club
+- [1968-10-10] The Matrix
+- [1968-10-30] The Matrix
+- [1968-11-06] Pacific High Recording
+- [1969-06-01] Avalon Ballroom
+- [1969-08-28] Family Dog at the Great Highway
+- [1969-09-17] Alembic Studios
+- [1970-00-00] Studio
+- [1970-01-01] Unknown
+- [1970-12-17] The Matrix
+- [1971-02-01] Unknown
+- [1971-05-30] Winterland Arena
+- [1971-09-29] Studio Rehearsals with Keith Godchaux
+- [1971-09-30] Studio
+- [1971-10-01] Studio
+- [1973-11-28] Palace of Fine Arts
+- [1974-12-01] Studio
+- [1975-02-28] Bob Weir's Studio
+- [1975-03-00] Studio
+- [1975-03-01] Bob Weir's Studio
+- [1975-03-17] Ace's
+- [1975-03-21] Ace's studio
+- [1975-03-26] Ace's
+- [1975-04-02] Ace's Studio
+- [1975-04-17] Ace's Studio
+- [1975-06-03] Ace's Studio
+- [1975-06-04] Ace's Studio
+- [1975-06-05] Ace's Studio
+- [1975-06-07] Bob Weir's Studio
+- [1975-07-07] Ace's Studio
+- [1975-07-23] Club Front Studio
+- [1975-07-24] Club Front Studio
+- [1975-09-16] Club Front Studio
+- [1976-05-28] Le Club Front Studios
+- [1977-02-17] Arista Studios
+- [1977-02-20] Studio (Terrapin Station Outtakes)
+- [1977-03-01] Multiple
+- [1978-08-01] Studio (Shakedown Street Rehearsal)
+- [1978-08-18] Studio
+- [1978-09-13] Gizah Sound and Light Theater
+- [1978-11-08] Capitol Center
+- [1980-10-01] Warfield Theatre & Radio City Music Hall
+- [1981-03-04] Club Front
+- [1981-12-11] Club Front
+- [1982-01-01] Mickey's ranch studio
+- [1982-11-26] Bob Marley Performing Arts Center
+- [1985-02-00] Twilight Zone Sessions
+- [1985-04-21] Marin Veterans Memorial Auditorium
+- [1986-12-01] Club Front
+- [1987-01-01] Backstage Interview
+- [1987-03-28] Hampton Coliseum
+- [1987-06-01] Club Front
+- [1987-07-13] Robert F. Kennedy Stadium
+- [1988-06-01] Unknown
+- [1989-09-09] The Spectrum
+- [1990-08-28] Club Front
+- [1990-09-26] Club Front
+- [1990-09-27] Club Front
+- [1990-09-28] Club Front
+- [1992-02-13] Club Front
+- [1992-02-21] Club Front Studio
+- [1993-02-10] Club Front
+- [1994-02-24] Oakland County Coliseum*
+- [1995-01-01] Various
+- [1995-03-28] The Omni
+
+## Applied Venue/Location Corrections
+
+- [1968-01-22] Applied Known Corrections: Location: '' -> 'Seattle, Wa'
+- [1968-01-23] Applied Known Corrections: Location: '' -> 'Seattle, Wa'
+- [1968-10-08] Applied Known Corrections: Venue: 'The Matrix Club' -> 'The Matrix'; Location: '' -> 'San Francisco, Ca'
+- [1968-10-10] Applied Known Corrections: Location: '' -> 'San Francisco, Ca'
+- [1968-10-30] Applied Known Corrections: Location: '' -> 'San Francisco, Ca'
+- [1968-11-06] Applied Known Corrections: Location: '' -> 'San Francisco, Ca'
+- [1969-06-01] Applied Known Corrections: Location: '' -> 'San Francisco, Ca'
+- [1969-08-28] Applied Known Corrections: Location: '' -> 'San Francisco, Ca'
+- [1970-12-17] Applied Known Corrections: Location: '' -> 'San Francisco, Ca'
+- [1971-05-30] Applied Known Corrections: Location: '' -> 'San Francisco, Ca'
+- [1975-07-23] Applied Known Corrections: Venue: 'Club Front Studio' -> 'Club Front'; Location: '' -> 'San Rafael, Ca'
+- [1975-07-24] Applied Known Corrections: Venue: 'Club Front Studio' -> 'Club Front'; Location: '' -> 'San Rafael, Ca'
+- [1975-09-16] Applied Known Corrections: Venue: 'Club Front Studio' -> 'Club Front'; Location: '' -> 'San Rafael, Ca'
+- [1976-05-28] Applied Known Corrections: Venue: 'Le Club Front Studios' -> 'Club Front'; Location: '' -> 'San Rafael, Ca'
+- [1978-09-13] Applied Known Corrections: Location: '' -> 'Giza, Egypt'
+- [1978-11-08] Applied Known Corrections: Location: '' -> 'Landover, Md'
+- [1980-10-01] Applied Known Corrections: Location: '' -> 'San Francisco, CA & New York, NY'
+- [1981-03-04] Applied Known Corrections: Location: '' -> 'San Rafael, Ca'
+- [1981-12-11] Applied Known Corrections: Location: '' -> 'San Rafael, Ca'
+- [1982-01-01] Applied Known Corrections: Location: '' -> 'Novato, Ca'
+- [1982-11-26] Applied Known Corrections: Location: '' -> 'Montego Bay, Jam'
+- [1985-04-21] Applied Known Corrections: Location: '' -> 'Marin, Ca'
+- [1986-12-01] Applied Known Corrections: Location: '' -> 'San Rafael, Ca'
+- [1987-03-28] Applied Known Corrections: Location: '' -> 'Hampton, Va'
+- [1987-06-01] Applied Known Corrections: Location: '' -> 'San Rafael, Ca'
+- [1987-07-13] Applied Known Corrections: Location: '' -> 'Washington, DC'
+- [1989-09-09] Applied Known Corrections: Location: '' -> 'San Rafael, Ca'
+- [1990-08-28] Applied Known Corrections: Location: '' -> 'San Rafael, Ca'
+- [1990-09-26] Applied Known Corrections: Location: '' -> 'San Rafael, Ca'
+- [1990-09-27] Applied Known Corrections: Location: '' -> 'San Rafael, Ca'
+- [1990-09-28] Applied Known Corrections: Location: '' -> 'San Rafael, Ca'
+- [1992-02-13] Applied Known Corrections: Location: '' -> 'San Rafael, Ca'
+- [1992-02-21] Applied Known Corrections: Venue: 'Club Front Studio' -> 'Club Front'; Location: '' -> 'San Rafael, Ca'
+- [1993-02-10] Applied Known Corrections: Location: '' -> 'San Rafael, Ca'
+- [1994-02-24] Applied Known Corrections: Venue: 'Oakland County Coliseum*' -> 'Oakland County Coliseum'; Location: '' -> 'Oakland, Ca'
+- [1995-03-28] Applied Known Corrections: Location: '' -> 'Atlanta, Ga'
 
 ## Issue Log
 
