@@ -111,9 +111,11 @@ This file tracks planned features, enhancements, and bug fixes for the gdar appl
   - Add volume slider/control to Playback Screen controls.
   - Add setting in Playback Settings to toggle visibility of volume control.
 
-- [ ] **Gapless Playback:** Implement `ConcatenatingAudioSource` to enable true gapless playback by default for all shows, ensuring seamless transitions between tracks.
+- [x] **Gapless Playback:** Refactor to use `AudioPlayer.setAudioSources` (fixing `ConcatenatingAudioSource` deprecation) to ensure true gapless playback by default for all shows.
 - [ ] **Smart Random Setting**: Add a setting to toggle whether "Automated Random (Continuous Play) ignores search filter to pick from full library" (currently enabled by default).
 - [ ] **Hide Forward/Reverse Controls:** Add setting to hide Next/Previous track buttons in the player interfaces for a minimalist look.
+
+- [ ] **Android Caching:** Implement `LockCachingAudioSource` for Android platform to enable full-file buffering.
 
 ## Low Priority / Ideas
 
@@ -131,7 +133,7 @@ This file tracks planned features, enhancements, and bug fixes for the gdar appl
 - [ ] **Track Progress Indicator:** Add setting to show a progress indicator on the currently playing track list item. Should not show time labels and must respect the "Hide Track Duration" setting.
 
 - [ ] **Swipe to Block Follow-up:** When using "Swipe to Block" to remove a show, provide an option (or setting) to immediately trigger a new random selection.
-- [ ] **RGB Glow Setting:** Add a setting to control/boost the "glow" intensity of the RGB border effect.
+- [x] **RGB Glow Setting:** Add a setting to control/boost the "glow" intensity of the RGB border effect.
 
 - [x] **Move Encore Tracks:** Create a Python script to identify and move end tracks into an 'Encore' set.
   - [x] `remove_encore_prefix.py` handles prefix removal and moving misplaced tracks.
@@ -143,7 +145,7 @@ This file tracks planned features, enhancements, and bug fixes for the gdar appl
     - [x] Categorized matches into: (1) "Encore" in title, (2) "Tuning" in middle, (3) Neither.
     - [x] Generated detailed report `report_set1_enc.md` including full track lists and set names.
     - [x] Generated single minified JSON output `set1_matches.json`.
-  - [ ] **Review Set 1 Candidates:** Manually review `set1_matches.json` and split sets where appropriate.
+  - [x] **Review Set 1 Candidates:** Manually review `set1_matches.json` and split sets where appropriate.
 - [x] **Refined Usage Instructions:**
   - [x] Improved line breaking (no widows/orphans).
   - [x] Enhanced typography (bold keywords).
