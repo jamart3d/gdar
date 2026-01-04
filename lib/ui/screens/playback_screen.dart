@@ -13,6 +13,7 @@ import 'package:gdar/utils/utils.dart';
 import 'package:gdar/utils/color_generator.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:provider/provider.dart';
+import 'package:intl/intl.dart';
 import 'dart:async';
 
 import 'package:gdar/ui/widgets/rating_control.dart';
@@ -661,7 +662,8 @@ class _PlaybackScreenState extends State<PlaybackScreen>
                   offset: Offset(0, yOffset),
                   child: SingleChildScrollView(
                     physics: const ClampingScrollPhysics(),
-                    padding: EdgeInsets.fromLTRB(16, 0, 16, 32 * scaleFactor),
+                    padding: EdgeInsets.fromLTRB(
+                        16, 12 * scaleFactor, 16, 32 * scaleFactor),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
@@ -688,13 +690,38 @@ class _PlaybackScreenState extends State<PlaybackScreen>
                         Row(
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
-                            Text(
-                              currentShow.formattedDate,
-                              style: textTheme.titleMedium
-                                  ?.apply(fontSizeFactor: scaleFactor)
-                                  .copyWith(
-                                    color: colorScheme.onSurfaceVariant,
-                                  ),
+                            Builder(
+                              builder: (context) {
+                                String displayDate;
+                                try {
+                                  final dateTime =
+                                      DateTime.parse(currentShow.date);
+                                  final monthFormat =
+                                      settingsProvider.abbreviateMonth
+                                          ? DateFormat.yMMMd()
+                                          : DateFormat.yMMMMd();
+                                  displayDate = monthFormat.format(dateTime);
+
+                                  if (settingsProvider.showDayOfWeek) {
+                                    final dayFormat =
+                                        settingsProvider.abbreviateDayOfWeek
+                                            ? DateFormat.E()
+                                            : DateFormat.EEEE();
+                                    displayDate =
+                                        '${dayFormat.format(dateTime)}, $displayDate';
+                                  }
+                                } catch (_) {
+                                  displayDate = currentShow.formattedDate;
+                                }
+                                return Text(
+                                  displayDate,
+                                  style: textTheme.titleMedium
+                                      ?.apply(fontSizeFactor: scaleFactor)
+                                      .copyWith(
+                                        color: colorScheme.onSurfaceVariant,
+                                      ),
+                                );
+                              },
                             ),
                             const SizedBox(width: 8),
                             IconButton(

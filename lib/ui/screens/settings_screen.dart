@@ -680,6 +680,43 @@ class SettingsScreen extends StatelessWidget {
                         secondary: const Icon(Icons.date_range_rounded),
                       ),
                       SwitchListTile(
+                        title: const Text('Show Day of Week'),
+                        subtitle: const Text('Includes the day name in dates'),
+                        value: settingsProvider.showDayOfWeek,
+                        onChanged: (value) {
+                          context
+                              .read<SettingsProvider>()
+                              .toggleShowDayOfWeek();
+                        },
+                        secondary: const Icon(Icons.today_rounded),
+                      ),
+                      if (settingsProvider.showDayOfWeek)
+                        SwitchListTile(
+                          title: const Text('Abbreviate Day of Week'),
+                          subtitle:
+                              const Text('Use short day names (e.g., Sat)'),
+                          value: settingsProvider.abbreviateDayOfWeek,
+                          onChanged: (value) {
+                            context
+                                .read<SettingsProvider>()
+                                .toggleAbbreviateDayOfWeek();
+                          },
+                          secondary: const Icon(Icons.short_text_rounded),
+                        ),
+                      SwitchListTile(
+                        title: const Text('Abbreviate Month'),
+                        subtitle:
+                            const Text('Use short month names (e.g., Aug)'),
+                        value: settingsProvider.abbreviateMonth,
+                        onChanged: (value) {
+                          context
+                              .read<SettingsProvider>()
+                              .toggleAbbreviateMonth();
+                        },
+                        secondary:
+                            const Icon(Icons.calendar_view_month_rounded),
+                      ),
+                      SwitchListTile(
                         title: const Text('Show SHNID Badge (Single Source)'),
                         subtitle: const Text(
                             'Display SHNID number on card if only one source'),

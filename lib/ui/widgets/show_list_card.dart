@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:intl/intl.dart';
 import 'package:gdar/ui/widgets/animated_gradient_border.dart';
 import 'package:gdar/models/show.dart';
 import 'package:gdar/models/source.dart';
@@ -56,6 +57,24 @@ class _ShowListCardState extends State<ShowListCard> {
             : colorScheme.outlineVariant;
     final bool shouldShowBadge = widget.show.sources.length > 1 ||
         (widget.show.sources.length == 1 && settingsProvider.showSingleShnid);
+
+    String displayDate;
+    try {
+      final dateTime = DateTime.parse(widget.show.date);
+      final monthFormat = settingsProvider.abbreviateMonth
+          ? DateFormat.yMMMd()
+          : DateFormat.yMMMMd();
+      displayDate = monthFormat.format(dateTime);
+
+      if (settingsProvider.showDayOfWeek) {
+        final dayFormat = settingsProvider.abbreviateDayOfWeek
+            ? DateFormat.E()
+            : DateFormat.EEEE();
+        displayDate = '${dayFormat.format(dateTime)}, $displayDate';
+      }
+    } catch (_) {
+      displayDate = widget.show.formattedDate;
+    }
 
     final double scaleFactor = settingsProvider.uiScale ? 1.5 : 1.0;
 
@@ -190,6 +209,7 @@ class _ShowListCardState extends State<ShowListCard> {
               shouldShowBadge: shouldShowBadge,
               settingsProvider: settingsProvider,
               colorScheme: colorScheme,
+              displayDate: displayDate,
             ),
           ),
         ),
@@ -222,6 +242,7 @@ class _ShowListCardState extends State<ShowListCard> {
           shouldShowBadge: shouldShowBadge,
           settingsProvider: settingsProvider,
           colorScheme: colorScheme,
+          displayDate: displayDate,
         ),
       ),
     );
@@ -237,6 +258,7 @@ class _ShowListCardState extends State<ShowListCard> {
     required bool shouldShowBadge,
     required SettingsProvider settingsProvider,
     required ColorScheme colorScheme,
+    required String displayDate,
   }) {
     return Container(
       decoration: BoxDecoration(
@@ -247,7 +269,7 @@ class _ShowListCardState extends State<ShowListCard> {
         children: [
           Semantics(
             label:
-                '${widget.show.venue} on ${widget.show.formattedDate}. ${widget.isPlaying ? "Playing" : ""}',
+                '${widget.show.venue} on $displayDate. ${widget.isPlaying ? "Playing" : ""}',
             hint: widget.isExpanded
                 ? 'Double tap to collapse'
                 : 'Double tap to expand',
@@ -280,7 +302,7 @@ class _ShowListCardState extends State<ShowListCard> {
                                     height: venueStyle.fontSize! * 1.6,
                                     child: ConditionalMarquee(
                                       text: settingsProvider.dateFirstInShowCard
-                                          ? widget.show.formattedDate
+                                          ? displayDate
                                           : widget.show.venue,
                                       style: venueStyle,
                                     ),
@@ -291,7 +313,7 @@ class _ShowListCardState extends State<ShowListCard> {
                                     child: Text(
                                       settingsProvider.dateFirstInShowCard
                                           ? widget.show.venue
-                                          : widget.show.formattedDate,
+                                          : displayDate,
                                       style: dateStyle,
                                     ),
                                   ),

@@ -14,6 +14,9 @@ class SettingsProvider with ChangeNotifier {
 
   static const String _playRandomOnStartupKey = 'play_random_on_startup';
   static const String _dateFirstInShowCardKey = 'date_first_in_show_card';
+  static const String _showDayOfWeekKey = 'show_day_of_week';
+  static const String _abbreviateDayOfWeekKey = 'abbreviate_day_of_week';
+  static const String _abbreviateMonthKey = 'abbreviate_month';
   static const String _useDynamicColorKey = 'use_dynamic_color';
   static const String _appFontKey = 'app_font';
   String _appFont = 'default';
@@ -53,6 +56,9 @@ class SettingsProvider with ChangeNotifier {
   late bool _playRandomOnCompletion;
   late bool _playRandomOnStartup;
   late bool _dateFirstInShowCard;
+  late bool _showDayOfWeek;
+  late bool _abbreviateDayOfWeek;
+  late bool _abbreviateMonth;
   late bool _useDynamicColor;
   // late bool _useHandwritingFont; // Removed
   late bool _uiScale;
@@ -86,6 +92,9 @@ class SettingsProvider with ChangeNotifier {
   bool get playRandomOnCompletion => _playRandomOnCompletion;
   bool get playRandomOnStartup => _playRandomOnStartup;
   bool get dateFirstInShowCard => _dateFirstInShowCard;
+  bool get showDayOfWeek => _showDayOfWeek;
+  bool get abbreviateDayOfWeek => _abbreviateDayOfWeek;
+  bool get abbreviateMonth => _abbreviateMonth;
   bool get useDynamicColor => _useDynamicColor;
   bool get useSliverAppBar => true;
   bool get useSharedAxisTransition => true;
@@ -148,6 +157,9 @@ class SettingsProvider with ChangeNotifier {
         _prefs.getBool(_playRandomOnCompletionKey) ?? false;
     _playRandomOnStartup = _prefs.getBool(_playRandomOnStartupKey) ?? false;
     _dateFirstInShowCard = _prefs.getBool(_dateFirstInShowCardKey) ?? true;
+    _showDayOfWeek = _prefs.getBool(_showDayOfWeekKey) ?? false;
+    _abbreviateDayOfWeek = _prefs.getBool(_abbreviateDayOfWeekKey) ?? true;
+    _abbreviateMonth = _prefs.getBool(_abbreviateMonthKey) ?? false;
     _useDynamicColor = _prefs.getBool(_useDynamicColorKey) ?? true;
     // Font Migration Logic
     if (_prefs.containsKey('use_handwriting_font')) {
@@ -228,6 +240,12 @@ class SettingsProvider with ChangeNotifier {
       _playRandomOnStartupKey, _playRandomOnStartup = !_playRandomOnStartup);
   void toggleDateFirstInShowCard() => _updatePreference(
       _dateFirstInShowCardKey, _dateFirstInShowCard = !_dateFirstInShowCard);
+  void toggleShowDayOfWeek() =>
+      _updatePreference(_showDayOfWeekKey, _showDayOfWeek = !_showDayOfWeek);
+  void toggleAbbreviateDayOfWeek() => _updatePreference(
+      _abbreviateDayOfWeekKey, _abbreviateDayOfWeek = !_abbreviateDayOfWeek);
+  void toggleAbbreviateMonth() => _updatePreference(
+      _abbreviateMonthKey, _abbreviateMonth = !_abbreviateMonth);
   void toggleUseDynamicColor() => _updatePreference(
       _useDynamicColorKey, _useDynamicColor = !_useDynamicColor);
   // void toggleUseHandwritingFont() => ... // Removed
