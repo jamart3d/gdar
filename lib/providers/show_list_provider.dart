@@ -249,7 +249,8 @@ class ShowListProvider with ChangeNotifier {
           final query = _searchQuery.toLowerCase();
           if (query.isNotEmpty) {
             if (!show.venue.toLowerCase().contains(query) &&
-                !show.formattedDate.toLowerCase().contains(query)) {
+                !show.formattedDate.toLowerCase().contains(query) &&
+                !show.location.toLowerCase().contains(query)) {
               return false;
             }
           }

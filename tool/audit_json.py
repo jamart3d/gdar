@@ -3,6 +3,7 @@ import argparse
 import sys
 from collections import defaultdict
 
+import re
 # Known corrections map: Date -> (Venue, Location)
 KNOWN_VENUE_LOCATIONS = {
     "1968-01-22": ("Eagles Auditorium", "Seattle, Wa"),
@@ -65,6 +66,444 @@ def get_source_map(data):
             source_map[shnid] = ", ".join(sig)
     return source_map
 
+# --- Classification Logic (Ported from fix_sets_api.py) ---
+typical_closers = [
+    "Sugar Magnolia", "Sunshine Daydream", "One More Saturday Night", 
+    "Not Fade Away", "Goin' Down the Road Feeling Bad", "Good Lovin'", 
+    "Around and Around", "Johnny B. Goode", "U.S. Blues", "Casey Jones", 
+    "Turn On Your Love Light", "Estimated Prophet", "Morning Dew", 
+    "The Music Never Stopped", "Throwing Stones", "Deal"
+]
+
+typical_encores = [
+    "U.S. Blues", "One More Saturday Night", "Johnny B. Goode", 
+    "Brokedown Palace", "And We Bid You Goodnight", "Baby Blue", 
+    "Mighty Quinn", "Liberty", "Box of Rain", "Black Muddy River", 
+    "I Fought the Law", "Werewolves of London"
+]
+
+def get_song_script_logic(song_title):
+    # Data dictionary defining the role and script beats for each song
+    dead_logic = {
+        "Box of Rain": {
+            "role": "Emotional Encore",
+            "stat": "58% Encore frequency",
+            "hook": "The spiritual send-off. Mention the 1986 bust-out and the 1995 finale."
+        },
+        "The Weight": {
+            "role": "Curtain Call",
+            "stat": "93% Encore frequency",
+            "hook": "The vocal trade-off. Focus on the brotherhood of the final years."
+        },
+        "Casey Jones": {
+            "role": "Set I Closer",
+            "stat": "Rarely an Encore (6%)",
+            "hook": "The 'runaway train' effect. It leaves the crowd hanging for Set II."
+        },
+        "Truckin'": {
+            "role": "Set II Engine",
+            "stat": "Near-zero Encore frequency",
+            "hook": "The bridge to the jam. Not a destination, but a journey."
+        },
+        "Around and Around": {
+            "role": "Rock & Roll Finale",
+            "stat": "25% Show-ending frequency",
+            "hook": "The high-octane gear shift. This is the 'lights up' song of the late 70s."
+        },
+        "One More Saturday Night": {
+            "aliases": ["omsn", "saturday night", "e_omsn", "one saturday night (you were warned)"],
+            "role": "Calendar Specialist", # Role maps to action
+            "stat": "98% on Saturdays",
+            "hook": "The automatic Saturday finale. If it's Saturday, Bobby is screaming the ending."
+        },
+        "The Weight": {
+            "role": "Curtain Call",
+            "stat": "Absolute final track of the 90s",
+            "hook": "The 90s era 'curtain call' encore."
+        },
+        "Turn on Your Lovelight": {
+             "aliases": ["love light", "lovelight", "turn on your love light #", "lovelight -", "turn on your love light"],
+             "role": "Era-Dependent Finale",
+             "stat": "Pigpen's 20-minute marathon",
+             "hook": "In multi-set shows, this often ended Set 2 without a following encore."
+        },
+        "And We Bid You Goodnight": {
+            "aliases": ["awbygn", "we bid you good night", "goodnight irene", "and we bid you good night", "we bid you goodnight"],
+            "role": "Final Blessing",
+            "stat": "A cappella finale",
+            "hook": "Played a cappella after the instruments were down."
+        },
+        "Brokedown Palace": {
+            "role": "The Lullaby",
+            "stat": "Definitive sentimental encore",
+            "hook": "If this is played, the night is over."
+        },
+        "Not Fade Away": {
+            "aliases": ["not fade away -", "not fade away (1)", "not fade away*-"],
+            "role": "Ritual Finale",
+            "stat": "80% chance it closes Set II",
+            "hook": "The Bo Diddley beat. Look for the 'Chant' in the script."
+        },
+        "Good Lovin'": {
+            "role": "Party Closer",
+            "stat": "15% chance as standalone encore",
+            "hook": "Alternates with Sugar Magnolia."
+        },
+        "It's All Over Now Baby Blue": {
+            "aliases": ["it's all over now, bbay blue", "(it's all over now) baby blue"],
+            "role": "Soft Landing",
+            "stat": "Standard Dylan Encore",
+            "hook": "Standard 'Soft Landing' Dylan encore."
+        },
+        "Scarlet Begonias": {
+            "role": "Second Set Opener",
+            "stat": "< 1% Encore",
+            "hook": "The spark plug. It signals that the heavy jamming is about to begin."
+        },
+        "Morning Dew": {
+            "role": "Emotional Apex",
+            "stat": "Second Set Ballad",
+            "hook": "The 'spiritual center' of the show. Rarely the final song, but often the most important."
+        },
+        "Sugar Magnolia": {
+            "aliases": ["sugar magnolia-", "sugar magnolia /", "sunshine daydream"],
+            "role": "Set II Closer",
+            "stat": "Usually the main set peak",
+            "hook": "If played as encore, look for 'Sunshine Daydream' reprise."
+        },
+        "Revolution": {
+            "role": "Special Event Encore",
+            "stat": "91% Encore frequency",
+            "hook": "A rare Beatles bust-out. Check for birthdays (Phil's or Lennon's)."
+        },
+        "Rain": {
+            "role": "Atmospheric Closer",
+            "stat": "51% First Set Closer",
+            "hook": "Beatles cover (1992-1995). Check for outdoor weather context."
+        }
+    }
+
+    # Case-insensitive lookup (exact match)
+    song_map = {k.lower(): v for k, v in dead_logic.items()}
+    found_logic = song_map.get(song_title.lower())
+    
+    if found_logic:
+        return found_logic
+        
+    # Alias lookup
+    lower_title = song_title.lower()
+    for key, data in dead_logic.items():
+        if "aliases" in data:
+            for alias in data["aliases"]:
+                if alias.lower() == lower_title: # Strict alias match? or 'in'? User aliases look specific.
+                     return data
+                     
+    # Substring match on Key (Legacy fallback)
+    # for key, data in dead_logic.items():
+    #     if key.lower() in lower_title:
+    #         return data
+
+
+
+    # Logic to return the data or a default if song isn't found
+    return {"role": "Varies", "stat": "N/A", "hook": "Standard rotation."}
+
+def classify_dead_tracks(date, track_list):
+    """
+    date: 'YYYY-MM-DD'
+    track_list: List of the final 4-5 songs of the show in order.
+    """
+    try:
+        year = int(date.split('-')[0])
+    except:
+        year = 0
+        
+    last_song = track_list[-1]
+    penultimate = track_list[-2] if len(track_list) > 1 else None
+
+    # Result structure
+    show_structure = {"Set_Closer": [], "Encore": []}
+
+    # 1. PURE ENCORE LIST (Assume these are always encores if at the end)
+    pure_encores = ["The Mighty Quinn", "Quinn the Eskimo", "Satisfaction", "(I Can't Get No) Satisfaction", "Brokedown Palace", "Liberty", "The Weight", "Lucy in the Sky with Diamonds"]
+    
+    # 2. PURE CLOSER LIST (Assume these trigger the encore break)
+    # Around and Around Eras:
+    # - 1970–1974: First Set Closer (High frequency)
+    # - 1976–1980: Second Set Closer (Peak frequency)
+    # - 1981–1995: Mid-Second Set (Lower frequency) -> If found at end, treat as Closer (or cut tape), NOT Encore.
+    pure_closers = ["Around and Around", "Around & Around", "Sugar Magnolia", "Sunshine Daydream", "Good Lovin'"]
+
+    # 3. Handle Satisfaction Exceptions (1981-03-24, 1981-05-12, 1981-12-05)
+    sat_exceptions = ["1981-03-24", "1981-05-12", "1981-12-05"]
+    if date in sat_exceptions and last_song != "Satisfaction":
+        show_structure["Set_Closer"] = ["Satisfaction"]
+        show_structure["Encore"] = [last_song]
+        return show_structure
+
+    # 4. Handle 1974 "Triple Set" Era Logic
+    if year == 1974:
+        # If OMSN is present, it is almost always the Set 3 Closer.
+        if "One More Saturday Night" in track_list:
+            idx = track_list.index("One More Saturday Night")
+            show_structure["Set_Closer"] = track_list[:idx+1]
+            show_structure["Encore"] = track_list[idx+1:]
+        else:
+            show_structure["Encore"] = [last_song]
+            show_structure["Set_Closer"] = track_list[:-1]
+
+    # 5. Handle Casey Jones Eras
+    # 1970–1973: Triple Encore Era
+    # 1977–1984: Mid-Period Rarity
+    # 1992–1993: 90s Revival
+    if "Casey Jones" in [last_song, penultimate]:
+        is_casey_encore = False
+        if 1970 <= year <= 1973: is_casey_encore = True
+        elif 1977 <= year <= 1984: is_casey_encore = True
+        elif 1992 <= year <= 1993: is_casey_encore = True
+        
+        if is_casey_encore:
+            if last_song == "Casey Jones":
+                 show_structure["Encore"] = ["Casey Jones"]
+                 show_structure["Set_Closer"] = [penultimate]
+                 return show_structure
+            elif penultimate == "Casey Jones" and last_song in ["Johnny B. Goode", "Uncle John's Band"]:
+                 show_structure["Encore"] = ["Casey Jones", last_song]
+                 show_structure["Set_Closer"] = [track_list[-3]]
+                 return show_structure
+
+    # 6. Handle "Day Job" Eras
+    # 12/15/1982: Debut, only time closing Set 1.
+    # 1982–1986: Standard Encore run.
+    # 06/24/1995: The "Bust-Out" Encore.
+    if last_song in ["Day Job", "Keep Your Day Job"]:
+        if date == "1982-12-15":
+             show_structure["Set_Closer"] = [last_song]
+             return show_structure
+        elif (1982 <= year <= 1986) or date == "1995-06-24":
+             show_structure["Encore"] = [last_song]
+             return show_structure
+
+    # 7. Standard Era Logic (Post-1977)
+    else:
+        # Check if the last song is a known Encore
+        if last_song in pure_encores or last_song == "Uncle John's Band":
+            show_structure["Encore"] = [last_song]
+            show_structure["Set_Closer"] = [penultimate]
+            
+            # Check for "Double Encore" (e.g. U.S. Blues > OMSN)
+            if penultimate in ["U.S. Blues", "Johnny B. Goode"]:
+                show_structure["Encore"] = [penultimate, last_song]
+                show_structure["Set_Closer"] = [track_list[-3]]
+        
+        elif last_song in pure_closers:
+            # If the show ends with a closer, there was technically 'No Encore'
+            show_structure["Set_Closer"] = [last_song]
+            show_structure["Encore"] = ["(No Encore Played)"]
+
+
+    # 8. User Provided Script Logic
+    script_logic = get_song_script_logic(last_song)
+    role = script_logic.get("role", "")
+    
+    if "Encore" in role or "Curtain Call" in role or "Calendar Specialist" in role or "Lullaby" in role or "Final Blessing" in role or "Soft Landing" in role:
+         if role == "Emotional Encore": # Special case for Box of Rain to ensure it's treated right
+            show_structure["Encore"] = [last_song]
+            show_structure["Set_Closer"] = [penultimate]
+            return show_structure
+         
+         # The Weight (Curtain Call), OMSN (Calendar), Brokedown (Lullaby)
+         show_structure["Encore"] = [last_song]
+         show_structure["Set_Closer"] = [penultimate]
+         return show_structure
+
+    elif "Closer" in role or "Finale" in role or "Engine" in role or "Opener" in role or "Apex" in role:
+         # Treat as Set Closer (SKIP)
+         show_structure["Set_Closer"] = [last_song]
+         show_structure["Encore"] = ["(No Encore Played)"]
+         return show_structure
+
+    # Ensure we return something even if no specific rules matched
+    return show_structure
+
+def generate_encore_rules(data):
+    """Finds candidates for missing encores and groups by last track name."""
+    candidates = defaultdict(lambda: {"count": 0, "types": defaultdict(int), "dates": []})
+    
+    for show in data:
+        show_date = show.get('date', 'Unknown')
+        for source in show.get('sources', []):
+            sets = source.get('sets', [])
+            if not sets and 'source_sets' in source: sets = source['source_sets']
+            if not sets: continue
+            
+            has_set2 = any(s.get('n') == "Set 2" for s in sets)
+            has_set3 = any(s.get('n') == "Set 3" for s in sets)
+            has_encore = any(s.get('n') == "Encore" for s in sets)
+            total_tracks = sum(len(s.get('t', [])) for s in sets)
+            
+            if total_tracks > 13 and (has_set2 or has_set3) and not has_encore:
+                last_set = sets[-1]
+                if last_set.get('t'):
+                    # Get last few tracks for classification
+                    track_names = [t.get('t', '') for t in last_set['t']]
+                    last_track_name = track_names[-1].strip().lower()
+                    
+                    # Run Classification
+                    classification = "Unknown"
+                    if len(track_names) >= 1:
+                        classified = classify_dead_tracks(show_date, track_names[-5:])
+                        if classified.get("Encore") and classified["Encore"] != ["(No Encore Played)"]:
+                            classification = "Encore"
+                        elif classified.get("Encore") == ["(No Encore Played)"]:
+                            classification = "Set_Closer"
+                    
+                    candidates[last_track_name]["count"] += 1
+                    candidates[last_track_name]["types"][classification] += 1
+                    candidates[last_track_name]["dates"].append(show_date)
+
+    # Convert to rules list with smart defaults
+    rules = []
+    for name, info in sorted(candidates.items(), key=lambda x: x[1]["count"], reverse=True):
+        # Determine likely classification (majority vote)
+        likely_type = max(info["types"].items(), key=lambda x: x[1])[0]
+        
+        # Default Action
+        default_action = "SKIP"
+        if likely_type == "Encore":
+            default_action = "MOVE_1"
+        
+        rules.append({
+            "last_track": name,
+            "count": info["count"],
+            "classification": likely_type,
+            "action": default_action
+        })
+    return rules
+
+def apply_encore_rules(data, rules_path):
+    """Applies encore fixes based on rules file."""
+    try:
+        with open(rules_path, 'r') as f:
+            rules_list = json.load(f)
+    except Exception as e:
+        print(f"Error reading rules file: {e}")
+        return data
+        
+    # Create lookup map
+    rules_map = {r['last_track']: r['action'] for r in rules_list}
+    
+    applied_count = 0
+    
+    for show in data:
+        show_date = show.get('date', 'Unknown')
+        for source in show.get('sources', []):
+            sets = source.get('sets', [])
+            if not sets and 'source_sets' in source: sets = source['source_sets']
+            if not sets: continue
+            
+            has_set2 = any(s.get('n') == "Set 2" for s in sets)
+            has_set3 = any(s.get('n') == "Set 3" for s in sets)
+            has_encore = any(s.get('n') == "Encore" for s in sets)
+            total_tracks = sum(len(s.get('t', [])) for s in sets)
+            
+            if total_tracks > 13 and (has_set2 or has_set3) and not has_encore:
+                last_set = sets[-1]
+                if last_set.get('t'):
+                    track_names = [t.get('t', '') for t in last_set['t']]
+                    last_track_name = track_names[-1].strip().lower()
+                    
+                    action = "SKIP"
+                    
+                    # Special Rule: e_omsn
+                    if last_track_name == "e_omsn":
+                        # Rename in place
+                        last_set['t'][-1]['t'] = "One More Saturday Night"
+                        action = "MOVE_1"
+                    else:
+                        # 1. Try Dynamic Classification (Era-Aware)
+                        classified = classify_dead_tracks(show_date, track_names[-5:])
+                        
+                        # Check if classification explicitly identified an encore
+                        if classified.get("Encore") and classified["Encore"] != ["(No Encore Played)"]:
+                            # Determine move count based on classified encore length
+                            encore_len = len(classified["Encore"])
+                            if encore_len == 1:
+                                action = "MOVE_1"
+                            elif encore_len == 2:
+                                action = "MOVE_2"
+                            
+                    # 2. Fallback to Rules File if Classification was "Set_Closer" (SKIP) or inconclusive
+                    # BUT, allow rules file to OVERRIDE "SKIP" -> "MOVE"? 
+                    # If classification says "Set_Closer", we probably shouldn't move it unless user forced it.
+                    # If classification detected an Encore, we definitely move it.
+                    
+                    if action == "SKIP":
+                        # Check rules file
+                        rule_action = rules_map.get(last_track_name, "SKIP")
+                        if rule_action.startswith("MOVE"):
+                            action = rule_action
+                    
+                    if action == "MOVE_1":
+                        moved_track = last_set['t'].pop()
+                        # Add to new Encore set
+                        new_encore = {"n": "Encore", "t": [moved_track]}
+                        sets.append(new_encore)
+                        applied_count += 1
+                        
+                    elif action == "MOVE_2":
+                        if len(last_set['t']) >= 2:
+                            moved_track_2 = last_set['t'].pop()
+                            moved_track_1 = last_set['t'].pop()
+                            # Add to new Encore set (ordered 1 then 2)
+                            new_encore = {"n": "Encore", "t": [moved_track_1, moved_track_2]}
+                            sets.append(new_encore)
+                            applied_count += 1
+    
+    print(f"Applied {applied_count} encore fixes.")
+    return data
+    
+    print(f"Applied {applied_count} encore fixes.")
+    return data
+
+def report_messy_tracks(data):
+    # Report Messy Track Names
+    messy_tracks = []
+    messy_pattern = re.compile(r'\d+d\d+t\d+', re.IGNORECASE)
+    
+    for show in data:
+        show_date = show.get('date', 'Unknown')
+        for source in show.get('sources', []):
+            shnid = source.get('id', 'Unknown')
+            for s in source.get('sets', []) + source.get('source_sets', []):
+                 for t in s.get('t', []):
+                     title = t.get('t', '')
+                     if messy_pattern.search(title):
+                         messy_tracks.append(f"- [{show_date}] Source {shnid}: {title}")
+
+    if messy_tracks:
+        with open('messy_track_names.md', 'w') as f:
+            f.write("# Messy Track Names Report\n\n")
+            f.write("Found the following tracks with 'd#t#' pattern:\n\n")
+            f.write("\n".join(messy_tracks))
+        print(f"Reported {len(messy_tracks)} messy track names to messy_track_names.md")
+    else:
+        print("No messy track names found.")
+
+def remove_blacklisted_sources(data):
+    """Removes specific SHNIDs requested by the user."""
+    blacklist = ["71"] # String ID
+    removed_count = 0
+    for show in data:
+        sources = show.get('sources', [])
+        original_len = len(sources)
+        show['sources'] = [s for s in sources if str(s.get('id', '')) not in blacklist]
+        removed_count += original_len - len(show['sources'])
+    
+    if removed_count > 0:
+        print(f"Removed {removed_count} blacklisted sources (Ids: {blacklist}).")
+    return data
+
 def audit_json(input_file, report_file, reference_file=None, output_file=None):
     print(f"Starting audit of {input_file}...")
     
@@ -74,6 +513,8 @@ def audit_json(input_file, report_file, reference_file=None, output_file=None):
     except Exception as e:
         print(f"FATAL: Could not read or parse JSON file: {e}")
         sys.exit(1)
+
+    data = remove_blacklisted_sources(data)
 
     ref_data = None
     if reference_file:
@@ -102,6 +543,8 @@ def audit_json(input_file, report_file, reference_file=None, output_file=None):
         "us_blues_last_no_encore": 0,
         "us_blues_last_no_encore": 0,
         "omsn_last_no_encore": 0,
+        "rain_last_no_encore": 0,
+        "casey_jones_last_no_encore": 0,
         "shows_missing_l": 0,
         "missing_fields": defaultdict(int)
     }
@@ -233,7 +676,16 @@ def audit_json(input_file, report_file, reference_file=None, output_file=None):
                     if "one more saturday night" in lt_name_lower:
                          stats["omsn_last_no_encore"] += 1
                          issues_found_in_source.append("One More Saturday Night is last track but NOT in Encore.")
+
+                    if "rain" in lt_name_lower and lt_name_lower.endswith("rain"):
+                         stats["rain_last_no_encore"] += 1
+                         issues_found_in_source.append("Last track ends with 'Rain' but NOT in Encore.")
+
+                    if "casey jones" in lt_name_lower:
+                         stats["casey_jones_last_no_encore"] += 1
+                         issues_found_in_source.append("Casey Jones is last track but NOT in Encore.")
             
+
 
 
             if issues_found_in_source:
@@ -250,6 +702,8 @@ def audit_json(input_file, report_file, reference_file=None, output_file=None):
              print("Done.")
          except Exception as e:
              print(f"FATAL: Could not write output file: {e}")
+
+
 
     # Write Report
     print(f"Audit complete. Found {len(issues_log)} issues.")
@@ -302,6 +756,8 @@ def audit_json(input_file, report_file, reference_file=None, output_file=None):
         f.write(f"- **Long Shows with NO Encore (>13 tracks):** {stats['long_no_encore']}\n")
         f.write(f"- **'U.S. Blues' last but NO Encore:** {stats['us_blues_last_no_encore']}\n")
         f.write(f"- **'One More Saturday Night' last but NO Encore:** {stats['omsn_last_no_encore']}\n")
+        f.write(f"- **Ends with 'Rain' but NO Encore:** {stats['rain_last_no_encore']}\n")
+        f.write(f"- **'Casey Jones' last but NO Encore:** {stats['casey_jones_last_no_encore']}\n")
 
         f.write(f"- **Shows missing Location 'l':** {stats['shows_missing_l']}\n")
         f.write("\n")
@@ -364,8 +820,39 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Audit JSON data integrity.')
     parser.add_argument('--input', default='assets/data/output.optimized_src.json', help='Input JSON file')
     parser.add_argument('--report', default='audit_report.md', help='Output report file')
-    parser.add_argument('--reference', help='Optional reference JSON file to compare against')
+    parser.add_argument('--generate-encore-rules', help='Output JSON file for encore rules')
+    parser.add_argument('--apply-encore-rules', help='Input JSON file with encore rules to apply')
     parser.add_argument('--output', help='Optional output JSON file to save corrections')
     args = parser.parse_args()
     
-    audit_json(args.input, args.report, args.reference, args.output)
+    if args.generate_encore_rules:
+        with open(args.input, 'r') as f:
+            data = json.load(f)
+        data = remove_blacklisted_sources(data)
+        rules = generate_encore_rules(data)
+        with open(args.generate_encore_rules, 'w') as f:
+            json.dump(rules, f, indent=2)
+        print(f"Generated encore rules to {args.generate_encore_rules}")
+        report_messy_tracks(data)
+        
+    elif args.apply_encore_rules and args.output:
+        with open(args.input, 'r') as f:
+            data = json.load(f)
+        data = remove_blacklisted_sources(data)
+        new_data = apply_encore_rules(data, args.apply_encore_rules)
+        with open(args.output, 'w') as f:
+            json.dump(new_data, f, separators=(',', ':'))
+        print(f"Saved patched data to {args.output}")
+        report_messy_tracks(new_data)
+        
+    else:
+        audit_json(args.input, args.report, None, args.output)
+        # Note: audit_json doesn't return data easily, so we might skip messy track report here or read file separately.
+        # But wait, audit_json logic was just modified to NOT include messy tracks!
+        # I extracted the logic out of audit_json.
+        # So I need to read the data here to run report_messy_tracks, or pass it into audit_json.
+        # Let's just read it quickly if needed, or better, let audit_json handle it?
+        # Actually, let's just run it on the input file data for consistent reporting.
+        with open(args.input, 'r') as f:
+             data = json.load(f)
+        report_messy_tracks(data)

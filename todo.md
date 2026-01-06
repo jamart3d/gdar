@@ -125,7 +125,7 @@ This file tracks planned features, enhancements, and bug fixes for the gdar appl
 
 - [ ] **Play Count & History**: Consider how to track and display how many times a show has been played. Display only in Rate Dialog or Rated Shows Library (not in Playback Controls).
 
-- [ ] **Search Help**: Add functionality to help users enter month names in the search field (e.g., autocomplete or chips).
+- [x] **Search Help**: Add functionality to help users enter month names in the search field (e.g., autocomplete or chips). Updated to search location as well.
 
 - [ ] **Compact Player Mode:** Move the play/pause control to an icon on the currently playing track in the list. When enabled and expanded, do not show any playback controls.
 - [ ] **Track Progress Indicator:** Add setting to show a progress indicator on the currently playing track list item. Should not show time labels and must respect the "Hide Track Duration" setting.

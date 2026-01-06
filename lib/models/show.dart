@@ -6,6 +6,7 @@ class Show {
   final String artist;
   final String date;
   String venue; // Changed from final to allow modification
+  String location;
   List<Source> sources; // Changed from final to allow modification
   bool hasFeaturedTrack; // Our new property
 
@@ -14,6 +15,7 @@ class Show {
     required this.artist,
     required this.date,
     required this.venue,
+    this.location = '',
     required this.sources,
     this.hasFeaturedTrack = false, // Default to false
   });
@@ -53,6 +55,7 @@ class Show {
       artist: 'Grateful Dead',
       date: date,
       venue: showName,
+      location: showLocation ?? '',
       sources: sources,
     );
   }
@@ -62,6 +65,7 @@ class Show {
     String? artist,
     String? date,
     String? venue,
+    String? location,
     List<Source>? sources,
     bool? hasFeaturedTrack,
   }) {
@@ -70,6 +74,7 @@ class Show {
       artist: artist ?? this.artist,
       date: date ?? this.date,
       venue: venue ?? this.venue,
+      location: location ?? this.location,
       sources: sources ?? this.sources,
       hasFeaturedTrack: hasFeaturedTrack ?? this.hasFeaturedTrack,
     );
@@ -82,8 +87,10 @@ class Show {
           runtimeType == other.runtimeType &&
           name == other.name &&
           date == other.date &&
-          venue == other.venue;
+          venue == other.venue &&
+          location == other.location;
 
   @override
-  int get hashCode => name.hashCode ^ date.hashCode ^ venue.hashCode;
+  int get hashCode =>
+      name.hashCode ^ date.hashCode ^ venue.hashCode ^ location.hashCode;
 }

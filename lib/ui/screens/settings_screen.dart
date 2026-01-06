@@ -90,26 +90,28 @@ class SettingsScreen extends StatelessWidget {
         return AlertDialog(
           title: const Text('Select App Font'),
           content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: fonts.entries.map((entry) {
-                return RadioListTile<String>(
-                  title: Text(
-                    displayNames[entry.key]!,
-                    style: entry.value?.copyWith(
-                      fontSize: 18,
+            child: RadioGroup<String>(
+              groupValue: settingsProvider.appFont,
+              onChanged: (String? value) {
+                if (value != null) {
+                  settingsProvider.setAppFont(value);
+                  Navigator.of(context).pop();
+                }
+              },
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: fonts.entries.map((entry) {
+                  return RadioListTile<String>(
+                    title: Text(
+                      displayNames[entry.key]!,
+                      style: entry.value?.copyWith(
+                        fontSize: 18,
+                      ),
                     ),
-                  ),
-                  value: entry.key,
-                  groupValue: settingsProvider.appFont,
-                  onChanged: (String? value) {
-                    if (value != null) {
-                      settingsProvider.setAppFont(value);
-                      Navigator.of(context).pop();
-                    }
-                  },
-                );
-              }).toList(),
+                    value: entry.key,
+                  );
+                }).toList(),
+              ),
             ),
           ),
           actions: <Widget>[
@@ -512,6 +514,32 @@ class SettingsScreen extends StatelessWidget {
                               ),
                               const SizedBox(height: 8),
                               AnimatedGradientBorder(
+                                borderRadius:
+                                    24, // Matches standard SegmentedButton radius
+                                borderWidth: 3,
+                                colors: const [
+                                  Colors.red,
+                                  Colors.yellow,
+                                  Colors.green,
+                                  Colors.cyan,
+                                  Colors.blue,
+                                  Colors.purple,
+                                  Colors.red,
+                                ],
+                                showGlow: true,
+                                // Glow mirrors the global logic:
+                                // If "Glow Border" is ON OR "Half Glow" is ON, we show shadow.
+                                showShadow: settingsProvider.showGlowBorder ||
+                                    settingsProvider.halfGlowDynamic,
+                                // Apply 50% reduction for Half Glow mode, on top of base 0.5 opacity
+                                glowOpacity: 0.5 *
+                                    (settingsProvider.halfGlowDynamic
+                                        ? 0.5
+                                        : 1.0),
+                                animationSpeed:
+                                    settingsProvider.rgbAnimationSpeed,
+                                // Transparent background to blend with SectionCard
+                                backgroundColor: Colors.transparent,
                                 child: SegmentedButton<double>(
                                   segments: const [
                                     ButtonSegment(
@@ -587,32 +615,6 @@ class SettingsScreen extends StatelessWidget {
                                     ),
                                   ),
                                 ),
-                                borderRadius:
-                                    24, // Matches standard SegmentedButton radius
-                                borderWidth: 3,
-                                colors: const [
-                                  Colors.red,
-                                  Colors.yellow,
-                                  Colors.green,
-                                  Colors.cyan,
-                                  Colors.blue,
-                                  Colors.purple,
-                                  Colors.red,
-                                ],
-                                showGlow: true,
-                                // Glow mirrors the global logic:
-                                // If "Glow Border" is ON OR "Half Glow" is ON, we show shadow.
-                                showShadow: settingsProvider.showGlowBorder ||
-                                    settingsProvider.halfGlowDynamic,
-                                // Apply 50% reduction for Half Glow mode, on top of base 0.5 opacity
-                                glowOpacity: 0.5 *
-                                    (settingsProvider.halfGlowDynamic
-                                        ? 0.5
-                                        : 1.0),
-                                animationSpeed:
-                                    settingsProvider.rgbAnimationSpeed,
-                                // Transparent background to blend with SectionCard
-                                backgroundColor: Colors.transparent,
                               ),
                             ],
                           ),
@@ -631,6 +633,116 @@ class SettingsScreen extends StatelessWidget {
                     title: 'Interface',
                     icon: Icons.view_quilt_outlined,
                     children: [
+                      // 1. General UI Group
+                      SwitchListTile(
+                        title: const Text('UI Scale'),
+                        subtitle:
+                            const Text('Increase text size across the app'),
+                        value: settingsProvider.uiScale,
+                        onChanged: (value) {
+                          context.read<SettingsProvider>().toggleUiScale();
+                        },
+                        secondary: const Icon(Icons.text_fields_rounded),
+                      ),
+                      SwitchListTile(
+                        title: const Text('Show Splash Screen'),
+                        subtitle:
+                            const Text('Show a loading screen on startup'),
+                        value: settingsProvider.showSplashScreen,
+                        onChanged: (value) {
+                          context
+                              .read<SettingsProvider>()
+                              .toggleShowSplashScreen();
+                        },
+                        secondary: const Icon(Icons.rocket_launch_rounded),
+                      ),
+                      const SizedBox(height: 8),
+                      const Divider(),
+                      const SizedBox(height: 8),
+
+                      // 2. Date & Time Group
+                      SwitchListTile(
+                        title: const Text('Show date first in show cards'),
+                        subtitle:
+                            const Text('Display the date before the venue'),
+                        value: settingsProvider.dateFirstInShowCard,
+                        onChanged: (value) {
+                          context
+                              .read<SettingsProvider>()
+                              .toggleDateFirstInShowCard();
+                        },
+                        secondary: const Icon(Icons.date_range_rounded),
+                      ),
+                      SwitchListTile(
+                        title: const Text('Show Day of Week'),
+                        subtitle: const Text('Includes the day name in dates'),
+                        value: settingsProvider.showDayOfWeek,
+                        onChanged: (value) {
+                          context
+                              .read<SettingsProvider>()
+                              .toggleShowDayOfWeek();
+                        },
+                        secondary: const Icon(Icons.today_rounded),
+                      ),
+                      if (settingsProvider.showDayOfWeek)
+                        SwitchListTile(
+                          title: const Text('Abbreviate Day of Week'),
+                          subtitle:
+                              const Text('Use short day names (e.g., Sat)'),
+                          value: settingsProvider.abbreviateDayOfWeek,
+                          onChanged: (value) {
+                            context
+                                .read<SettingsProvider>()
+                                .toggleAbbreviateDayOfWeek();
+                          },
+                          secondary: const Icon(Icons.short_text_rounded),
+                        ),
+                      SwitchListTile(
+                        title: const Text('Abbreviate Month'),
+                        subtitle:
+                            const Text('Use short month names (e.g., Aug)'),
+                        value: settingsProvider.abbreviateMonth,
+                        onChanged: (value) {
+                          context
+                              .read<SettingsProvider>()
+                              .toggleAbbreviateMonth();
+                        },
+                        secondary:
+                            const Icon(Icons.calendar_view_month_rounded),
+                      ),
+                      const SizedBox(height: 8),
+                      const Divider(),
+                      const SizedBox(height: 8),
+
+                      // 3. List Sorting & Badges
+                      SwitchListTile(
+                        title: const Text('Sort Oldest First'),
+                        subtitle: const Text('Show earliest shows at the top'),
+                        value: settingsProvider.sortOldestFirst,
+                        onChanged: (value) {
+                          context
+                              .read<SettingsProvider>()
+                              .toggleSortOldestFirst();
+                        },
+                        secondary: const Icon(Icons.sort_rounded),
+                      ),
+                      SwitchListTile(
+                        title: const Text('Show SHNID Badge (Single Source)'),
+                        subtitle: const Text(
+                            'Display SHNID number on card if only one source'),
+                        value: settingsProvider.showSingleShnid,
+                        onChanged: (value) {
+                          context
+                              .read<SettingsProvider>()
+                              .toggleShowSingleShnid();
+                        },
+                        secondary: const Icon(Icons.looks_one_rounded),
+                      ),
+                      const SizedBox(height: 8),
+                      const Divider(),
+                      const SizedBox(height: 8),
+
+                      // 4. Track List Options
                       SwitchListTile(
                         title: const Text('Show Track Numbers'),
                         subtitle: const Text('Display track numbers in lists'),
@@ -653,63 +765,6 @@ class SettingsScreen extends StatelessWidget {
                               .toggleHideTrackDuration();
                         },
                         secondary: const Icon(Icons.timer_off_rounded),
-                      ),
-                      SwitchListTile(
-                        title: const Text('Sort Oldest First'),
-                        subtitle: const Text('Show earliest shows at the top'),
-                        value: settingsProvider.sortOldestFirst,
-                        onChanged: (value) {
-                          context
-                              .read<SettingsProvider>()
-                              .toggleSortOldestFirst();
-                        },
-                        secondary: const Icon(Icons.sort_rounded),
-                      ),
-                      SwitchListTile(
-                        title: const Text('Show date first in show cards'),
-                        subtitle:
-                            const Text('Display the date before the venue'),
-                        value: settingsProvider.dateFirstInShowCard,
-                        onChanged: (value) {
-                          context
-                              .read<SettingsProvider>()
-                              .toggleDateFirstInShowCard();
-                        },
-                        secondary: const Icon(Icons.date_range_rounded),
-                      ),
-                      SwitchListTile(
-                        title: const Text('Show SHNID Badge (Single Source)'),
-                        subtitle: const Text(
-                            'Display SHNID number on card if only one source'),
-                        value: settingsProvider.showSingleShnid,
-                        onChanged: (value) {
-                          context
-                              .read<SettingsProvider>()
-                              .toggleShowSingleShnid();
-                        },
-                        secondary: const Icon(Icons.looks_one_rounded),
-                      ),
-                      SwitchListTile(
-                        title: const Text('UI Scale'),
-                        subtitle:
-                            const Text('Increase text size across the app'),
-                        value: settingsProvider.uiScale,
-                        onChanged: (value) {
-                          context.read<SettingsProvider>().toggleUiScale();
-                        },
-                        secondary: const Icon(Icons.text_fields_rounded),
-                      ),
-                      SwitchListTile(
-                        title: const Text('Show Splash Screen'),
-                        subtitle:
-                            const Text('Show a loading screen on startup'),
-                        value: settingsProvider.showSplashScreen,
-                        onChanged: (value) {
-                          context
-                              .read<SettingsProvider>()
-                              .toggleShowSplashScreen();
-                        },
-                        secondary: const Icon(Icons.rocket_launch_rounded),
                       ),
                     ],
                   ),
@@ -866,7 +921,7 @@ class SettingsScreen extends StatelessWidget {
                     color: Theme.of(context)
                         .colorScheme
                         .surfaceContainerHighest
-                        .withOpacity(0.3),
+                        .withValues(alpha: 0.3),
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(24)),
                     child: ListTile(
@@ -900,7 +955,7 @@ class SettingsScreen extends StatelessWidget {
                     color: Theme.of(context)
                         .colorScheme
                         .surfaceContainerHighest
-                        .withOpacity(0.3),
+                        .withValues(alpha: 0.3),
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(24)),
                     child: Column(

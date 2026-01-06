@@ -332,7 +332,8 @@ def fix_sets(input_file, output_file, report_file, long_encore_report_file, very
         "track_name_corrections": [], "case_corrected_track_names": [], 
         "duration_in_track_name_removed": 0, "special_track_corrections_made": [], 
         "encore_variation_fixes": [], "double_slash_removed_fixes": [], "trailing_empty_paren_removed": 0,
-        "non_mp3_tracks": []
+        "non_mp3_tracks": [],
+        "missing_encore_analysis": {} # {track_name: {count: int, type: str}}
     }
     report_logs = {}
 
@@ -644,6 +645,19 @@ def fix_sets(input_file, output_file, report_file, long_encore_report_file, very
 
                         if track_names_for_classification:
                             classified_structure = classify_dead_tracks(show_date, track_names_for_classification)
+                            
+                            # --- Tally Logic ---
+                            last_track_name_lower = track_names_for_classification[-1].lower().strip()
+                            if last_track_name_lower not in stats["missing_encore_analysis"]:
+                                stats["missing_encore_analysis"][last_track_name_lower] = {"count": 0, "type": "Unknown"}
+                            
+                            stats["missing_encore_analysis"][last_track_name_lower]["count"] += 1
+                            
+                            if classified_structure.get("Encore") and classified_structure["Encore"] != ["(No Encore Played)"]:
+                                stats["missing_encore_analysis"][last_track_name_lower]["type"] = "Encore"
+                            elif classified_structure.get("Encore") == ["(No Encore Played)"]:
+                                stats["missing_encore_analysis"][last_track_name_lower]["type"] = "Set_Closer"
+                            # -------------------
                             
                             classified_encore_names = classified_structure.get("Encore", [])
                             classified_closer_names = classified_structure.get("Set_Closer", [])
@@ -1443,6 +1457,17 @@ def fix_sets(input_file, output_file, report_file, long_encore_report_file, very
             f.write(f"**Summary:**\n\n")
             f.write(f"- Fixed by Rule-Based Classification: {len(stats['rule_based_encore_fixes'])}\n")
             f.write(f"- Remaining Potential Unlabeled Encores: {remaining_unlabeled_count}\n\n")
+
+            f.write("### Missing Encore Analysis (Tally by Last Track)\n\n")
+            f.write("| Last Track | Count | Classification |\n")
+            f.write("|---|---|---|\n")
+            
+            # Sort by count desc
+            sorted_tally = sorted(stats['missing_encore_analysis'].items(), key=lambda item: item[1]['count'], reverse=True)
+            
+            for track_name, info in sorted_tally:
+                f.write(f"| {track_name} | {info['count']} | {info['type']} |\n")
+            f.write("\n")
 
             if stats["remaining_unlabeled_encores"]:
                 f.write("---\n\n ## Remaining Potential Unlabeled Encores\n\n")

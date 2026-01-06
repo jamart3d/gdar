@@ -547,7 +547,7 @@ class _ShowListScreenState extends State<ShowListScreen>
                 child: SearchBar(
                   controller: _searchController,
                   focusNode: _searchFocusNode,
-                  hintText: 'Search by venue or date',
+                  hintText: 'Search by venue, date, or location',
                   leading: const Icon(Icons.search_rounded),
                   trailing: _searchController.text.isNotEmpty
                       ? [

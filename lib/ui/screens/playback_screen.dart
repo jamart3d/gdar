@@ -82,7 +82,8 @@ class _PlaybackScreenState extends State<PlaybackScreen>
     super.dispose();
   }
 
-  void _scrollToCurrentTrack({bool animate = true}) {
+  void _scrollToCurrentTrack(
+      {bool animate = true, bool force = false, double maxVisibleY = 1.0}) {
     if (!mounted) return;
     final audioProvider = context.read<AudioProvider>();
     final currentTrack = audioProvider.currentTrack;
@@ -118,6 +119,26 @@ class _PlaybackScreenState extends State<PlaybackScreen>
     }
 
     if (targetIndex != -1 && _itemScrollController.isAttached) {
+      final positions = _itemPositionsListener.itemPositions.value;
+
+      // Smart check to prevent jank
+      if (positions.isNotEmpty) {
+        if (force) {
+          // If forced (manual tap), only skip if we are already close to the target alignment (0.3)
+          final isAligned = positions.any((position) =>
+              position.index == targetIndex &&
+              (position.itemLeadingEdge - 0.3).abs() < 0.05); // 5% tolerance
+          if (isAligned) return;
+        } else {
+          // If auto-scroll, skip if fully visible within the allowed range
+          final isVisible = positions.any((position) =>
+              position.index == targetIndex &&
+              position.itemLeadingEdge >= 0 &&
+              position.itemTrailingEdge <= maxVisibleY);
+          if (isVisible) return;
+        }
+      }
+
       if (animate) {
         _itemScrollController.scrollTo(
           index: targetIndex,
@@ -134,7 +155,6 @@ class _PlaybackScreenState extends State<PlaybackScreen>
     }
   }
 
-  @override
   Widget build(BuildContext context) {
     final audioProvider = context.watch<AudioProvider>();
     final settingsProvider = context.watch<SettingsProvider>();
@@ -211,6 +231,10 @@ class _PlaybackScreenState extends State<PlaybackScreen>
         margin: EdgeInsets.zero,
         onPanelSlide: (position) {
           _panelPositionNotifier.value = position;
+        },
+        onPanelOpened: () {
+          // Panel covers significant portion, ensure track is in top 40%
+          _scrollToCurrentTrack(maxVisibleY: 0.4);
         },
         panel: _buildBottomControlsPanel(
           context,
@@ -592,7 +616,7 @@ class _PlaybackScreenState extends State<PlaybackScreen>
                 GestureDetector(
                   behavior: HitTestBehavior.opaque,
                   onTap: () {
-                    _scrollToCurrentTrack();
+                    _scrollToCurrentTrack(force: true);
                     if (_panelController.isAttached) {
                       if (_panelController.isPanelClosed) {
                         _panelController.open();

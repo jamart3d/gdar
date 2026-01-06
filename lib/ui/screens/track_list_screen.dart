@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:gdar/models/show.dart';
 import 'package:gdar/models/source.dart';
 import 'package:gdar/models/track.dart';
@@ -9,11 +10,8 @@ import 'package:gdar/ui/screens/settings_screen.dart';
 import 'package:gdar/ui/widgets/mini_player.dart';
 import 'package:gdar/ui/widgets/src_badge.dart';
 import 'package:gdar/ui/widgets/rating_control.dart';
-import 'package:gdar/ui/widgets/conditional_marquee.dart';
 import 'package:gdar/utils/utils.dart';
 import 'package:provider/provider.dart';
-import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
-import 'dart:ui';
 
 class TrackListScreen extends StatefulWidget {
   final Show show;
@@ -30,75 +28,11 @@ class TrackListScreen extends StatefulWidget {
 }
 
 class _TrackListScreenState extends State<TrackListScreen> {
-  final ItemScrollController _itemScrollController = ItemScrollController();
-  final ItemPositionsListener _itemPositionsListener =
-      ItemPositionsListener.create();
-  String? _lastTrackTitle;
+  OverlayEntry? _overlayEntry;
 
-  @override
-  void initState() {
-    super.initState();
-    final audioProvider = context.read<AudioProvider>();
-    _lastTrackTitle = audioProvider.currentTrack?.title;
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _scrollToCurrentTrack(animate: false);
-    });
-  }
+  // Logic identifying the current source/track is removed as requested.
 
-  void _scrollToCurrentTrack({bool animate = true}) {
-    if (!mounted) return;
-    final audioProvider = context.read<AudioProvider>();
-
-    final isCurrentShow = audioProvider.currentShow?.name == widget.show.name;
-    if (!isCurrentShow) return;
-
-    final currentTrack = audioProvider.currentTrack;
-    if (currentTrack == null) return;
-
-    // Build the list structure to find the index
-    final Map<String, List<Track>> tracksBySet = {};
-    for (var track in widget.source.tracks) {
-      if (!tracksBySet.containsKey(track.setName)) {
-        tracksBySet[track.setName] = [];
-      }
-      tracksBySet[track.setName]!.add(track);
-    }
-
-    final List<dynamic> listItems = [];
-    tracksBySet.forEach((setName, tracks) {
-      listItems.add(setName);
-      listItems.addAll(tracks);
-    });
-
-    int targetIndex = -1;
-    for (int i = 0; i < listItems.length; i++) {
-      final item = listItems[i];
-      if (item is Track &&
-          item.title == currentTrack.title &&
-          item.trackNumber == currentTrack.trackNumber) {
-        targetIndex = i;
-        break;
-      }
-    }
-
-    if (targetIndex != -1 && _itemScrollController.isAttached) {
-      if (animate) {
-        _itemScrollController.scrollTo(
-          index: targetIndex,
-          duration: const Duration(milliseconds: 500),
-          curve: Curves.easeInOutCubic,
-          alignment: 0.3,
-        );
-      } else {
-        _itemScrollController.jumpTo(
-          index: targetIndex,
-          alignment: 0.3,
-        );
-      }
-    }
-  }
-
-  void _onTrackTapped(Source source, int trackIndex) {
+  void _onTrackTapped(BuildContext itemContext, Source source, int trackIndex) {
     final audioProvider = context.read<AudioProvider>();
     final settingsProvider = context.read<SettingsProvider>();
 
@@ -106,29 +40,75 @@ class _TrackListScreenState extends State<TrackListScreen> {
 
     // If Play on Tap is disabled, prevent switching sources by tap
     if (!isCurrentSource && !settingsProvider.playOnTap) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Play on Tap is disabled. Enable it in Settings to play from other sources.',
-            style: TextStyle(
-                color: Theme.of(context).colorScheme.onInverseSurface),
-          ),
-          behavior: SnackBarBehavior.floating,
-          backgroundColor: Theme.of(context).colorScheme.inverseSurface,
-          action: SnackBarAction(
-            label: 'Settings',
-            onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const SettingsScreen()),
-              );
-            },
-          ),
-        ),
-      );
+      _showContextualOverlay(itemContext);
       return;
     }
 
     audioProvider.playSource(widget.show, source, initialIndex: trackIndex);
+  }
+
+  void _showContextualOverlay(BuildContext itemContext) {
+    _overlayEntry?.remove();
+    _overlayEntry = null;
+
+    final renderBox = itemContext.findRenderObject() as RenderBox?;
+    if (renderBox == null) return;
+
+    final size = renderBox.size;
+    final offset = renderBox.localToGlobal(Offset.zero);
+
+    _overlayEntry = OverlayEntry(
+      builder: (context) => Positioned(
+        left: offset.dx,
+        top: offset.dy,
+        width: size.width,
+        height: size.height,
+        child: Material(
+          color: Colors.transparent,
+          child: Container(
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.inverseSurface,
+              borderRadius: BorderRadius.circular(16),
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    'Play on Tap disabled',
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.onInverseSurface,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                TextButton(
+                  onPressed: () {
+                    _overlayEntry?.remove();
+                    _overlayEntry = null;
+                    Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => const SettingsScreen()),
+                    );
+                  },
+                  child: Text(
+                    'Settings',
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.inversePrimary,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+
+    Overlay.of(context).insert(_overlayEntry!);
+    Future.delayed(const Duration(seconds: 3), () {
+      _overlayEntry?.remove();
+      _overlayEntry = null;
+    });
   }
 
   void _openPlaybackScreen() {
@@ -144,36 +124,9 @@ class _TrackListScreenState extends State<TrackListScreen> {
         audioProvider.currentShow!.name != widget.show.name;
     final settingsProvider = context.watch<SettingsProvider>();
 
-    // Auto-scroll when track changes while viewing this show
-    if (audioProvider.currentShow?.name == widget.show.name &&
-        audioProvider.currentTrack?.title != _lastTrackTitle) {
-      _lastTrackTitle = audioProvider.currentTrack?.title;
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        _scrollToCurrentTrack();
-      });
-    }
-
     return Scaffold(
       appBar: AppBar(
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              widget.show.formattedDate,
-              style: Theme.of(context).textTheme.titleLarge?.apply(
-                  fontSizeFactor: settingsProvider.uiScale ? 1.25 : 1.0),
-            ),
-            Text(
-              widget.show.venue,
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Theme.of(context).colorScheme.primary,
-                    fontSize: 12 * (settingsProvider.uiScale ? 1.25 : 1.0),
-                  ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ],
-        ),
+        // Title is empty as requested
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 16.0),
@@ -232,7 +185,7 @@ class _TrackListScreenState extends State<TrackListScreen> {
                         color: Theme.of(context)
                             .colorScheme
                             .secondaryContainer
-                            .withOpacity(0.5),
+                            .withValues(alpha: 0.5),
                         borderRadius: BorderRadius.circular(4),
                       ),
                       child: Text(
@@ -281,7 +234,7 @@ class _TrackListScreenState extends State<TrackListScreen> {
     final audioProvider = context.watch<AudioProvider>();
     final isDifferentShowPlaying = audioProvider.currentShow != null &&
         audioProvider.currentShow!.name != widget.show.name;
-    final bottomPadding = isDifferentShowPlaying ? 140.0 : 16.0;
+    final bottomPadding = isDifferentShowPlaying ? 160.0 : 40.0;
 
     if (widget.show.sources.isEmpty) {
       return const Center(child: Text('No tracks available for this show.'));
@@ -297,28 +250,26 @@ class _TrackListScreenState extends State<TrackListScreen> {
     }
 
     final List<dynamic> listItems = [];
-    final Map<int, int> listItemToTrackIndex = {};
-    int currentTrackIndex = 0;
+    // Add Header Key
+    listItems.add('SHOW_HEADER');
 
     tracksBySet.forEach((setName, tracks) {
       listItems.add(setName);
-      for (var track in tracks) {
-        listItemToTrackIndex[listItems.length] = currentTrackIndex++;
-        listItems.add(track);
-      }
+      listItems.addAll(tracks);
     });
 
-    return ScrollablePositionedList.builder(
-      itemScrollController: _itemScrollController,
-      itemPositionsListener: _itemPositionsListener,
+    return ListView.builder(
       padding: EdgeInsets.fromLTRB(12, 8, 12, bottomPadding),
       itemCount: listItems.length,
       itemBuilder: (context, index) {
         final item = listItems[index];
-        if (item is String) {
+        if (item == 'SHOW_HEADER') {
+          return _buildShowHeader(context);
+        } else if (item is String) {
           return _buildSetHeader(context, item);
         } else if (item is Track) {
-          final trackIndex = listItemToTrackIndex[index] ?? 0;
+          // Pass absolute index of the track in the source for playback
+          final trackIndex = source.tracks.indexOf(item);
           return _buildTrackItem(context, item, source, trackIndex);
         }
         return const SizedBox.shrink();
@@ -326,128 +277,210 @@ class _TrackListScreenState extends State<TrackListScreen> {
     );
   }
 
+  Widget _buildShowHeader(BuildContext context) {
+    final settingsProvider = context.watch<SettingsProvider>();
+    final scaleFactor = settingsProvider.uiScale ? 1.25 : 1.0;
+    final colorScheme = Theme.of(context).colorScheme;
+
+    String dateText = widget.show.formattedDate;
+    try {
+      final date = DateTime.parse(widget.show.date);
+      String pattern = '';
+
+      // Month & Day & Year
+      if (settingsProvider.abbreviateMonth) {
+        pattern = 'MMM d, y';
+      } else {
+        pattern = 'MMMM d, y';
+      }
+
+      // Day of Week
+      if (settingsProvider.showDayOfWeek) {
+        if (settingsProvider.abbreviateDayOfWeek) {
+          pattern = 'E, $pattern';
+        } else {
+          pattern = 'EEEE, $pattern';
+        }
+      }
+      dateText = DateFormat(pattern).format(date);
+    } catch (_) {}
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16.0, top: 8.0),
+      child: Card(
+        elevation: 0,
+        color: colorScheme.surfaceContainerHigh,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        child: Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Text(
+                dateText,
+                textAlign: TextAlign.center,
+                style: Theme.of(context)
+                    .textTheme
+                    .headlineMedium
+                    ?.copyWith(
+                      fontWeight: FontWeight.w800,
+                      height: 1.1,
+                      letterSpacing: -0.5,
+                    )
+                    .apply(fontSizeFactor: scaleFactor),
+              ),
+              const SizedBox(height: 12),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Icon(Icons.stadium_rounded,
+                      size: 20 * scaleFactor, color: colorScheme.primary),
+                  const SizedBox(width: 8),
+                  Flexible(
+                    child: Text(
+                      widget.show.venue,
+                      textAlign: TextAlign.center,
+                      style: Theme.of(context)
+                          .textTheme
+                          .titleMedium
+                          ?.copyWith(
+                            color: colorScheme.primary,
+                            fontWeight: FontWeight.bold,
+                          )
+                          .apply(fontSizeFactor: scaleFactor),
+                    ),
+                  ),
+                ],
+              ),
+              if (widget.show.location.isNotEmpty) ...[
+                const SizedBox(height: 8),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Icon(Icons.place_outlined,
+                        size: 20 * scaleFactor,
+                        color: colorScheme.onSurfaceVariant),
+                    const SizedBox(width: 8),
+                    Flexible(
+                      child: Text(
+                        widget.show.location,
+                        textAlign: TextAlign.center,
+                        style: Theme.of(context)
+                            .textTheme
+                            .bodyLarge
+                            ?.copyWith(
+                              color: colorScheme.onSurfaceVariant,
+                            )
+                            .apply(fontSizeFactor: scaleFactor),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildSetHeader(BuildContext context, String setName) {
     final settingsProvider = context.watch<SettingsProvider>();
+    final colorScheme = Theme.of(context).colorScheme;
+    final scaleFactor = settingsProvider.uiScale ? 1.25 : 1.0;
+
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
-      child: Text(
-        setName,
-        style: Theme.of(context)
-            .textTheme
-            .titleSmall
-            ?.copyWith(
-              color: Theme.of(context).colorScheme.primary,
-              fontWeight: FontWeight.bold,
-            )
-            .apply(fontSizeFactor: settingsProvider.uiScale ? 1.25 : 1.0),
+      padding: const EdgeInsets.fromLTRB(8, 24, 8, 8),
+      child: Align(
+        alignment: Alignment.centerLeft,
+        child: Container(
+          padding: EdgeInsets.symmetric(
+              horizontal: 16 * scaleFactor, vertical: 6 * scaleFactor),
+          decoration: BoxDecoration(
+            color: colorScheme.secondaryContainer,
+            borderRadius: BorderRadius.circular(50),
+          ),
+          child: Text(
+            setName.toUpperCase(),
+            style: Theme.of(context)
+                .textTheme
+                .labelLarge
+                ?.copyWith(
+                  color: colorScheme.onSecondaryContainer,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 1.0,
+                )
+                .apply(fontSizeFactor: scaleFactor),
+          ),
+        ),
       ),
     );
   }
 
   Widget _buildTrackItem(
       BuildContext context, Track track, Source source, int index) {
-    final audioProvider = context.watch<AudioProvider>();
     final settingsProvider = context.watch<SettingsProvider>();
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
-    return StreamBuilder<int?>(
-      stream: audioProvider.currentIndexStream,
-      initialData: audioProvider.audioPlayer.currentIndex,
-      builder: (context, snapshot) {
-        final currentIndex = snapshot.data;
-        final isCurrentTrack =
-            audioProvider.currentShow?.name == widget.show.name &&
-                currentIndex == index;
+    final double scaleFactor = settingsProvider.uiScale ? 1.25 : 1.0;
 
-        final double scaleFactor = settingsProvider.uiScale ? 1.25 : 1.0;
+    final baseTitleStyle =
+        textTheme.bodyLarge ?? const TextStyle(fontSize: 16.0);
+    final titleStyle = baseTitleStyle
+        .copyWith(fontWeight: FontWeight.w400, letterSpacing: 0.25)
+        .apply(fontSizeFactor: scaleFactor);
 
-        final baseTitleStyle =
-            textTheme.bodyLarge ?? const TextStyle(fontSize: 16.0);
-        final titleStyle = baseTitleStyle
-            .copyWith(
-                color: isCurrentTrack
-                    ? colorScheme.primary
-                    : colorScheme.onSurface,
-                fontWeight: isCurrentTrack ? FontWeight.bold : FontWeight.w500,
-                letterSpacing: 0.1)
-            .apply(fontSizeFactor: scaleFactor);
+    final baseDurationStyle =
+        textTheme.labelMedium ?? const TextStyle(fontSize: 12.0);
+    final durationStyle = baseDurationStyle.copyWith(
+      color: colorScheme.onSurfaceVariant,
+      fontWeight: FontWeight.w500,
+      fontFeatures: [const FontFeature.tabularFigures()],
+    ).apply(fontSizeFactor: scaleFactor);
 
-        final baseDurationStyle =
-            textTheme.labelMedium ?? const TextStyle(fontSize: 12.0);
-        final durationStyle = baseDurationStyle.copyWith(
-          color: isCurrentTrack
-              ? colorScheme.primary.withOpacity(0.8)
-              : colorScheme.onSurfaceVariant,
-          fontWeight: FontWeight.w600,
-          letterSpacing: 0.5,
-          fontFeatures: [const FontFeature.tabularFigures()],
-        ).apply(fontSizeFactor: scaleFactor);
+    final titleText = settingsProvider.showTrackNumbers
+        ? '${track.trackNumber}. ${track.title}'
+        : track.title;
 
-        final titleText = settingsProvider.showTrackNumbers
-            ? '${track.trackNumber}. ${track.title}'
-            : track.title;
-
-        return Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
-          child: Material(
-            color: isCurrentTrack
-                ? colorScheme.primaryContainer.withOpacity(0.3)
-                : Colors.transparent,
-            borderRadius: BorderRadius.circular(12),
-            child: InkWell(
-              borderRadius: BorderRadius.circular(12),
-              onTap: () => _onTrackTapped(source, index),
-              child: Padding(
-                padding: EdgeInsets.symmetric(
-                    horizontal: 16, vertical: 8 * scaleFactor),
-                child: Row(
-                  children: [
-                    if (isCurrentTrack) ...[
-                      Icon(Icons.play_arrow_rounded,
-                          color: colorScheme.primary, size: 20 * scaleFactor),
-                      const SizedBox(width: 8),
-                    ],
-                    Expanded(
-                      child: SizedBox(
-                        height: titleStyle.fontSize! * 1.5,
-                        child: ConditionalMarquee(
-                          text: titleText,
-                          style: titleStyle,
-                          textAlign: settingsProvider.hideTrackDuration
-                              ? TextAlign.center
-                              : TextAlign.left,
-                        ),
-                      ),
-                    ),
-                    if (!settingsProvider.hideTrackDuration) ...[
-                      const SizedBox(width: 8),
-                      SizedBox(
-                        width: 52 * scaleFactor,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: isCurrentTrack
-                                ? colorScheme.primaryContainer.withOpacity(0.5)
-                                : colorScheme.surfaceContainerHighest,
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Text(
-                            formatDuration(Duration(seconds: track.duration)),
-                            style: durationStyle,
-                            textAlign: TextAlign.center,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ],
+    return Builder(builder: (context) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(16),
+          onTap: () => _onTrackTapped(context, source, index),
+          child: Padding(
+            padding: EdgeInsets.symmetric(
+                horizontal: 20, vertical: 12 * scaleFactor),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.baseline,
+              textBaseline: TextBaseline.alphabetic,
+              children: [
+                Expanded(
+                  child: Text(
+                    titleText,
+                    style: titleStyle,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    textAlign: settingsProvider.hideTrackDuration
+                        ? TextAlign.center
+                        : TextAlign.left,
+                  ),
                 ),
-              ),
+                if (!settingsProvider.hideTrackDuration) ...[
+                  const SizedBox(width: 16),
+                  Text(
+                    formatDuration(Duration(seconds: track.duration)),
+                    style: durationStyle,
+                  ),
+                ],
+              ],
             ),
           ),
-        );
-      },
-    );
+        ),
+      );
+    });
   }
 }

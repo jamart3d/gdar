@@ -56,6 +56,7 @@ class ShowService {
             artist: show.artist,
             date: show.date,
             venue: show.venue,
+            location: show.location,
             sources:
                 List<Source>.from(show.sources), // Create a copy of the list
             hasFeaturedTrack: show.hasFeaturedTrack,
