@@ -1320,11 +1320,11 @@ class MockSettingsProvider extends _i1.Mock implements _i8.SettingsProvider {
       ) as bool);
 
   @override
-  bool get showGlowBorder => (super.noSuchMethod(
-        Invocation.getter(#showGlowBorder),
-        returnValue: false,
-        returnValueForMissingStub: false,
-      ) as bool);
+  int get glowMode => (super.noSuchMethod(
+        Invocation.getter(#glowMode),
+        returnValue: 0,
+        returnValueForMissingStub: 0,
+      ) as int);
 
   @override
   bool get highlightPlayingWithRgb => (super.noSuchMethod(
@@ -1369,6 +1369,27 @@ class MockSettingsProvider extends _i1.Mock implements _i8.SettingsProvider {
       ) as bool);
 
   @override
+  bool get showDayOfWeek => (super.noSuchMethod(
+        Invocation.getter(#showDayOfWeek),
+        returnValue: false,
+        returnValueForMissingStub: false,
+      ) as bool);
+
+  @override
+  bool get abbreviateDayOfWeek => (super.noSuchMethod(
+        Invocation.getter(#abbreviateDayOfWeek),
+        returnValue: false,
+        returnValueForMissingStub: false,
+      ) as bool);
+
+  @override
+  bool get abbreviateMonth => (super.noSuchMethod(
+        Invocation.getter(#abbreviateMonth),
+        returnValue: false,
+        returnValueForMissingStub: false,
+      ) as bool);
+
+  @override
   Map<String, int> get showRatings => (super.noSuchMethod(
         Invocation.getter(#showRatings),
         returnValue: <String, int>{},
@@ -1406,13 +1427,6 @@ class MockSettingsProvider extends _i1.Mock implements _i8.SettingsProvider {
   @override
   bool get showGlobalAlbumArt => (super.noSuchMethod(
         Invocation.getter(#showGlobalAlbumArt),
-        returnValue: false,
-        returnValueForMissingStub: false,
-      ) as bool);
-
-  @override
-  bool get halfGlowDynamic => (super.noSuchMethod(
-        Invocation.getter(#halfGlowDynamic),
         returnValue: false,
         returnValueForMissingStub: false,
       ) as bool);
@@ -1545,6 +1559,33 @@ class MockSettingsProvider extends _i1.Mock implements _i8.SettingsProvider {
       );
 
   @override
+  void toggleShowDayOfWeek() => super.noSuchMethod(
+        Invocation.method(
+          #toggleShowDayOfWeek,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void toggleAbbreviateDayOfWeek() => super.noSuchMethod(
+        Invocation.method(
+          #toggleAbbreviateDayOfWeek,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void toggleAbbreviateMonth() => super.noSuchMethod(
+        Invocation.method(
+          #toggleAbbreviateMonth,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
   void toggleUiScale() => super.noSuchMethod(
         Invocation.method(
           #toggleUiScale,
@@ -1554,10 +1595,10 @@ class MockSettingsProvider extends _i1.Mock implements _i8.SettingsProvider {
       );
 
   @override
-  void toggleShowGlowBorder() => super.noSuchMethod(
+  void setGlowMode(int? mode) => super.noSuchMethod(
         Invocation.method(
-          #toggleShowGlowBorder,
-          [],
+          #setGlowMode,
+          [mode],
         ),
         returnValueForMissingStub: null,
       );
@@ -1593,15 +1634,6 @@ class MockSettingsProvider extends _i1.Mock implements _i8.SettingsProvider {
   void toggleUseStrictSrcCategorization() => super.noSuchMethod(
         Invocation.method(
           #toggleUseStrictSrcCategorization,
-          [],
-        ),
-        returnValueForMissingStub: null,
-      );
-
-  @override
-  void toggleHalfGlowDynamic() => super.noSuchMethod(
-        Invocation.method(
-          #toggleHalfGlowDynamic,
           [],
         ),
         returnValueForMissingStub: null,

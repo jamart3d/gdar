@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:intl/intl.dart';
 import 'package:gdar/ui/widgets/animated_gradient_border.dart';
 import 'package:gdar/models/show.dart';
 import 'package:gdar/models/source.dart';
@@ -68,6 +69,24 @@ class _ShowListCardState extends State<ShowListCard> {
             color: colorScheme.onSurface)
         .apply(fontSizeFactor: scaleFactor);
 
+    // Date Formatting Logic
+    String dateFormatPattern = '';
+    if (settingsProvider.showDayOfWeek) {
+      dateFormatPattern +=
+          settingsProvider.abbreviateDayOfWeek ? 'E, ' : 'EEEE, ';
+    }
+    dateFormatPattern += settingsProvider.abbreviateMonth ? 'MMM' : 'MMMM';
+    dateFormatPattern += ' d, y';
+
+    final String formattedDate = () {
+      try {
+        final date = DateTime.parse(widget.show.date);
+        return DateFormat(dateFormatPattern).format(date);
+      } catch (e) {
+        return widget.show.date;
+      }
+    }();
+
     final baseDateStyle =
         textTheme.bodyLarge ?? const TextStyle(fontSize: 16.0);
     final dateStyle = baseDateStyle
@@ -79,10 +98,11 @@ class _ShowListCardState extends State<ShowListCard> {
     // Only apply custom background color if NOT in "True Black" mode.
     // True Black mode applies if:
     // 1. Dynamic Color is OFF (Strict True Black)
-    // 2. Dynamic Color is ON AND Half Glow is ON (Hybrid True Black)
+    // 2. [REMOVED] Half Glow no longer implies True Black background logic directly here,
+    //    but we still want to respect the user's "True Black" intent if they had it.
+    //    However, per new requirements, "True Black" background is now just !useDynamicColor.
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    final isTrueBlackMode = isDarkMode &&
-        (!settingsProvider.useDynamicColor || settingsProvider.halfGlowDynamic);
+    final isTrueBlackMode = isDarkMode && settingsProvider.useTrueBlack;
 
     if (!isTrueBlackMode &&
         widget.isPlaying &&
@@ -101,36 +121,27 @@ class _ShowListCardState extends State<ShowListCard> {
     bool suppressOuterGlow =
         widget.isExpanded && widget.show.sources.length > 1;
 
-    bool showGlow =
-        settingsProvider.showGlowBorder || settingsProvider.halfGlowDynamic;
+    // Glow Mode: 0 = Off, 10-100 = Intensity percentage
+    bool showGlow = settingsProvider.glowMode > 0;
     bool useRgb = false;
 
     if (settingsProvider.highlightPlayingWithRgb && widget.isPlaying) {
       useRgb = true;
     }
 
-    // In Strict True Black mode (!useDynamicColor), we ONLY show the border/glow if it's the playing card.
-    // In Half Glow mode (useDynamicColor && halfGlowDynamic), we allow glow but reduced.
-    if (isDarkMode && !settingsProvider.useDynamicColor && !widget.isPlaying) {
-      showGlow = false;
-    }
-
     // Shadow Visibility:
-    // 1. Strict True Black (!useDynamicColor): NO Shadow.
-    // 2. Settings "Glow Border" OFF: NO Shadow.
-    // 3. Otherwise: YES Shadow.
-    // Shadow Visibility:
-    // 1. Strict True Black (!useDynamicColor): NO Shadow.
-    // 2. Settings "Glow Border" OFF (unless "Half Glow" forces it): NO Shadow.
-    // 3. Otherwise: YES Shadow.
-    bool showShadow =
-        (settingsProvider.showGlowBorder || settingsProvider.halfGlowDynamic) &&
-            !(isDarkMode && !settingsProvider.useDynamicColor);
+    // 1. Glow Mode is 0 (Off): NO Shadow.
+    // 2. True Black Mode: NO Shadow (User preference for pitch black).
+    // 3. Otherwise: YES Shadow if Glow is On (>0).
+    bool showShadow = settingsProvider.glowMode > 0 &&
+        !(isDarkMode && settingsProvider.useTrueBlack);
 
     // Glow Strength Logic:
-    // Playing: Full Opacity (1.0)
-    // Not Playing: Quarter Opacity (0.25)
-    double glowOpacity = widget.isPlaying ? 1.0 : 0.25;
+    // Base opacity from percentage: glowMode / 100 (e.g., 50% = 0.5)
+    // Playing: Full percentage strength
+    // Not Playing: Quarter of percentage strength
+    double baseOpacity = settingsProvider.glowMode / 100.0;
+    double glowOpacity = widget.isPlaying ? baseOpacity : baseOpacity * 0.25;
 
     if ((showGlow || useRgb) && !suppressOuterGlow) {
       return Padding(
@@ -144,7 +155,7 @@ class _ShowListCardState extends State<ShowListCard> {
                     BoxShadow(
                       // Cut non-RGB glow by 80% (so utilize 20% of original strength)
                       color: colorScheme.primary
-                          .withOpacity(0.2 * 0.2 * glowOpacity),
+                          .withValues(alpha: 0.2 * 0.2 * glowOpacity),
                       blurRadius: 12,
                       spreadRadius: 2,
                     ),
@@ -172,13 +183,9 @@ class _ShowListCardState extends State<ShowListCard> {
                   ],
             showGlow: true,
             showShadow: showShadow,
-            // Cut RGB glow by 50% (factor of 0.5)
-            // Cut RGB glow by 50% (factor of 0.5)
-            // Cut Non-RGB glow by 80% (factor of 0.2)
-            // Apply Half Glow reduction if active
-            glowOpacity: (useRgb ? 0.5 : 0.2) *
-                (settingsProvider.halfGlowDynamic ? 0.5 : 1.0) *
-                glowOpacity,
+            // RGB: 50% base * percentage * playing multiplier
+            // Non-RGB: 20% base * percentage * playing multiplier
+            glowOpacity: (useRgb ? 0.5 : 0.2) * glowOpacity,
             animationSpeed: settingsProvider.rgbAnimationSpeed,
             child: _buildCardContent(
               context: context,
@@ -190,6 +197,7 @@ class _ShowListCardState extends State<ShowListCard> {
               shouldShowBadge: shouldShowBadge,
               settingsProvider: settingsProvider,
               colorScheme: colorScheme,
+              formattedDate: formattedDate,
             ),
           ),
         ),
@@ -201,7 +209,7 @@ class _ShowListCardState extends State<ShowListCard> {
       child: Card(
         margin: EdgeInsets.zero,
         elevation: widget.isExpanded ? 2 : 0,
-        shadowColor: colorScheme.shadow.withOpacity(0.1),
+        shadowColor: colorScheme.shadow.withValues(alpha: 0.1),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(28),
           side: (isTrueBlackMode && !widget.isPlaying)
@@ -222,6 +230,7 @@ class _ShowListCardState extends State<ShowListCard> {
           shouldShowBadge: shouldShowBadge,
           settingsProvider: settingsProvider,
           colorScheme: colorScheme,
+          formattedDate: formattedDate,
         ),
       ),
     );
@@ -237,6 +246,7 @@ class _ShowListCardState extends State<ShowListCard> {
     required bool shouldShowBadge,
     required SettingsProvider settingsProvider,
     required ColorScheme colorScheme,
+    required String formattedDate,
   }) {
     return Container(
       decoration: BoxDecoration(
@@ -247,7 +257,7 @@ class _ShowListCardState extends State<ShowListCard> {
         children: [
           Semantics(
             label:
-                '${widget.show.venue} on ${widget.show.formattedDate}. ${widget.isPlaying ? "Playing" : ""}',
+                '${widget.show.venue} on $formattedDate. ${widget.isPlaying ? "Playing" : ""}',
             hint: widget.isExpanded
                 ? 'Double tap to collapse'
                 : 'Double tap to expand',
@@ -280,7 +290,7 @@ class _ShowListCardState extends State<ShowListCard> {
                                     height: venueStyle.fontSize! * 1.6,
                                     child: ConditionalMarquee(
                                       text: settingsProvider.dateFirstInShowCard
-                                          ? widget.show.formattedDate
+                                          ? formattedDate
                                           : widget.show.venue,
                                       style: venueStyle,
                                     ),
@@ -291,7 +301,7 @@ class _ShowListCardState extends State<ShowListCard> {
                                     child: Text(
                                       settingsProvider.dateFirstInShowCard
                                           ? widget.show.venue
-                                          : widget.show.formattedDate,
+                                          : formattedDate,
                                       style: dateStyle,
                                     ),
                                   ),
@@ -421,8 +431,7 @@ class _ShowListCardState extends State<ShowListCard> {
 
     // Check for True Black mode
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    final isTrueBlackMode = isDarkMode &&
-        (!settingsProvider.useDynamicColor || settingsProvider.halfGlowDynamic);
+    final isTrueBlackMode = isDarkMode && settingsProvider.useTrueBlack;
 
     final List<Color> gradientColors;
     if (isTrueBlackMode) {
@@ -432,8 +441,8 @@ class _ShowListCardState extends State<ShowListCard> {
       ];
     } else {
       gradientColors = [
-        colorScheme.secondaryContainer.withOpacity(0.7),
-        colorScheme.secondaryContainer.withOpacity(0.5),
+        colorScheme.secondaryContainer.withValues(alpha: 0.7),
+        colorScheme.secondaryContainer.withValues(alpha: 0.5),
       ];
     }
 
@@ -449,7 +458,7 @@ class _ShowListCardState extends State<ShowListCard> {
         borderRadius: BorderRadius.circular(10),
         boxShadow: [
           BoxShadow(
-              color: colorScheme.shadow.withOpacity(0.05),
+              color: colorScheme.shadow.withValues(alpha: 0.05),
               blurRadius: 2,
               offset: const Offset(0, 1))
         ],

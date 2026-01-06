@@ -126,7 +126,8 @@ class _GdarAppState extends State<GdarApp> {
                       settingsProvider.appFont, baseDark.textTheme),
                 );
 
-                if (settingsProvider.halfGlowDynamic) {
+                // Apply True Black if enabled
+                if (settingsProvider.useTrueBlack) {
                   final trueBlackDynamic = darkDynamic.copyWith(
                     surface: Colors.black,
                     onSurface: Colors.white,
@@ -174,30 +175,30 @@ class _GdarAppState extends State<GdarApp> {
                   darkTheme = darkTheme.copyWith(colorScheme: baseDarkScheme);
                 }
 
-                // Override surfaces to be "True Black" / Neutral (no tint)
-                // This keeps the primary/secondary colors from the seed (or default) but removes the tint from the background/surfaces.
-                // We do this AFTER potentially setting the seed color, so it applies to both seeded and default themes.
-                final baseDarkScheme = darkTheme.colorScheme;
-                final trueBlackDarkScheme = baseDarkScheme.copyWith(
-                  surface: Colors.black,
-                  onSurface: Colors.white,
-                  surfaceContainerLowest: Colors.black,
-                  surfaceContainerLow: Colors.black,
-                  surfaceContainer: Colors.black,
-                  surfaceContainerHigh: Colors.black,
-                  surfaceContainerHighest: Colors.black,
-                );
+                // Override surfaces to be "True Black" if enabled
+                if (settingsProvider.useTrueBlack) {
+                  final baseDarkScheme = darkTheme.colorScheme;
+                  final trueBlackDarkScheme = baseDarkScheme.copyWith(
+                    surface: Colors.black,
+                    onSurface: Colors.white,
+                    surfaceContainerLowest: Colors.black,
+                    surfaceContainerLow: Colors.black,
+                    surfaceContainer: Colors.black,
+                    surfaceContainerHigh: Colors.black,
+                    surfaceContainerHighest: Colors.black,
+                  );
 
-                darkTheme = darkTheme.copyWith(
-                  colorScheme: trueBlackDarkScheme,
-                  scaffoldBackgroundColor: Colors.black,
-                  appBarTheme: const AppBarTheme(
-                    backgroundColor: Colors.black,
-                    elevation: 0,
-                    scrolledUnderElevation: 0,
-                    systemOverlayStyle: SystemUiOverlayStyle.light,
-                  ),
-                );
+                  darkTheme = darkTheme.copyWith(
+                    colorScheme: trueBlackDarkScheme,
+                    scaffoldBackgroundColor: Colors.black,
+                    appBarTheme: const AppBarTheme(
+                      backgroundColor: Colors.black,
+                      elevation: 0,
+                      scrolledUnderElevation: 0,
+                      systemOverlayStyle: SystemUiOverlayStyle.light,
+                    ),
+                  );
+                }
               }
 
               return MaterialApp(
@@ -207,15 +208,14 @@ class _GdarAppState extends State<GdarApp> {
                 darkTheme: darkTheme,
                 themeMode:
                     themeProvider.isDarkMode ? ThemeMode.dark : ThemeMode.light,
-                themeAnimationDuration: const Duration(milliseconds: 500),
-                themeAnimationCurve: Curves.easeInOut,
+                themeAnimationDuration: const Duration(milliseconds: 400),
+                themeAnimationCurve: Curves.easeInOutCubicEmphasized,
                 home: settingsProvider.showSplashScreen
                     ? const SplashScreen()
                     : const ShowListScreen(),
                 builder: (context, child) {
-                  final isTrueBlack = themeProvider.isDarkMode &&
-                      (!settingsProvider.useDynamicColor ||
-                          settingsProvider.halfGlowDynamic);
+                  final isTrueBlack =
+                      themeProvider.isDarkMode && settingsProvider.useTrueBlack;
 
                   if (isTrueBlack) {
                     return AnnotatedRegion<SystemUiOverlayStyle>(

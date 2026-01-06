@@ -214,8 +214,7 @@ class SettingsScreen extends StatelessWidget {
     // Only apply custom background color if NOT in "True Black" mode.
     // True Black mode = Dark Mode + Custom Seed + No Dynamic Color.
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    final isTrueBlackMode = isDarkMode &&
-        (!settingsProvider.useDynamicColor || settingsProvider.halfGlowDynamic);
+    final isTrueBlackMode = isDarkMode && settingsProvider.useTrueBlack;
 
     if (!isTrueBlackMode &&
         settingsProvider.highlightCurrentShowCard &&
@@ -417,8 +416,7 @@ class SettingsScreen extends StatelessWidget {
                     icon: Icons.palette_outlined,
                     children: [
                       SwitchListTile(
-                        title: const Text('Dark Mode'),
-                        subtitle: const Text('Enable Dark Mode'),
+                        title: const Text('Dark'),
                         value: themeProvider.isDarkMode,
                         onChanged: (value) {
                           context.read<ThemeProvider>().toggleTheme();
@@ -431,8 +429,7 @@ class SettingsScreen extends StatelessWidget {
                       ),
                       SwitchListTile(
                         title: const Text('Dynamic Color'),
-                        subtitle: const Text(
-                            "Theme the app from your device's wallpaper"),
+                        subtitle: const Text('Theme from wallpaper'),
                         value: settingsProvider.useDynamicColor,
                         onChanged: (value) {
                           context
@@ -441,6 +438,19 @@ class SettingsScreen extends StatelessWidget {
                         },
                         secondary: const Icon(Icons.color_lens_rounded),
                       ),
+                      // True Black Mode (only in Dark Mode)
+                      if (isDarkMode)
+                        SwitchListTile(
+                          title: const Text('True Black'),
+                          subtitle: const Text('Shadows and blur disabled'),
+                          value: settingsProvider.useTrueBlack,
+                          onChanged: (value) {
+                            context
+                                .read<SettingsProvider>()
+                                .toggleUseTrueBlack();
+                          },
+                          secondary: const Icon(Icons.brightness_1_rounded),
+                        ),
                       if (!settingsProvider.useDynamicColor)
                         ListTile(
                           leading: const Icon(Icons.palette_rounded),
@@ -462,33 +472,63 @@ class SettingsScreen extends StatelessWidget {
                             ),
                           ),
                         ),
-                      if (settingsProvider.useDynamicColor &&
-                          themeProvider.isDarkMode)
-                        SwitchListTile(
-                          title: const Text('True Black And Half Glow'),
-                          subtitle: const Text(
-                              'Use true black background with reduced glow'),
-                          value: settingsProvider.halfGlowDynamic,
-                          onChanged: (value) {
-                            context
-                                .read<SettingsProvider>()
-                                .toggleHalfGlowDynamic();
-                          },
-                          secondary: const Icon(Icons.light_mode_outlined),
-                        ),
-                      // "Glow Border" setting is hidden if "Half Glow" is active, as that mode enforces its own glow state.
-                      if (!settingsProvider.halfGlowDynamic)
-                        SwitchListTile(
-                          title: const Text('Glow Border'),
-                          subtitle: const Text(
-                              'Show a glowing gradient border on cards'),
-                          value: settingsProvider.showGlowBorder,
-                          onChanged: (value) {
-                            context
-                                .read<SettingsProvider>()
-                                .toggleShowGlowBorder();
-                          },
-                          secondary: const Icon(Icons.blur_on_rounded),
+                      SwitchListTile(
+                        title: const Text('Glow Border'),
+                        subtitle: const Text('Animated border effect'),
+                        value: settingsProvider.glowMode > 0,
+                        onChanged: (value) {
+                          context
+                              .read<SettingsProvider>()
+                              .setGlowMode(value ? 100 : 0); // Full or Off
+                        },
+                        secondary: const Icon(Icons.blur_on_rounded),
+                      ),
+                      if (settingsProvider.glowMode > 0)
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16.0, vertical: 8.0),
+                          child: Row(
+                            children: [
+                              const SizedBox(width: 16),
+                              Expanded(
+                                child: Row(
+                                  children: [
+                                    Text(
+                                      'Intensity',
+                                      style:
+                                          Theme.of(context).textTheme.bodySmall,
+                                    ),
+                                    Expanded(
+                                      child: Slider(
+                                        value: settingsProvider.glowMode
+                                            .toDouble(),
+                                        min: 10,
+                                        max: 100,
+                                        divisions: 18, // 10, 15, 20, ..., 100
+                                        onChanged: (value) {
+                                          context
+                                              .read<SettingsProvider>()
+                                              .setGlowMode(value.round());
+                                        },
+                                      ),
+                                    ),
+                                    SizedBox(
+                                      width: 40,
+                                      child: Text(
+                                        '${settingsProvider.glowMode}%',
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .bodySmall,
+                                        textAlign: TextAlign.end,
+                                      ),
+                                    ),
+                                    const SizedBox(
+                                        width: 16), // Balance spacing
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       SwitchListTile(
                         title: const Text('Highlight Playing with RGB'),
@@ -528,14 +568,11 @@ class SettingsScreen extends StatelessWidget {
                                 ],
                                 showGlow: true,
                                 // Glow mirrors the global logic:
-                                // If "Glow Border" is ON OR "Half Glow" is ON, we show shadow.
-                                showShadow: settingsProvider.showGlowBorder ||
-                                    settingsProvider.halfGlowDynamic,
-                                // Apply 50% reduction for Half Glow mode, on top of base 0.5 opacity
-                                glowOpacity: 0.5 *
-                                    (settingsProvider.halfGlowDynamic
-                                        ? 0.5
-                                        : 1.0),
+                                // If "Glow Border" is ON (1) or HALF (2), we show shadow.
+                                showShadow: settingsProvider.glowMode > 0,
+                                // Use percentage-based glow intensity
+                                glowOpacity:
+                                    0.5 * (settingsProvider.glowMode / 100.0),
                                 animationSpeed:
                                     settingsProvider.rgbAnimationSpeed,
                                 // Transparent background to blend with SectionCard

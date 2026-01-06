@@ -3,6 +3,8 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gdar/models/show.dart';
 
+import 'package:flutter/foundation.dart';
+
 void main() {
   test('Verify output.optimized_src.json integrity and parsing', () async {
     final file = File('assets/data/output.optimized_src.json');
@@ -13,7 +15,7 @@ void main() {
     final jsonString = await file.readAsString();
     final List<dynamic> jsonList = json.decode(jsonString);
 
-    print('Found ${jsonList.length} shows in JSON.');
+    debugPrint('Found ${jsonList.length} shows in JSON.');
 
     int successCount = 0;
 
@@ -36,7 +38,7 @@ void main() {
       }
     }
 
-    print('Successfully parsed $successCount shows.');
+    debugPrint('Successfully parsed $successCount shows.');
     expect(successCount, equals(jsonList.length));
   });
 }

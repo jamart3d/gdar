@@ -166,3 +166,6 @@ This file tracks planned features, enhancements, and bug fixes for the gdar appl
   - [x] Created `clean_mixed_vbr_sources.py` to strip VBR tracks from 128 "mixed quality" sources.
   - [x] Removed 2,388 VBR tracks and saved to `output.optimized_src_vbr_cleaned.json`.
   - [x] Generated `vbr_cleaning_report.md` with detailed counts.
+- [ ] Add System Theme option to Appearance settings
+  - Allow user to follow system theme (Light/Dark/Auto)
+  - Add theme setting from device

@@ -28,7 +28,10 @@ class MockSettingsProvider extends Mock implements SettingsProvider {
   @override
   bool get showTrackNumbers => false;
   @override
-  bool get showGlowBorder => false;
+  int get glowMode => 0;
+
+  @override
+  bool get useTrueBlack => false;
   @override
   bool get highlightPlayingWithRgb => false;
   @override
@@ -36,8 +39,7 @@ class MockSettingsProvider extends Mock implements SettingsProvider {
   // useHandwritingFont removed
   @override
   bool get useDynamicColor => false;
-  @override
-  bool get halfGlowDynamic => false;
+  // halfGlowDynamic removed
   @override
   double get rgbAnimationSpeed => 1.0;
   @override
@@ -90,13 +92,12 @@ class MockSettingsProvider extends Mock implements SettingsProvider {
   @override
   void toggleUiScale() {}
   @override
-  void toggleShowGlowBorder() {}
+  void setGlowMode(int mode) {}
   @override
   void toggleHighlightPlayingWithRgb() {}
   @override
   void toggleShowPlaybackMessages() {}
-  @override
-  void toggleHalfGlowDynamic() {}
+  // toggleHalfGlowDynamic removed
   @override
   void setRgbAnimationSpeed(double speed) {}
   @override

@@ -176,6 +176,15 @@ class MockAudioProvider extends _i1.Mock implements _i3.AudioProvider {
       );
 
   @override
+  ({_i7.Show show, _i8.Source source})? pickRandomShow(
+          {bool? filterBySearch = true}) =>
+      (super.noSuchMethod(Invocation.method(
+        #pickRandomShow,
+        [],
+        {#filterBySearch: filterBySearch},
+      )) as ({_i7.Show show, _i8.Source source})?);
+
+  @override
   _i4.Future<_i7.Show?> playRandomShow({bool? filterBySearch = true}) =>
       (super.noSuchMethod(
         Invocation.method(

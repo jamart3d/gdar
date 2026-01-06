@@ -36,8 +36,7 @@ class SourceListItem extends StatelessWidget {
 
     // Check for True Black mode
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    final isTrueBlackMode = isDarkMode &&
-        (!settingsProvider.useDynamicColor || settingsProvider.halfGlowDynamic);
+    final isTrueBlackMode = isDarkMode && settingsProvider.useTrueBlack;
 
     Color itemBackgroundColor;
     if (isTrueBlackMode) {
@@ -51,7 +50,7 @@ class SourceListItem extends StatelessWidget {
     }
 
     // Glow Logic
-    bool showGlow = settingsProvider.showGlowBorder;
+    bool showGlow = settingsProvider.glowMode > 0;
     bool useRgb = false;
 
     if (settingsProvider.highlightPlayingWithRgb && isSourcePlaying) {
@@ -66,7 +65,8 @@ class SourceListItem extends StatelessWidget {
     // Shadow Visibility
     bool showShadow = !(isTrueBlackMode && !isSourcePlaying);
 
-    double glowOpacity = isSourcePlaying ? 1.0 : 0.25;
+    double glowOpacity = (isSourcePlaying ? 1.0 : 0.25) *
+        (settingsProvider.glowMode / 100.0);
 
     Widget buildContent() {
       return Container(
@@ -86,7 +86,7 @@ class SourceListItem extends StatelessWidget {
           boxShadow: (!showGlow && !useRgb && showShadow)
               ? [
                   BoxShadow(
-                    color: colorScheme.shadow.withOpacity(0.1),
+                    color: colorScheme.shadow.withValues(alpha: 0.1),
                     blurRadius: 4,
                     offset: const Offset(0, 2),
                   )
@@ -188,8 +188,8 @@ class SourceListItem extends StatelessWidget {
                             horizontal: 10, vertical: 6),
                         decoration: BoxDecoration(
                           color: isSourcePlaying
-                              ? colorScheme.tertiary.withOpacity(0.1)
-                              : colorScheme.secondary.withOpacity(0.1),
+                              ? colorScheme.tertiary.withValues(alpha: 0.1)
+                              : colorScheme.secondary.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Text(
@@ -222,7 +222,8 @@ class SourceListItem extends StatelessWidget {
                 ? [
                     BoxShadow(
                       color: (useRgb ? Colors.red : colorScheme.primary)
-                          .withOpacity((useRgb ? 0.4 : 0.2) * glowOpacity),
+                          .withValues(
+                              alpha: (useRgb ? 0.4 : 0.2) * glowOpacity),
                       blurRadius: 8,
                       spreadRadius: 1,
                     ),

@@ -16,8 +16,7 @@ class PlaybackProgressBar extends StatelessWidget {
 
     // Check for True Black mode
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    final isTrueBlackMode = isDarkMode &&
-        (!settingsProvider.useDynamicColor || settingsProvider.halfGlowDynamic);
+    final isTrueBlackMode = isDarkMode && settingsProvider.useTrueBlack;
 
     final audioProvider = context.watch<AudioProvider>();
 

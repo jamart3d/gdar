@@ -270,6 +270,7 @@ class AudioProvider with ChangeNotifier {
     }
 
     try {
+      // ignore: deprecated_member_use
       final playlist = ConcatenatingAudioSource(
         useLazyPreparation: false,
         shuffleOrder: DefaultShuffleOrder(),

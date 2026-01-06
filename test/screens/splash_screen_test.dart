@@ -31,7 +31,8 @@ void main() {
     when(mockSettingsProvider.useSliverAppBar).thenReturn(false);
     when(mockSettingsProvider.uiScale).thenReturn(false);
     when(mockSettingsProvider.useDynamicColor).thenReturn(true);
-    when(mockSettingsProvider.halfGlowDynamic).thenReturn(false);
+    when(mockSettingsProvider.glowMode).thenReturn(0);
+    when(mockSettingsProvider.useTrueBlack).thenReturn(false);
     when(mockSettingsProvider.highlightCurrentShowCard).thenReturn(true);
     when(mockShowListProvider.isLoading).thenReturn(false);
     when(mockShowListProvider.allShows).thenReturn([]);

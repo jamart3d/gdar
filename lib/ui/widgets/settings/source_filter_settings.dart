@@ -140,8 +140,7 @@ class SourceFilterSettings extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
     final settingsProvider = context.watch<SettingsProvider>();
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    final isTrueBlackMode = isDarkMode &&
-        (!settingsProvider.useDynamicColor || settingsProvider.halfGlowDynamic);
+    final isTrueBlackMode = isDarkMode && settingsProvider.useTrueBlack;
     final scaleFactor = settingsProvider.uiScale ? 1.25 : 1.0;
 
     return InkWell(

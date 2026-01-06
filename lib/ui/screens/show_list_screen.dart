@@ -578,8 +578,7 @@ class _ShowListScreenState extends State<ShowListScreen>
     // Only apply custom background color if NOT in "True Black" mode.
     // True Black mode = Dark Mode + Custom Seed + No Dynamic Color.
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    final isTrueBlackMode = isDarkMode &&
-        (!settingsProvider.useDynamicColor || settingsProvider.halfGlowDynamic);
+    final isTrueBlackMode = isDarkMode && settingsProvider.useTrueBlack;
 
     if (!isTrueBlackMode &&
         settingsProvider.highlightCurrentShowCard &&

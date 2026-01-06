@@ -15,7 +15,11 @@ class SettingsProvider with ChangeNotifier {
   static const String _playRandomOnStartupKey = 'play_random_on_startup';
   static const String _dateFirstInShowCardKey = 'date_first_in_show_card';
   static const String _useDynamicColorKey = 'use_dynamic_color';
+  static const String _useTrueBlackKey = 'use_true_black';
   static const String _appFontKey = 'app_font';
+  static const String _showDayOfWeekKey = 'show_day_of_week';
+  static const String _abbreviateDayOfWeekKey = 'abbreviate_day_of_week';
+  static const String _abbreviateMonthKey = 'abbreviate_month';
   String _appFont = 'default';
   String get appFont => _appFont;
   void setAppFont(String font) =>
@@ -25,7 +29,9 @@ class SettingsProvider with ChangeNotifier {
   // static const String _useHandwritingFontKey = 'use_handwriting_font';
   static const String _uiScaleKey = 'ui_scale';
   static const String _seedColorKey = 'seed_color';
-  static const String _showGlowBorderKey = 'show_glow_border';
+  static const String _glowModeKey = 'glow_mode'; // 0=Off, 1=On, 2=Half
+  static const String _showGlowBorderKey = 'show_glow_border'; // Deprecated
+  static const String _halfGlowDynamicKey = 'half_glow_dynamic'; // Deprecated
   static const String _highlightPlayingWithRgbKey =
       'highlight_playing_with_rgb';
   static const String _showPlaybackMessagesKey = 'show_playback_messages';
@@ -54,13 +60,17 @@ class SettingsProvider with ChangeNotifier {
   late bool _playRandomOnStartup;
   late bool _dateFirstInShowCard;
   late bool _useDynamicColor;
+  late bool _useTrueBlack;
   // late bool _useHandwritingFont; // Removed
   late bool _uiScale;
-  late bool _showGlowBorder;
+  late int _glowMode;
   late bool _highlightPlayingWithRgb;
   late bool _showPlaybackMessages;
   late bool _sortOldestFirst;
   late bool _useStrictSrcCategorization;
+  late bool _showDayOfWeek;
+  late bool _abbreviateDayOfWeek;
+  late bool _abbreviateMonth;
 
   Color? _seedColor;
 
@@ -87,17 +97,21 @@ class SettingsProvider with ChangeNotifier {
   bool get playRandomOnStartup => _playRandomOnStartup;
   bool get dateFirstInShowCard => _dateFirstInShowCard;
   bool get useDynamicColor => _useDynamicColor;
+  bool get useTrueBlack => _useTrueBlack;
   bool get useSliverAppBar => true;
   bool get useSharedAxisTransition => true;
   // bool get useHandwritingFont => _useHandwritingFont; // Removed
   bool get uiScale => _uiScale;
-  bool get showGlowBorder => _showGlowBorder;
+  int get glowMode => _glowMode;
   bool get highlightPlayingWithRgb => _highlightPlayingWithRgb;
   bool get showPlaybackMessages => _showPlaybackMessages;
   bool get sortOldestFirst => _sortOldestFirst;
   bool get useStrictSrcCategorization => _useStrictSrcCategorization;
   bool get highlightCurrentShowCard => true;
   bool get useMaterial3 => true;
+  bool get showDayOfWeek => _showDayOfWeek;
+  bool get abbreviateDayOfWeek => _abbreviateDayOfWeek;
+  bool get abbreviateMonth => _abbreviateMonth;
 
   Color? get seedColor => _seedColor;
 
@@ -149,6 +163,9 @@ class SettingsProvider with ChangeNotifier {
     _playRandomOnStartup = _prefs.getBool(_playRandomOnStartupKey) ?? false;
     _dateFirstInShowCard = _prefs.getBool(_dateFirstInShowCardKey) ?? true;
     _useDynamicColor = _prefs.getBool(_useDynamicColorKey) ?? true;
+    _showDayOfWeek = _prefs.getBool(_showDayOfWeekKey) ?? true;
+    _abbreviateDayOfWeek = _prefs.getBool(_abbreviateDayOfWeekKey) ?? true;
+    _abbreviateMonth = _prefs.getBool(_abbreviateMonthKey) ?? true;
     // Font Migration Logic
     if (_prefs.containsKey('use_handwriting_font')) {
       bool oldHandwriting = _prefs.getBool('use_handwriting_font') ?? false;
@@ -163,10 +180,47 @@ class SettingsProvider with ChangeNotifier {
       _appFont = _prefs.getString(_appFontKey) ?? 'default';
     }
 
-    _showGlowBorder = _prefs.getBool(_showGlowBorderKey) ?? false;
+    // Glow Border Migration Logic
+    // New system: 0=Off, 10-100=Intensity percentage
+    if (_prefs.containsKey(_glowModeKey)) {
+      _glowMode = _prefs.getInt(_glowModeKey) ?? 0;
+      // Migrate from old values to percentage
+      if (_glowMode == 1) {
+        _glowMode = 25; // Old "Quarter" becomes 25%
+        _prefs.setInt(_glowModeKey, _glowMode);
+      } else if (_glowMode == 2) {
+        _glowMode = 50; // Old "Half" becomes 50%
+        _prefs.setInt(_glowModeKey, _glowMode);
+      } else if (_glowMode == 3) {
+        _glowMode = 100; // Old "Full" becomes 100%
+        _prefs.setInt(_glowModeKey, _glowMode);
+      }
+    } else {
+      // Migrate from old boolean keys
+      bool oldShow = _prefs.getBool(_showGlowBorderKey) ?? false;
+      bool oldHalf = _prefs.getBool(_halfGlowDynamicKey) ?? false;
+      if (oldHalf) {
+        _glowMode = 50; // Half = 50%
+      } else if (oldShow) {
+        _glowMode = 100; // Full = 100%
+      } else {
+        _glowMode = 0; // Off
+      }
+      // Save matched value to new key
+      _prefs.setInt(_glowModeKey, _glowMode);
+    }
+
+    // True Black Migration: if user had halfGlowDynamic, they likely wanted True Black
+    bool oldHalf = _prefs.getBool(_halfGlowDynamicKey) ?? false;
+    if (oldHalf && !_prefs.containsKey(_useTrueBlackKey)) {
+      _useTrueBlack = true;
+      _prefs.setBool(_useTrueBlackKey, true);
+    } else {
+      _useTrueBlack = _prefs.getBool(_useTrueBlackKey) ?? false;
+    }
+
     _highlightPlayingWithRgb =
         _prefs.getBool(_highlightPlayingWithRgbKey) ?? false;
-    _halfGlowDynamic = _prefs.getBool(_halfGlowDynamicKey) ?? false;
     _rgbAnimationSpeed = _prefs.getDouble(_rgbAnimationSpeedKey) ?? 1.0;
 
     _showSplashScreen = _prefs.getBool(_showSplashScreenKey) ?? true;
@@ -230,10 +284,21 @@ class SettingsProvider with ChangeNotifier {
       _dateFirstInShowCardKey, _dateFirstInShowCard = !_dateFirstInShowCard);
   void toggleUseDynamicColor() => _updatePreference(
       _useDynamicColorKey, _useDynamicColor = !_useDynamicColor);
+  void toggleUseTrueBlack() =>
+      _updatePreference(_useTrueBlackKey, _useTrueBlack = !_useTrueBlack);
+  void toggleShowDayOfWeek() =>
+      _updatePreference(_showDayOfWeekKey, _showDayOfWeek = !_showDayOfWeek);
+  void toggleAbbreviateDayOfWeek() => _updatePreference(
+      _abbreviateDayOfWeekKey, _abbreviateDayOfWeek = !_abbreviateDayOfWeek);
+  void toggleAbbreviateMonth() => _updatePreference(
+      _abbreviateMonthKey, _abbreviateMonth = !_abbreviateMonth);
   // void toggleUseHandwritingFont() => ... // Removed
   void toggleUiScale() => _updatePreference(_uiScaleKey, _uiScale = !_uiScale);
-  void toggleShowGlowBorder() =>
-      _updatePreference(_showGlowBorderKey, _showGlowBorder = !_showGlowBorder);
+
+  void setGlowMode(int mode) {
+    _updateIntPreference(_glowModeKey, _glowMode = mode);
+  }
+
   void toggleHighlightPlayingWithRgb() => _updatePreference(
       _highlightPlayingWithRgbKey,
       _highlightPlayingWithRgb = !_highlightPlayingWithRgb);
@@ -244,11 +309,7 @@ class SettingsProvider with ChangeNotifier {
   void toggleUseStrictSrcCategorization() => _updatePreference(
       _useStrictSrcCategorizationKey,
       _useStrictSrcCategorization = !_useStrictSrcCategorization);
-  static const String _halfGlowDynamicKey = 'half_glow_dynamic';
-  bool _halfGlowDynamic = false;
-  bool get halfGlowDynamic => _halfGlowDynamic;
-  void toggleHalfGlowDynamic() => _updatePreference(
-      _halfGlowDynamicKey, _halfGlowDynamic = !_halfGlowDynamic);
+  // Removed _halfGlowDynamicKey and logic as it is merged into _glowMode
 
   static const String _rgbAnimationSpeedKey = 'rgb_animation_speed';
   double _rgbAnimationSpeed = 1.0;
@@ -261,6 +322,7 @@ class SettingsProvider with ChangeNotifier {
     if (color == null) {
       await _prefs.remove(_seedColorKey);
     } else {
+      // ignore: deprecated_member_use
       await _prefs.setInt(_seedColorKey, color.value);
     }
     notifyListeners();
@@ -419,6 +481,11 @@ class SettingsProvider with ChangeNotifier {
 
   Future<void> _updateDoublePreference(String key, double value) async {
     await _prefs.setDouble(key, value);
+    notifyListeners();
+  }
+
+  Future<void> _updateIntPreference(String key, int value) async {
+    await _prefs.setInt(key, value);
     notifyListeners();
   }
 

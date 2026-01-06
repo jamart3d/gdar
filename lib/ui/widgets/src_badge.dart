@@ -5,11 +5,13 @@ import 'package:provider/provider.dart';
 class SrcBadge extends StatelessWidget {
   final String src;
   final bool isPlaying;
+  final double fontSize;
 
   const SrcBadge({
     super.key,
     required this.src,
     this.isPlaying = false,
+    this.fontSize = 9.0,
   });
 
   @override
@@ -21,8 +23,7 @@ class SrcBadge extends StatelessWidget {
 
     // Check for True Black mode
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    final isTrueBlackMode = isDarkMode &&
-        (!settingsProvider.useDynamicColor || settingsProvider.halfGlowDynamic);
+    final isTrueBlackMode = isDarkMode && settingsProvider.useTrueBlack;
 
     final List<Color> gradientColors;
     if (isTrueBlackMode) {
@@ -32,8 +33,8 @@ class SrcBadge extends StatelessWidget {
       ];
     } else {
       gradientColors = [
-        colorScheme.secondaryContainer.withOpacity(0.7),
-        colorScheme.secondaryContainer.withOpacity(0.5),
+        colorScheme.secondaryContainer.withValues(alpha: 0.7),
+        colorScheme.secondaryContainer.withValues(alpha: 0.5),
       ];
     }
 
@@ -53,7 +54,7 @@ class SrcBadge extends StatelessWidget {
             ? []
             : [
                 BoxShadow(
-                    color: colorScheme.shadow.withOpacity(0.05),
+                    color: colorScheme.shadow.withValues(alpha: 0.05),
                     blurRadius: 2,
                     offset: const Offset(0, 1))
               ],
@@ -63,7 +64,7 @@ class SrcBadge extends StatelessWidget {
         style: Theme.of(context).textTheme.labelSmall?.copyWith(
               color: colorScheme.onSecondaryContainer,
               fontWeight: FontWeight.w700,
-              fontSize: 9 *
+              fontSize: fontSize *
                   (settingsProvider.uiScale ? 1.25 : 1.0) *
                   (settingsProvider.appFont == 'rock_salt' ? 0.7 : 1.0),
               letterSpacing:

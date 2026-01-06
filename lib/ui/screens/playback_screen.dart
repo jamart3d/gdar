@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:intl/intl.dart';
 import 'package:gdar/ui/widgets/animated_gradient_border.dart';
 import 'package:gdar/ui/widgets/src_badge.dart';
 import 'package:gdar/models/show.dart';
@@ -155,6 +156,7 @@ class _PlaybackScreenState extends State<PlaybackScreen>
     }
   }
 
+  @override
   Widget build(BuildContext context) {
     final audioProvider = context.watch<AudioProvider>();
     final settingsProvider = context.watch<SettingsProvider>();
@@ -183,8 +185,7 @@ class _PlaybackScreenState extends State<PlaybackScreen>
 
     // Check for True Black mode
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    final isTrueBlackMode = isDarkMode &&
-        (!settingsProvider.useDynamicColor || settingsProvider.halfGlowDynamic);
+    final isTrueBlackMode = isDarkMode && settingsProvider.useTrueBlack;
 
     if (!isTrueBlackMode && settingsProvider.highlightCurrentShowCard) {
       String seed = currentShow.name;
@@ -254,8 +255,8 @@ class _PlaybackScreenState extends State<PlaybackScreen>
 
             return Column(
               children: [
-                _buildAppBar(
-                    context, currentShow, currentSource, backgroundColor),
+                _buildAppBar(context, currentShow, currentSource,
+                    backgroundColor, panelPosition),
                 Expanded(
                   child: _buildTrackList(context, audioProvider, currentSource,
                       dynamicBottomPadding, isTrueBlackMode),
@@ -268,99 +269,124 @@ class _PlaybackScreenState extends State<PlaybackScreen>
     );
   }
 
-  Widget _buildAppBar(
-      BuildContext context, Show show, Source source, Color backgroundColor) {
+  Widget _buildAppBar(BuildContext context, Show show, Source source,
+      Color backgroundColor, double panelPosition) {
     final settingsProvider = context.watch<SettingsProvider>();
+
+    // Date Formatting Logic
+    String dateFormatPattern = '';
+    if (settingsProvider.showDayOfWeek) {
+      dateFormatPattern +=
+          settingsProvider.abbreviateDayOfWeek ? 'E, ' : 'EEEE, ';
+    }
+    dateFormatPattern += settingsProvider.abbreviateMonth ? 'MMM' : 'MMMM';
+    dateFormatPattern += ' d, y';
+
+    final String formattedDate = () {
+      try {
+        final date = DateTime.parse(show.date);
+        return DateFormat(dateFormatPattern).format(date);
+      } catch (e) {
+        return show.date;
+      }
+    }();
+
     return AppBar(
       backgroundColor: backgroundColor,
       elevation: 0,
-      title: SizedBox(
-        height: (Theme.of(context).textTheme.titleLarge?.fontSize ?? 22.0) *
-            (settingsProvider.uiScale ? 1.25 : 1.0) *
-            1.6,
-        child: ConditionalMarquee(
-          text: show.formattedDate,
-          style: Theme.of(context)
-              .textTheme
-              .titleLarge
-              ?.apply(fontSizeFactor: settingsProvider.uiScale ? 1.25 : 1.0),
+      title: Opacity(
+        opacity: (1.0 - (panelPosition * 1.5)).clamp(0.0, 1.0),
+        child: SizedBox(
+          height: (Theme.of(context).textTheme.titleLarge?.fontSize ?? 22.0) *
+              (settingsProvider.uiScale ? 1.25 : 1.0) *
+              1.6,
+          child: ConditionalMarquee(
+            text: formattedDate,
+            style: Theme.of(context)
+                .textTheme
+                .titleLarge
+                ?.apply(fontSizeFactor: settingsProvider.uiScale ? 1.25 : 1.0),
+          ),
         ),
       ),
       actions: [
-        Padding(
-          padding: const EdgeInsets.only(right: 16.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Consumer<SettingsProvider>(
-                builder: (context, settings, _) {
-                  final String ratingKey = source.id;
-                  final isPlayed = settings.isPlayed(ratingKey);
+        Opacity(
+          opacity: (1.0 - (panelPosition * 1.5)).clamp(0.0, 1.0),
+          child: Padding(
+            padding: const EdgeInsets.only(right: 16.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Consumer<SettingsProvider>(
+                  builder: (context, settings, _) {
+                    final String ratingKey = source.id;
+                    final isPlayed = settings.isPlayed(ratingKey);
 
-                  return RatingControl(
-                    key: ValueKey(
-                        '${ratingKey}_${settings.getRating(ratingKey)}_$isPlayed'),
-                    rating: settings.getRating(ratingKey),
-                    size: 16 * (settings.uiScale ? 1.25 : 1.0),
-                    isPlayed: isPlayed,
-                    onTap: () async {
-                      final currentRating = settings.getRating(ratingKey);
-                      await showDialog(
-                        context: context,
-                        builder: (context) => RatingDialog(
-                          initialRating: currentRating,
-                          sourceId: source.id,
-                          sourceUrl: source.tracks.isNotEmpty
-                              ? source.tracks.first.url
-                              : null,
-                          isPlayed: settings.isPlayed(ratingKey),
-                          onRatingChanged: (newRating) {
-                            settings.setRating(ratingKey, newRating);
-                          },
-                          onPlayedChanged: (bool newIsPlayed) {
-                            if (newIsPlayed != settings.isPlayed(ratingKey)) {
-                              settings.togglePlayed(ratingKey);
-                            }
-                          },
-                        ),
-                      );
-                    },
-                  );
-                },
-              ),
-              const SizedBox(height: 2),
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  if (source.src != null) ...[
-                    SrcBadge(src: source.src!),
-                    const SizedBox(width: 4),
-                  ],
-                  Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                    decoration: BoxDecoration(
-                      color: Theme.of(context)
-                          .colorScheme
-                          .secondaryContainer
-                          .withValues(alpha: 0.5),
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                    child: Text(
-                      source.id,
-                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                            color: Theme.of(context)
-                                .colorScheme
-                                .onSecondaryContainer,
-                            fontSize:
-                                10 * (settingsProvider.uiScale ? 1.25 : 1.0),
+                    return RatingControl(
+                      key: ValueKey(
+                          '${ratingKey}_${settings.getRating(ratingKey)}_$isPlayed'),
+                      rating: settings.getRating(ratingKey),
+                      size: 16 * (settings.uiScale ? 1.25 : 1.0),
+                      isPlayed: isPlayed,
+                      onTap: () async {
+                        final currentRating = settings.getRating(ratingKey);
+                        await showDialog(
+                          context: context,
+                          builder: (context) => RatingDialog(
+                            initialRating: currentRating,
+                            sourceId: source.id,
+                            sourceUrl: source.tracks.isNotEmpty
+                                ? source.tracks.first.url
+                                : null,
+                            isPlayed: settings.isPlayed(ratingKey),
+                            onRatingChanged: (newRating) {
+                              settings.setRating(ratingKey, newRating);
+                            },
+                            onPlayedChanged: (bool newIsPlayed) {
+                              if (newIsPlayed != settings.isPlayed(ratingKey)) {
+                                settings.togglePlayed(ratingKey);
+                              }
+                            },
                           ),
+                        );
+                      },
+                    );
+                  },
+                ),
+                const SizedBox(height: 2),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (source.src != null) ...[
+                      SrcBadge(src: source.src!),
+                      const SizedBox(width: 4),
+                    ],
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context)
+                            .colorScheme
+                            .secondaryContainer
+                            .withValues(alpha: 0.5),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Text(
+                        source.id,
+                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .onSecondaryContainer,
+                              fontSize:
+                                  10 * (settingsProvider.uiScale ? 1.25 : 1.0),
+                            ),
+                      ),
                     ),
-                  ),
-                ],
-              ),
-            ],
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
         IconButton(
@@ -486,9 +512,9 @@ class _PlaybackScreenState extends State<PlaybackScreen>
                       Colors.red,
                     ],
                     showGlow: true,
-                    showShadow: settingsProvider.showGlowBorder,
+                    showShadow: settingsProvider.glowMode > 0,
                     glowOpacity:
-                        0.5 * (settingsProvider.halfGlowDynamic ? 0.5 : 1.0),
+                        0.5 * (settingsProvider.glowMode / 100.0),
                     animationSpeed: settingsProvider.rgbAnimationSpeed,
                     child: Material(
                       color: isTrueBlackMode
@@ -573,8 +599,25 @@ class _PlaybackScreenState extends State<PlaybackScreen>
     final scaleFactor = settingsProvider.uiScale ? 1.25 : 1.0;
 
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    final isTrueBlackMode = isDarkMode &&
-        (!settingsProvider.useDynamicColor || settingsProvider.halfGlowDynamic);
+    final isTrueBlackMode = isDarkMode && settingsProvider.useTrueBlack;
+
+    // Date Formatting Logic
+    String dateFormatPattern = '';
+    if (settingsProvider.showDayOfWeek) {
+      dateFormatPattern +=
+          settingsProvider.abbreviateDayOfWeek ? 'E, ' : 'EEEE, ';
+    }
+    dateFormatPattern += settingsProvider.abbreviateMonth ? 'MMM' : 'MMMM';
+    dateFormatPattern += ' d, y';
+
+    final String formattedDate = () {
+      try {
+        final date = DateTime.parse(currentShow.date);
+        return DateFormat(dateFormatPattern).format(date);
+      } catch (e) {
+        return currentShow.date;
+      }
+    }();
 
     return Container(
       decoration: BoxDecoration(
@@ -665,80 +708,113 @@ class _PlaybackScreenState extends State<PlaybackScreen>
               valueListenable: panelPositionNotifier,
               builder: (context, value, child) {
                 // Closed (0.0): +100 (Hidden down)
-                // Open (1.0): -24 (Up to reduce gap)
-                final double yOffset = (100.0 - 124.0 * value) * scaleFactor;
+                // Open (1.0): -32 (Up more to compensate for larger gap)
+                final double yOffset = (100.0 - 132.0 * value) * scaleFactor;
                 return Transform.translate(
                   offset: Offset(0, yOffset),
                   child: SingleChildScrollView(
-                    physics: const ClampingScrollPhysics(),
+                    physics: const NeverScrollableScrollPhysics(),
                     padding: EdgeInsets.fromLTRB(16, 0, 16, 32 * scaleFactor),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Align(
-                          alignment: Alignment.centerLeft,
-                          child: Text(
-                            currentSource.location ?? 'Location N/A',
-                            style: textTheme.titleSmall
-                                ?.apply(fontSizeFactor: scaleFactor)
-                                .copyWith(
-                                  color: colorScheme.secondary,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                          ),
-                        ),
-                        const SizedBox(height: 4),
                         Row(
+                          crossAxisAlignment: CrossAxisAlignment.end,
                           children: [
-                            Text(
-                              currentShow.formattedDate,
-                              style: textTheme.titleMedium
-                                  ?.apply(fontSizeFactor: scaleFactor)
-                                  .copyWith(
-                                    color: colorScheme.onSurfaceVariant,
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Align(
+                                    alignment: Alignment.centerLeft,
+                                    child: Text(
+                                      currentSource.location ?? 'Location N/A',
+                                      style: textTheme.titleSmall?.copyWith(
+                                        fontSize: 16 *
+                                            scaleFactor, // Reduced from 18 to differentiate from Venue
+                                        color: colorScheme.secondary,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
                                   ),
+                                  const SizedBox(
+                                      height:
+                                          4), // Reduced from 8 to bring Location closer to Date
+                                  Row(
+                                    children: [
+                                      const SizedBox(
+                                          width:
+                                              4), // Slight indentation for Date
+                                      Transform.translate(
+                                        offset: const Offset(0,
+                                            2), // Push Date down closer to Green Line
+                                        child: Text(
+                                          formattedDate,
+                                          style: textTheme.titleMedium
+                                              ?.apply(
+                                                  fontSizeFactor: scaleFactor)
+                                              .copyWith(
+                                                color: colorScheme
+                                                    .onSurfaceVariant,
+                                                height: 1.0,
+                                              ),
+                                        ),
+                                      ),
+                                      IconButton(
+                                        constraints: const BoxConstraints(),
+                                        padding: const EdgeInsets.only(left: 8),
+                                        icon: Icon(Icons.copy_rounded,
+                                            size: 20 * scaleFactor,
+                                            color:
+                                                colorScheme.onSurfaceVariant),
+                                        onPressed: () {
+                                          final track = currentSource.tracks[
+                                              audioProvider.audioPlayer
+                                                      .currentIndex ??
+                                                  0];
+                                          final locationStr = currentSource
+                                                      .location !=
+                                                  null
+                                              ? " - ${currentSource.location}"
+                                              : "";
+                                          final info =
+                                              "${currentShow.venue}$locationStr - $formattedDate - ${currentSource.id}\n${track.title}\n${track.url.replaceAll('/download/', '/details/').split('/').sublist(0, 5).join('/')}";
+                                          Clipboard.setData(
+                                              ClipboardData(text: info));
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(
+                                            SnackBar(
+                                              content: Text(
+                                                  'Show details copied to clipboard',
+                                                  style: TextStyle(
+                                                      color: Theme.of(context)
+                                                          .colorScheme
+                                                          .onInverseSurface)),
+                                              behavior:
+                                                  SnackBarBehavior.floating,
+                                              backgroundColor: Theme.of(context)
+                                                  .colorScheme
+                                                  .inverseSurface,
+                                              shape: RoundedRectangleBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                          12)),
+                                              margin: const EdgeInsets.all(12),
+                                              showCloseIcon: true,
+                                              closeIconColor: Theme.of(context)
+                                                  .colorScheme
+                                                  .onInverseSurface,
+                                            ),
+                                          );
+                                        },
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
                             ),
                             const SizedBox(width: 8),
-                            IconButton(
-                              icon: Icon(Icons.copy_rounded,
-                                  size: 20 * scaleFactor,
-                                  color: colorScheme.onSurfaceVariant),
-                              onPressed: () {
-                                final track = currentSource.tracks[
-                                    audioProvider.audioPlayer.currentIndex ??
-                                        0];
-                                final locationStr =
-                                    currentSource.location != null
-                                        ? " - ${currentSource.location}"
-                                        : "";
-                                final info =
-                                    "${currentShow.venue}$locationStr - ${currentShow.formattedDate} - ${currentSource.id}\n${track.title}\n${track.url.replaceAll('/download/', '/details/').split('/').sublist(0, 5).join('/')}";
-                                Clipboard.setData(ClipboardData(text: info));
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(
-                                        'Show details copied to clipboard',
-                                        style: TextStyle(
-                                            color: Theme.of(context)
-                                                .colorScheme
-                                                .onInverseSurface)),
-                                    behavior: SnackBarBehavior.floating,
-                                    backgroundColor: Theme.of(context)
-                                        .colorScheme
-                                        .inverseSurface,
-                                    shape: RoundedRectangleBorder(
-                                        borderRadius:
-                                            BorderRadius.circular(12)),
-                                    margin: const EdgeInsets.all(12),
-                                    showCloseIcon: true,
-                                    closeIconColor: Theme.of(context)
-                                        .colorScheme
-                                        .onInverseSurface,
-                                  ),
-                                );
-                              },
-                            ),
-                            const Spacer(),
                             IntrinsicWidth(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -751,67 +827,78 @@ class _PlaybackScreenState extends State<PlaybackScreen>
                                         currentSource,
                                         settingsProvider),
                                   ),
-                                  const SizedBox(height: 8),
-                                  InkWell(
-                                    onTap: () {
-                                      if (currentSource.tracks.isNotEmpty) {
-                                        launchArchivePage(
-                                            currentSource.tracks.first.url);
-                                      }
-                                    },
-                                    borderRadius: BorderRadius.circular(6),
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        if (currentSource.src != null) ...[
-                                          SrcBadge(
-                                              src: currentSource.src!,
-                                              isPlaying: true),
-                                          const SizedBox(width: 6),
-                                        ],
-                                        Container(
-                                          padding: const EdgeInsets.symmetric(
-                                              horizontal: 10, vertical: 6),
-                                          decoration: BoxDecoration(
-                                            color: colorScheme.tertiaryContainer
-                                                .withValues(alpha: 0.7),
-                                            borderRadius:
-                                                BorderRadius.circular(6),
-                                          ),
-                                          alignment: Alignment.center,
-                                          child: Container(
-                                            decoration: BoxDecoration(
-                                              border: Border(
-                                                bottom: BorderSide(
-                                                  color: colorScheme
-                                                      .onTertiaryContainer,
-                                                  width: 1.5,
+                                  const SizedBox(
+                                      height:
+                                          16), // Increased from 8 to compensate for -6px offset
+                                  Transform.translate(
+                                    offset: const Offset(
+                                        0, -8), // Move UP 8px total
+                                    child: InkWell(
+                                      onTap: () {
+                                        if (currentSource.tracks.isNotEmpty) {
+                                          launchArchivePage(
+                                              currentSource.tracks.first.url);
+                                        }
+                                      },
+                                      borderRadius: BorderRadius.circular(6),
+                                      child: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            if (currentSource.src != null) ...[
+                                              SrcBadge(
+                                                  src: currentSource.src!,
+                                                  isPlaying: true,
+                                                  fontSize:
+                                                      11.0), // Larger badge
+                                              const SizedBox(width: 6),
+                                            ],
+                                            Container(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      horizontal: 10,
+                                                      vertical: 6),
+                                              decoration: BoxDecoration(
+                                                color: colorScheme
+                                                    .tertiaryContainer
+                                                    .withValues(alpha: 0.7),
+                                                borderRadius:
+                                                    BorderRadius.circular(6),
+                                              ),
+                                              child: Container(
+                                                padding: const EdgeInsets.only(
+                                                    bottom:
+                                                        1.0), // Gap for underline
+                                                decoration: BoxDecoration(
+                                                  border: Border(
+                                                    bottom: BorderSide(
+                                                      color: colorScheme
+                                                          .onTertiaryContainer,
+                                                      width: 1.0,
+                                                    ),
+                                                  ),
+                                                ),
+                                                child: Text(
+                                                  currentSource.id,
+                                                  style: textTheme.bodyMedium
+                                                      ?.copyWith(
+                                                    color: colorScheme
+                                                        .onTertiaryContainer,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
                                                 ),
                                               ),
                                             ),
-                                            padding: const EdgeInsets.only(
-                                                bottom: 2.0),
-                                            child: Text(
-                                              currentSource.id,
-                                              style: textTheme.bodyMedium
-                                                  ?.copyWith(
-                                                color: colorScheme
-                                                    .onTertiaryContainer,
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      ],
+                                          ]),
                                     ),
-                                  ),
+                                  ), // Close Transform.translate
                                 ],
                               ),
                             ),
                           ],
                         ),
+                        const SizedBox(height: 8), // Reduced from 16 to 8
                         const PlaybackProgressBar(),
                         const SizedBox(height: 8),
                         const PlaybackControls(),
@@ -901,7 +988,7 @@ class _PlaybackScreenState extends State<PlaybackScreen>
     return RatingControl(
       rating: rating,
       isPlayed: settings.isPlayed(ratingKey),
-      size: 20,
+      size: 24, // Increased from 20 to be larger than SHNID chip
       onTap: () async {
         await showDialog(
           context: context,

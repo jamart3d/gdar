@@ -65,19 +65,10 @@ void main() {
     if (!settingsProvider.useDynamicColor) {
       settingsProvider.toggleUseDynamicColor();
     }
-    // 3. Half Glow = TRUE
-    // Defaults to false, so toggle makes it true
-    if (!settingsProvider.halfGlowDynamic) {
-      settingsProvider.toggleHalfGlowDynamic();
-    }
+    // 3. Set Glow Mode to HALF (2)
+    settingsProvider.setGlowMode(2);
 
-    // 4. Set "Glow Border" to FALSE to prove Half Glow forces it back ON
-    if (settingsProvider.showGlowBorder) {
-      settingsProvider.toggleShowGlowBorder();
-    }
-
-    expect(settingsProvider.halfGlowDynamic, isTrue);
-    expect(settingsProvider.showGlowBorder, isFalse);
+    expect(settingsProvider.glowMode, equals(2));
 
     await tester.pumpWidget(createTestableWidget(
       show: createDummyShow('Test Venue', '2025-01-01'),
@@ -90,13 +81,9 @@ void main() {
 
     final borderWidget = tester.widget<AnimatedGradientBorder>(borderFinder);
 
-    print('DEBUG: showShadow=${borderWidget.showShadow}');
-    print('DEBUG: glowOpacity=${borderWidget.glowOpacity}');
-    print('DEBUG: halfGlowDynamic=${settingsProvider.halfGlowDynamic}');
-
-    // ASCERTION 1: Shadow should be TRUE (forced by halfGlowDynamic)
+    // ASCERTION 1: Shadow should be TRUE (Mode 2 has shadow)
     expect(borderWidget.showShadow, isTrue,
-        reason: 'Shadow should be forced ON when Half Glow is active');
+        reason: 'Shadow should be forced ON when Half Glow is active (Mode 2)');
 
     // Expected: 0.2 * 0.5 * 0.25 = 0.025
     expect(borderWidget.glowOpacity, closeTo(0.025, 0.0001),
@@ -110,9 +97,8 @@ void main() {
     if (!settingsProvider.useDynamicColor) {
       settingsProvider.toggleUseDynamicColor();
     }
-    if (!settingsProvider.halfGlowDynamic) {
-      settingsProvider.toggleHalfGlowDynamic();
-    }
+    // Set Glow Mode to HALF (2) to test reduced opacity
+    settingsProvider.setGlowMode(2);
 
     final show = createDummyShow('Test Venue', '2025-01-01');
 
@@ -138,8 +124,6 @@ void main() {
 
     final borderWidget = tester
         .widget<AnimatedGradientBorder>(find.byType(AnimatedGradientBorder));
-
-    print('DEBUG TEST 2: glowOpacity=${borderWidget.glowOpacity}');
 
     // Calculation: 1.0 * 0.2 * 0.5 = 0.1
     // expect(borderWidget.glowOpacity, closeTo(0.1, 0.0001), ...
