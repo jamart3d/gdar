@@ -87,7 +87,10 @@ class _TrackListScreenState extends State<TrackListScreen> {
                     _overlayEntry?.remove();
                     _overlayEntry = null;
                     Navigator.of(context).push(
-                      MaterialPageRoute(builder: (_) => const SettingsScreen()),
+                      MaterialPageRoute(
+                          builder: (_) => const SettingsScreen(
+                                highlightSetting: 'play_on_tap',
+                              )),
                     );
                   },
                   child: Text(

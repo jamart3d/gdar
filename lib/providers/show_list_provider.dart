@@ -362,8 +362,10 @@ class ShowListProvider with ChangeNotifier {
     }
   }
 
-  void onShowTap(Show show) {
-    final key = getShowKey(show);
+  bool isShowExpanded(String key) => _expandedShowKey == key;
+  bool isShowLoading(String key) => _loadingShowKey == key;
+
+  void toggleShowExpansion(String key) {
     if (_expandedShowKey == key) {
       // Collapse the current show
       _expandedShowKey = null;
@@ -374,8 +376,7 @@ class ShowListProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  void setLoadingShow(Show? show) {
-    final key = show != null ? getShowKey(show) : null;
+  void setLoadingShow(String? key) {
     if (_loadingShowKey != key) {
       _loadingShowKey = key;
       notifyListeners();
@@ -383,8 +384,8 @@ class ShowListProvider with ChangeNotifier {
   }
 
   // Used to expand a show, e.g., when the current playing show is tapped.
-  void expandShow(Show show) {
-    _expandedShowKey = getShowKey(show);
+  void expandShow(String key) {
+    _expandedShowKey = key;
     notifyListeners();
   }
 

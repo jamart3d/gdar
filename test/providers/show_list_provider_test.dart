@@ -110,42 +110,43 @@ void main() {
       expect(showListProvider.filteredShows.length, 3);
     });
 
-    test('onShowTap expands and collapses a show', () async {
+    test('toggleShowExpansion (prev onShowTap) expands and collapses a show',
+        () async {
       when(mockShowService.getShows()).thenAnswer((_) async => dummyShows);
       await showListProvider.fetchShows();
       final show = showListProvider.filteredShows.first;
+      final key = showListProvider.getShowKey(show);
 
-      showListProvider.onShowTap(show);
-      expect(
-          showListProvider.expandedShowKey, showListProvider.getShowKey(show));
+      showListProvider.toggleShowExpansion(key);
+      expect(showListProvider.expandedShowKey, key);
 
-      showListProvider.onShowTap(show);
+      showListProvider.toggleShowExpansion(key);
       expect(showListProvider.expandedShowKey, isNull);
     });
 
     test('setLoadingShow updates the loading show name', () {
       final show = dummyShows.first;
-      showListProvider.setLoadingShow(show);
-      expect(
-          showListProvider.loadingShowKey, showListProvider.getShowKey(show));
+      final key = showListProvider.getShowKey(show);
+      showListProvider.setLoadingShow(key);
+      expect(showListProvider.loadingShowKey, key);
     });
 
     test('expandShow expands the given show', () async {
       when(mockShowService.getShows()).thenAnswer((_) async => dummyShows);
       await showListProvider.fetchShows();
       final show = showListProvider.filteredShows.first;
-      showListProvider.expandShow(show);
-      expect(
-          showListProvider.expandedShowKey, showListProvider.getShowKey(show));
+      final key = showListProvider.getShowKey(show);
+      showListProvider.expandShow(key);
+      expect(showListProvider.expandedShowKey, key);
     });
 
     test('collapseCurrentShow collapses the current show', () async {
       when(mockShowService.getShows()).thenAnswer((_) async => dummyShows);
       await showListProvider.fetchShows();
       final show = showListProvider.filteredShows.first;
-      showListProvider.expandShow(show);
-      expect(
-          showListProvider.expandedShowKey, showListProvider.getShowKey(show));
+      final key = showListProvider.getShowKey(show);
+      showListProvider.expandShow(key);
+      expect(showListProvider.expandedShowKey, key);
 
       showListProvider.collapseCurrentShow();
       expect(showListProvider.expandedShowKey, isNull);

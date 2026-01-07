@@ -81,7 +81,7 @@ class _ShowListScreenState extends State<ShowListScreen>
             if (show != null && mounted) {
               // If the random show has multiple sources, expand it.
               if (show.sources.length > 1) {
-                showListProvider.expandShow(show);
+                showListProvider.expandShow(showListProvider.getShowKey(show));
                 _animationController.forward(from: 0.0);
               }
 
@@ -291,7 +291,7 @@ class _ShowListScreenState extends State<ShowListScreen>
 
     // If tapping a new or collapsed show, expand it.
     final wasSomethingExpanded = previouslyExpanded != null;
-    showListProvider.onShowTap(show);
+    showListProvider.toggleShowExpansion(key);
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (!mounted) return;
@@ -366,12 +366,12 @@ class _ShowListScreenState extends State<ShowListScreen>
     HapticFeedback.mediumImpact();
     final showListProvider = context.read<ShowListProvider>();
     final audioProvider = context.read<AudioProvider>();
-
-    showListProvider.setLoadingShow(show);
-    // Expand the parent show if it's not already.
     final key = showListProvider.getShowKey(show);
+
+    showListProvider.setLoadingShow(key);
+    // Expand the parent show if it's not already.
     if (showListProvider.expandedShowKey != key) {
-      showListProvider.expandShow(show);
+      showListProvider.expandShow(key);
       _animationController.forward(from: 0.0);
     }
     audioProvider.playSource(show, source);
@@ -414,7 +414,7 @@ class _ShowListScreenState extends State<ShowListScreen>
     if (currentShow.sources.length > 1) {
       final key = showListProvider.getShowKey(currentShow);
       if (showListProvider.expandedShowKey != key) {
-        showListProvider.expandShow(currentShow);
+        showListProvider.expandShow(key);
         _animationController.forward(from: 0.0);
       }
     } else {
@@ -459,7 +459,7 @@ class _ShowListScreenState extends State<ShowListScreen>
 
       // 2. Expand UI if needed
       if (show.sources.length > 1) {
-        showListProvider.expandShow(show);
+        showListProvider.expandShow(showListProvider.getShowKey(show));
         _animationController.forward(from: 0.0);
       }
 
@@ -731,8 +731,7 @@ class _ShowListScreenState extends State<ShowListScreen>
             isExpanded: isExpanded,
             isPlaying: audioProvider.currentShow == show,
             playingSource: audioProvider.currentSource,
-            isLoading: showListProvider.loadingShowKey ==
-                key, // TODO: Update ShowListProvider to use ID/Key
+            isLoading: showListProvider.isShowLoading(key),
             onTap: () => _onShowTapped(show),
             onLongPress: () => _onCardLongPressed(show),
           ),

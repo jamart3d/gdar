@@ -145,6 +145,13 @@ class MockSettingsProvider extends _i1.Mock implements _i5.SettingsProvider {
       ) as bool);
 
   @override
+  bool get useTrueBlack => (super.noSuchMethod(
+        Invocation.getter(#useTrueBlack),
+        returnValue: false,
+        returnValueForMissingStub: false,
+      ) as bool);
+
+  @override
   bool get useSliverAppBar => (super.noSuchMethod(
         Invocation.getter(#useSliverAppBar),
         returnValue: false,
@@ -399,6 +406,15 @@ class MockSettingsProvider extends _i1.Mock implements _i5.SettingsProvider {
   void toggleUseDynamicColor() => super.noSuchMethod(
         Invocation.method(
           #toggleUseDynamicColor,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void toggleUseTrueBlack() => super.noSuchMethod(
+        Invocation.method(
+          #toggleUseTrueBlack,
           [],
         ),
         returnValueForMissingStub: null,

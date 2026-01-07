@@ -1125,28 +1125,48 @@ class MockShowListProvider extends _i1.Mock implements _i6.ShowListProvider {
       );
 
   @override
-  void onShowTap(_i7.Show? show) => super.noSuchMethod(
+  bool isShowExpanded(String? key) => (super.noSuchMethod(
         Invocation.method(
-          #onShowTap,
-          [show],
+          #isShowExpanded,
+          [key],
+        ),
+        returnValue: false,
+        returnValueForMissingStub: false,
+      ) as bool);
+
+  @override
+  bool isShowLoading(String? key) => (super.noSuchMethod(
+        Invocation.method(
+          #isShowLoading,
+          [key],
+        ),
+        returnValue: false,
+        returnValueForMissingStub: false,
+      ) as bool);
+
+  @override
+  void toggleShowExpansion(String? key) => super.noSuchMethod(
+        Invocation.method(
+          #toggleShowExpansion,
+          [key],
         ),
         returnValueForMissingStub: null,
       );
 
   @override
-  void setLoadingShow(_i7.Show? show) => super.noSuchMethod(
+  void setLoadingShow(String? key) => super.noSuchMethod(
         Invocation.method(
           #setLoadingShow,
-          [show],
+          [key],
         ),
         returnValueForMissingStub: null,
       );
 
   @override
-  void expandShow(_i7.Show? show) => super.noSuchMethod(
+  void expandShow(String? key) => super.noSuchMethod(
         Invocation.method(
           #expandShow,
-          [show],
+          [key],
         ),
         returnValueForMissingStub: null,
       );
@@ -1294,6 +1314,13 @@ class MockSettingsProvider extends _i1.Mock implements _i8.SettingsProvider {
   @override
   bool get useDynamicColor => (super.noSuchMethod(
         Invocation.getter(#useDynamicColor),
+        returnValue: false,
+        returnValueForMissingStub: false,
+      ) as bool);
+
+  @override
+  bool get useTrueBlack => (super.noSuchMethod(
+        Invocation.getter(#useTrueBlack),
         returnValue: false,
         returnValueForMissingStub: false,
       ) as bool);
@@ -1553,6 +1580,15 @@ class MockSettingsProvider extends _i1.Mock implements _i8.SettingsProvider {
   void toggleUseDynamicColor() => super.noSuchMethod(
         Invocation.method(
           #toggleUseDynamicColor,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void toggleUseTrueBlack() => super.noSuchMethod(
+        Invocation.method(
+          #toggleUseTrueBlack,
           [],
         ),
         returnValueForMissingStub: null,

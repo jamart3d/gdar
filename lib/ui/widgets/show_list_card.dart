@@ -104,7 +104,7 @@ class _ShowListCardState extends State<ShowListCard> {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     final isTrueBlackMode = isDarkMode && settingsProvider.useTrueBlack;
 
-    if ((!isTrueBlackMode || settingsProvider.halfGlowDynamic) &&
+    if ((!isTrueBlackMode || settingsProvider.glowMode == 50) &&
         widget.isPlaying &&
         settingsProvider.highlightCurrentShowCard) {
       String seed = widget.show.name;

@@ -15,8 +15,42 @@ import 'package:gdar/ui/widgets/animated_gradient_border.dart'; // Add import
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-class SettingsScreen extends StatelessWidget {
-  const SettingsScreen({super.key});
+class SettingsScreen extends StatefulWidget {
+  final String? highlightSetting;
+
+  const SettingsScreen({super.key, this.highlightSetting});
+
+  @override
+  State<SettingsScreen> createState() => _SettingsScreenState();
+}
+
+class _SettingsScreenState extends State<SettingsScreen>
+    with SingleTickerProviderStateMixin {
+  final Map<String, GlobalKey> _settingKeys = {};
+
+  @override
+  void initState() {
+    super.initState();
+    // Register keys for highlightable settings
+    if (widget.highlightSetting != null) {
+      _settingKeys[widget.highlightSetting!] = GlobalKey();
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _scrollToHighlight();
+      });
+    }
+  }
+
+  void _scrollToHighlight() {
+    final key = _settingKeys[widget.highlightSetting];
+    if (key?.currentContext != null) {
+      Scrollable.ensureVisible(
+        key!.currentContext!,
+        duration: const Duration(milliseconds: 600),
+        curve: Curves.easeInOutCubicEmphasized,
+        alignment: 0.5, // Center in viewport
+      );
+    }
+  }
 
   void _showColorPickerDialog(BuildContext context) {
     final settingsProvider = context.read<SettingsProvider>();
@@ -474,7 +508,6 @@ class SettingsScreen extends StatelessWidget {
                         ),
                       SwitchListTile(
                         title: const Text('Glow Border'),
-                        subtitle: const Text('Animated border effect'),
                         value: settingsProvider.glowMode > 0,
                         onChanged: (value) {
                           context
@@ -920,16 +953,24 @@ class SettingsScreen extends StatelessWidget {
                   SectionCard(
                     title: 'Playback',
                     icon: Icons.play_circle_outline,
+                    initiallyExpanded:
+                        widget.highlightSetting == 'play_on_tap' ||
+                            widget.highlightSetting == 'playback_messages',
                     children: [
-                      SwitchListTile(
-                        title: const Text('Play on Tap'),
-                        subtitle:
-                            const Text('Tap track in inactive source to play'),
-                        value: settingsProvider.playOnTap,
-                        onChanged: (value) {
-                          context.read<SettingsProvider>().togglePlayOnTap();
-                        },
-                        secondary: const Icon(Icons.touch_app_rounded),
+                      _HighlightableSetting(
+                        startWithHighlight:
+                            widget.highlightSetting == 'play_on_tap',
+                        settingKey: _settingKeys['play_on_tap'],
+                        child: SwitchListTile(
+                          title: const Text('Play on Tap'),
+                          subtitle: const Text(
+                              'Tap track in inactive source to play'),
+                          value: settingsProvider.playOnTap,
+                          onChanged: (value) {
+                            context.read<SettingsProvider>().togglePlayOnTap();
+                          },
+                          secondary: const Icon(Icons.touch_app_rounded),
+                        ),
                       ),
                       SwitchListTile(
                         title: const Text('Show Playback Messages'),
@@ -1032,6 +1073,80 @@ class SettingsScreen extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+class _HighlightableSetting extends StatefulWidget {
+  final Widget child;
+  final bool startWithHighlight;
+  final GlobalKey? settingKey;
+
+  const _HighlightableSetting({
+    required this.child,
+    this.startWithHighlight = false,
+    this.settingKey,
+  });
+
+  @override
+  State<_HighlightableSetting> createState() => _HighlightableSettingState();
+}
+
+class _HighlightableSettingState extends State<_HighlightableSetting>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<Color?> _colorAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+        vsync: this, duration: const Duration(milliseconds: 1000));
+
+    // Wait until build context is available to read theme
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final colorScheme = Theme.of(context).colorScheme;
+    _colorAnimation = ColorTween(
+      begin: Colors.transparent,
+      end: colorScheme.tertiaryContainer.withValues(alpha: 0.6),
+    ).animate(CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeInOut,
+    ));
+
+    if (widget.startWithHighlight) {
+      // Pulse 3 times
+      _controller.forward().then((_) => _controller.reverse().then((_) =>
+          _controller.forward().then((_) => _controller.reverse().then((_) =>
+              _controller.forward().then((_) => _controller.reverse())))));
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _colorAnimation,
+      builder: (context, child) {
+        return Container(
+          key: widget.settingKey,
+          decoration: BoxDecoration(
+            color: _colorAnimation.value,
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: child,
+        );
+      },
+      child: widget.child,
     );
   }
 }
