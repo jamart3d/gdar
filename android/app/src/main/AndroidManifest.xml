@@ -15,7 +15,7 @@
     </queries>
 
 
-    <application android:label="gdar" android:name="${applicationName}" android:roundIcon="@mipmap/ic_launcher_round" android:icon="@mipmap/ic_launcher1">
+    <application android:label="@string/app_name" android:name="${applicationName}" android:roundIcon="@mipmap/ic_launcher_round" android:icon="@mipmap/ic_launcher1">
         <activity android:name="com.ryanheise.audioservice.AudioServiceActivity" android:exported="true" android:launchMode="singleTop" android:theme="@style/LaunchTheme" android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode" android:hardwareAccelerated="true" android:windowSoftInputMode="adjustResize">
             <!-- Specifies an Android theme to apply to this Activity as soon as
                  the Android process has started. This theme is visible to the user
@@ -26,7 +26,32 @@
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
+
+            <!-- Deep Link Intent Filter -->
+            <intent-filter android:label="gdar_deep_link">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <!-- Accepts URIs that begin with "gdar://play-random" or "gdar://open" -->
+                <data android:scheme="gdar" android:host="play-random" />
+                <data android:scheme="gdar" android:host="open" />
+            </intent-filter>
+
+            <!-- Support standard media search intents from Assistant/Gemini -->
+            <intent-filter>
+                <action android:name="android.media.action.MEDIA_PLAY_FROM_SEARCH" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+
+            <!-- Support generic search intents -->
+            <intent-filter>
+                <action android:name="android.intent.action.SEARCH" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
         </activity>
+
+        <!-- App Actions Shortcuts -->
+        <meta-data android:name="android.app.shortcuts" android:resource="@xml/shortcuts" />
 
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->

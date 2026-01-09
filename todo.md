@@ -121,7 +121,7 @@ This file tracks planned features, enhancements, and bug fixes for the gdar appl
 
 - [ ] **Google TV Support:** Create a dedicated screen/layout optimized for Google TV and Android TV.
 
-- [ ] **Google Assistant Integration:** Add support for voice commands (e.g., "Hey Google, play a random show on gdar") using App Actions.
+- [x] **Google Assistant Integration:** Add support for voice commands (e.g., "Hey Google, play a random show on gdar") using App Actions.
 
 - [ ] **Calendar Feature:** View shows by date on a calendar interface (e.g., "On This Day").
 
@@ -135,21 +135,14 @@ This file tracks planned features, enhancements, and bug fixes for the gdar appl
 - [ ] **Swipe to Block Follow-up:** When using "Swipe to Block" to remove a show, provide an option (or setting) to immediately trigger a new random selection.
 - [x] **RGB Glow Setting:** Add a setting to control/boost the "glow" intensity of the RGB border effect.
 
-- [x] **Move Encore Tracks:** Create a Python script to identify and move end tracks into an 'Encore' set.
-  - [x] `remove_encore_prefix.py` handles prefix removal and moving misplaced tracks.
-- [x] **Data Cleaning Scripts:**
-  - [x] `fix2_with_database.py`: Clean setlist data and generate review lists.
-  - [x] `report_review_shnids.py`: Generate lexicographically sorted SHNID lists for review.
-  - [x] **Investigate Sequences Following 'Tuning':** Analyze tracks appearing after "Tuning" to identify potential encores or separation issues.
-  - [x] **Set 1 Analysis Script:** Created script (`find_set1_encore.py`) to find single-set shows with >12 tracks.
-    - [x] Categorized matches into: (1) "Encore" in title, (2) "Tuning" in middle, (3) Neither.
-    - [x] Generated detailed report `report_set1_enc.md` including full track lists and set names.
-    - [x] Generated single minified JSON output `set1_matches.json`.
-  - [x] **Review Set 1 Candidates:** Manually review `set1_matches.json` and split sets where appropriate.
+
+
+ 
+ 
 - [x] **Refined Usage Instructions:**
   - [x] Improved line breaking (no widows/orphans).
   - [x] Enhanced typography (bold keywords).
-  - [ ] Ensure "Long-press" starts on a new line in usage instructions.
+  
 - [ ] **Rated Shows Export/Import:** Allow exporting/importing the library of rated shows (dates, shnids, played status, star ratings), possibly via a calendar format or JSON file.
 - [ ] **Storage Mechanism Investigation:** Investigate possible better ways to store settings and rated shows (e.g., Hive, drift/SQLite) instead of SharedPreferences/JSON files for scalability.
   - [ ] **Pre-populated Database:** converting `shows.json` to a pre-built database (Hive/Drift) shipped in assets to eliminate first-run JSON parsing lag.

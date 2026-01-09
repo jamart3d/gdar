@@ -17,6 +17,8 @@ dependencies:
   # For Audio Playback
   just_audio: ^0.10.5
   just_audio_background: ^0.0.1-beta.11
+  # For Deep Linking / App Actions
+  app_links: ^6.3.2
 
   # For State Management (Theme)
   provider: ^6.1.1

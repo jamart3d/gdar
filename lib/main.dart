@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -11,6 +12,7 @@ import 'package:gdar/utils/app_themes.dart';
 import 'package:gdar/utils/logger.dart';
 // import 'package:google_fonts/google_fonts.dart'; // Removed
 import 'package:just_audio_background/just_audio_background.dart';
+import 'package:app_links/app_links.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -59,6 +61,9 @@ class GdarApp extends StatefulWidget {
 class _GdarAppState extends State<GdarApp> {
   late final ShowListProvider _showListProvider;
   late final SettingsProvider _settingsProvider;
+  late final AppLinks _appLinks;
+  StreamSubscription? _linkSubscription;
+  final GlobalKey<NavigatorState> _navigatorKey = GlobalKey<NavigatorState>();
 
   @override
   void initState() {
@@ -72,6 +77,67 @@ class _GdarAppState extends State<GdarApp> {
     if (widget.showListProvider == null) {
       _showListProvider.init();
     }
+
+    _initDeepLinks();
+  }
+
+  void _initDeepLinks() {
+    _appLinks = AppLinks();
+
+    // Handle initial link if app was closed
+    _appLinks.getInitialLink().then((uri) {
+      if (uri != null) {
+        _handleDeepLink(uri);
+      }
+    });
+
+    // Handle links while app is running
+    _linkSubscription = _appLinks.uriLinkStream.listen((uri) {
+      _handleDeepLink(uri);
+    });
+  }
+
+  void _handleDeepLink(Uri uri) {
+    logger.i(
+        'Handling deep link: $uri (scheme: ${uri.scheme}, host: ${uri.host}, query: ${uri.queryParameters})');
+
+    if (uri.scheme == 'gdar') {
+      if (uri.host == 'play-random') {
+        WidgetsBinding.instance.addPostFrameCallback((_) async {
+          final context = _navigatorKey.currentContext;
+          if (context != null) {
+            final audioProvider =
+                Provider.of<AudioProvider>(context, listen: false);
+            logger.i('App Action: Playing random show based on deep link');
+            await audioProvider.playRandomShow(filterBySearch: false);
+          }
+        });
+      } else if (uri.host == 'open') {
+        final feature = uri.queryParameters['feature']?.toLowerCase() ?? '';
+        logger.i('App Action: Opening feature: $feature');
+
+        // If the user says "ask gdar to play a random show", Assistant might pass
+        // "play a random show" as the feature.
+        if (feature.contains('play') || feature.contains('random')) {
+          WidgetsBinding.instance.addPostFrameCallback((_) async {
+            final context = _navigatorKey.currentContext;
+            if (context != null) {
+              final audioProvider =
+                  Provider.of<AudioProvider>(context, listen: false);
+              logger.i(
+                  'App Action: Playing random show based on feature request: $feature');
+              await audioProvider.playRandomShow(filterBySearch: false);
+            }
+          });
+        }
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _linkSubscription?.cancel();
+    super.dispose();
   }
 
   @override
@@ -202,6 +268,7 @@ class _GdarAppState extends State<GdarApp> {
               }
 
               return MaterialApp(
+                navigatorKey: _navigatorKey,
                 title: 'gdar',
                 debugShowCheckedModeBanner: false,
                 theme: lightTheme,
