@@ -5,6 +5,7 @@ This file tracks planned features, enhancements, and bug fixes for the gdar appl
 ## High Priority
 
 - [x] **Unit Tests:** Write unit tests for providers (`AudioProvider`, `ShowListProvider`) to ensure business logic is correct.
+  - [ ] **Test Architecture Refactor:** Extract SHNID/track parsing logic from `AudioProvider.playFromShareString` into pure functions for easier unit testing, or implement as widget tests for end-to-end clipboard playback flow.
 - [x] **Widget Tests:** Write widget tests for critical UI components like `ShowListCard` and `PlaybackScreen`.
 - [x] **Error Handling:** Implement more robust error handling for audio playback (e.g., show a snackbar if a track URL is invalid or network fails).
 - [x] **App Startup:** Refactor startup to be synchronous, remove initial loading screen, and respect splash screen setting immediately.
@@ -27,6 +28,8 @@ This file tracks planned features, enhancements, and bug fixes for the gdar appl
 - [x] **Rate Show Dialog UI:** Improve the layout and design of the rating dialog.
 - [x] **SHNID Badge Size:** Increase the size of the SHNID badge in the Playback Screen (it's too small).
 - [x] **Clipboard Icon:** Add a clipboard icon next to the venue name in Playback Screen to copy show/track info.
+
+- [ ] **Clipboard Playback Countdown:** Add Material 3 expressive countdown animation (3, 2, 1) after paste detection, before playback starts. This provides visual feedback during the brief processing delay and confirms the paste was recognized.
 
 - [x] **Quick Block:** Left swipe on a Show Card (for single source shows) or an individual Source Item (for multi-source shows) to instantly mark it as "Red Star" (Blocked). Handles stopping playback and provides undo options.
 
@@ -64,7 +67,7 @@ This file tracks planned features, enhancements, and bug fixes for the gdar appl
     - [x] Block confirmation for rated shows.
     - [x] **Rated Shows Library**: Added dynamic counts to each tab label (e.g., "Played (5)").
     - [ ] **Data Sharding:** Split the monolithic JSON data by year (e.g., `years/1972.json`) and use a lightweight master index to improve app startup performance and reduce memory usage.
-    - [ ] **Venue Normalization:** Implement fuzzy matching to standardize venue names (e.g., merging "Fillmore East" and "Fillmore East, NYC") for reliable grouping and filtering.
+ 
 
 - [x] **Smart Random Playback**:
   - Manual Random (Button) respects search filter.
@@ -113,6 +116,8 @@ This file tracks planned features, enhancements, and bug fixes for the gdar appl
 
 - [x] **Gapless Playback:** Refactor to use `AudioPlayer.setAudioSources` (fixing `ConcatenatingAudioSource` deprecation) to ensure true gapless playback by default for all shows.
 - [ ] **Smart Random Setting**: Add a setting to toggle whether "Automated Random (Continuous Play) ignores search filter to pick from full library" (currently enabled by default).
+- [ ] **Investigation:** Audit `randomPlayback` and `gaplessPlayback` settings. 
+  - *Context:* Gapless is currently implicit (always on via `ConcatenatingAudioSource`). Random playback is a behavior/method, not a single state flag. Investigate if explicit settings are needed.
 - [ ] **Hide Forward/Reverse Controls:** Add setting to hide Next/Previous track buttons in the player interfaces for a minimalist look.
 
 - [ ] **Android Caching:** Implement `LockCachingAudioSource` for Android platform to enable full-file buffering.
@@ -122,6 +127,7 @@ This file tracks planned features, enhancements, and bug fixes for the gdar appl
 - [ ] **Google TV Support:** Create a dedicated screen/layout optimized for Google TV and Android TV.
 
 - [x] **Google Assistant Integration:** Add support for voice commands (e.g., "Hey Google, play a random show on gdar") using App Actions.
+  - [x] **Deep Link Consistency:** Ensured deep link actions wait for show list data initialization to resolve playback race conditions during cold start.
 
 - [ ] **Calendar Feature:** View shows by date on a calendar interface (e.g., "On This Day").
 
@@ -144,8 +150,9 @@ This file tracks planned features, enhancements, and bug fixes for the gdar appl
   - [x] Enhanced typography (bold keywords).
   
 - [ ] **Rated Shows Export/Import:** Allow exporting/importing the library of rated shows (dates, shnids, played status, star ratings), possibly via a calendar format or JSON file.
-- [ ] **Storage Mechanism Investigation:** Investigate possible better ways to store settings and rated shows (e.g., Hive, drift/SQLite) instead of SharedPreferences/JSON files for scalability.
+- [ ] **Storage Mechanism Investigation:** Investigate possible better ways to store settings and rated shows (e.g., Hive, drift/SQLite) instead of SharedPreferences/JSON files for scalability and improved app footprint.
   - [ ] **Pre-populated Database:** converting `shows.json` to a pre-built database (Hive/Drift) shipped in assets to eliminate first-run JSON parsing lag.
+  - [ ] **SharedPreferences Alternatives:** Research lightweight, performant alternatives to SharedPreferences for storing app settings to reduce memory footprint and improve read/write performance.
 - [x] **Venue Name Cleaning:** Trim venue name by "," or " - ", keeping the name as `venue` and moving the trimmed part to a new `location` attribute.
 - [x] **"Grateful Dead at" Cleanup:** Create a script to report shows starting with "Grateful Dead at", then investigate trimming this prefix in the database.
 - [x] **Duplicate Track Cleanup:**

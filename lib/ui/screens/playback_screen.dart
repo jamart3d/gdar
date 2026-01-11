@@ -54,7 +54,7 @@ class _PlaybackScreenState extends State<PlaybackScreen>
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final audioProvider = context.read<AudioProvider>();
       _errorSubscription = audioProvider.playbackErrorStream.listen((error) {
-        if (mounted) {
+        if (mounted && error.isNotEmpty) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(
@@ -513,8 +513,7 @@ class _PlaybackScreenState extends State<PlaybackScreen>
                     ],
                     showGlow: true,
                     showShadow: settingsProvider.glowMode > 0,
-                    glowOpacity:
-                        0.5 * (settingsProvider.glowMode / 100.0),
+                    glowOpacity: 0.5 * (settingsProvider.glowMode / 100.0),
                     animationSpeed: settingsProvider.rgbAnimationSpeed,
                     child: Material(
                       color: isTrueBlackMode
@@ -782,29 +781,66 @@ class _PlaybackScreenState extends State<PlaybackScreen>
                                               "${currentShow.venue}$locationStr - $formattedDate - ${currentSource.id}\n${track.title}\n${track.url.replaceAll('/download/', '/details/').split('/').sublist(0, 5).join('/')}";
                                           Clipboard.setData(
                                               ClipboardData(text: info));
+                                          HapticFeedback
+                                              .selectionClick(); // Confirm copy action
                                           ScaffoldMessenger.of(context)
                                               .showSnackBar(
                                             SnackBar(
-                                              content: Text(
-                                                  'Show details copied to clipboard',
-                                                  style: TextStyle(
-                                                      color: Theme.of(context)
-                                                          .colorScheme
-                                                          .onInverseSurface)),
+                                              content: Row(
+                                                children: [
+                                                  Icon(
+                                                    Icons
+                                                        .check_circle_outline_rounded,
+                                                    color: colorScheme
+                                                        .onPrimaryContainer,
+                                                    size: 20 * scaleFactor,
+                                                  ),
+                                                  const SizedBox(width: 12),
+                                                  Expanded(
+                                                    child: Text(
+                                                      'Details copied to clipboard',
+                                                      style: textTheme
+                                                          .labelLarge
+                                                          ?.copyWith(
+                                                        color: colorScheme
+                                                            .onPrimaryContainer,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
                                               behavior:
                                                   SnackBarBehavior.floating,
-                                              backgroundColor: Theme.of(context)
-                                                  .colorScheme
-                                                  .inverseSurface,
+                                              backgroundColor:
+                                                  colorScheme.primaryContainer,
+                                              elevation: 4,
+                                              duration: const Duration(
+                                                  milliseconds: 1500),
+                                              margin: EdgeInsets.only(
+                                                bottom: (MediaQuery.of(context)
+                                                            .size
+                                                            .height *
+                                                        (settingsProvider
+                                                                .uiScale
+                                                            ? 0.45
+                                                            : 0.40)) -
+                                                    minHeight +
+                                                    (75 * scaleFactor),
+                                                left: 48,
+                                                right: 48,
+                                              ),
                                               shape: RoundedRectangleBorder(
-                                                  borderRadius:
-                                                      BorderRadius.circular(
-                                                          12)),
-                                              margin: const EdgeInsets.all(12),
-                                              showCloseIcon: true,
-                                              closeIconColor: Theme.of(context)
-                                                  .colorScheme
-                                                  .onInverseSurface,
+                                                borderRadius:
+                                                    BorderRadius.circular(100),
+                                                side: BorderSide(
+                                                  color: colorScheme
+                                                      .onPrimaryContainer
+                                                      .withValues(alpha: 0.1),
+                                                  width: 1,
+                                                ),
+                                              ),
                                             ),
                                           );
                                         },

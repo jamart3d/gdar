@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:gdar/models/show.dart';
 import 'package:gdar/models/source.dart';
 import 'package:gdar/providers/audio_provider.dart';
@@ -72,6 +73,7 @@ class _ShowListItemDetailsState extends State<ShowListItemDetails> {
                 child: const Icon(Icons.block, color: Colors.white, size: 24),
               ),
               confirmDismiss: (direction) async {
+                HapticFeedback.heavyImpact(); // Strong feedback for blocking
                 final audioProvider = context.read<AudioProvider>();
                 if (audioProvider.currentSource?.id == source.id) {
                   audioProvider.stopAndClear();
@@ -79,21 +81,46 @@ class _ShowListItemDetailsState extends State<ShowListItemDetails> {
                 settingsProvider.setRating(source.id, -1);
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text(
-                      'Blocked Source "${source.id}"',
-                      style: TextStyle(
+                    content: Row(
+                      children: [
+                        Icon(
+                          Icons.block_flipped,
                           color:
-                              Theme.of(context).colorScheme.onInverseSurface),
+                              Theme.of(context).colorScheme.onPrimaryContainer,
+                          size: 20,
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            'Blocked Source "${source.id}"',
+                            style: TextStyle(
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .onPrimaryContainer,
+                                fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                      ],
                     ),
                     backgroundColor:
-                        Theme.of(context).colorScheme.inverseSurface,
+                        Theme.of(context).colorScheme.primaryContainer,
                     behavior: SnackBarBehavior.floating,
+                    duration: const Duration(seconds: 4),
+                    margin:
+                        const EdgeInsets.only(bottom: 154, left: 32, right: 32),
                     shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12)),
-                    margin: const EdgeInsets.all(12),
+                      borderRadius: BorderRadius.circular(100),
+                      side: BorderSide(
+                        color: Theme.of(context)
+                            .colorScheme
+                            .onPrimaryContainer
+                            .withValues(alpha: 0.1),
+                        width: 1,
+                      ),
+                    ),
                     action: SnackBarAction(
                       label: 'UNDO',
-                      textColor: Theme.of(context).colorScheme.inversePrimary,
+                      textColor: Theme.of(context).colorScheme.primary,
                       onPressed: () {
                         settingsProvider.setRating(source.id, 0);
                       },
@@ -132,22 +159,47 @@ class _ShowListItemDetailsState extends State<ShowListItemDetails> {
               // Mark as Blocked (Red Star / -1)
               settingsProvider.setRating(source.id, -1);
 
-              // Show Undo Snackbar
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text(
-                    'Blocked Source "${source.id}"',
-                    style: TextStyle(
-                        color: Theme.of(context).colorScheme.onInverseSurface),
+                  content: Row(
+                    children: [
+                      Icon(
+                        Icons.block_flipped,
+                        color: Theme.of(context).colorScheme.onPrimaryContainer,
+                        size: 20,
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          'Blocked Source "${source.id}"',
+                          style: TextStyle(
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .onPrimaryContainer,
+                              fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                    ],
                   ),
-                  backgroundColor: Theme.of(context).colorScheme.inverseSurface,
+                  backgroundColor:
+                      Theme.of(context).colorScheme.primaryContainer,
                   behavior: SnackBarBehavior.floating,
+                  duration: const Duration(seconds: 4),
+                  margin:
+                      const EdgeInsets.only(bottom: 154, left: 32, right: 32),
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12)),
-                  margin: const EdgeInsets.all(12),
+                    borderRadius: BorderRadius.circular(100),
+                    side: BorderSide(
+                      color: Theme.of(context)
+                          .colorScheme
+                          .onPrimaryContainer
+                          .withValues(alpha: 0.1),
+                      width: 1,
+                    ),
+                  ),
                   action: SnackBarAction(
                     label: 'UNDO',
-                    textColor: Theme.of(context).colorScheme.inversePrimary,
+                    textColor: Theme.of(context).colorScheme.primary,
                     onPressed: () {
                       settingsProvider.setRating(source.id, 0);
                     },

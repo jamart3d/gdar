@@ -15,6 +15,22 @@ String formatDuration(Duration d) {
   return '$minutes:$seconds';
 }
 
+Duration parseDuration(String s) {
+  try {
+    final parts = s.split(':').map((p) => int.tryParse(p) ?? 0).toList();
+    if (parts.length == 3) {
+      return Duration(hours: parts[0], minutes: parts[1], seconds: parts[2]);
+    } else if (parts.length == 2) {
+      return Duration(minutes: parts[0], seconds: parts[1]);
+    } else if (parts.length == 1) {
+      return Duration(seconds: parts[0]);
+    }
+  } catch (e) {
+    logger.w('Error parsing duration: $s');
+  }
+  return Duration.zero;
+}
+
 String? transformArchiveUrl(String url) {
   // Replace 'download' with 'details'
   String newUrl = url.replaceFirst('/download/', '/details/');

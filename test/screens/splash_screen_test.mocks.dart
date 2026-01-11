@@ -3,17 +3,17 @@
 // Do not manually edit this file.
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'dart:async' as _i6;
+import 'dart:async' as _i4;
 import 'dart:ui' as _i8;
 
-import 'package:gdar/models/show.dart' as _i5;
+import 'package:gdar/models/show.dart' as _i6;
 import 'package:gdar/models/source.dart' as _i10;
 import 'package:gdar/providers/audio_provider.dart' as _i9;
 import 'package:gdar/providers/settings_provider.dart' as _i7;
 import 'package:gdar/providers/show_list_provider.dart' as _i3;
 import 'package:just_audio/just_audio.dart' as _i2;
 import 'package:mockito/mockito.dart' as _i1;
-import 'package:mockito/src/dummies.dart' as _i4;
+import 'package:mockito/src/dummies.dart' as _i5;
 
 // ignore_for_file: type=lint
 // ignore_for_file: avoid_redundant_argument_values
@@ -45,6 +45,13 @@ class _FakeAudioPlayer_0 extends _i1.SmartFake implements _i2.AudioPlayer {
 /// See the documentation for Mockito's code generation for more information.
 class MockShowListProvider extends _i1.Mock implements _i3.ShowListProvider {
   @override
+  _i4.Future<void> get initializationComplete => (super.noSuchMethod(
+        Invocation.getter(#initializationComplete),
+        returnValue: _i4.Future<void>.value(),
+        returnValueForMissingStub: _i4.Future<void>.value(),
+      ) as _i4.Future<void>);
+
+  @override
   bool get isLoading => (super.noSuchMethod(
         Invocation.getter(#isLoading),
         returnValue: false,
@@ -54,22 +61,22 @@ class MockShowListProvider extends _i1.Mock implements _i3.ShowListProvider {
   @override
   String get searchQuery => (super.noSuchMethod(
         Invocation.getter(#searchQuery),
-        returnValue: _i4.dummyValue<String>(
+        returnValue: _i5.dummyValue<String>(
           this,
           Invocation.getter(#searchQuery),
         ),
-        returnValueForMissingStub: _i4.dummyValue<String>(
+        returnValueForMissingStub: _i5.dummyValue<String>(
           this,
           Invocation.getter(#searchQuery),
         ),
       ) as String);
 
   @override
-  List<_i5.Show> get allShows => (super.noSuchMethod(
+  List<_i6.Show> get allShows => (super.noSuchMethod(
         Invocation.getter(#allShows),
-        returnValue: <_i5.Show>[],
-        returnValueForMissingStub: <_i5.Show>[],
-      ) as List<_i5.Show>);
+        returnValue: <_i6.Show>[],
+        returnValueForMissingStub: <_i6.Show>[],
+      ) as List<_i6.Show>);
 
   @override
   bool get isArchiveReachable => (super.noSuchMethod(
@@ -93,11 +100,11 @@ class MockShowListProvider extends _i1.Mock implements _i3.ShowListProvider {
       ) as int);
 
   @override
-  List<_i5.Show> get filteredShows => (super.noSuchMethod(
+  List<_i6.Show> get filteredShows => (super.noSuchMethod(
         Invocation.getter(#filteredShows),
-        returnValue: <_i5.Show>[],
-        returnValueForMissingStub: <_i5.Show>[],
-      ) as List<_i5.Show>);
+        returnValue: <_i6.Show>[],
+        returnValueForMissingStub: <_i6.Show>[],
+      ) as List<_i6.Show>);
 
   @override
   Set<String> get availableCategories => (super.noSuchMethod(
@@ -114,19 +121,19 @@ class MockShowListProvider extends _i1.Mock implements _i3.ShowListProvider {
       ) as bool);
 
   @override
-  String getShowKey(_i5.Show? show) => (super.noSuchMethod(
+  String getShowKey(_i6.Show? show) => (super.noSuchMethod(
         Invocation.method(
           #getShowKey,
           [show],
         ),
-        returnValue: _i4.dummyValue<String>(
+        returnValue: _i5.dummyValue<String>(
           this,
           Invocation.method(
             #getShowKey,
             [show],
           ),
         ),
-        returnValueForMissingStub: _i4.dummyValue<String>(
+        returnValueForMissingStub: _i5.dummyValue<String>(
           this,
           Invocation.method(
             #getShowKey,
@@ -145,14 +152,14 @@ class MockShowListProvider extends _i1.Mock implements _i3.ShowListProvider {
       );
 
   @override
-  _i6.Future<void> init() => (super.noSuchMethod(
+  _i4.Future<void> init() => (super.noSuchMethod(
         Invocation.method(
           #init,
           [],
         ),
-        returnValue: _i6.Future<void>.value(),
-        returnValueForMissingStub: _i6.Future<void>.value(),
-      ) as _i6.Future<void>);
+        returnValue: _i4.Future<void>.value(),
+        returnValueForMissingStub: _i4.Future<void>.value(),
+      ) as _i4.Future<void>);
 
   @override
   void update(_i7.SettingsProvider? settings) => super.noSuchMethod(
@@ -180,24 +187,24 @@ class MockShowListProvider extends _i1.Mock implements _i3.ShowListProvider {
       );
 
   @override
-  _i6.Future<void> fetchShows() => (super.noSuchMethod(
+  _i4.Future<void> fetchShows() => (super.noSuchMethod(
         Invocation.method(
           #fetchShows,
           [],
         ),
-        returnValue: _i6.Future<void>.value(),
-        returnValueForMissingStub: _i6.Future<void>.value(),
-      ) as _i6.Future<void>);
+        returnValue: _i4.Future<void>.value(),
+        returnValueForMissingStub: _i4.Future<void>.value(),
+      ) as _i4.Future<void>);
 
   @override
-  _i6.Future<void> checkArchiveStatus() => (super.noSuchMethod(
+  _i4.Future<void> checkArchiveStatus() => (super.noSuchMethod(
         Invocation.method(
           #checkArchiveStatus,
           [],
         ),
-        returnValue: _i6.Future<void>.value(),
-        returnValueForMissingStub: _i6.Future<void>.value(),
-      ) as _i6.Future<void>);
+        returnValue: _i4.Future<void>.value(),
+        returnValueForMissingStub: _i4.Future<void>.value(),
+      ) as _i4.Future<void>);
 
   @override
   void setSearchQuery(String? query) => super.noSuchMethod(
@@ -308,11 +315,11 @@ class MockSettingsProvider extends _i1.Mock implements _i7.SettingsProvider {
   @override
   String get appFont => (super.noSuchMethod(
         Invocation.getter(#appFont),
-        returnValue: _i4.dummyValue<String>(
+        returnValue: _i5.dummyValue<String>(
           this,
           Invocation.getter(#appFont),
         ),
-        returnValueForMissingStub: _i4.dummyValue<String>(
+        returnValueForMissingStub: _i5.dummyValue<String>(
           this,
           Invocation.getter(#appFont),
         ),
@@ -769,14 +776,14 @@ class MockSettingsProvider extends _i1.Mock implements _i7.SettingsProvider {
       );
 
   @override
-  _i6.Future<void> setSeedColor(_i8.Color? color) => (super.noSuchMethod(
+  _i4.Future<void> setSeedColor(_i8.Color? color) => (super.noSuchMethod(
         Invocation.method(
           #setSeedColor,
           [color],
         ),
-        returnValue: _i6.Future<void>.value(),
-        returnValueForMissingStub: _i6.Future<void>.value(),
-      ) as _i6.Future<void>);
+        returnValue: _i4.Future<void>.value(),
+        returnValueForMissingStub: _i4.Future<void>.value(),
+      ) as _i4.Future<void>);
 
   @override
   int getRating(String? showName) => (super.noSuchMethod(
@@ -799,7 +806,7 @@ class MockSettingsProvider extends _i1.Mock implements _i7.SettingsProvider {
       ) as bool);
 
   @override
-  _i6.Future<void> setRating(
+  _i4.Future<void> setRating(
     String? showName,
     int? rating,
   ) =>
@@ -811,29 +818,29 @@ class MockSettingsProvider extends _i1.Mock implements _i7.SettingsProvider {
             rating,
           ],
         ),
-        returnValue: _i6.Future<void>.value(),
-        returnValueForMissingStub: _i6.Future<void>.value(),
-      ) as _i6.Future<void>);
+        returnValue: _i4.Future<void>.value(),
+        returnValueForMissingStub: _i4.Future<void>.value(),
+      ) as _i4.Future<void>);
 
   @override
-  _i6.Future<void> togglePlayed(String? showName) => (super.noSuchMethod(
+  _i4.Future<void> togglePlayed(String? showName) => (super.noSuchMethod(
         Invocation.method(
           #togglePlayed,
           [showName],
         ),
-        returnValue: _i6.Future<void>.value(),
-        returnValueForMissingStub: _i6.Future<void>.value(),
-      ) as _i6.Future<void>);
+        returnValue: _i4.Future<void>.value(),
+        returnValueForMissingStub: _i4.Future<void>.value(),
+      ) as _i4.Future<void>);
 
   @override
-  _i6.Future<void> markAsPlayed(String? showName) => (super.noSuchMethod(
+  _i4.Future<void> markAsPlayed(String? showName) => (super.noSuchMethod(
         Invocation.method(
           #markAsPlayed,
           [showName],
         ),
-        returnValue: _i6.Future<void>.value(),
-        returnValueForMissingStub: _i6.Future<void>.value(),
-      ) as _i6.Future<void>);
+        returnValue: _i4.Future<void>.value(),
+        returnValueForMissingStub: _i4.Future<void>.value(),
+      ) as _i4.Future<void>);
 
   @override
   void toggleRandomOnlyUnplayed() => super.noSuchMethod(
@@ -872,7 +879,7 @@ class MockSettingsProvider extends _i1.Mock implements _i7.SettingsProvider {
       );
 
   @override
-  _i6.Future<void> setSourceCategoryFilter(
+  _i4.Future<void> setSourceCategoryFilter(
     String? category,
     bool? isActive,
   ) =>
@@ -884,30 +891,30 @@ class MockSettingsProvider extends _i1.Mock implements _i7.SettingsProvider {
             isActive,
           ],
         ),
-        returnValue: _i6.Future<void>.value(),
-        returnValueForMissingStub: _i6.Future<void>.value(),
-      ) as _i6.Future<void>);
+        returnValue: _i4.Future<void>.value(),
+        returnValueForMissingStub: _i4.Future<void>.value(),
+      ) as _i4.Future<void>);
 
   @override
-  _i6.Future<void> setSoloSourceCategoryFilter(String? category) =>
+  _i4.Future<void> setSoloSourceCategoryFilter(String? category) =>
       (super.noSuchMethod(
         Invocation.method(
           #setSoloSourceCategoryFilter,
           [category],
         ),
-        returnValue: _i6.Future<void>.value(),
-        returnValueForMissingStub: _i6.Future<void>.value(),
-      ) as _i6.Future<void>);
+        returnValue: _i4.Future<void>.value(),
+        returnValueForMissingStub: _i4.Future<void>.value(),
+      ) as _i4.Future<void>);
 
   @override
-  _i6.Future<void> enableAllSourceCategories() => (super.noSuchMethod(
+  _i4.Future<void> enableAllSourceCategories() => (super.noSuchMethod(
         Invocation.method(
           #enableAllSourceCategories,
           [],
         ),
-        returnValue: _i6.Future<void>.value(),
-        returnValueForMissingStub: _i6.Future<void>.value(),
-      ) as _i6.Future<void>);
+        returnValue: _i4.Future<void>.value(),
+        returnValueForMissingStub: _i4.Future<void>.value(),
+      ) as _i4.Future<void>);
 
   @override
   void addListener(_i8.VoidCallback? listener) => super.noSuchMethod(
@@ -964,46 +971,56 @@ class MockAudioProvider extends _i1.Mock implements _i9.AudioProvider {
       ) as _i2.AudioPlayer);
 
   @override
-  _i6.Stream<_i2.PlayerState> get playerStateStream => (super.noSuchMethod(
+  _i4.Stream<_i2.PlayerState> get playerStateStream => (super.noSuchMethod(
         Invocation.getter(#playerStateStream),
-        returnValue: _i6.Stream<_i2.PlayerState>.empty(),
-        returnValueForMissingStub: _i6.Stream<_i2.PlayerState>.empty(),
-      ) as _i6.Stream<_i2.PlayerState>);
+        returnValue: _i4.Stream<_i2.PlayerState>.empty(),
+        returnValueForMissingStub: _i4.Stream<_i2.PlayerState>.empty(),
+      ) as _i4.Stream<_i2.PlayerState>);
 
   @override
-  _i6.Stream<int?> get currentIndexStream => (super.noSuchMethod(
+  _i4.Stream<int?> get currentIndexStream => (super.noSuchMethod(
         Invocation.getter(#currentIndexStream),
-        returnValue: _i6.Stream<int?>.empty(),
-        returnValueForMissingStub: _i6.Stream<int?>.empty(),
-      ) as _i6.Stream<int?>);
+        returnValue: _i4.Stream<int?>.empty(),
+        returnValueForMissingStub: _i4.Stream<int?>.empty(),
+      ) as _i4.Stream<int?>);
 
   @override
-  _i6.Stream<Duration?> get durationStream => (super.noSuchMethod(
+  _i4.Stream<Duration?> get durationStream => (super.noSuchMethod(
         Invocation.getter(#durationStream),
-        returnValue: _i6.Stream<Duration?>.empty(),
-        returnValueForMissingStub: _i6.Stream<Duration?>.empty(),
-      ) as _i6.Stream<Duration?>);
+        returnValue: _i4.Stream<Duration?>.empty(),
+        returnValueForMissingStub: _i4.Stream<Duration?>.empty(),
+      ) as _i4.Stream<Duration?>);
 
   @override
-  _i6.Stream<Duration> get positionStream => (super.noSuchMethod(
+  _i4.Stream<Duration> get positionStream => (super.noSuchMethod(
         Invocation.getter(#positionStream),
-        returnValue: _i6.Stream<Duration>.empty(),
-        returnValueForMissingStub: _i6.Stream<Duration>.empty(),
-      ) as _i6.Stream<Duration>);
+        returnValue: _i4.Stream<Duration>.empty(),
+        returnValueForMissingStub: _i4.Stream<Duration>.empty(),
+      ) as _i4.Stream<Duration>);
 
   @override
-  _i6.Stream<Duration> get bufferedPositionStream => (super.noSuchMethod(
+  _i4.Stream<Duration> get bufferedPositionStream => (super.noSuchMethod(
         Invocation.getter(#bufferedPositionStream),
-        returnValue: _i6.Stream<Duration>.empty(),
-        returnValueForMissingStub: _i6.Stream<Duration>.empty(),
-      ) as _i6.Stream<Duration>);
+        returnValue: _i4.Stream<Duration>.empty(),
+        returnValueForMissingStub: _i4.Stream<Duration>.empty(),
+      ) as _i4.Stream<Duration>);
 
   @override
-  _i6.Stream<String> get playbackErrorStream => (super.noSuchMethod(
+  _i4.Stream<String> get playbackErrorStream => (super.noSuchMethod(
         Invocation.getter(#playbackErrorStream),
-        returnValue: _i6.Stream<String>.empty(),
-        returnValueForMissingStub: _i6.Stream<String>.empty(),
-      ) as _i6.Stream<String>);
+        returnValue: _i4.Stream<String>.empty(),
+        returnValueForMissingStub: _i4.Stream<String>.empty(),
+      ) as _i4.Stream<String>);
+
+  @override
+  _i4.Stream<({_i6.Show show, _i10.Source source})>
+      get randomShowRequestStream => (super.noSuchMethod(
+            Invocation.getter(#randomShowRequestStream),
+            returnValue:
+                _i4.Stream<({_i6.Show show, _i10.Source source})>.empty(),
+            returnValueForMissingStub:
+                _i4.Stream<({_i6.Show show, _i10.Source source})>.empty(),
+          ) as _i4.Stream<({_i6.Show show, _i10.Source source})>);
 
   @override
   bool get hasListeners => (super.noSuchMethod(
@@ -1011,6 +1028,15 @@ class MockAudioProvider extends _i1.Mock implements _i9.AudioProvider {
         returnValue: false,
         returnValueForMissingStub: false,
       ) as bool);
+
+  @override
+  void clearPendingRandomShowRequest() => super.noSuchMethod(
+        Invocation.method(
+          #clearPendingRandomShowRequest,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
 
   @override
   void update(
@@ -1038,7 +1064,7 @@ class MockAudioProvider extends _i1.Mock implements _i9.AudioProvider {
       );
 
   @override
-  ({_i5.Show show, _i10.Source source})? pickRandomShow(
+  ({_i6.Show show, _i10.Source source})? pickRandomShow(
           {bool? filterBySearch = true}) =>
       (super.noSuchMethod(
         Invocation.method(
@@ -1047,25 +1073,26 @@ class MockAudioProvider extends _i1.Mock implements _i9.AudioProvider {
           {#filterBySearch: filterBySearch},
         ),
         returnValueForMissingStub: null,
-      ) as ({_i5.Show show, _i10.Source source})?);
+      ) as ({_i6.Show show, _i10.Source source})?);
 
   @override
-  _i6.Future<_i5.Show?> playRandomShow({bool? filterBySearch = true}) =>
+  _i4.Future<_i6.Show?> playRandomShow({bool? filterBySearch = true}) =>
       (super.noSuchMethod(
         Invocation.method(
           #playRandomShow,
           [],
           {#filterBySearch: filterBySearch},
         ),
-        returnValue: _i6.Future<_i5.Show?>.value(),
-        returnValueForMissingStub: _i6.Future<_i5.Show?>.value(),
-      ) as _i6.Future<_i5.Show?>);
+        returnValue: _i4.Future<_i6.Show?>.value(),
+        returnValueForMissingStub: _i4.Future<_i6.Show?>.value(),
+      ) as _i4.Future<_i6.Show?>);
 
   @override
-  _i6.Future<void> playSource(
-    _i5.Show? show,
+  _i4.Future<void> playSource(
+    _i6.Show? show,
     _i10.Source? source, {
     int? initialIndex = 0,
+    Duration? initialPosition,
   }) =>
       (super.noSuchMethod(
         Invocation.method(
@@ -1074,11 +1101,25 @@ class MockAudioProvider extends _i1.Mock implements _i9.AudioProvider {
             show,
             source,
           ],
-          {#initialIndex: initialIndex},
+          {
+            #initialIndex: initialIndex,
+            #initialPosition: initialPosition,
+          },
         ),
-        returnValue: _i6.Future<void>.value(),
-        returnValueForMissingStub: _i6.Future<void>.value(),
-      ) as _i6.Future<void>);
+        returnValue: _i4.Future<void>.value(),
+        returnValueForMissingStub: _i4.Future<void>.value(),
+      ) as _i4.Future<void>);
+
+  @override
+  _i4.Future<bool> playFromShareString(String? shareString) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #playFromShareString,
+          [shareString],
+        ),
+        returnValue: _i4.Future<bool>.value(false),
+        returnValueForMissingStub: _i4.Future<bool>.value(false),
+      ) as _i4.Future<bool>);
 
   @override
   void clearError() => super.noSuchMethod(
@@ -1090,14 +1131,14 @@ class MockAudioProvider extends _i1.Mock implements _i9.AudioProvider {
       );
 
   @override
-  _i6.Future<void> stopAndClear() => (super.noSuchMethod(
+  _i4.Future<void> stopAndClear() => (super.noSuchMethod(
         Invocation.method(
           #stopAndClear,
           [],
         ),
-        returnValue: _i6.Future<void>.value(),
-        returnValueForMissingStub: _i6.Future<void>.value(),
-      ) as _i6.Future<void>);
+        returnValue: _i4.Future<void>.value(),
+        returnValueForMissingStub: _i4.Future<void>.value(),
+      ) as _i4.Future<void>);
 
   @override
   void play() => super.noSuchMethod(

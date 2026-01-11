@@ -961,6 +961,13 @@ class MockAudioPlayerRelaxed extends _i1.Mock implements _i2.AudioPlayer {
 /// See the documentation for Mockito's code generation for more information.
 class MockShowListProvider extends _i1.Mock implements _i6.ShowListProvider {
   @override
+  _i3.Future<void> get initializationComplete => (super.noSuchMethod(
+        Invocation.getter(#initializationComplete),
+        returnValue: _i3.Future<void>.value(),
+        returnValueForMissingStub: _i3.Future<void>.value(),
+      ) as _i3.Future<void>);
+
+  @override
   bool get isLoading => (super.noSuchMethod(
         Invocation.getter(#isLoading),
         returnValue: false,

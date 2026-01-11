@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:gdar/models/show.dart';
 import 'package:gdar/models/source.dart';
@@ -40,10 +41,12 @@ class _TrackListScreenState extends State<TrackListScreen> {
 
     // If Play on Tap is disabled, prevent switching sources by tap
     if (!isCurrentSource && !settingsProvider.playOnTap) {
+      HapticFeedback.mediumImpact(); // Distinct "blocked" feedback
       _showContextualOverlay(itemContext);
       return;
     }
 
+    HapticFeedback.selectionClick(); // Success feedback
     audioProvider.playSource(widget.show, source, initialIndex: trackIndex);
   }
 
@@ -56,51 +59,76 @@ class _TrackListScreenState extends State<TrackListScreen> {
 
     final size = renderBox.size;
     final offset = renderBox.localToGlobal(Offset.zero);
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
 
     _overlayEntry = OverlayEntry(
       builder: (context) => Positioned(
-        left: offset.dx,
+        left: offset.dx + 8,
         top: offset.dy,
-        width: size.width,
+        width: size.width - 16,
         height: size.height,
         child: Material(
           color: Colors.transparent,
-          child: Container(
-            decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.inverseSurface,
-              borderRadius: BorderRadius.circular(16),
-            ),
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    'Play on Tap disabled',
-                    style: TextStyle(
-                      color: Theme.of(context).colorScheme.onInverseSurface,
-                      fontWeight: FontWeight.bold,
+          child: Center(
+            child: Container(
+              height: 48, // Standard expressive pill height
+              decoration: BoxDecoration(
+                color: colorScheme.primaryContainer,
+                borderRadius: BorderRadius.circular(100),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.2),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+                border: Border.all(
+                  color: colorScheme.onPrimaryContainer.withValues(alpha: 0.1),
+                  width: 1,
+                ),
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.touch_app_outlined,
+                    color: colorScheme.onPrimaryContainer,
+                    size: 20,
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      'Play on Tap disabled',
+                      style: textTheme.labelLarge?.copyWith(
+                        color: colorScheme.onPrimaryContainer,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
-                ),
-                TextButton(
-                  onPressed: () {
-                    _overlayEntry?.remove();
-                    _overlayEntry = null;
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
+                  TextButton(
+                    onPressed: () {
+                      _overlayEntry?.remove();
+                      _overlayEntry = null;
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
                           builder: (_) => const SettingsScreen(
-                                highlightSetting: 'play_on_tap',
-                              )),
-                    );
-                  },
-                  child: Text(
-                    'Settings',
-                    style: TextStyle(
-                      color: Theme.of(context).colorScheme.inversePrimary,
+                            highlightSetting: 'play_on_tap',
+                          ),
+                        ),
+                      );
+                    },
+                    child: Text(
+                      'SETTINGS',
+                      style: textTheme.labelLarge?.copyWith(
+                        color: colorScheme.primary,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 1.2,
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
@@ -109,8 +137,10 @@ class _TrackListScreenState extends State<TrackListScreen> {
 
     Overlay.of(context).insert(_overlayEntry!);
     Future.delayed(const Duration(seconds: 3), () {
-      _overlayEntry?.remove();
-      _overlayEntry = null;
+      if (_overlayEntry != null) {
+        _overlayEntry?.remove();
+        _overlayEntry = null;
+      }
     });
   }
 

@@ -64,10 +64,14 @@ void main() {
 
     when(mockAudioPlayer.play()).thenAnswer((_) async {});
     when(mockAudioPlayer.stop()).thenAnswer((_) async {});
-    when(mockAudioPlayer.setAudioSources(any,
+    when(mockAudioPlayer.setAudioSource(any,
             initialIndex: anyNamed('initialIndex'),
             preload: anyNamed('preload')))
         .thenAnswer((_) async => const Duration(seconds: 100));
+
+    when(mockShowListProvider.isLoading).thenReturn(false);
+    when(mockShowListProvider.allShows).thenReturn([]);
+    when(mockShowListProvider.initializationComplete).thenAnswer((_) async {});
 
     // Create AudioProvider AFTER stubbing
     audioProvider = AudioProvider(audioPlayer: mockAudioPlayer);
@@ -136,7 +140,7 @@ void main() {
         expect(playedShow, isNotNull);
         expect(shows.contains(playedShow), isTrue);
 
-        verify(mockAudioPlayer.setAudioSources(any,
+        verify(mockAudioPlayer.setAudioSource(any,
                 initialIndex: 0, preload: true))
             .called(1);
         verify(mockAudioPlayer.play()).called(1);
@@ -156,7 +160,7 @@ void main() {
         final playedShow = await audioProvider.playRandomShow();
 
         expect(playedShow, isNull);
-        verifyNever(mockAudioPlayer.setAudioSources(any));
+        verifyNever(mockAudioPlayer.setAudioSource(any));
         verifyNever(mockAudioPlayer.play());
       });
     });
@@ -178,7 +182,7 @@ void main() {
         when(mockSettingsProvider.randomOnlyHighRated).thenReturn(false);
 
         // Stub AudioPlayer
-        when(mockAudioPlayer.setAudioSources(any,
+        when(mockAudioPlayer.setAudioSource(any,
                 initialIndex: anyNamed('initialIndex'),
                 preload: anyNamed('preload')))
             .thenAnswer((_) async => const Duration(seconds: 100));
@@ -221,7 +225,7 @@ void main() {
         expect(audioProvider.currentShow, equals(show));
         expect(audioProvider.currentSource, equals(source));
 
-        verify(mockAudioPlayer.setAudioSources(any,
+        verify(mockAudioPlayer.setAudioSource(any,
                 initialIndex: 0, preload: true))
             .called(1);
         verify(mockAudioPlayer.play()).called(1);
@@ -257,7 +261,7 @@ void main() {
         processingStateController.add(ProcessingState.completed);
         await Future.delayed(const Duration(milliseconds: 10));
 
-        verifyNever(mockAudioPlayer.setAudioSources(any));
+        verifyNever(mockAudioPlayer.setAudioSource(any));
         verifyNever(mockAudioPlayer.play());
       });
     });

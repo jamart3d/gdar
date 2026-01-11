@@ -12,6 +12,7 @@ import 'package:just_audio/just_audio.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:provider/provider.dart';
+import 'package:gdar/ui/widgets/rating_control.dart';
 
 import 'playback_screen_test.mocks.dart';
 
@@ -68,6 +69,14 @@ class MockSettingsProvider extends Mock implements SettingsProvider {
   bool get showExpandIcon => false;
   @override
   set showExpandIcon(bool value) {}
+
+  // New Getters that were missing
+  @override
+  bool get showDayOfWeek => true;
+  @override
+  bool get abbreviateDayOfWeek => true;
+  @override
+  bool get abbreviateMonth => true;
 
   @override
   void toggleShowSplashScreen() {}
@@ -230,7 +239,8 @@ void main() {
 
     // Venue is displayed twice (at least): AppBar and Panel
     // Date is displayed twice (at least): AppBar and Panel
-    expect(find.text(dummyShow.formattedDate), findsAtLeastNWidgets(1));
+    // Date is displayed twice (at least): AppBar and Panel
+    expect(find.textContaining('Jan 15, 2025'), findsAtLeastNWidgets(1));
 
     // The track title is displayed in the list and in the bottom controls
     expect(
@@ -268,7 +278,16 @@ void main() {
     await tester
         .pumpWidget(createTestableWidget(child: const PlaybackScreen()));
 
-    // Should find 3 star_border icons (RatingControl default is 0, appearing in AppBar and Panel)
+    // Verify basic content is present (Date should be visible)
+    expect(find.textContaining('Jan'), findsAtLeastNWidgets(1),
+        reason: 'Date should be visible');
+
+    // Verify RatingControl is present
+    expect(find.byType(RatingControl), findsAtLeastNWidgets(1),
+        reason: 'RatingControl widget should be present');
+
+    // Should find 3 star_border icons (RatingControl default is 0, appearing in AppBar)
+    // Note: If finding icons fails but RatingControl is present, check flutter_rating_bar implementation
     expect(find.byIcon(Icons.star_border), findsAtLeastNWidgets(3));
   });
 }

@@ -85,10 +85,11 @@ void main() {
     expect(borderWidget.showShadow, isTrue,
         reason: 'Shadow should be forced ON when Half Glow is active (Mode 2)');
 
-    // Expected: 0.2 * 0.5 * 0.25 = 0.025
-    expect(borderWidget.glowOpacity, closeTo(0.025, 0.0001),
+    // glow Mode 2 = 2% intensity
+    // Not playing: 0.02 * 0.25 (not-playing multiplier) * 0.2 (non-RGB multiplier) = 0.001
+    expect(borderWidget.glowOpacity, closeTo(0.001, 0.0001),
         reason:
-            'Opacity should be 0.025 (standard 0.2 * half 0.5 * not-playing 0.25)');
+            'Opacity should be 0.001 (2% mode * 0.25 not-playing * 0.2 non-RGB)');
   });
 
   testWidgets('True Black & Half Glow reduces opacity for Playing Card',
@@ -125,12 +126,11 @@ void main() {
     final borderWidget = tester
         .widget<AnimatedGradientBorder>(find.byType(AnimatedGradientBorder));
 
-    // Calculation: 1.0 * 0.2 * 0.5 = 0.1
-    // expect(borderWidget.glowOpacity, closeTo(0.1, 0.0001), ...
-
-    if ((borderWidget.glowOpacity - 0.1).abs() > 0.0001) {
+    // Glow Mode 2 = 2% intensity
+    // Playing: 0.02 * 1.0 (playing multiplier) * 0.2 (non-RGB multiplier) = 0.004
+    if ((borderWidget.glowOpacity - 0.004).abs() > 0.0001) {
       fail(
-          'Opacity mismatch! Expected 0.1 but got ${borderWidget.glowOpacity}. (Show shadow: ${borderWidget.showShadow})');
+          'Opacity mismatch! Expected 0.004 but got ${borderWidget.glowOpacity}. (Show shadow: ${borderWidget.showShadow})');
     }
   });
 }

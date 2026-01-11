@@ -29,7 +29,7 @@ class ShowListScreen extends StatefulWidget {
 }
 
 class _ShowListScreenState extends State<ShowListScreen>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _searchFocusNode = FocusNode();
   final ItemScrollController _itemScrollController = ItemScrollController();
@@ -38,7 +38,10 @@ class _ShowListScreenState extends State<ShowListScreen>
 
   late final AnimationController _animationController;
   late final Animation<double> _animation;
+  late AnimationController _searchPulseController;
+  late Animation<double> _searchPulseAnimation;
   StreamSubscription<PlayerState>? _playerStateSubscription;
+  StreamSubscription<({Show show, Source source})>? _randomShowSubscription;
 
   bool _isSearchVisible = false;
   bool _isRandomShowLoading = false;
@@ -62,11 +65,43 @@ class _ShowListScreenState extends State<ShowListScreen>
       curve: Curves.easeInOutCubicEmphasized,
     );
 
+    // Search icon pulse animation
+    _searchPulseController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1200),
+    );
+    _searchPulseAnimation = Tween<double>(begin: 1.0, end: 1.15).animate(
+      CurvedAnimation(
+        parent: _searchPulseController,
+        curve: Curves.easeInOut,
+      ),
+    );
+
+    // Subscribe to random show requests from AudioProvider (unified logic)
+    final audioProvider = context.read<AudioProvider>();
+    _randomShowSubscription =
+        audioProvider.randomShowRequestStream.listen((selection) {
+      if (mounted) {
+        _handleRandomShowSelection(selection);
+      }
+    });
+
+    // Check for any pending selection that might have happened during boot/restart
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        final pending = audioProvider.pendingRandomShowRequest;
+        if (pending != null) {
+          logger.i('ShowListScreen: Found pending random selection on mount.');
+          _handleRandomShowSelection(pending);
+          audioProvider.clearPendingRandomShowRequest();
+        }
+      }
+    });
+
     // Play random show on startup if enabled
     final settingsProvider = context.read<SettingsProvider>();
     if (settingsProvider.playRandomOnStartup) {
       final showListProvider = context.read<ShowListProvider>();
-      final audioProvider = context.read<AudioProvider>();
 
       void playRandomShowAndRemoveListener() {
         if (!_randomShowPlayed &&
@@ -76,24 +111,7 @@ class _ShowListScreenState extends State<ShowListScreen>
             _randomShowPlayed = true;
           });
           logger.i('Startup setting enabled, playing random show.');
-
-          audioProvider.playRandomShow().then((show) {
-            if (show != null && mounted) {
-              // If the random show has multiple sources, expand it.
-              if (show.sources.length > 1) {
-                showListProvider.expandShow(showListProvider.getShowKey(show));
-                _animationController.forward(from: 0.0);
-              }
-
-              // Use addPostFrameCallback to ensure collapse animation has started
-              WidgetsBinding.instance.addPostFrameCallback((_) {
-                if (mounted) {
-                  _reliablyScrollToShow(show);
-                }
-              });
-            }
-          });
-
+          audioProvider.playRandomShow();
           showListProvider.removeListener(playRandomShowAndRemoveListener);
         } else if (!showListProvider.isLoading) {
           // If loading is finished but we couldn't play, still remove the listener
@@ -110,7 +128,21 @@ class _ShowListScreenState extends State<ShowListScreen>
     }
 
     _searchController.addListener(() {
-      context.read<ShowListProvider>().setSearchQuery(_searchController.text);
+      final text = _searchController.text;
+
+      // Detect share strings: look for year pattern (1960-2030) followed by " - " and digits (SHNID)
+      // This matches formats like: "... - Fri, Jun 20, 1980 - 156397[track]..."
+      final isPastePattern =
+          RegExp(r'(19[6-9]\d|20[0-2]\d).*?-\s*\d+').hasMatch(text);
+
+      // Also check for archive.org URLs
+      final hasArchiveUrl = text.contains('archive.org/details/gd');
+
+      if (isPastePattern || hasArchiveUrl) {
+        _handleClipboardPlayback(text);
+      } else {
+        context.read<ShowListProvider>().setSearchQuery(text);
+      }
     });
 
     _searchFocusNode.addListener(() {
@@ -119,7 +151,6 @@ class _ShowListScreenState extends State<ShowListScreen>
     });
 
     // Listen to player state to manage loading indicators
-    final audioProvider = context.read<AudioProvider>();
     audioProvider.addListener(() {
       if (audioProvider.error != null) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -180,11 +211,26 @@ class _ShowListScreenState extends State<ShowListScreen>
     _searchController.dispose();
     _searchFocusNode.dispose();
     _animationController.dispose();
+    _searchPulseController.dispose();
+    _randomShowSubscription?.cancel();
     _playerStateSubscription?.cancel();
     super.dispose();
   }
 
-  void _toggleSearch() => setState(() => _isSearchVisible = !_isSearchVisible);
+  void _toggleSearch() {
+    HapticFeedback.lightImpact(); // Subtle UI state change feedback
+    setState(() {
+      _isSearchVisible = !_isSearchVisible;
+      if (_isSearchVisible) {
+        _searchFocusNode.requestFocus();
+        _searchPulseController.repeat(reverse: true); // Start pulsing
+      } else {
+        _searchFocusNode.unfocus();
+        _searchPulseController.stop();
+        _searchPulseController.reset(); // Stop pulsing
+      }
+    });
+  }
 
   double _calculateExpandedHeight(Show show) {
     if (show.sources.length <= 1) return 0.0;
@@ -284,12 +330,14 @@ class _ShowListScreenState extends State<ShowListScreen>
 
     // If tapping an already expanded show, collapse it.
     if (isCollapsingCurrent) {
+      HapticFeedback.selectionClick(); // Confirm collapse action
       showListProvider.collapseCurrentShow();
       _animationController.reverse();
       return;
     }
 
     // If tapping a new or collapsed show, expand it.
+    HapticFeedback.selectionClick(); // Confirm expand action
     final wasSomethingExpanded = previouslyExpanded != null;
     showListProvider.toggleShowExpansion(key);
 
@@ -404,11 +452,16 @@ class _ShowListScreenState extends State<ShowListScreen>
 
   /// Collapses/Adds show and scrolls to the current show on return.
   void _collapseAndScrollOnReturn() {
+    logger.i(
+        'ShowListScreen: Returning from playback, scrolling to current show...');
     final showListProvider = context.read<ShowListProvider>();
     final audioProvider = context.read<AudioProvider>();
     final currentShow = audioProvider.currentShow;
 
-    if (currentShow == null) return;
+    if (currentShow == null) {
+      logger.w('ShowListScreen: No current show to scroll to');
+      return;
+    }
 
     // If multi-source, ensure it's expanded.
     if (currentShow.sources.length > 1) {
@@ -438,6 +491,30 @@ class _ShowListScreenState extends State<ShowListScreen>
     });
   }
 
+  void _handleRandomShowSelection(({Show show, Source source}) selection) {
+    if (!mounted) return;
+
+    final showListProvider = context.read<ShowListProvider>();
+    final show = selection.show;
+
+    // 1. Expand UI if needed
+    if (show.sources.length > 1) {
+      showListProvider.expandShow(showListProvider.getShowKey(show));
+      _animationController.forward(from: 0.0);
+    }
+
+    // 2. Scroll to show
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _reliablyScrollToShow(show,
+            duration: const Duration(milliseconds: 1000));
+      }
+    });
+
+    // Ensure loading state is cleared
+    setState(() => _isRandomShowLoading = false);
+  }
+
   Future<void> _handlePlayRandomShow() async {
     final showListProvider = context.read<ShowListProvider>();
     final audioProvider = context.read<AudioProvider>();
@@ -450,34 +527,132 @@ class _ShowListScreenState extends State<ShowListScreen>
 
     setState(() => _isRandomShowLoading = true);
 
-    // 1. Pick the show logic first (synchronous-like, no async wait for audio)
-    final selection = audioProvider.pickRandomShow();
+    // Call unified random playback logic.
+    // ShowListScreen will react to the selection via the subscription in initState.
+    final show = await audioProvider.playRandomShow(filterBySearch: true);
 
-    if (selection != null) {
-      final show = selection.show;
-      final source = selection.source;
-
-      // 2. Expand UI if needed
-      if (show.sources.length > 1) {
-        showListProvider.expandShow(showListProvider.getShowKey(show));
-        _animationController.forward(from: 0.0);
-      }
-
-      // 3. Initiate Scroll IMMEDIATELY with a longer, expressive duration
-      // Use addPostFrameCallback to ensure layout (expansion) is registered
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) {
-          _reliablyScrollToShow(show,
-              duration: const Duration(milliseconds: 1000));
-        }
-      });
-
-      // 4. Start Playback (this happens in parallel with the scroll now)
-      await audioProvider.playSource(show, source);
-    } else {
+    if (show == null && mounted) {
       // If we failed, wait a moment before hiding the loading indicator to prevent flicker
       await Future.delayed(const Duration(milliseconds: 300));
       setState(() => _isRandomShowLoading = false);
+    }
+  }
+
+  Future<bool> _handleClipboardPlayback(String text) async {
+    logger.i('ShowListScreen: Attempting clipboard playback for: "$text"');
+    final audioProvider = context.read<AudioProvider>();
+    final success = await audioProvider.playFromShareString(text);
+    if (success && mounted) {
+      HapticFeedback.mediumImpact(); // Confirm clipboard playback started
+      _searchController.clear();
+      _searchFocusNode.unfocus(); // Close keyboard
+      setState(() => _isSearchVisible = false); // Hide search bar
+
+      // Trigger UI Parity: Scroll to show and update selection state
+      final show = audioProvider.currentShow;
+      final source = audioProvider.currentSource;
+      if (show != null && source != null) {
+        _handleRandomShowSelection((show: show, source: source));
+      }
+
+      // Navigate to Playback Screen
+      _openPlaybackScreen();
+
+      final colorScheme = Theme.of(context).colorScheme;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: colorScheme.onPrimaryContainer.withValues(alpha: 0.2),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.bolt_rounded,
+                  color: colorScheme.onPrimaryContainer,
+                  size: 18,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Playing from Clipboard',
+                      style: TextStyle(
+                        color: colorScheme.onPrimaryContainer,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 14,
+                      ),
+                    ),
+                    const SizedBox(height: 1),
+                    Text(
+                      'Navigating to playback...',
+                      style: TextStyle(
+                        color: colorScheme.onPrimaryContainer
+                            .withValues(alpha: 0.7),
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          backgroundColor: colorScheme.primaryContainer,
+          elevation: 6,
+          behavior: SnackBarBehavior.floating,
+          duration: const Duration(milliseconds: 2500),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          margin: EdgeInsets.only(
+            bottom: MediaQuery.of(context).size.height * 0.65, // Upper third
+            left: 16,
+            right: 16,
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        ),
+      );
+    }
+    return success;
+  }
+
+  void _onSearchSubmitted(String text) {
+    logger.i('ShowListScreen: Search submitted: "$text"');
+    if (text.isEmpty) return;
+
+    // 1. Try clipboard playback first
+    if (text.contains('https://archive.org/details/gd')) {
+      _handleClipboardPlayback(text);
+      return;
+    }
+
+    // 2. Otherwise, treat like "Play on Tap" for the first result
+    final showListProvider = context.read<ShowListProvider>();
+    final audioProvider = context.read<AudioProvider>();
+
+    if (showListProvider.filteredShows.isNotEmpty) {
+      HapticFeedback.selectionClick(); // Confirm search submit action
+      final topShow = showListProvider.filteredShows.first;
+      if (topShow.sources.isNotEmpty) {
+        final topSource = topShow.sources.first;
+        audioProvider.playSource(topShow, topSource);
+
+        // Trigger UI Parity: Scroll to show and update selection state
+        _handleRandomShowSelection((show: topShow, source: topSource));
+
+        // Navigate to Playback Screen
+        _openPlaybackScreen();
+
+        _searchController.clear();
+        _searchFocusNode.unfocus();
+      }
     }
   }
 
@@ -508,18 +683,21 @@ class _ShowListScreenState extends State<ShowListScreen>
           icon: const Icon(Icons.question_mark_rounded),
           onPressed: _handlePlayRandomShow,
         ),
-      IconButton(
-        icon: const Icon(Icons.search_rounded),
-        isSelected: _isSearchVisible,
-        style: _isSearchVisible
-            ? IconButton.styleFrom(
-                backgroundColor: colorScheme.surfaceContainer,
-                shape: CircleBorder(
-                  side: BorderSide(color: colorScheme.outline),
-                ),
-              )
-            : null,
-        onPressed: _toggleSearch,
+      ScaleTransition(
+        scale: _searchPulseAnimation,
+        child: IconButton(
+          icon: const Icon(Icons.search_rounded),
+          isSelected: _isSearchVisible,
+          style: _isSearchVisible
+              ? IconButton.styleFrom(
+                  backgroundColor: colorScheme.surfaceContainer,
+                  shape: CircleBorder(
+                    side: BorderSide(color: colorScheme.outline),
+                  ),
+                )
+              : null,
+          onPressed: _toggleSearch,
+        ),
       ),
       IconButton(
         icon: const Icon(Icons.settings_rounded),
@@ -547,7 +725,7 @@ class _ShowListScreenState extends State<ShowListScreen>
                 child: SearchBar(
                   controller: _searchController,
                   focusNode: _searchFocusNode,
-                  hintText: 'Search by venue, date, or location',
+                  hintText: 'Search venue, date, location — or paste to play',
                   leading: const Icon(Icons.search_rounded),
                   trailing: _searchController.text.isNotEmpty
                       ? [
@@ -555,7 +733,20 @@ class _ShowListScreenState extends State<ShowListScreen>
                               icon: const Icon(Icons.clear_rounded),
                               onPressed: () => _searchController.clear())
                         ]
-                      : null,
+                      : [
+                          Padding(
+                            padding: const EdgeInsets.only(right: 8),
+                            child: Icon(
+                              Icons.content_paste_rounded,
+                              size: 20,
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .onSurfaceVariant
+                                  .withValues(alpha: 0.5),
+                            ),
+                          ),
+                        ],
+                  onSubmitted: _onSearchSubmitted,
                   elevation: const WidgetStatePropertyAll(0),
                   shape: WidgetStatePropertyAll(RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(28),
@@ -605,7 +796,7 @@ class _ShowListScreenState extends State<ShowListScreen>
             ),
           ),
           child: Text(
-            'gdar',
+            'shakedown',
             style: Theme.of(context)
                 .textTheme
                 .titleLarge
@@ -702,22 +893,45 @@ class _ShowListScreenState extends State<ShowListScreen>
             // Mark as Blocked (Red Star / -1)
             settingsProvider.setRating(show.sources.first.id, -1);
 
-            // Show Undo Snackbar
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text(
-                  'Blocked "${show.venue}"',
-                  style: TextStyle(
-                      color: Theme.of(context).colorScheme.onInverseSurface),
+                content: Row(
+                  children: [
+                    Icon(
+                      Icons.block_flipped,
+                      color: Theme.of(context).colorScheme.onPrimaryContainer,
+                      size: 20,
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        'Blocked "${show.venue}"',
+                        style: TextStyle(
+                            color: Theme.of(context)
+                                .colorScheme
+                                .onPrimaryContainer,
+                            fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ],
                 ),
-                backgroundColor: Theme.of(context).colorScheme.inverseSurface,
+                backgroundColor: Theme.of(context).colorScheme.primaryContainer,
                 behavior: SnackBarBehavior.floating,
+                duration: const Duration(seconds: 4),
+                margin: const EdgeInsets.only(bottom: 100, left: 24, right: 24),
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12)),
-                margin: const EdgeInsets.all(12),
+                  borderRadius: BorderRadius.circular(100),
+                  side: BorderSide(
+                    color: Theme.of(context)
+                        .colorScheme
+                        .onPrimaryContainer
+                        .withValues(alpha: 0.1),
+                    width: 1,
+                  ),
+                ),
                 action: SnackBarAction(
                   label: 'UNDO',
-                  textColor: Theme.of(context).colorScheme.inversePrimary,
+                  textColor: Theme.of(context).colorScheme.primary,
                   onPressed: () {
                     // Restore rating
                     settingsProvider.setRating(show.sources.first.id, 0);

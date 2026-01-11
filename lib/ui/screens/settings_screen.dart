@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:gdar/providers/audio_provider.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -425,7 +426,7 @@ class _SettingsScreenState extends State<SettingsScreen>
                         ),
                       ),
                       ListTile(
-                        leading: const Icon(Icons.open_in_new_rounded),
+                        leading: const Icon(Icons.link_rounded),
                         title: const Text('View Source Page'),
                         subtitle: Text.rich(
                           TextSpan(
@@ -442,6 +443,43 @@ class _SettingsScreenState extends State<SettingsScreen>
                           ),
                         ),
                       ),
+                      ListTile(
+                        leading: const Icon(Icons.copy_rounded),
+                        title: const Text('Share Track with Friends'),
+                        subtitle: Text.rich(
+                          TextSpan(
+                            style: Theme.of(context).textTheme.bodyMedium,
+                            children: const [
+                              TextSpan(
+                                  text: 'Tap',
+                                  style:
+                                      TextStyle(fontWeight: FontWeight.bold)),
+                              TextSpan(
+                                  text:
+                                      ' the share icon on the playback screen to copy track details to your clipboard. Send this to a friend!'),
+                            ],
+                          ),
+                        ),
+                      ),
+                      ListTile(
+                        leading: const Icon(Icons.content_paste_rounded),
+                        title: const Text('Play from Shared Link'),
+                        subtitle: Text.rich(
+                          TextSpan(
+                            style: Theme.of(context).textTheme.bodyMedium,
+                            children: const [
+                              TextSpan(
+                                  text: 'Paste',
+                                  style:
+                                      TextStyle(fontWeight: FontWeight.bold)),
+                              TextSpan(
+                                  text:
+                                      ' a shared link into the search bar to instantly start playback at that track. The app will scroll to the show and navigate to the player automatically.'),
+                            ],
+                          ),
+                        ),
+                        isThreeLine: true,
+                      ),
                     ],
                   ),
 
@@ -453,6 +491,7 @@ class _SettingsScreenState extends State<SettingsScreen>
                         title: const Text('Dark'),
                         value: themeProvider.isDarkMode,
                         onChanged: (value) {
+                          HapticFeedback.lightImpact();
                           context.read<ThemeProvider>().toggleTheme();
                         },
                         secondary: Icon(
@@ -466,6 +505,7 @@ class _SettingsScreenState extends State<SettingsScreen>
                         subtitle: const Text('Theme from wallpaper'),
                         value: settingsProvider.useDynamicColor,
                         onChanged: (value) {
+                          HapticFeedback.lightImpact();
                           context
                               .read<SettingsProvider>()
                               .toggleUseDynamicColor();
@@ -479,6 +519,7 @@ class _SettingsScreenState extends State<SettingsScreen>
                           subtitle: const Text('Shadows and blur disabled'),
                           value: settingsProvider.useTrueBlack,
                           onChanged: (value) {
+                            HapticFeedback.lightImpact();
                             context
                                 .read<SettingsProvider>()
                                 .toggleUseTrueBlack();
@@ -967,6 +1008,7 @@ class _SettingsScreenState extends State<SettingsScreen>
                               'Tap track in inactive source to play'),
                           value: settingsProvider.playOnTap,
                           onChanged: (value) {
+                            HapticFeedback.lightImpact();
                             context.read<SettingsProvider>().togglePlayOnTap();
                           },
                           secondary: const Icon(Icons.touch_app_rounded),

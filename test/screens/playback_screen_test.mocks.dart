@@ -7,11 +7,11 @@ import 'dart:async' as _i4;
 import 'dart:ui' as _i9;
 
 import 'package:audio_session/audio_session.dart' as _i11;
-import 'package:gdar/models/show.dart' as _i7;
-import 'package:gdar/models/source.dart' as _i8;
+import 'package:gdar/models/show.dart' as _i5;
+import 'package:gdar/models/source.dart' as _i6;
 import 'package:gdar/providers/audio_provider.dart' as _i3;
-import 'package:gdar/providers/settings_provider.dart' as _i6;
-import 'package:gdar/providers/show_list_provider.dart' as _i5;
+import 'package:gdar/providers/settings_provider.dart' as _i8;
+import 'package:gdar/providers/show_list_provider.dart' as _i7;
 import 'package:just_audio/just_audio.dart' as _i2;
 import 'package:mockito/mockito.dart' as _i1;
 import 'package:mockito/src/dummies.dart' as _i10;
@@ -145,15 +145,32 @@ class MockAudioProvider extends _i1.Mock implements _i3.AudioProvider {
       ) as _i4.Stream<String>);
 
   @override
+  _i4.Stream<({_i5.Show show, _i6.Source source})>
+      get randomShowRequestStream => (super.noSuchMethod(
+            Invocation.getter(#randomShowRequestStream),
+            returnValue:
+                _i4.Stream<({_i5.Show show, _i6.Source source})>.empty(),
+          ) as _i4.Stream<({_i5.Show show, _i6.Source source})>);
+
+  @override
   bool get hasListeners => (super.noSuchMethod(
         Invocation.getter(#hasListeners),
         returnValue: false,
       ) as bool);
 
   @override
+  void clearPendingRandomShowRequest() => super.noSuchMethod(
+        Invocation.method(
+          #clearPendingRandomShowRequest,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
   void update(
-    _i5.ShowListProvider? showListProvider,
-    _i6.SettingsProvider? settingsProvider,
+    _i7.ShowListProvider? showListProvider,
+    _i8.SettingsProvider? settingsProvider,
   ) =>
       super.noSuchMethod(
         Invocation.method(
@@ -176,30 +193,31 @@ class MockAudioProvider extends _i1.Mock implements _i3.AudioProvider {
       );
 
   @override
-  ({_i7.Show show, _i8.Source source})? pickRandomShow(
+  ({_i5.Show show, _i6.Source source})? pickRandomShow(
           {bool? filterBySearch = true}) =>
       (super.noSuchMethod(Invocation.method(
         #pickRandomShow,
         [],
         {#filterBySearch: filterBySearch},
-      )) as ({_i7.Show show, _i8.Source source})?);
+      )) as ({_i5.Show show, _i6.Source source})?);
 
   @override
-  _i4.Future<_i7.Show?> playRandomShow({bool? filterBySearch = true}) =>
+  _i4.Future<_i5.Show?> playRandomShow({bool? filterBySearch = true}) =>
       (super.noSuchMethod(
         Invocation.method(
           #playRandomShow,
           [],
           {#filterBySearch: filterBySearch},
         ),
-        returnValue: _i4.Future<_i7.Show?>.value(),
-      ) as _i4.Future<_i7.Show?>);
+        returnValue: _i4.Future<_i5.Show?>.value(),
+      ) as _i4.Future<_i5.Show?>);
 
   @override
   _i4.Future<void> playSource(
-    _i7.Show? show,
-    _i8.Source? source, {
+    _i5.Show? show,
+    _i6.Source? source, {
     int? initialIndex = 0,
+    Duration? initialPosition,
   }) =>
       (super.noSuchMethod(
         Invocation.method(
@@ -208,11 +226,24 @@ class MockAudioProvider extends _i1.Mock implements _i3.AudioProvider {
             show,
             source,
           ],
-          {#initialIndex: initialIndex},
+          {
+            #initialIndex: initialIndex,
+            #initialPosition: initialPosition,
+          },
         ),
         returnValue: _i4.Future<void>.value(),
         returnValueForMissingStub: _i4.Future<void>.value(),
       ) as _i4.Future<void>);
+
+  @override
+  _i4.Future<bool> playFromShareString(String? shareString) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #playFromShareString,
+          [shareString],
+        ),
+        returnValue: _i4.Future<bool>.value(false),
+      ) as _i4.Future<bool>);
 
   @override
   void clearError() => super.noSuchMethod(

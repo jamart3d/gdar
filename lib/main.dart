@@ -64,6 +64,8 @@ class _GdarAppState extends State<GdarApp> {
   late final AppLinks _appLinks;
   StreamSubscription? _linkSubscription;
   final GlobalKey<NavigatorState> _navigatorKey = GlobalKey<NavigatorState>();
+  final String _sessionId =
+      DateTime.now().millisecondsSinceEpoch.toString().substring(7);
 
   @override
   void initState() {
@@ -87,51 +89,71 @@ class _GdarAppState extends State<GdarApp> {
     // Handle initial link if app was closed
     _appLinks.getInitialLink().then((uri) {
       if (uri != null) {
+        logger
+            .i('Main: [Session #$_sessionId] Handling INITIAL deep link: $uri');
         _handleDeepLink(uri);
       }
     });
 
     // Handle links while app is running
     _linkSubscription = _appLinks.uriLinkStream.listen((uri) {
+      logger.i('Main: [Session #$_sessionId] Handling STREAM deep link: $uri');
       _handleDeepLink(uri);
     });
   }
 
   void _handleDeepLink(Uri uri) {
     logger.i(
-        'Handling deep link: $uri (scheme: ${uri.scheme}, host: ${uri.host}, query: ${uri.queryParameters})');
+        'Main: [Session #$_sessionId] Handling deep link: $uri (scheme: ${uri.scheme}, host: ${uri.host}, query: ${uri.queryParameters})');
 
     if (uri.scheme == 'gdar') {
-      if (uri.host == 'play-random') {
-        WidgetsBinding.instance.addPostFrameCallback((_) async {
-          final context = _navigatorKey.currentContext;
-          if (context != null) {
-            final audioProvider =
-                Provider.of<AudioProvider>(context, listen: false);
-            logger.i('App Action: Playing random show based on deep link');
-            await audioProvider.playRandomShow(filterBySearch: false);
-          }
-        });
-      } else if (uri.host == 'open') {
-        final feature = uri.queryParameters['feature']?.toLowerCase() ?? '';
-        logger.i('App Action: Opening feature: $feature');
+      _triggerDeepLinkAction(uri);
+    } else {
+      logger.w('Main: Unhandled deep link scheme: ${uri.scheme}');
+    }
+  }
 
-        // If the user says "ask gdar to play a random show", Assistant might pass
-        // "play a random show" as the feature.
-        if (feature.contains('play') || feature.contains('random')) {
-          WidgetsBinding.instance.addPostFrameCallback((_) async {
-            final context = _navigatorKey.currentContext;
-            if (context != null) {
-              final audioProvider =
-                  Provider.of<AudioProvider>(context, listen: false);
-              logger.i(
-                  'App Action: Playing random show based on feature request: $feature');
-              await audioProvider.playRandomShow(filterBySearch: false);
-            }
+  void _triggerDeepLinkAction(Uri uri, {int retryCount = 0}) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final context = _navigatorKey.currentContext;
+      if (context != null) {
+        final audioProvider =
+            Provider.of<AudioProvider>(context, listen: false);
+
+        if (uri.host == 'play-random') {
+          logger.i(
+              'Main: [Session #$_sessionId] Triggering playRandomShow from host: "play-random"');
+          audioProvider.playRandomShow(filterBySearch: true);
+        } else if (uri.host == 'open') {
+          final feature = uri.queryParameters['feature']?.toLowerCase() ?? '';
+          logger.i(
+              'Main: [Session #$_sessionId] Deep link matches "open" with feature: "$feature"');
+
+          if (feature.contains('play') || feature.contains('random')) {
+            logger.i(
+                'Main: [Session #$_sessionId] Triggering playRandomShow based on feature: "$feature"');
+            audioProvider.playRandomShow(filterBySearch: true);
+          } else {
+            logger.i(
+                'Main: [Session #$_sessionId] Feature "$feature" does not require playback');
+          }
+        } else {
+          logger.w(
+              'Main: [Session #$_sessionId] Unhandled deep link host: ${uri.host}');
+        }
+      } else {
+        if (retryCount < 10) {
+          logger.w(
+              'Main: [Session #$_sessionId] Navigator context is null, retrying (${retryCount + 1})...');
+          Future.delayed(const Duration(milliseconds: 200), () {
+            _triggerDeepLinkAction(uri, retryCount: retryCount + 1);
           });
+        } else {
+          logger.e(
+              'Main: Navigator context is null after multiple retries. Deep link failed.');
         }
       }
-    }
+    });
   }
 
   @override

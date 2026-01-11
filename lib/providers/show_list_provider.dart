@@ -22,6 +22,10 @@ class ShowListProvider with ChangeNotifier {
   bool _hasCheckedArchive = false;
   bool _sortOldestFirst = true;
 
+  // Completer for initialization
+  final Completer<void> _initCompleter = Completer<void>();
+  Future<void> get initializationComplete => _initCompleter.future;
+
   // Public getters
   bool get isLoading => _isLoading;
   String? get error => _error;
@@ -310,6 +314,9 @@ class ShowListProvider with ChangeNotifier {
       notifyListeners();
     } finally {
       _isLoading = false;
+      if (!_initCompleter.isCompleted) {
+        _initCompleter.complete();
+      }
       notifyListeners();
     }
   }
