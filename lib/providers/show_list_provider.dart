@@ -400,4 +400,33 @@ class ShowListProvider with ChangeNotifier {
     _expandedShowKey = null;
     notifyListeners();
   }
+
+  /// Optimistically removes a show from the list.
+  /// This should be called immediately when a show is blocked/dismissed
+  /// to ensure the UI updates synchronously, preventing "Dismissible still in tree" errors.
+  void dismissShow(Show show) {
+    if (_filteredShowsCache.contains(show)) {
+      _filteredShowsCache.remove(show);
+      notifyListeners();
+    }
+  }
+
+  /// Optimistically removes a source from a specific show.
+  void dismissSource(Show show, String sourceId) {
+    // Find the show in the cache
+    final index = _filteredShowsCache.indexOf(show);
+    if (index != -1) {
+      final updatedSources =
+          show.sources.where((s) => s.id != sourceId).toList();
+
+      // If no sources left, remove the show entirely
+      if (updatedSources.isEmpty) {
+        _filteredShowsCache.removeAt(index);
+      } else {
+        // Update the show with removed source
+        _filteredShowsCache[index] = show.copyWith(sources: updatedSources);
+      }
+      notifyListeners();
+    }
+  }
 }

@@ -873,100 +873,134 @@ class _ShowListScreenState extends State<ShowListScreen>
     final key = showListProvider.getShowKey(show);
     final isExpanded = showListProvider.expandedShowKey == key;
 
-    return Column(
-      key: ValueKey('${show.name}_${show.date}'),
-      children: [
-        Dismissible(
-          key: ValueKey('${show.name}_${show.date}'),
-          // Disable swipe on the main card if there are multiple sources.
-          // Sources must be blocked individually in the expanded view.
-          direction: show.sources.length > 1
-              ? DismissDirection.none
-              : DismissDirection.endToStart,
-          background: const SwipeActionBackground(
-            borderRadius: 12.0, // Matching Card's border radius
-          ),
-          onDismissed: (direction) {
-            // Stop playback if this specific show is playing
-            if (audioProvider.currentShow == show) {
-              audioProvider.stopAndClear();
-            }
+    return Builder(builder: (context) {
+      return Column(
+        key: ValueKey('${show.name}_${show.date}'),
+        children: [
+          Dismissible(
+            key: ValueKey('${show.name}_${show.date}'),
+            // Disable swipe on the main card if there are multiple sources.
+            // Sources must be blocked individually in the expanded view.
+            direction: show.sources.length > 1
+                ? DismissDirection.none
+                : DismissDirection.endToStart,
+            background: const SwipeActionBackground(
+              borderRadius: 12.0, // Matching Card's border radius
+            ),
+            confirmDismiss: (direction) async {
+              // Haptic Feedback for the block action
+              HapticFeedback.mediumImpact();
 
-            // Mark as Blocked (Red Star / -1)
-            settingsProvider.setRating(show.sources.first.id, -1);
+              // Calculate position for SnackBar
+              double bottomMargin = 80; // Default fallback
+              try {
+                final RenderBox? box = context.findRenderObject() as RenderBox?;
+                if (box != null && box.hasSize) {
+                  final position = box.localToGlobal(Offset.zero);
+                  final size = box.size;
+                  final screenHeight = MediaQuery.of(context).size.height;
+                  // Position just below the item
+                  // Screen Height - (Item Top + Item Height) = Space below item
+                  // We want SnackBar to float there.
+                  // SnackBar approx height is 60.
+                  final spaceBelow = screenHeight - (position.dy + size.height);
+                  // Ensure margin is within screen bounds and reasonable
+                  bottomMargin =
+                      (spaceBelow - 60).clamp(10.0, screenHeight - 100);
+                }
+              } catch (e) {
+                // Fallback to default if render object not found
+              }
 
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Row(
-                  children: [
-                    Icon(
-                      Icons.block_flipped,
-                      color: Theme.of(context).colorScheme.onPrimaryContainer,
-                      size: 20,
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Text(
-                        'Blocked "${show.venue}"',
-                        style: TextStyle(
-                            color: Theme.of(context)
-                                .colorScheme
-                                .onPrimaryContainer,
-                            fontWeight: FontWeight.bold),
+              // Stop playback if this specific show is playing
+              if (audioProvider.currentShow == show) {
+                audioProvider.stopAndClear();
+              }
+
+              // Mark as Blocked (Red Star / -1)
+              settingsProvider.setRating(show.sources.first.id, -1);
+
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Row(
+                    children: [
+                      Icon(
+                        Icons.block_flipped,
+                        color: Theme.of(context).colorScheme.onPrimaryContainer,
+                        size: 20,
                       ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          'Blocked "${show.venue}"',
+                          style: TextStyle(
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .onPrimaryContainer,
+                              fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                    ],
+                  ),
+                  backgroundColor:
+                      Theme.of(context).colorScheme.primaryContainer,
+                  behavior: SnackBarBehavior.floating,
+                  duration: const Duration(seconds: 4),
+                  margin: EdgeInsets.only(
+                      bottom: bottomMargin, left: 24, right: 24),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(100),
+                    side: BorderSide(
+                      color: Theme.of(context)
+                          .colorScheme
+                          .onPrimaryContainer
+                          .withValues(alpha: 0.1),
+                      width: 1,
                     ),
-                  ],
-                ),
-                backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-                behavior: SnackBarBehavior.floating,
-                duration: const Duration(seconds: 4),
-                margin: const EdgeInsets.only(bottom: 100, left: 24, right: 24),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(100),
-                  side: BorderSide(
-                    color: Theme.of(context)
-                        .colorScheme
-                        .onPrimaryContainer
-                        .withValues(alpha: 0.1),
-                    width: 1,
+                  ),
+                  action: SnackBarAction(
+                    label: 'UNDO',
+                    textColor: Theme.of(context).colorScheme.primary,
+                    onPressed: () {
+                      // Restore rating
+                      settingsProvider.setRating(show.sources.first.id, 0);
+                    },
                   ),
                 ),
-                action: SnackBarAction(
-                  label: 'UNDO',
-                  textColor: Theme.of(context).colorScheme.primary,
-                  onPressed: () {
-                    // Restore rating
-                    settingsProvider.setRating(show.sources.first.id, 0);
-                  },
-                ),
-              ),
-            );
-          },
-          child: ShowListCard(
-            show: show,
-            isExpanded: isExpanded,
-            isPlaying: audioProvider.currentShow == show,
-            playingSource: audioProvider.currentSource,
-            isLoading: showListProvider.isShowLoading(key),
-            onTap: () => _onShowTapped(show),
-            onLongPress: () => _onCardLongPressed(show),
+              );
+              return true;
+            },
+            onDismissed: (direction) {
+              // Optimistically remove from list to prevent "still in tree" crash.
+              // setRating was already called in confirmDismiss to handle data persistence.
+              showListProvider.dismissShow(show);
+            },
+            child: ShowListCard(
+              show: show,
+              isExpanded: isExpanded,
+              isPlaying: audioProvider.currentShow == show,
+              playingSource: audioProvider.currentSource,
+              isLoading: showListProvider.isShowLoading(key),
+              onTap: () => _onShowTapped(show),
+              onLongPress: () => _onCardLongPressed(show),
+            ),
           ),
-        ),
-        SizeTransition(
-          sizeFactor: _animation,
-          axisAlignment: -1.0,
-          child: isExpanded
-              ? ShowListItemDetails(
-                  show: show,
-                  playingSourceId: audioProvider.currentSource?.id,
-                  height: _calculateExpandedHeight(show),
-                  onSourceTapped: (source) => _onSourceTapped(show, source),
-                  onSourceLongPress: (source) =>
-                      _onSourceLongPressed(show, source),
-                )
-              : const SizedBox.shrink(),
-        ),
-      ],
-    );
+          SizeTransition(
+            sizeFactor: _animation,
+            axisAlignment: -1.0,
+            child: isExpanded
+                ? ShowListItemDetails(
+                    show: show,
+                    playingSourceId: audioProvider.currentSource?.id,
+                    height: _calculateExpandedHeight(show),
+                    onSourceTapped: (source) => _onSourceTapped(show, source),
+                    onSourceLongPress: (source) =>
+                        _onSourceLongPressed(show, source),
+                  )
+                : const SizedBox.shrink(),
+          ),
+        ],
+      );
+    });
   }
 }

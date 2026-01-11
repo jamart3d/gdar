@@ -170,3 +170,12 @@ This file tracks planned features, enhancements, and bug fixes for the gdar appl
 - [ ] Add System Theme option to Appearance settings
   - Allow user to follow system theme (Light/Dark/Auto)
   - Add theme setting from device
+
+## Footprint Reduction
+
+- [ ] **Optimize Show Data Size:** `assets/data/output.optimized_src.json` is ~9.2MB.
+    - **Normalization:** Extract repeating strings (venues, artists, locations) into lookup tables to reduce redundancy.
+    - **Binary Format:** Investigate FlatBuffers or MsgPack to replace JSON for faster parsing and smaller size.
+    - **Compression:** Verify if Gzip/Brotli compression of the asset at rest (and decompressing in stream) yields net benefit vs CPU cost.
+- [ ] **Font Optimization:** Verify `google_fonts` usage. Bundling frequently used weights (Inter/Roboto) as assets can rely less on runtime caching and network calls.
+- [ ] **Code Dead-Stripping:** Ensure `flutter build --release` effectively tree-shakes unused icon code points (SettingsProvider uses simple booleans, but large icon sets can bloat).
