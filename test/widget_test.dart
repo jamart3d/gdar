@@ -28,7 +28,7 @@ void main() {
 
     // This is a simple test to verify that the AppBar title is present.
     // This confirms the app has at least started and rendered the main screen.
-    expect(find.text('gdar'), findsOneWidget);
+    expect(find.text('shakedown'), findsOneWidget);
 
     // This test is very basic. A real app would have more specific tests.
     // For example, verifying the search bar is present, etc.

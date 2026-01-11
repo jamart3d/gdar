@@ -11,6 +11,7 @@ import 'package:gdar/providers/show_list_provider.dart';
 import 'package:gdar/ui/screens/playback_screen.dart';
 import 'package:gdar/ui/screens/settings_screen.dart';
 import 'package:gdar/ui/screens/track_list_screen.dart';
+
 import 'package:gdar/ui/widgets/mini_player.dart';
 import 'package:gdar/ui/widgets/show_list_card.dart';
 import 'package:gdar/ui/widgets/swipe_action_background.dart';
@@ -516,6 +517,7 @@ class _ShowListScreenState extends State<ShowListScreen>
   }
 
   Future<void> _handlePlayRandomShow() async {
+    HapticFeedback.mediumImpact();
     final showListProvider = context.read<ShowListProvider>();
     final audioProvider = context.read<AudioProvider>();
 
@@ -538,87 +540,43 @@ class _ShowListScreenState extends State<ShowListScreen>
     }
   }
 
+  bool _showPasteFeedback = false; // Add class member
+
   Future<bool> _handleClipboardPlayback(String text) async {
     logger.i('ShowListScreen: Attempting clipboard playback for: "$text"');
+
+    // 1. Show Top Notification
+    setState(() => _showPasteFeedback = true);
+
+    if (!mounted) return false;
+
+    // 2. Start Processing (Delay is purely data fetching)
     final audioProvider = context.read<AudioProvider>();
     final success = await audioProvider.playFromShareString(text);
-    if (success && mounted) {
-      HapticFeedback.mediumImpact(); // Confirm clipboard playback started
-      _searchController.clear();
-      _searchFocusNode.unfocus(); // Close keyboard
-      setState(() => _isSearchVisible = false); // Hide search bar
 
-      // Trigger UI Parity: Scroll to show and update selection state
-      final show = audioProvider.currentShow;
-      final source = audioProvider.currentSource;
-      if (show != null && source != null) {
-        _handleRandomShowSelection((show: show, source: source));
+    // 3. Handle Result
+    if (mounted) {
+      if (success) {
+        HapticFeedback.mediumImpact();
+        _searchController.clear();
+        _searchFocusNode.unfocus();
+        setState(() {
+          _isSearchVisible = false;
+          _showPasteFeedback = false; // Hide on success before nav
+        });
+
+        // Trigger UI Parity
+        final show = audioProvider.currentShow;
+        final source = audioProvider.currentSource;
+        if (show != null && source != null) {
+          _handleRandomShowSelection((show: show, source: source));
+        }
+
+        _openPlaybackScreen();
+      } else {
+        // Hide feedback if failed (maybe show error snackbar here instead?)
+        setState(() => _showPasteFeedback = false);
       }
-
-      // Navigate to Playback Screen
-      _openPlaybackScreen();
-
-      final colorScheme = Theme.of(context).colorScheme;
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(6),
-                decoration: BoxDecoration(
-                  color: colorScheme.onPrimaryContainer.withValues(alpha: 0.2),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  Icons.bolt_rounded,
-                  color: colorScheme.onPrimaryContainer,
-                  size: 18,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Playing from Clipboard',
-                      style: TextStyle(
-                        color: colorScheme.onPrimaryContainer,
-                        fontWeight: FontWeight.w600,
-                        fontSize: 14,
-                      ),
-                    ),
-                    const SizedBox(height: 1),
-                    Text(
-                      'Navigating to playback...',
-                      style: TextStyle(
-                        color: colorScheme.onPrimaryContainer
-                            .withValues(alpha: 0.7),
-                        fontSize: 12,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          backgroundColor: colorScheme.primaryContainer,
-          elevation: 6,
-          behavior: SnackBarBehavior.floating,
-          duration: const Duration(milliseconds: 2500),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-          margin: EdgeInsets.only(
-            bottom: MediaQuery.of(context).size.height * 0.65, // Upper third
-            left: 16,
-            right: 16,
-          ),
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-        ),
-      );
     }
     return success;
   }
@@ -826,6 +784,50 @@ class _ShowListScreenState extends State<ShowListScreen>
                 onTap: _openPlaybackScreen,
               ),
             ),
+          // Custom Top Notification
+          AnimatedPositioned(
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeOutCubic,
+            // Visually "just below the paste" area.
+            // If search is visible (approx 80 height), it sits below it.
+            // If search is hidden, it slides up and away (-100).
+            top: _showPasteFeedback ? (_isSearchVisible ? 70.0 : 0.0) : -100.0,
+            left: 24,
+            right: 24,
+            child: Material(
+              elevation: 6,
+              shadowColor: Colors.black45,
+              borderRadius: BorderRadius.circular(16),
+              color: Theme.of(context).colorScheme.inverseSurface,
+              child: Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                child: Row(
+                  children: [
+                    SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2.5,
+                        color: Theme.of(context).colorScheme.onInverseSurface,
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Text(
+                        'Fetching show...',
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.onInverseSurface,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 15,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
         ],
       ),
     );

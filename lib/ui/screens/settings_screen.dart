@@ -1055,7 +1055,6 @@ class _SettingsScreenState extends State<SettingsScreen>
                           fontSize: 18,
                         ),
                       ),
-                      subtitle: const Text('View and unblock shows'),
                       trailing:
                           const Icon(Icons.arrow_forward_ios_rounded, size: 16),
                       onTap: () {

@@ -24,7 +24,7 @@ class AboutScreen extends StatelessWidget {
         ),
         child: Scaffold(
           appBar: AppBar(
-            title: const Text('About gdar'),
+            title: const Text('About Shakedown'),
           ),
           body: SingleChildScrollView(
             child: Padding(
@@ -49,7 +49,7 @@ class AboutScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    'gdar',
+                    'Shakedown',
                     style: textTheme.displayMedium?.copyWith(
                       fontWeight: FontWeight.bold,
                       color: colorScheme.primary,

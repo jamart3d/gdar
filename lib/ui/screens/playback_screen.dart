@@ -578,6 +578,7 @@ class _PlaybackScreenState extends State<PlaybackScreen>
             ),
       onTap: () {
         if (!isPlaying) {
+          HapticFeedback.lightImpact();
           audioProvider.seekToTrack(index);
         }
       },
@@ -707,8 +708,8 @@ class _PlaybackScreenState extends State<PlaybackScreen>
               valueListenable: panelPositionNotifier,
               builder: (context, value, child) {
                 // Closed (0.0): +100 (Hidden down)
-                // Open (1.0): -32 (Up more to compensate for larger gap)
-                final double yOffset = (100.0 - 132.0 * value) * scaleFactor;
+                // Open (1.0): -12 (Up less to avoid overlap)
+                final double yOffset = (100.0 - 112.0 * value) * scaleFactor;
                 return Transform.translate(
                   offset: Offset(0, yOffset),
                   child: SingleChildScrollView(

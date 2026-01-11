@@ -1,4 +1,4 @@
-# gdar
+# Shakedown
 
 A Flutter application for browsing and playing concert recordings of the Grateful Dead from archives.
 
@@ -9,6 +9,10 @@ A Flutter application for browsing and playing concert recordings of the Gratefu
   - Dedicated playback screen with set list support (Set 1, Set 2, Encore).
   - Persistent mini-player for audio controls while browsing.
   - Random playback options: Play random show on startup/completion, filter by unplayed or high-rated shows.
+- **Smart Clipboard Integration**:
+  - Automatically detects Archive.org share links in your clipboard.
+  - **Instant Playback**: Detects paste gestures and immediately initiates playback with a helpful notification.
+  - Seamlessly parses SHNIDs and track names to start playback instantly.
 - **Collection Management**:
   - Rate shows (1-3 stars) or block them (Red star).
   - Block specific sources (SHNIDs) for multi-source shows by swiping left on the source item.
@@ -21,7 +25,8 @@ A Flutter application for browsing and playing concert recordings of the Gratefu
   - Copy show/track info to clipboard.
 - **Customization**:
   - Light and Dark theme support with dynamic color options.
-  - "True Black" mode for OLED screens.
+  - **True Black Mode**: Pitch black backgrounds for OLED screens.
+  - **Glow Effects**: Adjustable glow intensity for the playback card, adding a premium feel.
   - **Accessibility**: Semantic labels for screen readers.
   - **Hide Track Duration** option for a minimalist interface.
   - **Global UI Scale**: Consistent text scaling across all screens.

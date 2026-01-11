@@ -5,7 +5,7 @@ This file tracks planned features, enhancements, and bug fixes for the gdar appl
 ## High Priority
 
 - [x] **Unit Tests:** Write unit tests for providers (`AudioProvider`, `ShowListProvider`) to ensure business logic is correct.
-  - [ ] **Test Architecture Refactor:** Extract SHNID/track parsing logic from `AudioProvider.playFromShareString` into pure functions for easier unit testing, or implement as widget tests for end-to-end clipboard playback flow.
+  - [x] **Test Architecture Refactor:** Extract SHNID/track parsing logic from `AudioProvider.playFromShareString` into pure functions (`ShareLinkParser`) for easier unit testing.
 - [x] **Widget Tests:** Write widget tests for critical UI components like `ShowListCard` and `PlaybackScreen`.
 - [x] **Error Handling:** Implement more robust error handling for audio playback (e.g., show a snackbar if a track URL is invalid or network fails).
 - [x] **App Startup:** Refactor startup to be synchronous, remove initial loading screen, and respect splash screen setting immediately.
@@ -29,11 +29,11 @@ This file tracks planned features, enhancements, and bug fixes for the gdar appl
 - [x] **SHNID Badge Size:** Increase the size of the SHNID badge in the Playback Screen (it's too small).
 - [x] **Clipboard Icon:** Add a clipboard icon next to the venue name in Playback Screen to copy show/track info.
 
-- [ ] **Clipboard Playback Countdown:** Add Material 3 expressive countdown animation (3, 2, 1) after paste detection, before playback starts. This provides visual feedback during the brief processing delay and confirms the paste was recognized.
+- [x] **Clipboard Playback Feedback:** Replaced countdown with immediate playback and a SnackBar notification for a faster, "snappier" user experience.
 
 - [x] **Quick Block:** Left swipe on a Show Card (for single source shows) or an individual Source Item (for multi-source shows) to instantly mark it as "Red Star" (Blocked). Handles stopping playback and provides undo options.
 
-- [ ] **Clipboard Playback:** Feature to parse a shared show/track string from the clipboard and instantly play that specific track/position.
+- [x] **Clipboard Playback:** Feature to parse a shared show/track string from the clipboard and instantly play that specific track/position.
 
 - [x] **Set Lists:** Organize tracks into sets (Set 1, Set 2, Encore) in the track list view.
   - *Implementation Note:* `shows2.json` now includes a `setlist` attribute. Update `Show` or `Track` models to support this structure and parse it from the new JSON.
@@ -116,8 +116,7 @@ This file tracks planned features, enhancements, and bug fixes for the gdar appl
 
 - [x] **Gapless Playback:** Refactor to use `AudioPlayer.setAudioSources` (fixing `ConcatenatingAudioSource` deprecation) to ensure true gapless playback by default for all shows.
 - [ ] **Smart Random Setting**: Add a setting to toggle whether "Automated Random (Continuous Play) ignores search filter to pick from full library" (currently enabled by default).
-- [ ] **Investigation:** Audit `randomPlayback` and `gaplessPlayback` settings. 
-  - *Context:* Gapless is currently implicit (always on via `ConcatenatingAudioSource`). Random playback is a behavior/method, not a single state flag. Investigate if explicit settings are needed.
+
 - [ ] **Hide Forward/Reverse Controls:** Add setting to hide Next/Previous track buttons in the player interfaces for a minimalist look.
 
 - [ ] **Android Caching:** Implement `LockCachingAudioSource` for Android platform to enable full-file buffering.

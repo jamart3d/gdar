@@ -208,10 +208,22 @@ class _GdarAppState extends State<GdarApp> {
                 lightTheme = baseLight.copyWith(
                   textTheme: AppThemes.getTextTheme(
                       settingsProvider.appFont, baseLight.textTheme),
+                  textSelectionTheme: TextSelectionThemeData(
+                    cursorColor: baseLight.colorScheme.primary,
+                    selectionColor:
+                        baseLight.colorScheme.primary.withValues(alpha: 0.3),
+                    selectionHandleColor: baseLight.colorScheme.primary,
+                  ),
                 );
                 darkTheme = baseDark.copyWith(
                   textTheme: AppThemes.getTextTheme(
                       settingsProvider.appFont, baseDark.textTheme),
+                  textSelectionTheme: TextSelectionThemeData(
+                    cursorColor: baseDark.colorScheme.primary,
+                    selectionColor:
+                        baseDark.colorScheme.primary.withValues(alpha: 0.3),
+                    selectionHandleColor: baseDark.colorScheme.primary,
+                  ),
                 );
 
                 // Apply True Black if enabled
@@ -261,6 +273,24 @@ class _GdarAppState extends State<GdarApp> {
                   );
 
                   darkTheme = darkTheme.copyWith(colorScheme: baseDarkScheme);
+
+                  // Apply seed-based selection theme
+                  lightTheme = lightTheme.copyWith(
+                    textSelectionTheme: TextSelectionThemeData(
+                      cursorColor: lightTheme.colorScheme.primary,
+                      selectionColor:
+                          lightTheme.colorScheme.primary.withValues(alpha: 0.3),
+                      selectionHandleColor: lightTheme.colorScheme.primary,
+                    ),
+                  );
+                  darkTheme = darkTheme.copyWith(
+                    textSelectionTheme: TextSelectionThemeData(
+                      cursorColor: darkTheme.colorScheme.primary,
+                      selectionColor:
+                          darkTheme.colorScheme.primary.withValues(alpha: 0.3),
+                      selectionHandleColor: darkTheme.colorScheme.primary,
+                    ),
+                  );
                 }
 
                 // Override surfaces to be "True Black" if enabled

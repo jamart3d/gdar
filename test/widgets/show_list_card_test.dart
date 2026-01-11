@@ -67,10 +67,19 @@ void main() {
 
   testWidgets('ShowListCard displays venue and date',
       (WidgetTester tester) async {
-    await tester.pumpWidget(createTestableWidget(show: dummyShow));
+    final settingsProvider = SettingsProvider(prefs);
+    // Default abbreviateMonth is true ("Jan"), but Show.formattedDate is "January".
+    // Toggle to false to match the full date string expected by the test.
+    // settingsProvider.toggleAbbreviateMonth(); // Removed as we now expect abbreviated month
+
+    await tester.pumpWidget(createTestableWidget(
+        show: dummyShow,
+        settingsProvider: settingsProvider // Pass the configured provider
+        ));
 
     expect(find.text(dummyShow.venue), findsOneWidget);
-    expect(find.text(dummyShow.formattedDate), findsOneWidget);
+    // Default abbreviateMonth is true, so we expect "Jan", not "January"
+    expect(find.text('Jan 15, 2025'), findsOneWidget);
   });
 
   testWidgets('ShowListCard border color changes when isPlaying is true',

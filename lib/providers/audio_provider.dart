@@ -11,7 +11,7 @@ import 'package:gdar/models/track.dart';
 import 'package:gdar/providers/settings_provider.dart';
 import 'package:gdar/providers/show_list_provider.dart';
 import 'package:gdar/utils/logger.dart';
-import 'package:gdar/utils/utils.dart';
+import 'package:gdar/utils/share_link_parser.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:just_audio_background/just_audio_background.dart';
 
@@ -292,90 +292,25 @@ class AudioProvider with ChangeNotifier {
   /// Line 4: Position: MM:SS (Optional)
   Future<bool> playFromShareString(String shareString) async {
     if (_showListProvider == null) return false;
-    final cleanShare = shareString.toLowerCase();
-    logger
-        .i('AudioProvider: playFromShareString hash: ${shareString.hashCode}');
+
+    // Use the pure parser utility
+    final data = ShareLinkParser.parse(shareString);
+    if (data == null) {
+      logger.w('Clipboard Playback: Could not parse share string');
+      return false;
+    }
+
+    final shnid = data.shnid;
+    final trackName = data.trackName;
+    final pos = data.position;
+
     logger.i(
-        'Clipboard Playback: Input preview (first 200 chars): "${shareString.substring(0, shareString.length > 200 ? 200 : shareString.length)}"');
+        'Clipboard Playback: Extracted SHNID: "$shnid", Track: "$trackName", Position: $pos');
 
     try {
       Show? targetShow;
       Source? targetSource;
       int trackIndex = 0;
-
-      logger.i('Clipboard Playback: Input: "$shareString"');
-
-      // Parse structure: [venue] - [location] - [date] - [SHNID][track name][URL]
-      // Example: "West High Auditorium - Anchorage, AK - Fri, Jun 20, 1980 - 156397[crowd - tuning]https://..."
-
-      // Find the year (4 digits between 1960-2030) as an anchor
-      final yearMatch =
-          RegExp(r'(19[6-9]\d|20[0-2]\d)').firstMatch(shareString);
-      if (yearMatch == null) {
-        logger.w('Clipboard Playback: Could not find year in paste');
-        return false;
-      }
-
-      // Extract everything after the year
-      final afterYear = shareString.substring(yearMatch.end);
-
-      // SHNID comes after " - " following the year
-      final shnidStart = afterYear.indexOf(' - ');
-      if (shnidStart == -1) {
-        logger.w('Clipboard Playback: Could not find SHNID separator');
-        return false;
-      }
-
-      // Extract SHNID: starts after " - ", capture only digits/hyphens/dots until we hit a letter or bracket
-      final shnidText = afterYear.substring(shnidStart + 3).trim();
-      String shnid = '';
-      int shnidEnd = 0;
-
-      for (int i = 0; i < shnidText.length; i++) {
-        final char = shnidText[i];
-        // SHNID can contain digits, dots, hyphens
-        if (RegExp(r'[0-9.\-]').hasMatch(char)) {
-          shnid += char;
-          shnidEnd = i + 1;
-        } else {
-          // Stop at first non-SHNID character (letter, bracket, etc)
-          break;
-        }
-      }
-      shnid = shnid.trim();
-
-      logger.i('Clipboard Playback: Extracted SHNID: "$shnid"');
-
-      if (shnid.isEmpty) {
-        logger.w('Clipboard Playback: SHNID is empty');
-        return false;
-      }
-
-      // Extract track name: everything after SHNID until "[", "https", or end
-      String? trackName;
-      if (shnidEnd < shnidText.length) {
-        String afterShnid = shnidText.substring(shnidEnd).trim();
-
-        // Try to extract from brackets first: [track name]
-        final trackMatch = RegExp(r'\[([^\]]+)\]').firstMatch(afterShnid);
-        if (trackMatch != null) {
-          trackName = trackMatch.group(1);
-        } else {
-          // Otherwise, take everything until "https" or end of string
-          final urlIndex = afterShnid.indexOf('https');
-          if (urlIndex != -1) {
-            trackName = afterShnid.substring(0, urlIndex).trim();
-          } else {
-            trackName = afterShnid.trim();
-          }
-          // Remove any trailing brackets or special chars
-          trackName = trackName.replaceAll(RegExp(r'[\[\]]'), '').trim();
-        }
-
-        if (trackName != null && trackName.isNotEmpty) {
-          logger.i('Clipboard Playback: Extracted track name: "$trackName"');
-        }
-      }
 
       // Find the matching source by SHNID
       final allShows = _showListProvider!.allShows;
@@ -406,16 +341,6 @@ class AudioProvider with ChangeNotifier {
             break;
           }
         }
-      }
-
-      // Parse Position (Optional)
-      Duration? pos;
-      final posIndex = cleanShare.indexOf('position:');
-      if (posIndex != -1) {
-        final posPart =
-            shareString.substring(posIndex + 'position:'.length).trim();
-        final timeStr = posPart.split(' ').first.split('\n').first;
-        pos = parseDuration(timeStr);
       }
 
       logger.i(

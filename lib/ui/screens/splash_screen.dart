@@ -155,7 +155,7 @@ class _SplashScreenState extends State<SplashScreen>
             children: [
               Center(
                 child: Text(
-                  'gdar',
+                  'shakedown',
                   style: theme.textTheme.displayLarge?.copyWith(
                     fontWeight: FontWeight.bold,
                     color: theme.colorScheme.primary,

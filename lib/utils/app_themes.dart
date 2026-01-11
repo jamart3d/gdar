@@ -74,6 +74,11 @@ class AppThemes {
       ),
       cardColor: Colors.white,
       textTheme: textTheme,
+      textSelectionTheme: TextSelectionThemeData(
+        cursorColor: Colors.blue,
+        selectionColor: Colors.blue.withValues(alpha: 0.3),
+        selectionHandleColor: Colors.blue,
+      ),
     );
   }
 
@@ -92,6 +97,11 @@ class AppThemes {
       ),
       cardColor: Colors.black,
       textTheme: textTheme,
+      textSelectionTheme: TextSelectionThemeData(
+        cursorColor: Colors.blue,
+        selectionColor: Colors.blue.withValues(alpha: 0.3),
+        selectionHandleColor: Colors.blue,
+      ),
     );
   }
 }
