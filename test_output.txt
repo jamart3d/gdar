@@ -1,0 +1,52 @@
+00:00 +0: loading /home/jam/StudioProjects/gdar/test/screens/show_list_screen_swipe_test.dart                                                                                                          00:01 +0: loading /home/jam/StudioProjects/gdar/test/screens/show_list_screen_swipe_test.dart                                                                                                          00:01 +0: Dismissing a single-source show removes it from the list without crash                                                                                                                       00:01 +0: Dismissing a single-source show removes it from the list without crash                                                                                                                       
+══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞════════════════════════════════════════════════════
+The following assertion was thrown running a test:
+Tried to use Provider with a subtype of Listenable/Stream (AudioProvider).
+
+This is likely a mistake, as Provider will not automatically update dependents
+when AudioProvider is updated. Instead, consider changing Provider for more specific
+implementation that handles the update mechanism, such as:
+
+- ListenableProvider
+- ChangeNotifierProvider
+- ValueListenableProvider
+- StreamProvider
+
+Alternatively, if you are making your own provider, consider using InheritedProvider.
+
+If you think that this is not an error, you can disable this check by setting
+Provider.debugCheckInvalidValueType to `null` in your main file:
+
+```
+void main() {
+  Provider.debugCheckInvalidValueType = null;
+
+  runApp(MyApp());
+}
+```
+
+
+When the exception was thrown, this was the stack:
+#0      Provider.debugCheckInvalidValueType.<anonymous closure>.<anonymous closure> (package:provider/src/provider.dart:421:9)
+#1      Provider.debugCheckInvalidValueType.<anonymous closure> (package:provider/src/provider.dart:448:6)
+#2      new Provider.value.<anonymous closure> (package:provider/src/provider.dart:278:48)
+#3      new Provider.value (package:provider/src/provider.dart:280:10)
+#4      main.createWidgetUnderTest (file:///home/jam/StudioProjects/gdar/test/screens/show_list_screen_swipe_test.dart:189:9)
+#5      main.<anonymous closure> (file:///home/jam/StudioProjects/gdar/test/screens/show_list_screen_swipe_test.dart:214:29)
+#6      testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:29)
+<asynchronous suspension>
+#7      TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1059:5)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided one frame from package:stack_trace)
+
+The test description was:
+  Dismissing a single-source show removes it from the list without crash
+════════════════════════════════════════════════════════════════════════════════════════════════════
+00:01 +0 -1: Dismissing a single-source show removes it from the list without crash [E]                                                                                                                
+  Test failed. See exception logs above.
+  The test description was: Dismissing a single-source show removes it from the list without crash
+  
+
+To run this test again: /home/jam/development/flutter/bin/cache/dart-sdk/bin/dart test /home/jam/StudioProjects/gdar/test/screens/show_list_screen_swipe_test.dart -p vm --plain-name 'Dismissing a single-source show removes it from the list without crash'
+00:01 +0 -1: Some tests failed.                                                                                                                                                                        
