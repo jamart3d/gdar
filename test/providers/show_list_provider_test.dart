@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:gdar/api/show_service.dart';
+import 'package:gdar/services/catalog_service.dart';
 import 'package:gdar/models/show.dart';
 import 'package:gdar/models/source.dart';
 import 'package:gdar/providers/show_list_provider.dart';
@@ -10,10 +10,10 @@ import 'package:gdar/providers/settings_provider.dart';
 
 import 'show_list_provider_test.mocks.dart';
 
-@GenerateNiceMocks([MockSpec<ShowService>(), MockSpec<SettingsProvider>()])
+@GenerateNiceMocks([MockSpec<CatalogService>(), MockSpec<SettingsProvider>()])
 void main() {
   late ShowListProvider showListProvider;
-  late MockShowService mockShowService;
+  late MockCatalogService mockCatalogService;
 
   // Helper function to create a dummy show
   Show createDummyShow(String name, String date,
@@ -41,32 +41,33 @@ void main() {
   ];
 
   setUp(() {
-    mockShowService = MockShowService();
-    showListProvider = ShowListProvider(showService: mockShowService);
+    mockCatalogService = MockCatalogService();
+    showListProvider = ShowListProvider(catalogService: mockCatalogService);
   });
 
   group('ShowListProvider Tests', () {
     test('Initial values are correct', () {
-      expect(showListProvider.isLoading, isTrue);
+      expect(showListProvider.isLoading, isTrue); // Starts loading
       expect(showListProvider.error, isNull);
       expect(showListProvider.searchQuery, isEmpty);
       expect(showListProvider.filteredShows, isEmpty);
     });
 
     test('fetchShows successfully loads shows', () async {
-      when(mockShowService.getShows()).thenAnswer((_) async => dummyShows);
+      when(mockCatalogService.initialize()).thenAnswer((_) async {});
+      when(mockCatalogService.allShows).thenReturn(dummyShows);
 
       await showListProvider.fetchShows();
 
       expect(showListProvider.isLoading, isFalse);
       expect(showListProvider.error, isNull);
-      // The filteredShows getter removes the featured track show
-      // Actually, we fail open if checks are disabled, so we expect 3
+      // The filteredShows getter filtering logic remains the same
       expect(showListProvider.filteredShows.length, 3);
     });
 
     test('fetchShows handles errors', () async {
-      when(mockShowService.getShows()).thenThrow(Exception('Failed to load'));
+      when(mockCatalogService.initialize())
+          .thenThrow(Exception('Failed to load'));
 
       await showListProvider.fetchShows();
 
@@ -88,7 +89,8 @@ void main() {
     });
 
     test('filteredShows returns correct shows based on search query', () async {
-      when(mockShowService.getShows()).thenAnswer((_) async => dummyShows);
+      when(mockCatalogService.initialize()).thenAnswer((_) async {});
+      when(mockCatalogService.allShows).thenReturn(dummyShows);
       await showListProvider.fetchShows();
 
       showListProvider.setSearchQuery('Venue A');
@@ -103,7 +105,8 @@ void main() {
     });
 
     test('filteredShows hides featured tracks', () async {
-      when(mockShowService.getShows()).thenAnswer((_) async => dummyShows);
+      when(mockCatalogService.initialize()).thenAnswer((_) async {});
+      when(mockCatalogService.allShows).thenReturn(dummyShows);
       await showListProvider.fetchShows();
 
       // Expect 3 because we default to fail-open
@@ -112,7 +115,8 @@ void main() {
 
     test('toggleShowExpansion (prev onShowTap) expands and collapses a show',
         () async {
-      when(mockShowService.getShows()).thenAnswer((_) async => dummyShows);
+      when(mockCatalogService.initialize()).thenAnswer((_) async {});
+      when(mockCatalogService.allShows).thenReturn(dummyShows);
       await showListProvider.fetchShows();
       final show = showListProvider.filteredShows.first;
       final key = showListProvider.getShowKey(show);
@@ -132,7 +136,8 @@ void main() {
     });
 
     test('expandShow expands the given show', () async {
-      when(mockShowService.getShows()).thenAnswer((_) async => dummyShows);
+      when(mockCatalogService.initialize()).thenAnswer((_) async {});
+      when(mockCatalogService.allShows).thenReturn(dummyShows);
       await showListProvider.fetchShows();
       final show = showListProvider.filteredShows.first;
       final key = showListProvider.getShowKey(show);
@@ -141,7 +146,8 @@ void main() {
     });
 
     test('collapseCurrentShow collapses the current show', () async {
-      when(mockShowService.getShows()).thenAnswer((_) async => dummyShows);
+      when(mockCatalogService.initialize()).thenAnswer((_) async {});
+      when(mockCatalogService.allShows).thenReturn(dummyShows);
       await showListProvider.fetchShows();
       final show = showListProvider.filteredShows.first;
       final key = showListProvider.getShowKey(show);

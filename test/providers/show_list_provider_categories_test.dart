@@ -9,13 +9,13 @@ import 'show_list_provider_test.mocks.dart';
 void main() {
   group('ShowListProvider Category Detection', () {
     late ShowListProvider provider;
-    late MockShowService mockShowService;
+    late MockCatalogService mockCatalogService;
     late MockSettingsProvider mockSettingsProvider;
 
     setUp(() {
-      mockShowService = MockShowService();
+      mockCatalogService = MockCatalogService();
       mockSettingsProvider = MockSettingsProvider();
-      provider = ShowListProvider(showService: mockShowService);
+      provider = ShowListProvider(catalogService: mockCatalogService);
 
       // Disable strict mode to test URL parsing
       when(mockSettingsProvider.useStrictSrcCategorization).thenReturn(false);
@@ -72,7 +72,8 @@ void main() {
         ),
       ];
 
-      when(mockShowService.getShows()).thenAnswer((_) async => shows);
+      when(mockCatalogService.initialize()).thenAnswer((_) async {});
+      when(mockCatalogService.allShows).thenReturn(shows);
 
       await provider.fetchShows();
 

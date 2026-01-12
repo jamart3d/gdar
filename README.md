@@ -9,9 +9,9 @@ A Flutter application for browsing and playing concert recordings of the Gratefu
   - Dedicated playback screen with set list support (Set 1, Set 2, Encore).
   - Persistent mini-player for audio controls while browsing.
   - Random playback options: Play random show on startup/completion, filter by unplayed or high-rated shows.
-- **Smart Clipboard Integration**:
-  - Automatically detects Archive.org share links in your clipboard.
-  - **Instant Playback**: Detects paste gestures and immediately initiates playback with a helpful notification.
+
+- **Clipboard Playback**:
+  - **Instant Playback**: Paste an Archive.org share link into the **search field** to instantly trigger playback.
   - Seamlessly parses SHNIDs and track names to start playback instantly.
 - **Collection Management**:
   - Rate shows (1-3 stars) or block them (Red star).
@@ -22,7 +22,7 @@ A Flutter application for browsing and playing concert recordings of the Gratefu
 - **Rich Details**:
   - View track details, sources, and SHNID badges.
   - Direct links to Archive.org for source details.
-  - Copy show/track info to clipboard.
+  - **Copy**: Copy show/track info to clipboard from the **open player** in the playback screen.
 - **Customization**:
   - Light and Dark theme support with dynamic color options.
   - **True Black Mode**: Pitch black backgrounds for OLED screens.
@@ -79,11 +79,20 @@ Access settings via the gear icon in the top app bar.
 
 The project's Dart code is located in the `lib` directory and is organized as follows:
 
-- **`api/`**: Contains services for fetching data, like show information.
-- **`models/`**: Defines the data structures for shows, tracks, and sources.
+- **`models/`**: Defines the data structures for shows, sources, tracks, and ratings.
 - **`providers/`**: Manages the application's state (e.g., audio playback, show lists, settings).
+- **`services/`**: Core data services, including the **Hybrid Catalog Service** (JSON parsing + Hive storage).
 - **`ui/`**: Contains the user interface code, separated into:
   - **`screens/`**: The main screens of the application (e.g., show list, playback).
   - **`widgets/`**: Reusable UI components used across different screens.
 - **`utils/`**: Includes utility functions, theme definitions, and other shared resources.
 - **`main.dart`**: The entry point of the application.
+
+## Technical Architecture
+
+**Hybrid Data & Persistence**
+To balance app size with performance and robust user data storage, Shakedown utilizes a hybrid approach:
+
+- **Show Catalog (JSON)**: The concert database is loaded from stored compressed JSON (`assets/data/output.optimized_src.json`) into memory at startup. This avoids the overhead of a large pre-built database file, keeping the APK/AAB size small (~15MB). Background isolates (`compute()`) prevent UI jank during this loading process.
+- **User Data (Hive)**: User-generated content like **Ratings**, **Blocked Shows/Sources**, and **Played Status** is stored in a dedicated **Hive** box (`ratings`). This ensures fast, persistent, and efficient local storage for your personal collection data without modifying the read-only catalog.
+- **Service Layer**: A unified `CatalogService` orchestrates this split, providing synchronous access to the in-memory show list while managing asynchronous Hive operations for user state.

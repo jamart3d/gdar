@@ -33,6 +33,11 @@ This file tracks planned features, enhancements, and bug fixes for the gdar appl
 
 - [x] **Quick Block:** Left swipe on a Show Card (for single source shows) or an individual Source Item (for multi-source shows) to instantly mark it as "Red Star" (Blocked). Handles stopping playback and provides undo options.
 
+- [ ] **Smart Clipboard Integration:**
+  - **Feature:** Automatically detect Archive.org share links in clipboard on app resume.
+  - **Behavior:** Show a SnackBar or Dialog: "Found show [Show Name]. Play?".
+  - **Feasibility:** Implement `WidgetsBindingObserver` to detect `AppLifecycleState.resumed`, then access `Clipboard.getData` to parsing URL.
+
 - [x] **Clipboard Playback:** Feature to parse a shared show/track string from the clipboard and instantly play that specific track/position.
 
 - [x] **Set Lists:** Organize tracks into sets (Set 1, Set 2, Encore) in the track list view.
@@ -141,41 +146,43 @@ This file tracks planned features, enhancements, and bug fixes for the gdar appl
 - [x] **RGB Glow Setting:** Add a setting to control/boost the "glow" intensity of the RGB border effect.
 
 
-
- 
- 
-- [x] **Refined Usage Instructions:**
-  - [x] Improved line breaking (no widows/orphans).
-  - [x] Enhanced typography (bold keywords).
-  
 - [ ] **Rated Shows Export/Import:** Allow exporting/importing the library of rated shows (dates, shnids, played status, star ratings), possibly via a calendar format or JSON file.
-- [ ] **Storage Mechanism Investigation:** Investigate possible better ways to store settings and rated shows (e.g., Hive, drift/SQLite) instead of SharedPreferences/JSON files for scalability and improved app footprint.
-  - [ ] **Pre-populated Database:** converting `shows.json` to a pre-built database (Hive/Drift) shipped in assets to eliminate first-run JSON parsing lag.
-  - [ ] **SharedPreferences Alternatives:** Research lightweight, performant alternatives to SharedPreferences for storing app settings to reduce memory footprint and improve read/write performance.
-- [x] **Venue Name Cleaning:** Trim venue name by "," or " - ", keeping the name as `venue` and moving the trimmed part to a new `location` attribute.
-- [x] **"Grateful Dead at" Cleanup:** Create a script to report shows starting with "Grateful Dead at", then investigate trimming this prefix in the database.
-- [x] **Duplicate Track Cleanup:**
-  - [x] Created `fix_duplicate_tracks.py` to identify and remove highly redundant tracks (1.5x ratio).
-  - [x] Refined logic to check **Name + Duration** for accuracy.
-  - [x] Implemented robust normalization (unescaping, stripping transition markers like `-`, `\`, `;`).
-  - [x] Automated exclusion of **VBR tracks** from fixed sources.
-  - [x] Generated detailed audit reports (`dup_fix_report.md`).
-- [x] **VBR Track Audit:**
-  - [x] Created `find_vbr_tracks.py` to globally report on remaining `_vbr.mp3` usage.
-  - [x] Generated `vbr_report.md` for baseline analysis.
-- [x] **Mixed VBR Cleanup:**
-  - [x] Created `clean_mixed_vbr_sources.py` to strip VBR tracks from 128 "mixed quality" sources.
-  - [x] Removed 2,388 VBR tracks and saved to `output.optimized_src_vbr_cleaned.json`.
-  - [x] Generated `vbr_cleaning_report.md` with detailed counts.
-- [ ] Add System Theme option to Appearance settings
-  - Allow user to follow system theme (Light/Dark/Auto)
-  - Add theme setting from device
+
+
 
 ## Footprint Reduction
 
-- [ ] **Optimize Show Data Size:** `assets/data/output.optimized_src.json` is ~9.2MB.
-    - **Normalization:** Extract repeating strings (venues, artists, locations) into lookup tables to reduce redundancy.
-    - **Binary Format:** Investigate FlatBuffers or MsgPack to replace JSON for faster parsing and smaller size.
-    - **Compression:** Verify if Gzip/Brotli compression of the asset at rest (and decompressing in stream) yields net benefit vs CPU cost.
 - [ ] **Font Optimization:** Verify `google_fonts` usage. Bundling frequently used weights (Inter/Roboto) as assets can rely less on runtime caching and network calls.
 - [ ] **Code Dead-Stripping:** Ensure `flutter build --release` effectively tree-shakes unused icon code points (SettingsProvider uses simple booleans, but large icon sets can bloat).
+
+
+
+## Data & Persistence Architecture (Completed)
+
+**Implemented: Hybrid Data Architecture**
+Balanced app size with performance and robust user data storage.
+
+- [x] **Show Catalog (JSON):** Kept the generic compressed JSON (`assets/data/output.optimized_src.json`) as the source of truth to avoid doubling app size.
+- [x] **User Data (Hive):** Added Hive for efficient, persistent storage of user-generated content:
+  - Ratings (0-3 stars, Blocked)
+  - Date & Source IDs
+- [x] **CatalogService:** Created a unified service that:
+  - Loads JSON in a background isolate (`compute`) to prevent UI jank.
+  - Manages the Hive `ratings` box.
+  - Provides a single source of truth for the app's data.
+- [x] **Provider Refactor:** Updated `ShowListProvider` to consume `CatalogService` instead of the legacy single-file service.
+- [x] **Unit Tests:** Added specific tests for `CatalogService` parsing logic (venue unification, source merging).
+
+### Audio Buffering Behavior Analysis (Documentation)
+*   **Start of Playback**:
+    *   `AudioProvider` calls `setAudioSource(preload: true)`.
+    *   Player state: `idle` → `loading` → `buffering`.
+    *   Playback begins when buffer reaches `initialPlaybackStartTimeMs` (2500ms).
+*   **Mid-Playback**:
+    *   Buffer depletion triggers `buffering` state (pauses playback).
+    *   Resumes automatically when rebuffer threshold is met.
+*   **Foreground vs. Background**:
+    *   Execution is identical (`Foreground Service`).
+    *   Background may experience OS throttling (Data Saver/Battery), potentially causing more frequent stalls.
+
+

@@ -109,28 +109,39 @@ class MockShowListProvider extends ChangeNotifier implements ShowListProvider {
   String get searchQuery => '';
 
   @override
-  List<Show> get allShows => _filteredShows.toList();
-
-  @override
-  bool isShowLoading(String key) => false;
-
-  @override
-  void setArchiveStatus(bool isReachable) {}
-
-  @override
-  void setPlayingShow(String? showName, String? sourceId) {}
-
-  @override
-  void update(SettingsProvider settings) {}
-
-  @override
-  bool get isArchiveReachable => false;
-
-  @override
-  bool get hasCheckedArchive => false;
-
-  @override
   int get totalShnids => 0;
+
+  // Alias to filteredShows for mock purposes so we have data
+  @override
+  List<Show> get allShows => _filteredShows;
+
+  @override
+  Show? getShow(String key) {
+    if (_filteredShows.isEmpty) return null;
+    try {
+      return _filteredShows.firstWhere((s) => s.key == key);
+    } catch (_) {
+      return _filteredShows.first; // Fallback for mock
+    }
+  }
+
+  @override
+  bool isShowLoading(String key) => false; // Restored
+
+  @override
+  void setArchiveStatus(bool isReachable) {} // Restored
+
+  @override
+  void setPlayingShow(String? showName, String? sourceId) {} // Restored
+
+  @override
+  void update(SettingsProvider settings) {} // Restored
+
+  @override
+  bool get isArchiveReachable => false; // Restored
+
+  @override
+  bool get hasCheckedArchive => false; // Restored
 
   @override
   Set<String> get availableCategories => {};

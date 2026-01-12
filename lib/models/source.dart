@@ -1,10 +1,20 @@
+import 'package:hive/hive.dart';
 import 'track.dart';
 
+part 'source.g.dart';
+
+@HiveType(typeId: 2)
 class Source {
+  @HiveField(0)
   final String id;
+
+  @HiveField(1)
   final String? src;
+
+  @HiveField(2)
   final List<Track> tracks;
 
+  @HiveField(3)
   final String? location;
 
   Source({

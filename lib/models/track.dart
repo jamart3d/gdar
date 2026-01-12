@@ -1,8 +1,22 @@
+import 'package:hive/hive.dart';
+
+part 'track.g.dart';
+
+@HiveType(typeId: 3)
 class Track {
+  @HiveField(0)
   final int trackNumber;
+
+  @HiveField(1)
   final String title;
+
+  @HiveField(2)
   final int duration; // in seconds
+
+  @HiveField(3)
   final String url;
+
+  @HiveField(4)
   final String setName;
 
   Track({

@@ -1,14 +1,35 @@
 import 'package:intl/intl.dart';
+import 'package:hive/hive.dart';
 import 'source.dart';
 
-class Show {
+part 'show.g.dart';
+
+@HiveType(typeId: 1)
+class Show extends HiveObject {
+  @HiveField(0)
   final String name;
+
+  @HiveField(1)
   final String artist;
+
+  @HiveField(2)
   final String date;
+
+  @HiveField(3)
   String venue; // Changed from final to allow modification
+
+  @HiveField(4)
   String location;
+
+  @HiveField(5)
   List<Source> sources; // Changed from final to allow modification
+
+  @HiveField(6)
   bool hasFeaturedTrack; // Our new property
+
+  // Helper for Hive keys (assuming date is unique enough for now, or date+venue)
+  @override
+  String get key => '${date}_${venue.replaceAll(RegExp(r'\s+'), '')}';
 
   Show({
     required this.name,
