@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:gdar/services/catalog_service.dart';
+import 'package:shakedown/services/catalog_service.dart';
 
 void main() {
   group('CatalogService Parsing Logic', () {

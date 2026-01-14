@@ -1,12 +1,12 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:gdar/services/catalog_service.dart';
-import 'package:gdar/models/show.dart';
-import 'package:gdar/models/source.dart';
-import 'package:gdar/providers/show_list_provider.dart';
+import 'package:shakedown/services/catalog_service.dart';
+import 'package:shakedown/models/show.dart';
+import 'package:shakedown/models/source.dart';
+import 'package:shakedown/providers/show_list_provider.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 
-import 'package:gdar/providers/settings_provider.dart';
+import 'package:shakedown/providers/settings_provider.dart';
 
 import 'show_list_provider_test.mocks.dart';
 

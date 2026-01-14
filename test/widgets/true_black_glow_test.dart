@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:gdar/models/show.dart';
-import 'package:gdar/models/source.dart';
-import 'package:gdar/providers/settings_provider.dart';
-import 'package:gdar/providers/theme_provider.dart';
-import 'package:gdar/ui/widgets/animated_gradient_border.dart';
-import 'package:gdar/ui/widgets/show_list_card.dart';
+import 'package:shakedown/models/show.dart';
+import 'package:shakedown/models/source.dart';
+import 'package:shakedown/providers/settings_provider.dart';
+import 'package:shakedown/providers/theme_provider.dart';
+import 'package:shakedown/ui/widgets/animated_gradient_border.dart';
+import 'package:shakedown/ui/widgets/show_list_card.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 

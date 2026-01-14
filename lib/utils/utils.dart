@@ -1,6 +1,6 @@
 // lib/utils/utils.dart
 
-import 'package:gdar/utils/logger.dart';
+import 'package:shakedown/utils/logger.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 String formatDuration(Duration d) {

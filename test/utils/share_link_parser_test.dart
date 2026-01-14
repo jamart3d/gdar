@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:gdar/utils/share_link_parser.dart';
+import 'package:shakedown/utils/share_link_parser.dart';
 
 void main() {
   group('ShareLinkParser', () {

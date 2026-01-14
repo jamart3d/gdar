@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
-import 'package:gdar/providers/audio_provider.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:gdar/providers/settings_provider.dart';
+import 'package:shakedown/providers/audio_provider.dart';
+// import 'package:google_fonts/google_fonts.dart'; // Removed
+import 'package:shakedown/providers/settings_provider.dart';
 
-import 'package:gdar/providers/theme_provider.dart';
-import 'package:gdar/ui/screens/about_screen.dart';
-import 'package:gdar/utils/color_generator.dart';
-import 'package:gdar/ui/widgets/section_card.dart';
-import 'package:gdar/ui/widgets/settings/source_filter_settings.dart';
-import 'package:gdar/ui/widgets/settings/collection_statistics.dart';
-import 'package:gdar/ui/screens/rated_shows_screen.dart';
-import 'package:gdar/ui/widgets/animated_gradient_border.dart'; // Add import
+import 'package:shakedown/providers/theme_provider.dart';
+import 'package:shakedown/ui/screens/about_screen.dart';
+import 'package:shakedown/utils/color_generator.dart';
+import 'package:shakedown/ui/widgets/section_card.dart';
+import 'package:shakedown/ui/widgets/settings/source_filter_settings.dart';
+import 'package:shakedown/ui/widgets/settings/collection_statistics.dart';
+import 'package:shakedown/ui/screens/rated_shows_screen.dart';
+import 'package:shakedown/ui/widgets/animated_gradient_border.dart'; // Add import
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -107,9 +107,9 @@ class _SettingsScreenState extends State<SettingsScreen>
     // Map of internal value to display name and TextStyle
     final Map<String, TextStyle?> fonts = {
       'default': null,
-      'caveat': GoogleFonts.caveat(),
-      'permanent_marker': GoogleFonts.permanentMarker(),
-      'rock_salt': GoogleFonts.rockSalt(),
+      'caveat': const TextStyle(fontFamily: 'Caveat'),
+      'permanent_marker': const TextStyle(fontFamily: 'Permanent Marker'),
+      'rock_salt': const TextStyle(fontFamily: 'RockSalt'),
     };
 
     final Map<String, String> displayNames = {

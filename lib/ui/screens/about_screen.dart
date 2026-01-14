@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import 'package:gdar/providers/settings_provider.dart';
+import 'package:shakedown/providers/settings_provider.dart';
 import 'package:provider/provider.dart';
 
 class AboutScreen extends StatelessWidget {

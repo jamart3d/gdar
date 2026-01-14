@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:gdar/providers/audio_provider.dart';
-import 'package:gdar/providers/settings_provider.dart';
-import 'package:gdar/utils/utils.dart'; // for formatDuration
+import 'package:shakedown/providers/audio_provider.dart';
+import 'package:shakedown/providers/settings_provider.dart';
+import 'package:shakedown/utils/utils.dart'; // for formatDuration
 import 'package:just_audio/just_audio.dart';
 import 'package:provider/provider.dart';
 

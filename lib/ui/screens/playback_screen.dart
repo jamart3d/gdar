@@ -1,25 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
-import 'package:gdar/ui/widgets/animated_gradient_border.dart';
-import 'package:gdar/ui/widgets/src_badge.dart';
-import 'package:gdar/models/show.dart';
-import 'package:gdar/models/source.dart';
-import 'package:gdar/models/track.dart';
-import 'package:gdar/providers/audio_provider.dart';
-import 'package:gdar/providers/settings_provider.dart';
-import 'package:gdar/ui/screens/settings_screen.dart';
-import 'package:gdar/ui/widgets/conditional_marquee.dart';
-import 'package:gdar/utils/utils.dart';
-import 'package:gdar/utils/color_generator.dart';
+import 'package:shakedown/ui/widgets/animated_gradient_border.dart';
+import 'package:shakedown/ui/widgets/src_badge.dart';
+import 'package:shakedown/models/show.dart';
+import 'package:shakedown/models/source.dart';
+import 'package:shakedown/models/track.dart';
+import 'package:shakedown/providers/audio_provider.dart';
+import 'package:shakedown/providers/settings_provider.dart';
+import 'package:shakedown/ui/screens/settings_screen.dart';
+import 'package:shakedown/ui/widgets/conditional_marquee.dart';
+import 'package:shakedown/utils/utils.dart';
+import 'package:shakedown/utils/color_generator.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:provider/provider.dart';
 import 'dart:async';
 
-import 'package:gdar/ui/widgets/rating_control.dart';
+import 'package:shakedown/ui/widgets/rating_control.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
-import 'package:gdar/ui/widgets/playback/playback_progress_bar.dart';
-import 'package:gdar/ui/widgets/playback/playback_controls.dart';
+import 'package:shakedown/ui/widgets/playback/playback_progress_bar.dart';
+import 'package:shakedown/ui/widgets/playback/playback_controls.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
 class PlaybackScreen extends StatefulWidget {

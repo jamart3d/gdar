@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:shakedown/config/default_settings.dart';
+import 'package:shakedown/utils/logger.dart';
 
 class SettingsProvider with ChangeNotifier {
   final SharedPreferences _prefs;
@@ -133,7 +135,8 @@ class SettingsProvider with ChangeNotifier {
     bool firstRunCheckDone = _prefs.getBool('first_run_check_done') ?? false;
 
     // Default values
-    _uiScale = _prefs.getBool(_uiScaleKey) ?? false;
+    _uiScale =
+        _prefs.getBool(_uiScaleKey) ?? DefaultSettings.uiScaleDesktopDefault;
 
     if (!firstRunCheckDone) {
       // Get physical screen size
@@ -143,9 +146,9 @@ class SettingsProvider with ChangeNotifier {
 
       if (physicalWidth <= 720) {
         // Small screen: Default scale settings to false
-        _uiScale = false;
+        _uiScale = DefaultSettings.uiScaleMobileDefault;
         // Save these defaults immediately so they persist
-        _prefs.setBool(_uiScaleKey, false);
+        _prefs.setBool(_uiScaleKey, DefaultSettings.uiScaleMobileDefault);
       }
 
       _isFirstRun = true; // Mark as first run for Splash Screen
@@ -154,18 +157,27 @@ class SettingsProvider with ChangeNotifier {
       _prefs.setBool('first_run_check_done', true);
     }
 
-    _showTrackNumbers = _prefs.getBool(_trackNumberKey) ?? false;
-    _hideTrackDuration = _prefs.getBool(_hideTrackDurationKey) ?? true;
-    _playOnTap = _prefs.getBool(_playOnTapKey) ?? false;
-    _showSingleShnid = _prefs.getBool(_showSingleShnidKey) ?? false;
-    _playRandomOnCompletion =
-        _prefs.getBool(_playRandomOnCompletionKey) ?? false;
-    _playRandomOnStartup = _prefs.getBool(_playRandomOnStartupKey) ?? false;
-    _dateFirstInShowCard = _prefs.getBool(_dateFirstInShowCardKey) ?? true;
-    _useDynamicColor = _prefs.getBool(_useDynamicColorKey) ?? true;
-    _showDayOfWeek = _prefs.getBool(_showDayOfWeekKey) ?? true;
-    _abbreviateDayOfWeek = _prefs.getBool(_abbreviateDayOfWeekKey) ?? true;
-    _abbreviateMonth = _prefs.getBool(_abbreviateMonthKey) ?? true;
+    _showTrackNumbers =
+        _prefs.getBool(_trackNumberKey) ?? DefaultSettings.showTrackNumbers;
+    _hideTrackDuration = _prefs.getBool(_hideTrackDurationKey) ??
+        DefaultSettings.hideTrackDuration;
+    _playOnTap = _prefs.getBool(_playOnTapKey) ?? DefaultSettings.playOnTap;
+    _showSingleShnid =
+        _prefs.getBool(_showSingleShnidKey) ?? DefaultSettings.showSingleShnid;
+    _playRandomOnCompletion = _prefs.getBool(_playRandomOnCompletionKey) ??
+        DefaultSettings.playRandomOnCompletion;
+    _playRandomOnStartup = _prefs.getBool(_playRandomOnStartupKey) ??
+        DefaultSettings.playRandomOnStartup;
+    _dateFirstInShowCard = _prefs.getBool(_dateFirstInShowCardKey) ??
+        DefaultSettings.dateFirstInShowCard;
+    _useDynamicColor =
+        _prefs.getBool(_useDynamicColorKey) ?? DefaultSettings.useDynamicColor;
+    _showDayOfWeek =
+        _prefs.getBool(_showDayOfWeekKey) ?? DefaultSettings.showDayOfWeek;
+    _abbreviateDayOfWeek = _prefs.getBool(_abbreviateDayOfWeekKey) ??
+        DefaultSettings.abbreviateDayOfWeek;
+    _abbreviateMonth =
+        _prefs.getBool(_abbreviateMonthKey) ?? DefaultSettings.abbreviateMonth;
     // Font Migration Logic
     if (_prefs.containsKey('use_handwriting_font')) {
       bool oldHandwriting = _prefs.getBool('use_handwriting_font') ?? false;
@@ -177,13 +189,15 @@ class SettingsProvider with ChangeNotifier {
       }
       _prefs.remove('use_handwriting_font');
     } else {
-      _appFont = _prefs.getString(_appFontKey) ?? 'default';
+      _appFont = _prefs.getString(_appFontKey) ?? DefaultSettings.appFont;
     }
+    logger.i(
+        'SettingsProvider: Active App Font = $_appFont (Default: ${DefaultSettings.appFont})');
 
     // Glow Border Migration Logic
     // New system: 0=Off, 10-100=Intensity percentage
     if (_prefs.containsKey(_glowModeKey)) {
-      _glowMode = _prefs.getInt(_glowModeKey) ?? 0;
+      _glowMode = _prefs.getInt(_glowModeKey) ?? DefaultSettings.glowMode;
       // Migrate from old values to percentage
       if (_glowMode == 1) {
         _glowMode = 25; // Old "Quarter" becomes 25%
@@ -204,7 +218,7 @@ class SettingsProvider with ChangeNotifier {
       } else if (oldShow) {
         _glowMode = 100; // Full = 100%
       } else {
-        _glowMode = 0; // Off
+        _glowMode = DefaultSettings.glowMode; // Off
       }
       // Save matched value to new key
       _prefs.setInt(_glowModeKey, _glowMode);
@@ -216,18 +230,24 @@ class SettingsProvider with ChangeNotifier {
       _useTrueBlack = true;
       _prefs.setBool(_useTrueBlackKey, true);
     } else {
-      _useTrueBlack = _prefs.getBool(_useTrueBlackKey) ?? false;
+      _useTrueBlack =
+          _prefs.getBool(_useTrueBlackKey) ?? DefaultSettings.useTrueBlack;
     }
 
-    _highlightPlayingWithRgb =
-        _prefs.getBool(_highlightPlayingWithRgbKey) ?? false;
-    _rgbAnimationSpeed = _prefs.getDouble(_rgbAnimationSpeedKey) ?? 1.0;
+    _highlightPlayingWithRgb = _prefs.getBool(_highlightPlayingWithRgbKey) ??
+        DefaultSettings.highlightPlayingWithRgb;
+    _rgbAnimationSpeed = _prefs.getDouble(_rgbAnimationSpeedKey) ??
+        DefaultSettings.rgbAnimationSpeed;
 
-    _showSplashScreen = _prefs.getBool(_showSplashScreenKey) ?? true;
-    _showPlaybackMessages = _prefs.getBool(_showPlaybackMessagesKey) ?? false;
-    _sortOldestFirst = _prefs.getBool(_sortOldestFirstKey) ?? true;
+    _showSplashScreen = _prefs.getBool(_showSplashScreenKey) ??
+        DefaultSettings.showSplashScreen;
+    _showPlaybackMessages = _prefs.getBool(_showPlaybackMessagesKey) ??
+        DefaultSettings.showPlaybackMessages;
+    _sortOldestFirst =
+        _prefs.getBool(_sortOldestFirstKey) ?? DefaultSettings.sortOldestFirst;
     _useStrictSrcCategorization =
-        _prefs.getBool(_useStrictSrcCategorizationKey) ?? true;
+        _prefs.getBool(_useStrictSrcCategorizationKey) ??
+            DefaultSettings.useStrictSrcCategorization;
 
     final seedColorValue = _prefs.getInt(_seedColorKey);
     if (seedColorValue != null) {
@@ -256,9 +276,12 @@ class SettingsProvider with ChangeNotifier {
       _playedShows = playedList.toSet();
     }
 
-    _randomOnlyUnplayed = _prefs.getBool(_randomOnlyUnplayedKey) ?? false;
-    _randomOnlyHighRated = _prefs.getBool(_randomOnlyHighRatedKey) ?? false;
-    _randomExcludePlayed = _prefs.getBool(_randomExcludePlayedKey) ?? false;
+    _randomOnlyUnplayed = _prefs.getBool(_randomOnlyUnplayedKey) ??
+        DefaultSettings.randomOnlyUnplayed;
+    _randomOnlyHighRated = _prefs.getBool(_randomOnlyHighRatedKey) ??
+        DefaultSettings.randomOnlyHighRated;
+    _randomExcludePlayed = _prefs.getBool(_randomExcludePlayedKey) ??
+        DefaultSettings.randomExcludePlayed;
 
     _initSourceFilters();
   }
@@ -454,15 +477,8 @@ class SettingsProvider with ChangeNotifier {
       }
     } else {
       // First run or no saved filters: Default to ONLY Matrix enabled
-      _sourceCategoryFilters = {
-        'matrix': true,
-        'ultra': false,
-        'betty': false,
-        'sbd': false,
-        'fm': false,
-        'dsbd': false,
-        'unk': false,
-      };
+      // First run or no saved filters: Default to ONLY Matrix enabled
+      _sourceCategoryFilters = Map.from(DefaultSettings.sourceCategoryFilters);
     }
   }
 

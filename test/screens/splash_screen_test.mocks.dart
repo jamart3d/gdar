@@ -6,11 +6,11 @@
 import 'dart:async' as _i4;
 import 'dart:ui' as _i8;
 
-import 'package:gdar/models/show.dart' as _i6;
-import 'package:gdar/models/source.dart' as _i10;
-import 'package:gdar/providers/audio_provider.dart' as _i9;
-import 'package:gdar/providers/settings_provider.dart' as _i7;
-import 'package:gdar/providers/show_list_provider.dart' as _i3;
+import 'package:shakedown/models/show.dart' as _i6;
+import 'package:shakedown/models/source.dart' as _i10;
+import 'package:shakedown/providers/audio_provider.dart' as _i9;
+import 'package:shakedown/providers/settings_provider.dart' as _i7;
+import 'package:shakedown/providers/show_list_provider.dart' as _i3;
 import 'package:just_audio/just_audio.dart' as _i2;
 import 'package:mockito/mockito.dart' as _i1;
 import 'package:mockito/src/dummies.dart' as _i5;

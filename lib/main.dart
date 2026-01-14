@@ -2,14 +2,14 @@ import 'dart:async';
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:gdar/providers/audio_provider.dart';
-import 'package:gdar/providers/settings_provider.dart';
-import 'package:gdar/providers/show_list_provider.dart';
-import 'package:gdar/providers/theme_provider.dart';
-import 'package:gdar/ui/screens/show_list_screen.dart';
-import 'package:gdar/ui/screens/splash_screen.dart';
-import 'package:gdar/utils/app_themes.dart';
-import 'package:gdar/utils/logger.dart';
+import 'package:shakedown/providers/audio_provider.dart';
+import 'package:shakedown/providers/settings_provider.dart';
+import 'package:shakedown/providers/show_list_provider.dart';
+import 'package:shakedown/providers/theme_provider.dart';
+import 'package:shakedown/ui/screens/show_list_screen.dart';
+import 'package:shakedown/ui/screens/splash_screen.dart';
+import 'package:shakedown/utils/app_themes.dart';
+import 'package:shakedown/utils/logger.dart';
 // import 'package:google_fonts/google_fonts.dart'; // Removed
 import 'package:just_audio_background/just_audio_background.dart';
 import 'package:app_links/app_links.dart';
@@ -31,7 +31,7 @@ Future<void> main() async {
 
   // Initialize background audio service with your app-specific channel
   await JustAudioBackground.init(
-    androidNotificationChannelId: 'com.jamart3d.gdar.channel.audio',
+    androidNotificationChannelId: 'com.jamart3d.shakedown.channel.audio',
     androidNotificationChannelName: 'Audio Playback',
     androidNotificationOngoing: true,
     androidNotificationIcon: 'mipmap/ic_launcher',
@@ -106,7 +106,7 @@ class _GdarAppState extends State<GdarApp> {
     logger.i(
         'Main: [Session #$_sessionId] Handling deep link: $uri (scheme: ${uri.scheme}, host: ${uri.host}, query: ${uri.queryParameters})');
 
-    if (uri.scheme == 'gdar') {
+    if (uri.scheme == 'shakedown') {
       _triggerDeepLinkAction(uri);
     } else {
       logger.w('Main: Unhandled deep link scheme: ${uri.scheme}');
@@ -321,7 +321,7 @@ class _GdarAppState extends State<GdarApp> {
 
               return MaterialApp(
                 navigatorKey: _navigatorKey,
-                title: 'gdar',
+                title: 'Shakedown',
                 debugShowCheckedModeBanner: false,
                 theme: lightTheme,
                 darkTheme: darkTheme,

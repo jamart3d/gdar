@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:gdar/models/show.dart';
-import 'package:gdar/providers/show_list_provider.dart';
-import 'package:gdar/ui/widgets/section_card.dart';
+import 'package:shakedown/models/show.dart';
+import 'package:shakedown/providers/show_list_provider.dart';
+import 'package:shakedown/ui/widgets/section_card.dart';
 import 'package:provider/provider.dart';
 
 class CollectionStatistics extends StatelessWidget {

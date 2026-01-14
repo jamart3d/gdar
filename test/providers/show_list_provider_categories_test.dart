@@ -1,8 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:gdar/providers/show_list_provider.dart';
-import 'package:gdar/models/show.dart';
-import 'package:gdar/models/source.dart';
-import 'package:gdar/models/track.dart';
+import 'package:shakedown/providers/show_list_provider.dart';
+import 'package:shakedown/models/show.dart';
+import 'package:shakedown/models/source.dart';
+import 'package:shakedown/models/track.dart';
 import 'package:mockito/mockito.dart';
 import 'show_list_provider_test.mocks.dart';
 

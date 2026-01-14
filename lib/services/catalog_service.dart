@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:gdar/utils/logger.dart';
+import 'package:shakedown/utils/logger.dart';
 import '../models/show.dart';
 import '../models/rating.dart';
 

@@ -1,4 +1,4 @@
-import 'package:gdar/utils/utils.dart'; // For parseDuration
+import 'package:shakedown/utils/utils.dart'; // For parseDuration
 
 /// Data class to hold the parsed information from a share link.
 class ShareLinkData {

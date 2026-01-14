@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:gdar/providers/settings_provider.dart';
+import 'package:shakedown/providers/settings_provider.dart';
 import 'package:provider/provider.dart';
 
 class SrcBadge extends StatelessWidget {

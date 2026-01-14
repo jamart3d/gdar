@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
-import 'package:gdar/providers/settings_provider.dart';
-import 'package:gdar/utils/utils.dart';
+import 'package:shakedown/providers/settings_provider.dart';
+import 'package:shakedown/utils/utils.dart';
 import 'package:provider/provider.dart';
 
 class RatingControl extends StatelessWidget {

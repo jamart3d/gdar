@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:gdar/models/show.dart';
-import 'package:gdar/models/source.dart';
-import 'package:gdar/providers/audio_provider.dart';
-import 'package:gdar/providers/settings_provider.dart';
-import 'package:gdar/ui/widgets/conditional_marquee.dart';
+import 'package:shakedown/models/show.dart';
+import 'package:shakedown/models/source.dart';
+import 'package:shakedown/providers/audio_provider.dart';
+import 'package:shakedown/providers/settings_provider.dart';
+import 'package:shakedown/ui/widgets/conditional_marquee.dart';
 
 import 'package:just_audio/just_audio.dart';
 import 'package:provider/provider.dart';
-import 'package:gdar/utils/color_generator.dart';
+import 'package:shakedown/utils/color_generator.dart';
 
 class MiniPlayer extends StatefulWidget {
   final VoidCallback onTap;

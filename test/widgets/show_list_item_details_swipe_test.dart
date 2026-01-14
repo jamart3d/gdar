@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:gdar/models/show.dart';
-import 'package:gdar/models/source.dart';
-import 'package:gdar/providers/audio_provider.dart';
-import 'package:gdar/providers/settings_provider.dart';
-import 'package:gdar/providers/show_list_provider.dart'; // Add import
-import 'package:gdar/ui/widgets/show_list_item_details.dart';
+import 'package:shakedown/models/show.dart';
+import 'package:shakedown/models/source.dart';
+import 'package:shakedown/providers/audio_provider.dart';
+import 'package:shakedown/providers/settings_provider.dart';
+import 'package:shakedown/providers/show_list_provider.dart'; // Add import
+import 'package:shakedown/ui/widgets/show_list_item_details.dart';
 
 import 'package:mockito/mockito.dart';
 import 'package:provider/provider.dart';

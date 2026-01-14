@@ -1,4 +1,4 @@
-package com.jamart3d.gdar
+package com.jamart3d.shakedown
 
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine

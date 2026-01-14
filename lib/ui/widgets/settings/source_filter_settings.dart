@@ -1,8 +1,8 @@
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
-import 'package:gdar/providers/settings_provider.dart';
-import 'package:gdar/providers/show_list_provider.dart';
-import 'package:gdar/ui/widgets/section_card.dart';
+import 'package:shakedown/providers/settings_provider.dart';
+import 'package:shakedown/providers/show_list_provider.dart';
+import 'package:shakedown/ui/widgets/section_card.dart';
 import 'package:provider/provider.dart';
 
 class SourceFilterSettings extends StatelessWidget {

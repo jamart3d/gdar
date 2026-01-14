@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:gdar/models/show.dart';
-import 'package:gdar/models/source.dart';
-import 'package:gdar/providers/audio_provider.dart';
-import 'package:gdar/providers/settings_provider.dart';
-import 'package:gdar/providers/show_list_provider.dart'; // Add import
+import 'package:shakedown/models/show.dart';
+import 'package:shakedown/models/source.dart';
+import 'package:shakedown/providers/audio_provider.dart';
+import 'package:shakedown/providers/settings_provider.dart';
+import 'package:shakedown/providers/show_list_provider.dart'; // Add import
 
-import 'package:gdar/ui/widgets/source_list_item.dart';
-import 'package:gdar/ui/widgets/swipe_action_background.dart';
+import 'package:shakedown/ui/widgets/source_list_item.dart';
+import 'package:shakedown/ui/widgets/swipe_action_background.dart';
 import 'package:provider/provider.dart';
 
 /// A widget that displays a list of sources (SHNIDs) for a given show.

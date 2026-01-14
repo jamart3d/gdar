@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">shakedown</string>
+    <string name="app_name">Shakedown</string>
     <string name="app_name_phonetic">Shakedown</string>
     <string name="shortcut_play_random_dead">Play Random Grateful Dead Show</string>
 </resources>

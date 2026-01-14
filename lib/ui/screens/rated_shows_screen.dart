@@ -1,16 +1,16 @@
 import 'package:flutter/services.dart';
 
 import 'package:flutter/material.dart';
-import 'package:gdar/models/show.dart';
-import 'package:gdar/models/source.dart';
-import 'package:gdar/providers/audio_provider.dart';
-import 'package:gdar/providers/settings_provider.dart';
-import 'package:gdar/providers/show_list_provider.dart';
-import 'package:gdar/ui/screens/playback_screen.dart';
-import 'package:gdar/ui/screens/track_list_screen.dart';
-import 'package:gdar/ui/widgets/rating_control.dart';
+import 'package:shakedown/models/show.dart';
+import 'package:shakedown/models/source.dart';
+import 'package:shakedown/providers/audio_provider.dart';
+import 'package:shakedown/providers/settings_provider.dart';
+import 'package:shakedown/providers/show_list_provider.dart';
+import 'package:shakedown/ui/screens/playback_screen.dart';
+import 'package:shakedown/ui/screens/track_list_screen.dart';
+import 'package:shakedown/ui/widgets/rating_control.dart';
 
-import 'package:gdar/ui/widgets/src_badge.dart';
+import 'package:shakedown/ui/widgets/src_badge.dart';
 import 'package:provider/provider.dart';
 
 class RatedShowsScreen extends StatefulWidget {

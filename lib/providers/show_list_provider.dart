@@ -1,11 +1,11 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
-import 'package:gdar/services/catalog_service.dart';
-import 'package:gdar/models/show.dart';
-import 'package:gdar/models/source.dart';
-import 'package:gdar/providers/settings_provider.dart';
-import 'package:gdar/utils/logger.dart';
+import 'package:shakedown/services/catalog_service.dart';
+import 'package:shakedown/models/show.dart';
+import 'package:shakedown/models/source.dart';
+import 'package:shakedown/providers/settings_provider.dart';
+import 'package:shakedown/utils/logger.dart';
 import 'package:http/http.dart' as http;
 
 class ShowListProvider with ChangeNotifier {
