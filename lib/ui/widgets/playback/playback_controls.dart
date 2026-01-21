@@ -56,7 +56,7 @@ class _PlaybackControlsState extends State<PlaybackControls>
         final index = indexSnapshot.data ?? 0;
         final isFirstTrack = index == 0;
         final sequence = audioProvider.audioPlayer.sequence;
-        final totalLength = sequence?.length ?? 0;
+        final totalLength = sequence.length;
         final isLastTrack = index >= totalLength - 1;
 
         return StreamBuilder<PlayerState>(
