@@ -181,7 +181,7 @@ class ShowListProvider with ChangeNotifier {
     return categories;
   }
 
-  bool _isSourceAllowed(Source source) {
+  bool isSourceAllowed(Source source) {
     if (_sourceCategoryFilters.isEmpty) {
       return true;
     }
@@ -230,7 +230,7 @@ class ShowListProvider with ChangeNotifier {
             // Blocked
             if (_showRatings[source.id] == -1) return false;
             // Category
-            return _isSourceAllowed(source);
+            return isSourceAllowed(source);
           }).toList();
 
           // B. Highest SHNID Filtering

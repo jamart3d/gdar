@@ -106,7 +106,7 @@ class _GdarAppState extends State<GdarApp> {
     logger.i(
         'Main: [Session #$_sessionId] Handling deep link: $uri (scheme: ${uri.scheme}, host: ${uri.host}, query: ${uri.queryParameters})');
 
-    if (uri.scheme == 'shakedown') {
+    if (uri.scheme == 'shakedown' || uri.scheme == 'gdar') {
       _triggerDeepLinkAction(uri);
     } else {
       logger.w('Main: Unhandled deep link scheme: ${uri.scheme}');

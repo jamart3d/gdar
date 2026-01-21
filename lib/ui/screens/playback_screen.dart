@@ -176,7 +176,9 @@ class _PlaybackScreenState extends State<PlaybackScreen>
     if (audioProvider.currentTrack?.title != _lastTrackTitle) {
       _lastTrackTitle = audioProvider.currentTrack?.title;
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        _scrollToCurrentTrack();
+        // If panel is open (or opening), limit visibility to top 40%
+        final isPanelOpen = _panelPositionNotifier.value > 0.1;
+        _scrollToCurrentTrack(maxVisibleY: isPanelOpen ? 0.4 : 1.0);
       });
     }
 
@@ -475,8 +477,12 @@ class _PlaybackScreenState extends State<PlaybackScreen>
       stream: audioProvider.currentIndexStream,
       initialData: audioProvider.audioPlayer.currentIndex,
       builder: (context, snapshot) {
-        final currentIndex = snapshot.data;
-        final isPlaying = currentIndex == index;
+        // Use currentTrack equality for robust highlighting (handles seamless playback)
+        // Use robust value comparison for highlighting
+        final currentTrack = audioProvider.currentTrack;
+        final isPlaying = currentTrack != null &&
+            currentTrack.title == track.title &&
+            currentTrack.trackNumber == track.trackNumber;
 
         final double scaleFactor = settingsProvider.uiScale ? 1.25 : 1.0;
 
@@ -522,23 +528,22 @@ class _PlaybackScreenState extends State<PlaybackScreen>
                       borderRadius: BorderRadius.circular(8),
                       clipBehavior: Clip.antiAlias,
                       child: _buildTrackListTile(context, audioProvider, track,
-                          index, currentIndex, scaleFactor),
+                          index, isPlaying, scaleFactor),
                     ),
                   ),
                 )
-              : _buildTrackListTile(context, audioProvider, track, index,
-                  currentIndex, scaleFactor),
+              : _buildTrackListTile(
+                  context, audioProvider, track, index, isPlaying, scaleFactor),
         );
       },
     );
   }
 
   Widget _buildTrackListTile(BuildContext context, AudioProvider audioProvider,
-      Track track, int index, int? currentIndex, double scaleFactor) {
+      Track track, int index, bool isPlaying, double scaleFactor) {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
     final settingsProvider = context.watch<SettingsProvider>();
-    final isPlaying = currentIndex == index;
 
     final baseTitleStyle =
         textTheme.bodyLarge ?? const TextStyle(fontSize: 16.0);

@@ -82,11 +82,15 @@ This file tracks planned features, enhancements, and bug fixes for the gdar appl
 - [ ] **3D Rotating Stars:** Animate rating stars by rotating them around their Y-axis to give a 3D effect.
 - [x] **Font Selection:** Add setting to choose the handwriting font. Options: Caveat, Permanent Marker, Lacquer, Rock Salt.
 - [x] **Fix highlight:** With Dark Mode + Dynamic Color + Glow Border: Fix issue where glow is uniform on all shows, and missing when expanded. Implement "half glow" for all, and "regular glow" for current show/shnid.
+- [ ] **RGB Animation Persistence:** Investigate options to prevent the RGB border animation from resetting/restarting when navigating between screens (e.g. Playback -> Settings -> Playback).
 - [ ] **Improve Playback Controls:** Enhance the layout and interactivity of controls in the Playback Screen.
   - [ ] **Venue Name Positioning:**
     - [ ] Add setting to display venue name under the date in Playback Screen appbar.
     - [ ] Move venue name in Playback Controls (expanded) to just above the date.
     - [ ] Hide venue name in Playback Controls when collapsed.
+    - [ ] Hide venue name in Playback Controls when collapsed.
+  - [x] **Buffering Indicator:** Ensure the buffering indicator on the open sliding panel (Play/Pause button) matches the style of the miniplayer's indicator.
+  - [x] **Playback Controls:** Refactor `PlaybackControls` to use a filled-circle container design matching `MiniPlayer`, ensuring consistent buffering indicators and increasing the button size.
 - [x] **Haptic Feedback Idetified Improvements:**
   - [x] Add `HapticFeedback.mediumImpact()` to Source Filter "Solo" Mode (Long Press).
   - [x] **Polish:** Add subtle feedback (`selectionClick`) to:
@@ -115,6 +119,8 @@ This file tracks planned features, enhancements, and bug fixes for the gdar appl
 
 - [ ] **Miniplayer Fix:** Fix miniplayer rebuild when navigating between shows screen and track list screen, or integrate it better with the playback controls from the playback screen.
 
+- [ ] **Miniplayer Visibility:** Ensure miniplayer remains visible when search bar is active (expanded) but the keyboard is dismissed, provided there is an active track.
+
 - [ ] **Volume Control:**
   - Add volume slider/control to Playback Screen controls.
   - Add setting in Playback Settings to toggle visibility of volume control.
@@ -122,9 +128,25 @@ This file tracks planned features, enhancements, and bug fixes for the gdar appl
 - [x] **Gapless Playback:** Refactor to use `AudioPlayer.setAudioSources` (fixing `ConcatenatingAudioSource` deprecation) to ensure true gapless playback by default for all shows.
 - [ ] **Smart Random Setting**: Add a setting to toggle whether "Automated Random (Continuous Play) ignores search filter to pick from full library" (currently enabled by default).
 
+- [x] **Native Pre-Queueing (Deep Sleep Fix):** Implement Option 1 (pre-queueing the next show).
+    - [x] **Trigger:** Queueing the next show at the **START** of the last track to guarantee ample processing time.
+    - [x] **Benefit:** Eliminates the silence gap and prevents Android 14+ from killing the app.
+    - *Synergy:* This naturally builds a historical playlist in the native player.
+
+- [ ] **Playback Undo / History:**
+    - **Concept:** Since we are continually appending items to the playlist (Native Pre-Queueing), we effectively have a history trail.
+    - **Feature:** "Undo" button (Snackbar/UI) jumps back to the previous track/show in the playlist sequence.
+    - **History View:** A setting/screen to list the sequence of played shows, leveraging this underlying playlist history.
+    - **Constraint:** Requires app visibility for the UI, but the underlying data is already there.
+
 - [ ] **Hide Forward/Reverse Controls:** Add setting to hide Next/Previous track buttons in the player interfaces for a minimalist look.
 
 - [ ] **Android Caching:** Implement `LockCachingAudioSource` for Android platform to enable full-file buffering.
+
+- [ ] **Restrict Playback Navigation:** Ensure Next/Previous buttons in `MiniPlayer` and `PlaybackControls` only navigate within the current source/show.
+  - **Feature:** Add a **Setting** to toggle this behavior (Default: TBD).
+  - **Behavior (Enabled):** The "Previous" button is grey/inactive at the first track; "Next" button is grey/inactive at the last track of the *current show*.
+  - **Behavior (Disabled):** Buttons allow seamless navigation into the pre-queued/history tracks (crossing show boundaries).
 
 ## Low Priority / Ideas
 
@@ -132,10 +154,14 @@ This file tracks planned features, enhancements, and bug fixes for the gdar appl
 
 - [x] **Google Assistant Integration:** Add support for voice commands (e.g., "Hey Google, play a random show on gdar") using App Actions.
   - [x] **Deep Link Consistency:** Ensured deep link actions wait for show list data initialization to resolve playback race conditions during cold start.
+  - [ ] **User Instructions:** Add a section in Settings (or a Help dialog) explaining available voice commands ("Play random show") and deep link capabilities.
+  - [ ] **Gemini Listing:** Investigate requirements for getting the app listed in "Gemini Connected Apps" (or equivalent discovery surfaces).
 
 - [ ] **Calendar Feature:** View shows by date on a calendar interface (e.g., "On This Day").
 
-- [ ] **Play Count & History**: Consider how to track and display how many times a show has been played. Display only in Rate Dialog or Rated Shows Library (not in Playback Controls).
+- [ ] **Play Count & History**: Track how many times a show has been played.
+    - *Synergy:* Can play off the "History View" logic from Native Pre-Queueing.
+    - Display only in Rate Dialog or Rated Shows Library (not in Playback Controls).
 
 - [x] **Search Help**: Add functionality to help users enter month names in the search field (e.g., autocomplete or chips). Updated to search location as well.
 
@@ -143,6 +169,7 @@ This file tracks planned features, enhancements, and bug fixes for the gdar appl
 - [ ] **Track Progress Indicator:** Add setting to show a progress indicator on the currently playing track list item. Should not show time labels and must respect the "Hide Track Duration" setting.
 
 - [ ] **Swipe to Block Follow-up:** When using "Swipe to Block" to remove a show, provide an option (or setting) to immediately trigger a new random selection.
+
 - [x] **RGB Glow Setting:** Add a setting to control/boost the "glow" intensity of the RGB border effect.
 
 

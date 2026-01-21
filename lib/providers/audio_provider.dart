@@ -19,6 +19,7 @@ class AudioProvider with ChangeNotifier {
   static final Random _random = Random();
   late final AudioPlayer _audioPlayer;
   StreamSubscription<ProcessingState>? _processingStateSubscription;
+  StreamSubscription<Duration>? _positionSubscription;
   StreamSubscription<PlaybackEvent>? _playbackEventSubscription;
   StreamSubscription<int?>? _indexSubscription;
   final _errorController = StreamController<String>.broadcast();
@@ -41,6 +42,9 @@ class AudioProvider with ChangeNotifier {
   ({Show show, Source source})? get pendingRandomShowRequest =>
       _pendingRandomShowRequest;
 
+  // Flag to prevent marking as played multiple times for the same source
+  bool _hasMarkedAsPlayed = false;
+
   void clearPendingRandomShowRequest() {
     _pendingRandomShowRequest = null;
     notifyListeners();
@@ -49,10 +53,47 @@ class AudioProvider with ChangeNotifier {
   Track? get currentTrack {
     if (_currentSource == null) return null;
     final index = _audioPlayer.currentIndex;
-    if (index == null || index < 0 || index >= _currentSource!.tracks.length) {
+    final sequence = _audioPlayer.sequence;
+    if (index == null || index < 0 || index >= sequence.length) {
       return null;
     }
-    return _currentSource!.tracks[index];
+
+    // Fix: Use the MediaItem tag to find the LOCAL index within the source,
+    // instead of using the GLOBAL playlist index.
+    final sourceItem = sequence[index];
+    if (sourceItem.tag is MediaItem) {
+      final item = sourceItem.tag as MediaItem;
+      // 1. Try extras (future proofing)
+      if (item.extras != null && item.extras!.containsKey('track_index')) {
+        final localIndex = item.extras!['track_index'] as int;
+        if (localIndex >= 0 && localIndex < _currentSource!.tracks.length) {
+          return _currentSource!.tracks[localIndex];
+        }
+      }
+
+      // 2. Fallback: Parse from ID (current implementation)
+      // Format: showName_sourceId_index
+      try {
+        final parts = item.id.split('_');
+        if (parts.isNotEmpty) {
+          final localIndex = int.tryParse(parts.last);
+          if (localIndex != null &&
+              localIndex >= 0 &&
+              localIndex < _currentSource!.tracks.length) {
+            return _currentSource!.tracks[localIndex];
+          }
+        }
+      } catch (e) {
+        // ignore
+      }
+    }
+
+    // Fallback to global index if all else fails (only valid for single show)
+    if (index < _currentSource!.tracks.length) {
+      return _currentSource!.tracks[index];
+    }
+
+    return null;
   }
 
   Stream<PlayerState> get playerStateStream => _audioPlayer.playerStateStream;
@@ -65,11 +106,30 @@ class AudioProvider with ChangeNotifier {
   Stream<({Show show, Source source})> get randomShowRequestStream =>
       _randomShowRequestController.stream;
 
+  bool _isTransitioning = false;
+
+  // Flag to ignore player stream events while we are manually loading a new source.
+  bool _isSwitchingSource = false;
+
   AudioProvider({AudioPlayer? audioPlayer}) {
     _audioPlayer = audioPlayer ?? AudioPlayer();
-    _listenForCompletion();
+    _listenForPlaybackProgress();
     _listenForErrors();
-    _listenForIndexChanges();
+    _listenForProcessingState();
+  }
+
+  void _listenForProcessingState() {
+    _processingStateSubscription =
+        _audioPlayer.processingStateStream.listen((state) {
+      if (state == ProcessingState.completed) {
+        final shouldPlay = _settingsProvider?.playRandomOnCompletion ?? false;
+        if (shouldPlay) {
+          logger.i('Playback completed. Triggering fallback random show...');
+          // Use playRandomShow (Stop & Load) as fallback
+          playRandomShow();
+        }
+      }
+    });
   }
 
   void update(
@@ -80,22 +140,47 @@ class AudioProvider with ChangeNotifier {
     _settingsProvider = settingsProvider;
   }
 
-  void _listenForCompletion() {
-    _processingStateSubscription =
-        _audioPlayer.processingStateStream.listen((state) async {
-      if (state == ProcessingState.completed) {
-        // Mark as played
-        if (_currentShow != null) {
-          final source = _currentSource;
-          // Always use the source ID.
-          if (source != null) {
-            await _settingsProvider?.markAsPlayed(source.id);
-          }
-        }
+  void _listenForPlaybackProgress() {
+    // New Logic: Queue the next show as soon as we start the LAST track.
+    // This gives us minutes of buffer time instead of milliseconds.
+    _indexSubscription = _audioPlayer.currentIndexStream.listen((index) async {
+      final sequence = _audioPlayer.sequence;
+      if (index == null || sequence.isEmpty) return;
 
-        if (_settingsProvider?.playRandomOnCompletion ?? false) {
-          logger.i('Playlist completed, playing random show.');
-          await playRandomShow(filterBySearch: false);
+      // 1. Queueing Trigger
+      // If we are on the last track, queue the next show immediately.
+      if (index == sequence.length - 1) {
+        final shouldPlay = _settingsProvider?.playRandomOnCompletion ?? false;
+        if (!_isTransitioning && shouldPlay) {
+          _isTransitioning = true; // Block duplicates
+          logger.i(
+              'Started last track (Index $index). Pre-queueing next random show...');
+          await queueRandomShow();
+        } else {
+          logger.d(
+              'Last track reached (Index $index), but skipping queue. Transitioning: $_isTransitioning, AutoPlay: $shouldPlay');
+        }
+      }
+
+      // 2. Metadata Update (Parity)
+      // When index changes, check if the Show changed by inspecting the tag.
+      // Tags are usually formatted as keys, but here they are MediaItems.
+      final currentSource = sequence[index];
+      if (currentSource.tag is MediaItem) {
+        final item = currentSource.tag as MediaItem;
+        final sourceId = item.extras?['source_id'] as String?;
+
+        // If the source ID has changed, we need to update our internal "Current Show"
+        // This handles the transition from Show A -> Show B automatically.
+        if (sourceId != null && _currentSource?.id != sourceId) {
+          // If we are currently MANUALLY switching sources, ignore any mismatch
+          // (which is likely due to the player stream reporting the old source during teardown).
+          if (_isSwitchingSource) {
+            logger.d(
+                'Ignoring source mismatch during manual switch (Player: $sourceId, App: ${_currentSource?.id})');
+          } else {
+            _updateCurrentShowFromSourceId(sourceId);
+          }
         }
       }
     });
@@ -109,15 +194,13 @@ class AudioProvider with ChangeNotifier {
     });
   }
 
-  void _listenForIndexChanges() {
-    _indexSubscription = _audioPlayer.currentIndexStream.listen((index) {
-      notifyListeners();
-    });
-  }
+  // Removed _listenForIndexChanges as it is now merged into _listenForPlaybackProgress
+  // to avoid multiple listeners on the same stream.
 
   @override
   void dispose() {
     _processingStateSubscription?.cancel();
+    _positionSubscription?.cancel();
     _playbackEventSubscription?.cancel();
     _indexSubscription?.cancel();
     _errorController.close();
@@ -155,7 +238,14 @@ class AudioProvider with ChangeNotifier {
     for (final show in sourceList) {
       // Find valid sources for this show
       final validSources = show.sources.where((s) {
-        return settings.getRating(s.id) != -1;
+        // Must be unblocked
+        if (settings.getRating(s.id) == -1) return false;
+        // Must match active filters (SBD, Matrix, etc.)
+        if (_showListProvider != null &&
+            !_showListProvider!.isSourceAllowed(s)) {
+          return false;
+        }
+        return true;
       }).toList();
 
       if (validSources.isEmpty) {
@@ -277,11 +367,21 @@ class AudioProvider with ChangeNotifier {
     _currentSource = source;
     // Notify ShowListProvider to ensuring visibility
     _showListProvider?.setPlayingShow(show.name, source.id);
+    _hasMarkedAsPlayed = false; // Reset for new source
     notifyListeners(); // Notify immediately so the UI can update
 
     // Start audio loading in the background
-    await _loadAndPlayAudio(source,
-        initialIndex: initialIndex, initialPosition: initialPosition);
+    try {
+      _isSwitchingSource = true;
+      await _loadAndPlayAudio(source,
+          initialIndex: initialIndex, initialPosition: initialPosition);
+    } finally {
+      // Only reset the transition flag AFTER loading is complete (or failed).
+      // Resetting it too early allows _listenForPlaybackProgress to trigger AGAIN
+      // while we are still loading, causing a double-trigger / race condition.
+      _isSwitchingSource = false;
+      _isTransitioning = false;
+    }
   }
 
   /// Parses a share string and starts playback if valid.
@@ -361,6 +461,99 @@ class AudioProvider with ChangeNotifier {
     }
   }
 
+  Future<void> queueRandomShow() async {
+    final selection = pickRandomShow(filterBySearch: false);
+    if (selection == null) {
+      logger.w('Pre-queueing aborted: No show selected.');
+      _isTransitioning =
+          false; // Reset flag so we can retry if conditions change
+      return;
+    }
+
+    final show = selection.show;
+    final source = selection.source;
+
+    logger.i('Queueing next show: ${show.date} (${source.id})');
+    Uri? artUri;
+    try {
+      artUri = await _getAlbumArtUri();
+    } catch (_) {}
+
+    // Build the AudioSource children
+    final nextSources = source.tracks.asMap().entries.map((entry) {
+      int index = entry.key;
+      Track track = entry.value;
+
+      return AudioSource.uri(
+        Uri.parse(track.url),
+        tag: MediaItem(
+          id: '${show.name}_${source.id}_$index',
+          album: show.venue,
+          title: track.title,
+          artist: show.artist,
+          duration: Duration(seconds: track.duration),
+          artUri: artUri,
+          extras: {'source_id': source.id, 'track_index': index},
+        ),
+      );
+    }).toList();
+
+    // Append to the existing playlist directly via AudioPlayer
+    try {
+      await _audioPlayer.addAudioSources(nextSources);
+      logger.i('Successfully appended ${nextSources.length} tracks.');
+      _isTransitioning = false;
+    } catch (e) {
+      // If this fails (e.g. native Shuffle Order bug), we just log it and abort pre-queueing.
+      // The app will fall back to "Load on End" behavior naturally when the current track finishes.
+      logger.w(
+          'Failed to pre-queue next show (addAudioSources failed). Will load normally on track end. Error: $e');
+      _isTransitioning = false;
+    }
+  }
+
+  void _updateCurrentShowFromSourceId(String sourceId) {
+    if (_showListProvider == null) return;
+
+    // Mark previous show as played if we haven't already
+    // Logic: If we are switching TO a new source, the previous one is done.
+    if (!_hasMarkedAsPlayed && _currentSource != null) {
+      _settingsProvider?.markAsPlayed(_currentSource!.id);
+      _hasMarkedAsPlayed = true;
+    }
+
+    // Find the new show
+    Show? foundShow;
+    Source? foundSource;
+
+    // Efficient lookup? We iterate for now.
+    for (final show in _showListProvider!.allShows) {
+      for (final source in show.sources) {
+        if (source.id == sourceId) {
+          foundShow = show;
+          foundSource = source;
+          break;
+        }
+      }
+      if (foundSource != null) break;
+    }
+
+    if (foundShow != null && foundSource != null) {
+      logger.i(
+          'Deep Sleep Transition: Detected track change to ${foundShow.date} (${foundSource.id}). Updating UI.');
+      _currentShow = foundShow;
+      _currentSource = foundSource;
+      _showListProvider?.setPlayingShow(foundShow.name, foundSource.id);
+      _hasMarkedAsPlayed = false; // Reset for the new show
+      _isTransitioning = false; // Ready for the NEXT transition
+      notifyListeners();
+
+      // Notify Random Request Stream (For UI Parity causing scroll/expand)
+      _pendingRandomShowRequest = (show: foundShow, source: foundSource);
+      _randomShowRequestController.add((show: foundShow, source: foundSource));
+    }
+  }
+
   String? _error;
   String? get error => _error;
 
@@ -386,56 +579,74 @@ class AudioProvider with ChangeNotifier {
       logger.w('Failed to get album art URI: $e');
     }
 
+    // Explicitly stop before switching sources to prevent native crashes (MediaCodec/ExoPlayer).
+    // releasing the decoder is safer than just pausing.
     try {
-      // ignore: deprecated_member_use
-      final playlist = ConcatenatingAudioSource(
-        useLazyPreparation: false,
-        shuffleOrder: DefaultShuffleOrder(),
-        children: source.tracks.asMap().entries.map((entry) {
-          int index = entry.key;
-          Track track = entry.value;
+      if (_audioPlayer.playing ||
+          _audioPlayer.processingState != ProcessingState.idle) {
+        await _audioPlayer.stop();
+        // Brief delay to allow native resources (MediaCodec) to fully release.
+        await Future.delayed(const Duration(milliseconds: 50));
+      }
+    } catch (e) {
+      logger.w('Error stopping before source switch (non-fatal): $e');
+    }
 
-          // Log the metadata to verify what is being passed to just_audio_background
-          logger.i(
-              'Creating MediaItem - Title: "${track.title}", Album: "${_currentShow!.venue}", Artist: "${_currentShow!.artist}"');
+    try {
+      // Build AudioSource list directly
+      final children = source.tracks.asMap().entries.map((entry) {
+        int index = entry.key;
+        Track track = entry.value;
 
-          return AudioSource.uri(
-            Uri.parse(track.url),
-            tag: MediaItem(
-              id: '${_currentShow!.name}_${source.id}_$index',
-              album: _currentShow!.venue,
-              title: track.title,
-              artist: _currentShow!.artist,
-              duration: Duration(seconds: track.duration),
-              artUri: artUri,
-              extras: {'source_id': source.id},
-            ),
-          );
-        }).toList(),
-      );
+        return AudioSource.uri(
+          Uri.parse(track.url),
+          tag: MediaItem(
+            id: '${_currentShow!.name}_${source.id}_$index',
+            album: _currentShow!.venue,
+            title: track.title,
+            artist: _currentShow!.artist,
+            duration: Duration(seconds: track.duration),
+            artUri: artUri,
+            extras: {'source_id': source.id, 'track_index': index},
+          ),
+        );
+      }).toList();
 
-      await _audioPlayer.setAudioSource(
-        playlist,
+      // Use setAudioSources directly instead of ConcatenatingAudioSource.
+      // This is the recommended replacement for the deprecated ConcatenatingAudioSource.
+      await _audioPlayer.setAudioSources(
+        children,
         initialIndex: initialIndex,
         initialPosition: initialPosition,
-        preload: true,
+        preload: false,
       );
 
       _audioPlayer.play();
     } catch (e, stackTrace) {
-      logger.e('Error playing source', error: e, stackTrace: stackTrace);
-      _error = 'Error playing source: ${e.toString()}';
-      _errorController.add(_error!);
-      notifyListeners();
-      stopAndClear(); // Clear state on error
+      // Only handle errors if this request corresponds to the current source.
+      if (_currentSource?.id == source.id) {
+        logger.e('Error playing source', error: e, stackTrace: stackTrace);
+        _error = 'Error playing source: ${e.toString()}';
+        _errorController.add(_error!);
+        notifyListeners();
+        stopAndClear(); // Clear state on error
+      } else {
+        logger.w(
+            'Ignoring error from superseded playback request (Source: ${source.id}): $e');
+      }
     }
   }
 
   Future<void> stopAndClear() async {
+    logger.i('Stopping and cleaning up...');
     await _audioPlayer.stop();
     _currentShow = null;
-    _currentSource = null;
     _showListProvider?.setPlayingShow(null, null);
+    _currentSource = null;
+    _error = null;
+    _pendingRandomShowRequest = null;
+    _isTransitioning = false;
+    _hasMarkedAsPlayed = false;
     notifyListeners();
   }
 
@@ -449,10 +660,42 @@ class AudioProvider with ChangeNotifier {
 
   void seek(Duration position) => _audioPlayer.seek(position);
 
-  void seekToTrack(int index) {
-    _audioPlayer.seek(Duration.zero, index: index);
-    if (!_audioPlayer.playing) {
-      _audioPlayer.play();
+  void seekToTrack(int localIndex) {
+    if (_currentSource == null) return;
+
+    // Find the global index that corresponds to this local index for the current source
+    final sequence = _audioPlayer.sequence;
+
+    int? globalIndex;
+
+    for (int i = 0; i < sequence.length; i++) {
+      final source = sequence[i];
+      if (source.tag is MediaItem) {
+        final item = source.tag as MediaItem;
+        // Check identifying tags
+        final sourceId = item.extras?['source_id'] as String?;
+        final trackIndex = item.extras?['track_index'] as int?;
+
+        if (sourceId == _currentSource!.id && trackIndex == localIndex) {
+          globalIndex = i;
+          break;
+        }
+      }
+    }
+
+    if (globalIndex != null) {
+      _audioPlayer.seek(Duration.zero, index: globalIndex);
+      if (!_audioPlayer.playing) {
+        _audioPlayer.play();
+      }
+    } else {
+      logger.w(
+          'seekToTrack: Could not find global index for local seek (Source: ${_currentSource!.id}, Track: $localIndex). Fallback to local index.');
+      // Fallback (mostly for single-show scenarios)
+      _audioPlayer.seek(Duration.zero, index: localIndex);
+      if (!_audioPlayer.playing) {
+        _audioPlayer.play();
+      }
     }
   }
 

@@ -1,0 +1,7 @@
+**Update: Deep Integration & UI Polish**
+
+• **Google Assistant Ready:** Added support for voice commands (e.g., "Open Shakedown and play music").
+• **Deep Links:** Enhanced `shakedown://` playback triggers for automation.
+• **Improved Playback Controls:** Larger, unified design for the open player with consistent buffering indicators.
+• **Reliability & Stability:** Verified background playback, optimized deep sleep behavior, and resolved rare random playback triggers.
+• **Performance:** Enhanced UI smoothness and responsiveness.

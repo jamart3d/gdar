@@ -12,9 +12,9 @@
         </capability-binding>
         <intent
             android:action="android.intent.action.VIEW"
-            android:targetPackage="com.jamart3d.gdar"
+            android:targetPackage="com.jamart3d.shakedown"
             android:targetClass="com.ryanheise.audioservice.AudioServiceActivity"
-            android:data="gdar://play-random" />
+            android:data="shakedown://play-random" />
     </shortcut>
 
     <!-- Natural language hint for Assistant -->
@@ -29,18 +29,18 @@
         </capability-binding>
         <intent
             android:action="android.intent.action.VIEW"
-            android:targetPackage="com.jamart3d.gdar"
+            android:targetPackage="com.jamart3d.shakedown"
             android:targetClass="com.ryanheise.audioservice.AudioServiceActivity"
-            android:data="gdar://play-random" />
+            android:data="shakedown://play-random" />
     </shortcut>
 
     <capability android:name="actions.intent.PLAY_MUSIC">
         <intent
             android:action="android.intent.action.VIEW"
-            android:targetPackage="com.jamart3d.gdar"
+            android:targetPackage="com.jamart3d.shakedown"
             android:targetClass="com.ryanheise.audioservice.AudioServiceActivity"
-            android:data="gdar://play-random">
-            <url-template android:value="gdar://play-random{?musicEntityName,musicArtistName}" />
+            android:data="shakedown://play-random">
+            <url-template android:value="shakedown://play-random{?musicEntityName,musicArtistName}" />
             <parameter android:name="musicEntityName" android:key="musicEntityName" />
             <parameter android:name="musicArtistName" android:key="musicArtistName" />
         </intent>
@@ -50,10 +50,10 @@
     <capability android:name="actions.intent.OPEN_APP_FEATURE">
         <intent
             android:action="android.intent.action.VIEW"
-            android:targetPackage="com.jamart3d.gdar"
+            android:targetPackage="com.jamart3d.shakedown"
             android:targetClass="com.ryanheise.audioservice.AudioServiceActivity"
-            android:data="gdar://open">
-            <url-template android:value="gdar://open{?feature}" />
+            android:data="shakedown://open">
+            <url-template android:value="shakedown://open{?feature}" />
             <parameter android:name="feature" android:key="feature" />
         </intent>
     </capability>

@@ -43,7 +43,9 @@ void main() {
     when(mockShowListProvider.loadingShowKey).thenReturn(null);
     // Simulate check completed but failed
     when(mockShowListProvider.hasCheckedArchive).thenReturn(true);
+    when(mockShowListProvider.hasCheckedArchive).thenReturn(true);
     when(mockShowListProvider.isArchiveReachable).thenReturn(false);
+    when(mockShowListProvider.isSourceAllowed(any)).thenReturn(true);
 
     // Stub AudioProvider streams and properties
     when(mockAudioProvider.playerStateStream)

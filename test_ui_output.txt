@@ -1,0 +1,27 @@
+00:00 +0: loading /home/jam/StudioProjects/gdar/test/screens/show_list_screen_lifecycle_test.dart                                                                                                      00:01 +0: loading /home/jam/StudioProjects/gdar/test/screens/show_list_screen_lifecycle_test.dart                                                                                                      00:01 +0: Random Show Selection is DEFERRED when app is in BACKGROUND and EXECUTED when RESUMED                                                                                                        00:02 +0: Random Show Selection is DEFERRED when app is in BACKGROUND and EXECUTED when RESUMED                                                                                                        00:02 +0: Random Show Selection is DEFERRED when app is in BACKGROUND and EXECUTED when RESUMED                                                                                                        
+══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞════════════════════════════════════════════════════
+The following StateError was thrown running a test:
+Bad state: No method stub was called from within `when()`. Was a real method called, or perhaps an
+extension method?
+
+When the exception was thrown, this was the stack:
+#0      PostExpectation._completeWhen (package:mockito/src/mock.dart:573:7)
+#1      PostExpectation.thenReturn (package:mockito/src/mock.dart:529:12)
+#2      main.<anonymous closure> (file:///home/jam/StudioProjects/gdar/test/screens/show_list_screen_lifecycle_test.dart:138:46)
+#3      testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:29)
+<asynchronous suspension>
+#4      TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1059:5)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided one frame from package:stack_trace)
+
+The test description was:
+  Random Show Selection is DEFERRED when app is in BACKGROUND and EXECUTED when RESUMED
+════════════════════════════════════════════════════════════════════════════════════════════════════
+00:02 +0 -1: Random Show Selection is DEFERRED when app is in BACKGROUND and EXECUTED when RESUMED [E]                                                                                                 
+  Test failed. See exception logs above.
+  The test description was: Random Show Selection is DEFERRED when app is in BACKGROUND and EXECUTED when RESUMED
+  
+
+To run this test again: /home/jam/development/flutter/bin/cache/dart-sdk/bin/dart test /home/jam/StudioProjects/gdar/test/screens/show_list_screen_lifecycle_test.dart -p vm --plain-name 'Random Show Selection is DEFERRED when app is in BACKGROUND and EXECUTED when RESUMED'
+00:02 +0 -1: Some tests failed.                                                                                                                                                                        

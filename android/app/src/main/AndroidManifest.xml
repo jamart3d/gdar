@@ -5,6 +5,7 @@
     <uses-permission android:name="android.permission.WAKE_LOCK"/>
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK"/>
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
     <uses-permission android:name="android.permission.INTERNET" />
 
     <queries>
@@ -15,7 +16,7 @@
     </queries>
 
 
-    <application android:label="@string/app_name" android:name="${applicationName}" android:roundIcon="@mipmap/ic_launcher_round" android:icon="@mipmap/ic_launcher1">
+    <application android:label="@string/app_name" android:name="${applicationName}" android:roundIcon="@mipmap/ic_launcher_round" android:icon="@mipmap/ic_launcher1" android:usesCleartextTraffic="true">
         <activity android:name="com.ryanheise.audioservice.AudioServiceActivity" android:exported="true" android:launchMode="singleTask" android:alwaysRetainTaskState="true" android:theme="@style/LaunchTheme" android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode" android:hardwareAccelerated="true" android:windowSoftInputMode="adjustResize">
             <meta-data android:name="flutter_deeplinking_enabled" android:value="true" />
             <!-- Specifies an Android theme to apply to this Activity as soon as
@@ -57,7 +58,7 @@
         <meta-data android:name="flutterEmbedding" android:value="2" />
 
         <!-- Background Audio Service -->
-        <service android:name="com.ryanheise.audioservice.AudioService" android:foregroundServiceType="mediaPlayback" android:exported="false" tools:node="replace">
+        <service android:name="com.ryanheise.audioservice.AudioService" android:foregroundServiceType="mediaPlayback" android:exported="true" tools:node="replace">
             <intent-filter>
                 <action android:name="android.media.browse.MediaBrowserService" />
             </intent-filter>

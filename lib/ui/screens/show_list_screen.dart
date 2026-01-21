@@ -30,7 +30,7 @@ class ShowListScreen extends StatefulWidget {
 }
 
 class _ShowListScreenState extends State<ShowListScreen>
-    with TickerProviderStateMixin {
+    with TickerProviderStateMixin, WidgetsBindingObserver {
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _searchFocusNode = FocusNode();
   final ItemScrollController _itemScrollController = ItemScrollController();
@@ -48,6 +48,9 @@ class _ShowListScreenState extends State<ShowListScreen>
   bool _isRandomShowLoading = false;
   bool _randomShowPlayed = false;
 
+  // Track pending selection for when app resumes from background
+  ({Show show, Source source})? _pendingBackgroundSelection;
+
   static const Duration _animationDuration = Duration(milliseconds: 300);
 
   // Height constants for calculation
@@ -57,6 +60,7 @@ class _ShowListScreenState extends State<ShowListScreen>
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _animationController = AnimationController(
       vsync: this,
       duration: _animationDuration,
@@ -209,6 +213,7 @@ class _ShowListScreenState extends State<ShowListScreen>
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _searchController.dispose();
     _searchFocusNode.dispose();
     _animationController.dispose();
@@ -216,6 +221,18 @@ class _ShowListScreenState extends State<ShowListScreen>
     _randomShowSubscription?.cancel();
     _playerStateSubscription?.cancel();
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed &&
+        _pendingBackgroundSelection != null) {
+      logger.i(
+          'ShowListScreen: App resumed, handling pending random show selection.');
+      final selection = _pendingBackgroundSelection!;
+      _pendingBackgroundSelection = null;
+      _handleRandomShowSelection(selection);
+    }
   }
 
   void _toggleSearch() {
@@ -486,7 +503,12 @@ class _ShowListScreenState extends State<ShowListScreen>
         // yield to ensure layout pass is complete
         await Future.delayed(const Duration(milliseconds: 100));
         if (mounted) {
-          _reliablyScrollToShow(currentShow);
+          // Re-fetch the current show to ensure we don't scroll to a stale one
+          // if the track changed during the delay.
+          final freshCurrentShow = context.read<AudioProvider>().currentShow;
+          if (freshCurrentShow != null) {
+            _reliablyScrollToShow(freshCurrentShow);
+          }
         }
       }
     });
@@ -494,6 +516,15 @@ class _ShowListScreenState extends State<ShowListScreen>
 
   void _handleRandomShowSelection(({Show show, Source source}) selection) {
     if (!mounted) return;
+
+    // Check lifecycle state. If hidden/paused, defer UI updates.
+    final lifecycleState = WidgetsBinding.instance.lifecycleState;
+    if (lifecycleState != null && lifecycleState != AppLifecycleState.resumed) {
+      logger.i(
+          'ShowListScreen: handleRandomShowSelection called in background ($lifecycleState). Deferring UI update.');
+      _pendingBackgroundSelection = selection;
+      return;
+    }
 
     final showListProvider = context.read<ShowListProvider>();
     final show = selection.show;

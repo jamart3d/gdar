@@ -216,15 +216,13 @@ class _MiniPlayerState extends State<MiniPlayer>
                   child: Row(
                     children: [
                       Expanded(
-                        child: StreamBuilder<int?>(
-                          stream: audioProvider.currentIndexStream,
-                          initialData: audioProvider.audioPlayer.currentIndex,
+                        child: StreamBuilder<SequenceState?>(
+                          stream: audioProvider.audioPlayer.sequenceStateStream,
                           builder: (context, snapshot) {
-                            final index = snapshot.data ?? 0;
-                            if (index >= currentSource.tracks.length) {
+                            final currentTrack = audioProvider.currentTrack;
+                            if (currentTrack == null) {
                               return const SizedBox.shrink();
                             }
-                            final track = currentSource.tracks[index];
 
                             final baseTitleStyle = textTheme.titleMedium
                                     ?.copyWith(fontSize: 19.0) ??
@@ -236,15 +234,6 @@ class _MiniPlayerState extends State<MiniPlayer>
                                   letterSpacing: 0.1,
                                   color: colorScheme.onSurface,
                                 );
-                            // Venue style removed as it's no longer used
-                            // final baseVenueStyle = textTheme.bodyLarge ??
-                            //     const TextStyle(fontSize: 16.0);
-                            // final venueStyle = baseVenueStyle
-                            //     .apply(fontSizeFactor: scaleFactor)
-                            //     .copyWith(
-                            //       color: colorScheme.onSurfaceVariant,
-                            //       letterSpacing: 0.15,
-                            //     );
 
                             return Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -255,27 +244,26 @@ class _MiniPlayerState extends State<MiniPlayer>
                                   child: Material(
                                     type: MaterialType.transparency,
                                     child: ConditionalMarquee(
-                                      text: track.title,
+                                      text: currentTrack.title,
                                       style: titleStyle,
                                     ),
                                   ),
                                 ),
-                                // Venue removed as per user request
-                                // SizedBox(height: 6 * scaleFactor),
                               ],
                             );
                           },
                         ),
                       ),
                       const SizedBox(width: 12),
-                      StreamBuilder<int?>(
-                        stream: audioProvider.currentIndexStream,
-                        initialData: audioProvider.audioPlayer.currentIndex,
+                      StreamBuilder<SequenceState?>(
+                        stream: audioProvider.audioPlayer.sequenceStateStream,
                         builder: (context, snapshot) {
-                          final index = snapshot.data ?? 0;
-                          final isFirstTrack = index == 0;
-                          final isLastTrack =
-                              index >= currentSource.tracks.length - 1;
+                          final sequenceState = snapshot.data;
+                          final sequence = sequenceState?.sequence ?? [];
+                          final currentIndex = sequenceState?.currentIndex ?? 0;
+                          final hasPrevious = currentIndex > 0;
+                          final hasNext = currentIndex < sequence.length - 1;
+
                           return Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
@@ -283,9 +271,9 @@ class _MiniPlayerState extends State<MiniPlayer>
                                 icon: const Icon(Icons.skip_previous_rounded),
                                 iconSize: iconSize,
                                 color: colorScheme.onSurfaceVariant,
-                                onPressed: isFirstTrack
-                                    ? null
-                                    : audioProvider.seekToPrevious,
+                                onPressed: hasPrevious
+                                    ? audioProvider.seekToPrevious
+                                    : null,
                               ),
                               StreamBuilder<PlayerState>(
                                 stream: audioProvider.playerStateStream,
@@ -371,9 +359,8 @@ class _MiniPlayerState extends State<MiniPlayer>
                                 icon: const Icon(Icons.skip_next_rounded),
                                 iconSize: iconSize,
                                 color: colorScheme.onSurfaceVariant,
-                                onPressed: isLastTrack
-                                    ? null
-                                    : audioProvider.seekToNext,
+                                onPressed:
+                                    hasNext ? audioProvider.seekToNext : null,
                               ),
                             ],
                           );

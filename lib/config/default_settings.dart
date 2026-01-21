@@ -4,7 +4,7 @@
 class DefaultSettings {
   // Appearance
   static const bool useDynamicColor = true;
-  static const bool useTrueBlack = false;
+  static const bool useTrueBlack = true;
   static const String appFont = 'rock_salt';
   // Options:
   // 'default' - Standard system font (clean, legible)
@@ -30,7 +30,7 @@ class DefaultSettings {
   // Playback Behavior
   static const bool playOnTap = false;
   static const bool playRandomOnStartup = false;
-  static const bool playRandomOnCompletion = false;
+  static const bool playRandomOnCompletion = true;
   static const bool showPlaybackMessages = false;
 
   // Data & Filtering

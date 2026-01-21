@@ -96,3 +96,39 @@ To balance app size with performance and robust user data storage, Shakedown uti
 - **Show Catalog (JSON)**: The concert database is loaded from stored compressed JSON (`assets/data/output.optimized_src.json`) into memory at startup. This avoids the overhead of a large pre-built database file, keeping the APK/AAB size small (~15MB). Background isolates (`compute()`) prevent UI jank during this loading process.
 - **User Data (Hive)**: User-generated content like **Ratings**, **Blocked Shows/Sources**, and **Played Status** is stored in a dedicated **Hive** box (`ratings`). This ensures fast, persistent, and efficient local storage for your personal collection data without modifying the read-only catalog.
 - **Service Layer**: A unified `CatalogService` orchestrates this split, providing synchronous access to the in-memory show list while managing asynchronous Hive operations for user state.
+
+## Building & Release
+
+To build a release-ready Android App Bundle (AAB) for the Google Play Store, use the following commands:
+
+```bash
+# 1. Clean the project
+flutter clean
+
+# 2. Build the signed App Bundle
+flutter build appbundle --release
+```
+
+The output file will be located at:  
+`build/app/outputs/bundle/release/app-release.aab`
+
+## Testing & Debugging
+
+To test the "Play Random" deep link initialization (simulating a Google Assistant voice command) via ADB:
+
+```bash
+# Play Random Show
+adb shell am start -W -a android.intent.action.VIEW -d "shakedown://play-random" com.jamart3d.shakedown
+
+# Open Specific Feature
+adb shell am start -W -a android.intent.action.VIEW -d "shakedown://open?feature=play_random" com.jamart3d.shakedown
+```
+
+
+## Background Playback Audit (Jan 2026)
+
+The application is **correctly configured** for standard background audio playback on Android 14+.
+
+- **Configuration**: Excellent (Manifest and Services are correct).
+- **Gapless Playback**: Excellent (Handled natively).
+- **Potential Risk**: The "Auto-Advance" to a random show relies on the Flutter UI Isolate. In deep sleep (Doze mode), this *might* fail on some devices, causing playback to stop after a show ends until the phone is woken up.

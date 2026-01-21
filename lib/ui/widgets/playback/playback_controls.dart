@@ -55,7 +55,9 @@ class _PlaybackControlsState extends State<PlaybackControls>
       builder: (context, indexSnapshot) {
         final index = indexSnapshot.data ?? 0;
         final isFirstTrack = index == 0;
-        final isLastTrack = index >= currentSource.tracks.length - 1;
+        final sequence = audioProvider.audioPlayer.sequence;
+        final totalLength = sequence?.length ?? 0;
+        final isLastTrack = index >= totalLength - 1;
 
         return StreamBuilder<PlayerState>(
           stream: audioProvider.playerStateStream,
@@ -88,41 +90,56 @@ class _PlaybackControlsState extends State<PlaybackControls>
                           audioProvider.seekToPrevious();
                         },
                 ),
-                if (processingState == ProcessingState.loading ||
-                    processingState == ProcessingState.buffering)
-                  SizedBox(
-                    width: 56.0 * scaleFactor,
-                    height: 56.0 * scaleFactor,
-                    child: const CircularProgressIndicator(),
-                  )
-                else
-                  ScaleTransition(
-                    scale: _scaleAnimation,
-                    child: GestureDetector(
-                      onLongPress: () {
-                        HapticFeedback.heavyImpact();
-                        audioProvider.stopAndClear();
-                      },
-                      child: IconButton(
-                        key: const ValueKey('play_pause_button'),
-                        iconSize: 56.0 * scaleFactor,
-                        onPressed: () {
-                          HapticFeedback.selectionClick();
-                          if (playing) {
-                            audioProvider.pause();
-                          } else {
-                            audioProvider.play();
-                          }
-                        },
-                        icon: Icon(
-                          playing
-                              ? Icons.pause_circle_filled_rounded
-                              : Icons.play_circle_fill_rounded,
+                ScaleTransition(
+                  scale: _scaleAnimation,
+                  child: GestureDetector(
+                    onLongPress: () {
+                      HapticFeedback.heavyImpact();
+                      audioProvider.stopAndClear();
+                    },
+                    child: Hero(
+                      tag: 'play_pause_button',
+                      child: Container(
+                        width:
+                            70.0 * scaleFactor, // Adjusted size (midway 56-84)
+                        height: 70.0 * scaleFactor,
+                        decoration: BoxDecoration(
                           color: colorScheme.primary,
+                          shape: BoxShape.circle,
                         ),
+                        child: (processingState == ProcessingState.loading ||
+                                processingState == ProcessingState.buffering)
+                            ? Padding(
+                                padding: const EdgeInsets.all(18.0),
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 3.5,
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                    colorScheme.onPrimary,
+                                  ),
+                                ),
+                              )
+                            : IconButton(
+                                key: const ValueKey('play_pause_button'),
+                                iconSize: 42.0 * scaleFactor,
+                                onPressed: () {
+                                  HapticFeedback.selectionClick();
+                                  if (playing) {
+                                    audioProvider.pause();
+                                  } else {
+                                    audioProvider.play();
+                                  }
+                                },
+                                icon: Icon(
+                                  playing
+                                      ? Icons.pause_rounded
+                                      : Icons.play_arrow_rounded,
+                                  color: colorScheme.onPrimary,
+                                ),
+                              ),
                       ),
                     ),
                   ),
+                ),
                 IconButton(
                   icon: const Icon(Icons.skip_next_rounded),
                   iconSize: iconSize,
