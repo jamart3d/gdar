@@ -30,6 +30,7 @@ A Flutter application for browsing and playing concert recordings of the Gratefu
   - **Accessibility**: Semantic labels for screen readers.
   - **Hide Track Duration** option for a minimalist interface.
   - **Global UI Scale**: Consistent text scaling across all screens.
+  - **Font Selection**: Choose from 4 curated handwriting fonts (Caveat, Permanent Marker, Lacquer, Rock Salt).
 - **Enhanced UX**:
   - **Smart Rating Dialog**: Toggle "Played" status, confirmation dialogs for safety, and mutually exclusive rating/blocking logic.
   - **Expressive Swipe to Block**: Polished Material 3 design for blocking shows/sources.
@@ -38,6 +39,7 @@ A Flutter application for browsing and playing concert recordings of the Gratefu
   - **Smart Random**: Manual triggers respect search filters; automated playback picks from the full library to keep music fresh.
   - **Refined Settings**: Dedicated "Random Playback" section and clearer usage instructions with improved typography.
   - **Source-Only Blocking**: Blocking now applies specifically to Source IDs rather than the entire Show, allowing for finer curation.
+  - **Native-Level Gapless**: Playback engine rewritten to use `ConcatenatingAudioSource` for true, precise gapless transitions.
 
 ## Usage Guide
 
@@ -58,7 +60,7 @@ A Flutter application for browsing and playing concert recordings of the Gratefu
 
 Access settings via the gear icon in the top app bar.
 
-- **Appearance**: Toggle **Dark Mode**, **True Black Mode** (for OLED), and **Dynamic Color** (Material You). Note: True Black requires Dynamic Color to be disabled or "Half Glow" to be enabled.
+- **Appearance**: Toggle **Dark Mode**, **True Black Mode** (for OLED), **Dynamic Color** (Material You), and **Handwriting Font**.
 - **Playback**:
   - **Gapless Playback**: Seamless audio transitions.
   - **Random Playback**: Configure behavior for the random shuffle button.
@@ -66,8 +68,8 @@ Access settings via the gear icon in the top app bar.
   - **UI Scale**: Adjust text size globally.
   - **Show Single SHNID**: Toggle visibility of SHNID badges for single-source shows.
 - **Source Filtering**:
-  - **Filters**: Toggle specific source types (SBD, Matrix, etc.).
-  - **Solo Mode**: **Long press** a filter category to solo it (disable all others).
+  - **Categories**: Filter sources by type (Matrix, SBD, Betty Board, Audience, etc.).
+  - **Solo Mode**: **Long press** a filter category chip to solo it (active) and disable all others.
 
 ### **Random Selection Logic**
 
@@ -131,4 +133,4 @@ The application is **correctly configured** for standard background audio playba
 
 - **Configuration**: Excellent (Manifest and Services are correct).
 - **Gapless Playback**: Excellent (Handled natively).
-- **Potential Risk**: The "Auto-Advance" to a random show relies on the Flutter UI Isolate. In deep sleep (Doze mode), this *might* fail on some devices, causing playback to stop after a show ends until the phone is woken up.
+- **Deep Sleep Stability**: **Fixed**. Implemented "Native Pre-Queueing" where the next show is queued into the native player buffer at the start of the last track. This ensures continuous playback even if the Flutter UI isolate is suspended by Android's Doze mode.

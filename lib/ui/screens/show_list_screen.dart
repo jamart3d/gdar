@@ -126,7 +126,9 @@ class _ShowListScreenState extends State<ShowListScreen>
 
       // If shows are already loaded, play immediately. Otherwise, add a listener.
       if (!showListProvider.isLoading) {
-        playRandomShowAndRemoveListener();
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          playRandomShowAndRemoveListener();
+        });
       } else {
         showListProvider.addListener(playRandomShowAndRemoveListener);
       }
