@@ -1,7 +1,8 @@
 <en-US>
-Update: Robust Playback & Deep Sleep Fix
+Version 1.0.6: Offline Buffering & UI Enhancements
 
-- Continuous Playback / Deep Sleep: Fixed issue where random playback would stop when screen was off. App now reliably plays the next show. Pre-queues next show source at end of last track on current show.
-- Enhanced Controls: "Next/Previous" buttons now smarter about show boundaries.
-- Stability: Improved error handling for playlist management.
+- Offline Buffering: New setting to pre-cache tracks for uninterrupted playback during deep sleep. Dynamically displays cache status (tracks cached / limit).
+- Deep Sleep Reliability: Enhanced continuous random playback when screen is off. Pre-queues next show at end of current show.
+- UI Polish: Improved settings screen with real-time cache status updates.
+- Stability: Better error handling and state management for audio playback.
 </en-US>
