@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class AnimatedGradientBorder extends StatefulWidget {
   final Widget child;
@@ -10,6 +11,7 @@ class AnimatedGradientBorder extends StatefulWidget {
   final Color? backgroundColor;
   final double glowOpacity;
   final double animationSpeed;
+  final bool ignoreGlobalClock;
 
   const AnimatedGradientBorder({
     super.key,
@@ -22,6 +24,7 @@ class AnimatedGradientBorder extends StatefulWidget {
     this.backgroundColor,
     this.glowOpacity = 0.5,
     this.animationSpeed = 1.0,
+    this.ignoreGlobalClock = false,
   });
 
   @override
@@ -30,30 +33,41 @@ class AnimatedGradientBorder extends StatefulWidget {
 
 class _AnimatedGradientBorderState extends State<AnimatedGradientBorder>
     with SingleTickerProviderStateMixin {
-  late final AnimationController _controller;
+  AnimationController? _localController;
 
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(
+    // We defer initialization logic to build() or didChangeDependencies()
+    // because we need access to context/Provider.
+  }
+
+  /// Helper to get or create the local controller if global isn't found.
+  AnimationController _ensureLocalController() {
+    if (_localController != null) return _localController!;
+    _localController = AnimationController(
       vsync: this,
       duration: Duration(milliseconds: (3000 / widget.animationSpeed).round()),
     )..repeat();
+    return _localController!;
   }
 
   @override
   void didUpdateWidget(AnimatedGradientBorder oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.animationSpeed != oldWidget.animationSpeed) {
-      _controller.duration =
+    if (widget.animationSpeed != oldWidget.animationSpeed &&
+        _localController != null) {
+      _localController!.duration =
           Duration(milliseconds: (3000 / widget.animationSpeed).round());
-      _controller.repeat();
+      if (_localController!.isAnimating) {
+        _localController!.repeat();
+      }
     }
   }
 
   @override
   void dispose() {
-    _controller.dispose();
+    _localController?.dispose();
     super.dispose();
   }
 
@@ -69,6 +83,32 @@ class _AnimatedGradientBorderState extends State<AnimatedGradientBorder>
       );
     }
 
+    // Try to get the global master clock
+    Animation<double>? globalAnimation;
+    if (!widget.ignoreGlobalClock) {
+      try {
+        // Use Provider.of with listen: false to check for the global animation
+        // without triggering a rebuild on every tick (AnimatedBuilder handles that).
+        // We use try-catch because explicitly checking for existence isn't directly supported.
+        globalAnimation =
+            Provider.of<Animation<double>>(context, listen: false);
+      } catch (_) {
+        // Provider not found, fall back to local controller
+        globalAnimation = null;
+      }
+    }
+
+    final Animation<double> animation;
+    if (globalAnimation != null) {
+      animation = globalAnimation;
+      // If we had a local one (e.g. context changed), dispose it
+      _localController?.dispose();
+      _localController = null;
+    } else {
+      // Fallback to local clock
+      animation = _ensureLocalController().view;
+    }
+
     final colors = widget.colors ??
         [
           Theme.of(context).colorScheme.primary,
@@ -78,14 +118,14 @@ class _AnimatedGradientBorderState extends State<AnimatedGradientBorder>
         ];
 
     return AnimatedBuilder(
-      animation: _controller,
+      animation: animation,
       builder: (context, child) {
         return CustomPaint(
           painter: _GradientBorderPainter(
             colors: colors,
             borderRadius: widget.borderRadius,
             borderWidth: widget.borderWidth,
-            rotation: _controller.value * 2 * 3.14159,
+            rotation: animation.value * 2 * 3.14159,
             showShadow: widget.showShadow,
             glowOpacity: widget.glowOpacity,
           ),
@@ -131,7 +171,6 @@ class _GradientBorderPainter extends CustomPainter {
     // 1. Draw RGB Shadow
     if (showShadow) {
       // Create a gradient that rotates internally
-      // We assume the gradient is centered in the rect
       final gradient = SweepGradient(
         colors:
             colors.map((c) => c.withValues(alpha: c.a * glowOpacity)).toList(),
@@ -146,7 +185,6 @@ class _GradientBorderPainter extends CustomPainter {
             borderWidth + 8.0; // Slightly wider than border for glow
 
       // We draw the shadow slightly larger to ensure it peeks out
-      // Using the exact RRect of the border (plus a bit of inflate)
       final shadowRRect = RRect.fromRectAndRadius(
           rect.inflate(2.0), Radius.circular(borderRadius + 2.0));
 

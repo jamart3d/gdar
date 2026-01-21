@@ -649,6 +649,9 @@ class _SettingsScreenState extends State<SettingsScreen>
                                     0.5 * (settingsProvider.glowMode / 100.0),
                                 animationSpeed:
                                     settingsProvider.rgbAnimationSpeed,
+                                // Ignore global clock locally so the preview animates even if the
+                                // global clock is paused by the ShowListScreen behind us.
+                                ignoreGlobalClock: true,
                                 // Transparent background to blend with SectionCard
                                 backgroundColor: Colors.transparent,
                                 child: SegmentedButton<double>(

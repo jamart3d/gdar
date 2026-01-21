@@ -257,8 +257,8 @@ class _PlaybackScreenState extends State<PlaybackScreen>
 
             return Column(
               children: [
-                _buildAppBar(context, currentShow, currentSource,
-                    backgroundColor, panelPosition),
+                _buildAppBar(
+                    currentShow, currentSource, backgroundColor, panelPosition),
                 Expanded(
                   child: _buildTrackList(context, audioProvider, currentSource,
                       dynamicBottomPadding, isTrueBlackMode),
@@ -271,8 +271,8 @@ class _PlaybackScreenState extends State<PlaybackScreen>
     );
   }
 
-  Widget _buildAppBar(BuildContext context, Show show, Source source,
-      Color backgroundColor, double panelPosition) {
+  Widget _buildAppBar(
+      Show show, Source source, Color backgroundColor, double panelPosition) {
     final settingsProvider = context.watch<SettingsProvider>();
 
     // Date Formatting Logic
@@ -394,10 +394,27 @@ class _PlaybackScreenState extends State<PlaybackScreen>
         IconButton(
           icon: const Icon(Icons.settings_rounded),
           iconSize: 24 * (settingsProvider.uiScale ? 1.25 : 1.0),
-          onPressed: () {
-            Navigator.of(context).push(
-              MaterialPageRoute(builder: (_) => const SettingsScreen()),
+          onPressed: () async {
+            // Pause global clock before navigating away to prevent visual jumps
+            try {
+              context.read<AnimationController>().stop();
+            } catch (_) {}
+
+            await Navigator.of(context).push(
+              PageRouteBuilder(
+                pageBuilder: (context, animation, secondaryAnimation) =>
+                    const SettingsScreen(),
+                transitionDuration: Duration.zero,
+              ),
             );
+
+            // Resume global clock on return
+            if (mounted) {
+              try {
+                final controller = context.read<AnimationController>();
+                if (!controller.isAnimating) controller.repeat();
+              } catch (_) {}
+            }
           },
         ),
       ],

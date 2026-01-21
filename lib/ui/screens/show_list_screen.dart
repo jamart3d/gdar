@@ -690,13 +690,29 @@ class _ShowListScreenState extends State<ShowListScreen>
       ),
       IconButton(
         icon: const Icon(Icons.settings_rounded),
-        onPressed: () => Navigator.of(context).push(
-          PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) =>
-                const SettingsScreen(),
-            transitionDuration: Duration.zero,
-          ),
-        ),
+        onPressed: () async {
+          // Pause global clock before navigating to generic pages (Settings)
+          // to prevent "visual jumps" when returning.
+          try {
+            context.read<AnimationController>().stop();
+          } catch (_) {}
+
+          await Navigator.of(context).push(
+            PageRouteBuilder(
+              pageBuilder: (context, animation, secondaryAnimation) =>
+                  const SettingsScreen(),
+              transitionDuration: Duration.zero,
+            ),
+          );
+
+          // Resume clock on return
+          if (mounted) {
+            try {
+              final controller = context.read<AnimationController>();
+              if (!controller.isAnimating) controller.repeat();
+            } catch (_) {}
+          }
+        },
       ),
     ];
   }
@@ -777,13 +793,28 @@ class _ShowListScreenState extends State<ShowListScreen>
       appBar: AppBar(
         backgroundColor: backgroundColor,
         title: GestureDetector(
-          onTap: () => Navigator.of(context).push(
-            PageRouteBuilder(
-              pageBuilder: (context, animation, secondaryAnimation) =>
-                  const SettingsScreen(),
-              transitionDuration: Duration.zero,
-            ),
-          ),
+          onTap: () async {
+            // Pause global clock
+            try {
+              context.read<AnimationController>().stop();
+            } catch (_) {}
+
+            await Navigator.of(context).push(
+              PageRouteBuilder(
+                pageBuilder: (context, animation, secondaryAnimation) =>
+                    const SettingsScreen(),
+                transitionDuration: Duration.zero,
+              ),
+            );
+
+            // Resume global clock
+            if (mounted) {
+              try {
+                final controller = context.read<AnimationController>();
+                if (!controller.isAnimating) controller.repeat();
+              } catch (_) {}
+            }
+          },
           child: Text(
             'shakedown',
             style: Theme.of(context)

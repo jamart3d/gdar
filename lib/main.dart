@@ -15,6 +15,7 @@ import 'package:just_audio_background/just_audio_background.dart';
 import 'package:app_links/app_links.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:shakedown/ui/widgets/rgb_clock_wrapper.dart';
 
 Future<void> main() async {
   // Ensure Flutter bindings are initialized
@@ -186,169 +187,173 @@ class _GdarAppState extends State<GdarApp> {
       ],
       child: Consumer2<ThemeProvider, SettingsProvider>(
         builder: (context, themeProvider, settingsProvider, child) {
-          return DynamicColorBuilder(
-            builder: (ColorScheme? lightDynamic, ColorScheme? darkDynamic) {
-              ThemeData lightTheme;
-              ThemeData darkTheme;
+          return RgbClockWrapper(
+            animationSpeed: settingsProvider.rgbAnimationSpeed,
+            child: DynamicColorBuilder(
+              builder: (ColorScheme? lightDynamic, ColorScheme? darkDynamic) {
+                ThemeData lightTheme;
+                ThemeData darkTheme;
 
-              if (settingsProvider.useDynamicColor &&
-                  lightDynamic != null &&
-                  darkDynamic != null) {
-                // Use dynamic colors if the setting is on and they are available
-                // Use dynamic colors if the setting is on and they are available
-                final baseLight = ThemeData(
-                  useMaterial3: settingsProvider.useMaterial3,
-                  colorScheme: lightDynamic,
-                );
-                final baseDark = ThemeData(
-                  useMaterial3: settingsProvider.useMaterial3,
-                  colorScheme: darkDynamic,
-                );
-
-                lightTheme = baseLight.copyWith(
-                  textTheme: AppThemes.getTextTheme(
-                      settingsProvider.appFont, baseLight.textTheme),
-                  textSelectionTheme: TextSelectionThemeData(
-                    cursorColor: baseLight.colorScheme.primary,
-                    selectionColor:
-                        baseLight.colorScheme.primary.withValues(alpha: 0.3),
-                    selectionHandleColor: baseLight.colorScheme.primary,
-                  ),
-                );
-                darkTheme = baseDark.copyWith(
-                  textTheme: AppThemes.getTextTheme(
-                      settingsProvider.appFont, baseDark.textTheme),
-                  textSelectionTheme: TextSelectionThemeData(
-                    cursorColor: baseDark.colorScheme.primary,
-                    selectionColor:
-                        baseDark.colorScheme.primary.withValues(alpha: 0.3),
-                    selectionHandleColor: baseDark.colorScheme.primary,
-                  ),
-                );
-
-                // Apply True Black if enabled
-                if (settingsProvider.useTrueBlack) {
-                  final trueBlackDynamic = darkDynamic.copyWith(
-                    surface: Colors.black,
-                    onSurface: Colors.white,
-                    surfaceContainerLowest: Colors.black,
-                    surfaceContainerLow: Colors.black,
-                    surfaceContainer: Colors.black,
-                    surfaceContainerHigh: Colors.black,
-                    surfaceContainerHighest: Colors.black,
+                if (settingsProvider.useDynamicColor &&
+                    lightDynamic != null &&
+                    darkDynamic != null) {
+                  // Use dynamic colors if the setting is on and they are available
+                  // Use dynamic colors if the setting is on and they are available
+                  final baseLight = ThemeData(
+                    useMaterial3: settingsProvider.useMaterial3,
+                    colorScheme: lightDynamic,
+                  );
+                  final baseDark = ThemeData(
+                    useMaterial3: settingsProvider.useMaterial3,
+                    colorScheme: darkDynamic,
                   );
 
-                  darkTheme = darkTheme.copyWith(
-                    colorScheme: trueBlackDynamic,
-                    scaffoldBackgroundColor: Colors.black,
-                    appBarTheme: const AppBarTheme(
-                      backgroundColor: Colors.black,
-                      elevation: 0,
-                      scrolledUnderElevation: 0,
-                      systemOverlayStyle: SystemUiOverlayStyle.light,
-                    ),
-                  );
-                }
-              } else {
-                // If dynamic color is off, first get the base static themes.
-                lightTheme = AppThemes.lightTheme(settingsProvider.appFont,
-                    useMaterial3: settingsProvider.useMaterial3);
-                darkTheme = AppThemes.darkTheme(settingsProvider.appFont,
-                    useMaterial3: settingsProvider.useMaterial3);
-
-                // Then, check for a user-defined seed color to override the color scheme.
-                final seedColor = settingsProvider.seedColor;
-                if (seedColor != null) {
-                  lightTheme = lightTheme.copyWith(
-                    colorScheme: ColorScheme.fromSeed(
-                      seedColor: seedColor,
-                      brightness: Brightness.light,
-                    ),
-                  );
-
-                  // Generate base dark scheme from seed
-                  final baseDarkScheme = ColorScheme.fromSeed(
-                    seedColor: seedColor,
-                    brightness: Brightness.dark,
-                  );
-
-                  darkTheme = darkTheme.copyWith(colorScheme: baseDarkScheme);
-
-                  // Apply seed-based selection theme
-                  lightTheme = lightTheme.copyWith(
+                  lightTheme = baseLight.copyWith(
+                    textTheme: AppThemes.getTextTheme(
+                        settingsProvider.appFont, baseLight.textTheme),
                     textSelectionTheme: TextSelectionThemeData(
-                      cursorColor: lightTheme.colorScheme.primary,
+                      cursorColor: baseLight.colorScheme.primary,
                       selectionColor:
-                          lightTheme.colorScheme.primary.withValues(alpha: 0.3),
-                      selectionHandleColor: lightTheme.colorScheme.primary,
+                          baseLight.colorScheme.primary.withValues(alpha: 0.3),
+                      selectionHandleColor: baseLight.colorScheme.primary,
                     ),
                   );
-                  darkTheme = darkTheme.copyWith(
+                  darkTheme = baseDark.copyWith(
+                    textTheme: AppThemes.getTextTheme(
+                        settingsProvider.appFont, baseDark.textTheme),
                     textSelectionTheme: TextSelectionThemeData(
-                      cursorColor: darkTheme.colorScheme.primary,
+                      cursorColor: baseDark.colorScheme.primary,
                       selectionColor:
-                          darkTheme.colorScheme.primary.withValues(alpha: 0.3),
-                      selectionHandleColor: darkTheme.colorScheme.primary,
+                          baseDark.colorScheme.primary.withValues(alpha: 0.3),
+                      selectionHandleColor: baseDark.colorScheme.primary,
                     ),
                   );
-                }
 
-                // Override surfaces to be "True Black" if enabled
-                if (settingsProvider.useTrueBlack) {
-                  final baseDarkScheme = darkTheme.colorScheme;
-                  final trueBlackDarkScheme = baseDarkScheme.copyWith(
-                    surface: Colors.black,
-                    onSurface: Colors.white,
-                    surfaceContainerLowest: Colors.black,
-                    surfaceContainerLow: Colors.black,
-                    surfaceContainer: Colors.black,
-                    surfaceContainerHigh: Colors.black,
-                    surfaceContainerHighest: Colors.black,
-                  );
+                  // Apply True Black if enabled
+                  if (settingsProvider.useTrueBlack) {
+                    final trueBlackDynamic = darkDynamic.copyWith(
+                      surface: Colors.black,
+                      onSurface: Colors.white,
+                      surfaceContainerLowest: Colors.black,
+                      surfaceContainerLow: Colors.black,
+                      surfaceContainer: Colors.black,
+                      surfaceContainerHigh: Colors.black,
+                      surfaceContainerHighest: Colors.black,
+                    );
 
-                  darkTheme = darkTheme.copyWith(
-                    colorScheme: trueBlackDarkScheme,
-                    scaffoldBackgroundColor: Colors.black,
-                    appBarTheme: const AppBarTheme(
-                      backgroundColor: Colors.black,
-                      elevation: 0,
-                      scrolledUnderElevation: 0,
-                      systemOverlayStyle: SystemUiOverlayStyle.light,
-                    ),
-                  );
-                }
-              }
-
-              return MaterialApp(
-                navigatorKey: _navigatorKey,
-                title: 'Shakedown',
-                debugShowCheckedModeBanner: false,
-                theme: lightTheme,
-                darkTheme: darkTheme,
-                themeMode:
-                    themeProvider.isDarkMode ? ThemeMode.dark : ThemeMode.light,
-                themeAnimationDuration: const Duration(milliseconds: 400),
-                themeAnimationCurve: Curves.easeInOutCubicEmphasized,
-                home: settingsProvider.showSplashScreen
-                    ? const SplashScreen()
-                    : const ShowListScreen(),
-                builder: (context, child) {
-                  final isTrueBlack =
-                      themeProvider.isDarkMode && settingsProvider.useTrueBlack;
-
-                  if (isTrueBlack) {
-                    return AnnotatedRegion<SystemUiOverlayStyle>(
-                      value: const SystemUiOverlayStyle(
-                        systemNavigationBarColor: Colors.black,
-                        systemNavigationBarIconBrightness: Brightness.light,
+                    darkTheme = darkTheme.copyWith(
+                      colorScheme: trueBlackDynamic,
+                      scaffoldBackgroundColor: Colors.black,
+                      appBarTheme: const AppBarTheme(
+                        backgroundColor: Colors.black,
+                        elevation: 0,
+                        scrolledUnderElevation: 0,
+                        systemOverlayStyle: SystemUiOverlayStyle.light,
                       ),
-                      child: child!,
                     );
                   }
-                  return child!;
-                },
-              );
-            },
+                } else {
+                  // If dynamic color is off, first get the base static themes.
+                  lightTheme = AppThemes.lightTheme(settingsProvider.appFont,
+                      useMaterial3: settingsProvider.useMaterial3);
+                  darkTheme = AppThemes.darkTheme(settingsProvider.appFont,
+                      useMaterial3: settingsProvider.useMaterial3);
+
+                  // Then, check for a user-defined seed color to override the color scheme.
+                  final seedColor = settingsProvider.seedColor;
+                  if (seedColor != null) {
+                    lightTheme = lightTheme.copyWith(
+                      colorScheme: ColorScheme.fromSeed(
+                        seedColor: seedColor,
+                        brightness: Brightness.light,
+                      ),
+                    );
+
+                    // Generate base dark scheme from seed
+                    final baseDarkScheme = ColorScheme.fromSeed(
+                      seedColor: seedColor,
+                      brightness: Brightness.dark,
+                    );
+
+                    darkTheme = darkTheme.copyWith(colorScheme: baseDarkScheme);
+
+                    // Apply seed-based selection theme
+                    lightTheme = lightTheme.copyWith(
+                      textSelectionTheme: TextSelectionThemeData(
+                        cursorColor: lightTheme.colorScheme.primary,
+                        selectionColor: lightTheme.colorScheme.primary
+                            .withValues(alpha: 0.3),
+                        selectionHandleColor: lightTheme.colorScheme.primary,
+                      ),
+                    );
+                    darkTheme = darkTheme.copyWith(
+                      textSelectionTheme: TextSelectionThemeData(
+                        cursorColor: darkTheme.colorScheme.primary,
+                        selectionColor: darkTheme.colorScheme.primary
+                            .withValues(alpha: 0.3),
+                        selectionHandleColor: darkTheme.colorScheme.primary,
+                      ),
+                    );
+                  }
+
+                  // Override surfaces to be "True Black" if enabled
+                  if (settingsProvider.useTrueBlack) {
+                    final baseDarkScheme = darkTheme.colorScheme;
+                    final trueBlackDarkScheme = baseDarkScheme.copyWith(
+                      surface: Colors.black,
+                      onSurface: Colors.white,
+                      surfaceContainerLowest: Colors.black,
+                      surfaceContainerLow: Colors.black,
+                      surfaceContainer: Colors.black,
+                      surfaceContainerHigh: Colors.black,
+                      surfaceContainerHighest: Colors.black,
+                    );
+
+                    darkTheme = darkTheme.copyWith(
+                      colorScheme: trueBlackDarkScheme,
+                      scaffoldBackgroundColor: Colors.black,
+                      appBarTheme: const AppBarTheme(
+                        backgroundColor: Colors.black,
+                        elevation: 0,
+                        scrolledUnderElevation: 0,
+                        systemOverlayStyle: SystemUiOverlayStyle.light,
+                      ),
+                    );
+                  }
+                }
+
+                return MaterialApp(
+                  navigatorKey: _navigatorKey,
+                  title: 'Shakedown',
+                  debugShowCheckedModeBanner: false,
+                  theme: lightTheme,
+                  darkTheme: darkTheme,
+                  themeMode: themeProvider.isDarkMode
+                      ? ThemeMode.dark
+                      : ThemeMode.light,
+                  themeAnimationDuration: const Duration(milliseconds: 400),
+                  themeAnimationCurve: Curves.easeInOutCubicEmphasized,
+                  home: settingsProvider.showSplashScreen
+                      ? const SplashScreen()
+                      : const ShowListScreen(),
+                  builder: (context, child) {
+                    final isTrueBlack = themeProvider.isDarkMode &&
+                        settingsProvider.useTrueBlack;
+
+                    if (isTrueBlack) {
+                      return AnnotatedRegion<SystemUiOverlayStyle>(
+                        value: const SystemUiOverlayStyle(
+                          systemNavigationBarColor: Colors.black,
+                          systemNavigationBarIconBrightness: Brightness.light,
+                        ),
+                        child: child!,
+                      );
+                    }
+                    return child!;
+                  },
+                );
+              },
+            ),
           );
         },
       ),

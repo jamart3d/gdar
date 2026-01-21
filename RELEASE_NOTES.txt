@@ -1,9 +1,7 @@
 <en-US>
-Update: Deep Integration & UI Polish
+Update: Robust Playback & Deep Sleep Fix
 
-- Google Assistant Ready: Added support for voice commands (e.g., "Open Shakedown and play music").
-- Deep Links: Enhanced shakedown:// playback triggers for automation.
-- Improved Playback Controls: Larger, unified design for the open player with consistent buffering indicators.
-- Reliability & Stability: Verified background playback, optimized deep sleep behavior, and resolved rare random playback triggers.
-- Performance: Enhanced UI smoothness and responsiveness.
+- Continuous Playback / Deep Sleep: Fixed issue where random playback would stop when screen was off. App now reliably plays the next show. Pre-queues next show source at end of last track on current show.
+- Enhanced Controls: "Next/Previous" buttons now smarter about show boundaries.
+- Stability: Improved error handling for playlist management.
 </en-US>

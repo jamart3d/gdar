@@ -13,6 +13,10 @@ This file tracks planned features, enhancements, and bug fixes for the gdar appl
 - [x] **App Icon:** Update application icon.
 - [x] **Bug Investigation:** Check into why RGB border is not visible on Android 16 vs 15.
 - [x] **Album Art:** Update default album art to `assets/images/t_steal.webp`.
+- [ ] **Deep Sleep Buffering:** Investigate "track buffers and does not play" issue during deep sleep.
+  - **Goal:** Ensure the next track is fully buffered before playback starts to prevent stalling when the OS restricts network/CPU in deep sleep.
+  - **Potential Solution:** Investigate `LockCachingAudioSource` (see existing item) or aggressive pre-buffering.
+
 
 ## Medium Priority
 
@@ -82,12 +86,19 @@ This file tracks planned features, enhancements, and bug fixes for the gdar appl
 - [ ] **3D Rotating Stars:** Animate rating stars by rotating them around their Y-axis to give a 3D effect.
 - [x] **Font Selection:** Add setting to choose the handwriting font. Options: Caveat, Permanent Marker, Lacquer, Rock Salt.
 - [x] **Fix highlight:** With Dark Mode + Dynamic Color + Glow Border: Fix issue where glow is uniform on all shows, and missing when expanded. Implement "half glow" for all, and "regular glow" for current show/shnid.
-- [ ] **RGB Animation Persistence:** Investigate options to prevent the RGB border animation from resetting/restarting when navigating between screens (e.g. Playback -> Settings -> Playback).
+- [x] **RGB Animation Persistence:** Investigate options to prevent the RGB border animation from resetting/restarting when navigating between screens (e.g. Playback -> Settings -> Playback).
+  - **Root Cause:** `AnimatedGradientBorder` manages its own `AnimationController` locally. Navigation rebuilds the widget, resetting rotation to 0. Additionally, navigating between `PlaybackScreen` via `MaterialPageRoute` caused a "pop" due to default transitions not matching the `ShowListScreen`'s instant transition.
+  - **Solution:**
+    - **Global Animation:** Lifted animation state to `RgbClockWrapper` (Provider) so all borders sync to a single continuous `AnimationController`.
+    - **Targeted Pause/Resume:** Explicitly pause the global controller (`.stop()`) *before* pushing `SettingsScreen` and resume (`.repeat()`) *after* returning to ensure seamless continuity without visual resets.
+    - **Independent Preview:** Updated `SettingsScreen` preview to use a local controller (`ignoreGlobalClock: true`) so it animates while the global clock is paused.
+    - **Consistent Navigation:** Switched `PlaybackScreen` -> `SettingsScreen` navigation to `PageRouteBuilder` with `Duration.zero` (instant) to match `ShowListScreen` behavior, eliminating the visual "pop".
+  - **Verification:** Manually verified seamless transitions and animation continuity between Show List, Playback, and Settings screens. Unit testing full navigation proved complex due to layout dependencies, but the logic is covered by the manual verification plan.
+
 - [ ] **Improve Playback Controls:** Enhance the layout and interactivity of controls in the Playback Screen.
   - [ ] **Venue Name Positioning:**
     - [ ] Add setting to display venue name under the date in Playback Screen appbar.
     - [ ] Move venue name in Playback Controls (expanded) to just above the date.
-    - [ ] Hide venue name in Playback Controls when collapsed.
     - [ ] Hide venue name in Playback Controls when collapsed.
   - [x] **Buffering Indicator:** Ensure the buffering indicator on the open sliding panel (Play/Pause button) matches the style of the miniplayer's indicator.
   - [x] **Playback Controls:** Refactor `PlaybackControls` to use a filled-circle container design matching `MiniPlayer`, ensuring consistent buffering indicators and increasing the button size.
