@@ -13,9 +13,11 @@ This file tracks planned features, enhancements, and bug fixes for the gdar appl
 - [x] **App Icon:** Update application icon.
 - [x] **Bug Investigation:** Check into why RGB border is not visible on Android 16 vs 15.
 - [x] **Album Art:** Update default album art to `assets/images/t_steal.webp`.
-- [ ] **Deep Sleep Buffering:** Investigate "track buffers and does not play" issue during deep sleep.
+- [x] **Deep Sleep Buffering:** Investigate "track buffers and does not play" issue during deep sleep.
   - **Goal:** Ensure the next track is fully buffered before playback starts to prevent stalling when the OS restricts network/CPU in deep sleep.
-  - **Potential Solution:** Investigate `LockCachingAudioSource` (see existing item) or aggressive pre-buffering.
+  - **Solution:** Implemented `LockCachingAudioSource` as a toggleable "Offline Buffering" setting.
+  - **Status:** Completed. Toggle added to Settings -> Playback. Cache clears on startup.
+  - [ ] **Enhancement:** Add periodic timer to update cache count in real-time as tracks are cached (currently only updates on cleanup/source change).
 
 
 ## Medium Priority
@@ -224,3 +226,9 @@ Balanced app size with performance and robust user data storage.
     *   Background may experience OS throttling (Data Saver/Battery), potentially causing more frequent stalls.
 
 
+
+
+## Maintenance & Technical Debt
+
+- [ ] Refactor `AudioPlayer` state management logic
+- [ ] **Deprecation Cleanup:** `ConcatenatingAudioSource` is deprecated in `just_audio` 0.10.0+. Use `AudioPlayer.setAudioSources(List<AudioSource>)` instead. Ensure no new code uses the deprecated class.

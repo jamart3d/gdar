@@ -37,6 +37,7 @@ class DefaultSettings {
   static const bool showSingleShnid = false;
   static const bool sortOldestFirst = true;
   static const bool useStrictSrcCategorization = true;
+  static const bool offlineBuffering = false;
 
   // Random Show Filters
   static const bool randomOnlyUnplayed = false;

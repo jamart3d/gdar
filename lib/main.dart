@@ -30,6 +30,9 @@ Future<void> main() async {
   // Initialize your logger
   initLogger();
 
+  // Clear any stale audio cache files
+  await AudioProvider.clearAudioCache();
+
   // Initialize background audio service with your app-specific channel
   await JustAudioBackground.init(
     androidNotificationChannelId: 'com.jamart3d.shakedown.channel.audio',

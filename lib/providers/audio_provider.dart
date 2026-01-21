@@ -14,6 +14,8 @@ import 'package:shakedown/utils/logger.dart';
 import 'package:shakedown/utils/share_link_parser.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:just_audio_background/just_audio_background.dart';
+import 'package:crypto/crypto.dart'; // For cache key generation
+import 'dart:convert'; // For utf8 encoding
 
 class AudioProvider with ChangeNotifier {
   static final Random _random = Random();
@@ -105,6 +107,32 @@ class AudioProvider with ChangeNotifier {
   Stream<String> get playbackErrorStream => _errorController.stream;
   Stream<({Show show, Source source})> get randomShowRequestStream =>
       _randomShowRequestController.stream;
+
+  /// Returns the current number of cached audio files.
+  /// This is a synchronous getter that counts SHA-256 hash files in the temp directory.
+  int get cachedTrackCount {
+    try {
+      final cacheDir = Directory.systemTemp;
+      if (!cacheDir.existsSync()) return 0;
+
+      final files = cacheDir.listSync();
+      int count = 0;
+
+      for (final entity in files) {
+        if (entity is File) {
+          final name = entity.uri.pathSegments.last;
+          // Identify our cache files (SHA-256 hash length is 64)
+          if (name.length == 64) {
+            count++;
+          }
+        }
+      }
+
+      return count;
+    } catch (e) {
+      return 0;
+    }
+  }
 
   bool _isTransitioning = false;
 
@@ -470,6 +498,15 @@ class AudioProvider with ChangeNotifier {
       return;
     }
 
+    // Opportunistic Cache Cleanup
+    // We run this when queuing a new show to keep storage usage healthy over long sessions.
+    // Dynamic Limit: Keep enough for the current show + 5 tracks buffer, but at least 20.
+    final currentTrackCount = _currentSource?.tracks.length ?? 0;
+    final dynamicLimit = max(20, currentTrackCount + 5);
+
+    // Fire and forget (don't await) to not block the UI.
+    _performCacheCleanup(maxFiles: dynamicLimit);
+
     final show = selection.show;
     final source = selection.source;
 
@@ -484,9 +521,9 @@ class AudioProvider with ChangeNotifier {
       int index = entry.key;
       Track track = entry.value;
 
-      return AudioSource.uri(
+      return _createAudioSource(
         Uri.parse(track.url),
-        tag: MediaItem(
+        MediaItem(
           id: '${show.name}_${source.id}_$index',
           album: show.venue,
           title: track.title,
@@ -598,9 +635,9 @@ class AudioProvider with ChangeNotifier {
         int index = entry.key;
         Track track = entry.value;
 
-        return AudioSource.uri(
+        return _createAudioSource(
           Uri.parse(track.url),
-          tag: MediaItem(
+          MediaItem(
             id: '${_currentShow!.name}_${source.id}_$index',
             album: _currentShow!.venue,
             title: track.title,
@@ -618,7 +655,7 @@ class AudioProvider with ChangeNotifier {
         children,
         initialIndex: initialIndex,
         initialPosition: initialPosition,
-        preload: false,
+        preload: _settingsProvider?.offlineBuffering ?? false,
       );
 
       _audioPlayer.play();
@@ -722,6 +759,105 @@ class AudioProvider with ChangeNotifier {
     } catch (e) {
       logger.e('Error preparing album art', error: e);
       return null;
+    }
+  }
+
+  AudioSource _createAudioSource(Uri uri, MediaItem tag) {
+    // Check setting
+    final useCache = _settingsProvider?.offlineBuffering ?? false;
+
+    if (useCache) {
+      // Create a stable cache key based on the URL
+      final key = sha256.convert(utf8.encode(uri.toString())).toString();
+      return LockCachingAudioSource(
+        uri,
+        tag: tag,
+        cacheFile: File('${Directory.systemTemp.path}/$key'),
+      );
+    } else {
+      return AudioSource.uri(uri, tag: tag);
+    }
+  }
+
+  /// Clears all cached audio files from the temporary directory.
+  /// Should be called on app startup.
+  static Future<void> clearAudioCache() async {
+    try {
+      final cacheDir = Directory.systemTemp;
+      if (await cacheDir.exists()) {
+        final List<FileSystemEntity> files = cacheDir.listSync();
+        for (final file in files) {
+          // We only delete files that look like our sha256 hashes (64 hex chars)
+          // or generally safe temp files?
+          // For safety, let's just delete files if possible, or maybe check extension?
+          // Our cache files have no extension.
+          if (file is File) {
+            // Basic check to avoid deleting system temp stuff if shared (though usually app specific on mobile)
+            final name = file.uri.pathSegments.last;
+            if (name.length == 64 && double.tryParse(name) == null) {
+              try {
+                await file.delete();
+              } catch (_) {}
+            }
+          }
+        }
+        logger.i('Cleared audio cache.');
+      }
+    } catch (e) {
+      logger.w('Failed to clear audio cache: $e');
+    }
+  }
+
+  /// Keep only the most recent [maxFiles] files in the cache.
+  Future<void> _performCacheCleanup({int maxFiles = 20}) async {
+    try {
+      final cacheDir = Directory.systemTemp;
+      if (!await cacheDir.exists()) return;
+
+      final List<FileSystemEntity> files = cacheDir.listSync();
+      final List<File> audioFiles = [];
+
+      for (final entity in files) {
+        if (entity is File) {
+          final name = entity.uri.pathSegments.last;
+          // Identify our cache files (SHA-256 hash length is 64)
+          if (name.length == 64) {
+            audioFiles.add(entity);
+          }
+        }
+      }
+
+      // If we are within limits, do nothing
+      if (audioFiles.length <= maxFiles) return;
+
+      // Sort by Modification Time (Newest First)
+      audioFiles.sort((a, b) {
+        return b.lastModifiedSync().compareTo(a.lastModifiedSync());
+      });
+
+      // Delete files exceeding the limit
+      // (The files currently playing/buffering will likely be locked by OS/waiting,
+      // so we use a try-catch block for safety, though typically we just delete old ones).
+      final filesToDelete = audioFiles.sublist(maxFiles);
+      int deletedCount = 0;
+
+      for (final file in filesToDelete) {
+        try {
+          await file.delete();
+          deletedCount++;
+        } catch (_) {
+          // Ignore errors (file might be in use)
+        }
+      }
+
+      if (deletedCount > 0) {
+        logger.i(
+            'Cache Cleanup: Removed $deletedCount old files. Remaining: $maxFiles');
+        // Notify listeners so UI can update the cache count
+        notifyListeners();
+      }
+    } catch (e) {
+      logger.w('Cache Cleanup Failed: $e');
     }
   }
 }

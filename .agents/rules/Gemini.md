@@ -15,7 +15,7 @@ Antigravity Global Governance Rules (Flutter/Dart Edition)
    Language: Dart version associated with Flutter 3.35.6, with sound null safety.
    Style: Adhere strictly to the official Dart style guide; use flutter format.
    Framework & State: Flutter 3.35.6. State Management: Provider (primary, per pubspec.yaml). Use ChangeNotifier or ProxyProvider for state dependency.
-   Audio Core: Gapless Playback is mandatory. MUST USE ConcatenatingAudioSource from just_audio to achieve true gapless transitions. Do not attempt manual seek or setAsset loops for gapless.
+   Audio Core: Gapless Playback is mandatory. MUST USE AudioPlayer.setAudioSources(List) from just_audio to achieve true gapless transitions. Do not use the deprecated ConcatenatingAudioSource. Do not attempt manual seek or setAsset loops for gapless.
    UI/UX: Material 3 Design. Expressive but clean. No album art.
    Data Handling: Read show/track data from a highly optimized local JSON file. Handle sub-listing by shnid for multi-part shows. Respect optimized patterns (e.g., flat structures or ID referencing) during parsing.
    Architecture: Clean Architecture. Separate UI (Widgets), Business Logic (Provider/State), and Data (JSON parsing/Repository).

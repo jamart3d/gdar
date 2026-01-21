@@ -1029,6 +1029,23 @@ class _SettingsScreenState extends State<SettingsScreen>
                         },
                         secondary: const Icon(Icons.message_rounded),
                       ),
+                      SwitchListTile(
+                        title: const Text('Offline Buffering'),
+                        subtitle: Text(
+                          settingsProvider.offlineBuffering
+                              ? 'Cached ${audioProvider.cachedTrackCount} of (${audioProvider.currentSource?.tracks.length ?? 0} + 5) tracks for reliable playback'
+                              : 'Cache tracks to disk for reliable deep sleep playback',
+                        ),
+                        value: settingsProvider.offlineBuffering,
+                        onChanged: (value) {
+                          HapticFeedback.lightImpact();
+                          context
+                              .read<SettingsProvider>()
+                              .toggleOfflineBuffering();
+                        },
+                        secondary:
+                            const Icon(Icons.download_for_offline_rounded),
+                      ),
                     ],
                   ),
 

@@ -40,6 +40,7 @@ class SettingsProvider with ChangeNotifier {
   static const String _sortOldestFirstKey = 'sort_oldest_first';
   static const String _useStrictSrcCategorizationKey =
       'use_strict_src_categorization';
+  static const String _offlineBufferingKey = 'offline_buffering';
 
   static const String _showSplashScreenKey = 'show_splash_screen';
   late bool _showSplashScreen;
@@ -70,6 +71,7 @@ class SettingsProvider with ChangeNotifier {
   late bool _showPlaybackMessages;
   late bool _sortOldestFirst;
   late bool _useStrictSrcCategorization;
+  late bool _offlineBuffering;
   late bool _showDayOfWeek;
   late bool _abbreviateDayOfWeek;
   late bool _abbreviateMonth;
@@ -109,6 +111,7 @@ class SettingsProvider with ChangeNotifier {
   bool get showPlaybackMessages => _showPlaybackMessages;
   bool get sortOldestFirst => _sortOldestFirst;
   bool get useStrictSrcCategorization => _useStrictSrcCategorization;
+  bool get offlineBuffering => _offlineBuffering;
   bool get highlightCurrentShowCard => true;
   bool get useMaterial3 => true;
   bool get showDayOfWeek => _showDayOfWeek;
@@ -248,6 +251,8 @@ class SettingsProvider with ChangeNotifier {
     _useStrictSrcCategorization =
         _prefs.getBool(_useStrictSrcCategorizationKey) ??
             DefaultSettings.useStrictSrcCategorization;
+    _offlineBuffering = _prefs.getBool(_offlineBufferingKey) ??
+        DefaultSettings.offlineBuffering;
 
     final seedColorValue = _prefs.getInt(_seedColorKey);
     if (seedColorValue != null) {
@@ -332,6 +337,10 @@ class SettingsProvider with ChangeNotifier {
   void toggleUseStrictSrcCategorization() => _updatePreference(
       _useStrictSrcCategorizationKey,
       _useStrictSrcCategorization = !_useStrictSrcCategorization);
+
+  void toggleOfflineBuffering() => _updatePreference(
+      _offlineBufferingKey, _offlineBuffering = !_offlineBuffering);
+
   // Removed _halfGlowDynamicKey and logic as it is merged into _glowMode
 
   static const String _rgbAnimationSpeedKey = 'rgb_animation_speed';
