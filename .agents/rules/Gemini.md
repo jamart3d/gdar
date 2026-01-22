@@ -19,6 +19,7 @@ Antigravity Global Governance Rules (Flutter/Dart Edition)
    UI/UX: Material 3 Design. Expressive but clean. No album art.
    Data Handling: Read show/track data from a highly optimized local JSON file. Handle sub-listing by shnid for multi-part shows. Respect optimized patterns (e.g., flat structures or ID referencing) during parsing.
    Architecture: Clean Architecture. Separate UI (Widgets), Business Logic (Provider/State), and Data (JSON parsing/Repository).
+   Deprecations: 'withOpacity' is deprecated. Use .withValues(alpha: double) to avoid precision loss.
    No Placeholders: Provide complete, runnable, and self-contained code files. Do not use // ... existing code ... or // your code here.
 4. PERSISTENT SESSION AUDIT (MANDATORY)
    Log Initiation: Start every session by creating/update [YYYY-MM-DD_SESSION_XX.md] in the /session_logs/ directory.

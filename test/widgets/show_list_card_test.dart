@@ -10,12 +10,48 @@ import 'package:shakedown/ui/widgets/show_list_card.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:flutter/services.dart';
+import 'package:shakedown/services/catalog_service.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import 'package:shakedown/models/rating.dart';
+import 'dart:io';
+
 void main() {
   late SharedPreferences prefs;
 
   setUp(() async {
-    SharedPreferences.setMockInitialValues({});
+    await CatalogService().reset();
+    final tempDir = await Directory.systemTemp.createTemp('hive_test_');
+    const channel = MethodChannel('plugins.flutter.io/path_provider');
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(channel, (MethodCall methodCall) async {
+      return tempDir.path;
+    });
+
+    SharedPreferences.setMockInitialValues({
+      'glow_mode': 0, // Disable glow animations
+      'show_day_of_week':
+          false, // Disable day of week to match test expectations (e.g. "Jan 15, 2025")
+      'abbreviate_month': true, // Ensure "Jan" not "January"
+      'marquee_enabled':
+          false, // Disable marquee animations to prevent pumpAndSettle timeouts
+      'highlight_playing_with_rgb':
+          false, // Disable RGB animations to prevent pumpAndSettle timeouts
+    });
     prefs = await SharedPreferences.getInstance();
+
+    // Initialize CatalogService (Singleton)
+    // We rely on it for RatingControl inside ShowListCard
+    await CatalogService().initialize(prefs: prefs);
+
+    // Clear boxes to prevent test pollution
+    await Hive.box<Rating>('ratings').clear();
+    await Hive.box<bool>('user_history').clear();
+    await Hive.box<int>('play_counts').clear();
+  });
+
+  tearDown(() async {
+    await CatalogService().reset();
   });
 
   // Helper function to create a dummy show
@@ -84,8 +120,12 @@ void main() {
 
   testWidgets('ShowListCard border color changes when isPlaying is true',
       (WidgetTester tester) async {
-    await tester
-        .pumpWidget(createTestableWidget(show: dummyShow, isPlaying: true));
+    final settingsProvider = SettingsProvider(prefs);
+    settingsProvider
+        .setGlowMode(0); // Ensure Card is used, not AnimatedGradientBorder
+
+    await tester.pumpWidget(createTestableWidget(
+        show: dummyShow, isPlaying: true, settingsProvider: settingsProvider));
 
     final card = tester.widget<Card>(find.byType(Card));
     final shape = card.shape as RoundedRectangleBorder;
@@ -193,7 +233,7 @@ void main() {
 
     // Tap it
     await tester.tap(ratingControl);
-    await tester.pumpAndSettle();
+    await tester.pump(const Duration(seconds: 1));
 
     // Verify dialog is open
     expect(find.text('Rate Show'), findsOneWidget);
@@ -210,7 +250,7 @@ void main() {
       (WidgetTester tester) async {
     final show = createDummyShow('Played Show', '2025-01-01');
     final settingsProvider = SettingsProvider(prefs);
-    await settingsProvider.markAsPlayed('source0');
+    await CatalogService().markAsPlayed('source0');
 
     await tester.pumpWidget(createTestableWidget(
       show: show,
@@ -255,7 +295,7 @@ void main() {
 
     // Tap it
     await tester.tap(ratingControl);
-    await tester.pumpAndSettle();
+    await tester.pump(const Duration(seconds: 1));
 
     // Verify dialog is NOT open
     expect(find.text('Rate Show'), findsNothing);

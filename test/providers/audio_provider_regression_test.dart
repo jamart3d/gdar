@@ -11,6 +11,7 @@ import 'package:shakedown/providers/show_list_provider.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
+import 'package:shakedown/services/catalog_service.dart';
 
 import 'audio_provider_test.mocks.dart';
 
@@ -19,12 +20,14 @@ import 'audio_provider_test.mocks.dart';
       as: #MockAudioPlayerRelaxed, onMissingStub: OnMissingStub.returnDefault),
   MockSpec<ShowListProvider>(),
   MockSpec<SettingsProvider>(),
+  MockSpec<CatalogService>(),
 ])
 void main() {
   late AudioProvider audioProvider;
   late MockAudioPlayerRelaxed mockAudioPlayer;
   late MockShowListProvider mockShowListProvider;
   late MockSettingsProvider mockSettingsProvider;
+  late MockCatalogService mockCatalogService;
 
   // Stream Controllers for mocks
   late StreamController<ProcessingState> processingStateController;
@@ -42,6 +45,7 @@ void main() {
     mockSettingsProvider = MockSettingsProvider();
     mockShowListProvider = MockShowListProvider();
     mockAudioPlayer = MockAudioPlayerRelaxed();
+    mockCatalogService = MockCatalogService();
 
     processingStateController = StreamController<ProcessingState>.broadcast();
     positionController = StreamController<Duration>.broadcast();
@@ -53,10 +57,11 @@ void main() {
     when(mockSettingsProvider.randomOnlyHighRated).thenReturn(false);
     when(mockSettingsProvider.randomExcludePlayed).thenReturn(false);
     when(mockSettingsProvider.playRandomOnCompletion).thenReturn(false);
-    when(mockSettingsProvider.markAsPlayed(any)).thenAnswer((_) async {});
     when(mockSettingsProvider.showGlobalAlbumArt).thenReturn(true);
-    when(mockSettingsProvider.getRating(any)).thenReturn(0);
-    when(mockSettingsProvider.isPlayed(any)).thenReturn(false);
+
+    // Stub CatalogService methods
+    when(mockCatalogService.getRating(any)).thenReturn(0);
+    when(mockCatalogService.isPlayed(any)).thenReturn(false);
 
     // Stub AudioPlayer Streams
     when(mockAudioPlayer.processingStateStream)
@@ -94,7 +99,10 @@ void main() {
     when(mockShowListProvider.isSourceAllowed(any)).thenReturn(true);
 
     // Create AudioProvider
-    audioProvider = AudioProvider(audioPlayer: mockAudioPlayer);
+    audioProvider = AudioProvider(
+      audioPlayer: mockAudioPlayer,
+      catalogService: mockCatalogService,
+    );
     audioProvider.update(mockShowListProvider, mockSettingsProvider);
   });
 
@@ -135,42 +143,41 @@ void main() {
     );
   }
 
-  testWidgets(
-      'Early Trigger: Plays next random show when near end of last track',
+  testWidgets('Pre-Queueing: Adds next random show when starting last track',
       (WidgetTester tester) async {
     await tester.runAsync(() async {
       // 1. Setup Settings
       when(mockSettingsProvider.playRandomOnCompletion).thenReturn(true);
 
-      // 2. Setup Audio State for "End of Show"
-      // 100s duration. Threshold is duration - 0.25s = 99.75s
-      when(mockAudioPlayer.duration).thenReturn(const Duration(seconds: 100));
-
-      // Sequence of 2 tracks. Index 1 is the last track.
+      // 2. Setup Audio State for "Last Track"
       final sequence = [
         AudioSource.uri(Uri.parse('http://dummy/1')),
         AudioSource.uri(Uri.parse('http://dummy/2'))
       ];
       when(mockAudioPlayer.sequence).thenReturn(sequence);
-      // Current index is last track
       when(mockAudioPlayer.currentIndex).thenReturn(1);
+
+      // Stub addAudioSources to return success
+      when(mockAudioPlayer.addAudioSources(any)).thenAnswer((_) async => []);
 
       // 3. Setup Show List for Random Pick
       final show = createDummyShow(1);
       when(mockShowListProvider.filteredShows).thenReturn([show]);
       when(mockShowListProvider.allShows).thenReturn([show]);
 
-      // 4. Emit Position Update causing trigger
-      // 99.8s > 99.75s threshold
-      positionController.add(const Duration(milliseconds: 99800));
+      // 4. Emit Index Update causing trigger (Start of Last Track)
+      currentIndexController.add(1);
 
       // Wait for async operations
       await Future.delayed(const Duration(milliseconds: 50));
 
-      // 5. Verify Random Show Triggered
-      verify(mockAudioPlayer.setAudioSource(any,
-              initialIndex: 0, preload: false))
-          .called(1);
+      // 5. Verify Random Show Queued (addAudioSources called)
+      verify(mockAudioPlayer.addAudioSources(any)).called(1);
+
+      // Verify setAudioSource was NOT called (we shouldn't stop playback)
+      verifyNever(mockAudioPlayer.setAudioSource(any,
+          initialIndex: anyNamed('initialIndex'),
+          preload: anyNamed('preload')));
     });
   });
 }

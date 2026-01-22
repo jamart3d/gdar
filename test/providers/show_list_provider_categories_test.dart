@@ -4,6 +4,7 @@ import 'package:shakedown/models/show.dart';
 import 'package:shakedown/models/source.dart';
 import 'package:shakedown/models/track.dart';
 import 'package:mockito/mockito.dart';
+import 'package:flutter/foundation.dart';
 import 'show_list_provider_test.mocks.dart';
 
 void main() {
@@ -11,10 +12,12 @@ void main() {
     late ShowListProvider provider;
     late MockCatalogService mockCatalogService;
     late MockSettingsProvider mockSettingsProvider;
+    late MockSharedPreferences mockPrefs;
 
     setUp(() {
       mockCatalogService = MockCatalogService();
       mockSettingsProvider = MockSettingsProvider();
+      mockPrefs = MockSharedPreferences();
       provider = ShowListProvider(catalogService: mockCatalogService);
 
       // Disable strict mode to test URL parsing
@@ -22,7 +25,12 @@ void main() {
       when(mockSettingsProvider.sortOldestFirst).thenReturn(true);
       when(mockSettingsProvider.filterHighestShnid).thenReturn(false);
       when(mockSettingsProvider.sourceCategoryFilters).thenReturn({});
-      when(mockSettingsProvider.showRatings).thenReturn({});
+      // when(mockSettingsProvider.showRatings).thenReturn({}); // Removed as ratings are now handled by CatalogService
+
+      // Stub ratingsListenable
+      final mockRatingBox = MockRatingBox();
+      when(mockCatalogService.ratingsListenable)
+          .thenReturn(ValueNotifier(mockRatingBox));
 
       provider.update(mockSettingsProvider);
     });
@@ -72,16 +80,17 @@ void main() {
         ),
       ];
 
-      when(mockCatalogService.initialize()).thenAnswer((_) async {});
+      when(mockCatalogService.initialize(
+              prefs: anyNamed('prefs'), strategy: anyNamed('strategy')))
+          .thenAnswer((_) async {});
       when(mockCatalogService.allShows).thenReturn(shows);
 
-      await provider.fetchShows();
+      await provider.fetchShows(mockPrefs);
 
       expect(provider.availableCategories, contains('sbd'));
       expect(provider.availableCategories, contains('matrix'));
       expect(provider.availableCategories, contains('betty'));
-      expect(provider.availableCategories,
-          isNot(contains('ultra'))); // Should not contain ultra
+      expect(provider.availableCategories, isNot(contains('ultra')));
     });
   });
 }

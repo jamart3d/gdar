@@ -13,9 +13,12 @@ import 'package:shakedown/ui/widgets/conditional_marquee.dart';
 import 'package:shakedown/utils/utils.dart';
 import 'package:shakedown/utils/color_generator.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:provider/provider.dart';
 import 'dart:async';
 
+import 'package:shakedown/models/rating.dart';
+import 'package:shakedown/services/catalog_service.dart';
 import 'package:shakedown/ui/widgets/rating_control.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 import 'package:shakedown/ui/widgets/playback/playback_progress_bar.dart';
@@ -316,41 +319,54 @@ class _PlaybackScreenState extends State<PlaybackScreen>
           opacity: (1.0 - (panelPosition * 1.5)).clamp(0.0, 1.0),
           child: Padding(
             padding: const EdgeInsets.only(right: 16.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Consumer<SettingsProvider>(
-                  builder: (context, settings, _) {
-                    final String ratingKey = source.id;
-                    final isPlayed = settings.isPlayed(ratingKey);
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                ValueListenableBuilder<Box<bool>>(
+                  valueListenable: CatalogService().historyListenable,
+                  builder: (context, historyBox, _) {
+                    return ValueListenableBuilder<Box<Rating>>(
+                      valueListenable: CatalogService().ratingsListenable,
+                      builder: (context, ratingsBox, _) {
+                        final String ratingKey = source.id;
+                        final isPlayed = historyBox.get(ratingKey) ?? false;
+                        final ratingObj = ratingsBox.get(ratingKey);
+                        final int rating = ratingObj?.rating ?? 0;
 
-                    return RatingControl(
-                      key: ValueKey(
-                          '${ratingKey}_${settings.getRating(ratingKey)}_$isPlayed'),
-                      rating: settings.getRating(ratingKey),
-                      size: 16 * (settings.uiScale ? 1.25 : 1.0),
-                      isPlayed: isPlayed,
-                      onTap: () async {
-                        final currentRating = settings.getRating(ratingKey);
-                        await showDialog(
-                          context: context,
-                          builder: (context) => RatingDialog(
-                            initialRating: currentRating,
-                            sourceId: source.id,
-                            sourceUrl: source.tracks.isNotEmpty
-                                ? source.tracks.first.url
-                                : null,
-                            isPlayed: settings.isPlayed(ratingKey),
-                            onRatingChanged: (newRating) {
-                              settings.setRating(ratingKey, newRating);
-                            },
-                            onPlayedChanged: (bool newIsPlayed) {
-                              if (newIsPlayed != settings.isPlayed(ratingKey)) {
-                                settings.togglePlayed(ratingKey);
-                              }
-                            },
-                          ),
+                        return RatingControl(
+                          key: ValueKey('${ratingKey}_${rating}_$isPlayed'),
+                          rating: rating,
+                          size: 16 * (settingsProvider.uiScale ? 1.25 : 1.0),
+                          isPlayed: isPlayed,
+                          onTap: () async {
+                            final currentRating =
+                                ratingsBox.get(ratingKey)?.rating ?? 0;
+                            await showDialog(
+                              context: context,
+                              builder: (context) => RatingDialog(
+                                initialRating: currentRating,
+                                sourceId: source.id,
+                                sourceUrl: source.tracks.isNotEmpty
+                                    ? source.tracks.first.url
+                                    : null,
+                                isPlayed: historyBox.get(ratingKey) ?? false,
+                                onRatingChanged: (newRating) {
+                                  CatalogService()
+                                      .setRating(ratingKey, newRating);
+                                },
+                                onPlayedChanged: (bool newIsPlayed) {
+                                  if (newIsPlayed !=
+                                      (historyBox.get(ratingKey) ?? false)) {
+                                    CatalogService().togglePlayed(ratingKey);
+                                  }
+                                },
+                              ),
+                            );
+                          },
                         );
                       },
                     );
@@ -388,6 +404,7 @@ class _PlaybackScreenState extends State<PlaybackScreen>
                   ],
                 ),
               ],
+            ),
             ),
           ),
         ),
@@ -881,10 +898,7 @@ class _PlaybackScreenState extends State<PlaybackScreen>
                                   Align(
                                     alignment: Alignment.centerRight,
                                     child: _buildRatingButton(
-                                        context,
-                                        currentShow,
-                                        currentSource,
-                                        settingsProvider),
+                                        context, currentShow, currentSource),
                                   ),
                                   const SizedBox(
                                       height:
@@ -1039,33 +1053,40 @@ class _PlaybackScreenState extends State<PlaybackScreen>
     );
   }
 
-  Widget _buildRatingButton(BuildContext context, Show show, Source source,
-      SettingsProvider settings) {
+  Widget _buildRatingButton(BuildContext context, Show show, Source source) {
     final String ratingKey = source.id;
-    final rating = settings.getRating(ratingKey);
 
-    return RatingControl(
-      rating: rating,
-      isPlayed: settings.isPlayed(ratingKey),
-      size: 24, // Increased from 20 to be larger than SHNID chip
-      onTap: () async {
-        await showDialog(
-          context: context,
-          builder: (context) => RatingDialog(
-            initialRating: rating,
-            sourceId: source.id,
-            sourceUrl:
-                source.tracks.isNotEmpty ? source.tracks.first.url : null,
-            isPlayed: settings.isPlayed(ratingKey),
-            onRatingChanged: (newRating) {
-              settings.setRating(ratingKey, newRating);
-            },
-            onPlayedChanged: (bool isPlayed) {
-              if (isPlayed != settings.isPlayed(ratingKey)) {
-                settings.togglePlayed(ratingKey);
-              }
-            },
-          ),
+    return ValueListenableBuilder(
+      valueListenable: CatalogService().ratingsListenable,
+      builder: (context, _, __) {
+        final catalog = CatalogService();
+        final rating = catalog.getRating(ratingKey);
+        final isPlayed = catalog.isPlayed(ratingKey);
+
+        return RatingControl(
+          rating: rating,
+          isPlayed: isPlayed,
+          size: 24, // Increased from 20 to be larger than SHNID chip
+          onTap: () async {
+            await showDialog(
+              context: context,
+              builder: (context) => RatingDialog(
+                initialRating: rating,
+                sourceId: source.id,
+                sourceUrl:
+                    source.tracks.isNotEmpty ? source.tracks.first.url : null,
+                isPlayed: isPlayed,
+                onRatingChanged: (newRating) {
+                  catalog.setRating(ratingKey, newRating);
+                },
+                onPlayedChanged: (bool newIsPlayed) {
+                  if (newIsPlayed != catalog.isPlayed(ratingKey)) {
+                    catalog.togglePlayed(ratingKey);
+                  }
+                },
+              ),
+            );
+          },
         );
       },
     );

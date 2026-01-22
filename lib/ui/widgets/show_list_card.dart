@@ -11,6 +11,7 @@ import 'package:provider/provider.dart';
 import 'package:shakedown/ui/widgets/rating_control.dart';
 import 'package:shakedown/ui/widgets/src_badge.dart';
 import 'package:shakedown/utils/color_generator.dart';
+import 'package:shakedown/services/catalog_service.dart';
 
 class ShowListCard extends StatefulWidget {
   final Show show;
@@ -293,6 +294,8 @@ class _ShowListCardState extends State<ShowListCard> {
                                           ? formattedDate
                                           : widget.show.venue,
                                       style: venueStyle,
+                                      enableAnimation: settingsProvider
+                                          .marqueeEnabled, // Respect setting (disabled in tests)
                                     ),
                                   ),
                                   SizedBox(height: 6 * scaleFactor),
@@ -479,99 +482,70 @@ class _ShowListCardState extends State<ShowListCard> {
   Widget _buildRatingButton(
       BuildContext context, Show show, SettingsProvider settings,
       {bool showSrcBadge = true}) {
+    // Determine the source to show ratings for
+    Source? targetSource;
+
     if (widget.isPlaying && widget.playingSource != null) {
-      final source = widget.playingSource!;
-      final rating = settings.getRating(source.id);
-      bool isPlayed = settings.isPlayed(source.id);
-
-      // determine badge string
-      String? badgeSrc = source.src;
-
-      return Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            RatingControl(
-              rating: rating,
-              isPlayed: isPlayed,
-              size: 20,
-              onTap: () async {
-                await showDialog(
-                  context: context,
-                  builder: (context) => RatingDialog(
-                    initialRating: rating,
-                    sourceId: source.id,
-                    isPlayed: isPlayed,
-                    onRatingChanged: (newRating) {
-                      settings.setRating(source.id, newRating);
-                    },
-                    onPlayedChanged: (bool isPlayed) {
-                      if (isPlayed != settings.isPlayed(source.id)) {
-                        settings.togglePlayed(source.id);
-                      }
-                    },
-                  ),
-                );
-              },
-            ),
-            if (badgeSrc != null && showSrcBadge) ...[
-              const SizedBox(height: 4),
-              SrcBadge(src: badgeSrc),
-            ],
-          ],
-        ),
-      );
+      targetSource = widget.playingSource!;
+    } else if (show.sources.length == 1) {
+      targetSource = show.sources.first;
     }
 
-    // If there are multiple sources visible (not filtered to 1), we don't show the rating on the card.
-    if (show.sources.length > 1) {
+    // If no target source (e.g. multiple sources and not playing), hide rating
+    if (targetSource == null) {
       return const SizedBox.shrink();
     }
 
-    // Always use the SOURCE ID for ratings/played status, even if only one source exists.
-    final source = show.sources.first;
-    final ratingKey = source.id;
+    final ratingKey = targetSource.id;
+    final badgeSrc = targetSource.src;
 
-    final rating = settings.getRating(ratingKey);
-    bool isPlayed = settings.isPlayed(ratingKey);
+    return ValueListenableBuilder(
+      valueListenable: CatalogService().ratingsListenable,
+      builder: (context, _, __) {
+        final catalog = CatalogService();
+        final rating = catalog.getRating(ratingKey);
+        final isPlayed = catalog.isPlayed(ratingKey);
 
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          RatingControl(
-            rating: rating,
-            isPlayed: isPlayed,
-            size: 20,
-            onTap: (widget.isPlaying || widget.alwaysShowRatingInteraction)
-                ? () async {
-                    await showDialog(
-                      context: context,
-                      builder: (context) => RatingDialog(
-                        initialRating: rating,
-                        sourceId: ratingKey, // Always pass Source ID
-                        isPlayed: isPlayed,
-                        onRatingChanged: (newRating) {
-                          settings.setRating(ratingKey, newRating);
-                        },
-                        onPlayedChanged: (bool newIsPlayed) {
-                          if (newIsPlayed != settings.isPlayed(ratingKey)) {
-                            settings.togglePlayed(ratingKey);
-                          }
-                        },
-                      ),
-                    );
-                  }
-                : null,
+        return Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              RatingControl(
+                rating: rating,
+                isPlayed: isPlayed,
+                size: 20,
+                onTap: (widget.isPlaying ||
+                        widget.alwaysShowRatingInteraction ||
+                        show.sources.length == 1)
+                    ? () async {
+                        await showDialog(
+                          context: context,
+                          builder: (context) => RatingDialog(
+                            initialRating: rating,
+                            sourceId: ratingKey,
+                            isPlayed: isPlayed,
+                            onRatingChanged: (newRating) {
+                              catalog.setRating(ratingKey, newRating);
+                            },
+                            onPlayedChanged: (bool newIsPlayed) {
+                              if (newIsPlayed != catalog.isPlayed(ratingKey)) {
+                                catalog.togglePlayed(ratingKey);
+                              }
+                            },
+                          ),
+                        );
+                      }
+                    : null,
+              ),
+              if (badgeSrc != null && showSrcBadge) ...[
+                const SizedBox(height: 4),
+                SrcBadge(src: badgeSrc),
+              ],
+            ],
           ),
-          if (source.src != null && showSrcBadge) ...[
-            const SizedBox(height: 4),
-            SrcBadge(src: source.src!),
-          ],
-        ],
-      ),
+        );
+      },
     );
   }
 }

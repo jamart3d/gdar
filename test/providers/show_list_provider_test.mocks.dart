@@ -3,14 +3,18 @@
 // Do not manually edit this file.
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'dart:async' as _i4;
-import 'dart:ui' as _i7;
+import 'dart:async' as _i7;
+import 'dart:ui' as _i11;
 
+import 'package:flutter/foundation.dart' as _i2;
+import 'package:hive_flutter/hive_flutter.dart' as _i5;
 import 'package:mockito/mockito.dart' as _i1;
-import 'package:mockito/src/dummies.dart' as _i6;
-import 'package:shakedown/models/show.dart' as _i3;
-import 'package:shakedown/providers/settings_provider.dart' as _i5;
-import 'package:shakedown/services/catalog_service.dart' as _i2;
+import 'package:mockito/src/dummies.dart' as _i10;
+import 'package:shakedown/models/rating.dart' as _i6;
+import 'package:shakedown/models/show.dart' as _i4;
+import 'package:shakedown/providers/settings_provider.dart' as _i9;
+import 'package:shakedown/services/catalog_service.dart' as _i3;
+import 'package:shared_preferences/shared_preferences.dart' as _i8;
 
 // ignore_for_file: type=lint
 // ignore_for_file: avoid_redundant_argument_values
@@ -25,10 +29,21 @@ import 'package:shakedown/services/catalog_service.dart' as _i2;
 // ignore_for_file: camel_case_types
 // ignore_for_file: subtype_of_sealed_class
 
+class _FakeValueListenable_0<T> extends _i1.SmartFake
+    implements _i2.ValueListenable<T> {
+  _FakeValueListenable_0(
+    Object parent,
+    Invocation parentInvocation,
+  ) : super(
+          parent,
+          parentInvocation,
+        );
+}
+
 /// A class which mocks [CatalogService].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockCatalogService extends _i1.Mock implements _i2.CatalogService {
+class MockCatalogService extends _i1.Mock implements _i3.CatalogService {
   @override
   bool get isInitialized => (super.noSuchMethod(
         Invocation.getter(#isInitialized),
@@ -37,39 +52,85 @@ class MockCatalogService extends _i1.Mock implements _i2.CatalogService {
       ) as bool);
 
   @override
-  List<_i3.Show> get allShows => (super.noSuchMethod(
+  List<_i4.Show> get allShows => (super.noSuchMethod(
         Invocation.getter(#allShows),
-        returnValue: <_i3.Show>[],
-        returnValueForMissingStub: <_i3.Show>[],
-      ) as List<_i3.Show>);
+        returnValue: <_i4.Show>[],
+        returnValueForMissingStub: <_i4.Show>[],
+      ) as List<_i4.Show>);
 
   @override
-  _i4.Future<void> initialize(
-          {_i2.CatalogLoadingStrategy? strategy =
-              _i2.CatalogLoadingStrategy.inMemory}) =>
+  _i2.ValueListenable<_i5.Box<int>> get playCountsListenable =>
+      (super.noSuchMethod(
+        Invocation.getter(#playCountsListenable),
+        returnValue: _FakeValueListenable_0<_i5.Box<int>>(
+          this,
+          Invocation.getter(#playCountsListenable),
+        ),
+        returnValueForMissingStub: _FakeValueListenable_0<_i5.Box<int>>(
+          this,
+          Invocation.getter(#playCountsListenable),
+        ),
+      ) as _i2.ValueListenable<_i5.Box<int>>);
+
+  @override
+  _i2.ValueListenable<_i5.Box<bool>> get historyListenable =>
+      (super.noSuchMethod(
+        Invocation.getter(#historyListenable),
+        returnValue: _FakeValueListenable_0<_i5.Box<bool>>(
+          this,
+          Invocation.getter(#historyListenable),
+        ),
+        returnValueForMissingStub: _FakeValueListenable_0<_i5.Box<bool>>(
+          this,
+          Invocation.getter(#historyListenable),
+        ),
+      ) as _i2.ValueListenable<_i5.Box<bool>>);
+
+  @override
+  _i2.ValueListenable<_i5.Box<_i6.Rating>> get ratingsListenable =>
+      (super.noSuchMethod(
+        Invocation.getter(#ratingsListenable),
+        returnValue: _FakeValueListenable_0<_i5.Box<_i6.Rating>>(
+          this,
+          Invocation.getter(#ratingsListenable),
+        ),
+        returnValueForMissingStub: _FakeValueListenable_0<_i5.Box<_i6.Rating>>(
+          this,
+          Invocation.getter(#ratingsListenable),
+        ),
+      ) as _i2.ValueListenable<_i5.Box<_i6.Rating>>);
+
+  @override
+  _i7.Future<void> initialize({
+    required _i8.SharedPreferences? prefs,
+    _i3.CatalogLoadingStrategy? strategy = _i3.CatalogLoadingStrategy.inMemory,
+  }) =>
       (super.noSuchMethod(
         Invocation.method(
           #initialize,
           [],
-          {#strategy: strategy},
+          {
+            #prefs: prefs,
+            #strategy: strategy,
+          },
         ),
-        returnValue: _i4.Future<void>.value(),
-        returnValueForMissingStub: _i4.Future<void>.value(),
-      ) as _i4.Future<void>);
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
 
   @override
-  _i4.Future<void> switchStrategy(_i2.CatalogLoadingStrategy? newStrategy) =>
+  _i7.Future<void> switchStrategy(_i3.CatalogLoadingStrategy? newStrategy) =>
       (super.noSuchMethod(
         Invocation.method(
           #switchStrategy,
           [newStrategy],
         ),
-        returnValue: _i4.Future<void>.value(),
-        returnValueForMissingStub: _i4.Future<void>.value(),
-      ) as _i4.Future<void>);
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
 
   @override
-  _i4.Future<void> addRating(
+  _i7.Future<void> addRating(
     String? sourceId,
     int? ratingValue,
   ) =>
@@ -81,9 +142,9 @@ class MockCatalogService extends _i1.Mock implements _i2.CatalogService {
             ratingValue,
           ],
         ),
-        returnValue: _i4.Future<void>.value(),
-        returnValueForMissingStub: _i4.Future<void>.value(),
-      ) as _i4.Future<void>);
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
 
   @override
   int getRating(String? sourceId) => (super.noSuchMethod(
@@ -96,20 +157,97 @@ class MockCatalogService extends _i1.Mock implements _i2.CatalogService {
       ) as int);
 
   @override
-  _i4.Future<void> close() => (super.noSuchMethod(
+  _i7.Future<void> incrementPlayCount(String? sourceId) => (super.noSuchMethod(
+        Invocation.method(
+          #incrementPlayCount,
+          [sourceId],
+        ),
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
+
+  @override
+  int getPlayCount(String? sourceId) => (super.noSuchMethod(
+        Invocation.method(
+          #getPlayCount,
+          [sourceId],
+        ),
+        returnValue: 0,
+        returnValueForMissingStub: 0,
+      ) as int);
+
+  @override
+  bool isPlayed(String? sourceId) => (super.noSuchMethod(
+        Invocation.method(
+          #isPlayed,
+          [sourceId],
+        ),
+        returnValue: false,
+        returnValueForMissingStub: false,
+      ) as bool);
+
+  @override
+  _i7.Future<void> markAsPlayed(String? sourceId) => (super.noSuchMethod(
+        Invocation.method(
+          #markAsPlayed,
+          [sourceId],
+        ),
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
+
+  @override
+  _i7.Future<void> togglePlayed(String? sourceId) => (super.noSuchMethod(
+        Invocation.method(
+          #togglePlayed,
+          [sourceId],
+        ),
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
+
+  @override
+  _i7.Future<void> setRating(
+    String? sourceId,
+    int? rating,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #setRating,
+          [
+            sourceId,
+            rating,
+          ],
+        ),
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
+
+  @override
+  _i7.Future<void> close() => (super.noSuchMethod(
         Invocation.method(
           #close,
           [],
         ),
-        returnValue: _i4.Future<void>.value(),
-        returnValueForMissingStub: _i4.Future<void>.value(),
-      ) as _i4.Future<void>);
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
+
+  @override
+  _i7.Future<void> reset() => (super.noSuchMethod(
+        Invocation.method(
+          #reset,
+          [],
+        ),
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
 }
 
 /// A class which mocks [SettingsProvider].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockSettingsProvider extends _i1.Mock implements _i5.SettingsProvider {
+class MockSettingsProvider extends _i1.Mock implements _i9.SettingsProvider {
   @override
   bool get showExpandIcon => (super.noSuchMethod(
         Invocation.getter(#showExpandIcon),
@@ -129,11 +267,11 @@ class MockSettingsProvider extends _i1.Mock implements _i5.SettingsProvider {
   @override
   String get appFont => (super.noSuchMethod(
         Invocation.getter(#appFont),
-        returnValue: _i6.dummyValue<String>(
+        returnValue: _i10.dummyValue<String>(
           this,
           Invocation.getter(#appFont),
         ),
-        returnValueForMissingStub: _i6.dummyValue<String>(
+        returnValueForMissingStub: _i10.dummyValue<String>(
           this,
           Invocation.getter(#appFont),
         ),
@@ -280,6 +418,13 @@ class MockSettingsProvider extends _i1.Mock implements _i5.SettingsProvider {
       ) as bool);
 
   @override
+  bool get offlineBuffering => (super.noSuchMethod(
+        Invocation.getter(#offlineBuffering),
+        returnValue: false,
+        returnValueForMissingStub: false,
+      ) as bool);
+
+  @override
   bool get highlightCurrentShowCard => (super.noSuchMethod(
         Invocation.getter(#highlightCurrentShowCard),
         returnValue: false,
@@ -313,20 +458,6 @@ class MockSettingsProvider extends _i1.Mock implements _i5.SettingsProvider {
         returnValue: false,
         returnValueForMissingStub: false,
       ) as bool);
-
-  @override
-  Map<String, int> get showRatings => (super.noSuchMethod(
-        Invocation.getter(#showRatings),
-        returnValue: <String, int>{},
-        returnValueForMissingStub: <String, int>{},
-      ) as Map<String, int>);
-
-  @override
-  Set<String> get playedShows => (super.noSuchMethod(
-        Invocation.getter(#playedShows),
-        returnValue: <String>{},
-        returnValueForMissingStub: <String>{},
-      ) as Set<String>);
 
   @override
   bool get randomOnlyUnplayed => (super.noSuchMethod(
@@ -565,6 +696,15 @@ class MockSettingsProvider extends _i1.Mock implements _i5.SettingsProvider {
       );
 
   @override
+  void toggleOfflineBuffering() => super.noSuchMethod(
+        Invocation.method(
+          #toggleOfflineBuffering,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
   void setRgbAnimationSpeed(double? speed) => super.noSuchMethod(
         Invocation.method(
           #setRgbAnimationSpeed,
@@ -574,71 +714,14 @@ class MockSettingsProvider extends _i1.Mock implements _i5.SettingsProvider {
       );
 
   @override
-  _i4.Future<void> setSeedColor(_i7.Color? color) => (super.noSuchMethod(
+  _i7.Future<void> setSeedColor(_i11.Color? color) => (super.noSuchMethod(
         Invocation.method(
           #setSeedColor,
           [color],
         ),
-        returnValue: _i4.Future<void>.value(),
-        returnValueForMissingStub: _i4.Future<void>.value(),
-      ) as _i4.Future<void>);
-
-  @override
-  int getRating(String? showName) => (super.noSuchMethod(
-        Invocation.method(
-          #getRating,
-          [showName],
-        ),
-        returnValue: 0,
-        returnValueForMissingStub: 0,
-      ) as int);
-
-  @override
-  bool isPlayed(String? showName) => (super.noSuchMethod(
-        Invocation.method(
-          #isPlayed,
-          [showName],
-        ),
-        returnValue: false,
-        returnValueForMissingStub: false,
-      ) as bool);
-
-  @override
-  _i4.Future<void> setRating(
-    String? showName,
-    int? rating,
-  ) =>
-      (super.noSuchMethod(
-        Invocation.method(
-          #setRating,
-          [
-            showName,
-            rating,
-          ],
-        ),
-        returnValue: _i4.Future<void>.value(),
-        returnValueForMissingStub: _i4.Future<void>.value(),
-      ) as _i4.Future<void>);
-
-  @override
-  _i4.Future<void> togglePlayed(String? showName) => (super.noSuchMethod(
-        Invocation.method(
-          #togglePlayed,
-          [showName],
-        ),
-        returnValue: _i4.Future<void>.value(),
-        returnValueForMissingStub: _i4.Future<void>.value(),
-      ) as _i4.Future<void>);
-
-  @override
-  _i4.Future<void> markAsPlayed(String? showName) => (super.noSuchMethod(
-        Invocation.method(
-          #markAsPlayed,
-          [showName],
-        ),
-        returnValue: _i4.Future<void>.value(),
-        returnValueForMissingStub: _i4.Future<void>.value(),
-      ) as _i4.Future<void>);
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
 
   @override
   void toggleRandomOnlyUnplayed() => super.noSuchMethod(
@@ -677,7 +760,7 @@ class MockSettingsProvider extends _i1.Mock implements _i5.SettingsProvider {
       );
 
   @override
-  _i4.Future<void> setSourceCategoryFilter(
+  _i7.Future<void> setSourceCategoryFilter(
     String? category,
     bool? isActive,
   ) =>
@@ -689,33 +772,33 @@ class MockSettingsProvider extends _i1.Mock implements _i5.SettingsProvider {
             isActive,
           ],
         ),
-        returnValue: _i4.Future<void>.value(),
-        returnValueForMissingStub: _i4.Future<void>.value(),
-      ) as _i4.Future<void>);
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
 
   @override
-  _i4.Future<void> setSoloSourceCategoryFilter(String? category) =>
+  _i7.Future<void> setSoloSourceCategoryFilter(String? category) =>
       (super.noSuchMethod(
         Invocation.method(
           #setSoloSourceCategoryFilter,
           [category],
         ),
-        returnValue: _i4.Future<void>.value(),
-        returnValueForMissingStub: _i4.Future<void>.value(),
-      ) as _i4.Future<void>);
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
 
   @override
-  _i4.Future<void> enableAllSourceCategories() => (super.noSuchMethod(
+  _i7.Future<void> enableAllSourceCategories() => (super.noSuchMethod(
         Invocation.method(
           #enableAllSourceCategories,
           [],
         ),
-        returnValue: _i4.Future<void>.value(),
-        returnValueForMissingStub: _i4.Future<void>.value(),
-      ) as _i4.Future<void>);
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
 
   @override
-  void addListener(_i7.VoidCallback? listener) => super.noSuchMethod(
+  void addListener(_i11.VoidCallback? listener) => super.noSuchMethod(
         Invocation.method(
           #addListener,
           [listener],
@@ -724,7 +807,7 @@ class MockSettingsProvider extends _i1.Mock implements _i5.SettingsProvider {
       );
 
   @override
-  void removeListener(_i7.VoidCallback? listener) => super.noSuchMethod(
+  void removeListener(_i11.VoidCallback? listener) => super.noSuchMethod(
         Invocation.method(
           #removeListener,
           [listener],
@@ -749,4 +832,488 @@ class MockSettingsProvider extends _i1.Mock implements _i5.SettingsProvider {
         ),
         returnValueForMissingStub: null,
       );
+}
+
+/// A class which mocks [SharedPreferences].
+///
+/// See the documentation for Mockito's code generation for more information.
+class MockSharedPreferences extends _i1.Mock implements _i8.SharedPreferences {
+  @override
+  Set<String> getKeys() => (super.noSuchMethod(
+        Invocation.method(
+          #getKeys,
+          [],
+        ),
+        returnValue: <String>{},
+        returnValueForMissingStub: <String>{},
+      ) as Set<String>);
+
+  @override
+  Object? get(String? key) => (super.noSuchMethod(
+        Invocation.method(
+          #get,
+          [key],
+        ),
+        returnValueForMissingStub: null,
+      ) as Object?);
+
+  @override
+  bool? getBool(String? key) => (super.noSuchMethod(
+        Invocation.method(
+          #getBool,
+          [key],
+        ),
+        returnValueForMissingStub: null,
+      ) as bool?);
+
+  @override
+  int? getInt(String? key) => (super.noSuchMethod(
+        Invocation.method(
+          #getInt,
+          [key],
+        ),
+        returnValueForMissingStub: null,
+      ) as int?);
+
+  @override
+  double? getDouble(String? key) => (super.noSuchMethod(
+        Invocation.method(
+          #getDouble,
+          [key],
+        ),
+        returnValueForMissingStub: null,
+      ) as double?);
+
+  @override
+  String? getString(String? key) => (super.noSuchMethod(
+        Invocation.method(
+          #getString,
+          [key],
+        ),
+        returnValueForMissingStub: null,
+      ) as String?);
+
+  @override
+  bool containsKey(String? key) => (super.noSuchMethod(
+        Invocation.method(
+          #containsKey,
+          [key],
+        ),
+        returnValue: false,
+        returnValueForMissingStub: false,
+      ) as bool);
+
+  @override
+  List<String>? getStringList(String? key) => (super.noSuchMethod(
+        Invocation.method(
+          #getStringList,
+          [key],
+        ),
+        returnValueForMissingStub: null,
+      ) as List<String>?);
+
+  @override
+  _i7.Future<bool> setBool(
+    String? key,
+    bool? value,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #setBool,
+          [
+            key,
+            value,
+          ],
+        ),
+        returnValue: _i7.Future<bool>.value(false),
+        returnValueForMissingStub: _i7.Future<bool>.value(false),
+      ) as _i7.Future<bool>);
+
+  @override
+  _i7.Future<bool> setInt(
+    String? key,
+    int? value,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #setInt,
+          [
+            key,
+            value,
+          ],
+        ),
+        returnValue: _i7.Future<bool>.value(false),
+        returnValueForMissingStub: _i7.Future<bool>.value(false),
+      ) as _i7.Future<bool>);
+
+  @override
+  _i7.Future<bool> setDouble(
+    String? key,
+    double? value,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #setDouble,
+          [
+            key,
+            value,
+          ],
+        ),
+        returnValue: _i7.Future<bool>.value(false),
+        returnValueForMissingStub: _i7.Future<bool>.value(false),
+      ) as _i7.Future<bool>);
+
+  @override
+  _i7.Future<bool> setString(
+    String? key,
+    String? value,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #setString,
+          [
+            key,
+            value,
+          ],
+        ),
+        returnValue: _i7.Future<bool>.value(false),
+        returnValueForMissingStub: _i7.Future<bool>.value(false),
+      ) as _i7.Future<bool>);
+
+  @override
+  _i7.Future<bool> setStringList(
+    String? key,
+    List<String>? value,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #setStringList,
+          [
+            key,
+            value,
+          ],
+        ),
+        returnValue: _i7.Future<bool>.value(false),
+        returnValueForMissingStub: _i7.Future<bool>.value(false),
+      ) as _i7.Future<bool>);
+
+  @override
+  _i7.Future<bool> remove(String? key) => (super.noSuchMethod(
+        Invocation.method(
+          #remove,
+          [key],
+        ),
+        returnValue: _i7.Future<bool>.value(false),
+        returnValueForMissingStub: _i7.Future<bool>.value(false),
+      ) as _i7.Future<bool>);
+
+  @override
+  _i7.Future<bool> commit() => (super.noSuchMethod(
+        Invocation.method(
+          #commit,
+          [],
+        ),
+        returnValue: _i7.Future<bool>.value(false),
+        returnValueForMissingStub: _i7.Future<bool>.value(false),
+      ) as _i7.Future<bool>);
+
+  @override
+  _i7.Future<bool> clear() => (super.noSuchMethod(
+        Invocation.method(
+          #clear,
+          [],
+        ),
+        returnValue: _i7.Future<bool>.value(false),
+        returnValueForMissingStub: _i7.Future<bool>.value(false),
+      ) as _i7.Future<bool>);
+
+  @override
+  _i7.Future<void> reload() => (super.noSuchMethod(
+        Invocation.method(
+          #reload,
+          [],
+        ),
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
+}
+
+/// A class which mocks [Box].
+///
+/// See the documentation for Mockito's code generation for more information.
+class MockRatingBox extends _i1.Mock implements _i5.Box<_i6.Rating> {
+  @override
+  Iterable<_i6.Rating> get values => (super.noSuchMethod(
+        Invocation.getter(#values),
+        returnValue: <_i6.Rating>[],
+        returnValueForMissingStub: <_i6.Rating>[],
+      ) as Iterable<_i6.Rating>);
+
+  @override
+  String get name => (super.noSuchMethod(
+        Invocation.getter(#name),
+        returnValue: _i10.dummyValue<String>(
+          this,
+          Invocation.getter(#name),
+        ),
+        returnValueForMissingStub: _i10.dummyValue<String>(
+          this,
+          Invocation.getter(#name),
+        ),
+      ) as String);
+
+  @override
+  bool get isOpen => (super.noSuchMethod(
+        Invocation.getter(#isOpen),
+        returnValue: false,
+        returnValueForMissingStub: false,
+      ) as bool);
+
+  @override
+  bool get lazy => (super.noSuchMethod(
+        Invocation.getter(#lazy),
+        returnValue: false,
+        returnValueForMissingStub: false,
+      ) as bool);
+
+  @override
+  Iterable<dynamic> get keys => (super.noSuchMethod(
+        Invocation.getter(#keys),
+        returnValue: <dynamic>[],
+        returnValueForMissingStub: <dynamic>[],
+      ) as Iterable<dynamic>);
+
+  @override
+  int get length => (super.noSuchMethod(
+        Invocation.getter(#length),
+        returnValue: 0,
+        returnValueForMissingStub: 0,
+      ) as int);
+
+  @override
+  bool get isEmpty => (super.noSuchMethod(
+        Invocation.getter(#isEmpty),
+        returnValue: false,
+        returnValueForMissingStub: false,
+      ) as bool);
+
+  @override
+  bool get isNotEmpty => (super.noSuchMethod(
+        Invocation.getter(#isNotEmpty),
+        returnValue: false,
+        returnValueForMissingStub: false,
+      ) as bool);
+
+  @override
+  Iterable<_i6.Rating> valuesBetween({
+    dynamic startKey,
+    dynamic endKey,
+  }) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #valuesBetween,
+          [],
+          {
+            #startKey: startKey,
+            #endKey: endKey,
+          },
+        ),
+        returnValue: <_i6.Rating>[],
+        returnValueForMissingStub: <_i6.Rating>[],
+      ) as Iterable<_i6.Rating>);
+
+  @override
+  _i6.Rating? getAt(int? index) => (super.noSuchMethod(
+        Invocation.method(
+          #getAt,
+          [index],
+        ),
+        returnValueForMissingStub: null,
+      ) as _i6.Rating?);
+
+  @override
+  Map<dynamic, _i6.Rating> toMap() => (super.noSuchMethod(
+        Invocation.method(
+          #toMap,
+          [],
+        ),
+        returnValue: <dynamic, _i6.Rating>{},
+        returnValueForMissingStub: <dynamic, _i6.Rating>{},
+      ) as Map<dynamic, _i6.Rating>);
+
+  @override
+  dynamic keyAt(int? index) => super.noSuchMethod(
+        Invocation.method(
+          #keyAt,
+          [index],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  _i7.Stream<_i5.BoxEvent> watch({dynamic key}) => (super.noSuchMethod(
+        Invocation.method(
+          #watch,
+          [],
+          {#key: key},
+        ),
+        returnValue: _i7.Stream<_i5.BoxEvent>.empty(),
+        returnValueForMissingStub: _i7.Stream<_i5.BoxEvent>.empty(),
+      ) as _i7.Stream<_i5.BoxEvent>);
+
+  @override
+  bool containsKey(dynamic key) => (super.noSuchMethod(
+        Invocation.method(
+          #containsKey,
+          [key],
+        ),
+        returnValue: false,
+        returnValueForMissingStub: false,
+      ) as bool);
+
+  @override
+  _i7.Future<void> put(
+    dynamic key,
+    _i6.Rating? value,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #put,
+          [
+            key,
+            value,
+          ],
+        ),
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
+
+  @override
+  _i7.Future<void> putAt(
+    int? index,
+    _i6.Rating? value,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #putAt,
+          [
+            index,
+            value,
+          ],
+        ),
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
+
+  @override
+  _i7.Future<void> putAll(Map<dynamic, _i6.Rating>? entries) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #putAll,
+          [entries],
+        ),
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
+
+  @override
+  _i7.Future<int> add(_i6.Rating? value) => (super.noSuchMethod(
+        Invocation.method(
+          #add,
+          [value],
+        ),
+        returnValue: _i7.Future<int>.value(0),
+        returnValueForMissingStub: _i7.Future<int>.value(0),
+      ) as _i7.Future<int>);
+
+  @override
+  _i7.Future<Iterable<int>> addAll(Iterable<_i6.Rating>? values) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #addAll,
+          [values],
+        ),
+        returnValue: _i7.Future<Iterable<int>>.value(<int>[]),
+        returnValueForMissingStub: _i7.Future<Iterable<int>>.value(<int>[]),
+      ) as _i7.Future<Iterable<int>>);
+
+  @override
+  _i7.Future<void> delete(dynamic key) => (super.noSuchMethod(
+        Invocation.method(
+          #delete,
+          [key],
+        ),
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
+
+  @override
+  _i7.Future<void> deleteAt(int? index) => (super.noSuchMethod(
+        Invocation.method(
+          #deleteAt,
+          [index],
+        ),
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
+
+  @override
+  _i7.Future<void> deleteAll(Iterable<dynamic>? keys) => (super.noSuchMethod(
+        Invocation.method(
+          #deleteAll,
+          [keys],
+        ),
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
+
+  @override
+  _i7.Future<void> compact() => (super.noSuchMethod(
+        Invocation.method(
+          #compact,
+          [],
+        ),
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
+
+  @override
+  _i7.Future<int> clear() => (super.noSuchMethod(
+        Invocation.method(
+          #clear,
+          [],
+        ),
+        returnValue: _i7.Future<int>.value(0),
+        returnValueForMissingStub: _i7.Future<int>.value(0),
+      ) as _i7.Future<int>);
+
+  @override
+  _i7.Future<void> close() => (super.noSuchMethod(
+        Invocation.method(
+          #close,
+          [],
+        ),
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
+
+  @override
+  _i7.Future<void> deleteFromDisk() => (super.noSuchMethod(
+        Invocation.method(
+          #deleteFromDisk,
+          [],
+        ),
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
+
+  @override
+  _i7.Future<void> flush() => (super.noSuchMethod(
+        Invocation.method(
+          #flush,
+          [],
+        ),
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
 }

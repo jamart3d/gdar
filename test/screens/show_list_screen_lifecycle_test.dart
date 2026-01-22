@@ -94,7 +94,7 @@ class MockShowListProvider extends Mock implements ShowListProvider {
   void setPlayingShow(String? showName, String? sourceId) {}
 
   @override
-  Future<void> init() async {}
+  Future<void> init(SharedPreferences prefs) async {}
   @override
   Future<void> get initializationComplete => Future.value();
 }

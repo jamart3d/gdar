@@ -5,6 +5,7 @@ import 'package:shakedown/models/source.dart';
 import 'package:shakedown/providers/audio_provider.dart';
 import 'package:shakedown/providers/settings_provider.dart';
 import 'package:shakedown/providers/show_list_provider.dart'; // Add import
+import 'package:shakedown/services/catalog_service.dart';
 
 import 'package:shakedown/ui/widgets/source_list_item.dart';
 import 'package:shakedown/ui/widgets/swipe_action_background.dart';
@@ -72,7 +73,7 @@ class _ShowListItemDetailsState extends State<ShowListItemDetails> {
           }
 
           // Mark as Blocked (Red Star / -1)
-          settingsProvider.setRating(source.id, -1);
+          CatalogService().setRating(source.id, -1);
 
           // Calculate position for SnackBar
           double bottomMargin = 80; // Default fallback
@@ -131,7 +132,7 @@ class _ShowListItemDetailsState extends State<ShowListItemDetails> {
                 label: 'UNDO',
                 textColor: Theme.of(context).colorScheme.primary,
                 onPressed: () {
-                  settingsProvider.setRating(source.id, 0);
+                  CatalogService().setRating(source.id, 0);
                 },
               ),
             ),

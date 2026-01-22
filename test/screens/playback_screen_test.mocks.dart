@@ -151,6 +151,12 @@ class MockAudioProvider extends _i1.Mock implements _i3.AudioProvider {
           ) as _i4.Stream<({_i5.Show show, _i6.Source source})>);
 
   @override
+  int get cachedTrackCount => (super.noSuchMethod(
+        Invocation.getter(#cachedTrackCount),
+        returnValue: 0,
+      ) as int);
+
+  @override
   bool get hasListeners => (super.noSuchMethod(
         Invocation.getter(#hasListeners),
         returnValue: false,
@@ -244,6 +250,16 @@ class MockAudioProvider extends _i1.Mock implements _i3.AudioProvider {
       ) as _i4.Future<bool>);
 
   @override
+  _i4.Future<void> queueRandomShow() => (super.noSuchMethod(
+        Invocation.method(
+          #queueRandomShow,
+          [],
+        ),
+        returnValue: _i4.Future<void>.value(),
+        returnValueForMissingStub: _i4.Future<void>.value(),
+      ) as _i4.Future<void>);
+
+  @override
   void clearError() => super.noSuchMethod(
         Invocation.method(
           #clearError,
@@ -308,10 +324,10 @@ class MockAudioProvider extends _i1.Mock implements _i3.AudioProvider {
       );
 
   @override
-  void seekToTrack(int? index) => super.noSuchMethod(
+  void seekToTrack(int? localIndex) => super.noSuchMethod(
         Invocation.method(
           #seekToTrack,
-          [index],
+          [localIndex],
         ),
         returnValueForMissingStub: null,
       );

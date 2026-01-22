@@ -11,6 +11,7 @@ import 'package:shakedown/ui/screens/settings_screen.dart';
 import 'package:shakedown/ui/widgets/mini_player.dart';
 import 'package:shakedown/ui/widgets/src_badge.dart';
 import 'package:shakedown/ui/widgets/rating_control.dart';
+import 'package:shakedown/services/catalog_service.dart';
 import 'package:shakedown/utils/utils.dart';
 import 'package:provider/provider.dart';
 
@@ -163,78 +164,93 @@ class _TrackListScreenState extends State<TrackListScreen> {
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 16.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Consumer<SettingsProvider>(
-                  builder: (context, settings, _) {
-                    final String ratingKey = widget.source.id;
-                    final isPlayed = settings.isPlayed(ratingKey);
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxHeight: 56),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.end,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Flexible(
+                    child: ValueListenableBuilder(
+                      valueListenable: CatalogService().ratingsListenable,
+                      builder: (context, _, __) {
+                        final String ratingKey = widget.source.id;
+                        final catalog = CatalogService();
+                        final isPlayed = catalog.isPlayed(ratingKey);
+                        final rating = catalog.getRating(ratingKey);
 
-                    return RatingControl(
-                      key: ValueKey(
-                          '${ratingKey}_${settings.getRating(ratingKey)}_$isPlayed'),
-                      rating: settings.getRating(ratingKey),
-                      size: 16 * (settings.uiScale ? 1.25 : 1.0),
-                      isPlayed: isPlayed,
-                      onTap: () async {
-                        final currentRating = settings.getRating(ratingKey);
-                        await showDialog(
-                          context: context,
-                          builder: (context) => RatingDialog(
-                            initialRating: currentRating,
-                            sourceId: widget.source.id,
-                            sourceUrl: widget.source.tracks.isNotEmpty
-                                ? widget.source.tracks.first.url
-                                : null,
-                            isPlayed: settings.isPlayed(ratingKey),
-                            onRatingChanged: (newRating) {
-                              settings.setRating(ratingKey, newRating);
-                            },
-                            onPlayedChanged: (bool newIsPlayed) {
-                              if (newIsPlayed != settings.isPlayed(ratingKey)) {
-                                settings.togglePlayed(ratingKey);
-                              }
-                            },
-                          ),
+                        return RatingControl(
+                          key: ValueKey('${ratingKey}_${rating}_$isPlayed'),
+                          rating: rating,
+                          size: 12 * (settingsProvider.uiScale ? 1.25 : 1.0),
+                          isPlayed: isPlayed,
+                          compact: true,
+                          onTap: () async {
+                            await showDialog(
+                              context: context,
+                              builder: (context) => RatingDialog(
+                                initialRating: catalog.getRating(ratingKey),
+                                sourceId: widget.source.id,
+                                sourceUrl: widget.source.tracks.isNotEmpty
+                                    ? widget.source.tracks.first.url
+                                    : null,
+                                isPlayed: catalog.isPlayed(ratingKey),
+                                onRatingChanged: (newRating) {
+                                  catalog.setRating(ratingKey, newRating);
+                                },
+                                onPlayedChanged: (bool newIsPlayed) {
+                                  // Direct toggle since we don't have explicit setPlayed(bool) yet
+                                  // or just use togglePlayed if it matches logic
+                                  if (newIsPlayed !=
+                                      catalog.isPlayed(ratingKey)) {
+                                    catalog.togglePlayed(ratingKey);
+                                  }
+                                },
+                              ),
+                            );
+                          },
                         );
                       },
-                    );
-                  },
-                ),
-                const SizedBox(height: 2),
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    if (widget.source.src != null) ...[
-                      SrcBadge(src: widget.source.src!),
-                      const SizedBox(width: 4),
-                    ],
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 6, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: Theme.of(context)
-                            .colorScheme
-                            .secondaryContainer
-                            .withValues(alpha: 0.5),
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: Text(
-                        widget.source.id,
-                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                              color: Theme.of(context)
-                                  .colorScheme
-                                  .onSecondaryContainer,
-                              fontSize:
-                                  10 * (settingsProvider.uiScale ? 1.25 : 1.0),
-                            ),
-                      ),
                     ),
-                  ],
-                ),
-              ],
+                  ),
+                  Flexible(
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (widget.source.src != null) ...[
+                          SrcBadge(src: widget.source.src!),
+                          const SizedBox(width: 4),
+                        ],
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: Theme.of(context)
+                                .colorScheme
+                                .secondaryContainer
+                                .withValues(alpha: 0.5),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Text(
+                            widget.source.id,
+                            style: Theme.of(context)
+                                .textTheme
+                                .labelSmall
+                                ?.copyWith(
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .onSecondaryContainer,
+                                  fontSize: 10 *
+                                      (settingsProvider.uiScale ? 1.25 : 1.0),
+                                ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
           IconButton(

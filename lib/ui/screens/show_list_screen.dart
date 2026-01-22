@@ -18,6 +18,7 @@ import 'package:shakedown/ui/widgets/swipe_action_background.dart';
 import 'package:shakedown/ui/widgets/show_list_item_details.dart';
 import 'package:shakedown/utils/color_generator.dart';
 import 'package:shakedown/utils/logger.dart';
+import 'package:shakedown/services/catalog_service.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:provider/provider.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
@@ -982,7 +983,7 @@ class _ShowListScreenState extends State<ShowListScreen>
               }
 
               // Mark as Blocked (Red Star / -1)
-              settingsProvider.setRating(show.sources.first.id, -1);
+              CatalogService().setRating(show.sources.first.id, -1);
 
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
@@ -1027,7 +1028,7 @@ class _ShowListScreenState extends State<ShowListScreen>
                     textColor: Theme.of(context).colorScheme.primary,
                     onPressed: () {
                       // Restore rating
-                      settingsProvider.setRating(show.sources.first.id, 0);
+                      CatalogService().setRating(show.sources.first.id, 0);
                     },
                   ),
                 ),

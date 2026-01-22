@@ -1030,11 +1030,11 @@ class _SettingsScreenState extends State<SettingsScreen>
                         secondary: const Icon(Icons.message_rounded),
                       ),
                       SwitchListTile(
-                        title: const Text('Offline Buffering'),
+                        title: const Text('Advanced Cache'),
                         subtitle: Text(
                           settingsProvider.offlineBuffering
-                              ? 'Cached ${audioProvider.cachedTrackCount} of (${audioProvider.currentSource?.tracks.length ?? 0} + 5) tracks for reliable playback'
-                              : 'Cache tracks to disk for reliable deep sleep playback',
+                              ? 'Cached ${audioProvider.cachedTrackCount} of (${audioProvider.currentSource?.tracks.length ?? 0} + 5) tracks'
+                              : 'Cache tracks to disk for deep sleep playback',
                         ),
                         value: settingsProvider.offlineBuffering,
                         onChanged: (value) {

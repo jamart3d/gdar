@@ -10,6 +10,8 @@ import 'package:shakedown/ui/widgets/show_list_item_details.dart';
 import 'package:mockito/mockito.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter/services.dart';
+import 'package:shakedown/services/catalog_service.dart';
 
 // Mock AudioProvider since it's used in onDismissed
 class MockAudioProvider extends Mock implements AudioProvider {
@@ -24,21 +26,9 @@ class MockAudioProvider extends Mock implements AudioProvider {
 class MockSettingsProvider extends SettingsProvider {
   MockSettingsProvider(super.prefs);
 
-  final Map<String, int> _ratings = {};
-
-  @override
-  Future<void> setRating(String key, int rating) async {
-    _ratings[key] = rating;
-    notifyListeners();
-  }
-
-  @override
-  int getRating(String key) => _ratings[key] ?? 0;
-
   @override
   bool get highlightPlayingWithRgb => false;
 
-  @override
   @override
   bool get uiScale => false;
 }
@@ -76,8 +66,16 @@ void main() {
   late MockShowListProvider mockShowListProvider;
 
   setUp(() async {
+    const channel = MethodChannel('plugins.flutter.io/path_provider');
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(channel, (MethodCall methodCall) async {
+      return '.';
+    });
+
     SharedPreferences.setMockInitialValues({});
     prefs = await SharedPreferences.getInstance();
+    await CatalogService().initialize(prefs: prefs);
+
     mockAudioProvider = MockAudioProvider();
     mockSettingsProvider = MockSettingsProvider(prefs);
     mockShowListProvider = MockShowListProvider();
@@ -161,7 +159,7 @@ void main() {
 
     // Verification:
     // 1. Check if setRating(-1) was called
-    expect(mockSettingsProvider.getRating('source0'), -1);
+    expect(CatalogService().getRating('source0'), -1);
 
     // 2. Check for SnackBar (verifies confirmDismiss logic ran)
     // expect(find.byType(SnackBar), findsOneWidget); // Commented out to isolate failure

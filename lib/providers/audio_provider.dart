@@ -10,6 +10,7 @@ import 'package:shakedown/models/source.dart';
 import 'package:shakedown/models/track.dart';
 import 'package:shakedown/providers/settings_provider.dart';
 import 'package:shakedown/providers/show_list_provider.dart';
+import 'package:shakedown/services/catalog_service.dart';
 import 'package:shakedown/utils/logger.dart';
 import 'package:shakedown/utils/share_link_parser.dart';
 import 'package:just_audio/just_audio.dart';
@@ -139,7 +140,13 @@ class AudioProvider with ChangeNotifier {
   // Flag to ignore player stream events while we are manually loading a new source.
   bool _isSwitchingSource = false;
 
-  AudioProvider({AudioPlayer? audioPlayer}) {
+  // Dependency Injection for easier testing
+  final CatalogService _catalogService;
+
+  AudioProvider({
+    AudioPlayer? audioPlayer,
+    CatalogService? catalogService,
+  }) : _catalogService = catalogService ?? CatalogService() {
     _audioPlayer = audioPlayer ?? AudioPlayer();
     _listenForPlaybackProgress();
     _listenForErrors();
@@ -240,6 +247,7 @@ class AudioProvider with ChangeNotifier {
   ({Show show, Source source})? pickRandomShow({bool filterBySearch = true}) {
     final settings = _settingsProvider;
     if (settings == null) return null;
+    final catalog = _catalogService; // Use CatalogService for data
 
     List<Show>? sourceList;
     if (filterBySearch) {
@@ -267,7 +275,7 @@ class AudioProvider with ChangeNotifier {
       // Find valid sources for this show
       final validSources = show.sources.where((s) {
         // Must be unblocked
-        if (settings.getRating(s.id) == -1) return false;
+        if (catalog.getRating(s.id) == -1) return false;
         // Must match active filters (SBD, Matrix, etc.)
         if (_showListProvider != null &&
             !_showListProvider!.isSourceAllowed(s)) {
@@ -284,8 +292,8 @@ class AudioProvider with ChangeNotifier {
       // If Highest SHNID is on, it's already filtered by ShowListProvider.
       // We pick the first valid source as the representative for weighting.
       final source = validSources.first;
-      final rating = settings.getRating(source.id);
-      final isPlayed = settings.isPlayed(source.id);
+      final rating = catalog.getRating(source.id);
+      final isPlayed = catalog.isPlayed(source.id);
 
       // Filter by Settings
       if (settings.randomOnlyUnplayed && isPlayed) {
@@ -377,10 +385,10 @@ class AudioProvider with ChangeNotifier {
 
     final show = selection.show;
     final source = selection.source;
-    final settings = _settingsProvider!;
+    final catalog = _catalogService; // Use injected service
 
     logger.i(
-        'Playing random source: ${source.id} (Rating: ${settings.getRating(source.id)}, Played: ${settings.isPlayed(source.id)})');
+        'Playing random source: ${source.id} (Rating: ${catalog.getRating(source.id)}, Played: ${catalog.isPlayed(source.id)})');
 
     // Notify listeners/UI that a random show was requested
     _pendingRandomShowRequest = selection;
@@ -552,10 +560,11 @@ class AudioProvider with ChangeNotifier {
   void _updateCurrentShowFromSourceId(String sourceId) {
     if (_showListProvider == null) return;
 
-    // Mark previous show as played if we haven't already
     // Logic: If we are switching TO a new source, the previous one is done.
     if (!_hasMarkedAsPlayed && _currentSource != null) {
-      _settingsProvider?.markAsPlayed(_currentSource!.id);
+      final catalog = _catalogService;
+      catalog.markAsPlayed(_currentSource!.id);
+      catalog.incrementPlayCount(_currentSource!.id);
       _hasMarkedAsPlayed = true;
     }
 

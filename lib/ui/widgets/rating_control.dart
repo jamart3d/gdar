@@ -1,15 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
-import 'package:shakedown/providers/settings_provider.dart';
-import 'package:shakedown/utils/utils.dart';
 import 'package:provider/provider.dart';
+import 'package:shakedown/providers/settings_provider.dart';
+import 'package:shakedown/services/catalog_service.dart';
+import 'package:shakedown/utils/utils.dart';
 
 class RatingControl extends StatelessWidget {
   final int rating;
   final VoidCallback? onTap;
   final double size;
   final bool isPlayed;
+  final bool compact;
 
   const RatingControl({
     super.key,
@@ -17,6 +19,7 @@ class RatingControl extends StatelessWidget {
     this.onTap,
     this.size = 24.0,
     this.isPlayed = false,
+    this.compact = false,
   });
 
   @override
@@ -87,7 +90,12 @@ class RatingControl extends StatelessWidget {
         HapticFeedback.selectionClick();
         onTap!();
       },
-      child: content,
+      child: compact
+          ? content
+          : ConstrainedBox(
+              constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
+              child: Center(child: content),
+            ),
     );
   }
 }
@@ -182,43 +190,72 @@ class _RatingDialogState extends State<RatingDialog> {
         Padding(
           padding: const EdgeInsets.symmetric(vertical: 8.0),
           child: Center(
-            child: IgnorePointer(
-              ignoring: _currentRating == -1,
-              child: Opacity(
-                opacity: _currentRating == -1 ? 0.3 : 1.0,
-                child: RatingBar(
-                  initialRating: (_currentRating == 0 && _isPlayed)
-                      ? 1.0
-                      : (_currentRating > 0 ? _currentRating.toDouble() : 0.0),
-                  minRating: 1,
-                  direction: Axis.horizontal,
-                  allowHalfRating: false,
-                  itemCount: 3,
-                  itemPadding: const EdgeInsets.symmetric(horizontal: 4.0),
-                  ratingWidget: RatingWidget(
-                    full: Icon(
-                      Icons.star,
-                      color: (_currentRating == 0 && _isPlayed)
-                          ? Colors.grey
-                          : Colors.amber,
+            child: Column(
+              children: [
+                IgnorePointer(
+                  ignoring: _currentRating == -1,
+                  child: Opacity(
+                    opacity: _currentRating == -1 ? 0.3 : 1.0,
+                    child: RatingBar(
+                      initialRating: (_currentRating == 0 && _isPlayed)
+                          ? 1.0
+                          : (_currentRating > 0
+                              ? _currentRating.toDouble()
+                              : 0.0),
+                      minRating: 1,
+                      direction: Axis.horizontal,
+                      allowHalfRating: false,
+                      itemCount: 3,
+                      itemPadding: const EdgeInsets.symmetric(horizontal: 4.0),
+                      ratingWidget: RatingWidget(
+                        full: Icon(
+                          Icons.star,
+                          color: (_currentRating == 0 && _isPlayed)
+                              ? Colors.grey
+                              : Colors.amber,
+                        ),
+                        half: Icon(
+                          Icons.star_half,
+                          color: (_currentRating == 0 && _isPlayed)
+                              ? Colors.grey
+                              : Colors.amber,
+                        ),
+                        empty:
+                            const Icon(Icons.star_border, color: Colors.grey),
+                      ),
+                      onRatingUpdate: (rating) {
+                        HapticFeedback.selectionClick();
+                        setState(() {
+                          _currentRating = rating.toInt();
+                        });
+                        widget.onRatingChanged(rating.toInt());
+                      },
                     ),
-                    half: Icon(
-                      Icons.star_half,
-                      color: (_currentRating == 0 && _isPlayed)
-                          ? Colors.grey
-                          : Colors.amber,
-                    ),
-                    empty: const Icon(Icons.star_border, color: Colors.grey),
                   ),
-                  onRatingUpdate: (rating) {
-                    HapticFeedback.selectionClick();
-                    setState(() {
-                      _currentRating = rating.toInt();
-                    });
-                    widget.onRatingChanged(rating.toInt());
-                  },
                 ),
-              ),
+                if (widget.sourceId != null) ...[
+                  const SizedBox(height: 8),
+                  ValueListenableBuilder(
+                    valueListenable: CatalogService().playCountsListenable,
+                    builder: (context, box, _) {
+                      final count = box.get(widget.sourceId!) ?? 0;
+                      if (count > 0) {
+                        return Text(
+                          '$count Play${count == 1 ? '' : 's'}',
+                          style:
+                              Theme.of(context).textTheme.labelMedium?.copyWith(
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .onSurfaceVariant,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                        );
+                      }
+                      return const SizedBox.shrink();
+                    },
+                  ),
+                ],
+              ],
             ),
           ),
         ),

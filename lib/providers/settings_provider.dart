@@ -42,6 +42,10 @@ class SettingsProvider with ChangeNotifier {
       'use_strict_src_categorization';
   static const String _offlineBufferingKey = 'offline_buffering';
 
+  // static const String _offlineBufferingKey = 'offline_buffering'; // Already defined above
+  static const String _marqueeEnabledKey =
+      'marquee_enabled'; // Logic for disabling marquee in tests
+
   static const String _showSplashScreenKey = 'show_splash_screen';
   late bool _showSplashScreen;
   bool get showSplashScreen => _showSplashScreen;
@@ -75,18 +79,15 @@ class SettingsProvider with ChangeNotifier {
   late bool _showDayOfWeek;
   late bool _abbreviateDayOfWeek;
   late bool _abbreviateMonth;
+  late bool _marqueeEnabled;
 
   Color? _seedColor;
 
-  // Ratings & Played Status
-  static const String _showRatingsKey = 'show_ratings';
-  static const String _playedShowsKey = 'played_shows';
+  // Ratings & Played Status moved to CatalogService (Hive)
   static const String _randomOnlyUnplayedKey = 'random_only_unplayed';
   static const String _randomOnlyHighRatedKey = 'random_only_high_rated';
   static const String _randomExcludePlayedKey = 'random_exclude_played';
 
-  Map<String, int> _showRatings = {};
-  Set<String> _playedShows = {};
   bool _randomOnlyUnplayed = false;
   bool _randomOnlyHighRated = false;
   bool _randomExcludePlayed = false;
@@ -117,11 +118,12 @@ class SettingsProvider with ChangeNotifier {
   bool get showDayOfWeek => _showDayOfWeek;
   bool get abbreviateDayOfWeek => _abbreviateDayOfWeek;
   bool get abbreviateMonth => _abbreviateMonth;
+  bool get marqueeEnabled => _marqueeEnabled;
 
   Color? get seedColor => _seedColor;
 
-  Map<String, int> get showRatings => _showRatings;
-  Set<String> get playedShows => _playedShows;
+  // Map<String, int> get showRatings => _showRatings; // Moved to CatalogService
+  // Set<String> get playedShows => _playedShows; // Moved to CatalogService
   bool get randomOnlyUnplayed => _randomOnlyUnplayed;
   bool get randomOnlyHighRated => _randomOnlyHighRated;
   bool get randomExcludePlayed => _randomExcludePlayed;
@@ -254,6 +256,8 @@ class SettingsProvider with ChangeNotifier {
     _offlineBuffering = _prefs.getBool(_offlineBufferingKey) ??
         DefaultSettings.offlineBuffering;
 
+    _marqueeEnabled = _prefs.getBool(_marqueeEnabledKey) ?? true;
+
     final seedColorValue = _prefs.getInt(_seedColorKey);
     if (seedColorValue != null) {
       _seedColor = Color(seedColorValue);
@@ -261,26 +265,13 @@ class SettingsProvider with ChangeNotifier {
       _seedColor = null;
     }
 
-    _initRatings();
+    // Ratings initialized in CatalogService now.
+    _initSourceFilters();
   }
 
-  void _initRatings() {
-    final String? ratingsJson = _prefs.getString(_showRatingsKey);
-    if (ratingsJson != null) {
-      try {
-        final Map<String, dynamic> decoded = json.decode(ratingsJson);
-        _showRatings = decoded.map((key, value) => MapEntry(key, value as int));
-      } catch (e) {
-        // Handle error or ignore
-        _showRatings = {};
-      }
-    }
-
-    final List<String>? playedList = _prefs.getStringList(_playedShowsKey);
-    if (playedList != null) {
-      _playedShows = playedList.toSet();
-    }
-
+  // Renamed from _initRatings to just init filters since ratings are gone
+  void _initSourceFilters() {
+    // Restore random settings
     _randomOnlyUnplayed = _prefs.getBool(_randomOnlyUnplayedKey) ??
         DefaultSettings.randomOnlyUnplayed;
     _randomOnlyHighRated = _prefs.getBool(_randomOnlyHighRatedKey) ??
@@ -288,7 +279,26 @@ class SettingsProvider with ChangeNotifier {
     _randomExcludePlayed = _prefs.getBool(_randomExcludePlayedKey) ??
         DefaultSettings.randomExcludePlayed;
 
-    _initSourceFilters();
+    // Restore source filters
+    _filterHighestShnid = _prefs.getBool(_filterHighestShnidKey) ?? true;
+
+    final String? catsJson = _prefs.getString(_sourceCategoryFiltersKey);
+    if (catsJson != null) {
+      try {
+        final Map<String, dynamic> decoded = json.decode(catsJson);
+        // Merge with defaults to handle any new keys in future
+        decoded.forEach((key, value) {
+          if (_sourceCategoryFilters.containsKey(key) && value is bool) {
+            _sourceCategoryFilters[key] = value;
+          }
+        });
+      } catch (e) {
+        // use defaults
+      }
+    } else {
+      // First run or no saved filters: Default to ONLY Matrix enabled
+      _sourceCategoryFilters = Map.from(DefaultSettings.sourceCategoryFilters);
+    }
   }
 
   // Toggle methods
@@ -361,37 +371,7 @@ class SettingsProvider with ChangeNotifier {
   }
 
   // Ratings & Played Methods
-  int getRating(String showName) {
-    return _showRatings[showName] ?? 0;
-  }
-
-  bool isPlayed(String showName) {
-    return _playedShows.contains(showName);
-  }
-
-  Future<void> setRating(String showName, int rating) async {
-    _showRatings[showName] = rating;
-    notifyListeners();
-    await _saveRatings();
-  }
-
-  Future<void> togglePlayed(String showName) async {
-    if (_playedShows.contains(showName)) {
-      _playedShows.remove(showName);
-    } else {
-      _playedShows.add(showName);
-    }
-    notifyListeners();
-    await _savePlayedShows();
-  }
-
-  Future<void> markAsPlayed(String showName) async {
-    if (!_playedShows.contains(showName)) {
-      _playedShows.add(showName);
-      notifyListeners();
-      await _savePlayedShows();
-    }
-  }
+  // Ratings & Played Methods moved to CatalogService
 
   void toggleRandomOnlyUnplayed() => _updatePreference(
       _randomOnlyUnplayedKey, _randomOnlyUnplayed = !_randomOnlyUnplayed);
@@ -468,28 +448,7 @@ class SettingsProvider with ChangeNotifier {
   // This chunk will be for adding the fields and methods.
   // I will place them before "Persistence Helpers".
 
-  Future<void> _initSourceFilters() async {
-    _filterHighestShnid = _prefs.getBool(_filterHighestShnidKey) ?? true;
-
-    final String? catsJson = _prefs.getString(_sourceCategoryFiltersKey);
-    if (catsJson != null) {
-      try {
-        final Map<String, dynamic> decoded = json.decode(catsJson);
-        // Merge with defaults to handle any new keys in future
-        decoded.forEach((key, value) {
-          if (_sourceCategoryFilters.containsKey(key) && value is bool) {
-            _sourceCategoryFilters[key] = value;
-          }
-        });
-      } catch (e) {
-        // use defaults
-      }
-    } else {
-      // First run or no saved filters: Default to ONLY Matrix enabled
-      // First run or no saved filters: Default to ONLY Matrix enabled
-      _sourceCategoryFilters = Map.from(DefaultSettings.sourceCategoryFilters);
-    }
-  }
+  // _initSourceFilters moved up
 
   // Toggles
 
@@ -512,14 +471,5 @@ class SettingsProvider with ChangeNotifier {
   Future<void> _updateIntPreference(String key, int value) async {
     await _prefs.setInt(key, value);
     notifyListeners();
-  }
-
-  Future<void> _saveRatings() async {
-    final String encoded = json.encode(_showRatings);
-    await _prefs.setString(_showRatingsKey, encoded);
-  }
-
-  Future<void> _savePlayedShows() async {
-    await _prefs.setStringList(_playedShowsKey, _playedShows.toList());
   }
 }

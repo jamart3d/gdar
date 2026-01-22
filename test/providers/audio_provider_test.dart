@@ -12,6 +12,7 @@ import 'package:just_audio/just_audio.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:just_audio_background/just_audio_background.dart';
+import 'package:shakedown/services/catalog_service.dart';
 
 import 'audio_provider_test.mocks.dart';
 
@@ -20,12 +21,14 @@ import 'audio_provider_test.mocks.dart';
       as: #MockAudioPlayerRelaxed, onMissingStub: OnMissingStub.returnDefault),
   MockSpec<ShowListProvider>(),
   MockSpec<SettingsProvider>(),
+  MockSpec<CatalogService>(),
 ])
 void main() {
   late AudioProvider audioProvider;
   late MockAudioPlayerRelaxed mockAudioPlayer;
   late MockShowListProvider mockShowListProvider;
   late MockSettingsProvider mockSettingsProvider;
+  late MockCatalogService mockCatalogService;
   late StreamController<ProcessingState> processingStateController;
   late StreamController<Duration> positionController;
   late StreamController<int?> currentIndexController;
@@ -40,6 +43,7 @@ void main() {
     mockSettingsProvider = MockSettingsProvider();
     mockShowListProvider = MockShowListProvider();
     mockAudioPlayer = MockAudioPlayerRelaxed();
+    mockCatalogService = MockCatalogService();
     processingStateController = StreamController<ProcessingState>.broadcast();
     positionController = StreamController<Duration>.broadcast();
     currentIndexController = StreamController<int?>.broadcast();
@@ -49,10 +53,11 @@ void main() {
     when(mockSettingsProvider.randomOnlyHighRated).thenReturn(false);
     when(mockSettingsProvider.randomExcludePlayed).thenReturn(false);
     when(mockSettingsProvider.playRandomOnCompletion).thenReturn(false);
-    when(mockSettingsProvider.markAsPlayed(any)).thenAnswer((_) async {});
     when(mockSettingsProvider.showGlobalAlbumArt).thenReturn(true);
-    when(mockSettingsProvider.getRating(any)).thenReturn(0);
-    when(mockSettingsProvider.isPlayed(any)).thenReturn(false);
+
+    // Stub CatalogService methods
+    when(mockCatalogService.getRating(any)).thenReturn(0);
+    when(mockCatalogService.isPlayed(any)).thenReturn(false);
 
     when(mockAudioPlayer.processingStateStream)
         .thenAnswer((_) => processingStateController.stream);
@@ -76,11 +81,13 @@ void main() {
 
     when(mockShowListProvider.isLoading).thenReturn(false);
     when(mockShowListProvider.allShows).thenReturn([]);
+    // when(mockShowListProvider.initializationComplete).thenAnswer((_) async {}); // Init removed from provider? Check later.
     when(mockShowListProvider.initializationComplete).thenAnswer((_) async {});
     when(mockShowListProvider.isSourceAllowed(any)).thenReturn(true);
 
     // Create AudioProvider AFTER stubbing
-    audioProvider = AudioProvider(audioPlayer: mockAudioPlayer);
+    audioProvider = AudioProvider(
+        audioPlayer: mockAudioPlayer, catalogService: mockCatalogService);
     audioProvider.update(mockShowListProvider, mockSettingsProvider);
   });
 
@@ -126,9 +133,11 @@ void main() {
       await tester.runAsync(() async {
         // Stub SettingsProvider methods
         for (var i = 1; i <= 2; i++) {
-          final name = 'Grateful Dead at Venue $i on 2025-11-15';
-          when(mockSettingsProvider.getRating(name)).thenReturn(0);
-          when(mockSettingsProvider.isPlayed(name)).thenReturn(false);
+          // final name = 'Grateful Dead at Venue $i on 2025-11-15'; // Unused
+          final sourceId = 'source${i - 1}';
+          when(mockCatalogService.getRating(sourceId)).thenReturn(0);
+          when(mockCatalogService.isPlayed(sourceId)).thenReturn(false);
+          // Assuming source ID structure from createDummyShow source${index-1}
         }
         when(mockSettingsProvider.randomOnlyUnplayed).thenReturn(false);
         when(mockSettingsProvider.randomOnlyHighRated).thenReturn(false);
@@ -179,13 +188,12 @@ void main() {
       await tester.runAsync(() async {
         // Stub SettingsProvider
         for (var i = 1; i <= 2; i++) {
-          final name = 'Grateful Dead at Venue $i on 2025-11-15';
-          when(mockSettingsProvider.getRating(name)).thenReturn(0);
-          when(mockSettingsProvider.isPlayed(name)).thenReturn(false);
-          // Stub source rating
-          when(mockSettingsProvider.getRating('source0'))
-              .thenReturn(0); // Dummy sources start at source0
+          // final name = 'Grateful Dead at Venue $i on 2025-11-15'; // Unused
+          final sourceId = 'source${i - 1}';
+          when(mockCatalogService.getRating(sourceId)).thenReturn(0);
+          when(mockCatalogService.isPlayed(sourceId)).thenReturn(false);
         }
+        when(mockCatalogService.getRating('source0')).thenReturn(0);
         when(mockSettingsProvider.randomOnlyUnplayed).thenReturn(false);
         when(mockSettingsProvider.randomOnlyHighRated).thenReturn(false);
 

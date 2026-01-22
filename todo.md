@@ -97,6 +97,11 @@ This file tracks planned features, enhancements, and bug fixes for the gdar appl
     - **Consistent Navigation:** Switched `PlaybackScreen` -> `SettingsScreen` navigation to `PageRouteBuilder` with `Duration.zero` (instant) to match `ShowListScreen` behavior, eliminating the visual "pop".
   - **Verification:** Manually verified seamless transitions and animation continuity between Show List, Playback, and Settings screens. Unit testing full navigation proved complex due to layout dependencies, but the logic is covered by the manual verification plan.
 
+- [ ] **Settings UX Enhancement:**
+  - [ ] When user enables "Play Random Show on Completion" in Settings → Random Playback, suggest also enabling "Advanced Cache" (Settings → Playback) to improve playback reliability while device sleeps.
+  - **Implementation:** Show a SnackBar or Dialog with message: "For best results during deep sleep, consider enabling Advanced Cache in Playback settings."
+  - **Benefit:** Proactively guides users to optimal configuration for continuous random playback.
+
 - [ ] **Improve Playback Controls:** Enhance the layout and interactivity of controls in the Playback Screen.
   - [ ] **Venue Name Positioning:**
     - [ ] Add setting to display venue name under the date in Playback Screen appbar.
@@ -154,7 +159,7 @@ This file tracks planned features, enhancements, and bug fixes for the gdar appl
 
 - [ ] **Hide Forward/Reverse Controls:** Add setting to hide Next/Previous track buttons in the player interfaces for a minimalist look.
 
-- [ ] **Android Caching:** Implement `LockCachingAudioSource` for Android platform to enable full-file buffering.
+- [x] **Android Caching:** Implement `LockCachingAudioSource` for Android platform to enable full-file buffering.
 
 - [ ] **Restrict Playback Navigation:** Ensure Next/Previous buttons in `MiniPlayer` and `PlaybackControls` only navigate within the current source/show.
   - **Feature:** Add a **Setting** to toggle this behavior (Default: TBD).
@@ -172,7 +177,7 @@ This file tracks planned features, enhancements, and bug fixes for the gdar appl
 
 - [ ] **Calendar Feature:** View shows by date on a calendar interface (e.g., "On This Day").
 
-- [ ] **Play Count & History**: Track how many times a show has been played.
+- [x] **Play Count & History**: Track how many times a show has been played.
     - *Synergy:* Can play off the "History View" logic from Native Pre-Queueing.
     - Display only in Rate Dialog or Rated Shows Library (not in Playback Controls).
 
@@ -232,3 +237,17 @@ Balanced app size with performance and robust user data storage.
 
 - [ ] Refactor `AudioPlayer` state management logic
 - [ ] **Deprecation Cleanup:** `ConcatenatingAudioSource` is deprecated in `just_audio` 0.10.0+. Use `AudioPlayer.setAudioSources(List<AudioSource>)` instead. Ensure no new code uses the deprecated class.
+
+### Storage Architecture Cleanup (Post-Hive Migration)
+
+- [ ] **Backup & Sync Feature:**
+  - **Priority:** Low (Feature Request)
+  - **Context:** All user data is now consolidated in Hive boxes (`ratings`, `play_counts`, `user_history`).
+  - **Action:** Create a service to serialize these 3 boxes to a JSON file for user export/import.
+  - **Benefit:** Enables users to backup their listening history and restore it on new devices.
+
+- [ ] **Code Cleanup:**
+  - **Priority:** Low
+  - **Action:** Remove commented-out legacy getters/fields in `SettingsProvider` (e.g., `_showRatings`, `_playedShows`) to reduce code noise.
+  - **Context:** These fields are no longer used after migration to `CatalogService` as the single source of truth for user data.
+

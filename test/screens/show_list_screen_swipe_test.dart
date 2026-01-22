@@ -5,6 +5,7 @@ import 'package:shakedown/models/source.dart';
 import 'package:shakedown/providers/audio_provider.dart';
 import 'package:shakedown/providers/settings_provider.dart';
 import 'package:shakedown/providers/show_list_provider.dart';
+import 'package:shakedown/services/catalog_service.dart';
 import 'package:shakedown/ui/screens/show_list_screen.dart';
 import 'package:mockito/mockito.dart';
 import 'package:provider/provider.dart';
@@ -34,22 +35,26 @@ class MockAudioProvider extends Mock implements AudioProvider {
 
 class MockSettingsProvider extends SettingsProvider {
   MockSettingsProvider(super.prefs);
-
-  final Map<String, int> _ratings = {};
-
-  @override
-  Future<void> setRating(String key, int rating) async {
-    _ratings[key] = rating;
-    notifyListeners();
-  }
-
-  @override
-  int getRating(String key) => _ratings[key] ?? 0;
-
   @override
   bool get uiScale => false;
   @override
   bool get playRandomOnStartup => false;
+
+  // Note: setRating/getRating removed as they are no longer in SettingsProvider
+}
+
+class MockCatalogService extends Mock implements CatalogService {
+  final Map<String, int> _ratings = {};
+
+  @override
+  int getRating(String? sourceId) => _ratings[sourceId] ?? 0;
+
+  @override
+  Future<void> setRating(String? sourceId, int rating) async {
+    if (sourceId != null) {
+      _ratings[sourceId] = rating;
+    }
+  }
 }
 
 class MockShowListProvider extends ChangeNotifier implements ShowListProvider {
@@ -68,7 +73,7 @@ class MockShowListProvider extends ChangeNotifier implements ShowListProvider {
   String? loadingShowKey;
 
   @override
-  String? expandedShowKey; // Add this getter
+  String? expandedShowKey;
 
   void setShows(List<Show> shows) {
     _filteredShows = shows;
@@ -97,10 +102,11 @@ class MockShowListProvider extends ChangeNotifier implements ShowListProvider {
   Future<void> checkArchiveStatus() async {}
 
   @override
-  Future<void> fetchShows({bool forceRefresh = false}) async {}
+  Future<void> fetchShows(SharedPreferences prefs,
+      {bool forceRefresh = false}) async {}
 
   @override
-  Future<void> init() async {}
+  Future<void> init(SharedPreferences prefs) async {}
 
   @override
   bool isShowExpanded(String key) => false;
@@ -111,7 +117,6 @@ class MockShowListProvider extends ChangeNotifier implements ShowListProvider {
   @override
   int get totalShnids => 0;
 
-  // Alias to filteredShows for mock purposes so we have data
   @override
   List<Show> get allShows => _filteredShows;
 
@@ -121,32 +126,31 @@ class MockShowListProvider extends ChangeNotifier implements ShowListProvider {
     try {
       return _filteredShows.firstWhere((s) => s.key == key);
     } catch (_) {
-      return _filteredShows.first; // Fallback for mock
+      return _filteredShows.first;
     }
   }
 
   @override
-  bool isShowLoading(String key) => false; // Restored
+  bool isShowLoading(String key) => false;
 
   @override
-  void setArchiveStatus(bool isReachable) {} // Restored
+  void setArchiveStatus(bool isReachable) {}
 
   @override
-  void setPlayingShow(String? showName, String? sourceId) {} // Restored
+  void setPlayingShow(String? showName, String? sourceId) {}
 
   @override
-  void update(SettingsProvider settings) {} // Restored
+  void update(SettingsProvider settings) {}
 
   @override
-  bool get isArchiveReachable => false; // Restored
+  bool get isArchiveReachable => false;
 
   @override
-  bool get hasCheckedArchive => false; // Restored
+  bool get hasCheckedArchive => false;
 
   @override
   Set<String> get availableCategories => {};
 
-  // Retry without override annotation to test lint theory
   void retry() {}
 
   @override
@@ -171,6 +175,7 @@ void main() {
   late MockAudioProvider mockAudioProvider;
   late MockSettingsProvider mockSettingsProvider;
   late MockShowListProvider mockShowListProvider;
+  late MockCatalogService mockCatalogService;
 
   setUp(() async {
     SharedPreferences.setMockInitialValues({});
@@ -178,6 +183,7 @@ void main() {
     mockAudioProvider = MockAudioProvider();
     mockSettingsProvider = MockSettingsProvider(prefs);
     mockShowListProvider = MockShowListProvider();
+    mockCatalogService = MockCatalogService();
   });
 
   Widget createWidgetUnderTest() {
@@ -188,6 +194,7 @@ void main() {
         ChangeNotifierProvider<AudioProvider>.value(value: mockAudioProvider),
         ChangeNotifierProvider<ShowListProvider>.value(
             value: mockShowListProvider),
+        Provider<CatalogService>.value(value: mockCatalogService),
       ],
       child: const MaterialApp(
         home: ShowListScreen(),
@@ -208,29 +215,25 @@ void main() {
         sources: [source],
         hasFeaturedTrack: false);
 
-    mockShowListProvider.setShows([show]); // Use modifiable list
+    mockShowListProvider.setShows([show]);
 
     await tester.pumpWidget(createWidgetUnderTest());
-    await tester.pump(const Duration(seconds: 1)); // Allow animations to settle
+    await tester.pump(const Duration(seconds: 1));
 
     expect(find.text('Venue'), findsOneWidget);
 
-    // Find Dismissible
     final dismissibleFinder = find.byType(Dismissible);
     expect(dismissibleFinder, findsOneWidget);
 
-    // Verify swipe action starts
     await tester.drag(dismissibleFinder, const Offset(-500.0, 0.0));
-    // Pump frames to allow animation and processing
     await tester.pump();
     await tester.pump(const Duration(seconds: 1)); // Animation completion
 
     // Verification:
-    // 1. Check if setRating(-1) was called
-    expect(mockSettingsProvider.getRating('source1'), -1);
+    // 1. Check if setRating(-1) was called on CatalogService
+    expect(mockCatalogService.getRating('source1'), -1);
 
     // 2. The item should be GONE now.
-    // confirmDismiss returned true, onDismissed called dismissShow, mock updated list, UI rebuilt.
     expect(find.text('Venue'), findsNothing);
   });
 }

@@ -12,6 +12,7 @@ class ConditionalMarquee extends StatelessWidget {
   final double blankSpace;
   final double fadingEdgeStartFraction;
   final double fadingEdgeEndFraction;
+  final bool enableAnimation;
 
   const ConditionalMarquee({
     super.key,
@@ -23,12 +24,23 @@ class ConditionalMarquee extends StatelessWidget {
     this.blankSpace = 40.0,
     this.fadingEdgeStartFraction = 0.1,
     this.fadingEdgeEndFraction = 0.1,
+    this.enableAnimation = true,
   });
 
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
+        if (!enableAnimation) {
+          return Text(
+            text,
+            style: style,
+            textAlign: textAlign,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          );
+        }
+
         // Use a TextPainter to determine if the text will overflow
         final textPainter = TextPainter(
           text: TextSpan(text: text, style: style),
@@ -50,7 +62,6 @@ class ConditionalMarquee extends StatelessWidget {
             ),
           );
         } else {
-          // Otherwise, show a standard Text widget
           // Otherwise, show a standard Text widget
           return Text(
             text,

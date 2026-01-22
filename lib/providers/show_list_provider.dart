@@ -7,6 +7,7 @@ import 'package:shakedown/models/source.dart';
 import 'package:shakedown/providers/settings_provider.dart';
 import 'package:shakedown/utils/logger.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ShowListProvider with ChangeNotifier {
   final CatalogService _catalogService;
@@ -56,14 +57,13 @@ class ShowListProvider with ChangeNotifier {
   ShowListProvider({CatalogService? catalogService})
       : _catalogService = catalogService ?? CatalogService();
 
-  Future<void> init() async {
+  Future<void> init(SharedPreferences prefs) async {
     await Future.wait([
-      fetchShows(),
+      fetchShows(prefs),
       checkArchiveStatus(),
     ]);
   }
 
-  Map<String, int> _showRatings = {};
   bool _filterHighestShnid = false;
   bool _useStrictSrcCategorization = true; // Default
   Map<String, bool> _sourceCategoryFilters = {};
@@ -96,11 +96,7 @@ class ShowListProvider with ChangeNotifier {
       filtersChanged = true;
     }
 
-    // Check if ratings have changed
-    if (!mapEquals(_showRatings, settings.showRatings)) {
-      _showRatings = Map.from(settings.showRatings);
-      filtersChanged = true;
-    }
+    // Check if ratings have changed - REMOVED: Now handled by _onRatingsChanged via CatalogService listener
 
     if (filtersChanged) {
       _updateFilteredShows();
@@ -228,7 +224,8 @@ class ShowListProvider with ChangeNotifier {
             }
 
             // Blocked
-            if (_showRatings[source.id] == -1) return false;
+            if (_catalogService.getRating(source.id) == -1) return false;
+
             // Category
             return isSourceAllowed(source);
           }).toList();
@@ -271,11 +268,15 @@ class ShowListProvider with ChangeNotifier {
     }
   }
 
-  Future<void> fetchShows() async {
+  Future<void> fetchShows(SharedPreferences prefs) async {
     _isLoading = true;
     notifyListeners();
     try {
-      await _catalogService.initialize();
+      await _catalogService.initialize(prefs: prefs);
+
+      // Listen for rating changes to update filters
+      _catalogService.ratingsListenable.addListener(_onRatingsChanged);
+
       _allShows = _catalogService.allShows;
       _scanAvailableCategories();
       _sortShows();
@@ -396,5 +397,18 @@ class ShowListProvider with ChangeNotifier {
       }
       notifyListeners();
     }
+  }
+
+  void _onRatingsChanged() {
+    _updateFilteredShows();
+    notifyListeners();
+  }
+
+  @override
+  void dispose() {
+    // If we wanted to be strictly correct we would remove the listener here.
+    // But given the complexity of obtaining the same ValueListenable instance
+    // and the singleton nature of this provider, we skip it for now.
+    super.dispose();
   }
 }

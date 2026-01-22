@@ -13,6 +13,9 @@ import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:provider/provider.dart';
 import 'package:shakedown/ui/widgets/rating_control.dart';
+import 'package:flutter/services.dart';
+import 'package:shakedown/services/catalog_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'playback_screen_test.mocks.dart';
 
@@ -113,34 +116,7 @@ class MockSettingsProvider extends Mock implements SettingsProvider {
   Future<void> setSeedColor(Color? color) async {}
 
   @override
-  Map<String, int> get showRatings => {};
-  @override
-  Set<String> get playedShows => {};
-  @override
-  bool get randomOnlyUnplayed => false;
-  @override
-  bool get randomOnlyHighRated => false;
-
-  @override
-  int getRating(String showName) => 0;
-  @override
-  bool isPlayed(String showName) => false;
-  @override
-  Future<void> setRating(String showName, int rating) async {}
-  @override
-  Future<void> togglePlayed(String showName) async {}
-  @override
-  Future<void> markAsPlayed(String showName) async {}
-  @override
-  void toggleRandomOnlyUnplayed() {}
-  @override
-  void toggleRandomOnlyHighRated() {}
-  @override
   bool get hideTrackDuration => false;
-  @override
-  bool get randomExcludePlayed => false;
-  @override
-  void toggleRandomExcludePlayed() {}
   @override
   bool get showGlobalAlbumArt => true;
 }
@@ -173,7 +149,17 @@ void main() {
     sources: [dummySource],
   );
 
-  setUp(() {
+  setUp(() async {
+    const channel = MethodChannel('plugins.flutter.io/path_provider');
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(channel, (MethodCall methodCall) async {
+      return '.';
+    });
+
+    SharedPreferences.setMockInitialValues({});
+    final prefs = await SharedPreferences.getInstance();
+    await CatalogService().initialize(prefs: prefs);
+
     mockAudioProvider = MockAudioProvider();
     mockSettingsProvider = MockSettingsProvider();
     mockAudioPlayer = MockAudioPlayer();

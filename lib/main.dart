@@ -81,7 +81,7 @@ class _GdarAppState extends State<GdarApp> {
     // Start initialization but don't block the UI
     // Only init if it's the internal one (or if we want to force it, but for tests we might want to skip)
     if (widget.showListProvider == null) {
-      _showListProvider.init();
+      _showListProvider.init(widget.prefs);
     }
 
     _initDeepLinks();

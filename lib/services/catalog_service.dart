@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shakedown/utils/logger.dart';
 import '../models/show.dart';
 import '../models/rating.dart';
@@ -20,6 +21,8 @@ class CatalogService {
   CatalogService._internal();
 
   late Box<Rating> _ratingsBox;
+  late Box<int> _playCountsBox;
+  late Box<bool> _historyBox; // Stores played status (Source ID -> true)
   List<Show>? _showsCache;
 
   bool _isInitialized = false;
@@ -29,7 +32,8 @@ class CatalogService {
   /// 1. Opens Hive Box for Ratings.
   /// 2. Loads JSON catalog (background isolate).
   Future<void> initialize(
-      {CatalogLoadingStrategy strategy =
+      {required SharedPreferences prefs,
+      CatalogLoadingStrategy strategy =
           CatalogLoadingStrategy.inMemory}) async {
     if (_isInitialized) return;
 
@@ -38,9 +42,14 @@ class CatalogService {
     // Register Adapters if not already registered (check ID 0 for Rating)
     if (!Hive.isAdapterRegistered(0)) Hive.registerAdapter(RatingAdapter());
 
-    // Open Ratings Box
+    // Open Boxes
     _ratingsBox = await Hive.openBox<Rating>('ratings');
-    logger.i('Hive Ratings Box opened.');
+    _playCountsBox = await Hive.openBox<int>('play_counts');
+    _historyBox = await Hive.openBox<bool>('user_history');
+    logger.i('Hive Boxes (Ratings, PlayCounts, History) opened.');
+
+    // 1b. Migrate from SharedPreferences if needed
+    await _migrateFromPreferences(prefs);
 
     // 2. Load Shows (JSON)
     if (_showsCache == null) {
@@ -152,8 +161,126 @@ class CatalogService {
     return r?.rating ?? 0; // Return 0 if not found
   }
 
+  // Play Count Methods
+  Future<void> incrementPlayCount(String sourceId) async {
+    if (!_isInitialized) return;
+    int current = _playCountsBox.get(sourceId) ?? 0;
+    await _playCountsBox.put(sourceId, current + 1);
+  }
+
+  int getPlayCount(String sourceId) {
+    if (!_isInitialized) return 0;
+    return _playCountsBox.get(sourceId) ?? 0;
+  }
+
+  ValueListenable<Box<int>> get playCountsListenable {
+    if (!_isInitialized) {
+      throw Exception('CatalogService not initialized');
+    }
+    return _playCountsBox.listenable();
+  }
+
+  // History Methods
+  bool isPlayed(String sourceId) {
+    if (!_isInitialized) return false;
+    return _historyBox.get(sourceId) ?? false;
+  }
+
+  Future<void> markAsPlayed(String sourceId) async {
+    if (!_isInitialized) return;
+    if (!_historyBox.containsKey(sourceId)) {
+      await _historyBox.put(sourceId, true);
+    }
+  }
+
+  Future<void> togglePlayed(String sourceId) async {
+    if (!_isInitialized) return;
+    if (_historyBox.containsKey(sourceId)) {
+      await _historyBox.delete(sourceId);
+    } else {
+      await _historyBox.put(sourceId, true);
+    }
+  }
+
+  // Set Rating (Alias for addRating to match existing pattern better)
+  Future<void> setRating(String sourceId, int rating) async {
+    await addRating(sourceId, rating);
+  }
+
+  ValueListenable<Box<bool>> get historyListenable {
+    if (!_isInitialized) throw Exception('CatalogService not initialized');
+    return _historyBox.listenable();
+  }
+
+  ValueListenable<Box<Rating>> get ratingsListenable {
+    if (!_isInitialized) throw Exception('CatalogService not initialized');
+    return _ratingsBox.listenable();
+  }
+
   // Clean up
   Future<void> close() async {
-    if (_isInitialized) await _ratingsBox.close();
+    if (_isInitialized) {
+      await _ratingsBox.close();
+      await _playCountsBox.close();
+      await _historyBox.close();
+    }
+  }
+
+  // Migration Logic
+  // Migration Logic
+  Future<void> _migrateFromPreferences(SharedPreferences prefs) async {
+    const String showRatingsKey = 'show_ratings';
+    const String playedShowsKey = 'played_shows';
+
+    bool migrationOccurred = false;
+
+    // Migrate Ratings
+    if (prefs.containsKey(showRatingsKey)) {
+      logger.i('Migrating Ratings from SharedPreferences...');
+      final String? ratingsJson = prefs.getString(showRatingsKey);
+      if (ratingsJson != null) {
+        try {
+          final Map<String, dynamic> decoded = json.decode(ratingsJson);
+          for (var entry in decoded.entries) {
+            final sourceId = entry.key;
+            final ratingVal = entry.value as int;
+            // Only migrate if not already in Hive
+            if (!_ratingsBox.containsKey(sourceId)) {
+              await addRating(sourceId, ratingVal);
+            }
+          }
+        } catch (e) {
+          logger.e('Error migrating ratings: $e');
+        }
+      }
+      await prefs.remove(showRatingsKey);
+      migrationOccurred = true;
+    }
+
+    // Migrate History
+    if (prefs.containsKey(playedShowsKey)) {
+      logger.i('Migrating History from SharedPreferences...');
+      final List<String>? playedList = prefs.getStringList(playedShowsKey);
+      if (playedList != null) {
+        for (var sourceId in playedList) {
+          if (!_historyBox.containsKey(sourceId)) {
+            await _historyBox.put(sourceId, true);
+          }
+        }
+      }
+      await prefs.remove(playedShowsKey);
+      migrationOccurred = true;
+    }
+
+    if (migrationOccurred) {
+      logger.i('Migration completed successfully.');
+    }
+  }
+
+  @visibleForTesting
+  Future<void> reset() async {
+    await close();
+    _isInitialized = false;
+    _showsCache = null;
   }
 }

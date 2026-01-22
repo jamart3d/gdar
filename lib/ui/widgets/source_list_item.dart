@@ -4,6 +4,7 @@ import 'package:shakedown/ui/widgets/animated_gradient_border.dart';
 import 'package:shakedown/providers/settings_provider.dart';
 import 'package:shakedown/ui/widgets/rating_control.dart';
 import 'package:shakedown/ui/widgets/src_badge.dart';
+import 'package:shakedown/services/catalog_service.dart';
 
 import 'package:provider/provider.dart';
 
@@ -65,8 +66,8 @@ class SourceListItem extends StatelessWidget {
     // Shadow Visibility
     bool showShadow = !(isTrueBlackMode && !isSourcePlaying);
 
-    double glowOpacity = (isSourcePlaying ? 1.0 : 0.25) *
-        (settingsProvider.glowMode / 100.0);
+    double glowOpacity =
+        (isSourcePlaying ? 1.0 : 0.25) * (settingsProvider.glowMode / 100.0);
 
     Widget buildContent() {
       return Container(
@@ -141,41 +142,46 @@ class SourceListItem extends StatelessWidget {
                                 src: source.src!, isPlaying: isSourcePlaying),
                             const SizedBox(width: 8),
                           ],
-                          RatingControl(
-                            rating: settingsProvider.getRating(source.id),
-                            size: 18 * scaleFactor,
-                            isPlayed: settingsProvider.isPlayed(source.id),
-                            onTap: (isSourcePlaying ||
-                                    alwaysShowRatingInteraction)
-                                ? () async {
-                                    final currentRating =
-                                        settingsProvider.getRating(source.id);
-                                    await showDialog(
-                                      context: context,
-                                      builder: (context) => RatingDialog(
-                                        initialRating: currentRating,
-                                        sourceId: source.id,
-                                        sourceUrl: source.tracks.isNotEmpty
-                                            ? source.tracks.first.url
-                                            : null,
-                                        isPlayed: settingsProvider
-                                            .isPlayed(source.id),
-                                        onRatingChanged: (newRating) {
-                                          settingsProvider.setRating(
-                                              source.id, newRating);
-                                        },
-                                        onPlayedChanged: (bool isPlayed) {
-                                          if (isPlayed !=
-                                              settingsProvider
-                                                  .isPlayed(source.id)) {
-                                            settingsProvider
-                                                .togglePlayed(source.id);
-                                          }
-                                        },
-                                      ),
-                                    );
-                                  }
-                                : null,
+                          ValueListenableBuilder(
+                            valueListenable: CatalogService().ratingsListenable,
+                            builder: (context, _, __) {
+                              final catalog = CatalogService();
+                              final rating = catalog.getRating(source.id);
+                              final isPlayed = catalog.isPlayed(source.id);
+
+                              return RatingControl(
+                                rating: rating,
+                                size: 18 * scaleFactor,
+                                isPlayed: isPlayed,
+                                onTap: (isSourcePlaying ||
+                                        alwaysShowRatingInteraction)
+                                    ? () async {
+                                        await showDialog(
+                                          context: context,
+                                          builder: (context) => RatingDialog(
+                                            initialRating: rating,
+                                            sourceId: source.id,
+                                            sourceUrl: source.tracks.isNotEmpty
+                                                ? source.tracks.first.url
+                                                : null,
+                                            isPlayed: isPlayed,
+                                            onRatingChanged: (newRating) {
+                                              catalog.setRating(
+                                                  source.id, newRating);
+                                            },
+                                            onPlayedChanged:
+                                                (bool newIsPlayed) {
+                                              if (newIsPlayed !=
+                                                  catalog.isPlayed(source.id)) {
+                                                catalog.togglePlayed(source.id);
+                                              }
+                                            },
+                                          ),
+                                        );
+                                      }
+                                    : null,
+                              );
+                            },
                           ),
                         ],
                       ),
