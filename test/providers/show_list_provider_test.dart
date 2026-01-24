@@ -187,5 +187,16 @@ void main() {
       showListProvider.collapseCurrentShow();
       expect(showListProvider.expandedShowKey, isNull);
     });
+
+    test('random button usage state tracking', () {
+      expect(showListProvider.hasUsedRandomButton, isFalse);
+
+      showListProvider.markRandomButtonUsed();
+      expect(showListProvider.hasUsedRandomButton, isTrue);
+
+      // Verify idempotency (no error or state change on repeated call)
+      showListProvider.markRandomButtonUsed();
+      expect(showListProvider.hasUsedRandomButton, isTrue);
+    });
   });
 }

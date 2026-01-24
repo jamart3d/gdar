@@ -65,14 +65,6 @@ class SettingsProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  // Shakedown Tween Setting
-  static const String _enableShakedownTweenKey = 'enable_shakedown_tween';
-  late bool _enableShakedownTween;
-  bool get enableShakedownTween => _enableShakedownTween;
-
-  void toggleEnableShakedownTween() => _updatePreference(
-      _enableShakedownTweenKey, _enableShakedownTween = !_enableShakedownTween);
-
   void toggleShowSplashScreen() => _updatePreference(
       _showSplashScreenKey, _showSplashScreen = !_showSplashScreen);
 
@@ -155,6 +147,13 @@ class SettingsProvider with ChangeNotifier {
   void toggleShowDebugLayout() => _updatePreference(
       _showDebugLayoutKey, _showDebugLayout = !_showDebugLayout);
 
+  // Shakedown Tween Setting (Internal)
+  static const String _enableShakedownTweenKey = 'enable_shakedown_tween';
+  late bool _enableShakedownTween;
+  bool get enableShakedownTween => _enableShakedownTween;
+  void toggleEnableShakedownTween() => _updatePreference(
+      _enableShakedownTweenKey, _enableShakedownTween = !_enableShakedownTween);
+
   // MethodChannel for ADB UI scale testing
   static const MethodChannel _uiScaleChannel =
       MethodChannel('com.jamart3d.shakedown/ui_scale');
@@ -208,9 +207,6 @@ class SettingsProvider with ChangeNotifier {
 
     _onboardingCompletedVersion =
         _prefs.getInt(_onboardingCompletedVersionKey) ?? 0;
-
-    _enableShakedownTween =
-        _prefs.getBool(_enableShakedownTweenKey) ?? false; // Default OFF
 
     _showTrackNumbers =
         _prefs.getBool(_trackNumberKey) ?? DefaultSettings.showTrackNumbers;
@@ -308,6 +304,8 @@ class SettingsProvider with ChangeNotifier {
 
     _marqueeEnabled = _prefs.getBool(_marqueeEnabledKey) ?? true;
     _showDebugLayout = _prefs.getBool(_showDebugLayoutKey) ?? false;
+    _enableShakedownTween =
+        _prefs.getBool(_enableShakedownTweenKey) ?? true; // Default OFF
 
     final seedColorValue = _prefs.getInt(_seedColorKey);
     if (seedColorValue != null) {

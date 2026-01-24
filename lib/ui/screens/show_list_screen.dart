@@ -43,6 +43,8 @@ class _ShowListScreenState extends State<ShowListScreen>
   late final Animation<double> _animation;
   late AnimationController _searchPulseController;
   late Animation<double> _searchPulseAnimation;
+  late AnimationController _randomPulseController;
+  late Animation<double> _randomPulseAnimation;
   StreamSubscription<PlayerState>? _playerStateSubscription;
   StreamSubscription<({Show show, Source source})>? _randomShowSubscription;
 
@@ -83,6 +85,28 @@ class _ShowListScreenState extends State<ShowListScreen>
         curve: Curves.easeInOut,
       ),
     );
+
+    // Random button pulse animation (Material 3 style)
+    _randomPulseController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1500),
+    );
+    _randomPulseAnimation = Tween<double>(begin: 1.0, end: 1.2).animate(
+      CurvedAnimation(
+        parent: _randomPulseController,
+        curve: Curves.easeInOutSine, // Smooth breathing curve
+      ),
+    );
+
+    // Initial check for random button usage
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        final showListProvider = context.read<ShowListProvider>();
+        if (!showListProvider.hasUsedRandomButton) {
+          _randomPulseController.repeat(reverse: true);
+        }
+      }
+    });
 
     // Subscribe to random show requests from AudioProvider (unified logic)
     final audioProvider = context.read<AudioProvider>();
@@ -222,6 +246,7 @@ class _ShowListScreenState extends State<ShowListScreen>
     _searchFocusNode.dispose();
     _animationController.dispose();
     _searchPulseController.dispose();
+    _randomPulseController.dispose();
     _randomShowSubscription?.cancel();
     _playerStateSubscription?.cancel();
     super.dispose();
@@ -560,6 +585,13 @@ class _ShowListScreenState extends State<ShowListScreen>
     final showListProvider = context.read<ShowListProvider>();
     final audioProvider = context.read<AudioProvider>();
 
+    // Mark used and stop animation
+    if (!showListProvider.hasUsedRandomButton) {
+      showListProvider.markRandomButtonUsed();
+      _randomPulseController.stop();
+      _randomPulseController.reset();
+    }
+
     // Check if a show is currently expanded and collapse it first.
     if (showListProvider.expandedShowKey != null) {
       showListProvider.collapseCurrentShow();
@@ -676,9 +708,12 @@ class _ShowListScreenState extends State<ShowListScreen>
               child: CircularProgressIndicator(strokeWidth: 2.5)),
         )
       else
-        IconButton(
-          icon: const Icon(Icons.question_mark_rounded),
-          onPressed: _handlePlayRandomShow,
+        ScaleTransition(
+          scale: _randomPulseAnimation,
+          child: IconButton(
+            icon: const Icon(Icons.question_mark_rounded),
+            onPressed: _handlePlayRandomShow,
+          ),
         ),
       ScaleTransition(
         scale: _searchPulseAnimation,
@@ -823,7 +858,7 @@ class _ShowListScreenState extends State<ShowListScreen>
               } catch (_) {}
             }
           },
-          child: const ShakedownTitle(fontSize: 20),
+          child: const ShakedownTitle(fontSize: 16),
         ),
         actions: _buildAppBarActions(),
       ),

@@ -145,6 +145,10 @@ This file tracks planned features, enhancements, and bug fixes for the gdar appl
     - **UI:** List of source badges that can be activated/deactivated.
     - **Constraint:** At least one category must remain active.
 
+- [ ] **Staggered List Motion:** Animate ShowListCards sliding/fading in when the list loads or search results update for a fluid, premium feel.
+
+- [ ] **Random Icon Animation:** When going from splash screen to show list screen, make the select random button (question mark) pulse in a Material 3 design way until it's been used once (per app start).
+
 - [ ] **Miniplayer Fix:** Fix miniplayer rebuild when navigating between shows screen and track list screen, or integrate it better with the playback controls from the playback screen.
 
 - [ ] **Miniplayer Visibility:** Ensure miniplayer remains visible when search bar is active (expanded) but the keyboard is dismissed, provided there is an active track.
@@ -195,8 +199,10 @@ This file tracks planned features, enhancements, and bug fixes for the gdar appl
 
 - [ ] **Compact Player Mode:** Move the play/pause control to an icon on the currently playing track in the list. When enabled and expanded, do not show any playback controls.
 - [ ] **Track Progress Indicator:** Add setting to show a progress indicator on the currently playing track list item. Should not show time labels and must respect the "Hide Track Duration" setting.
+- [ ] **Marquee Control:** In playback screen, when "Show Track Number" is enabled and a track title marquees, the track number itself should NOT marquee (stay fixed).
 
 - [ ] **Swipe to Block Follow-up:** When using "Swipe to Block" to remove a show, provide an option (or setting) to immediately trigger a new random selection.
+- [ ] **Swipe to Block Undo Animation:** When undoing a block (restoring the show), animate the "opposite" of the block action slowly for clear feedback.
 
 - [x] **RGB Glow Setting:** Add a setting to control/boost the "glow" intensity of the RGB border effect.
 
@@ -217,7 +223,15 @@ This file tracks planned features, enhancements, and bug fixes for the gdar appl
        - [x] **Implement MethodChannel:** Create a listener in `MainActivity.kt` for the ADB broadcast `com.jamart3d.shakedown.SET_UI_SCALE` to toggle `settingsProvider.uiScale` instantly without restarting the app.
        - [x] **Connect Flutter State:** Ensure the `settingsProvider` notifies listeners so the `ShowListCard` rebuilds immediately when the ADB command is sent.
 
-    2. **Layout Logic (Fixing "Too Big" Collisions)**
+    2. **Font Consistency Audit & Fixes (In Progress)**
+       - [x] **Standardize Onboarding Base Sizes:** Bump Onboarding body text (9.5 -> 14.0) and headers (10.5 -> 16.0) to match app standards.
+       - [x] **Splash Screen Scaling:** Apply `FontLayoutConfig` scale factor to Splash Screen checklist items so they respect the UI Scale setting.
+       - [x] **Settings Screen Normalization:** Bump base font sizes (10.0->15.0, 8.5->12.0) to matched Material standards.
+       - [x] **Font Preview Fix:** Ensure font selection dialog respects the current UI scale factor.
+       - [x] **Density Tuning:** Relax extreme visual density (`vertical: -4`) to accommodate larger fonts without cramping.
+       - [x] **Centralized Typography:** Create `AppTextStyles` helper to unify font scaling logic and eliminate ad-hoc `fontSize * scale` calculations.
+
+    3. **Layout Logic (Fixing "Too Big" Collisions)**
        - [ ] **Kill the "Double-Scaling" Bug:**
          - Wrap the Venue and Date text widgets in a `SizedBox` with a fixed height (e.g., `height: 32.0 * scaleFactor`).
          - **Crucial:** Set `textScaleFactor: 1.0` inside these widgets. This ensures that the system font size doesn't multiply with your 1.5x factor, which is currently causing the "Too Big" vertical overlap.
@@ -238,6 +252,7 @@ This file tracks planned features, enhancements, and bug fixes for the gdar appl
          - **Case A (Small):** Text is static, gap is clear.
          - **Case B (Medium):** Text fills width, gap is clear.
          - **Case C (Too Big):** Marquee activates horizontally, vertical height is locked to the card's `82.0 * scaleFactor`, gap is strictly preserved.
+       - [ ] **Smart Abbreviation:** When checking "UI Scale" on, automatically enable "Abbreviate Day & Month" (if not already handled) to save space.
 
 - [x] **Onboarding Page:**
   - **Feature:** Display an onboarding/welcome screen on first app launch.

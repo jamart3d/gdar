@@ -8,6 +8,8 @@ import 'package:shakedown/ui/widgets/conditional_marquee.dart';
 
 import 'package:just_audio/just_audio.dart';
 import 'package:provider/provider.dart';
+import 'package:shakedown/utils/font_layout_config.dart';
+import 'package:shakedown/ui/styles/app_typography.dart';
 import 'package:shakedown/utils/color_generator.dart';
 
 class MiniPlayer extends StatefulWidget {
@@ -59,7 +61,8 @@ class _MiniPlayerState extends State<MiniPlayer>
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
-    final double scaleFactor = settingsProvider.uiScale ? 1.25 : 1.0;
+    final double scaleFactor =
+        FontLayoutConfig.getEffectiveScale(context, settingsProvider);
     final double iconSize = 28 * scaleFactor;
     final double buttonSize = 48 * scaleFactor;
 
@@ -227,13 +230,13 @@ class _MiniPlayerState extends State<MiniPlayer>
                             final baseTitleStyle = textTheme.titleMedium
                                     ?.copyWith(fontSize: 19.0) ??
                                 const TextStyle(fontSize: 19.0);
-                            final titleStyle = baseTitleStyle
-                                .apply(fontSizeFactor: scaleFactor)
-                                .copyWith(
-                                  fontWeight: FontWeight.w600,
-                                  letterSpacing: 0.1,
-                                  color: colorScheme.onSurface,
-                                );
+                            final titleStyle = baseTitleStyle.copyWith(
+                              fontSize: AppTypography.responsiveFontSize(
+                                  context, 19.0),
+                              fontWeight: FontWeight.w600,
+                              letterSpacing: 0.1,
+                              color: colorScheme.onSurface,
+                            );
 
                             return Column(
                               crossAxisAlignment: CrossAxisAlignment.start,

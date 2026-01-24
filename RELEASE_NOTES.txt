@@ -1,8 +1,6 @@
 <en-US>
-Version 1.0.6: Offline Buffering & UI Enhancements
-
-- Offline Buffering: New setting to pre-cache tracks for uninterrupted playback during deep sleep. Dynamically displays cache status (tracks cached / limit).
-- Deep Sleep Reliability: Enhanced continuous random playback when screen is off. Pre-queues next show at end of current show.
-- UI Polish: Improved settings screen with real-time cache status updates.
-- Stability: Better error handling and state management for audio playback.
+Version 1.0.7: Shakedown Tween & UI Enhancements
+- Onboarding screen to help users understand the app's features and capabilities.
+- Layout Improvements: 
+- Under-the-hood: Code quality improvements and verification tests for settings.
 </en-US>

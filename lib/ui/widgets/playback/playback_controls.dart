@@ -4,6 +4,7 @@ import 'package:shakedown/providers/audio_provider.dart';
 import 'package:shakedown/providers/settings_provider.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:provider/provider.dart';
+import 'package:shakedown/utils/font_layout_config.dart';
 
 class PlaybackControls extends StatefulWidget {
   const PlaybackControls({super.key});
@@ -46,7 +47,8 @@ class _PlaybackControlsState extends State<PlaybackControls>
       return const SizedBox.shrink();
     }
 
-    final double scaleFactor = settingsProvider.uiScale ? 1.25 : 1.0;
+    final double scaleFactor =
+        FontLayoutConfig.getEffectiveScale(context, settingsProvider);
     final double iconSize = 32 * scaleFactor;
 
     return StreamBuilder<int?>(

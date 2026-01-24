@@ -27,6 +27,7 @@ import 'package:shakedown/ui/widgets/playback/playback_controls.dart';
 
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:shakedown/utils/font_layout_config.dart';
+import 'package:shakedown/ui/styles/app_typography.dart';
 
 class PlaybackScreen extends StatefulWidget {
   const PlaybackScreen({super.key});
@@ -306,29 +307,14 @@ class _PlaybackScreenState extends State<PlaybackScreen>
       title: Opacity(
         opacity: (1.0 - (panelPosition * 1.5)).clamp(0.0, 1.0),
         child: SizedBox(
-          height: (settingsProvider.appFont == 'rock_salt'
-                  ? (settingsProvider.uiScale ? 10.78 : 10.59)
-                  : settingsProvider.appFont == 'caveat'
-                      ? (settingsProvider.uiScale ? 14.5 : 15.0)
-                      : (settingsProvider.uiScale ? 9.17 : 11.0)) *
-              FontLayoutConfig.getEffectiveScale(context, settingsProvider) *
-              2.2,
+          height: AppTypography.responsiveFontSize(context, 11.0) * 2.2,
           child: ConditionalMarquee(
             text: formattedDate,
             style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                  fontSize: (settingsProvider.appFont == 'rock_salt'
-                          ? (settingsProvider.uiScale
-                              ? 10.78 // Rock Salt UI Scale ON: ~11px final
-                              : 10.59) // Rock Salt UI Scale OFF: ~9px final
-                          : settingsProvider.appFont == 'caveat'
-                              ? (settingsProvider.uiScale
-                                  ? 14.5 // Caveat UI Scale ON: ~17.4px final
-                                  : 15.0) // Caveat UI Scale OFF: 15px final
-                              : (settingsProvider.uiScale
-                                  ? 9.17 // Roboto/others UI Scale ON: ~11px final
-                                  : 11.0)) * // Roboto/others UI Scale OFF: 11px final
-                      FontLayoutConfig.getEffectiveScale(
-                          context, settingsProvider),
+                  fontSize: AppTypography.responsiveFontSize(
+                    context,
+                    settingsProvider.appFont == 'caveat' ? 13.0 : 11.0,
+                  ),
                 ),
           ),
         ),
@@ -359,9 +345,8 @@ class _PlaybackScreenState extends State<PlaybackScreen>
                           return RatingControl(
                             key: ValueKey('${ratingKey}_${rating}_$isPlayed'),
                             rating: rating,
-                            size: 16 *
-                                FontLayoutConfig.getEffectiveScale(
-                                    context, settingsProvider),
+                            size:
+                                AppTypography.responsiveFontSize(context, 16.0),
                             isPlayed: isPlayed,
                             onTap: () async {
                               final currentRating =
@@ -411,8 +396,7 @@ class _PlaybackScreenState extends State<PlaybackScreen>
         ),
         IconButton(
           icon: const Icon(Icons.settings_rounded),
-          iconSize: 24 *
-              FontLayoutConfig.getEffectiveScale(context, settingsProvider),
+          iconSize: AppTypography.responsiveFontSize(context, 24.0),
           onPressed: () async {
             // Pause global clock before navigating away to prevent visual jumps
             try {
@@ -482,21 +466,15 @@ class _PlaybackScreenState extends State<PlaybackScreen>
   }
 
   Widget _buildSetHeader(BuildContext context, String setName) {
-    final settingsProvider = context.watch<SettingsProvider>();
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
       child: Text(
         setName,
-        style: Theme.of(context)
-            .textTheme
-            .titleSmall
-            ?.copyWith(
+        style: Theme.of(context).textTheme.titleSmall?.copyWith(
+              fontSize: AppTypography.responsiveFontSize(context, 14.0),
               color: Theme.of(context).colorScheme.primary,
               fontWeight: FontWeight.bold,
-            )
-            .apply(
-                fontSizeFactor: FontLayoutConfig.getEffectiveScale(
-                    context, settingsProvider)),
+            ),
       ),
     );
   }
@@ -587,17 +565,12 @@ class _PlaybackScreenState extends State<PlaybackScreen>
     final baseTitleStyle =
         textTheme.bodyLarge ?? const TextStyle(fontSize: 16.0);
 
-    // Calculate fontSize with Rock Salt compensation
-    final double titleFontSize = settingsProvider.appFont == 'rock_salt'
-        ? (settingsProvider.uiScale
-            ? 11.5 // Rock Salt UI Scale ON: ~11.7px final (11.5 * 0.85 * 1.2)
-            : 12.0) // Rock Salt UI Scale OFF: ~10.2px final (12.0 * 0.85)
-        : (settingsProvider.uiScale
-            ? 13.33 // Roboto/others UI Scale ON: ~16px final (13.33 * 1.2)
-            : 16.0); // Roboto/others UI Scale OFF: 16px final
+    // Simplified centralized font sizing
+    final double titleFontSize =
+        AppTypography.responsiveFontSize(context, 16.0);
 
     final titleStyle = baseTitleStyle.copyWith(
-      fontSize: titleFontSize * scaleFactor,
+      fontSize: titleFontSize,
       fontWeight: isPlaying ? FontWeight.w600 : FontWeight.normal,
       color: isPlaying ? colorScheme.primary : colorScheme.onSurface,
     );
@@ -732,19 +705,14 @@ class _PlaybackScreenState extends State<PlaybackScreen>
                       children: [
                         Flexible(
                           child: SizedBox(
-                            height: (settingsProvider.appFont == 'rock_salt'
-                                    ? 14.12
-                                    : 18.0) *
-                                scaleFactor *
+                            height: AppTypography.responsiveFontSize(
+                                    context, 18.0) *
                                 2.2,
                             child: ConditionalMarquee(
                               text: currentShow.venue,
                               style: textTheme.headlineSmall?.copyWith(
-                                fontSize:
-                                    (settingsProvider.appFont == 'rock_salt'
-                                            ? 14.12
-                                            : 18.0) *
-                                        scaleFactor,
+                                fontSize: AppTypography.responsiveFontSize(
+                                    context, 18.0),
                                 color: colorScheme.onSurface,
                               ),
                               blankSpace: 60.0,
@@ -792,8 +760,9 @@ class _PlaybackScreenState extends State<PlaybackScreen>
                                     child: Text(
                                       currentSource.location ?? 'Location N/A',
                                       style: textTheme.titleSmall?.copyWith(
-                                        fontSize: 16 *
-                                            scaleFactor, // Reduced from 18 to differentiate from Venue
+                                        fontSize:
+                                            AppTypography.responsiveFontSize(
+                                                context, 16.0),
                                         color: colorScheme.secondary,
                                         fontWeight: FontWeight.w500,
                                       ),
@@ -811,15 +780,9 @@ class _PlaybackScreenState extends State<PlaybackScreen>
                                         child: Transform.translate(
                                           offset: const Offset(0, 2),
                                           child: SizedBox(
-                                            height: (settingsProvider.appFont ==
-                                                        'rock_salt'
-                                                    ? (settingsProvider.uiScale
-                                                        ? 10.05
-                                                        : 11.76)
-                                                    : (settingsProvider.uiScale
-                                                        ? 11.88
-                                                        : 14.0)) *
-                                                scaleFactor *
+                                            height: AppTypography
+                                                    .responsiveFontSize(
+                                                        context, 14.0) *
                                                 2.2,
                                             child: Padding(
                                               padding:
@@ -829,18 +792,9 @@ class _PlaybackScreenState extends State<PlaybackScreen>
                                                 text: formattedDate,
                                                 style: textTheme.titleMedium
                                                     ?.copyWith(
-                                                  fontSize: (settingsProvider
-                                                                  .appFont ==
-                                                              'rock_salt'
-                                                          ? (settingsProvider
-                                                                  .uiScale
-                                                              ? 10.05 // Rock Salt UI Scale ON: 10.25px final
-                                                              : 11.76) // Rock Salt UI Scale OFF: 10px final
-                                                          : (settingsProvider
-                                                                  .uiScale
-                                                              ? 11.88 // Roboto/others UI Scale ON: 14.25px final
-                                                              : 14.0)) * // Roboto/others UI Scale OFF: 14px final
-                                                      scaleFactor,
+                                                  fontSize: AppTypography
+                                                      .responsiveFontSize(
+                                                          context, 14.0),
                                                   color: colorScheme
                                                       .onSurfaceVariant,
                                                   height: 1.2,
@@ -1075,7 +1029,7 @@ class _PlaybackScreenState extends State<PlaybackScreen>
         return RatingControl(
           rating: rating,
           isPlayed: isPlayed,
-          size: 24, // Increased from 20 to be larger than SHNID chip
+          size: AppTypography.responsiveFontSize(context, 24.0),
           onTap: () async {
             await showDialog(
               context: context,

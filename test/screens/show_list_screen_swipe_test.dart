@@ -169,6 +169,12 @@ class MockShowListProvider extends ChangeNotifier implements ShowListProvider {
 
   @override
   void dismissSource(Show show, String sourceId) {}
+
+  @override
+  bool get hasUsedRandomButton => false;
+
+  @override
+  void markRandomButtonUsed() {}
 }
 
 void main() {

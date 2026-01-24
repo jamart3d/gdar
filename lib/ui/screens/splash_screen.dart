@@ -5,6 +5,7 @@ import 'package:shakedown/providers/show_list_provider.dart';
 import 'package:shakedown/providers/settings_provider.dart';
 import 'package:shakedown/ui/screens/show_list_screen.dart';
 import 'package:shakedown/ui/widgets/shakedown_title.dart';
+import 'package:shakedown/utils/font_layout_config.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -141,11 +142,11 @@ class _SplashScreenState extends State<SplashScreen>
                 (context, animation, secondaryAnimation, child) {
               final curvedAnimation = CurvedAnimation(
                 parent: animation,
-                curve: Curves.easeInOutCubicEmphasized,
+                curve: Curves.bounceOut,
               );
               return FadeTransition(opacity: curvedAnimation, child: child);
             },
-            transitionDuration: const Duration(milliseconds: 900),
+            transitionDuration: const Duration(milliseconds: 1800),
           ),
         );
       }
@@ -156,6 +157,8 @@ class _SplashScreenState extends State<SplashScreen>
   Widget build(BuildContext context) {
     final showListProvider = context.watch<ShowListProvider>();
     final settingsProvider = context.watch<SettingsProvider>();
+    final effectiveScale =
+        FontLayoutConfig.getEffectiveScale(context, settingsProvider);
 
     return Scaffold(
         body: SafeArea(
@@ -165,7 +168,7 @@ class _SplashScreenState extends State<SplashScreen>
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Center(
-              child: const ShakedownTitle(fontSize: 36),
+              child: const ShakedownTitle(fontSize: 24),
             ),
             const SizedBox(height: 40),
             FadeTransition(
@@ -177,11 +180,13 @@ class _SplashScreenState extends State<SplashScreen>
                     _buildChecklistItem(
                       label: 'Hey Now!',
                       isDone: true,
+                      scaleFactor: effectiveScale,
                     )
                   else
                     _buildChecklistItem(
                       label: 'Reading settings...',
                       isDone: true,
+                      scaleFactor: effectiveScale,
                     ),
                   const SizedBox(height: 12),
 
@@ -206,6 +211,7 @@ class _SplashScreenState extends State<SplashScreen>
                         return _buildChecklistItem(
                           label: label,
                           isDone: isDone,
+                          scaleFactor: effectiveScale,
                         );
                       }),
 
@@ -232,6 +238,7 @@ class _SplashScreenState extends State<SplashScreen>
                         return _buildChecklistItem(
                           label: label,
                           isDone: isDone,
+                          scaleFactor: effectiveScale,
                         );
                       }),
 
@@ -245,6 +252,7 @@ class _SplashScreenState extends State<SplashScreen>
                             : 'Archive.org unreachable (offline mode)')
                         : 'Checking archive.org...',
                     isDone: showListProvider.hasCheckedArchive,
+                    scaleFactor: effectiveScale,
                   ),
 
                   // 4. Random Play (Conditional)
@@ -253,6 +261,7 @@ class _SplashScreenState extends State<SplashScreen>
                     _buildChecklistItem(
                       label: 'Play random show on startup',
                       isDone: true,
+                      scaleFactor: effectiveScale,
                     ),
                   ]
                 ],
@@ -264,7 +273,8 @@ class _SplashScreenState extends State<SplashScreen>
     ));
   }
 
-  Widget _buildChecklistItem({required String label, required bool isDone}) {
+  Widget _buildChecklistItem(
+      {required String label, required bool isDone, double scaleFactor = 1.0}) {
     final theme = Theme.of(context);
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -292,7 +302,9 @@ class _SplashScreenState extends State<SplashScreen>
           width: 220, // Fixed width for alignment
           child: Text(
             label,
-            style: theme.textTheme.titleMedium,
+            style: theme.textTheme.titleMedium?.copyWith(
+              fontSize: 16.0 * scaleFactor, // Base TBD, standardizing to 16
+            ),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),

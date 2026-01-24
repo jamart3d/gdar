@@ -23,6 +23,7 @@ class FontLayoutConfig {
     'rock_salt': FontLayoutConfig(
       baseControlZoneWidth: 68.0,
       textScaleClampMax: 1.35,
+      textScaleBoost: 0.83,
     ),
     'caveat': FontLayoutConfig(
       baseControlZoneWidth: 68.0, // Standardized

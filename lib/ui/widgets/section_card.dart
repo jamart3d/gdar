@@ -29,19 +29,19 @@ class SectionCard extends StatelessWidget {
         child: ExpansionTile(
           initiallyExpanded: initiallyExpanded,
           dense: true,
-          visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
+          visualDensity: VisualDensity.compact,
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
           collapsedShape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
           leading:
-              Icon(icon, color: colorScheme.primary, size: 20 * scaleFactor),
+              Icon(icon, color: colorScheme.primary, size: 24 * scaleFactor),
           title: Text(
             title,
             style: TextStyle(
               color: colorScheme.primary,
               fontWeight: FontWeight.bold,
-              fontSize: 15 * scaleFactor,
+              fontSize: 18 * scaleFactor,
             ),
           ),
           children: children,

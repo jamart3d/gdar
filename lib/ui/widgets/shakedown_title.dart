@@ -54,6 +54,9 @@ class ShakedownTitle extends StatelessWidget {
 
     return Hero(
       tag: 'app_title',
+      createRectTween: (begin, end) {
+        return MaterialRectCenterArcTween(begin: begin, end: end);
+      },
       // Custom flight shuttle to smooth out text style interpolation
       flightShuttleBuilder: (
         BuildContext flightContext,

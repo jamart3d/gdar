@@ -22,6 +22,7 @@ class ShowListProvider with ChangeNotifier {
   bool _isArchiveReachable = false;
   bool _hasCheckedArchive = false;
   bool _sortOldestFirst = true;
+  bool _hasUsedRandomButton = false; // Tracks usage for onboarding pulse
 
   // Completer for initialization
   final Completer<void> _initCompleter = Completer<void>();
@@ -37,6 +38,14 @@ class ShowListProvider with ChangeNotifier {
 
   bool get isArchiveReachable => _isArchiveReachable;
   bool get hasCheckedArchive => _hasCheckedArchive;
+  bool get hasUsedRandomButton => _hasUsedRandomButton;
+
+  void markRandomButtonUsed() {
+    if (!_hasUsedRandomButton) {
+      _hasUsedRandomButton = true;
+      notifyListeners();
+    }
+  }
 
   int get totalShnids =>
       _allShows.fold(0, (sum, show) => sum + show.sources.length);
