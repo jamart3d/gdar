@@ -6,6 +6,7 @@ import 'package:shakedown/providers/audio_provider.dart';
 import 'package:shakedown/providers/settings_provider.dart';
 import 'package:shakedown/providers/show_list_provider.dart';
 import 'package:shakedown/providers/theme_provider.dart';
+import 'package:shakedown/ui/screens/onboarding_screen.dart';
 import 'package:shakedown/ui/screens/show_list_screen.dart';
 import 'package:shakedown/ui/screens/splash_screen.dart';
 import 'package:shakedown/utils/app_themes.dart';
@@ -128,6 +129,43 @@ class _GdarAppState extends State<GdarApp> {
           logger.i(
               'Main: [Session #$_sessionId] Triggering playRandomShow from host: "play-random"');
           audioProvider.playRandomShow(filterBySearch: true);
+        } else if (uri.host == 'ui-scale') {
+          // Handle UI scale testing deep link
+          final enabled =
+              uri.queryParameters['enabled']?.toLowerCase() == 'true';
+          final settingsProvider =
+              Provider.of<SettingsProvider>(context, listen: false);
+
+          logger
+              .i('Main: [Session #$_sessionId] Setting UI scale to: $enabled');
+
+          // Update the setting directly
+          if (enabled != settingsProvider.uiScale) {
+            settingsProvider.toggleUiScale();
+          }
+        } else if (uri.host == 'font') {
+          // Handle font testing deep link: shakedown://font?name=caveat
+          final fontName =
+              uri.queryParameters['name']?.toLowerCase() ?? 'default';
+          final settingsProvider =
+              Provider.of<SettingsProvider>(context, listen: false);
+
+          // Valid fonts: default, caveat, permanent_marker, lacquer, rock_salt
+          final validFonts = [
+            'default',
+            'caveat',
+            'permanent_marker',
+            'lacquer',
+            'rock_salt'
+          ];
+
+          if (validFonts.contains(fontName)) {
+            logger.i('Main: [Session #$_sessionId] Setting font to: $fontName');
+            settingsProvider.setAppFont(fontName);
+          } else {
+            logger.w(
+                'Main: [Session #$_sessionId] Invalid font name: $fontName (valid: ${validFonts.join(", ")})');
+          }
         } else if (uri.host == 'open') {
           final feature = uri.queryParameters['feature']?.toLowerCase() ?? '';
           logger.i(
@@ -336,15 +374,17 @@ class _GdarAppState extends State<GdarApp> {
                       : ThemeMode.light,
                   themeAnimationDuration: const Duration(milliseconds: 400),
                   themeAnimationCurve: Curves.easeInOutCubicEmphasized,
-                  home: settingsProvider.showSplashScreen
-                      ? const SplashScreen()
-                      : const ShowListScreen(),
+                  home: settingsProvider.showOnboarding
+                      ? const OnboardingScreen()
+                      : (settingsProvider.showSplashScreen
+                          ? const SplashScreen()
+                          : const ShowListScreen()),
                   builder: (context, child) {
                     final isTrueBlack = themeProvider.isDarkMode &&
                         settingsProvider.useTrueBlack;
 
                     if (isTrueBlack) {
-                      return AnnotatedRegion<SystemUiOverlayStyle>(
+                      child = AnnotatedRegion<SystemUiOverlayStyle>(
                         value: const SystemUiOverlayStyle(
                           systemNavigationBarColor: Colors.black,
                           systemNavigationBarIconBrightness: Brightness.light,
@@ -352,6 +392,17 @@ class _GdarAppState extends State<GdarApp> {
                         child: child!,
                       );
                     }
+
+                    // Apply UI Scale if enabled
+                    if (settingsProvider.uiScale) {
+                      child = MediaQuery(
+                        data: MediaQuery.of(context).copyWith(
+                          textScaler: const TextScaler.linear(1.2),
+                        ),
+                        child: child!,
+                      );
+                    }
+
                     return child!;
                   },
                 );

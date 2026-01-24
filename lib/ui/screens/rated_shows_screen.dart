@@ -14,6 +14,7 @@ import 'package:shakedown/ui/widgets/rating_control.dart';
 import 'package:shakedown/ui/widgets/src_badge.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:shakedown/models/rating.dart';
+import 'package:shakedown/utils/font_layout_config.dart';
 
 class RatedShowsScreen extends StatefulWidget {
   const RatedShowsScreen({super.key});
@@ -116,14 +117,15 @@ class _RatedShowsScreenState extends State<RatedShowsScreen>
     final showListProvider = context.watch<ShowListProvider>();
     final settingsProvider =
         context.watch<SettingsProvider>(); // Still needed for uiScale? Yes.
-    final scaleFactor = settingsProvider.uiScale ? 1.5 : 1.0;
+    final scaleFactor =
+        FontLayoutConfig.getEffectiveScale(context, settingsProvider);
     final textTheme = Theme.of(context).textTheme;
 
     final appBarTitleStyle = textTheme.titleLarge?.copyWith(
-      fontSize: (textTheme.titleLarge?.fontSize ?? 22.0) * scaleFactor,
+      fontSize: 12.0 * scaleFactor,
     );
     final tabLabelStyle = textTheme.labelLarge?.copyWith(
-      fontSize: (textTheme.labelLarge?.fontSize ?? 14.0) * scaleFactor,
+      fontSize: 9.0 * scaleFactor,
     );
 
     return Scaffold(
@@ -190,6 +192,8 @@ class _RatedShowListState extends State<_RatedShowList> {
     final settingsProvider = context.watch<SettingsProvider>();
     final audioProvider = context.watch<AudioProvider>();
     final catalog = CatalogService();
+    final scaleFactor =
+        FontLayoutConfig.getEffectiveScale(context, settingsProvider);
 
     // 1. Get all shows
     final allShows = showListProvider.allShows;
@@ -253,8 +257,12 @@ class _RatedShowListState extends State<_RatedShowList> {
 
     if (flatSources.isEmpty) {
       return Center(
-        child:
-            Text('No shows found with rating: ${_getTabLabel(widget.rating)}'),
+        child: Text(
+            'No shows found with rating: ${_getTabLabel(widget.rating)}',
+            style: Theme.of(context)
+                .textTheme
+                .bodyMedium
+                ?.copyWith(fontSize: 9.0 * scaleFactor)),
       );
     }
 
@@ -271,7 +279,7 @@ class _RatedShowListState extends State<_RatedShowList> {
 
         // Customize the item presentation
         return Padding(
-          padding: const EdgeInsets.only(bottom: 8.0),
+          padding: EdgeInsets.zero,
           child: _buildRatedSourceItem(
             context,
             show,
@@ -295,7 +303,8 @@ class _RatedShowListState extends State<_RatedShowList> {
       SettingsProvider settingsProvider,
       AudioProvider audioProvider) {
     final catalog = CatalogService();
-    final scaleFactor = settingsProvider.uiScale ? 1.25 : 1.0;
+    final scaleFactor =
+        FontLayoutConfig.getEffectiveScale(context, settingsProvider);
     final colorScheme = Theme.of(context).colorScheme;
 
     // Use SourceListItem logic but wrapped with Show info
@@ -303,9 +312,7 @@ class _RatedShowListState extends State<_RatedShowList> {
       color: isPlaying
           ? colorScheme.tertiaryContainer
           : colorScheme.surfaceContainerHighest,
-      borderRadius: BorderRadius.circular(12),
       child: InkWell(
-        borderRadius: BorderRadius.circular(12),
         onTap: () {
           if (isPlaying) {
             Navigator.of(context).push(
@@ -326,10 +333,9 @@ class _RatedShowListState extends State<_RatedShowList> {
           audioProvider.playSource(show, source);
         },
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
+          padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 0),
           child: Row(
             children: [
-              // Rating
               RatingControl(
                 rating: catalog.getRating(source.id),
                 size: 18 * scaleFactor,
@@ -360,53 +366,52 @@ class _RatedShowListState extends State<_RatedShowList> {
               const SizedBox(width: 12),
               // Content: Just the Date
               Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      show.formattedDateYearFirst,
-                      style: Theme.of(context)
-                          .textTheme
-                          .titleMedium
-                          ?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            color: isPlaying
-                                ? colorScheme.onTertiaryContainer
-                                : colorScheme.onSurface,
-                          )
-                          .apply(fontSizeFactor: scaleFactor),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    ValueListenableBuilder(
-                      valueListenable: CatalogService().playCountsListenable,
-                      builder: (context, box, _) {
-                        final count = box.get(source.id) ?? 0;
-                        if (count > 0) {
-                          return Text(
-                            'Played $count time${count == 1 ? '' : 's'}',
-                            style: Theme.of(context)
-                                .textTheme
-                                .bodySmall
-                                ?.copyWith(
-                                  color: isPlaying
-                                      ? colorScheme.onTertiaryContainer
-                                          .withValues(alpha: 0.8)
-                                      : colorScheme.onSurfaceVariant,
-                                )
-                                .apply(fontSizeFactor: scaleFactor),
-                          );
-                        }
-                        return const SizedBox.shrink();
-                      },
-                    ),
-                  ],
+                child: Text(
+                  show.formattedDateYearFirst,
+                  style: Theme.of(context)
+                      .textTheme
+                      .titleMedium
+                      ?.copyWith(
+                        fontSize: 9.5,
+                        fontWeight: FontWeight.bold,
+                        color: isPlaying
+                            ? colorScheme.onTertiaryContainer
+                            : colorScheme.onSurface,
+                      )
+                      .apply(fontSizeFactor: scaleFactor),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
+              ),
+              // Play Count
+              ValueListenableBuilder(
+                valueListenable: CatalogService().playCountsListenable,
+                builder: (context, box, _) {
+                  final count = box.get(source.id) ?? 0;
+                  if (count > 0) {
+                    return Padding(
+                      padding: const EdgeInsets.only(right: 8.0),
+                      child: Text(
+                        '${count}x played',
+                        style: Theme.of(context)
+                            .textTheme
+                            .bodySmall
+                            ?.copyWith(
+                              fontSize: 7.0,
+                              color: isPlaying
+                                  ? colorScheme.onTertiaryContainer
+                                      .withValues(alpha: 0.7)
+                                  : colorScheme.onSurfaceVariant,
+                            )
+                            .apply(fontSizeFactor: scaleFactor),
+                      ),
+                    );
+                  }
+                  return const SizedBox.shrink();
+                },
               ),
               // Badge
               if (source.src != null) ...[
-                const SizedBox(width: 8),
                 SrcBadge(src: source.src!, isPlaying: isPlaying),
               ],
             ],

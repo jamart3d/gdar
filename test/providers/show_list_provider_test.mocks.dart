@@ -460,6 +460,13 @@ class MockSettingsProvider extends _i1.Mock implements _i9.SettingsProvider {
       ) as bool);
 
   @override
+  bool get marqueeEnabled => (super.noSuchMethod(
+        Invocation.getter(#marqueeEnabled),
+        returnValue: false,
+        returnValueForMissingStub: false,
+      ) as bool);
+
+  @override
   bool get randomOnlyUnplayed => (super.noSuchMethod(
         Invocation.getter(#randomOnlyUnplayed),
         returnValue: false,

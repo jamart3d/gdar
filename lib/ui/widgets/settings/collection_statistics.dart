@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:shakedown/models/show.dart';
 import 'package:shakedown/providers/show_list_provider.dart';
 import 'package:shakedown/ui/widgets/section_card.dart';
+import 'package:shakedown/providers/settings_provider.dart';
+import 'package:shakedown/utils/font_layout_config.dart';
 import 'package:provider/provider.dart';
 
 class CollectionStatistics extends StatelessWidget {
@@ -10,6 +12,9 @@ class CollectionStatistics extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final showListProvider = context.watch<ShowListProvider>();
+    final settingsProvider = context.watch<SettingsProvider>();
+    final scaleFactor =
+        FontLayoutConfig.getEffectiveScale(context, settingsProvider);
     final allShows = showListProvider.allShows;
 
     int totalShows = allShows.length;
@@ -118,70 +123,113 @@ class CollectionStatistics extends StatelessWidget {
     final minutes = duration.inMinutes % 60;
 
     return SectionCard(
+      scaleFactor: scaleFactor,
       title: 'Collection Statistics',
       icon: Icons.bar_chart,
       children: [
         ListTile(
-          title: const Text('Total Collection'),
+          dense: true,
+          visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
+          title: Text('Total Collection',
+              style: TextStyle(fontSize: 10 * scaleFactor)),
           trailing: Text('$totalShows Shows / $totalSources Sources',
-              style: Theme.of(context).textTheme.titleMedium),
+              style: TextStyle(
+                  fontSize: 10 * scaleFactor, fontWeight: FontWeight.bold)),
         ),
         ListTile(
-          title: const Text('Total Songs'),
+          dense: true,
+          visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
+          title:
+              Text('Total Songs', style: TextStyle(fontSize: 10 * scaleFactor)),
           trailing: Text('$totalSongs',
-              style: Theme.of(context).textTheme.titleMedium),
+              style: TextStyle(
+                  fontSize: 10 * scaleFactor, fontWeight: FontWeight.bold)),
         ),
         ListTile(
-          title: const Text('Total Runtime'),
+          dense: true,
+          visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
+          title: Text('Total Runtime',
+              style: TextStyle(fontSize: 10 * scaleFactor)),
           trailing: Text('${days}d ${hours}h ${minutes}m',
-              style: Theme.of(context).textTheme.titleMedium),
+              style: TextStyle(
+                  fontSize: 10 * scaleFactor, fontWeight: FontWeight.bold)),
         ),
         ExpansionTile(
-          title: const Text('Source Categories'),
+          dense: true,
+          visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
+          title: Text('Source Categories',
+              style: TextStyle(fontSize: 10 * scaleFactor)),
           shape: const Border(),
           children: [
             if (catBettySources > 0)
               ListTile(
-                  title: const Text('Betty Boards'),
+                  dense: true,
+                  visualDensity:
+                      const VisualDensity(horizontal: 0, vertical: -4),
+                  title: Text('Betty Boards',
+                      style: TextStyle(fontSize: 10 * scaleFactor)),
                   trailing: Text(
                       '${catBettyShows.length} Shows / $catBettySources Sources',
-                      style: Theme.of(context).textTheme.bodyMedium)),
+                      style: TextStyle(fontSize: 8.5 * scaleFactor))),
             if (catUltraSources > 0)
               ListTile(
-                  title: const Text('Ultra Matrix'),
+                  dense: true,
+                  visualDensity:
+                      const VisualDensity(horizontal: 0, vertical: -4),
+                  title: Text('Ultra Matrix',
+                      style: TextStyle(fontSize: 10 * scaleFactor)),
                   trailing: Text(
                       '${catUltraShows.length} Shows / $catUltraSources Sources',
-                      style: Theme.of(context).textTheme.bodyMedium)),
+                      style: TextStyle(fontSize: 8.5 * scaleFactor))),
             if (catMatrixSources > 0)
               ListTile(
-                  title: const Text('Matrix'),
+                  dense: true,
+                  visualDensity:
+                      const VisualDensity(horizontal: 0, vertical: -4),
+                  title: Text('Matrix',
+                      style: TextStyle(fontSize: 10 * scaleFactor)),
                   trailing: Text(
                       '${catMatrixShows.length} Shows / $catMatrixSources Sources',
-                      style: Theme.of(context).textTheme.bodyMedium)),
+                      style: TextStyle(fontSize: 8.5 * scaleFactor))),
             if (catDsbdSources > 0)
               ListTile(
-                  title: const Text('Digital SBD'),
+                  dense: true,
+                  visualDensity:
+                      const VisualDensity(horizontal: 0, vertical: -4),
+                  title: Text('Digital SBD',
+                      style: TextStyle(fontSize: 10 * scaleFactor)),
                   trailing: Text(
                       '${catDsbdShows.length} Shows / $catDsbdSources Sources',
-                      style: Theme.of(context).textTheme.bodyMedium)),
+                      style: TextStyle(fontSize: 8.5 * scaleFactor))),
             if (catFmSources > 0)
               ListTile(
-                  title: const Text('FM Broadcast'),
+                  dense: true,
+                  visualDensity:
+                      const VisualDensity(horizontal: 0, vertical: -4),
+                  title: Text('FM Broadcast',
+                      style: TextStyle(fontSize: 10 * scaleFactor)),
                   trailing: Text(
                       '${catFmShows.length} Shows / $catFmSources Sources',
-                      style: Theme.of(context).textTheme.bodyMedium)),
+                      style: TextStyle(fontSize: 8.5 * scaleFactor))),
             if (catSbdSources > 0)
               ListTile(
-                  title: const Text('Soundboard'),
+                  dense: true,
+                  visualDensity:
+                      const VisualDensity(horizontal: 0, vertical: -4),
+                  title: Text('Soundboard',
+                      style: TextStyle(fontSize: 10 * scaleFactor)),
                   trailing: Text(
                       '${catSbdShows.length} Shows / $catSbdSources Sources',
-                      style: Theme.of(context).textTheme.bodyMedium)),
+                      style: TextStyle(fontSize: 8.5 * scaleFactor))),
             if (catUnkSources > 0)
               ListTile(
-                title: const Text('Unknown Shows'),
+                dense: true,
+                visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
+                title: Text('Unknown Shows',
+                    style: TextStyle(fontSize: 10 * scaleFactor)),
                 trailing: Text(
                     '${catUnkShows.length} Shows / $catUnkSources Sources',
-                    style: Theme.of(context).textTheme.bodyLarge),
+                    style: TextStyle(fontSize: 8.5 * scaleFactor)),
               ),
           ],
         ),

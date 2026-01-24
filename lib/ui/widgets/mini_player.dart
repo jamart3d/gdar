@@ -240,12 +240,16 @@ class _MiniPlayerState extends State<MiniPlayer>
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 SizedBox(
-                                  height: titleStyle.fontSize! * 1.5,
-                                  child: Material(
-                                    type: MaterialType.transparency,
-                                    child: ConditionalMarquee(
-                                      text: currentTrack.title,
-                                      style: titleStyle,
+                                  height: titleStyle.fontSize! * 2.2,
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 8.0),
+                                    child: Material(
+                                      type: MaterialType.transparency,
+                                      child: ConditionalMarquee(
+                                        text: currentTrack.title,
+                                        style: titleStyle.copyWith(height: 1.2),
+                                      ),
                                     ),
                                   ),
                                 ),

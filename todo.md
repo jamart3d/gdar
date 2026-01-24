@@ -4,6 +4,15 @@ This file tracks planned features, enhancements, and bug fixes for the gdar appl
 
 ## High Priority
 
+- [ ] **UI Scale & Layout Consistency:**
+  - **Requirement:** Ensure font size and scaling behavior matches the verified Settings screen.
+  - **Status:** Settings screen verified. Logic needs to be applied/verified in:
+    - [x] **Show List Screen:** `ShowListCard` (in progress).
+    - [x] **Playback Screen:** Ensure title/headers respect the toggle.
+    - [x] **Sliding Panel (Expanded):** When panel creates the full player view.
+    - [x] **Rated Shows Library Screen:** Ensure list items respect the toggle.
+  - **Note:** Four fonts and UI scale are verified good in Settings.
+
 - [x] **Unit Tests:** Write unit tests for providers (`AudioProvider`, `ShowListProvider`) to ensure business logic is correct.
   - [x] **Test Architecture Refactor:** Extract SHNID/track parsing logic from `AudioProvider.playFromShareString` into pure functions (`ShareLinkParser`) for easier unit testing.
 - [x] **Widget Tests:** Write widget tests for critical UI components like `ShowListCard` and `PlaybackScreen`.
@@ -76,6 +85,7 @@ This file tracks planned features, enhancements, and bug fixes for the gdar appl
       - [ ] **Settings:** Option for "Always Visible" vs "Auto Hide".
       - [ ] **Thumb Details:** Large, scalable thumb (respects UI Scale) that displays the year's last two digits (e.g., '77).
     - [x] Block confirmation for rated shows.
+    - [ ] **Confirmation for Red Star:** Always ask for confirmation when selecting "Block (Red Star)", even if unrated.
     - [x] **Rated Shows Library**: Added dynamic counts to each tab label (e.g., "Played (5)").
     - [ ] **Data Sharding:** Split the monolithic JSON data by year (e.g., `years/1972.json`) and use a lightweight master index to improve app startup performance and reduce memory usage.
  
@@ -191,7 +201,75 @@ This file tracks planned features, enhancements, and bug fixes for the gdar appl
 - [x] **RGB Glow Setting:** Add a setting to control/boost the "glow" intensity of the RGB border effect.
 
 
-- [ ] **Rated Shows Export/Import:** Allow exporting/importing the library of rated shows (dates, shnids, played status, star ratings), possibly via a calendar format or JSON file.
+- [ ] **User Data Backup & Restore:**
+  - **Feature:** Export and import all user data (ratings, played status, play counts, listening history) to/from a JSON file.
+  - **Data Source:** Serialize all Hive boxes (`ratings`, `play_counts`, `user_history`) into a single backup file.
+  - **UI Location:** Settings → rated shows library, in appbar  export / import button.
+  - ** modal ui for export / import** file picker, , option to save out as a calendar
+  - **Export:** Generate timestamped JSON file (e.g., `shakedown_backup_2026-01-22.json`) saved to Downloads.
+  - **Import:** Allow users to select a backup file and restore their data, with confirmation dialog showing what will be overwritten.
+  - **Benefit:** Enables users to backup their listening history and restore it on new devices or after app reinstall.
+
+- [ ] **Show List Card Scaling Verification & Fixes:**
+  - **Problem:** "Too Big" text collisions and inconsistent spacing when UI Scale is enabled with various legacy fonts.
+  - **Plan:**
+    1. **Infrastructure (The "ADB Bridge")**
+       - [x] **Implement MethodChannel:** Create a listener in `MainActivity.kt` for the ADB broadcast `com.jamart3d.shakedown.SET_UI_SCALE` to toggle `settingsProvider.uiScale` instantly without restarting the app.
+       - [x] **Connect Flutter State:** Ensure the `settingsProvider` notifies listeners so the `ShowListCard` rebuilds immediately when the ADB command is sent.
+
+    2. **Layout Logic (Fixing "Too Big" Collisions)**
+       - [ ] **Kill the "Double-Scaling" Bug:**
+         - Wrap the Venue and Date text widgets in a `SizedBox` with a fixed height (e.g., `height: 32.0 * scaleFactor`).
+         - **Crucial:** Set `textScaleFactor: 1.0` inside these widgets. This ensures that the system font size doesn't multiply with your 1.5x factor, which is currently causing the "Too Big" vertical overlap.
+       - [ ] **Enforce Vertical "Lanes":**
+         - Use a `Column` with `MainAxisSize.min`.
+         - Place a `SizedBox(height: 2.0 * scaleFactor)` between the two rows to guarantee the gap remains regardless of font size.
+       - [ ] **Refine Marquee Triggers:**
+         - Ensure the horizontal Marquee is wrapped in a `ClipRect` so that if the text expands vertically (due to descenders like 'g' or 'y'), it doesn't bleed into the other row's space.
+
+    3. **Systematic Testing (The ADB Audit)**
+       - [x] **Create "8-Look" Audit Script:** Script created at `tool/adb_ui_scale_test.py` to generate screenshots for 4 standard system font sizes (0.85, 1.0, 1.15, 1.3) crossed with `uiScale` (True/False).
+       - [x] **Create "Trigger Point" Script:** Script created at `tool/adb_trigger_point_test.py` using fine-grained font increments (1.0 to 1.5, step 0.05) to find exactly when the text becomes "too big" and triggers the Marquee.
+       - [ ] **Run Scripts and Generate Screenshots:** Execute both scripts with device connected to capture test screenshots.
+       - [ ] **Visual Verification:** Check that the Marquee only activates horizontally and that the vertical gap between "Venue" and "Date" never shrinks to 0px.
+
+    4. **Final Goal:**
+       - [ ] **Achieve "Fluid Scaling":**
+         - **Case A (Small):** Text is static, gap is clear.
+         - **Case B (Medium):** Text fills width, gap is clear.
+         - **Case C (Too Big):** Marquee activates horizontally, vertical height is locked to the card's `82.0 * scaleFactor`, gap is strictly preserved.
+
+- [x] **Onboarding Page:**
+  - **Feature:** Display an onboarding/welcome screen on first app launch.
+  - **Content:**
+    - **App Description:**
+      - "Shakedown - Stream thousands of Grateful Dead concerts from the Internet Archive"
+      - Key features: Browse by date, rate shows, track listening history, gapless playback
+      - Customize with fonts and UI scale
+    - **Usage Instructions:**
+      - **Browse**: Explore concerts by date in the main list
+      - **Search**: Find shows by date, month, venue, or location
+      - **Random**: Tap the ? icon in app bar for random show
+      - **Rating**: Tap stars (1-3), red star = blocked, grey = played/unrated
+      - **Playback**: Long-press source for quick play, single tap to browse tracks
+      - **Collection**: Access rated shows from Settings → Rated Shows Library
+      - **Tips**: Enable UI Scale for larger text, choose preferred font
+    - **Font Selection:**
+      - Display list of all available fonts with preview text
+      - Allow user to select preferred font
+      - Set default font if none selected
+      - Apply selection immediately to preview
+    - **UI Scale Option:**
+      - Show UI scale toggle/slider
+      - Preview the scale change in real-time
+    - **Thanks for Testing Message:**
+      - "Thanks for testing Shakedown! Your feedback helps improve the app."
+  - **Behavior:**
+    - Show on first launch
+    - Include "Don't show again" option
+    - Re-show if onboarding content is updated (version tracking)
+  - **Storage:** Store onboarding version/completion status in Hive or SharedPreferences.
+  - **UI:** Use a multi-page carousel or single scrollable page with dismiss button.
 
 
 
@@ -238,16 +316,8 @@ Balanced app size with performance and robust user data storage.
 - [ ] Refactor `AudioPlayer` state management logic
 - [ ] **Deprecation Cleanup:** `ConcatenatingAudioSource` is deprecated in `just_audio` 0.10.0+. Use `AudioPlayer.setAudioSources(List<AudioSource>)` instead. Ensure no new code uses the deprecated class.
 
-### Storage Architecture Cleanup (Post-Hive Migration)
+### Storage Architecture Enhancements (Post-Hive Migration)
 
-- [ ] **Backup & Sync Feature:**
-  - **Priority:** Low (Feature Request)
-  - **Context:** All user data is now consolidated in Hive boxes (`ratings`, `play_counts`, `user_history`).
-  - **Action:** Create a service to serialize these 3 boxes to a JSON file for user export/import.
-  - **Benefit:** Enables users to backup their listening history and restore it on new devices.
 
-- [ ] **Code Cleanup:**
-  - **Priority:** Low
-  - **Action:** Remove commented-out legacy getters/fields in `SettingsProvider` (e.g., `_showRatings`, `_playedShows`) to reduce code noise.
-  - **Context:** These fields are no longer used after migration to `CatalogService` as the single source of truth for user data.
+- [x] **Code Cleanup:** Removed commented-out legacy getters/fields in `SettingsProvider` after migration to `CatalogService`.
 

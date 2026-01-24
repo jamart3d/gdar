@@ -568,6 +568,13 @@ class MockSettingsProvider extends _i1.Mock implements _i8.SettingsProvider {
       ) as bool);
 
   @override
+  bool get marqueeEnabled => (super.noSuchMethod(
+        Invocation.getter(#marqueeEnabled),
+        returnValue: false,
+        returnValueForMissingStub: false,
+      ) as bool);
+
+  @override
   bool get randomOnlyUnplayed => (super.noSuchMethod(
         Invocation.getter(#randomOnlyUnplayed),
         returnValue: false,
@@ -786,13 +793,21 @@ class MockSettingsProvider extends _i1.Mock implements _i8.SettingsProvider {
       );
 
   @override
-  void toggleSortOldestFirst() => super.noSuchMethod(
+  bool get showOnboarding => (super.noSuchMethod(
+        Invocation.getter(#showOnboarding),
+        returnValue: false,
+        returnValueForMissingStub: false,
+      ) as bool);
+
+  @override
+  _i4.Future<void> completeOnboarding() => (super.noSuchMethod(
         Invocation.method(
-          #toggleSortOldestFirst,
+          #completeOnboarding,
           [],
         ),
-        returnValueForMissingStub: null,
-      );
+        returnValue: _i4.Future<void>.value(),
+        returnValueForMissingStub: _i4.Future<void>.value(),
+      ) as _i4.Future<void>);
 
   @override
   void toggleUseStrictSrcCategorization() => super.noSuchMethod(

@@ -54,7 +54,7 @@ class _ShowListItemDetailsState extends State<ShowListItemDetails> {
 
     return ListView.builder(
       physics: const NeverScrollableScrollPhysics(),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
       itemCount: widget.show.sources.length,
       itemBuilder: (context, index) {
         final source = widget.show.sources[index];
@@ -147,40 +147,37 @@ class _ShowListItemDetailsState extends State<ShowListItemDetails> {
         }
 
         if (isPlaying && settingsProvider.highlightPlayingWithRgb) {
-          return Padding(
-            padding: const EdgeInsets.only(bottom: 8.0),
-            child: Builder(builder: (context) {
-              return Dismissible(
-                key: ValueKey(source.id),
-                direction: DismissDirection.endToStart,
-                background: Container(
-                  alignment: Alignment.centerRight,
-                  padding: const EdgeInsets.only(right: 16.0),
-                  decoration: BoxDecoration(
-                    color: Colors.red,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: const Icon(Icons.block, color: Colors.white, size: 24),
+          return Builder(builder: (context) {
+            return Dismissible(
+              key: ValueKey(source.id),
+              direction: DismissDirection.endToStart,
+              background: Container(
+                alignment: Alignment.centerRight,
+                padding: const EdgeInsets.only(right: 16.0),
+                decoration: BoxDecoration(
+                  color: Colors.red,
+                  borderRadius: BorderRadius.circular(20),
                 ),
-                confirmDismiss: (direction) => handleConfirmDismiss(),
-                onDismissed: (direction) => handleOnDismissed(),
-                child: SourceListItem(
-                  source: source,
-                  isSourcePlaying: isPlaying,
-                  scaleFactor: scaleFactor,
-                  borderRadius: 20, // Match the Dismissible background radius
-                  showBorder: false,
-                  onTap: () => widget.onSourceTapped(source),
-                  onLongPress: () => widget.onSourceLongPress(source),
-                ),
-              );
-            }),
-          );
+                child: const Icon(Icons.block, color: Colors.white, size: 24),
+              ),
+              confirmDismiss: (direction) => handleConfirmDismiss(),
+              onDismissed: (direction) => handleOnDismissed(),
+              child: SourceListItem(
+                source: source,
+                isSourcePlaying: isPlaying,
+                scaleFactor: scaleFactor,
+                borderRadius: 20, // Match the Dismissible background radius
+                showBorder: false,
+                onTap: () => widget.onSourceTapped(source),
+                onLongPress: () => widget.onSourceLongPress(source),
+              ),
+            );
+          });
         }
 
         // Standard Item
         return Padding(
-          padding: const EdgeInsets.symmetric(vertical: 4),
+          padding: const EdgeInsets.symmetric(vertical: 1),
           child: Builder(builder: (context) {
             return Dismissible(
               key: ValueKey(source.id),

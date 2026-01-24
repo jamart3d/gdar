@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shakedown/config/default_settings.dart';
 import 'package:shakedown/utils/logger.dart';
@@ -27,8 +28,6 @@ class SettingsProvider with ChangeNotifier {
   void setAppFont(String font) =>
       _updateStringPreference(_appFontKey, _appFont = font);
 
-  // Deprecated key for migration
-  // static const String _useHandwritingFontKey = 'use_handwriting_font';
   static const String _uiScaleKey = 'ui_scale';
   static const String _seedColorKey = 'seed_color';
   static const String _glowModeKey = 'glow_mode'; // 0=Off, 1=On, 2=Half
@@ -42,7 +41,6 @@ class SettingsProvider with ChangeNotifier {
       'use_strict_src_categorization';
   static const String _offlineBufferingKey = 'offline_buffering';
 
-  // static const String _offlineBufferingKey = 'offline_buffering'; // Already defined above
   static const String _marqueeEnabledKey =
       'marquee_enabled'; // Logic for disabling marquee in tests
 
@@ -50,6 +48,30 @@ class SettingsProvider with ChangeNotifier {
   late bool _showSplashScreen;
   bool get showSplashScreen => _showSplashScreen;
   bool get isFirstRun => _isFirstRun;
+
+  // Onboarding
+  static const String _onboardingCompletedVersionKey =
+      'onboarding_completed_version';
+  static const int kCurrentOnboardingVersion = 1;
+
+  int _onboardingCompletedVersion = 0;
+  bool get showOnboarding =>
+      _onboardingCompletedVersion < kCurrentOnboardingVersion;
+
+  Future<void> completeOnboarding() async {
+    _onboardingCompletedVersion = kCurrentOnboardingVersion;
+    await _prefs.setInt(
+        _onboardingCompletedVersionKey, _onboardingCompletedVersion);
+    notifyListeners();
+  }
+
+  // Shakedown Tween Setting
+  static const String _enableShakedownTweenKey = 'enable_shakedown_tween';
+  late bool _enableShakedownTween;
+  bool get enableShakedownTween => _enableShakedownTween;
+
+  void toggleEnableShakedownTween() => _updatePreference(
+      _enableShakedownTweenKey, _enableShakedownTween = !_enableShakedownTween);
 
   void toggleShowSplashScreen() => _updatePreference(
       _showSplashScreenKey, _showSplashScreen = !_showSplashScreen);
@@ -68,7 +90,6 @@ class SettingsProvider with ChangeNotifier {
   late bool _dateFirstInShowCard;
   late bool _useDynamicColor;
   late bool _useTrueBlack;
-  // late bool _useHandwritingFont; // Removed
   late bool _uiScale;
   late int _glowMode;
   late bool _highlightPlayingWithRgb;
@@ -105,7 +126,6 @@ class SettingsProvider with ChangeNotifier {
   bool get useTrueBlack => _useTrueBlack;
   bool get useSliverAppBar => true;
   bool get useSharedAxisTransition => true;
-  // bool get useHandwritingFont => _useHandwritingFont; // Removed
   bool get uiScale => _uiScale;
   int get glowMode => _glowMode;
   bool get highlightPlayingWithRgb => _highlightPlayingWithRgb;
@@ -122,8 +142,6 @@ class SettingsProvider with ChangeNotifier {
 
   Color? get seedColor => _seedColor;
 
-  // Map<String, int> get showRatings => _showRatings; // Moved to CatalogService
-  // Set<String> get playedShows => _playedShows; // Moved to CatalogService
   bool get randomOnlyUnplayed => _randomOnlyUnplayed;
   bool get randomOnlyHighRated => _randomOnlyHighRated;
   bool get randomExcludePlayed => _randomExcludePlayed;
@@ -131,8 +149,34 @@ class SettingsProvider with ChangeNotifier {
   // Internal setting: Global Album Art
   bool get showGlobalAlbumArt => true;
 
+  static const String _showDebugLayoutKey = 'show_debug_layout';
+  late bool _showDebugLayout;
+  bool get showDebugLayout => _showDebugLayout;
+  void toggleShowDebugLayout() => _updatePreference(
+      _showDebugLayoutKey, _showDebugLayout = !_showDebugLayout);
+
+  // MethodChannel for ADB UI scale testing
+  static const MethodChannel _uiScaleChannel =
+      MethodChannel('com.jamart3d.shakedown/ui_scale');
+
   SettingsProvider(this._prefs) {
     _init();
+    _setupUiScaleChannel();
+  }
+
+  /// Set up MethodChannel listener for ADB UI scale testing
+  void _setupUiScaleChannel() {
+    _uiScaleChannel.setMethodCallHandler((call) async {
+      if (call.method == 'setUiScale') {
+        final bool enabled = call.arguments as bool;
+        if (enabled != _uiScale) {
+          _uiScale = enabled;
+          await _prefs.setBool(_uiScaleKey, enabled);
+          notifyListeners();
+          logger.i('SettingsProvider: UI Scale set to $enabled via ADB');
+        }
+      }
+    });
   }
 
   void _init() {
@@ -161,6 +205,12 @@ class SettingsProvider with ChangeNotifier {
       // Mark check as done
       _prefs.setBool('first_run_check_done', true);
     }
+
+    _onboardingCompletedVersion =
+        _prefs.getInt(_onboardingCompletedVersionKey) ?? 0;
+
+    _enableShakedownTween =
+        _prefs.getBool(_enableShakedownTweenKey) ?? false; // Default OFF
 
     _showTrackNumbers =
         _prefs.getBool(_trackNumberKey) ?? DefaultSettings.showTrackNumbers;
@@ -257,6 +307,7 @@ class SettingsProvider with ChangeNotifier {
         DefaultSettings.offlineBuffering;
 
     _marqueeEnabled = _prefs.getBool(_marqueeEnabledKey) ?? true;
+    _showDebugLayout = _prefs.getBool(_showDebugLayoutKey) ?? false;
 
     final seedColorValue = _prefs.getInt(_seedColorKey);
     if (seedColorValue != null) {
@@ -330,7 +381,6 @@ class SettingsProvider with ChangeNotifier {
       _abbreviateDayOfWeekKey, _abbreviateDayOfWeek = !_abbreviateDayOfWeek);
   void toggleAbbreviateMonth() => _updatePreference(
       _abbreviateMonthKey, _abbreviateMonth = !_abbreviateMonth);
-  // void toggleUseHandwritingFont() => ... // Removed
   void toggleUiScale() => _updatePreference(_uiScaleKey, _uiScale = !_uiScale);
 
   void setGlowMode(int mode) {
@@ -351,8 +401,6 @@ class SettingsProvider with ChangeNotifier {
   void toggleOfflineBuffering() => _updatePreference(
       _offlineBufferingKey, _offlineBuffering = !_offlineBuffering);
 
-  // Removed _halfGlowDynamicKey and logic as it is merged into _glowMode
-
   static const String _rgbAnimationSpeedKey = 'rgb_animation_speed';
   double _rgbAnimationSpeed = 1.0;
   double get rgbAnimationSpeed => _rgbAnimationSpeed;
@@ -369,9 +417,6 @@ class SettingsProvider with ChangeNotifier {
     }
     notifyListeners();
   }
-
-  // Ratings & Played Methods
-  // Ratings & Played Methods moved to CatalogService
 
   void toggleRandomOnlyUnplayed() => _updatePreference(
       _randomOnlyUnplayedKey, _randomOnlyUnplayed = !_randomOnlyUnplayed);
@@ -436,21 +481,6 @@ class SettingsProvider with ChangeNotifier {
     notifyListeners();
     await _saveSourceCategoryFilters();
   }
-
-  // ... existing methods ...
-
-  // Update _init or create _initSourceFilters called by it.
-  // Since I can't easily inject into _init with replace_file_content without context,
-  // I will append these helper methods and manually update _init in a separate call
-  // or try to fit it all here if I can match the end of the class.
-
-  // Actually, I should update _init in a separate chunk to avoid overwriting too much.
-  // This chunk will be for adding the fields and methods.
-  // I will place them before "Persistence Helpers".
-
-  // _initSourceFilters moved up
-
-  // Toggles
 
   // Persistence Helpers
   Future<void> _updatePreference(String key, bool value) async {

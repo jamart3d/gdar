@@ -241,7 +241,7 @@ class _RatingDialogState extends State<RatingDialog> {
                       final count = box.get(widget.sourceId!) ?? 0;
                       if (count > 0) {
                         return Text(
-                          '$count Play${count == 1 ? '' : 's'}',
+                          'Played ${count}x',
                           style:
                               Theme.of(context).textTheme.labelMedium?.copyWith(
                                     color: Theme.of(context)

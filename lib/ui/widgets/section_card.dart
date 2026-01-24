@@ -5,6 +5,7 @@ class SectionCard extends StatelessWidget {
   final IconData icon;
   final List<Widget> children;
   final bool initiallyExpanded;
+  final double scaleFactor;
 
   const SectionCard({
     super.key,
@@ -12,6 +13,7 @@ class SectionCard extends StatelessWidget {
     required this.icon,
     required this.children,
     this.initiallyExpanded = false,
+    this.scaleFactor = 1.0,
   });
 
   @override
@@ -26,17 +28,20 @@ class SectionCard extends StatelessWidget {
         data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
         child: ExpansionTile(
           initiallyExpanded: initiallyExpanded,
+          dense: true,
+          visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
           collapsedShape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-          leading: Icon(icon, color: colorScheme.primary),
+          leading:
+              Icon(icon, color: colorScheme.primary, size: 20 * scaleFactor),
           title: Text(
             title,
             style: TextStyle(
               color: colorScheme.primary,
               fontWeight: FontWeight.bold,
-              fontSize: 18,
+              fontSize: 15 * scaleFactor,
             ),
           ),
           children: children,

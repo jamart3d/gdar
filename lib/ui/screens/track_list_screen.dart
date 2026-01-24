@@ -9,6 +9,7 @@ import 'package:shakedown/providers/settings_provider.dart';
 import 'package:shakedown/ui/screens/playback_screen.dart';
 import 'package:shakedown/ui/screens/settings_screen.dart';
 import 'package:shakedown/ui/widgets/mini_player.dart';
+import 'package:shakedown/ui/widgets/shnid_badge.dart';
 import 'package:shakedown/ui/widgets/src_badge.dart';
 import 'package:shakedown/ui/widgets/rating_control.dart';
 import 'package:shakedown/services/catalog_service.dart';
@@ -219,33 +220,13 @@ class _TrackListScreenState extends State<TrackListScreen> {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         if (widget.source.src != null) ...[
-                          SrcBadge(src: widget.source.src!),
+                          SrcBadge(
+                            src: widget.source.src!,
+                            matchShnidLook: true,
+                          ),
                           const SizedBox(width: 4),
                         ],
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 6, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: Theme.of(context)
-                                .colorScheme
-                                .secondaryContainer
-                                .withValues(alpha: 0.5),
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          child: Text(
-                            widget.source.id,
-                            style: Theme.of(context)
-                                .textTheme
-                                .labelSmall
-                                ?.copyWith(
-                                  color: Theme.of(context)
-                                      .colorScheme
-                                      .onSecondaryContainer,
-                                  fontSize: 10 *
-                                      (settingsProvider.uiScale ? 1.25 : 1.0),
-                                ),
-                          ),
-                        ),
+                        ShnidBadge(text: widget.source.id),
                       ],
                     ),
                   ),
@@ -354,6 +335,23 @@ class _TrackListScreenState extends State<TrackListScreen> {
       dateText = DateFormat(pattern).format(date);
     } catch (_) {}
 
+    // Adjust line height and letter spacing based on font to prevent overlap
+    final double dateLineHeight;
+    final double dateLetterSpacing;
+    if (settingsProvider.appFont == 'rock_salt') {
+      dateLineHeight = 1.4;
+      dateLetterSpacing = 1.5;
+    } else if (settingsProvider.appFont == 'permanent_marker') {
+      dateLineHeight = 1.2;
+      dateLetterSpacing = 0.8;
+    } else if (settingsProvider.appFont == 'caveat') {
+      dateLineHeight = 1.2;
+      dateLetterSpacing = 0.0;
+    } else {
+      dateLineHeight = 1.1; // Roboto and others
+      dateLetterSpacing = -0.5;
+    }
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 16.0, top: 8.0),
       child: Card(
@@ -373,8 +371,8 @@ class _TrackListScreenState extends State<TrackListScreen> {
                     .headlineMedium
                     ?.copyWith(
                       fontWeight: FontWeight.w800,
-                      height: 1.1,
-                      letterSpacing: -0.5,
+                      height: dateLineHeight,
+                      letterSpacing: dateLetterSpacing,
                     )
                     .apply(fontSizeFactor: scaleFactor),
               ),
@@ -396,6 +394,13 @@ class _TrackListScreenState extends State<TrackListScreen> {
                           ?.copyWith(
                             color: colorScheme.primary,
                             fontWeight: FontWeight.bold,
+                            letterSpacing:
+                                settingsProvider.appFont == 'rock_salt'
+                                    ? 1.0
+                                    : (settingsProvider.appFont ==
+                                            'permanent_marker'
+                                        ? 0.5
+                                        : 0.0),
                           )
                           .apply(fontSizeFactor: scaleFactor),
                     ),

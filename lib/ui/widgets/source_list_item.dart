@@ -69,10 +69,11 @@ class SourceListItem extends StatelessWidget {
     double glowOpacity =
         (isSourcePlaying ? 1.0 : 0.25) * (settingsProvider.glowMode / 100.0);
 
-    Widget buildContent() {
+    Widget buildContent({double? radiusOverride}) {
+      final effectiveRadius = radiusOverride ?? borderRadius;
       return Container(
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(borderRadius),
+          borderRadius: BorderRadius.circular(effectiveRadius),
           color: itemBackgroundColor,
           border: (!showGlow &&
                   !useRgb &&
@@ -100,7 +101,7 @@ class SourceListItem extends StatelessWidget {
               child: Material(
                 color: Colors.transparent,
                 child: InkWell(
-                  borderRadius: BorderRadius.circular(borderRadius),
+                  borderRadius: BorderRadius.circular(effectiveRadius),
                   onTap: onTap,
                   onLongPress: onLongPress,
                 ),
@@ -139,7 +140,10 @@ class SourceListItem extends StatelessWidget {
                         children: [
                           if (source.src != null) ...[
                             SrcBadge(
-                                src: source.src!, isPlaying: isSourcePlaying),
+                              src: source.src!,
+                              isPlaying: isSourcePlaying,
+                              fontSize: 10.0,
+                            ),
                             const SizedBox(width: 8),
                           ],
                           ValueListenableBuilder(
@@ -220,7 +224,7 @@ class SourceListItem extends StatelessWidget {
 
     if (showGlow || useRgb) {
       return Padding(
-        padding: const EdgeInsets.symmetric(vertical: 4),
+        padding: const EdgeInsets.symmetric(vertical: 2),
         child: Container(
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(borderRadius),
@@ -259,14 +263,19 @@ class SourceListItem extends StatelessWidget {
             showShadow: false, // Handled by outer container
             glowOpacity: 0.5 * glowOpacity,
             animationSpeed: settingsProvider.rgbAnimationSpeed,
-            child: buildContent(),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(
+                  borderRadius - (useRgb ? 3 : 2)), // Subtract border width
+              child:
+                  buildContent(radiusOverride: borderRadius - (useRgb ? 3 : 2)),
+            ),
           ),
         ),
       );
     }
 
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
+      padding: const EdgeInsets.symmetric(vertical: 2),
       child: Material(
         color: Colors.transparent,
         child: buildContent(),

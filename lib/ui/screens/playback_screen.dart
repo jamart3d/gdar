@@ -5,6 +5,7 @@ import 'package:shakedown/ui/widgets/animated_gradient_border.dart';
 import 'package:shakedown/ui/widgets/src_badge.dart';
 import 'package:shakedown/models/show.dart';
 import 'package:shakedown/models/source.dart';
+import 'package:shakedown/ui/widgets/shnid_badge.dart';
 import 'package:shakedown/models/track.dart';
 import 'package:shakedown/providers/audio_provider.dart';
 import 'package:shakedown/providers/settings_provider.dart';
@@ -23,7 +24,9 @@ import 'package:shakedown/ui/widgets/rating_control.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 import 'package:shakedown/ui/widgets/playback/playback_progress_bar.dart';
 import 'package:shakedown/ui/widgets/playback/playback_controls.dart';
+
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
+import 'package:shakedown/utils/font_layout_config.dart';
 
 class PlaybackScreen extends StatefulWidget {
   const PlaybackScreen({super.key});
@@ -205,7 +208,8 @@ class _PlaybackScreenState extends State<PlaybackScreen>
         ? Colors.black
         : Theme.of(context).colorScheme.surfaceContainer;
 
-    final double scaleFactor = settingsProvider.uiScale ? 1.25 : 1.0;
+    final double scaleFactor =
+        FontLayoutConfig.getEffectiveScale(context, settingsProvider);
 
     // minHeight covering the drag handle + Venue/Copy row.
     final double bottomPadding = MediaQuery.of(context).padding.bottom;
@@ -302,15 +306,30 @@ class _PlaybackScreenState extends State<PlaybackScreen>
       title: Opacity(
         opacity: (1.0 - (panelPosition * 1.5)).clamp(0.0, 1.0),
         child: SizedBox(
-          height: (Theme.of(context).textTheme.titleLarge?.fontSize ?? 22.0) *
-              (settingsProvider.uiScale ? 1.25 : 1.0) *
-              1.6,
+          height: (settingsProvider.appFont == 'rock_salt'
+                  ? (settingsProvider.uiScale ? 10.78 : 10.59)
+                  : settingsProvider.appFont == 'caveat'
+                      ? (settingsProvider.uiScale ? 14.5 : 15.0)
+                      : (settingsProvider.uiScale ? 9.17 : 11.0)) *
+              FontLayoutConfig.getEffectiveScale(context, settingsProvider) *
+              2.2,
           child: ConditionalMarquee(
             text: formattedDate,
-            style: Theme.of(context)
-                .textTheme
-                .titleLarge
-                ?.apply(fontSizeFactor: settingsProvider.uiScale ? 1.25 : 1.0),
+            style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                  fontSize: (settingsProvider.appFont == 'rock_salt'
+                          ? (settingsProvider.uiScale
+                              ? 10.78 // Rock Salt UI Scale ON: ~11px final
+                              : 10.59) // Rock Salt UI Scale OFF: ~9px final
+                          : settingsProvider.appFont == 'caveat'
+                              ? (settingsProvider.uiScale
+                                  ? 14.5 // Caveat UI Scale ON: ~17.4px final
+                                  : 15.0) // Caveat UI Scale OFF: 15px final
+                              : (settingsProvider.uiScale
+                                  ? 9.17 // Roboto/others UI Scale ON: ~11px final
+                                  : 11.0)) * // Roboto/others UI Scale OFF: 11px final
+                      FontLayoutConfig.getEffectiveScale(
+                          context, settingsProvider),
+                ),
           ),
         ),
       ),
@@ -326,91 +345,74 @@ class _PlaybackScreenState extends State<PlaybackScreen>
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                ValueListenableBuilder<Box<bool>>(
-                  valueListenable: CatalogService().historyListenable,
-                  builder: (context, historyBox, _) {
-                    return ValueListenableBuilder<Box<Rating>>(
-                      valueListenable: CatalogService().ratingsListenable,
-                      builder: (context, ratingsBox, _) {
-                        final String ratingKey = source.id;
-                        final isPlayed = historyBox.get(ratingKey) ?? false;
-                        final ratingObj = ratingsBox.get(ratingKey);
-                        final int rating = ratingObj?.rating ?? 0;
+                  ValueListenableBuilder<Box<bool>>(
+                    valueListenable: CatalogService().historyListenable,
+                    builder: (context, historyBox, _) {
+                      return ValueListenableBuilder<Box<Rating>>(
+                        valueListenable: CatalogService().ratingsListenable,
+                        builder: (context, ratingsBox, _) {
+                          final String ratingKey = source.id;
+                          final isPlayed = historyBox.get(ratingKey) ?? false;
+                          final ratingObj = ratingsBox.get(ratingKey);
+                          final int rating = ratingObj?.rating ?? 0;
 
-                        return RatingControl(
-                          key: ValueKey('${ratingKey}_${rating}_$isPlayed'),
-                          rating: rating,
-                          size: 16 * (settingsProvider.uiScale ? 1.25 : 1.0),
-                          isPlayed: isPlayed,
-                          onTap: () async {
-                            final currentRating =
-                                ratingsBox.get(ratingKey)?.rating ?? 0;
-                            await showDialog(
-                              context: context,
-                              builder: (context) => RatingDialog(
-                                initialRating: currentRating,
-                                sourceId: source.id,
-                                sourceUrl: source.tracks.isNotEmpty
-                                    ? source.tracks.first.url
-                                    : null,
-                                isPlayed: historyBox.get(ratingKey) ?? false,
-                                onRatingChanged: (newRating) {
-                                  CatalogService()
-                                      .setRating(ratingKey, newRating);
-                                },
-                                onPlayedChanged: (bool newIsPlayed) {
-                                  if (newIsPlayed !=
-                                      (historyBox.get(ratingKey) ?? false)) {
-                                    CatalogService().togglePlayed(ratingKey);
-                                  }
-                                },
-                              ),
-                            );
-                          },
-                        );
-                      },
-                    );
-                  },
-                ),
-                const SizedBox(height: 2),
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    if (source.src != null) ...[
-                      SrcBadge(src: source.src!),
-                      const SizedBox(width: 4),
-                    ],
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 6, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: Theme.of(context)
-                            .colorScheme
-                            .secondaryContainer
-                            .withValues(alpha: 0.5),
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: Text(
-                        source.id,
-                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                              color: Theme.of(context)
-                                  .colorScheme
-                                  .onSecondaryContainer,
-                              fontSize:
-                                  10 * (settingsProvider.uiScale ? 1.25 : 1.0),
-                            ),
-                      ),
+                          return RatingControl(
+                            key: ValueKey('${ratingKey}_${rating}_$isPlayed'),
+                            rating: rating,
+                            size: 16 *
+                                FontLayoutConfig.getEffectiveScale(
+                                    context, settingsProvider),
+                            isPlayed: isPlayed,
+                            onTap: () async {
+                              final currentRating =
+                                  ratingsBox.get(ratingKey)?.rating ?? 0;
+                              await showDialog(
+                                context: context,
+                                builder: (context) => RatingDialog(
+                                  initialRating: currentRating,
+                                  sourceId: source.id,
+                                  sourceUrl: source.tracks.isNotEmpty
+                                      ? source.tracks.first.url
+                                      : null,
+                                  isPlayed: historyBox.get(ratingKey) ?? false,
+                                  onRatingChanged: (newRating) {
+                                    CatalogService()
+                                        .setRating(ratingKey, newRating);
+                                  },
+                                  onPlayedChanged: (bool newIsPlayed) {
+                                    if (newIsPlayed !=
+                                        (historyBox.get(ratingKey) ?? false)) {
+                                      CatalogService().togglePlayed(ratingKey);
+                                    }
+                                  },
+                                ),
+                              );
+                            },
+                          );
+                        },
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 4),
+                  if (source.src != null) ...[
+                    SrcBadge(
+                      src: source.src!,
+                      matchShnidLook: true,
                     ),
+                    const SizedBox(height: 4),
                   ],
-                ),
-              ],
-            ),
+                  // Unified ShnidBadge
+                  ShnidBadge(text: source.id),
+                  const SizedBox(height: 2), // Gap from bottom
+                ],
+              ),
             ),
           ),
         ),
         IconButton(
           icon: const Icon(Icons.settings_rounded),
-          iconSize: 24 * (settingsProvider.uiScale ? 1.25 : 1.0),
+          iconSize: 24 *
+              FontLayoutConfig.getEffectiveScale(context, settingsProvider),
           onPressed: () async {
             // Pause global clock before navigating away to prevent visual jumps
             try {
@@ -492,7 +494,9 @@ class _PlaybackScreenState extends State<PlaybackScreen>
               color: Theme.of(context).colorScheme.primary,
               fontWeight: FontWeight.bold,
             )
-            .apply(fontSizeFactor: settingsProvider.uiScale ? 1.25 : 1.0),
+            .apply(
+                fontSizeFactor: FontLayoutConfig.getEffectiveScale(
+                    context, settingsProvider)),
       ),
     );
   }
@@ -518,7 +522,8 @@ class _PlaybackScreenState extends State<PlaybackScreen>
             currentTrack.title == track.title &&
             currentTrack.trackNumber == track.trackNumber;
 
-        final double scaleFactor = settingsProvider.uiScale ? 1.25 : 1.0;
+        final double scaleFactor =
+            FontLayoutConfig.getEffectiveScale(context, settingsProvider);
 
         return Container(
           margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 1),
@@ -581,11 +586,21 @@ class _PlaybackScreenState extends State<PlaybackScreen>
 
     final baseTitleStyle =
         textTheme.bodyLarge ?? const TextStyle(fontSize: 16.0);
-    final titleStyle =
-        baseTitleStyle.apply(fontSizeFactor: scaleFactor).copyWith(
-              fontWeight: isPlaying ? FontWeight.w600 : FontWeight.normal,
-              color: isPlaying ? colorScheme.primary : colorScheme.onSurface,
-            );
+
+    // Calculate fontSize with Rock Salt compensation
+    final double titleFontSize = settingsProvider.appFont == 'rock_salt'
+        ? (settingsProvider.uiScale
+            ? 11.5 // Rock Salt UI Scale ON: ~11.7px final (11.5 * 0.85 * 1.2)
+            : 12.0) // Rock Salt UI Scale OFF: ~10.2px final (12.0 * 0.85)
+        : (settingsProvider.uiScale
+            ? 13.33 // Roboto/others UI Scale ON: ~16px final (13.33 * 1.2)
+            : 16.0); // Roboto/others UI Scale OFF: 16px final
+
+    final titleStyle = baseTitleStyle.copyWith(
+      fontSize: titleFontSize * scaleFactor,
+      fontWeight: isPlaying ? FontWeight.w600 : FontWeight.normal,
+      color: isPlaying ? colorScheme.primary : colorScheme.onSurface,
+    );
 
     return ListTile(
       shape: RoundedRectangleBorder(
@@ -593,7 +608,8 @@ class _PlaybackScreenState extends State<PlaybackScreen>
       ),
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
       title: SizedBox(
-        height: titleStyle.fontSize! * 1.6,
+        height: titleStyle.fontSize! *
+            (settingsProvider.appFont == 'rock_salt' ? 2.0 : 1.6),
         child: ConditionalMarquee(
           text: settingsProvider.showTrackNumbers
               ? '${track.trackNumber}. ${track.title}'
@@ -635,7 +651,8 @@ class _PlaybackScreenState extends State<PlaybackScreen>
     final textTheme = Theme.of(context).textTheme;
     final colorScheme = Theme.of(context).colorScheme;
     final settingsProvider = context.watch<SettingsProvider>();
-    final scaleFactor = settingsProvider.uiScale ? 1.25 : 1.0;
+    final scaleFactor =
+        FontLayoutConfig.getEffectiveScale(context, settingsProvider);
 
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     final isTrueBlackMode = isDarkMode && settingsProvider.useTrueBlack;
@@ -715,16 +732,21 @@ class _PlaybackScreenState extends State<PlaybackScreen>
                       children: [
                         Flexible(
                           child: SizedBox(
-                            height: textTheme.headlineSmall!.fontSize! *
+                            height: (settingsProvider.appFont == 'rock_salt'
+                                    ? 14.12
+                                    : 18.0) *
                                 scaleFactor *
-                                1.6,
+                                2.2,
                             child: ConditionalMarquee(
                               text: currentShow.venue,
-                              style: textTheme.headlineSmall
-                                  ?.apply(fontSizeFactor: scaleFactor)
-                                  .copyWith(
-                                    color: colorScheme.onSurface,
-                                  ),
+                              style: textTheme.headlineSmall?.copyWith(
+                                fontSize:
+                                    (settingsProvider.appFont == 'rock_salt'
+                                            ? 14.12
+                                            : 18.0) *
+                                        scaleFactor,
+                                color: colorScheme.onSurface,
+                              ),
                               blankSpace: 60.0,
                               pauseAfterRound: const Duration(seconds: 3),
                               textAlign: settingsProvider.hideTrackDuration
@@ -747,8 +769,8 @@ class _PlaybackScreenState extends State<PlaybackScreen>
               valueListenable: panelPositionNotifier,
               builder: (context, value, child) {
                 // Closed (0.0): +100 (Hidden down)
-                // Open (1.0): -12 (Up less to avoid overlap)
-                final double yOffset = (100.0 - 112.0 * value) * scaleFactor;
+                // Open (1.0): -24 (Up more to create gap from bottom)
+                final double yOffset = (100.0 - 124.0 * value) * scaleFactor;
                 return Transform.translate(
                   offset: Offset(0, yOffset),
                   child: SingleChildScrollView(
@@ -785,19 +807,47 @@ class _PlaybackScreenState extends State<PlaybackScreen>
                                       const SizedBox(
                                           width:
                                               4), // Slight indentation for Date
-                                      Transform.translate(
-                                        offset: const Offset(0,
-                                            2), // Push Date down closer to Green Line
-                                        child: Text(
-                                          formattedDate,
-                                          style: textTheme.titleMedium
-                                              ?.apply(
-                                                  fontSizeFactor: scaleFactor)
-                                              .copyWith(
-                                                color: colorScheme
-                                                    .onSurfaceVariant,
-                                                height: 1.0,
+                                      Flexible(
+                                        child: Transform.translate(
+                                          offset: const Offset(0, 2),
+                                          child: SizedBox(
+                                            height: (settingsProvider.appFont ==
+                                                        'rock_salt'
+                                                    ? (settingsProvider.uiScale
+                                                        ? 10.05
+                                                        : 11.76)
+                                                    : (settingsProvider.uiScale
+                                                        ? 11.88
+                                                        : 14.0)) *
+                                                scaleFactor *
+                                                2.2,
+                                            child: Padding(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      horizontal: 4.0),
+                                              child: ConditionalMarquee(
+                                                text: formattedDate,
+                                                style: textTheme.titleMedium
+                                                    ?.copyWith(
+                                                  fontSize: (settingsProvider
+                                                                  .appFont ==
+                                                              'rock_salt'
+                                                          ? (settingsProvider
+                                                                  .uiScale
+                                                              ? 10.05 // Rock Salt UI Scale ON: 10.25px final
+                                                              : 11.76) // Rock Salt UI Scale OFF: 10px final
+                                                          : (settingsProvider
+                                                                  .uiScale
+                                                              ? 11.88 // Roboto/others UI Scale ON: 14.25px final
+                                                              : 14.0)) * // Roboto/others UI Scale OFF: 14px final
+                                                      scaleFactor,
+                                                  color: colorScheme
+                                                      .onSurfaceVariant,
+                                                  height: 1.2,
+                                                ),
                                               ),
+                                            ),
+                                          ),
                                         ),
                                       ),
                                       IconButton(
@@ -891,83 +941,42 @@ class _PlaybackScreenState extends State<PlaybackScreen>
                               ),
                             ),
                             const SizedBox(width: 8),
-                            IntrinsicWidth(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.stretch,
-                                children: [
-                                  Align(
-                                    alignment: Alignment.centerRight,
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                // Rating Stars
+                                ConstrainedBox(
+                                  constraints: const BoxConstraints(
+                                      minWidth: 48, minHeight: 48),
+                                  child: Center(
                                     child: _buildRatingButton(
                                         context, currentShow, currentSource),
                                   ),
-                                  const SizedBox(
-                                      height:
-                                          16), // Increased from 8 to compensate for -6px offset
-                                  Transform.translate(
-                                    offset: const Offset(
-                                        0, -8), // Move UP 8px total
-                                    child: InkWell(
-                                      onTap: () {
-                                        if (currentSource.tracks.isNotEmpty) {
-                                          launchArchivePage(
-                                              currentSource.tracks.first.url);
-                                        }
-                                      },
-                                      borderRadius: BorderRadius.circular(6),
-                                      child: Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          children: [
-                                            if (currentSource.src != null) ...[
-                                              SrcBadge(
-                                                  src: currentSource.src!,
-                                                  isPlaying: true,
-                                                  fontSize:
-                                                      11.0), // Larger badge
-                                              const SizedBox(width: 6),
-                                            ],
-                                            Container(
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                      horizontal: 10,
-                                                      vertical: 6),
-                                              decoration: BoxDecoration(
-                                                color: colorScheme
-                                                    .tertiaryContainer
-                                                    .withValues(alpha: 0.7),
-                                                borderRadius:
-                                                    BorderRadius.circular(6),
-                                              ),
-                                              child: Container(
-                                                padding: const EdgeInsets.only(
-                                                    bottom:
-                                                        1.0), // Gap for underline
-                                                decoration: BoxDecoration(
-                                                  border: Border(
-                                                    bottom: BorderSide(
-                                                      color: colorScheme
-                                                          .onTertiaryContainer,
-                                                      width: 1.0,
-                                                    ),
-                                                  ),
-                                                ),
-                                                child: Text(
-                                                  currentSource.id,
-                                                  style: textTheme.bodyMedium
-                                                      ?.copyWith(
-                                                    color: colorScheme
-                                                        .onTertiaryContainer,
-                                                    fontWeight: FontWeight.bold,
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                          ]),
-                                    ),
-                                  ), // Close Transform.translate
-                                ],
-                              ),
+                                ),
+                                const SizedBox(height: 4),
+                                // SrcBadge
+                                // SrcBadge
+                                if (currentSource.src != null)
+                                  SrcBadge(
+                                    src: currentSource.src!,
+                                    matchShnidLook: true,
+                                  ),
+                                const SizedBox(height: 4),
+                                // Shnid Badge
+                                InkWell(
+                                  onTap: () {
+                                    if (currentSource.tracks.isNotEmpty) {
+                                      launchArchivePage(
+                                          currentSource.tracks.first.url);
+                                    }
+                                  },
+                                  borderRadius: BorderRadius.circular(8),
+                                  child: ShnidBadge(
+                                    text: currentSource.id,
+                                    showUnderline: true,
+                                  ),
+                                ),
+                              ],
                             ),
                           ],
                         ),

@@ -13,6 +13,7 @@ import 'package:shakedown/ui/widgets/settings/source_filter_settings.dart';
 import 'package:shakedown/ui/widgets/settings/collection_statistics.dart';
 import 'package:shakedown/ui/screens/rated_shows_screen.dart';
 import 'package:shakedown/ui/widgets/animated_gradient_border.dart'; // Add import
+import 'package:shakedown/utils/font_layout_config.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -106,7 +107,7 @@ class _SettingsScreenState extends State<SettingsScreen>
     final settingsProvider = context.read<SettingsProvider>();
     // Map of internal value to display name and TextStyle
     final Map<String, TextStyle?> fonts = {
-      'default': null,
+      'default': const TextStyle(fontFamily: 'Roboto'), // Enforce Roboto
       'caveat': const TextStyle(fontFamily: 'Caveat'),
       'permanent_marker': const TextStyle(fontFamily: 'Permanent Marker'),
       'rock_salt': const TextStyle(fontFamily: 'RockSalt'),
@@ -182,23 +183,28 @@ class _SettingsScreenState extends State<SettingsScreen>
     }
   }
 
-  Widget _buildClickableLink(BuildContext context, String text, String url,
+  Widget _buildClickableLink(
+      BuildContext context, String text, String url, double scaleFactor,
       {IconData? icon}) {
     final colorScheme = Theme.of(context).colorScheme;
     return ListTile(
+      dense: true,
+      visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
       leading: icon != null ? Icon(icon, color: colorScheme.primary) : null,
       title: Text(
         text,
         style: TextStyle(
           color: colorScheme.primary,
           decoration: TextDecoration.underline,
+          fontSize: 7.5 * scaleFactor,
         ),
       ),
       onTap: () => _launchUrl(url),
     );
   }
 
-  Widget _buildWeightRow(BuildContext context, String label, String weight,
+  Widget _buildWeightRow(
+      BuildContext context, String label, String weight, double scaleFactor,
       {required bool isActive, bool isBest = false}) {
     final colorScheme = Theme.of(context).colorScheme;
     final textStyle = Theme.of(context).textTheme.bodyMedium;
@@ -211,6 +217,7 @@ class _SettingsScreenState extends State<SettingsScreen>
           Text(
             label,
             style: textStyle?.copyWith(
+              fontSize: 7.5 * scaleFactor,
               color: isActive
                   ? (isBest ? colorScheme.primary : colorScheme.onSurface)
                   : colorScheme.outline,
@@ -222,6 +229,7 @@ class _SettingsScreenState extends State<SettingsScreen>
           Text(
             isActive ? weight : 'Excluded',
             style: textStyle?.copyWith(
+              fontSize: 7.5 * scaleFactor,
               color: isActive
                   ? (isBest
                       ? colorScheme.primary
@@ -229,7 +237,6 @@ class _SettingsScreenState extends State<SettingsScreen>
                   : colorScheme.outline,
               fontWeight:
                   isBest && isActive ? FontWeight.bold : FontWeight.normal,
-              fontSize: isActive ? null : 12,
             ),
           ),
         ],
@@ -242,6 +249,8 @@ class _SettingsScreenState extends State<SettingsScreen>
     final themeProvider = context.watch<ThemeProvider>();
     final settingsProvider = context.watch<SettingsProvider>();
     final audioProvider = context.watch<AudioProvider>();
+    final scaleFactor =
+        FontLayoutConfig.getEffectiveScale(context, settingsProvider);
 
     final colorScheme = Theme.of(context).colorScheme;
 
@@ -298,15 +307,23 @@ class _SettingsScreenState extends State<SettingsScreen>
               SliverList(
                 delegate: SliverChildListDelegate([
                   SectionCard(
+                    scaleFactor: scaleFactor,
                     title: 'Usage Instructions',
                     icon: Icons.help_outline,
                     children: [
                       ListTile(
+                        dense: true,
+                        visualDensity:
+                            const VisualDensity(horizontal: 0, vertical: -4),
                         leading: const Icon(Icons.shuffle_rounded),
-                        title: const Text('Random Selection'),
+                        title: Text('Random Selection',
+                            style: TextStyle(fontSize: 10 * scaleFactor)),
                         subtitle: Text.rich(
                           TextSpan(
-                            style: Theme.of(context).textTheme.bodyMedium,
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodyMedium
+                                ?.copyWith(fontSize: 8.5 * scaleFactor),
                             children: const [
                               TextSpan(
                                   text: 'Tap',
@@ -328,11 +345,18 @@ class _SettingsScreenState extends State<SettingsScreen>
                         isThreeLine: true,
                       ),
                       ListTile(
+                        dense: true,
+                        visualDensity:
+                            const VisualDensity(horizontal: 0, vertical: -4),
                         leading: const Icon(Icons.play_circle_outline_rounded),
-                        title: const Text('Player Controls'),
+                        title: Text('Player Controls',
+                            style: TextStyle(fontSize: 10 * scaleFactor)),
                         subtitle: Text.rich(
                           TextSpan(
-                            style: Theme.of(context).textTheme.bodyMedium,
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodyMedium
+                                ?.copyWith(fontSize: 8.5 * scaleFactor),
                             children: const [
                               TextSpan(
                                   text: 'Tap',
@@ -354,11 +378,18 @@ class _SettingsScreenState extends State<SettingsScreen>
                         isThreeLine: true,
                       ),
                       ListTile(
+                        dense: true,
+                        visualDensity:
+                            const VisualDensity(horizontal: 0, vertical: -4),
                         leading: const Icon(Icons.search_rounded),
-                        title: const Text('Search'),
+                        title: Text('Search',
+                            style: TextStyle(fontSize: 10 * scaleFactor)),
                         subtitle: Text.rich(
                           TextSpan(
-                            style: Theme.of(context).textTheme.bodyMedium,
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodyMedium
+                                ?.copyWith(fontSize: 8.5 * scaleFactor),
                             children: const [
                               TextSpan(
                                   text: 'Tap',
@@ -372,11 +403,18 @@ class _SettingsScreenState extends State<SettingsScreen>
                         ),
                       ),
                       ListTile(
+                        dense: true,
+                        visualDensity:
+                            const VisualDensity(horizontal: 0, vertical: -4),
                         leading: const Icon(Icons.star_rate_rounded),
-                        title: const Text('Rate Show'),
+                        title: Text('Rate Show',
+                            style: TextStyle(fontSize: 10 * scaleFactor)),
                         subtitle: Text.rich(
                           TextSpan(
-                            style: Theme.of(context).textTheme.bodyMedium,
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodyMedium
+                                ?.copyWith(fontSize: 8.5 * scaleFactor),
                             children: const [
                               TextSpan(
                                   text: 'Tap',
@@ -390,11 +428,18 @@ class _SettingsScreenState extends State<SettingsScreen>
                         ),
                       ),
                       ListTile(
+                        dense: true,
+                        visualDensity:
+                            const VisualDensity(horizontal: 0, vertical: -4),
                         leading: const Icon(Icons.block_rounded),
-                        title: const Text('Quick Block'),
+                        title: Text('Quick Block',
+                            style: TextStyle(fontSize: 10 * scaleFactor)),
                         subtitle: Text.rich(
                           TextSpan(
-                            style: Theme.of(context).textTheme.bodyMedium,
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodyMedium
+                                ?.copyWith(fontSize: 8.5 * scaleFactor),
                             children: const [
                               TextSpan(
                                   text: 'Swipe left',
@@ -408,11 +453,18 @@ class _SettingsScreenState extends State<SettingsScreen>
                         ),
                       ),
                       ListTile(
+                        dense: true,
+                        visualDensity:
+                            const VisualDensity(horizontal: 0, vertical: -4),
                         leading: const Icon(Icons.touch_app_rounded),
-                        title: const Text('Expand Show'),
+                        title: Text('Expand Show',
+                            style: TextStyle(fontSize: 10 * scaleFactor)),
                         subtitle: Text.rich(
                           TextSpan(
-                            style: Theme.of(context).textTheme.bodyMedium,
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodyMedium
+                                ?.copyWith(fontSize: 8.5 * scaleFactor),
                             children: const [
                               TextSpan(
                                   text: 'Tap',
@@ -426,11 +478,18 @@ class _SettingsScreenState extends State<SettingsScreen>
                         ),
                       ),
                       ListTile(
+                        dense: true,
+                        visualDensity:
+                            const VisualDensity(horizontal: 0, vertical: -4),
                         leading: const Icon(Icons.link_rounded),
-                        title: const Text('View Source Page'),
+                        title: Text('View Source Page',
+                            style: TextStyle(fontSize: 10 * scaleFactor)),
                         subtitle: Text.rich(
                           TextSpan(
-                            style: Theme.of(context).textTheme.bodyMedium,
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodyMedium
+                                ?.copyWith(fontSize: 8.5 * scaleFactor),
                             children: const [
                               TextSpan(
                                   text: 'Tap',
@@ -444,11 +503,18 @@ class _SettingsScreenState extends State<SettingsScreen>
                         ),
                       ),
                       ListTile(
+                        dense: true,
+                        visualDensity:
+                            const VisualDensity(horizontal: 0, vertical: -4),
                         leading: const Icon(Icons.copy_rounded),
-                        title: const Text('Share Track with Friends'),
+                        title: Text('Share Track with Friends',
+                            style: TextStyle(fontSize: 10 * scaleFactor)),
                         subtitle: Text.rich(
                           TextSpan(
-                            style: Theme.of(context).textTheme.bodyMedium,
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodyMedium
+                                ?.copyWith(fontSize: 8.5 * scaleFactor),
                             children: const [
                               TextSpan(
                                   text: 'Tap',
@@ -462,11 +528,18 @@ class _SettingsScreenState extends State<SettingsScreen>
                         ),
                       ),
                       ListTile(
+                        dense: true,
+                        visualDensity:
+                            const VisualDensity(horizontal: 0, vertical: -4),
                         leading: const Icon(Icons.content_paste_rounded),
-                        title: const Text('Play from Shared Link'),
+                        title: Text('Play from Shared Link',
+                            style: TextStyle(fontSize: 10 * scaleFactor)),
                         subtitle: Text.rich(
                           TextSpan(
-                            style: Theme.of(context).textTheme.bodyMedium,
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodyMedium
+                                ?.copyWith(fontSize: 8.5 * scaleFactor),
                             children: const [
                               TextSpan(
                                   text: 'Paste',
@@ -474,21 +547,25 @@ class _SettingsScreenState extends State<SettingsScreen>
                                       TextStyle(fontWeight: FontWeight.bold)),
                               TextSpan(
                                   text:
-                                      ' a shared link into the search bar to instantly start playback at that track. The app will scroll to the show and navigate to the player automatically.'),
+                                      ' a shared track link from your clipboard into search to jump directly to it.'),
                             ],
                           ),
                         ),
-                        isThreeLine: true,
                       ),
                     ],
                   ),
 
                   SectionCard(
+                    scaleFactor: scaleFactor,
                     title: 'Appearance',
                     icon: Icons.palette_outlined,
                     children: [
                       SwitchListTile(
-                        title: const Text('Dark'),
+                        dense: true,
+                        visualDensity:
+                            const VisualDensity(horizontal: 0, vertical: -4),
+                        title: Text('Dark',
+                            style: TextStyle(fontSize: 10 * scaleFactor)),
                         value: themeProvider.isDarkMode,
                         onChanged: (value) {
                           HapticFeedback.lightImpact();
@@ -501,8 +578,13 @@ class _SettingsScreenState extends State<SettingsScreen>
                         ),
                       ),
                       SwitchListTile(
-                        title: const Text('Dynamic Color'),
-                        subtitle: const Text('Theme from wallpaper'),
+                        dense: true,
+                        visualDensity:
+                            const VisualDensity(horizontal: 0, vertical: -4),
+                        title: Text('Dynamic Color',
+                            style: TextStyle(fontSize: 10 * scaleFactor)),
+                        subtitle: Text('Theme from wallpaper',
+                            style: TextStyle(fontSize: 8.5 * scaleFactor)),
                         value: settingsProvider.useDynamicColor,
                         onChanged: (value) {
                           HapticFeedback.lightImpact();
@@ -515,8 +597,13 @@ class _SettingsScreenState extends State<SettingsScreen>
                       // True Black Mode (only in Dark Mode)
                       if (isDarkMode)
                         SwitchListTile(
-                          title: const Text('True Black'),
-                          subtitle: const Text('Shadows and blur disabled'),
+                          dense: true,
+                          visualDensity:
+                              const VisualDensity(horizontal: 0, vertical: -4),
+                          title: Text('True Black',
+                              style: TextStyle(fontSize: 10 * scaleFactor)),
+                          subtitle: Text('Shadows and blur disabled',
+                              style: TextStyle(fontSize: 8.5 * scaleFactor)),
                           value: settingsProvider.useTrueBlack,
                           onChanged: (value) {
                             HapticFeedback.lightImpact();
@@ -528,32 +615,40 @@ class _SettingsScreenState extends State<SettingsScreen>
                         ),
                       if (!settingsProvider.useDynamicColor)
                         ListTile(
+                          dense: true,
+                          visualDensity:
+                              const VisualDensity(horizontal: 0, vertical: -4),
                           leading: const Icon(Icons.palette_rounded),
-                          title: const Text('Custom Theme Color'),
-                          subtitle:
-                              const Text('Overrides the default theme color'),
+                          title: Text('Custom Theme Color',
+                              style: TextStyle(fontSize: 10 * scaleFactor)),
+                          subtitle: Text('Overrides the default theme color',
+                              style: TextStyle(fontSize: 8.5 * scaleFactor)),
                           onTap: () => _showColorPickerDialog(context),
                           trailing: Container(
-                            width: 24,
-                            height: 24,
+                            width: 18,
+                            height: 18,
                             decoration: BoxDecoration(
                               color:
                                   settingsProvider.seedColor ?? Colors.purple,
                               shape: BoxShape.circle,
                               border: Border.all(
                                 color: colorScheme.outline,
-                                width: 2,
+                                width: 1.5,
                               ),
                             ),
                           ),
                         ),
                       SwitchListTile(
-                        title: const Text('Glow Border'),
+                        dense: true,
+                        visualDensity:
+                            const VisualDensity(horizontal: 0, vertical: -4),
+                        title: Text('Glow Border',
+                            style: TextStyle(fontSize: 10 * scaleFactor)),
                         value: settingsProvider.glowMode > 0,
                         onChanged: (value) {
                           context
                               .read<SettingsProvider>()
-                              .setGlowMode(value ? 100 : 0); // Full or Off
+                              .setGlowMode(value ? 65 : 0); // 65% or Off
                         },
                         secondary: const Icon(Icons.blur_on_rounded),
                       ),
@@ -569,8 +664,11 @@ class _SettingsScreenState extends State<SettingsScreen>
                                   children: [
                                     Text(
                                       'Intensity',
-                                      style:
-                                          Theme.of(context).textTheme.bodySmall,
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodySmall
+                                          ?.copyWith(
+                                              fontSize: 8.5 * scaleFactor),
                                     ),
                                     Expanded(
                                       child: Slider(
@@ -587,12 +685,14 @@ class _SettingsScreenState extends State<SettingsScreen>
                                       ),
                                     ),
                                     SizedBox(
-                                      width: 40,
+                                      width: 35 * scaleFactor,
                                       child: Text(
                                         '${settingsProvider.glowMode}%',
                                         style: Theme.of(context)
                                             .textTheme
-                                            .bodySmall,
+                                            .bodySmall
+                                            ?.copyWith(
+                                                fontSize: 8.5 * scaleFactor),
                                         textAlign: TextAlign.end,
                                       ),
                                     ),
@@ -605,13 +705,21 @@ class _SettingsScreenState extends State<SettingsScreen>
                           ),
                         ),
                       SwitchListTile(
-                        title: const Text('Highlight Playing with RGB'),
-                        subtitle: const Text('Animate border with RGB colors'),
+                        dense: true,
+                        visualDensity:
+                            const VisualDensity(horizontal: 0, vertical: -4),
+                        title: Text('Highlight Playing with RGB',
+                            style: TextStyle(fontSize: 10 * scaleFactor)),
+                        subtitle: Text('Animate border with RGB colors',
+                            style: TextStyle(fontSize: 8.5 * scaleFactor)),
                         value: settingsProvider.highlightPlayingWithRgb,
                         onChanged: (value) {
-                          context
-                              .read<SettingsProvider>()
-                              .toggleHighlightPlayingWithRgb();
+                          final provider = context.read<SettingsProvider>();
+                          provider.toggleHighlightPlayingWithRgb();
+                          // If turning RGB OFF and True Black is ON, turn off Glow too
+                          if (!value && provider.useTrueBlack) {
+                            provider.setGlowMode(0);
+                          }
                         },
                         secondary: const Icon(Icons.animation_rounded),
                       ),
@@ -624,7 +732,10 @@ class _SettingsScreenState extends State<SettingsScreen>
                             children: [
                               Text(
                                 'RGB Animation Speed',
-                                style: Theme.of(context).textTheme.bodyMedium,
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodyMedium
+                                    ?.copyWith(fontSize: 8.5 * scaleFactor),
                               ),
                               const SizedBox(height: 8),
                               AnimatedGradientBorder(
@@ -734,24 +845,34 @@ class _SettingsScreenState extends State<SettingsScreen>
                           ),
                         ),
                       ListTile(
+                        dense: true,
+                        visualDensity:
+                            const VisualDensity(horizontal: 0, vertical: -4),
                         leading: const Icon(Icons.text_format_rounded),
-                        title: const Text('App Font'),
-                        subtitle:
-                            Text(_getFontDisplayName(settingsProvider.appFont)),
+                        title: Text('App Font',
+                            style: TextStyle(fontSize: 10 * scaleFactor)),
+                        subtitle: Text(
+                            _getFontDisplayName(settingsProvider.appFont),
+                            style: TextStyle(fontSize: 8.5 * scaleFactor)),
                         onTap: () => _showFontSelectionDialog(context),
                       ),
                     ],
                   ),
 
                   SectionCard(
+                    scaleFactor: scaleFactor,
                     title: 'Interface',
                     icon: Icons.view_quilt_outlined,
                     children: [
                       // 1. General UI Group
                       SwitchListTile(
-                        title: const Text('UI Scale'),
-                        subtitle:
-                            const Text('Increase text size across the app'),
+                        dense: true,
+                        visualDensity:
+                            const VisualDensity(horizontal: 0, vertical: -4),
+                        title: Text('UI Scale',
+                            style: TextStyle(fontSize: 10 * scaleFactor)),
+                        subtitle: Text('Increase text size across the app',
+                            style: TextStyle(fontSize: 8.5 * scaleFactor)),
                         value: settingsProvider.uiScale,
                         onChanged: (value) {
                           context.read<SettingsProvider>().toggleUiScale();
@@ -759,9 +880,13 @@ class _SettingsScreenState extends State<SettingsScreen>
                         secondary: const Icon(Icons.text_fields_rounded),
                       ),
                       SwitchListTile(
-                        title: const Text('Show Splash Screen'),
-                        subtitle:
-                            const Text('Show a loading screen on startup'),
+                        dense: true,
+                        visualDensity:
+                            const VisualDensity(horizontal: 0, vertical: -4),
+                        title: Text('Show Splash Screen',
+                            style: TextStyle(fontSize: 10 * scaleFactor)),
+                        subtitle: Text('Show a loading screen on startup',
+                            style: TextStyle(fontSize: 8.5 * scaleFactor)),
                         value: settingsProvider.showSplashScreen,
                         onChanged: (value) {
                           context
@@ -770,15 +895,35 @@ class _SettingsScreenState extends State<SettingsScreen>
                         },
                         secondary: const Icon(Icons.rocket_launch_rounded),
                       ),
+                      SwitchListTile(
+                        dense: true,
+                        visualDensity:
+                            const VisualDensity(horizontal: 0, vertical: -4),
+                        title: Text('Enable Shakedown Tween',
+                            style: TextStyle(fontSize: 10 * scaleFactor)),
+                        subtitle: Text('Animate the Shakedown title text',
+                            style: TextStyle(fontSize: 8.5 * scaleFactor)),
+                        value: settingsProvider.enableShakedownTween,
+                        onChanged: (value) {
+                          context
+                              .read<SettingsProvider>()
+                              .toggleEnableShakedownTween();
+                        },
+                        secondary: const Icon(Icons.animation_rounded),
+                      ),
                       const SizedBox(height: 8),
                       const Divider(),
                       const SizedBox(height: 8),
 
                       // 2. Date & Time Group
                       SwitchListTile(
-                        title: const Text('Show date first in show cards'),
-                        subtitle:
-                            const Text('Display the date before the venue'),
+                        dense: true,
+                        visualDensity:
+                            const VisualDensity(horizontal: 0, vertical: -4),
+                        title: Text('Show date first in show cards',
+                            style: TextStyle(fontSize: 10 * scaleFactor)),
+                        subtitle: Text('Display the date before the venue',
+                            style: TextStyle(fontSize: 8.5 * scaleFactor)),
                         value: settingsProvider.dateFirstInShowCard,
                         onChanged: (value) {
                           context
@@ -788,8 +933,13 @@ class _SettingsScreenState extends State<SettingsScreen>
                         secondary: const Icon(Icons.date_range_rounded),
                       ),
                       SwitchListTile(
-                        title: const Text('Show Day of Week'),
-                        subtitle: const Text('Includes the day name in dates'),
+                        dense: true,
+                        visualDensity:
+                            const VisualDensity(horizontal: 0, vertical: -4),
+                        title: Text('Show Day of Week',
+                            style: TextStyle(fontSize: 10 * scaleFactor)),
+                        subtitle: Text('Includes the day name in dates',
+                            style: TextStyle(fontSize: 8.5 * scaleFactor)),
                         value: settingsProvider.showDayOfWeek,
                         onChanged: (value) {
                           context
@@ -800,9 +950,13 @@ class _SettingsScreenState extends State<SettingsScreen>
                       ),
                       if (settingsProvider.showDayOfWeek)
                         SwitchListTile(
-                          title: const Text('Abbreviate Day of Week'),
-                          subtitle:
-                              const Text('Use short day names (e.g., Sat)'),
+                          dense: true,
+                          visualDensity:
+                              const VisualDensity(horizontal: 0, vertical: -4),
+                          title: Text('Abbreviate Day of Week',
+                              style: TextStyle(fontSize: 10 * scaleFactor)),
+                          subtitle: Text('Use short day names (e.g., Sat)',
+                              style: TextStyle(fontSize: 8.5 * scaleFactor)),
                           value: settingsProvider.abbreviateDayOfWeek,
                           onChanged: (value) {
                             context
@@ -812,9 +966,13 @@ class _SettingsScreenState extends State<SettingsScreen>
                           secondary: const Icon(Icons.short_text_rounded),
                         ),
                       SwitchListTile(
-                        title: const Text('Abbreviate Month'),
-                        subtitle:
-                            const Text('Use short month names (e.g., Aug)'),
+                        dense: true,
+                        visualDensity:
+                            const VisualDensity(horizontal: 0, vertical: -4),
+                        title: Text('Abbreviate Month',
+                            style: TextStyle(fontSize: 10 * scaleFactor)),
+                        subtitle: Text('Use short month names (e.g., Aug)',
+                            style: TextStyle(fontSize: 8.5 * scaleFactor)),
                         value: settingsProvider.abbreviateMonth,
                         onChanged: (value) {
                           context
@@ -830,8 +988,13 @@ class _SettingsScreenState extends State<SettingsScreen>
 
                       // 3. List Sorting & Badges
                       SwitchListTile(
-                        title: const Text('Sort Oldest First'),
-                        subtitle: const Text('Show earliest shows at the top'),
+                        dense: true,
+                        visualDensity:
+                            const VisualDensity(horizontal: 0, vertical: -4),
+                        title: Text('Sort Oldest First',
+                            style: TextStyle(fontSize: 10 * scaleFactor)),
+                        subtitle: Text('Show earliest shows at the top',
+                            style: TextStyle(fontSize: 8.5 * scaleFactor)),
                         value: settingsProvider.sortOldestFirst,
                         onChanged: (value) {
                           context
@@ -841,9 +1004,14 @@ class _SettingsScreenState extends State<SettingsScreen>
                         secondary: const Icon(Icons.sort_rounded),
                       ),
                       SwitchListTile(
-                        title: const Text('Show SHNID Badge (Single Source)'),
-                        subtitle: const Text(
-                            'Display SHNID number on card if only one source'),
+                        dense: true,
+                        visualDensity:
+                            const VisualDensity(horizontal: 0, vertical: -4),
+                        title: Text('Show SHNID Badge (Single Source)',
+                            style: TextStyle(fontSize: 10 * scaleFactor)),
+                        subtitle: Text(
+                            'Display SHNID number on card if only one source',
+                            style: TextStyle(fontSize: 8.5 * scaleFactor)),
                         value: settingsProvider.showSingleShnid,
                         onChanged: (value) {
                           context
@@ -858,8 +1026,13 @@ class _SettingsScreenState extends State<SettingsScreen>
 
                       // 4. Track List Options
                       SwitchListTile(
-                        title: const Text('Show Track Numbers'),
-                        subtitle: const Text('Display track numbers in lists'),
+                        dense: true,
+                        visualDensity:
+                            const VisualDensity(horizontal: 0, vertical: -4),
+                        title: Text('Show Track Numbers',
+                            style: TextStyle(fontSize: 10 * scaleFactor)),
+                        subtitle: Text('Display track numbers in lists',
+                            style: TextStyle(fontSize: 8.5 * scaleFactor)),
                         value: settingsProvider.showTrackNumbers,
                         onChanged: (value) {
                           context
@@ -869,9 +1042,13 @@ class _SettingsScreenState extends State<SettingsScreen>
                         secondary: const Icon(Icons.pin_rounded),
                       ),
                       SwitchListTile(
-                        title: const Text('Hide Track Duration'),
-                        subtitle:
-                            const Text('Hide duration and center track titles'),
+                        dense: true,
+                        visualDensity:
+                            const VisualDensity(horizontal: 0, vertical: -4),
+                        title: Text('Hide Track Duration',
+                            style: TextStyle(fontSize: 10 * scaleFactor)),
+                        subtitle: Text('Hide duration and center track titles',
+                            style: TextStyle(fontSize: 8.5 * scaleFactor)),
                         value: settingsProvider.hideTrackDuration,
                         onChanged: (value) {
                           context
@@ -886,13 +1063,19 @@ class _SettingsScreenState extends State<SettingsScreen>
                   const SourceFilterSettings(),
 
                   SectionCard(
+                    scaleFactor: scaleFactor,
                     title: 'Random Playback',
                     icon: Icons.shuffle_rounded,
                     children: [
                       SwitchListTile(
-                        title: const Text('Play Random Show on Completion'),
-                        subtitle: const Text(
-                            'When a show ends, play another one randomly'),
+                        dense: true,
+                        visualDensity:
+                            const VisualDensity(horizontal: 0, vertical: -4),
+                        title: Text('Play Random Show on Completion',
+                            style: TextStyle(fontSize: 10 * scaleFactor)),
+                        subtitle: Text(
+                            'When a show ends, play another one randomly',
+                            style: TextStyle(fontSize: 8.5 * scaleFactor)),
                         value: settingsProvider.playRandomOnCompletion,
                         onChanged: (value) {
                           context
@@ -902,9 +1085,14 @@ class _SettingsScreenState extends State<SettingsScreen>
                         secondary: const Icon(Icons.repeat_rounded),
                       ),
                       SwitchListTile(
-                        title: const Text('Play Random Show on Startup'),
-                        subtitle: const Text(
-                            'Start playing a random show when the app opens'),
+                        dense: true,
+                        visualDensity:
+                            const VisualDensity(horizontal: 0, vertical: -4),
+                        title: Text('Play Random Show on Startup',
+                            style: TextStyle(fontSize: 10 * scaleFactor)),
+                        subtitle: Text(
+                            'Start playing a random show when the app opens',
+                            style: TextStyle(fontSize: 8.5 * scaleFactor)),
                         value: settingsProvider.playRandomOnStartup,
                         onChanged: (value) {
                           context
@@ -914,9 +1102,14 @@ class _SettingsScreenState extends State<SettingsScreen>
                         secondary: const Icon(Icons.start_rounded),
                       ),
                       SwitchListTile(
-                        title: const Text('Only Select Unplayed Shows'),
-                        subtitle: const Text(
-                            'Random playback will prefer unplayed shows'),
+                        dense: true,
+                        visualDensity:
+                            const VisualDensity(horizontal: 0, vertical: -4),
+                        title: Text('Only Select Unplayed Shows',
+                            style: TextStyle(fontSize: 10 * scaleFactor)),
+                        subtitle: Text(
+                            'Random playback will prefer unplayed shows',
+                            style: TextStyle(fontSize: 8.5 * scaleFactor)),
                         value: settingsProvider.randomOnlyUnplayed,
                         onChanged: (value) {
                           context
@@ -926,21 +1119,31 @@ class _SettingsScreenState extends State<SettingsScreen>
                         secondary: const Icon(Icons.new_releases_rounded),
                       ),
                       SwitchListTile(
-                        title: const Text('Only Select High Rated Shows'),
-                        subtitle: const Text(
-                            'Random playback will prefer shows rated 2+ stars'),
+                        dense: true,
+                        visualDensity:
+                            const VisualDensity(horizontal: 0, vertical: -4),
+                        title: Text('Only Select High Rated Shows',
+                            style: TextStyle(fontSize: 10 * scaleFactor)),
+                        subtitle: Text(
+                            'Random playback will prefer shows rated 2+ stars',
+                            style: TextStyle(fontSize: 8.5 * scaleFactor)),
                         value: settingsProvider.randomOnlyHighRated,
                         onChanged: (value) {
                           context
                               .read<SettingsProvider>()
                               .toggleRandomOnlyHighRated();
                         },
-                        secondary: const Icon(Icons.star_rounded),
+                        secondary: const Icon(Icons.star_rate_rounded),
                       ),
                       SwitchListTile(
-                        title: const Text('Exclude Played from Random'),
-                        subtitle: const Text(
-                            'Removes played shows from the selection pool'),
+                        dense: true,
+                        visualDensity:
+                            const VisualDensity(horizontal: 0, vertical: -4),
+                        title: Text('Exclude Already Played Shows',
+                            style: TextStyle(fontSize: 10 * scaleFactor)),
+                        subtitle: Text(
+                            'Random playback will never select shows you have played',
+                            style: TextStyle(fontSize: 8.5 * scaleFactor)),
                         value: settingsProvider.randomExcludePlayed,
                         onChanged: (value) {
                           context
@@ -964,26 +1167,32 @@ class _SettingsScreenState extends State<SettingsScreen>
                                     .textTheme
                                     .labelLarge
                                     ?.copyWith(
+                                      fontSize: 8.5 * scaleFactor,
                                       color:
                                           Theme.of(context).colorScheme.primary,
                                       fontWeight: FontWeight.bold,
                                     ),
                               ),
                               const SizedBox(height: 8),
-                              _buildWeightRow(context, 'Unplayed', '50x',
+                              _buildWeightRow(
+                                  context, 'Unplayed', '50x', scaleFactor,
                                   isActive: true, // Always active
                                   isBest: true),
-                              _buildWeightRow(context, '3 Stars', '30x',
+                              _buildWeightRow(
+                                  context, '3 Stars', '30x', scaleFactor,
                                   isActive:
                                       !settingsProvider.randomOnlyUnplayed),
-                              _buildWeightRow(context, '2 Stars', '20x',
+                              _buildWeightRow(
+                                  context, '2 Stars', '20x', scaleFactor,
                                   isActive:
                                       !settingsProvider.randomOnlyUnplayed),
-                              _buildWeightRow(context, '1 Star', '10x',
+                              _buildWeightRow(
+                                  context, '1 Star', '10x', scaleFactor,
                                   isActive: !settingsProvider
                                           .randomOnlyUnplayed &&
                                       !settingsProvider.randomOnlyHighRated),
-                              _buildWeightRow(context, 'Played', '5x',
+                              _buildWeightRow(
+                                  context, 'Played', '5x', scaleFactor,
                                   isActive: !settingsProvider
                                           .randomOnlyUnplayed &&
                                       !settingsProvider.randomExcludePlayed),
@@ -995,6 +1204,7 @@ class _SettingsScreenState extends State<SettingsScreen>
                   ),
 
                   SectionCard(
+                    scaleFactor: scaleFactor,
                     title: 'Playback',
                     icon: Icons.play_circle_outline,
                     initiallyExpanded:
@@ -1006,9 +1216,13 @@ class _SettingsScreenState extends State<SettingsScreen>
                             widget.highlightSetting == 'play_on_tap',
                         settingKey: _settingKeys['play_on_tap'],
                         child: SwitchListTile(
-                          title: const Text('Play on Tap'),
-                          subtitle: const Text(
-                              'Tap track in inactive source to play'),
+                          dense: true,
+                          visualDensity:
+                              const VisualDensity(horizontal: 0, vertical: -4),
+                          title: Text('Play on Tap',
+                              style: TextStyle(fontSize: 10 * scaleFactor)),
+                          subtitle: Text('Tap track in inactive source to play',
+                              style: TextStyle(fontSize: 8.5 * scaleFactor)),
                           value: settingsProvider.playOnTap,
                           onChanged: (value) {
                             HapticFeedback.lightImpact();
@@ -1018,9 +1232,14 @@ class _SettingsScreenState extends State<SettingsScreen>
                         ),
                       ),
                       SwitchListTile(
-                        title: const Text('Show Playback Messages'),
-                        subtitle: const Text(
-                            'Display detailed status, buffered time, and errors'),
+                        dense: true,
+                        visualDensity:
+                            const VisualDensity(horizontal: 0, vertical: -4),
+                        title: Text('Show Playback Messages',
+                            style: TextStyle(fontSize: 10 * scaleFactor)),
+                        subtitle: Text(
+                            'Display detailed status, buffered time, and errors',
+                            style: TextStyle(fontSize: 8.5 * scaleFactor)),
                         value: settingsProvider.showPlaybackMessages,
                         onChanged: (value) {
                           context
@@ -1030,11 +1249,16 @@ class _SettingsScreenState extends State<SettingsScreen>
                         secondary: const Icon(Icons.message_rounded),
                       ),
                       SwitchListTile(
-                        title: const Text('Advanced Cache'),
+                        dense: true,
+                        visualDensity:
+                            const VisualDensity(horizontal: 0, vertical: -4),
+                        title: Text('Advanced Cache',
+                            style: TextStyle(fontSize: 10 * scaleFactor)),
                         subtitle: Text(
                           settingsProvider.offlineBuffering
                               ? 'Cached ${audioProvider.cachedTrackCount} of (${audioProvider.currentSource?.tracks.length ?? 0} + 5) tracks'
                               : 'Cache tracks to disk for deep sleep playback',
+                          style: TextStyle(fontSize: 7.5 * scaleFactor),
                         ),
                         value: settingsProvider.offlineBuffering,
                         onChanged: (value) {
@@ -1065,6 +1289,9 @@ class _SettingsScreenState extends State<SettingsScreen>
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(24)),
                     child: ListTile(
+                      dense: true,
+                      visualDensity:
+                          const VisualDensity(horizontal: 0, vertical: -4),
                       leading: Icon(Icons.library_books_rounded,
                           color: Theme.of(context).colorScheme.primary),
                       title: Text(
@@ -1072,11 +1299,11 @@ class _SettingsScreenState extends State<SettingsScreen>
                         style: TextStyle(
                           color: Theme.of(context).colorScheme.primary,
                           fontWeight: FontWeight.bold,
-                          fontSize: 18,
+                          fontSize: 14 * scaleFactor,
                         ),
                       ),
                       trailing:
-                          const Icon(Icons.arrow_forward_ios_rounded, size: 16),
+                          const Icon(Icons.arrow_forward_ios_rounded, size: 12),
                       onTap: () {
                         Navigator.of(context).push(
                           MaterialPageRoute(
@@ -1100,6 +1327,9 @@ class _SettingsScreenState extends State<SettingsScreen>
                     child: Column(
                       children: [
                         ListTile(
+                          dense: true,
+                          visualDensity:
+                              const VisualDensity(horizontal: 0, vertical: -4),
                           leading: Icon(Icons.info_outline,
                               color: Theme.of(context).colorScheme.primary),
                           title: Text(
@@ -1107,10 +1337,10 @@ class _SettingsScreenState extends State<SettingsScreen>
                             style: TextStyle(
                                 color: Theme.of(context).colorScheme.primary,
                                 fontWeight: FontWeight.bold,
-                                fontSize: 18),
+                                fontSize: 14 * scaleFactor),
                           ),
                           trailing: const Icon(Icons.arrow_forward_ios_rounded,
-                              size: 16),
+                              size: 12),
                           onTap: () {
                             Navigator.of(context).push(
                               MaterialPageRoute(
@@ -1122,6 +1352,7 @@ class _SettingsScreenState extends State<SettingsScreen>
                           context,
                           'Consider donating to The Internet Archive',
                           'https://archive.org/donate/',
+                          scaleFactor,
                           icon: Icons.favorite,
                         ),
                       ],

@@ -22,6 +22,7 @@ import 'package:shakedown/services/catalog_service.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:provider/provider.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
+import 'package:shakedown/ui/widgets/shakedown_title.dart';
 
 class ShowListScreen extends StatefulWidget {
   const ShowListScreen({super.key});
@@ -312,23 +313,27 @@ class _ShowListScreenState extends State<ShowListScreen>
     final isExpanded = showListProvider.expandedShowKey == key;
 
     // Tapping never directly plays a show.
-    // It either expands, navigates to track list, or goes to player if already playing.
+    // It either expands, collapses (if already expanded), navigates to track list, or goes to player if already playing.
     if (isPlayingThisShow) {
       if (show.sources.length > 1) {
         if (isExpanded) {
-          await _openPlaybackScreen(); // Go to player if already playing and expanded
+          // USER REQUEST: Tapping an expanded card should collapse it, even if it's playing.
+          // Navigation to player is now handled by tapping the specific source item in the list.
+          await _handleShowExpansion(show);
         } else {
           await _handleShowExpansion(
               show); // Expand if playing and not expanded
         }
       } else {
-        await _openPlaybackScreen(); // Go to player if playing single source show
+        await _openPlaybackScreen(); // Go to player if playing single source show (no expanded state)
       }
     } else {
-      // Not playing this show, so expand or go to track list.
+      // Not playing this show
       if (show.sources.length > 1) {
+        // Multi-source: Always expand/collapse toggle
         await _handleShowExpansion(show);
       } else {
+        // Single source: Go to track list
         final shouldOpenPlayer = await Navigator.of(context).push(
           MaterialPageRoute(
             builder: (_) =>
@@ -438,8 +443,8 @@ class _ShowListScreenState extends State<ShowListScreen>
     final key = showListProvider.getShowKey(show);
 
     showListProvider.setLoadingShow(key);
-    // Expand the parent show if it's not already.
-    if (showListProvider.expandedShowKey != key) {
+    // Only expand the parent show if it has multiple sources and is not already expanded.
+    if (show.sources.length > 1 && showListProvider.expandedShowKey != key) {
       showListProvider.expandShow(key);
       _animationController.forward(from: 0.0);
     }
@@ -797,7 +802,7 @@ class _ShowListScreenState extends State<ShowListScreen>
         backgroundColor: backgroundColor,
         title: GestureDetector(
           onTap: () async {
-            // Pause global clock
+            // ... logic ...
             try {
               context.read<AnimationController>().stop();
             } catch (_) {}
@@ -818,13 +823,7 @@ class _ShowListScreenState extends State<ShowListScreen>
               } catch (_) {}
             }
           },
-          child: Text(
-            'shakedown',
-            style: Theme.of(context)
-                .textTheme
-                .titleLarge
-                ?.apply(fontSizeFactor: settingsProvider.uiScale ? 1.5 : 1.0),
-          ),
+          child: const ShakedownTitle(fontSize: 20),
         ),
         actions: _buildAppBarActions(),
       ),

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:shakedown/providers/settings_provider.dart';
 import 'package:shakedown/providers/show_list_provider.dart';
 import 'package:shakedown/ui/widgets/section_card.dart';
+import 'package:shakedown/utils/font_layout_config.dart';
 import 'package:provider/provider.dart';
 
 class SourceFilterSettings extends StatelessWidget {
@@ -12,14 +13,21 @@ class SourceFilterSettings extends StatelessWidget {
   Widget build(BuildContext context) {
     final settingsProvider = context.watch<SettingsProvider>();
     final showListProvider = context.watch<ShowListProvider>();
+    final scaleFactor =
+        FontLayoutConfig.getEffectiveScale(context, settingsProvider);
 
     return SectionCard(
+      scaleFactor: scaleFactor,
       title: 'Source Filtering',
       icon: Icons.filter_alt_outlined,
       children: [
         SwitchListTile(
-          title: const Text('Highest SHNID Only'),
-          subtitle: const Text('Only show the latest source for each show'),
+          dense: true,
+          visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
+          title: Text('Highest SHNID Only',
+              style: TextStyle(fontSize: 10 * scaleFactor)),
+          subtitle: Text('Only show the latest source for each show',
+              style: TextStyle(fontSize: 8.5 * scaleFactor)),
           value: settingsProvider.filterHighestShnid,
           onChanged: (value) {
             context.read<SettingsProvider>().toggleFilterHighestShnid();
@@ -27,14 +35,18 @@ class SourceFilterSettings extends StatelessWidget {
           secondary: const Icon(Icons.filter_list_rounded),
         ),
         ListTile(
-          title: const Text('Source Categories'),
-          subtitle: const Text('Tap to toggle, Long press to solo'),
+          dense: true,
+          visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
+          title: Text('Source Categories',
+              style: TextStyle(fontSize: 10 * scaleFactor)),
+          subtitle: Text('Tap to toggle, Long press to solo',
+              style: TextStyle(fontSize: 8.5 * scaleFactor)),
           leading: const Icon(Icons.category_rounded),
           trailing: TextButton(
             onPressed: () {
               context.read<SettingsProvider>().enableAllSourceCategories();
             },
-            child: const Text('All'),
+            child: Text('All', style: TextStyle(fontSize: 10 * scaleFactor)),
           ),
         ),
         Padding(
@@ -141,7 +153,8 @@ class SourceFilterSettings extends StatelessWidget {
     final settingsProvider = context.watch<SettingsProvider>();
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     final isTrueBlackMode = isDarkMode && settingsProvider.useTrueBlack;
-    final scaleFactor = settingsProvider.uiScale ? 1.25 : 1.0;
+    final scaleFactor =
+        FontLayoutConfig.getEffectiveScale(context, settingsProvider);
 
     return InkWell(
       onTap: onTap,
@@ -186,7 +199,7 @@ class SourceFilterSettings extends StatelessWidget {
                     ? colorScheme.onSecondaryContainer
                     : colorScheme.onSurface,
                 fontWeight: FontWeight.w700,
-                fontSize: 11 * scaleFactor,
+                fontSize: 9 * scaleFactor,
                 letterSpacing: 0.5,
               ),
         ),

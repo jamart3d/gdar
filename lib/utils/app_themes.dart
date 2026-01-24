@@ -13,46 +13,35 @@ class AppThemes {
         return baseTextTheme.apply(fontFamily: 'Permanent Marker');
 
       case 'rock_salt':
-        final theme = baseTextTheme.apply(fontFamily: 'RockSalt');
-        // Rock Salt is huge/wide and has tall ascenders/descenders.
-        // We scale it down AND increase line height to prevent clipping.
-        return theme.copyWith(
-          displayLarge: theme.displayLarge?.copyWith(
-              fontSize: (theme.displayLarge?.fontSize ?? 57) * 0.75,
-              height: 1.5),
-          displayMedium: theme.displayMedium?.copyWith(
-              fontSize: (theme.displayMedium?.fontSize ?? 45) * 0.75,
-              height: 1.5),
-          displaySmall: theme.displaySmall?.copyWith(
-              fontSize: (theme.displaySmall?.fontSize ?? 36) * 0.75,
-              height: 1.5),
-          headlineLarge: theme.headlineLarge?.copyWith(
-              fontSize: (theme.headlineLarge?.fontSize ?? 32) * 0.6,
-              height: 1.6),
-          headlineMedium: theme.headlineMedium?.copyWith(
-              fontSize: (theme.headlineMedium?.fontSize ?? 28) * 0.6,
-              height: 1.6),
-          headlineSmall: theme.headlineSmall?.copyWith(
-              fontSize: (theme.headlineSmall?.fontSize ?? 24) * 0.6,
-              height: 1.6),
-          titleLarge: theme.titleLarge?.copyWith(
-              fontSize: (theme.titleLarge?.fontSize ?? 22) * 0.6, height: 1.6),
-          titleMedium: theme.titleMedium?.copyWith(
-              fontSize: (theme.titleMedium?.fontSize ?? 16) * 0.6, height: 1.6),
-          titleSmall: theme.titleSmall?.copyWith(
-              fontSize: (theme.titleSmall?.fontSize ?? 14) * 0.6, height: 1.6),
-          bodyLarge: theme.bodyLarge?.copyWith(
-              fontSize: (theme.bodyLarge?.fontSize ?? 16) * 0.7, height: 1.6),
-          bodyMedium: theme.bodyMedium?.copyWith(
-              fontSize: (theme.bodyMedium?.fontSize ?? 14) * 0.7, height: 1.6),
-          bodySmall: theme.bodySmall?.copyWith(
-              fontSize: (theme.bodySmall?.fontSize ?? 12) * 0.7, height: 1.6),
-          labelLarge: theme.labelLarge?.copyWith(
-              fontSize: (theme.labelLarge?.fontSize ?? 14) * 0.7, height: 1.6),
-          labelMedium: theme.labelMedium?.copyWith(
-              fontSize: (theme.labelMedium?.fontSize ?? 12) * 0.7, height: 1.6),
-          labelSmall: theme.labelSmall?.copyWith(
-              fontSize: (theme.labelSmall?.fontSize ?? 11) * 0.7, height: 1.6),
+        // Rock Salt has wide character spacing and tall ascenders/descenders.
+        // Apply minimal downscaling (0.85x) to compensate for width, and
+        // increased line height (1.4) to prevent clipping.
+        // Helper function handles null fontSize gracefully
+        TextStyle? scaleStyle(TextStyle? style) {
+          if (style == null) return null;
+          return style.copyWith(
+            fontFamily: 'RockSalt',
+            fontSize: style.fontSize != null ? style.fontSize! * 0.85 : null,
+            height: 1.4,
+          );
+        }
+
+        return TextTheme(
+          displayLarge: scaleStyle(baseTextTheme.displayLarge),
+          displayMedium: scaleStyle(baseTextTheme.displayMedium),
+          displaySmall: scaleStyle(baseTextTheme.displaySmall),
+          headlineLarge: scaleStyle(baseTextTheme.headlineLarge),
+          headlineMedium: scaleStyle(baseTextTheme.headlineMedium),
+          headlineSmall: scaleStyle(baseTextTheme.headlineSmall),
+          titleLarge: scaleStyle(baseTextTheme.titleLarge),
+          titleMedium: scaleStyle(baseTextTheme.titleMedium),
+          titleSmall: scaleStyle(baseTextTheme.titleSmall),
+          bodyLarge: scaleStyle(baseTextTheme.bodyLarge),
+          bodyMedium: scaleStyle(baseTextTheme.bodyMedium),
+          bodySmall: scaleStyle(baseTextTheme.bodySmall),
+          labelLarge: scaleStyle(baseTextTheme.labelLarge),
+          labelMedium: scaleStyle(baseTextTheme.labelMedium),
+          labelSmall: scaleStyle(baseTextTheme.labelSmall),
         );
       default:
         return null; // Use default M3 typography

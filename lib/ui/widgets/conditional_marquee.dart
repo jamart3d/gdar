@@ -48,8 +48,10 @@ class ConditionalMarquee extends StatelessWidget {
           textDirection: TextDirection.ltr,
         )..layout(minWidth: 0, maxWidth: double.infinity);
 
-        // If the text width is greater than the available width, show Marquee
-        if (textPainter.width > constraints.maxWidth) {
+        // If the text width is greater than the available width (minus a safety buffer), show Marquee
+        // Safety buffer prevents cases where TextPainter under-reports width slightly compared to render.
+        // Increased to 50.0 for Rock Salt's aggressive sizing and wide flourishes.
+        if (textPainter.width > constraints.maxWidth - 50.0) {
           return ClipRect(
             child: Marquee(
               text: text,
