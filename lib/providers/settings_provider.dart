@@ -141,6 +141,14 @@ class SettingsProvider with ChangeNotifier {
   // Internal setting: Global Album Art
   bool get showGlobalAlbumArt => true;
 
+  // Session state for suggestions
+  bool _hasShownAdvancedCacheSuggestion = false;
+  bool get hasShownAdvancedCacheSuggestion => _hasShownAdvancedCacheSuggestion;
+  void markAdvancedCacheSuggestionShown() {
+    _hasShownAdvancedCacheSuggestion = true;
+    notifyListeners();
+  }
+
   static const String _showDebugLayoutKey = 'show_debug_layout';
   late bool _showDebugLayout;
   bool get showDebugLayout => _showDebugLayout;
@@ -171,8 +179,22 @@ class SettingsProvider with ChangeNotifier {
         if (enabled != _uiScale) {
           _uiScale = enabled;
           await _prefs.setBool(_uiScaleKey, enabled);
+
+          // Smart Abbreviation for ADB
+          if (_uiScale) {
+            if (!_abbreviateDayOfWeek) {
+              _abbreviateDayOfWeek = true;
+              await _prefs.setBool(_abbreviateDayOfWeekKey, true);
+            }
+            if (!_abbreviateMonth) {
+              _abbreviateMonth = true;
+              await _prefs.setBool(_abbreviateMonthKey, true);
+            }
+          }
+
           notifyListeners();
-          logger.i('SettingsProvider: UI Scale set to $enabled via ADB');
+          logger.i(
+              'SettingsProvider: UI Scale set to $enabled via ADB (Smart Abbreviation applied)');
         }
       }
     });
@@ -379,7 +401,16 @@ class SettingsProvider with ChangeNotifier {
       _abbreviateDayOfWeekKey, _abbreviateDayOfWeek = !_abbreviateDayOfWeek);
   void toggleAbbreviateMonth() => _updatePreference(
       _abbreviateMonthKey, _abbreviateMonth = !_abbreviateMonth);
-  void toggleUiScale() => _updatePreference(_uiScaleKey, _uiScale = !_uiScale);
+  void toggleUiScale() {
+    _uiScale = !_uiScale;
+    _updatePreference(_uiScaleKey, _uiScale);
+
+    // Smart Abbreviation: If UI Scale is ON, auto-enable abbreviations
+    if (_uiScale) {
+      if (!_abbreviateDayOfWeek) toggleAbbreviateDayOfWeek();
+      if (!_abbreviateMonth) toggleAbbreviateMonth();
+    }
+  }
 
   void setGlowMode(int mode) {
     _updateIntPreference(_glowModeKey, _glowMode = mode);

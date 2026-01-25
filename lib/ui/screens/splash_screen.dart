@@ -25,6 +25,7 @@ class _SplashScreenState extends State<SplashScreen>
 
   late final ShowListProvider _showListProvider;
   bool _minTimeElapsed = false;
+  bool _isNavigating = false;
   Timer? _minTimeTimer;
 
   @override
@@ -132,6 +133,12 @@ class _SplashScreenState extends State<SplashScreen>
     // Ensure we only navigate once
     _showListProvider.removeListener(_onShowListUpdate);
 
+    if (mounted) {
+      setState(() {
+        _isNavigating = true;
+      });
+    }
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         Navigator.of(context).pushReplacement(
@@ -171,100 +178,104 @@ class _SplashScreenState extends State<SplashScreen>
               child: const ShakedownTitle(fontSize: 24),
             ),
             const SizedBox(height: 40),
-            FadeTransition(
-              opacity: _fadeAnimation,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  if (settingsProvider.isFirstRun)
-                    _buildChecklistItem(
-                      label: 'Hey Now!',
-                      isDone: true,
-                      scaleFactor: effectiveScale,
-                    )
-                  else
-                    _buildChecklistItem(
-                      label: 'Reading settings...',
-                      isDone: true,
-                      scaleFactor: effectiveScale,
-                    ),
-                  const SizedBox(height: 12),
-
-                  // 1. Shnids Count
-                  AnimatedBuilder(
-                      animation: _countController,
-                      builder: (context, child) {
-                        int count = _shnidCountAnimation.value;
-                        bool isDone = _countController.status ==
-                            AnimationStatus.completed;
-                        bool isLoading = showListProvider.isLoading;
-
-                        String label;
-                        if (isLoading) {
-                          label = 'Loading data...';
-                        } else if (!isDone) {
-                          label = 'Found $count shnids...';
-                        } else {
-                          label = '$count shnids loaded';
-                        }
-
-                        return _buildChecklistItem(
-                          label: label,
-                          isDone: isDone,
-                          scaleFactor: effectiveScale,
-                        );
-                      }),
-
-                  const SizedBox(height: 12),
-
-                  // 2. Shows Count
-                  AnimatedBuilder(
-                      animation: _countController,
-                      builder: (context, child) {
-                        int count = _showCountAnimation.value;
-                        bool isDone = _countController.status ==
-                            AnimationStatus.completed;
-                        bool isLoading = showListProvider.isLoading;
-
-                        String label;
-                        if (isLoading) {
-                          label = 'Processing shows...';
-                        } else if (!isDone) {
-                          label = 'Found $count shows...';
-                        } else {
-                          label = '$count shows ready';
-                        }
-
-                        return _buildChecklistItem(
-                          label: label,
-                          isDone: isDone,
-                          scaleFactor: effectiveScale,
-                        );
-                      }),
-
-                  const SizedBox(height: 12),
-
-                  // 3. Archive Check
-                  _buildChecklistItem(
-                    label: showListProvider.hasCheckedArchive
-                        ? (showListProvider.isArchiveReachable
-                            ? 'Archive.org reachable'
-                            : 'Archive.org unreachable (offline mode)')
-                        : 'Checking archive.org...',
-                    isDone: showListProvider.hasCheckedArchive,
-                    scaleFactor: effectiveScale,
-                  ),
-
-                  // 4. Random Play (Conditional)
-                  if (settingsProvider.playRandomOnStartup) ...[
+            AnimatedOpacity(
+              opacity: _isNavigating ? 0.0 : 1.0,
+              duration: const Duration(milliseconds: 200),
+              child: FadeTransition(
+                opacity: _fadeAnimation,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (settingsProvider.isFirstRun)
+                      _buildChecklistItem(
+                        label: 'Hey Now!',
+                        isDone: true,
+                        scaleFactor: effectiveScale,
+                      )
+                    else
+                      _buildChecklistItem(
+                        label: 'Reading settings...',
+                        isDone: true,
+                        scaleFactor: effectiveScale,
+                      ),
                     const SizedBox(height: 12),
+
+                    // 1. Shnids Count
+                    AnimatedBuilder(
+                        animation: _countController,
+                        builder: (context, child) {
+                          int count = _shnidCountAnimation.value;
+                          bool isDone = _countController.status ==
+                              AnimationStatus.completed;
+                          bool isLoading = showListProvider.isLoading;
+
+                          String label;
+                          if (isLoading) {
+                            label = 'Loading data...';
+                          } else if (!isDone) {
+                            label = 'Found $count shnids...';
+                          } else {
+                            label = '$count shnids loaded';
+                          }
+
+                          return _buildChecklistItem(
+                            label: label,
+                            isDone: isDone,
+                            scaleFactor: effectiveScale,
+                          );
+                        }),
+
+                    const SizedBox(height: 12),
+
+                    // 2. Shows Count
+                    AnimatedBuilder(
+                        animation: _countController,
+                        builder: (context, child) {
+                          int count = _showCountAnimation.value;
+                          bool isDone = _countController.status ==
+                              AnimationStatus.completed;
+                          bool isLoading = showListProvider.isLoading;
+
+                          String label;
+                          if (isLoading) {
+                            label = 'Processing shows...';
+                          } else if (!isDone) {
+                            label = 'Found $count shows...';
+                          } else {
+                            label = '$count shows ready';
+                          }
+
+                          return _buildChecklistItem(
+                            label: label,
+                            isDone: isDone,
+                            scaleFactor: effectiveScale,
+                          );
+                        }),
+
+                    const SizedBox(height: 12),
+
+                    // 3. Archive Check
                     _buildChecklistItem(
-                      label: 'Play random show on startup',
-                      isDone: true,
+                      label: showListProvider.hasCheckedArchive
+                          ? (showListProvider.isArchiveReachable
+                              ? 'Archive.org reachable'
+                              : 'Archive.org unreachable (offline mode)')
+                          : 'Checking archive.org...',
+                      isDone: showListProvider.hasCheckedArchive,
                       scaleFactor: effectiveScale,
                     ),
-                  ]
-                ],
+
+                    // 4. Random Play (Conditional)
+                    if (settingsProvider.playRandomOnStartup) ...[
+                      const SizedBox(height: 12),
+                      _buildChecklistItem(
+                        label: 'Play random show on startup',
+                        isDone: true,
+                        scaleFactor: effectiveScale,
+                      ),
+                    ]
+                  ],
+                ),
               ),
             ),
           ],

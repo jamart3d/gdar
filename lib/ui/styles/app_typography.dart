@@ -57,4 +57,23 @@ class AppTypography {
   static TextStyle small(BuildContext context) {
     return TextStyle(fontSize: responsiveFontSize(context, baseSmallSize));
   }
+
+  static TextStyle tiny(BuildContext context) {
+    return TextStyle(fontSize: responsiveFontSize(context, baseTinySize));
+  }
+
+  /// Returns (height, letterSpacing) for header text based on the active font.
+  static ({double height, double letterSpacing}) getHeaderMetrics(
+      String fontName) {
+    switch (fontName) {
+      case 'rock_salt':
+        return (height: 1.4, letterSpacing: 1.5);
+      case 'permanent_marker':
+        return (height: 1.2, letterSpacing: 0.8);
+      case 'caveat':
+        return (height: 1.2, letterSpacing: 0.0);
+      default:
+        return (height: 1.1, letterSpacing: -0.5);
+    }
+  }
 }

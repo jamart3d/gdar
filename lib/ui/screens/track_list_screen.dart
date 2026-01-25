@@ -15,6 +15,8 @@ import 'package:shakedown/ui/widgets/rating_control.dart';
 import 'package:shakedown/services/catalog_service.dart';
 import 'package:shakedown/utils/utils.dart';
 import 'package:provider/provider.dart';
+import 'package:shakedown/ui/styles/app_typography.dart';
+import 'package:shakedown/utils/font_layout_config.dart';
 
 class TrackListScreen extends StatefulWidget {
   final Show show;
@@ -309,7 +311,9 @@ class _TrackListScreenState extends State<TrackListScreen> {
 
   Widget _buildShowHeader(BuildContext context) {
     final settingsProvider = context.watch<SettingsProvider>();
-    final scaleFactor = settingsProvider.uiScale ? 1.25 : 1.0;
+    // USE CENTRALIZED SCALING
+    final scaleFactor =
+        FontLayoutConfig.getEffectiveScale(context, settingsProvider);
     final colorScheme = Theme.of(context).colorScheme;
 
     String dateText = widget.show.formattedDate;
@@ -335,22 +339,88 @@ class _TrackListScreenState extends State<TrackListScreen> {
       dateText = DateFormat(pattern).format(date);
     } catch (_) {}
 
-    // Adjust line height and letter spacing based on font to prevent overlap
-    final double dateLineHeight;
-    final double dateLetterSpacing;
-    if (settingsProvider.appFont == 'rock_salt') {
-      dateLineHeight = 1.4;
-      dateLetterSpacing = 1.5;
-    } else if (settingsProvider.appFont == 'permanent_marker') {
-      dateLineHeight = 1.2;
-      dateLetterSpacing = 0.8;
-    } else if (settingsProvider.appFont == 'caveat') {
-      dateLineHeight = 1.2;
-      dateLetterSpacing = 0.0;
-    } else {
-      dateLineHeight = 1.1; // Roboto and others
-      dateLetterSpacing = -0.5;
-    }
+    // USE CENTRALIZED METRICS
+    final metrics = AppTypography.getHeaderMetrics(settingsProvider.appFont);
+
+    final audioProvider = context.watch<AudioProvider>();
+    final bool isPlaying = audioProvider.isPlaying;
+
+    final Widget headerContent = Padding(
+      padding: const EdgeInsets.all(24.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Text(
+            dateText,
+            textAlign: TextAlign.center,
+            style: Theme.of(context)
+                .textTheme
+                .headlineMedium
+                ?.copyWith(
+                  fontWeight: FontWeight.w800,
+                  height: metrics.height,
+                  letterSpacing: metrics.letterSpacing,
+                )
+                .apply(fontSizeFactor: scaleFactor),
+          ),
+          const SizedBox(height: 12),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Icon(Icons.stadium_rounded,
+                  size: 20 * scaleFactor, color: colorScheme.primary),
+              const SizedBox(width: 8),
+              Flexible(
+                child: Text(
+                  widget.show.venue,
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context)
+                      .textTheme
+                      .titleMedium
+                      ?.copyWith(
+                        color: colorScheme.primary,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: settingsProvider.appFont == 'rock_salt'
+                            ? 1.0
+                            : (settingsProvider.appFont == 'permanent_marker'
+                                ? 0.5
+                                : 0.0),
+                      )
+                      .apply(fontSizeFactor: scaleFactor),
+                ),
+              ),
+            ],
+          ),
+          if (widget.show.location.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Icon(Icons.place_outlined,
+                    size: 20 * scaleFactor,
+                    color: colorScheme.onSurfaceVariant),
+                const SizedBox(width: 8),
+                Flexible(
+                  child: Text(
+                    widget.show.location,
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context)
+                        .textTheme
+                        .bodyLarge
+                        ?.copyWith(
+                          color: colorScheme.onSurfaceVariant,
+                        )
+                        .apply(fontSizeFactor: scaleFactor),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ],
+      ),
+    );
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 16.0, top: 8.0),
@@ -358,84 +428,21 @@ class _TrackListScreenState extends State<TrackListScreen> {
         elevation: 0,
         color: colorScheme.surfaceContainerHigh,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Text(
-                dateText,
-                textAlign: TextAlign.center,
-                style: Theme.of(context)
-                    .textTheme
-                    .headlineMedium
-                    ?.copyWith(
-                      fontWeight: FontWeight.w800,
-                      height: dateLineHeight,
-                      letterSpacing: dateLetterSpacing,
-                    )
-                    .apply(fontSizeFactor: scaleFactor),
+        clipBehavior: Clip.antiAlias,
+        child: isPlaying
+            ? headerContent
+            : InkWell(
+                onLongPress: () {
+                  HapticFeedback.mediumImpact();
+                  context
+                      .read<AudioProvider>()
+                      .playSource(widget.show, widget.source);
+                  Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const PlaybackScreen()),
+                  );
+                },
+                child: headerContent,
               ),
-              const SizedBox(height: 12),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Icon(Icons.stadium_rounded,
-                      size: 20 * scaleFactor, color: colorScheme.primary),
-                  const SizedBox(width: 8),
-                  Flexible(
-                    child: Text(
-                      widget.show.venue,
-                      textAlign: TextAlign.center,
-                      style: Theme.of(context)
-                          .textTheme
-                          .titleMedium
-                          ?.copyWith(
-                            color: colorScheme.primary,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing:
-                                settingsProvider.appFont == 'rock_salt'
-                                    ? 1.0
-                                    : (settingsProvider.appFont ==
-                                            'permanent_marker'
-                                        ? 0.5
-                                        : 0.0),
-                          )
-                          .apply(fontSizeFactor: scaleFactor),
-                    ),
-                  ),
-                ],
-              ),
-              if (widget.show.location.isNotEmpty) ...[
-                const SizedBox(height: 8),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Icon(Icons.place_outlined,
-                        size: 20 * scaleFactor,
-                        color: colorScheme.onSurfaceVariant),
-                    const SizedBox(width: 8),
-                    Flexible(
-                      child: Text(
-                        widget.show.location,
-                        textAlign: TextAlign.center,
-                        style: Theme.of(context)
-                            .textTheme
-                            .bodyLarge
-                            ?.copyWith(
-                              color: colorScheme.onSurfaceVariant,
-                            )
-                            .apply(fontSizeFactor: scaleFactor),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ],
-          ),
-        ),
       ),
     );
   }
@@ -443,7 +450,9 @@ class _TrackListScreenState extends State<TrackListScreen> {
   Widget _buildSetHeader(BuildContext context, String setName) {
     final settingsProvider = context.watch<SettingsProvider>();
     final colorScheme = Theme.of(context).colorScheme;
-    final scaleFactor = settingsProvider.uiScale ? 1.25 : 1.0;
+    // USE CENTRALIZED SCALING
+    final scaleFactor =
+        FontLayoutConfig.getEffectiveScale(context, settingsProvider);
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(8, 24, 8, 8),
@@ -477,27 +486,27 @@ class _TrackListScreenState extends State<TrackListScreen> {
       BuildContext context, Track track, Source source, int index) {
     final settingsProvider = context.watch<SettingsProvider>();
     final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
 
-    final double scaleFactor = settingsProvider.uiScale ? 1.25 : 1.0;
+    // USE CENTRALIZED STYLES
+    final titleStyle = AppTypography.body(context).copyWith(
+      fontWeight: FontWeight.w400,
+      letterSpacing: 0.25,
+      // Color comes from Theme.bodyLarge (colorScheme.onSurface usually),
+      // we can explicitly set it if needed but inherited is fine.
+    );
 
-    final baseTitleStyle =
-        textTheme.bodyLarge ?? const TextStyle(fontSize: 16.0);
-    final titleStyle = baseTitleStyle
-        .copyWith(fontWeight: FontWeight.w400, letterSpacing: 0.25)
-        .apply(fontSizeFactor: scaleFactor);
-
-    final baseDurationStyle =
-        textTheme.labelMedium ?? const TextStyle(fontSize: 12.0);
-    final durationStyle = baseDurationStyle.copyWith(
+    final durationStyle = AppTypography.tiny(context).copyWith(
       color: colorScheme.onSurfaceVariant,
       fontWeight: FontWeight.w500,
       fontFeatures: [const FontFeature.tabularFigures()],
-    ).apply(fontSizeFactor: scaleFactor);
+    );
 
     final titleText = settingsProvider.showTrackNumbers
         ? '${track.trackNumber}. ${track.title}'
         : track.title;
+
+    final scaleFactor =
+        FontLayoutConfig.getEffectiveScale(context, settingsProvider);
 
     return Builder(builder: (context) {
       return Padding(

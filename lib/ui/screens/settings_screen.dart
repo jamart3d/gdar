@@ -29,6 +29,9 @@ class SettingsScreen extends StatefulWidget {
 class _SettingsScreenState extends State<SettingsScreen>
     with SingleTickerProviderStateMixin {
   final Map<String, GlobalKey> _settingKeys = {};
+  bool _playbackExpanded = false;
+  String? _activeHighlightKey;
+  int _highlightTriggerCount = 0;
 
   @override
   void initState() {
@@ -40,6 +43,45 @@ class _SettingsScreenState extends State<SettingsScreen>
         _scrollToHighlight();
       });
     }
+    // Pre-register offline_buffering key so we can scroll to it if needed
+    if (!_settingKeys.containsKey('offline_buffering')) {
+      _settingKeys['offline_buffering'] = GlobalKey();
+    }
+  }
+
+  void _scrollToSetting(String settingKey) {
+    bool needsStateUpdate = false;
+    // If target is in a collapsed section, expand it first
+    if (settingKey == 'offline_buffering' ||
+        settingKey == 'play_on_tap' ||
+        settingKey == 'playback_messages') {
+      if (!_playbackExpanded) {
+        needsStateUpdate = true;
+        _playbackExpanded = true;
+      }
+    }
+
+    setState(() {
+      if (needsStateUpdate) {
+        _playbackExpanded = true;
+      }
+      _activeHighlightKey = settingKey;
+      _highlightTriggerCount++;
+    });
+
+    // Give it a small delay to ensure the new widgets are in the tree and rendered
+    Future.delayed(const Duration(milliseconds: 100), () {
+      if (!mounted) return;
+      final key = _settingKeys[settingKey];
+      if (key?.currentContext != null) {
+        Scrollable.ensureVisible(
+          key!.currentContext!,
+          duration: const Duration(milliseconds: 600),
+          curve: Curves.easeInOutCubicEmphasized,
+          alignment: 0.5,
+        );
+      }
+    });
   }
 
   void _scrollToHighlight() {
@@ -1041,6 +1083,30 @@ class _SettingsScreenState extends State<SettingsScreen>
                           context
                               .read<SettingsProvider>()
                               .togglePlayRandomOnCompletion();
+
+                          // Suggest Advanced Cache if enabling and it's currently OFF
+                          if (value && !settingsProvider.offlineBuffering) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                behavior: SnackBarBehavior.floating,
+                                margin: EdgeInsets.only(
+                                  bottom:
+                                      MediaQuery.of(context).size.height * 0.45,
+                                  left: 16,
+                                  right: 16,
+                                ),
+                                content: const Text(
+                                    'Consider enabling Advanced Cache.'),
+                                action: SnackBarAction(
+                                  label: 'GO',
+                                  onPressed: () {
+                                    _scrollToSetting('offline_buffering');
+                                  },
+                                ),
+                                duration: const Duration(seconds: 4),
+                              ),
+                            );
+                          }
                         },
                         secondary: const Icon(Icons.repeat_rounded),
                       ),
@@ -1160,16 +1226,22 @@ class _SettingsScreenState extends State<SettingsScreen>
                   ),
 
                   SectionCard(
+                    key: ValueKey(
+                        'playback_${_playbackExpanded || widget.highlightSetting == 'offline_buffering'}'),
                     scaleFactor: scaleFactor,
                     title: 'Playback',
-                    icon: Icons.play_circle_outline,
-                    initiallyExpanded:
+                    icon: Icons.play_circle_outline_rounded,
+                    initiallyExpanded: _playbackExpanded ||
                         widget.highlightSetting == 'play_on_tap' ||
-                            widget.highlightSetting == 'playback_messages',
+                        widget.highlightSetting == 'playback_messages' ||
+                        widget.highlightSetting == 'offline_buffering',
                     children: [
                       _HighlightableSetting(
+                        key: ValueKey(
+                            'play_on_tap_${_highlightTriggerCount}_${_activeHighlightKey == 'play_on_tap'}'),
                         startWithHighlight:
-                            widget.highlightSetting == 'play_on_tap',
+                            _activeHighlightKey == 'play_on_tap' ||
+                                widget.highlightSetting == 'play_on_tap',
                         settingKey: _settingKeys['play_on_tap'],
                         child: SwitchListTile(
                           dense: true,
@@ -1186,42 +1258,58 @@ class _SettingsScreenState extends State<SettingsScreen>
                           secondary: const Icon(Icons.touch_app_rounded),
                         ),
                       ),
-                      SwitchListTile(
-                        dense: true,
-                        visualDensity: VisualDensity.compact,
-                        title: Text('Show Playback Messages',
-                            style: TextStyle(fontSize: 15 * scaleFactor)),
-                        subtitle: Text(
-                            'Display detailed status, buffered time, and errors',
-                            style: TextStyle(fontSize: 12.0 * scaleFactor)),
-                        value: settingsProvider.showPlaybackMessages,
-                        onChanged: (value) {
-                          context
-                              .read<SettingsProvider>()
-                              .toggleShowPlaybackMessages();
-                        },
-                        secondary: const Icon(Icons.message_rounded),
-                      ),
-                      SwitchListTile(
-                        dense: true,
-                        visualDensity: VisualDensity.compact,
-                        title: Text('Advanced Cache',
-                            style: TextStyle(fontSize: 15 * scaleFactor)),
-                        subtitle: Text(
-                          settingsProvider.offlineBuffering
-                              ? 'Cached ${audioProvider.cachedTrackCount} of (${audioProvider.currentSource?.tracks.length ?? 0} + 5) tracks'
-                              : 'Cache tracks to disk for deep sleep playback',
-                          style: TextStyle(fontSize: 12.0 * scaleFactor),
+                      _HighlightableSetting(
+                        key: ValueKey(
+                            'playback_messages_${_highlightTriggerCount}_${_activeHighlightKey == 'playback_messages'}'),
+                        startWithHighlight:
+                            _activeHighlightKey == 'playback_messages' ||
+                                widget.highlightSetting == 'playback_messages',
+                        settingKey: _settingKeys['playback_messages'],
+                        child: SwitchListTile(
+                          dense: true,
+                          visualDensity: VisualDensity.compact,
+                          title: Text('Show Playback Messages',
+                              style: TextStyle(fontSize: 15 * scaleFactor)),
+                          subtitle: Text(
+                              'Display detailed status, buffered time, and errors',
+                              style: TextStyle(fontSize: 12.0 * scaleFactor)),
+                          value: settingsProvider.showPlaybackMessages,
+                          onChanged: (value) {
+                            context
+                                .read<SettingsProvider>()
+                                .toggleShowPlaybackMessages();
+                          },
+                          secondary: const Icon(Icons.message_rounded),
                         ),
-                        value: settingsProvider.offlineBuffering,
-                        onChanged: (value) {
-                          HapticFeedback.lightImpact();
-                          context
-                              .read<SettingsProvider>()
-                              .toggleOfflineBuffering();
-                        },
-                        secondary:
-                            const Icon(Icons.download_for_offline_rounded),
+                      ),
+                      _HighlightableSetting(
+                        key: ValueKey(
+                            'offline_buffering_${_highlightTriggerCount}_${_activeHighlightKey == 'offline_buffering'}'),
+                        startWithHighlight:
+                            _activeHighlightKey == 'offline_buffering' ||
+                                widget.highlightSetting == 'offline_buffering',
+                        settingKey: _settingKeys['offline_buffering'],
+                        child: SwitchListTile(
+                          dense: true,
+                          visualDensity: VisualDensity.compact,
+                          title: Text('Advanced Cache',
+                              style: TextStyle(fontSize: 15 * scaleFactor)),
+                          subtitle: Text(
+                            settingsProvider.offlineBuffering
+                                ? 'Cached ${audioProvider.cachedTrackCount} of (${audioProvider.currentSource?.tracks.length ?? 0} + 5) tracks'
+                                : 'Cache tracks to disk for deep sleep playback',
+                            style: TextStyle(fontSize: 12.0 * scaleFactor),
+                          ),
+                          value: settingsProvider.offlineBuffering,
+                          onChanged: (value) {
+                            HapticFeedback.lightImpact();
+                            context
+                                .read<SettingsProvider>()
+                                .toggleOfflineBuffering();
+                          },
+                          secondary:
+                              const Icon(Icons.download_for_offline_rounded),
+                        ),
                       ),
                     ],
                   ),
@@ -1326,6 +1414,7 @@ class _HighlightableSetting extends StatefulWidget {
   final GlobalKey? settingKey;
 
   const _HighlightableSetting({
+    super.key,
     required this.child,
     this.startWithHighlight = false,
     this.settingKey,

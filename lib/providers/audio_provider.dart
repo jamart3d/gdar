@@ -33,6 +33,7 @@ class AudioProvider with ChangeNotifier {
   SettingsProvider? _settingsProvider;
 
   AudioPlayer get audioPlayer => _audioPlayer;
+  bool get isPlaying => _audioPlayer.playing;
 
   Show? _currentShow;
   Show? get currentShow => _currentShow;

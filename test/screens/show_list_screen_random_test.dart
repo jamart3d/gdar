@@ -52,7 +52,7 @@ class MockCatalogService extends Mock implements CatalogService {}
 
 // A mock provider that we can control the 'hasUsedRandomButton' state of.
 class MockShowListProvider extends ChangeNotifier implements ShowListProvider {
-  List<Show> _filteredShows = [];
+  final List<Show> _filteredShows = [];
   bool _hasUsedRandomButton = false;
 
   void setHasUsedRandomButton(bool value) {
