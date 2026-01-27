@@ -271,16 +271,18 @@ class _SettingsScreenState extends State<SettingsScreen>
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            label,
-            style: textStyle?.copyWith(
-              fontSize: 12.0 * scaleFactor,
-              color: isActive
-                  ? (isBest ? colorScheme.primary : colorScheme.onSurface)
-                  : colorScheme.outline,
-              decoration: isActive ? null : TextDecoration.lineThrough,
-              fontWeight:
-                  isBest && isActive ? FontWeight.bold : FontWeight.normal,
+          Expanded(
+            child: Text(
+              label,
+              style: textStyle?.copyWith(
+                fontSize: 12.0 * scaleFactor,
+                color: isActive
+                    ? (isBest ? colorScheme.primary : colorScheme.onSurface)
+                    : colorScheme.outline,
+                decoration: isActive ? null : TextDecoration.lineThrough,
+                fontWeight:
+                    isBest && isActive ? FontWeight.bold : FontWeight.normal,
+              ),
             ),
           ),
           Text(
@@ -350,7 +352,8 @@ class _SettingsScreenState extends State<SettingsScreen>
       child: MediaQuery(
         data: MediaQuery.of(context).copyWith(
           textScaler: settingsProvider.uiScale
-              ? const TextScaler.linear(1.2)
+              ? TextScaler.linear(
+                  settingsProvider.appFont == 'rock_salt' ? 1.0 : 1.2)
               : const TextScaler.linear(1.0),
         ),
         child: Scaffold(

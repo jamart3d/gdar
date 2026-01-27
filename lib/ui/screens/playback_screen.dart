@@ -222,12 +222,14 @@ class _PlaybackScreenState extends State<PlaybackScreen>
     // minHeight covering the drag handle + Venue/Copy row.
     final double bottomPadding = MediaQuery.of(context).padding.bottom;
     // Bumped from 92.0 to 96.0 to accommodate larger fonts like Caveat
-    final double minPanelHeight = (96.0 * scaleFactor) + bottomPadding;
+    // Adjusted: If scaled, use 75.0 base (75*1.35~=101.25) to accomodate Caveat + Scale
+    final double baseHeight = settingsProvider.uiScale ? 75.0 : 96.0;
+    final double minPanelHeight = (baseHeight * scaleFactor) + bottomPadding;
 
-    // maxHeight constraint to ~40% of screen (0.45 if scaled).
+    // maxHeight constraint to ~40% of screen (0.42 if scaled).
     // User enforced strict height regardless of font.
     final double maxPanelHeight = MediaQuery.of(context).size.height *
-        (settingsProvider.uiScale ? 0.45 : 0.40);
+        (settingsProvider.uiScale ? 0.42 : 0.40);
 
     return Scaffold(
       backgroundColor: backgroundColor,
@@ -752,13 +754,14 @@ class _PlaybackScreenState extends State<PlaybackScreen>
               valueListenable: panelPositionNotifier,
               builder: (context, value, child) {
                 // Closed (0.0): +100 (Hidden down)
-                // Open (1.0): -24 (Up more to create gap from bottom)
+                // Open (1.0): -40 (Up more to create gap from bottom)
                 // We keep the offset logic but now allow scrolling
-                final double yOffset = (100.0 - 124.0 * value) * scaleFactor;
+                // Adjusted from 132.0 to 140.0 to move content 8 logical pixels higher when open
+                final double yOffset = (100.0 - 140.0 * value) * scaleFactor;
                 return Transform.translate(
                   offset: Offset(0, yOffset),
                   child: SingleChildScrollView(
-                    physics: const NeverScrollableScrollPhysics(),
+                    physics: const ClampingScrollPhysics(),
                     padding: EdgeInsets.fromLTRB(
                         16,
                         0,
@@ -967,9 +970,7 @@ class _PlaybackScreenState extends State<PlaybackScreen>
                           },
                         ),
                         if (settingsProvider.showPlaybackMessages) ...[
-                          const SizedBox(
-                              height:
-                                  8), // Reduced from 16 to fit in fixed height
+                          SizedBox(height: 12 * scaleFactor),
                           _buildStatusMessages(context, audioProvider),
                         ],
                       ],
@@ -988,9 +989,10 @@ class _PlaybackScreenState extends State<PlaybackScreen>
       BuildContext context, AudioProvider audioProvider) {
     final colorScheme = Theme.of(context).colorScheme;
     final settingsProvider = context.read<SettingsProvider>();
-    final isScaled = settingsProvider.uiScale;
-    // Reduce status font size if scaled to prevent cramping
-    final double labelsFontSize = isScaled ? 10.0 : 12.0;
+    final double scaleFactor =
+        FontLayoutConfig.getEffectiveScale(context, settingsProvider);
+    // Adjusted: Match scaling instead of reducing it
+    final double labelsFontSize = 12.0 * scaleFactor;
 
     return StreamBuilder<PlayerState>(
       stream: audioProvider.playerStateStream,

@@ -81,6 +81,7 @@ def main():
     parser.add_argument("-df", "--default-only", action="store_true", help="Run only with the default font (skips others)")
     parser.add_argument("-sc", "--single-scale", action="store_true", help="Run only with 1x scale (skips 1.2x)")
     parser.add_argument("--stay-awake", action="store_true", help="Keep device awake during test (svc power stayon)")
+    parser.add_argument("--html-only", action="store_true", help="Skip tests and just generate the HTML report from existing images")
     args = parser.parse_args()
 
     device_id = args.device
@@ -89,6 +90,10 @@ def main():
     # update global LOCAL_DIR for this run
     global LOCAL_DIR
     LOCAL_DIR = f"./screenshots/font_verification/{run_tag}"
+
+    if args.html_only:
+        generate_html_report()
+        return
 
     # Pre-flight
     if not os.path.exists(LOCAL_DIR):
@@ -305,24 +310,48 @@ def generate_html_report():
     
     # Let's try to deduce groups dynamically
     groups = {} 
+    # Known fonts to correctly parse filenames (longest first to avoid partial matches)
+    known_fonts = ["rock_salt", "permanent_marker", "caveat", "default"]
     
     for f in files:
-        match = re.match(r"^(.*)_([a-z_]+)_([0-9.]+x)\.png$", f)
-        if match:
-            base_name, font, scale = match.groups()
-            if base_name not in groups:
-               groups[base_name] = []
-            groups[base_name].append({'file': f, 'font': font, 'scale': scale})
-        else:
-            # Fallback for unexpected names (e.g. splash_default.png which lacks scale/font in standard way logic?)
-            # Actually splash_default.png -> base=splash, font=default, scale=? NO.
-            # standard loop uses: f"{base}_{font}_{scale_name}.png"
-            # splash/onboarding use: "splash_default.png" (hardcoded). 
-            # We should probably treat them as "Misc" or their own group if they don't match pattern.
-            misc_key = "Startup / Onboarding"
-            if misc_key not in groups:
-                groups[misc_key] = []
-            groups[misc_key].append({'file': f, 'font': 'N/A', 'scale': 'N/A'})
+        parsed = False
+        # Try to match known fonts first to ensure correct base_name extraction
+        for font in known_fonts:
+            # Pattern: {base_name}_{font}_{scale}.png
+            # We use non-greedy matching for base_name, but rely on the specific font literal
+            pattern = f"^(.*)_{font}_([0-9.]+x)\.png$"
+            match = re.match(pattern, f)
+            if match:
+                base_name = match.group(1)
+                scale = match.group(2)
+                if base_name not in groups:
+                    groups[base_name] = []
+                groups[base_name].append({'file': f, 'font': font, 'scale': scale})
+                parsed = True
+                break
+        
+        if not parsed:
+            # Fallback for splash/onboarding or unknown patterns
+            # Note: Onboarding/Splash loop uses standard naming now too, so they might match above.
+            # If not, capture them here.
+            # Check for simple {base}_{font}_{scale} generic pattern if specific fonts failed?
+            # Or just dump in Misc.
+            # Current script generates: generic filenames for normal loop, preventing mismatches requires known fonts or smarter regex.
+            
+            # Try generic regex again as backup, but be aware of the "rock_salt" issue.
+            # If we are here, it means it didn't match a known font.
+            match = re.match(r"^(.*)_([a-z_]+)_([0-9.]+x)\.png$", f)
+            if match:
+                 # usage fallback - might be imperfect but better than discarding
+                 base_name, font, scale = match.groups()
+                 if base_name not in groups:
+                    groups[base_name] = []
+                 groups[base_name].append({'file': f, 'font': font, 'scale': scale})
+            else:
+                misc_key = "Startup / Misc"
+                if misc_key not in groups:
+                    groups[misc_key] = []
+                groups[misc_key].append({'file': f, 'font': 'N/A', 'scale': 'N/A'})
 
     # Custom Sort Order
     sort_order = [
@@ -343,10 +372,22 @@ def generate_html_report():
 
     sorted_group_keys = sorted(groups.keys(), key=lambda x: (get_sort_key(x), x))
 
+    # Define sort priority
+    font_priority = ["default", "rock_salt", "permanent_marker", "caveat"]
+    scale_priority = ["1x", "1.2x"]
+    
+    def get_item_sort_key(item):
+         f = item.get('font', 'default')
+         s = item.get('scale', '1x')
+         # Get index, default to 99 if not found
+         f_idx = font_priority.index(f) if f in font_priority else 99
+         s_idx = scale_priority.index(s) if s in scale_priority else 99
+         return (f_idx, s_idx)
+
     # Generate Group HTML
     groups_html = ""
     for base_name in sorted_group_keys:
-        items = groups[base_name]
+        items = sorted(groups[base_name], key=get_item_sort_key)
         cards_html = ""
         for item in items:
             cards_html += f"""
@@ -389,12 +430,15 @@ def generate_html_report():
         /* Group Grid */
         .group-container {{ margin-bottom: 40px; }}
         .group-grid {{ 
-            display: grid; 
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); 
+            display: flex; 
+            overflow-x: auto;
             gap: 15px; 
+            padding-bottom: 20px; /* Space for scrollbar */
+            align-items: flex-start;
         }}
         
         .card {{ 
+            flex: 0 0 250px; /* Fixed width */
             background: #1e1e1e; border-radius: 8px; overflow: hidden; 
             box-shadow: 0 4px 6px rgba(0,0,0,0.3); transition: transform 0.2s;
             cursor: pointer;
@@ -495,7 +539,7 @@ def generate_html_report():
             document.querySelectorAll('.group-grid').forEach(el => el.style.display = 'none');
         }}
         function expandAll() {{
-            document.querySelectorAll('.group-grid').forEach(el => el.style.display = 'grid');
+            document.querySelectorAll('.group-grid').forEach(el => el.style.display = 'flex');
         }}
     </script>
 </body>

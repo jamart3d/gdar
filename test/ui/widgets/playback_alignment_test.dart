@@ -159,25 +159,13 @@ void main() {
     // Trigger rebuild
     mockAudioProvider.notifyListeners();
 
-    await tester.pumpWidget(
-      MultiProvider(
-        providers: [
-          ChangeNotifierProvider<AudioProvider>.value(value: mockAudioProvider),
-          ChangeNotifierProvider<SettingsProvider>.value(
-              value: mockSettingsProvider),
-        ],
-        child: MaterialApp(
-          home: PlaybackScreen(),
-        ),
-      ),
-    );
+    // Trigger rebuild
+    mockAudioProvider.notifyListeners();
     await tester.pump(const Duration(milliseconds: 500));
 
     final track1RectNotPlaying = tester.getRect(track1TitleFinder);
 
     // COMPARE POSITIONS
-    print('Track 1 Playing Top: ${track1RectPlaying.top}');
-    print('Track 1 Not Playing Top: ${track1RectNotPlaying.top}');
 
     // Assert Vertical Stability
     expect(
