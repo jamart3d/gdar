@@ -317,7 +317,7 @@ This file tracks planned features, enhancements, and bug fixes for the gdar appl
 ## Footprint Reduction
 
 - [ ] **Font Optimization:** Verify `google_fonts` usage. Bundling frequently used weights (Inter/Roboto) as assets can rely less on runtime caching and network calls.
-- [ ] **Code Dead-Stripping:** Ensure `flutter build --release` effectively tree-shakes unused icon code points (SettingsProvider uses simple booleans, but large icon sets can bloat).
+- [ ]  Ensure `flutter build --release` effectively tree-shakes unused icon code points (SettingsProvider uses simple booleans, but large icon sets can bloat).
 
 
 

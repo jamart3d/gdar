@@ -558,8 +558,11 @@ class _PlaybackScreenState extends State<PlaybackScreen>
                     ),
                   ),
                 )
-              : _buildTrackListTile(
-                  context, audioProvider, track, index, isPlaying, scaleFactor),
+              : Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: _buildTrackListTile(context, audioProvider, track,
+                      index, isPlaying, scaleFactor),
+                ),
         );
       },
     );
@@ -582,6 +585,7 @@ class _PlaybackScreenState extends State<PlaybackScreen>
       fontSize: titleFontSize,
       fontWeight: isPlaying ? FontWeight.w600 : FontWeight.normal,
       color: isPlaying ? colorScheme.primary : colorScheme.onSurface,
+      height: 1.1, // Fix vertical jump when bolding
     );
 
     return ListTile(

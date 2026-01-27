@@ -215,7 +215,12 @@ class _MiniPlayerState extends State<MiniPlayer>
               InkWell(
                 onTap: widget.onTap,
                 child: Padding(
-                  padding: EdgeInsets.all(20.0 * scaleFactor),
+                  padding: EdgeInsets.only(
+                    left: 4.0,
+                    top: 20.0 * scaleFactor,
+                    bottom: 20.0 * scaleFactor,
+                    right: 4.0 * scaleFactor,
+                  ),
                   child: Row(
                     children: [
                       Expanded(
@@ -239,19 +244,20 @@ class _MiniPlayerState extends State<MiniPlayer>
                             );
 
                             return Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 SizedBox(
                                   height: titleStyle.fontSize! * 2.2,
                                   child: Padding(
                                     padding: const EdgeInsets.symmetric(
-                                        horizontal: 8.0),
+                                        horizontal: 2.0),
                                     child: Material(
                                       type: MaterialType.transparency,
                                       child: ConditionalMarquee(
                                         text: currentTrack.title,
                                         style: titleStyle.copyWith(height: 1.2),
+                                        textAlign: TextAlign.center,
                                       ),
                                     ),
                                   ),
@@ -261,7 +267,7 @@ class _MiniPlayerState extends State<MiniPlayer>
                           },
                         ),
                       ),
-                      const SizedBox(width: 12),
+                      const SizedBox(width: 0),
                       StreamBuilder<SequenceState?>(
                         stream: audioProvider.audioPlayer.sequenceStateStream,
                         builder: (context, snapshot) {
@@ -277,6 +283,8 @@ class _MiniPlayerState extends State<MiniPlayer>
                               IconButton(
                                 icon: const Icon(Icons.skip_previous_rounded),
                                 iconSize: iconSize,
+                                padding: EdgeInsets.all(4.0 * scaleFactor),
+                                constraints: const BoxConstraints(),
                                 color: colorScheme.onSurfaceVariant,
                                 onPressed: hasPrevious
                                     ? audioProvider.seekToPrevious

@@ -22,7 +22,7 @@ class ConditionalMarquee extends StatelessWidget {
     this.velocity = 30.0,
     this.pauseAfterRound = const Duration(seconds: 2),
     this.blankSpace = 40.0,
-    this.fadingEdgeStartFraction = 0.1,
+    this.fadingEdgeStartFraction = 0.0,
     this.fadingEdgeEndFraction = 0.1,
     this.enableAnimation = true,
   });
@@ -50,13 +50,14 @@ class ConditionalMarquee extends StatelessWidget {
 
         // If the text width is greater than the available width (minus a safety buffer), show Marquee
         // Safety buffer prevents cases where TextPainter under-reports width slightly compared to render.
-        // Increased to 50.0 for Rock Salt's aggressive sizing and wide flourishes.
-        if (textPainter.width > constraints.maxWidth - 50.0) {
+        // Reduced from 50.0 to 10.0 as we have tightened up the UI gaps.
+        if (textPainter.width > constraints.maxWidth - 10.0) {
           return ClipRect(
             child: Marquee(
               text: text,
               style: style,
               velocity: velocity,
+              startPadding: 0.0,
               pauseAfterRound: pauseAfterRound,
               blankSpace: blankSpace,
               fadingEdgeStartFraction: fadingEdgeStartFraction,
@@ -65,12 +66,17 @@ class ConditionalMarquee extends StatelessWidget {
           );
         } else {
           // Otherwise, show a standard Text widget
-          return Text(
-            text,
-            style: style,
-            textAlign: textAlign,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
+          return Align(
+            alignment: textAlign == TextAlign.center
+                ? Alignment.center
+                : Alignment.centerLeft,
+            child: Text(
+              text,
+              style: style,
+              textAlign: textAlign,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
           );
         }
       },

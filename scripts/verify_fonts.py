@@ -80,6 +80,7 @@ def main():
     parser.add_argument("--tag", default="latest", help="Tag for this test run (e.g., 'before_fix', 'after_fix')")
     parser.add_argument("-df", "--default-only", action="store_true", help="Run only with the default font (skips others)")
     parser.add_argument("-sc", "--single-scale", action="store_true", help="Run only with 1x scale (skips 1.2x)")
+    parser.add_argument("--stay-awake", action="store_true", help="Keep device awake during test (svc power stayon)")
     args = parser.parse_args()
 
     device_id = args.device
@@ -96,9 +97,12 @@ def main():
     # Setup Device
     print(f"Setting up device: {device_id}")
     run_adb(["shell", "mkdir", "-p", DEVICE_DIR], device_id)
-    run_adb(["shell", "svc", "power", "stayon", "true"], device_id)
     
-    # Start Keep Awake Thread
+    if args.stay_awake:
+        print("  -> Enabling Stay Awake (svc power stayon)")
+        run_adb(["shell", "svc", "power", "stayon", "true"], device_id)
+        
+    # Start Keep Awake Thread (Always runs to handle battery/wifi cases)
     wake_thread = threading.Thread(target=stay_awake_loop, args=(device_id,))
     wake_thread.start()
 
@@ -263,8 +267,14 @@ def main():
 
     finally:
         keep_awake = False
-        if wake_thread.is_alive():
+        if wake_thread and wake_thread.is_alive():
             wake_thread.join()
+        
+        if args.stay_awake:
+            run_adb(["shell", "svc", "power", "stayon", "false"], device_id)
+            
+        print("  [Cleanup] Resetting preferences (Restore Onboarding)...")
+        open_deep_link("shakedown://debug?action=reset_prefs", device_id)
         
         generate_html_report()
         print("\n=== Test Complete ===")

@@ -1,6 +1,4 @@
 Release 1.0.9:
-- **New Feature**: "Shakedown Shake" animation! The app title now performs an expressive, dampened shake when you arrive at the home screen.
 - **Improved**: Smoother splash screen transition with tuned timing (1.9s) for a more majestic entry.
 - **Fixed**: Onboarding screen layout issues on some device sizes.
-- **Fixed**: Memory leak related to animation timers.
 - **Internal**: Updated test suite for better stability.
