@@ -1,15 +1,6 @@
-<en-US>
-Version 1.0.8: Relocated Settings, Transitions & Refined Tracklists
-- Relocated Suggestion: Moved the Advanced Cache recommendation to a floating SnackBar for a cleaner Settings layout. 
-- Smart Navigation: The SnackBar action now automatically expands sections and scrolls to target settings.
-- Refined Splash: Splash screen elements now fade immediately upon navigation for a sleeker transition.
-- Typography: Centralized and standardized tracklist metrics across all fonts and scales.
-- Performance: Code quality improvements and diagnostic cleanup.
-</en-US>
-
-
-<en-US>
-Version 1.0.8: 
-- Typography: Centralized and standardized tracklist metrics across all fonts and scales.
-- Performance: Code quality improvements and diagnostic cleanup.
-</en-US>
+Release 1.0.9:
+- **New Feature**: "Shakedown Shake" animation! The app title now performs an expressive, dampened shake when you arrive at the home screen.
+- **Improved**: Smoother splash screen transition with tuned timing (1.9s) for a more majestic entry.
+- **Fixed**: Onboarding screen layout issues on some device sizes.
+- **Fixed**: Memory leak related to animation timers.
+- **Internal**: Updated test suite for better stability.
