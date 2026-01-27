@@ -7,7 +7,12 @@ import 'package:shakedown/utils/font_layout_config.dart';
 import 'package:provider/provider.dart';
 
 class CollectionStatistics extends StatelessWidget {
-  const CollectionStatistics({super.key});
+  final bool initiallyExpanded;
+
+  const CollectionStatistics({
+    super.key,
+    this.initiallyExpanded = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -125,6 +130,7 @@ class CollectionStatistics extends StatelessWidget {
     return SectionCard(
       scaleFactor: scaleFactor,
       title: 'Collection Statistics',
+      initiallyExpanded: initiallyExpanded,
       icon: Icons.bar_chart,
       children: [
         ListTile(

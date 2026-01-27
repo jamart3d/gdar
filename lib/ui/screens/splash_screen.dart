@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:shakedown/providers/show_list_provider.dart';
 import 'package:shakedown/providers/settings_provider.dart';
 import 'package:shakedown/ui/screens/show_list_screen.dart';
+
 import 'package:shakedown/ui/widgets/shakedown_title.dart';
 import 'package:shakedown/utils/font_layout_config.dart';
 
@@ -16,9 +17,6 @@ class SplashScreen extends StatefulWidget {
 
 class _SplashScreenState extends State<SplashScreen>
     with TickerProviderStateMixin {
-  late final AnimationController _fadeController;
-  late final Animation<double> _fadeAnimation;
-
   late final AnimationController _countController;
   late Animation<int> _shnidCountAnimation;
   late Animation<int> _showCountAnimation;
@@ -31,17 +29,6 @@ class _SplashScreenState extends State<SplashScreen>
   @override
   void initState() {
     super.initState();
-
-    // Fade animation
-    _fadeController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 1500),
-    );
-    _fadeAnimation = CurvedAnimation(
-      parent: _fadeController,
-      curve: Curves.easeInOut,
-    );
-    _fadeController.forward();
 
     // Count animation (for shnids and shows)
     _countController = AnimationController(
@@ -70,7 +57,6 @@ class _SplashScreenState extends State<SplashScreen>
 
   @override
   void dispose() {
-    _fadeController.dispose();
     _countController.dispose();
     _minTimeTimer?.cancel();
     _showListProvider.removeListener(_onShowListUpdate);
@@ -181,10 +167,10 @@ class _SplashScreenState extends State<SplashScreen>
             AnimatedOpacity(
               opacity: _isNavigating ? 0.0 : 1.0,
               duration: const Duration(milliseconds: 200),
-              child: FadeTransition(
-                opacity: _fadeAnimation,
+              child: IntrinsicWidth(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     if (settingsProvider.isFirstRun)
                       _buildChecklistItem(
@@ -284,11 +270,18 @@ class _SplashScreenState extends State<SplashScreen>
     ));
   }
 
-  Widget _buildChecklistItem(
-      {required String label, required bool isDone, double scaleFactor = 1.0}) {
+  Widget _buildChecklistItem({
+    required String label,
+    required bool isDone,
+    double scaleFactor = 1.0,
+  }) {
     final theme = Theme.of(context);
+
+    // Use a balanced base size that works well with the centralized scale factors
+    const double baseSize = 16.0;
+
     return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
+      mainAxisAlignment: MainAxisAlignment.start,
       children: [
         SizedBox(
           width: 24,
@@ -299,22 +292,27 @@ class _SplashScreenState extends State<SplashScreen>
                 ? Icon(Icons.check_circle,
                     key: const ValueKey('done'),
                     color: theme.colorScheme.primary,
-                    size: 20)
-                : const SizedBox(
-                    width: 14,
-                    height: 14,
+                    size: 20 *
+                        (scaleFactor > 1.2
+                            ? 1.2
+                            : scaleFactor)) // Cap icon growth
+                : SizedBox(
+                    width: 14 * scaleFactor,
+                    height: 14 * scaleFactor,
                     child: CircularProgressIndicator(
-                        strokeWidth: 2, key: ValueKey('loading')),
+                        strokeWidth: 2, key: const ValueKey('loading')),
                   ),
           ),
         ),
-        const SizedBox(width: 12),
-        SizedBox(
-          width: 220, // Fixed width for alignment
+        SizedBox(width: 12 * scaleFactor),
+        Container(
+          // Allow width to grow slightly with scale, but cap it to prevent overflow
+          constraints: BoxConstraints(
+              maxWidth: 220.0 * (scaleFactor < 1.0 ? 1.0 : scaleFactor)),
           child: Text(
             label,
             style: theme.textTheme.titleMedium?.copyWith(
-              fontSize: 16.0 * scaleFactor, // Base TBD, standardizing to 16
+              fontSize: baseSize * scaleFactor,
             ),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,

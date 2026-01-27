@@ -531,4 +531,13 @@ class SettingsProvider with ChangeNotifier {
     await _prefs.setInt(key, value);
     notifyListeners();
   }
+
+  /// TEST UTILITY: Resets all preferences to their default state.
+  /// Use via Deep Link: shakedown://debug?action=reset_prefs
+  Future<void> resetToDefaults() async {
+    await _prefs.clear();
+    // Re-initialize with defaults
+    _init();
+    notifyListeners();
+  }
 }

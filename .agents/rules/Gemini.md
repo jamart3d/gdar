@@ -32,6 +32,7 @@ Antigravity Global Governance Rules (Flutter/Dart Edition)
    Self-Healing: Analyze terminal failures (e.g., pub get), resolve conflicts, and retry once before asking for help.
    Mandatory Artifacts: * Task List: Summary of steps.
    Implementation Plan: Overview of architectural changes.
+   Plan Persistence: ALL implementation plans must be saved to the project root (e.g., `[FEATURE_NAME]_PLAN.md`) to persist across conversations. The plan header must include the **Date and Time**.
    Testing: Provide widget and unit tests for generated code.
    Walkthrough: Brief narrative of results and test instructions.
 6. DESIGN PHILOSOPHY (ANTIGRAVITY PREMIUM)

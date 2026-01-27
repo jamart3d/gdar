@@ -21,15 +21,15 @@ class AppTypography {
         FontLayoutConfig.getEffectiveScale(context, settingsProvider);
 
     // Font-specific size corrections relative to Roboto
-    // Caveat is naturally small/thin, so we boost it relative to the base design size
-    // Rock Salt is wide, so we slightly tame it or keep it standard.
+    // Caveat is naturally small/thin, so we boost it for readability.
+    // If UI Scale is on, we slightly tame the boost to prevent it feeling "too large".
     double fontMultiplier = 1.0;
     switch (settingsProvider.appFont) {
       case 'caveat':
-        fontMultiplier = 1.4; // +40% for readability
+        fontMultiplier = settingsProvider.uiScale ? 1.3 : 1.4;
         break;
       case 'rock_salt':
-        fontMultiplier = 0.9; // -10% to prevent overflow
+        fontMultiplier = settingsProvider.uiScale ? 0.85 : 0.9;
         break;
       case 'permanent_marker':
         fontMultiplier = 0.95;

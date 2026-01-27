@@ -354,6 +354,8 @@ class _SettingsScreenState extends State<SettingsScreen>
                     scaleFactor: scaleFactor,
                     title: 'Usage Instructions',
                     icon: Icons.help_outline,
+                    initiallyExpanded:
+                        widget.highlightSetting == 'usage_instructions',
                     children: [
                       ListTile(
                         dense: true,
@@ -594,6 +596,7 @@ class _SettingsScreenState extends State<SettingsScreen>
                     scaleFactor: scaleFactor,
                     title: 'Appearance',
                     icon: Icons.palette_outlined,
+                    initiallyExpanded: widget.highlightSetting == 'appearance',
                     children: [
                       SwitchListTile(
                         dense: true,
@@ -891,6 +894,7 @@ class _SettingsScreenState extends State<SettingsScreen>
                     scaleFactor: scaleFactor,
                     title: 'Interface',
                     icon: Icons.view_quilt_outlined,
+                    initiallyExpanded: widget.highlightSetting == 'interface',
                     children: [
                       // 1. General UI Group
                       SwitchListTile(
@@ -1069,6 +1073,8 @@ class _SettingsScreenState extends State<SettingsScreen>
                     scaleFactor: scaleFactor,
                     title: 'Random Playback',
                     icon: Icons.shuffle_rounded,
+                    initiallyExpanded:
+                        widget.highlightSetting == 'random_playback',
                     children: [
                       SwitchListTile(
                         dense: true,
@@ -1227,14 +1233,15 @@ class _SettingsScreenState extends State<SettingsScreen>
 
                   SectionCard(
                     key: ValueKey(
-                        'playback_${_playbackExpanded || widget.highlightSetting == 'offline_buffering'}'),
+                        'playback_${_playbackExpanded || widget.highlightSetting == 'offline_buffering' || widget.highlightSetting == 'playback'}'),
                     scaleFactor: scaleFactor,
                     title: 'Playback',
                     icon: Icons.play_circle_outline_rounded,
                     initiallyExpanded: _playbackExpanded ||
                         widget.highlightSetting == 'play_on_tap' ||
                         widget.highlightSetting == 'playback_messages' ||
-                        widget.highlightSetting == 'offline_buffering',
+                        widget.highlightSetting == 'offline_buffering' ||
+                        widget.highlightSetting == 'playback',
                     children: [
                       _HighlightableSetting(
                         key: ValueKey(
@@ -1316,7 +1323,20 @@ class _SettingsScreenState extends State<SettingsScreen>
 
                   // Statistics
                   // Collection Statistics
-                  const CollectionStatistics(),
+                  Builder(builder: (context) {
+                    // Register key for scrolling
+                    if (!_settingKeys.containsKey('collection_statistics')) {
+                      _settingKeys['collection_statistics'] =
+                          GlobalKey(debugLabel: 'collection_statistics');
+                    }
+                    return Container(
+                      key: _settingKeys['collection_statistics'],
+                      child: CollectionStatistics(
+                        initiallyExpanded:
+                            widget.highlightSetting == 'collection_statistics',
+                      ),
+                    );
+                  }),
 
                   // Manage Rated Shows (Moved out of Collection Statistics)
                   Card(

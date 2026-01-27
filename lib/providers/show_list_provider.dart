@@ -40,6 +40,21 @@ class ShowListProvider with ChangeNotifier {
   bool get hasCheckedArchive => _hasCheckedArchive;
   bool get hasUsedRandomButton => _hasUsedRandomButton;
 
+  bool _isSearchVisible = false;
+  bool get isSearchVisible => _isSearchVisible;
+
+  void setSearchVisible(bool visible) {
+    if (_isSearchVisible != visible) {
+      _isSearchVisible = visible;
+      notifyListeners();
+    }
+  }
+
+  void toggleSearchVisible() {
+    _isSearchVisible = !_isSearchVisible;
+    notifyListeners();
+  }
+
   void markRandomButtonUsed() {
     if (!_hasUsedRandomButton) {
       _hasUsedRandomButton = true;

@@ -699,7 +699,11 @@ class AudioProvider with ChangeNotifier {
 
   void play() => _audioPlayer.play();
 
+  void resume() => _audioPlayer.play();
+
   void pause() => _audioPlayer.pause();
+
+  void stop() => _audioPlayer.stop();
 
   void seekToNext() => _audioPlayer.seekToNext();
 

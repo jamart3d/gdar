@@ -23,21 +23,25 @@ class FontLayoutConfig {
     'rock_salt': FontLayoutConfig(
       baseControlZoneWidth: 68.0,
       textScaleClampMax: 1.35,
-      textScaleBoost: 0.83,
+      // Reduced from 0.83 to 0.70 to prevent oversized UI elements
+      textScaleBoost: 0.70,
     ),
     'caveat': FontLayoutConfig(
-      baseControlZoneWidth: 68.0, // Standardized
+      baseControlZoneWidth: 68.0,
       textScaleClampMax: 1.5,
-      verticalPaddingMultiplier:
-          1.0, // Caveat handles vertical space better, keeping 1.0? No, user said "same size".
+      // Caveat is naturally smaller, so we boost it slightly or keep it neutral
+      textScaleBoost: 1.1,
+      verticalPaddingMultiplier: 1.0,
     ),
     'permanent_marker': FontLayoutConfig(
-      baseControlZoneWidth: 68.0, // Standardized
+      baseControlZoneWidth: 68.0,
       textScaleClampMax: 1.4,
-      verticalPaddingMultiplier: 1.1, // Slight adjustment kept
+      textScaleBoost:
+          0.85, // Slightly reduced to match visual weight of Rock Salt
+      verticalPaddingMultiplier: 1.1,
     ),
     'default': FontLayoutConfig(
-      baseControlZoneWidth: 68.0, // Standardized
+      baseControlZoneWidth: 68.0,
     ),
   };
 

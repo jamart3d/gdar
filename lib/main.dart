@@ -7,11 +7,13 @@ import 'package:shakedown/providers/settings_provider.dart';
 import 'package:shakedown/providers/show_list_provider.dart';
 import 'package:shakedown/providers/theme_provider.dart';
 import 'package:shakedown/ui/screens/onboarding_screen.dart';
+import 'package:shakedown/ui/screens/playback_screen.dart';
+import 'package:shakedown/ui/screens/settings_screen.dart';
 import 'package:shakedown/ui/screens/show_list_screen.dart';
 import 'package:shakedown/ui/screens/splash_screen.dart';
+import 'package:shakedown/ui/screens/track_list_screen.dart';
 import 'package:shakedown/utils/app_themes.dart';
 import 'package:shakedown/utils/logger.dart';
-// import 'package:google_fonts/google_fonts.dart'; // Removed
 import 'package:just_audio_background/just_audio_background.dart';
 import 'package:app_links/app_links.dart';
 import 'package:provider/provider.dart';
@@ -178,6 +180,132 @@ class _GdarAppState extends State<GdarApp> {
           } else {
             logger.i(
                 'Main: [Session #$_sessionId] Feature "$feature" does not require playback');
+          }
+        } else if (uri.host == 'navigate') {
+          // Handle navigation intents
+          final screen = uri.queryParameters['screen']?.toLowerCase();
+          logger.i('Main: [Session #$_sessionId] Navigating to: $screen');
+
+          if (screen == 'settings') {
+            final highlight = uri.queryParameters['highlight'];
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                  builder: (_) => SettingsScreen(highlightSetting: highlight)),
+            );
+          } else if (screen == 'splash') {
+            Navigator.of(context).pushAndRemoveUntil(
+              MaterialPageRoute(builder: (_) => const SplashScreen()),
+              (route) => false,
+            );
+          } else if (screen == 'onboarding') {
+            Navigator.of(context).pushAndRemoveUntil(
+              MaterialPageRoute(builder: (_) => const OnboardingScreen()),
+              (route) => false,
+            );
+          } else if (screen == 'home') {
+            // Force reset to ShowListScreen (Home)
+            Navigator.of(context).pushAndRemoveUntil(
+              MaterialPageRoute(builder: (_) => const ShowListScreen()),
+              (route) => false,
+            );
+
+            final action = uri.queryParameters['action']?.toLowerCase();
+            if (action == 'search') {
+              // Ensure we are on home frame before toggling
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                Provider.of<ShowListProvider>(context, listen: false)
+                    .setSearchVisible(true);
+              });
+            } else if (action == 'close_search') {
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                Provider.of<ShowListProvider>(context, listen: false)
+                    .setSearchVisible(false);
+              });
+            }
+          } else if (screen == 'player') {
+            final openPanel = uri.queryParameters['panel'] == 'open';
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                  builder: (_) => PlaybackScreen(initiallyOpen: openPanel)),
+            );
+          } else if (screen == 'track_list') {
+            final indexStr = uri.queryParameters['index'];
+            final showListProvider =
+                Provider.of<ShowListProvider>(context, listen: false);
+            final allShows = showListProvider.allShows;
+
+            if (indexStr != null && allShows.isNotEmpty) {
+              final index = int.tryParse(indexStr) ?? 0;
+              final safeIndex = index.clamp(0, allShows.length - 1);
+              final show = allShows[safeIndex];
+
+              if (show.sources.isNotEmpty) {
+                // Default to first source
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) =>
+                        TrackListScreen(show: show, source: show.sources.first),
+                  ),
+                );
+              }
+            }
+          }
+        } else if (uri.host == 'debug') {
+          // Handle debug/reset intents
+          final action = uri.queryParameters['action']?.toLowerCase();
+          if (action == 'reset_prefs') {
+            logger.w(
+                'Main: [Session #$_sessionId] RESETTING ALL PREFERENCES via Deep Link');
+            final settingsProvider =
+                Provider.of<SettingsProvider>(context, listen: false);
+            settingsProvider.resetToDefaults();
+          } else if (action == 'complete_onboarding') {
+            logger.i(
+                'Main: [Session #$_sessionId] Completing Onboarding via Deep Link');
+            final settingsProvider =
+                Provider.of<SettingsProvider>(context, listen: false);
+            settingsProvider.completeOnboarding();
+          }
+        } else if (uri.host == 'settings') {
+          final key = uri.queryParameters['key'];
+          final value = uri.queryParameters['value'];
+          logger.i('Main: [Session #$_sessionId] Setting $key to $value');
+          final settingsProvider =
+              Provider.of<SettingsProvider>(context, listen: false);
+
+          if (key == 'show_playback_messages') {
+            if (value == 'true' && !settingsProvider.showPlaybackMessages) {
+              settingsProvider.toggleShowPlaybackMessages();
+            } else if (value == 'false' &&
+                settingsProvider.showPlaybackMessages) {
+              settingsProvider.toggleShowPlaybackMessages();
+            }
+          } else if (key == 'show_splash_screen') {
+            if (value == 'true' && !settingsProvider.showSplashScreen) {
+              settingsProvider.toggleShowSplashScreen();
+            } else if (value == 'false' && settingsProvider.showSplashScreen) {
+              settingsProvider.toggleShowSplashScreen();
+            }
+          }
+        } else if (uri.host == 'player') {
+          final action = uri.queryParameters['action']?.toLowerCase();
+          logger.i('Main: [Session #$_sessionId] Player Action: $action');
+          final audioProvider =
+              Provider.of<AudioProvider>(context, listen: false);
+
+          if (action == 'pause') {
+            audioProvider.pause();
+          } else if (action == 'resume' || action == 'play') {
+            audioProvider.resume();
+          } else if (action == 'stop') {
+            logger.i(
+                'Main: [Session #$_sessionId] Stopping and clearing playback via deep link');
+            audioProvider.stopAndClear();
+          } else {
+            // Default navigate behavior if no action or just screen=player
+            Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const PlaybackScreen()),
+            );
           }
         } else {
           logger.w(

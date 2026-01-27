@@ -188,6 +188,7 @@ This file tracks planned features, enhancements, and bug fixes for the gdar appl
   - [x] **Deep Link Consistency:** Ensured deep link actions wait for show list data initialization to resolve playback race conditions during cold start.
   - [ ] **User Instructions:** Add a section in Settings (or a Help dialog) explaining available voice commands ("Play random show") and deep link capabilities.
   - [ ] **Gemini Listing:** Investigate requirements for getting the app listed in "Gemini Connected Apps" (or equivalent discovery surfaces).
+  - [ ] **Deep Link Intent Audit:** Create a report of all deep link intents in the app, separating testing intents from production ones.
 
 - [ ] **Calendar Feature:** View shows by date on a calendar interface (e.g., "On This Day").
 
@@ -226,6 +227,13 @@ This file tracks planned features, enhancements, and bug fixes for the gdar appl
     2. **Font Consistency Audit & Fixes (In Progress)**
        - [x] **Standardize Onboarding Base Sizes:** Bump Onboarding body text (9.5 -> 14.0) and headers (10.5 -> 16.0) to match app standards.
        - [x] **Splash Screen Scaling:** Apply `FontLayoutConfig` scale factor to Splash Screen checklist items so they respect the UI Scale setting.
+    - [x] **Splash Screen Optimization:** Reduce font size of checklist items when UI Scale is enabled to prevent overflow/clipping.
+    - [x] **Settings Screen Optimization:** Reduce font size for "Rock Salt" font in Settings screen when UI Scale is enabled (it's currently a bit too large).
+    - [x] **Playback & Sliding Panel Audit:**
+      - [x] Audit font and control sizes for "Caveat" font in `PlaybackScreen` and sliding panel (open/close).
+      - [x] Fix: Reduce control sizes when sliding panel is open (currently too large).
+      - [x] **Roboto Font Audit:** Reduced control sizes by ~25% in `PlaybackScreen` when sliding panel is open for Default (Roboto) font.
+      - [x] **Caveat & Messages Audit:** Reduced control sizes by ~25% for Caveat and optimized playback status messages font size when `UI Scale` is ON.
        - [x] **Settings Screen Normalization:** Bump base font sizes (10.0->15.0, 8.5->12.0) to matched Material standards.
        - [x] **Font Preview Fix:** Ensure font selection dialog respects the current UI scale factor.
        - [x] **Density Tuning:** Relax extreme visual density (`vertical: -4`) to accommodate larger fonts without cramping.
@@ -253,6 +261,20 @@ This file tracks planned features, enhancements, and bug fixes for the gdar appl
          - **Case B (Medium):** Text fills width, gap is clear.
          - **Case C (Too Big):** Marquee activates horizontally, vertical height is locked to the card's `82.0 * scaleFactor`, gap is strictly preserved.
        - [ ] **Smart Abbreviation:** When checking "UI Scale" on, automatically enable "Abbreviate Day & Month" (if not already handled) to save space.
+
+    5. **Normalization of Font Logic (Refactoring)**
+       - **Problem:** Currently, font-specific adjustments (e.g., "reduce Caveat by 15% in panel") are scattered across multiple files (`playback_controls.dart`, `playback_screen.dart`, `onboarding_screen.dart`).
+       - **Plan:** Centralize this logic into `FontLayoutConfig` or `AppTypography`.
+       - **Action Items:**
+         - [ ] Move "Open Panel" font scaling factors (0.75 for Caveat/Default, 0.85 for others) into `FontLayoutConfig`.
+         - [ ] Move "Status Message" sizing logic into a shared helper or style definition.
+         - [ ] Create a specific `onboarding` font configuration in `FontLayoutConfig` to handle the Caveat reduction systematically rather than with ad-hoc `if` statements in the view.
+         - [ ] Ensure `AppTypography.responsiveFontSize` accepts a `context` (screen type) argument to apply these context-aware rules automatically.
+         - [ ] **Normalize Line Height:** Centralize `height` property logic (currently hardcoded as `1.2`, `1.4` etc. in various places) into `AppTypography` to ensure consistent vertical rhythm across fonts.
+         - [ ] **Handle "Optical" Weight:** Adjust `FontWeight` per font (e.g. `FontWeight.w400` vs `w500`) to ensure they visually match in "heaviness", especially when scaled.
+         - [ ] **Implement a "Cap" on Text Scaling:** Ensure that critical UI elements (like headers or navigation bars) have a maximum font size multiplier (e.g., max 1.5x) to prevent them from breaking layout even if the system scale is set very high (e.g. 2.0x).
+         - [ ] **Test `auto_size_text`:** Evaluate using the `auto_size_text` package for fixed-size containers (like buttons) where text *must* fit without overflowing, rather than scaling up indefinitely.
+         - [ ] **Use `TextTheme.apply()`:** Instead of manually creating new `TextStyle` objects everywhere, use `TextTheme.apply(fontFamily: ...)` to propagate font changes cleanly through the widget tree.
 
 - [x] **Onboarding Page:**
   - **Feature:** Display an onboarding/welcome screen on first app launch.

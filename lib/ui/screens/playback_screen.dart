@@ -30,7 +30,8 @@ import 'package:shakedown/utils/font_layout_config.dart';
 import 'package:shakedown/ui/styles/app_typography.dart';
 
 class PlaybackScreen extends StatefulWidget {
-  const PlaybackScreen({super.key});
+  final bool initiallyOpen;
+  const PlaybackScreen({super.key, this.initiallyOpen = false});
 
   @override
   State<PlaybackScreen> createState() => _PlaybackScreenState();
@@ -56,6 +57,12 @@ class _PlaybackScreenState extends State<PlaybackScreen>
       vsync: this,
       duration: const Duration(milliseconds: 1500),
     );
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (widget.initiallyOpen) {
+        _panelController.open();
+      }
+    });
 
     // Listen for errors
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -214,9 +221,11 @@ class _PlaybackScreenState extends State<PlaybackScreen>
 
     // minHeight covering the drag handle + Venue/Copy row.
     final double bottomPadding = MediaQuery.of(context).padding.bottom;
-    final double minPanelHeight = (92.0 * scaleFactor) + bottomPadding;
+    // Bumped from 92.0 to 96.0 to accommodate larger fonts like Caveat
+    final double minPanelHeight = (96.0 * scaleFactor) + bottomPadding;
 
-    // maxHeight constraint to ~40% of screen (0.45 if scaled)
+    // maxHeight constraint to ~40% of screen (0.45 if scaled).
+    // User enforced strict height regardless of font.
     final double maxPanelHeight = MediaQuery.of(context).size.height *
         (settingsProvider.uiScale ? 0.45 : 0.40);
 
@@ -696,8 +705,9 @@ class _PlaybackScreenState extends State<PlaybackScreen>
                     }
                   },
                   child: Padding(
+                    // Reduced bottom padding to prevent overflow with large fonts (Caveat)
                     padding: EdgeInsets.only(
-                        left: 16.0, right: 16.0, bottom: 30.0 + bottomPadding),
+                        left: 16.0, right: 16.0, bottom: 24.0 + bottomPadding),
                     child: Row(
                       mainAxisAlignment: settingsProvider.hideTrackDuration
                           ? MainAxisAlignment.center
@@ -705,9 +715,10 @@ class _PlaybackScreenState extends State<PlaybackScreen>
                       children: [
                         Flexible(
                           child: SizedBox(
+                            // Slightly reduced multiplier from 2.2 to 2.0 to tighten vertical space
                             height: AppTypography.responsiveFontSize(
                                     context, 18.0) *
-                                2.2,
+                                2.0,
                             child: ConditionalMarquee(
                               text: currentShow.venue,
                               style: textTheme.headlineSmall?.copyWith(
@@ -738,12 +749,20 @@ class _PlaybackScreenState extends State<PlaybackScreen>
               builder: (context, value, child) {
                 // Closed (0.0): +100 (Hidden down)
                 // Open (1.0): -24 (Up more to create gap from bottom)
+                // We keep the offset logic but now allow scrolling
                 final double yOffset = (100.0 - 124.0 * value) * scaleFactor;
                 return Transform.translate(
                   offset: Offset(0, yOffset),
                   child: SingleChildScrollView(
                     physics: const NeverScrollableScrollPhysics(),
-                    padding: EdgeInsets.fromLTRB(16, 0, 16, 32 * scaleFactor),
+                    padding: EdgeInsets.fromLTRB(
+                        16,
+                        0,
+                        16,
+                        (settingsProvider.uiScale &&
+                                settingsProvider.appFont == 'caveat')
+                            ? 56 * scaleFactor
+                            : 32 * scaleFactor),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
@@ -937,9 +956,16 @@ class _PlaybackScreenState extends State<PlaybackScreen>
                         const SizedBox(height: 8), // Reduced from 16 to 8
                         const PlaybackProgressBar(),
                         const SizedBox(height: 8),
-                        const PlaybackControls(),
+                        ValueListenableBuilder<double>(
+                          valueListenable: panelPositionNotifier,
+                          builder: (context, position, _) {
+                            return PlaybackControls(panelPosition: position);
+                          },
+                        ),
                         if (settingsProvider.showPlaybackMessages) ...[
-                          const SizedBox(height: 16),
+                          const SizedBox(
+                              height:
+                                  8), // Reduced from 16 to fit in fixed height
                           _buildStatusMessages(context, audioProvider),
                         ],
                       ],
@@ -957,6 +983,11 @@ class _PlaybackScreenState extends State<PlaybackScreen>
   Widget _buildStatusMessages(
       BuildContext context, AudioProvider audioProvider) {
     final colorScheme = Theme.of(context).colorScheme;
+    final settingsProvider = context.read<SettingsProvider>();
+    final isScaled = settingsProvider.uiScale;
+    // Reduce status font size if scaled to prevent cramping
+    final double labelsFontSize = isScaled ? 10.0 : 12.0;
+
     return StreamBuilder<PlayerState>(
       stream: audioProvider.playerStateStream,
       initialData: audioProvider.audioPlayer.playerState,
@@ -984,7 +1015,7 @@ class _PlaybackScreenState extends State<PlaybackScreen>
               style: TextStyle(
                 color: colorScheme.onSurfaceVariant,
                 fontWeight: FontWeight.bold,
-                fontSize: 12,
+                fontSize: labelsFontSize,
               ),
             ),
             const SizedBox(width: 8),
@@ -992,7 +1023,7 @@ class _PlaybackScreenState extends State<PlaybackScreen>
               '•',
               style: TextStyle(
                 color: colorScheme.onSurfaceVariant,
-                fontSize: 12,
+                fontSize: labelsFontSize,
               ),
             ),
             const SizedBox(width: 8),
@@ -1005,7 +1036,7 @@ class _PlaybackScreenState extends State<PlaybackScreen>
                   'Buffered: ${formatDuration(buffered)}',
                   style: TextStyle(
                     color: colorScheme.onSurfaceVariant,
-                    fontSize: 12,
+                    fontSize: labelsFontSize,
                   ),
                 );
               },

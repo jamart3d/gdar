@@ -199,6 +199,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   Widget _buildWelcomePage(BuildContext context, double scaleFactor) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    final settings = context.watch<SettingsProvider>();
 
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 24.0),
@@ -212,7 +213,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               color: colorScheme.onSurfaceVariant,
               height: 1.4,
               fontWeight: FontWeight.w500,
-              fontSize: AppTypography.responsiveFontSize(context, 16.0),
+              fontSize: AppTypography.responsiveFontSize(
+                  context,
+                  (settings.uiScale && settings.appFont == 'caveat')
+                      ? 14.5
+                      : 16.0),
             ),
             textAlign: TextAlign.center,
           ),
@@ -521,7 +526,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: colorScheme.onSurfaceVariant,
                   height: 1.2,
-                  fontSize: AppTypography.responsiveFontSize(context, 14.0),
+                  fontSize: AppTypography.responsiveFontSize(
+                      context,
+                      (Provider.of<SettingsProvider>(context).uiScale &&
+                              Provider.of<SettingsProvider>(context).appFont ==
+                                  'caveat')
+                          ? 12.5
+                          : 14.0),
                 ),
           ),
         ),
@@ -552,7 +563,14 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     color: colorScheme.onSurfaceVariant,
                     height: 1.3,
-                    fontSize: AppTypography.responsiveFontSize(context, 14.0),
+                    fontSize: AppTypography.responsiveFontSize(
+                        context,
+                        (Provider.of<SettingsProvider>(context).uiScale &&
+                                Provider.of<SettingsProvider>(context)
+                                        .appFont ==
+                                    'caveat')
+                            ? 12.5
+                            : 14.0),
                   ),
             ),
           ),

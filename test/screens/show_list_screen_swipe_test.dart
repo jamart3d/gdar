@@ -168,7 +168,29 @@ class MockShowListProvider extends ChangeNotifier implements ShowListProvider {
   bool isSourceAllowed(Source source) => true;
 
   @override
-  void dismissSource(Show show, String sourceId) {}
+  void dismissSource(Show show, String sourceId) {
+    if (_filteredShows.contains(show)) {
+      // Logic to simulate dismissal (not robust but sufficient for test if needed)
+      // Actually the test sets up logic in setShows.
+    }
+  }
+
+  bool _isSearchVisible = false;
+
+  @override
+  bool get isSearchVisible => _isSearchVisible;
+
+  @override
+  void setSearchVisible(bool visible) {
+    _isSearchVisible = visible;
+    notifyListeners();
+  }
+
+  @override
+  void toggleSearchVisible() {
+    _isSearchVisible = !_isSearchVisible;
+    notifyListeners();
+  }
 
   @override
   bool get hasUsedRandomButton => false;
