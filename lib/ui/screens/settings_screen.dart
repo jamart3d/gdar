@@ -19,8 +19,13 @@ import 'package:url_launcher/url_launcher.dart';
 
 class SettingsScreen extends StatefulWidget {
   final String? highlightSetting;
+  final bool showFontSelection; // Add this
 
-  const SettingsScreen({super.key, this.highlightSetting});
+  const SettingsScreen({
+    super.key,
+    this.highlightSetting,
+    this.showFontSelection = false, // Default to false
+  });
 
   @override
   State<SettingsScreen> createState() => _SettingsScreenState();
@@ -46,6 +51,14 @@ class _SettingsScreenState extends State<SettingsScreen>
     // Pre-register offline_buffering key so we can scroll to it if needed
     if (!_settingKeys.containsKey('offline_buffering')) {
       _settingKeys['offline_buffering'] = GlobalKey();
+    }
+
+    // Trigger Font Selection Dialog if requested
+    if (widget.showFontSelection) {
+      // Delay slightly to allow screen transition to complete/start smoothly
+      Future.delayed(const Duration(milliseconds: 500), () {
+        if (mounted) _showFontSelectionDialog(context);
+      });
     }
   }
 

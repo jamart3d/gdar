@@ -186,6 +186,9 @@ void main() {
         .thenAnswer((_) => Stream.value(Duration.zero));
     when(mockAudioProvider.playbackErrorStream)
         .thenAnswer((_) => Stream.value(''));
+    when(mockAudioPlayer.sequence).thenReturn([]);
+    when(mockAudioPlayer.sequenceStateStream)
+        .thenAnswer((_) => const Stream.empty());
     when(mockAudioProvider.currentTrack).thenReturn(null);
   });
 

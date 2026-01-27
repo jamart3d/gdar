@@ -16,9 +16,14 @@ enum CatalogLoadingStrategy {
 /// - Shows: Loaded from JSON (in-memory)
 /// - Ratings: Stored in Hive (persistent)
 class CatalogService {
-  static final CatalogService _instance = CatalogService._internal();
+  static CatalogService _instance = CatalogService._internal();
   factory CatalogService() => _instance;
   CatalogService._internal();
+
+  @visibleForTesting
+  static void setMock(CatalogService mock) {
+    _instance = mock;
+  }
 
   late Box<Rating> _ratingsBox;
   late Box<int> _playCountsBox;

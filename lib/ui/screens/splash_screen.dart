@@ -135,11 +135,11 @@ class _SplashScreenState extends State<SplashScreen>
                 (context, animation, secondaryAnimation, child) {
               final curvedAnimation = CurvedAnimation(
                 parent: animation,
-                curve: Curves.bounceOut,
+                curve: Curves.easeInCubic,
               );
               return FadeTransition(opacity: curvedAnimation, child: child);
             },
-            transitionDuration: const Duration(milliseconds: 1800),
+            transitionDuration: const Duration(milliseconds: 1900),
           ),
         );
       }

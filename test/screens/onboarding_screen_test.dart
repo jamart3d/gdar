@@ -68,6 +68,10 @@ void main() {
       when(mockSettingsProvider.showSplashScreen).thenReturn(true);
       when(mockSettingsProvider.showOnboarding).thenReturn(true);
       when(mockSettingsProvider.seedColor).thenReturn(null);
+      when(mockSettingsProvider.enableShakedownTween)
+          .thenReturn(false); // Added missing stub
+      when(mockSettingsProvider.marqueeEnabled)
+          .thenReturn(false); // Disable marquee
     });
 
     testWidgets('renders key UI elements correctly',
@@ -78,11 +82,21 @@ void main() {
       await tester.pumpWidget(createSubject());
       await tester.pump(const Duration(milliseconds: 500));
 
+      // Page 0
       expect(find.text('Shakedown'), findsOneWidget);
-      // We expect some text starting with 'Version' eventually, but without dragging in package_info_plus_platform_interface mocks, it might be safer to check for the FutureBuilder or just 'Shakedown' for now.
-      // Actually, let's just check 'Shakedown'.
-
       expect(find.textContaining('Welcome friend'), findsOneWidget);
+
+      // Navigate to Page 1 (Try drag instead of tap)
+      await tester.drag(find.byType(PageView), const Offset(-500, 0));
+      await tester.pump(const Duration(seconds: 1)); // Wait for transition
+
+      // Verify Page 1
+      expect(find.text('Quick Tips'), findsOneWidget);
+
+      // Navigate to Page 2
+      await tester.drag(find.byType(PageView), const Offset(-500, 0));
+      await tester.pump(const Duration(seconds: 1)); // Wait for transition
+
       expect(find.text('Font Selection'), findsOneWidget);
       expect(find.text('Rock Salt'), findsOneWidget);
       expect(find.text('Dark Mode'), findsOneWidget);
@@ -96,9 +110,21 @@ void main() {
       await tester.pumpWidget(createSubject());
       await tester.pump(const Duration(milliseconds: 500));
 
+      // Navigate to Page 2
+      await tester.drag(find.byType(PageView), const Offset(-500, 0));
+      await tester.pump(const Duration(seconds: 1));
+      await tester.drag(find.byType(PageView), const Offset(-500, 0));
+      await tester.pump(const Duration(seconds: 1));
+
       // Find Get Started button
       final getStartedBtn = find.text('Get Started');
       expect(getStartedBtn, findsOneWidget);
+
+      // Tap "Don't show again" to trigger completeOnboarding
+      final checkbox = find.text("Don't show again");
+      await tester.ensureVisible(checkbox);
+      await tester.tap(checkbox);
+      await tester.pump();
 
       await tester.ensureVisible(getStartedBtn);
       await tester.tap(getStartedBtn);
@@ -117,9 +143,15 @@ void main() {
       await tester.pumpWidget(createSubject());
       await tester.pump(const Duration(milliseconds: 500));
 
+      // Navigate to Page 2
+      await tester.drag(find.byType(PageView), const Offset(-500, 0));
+      await tester.pump(const Duration(seconds: 1));
+      await tester.drag(find.byType(PageView), const Offset(-500, 0));
+      await tester.pump(const Duration(seconds: 1));
+
       // Initial state (false by default)
-      expect(mockSettingsProvider.uiScale,
-          false); // Use mock getter check if possible, or verify setup
+      // Note: SettingsProvider is mocked, so we can't check its real state property unless we stubbed a getter that returns a variable.
+      // But verify() checks the method call.
 
       // Tap UI Scale Chip
       final uiScaleChip = find.text('UI Scale');
@@ -137,6 +169,12 @@ void main() {
 
       await tester.pumpWidget(createSubject());
       await tester.pump(const Duration(milliseconds: 500));
+
+      // Navigate to Page 2
+      await tester.drag(find.byType(PageView), const Offset(-500, 0));
+      await tester.pump(const Duration(seconds: 1));
+      await tester.drag(find.byType(PageView), const Offset(-500, 0));
+      await tester.pump(const Duration(seconds: 1));
 
       expect(mockThemeProvider.isDarkMode, false);
 

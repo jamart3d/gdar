@@ -10,6 +10,7 @@ import 'package:shakedown/utils/font_layout_config.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shakedown/ui/widgets/shakedown_title.dart';
 import 'package:shakedown/ui/styles/app_typography.dart';
+import 'package:shakedown/ui/styles/font_config.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -181,16 +182,29 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           ),
         ),
         const SizedBox(height: 16),
-        const ShakedownTitle(fontSize: 24), // Consistent title size
-        const SizedBox(height: 4),
-        if (_version != null)
-          Text(
-            'Version $_version',
-            style: theme.textTheme.titleMedium?.copyWith(
-              fontSize: AppTypography.responsiveFontSize(context, 12.0),
-              color: colorScheme.onSurfaceVariant,
-            ),
-          ),
+        TweenAnimationBuilder<double>(
+          duration: const Duration(milliseconds: 600),
+          curve: Curves.easeOutCubic,
+          tween: Tween<double>(begin: scaleFactor, end: scaleFactor),
+          builder: (context, animatedScale, child) {
+            return Column(
+              children: [
+                ShakedownTitle(fontSize: 24 * animatedScale),
+                const SizedBox(height: 4),
+                if (_version != null)
+                  Text(
+                    'Version $_version',
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontSize:
+                          AppTypography.responsiveFontSize(context, 12.0) *
+                              animatedScale,
+                      color: colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+              ],
+            );
+          },
+        ),
         const SizedBox(height: 24),
       ],
     );
@@ -201,80 +215,92 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     final colorScheme = theme.colorScheme;
     final settings = context.watch<SettingsProvider>();
 
-    return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(horizontal: 24.0),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const SizedBox(height: 20),
-          Text(
-            'Welcome friend! and many thanks for helping with this closed test.\nThis app is a lightweight streaming music player.',
-            style: theme.textTheme.titleMedium?.copyWith(
-              color: colorScheme.onSurfaceVariant,
-              height: 1.4,
-              fontWeight: FontWeight.w500,
-              fontSize: AppTypography.responsiveFontSize(
+    return LayoutBuilder(builder: (context, constraints) {
+      return SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(horizontal: 24.0),
+        child: ConstrainedBox(
+          constraints: BoxConstraints(minHeight: constraints.maxHeight),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const SizedBox(height: 20),
+              Text(
+                'Welcome friend! and many thanks for helping with this closed test.\nThis app is a lightweight streaming music player.',
+                style: theme.textTheme.titleMedium?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                  height: 1.4,
+                  fontWeight: FontWeight.w500,
+                  fontSize: AppTypography.responsiveFontSize(
+                      context,
+                      (settings.uiScale && settings.appFont == 'caveat')
+                          ? 14.5
+                          : 16.0),
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 32),
+              _buildBulletPoint(
                   context,
-                  (settings.uiScale && settings.appFont == 'caveat')
-                      ? 14.5
-                      : 16.0),
-            ),
-            textAlign: TextAlign.center,
+                  'Dive into an almost endless list of live Grateful Dead shows',
+                  scaleFactor),
+              _buildBulletPoint(context,
+                  'Play a random show or choose a specific date', scaleFactor),
+              _buildBulletPoint(
+                  context,
+                  'Filter source types: Matrix, Betty Board, Soundboard, etc.',
+                  scaleFactor),
+              _buildBulletPoint(
+                  context,
+                  'All audio is streamed directly from Archive.org',
+                  scaleFactor),
+              _buildBulletPoint(context, 'Gapless playback', scaleFactor),
+              const SizedBox(height: 40),
+            ],
           ),
-          const SizedBox(height: 32),
-          _buildBulletPoint(
-              context,
-              'Dive into an almost endless list of live Grateful Dead shows',
-              scaleFactor),
-          _buildBulletPoint(context,
-              'Play a random show or choose a specific date', scaleFactor),
-          _buildBulletPoint(
-              context,
-              'Filter source types: Matrix, Betty Board, Soundboard, etc.',
-              scaleFactor),
-          _buildBulletPoint(context,
-              'All audio is streamed directly from Archive.org', scaleFactor),
-          _buildBulletPoint(context, 'Gapless playback', scaleFactor),
-          const SizedBox(height: 40),
-        ],
-      ),
-    );
+        ),
+      );
+    });
   }
 
   Widget _buildTipsPage(BuildContext context, double scaleFactor) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(horizontal: 24.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const SizedBox(height: 20),
-          _buildSectionHeader(context, 'Quick Tips', scaleFactor),
-          const SizedBox(height: 20),
-          _buildTipRow(
-              context,
-              Icons.touch_app_rounded,
-              'Long press a show card for playing, single tap track play is off by default',
-              scaleFactor),
-          const SizedBox(height: 16),
-          _buildTipRow(
-              context,
-              Icons.question_mark_rounded,
-              'Tap to randomly select and discover a show you may not have heard',
-              scaleFactor),
-          const SizedBox(height: 16),
-          _buildTipRow(context, Icons.star_rate_rounded,
-              'Rate shows for random selection to use', scaleFactor),
-          const SizedBox(height: 16),
-          _buildTipRow(
-              context,
-              Icons.settings_rounded,
-              'Check out the settings for more options and usage instructions',
-              scaleFactor),
-          const SizedBox(height: 40),
-        ],
-      ),
-    );
+    return LayoutBuilder(builder: (context, constraints) {
+      return SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(horizontal: 24.0),
+        child: ConstrainedBox(
+          constraints: BoxConstraints(minHeight: constraints.maxHeight),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const SizedBox(height: 20),
+              _buildSectionHeader(context, 'Quick Tips', scaleFactor),
+              const SizedBox(height: 20),
+              _buildTipRow(
+                  context,
+                  Icons.touch_app_rounded,
+                  'Long press a show card for playing, single tap track play is off by default',
+                  scaleFactor),
+              const SizedBox(height: 16),
+              _buildTipRow(
+                  context,
+                  Icons.question_mark_rounded,
+                  'Tap to randomly select and discover a show you may not have heard',
+                  scaleFactor),
+              const SizedBox(height: 16),
+              _buildTipRow(context, Icons.star_rate_rounded,
+                  'Rate shows for random selection to use', scaleFactor),
+              const SizedBox(height: 16),
+              _buildTipRow(
+                  context,
+                  Icons.settings_rounded,
+                  'Check out the settings for more options and usage instructions',
+                  scaleFactor),
+              const SizedBox(height: 40),
+            ],
+          ),
+        ),
+      );
+    });
   }
 
   Widget _buildSetupPage(BuildContext context, SettingsProvider settings,
@@ -282,188 +308,216 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
-    return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(horizontal: 24.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          const SizedBox(height: 20),
-          _buildSectionHeader(
-              context, 'Customize Your Experience', scaleFactor),
-          const SizedBox(height: 20),
-          Text(
-            'Font Selection',
-            style: theme.textTheme.labelLarge?.copyWith(
-              color: colorScheme.onSurface,
-              fontSize: AppTypography.responsiveFontSize(context, 14.0),
-            ),
-          ),
-          const SizedBox(height: 12),
-          Wrap(
-            spacing: 8.0,
-            runSpacing: 8.0,
-            children: [
-              _buildFontChip(
-                  context, 'default', 'Roboto', settings, scaleFactor),
-              _buildFontChip(
-                  context, 'caveat', 'Caveat', settings, scaleFactor),
-              _buildFontChip(context, 'permanent_marker', 'Permanent Marker',
-                  settings, scaleFactor),
-              _buildFontChip(
-                  context, 'rock_salt', 'Rock Salt', settings, scaleFactor),
-            ],
-          ),
-          const SizedBox(height: 24),
-          Text(
-            'Preferences',
-            style: theme.textTheme.labelLarge?.copyWith(
-              color: colorScheme.onSurface,
-              fontSize: AppTypography.responsiveFontSize(context, 14.0),
-            ),
-          ),
-          const SizedBox(height: 12),
-          Wrap(
-            spacing: 8.0,
-            runSpacing: 8.0,
-            children: [
-              FilterChip(
-                label: Text('UI Scale',
-                    style: TextStyle(
-                        fontSize:
-                            AppTypography.responsiveFontSize(context, 12.0))),
-                selected: settings.uiScale,
-                onSelected: (bool selected) {
-                  HapticFeedback.selectionClick();
-                  settings.toggleUiScale();
-                },
-                showCheckmark: false,
-                selectedColor: colorScheme.primaryContainer,
-                labelStyle: TextStyle(
-                  color: settings.uiScale
-                      ? colorScheme.onPrimaryContainer
-                      : colorScheme.onSurface,
-                  fontWeight: FontWeight.normal,
-                ),
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              ),
-              FilterChip(
-                label: Text('Dark Mode',
-                    style: TextStyle(
-                        fontSize:
-                            AppTypography.responsiveFontSize(context, 12.0))),
-                selected: themeProvider.isDarkMode,
-                onSelected: (bool selected) {
-                  HapticFeedback.selectionClick();
-                  themeProvider.toggleTheme();
-                  if (!selected && settings.useTrueBlack) {
-                    settings.toggleUseTrueBlack();
-                  }
-                },
-                showCheckmark: false,
-                selectedColor: colorScheme.primaryContainer,
-                labelStyle: TextStyle(
-                  color: themeProvider.isDarkMode
-                      ? colorScheme.onPrimaryContainer
-                      : colorScheme.onSurface,
-                  fontWeight: FontWeight.normal,
-                ),
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              ),
-            ],
-          ),
-          const SizedBox(height: 32),
-          InkWell(
-            onTap: () {
-              setState(() {
-                _dontShowAgain = !_dontShowAgain;
-              });
-            },
-            borderRadius: BorderRadius.circular(8),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8.0),
-              child: Row(
+    return LayoutBuilder(builder: (context, constraints) {
+      return SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(horizontal: 24.0),
+        child: ConstrainedBox(
+          constraints: BoxConstraints(minHeight: constraints.maxHeight),
+          child: TweenAnimationBuilder<double>(
+            duration: const Duration(
+                milliseconds: 600), // Material 3 expressive duration
+            curve: Curves.easeOutCubic, // Expressive deceleration
+            tween: Tween<double>(begin: scaleFactor, end: scaleFactor),
+            builder: (context, animatedScale, child) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  SizedBox(
-                    width: 24,
-                    height: 24,
-                    child: Checkbox(
-                      value: _dontShowAgain,
-                      onChanged: (val) {
-                        setState(() {
-                          _dontShowAgain = val ?? false;
-                        });
-                      },
-                      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
+                  const SizedBox(height: 20),
+                  _buildSectionHeader(
+                      context, 'Customize Your Experience', animatedScale),
+                  const SizedBox(height: 20),
                   Text(
-                    "Don't show again",
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      fontSize: AppTypography.responsiveFontSize(context, 12.0),
+                    'Font Selection',
+                    style: theme.textTheme.labelLarge?.copyWith(
+                      color: colorScheme.onSurface,
+                      fontSize: AppTypography.responsiveFontSize(context, 14.0),
                     ),
                   ),
+                  const SizedBox(height: 12),
+                  Wrap(
+                    spacing: 8.0,
+                    runSpacing: 8.0,
+                    children: [
+                      _buildFontChip(
+                          context, 'default', 'Roboto', settings, scaleFactor),
+                      _buildFontChip(
+                          context, 'caveat', 'Caveat', settings, scaleFactor),
+                      _buildFontChip(context, 'permanent_marker',
+                          'Permanent Marker', settings, scaleFactor),
+                      _buildFontChip(context, 'rock_salt', 'Rock Salt',
+                          settings, scaleFactor),
+                    ],
+                  ),
+                  const SizedBox(height: 24),
+                  Text(
+                    'Preferences',
+                    style: theme.textTheme.labelLarge?.copyWith(
+                      color: colorScheme.onSurface,
+                      fontSize: AppTypography.responsiveFontSize(context, 14.0),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Wrap(
+                    spacing: 8.0,
+                    runSpacing: 8.0,
+                    children: [
+                      FilterChip(
+                        label: Text('UI Scale',
+                            style: TextStyle(
+                                fontSize: AppTypography.responsiveFontSize(
+                                    context, 12.0))),
+                        selected: settings.uiScale,
+                        onSelected: (bool selected) {
+                          HapticFeedback.selectionClick();
+                          settings.toggleUiScale();
+                        },
+                        showCheckmark: false,
+                        selectedColor: colorScheme.primaryContainer,
+                        labelStyle: TextStyle(
+                          color: settings.uiScale
+                              ? colorScheme.onPrimaryContainer
+                              : colorScheme.onSurface,
+                          fontWeight: FontWeight.normal,
+                        ),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 8),
+                      ),
+                      FilterChip(
+                        label: Text('Dark Mode',
+                            style: TextStyle(
+                                fontSize: AppTypography.responsiveFontSize(
+                                    context, 12.0))),
+                        selected: themeProvider.isDarkMode,
+                        onSelected: (bool selected) {
+                          HapticFeedback.selectionClick();
+                          themeProvider.toggleTheme();
+                          if (!selected && settings.useTrueBlack) {
+                            settings.toggleUseTrueBlack();
+                          }
+                        },
+                        showCheckmark: false,
+                        selectedColor: colorScheme.primaryContainer,
+                        labelStyle: TextStyle(
+                          color: themeProvider.isDarkMode
+                              ? colorScheme.onPrimaryContainer
+                              : colorScheme.onSurface,
+                          fontWeight: FontWeight.normal,
+                        ),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 8),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 32),
+                  InkWell(
+                    onTap: () {
+                      setState(() {
+                        _dontShowAgain = !_dontShowAgain;
+                      });
+                    },
+                    borderRadius: BorderRadius.circular(8),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          SizedBox(
+                            width: 24,
+                            height: 24,
+                            child: Checkbox(
+                              value: _dontShowAgain,
+                              onChanged: (val) {
+                                setState(() {
+                                  _dontShowAgain = val ?? false;
+                                });
+                              },
+                              materialTapTargetSize:
+                                  MaterialTapTargetSize.shrinkWrap,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            "Don't show again",
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              fontSize: AppTypography.responsiveFontSize(
+                                  context, 12.0),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  AnimatedGradientBorder(
+                    borderRadius: 30,
+                    borderWidth: 3,
+                    colors: const [
+                      Colors.red,
+                      Colors.orange,
+                      Colors.yellow,
+                      Colors.green,
+                      Colors.blue,
+                      Colors.purple,
+                      Colors.red,
+                    ],
+                    animationSpeed: 0.5,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: colorScheme.surface,
+                        borderRadius: BorderRadius.circular(30),
+                      ),
+                      child: ElevatedButton(
+                        onPressed: _finishOnboarding,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.transparent,
+                          shadowColor: Colors.transparent,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(30),
+                          ),
+                        ),
+                        child: Text(
+                          'Get Started',
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            fontSize:
+                                AppTypography.responsiveFontSize(context, 16.0),
+                            color: colorScheme.primary,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
                 ],
-              ),
-            ),
+              );
+            },
           ),
-          const SizedBox(height: 16),
-          AnimatedGradientBorder(
-            borderRadius: 30,
-            borderWidth: 3,
-            colors: const [
-              Colors.red,
-              Colors.orange,
-              Colors.yellow,
-              Colors.green,
-              Colors.blue,
-              Colors.purple,
-              Colors.red,
-            ],
-            animationSpeed: 0.5,
-            child: Container(
-              decoration: BoxDecoration(
-                color: colorScheme.surface,
-                borderRadius: BorderRadius.circular(30),
-              ),
-              child: ElevatedButton(
-                onPressed: _finishOnboarding,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.transparent,
-                  shadowColor: Colors.transparent,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30),
-                  ),
-                ),
-                child: Text(
-                  'Get Started',
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    fontSize: AppTypography.responsiveFontSize(context, 16.0),
-                    color: colorScheme.primary,
-                  ),
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(height: 24),
-        ],
-      ),
-    );
+        ),
+      );
+    });
   }
 
   Widget _buildSectionHeader(
       BuildContext context, String title, double scaleFactor) {
+    // Normalize fontSize across fonts by compensating for their scaleFactor
+    final settings = Provider.of<SettingsProvider>(context);
+    final fontConfig = FontConfig.get(settings.appFont);
+    final mediaQuery = MediaQuery.of(context);
+
+    // Base size 21px, divided by font's scaleFactor to normalize visual size
+    final normalizedFontSize = (21.0 / fontConfig.scaleFactor) *
+        scaleFactor *
+        mediaQuery.textScaler.scale(1.0);
+
     return Text(
       title,
       style: Theme.of(context).textTheme.titleMedium?.copyWith(
             color: Theme.of(context).colorScheme.primary,
             fontWeight: FontWeight.bold,
-            fontSize: AppTypography.responsiveFontSize(context, 18.0),
+            fontSize:
+                normalizedFontSize, // Normalized size keeps title position fixed
           ),
     );
   }
@@ -473,34 +527,62 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     final isSelected = settings.appFont == fontKey;
     final colorScheme = Theme.of(context).colorScheme;
 
-    return FilterChip(
-      label: Text(
-        label,
-        style: TextStyle(
-          fontSize: AppTypography.responsiveFontSize(context, 12.0),
-          fontFamily: fontKey == 'default'
-              ? 'Roboto'
-              : (label == 'Rock Salt' ? 'RockSalt' : label),
+    // Get font configuration for THIS chip (not the selected app font)
+    final config = FontConfig.get(fontKey);
+
+    // Calculate base size WITHOUT app's font scale factor applied
+    // This prevents chips from resizing when app font changes
+    final mediaQuery = MediaQuery.of(context);
+    final uiScale = scaleFactor; // Only UI Scale toggle should affect chip size
+    final fixedBaseSize = 12.0 * uiScale * mediaQuery.textScaler.scale(1.0);
+
+    // Apply this chip's normalization to match all chips to same visual size
+    final normalizedStyle = TextStyle(
+      fontFamily: config.fontFamily,
+      fontSize: fixedBaseSize *
+          config.scaleFactor, // Apply chip-specific normalization
+      height: config.lineHeight,
+      letterSpacing: config.letterSpacing,
+      fontWeight: config.adjustWeight(FontWeight.normal),
+    );
+
+    // Create isolated theme for this chip to force its font family
+    return SizedBox(
+      height: 40 * scaleFactor, // Scale height with UI Scale
+      child: Theme(
+        data: Theme.of(context).copyWith(
+          textTheme: Theme.of(context).textTheme.apply(
+                fontFamily: config.fontFamily, // Force this chip's font
+              ),
+        ),
+        child: FilterChip(
+          label: Text(
+            label,
+            style: normalizedStyle, // Explicitly use this font's style
+            textAlign: TextAlign.center, // Center text horizontally
+          ),
+          selected: isSelected,
+          onSelected: (bool selected) {
+            if (selected) {
+              HapticFeedback.selectionClick();
+              settings.setAppFont(fontKey);
+            }
+          },
+          showCheckmark: false,
+          selectedColor: colorScheme.primaryContainer,
+          labelStyle: normalizedStyle.copyWith(
+            fontFamily: config
+                .fontFamily, // Force font family again to prevent theme override
+            color: isSelected
+                ? colorScheme.onPrimaryContainer
+                : colorScheme.onSurface,
+          ),
+          padding: EdgeInsets.symmetric(
+            horizontal: 12 * scaleFactor,
+            vertical: 8 * scaleFactor,
+          ), // Scale padding with UI Scale
         ),
       ),
-      selected: isSelected,
-      onSelected: (bool selected) {
-        if (selected) {
-          HapticFeedback.selectionClick();
-          settings.setAppFont(fontKey);
-        }
-      },
-      showCheckmark: false,
-      selectedColor: colorScheme.primaryContainer,
-      labelStyle: TextStyle(
-        fontFamily: fontKey == 'default'
-            ? 'Roboto'
-            : (label == 'Rock Salt' ? 'RockSalt' : label),
-        color:
-            isSelected ? colorScheme.onPrimaryContainer : colorScheme.onSurface,
-        fontWeight: FontWeight.normal,
-      ),
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
     );
   }
 

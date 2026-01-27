@@ -107,6 +107,12 @@ class MockAudioProvider extends _i1.Mock implements _i3.AudioProvider {
       ) as _i2.AudioPlayer);
 
   @override
+  bool get isPlaying => (super.noSuchMethod(
+        Invocation.getter(#isPlaying),
+        returnValue: false,
+      ) as bool);
+
+  @override
   _i4.Stream<_i2.PlayerState> get playerStateStream => (super.noSuchMethod(
         Invocation.getter(#playerStateStream),
         returnValue: _i4.Stream<_i2.PlayerState>.empty(),
@@ -288,9 +294,27 @@ class MockAudioProvider extends _i1.Mock implements _i3.AudioProvider {
       );
 
   @override
+  void resume() => super.noSuchMethod(
+        Invocation.method(
+          #resume,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
   void pause() => super.noSuchMethod(
         Invocation.method(
           #pause,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void stop() => super.noSuchMethod(
+        Invocation.method(
+          #stop,
           [],
         ),
         returnValueForMissingStub: null,

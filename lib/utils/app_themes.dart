@@ -2,55 +2,66 @@
 
 import 'package:flutter/material.dart';
 // import 'package:google_fonts/google_fonts.dart'; // Bundled locally
+import 'package:shakedown/ui/styles/font_config.dart';
 
 class AppThemes {
-  static TextTheme? getTextTheme(String appFont, TextTheme baseTextTheme) {
-    debugPrint('AppThemes: Getting theme for font: $appFont');
-    switch (appFont) {
-      case 'caveat':
-        return baseTextTheme.apply(fontFamily: 'Caveat');
-      case 'permanent_marker':
-        return baseTextTheme.apply(fontFamily: 'Permanent Marker');
+  static TextTheme buildTextTheme(
+    String fontKey,
+    TextTheme baseTextTheme, {
+    bool uiScale = false,
+  }) {
+    final config = FontConfig.get(fontKey);
+    final double scaleMultiplier = uiScale ? 1.35 : 1.0; // Reduced from 1.4
+    final double totalScale = config.scaleFactor * scaleMultiplier;
 
-      case 'rock_salt':
-        // Rock Salt has wide character spacing and tall ascenders/descenders.
-        // Apply minimal downscaling (0.85x) to compensate for width, and
-        // increased line height (1.4) to prevent clipping.
-        // Helper function handles null fontSize gracefully
-        TextStyle? scaleStyle(TextStyle? style) {
-          if (style == null) return null;
-          return style.copyWith(
-            fontFamily: 'RockSalt',
-            fontSize: style.fontSize != null ? style.fontSize! * 0.85 : null,
-            height: 1.4,
-          );
-        }
+    // Only apply font family - DO NOT use fontSizeFactor here as it fails with null fontSize
+    final appliedTheme = baseTextTheme.apply(
+      fontFamily: config.fontFamily,
+    );
 
-        return TextTheme(
-          displayLarge: scaleStyle(baseTextTheme.displayLarge),
-          displayMedium: scaleStyle(baseTextTheme.displayMedium),
-          displaySmall: scaleStyle(baseTextTheme.displaySmall),
-          headlineLarge: scaleStyle(baseTextTheme.headlineLarge),
-          headlineMedium: scaleStyle(baseTextTheme.headlineMedium),
-          headlineSmall: scaleStyle(baseTextTheme.headlineSmall),
-          titleLarge: scaleStyle(baseTextTheme.titleLarge),
-          titleMedium: scaleStyle(baseTextTheme.titleMedium),
-          titleSmall: scaleStyle(baseTextTheme.titleSmall),
-          bodyLarge: scaleStyle(baseTextTheme.bodyLarge),
-          bodyMedium: scaleStyle(baseTextTheme.bodyMedium),
-          bodySmall: scaleStyle(baseTextTheme.bodySmall),
-          labelLarge: scaleStyle(baseTextTheme.labelLarge),
-          labelMedium: scaleStyle(baseTextTheme.labelMedium),
-          labelSmall: scaleStyle(baseTextTheme.labelSmall),
-        );
-      default:
-        return null; // Use default M3 typography
+    // Helper to normalize AND scale specific styles
+    TextStyle? normalize(TextStyle? style) {
+      if (style == null) return null;
+
+      // Apply scaling to fontSize (handle null case)
+      final baseFontSize = style.fontSize;
+      final scaledFontSize =
+          baseFontSize != null ? baseFontSize * totalScale : null;
+
+      return style.copyWith(
+        fontSize: scaledFontSize, // Apply our custom scaling here
+        height: config.lineHeight,
+        letterSpacing: (style.letterSpacing ?? 0.0) + config.letterSpacing,
+        fontWeight: config.adjustWeight(style.fontWeight ?? FontWeight.normal),
+      );
     }
+
+    return appliedTheme.copyWith(
+      displayLarge: normalize(appliedTheme.displayLarge),
+      displayMedium: normalize(appliedTheme.displayMedium),
+      displaySmall: normalize(appliedTheme.displaySmall),
+      headlineLarge: normalize(appliedTheme.headlineLarge),
+      headlineMedium: normalize(appliedTheme.headlineMedium),
+      headlineSmall: normalize(appliedTheme.headlineSmall),
+      titleLarge: normalize(appliedTheme.titleLarge),
+      titleMedium: normalize(appliedTheme.titleMedium),
+      titleSmall: normalize(appliedTheme.titleSmall),
+      bodyLarge: normalize(appliedTheme.bodyLarge),
+      bodyMedium: normalize(appliedTheme.bodyMedium),
+      bodySmall: normalize(appliedTheme.bodySmall),
+      labelLarge: normalize(appliedTheme.labelLarge),
+      labelMedium: normalize(appliedTheme.labelMedium),
+      labelSmall: normalize(appliedTheme.labelSmall),
+    );
   }
 
-  static ThemeData lightTheme(String appFont, {bool useMaterial3 = true}) {
+  static ThemeData lightTheme(
+    String appFont, {
+    bool useMaterial3 = true,
+    bool uiScale = false,
+  }) {
     final baseTextTheme = ThemeData.light().textTheme;
-    final textTheme = getTextTheme(appFont, baseTextTheme);
+    final textTheme = buildTextTheme(appFont, baseTextTheme, uiScale: uiScale);
 
     return ThemeData(
       useMaterial3: useMaterial3,
@@ -71,9 +82,13 @@ class AppThemes {
     );
   }
 
-  static ThemeData darkTheme(String appFont, {bool useMaterial3 = true}) {
+  static ThemeData darkTheme(
+    String appFont, {
+    bool useMaterial3 = true,
+    bool uiScale = false,
+  }) {
     final baseTextTheme = ThemeData.dark().textTheme;
-    final textTheme = getTextTheme(appFont, baseTextTheme);
+    final textTheme = buildTextTheme(appFont, baseTextTheme, uiScale: uiScale);
 
     return ThemeData(
       useMaterial3: useMaterial3,

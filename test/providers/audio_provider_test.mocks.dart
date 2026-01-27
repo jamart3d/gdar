@@ -1024,6 +1024,20 @@ class MockShowListProvider extends _i1.Mock implements _i7.ShowListProvider {
       ) as bool);
 
   @override
+  bool get hasUsedRandomButton => (super.noSuchMethod(
+        Invocation.getter(#hasUsedRandomButton),
+        returnValue: false,
+        returnValueForMissingStub: false,
+      ) as bool);
+
+  @override
+  bool get isSearchVisible => (super.noSuchMethod(
+        Invocation.getter(#isSearchVisible),
+        returnValue: false,
+        returnValueForMissingStub: false,
+      ) as bool);
+
+  @override
   int get totalShnids => (super.noSuchMethod(
         Invocation.getter(#totalShnids),
         returnValue: 0,
@@ -1050,6 +1064,33 @@ class MockShowListProvider extends _i1.Mock implements _i7.ShowListProvider {
         returnValue: false,
         returnValueForMissingStub: false,
       ) as bool);
+
+  @override
+  void setSearchVisible(bool? visible) => super.noSuchMethod(
+        Invocation.method(
+          #setSearchVisible,
+          [visible],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void toggleSearchVisible() => super.noSuchMethod(
+        Invocation.method(
+          #toggleSearchVisible,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void markRandomButtonUsed() => super.noSuchMethod(
+        Invocation.method(
+          #markRandomButtonUsed,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
 
   @override
   String getShowKey(_i8.Show? show) => (super.noSuchMethod(
@@ -1332,6 +1373,13 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
       ) as bool);
 
   @override
+  bool get showOnboarding => (super.noSuchMethod(
+        Invocation.getter(#showOnboarding),
+        returnValue: false,
+        returnValueForMissingStub: false,
+      ) as bool);
+
+  @override
   bool get showTrackNumbers => (super.noSuchMethod(
         Invocation.getter(#showTrackNumbers),
         returnValue: false,
@@ -1535,6 +1583,27 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
       ) as bool);
 
   @override
+  bool get hasShownAdvancedCacheSuggestion => (super.noSuchMethod(
+        Invocation.getter(#hasShownAdvancedCacheSuggestion),
+        returnValue: false,
+        returnValueForMissingStub: false,
+      ) as bool);
+
+  @override
+  bool get showDebugLayout => (super.noSuchMethod(
+        Invocation.getter(#showDebugLayout),
+        returnValue: false,
+        returnValueForMissingStub: false,
+      ) as bool);
+
+  @override
+  bool get enableShakedownTween => (super.noSuchMethod(
+        Invocation.getter(#enableShakedownTween),
+        returnValue: false,
+        returnValueForMissingStub: false,
+      ) as bool);
+
+  @override
   double get rgbAnimationSpeed => (super.noSuchMethod(
         Invocation.getter(#rgbAnimationSpeed),
         returnValue: 0.0,
@@ -1572,9 +1641,46 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
       );
 
   @override
+  _i4.Future<void> completeOnboarding() => (super.noSuchMethod(
+        Invocation.method(
+          #completeOnboarding,
+          [],
+        ),
+        returnValue: _i4.Future<void>.value(),
+        returnValueForMissingStub: _i4.Future<void>.value(),
+      ) as _i4.Future<void>);
+
+  @override
   void toggleShowSplashScreen() => super.noSuchMethod(
         Invocation.method(
           #toggleShowSplashScreen,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void markAdvancedCacheSuggestionShown() => super.noSuchMethod(
+        Invocation.method(
+          #markAdvancedCacheSuggestionShown,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void toggleShowDebugLayout() => super.noSuchMethod(
+        Invocation.method(
+          #toggleShowDebugLayout,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void toggleEnableShakedownTween() => super.noSuchMethod(
+        Invocation.method(
+          #toggleEnableShakedownTween,
           [],
         ),
         returnValueForMissingStub: null,
@@ -1838,6 +1944,16 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
   _i4.Future<void> enableAllSourceCategories() => (super.noSuchMethod(
         Invocation.method(
           #enableAllSourceCategories,
+          [],
+        ),
+        returnValue: _i4.Future<void>.value(),
+        returnValueForMissingStub: _i4.Future<void>.value(),
+      ) as _i4.Future<void>);
+
+  @override
+  _i4.Future<void> resetToDefaults() => (super.noSuchMethod(
+        Invocation.method(
+          #resetToDefaults,
           [],
         ),
         returnValue: _i4.Future<void>.value(),

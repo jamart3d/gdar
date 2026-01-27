@@ -266,7 +266,12 @@ void main() {
       expect(mockShowListProvider.hasUsedRandomButton, isTrue);
 
       // Settle any remaining animations/timers (like the loading indicator reset)
-      await tester.pumpAndSettle();
+      // Use explicit pumps instead of pumpAndSettle to avoid timeouts if infinite animations (like progress indicator) are momentarily active
+      await tester
+          .pump(); // Allow async playRandomShow to complete and setState(loading=false)
+      await tester.pump(const Duration(
+          milliseconds:
+              500)); // Allow pulse animation to visually stop/fade if needed
     });
   });
 }

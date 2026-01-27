@@ -28,6 +28,10 @@ This file tracks planned features, enhancements, and bug fixes for the gdar appl
   - **Status:** Completed. Toggle added to Settings -> Playback. Cache clears on startup.
   - [ ] **Enhancement:** Add periodic timer to update cache count in real-time as tracks are cached (currently only updates on cleanup/source change).
 
+- [ ] **Shakedown Animation:**
+  - **Requirement:** Implement an expressive "shake" animation for the `ShakedownTitle` when it reaches the AppBar (after splash transition).
+  - **Style:** Material 3 expressive, dampened spring/sine wave.
+
 
 ## Medium Priority
 
@@ -96,7 +100,7 @@ This file tracks planned features, enhancements, and bug fixes for the gdar appl
 
 - [ ] **UI Polish:** Refine animations and transitions for an even smoother feel.
 - [ ] **3D Rotating Stars:** Animate rating stars by rotating them around their Y-axis to give a 3D effect.
-- [x] **Font Selection:** Add setting to choose the handwriting font. Options: Caveat, Permanent Marker, Lacquer, Rock Salt.
+- [x] **Font Selection:** Add setting to choose the handwriting font. Options: Caveat, Permanent Marker, Rock Salt.
 - [x] **Fix highlight:** With Dark Mode + Dynamic Color + Glow Border: Fix issue where glow is uniform on all shows, and missing when expanded. Implement "half glow" for all, and "regular glow" for current show/shnid.
 - [x] **RGB Animation Persistence:** Investigate options to prevent the RGB border animation from resetting/restarting when navigating between screens (e.g. Playback -> Settings -> Playback).
   - **Root Cause:** `AnimatedGradientBorder` manages its own `AnimationController` locally. Navigation rebuilds the widget, resetting rotation to 0. Additionally, navigating between `PlaybackScreen` via `MaterialPageRoute` caused a "pop" due to default transitions not matching the `ShowListScreen`'s instant transition.

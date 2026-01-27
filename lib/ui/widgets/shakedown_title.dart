@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shakedown/providers/settings_provider.dart';
@@ -5,15 +6,79 @@ import 'package:shakedown/utils/font_layout_config.dart';
 
 /// A reusable widget for the app title "Shakedown" that handles
 /// consistent styling, Hero animations, and flight transitions.
-class ShakedownTitle extends StatelessWidget {
+class ShakedownTitle extends StatefulWidget {
   final double fontSize;
   final bool enableHero;
+  final bool animateOnStart;
+  final Duration shakeDelay;
 
   const ShakedownTitle({
     super.key,
     required this.fontSize,
     this.enableHero = true,
+    this.animateOnStart = false,
+    this.shakeDelay = Duration.zero,
   });
+
+  @override
+  State<ShakedownTitle> createState() => _ShakedownTitleState();
+}
+
+class _ShakedownTitleState extends State<ShakedownTitle>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _shakeController;
+  late final Animation<double> _shakeAnimation;
+  Timer? _startTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    _shakeController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1400),
+    );
+
+    // Expressive dampened sine wave for "shake"
+    // 0 -> - -> + -> - -> 0 (decaying)
+    _shakeAnimation = TweenSequence<double>([
+      TweenSequenceItem(
+          tween: Tween(begin: 0.0, end: -0.05)
+              .chain(CurveTween(curve: Curves.easeOut)),
+          weight: 15),
+      TweenSequenceItem(
+          tween: Tween(begin: -0.05, end: 0.05)
+              .chain(CurveTween(curve: Curves.easeInOut)),
+          weight: 20),
+      TweenSequenceItem(
+          tween: Tween(begin: 0.05, end: -0.03)
+              .chain(CurveTween(curve: Curves.easeInOut)),
+          weight: 20),
+      TweenSequenceItem(
+          tween: Tween(begin: -0.03, end: 0.015)
+              .chain(CurveTween(curve: Curves.easeInOut)),
+          weight: 20),
+      TweenSequenceItem(
+          tween: Tween(begin: 0.015, end: 0.0)
+              .chain(CurveTween(curve: Curves.elasticOut)), // Settle
+          weight: 25),
+    ]).animate(_shakeController);
+
+    if (widget.animateOnStart) {
+      // Delay to ensure Hero flight is complete if needed
+      _startTimer = Timer(widget.shakeDelay, () {
+        if (mounted) {
+          _shakeController.forward();
+        }
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _startTimer?.cancel();
+    _shakeController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -23,7 +88,7 @@ class ShakedownTitle extends StatelessWidget {
         FontLayoutConfig.getEffectiveScale(context, settingsProvider);
 
     final textStyle = theme.textTheme.displayLarge?.copyWith(
-      fontSize: fontSize * scaleFactor,
+      fontSize: widget.fontSize * scaleFactor,
       fontFamily: settingsProvider.appFont == 'default'
           ? 'Roboto'
           : (settingsProvider.appFont == 'rock_salt'
@@ -37,19 +102,25 @@ class ShakedownTitle extends StatelessWidget {
       height: 1.4,
     );
 
-    // If using 'titleLarge' base (like in AppBar), we might want to map displayLarge props
-    // or just use the style we constructed above. The key is CONSISTENCY across screens.
-    // The previous implementations used slightly different bases, but manual overrides
-    // made them look similar. We'll enforce the manual overrides here.
-
-    final widget = Text(
-      'Shakedown',
-      style: textStyle,
-      textAlign: TextAlign.center,
+    // Only apply rotation if strictly needed (optimization), but
+    // keeping it simple: Always rotate 0 if not animating.
+    final animWidget = AnimatedBuilder(
+      animation: _shakeAnimation,
+      builder: (context, child) {
+        return Transform.rotate(
+          angle: _shakeAnimation.value,
+          child: child,
+        );
+      },
+      child: Text(
+        'Shakedown',
+        style: textStyle,
+        textAlign: TextAlign.center,
+      ),
     );
 
-    if (!enableHero || !settingsProvider.enableShakedownTween) {
-      return widget;
+    if (!widget.enableHero || !settingsProvider.enableShakedownTween) {
+      return animWidget;
     }
 
     return Hero(
@@ -72,7 +143,7 @@ class ShakedownTitle extends StatelessWidget {
       },
       child: Material(
         type: MaterialType.transparency,
-        child: widget,
+        child: animWidget,
       ),
     );
   }

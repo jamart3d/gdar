@@ -30,7 +30,7 @@ A Flutter application for browsing and playing concert recordings of the Gratefu
   - **Accessibility**: Semantic labels for screen readers.
   - **Hide Track Duration** option for a minimalist interface.
   - **Global UI Scale**: Consistent text scaling across all screens.
-  - **Font Selection**: Choose from 4 curated handwriting fonts (Caveat, Permanent Marker, Lacquer, Rock Salt).
+  - **Font Selection**: Choose from 3 curated handwriting fonts (Caveat, Permanent Marker, Rock Salt).
 - **Enhanced UX**:
   - **Smart Rating Dialog**: Toggle "Played" status, confirmation dialogs for safety, and mutually exclusive rating/blocking logic.
   - **Expressive Swipe to Block**: Polished Material 3 design for blocking shows/sources.

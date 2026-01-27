@@ -126,140 +126,140 @@ def main():
         for i, (font, scale_val, scale_name) in enumerate(combinations):
             progress_pct = int(((i) / total_tests) * 100)
             print(f"\n\n>>> [{progress_pct}%] Testing Configuration: Font={font}, Scale={scale_name} ({i+1}/{total_tests}) <<<")
-                
-                # 1. Reset App & Configure
-                print(f"  [Setup] Resetting prefs and applying config...")
-                # Stop any existing playback first
-                open_deep_link("shakedown://player?action=stop", device_id)
-                time.sleep(0.5)
-                
-                open_deep_link("shakedown://debug?action=reset_prefs", device_id)
-                time.sleep(1.0)
-                
-                # Set Font & Scale
-                open_deep_link(f"shakedown://font?name={font}", device_id)
-                time.sleep(0.5)
-                open_deep_link(f"shakedown://ui-scale?enabled={scale_val}", device_id)
-                time.sleep(0.5)
+            
+            # 1. Reset App & Configure
+            print(f"  [Setup] Resetting prefs and applying config...")
+            # Stop any existing playback first
+            open_deep_link("shakedown://player?action=stop", device_id)
+            time.sleep(0.5)
+            
+            open_deep_link("shakedown://debug?action=reset_prefs", device_id)
+            time.sleep(1.0)
+            
+            # Set Font & Scale
+            open_deep_link(f"shakedown://font?name={font}", device_id)
+            time.sleep(0.5)
+            open_deep_link(f"shakedown://ui-scale?enabled={scale_val}", device_id)
+            time.sleep(0.5)
 
-                # 2. Verify Onboarding Flow
-                print(f"  [Verify] Onboarding Flow...")
-                
-                # 2a. Onboarding (Navigate explicitly to Onboarding)
-                open_deep_link("shakedown://navigate?screen=onboarding", device_id) 
+            # 2. Verify Onboarding Flow
+            print(f"  [Verify] Onboarding Flow...")
+            
+            # 2a. Onboarding (Navigate explicitly to Onboarding)
+            open_deep_link("shakedown://navigate?screen=onboarding", device_id) 
+            time.sleep(delay)
+            take_screenshot(f"onboarding_p1_{font}_{scale_name}.png", device_id)
+            
+            # Swipe to Page 2
+            swipe_left(device_id)
+            time.sleep(delay)
+            take_screenshot(f"onboarding_p2_{font}_{scale_name}.png", device_id)
+
+            # Swipe to Page 3
+            swipe_left(device_id)
+            time.sleep(delay)
+            take_screenshot(f"onboarding_p3_{font}_{scale_name}.png", device_id)
+
+            # 2b. Splash Screen
+            open_deep_link("shakedown://navigate?screen=splash", device_id)
+            time.sleep(1.0) 
+            take_screenshot(f"splash_{font}_{scale_name}.png", device_id)
+            
+            # Disable Splash Screen to prevent it from showing when we complete onboarding (or via play-random logic)
+            open_deep_link("shakedown://settings?key=show_splash_screen&value=false", device_id)
+            time.sleep(0.5)
+
+            # 3. Complete Onboarding
+            print(f"  [Setup] Completing Onboarding...")
+            open_deep_link("shakedown://debug?action=complete_onboarding", device_id)
+            
+            # Force stop playback first to ensure state is clean
+            open_deep_link("shakedown://player?action=stop", device_id)
+            time.sleep(0.5)
+
+            # Navigate to Home explicitly to clear Splash Screen and ensure fresh UI
+            open_deep_link("shakedown://navigate?screen=home", device_id)
+            time.sleep(1.0)
+            
+            # Capture Home Initial (Empty State / No Player)
+            take_screenshot(f"home_initial_{font}_{scale_name}.png", device_id)
+
+            # 4. Start Playback (Ensure Player is active for subsequent tests)
+            # Note: This might trigger a splash screen briefly if the app cold starts or resets
+            open_deep_link("shakedown://play-random", device_id)
+            time.sleep(delay + 3.0) # Extended wait to allow splash screen/buffering to clear
+
+            # 5. Verify Main App UI
+            print(f"  [Verify] Main Application UI...")
+
+            # A. Show List (Home) - Verifies Closed Panel (MiniPlayer)
+            # Ensure search is closed for the baseline home screenshot
+            open_deep_link("shakedown://navigate?screen=home&action=close_search", device_id)
+            time.sleep(delay)
+            take_screenshot(f"home_{font}_{scale_name}.png", device_id)
+
+            # A.2 Show List (Search Expanded)
+            open_deep_link("shakedown://navigate?screen=home&action=search", device_id)
+            time.sleep(delay - 0.5) 
+            take_screenshot(f"home_search_open_{font}_{scale_name}.png", device_id)
+
+            # Close Search to reset UI state
+            open_deep_link("shakedown://navigate?screen=home&action=close_search", device_id)
+            time.sleep(1.0)
+
+            # A.4 Track List (Consistent Show Selection)
+            # Select show at index 10 to ensure same show across all runs
+            open_deep_link("shakedown://navigate?screen=track_list&index=10", device_id)
+            time.sleep(delay)
+            take_screenshot(f"track_list_{font}_{scale_name}.png", device_id)
+
+            # B. Settings (Expanded Sections)
+            sections = [
+                "usage_instructions", 
+                "appearance", 
+                "interface", 
+                "random_playback", 
+                "playback",
+                "collection_statistics"
+            ]
+            
+            for section in sections:
+                # Reset to home to ensure fresh navigation stack/scroll state
+                open_deep_link("shakedown://navigate?screen=home", device_id) 
+                time.sleep(delay - 1.0) # Fast reset
+
+                open_deep_link(f"shakedown://navigate?screen=settings&highlight={section}", device_id)
                 time.sleep(delay)
-                take_screenshot(f"onboarding_p1_{font}_{scale_name}.png", device_id)
-                
-                # Swipe to Page 2
-                swipe_left(device_id)
-                time.sleep(delay)
-                take_screenshot(f"onboarding_p2_{font}_{scale_name}.png", device_id)
+                take_screenshot(f"settings_{section}_{font}_{scale_name}.png", device_id)
+            
+            # C. Player & Controls
+            
+            # 1. Player Panel OPEN (Baseline - Messages OFF)
+            # Reset to home first to ensure we aren't stacking player screens weirdly
+            open_deep_link("shakedown://navigate?screen=home", device_id)
+            time.sleep(1.0)
+            
+            # Ensure messages are OFF for baseline
+            open_deep_link("shakedown://settings?key=show_playback_messages&value=false", device_id)
+            open_deep_link("shakedown://navigate?screen=player&panel=open", device_id)
+            time.sleep(delay + 1.0) # Extra time for panel animation
+            take_screenshot(f"player_panel_open_{font}_{scale_name}.png", device_id)
 
-                # Swipe to Page 3
-                swipe_left(device_id)
-                time.sleep(delay)
-                take_screenshot(f"onboarding_p3_{font}_{scale_name}.png", device_id)
-
-                # 2b. Splash Screen
-                open_deep_link("shakedown://navigate?screen=splash", device_id)
-                time.sleep(1.0) 
-                take_screenshot(f"splash_{font}_{scale_name}.png", device_id)
-                
-                # Disable Splash Screen to prevent it from showing when we complete onboarding (or via play-random logic)
-                open_deep_link("shakedown://settings?key=show_splash_screen&value=false", device_id)
-                time.sleep(0.5)
-
-                # 3. Complete Onboarding
-                print(f"  [Setup] Completing Onboarding...")
-                open_deep_link("shakedown://debug?action=complete_onboarding", device_id)
-                
-                # Force stop playback first to ensure state is clean
-                open_deep_link("shakedown://player?action=stop", device_id)
-                time.sleep(0.5)
-
-                # Navigate to Home explicitly to clear Splash Screen and ensure fresh UI
-                open_deep_link("shakedown://navigate?screen=home", device_id)
-                time.sleep(1.0)
-                
-                # Capture Home Initial (Empty State / No Player)
-                take_screenshot(f"home_initial_{font}_{scale_name}.png", device_id)
-
-                # 4. Start Playback (Ensure Player is active for subsequent tests)
-                # Note: This might trigger a splash screen briefly if the app cold starts or resets
-                open_deep_link("shakedown://play-random", device_id)
-                time.sleep(delay + 3.0) # Extended wait to allow splash screen/buffering to clear
-
-                # 5. Verify Main App UI
-                print(f"  [Verify] Main Application UI...")
-
-                # A. Show List (Home) - Verifies Closed Panel (MiniPlayer)
-                # Ensure search is closed for the baseline home screenshot
-                open_deep_link("shakedown://navigate?screen=home&action=close_search", device_id)
-                time.sleep(delay)
-                take_screenshot(f"home_{font}_{scale_name}.png", device_id)
-
-                # A.2 Show List (Search Expanded)
-                open_deep_link("shakedown://navigate?screen=home&action=search", device_id)
-                time.sleep(delay - 0.5) 
-                take_screenshot(f"home_search_open_{font}_{scale_name}.png", device_id)
-
-                # Close Search to reset UI state
-                open_deep_link("shakedown://navigate?screen=home&action=close_search", device_id)
-                time.sleep(1.0)
-
-                # A.4 Track List (Consistent Show Selection)
-                # Select show at index 10 to ensure same show across all runs
-                open_deep_link("shakedown://navigate?screen=track_list&index=10", device_id)
-                time.sleep(delay)
-                take_screenshot(f"track_list_{font}_{scale_name}.png", device_id)
-
-                # B. Settings (Expanded Sections)
-                sections = [
-                    "usage_instructions", 
-                    "appearance", 
-                    "interface", 
-                    "random_playback", 
-                    "playback",
-                    "collection_statistics"
-                ]
-                
-                for section in sections:
-                    # Reset to home to ensure fresh navigation stack/scroll state
-                    open_deep_link("shakedown://navigate?screen=home", device_id) 
-                    time.sleep(delay - 1.0) # Fast reset
-
-                    open_deep_link(f"shakedown://navigate?screen=settings&highlight={section}", device_id)
-                    time.sleep(delay)
-                    take_screenshot(f"settings_{section}_{font}_{scale_name}.png", device_id)
-                
-                # C. Player & Controls
-                
-                # 1. Player Panel OPEN (Baseline - Messages OFF)
-                # Reset to home first to ensure we aren't stacking player screens weirdly
-                open_deep_link("shakedown://navigate?screen=home", device_id)
-                time.sleep(1.0)
-                
-                # Ensure messages are OFF for baseline
-                open_deep_link("shakedown://settings?key=show_playback_messages&value=false", device_id)
-                open_deep_link("shakedown://navigate?screen=player&panel=open", device_id)
-                time.sleep(delay + 1.0) # Extra time for panel animation
-                take_screenshot(f"player_panel_open_{font}_{scale_name}.png", device_id)
-
-                # 2. Messages ON
-                open_deep_link("shakedown://settings?key=show_playback_messages&value=true", device_id)
-                # Ensure checking same screen state
-                open_deep_link("shakedown://navigate?screen=player&panel=open", device_id)
-                time.sleep(delay)
-                take_screenshot(f"player_msg_on_{font}_{scale_name}.png", device_id)
-                
-                # Cleanup: Turn messages off for next run cleanliness (but don't screenshot)
-                open_deep_link("shakedown://settings?key=show_playback_messages&value=false", device_id)
-                
-                # 3. Paused State - (Removed as per user request)
-                
-                # Resume for next loop (though next loop resets app, so maybe not strictly needed, but good practice)
-                open_deep_link("shakedown://player?action=play", device_id)
-                time.sleep(0.5)
+            # 2. Messages ON
+            open_deep_link("shakedown://settings?key=show_playback_messages&value=true", device_id)
+            # Ensure checking same screen state
+            open_deep_link("shakedown://navigate?screen=player&panel=open", device_id)
+            time.sleep(delay)
+            take_screenshot(f"player_msg_on_{font}_{scale_name}.png", device_id)
+            
+            # Cleanup: Turn messages off for next run cleanliness (but don't screenshot)
+            open_deep_link("shakedown://settings?key=show_playback_messages&value=false", device_id)
+            
+            # 3. Paused State - (Removed as per user request)
+            
+            # Resume for next loop (though next loop resets app, so maybe not strictly needed, but good practice)
+            open_deep_link("shakedown://player?action=play", device_id)
+            time.sleep(0.5)
 
     finally:
         keep_awake = False

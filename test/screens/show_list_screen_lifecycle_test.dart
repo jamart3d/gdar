@@ -1,16 +1,20 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import 'package:mockito/mockito.dart';
+import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:shakedown/models/rating.dart';
 import 'package:shakedown/models/show.dart';
 import 'package:shakedown/models/source.dart';
 import 'package:shakedown/providers/audio_provider.dart';
 import 'package:shakedown/providers/settings_provider.dart';
 import 'package:shakedown/providers/show_list_provider.dart';
+import 'package:shakedown/services/catalog_service.dart';
 import 'package:shakedown/ui/screens/show_list_screen.dart';
-import 'package:mockito/mockito.dart';
-import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:just_audio/just_audio.dart';
 
 // Manual Mocks for simplicity
@@ -56,17 +60,52 @@ class MockSettingsProvider extends Mock implements SettingsProvider {
   bool get showGlobalAlbumArt => false;
   @override
   bool get useSliverAppBar => false;
+  @override
+  bool get highlightCurrentShowCard => true;
+  @override
+  bool get useTrueBlack => false;
+  @override
+  String get appFont => 'Roboto';
+  @override
+  bool get enableShakedownTween => false;
+  @override
+  bool get showDayOfWeek => true;
+  @override
+  bool get showSingleShnid => false;
+  @override
+  bool get abbreviateDayOfWeek => true;
+  @override
+  bool get abbreviateMonth => true;
+  @override
+  bool get dateFirstInShowCard => false;
+  @override
+  int get glowMode => 0; // Off
+  @override
+  bool get highlightPlayingWithRgb => false;
+  @override
+  double get rgbAnimationSpeed => 1.0;
+  @override
+  bool get showDebugLayout => false;
+  @override
+  bool get marqueeEnabled => false;
+  @override
+  bool get showExpandIcon => true;
 }
 
 class MockShowListProvider extends Mock implements ShowListProvider {
+  @override
+  bool get hasUsedRandomButton => true;
+  @override
+  bool get isSearchVisible => false;
   List<Show> _filteredShows = [];
+
+  @override
+  List<Show> get filteredShows => _filteredShows;
 
   void setFilteredShows(List<Show> shows) {
     _filteredShows = shows;
   }
 
-  @override
-  List<Show> get filteredShows => _filteredShows;
   @override
   List<Show> get allShows => _filteredShows;
 
@@ -99,16 +138,34 @@ class MockShowListProvider extends Mock implements ShowListProvider {
   Future<void> get initializationComplete => Future.value();
 }
 
+class MockCatalogService extends Mock implements CatalogService {
+  @override
+  ValueListenable<Box<Rating>> get ratingsListenable =>
+      ValueNotifier(MockBox<Rating>());
+  @override
+  ValueListenable<Box<bool>> get historyListenable =>
+      ValueNotifier(MockBox<bool>());
+  @override
+  int getRating(String? sourceId) => 0;
+  @override
+  bool isPlayed(String? sourceId) => false;
+}
+
+class MockBox<T> extends Mock implements Box<T> {}
+
 void main() {
   late MockAudioProvider mockAudioProvider;
   late MockSettingsProvider mockSettingsProvider;
   late MockShowListProvider mockShowListProvider;
+  late MockCatalogService mockCatalogService;
 
   setUp(() async {
     SharedPreferences.setMockInitialValues({});
     mockAudioProvider = MockAudioProvider();
     mockSettingsProvider = MockSettingsProvider();
     mockShowListProvider = MockShowListProvider();
+    mockCatalogService = MockCatalogService();
+    CatalogService.setMock(mockCatalogService);
   });
 
   Widget createWidgetUnderTest() {
@@ -144,7 +201,7 @@ void main() {
     mockShowListProvider.setFilteredShows([show]);
 
     await tester.pumpWidget(createWidgetUnderTest());
-    await tester.pumpAndSettle();
+    await tester.pump(const Duration(milliseconds: 100));
 
     // 2. Simulate Background State
     tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);

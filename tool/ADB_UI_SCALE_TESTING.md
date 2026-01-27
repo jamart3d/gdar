@@ -30,8 +30,7 @@ adb shell am start -a android.intent.action.VIEW -d "shakedown://font?name=cavea
 # Set to Permanent Marker
 adb shell am start -a android.intent.action.VIEW -d "shakedown://font?name=permanent_marker" com.jamart3d.shakedown
 
-# Set to Lacquer
-adb shell am start -a android.intent.action.VIEW -d "shakedown://font?name=lacquer" com.jamart3d.shakedown
+
 
 # Set to Rock Salt
 adb shell am start -a android.intent.action.VIEW -d "shakedown://font?name=rock_salt" com.jamart3d.shakedown

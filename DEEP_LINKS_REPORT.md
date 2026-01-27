@@ -22,7 +22,7 @@ These intents are primarily used during development and testing to quickly verif
 | URI Scheme & Parameters | Definition Source | Purpose / Description |
 | :--- | :--- | :--- |
 | `shakedown://ui-scale?enabled=true` | `main.dart`, `MainActivity.kt` | Toggles the 1.2x Global UI Scaling mode for layout testing. |
-| `shakedown://font?name={font_name}` | `main.dart` | Switches the active app font. Valid names: `default`, `caveat`, `permanent_marker`, `lacquer`, `rock_salt`. |
+| `shakedown://font?name={font_name}` | `main.dart` | Switches the active app font. Valid names: `default`, `caveat`, `permanent_marker`, `rock_salt`. |
 
 ---
 > [!NOTE]

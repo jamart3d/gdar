@@ -61,11 +61,10 @@ class FontLayoutConfig {
     final double textScale = MediaQuery.textScalerOf(context).scale(1.0);
 
     // Scaling Logic:
-    // - If UI Scale is OFF: Use system scale (clamped). No extra boosts.
-    // - If UI Scale is ON: Apply 1.2x boost AND intrinsic font boost (clamped).
-    // This ensures "Base" state is clean (scale 1), while "Large" state gets all enhancements.
+    // - If UI Scale is OFF: Use system scale (clamped). No modifications.
+    // - If UI Scale is ON: Apply 1.35x boost for noticeable size increase.
     final double effectiveScale = settingsProvider.uiScale
-        ? (textScale * 1.2 * config.textScaleBoost)
+        ? (textScale * 1.35) // Changed from 1.4 to match app_themes
             .clamp(config.textScaleClampMin, config.textScaleClampMax)
         : textScale.clamp(config.textScaleClampMin, config.textScaleClampMax);
 

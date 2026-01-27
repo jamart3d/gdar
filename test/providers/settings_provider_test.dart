@@ -15,26 +15,26 @@ void main() {
   });
 
   group('SettingsProvider Shakedown Tween', () {
-    test('initializes enableShakedownTween to false by default', () {
-      expect(settingsProvider.enableShakedownTween, false);
+    test('initializes enableShakedownTween to true by default', () {
+      expect(settingsProvider.enableShakedownTween, true);
     });
 
     test('toggleEnableShakedownTween toggles value and persists', () async {
       // Verify initial state
-      expect(settingsProvider.enableShakedownTween, false);
-
-      // Toggle ON
-      settingsProvider.toggleEnableShakedownTween();
       expect(settingsProvider.enableShakedownTween, true);
-
-      // Verify persistence
-      final prefs = await SharedPreferences.getInstance();
-      expect(prefs.getBool('enable_shakedown_tween'), true);
 
       // Toggle OFF
       settingsProvider.toggleEnableShakedownTween();
       expect(settingsProvider.enableShakedownTween, false);
+
+      // Verify persistence
+      final prefs = await SharedPreferences.getInstance();
       expect(prefs.getBool('enable_shakedown_tween'), false);
+
+      // Toggle ON
+      settingsProvider.toggleEnableShakedownTween();
+      expect(settingsProvider.enableShakedownTween, true);
+      expect(prefs.getBool('enable_shakedown_tween'), true);
     });
 
     test('initializes with true if saved in prefs', () async {

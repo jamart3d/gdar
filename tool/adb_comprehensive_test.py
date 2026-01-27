@@ -5,7 +5,7 @@ ADB Comprehensive Font & Scale Test
 Tests ShowListCard spacing across ALL combinations:
 - 4 system font sizes (0.85, 1.0, 1.15, 1.3)
 - 2 UI scale states (off, on)
-- 5 app fonts (default, caveat, permanent_marker, lacquer, rock_salt)
+- 4 app fonts (default, caveat, permanent_marker, rock_salt)
 
 Total: 40 screenshots
 
@@ -30,7 +30,7 @@ from datetime import datetime
 # Test matrix
 FONT_SCALES = [0.85, 1.0, 1.15, 1.3]
 UI_SCALES = [False, True]
-APP_FONTS = ['default', 'caveat', 'permanent_marker', 'lacquer', 'rock_salt']
+APP_FONTS = ['default', 'caveat', 'permanent_marker', 'rock_salt']
 
 # ADB commands
 ADB_SET_SYSTEM_FONT = "adb shell settings put system font_scale {}"
@@ -80,7 +80,7 @@ def capture_screenshot(filename):
 def main():
     """Run the comprehensive test."""
     parser = argparse.ArgumentParser(description='Comprehensive font and scale testing')
-    parser.add_argument('--font', type=str, help='Test specific font only (default, caveat, permanent_marker, lacquer, rock_salt)')
+    parser.add_argument('--font', type=str, help='Test specific font only (default, caveat, permanent_marker, rock_salt)')
     args = parser.parse_args()
     
     # Filter fonts if specified

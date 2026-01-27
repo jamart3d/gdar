@@ -152,12 +152,11 @@ class _GdarAppState extends State<GdarApp> {
           final settingsProvider =
               Provider.of<SettingsProvider>(context, listen: false);
 
-          // Valid fonts: default, caveat, permanent_marker, lacquer, rock_salt
+          // Valid fonts: default, caveat, permanent_marker, rock_salt
           final validFonts = [
             'default',
             'caveat',
             'permanent_marker',
-            'lacquer',
             'rock_salt'
           ];
 
@@ -265,6 +264,14 @@ class _GdarAppState extends State<GdarApp> {
             final settingsProvider =
                 Provider.of<SettingsProvider>(context, listen: false);
             settingsProvider.completeOnboarding();
+          } else if (action == 'show_font_dialog') {
+            logger.i(
+                'Main: [Session #$_sessionId] Showing Font Dialog via Deep Link');
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                  builder: (_) =>
+                      const SettingsScreen(showFontSelection: true)),
+            );
           }
         } else if (uri.host == 'settings') {
           final key = uri.queryParameters['key'];
@@ -378,8 +385,11 @@ class _GdarAppState extends State<GdarApp> {
                   );
 
                   lightTheme = baseLight.copyWith(
-                    textTheme: AppThemes.getTextTheme(
-                        settingsProvider.appFont, baseLight.textTheme),
+                    textTheme: AppThemes.buildTextTheme(
+                      settingsProvider.appFont,
+                      baseLight.textTheme,
+                      uiScale: settingsProvider.uiScale,
+                    ),
                     textSelectionTheme: TextSelectionThemeData(
                       cursorColor: baseLight.colorScheme.primary,
                       selectionColor:
@@ -388,8 +398,11 @@ class _GdarAppState extends State<GdarApp> {
                     ),
                   );
                   darkTheme = baseDark.copyWith(
-                    textTheme: AppThemes.getTextTheme(
-                        settingsProvider.appFont, baseDark.textTheme),
+                    textTheme: AppThemes.buildTextTheme(
+                      settingsProvider.appFont,
+                      baseDark.textTheme,
+                      uiScale: settingsProvider.uiScale,
+                    ),
                     textSelectionTheme: TextSelectionThemeData(
                       cursorColor: baseDark.colorScheme.primary,
                       selectionColor:
@@ -423,10 +436,16 @@ class _GdarAppState extends State<GdarApp> {
                   }
                 } else {
                   // If dynamic color is off, first get the base static themes.
-                  lightTheme = AppThemes.lightTheme(settingsProvider.appFont,
-                      useMaterial3: settingsProvider.useMaterial3);
-                  darkTheme = AppThemes.darkTheme(settingsProvider.appFont,
-                      useMaterial3: settingsProvider.useMaterial3);
+                  lightTheme = AppThemes.lightTheme(
+                    settingsProvider.appFont,
+                    useMaterial3: settingsProvider.useMaterial3,
+                    uiScale: settingsProvider.uiScale,
+                  );
+                  darkTheme = AppThemes.darkTheme(
+                    settingsProvider.appFont,
+                    useMaterial3: settingsProvider.useMaterial3,
+                    uiScale: settingsProvider.uiScale,
+                  );
 
                   // Then, check for a user-defined seed color to override the color scheme.
                   final seedColor = settingsProvider.seedColor;
@@ -500,8 +519,9 @@ class _GdarAppState extends State<GdarApp> {
                   themeMode: themeProvider.isDarkMode
                       ? ThemeMode.dark
                       : ThemeMode.light,
-                  themeAnimationDuration: const Duration(milliseconds: 400),
-                  themeAnimationCurve: Curves.easeInOutCubicEmphasized,
+                  themeAnimationDuration: Duration.zero, // Instant font changes
+                  themeAnimationCurve:
+                      Curves.linear, // Not used with zero duration
                   home: settingsProvider.showOnboarding
                       ? const OnboardingScreen()
                       : (settingsProvider.showSplashScreen
@@ -516,16 +536,6 @@ class _GdarAppState extends State<GdarApp> {
                         value: const SystemUiOverlayStyle(
                           systemNavigationBarColor: Colors.black,
                           systemNavigationBarIconBrightness: Brightness.light,
-                        ),
-                        child: child!,
-                      );
-                    }
-
-                    // Apply UI Scale if enabled
-                    if (settingsProvider.uiScale) {
-                      child = MediaQuery(
-                        data: MediaQuery.of(context).copyWith(
-                          textScaler: const TextScaler.linear(1.2),
                         ),
                         child: child!,
                       );

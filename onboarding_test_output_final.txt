@@ -1,0 +1,131 @@
+00:00 +0: loading /home/jam/StudioProjects/gdar/test/screens/onboarding_screen_test.dart                                                                                                               00:01 +0: loading /home/jam/StudioProjects/gdar/test/screens/onboarding_screen_test.dart                                                                                                               00:02 +0: loading /home/jam/StudioProjects/gdar/test/screens/onboarding_screen_test.dart                                                                                                               00:03 +0: loading /home/jam/StudioProjects/gdar/test/screens/onboarding_screen_test.dart                                                                                                               00:04 +0: loading /home/jam/StudioProjects/gdar/test/screens/onboarding_screen_test.dart                                                                                                               00:05 +0: loading /home/jam/StudioProjects/gdar/test/screens/onboarding_screen_test.dart                                                                                                               00:06 +0: loading /home/jam/StudioProjects/gdar/test/screens/onboarding_screen_test.dart                                                                                                               00:06 +0: OnboardingScreen renders key UI elements correctly                                                                                                                                           00:07 +0: OnboardingScreen renders key UI elements correctly                                                                                                                                           00:07 +0: OnboardingScreen renders key UI elements correctly                                                                                                                                           
+DEBUG_TEST: Navigation to Page 1 SUCCESS
+DEBUG_TEST: Navigation to Page 2 SUCCESS
+00:07 +1: OnboardingScreen renders key UI elements correctly                                                                                                                                           00:07 +1: OnboardingScreen Get Started button triggers completion                                                                                                                                      00:07 +1: OnboardingScreen Get Started button triggers completion                                                                                                                                      
+══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞════════════════════════════════════════════════════
+The following TestFailure was thrown running a test:
+No matching calls. All calls: MockSettingsProvider.addListener(Closure: () => void from Function
+'markNeedsNotifyDependents':.), MockSettingsProvider.appFont, MockSettingsProvider.uiScale,
+MockSettingsProvider.uiScale, MockSettingsProvider.appFont, MockSettingsProvider.uiScale,
+MockSettingsProvider.appFont, MockSettingsProvider.appFont, MockSettingsProvider.uiScale,
+MockSettingsProvider.appFont, MockSettingsProvider.uiScale, MockSettingsProvider.appFont,
+MockSettingsProvider.uiScale, MockSettingsProvider.appFont, MockSettingsProvider.appFont,
+MockSettingsProvider.uiScale, MockSettingsProvider.appFont, MockSettingsProvider.uiScale,
+MockSettingsProvider.appFont, MockSettingsProvider.uiScale, MockSettingsProvider.appFont,
+MockSettingsProvider.appFont, MockSettingsProvider.uiScale, MockSettingsProvider.appFont,
+MockSettingsProvider.uiScale, MockSettingsProvider.appFont, MockSettingsProvider.uiScale,
+MockSettingsProvider.appFont, MockSettingsProvider.appFont, MockSettingsProvider.uiScale,
+MockSettingsProvider.appFont, MockSettingsProvider.uiScale, MockSettingsProvider.appFont,
+MockSettingsProvider.uiScale, MockSettingsProvider.appFont, MockSettingsProvider.appFont,
+MockSettingsProvider.uiScale, MockSettingsProvider.appFont, MockSettingsProvider.uiScale,
+MockSettingsProvider.appFont, MockSettingsProvider.uiScale, MockSettingsProvider.appFont,
+MockSettingsProvider.appFont, MockSettingsProvider.appFont, MockSettingsProvider.uiScale,
+MockSettingsProvider.appFont, MockSettingsProvider.uiScale, MockSettingsProvider.appFont,
+MockSettingsProvider.uiScale, MockSettingsProvider.appFont, MockSettingsProvider.appFont,
+MockSettingsProvider.uiScale, MockSettingsProvider.appFont, MockSettingsProvider.uiScale,
+MockSettingsProvider.appFont, MockSettingsProvider.uiScale, MockSettingsProvider.appFont,
+MockSettingsProvider.appFont, MockSettingsProvider.uiScale, MockSettingsProvider.appFont,
+MockSettingsProvider.uiScale, MockSettingsProvider.appFont, MockSettingsProvider.uiScale,
+MockSettingsProvider.appFont, MockSettingsProvider.appFont, MockSettingsProvider.uiScale,
+MockSettingsProvider.appFont, MockSettingsProvider.uiScale, MockSettingsProvider.appFont,
+MockSettingsProvider.uiScale, MockSettingsProvider.appFont, MockSettingsProvider.appFont,
+MockSettingsProvider.uiScale, MockSettingsProvider.appFont, MockSettingsProvider.appFont,
+MockSettingsProvider.uiScale, MockSettingsProvider.appFont,
+MockSettingsProvider.enableShakedownTween, MockSettingsProvider.appFont,
+MockSettingsProvider.uiScale, MockSettingsProvider.uiScale, MockSettingsProvider.appFont,
+MockSettingsProvider.uiScale, MockSettingsProvider.appFont, MockSettingsProvider.appFont,
+MockSettingsProvider.uiScale, MockSettingsProvider.appFont, MockSettingsProvider.uiScale,
+MockSettingsProvider.appFont, MockSettingsProvider.uiScale, MockSettingsProvider.appFont,
+MockSettingsProvider.appFont, MockSettingsProvider.uiScale, MockSettingsProvider.appFont,
+MockSettingsProvider.uiScale, MockSettingsProvider.appFont, MockSettingsProvider.uiScale,
+MockSettingsProvider.appFont, MockSettingsProvider.appFont, MockSettingsProvider.uiScale,
+MockSettingsProvider.appFont, MockSettingsProvider.uiScale, MockSettingsProvider.appFont,
+MockSettingsProvider.uiScale, MockSettingsProvider.appFont, MockSettingsProvider.appFont,
+MockSettingsProvider.uiScale, MockSettingsProvider.appFont, MockSettingsProvider.uiScale,
+MockSettingsProvider.appFont, MockSettingsProvider.uiScale, MockSettingsProvider.appFont,
+MockSettingsProvider.appFont, MockSettingsProvider.uiScale, MockSettingsProvider.appFont,
+MockSettingsProvider.uiScale, MockSettingsProvider.appFont, MockSettingsProvider.uiScale,
+MockSettingsProvider.appFont, MockSettingsProvider.appFont, MockSettingsProvider.appFont,
+MockSettingsProvider.uiScale, MockSettingsProvider.appFont, MockSettingsProvider.uiScale,
+MockSettingsProvider.appFont, MockSettingsProvider.uiScale, MockSettingsProvider.appFont,
+MockSettingsProvider.appFont, MockSettingsProvider.uiScale, MockSettingsProvider.appFont,
+MockSettingsProvider.uiScale, MockSettingsProvider.appFont, MockSettingsProvider.uiScale,
+MockSettingsProvider.appFont, MockSettingsProvider.appFont, MockSettingsProvider.uiScale,
+MockSettingsProvider.appFont, MockSettingsProvider.uiScale, MockSettingsProvider.appFont,
+MockSettingsProvider.uiScale, MockSettingsProvider.appFont, MockSettingsProvider.appFont,
+MockSettingsProvider.uiScale, MockSettingsProvider.appFont, MockSettingsProvider.uiScale,
+MockSettingsProvider.appFont, MockSettingsProvider.uiScale, MockSettingsProvider.appFont,
+MockSettingsProvider.appFont, MockSettingsProvider.uiScale, MockSettingsProvider.appFont,
+MockSettingsProvider.appFont, MockSettingsProvider.uiScale, MockSettingsProvider.appFont,
+MockSettingsProvider.enableShakedownTween, MockSettingsProvider.appFont,
+MockSettingsProvider.appFont, MockSettingsProvider.uiScale, MockSettingsProvider.appFont,
+MockSettingsProvider.appFont, MockSettingsProvider.appFont, MockSettingsProvider.appFont,
+MockSettingsProvider.appFont, MockSettingsProvider.appFont, MockSettingsProvider.uiScale,
+MockSettingsProvider.appFont, MockSettingsProvider.appFont, MockSettingsProvider.uiScale,
+MockSettingsProvider.appFont, MockSettingsProvider.uiScale, MockSettingsProvider.uiScale,
+MockSettingsProvider.appFont, MockSettingsProvider.uiScale, MockSettingsProvider.appFont,
+MockSettingsProvider.appFont, MockSettingsProvider.uiScale, MockSettingsProvider.appFont,
+MockSettingsProvider.appFont, MockSettingsProvider.uiScale, MockSettingsProvider.appFont,
+MockSettingsProvider.appFont, MockSettingsProvider.uiScale, MockSettingsProvider.uiScale,
+MockSettingsProvider.appFont, MockSettingsProvider.uiScale, MockSettingsProvider.appFont,
+MockSettingsProvider.appFont, MockSettingsProvider.uiScale, MockSettingsProvider.appFont,
+MockSettingsProvider.uiScale, MockSettingsProvider.appFont, MockSettingsProvider.uiScale,
+MockSettingsProvider.appFont, MockSettingsProvider.appFont, MockSettingsProvider.uiScale,
+MockSettingsProvider.appFont, MockSettingsProvider.uiScale, MockSettingsProvider.appFont,
+MockSettingsProvider.uiScale, MockSettingsProvider.appFont, MockSettingsProvider.appFont,
+MockSettingsProvider.uiScale, MockSettingsProvider.appFont, MockSettingsProvider.uiScale,
+MockSettingsProvider.appFont, MockSettingsProvider.uiScale, MockSettingsProvider.appFont,
+MockSettingsProvider.appFont, MockSettingsProvider.uiScale, MockSettingsProvider.appFont,
+MockSettingsProvider.uiScale, MockSettingsProvider.appFont, MockSettingsProvider.uiScale,
+MockSettingsProvider.appFont, MockSettingsProvider.appFont, MockSettingsProvider.uiScale,
+MockSettingsProvider.appFont, MockSettingsProvider.uiScale, MockSettingsProvider.appFont,
+MockSettingsProvider.uiScale, MockSettingsProvider.appFont, MockSettingsProvider.appFont,
+MockSettingsProvider.appFont, MockSettingsProvider.uiScale, MockSettingsProvider.appFont,
+MockSettingsProvider.uiScale, MockSettingsProvider.appFont, MockSettingsProvider.uiScale,
+MockSettingsProvider.appFont, MockSettingsProvider.appFont, MockSettingsProvider.uiScale,
+MockSettingsProvider.appFont, MockSettingsProvider.uiScale, MockSettingsProvider.appFont,
+MockSettingsProvider.uiScale, MockSettingsProvider.appFont, MockSettingsProvider.appFont,
+MockSettingsProvider.uiScale, MockSettingsProvider.appFont, MockSettingsProvider.uiScale,
+MockSettingsProvider.appFont, MockSettingsProvider.uiScale, MockSettingsProvider.appFont,
+MockSettingsProvider.appFont, MockSettingsProvider.uiScale, MockSettingsProvider.appFont,
+MockSettingsProvider.uiScale, MockSettingsProvider.appFont, MockSettingsProvider.uiScale,
+MockSettingsProvider.appFont, MockSettingsProvider.appFont, MockSettingsProvider.uiScale,
+MockSettingsProvider.appFont, MockSettingsProvider.enableShakedownTween,
+MockSettingsProvider.appFont, MockSettingsProvider.appFont, MockSettingsProvider.uiScale,
+MockSettingsProvider.appFont, MockSettingsProvider.appFont, MockSettingsProvider.appFont,
+MockSettingsProvider.appFont, MockSettingsProvider.appFont, MockSettingsProvider.appFont,
+MockSettingsProvider.uiScale, MockSettingsProvider.appFont, MockSettingsProvider.appFont,
+MockSettingsProvider.uiScale, MockSettingsProvider.appFont, MockSettingsProvider.uiScale,
+MockSettingsProvider.uiScale, MockSettingsProvider.appFont, MockSettingsProvider.uiScale,
+MockSettingsProvider.appFont, MockSettingsProvider.appFont, MockSettingsProvider.uiScale,
+MockSettingsProvider.appFont, MockSettingsProvider.appFont, MockSettingsProvider.uiScale,
+MockSettingsProvider.appFont, MockSettingsProvider.showSplashScreen, MockSettingsProvider.appFont,
+MockSettingsProvider.uiScale, MockSettingsProvider.isFirstRun,
+MockSettingsProvider.playRandomOnStartup, MockSettingsProvider.appFont,
+MockSettingsProvider.uiScale, MockSettingsProvider.appFont,
+MockSettingsProvider.enableShakedownTween
+(If you called `verify(...).called(0);`, please instead use `verifyNever(...);`.)
+
+When the exception was thrown, this was the stack:
+#0      fail (package:matcher/src/expect/expect.dart:149:31)
+#1      _VerifyCall._checkWith (package:mockito/src/mock.dart:797:7)
+#2      _makeVerify.<anonymous closure> (package:mockito/src/mock.dart:1071:18)
+#3      main.<anonymous closure>.<anonymous closure> (file:///home/jam/StudioProjects/gdar/test/screens/onboarding_screen_test.dart:144:13)
+<asynchronous suspension>
+#4      testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#5      TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1059:5)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided one frame from package:stack_trace)
+
+The test description was:
+  Get Started button triggers completion
+════════════════════════════════════════════════════════════════════════════════════════════════════
+00:07 +1 -1: OnboardingScreen Get Started button triggers completion [E]                                                                                                                               
+  Test failed. See exception logs above.
+  The test description was: Get Started button triggers completion
+  
+
+To run this test again: /home/jam/development/flutter/bin/cache/dart-sdk/bin/dart test /home/jam/StudioProjects/gdar/test/screens/onboarding_screen_test.dart -p vm --plain-name 'OnboardingScreen Get Started button triggers completion'
+00:07 +1 -1: OnboardingScreen UI Scale chip updates SettingsProvider                                                                                                                                   00:08 +1 -1: OnboardingScreen UI Scale chip updates SettingsProvider                                                                                                                                   00:08 +2 -1: OnboardingScreen UI Scale chip updates SettingsProvider                                                                                                                                   00:08 +2 -1: OnboardingScreen Dark Mode chip toggles ThemeProvider                                                                                                                                     00:08 +3 -1: OnboardingScreen Dark Mode chip toggles ThemeProvider                                                                                                                                     00:08 +3 -1: Some tests failed.                                                                                                                                                                        

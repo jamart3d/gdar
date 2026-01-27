@@ -47,6 +47,8 @@ class _ShowListScreenState extends State<ShowListScreen>
   late Animation<double> _randomPulseAnimation;
   StreamSubscription<PlayerState>? _playerStateSubscription;
   StreamSubscription<({Show show, Source source})>? _randomShowSubscription;
+  late ShowListProvider _showListProvider;
+  late AudioProvider _audioProvider;
 
   // bool _isSearchVisible = false; // Moved to Provider
   bool _isRandomShowLoading = false;
@@ -114,26 +116,26 @@ class _ShowListScreenState extends State<ShowListScreen>
     });
 
     // Subscribe to random show requests from AudioProvider (unified logic)
-    final audioProvider = context.read<AudioProvider>();
+    _audioProvider = context.read<AudioProvider>();
     _randomShowSubscription =
-        audioProvider.randomShowRequestStream.listen((selection) {
+        _audioProvider.randomShowRequestStream.listen((selection) {
       if (mounted) {
         _handleRandomShowSelection(selection);
       }
     });
 
     // Subscribe to ShowListProvider for search visibility changes
-    final showListProvider = context.read<ShowListProvider>();
-    showListProvider.addListener(_syncSearchState);
+    _showListProvider = context.read<ShowListProvider>();
+    _showListProvider.addListener(_syncSearchState);
 
     // ... pending selection logic ...
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
-        final pending = audioProvider.pendingRandomShowRequest;
+        final pending = _audioProvider.pendingRandomShowRequest;
         if (pending != null) {
           logger.i('ShowListScreen: Found pending random selection on mount.');
           _handleRandomShowSelection(pending);
-          audioProvider.clearPendingRandomShowRequest();
+          _audioProvider.clearPendingRandomShowRequest();
         }
       }
     });
@@ -142,7 +144,7 @@ class _ShowListScreenState extends State<ShowListScreen>
     final settingsProvider = context.read<SettingsProvider>();
     if (settingsProvider.playRandomOnStartup) {
       // ... existing logic ...
-      _handleStartupRandomPlay(showListProvider, audioProvider);
+      _handleStartupRandomPlay(_showListProvider, _audioProvider);
     }
 
     _searchController.addListener(() {
@@ -164,9 +166,9 @@ class _ShowListScreenState extends State<ShowListScreen>
     });
 
     // Listen to player state ...
-    audioProvider.addListener(_onAudioProviderUpdate);
+    _audioProvider.addListener(_onAudioProviderUpdate);
 
-    _playerStateSubscription = audioProvider.playerStateStream.listen((state) {
+    _playerStateSubscription = _audioProvider.playerStateStream.listen((state) {
       // ... existing listener logic ...
       _onPlayerStateChange(state);
     });
@@ -254,18 +256,19 @@ class _ShowListScreenState extends State<ShowListScreen>
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
-    context
-        .read<ShowListProvider>()
-        .removeListener(_syncSearchState); // Remove listener
+    _showListProvider.removeListener(_syncSearchState);
+    _audioProvider.removeListener(_onAudioProviderUpdate);
+
     _searchController.dispose();
     _searchFocusNode.dispose();
+    _animationController.stop();
     _animationController.dispose();
+    _searchPulseController.stop();
     _searchPulseController.dispose();
+    _randomPulseController.stop();
     _randomPulseController.dispose();
     _randomShowSubscription?.cancel();
-    _playerStateSubscription
-        ?.cancel(); // audioProvider listener? removeListener?
-    // context.read<AudioProvider>().removeListener(_onAudioProviderUpdate); // Technically should remove
+    _playerStateSubscription?.cancel();
     super.dispose();
   }
 
@@ -886,7 +889,11 @@ class _ShowListScreenState extends State<ShowListScreen>
               } catch (_) {}
             }
           },
-          child: const ShakedownTitle(fontSize: 16),
+          child: const ShakedownTitle(
+            fontSize: 16,
+            animateOnStart: true,
+            shakeDelay: Duration(milliseconds: 1700),
+          ),
         ),
         actions: _buildAppBarActions(),
       ),
