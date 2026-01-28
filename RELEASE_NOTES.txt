@@ -1,7 +1,7 @@
 Release 1.0.10:
-- **Fixed**: Playback Panel now scrolls correctly to prevent text overflow when using large handwritten fonts (Caveat) with UI Scaling enabled.
-- **Improved**: Tuned "Rock Salt" font scaling in Settings for better legibility.
-- **Improved**: Settings screen responsiveness for smaller devices.
+- **Fixed**: Playback Panel "sliding" issue resolved; content now scales to fit instead of scrolling.
+- **Improved**: Playback Panel layout balanced by reducing bottom padding.
+- **New**: Added Archive.org connectivity check with visual status on Splash and Onboarding screens.
 
 Release 1.0.9:
 - **Improved**: Smoother splash screen transition with tuned timing (1.9s) for a more majestic entry.
