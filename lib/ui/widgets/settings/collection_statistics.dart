@@ -136,29 +136,53 @@ class CollectionStatistics extends StatelessWidget {
         ListTile(
           dense: true,
           visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
-          title: Text('Total Collection',
-              style: TextStyle(fontSize: 10 * scaleFactor)),
-          trailing: Text('$totalShows Shows / $totalSources Sources',
-              style: TextStyle(
-                  fontSize: 10 * scaleFactor, fontWeight: FontWeight.bold)),
+          title: FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Text('Total Collection',
+                style: TextStyle(fontSize: 10 * scaleFactor)),
+          ),
+          trailing: FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerRight,
+            child: Text('$totalShows Shows / $totalSources Sources',
+                style: TextStyle(
+                    fontSize: 10 * scaleFactor, fontWeight: FontWeight.bold)),
+          ),
         ),
         ListTile(
           dense: true,
           visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
-          title:
-              Text('Total Songs', style: TextStyle(fontSize: 10 * scaleFactor)),
-          trailing: Text('$totalSongs',
-              style: TextStyle(
-                  fontSize: 10 * scaleFactor, fontWeight: FontWeight.bold)),
+          title: FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Text('Total Songs',
+                style: TextStyle(fontSize: 10 * scaleFactor)),
+          ),
+          trailing: FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerRight,
+            child: Text('$totalSongs',
+                style: TextStyle(
+                    fontSize: 10 * scaleFactor, fontWeight: FontWeight.bold)),
+          ),
         ),
         ListTile(
           dense: true,
           visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
-          title: Text('Total Runtime',
-              style: TextStyle(fontSize: 10 * scaleFactor)),
-          trailing: Text('${days}d ${hours}h ${minutes}m',
-              style: TextStyle(
-                  fontSize: 10 * scaleFactor, fontWeight: FontWeight.bold)),
+          title: FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Text('Total Runtime',
+                style: TextStyle(fontSize: 10 * scaleFactor)),
+          ),
+          trailing: FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerRight,
+            child: Text('${days}d ${hours}h ${minutes}m',
+                style: TextStyle(
+                    fontSize: 10 * scaleFactor, fontWeight: FontWeight.bold)),
+          ),
         ),
         ExpansionTile(
           dense: true,
@@ -172,70 +196,126 @@ class CollectionStatistics extends StatelessWidget {
                   dense: true,
                   visualDensity:
                       const VisualDensity(horizontal: 0, vertical: -4),
-                  title: Text('Betty Boards',
-                      style: TextStyle(fontSize: 10 * scaleFactor)),
-                  trailing: Text(
-                      '${catBettyShows.length} Shows / $catBettySources Sources',
-                      style: TextStyle(fontSize: 8.5 * scaleFactor))),
+                  title: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerLeft,
+                    child: Text('Betty Boards',
+                        style: TextStyle(fontSize: 10 * scaleFactor)),
+                  ),
+                  trailing: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerRight,
+                    child: Text(
+                        '${catBettyShows.length} Shows / $catBettySources Sources',
+                        style: TextStyle(fontSize: 8.5 * scaleFactor)),
+                  )),
             if (catUltraSources > 0)
               ListTile(
                   dense: true,
                   visualDensity:
                       const VisualDensity(horizontal: 0, vertical: -4),
-                  title: Text('Ultra Matrix',
-                      style: TextStyle(fontSize: 10 * scaleFactor)),
-                  trailing: Text(
-                      '${catUltraShows.length} Shows / $catUltraSources Sources',
-                      style: TextStyle(fontSize: 8.5 * scaleFactor))),
+                  title: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerLeft,
+                    child: Text('Ultra Matrix',
+                        style: TextStyle(fontSize: 10 * scaleFactor)),
+                  ),
+                  trailing: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerRight,
+                    child: Text(
+                        '${catUltraShows.length} Shows / $catUltraSources Sources',
+                        style: TextStyle(fontSize: 8.5 * scaleFactor)),
+                  )),
             if (catMatrixSources > 0)
               ListTile(
                   dense: true,
                   visualDensity:
                       const VisualDensity(horizontal: 0, vertical: -4),
-                  title: Text('Matrix',
-                      style: TextStyle(fontSize: 10 * scaleFactor)),
-                  trailing: Text(
-                      '${catMatrixShows.length} Shows / $catMatrixSources Sources',
-                      style: TextStyle(fontSize: 8.5 * scaleFactor))),
+                  title: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerLeft,
+                    child: Text('Matrix',
+                        style: TextStyle(fontSize: 10 * scaleFactor)),
+                  ),
+                  trailing: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerRight,
+                    child: Text(
+                        '${catMatrixShows.length} Shows / $catMatrixSources Sources',
+                        style: TextStyle(fontSize: 8.5 * scaleFactor)),
+                  )),
             if (catDsbdSources > 0)
               ListTile(
                   dense: true,
                   visualDensity:
                       const VisualDensity(horizontal: 0, vertical: -4),
-                  title: Text('Digital SBD',
-                      style: TextStyle(fontSize: 10 * scaleFactor)),
-                  trailing: Text(
-                      '${catDsbdShows.length} Shows / $catDsbdSources Sources',
-                      style: TextStyle(fontSize: 8.5 * scaleFactor))),
+                  title: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerLeft,
+                    child: Text('Digital SBD',
+                        style: TextStyle(fontSize: 10 * scaleFactor)),
+                  ),
+                  trailing: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerRight,
+                    child: Text(
+                        '${catDsbdShows.length} Shows / $catDsbdSources Sources',
+                        style: TextStyle(fontSize: 8.5 * scaleFactor)),
+                  )),
             if (catFmSources > 0)
               ListTile(
                   dense: true,
                   visualDensity:
                       const VisualDensity(horizontal: 0, vertical: -4),
-                  title: Text('FM Broadcast',
-                      style: TextStyle(fontSize: 10 * scaleFactor)),
-                  trailing: Text(
-                      '${catFmShows.length} Shows / $catFmSources Sources',
-                      style: TextStyle(fontSize: 8.5 * scaleFactor))),
+                  title: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerLeft,
+                    child: Text('FM Broadcast',
+                        style: TextStyle(fontSize: 10 * scaleFactor)),
+                  ),
+                  trailing: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerRight,
+                    child: Text(
+                        '${catFmShows.length} Shows / $catFmSources Sources',
+                        style: TextStyle(fontSize: 8.5 * scaleFactor)),
+                  )),
             if (catSbdSources > 0)
               ListTile(
                   dense: true,
                   visualDensity:
                       const VisualDensity(horizontal: 0, vertical: -4),
-                  title: Text('Soundboard',
-                      style: TextStyle(fontSize: 10 * scaleFactor)),
-                  trailing: Text(
-                      '${catSbdShows.length} Shows / $catSbdSources Sources',
-                      style: TextStyle(fontSize: 8.5 * scaleFactor))),
+                  title: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerLeft,
+                    child: Text('Soundboard',
+                        style: TextStyle(fontSize: 10 * scaleFactor)),
+                  ),
+                  trailing: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerRight,
+                    child: Text(
+                        '${catSbdShows.length} Shows / $catSbdSources Sources',
+                        style: TextStyle(fontSize: 8.5 * scaleFactor)),
+                  )),
             if (catUnkSources > 0)
               ListTile(
                 dense: true,
                 visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
-                title: Text('Unknown Shows',
-                    style: TextStyle(fontSize: 10 * scaleFactor)),
-                trailing: Text(
-                    '${catUnkShows.length} Shows / $catUnkSources Sources',
-                    style: TextStyle(fontSize: 8.5 * scaleFactor)),
+                title: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child: Text('Unknown Shows',
+                      style: TextStyle(fontSize: 10 * scaleFactor)),
+                ),
+                trailing: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerRight,
+                  child: Text(
+                      '${catUnkShows.length} Shows / $catUnkSources Sources',
+                      style: TextStyle(fontSize: 8.5 * scaleFactor)),
+                ),
               ),
           ],
         ),

@@ -24,10 +24,18 @@ class SourceFilterSettings extends StatelessWidget {
         SwitchListTile(
           dense: true,
           visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
-          title: Text('Highest SHNID Only',
-              style: TextStyle(fontSize: 10 * scaleFactor)),
-          subtitle: Text('Only show the latest source for each show',
-              style: TextStyle(fontSize: 8.5 * scaleFactor)),
+          title: FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Text('Highest SHNID Only',
+                style: TextStyle(fontSize: 10 * scaleFactor)),
+          ),
+          subtitle: FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Text('Only show the latest source for each show',
+                style: TextStyle(fontSize: 8.5 * scaleFactor)),
+          ),
           value: settingsProvider.filterHighestShnid,
           onChanged: (value) {
             context.read<SettingsProvider>().toggleFilterHighestShnid();
@@ -37,10 +45,18 @@ class SourceFilterSettings extends StatelessWidget {
         ListTile(
           dense: true,
           visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
-          title: Text('Source Categories',
-              style: TextStyle(fontSize: 10 * scaleFactor)),
-          subtitle: Text('Tap to toggle, Long press to solo',
-              style: TextStyle(fontSize: 8.5 * scaleFactor)),
+          title: FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Text('Source Categories',
+                style: TextStyle(fontSize: 10 * scaleFactor)),
+          ),
+          subtitle: FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Text('Tap to toggle, Long press to solo',
+                style: TextStyle(fontSize: 8.5 * scaleFactor)),
+          ),
           leading: const Icon(Icons.category_rounded),
           trailing: TextButton(
             onPressed: () {
@@ -192,16 +208,19 @@ class SourceFilterSettings extends StatelessWidget {
             width: 1,
           ),
         ),
-        child: Text(
-          label.toUpperCase(),
-          style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                color: isActive
-                    ? colorScheme.onSecondaryContainer
-                    : colorScheme.onSurface,
-                fontWeight: FontWeight.w700,
-                fontSize: 9 * scaleFactor,
-                letterSpacing: 0.5,
-              ),
+        child: FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Text(
+            label.toUpperCase(),
+            style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                  color: isActive
+                      ? colorScheme.onSecondaryContainer
+                      : colorScheme.onSurface,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 9 * scaleFactor,
+                  letterSpacing: 0.5,
+                ),
+          ),
         ),
       ),
     );

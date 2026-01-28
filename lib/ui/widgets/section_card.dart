@@ -36,12 +36,16 @@ class SectionCard extends StatelessWidget {
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
           leading:
               Icon(icon, color: colorScheme.primary, size: 24 * scaleFactor),
-          title: Text(
-            title,
-            style: TextStyle(
-              color: colorScheme.primary,
-              fontWeight: FontWeight.bold,
-              fontSize: 18 * scaleFactor,
+          title: FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Text(
+              title,
+              style: TextStyle(
+                color: colorScheme.primary,
+                fontWeight: FontWeight.bold,
+                fontSize: 18 * scaleFactor,
+              ),
             ),
           ),
           children: children,

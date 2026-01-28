@@ -81,8 +81,13 @@ void main() {
     when(mockAudioProvider.playerStateStream).thenAnswer(
         (_) => Stream.value(PlayerState(false, ProcessingState.ready)));
     when(mockAudioPlayer.sequenceStateStream).thenAnswer((_) => Stream.empty());
+    when(mockAudioPlayer.bufferedPosition).thenReturn(Duration.zero);
+    when(mockAudioPlayer.position).thenReturn(Duration.zero);
+    when(mockAudioPlayer.duration).thenReturn(Duration.zero);
     when(mockAudioPlayer.playerState)
         .thenReturn(PlayerState(false, ProcessingState.ready));
+    when(mockAudioPlayer.sequence).thenReturn([]);
+    when(mockAudioPlayer.sequenceStream).thenAnswer((_) => Stream.value([]));
 
     // Settings Provider setup
     when(mockSettingsProvider.useTrueBlack).thenReturn(false);
@@ -99,6 +104,7 @@ void main() {
     when(mockSettingsProvider.glowMode).thenReturn(50);
     when(mockSettingsProvider.rgbAnimationSpeed).thenReturn(1.0);
     when(mockSettingsProvider.showSingleShnid).thenReturn(false);
+    when(mockSettingsProvider.showPlaybackMessages).thenReturn(false);
   });
 
   testWidgets(
@@ -164,13 +170,6 @@ void main() {
     await tester.pump(const Duration(milliseconds: 500));
 
     final track1RectNotPlaying = tester.getRect(track1TitleFinder);
-
-    print('Playing Rect: $track1RectPlaying');
-    print('Not Playing Rect: $track1RectNotPlaying');
-    print(
-        'Vertical Diff: ${(track1RectPlaying.top - track1RectNotPlaying.top).abs()}');
-    print(
-        'Horizontal Diff: ${(track1RectPlaying.left - track1RectNotPlaying.left).abs()}');
 
     // COMPARE POSITIONS
 

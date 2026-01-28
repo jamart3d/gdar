@@ -363,5 +363,25 @@ Balanced app size with performance and robust user data storage.
 ### Storage Architecture Enhancements (Post-Hive Migration)
 
 
+
 - [x] **Code Cleanup:** Removed commented-out legacy getters/fields in `SettingsProvider` after migration to `CatalogService`.
+
+
+## Design Audit: Expressive Material 3 (Settings Screen)
+
+- [ ] **SectionCard Refinement:**
+  - [ ] Increase corner radius to 28 (M3 Extra Large).
+  - [ ] Update title typography to `titleLarge` for better hierarchy.
+
+- [ ] **Collection Statistics Dashboard:**
+  - [ ] Convert linear list to a 2-column Grid Layout for key stats (Shows, Songs, Runtime).
+  - [ ] "Stat Cards": Container with large number, small label.
+
+- [ ] **Expressive Interactive Elements:**
+  - [ ] **Glow Slider:** Add dynamic label or discrete tick marks.
+  - [ ] **Source Badges:** Add tactile feel / scale animation on press.
+  - [ ] **Navigation:** Use `OpenContainer` or M3 transitions for sub-screens ("Manage Rated Shows", "About").
+
+- [ ] **Typography Alignment:** Map headers/labels to M3 Type Scale (`labelSmall`, `bodyMedium`, `titleLarge`) while respecting `scaleFactor`.
+
 

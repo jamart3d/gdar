@@ -248,12 +248,16 @@ class _SettingsScreenState extends State<SettingsScreen>
       dense: true,
       visualDensity: VisualDensity.compact,
       leading: icon != null ? Icon(icon, color: colorScheme.primary) : null,
-      title: Text(
-        text,
-        style: TextStyle(
-          color: colorScheme.primary,
-          decoration: TextDecoration.underline,
-          fontSize: 12.0 * scaleFactor,
+      title: FittedBox(
+        fit: BoxFit.scaleDown,
+        alignment: Alignment.centerLeft,
+        child: Text(
+          text,
+          style: TextStyle(
+            color: colorScheme.primary,
+            decoration: TextDecoration.underline,
+            fontSize: 12.0 * scaleFactor,
+          ),
         ),
       ),
       onTap: () => _launchUrl(url),
@@ -272,16 +276,20 @@ class _SettingsScreenState extends State<SettingsScreen>
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Expanded(
-            child: Text(
-              label,
-              style: textStyle?.copyWith(
-                fontSize: 12.0 * scaleFactor,
-                color: isActive
-                    ? (isBest ? colorScheme.primary : colorScheme.onSurface)
-                    : colorScheme.outline,
-                decoration: isActive ? null : TextDecoration.lineThrough,
-                fontWeight:
-                    isBest && isActive ? FontWeight.bold : FontWeight.normal,
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerLeft,
+              child: Text(
+                label,
+                style: textStyle?.copyWith(
+                  fontSize: 12.0 * scaleFactor,
+                  color: isActive
+                      ? (isBest ? colorScheme.primary : colorScheme.onSurface)
+                      : colorScheme.outline,
+                  decoration: isActive ? null : TextDecoration.lineThrough,
+                  fontWeight:
+                      isBest && isActive ? FontWeight.bold : FontWeight.normal,
+                ),
               ),
             ),
           ),
@@ -377,8 +385,11 @@ class _SettingsScreenState extends State<SettingsScreen>
                         dense: true,
                         visualDensity: VisualDensity.compact,
                         leading: const Icon(Icons.shuffle_rounded),
-                        title: Text('Random Selection',
-                            style: TextStyle(fontSize: 15 * scaleFactor)),
+                        title: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: Alignment.centerLeft,
+                            child: Text('Random Selection',
+                                style: TextStyle(fontSize: 15 * scaleFactor))),
                         subtitle: Text.rich(
                           TextSpan(
                             style: Theme.of(context)
@@ -409,8 +420,11 @@ class _SettingsScreenState extends State<SettingsScreen>
                         dense: true,
                         visualDensity: VisualDensity.compact,
                         leading: const Icon(Icons.play_circle_outline_rounded),
-                        title: Text('Player Controls',
-                            style: TextStyle(fontSize: 15 * scaleFactor)),
+                        title: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: Alignment.centerLeft,
+                            child: Text('Player Controls',
+                                style: TextStyle(fontSize: 15 * scaleFactor))),
                         subtitle: Text.rich(
                           TextSpan(
                             style: Theme.of(context)
@@ -441,8 +455,11 @@ class _SettingsScreenState extends State<SettingsScreen>
                         dense: true,
                         visualDensity: VisualDensity.compact,
                         leading: const Icon(Icons.search_rounded),
-                        title: Text('Search',
-                            style: TextStyle(fontSize: 15 * scaleFactor)),
+                        title: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: Alignment.centerLeft,
+                            child: Text('Search',
+                                style: TextStyle(fontSize: 15 * scaleFactor))),
                         subtitle: Text.rich(
                           TextSpan(
                             style: Theme.of(context)
@@ -465,8 +482,11 @@ class _SettingsScreenState extends State<SettingsScreen>
                         dense: true,
                         visualDensity: VisualDensity.compact,
                         leading: const Icon(Icons.star_rate_rounded),
-                        title: Text('Rate Show',
-                            style: TextStyle(fontSize: 15 * scaleFactor)),
+                        title: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: Alignment.centerLeft,
+                            child: Text('Rate Show',
+                                style: TextStyle(fontSize: 15 * scaleFactor))),
                         subtitle: Text.rich(
                           TextSpan(
                             style: Theme.of(context)
@@ -489,8 +509,11 @@ class _SettingsScreenState extends State<SettingsScreen>
                         dense: true,
                         visualDensity: VisualDensity.compact,
                         leading: const Icon(Icons.block_rounded),
-                        title: Text('Quick Block',
-                            style: TextStyle(fontSize: 15 * scaleFactor)),
+                        title: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: Alignment.centerLeft,
+                            child: Text('Quick Block',
+                                style: TextStyle(fontSize: 15 * scaleFactor))),
                         subtitle: Text.rich(
                           TextSpan(
                             style: Theme.of(context)
@@ -513,8 +536,11 @@ class _SettingsScreenState extends State<SettingsScreen>
                         dense: true,
                         visualDensity: VisualDensity.compact,
                         leading: const Icon(Icons.touch_app_rounded),
-                        title: Text('Expand Show',
-                            style: TextStyle(fontSize: 15 * scaleFactor)),
+                        title: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: Alignment.centerLeft,
+                            child: Text('Expand Show',
+                                style: TextStyle(fontSize: 15 * scaleFactor))),
                         subtitle: Text.rich(
                           TextSpan(
                             style: Theme.of(context)
@@ -537,8 +563,11 @@ class _SettingsScreenState extends State<SettingsScreen>
                         dense: true,
                         visualDensity: VisualDensity.compact,
                         leading: const Icon(Icons.link_rounded),
-                        title: Text('View Source Page',
-                            style: TextStyle(fontSize: 15 * scaleFactor)),
+                        title: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: Alignment.centerLeft,
+                            child: Text('View Source Page',
+                                style: TextStyle(fontSize: 15 * scaleFactor))),
                         subtitle: Text.rich(
                           TextSpan(
                             style: Theme.of(context)
@@ -561,8 +590,11 @@ class _SettingsScreenState extends State<SettingsScreen>
                         dense: true,
                         visualDensity: VisualDensity.compact,
                         leading: const Icon(Icons.copy_rounded),
-                        title: Text('Share Track with Friends',
-                            style: TextStyle(fontSize: 15 * scaleFactor)),
+                        title: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: Alignment.centerLeft,
+                            child: Text('Share Track with Friends',
+                                style: TextStyle(fontSize: 15 * scaleFactor))),
                         subtitle: Text.rich(
                           TextSpan(
                             style: Theme.of(context)
@@ -585,8 +617,11 @@ class _SettingsScreenState extends State<SettingsScreen>
                         dense: true,
                         visualDensity: VisualDensity.compact,
                         leading: const Icon(Icons.content_paste_rounded),
-                        title: Text('Play from Shared Link',
-                            style: TextStyle(fontSize: 15 * scaleFactor)),
+                        title: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: Alignment.centerLeft,
+                            child: Text('Play from Shared Link',
+                                style: TextStyle(fontSize: 15 * scaleFactor))),
                         subtitle: Text.rich(
                           TextSpan(
                             style: Theme.of(context)
@@ -617,8 +652,11 @@ class _SettingsScreenState extends State<SettingsScreen>
                       SwitchListTile(
                         dense: true,
                         visualDensity: VisualDensity.compact,
-                        title: Text('Dark',
-                            style: TextStyle(fontSize: 15 * scaleFactor)),
+                        title: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: Alignment.centerLeft,
+                            child: Text('Dark',
+                                style: TextStyle(fontSize: 15 * scaleFactor))),
                         value: themeProvider.isDarkMode,
                         onChanged: (value) {
                           HapticFeedback.lightImpact();
@@ -633,10 +671,17 @@ class _SettingsScreenState extends State<SettingsScreen>
                       SwitchListTile(
                         dense: true,
                         visualDensity: VisualDensity.compact,
-                        title: Text('Dynamic Color',
-                            style: TextStyle(fontSize: 15 * scaleFactor)),
-                        subtitle: Text('Theme from wallpaper',
-                            style: TextStyle(fontSize: 12.0 * scaleFactor)),
+                        title: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: Alignment.centerLeft,
+                            child: Text('Dynamic Color',
+                                style: TextStyle(fontSize: 15 * scaleFactor))),
+                        subtitle: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: Alignment.centerLeft,
+                            child: Text('Theme from wallpaper',
+                                style:
+                                    TextStyle(fontSize: 12.0 * scaleFactor))),
                         value: settingsProvider.useDynamicColor,
                         onChanged: (value) {
                           HapticFeedback.lightImpact();
@@ -651,10 +696,18 @@ class _SettingsScreenState extends State<SettingsScreen>
                         SwitchListTile(
                           dense: true,
                           visualDensity: VisualDensity.compact,
-                          title: Text('True Black',
-                              style: TextStyle(fontSize: 15 * scaleFactor)),
-                          subtitle: Text('Shadows and blur disabled',
-                              style: TextStyle(fontSize: 12.0 * scaleFactor)),
+                          title: FittedBox(
+                              fit: BoxFit.scaleDown,
+                              alignment: Alignment.centerLeft,
+                              child: Text('True Black',
+                                  style:
+                                      TextStyle(fontSize: 15 * scaleFactor))),
+                          subtitle: FittedBox(
+                              fit: BoxFit.scaleDown,
+                              alignment: Alignment.centerLeft,
+                              child: Text('Shadows and blur disabled',
+                                  style:
+                                      TextStyle(fontSize: 12.0 * scaleFactor))),
                           value: settingsProvider.useTrueBlack,
                           onChanged: (value) {
                             HapticFeedback.lightImpact();
@@ -669,10 +722,18 @@ class _SettingsScreenState extends State<SettingsScreen>
                           dense: true,
                           visualDensity: VisualDensity.compact,
                           leading: const Icon(Icons.palette_rounded),
-                          title: Text('Custom Theme Color',
-                              style: TextStyle(fontSize: 15 * scaleFactor)),
-                          subtitle: Text('Overrides the default theme color',
-                              style: TextStyle(fontSize: 12.0 * scaleFactor)),
+                          title: FittedBox(
+                              fit: BoxFit.scaleDown,
+                              alignment: Alignment.centerLeft,
+                              child: Text('Custom Theme Color',
+                                  style:
+                                      TextStyle(fontSize: 15 * scaleFactor))),
+                          subtitle: FittedBox(
+                              fit: BoxFit.scaleDown,
+                              alignment: Alignment.centerLeft,
+                              child: Text('Overrides the default theme color',
+                                  style:
+                                      TextStyle(fontSize: 12.0 * scaleFactor))),
                           onTap: () => _showColorPickerDialog(context),
                           trailing: Container(
                             width: 18,
@@ -691,8 +752,11 @@ class _SettingsScreenState extends State<SettingsScreen>
                       SwitchListTile(
                         dense: true,
                         visualDensity: VisualDensity.compact,
-                        title: Text('Glow Border',
-                            style: TextStyle(fontSize: 15 * scaleFactor)),
+                        title: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: Alignment.centerLeft,
+                            child: Text('Glow Border',
+                                style: TextStyle(fontSize: 15 * scaleFactor))),
                         value: settingsProvider.glowMode > 0,
                         onChanged: (value) {
                           context
@@ -756,10 +820,17 @@ class _SettingsScreenState extends State<SettingsScreen>
                       SwitchListTile(
                         dense: true,
                         visualDensity: VisualDensity.compact,
-                        title: Text('Highlight Playing with RGB',
-                            style: TextStyle(fontSize: 15 * scaleFactor)),
-                        subtitle: Text('Animate border with RGB colors',
-                            style: TextStyle(fontSize: 12.0 * scaleFactor)),
+                        title: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: Alignment.centerLeft,
+                            child: Text('Highlight Playing with RGB',
+                                style: TextStyle(fontSize: 15 * scaleFactor))),
+                        subtitle: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: Alignment.centerLeft,
+                            child: Text('Animate border with RGB colors',
+                                style:
+                                    TextStyle(fontSize: 12.0 * scaleFactor))),
                         value: settingsProvider.highlightPlayingWithRgb,
                         onChanged: (value) {
                           final provider = context.read<SettingsProvider>();
@@ -896,11 +967,18 @@ class _SettingsScreenState extends State<SettingsScreen>
                         dense: true,
                         visualDensity: VisualDensity.compact,
                         leading: const Icon(Icons.text_format_rounded),
-                        title: Text('App Font',
-                            style: TextStyle(fontSize: 15 * scaleFactor)),
-                        subtitle: Text(
-                            _getFontDisplayName(settingsProvider.appFont),
-                            style: TextStyle(fontSize: 12.0 * scaleFactor)),
+                        title: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: Alignment.centerLeft,
+                            child: Text('App Font',
+                                style: TextStyle(fontSize: 15 * scaleFactor))),
+                        subtitle: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                                _getFontDisplayName(settingsProvider.appFont),
+                                style:
+                                    TextStyle(fontSize: 12.0 * scaleFactor))),
                         onTap: () => _showFontSelectionDialog(context),
                       ),
                     ],
@@ -916,10 +994,17 @@ class _SettingsScreenState extends State<SettingsScreen>
                       SwitchListTile(
                         dense: true,
                         visualDensity: VisualDensity.compact,
-                        title: Text('UI Scale',
-                            style: TextStyle(fontSize: 15 * scaleFactor)),
-                        subtitle: Text('Increase text size across the app',
-                            style: TextStyle(fontSize: 12.0 * scaleFactor)),
+                        title: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: Alignment.centerLeft,
+                            child: Text('UI Scale',
+                                style: TextStyle(fontSize: 15 * scaleFactor))),
+                        subtitle: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: Alignment.centerLeft,
+                            child: Text('Increase text size across the app',
+                                style:
+                                    TextStyle(fontSize: 12.0 * scaleFactor))),
                         value: settingsProvider.uiScale,
                         onChanged: (value) {
                           context.read<SettingsProvider>().toggleUiScale();
@@ -929,10 +1014,17 @@ class _SettingsScreenState extends State<SettingsScreen>
                       SwitchListTile(
                         dense: true,
                         visualDensity: VisualDensity.compact,
-                        title: Text('Show Splash Screen',
-                            style: TextStyle(fontSize: 15 * scaleFactor)),
-                        subtitle: Text('Show a loading screen on startup',
-                            style: TextStyle(fontSize: 12.0 * scaleFactor)),
+                        title: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: Alignment.centerLeft,
+                            child: Text('Show Splash Screen',
+                                style: TextStyle(fontSize: 15 * scaleFactor))),
+                        subtitle: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: Alignment.centerLeft,
+                            child: Text('Show a loading screen on startup',
+                                style:
+                                    TextStyle(fontSize: 12.0 * scaleFactor))),
                         value: settingsProvider.showSplashScreen,
                         onChanged: (value) {
                           context
@@ -950,10 +1042,17 @@ class _SettingsScreenState extends State<SettingsScreen>
                       SwitchListTile(
                         dense: true,
                         visualDensity: VisualDensity.compact,
-                        title: Text('Show date first in show cards',
-                            style: TextStyle(fontSize: 15 * scaleFactor)),
-                        subtitle: Text('Display the date before the venue',
-                            style: TextStyle(fontSize: 12.0 * scaleFactor)),
+                        title: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: Alignment.centerLeft,
+                            child: Text('Show date first in show cards',
+                                style: TextStyle(fontSize: 15 * scaleFactor))),
+                        subtitle: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: Alignment.centerLeft,
+                            child: Text('Display the date before the venue',
+                                style:
+                                    TextStyle(fontSize: 12.0 * scaleFactor))),
                         value: settingsProvider.dateFirstInShowCard,
                         onChanged: (value) {
                           context
@@ -965,10 +1064,17 @@ class _SettingsScreenState extends State<SettingsScreen>
                       SwitchListTile(
                         dense: true,
                         visualDensity: VisualDensity.compact,
-                        title: Text('Show Day of Week',
-                            style: TextStyle(fontSize: 15 * scaleFactor)),
-                        subtitle: Text('Includes the day name in dates',
-                            style: TextStyle(fontSize: 12.0 * scaleFactor)),
+                        title: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: Alignment.centerLeft,
+                            child: Text('Show Day of Week',
+                                style: TextStyle(fontSize: 15 * scaleFactor))),
+                        subtitle: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: Alignment.centerLeft,
+                            child: Text('Includes the day name in dates',
+                                style:
+                                    TextStyle(fontSize: 12.0 * scaleFactor))),
                         value: settingsProvider.showDayOfWeek,
                         onChanged: (value) {
                           context
@@ -981,10 +1087,18 @@ class _SettingsScreenState extends State<SettingsScreen>
                         SwitchListTile(
                           dense: true,
                           visualDensity: VisualDensity.compact,
-                          title: Text('Abbreviate Day of Week',
-                              style: TextStyle(fontSize: 15 * scaleFactor)),
-                          subtitle: Text('Use short day names (e.g., Sat)',
-                              style: TextStyle(fontSize: 12.0 * scaleFactor)),
+                          title: FittedBox(
+                              fit: BoxFit.scaleDown,
+                              alignment: Alignment.centerLeft,
+                              child: Text('Abbreviate Day of Week',
+                                  style:
+                                      TextStyle(fontSize: 15 * scaleFactor))),
+                          subtitle: FittedBox(
+                              fit: BoxFit.scaleDown,
+                              alignment: Alignment.centerLeft,
+                              child: Text('Use short day names (e.g., Sat)',
+                                  style:
+                                      TextStyle(fontSize: 12.0 * scaleFactor))),
                           value: settingsProvider.abbreviateDayOfWeek,
                           onChanged: (value) {
                             context
@@ -996,10 +1110,17 @@ class _SettingsScreenState extends State<SettingsScreen>
                       SwitchListTile(
                         dense: true,
                         visualDensity: VisualDensity.compact,
-                        title: Text('Abbreviate Month',
-                            style: TextStyle(fontSize: 15 * scaleFactor)),
-                        subtitle: Text('Use short month names (e.g., Aug)',
-                            style: TextStyle(fontSize: 12.0 * scaleFactor)),
+                        title: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: Alignment.centerLeft,
+                            child: Text('Abbreviate Month',
+                                style: TextStyle(fontSize: 15 * scaleFactor))),
+                        subtitle: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: Alignment.centerLeft,
+                            child: Text('Use short month names (e.g., Aug)',
+                                style:
+                                    TextStyle(fontSize: 12.0 * scaleFactor))),
                         value: settingsProvider.abbreviateMonth,
                         onChanged: (value) {
                           context
@@ -1017,10 +1138,17 @@ class _SettingsScreenState extends State<SettingsScreen>
                       SwitchListTile(
                         dense: true,
                         visualDensity: VisualDensity.compact,
-                        title: Text('Sort Oldest First',
-                            style: TextStyle(fontSize: 15 * scaleFactor)),
-                        subtitle: Text('Show earliest shows at the top',
-                            style: TextStyle(fontSize: 12.0 * scaleFactor)),
+                        title: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: Alignment.centerLeft,
+                            child: Text('Sort Oldest First',
+                                style: TextStyle(fontSize: 15 * scaleFactor))),
+                        subtitle: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: Alignment.centerLeft,
+                            child: Text('Show earliest shows at the top',
+                                style:
+                                    TextStyle(fontSize: 12.0 * scaleFactor))),
                         value: settingsProvider.sortOldestFirst,
                         onChanged: (value) {
                           context
@@ -1032,11 +1160,18 @@ class _SettingsScreenState extends State<SettingsScreen>
                       SwitchListTile(
                         dense: true,
                         visualDensity: VisualDensity.compact,
-                        title: Text('Show SHNID Badge (Single Source)',
-                            style: TextStyle(fontSize: 15 * scaleFactor)),
-                        subtitle: Text(
-                            'Display SHNID number on card if only one source',
-                            style: TextStyle(fontSize: 12.0 * scaleFactor)),
+                        title: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: Alignment.centerLeft,
+                            child: Text('Show SHNID Badge (Single Source)',
+                                style: TextStyle(fontSize: 15 * scaleFactor))),
+                        subtitle: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                                'Display SHNID number on card if only one source',
+                                style:
+                                    TextStyle(fontSize: 12.0 * scaleFactor))),
                         value: settingsProvider.showSingleShnid,
                         onChanged: (value) {
                           context
@@ -1053,10 +1188,17 @@ class _SettingsScreenState extends State<SettingsScreen>
                       SwitchListTile(
                         dense: true,
                         visualDensity: VisualDensity.compact,
-                        title: Text('Show Track Numbers',
-                            style: TextStyle(fontSize: 15 * scaleFactor)),
-                        subtitle: Text('Display track numbers in lists',
-                            style: TextStyle(fontSize: 12.0 * scaleFactor)),
+                        title: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: Alignment.centerLeft,
+                            child: Text('Show Track Numbers',
+                                style: TextStyle(fontSize: 15 * scaleFactor))),
+                        subtitle: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: Alignment.centerLeft,
+                            child: Text('Display track numbers in lists',
+                                style:
+                                    TextStyle(fontSize: 12.0 * scaleFactor))),
                         value: settingsProvider.showTrackNumbers,
                         onChanged: (value) {
                           context
@@ -1068,10 +1210,17 @@ class _SettingsScreenState extends State<SettingsScreen>
                       SwitchListTile(
                         dense: true,
                         visualDensity: VisualDensity.compact,
-                        title: Text('Hide Track Duration',
-                            style: TextStyle(fontSize: 15 * scaleFactor)),
-                        subtitle: Text('Hide duration and center track titles',
-                            style: TextStyle(fontSize: 12.0 * scaleFactor)),
+                        title: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: Alignment.centerLeft,
+                            child: Text('Hide Track Duration',
+                                style: TextStyle(fontSize: 15 * scaleFactor))),
+                        subtitle: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: Alignment.centerLeft,
+                            child: Text('Hide duration and center track titles',
+                                style:
+                                    TextStyle(fontSize: 12.0 * scaleFactor))),
                         value: settingsProvider.hideTrackDuration,
                         onChanged: (value) {
                           context
@@ -1095,11 +1244,18 @@ class _SettingsScreenState extends State<SettingsScreen>
                       SwitchListTile(
                         dense: true,
                         visualDensity: VisualDensity.compact,
-                        title: Text('Play Random Show on Completion',
-                            style: TextStyle(fontSize: 15 * scaleFactor)),
-                        subtitle: Text(
-                            'When a show ends, play another one randomly',
-                            style: TextStyle(fontSize: 12.0 * scaleFactor)),
+                        title: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: Alignment.centerLeft,
+                            child: Text('Play Random Show on Completion',
+                                style: TextStyle(fontSize: 15 * scaleFactor))),
+                        subtitle: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                                'When a show ends, play another one randomly',
+                                style:
+                                    TextStyle(fontSize: 12.0 * scaleFactor))),
                         value: settingsProvider.playRandomOnCompletion,
                         onChanged: (value) {
                           context
@@ -1135,11 +1291,18 @@ class _SettingsScreenState extends State<SettingsScreen>
                       SwitchListTile(
                         dense: true,
                         visualDensity: VisualDensity.compact,
-                        title: Text('Play Random Show on Startup',
-                            style: TextStyle(fontSize: 15 * scaleFactor)),
-                        subtitle: Text(
-                            'Start playing a random show when the app opens',
-                            style: TextStyle(fontSize: 12.0 * scaleFactor)),
+                        title: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: Alignment.centerLeft,
+                            child: Text('Play Random Show on Startup',
+                                style: TextStyle(fontSize: 15 * scaleFactor))),
+                        subtitle: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                                'Start playing a random show when the app opens',
+                                style:
+                                    TextStyle(fontSize: 12.0 * scaleFactor))),
                         value: settingsProvider.playRandomOnStartup,
                         onChanged: (value) {
                           context
@@ -1151,11 +1314,18 @@ class _SettingsScreenState extends State<SettingsScreen>
                       SwitchListTile(
                         dense: true,
                         visualDensity: VisualDensity.compact,
-                        title: Text('Only Select Unplayed Shows',
-                            style: TextStyle(fontSize: 15 * scaleFactor)),
-                        subtitle: Text(
-                            'Random playback will prefer unplayed shows',
-                            style: TextStyle(fontSize: 12.0 * scaleFactor)),
+                        title: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: Alignment.centerLeft,
+                            child: Text('Only Select Unplayed Shows',
+                                style: TextStyle(fontSize: 15 * scaleFactor))),
+                        subtitle: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                                'Random playback will prefer unplayed shows',
+                                style:
+                                    TextStyle(fontSize: 12.0 * scaleFactor))),
                         value: settingsProvider.randomOnlyUnplayed,
                         onChanged: (value) {
                           context
@@ -1167,11 +1337,18 @@ class _SettingsScreenState extends State<SettingsScreen>
                       SwitchListTile(
                         dense: true,
                         visualDensity: VisualDensity.compact,
-                        title: Text('Only Select High Rated Shows',
-                            style: TextStyle(fontSize: 15 * scaleFactor)),
-                        subtitle: Text(
-                            'Random playback will prefer shows rated 2+ stars',
-                            style: TextStyle(fontSize: 12.0 * scaleFactor)),
+                        title: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: Alignment.centerLeft,
+                            child: Text('Only Select High Rated Shows',
+                                style: TextStyle(fontSize: 15 * scaleFactor))),
+                        subtitle: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                                'Random playback will prefer shows rated 2+ stars',
+                                style:
+                                    TextStyle(fontSize: 12.0 * scaleFactor))),
                         value: settingsProvider.randomOnlyHighRated,
                         onChanged: (value) {
                           context
@@ -1183,11 +1360,18 @@ class _SettingsScreenState extends State<SettingsScreen>
                       SwitchListTile(
                         dense: true,
                         visualDensity: VisualDensity.compact,
-                        title: Text('Exclude Already Played Shows',
-                            style: TextStyle(fontSize: 15 * scaleFactor)),
-                        subtitle: Text(
-                            'Random playback will never select shows you have played',
-                            style: TextStyle(fontSize: 12.0 * scaleFactor)),
+                        title: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: Alignment.centerLeft,
+                            child: Text('Exclude Already Played Shows',
+                                style: TextStyle(fontSize: 15 * scaleFactor))),
+                        subtitle: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                                'Random playback will never select shows you have played',
+                                style:
+                                    TextStyle(fontSize: 12.0 * scaleFactor))),
                         value: settingsProvider.randomExcludePlayed,
                         onChanged: (value) {
                           context
@@ -1269,10 +1453,19 @@ class _SettingsScreenState extends State<SettingsScreen>
                         child: SwitchListTile(
                           dense: true,
                           visualDensity: VisualDensity.compact,
-                          title: Text('Play on Tap',
-                              style: TextStyle(fontSize: 15 * scaleFactor)),
-                          subtitle: Text('Tap track in inactive source to play',
-                              style: TextStyle(fontSize: 12.0 * scaleFactor)),
+                          title: FittedBox(
+                              fit: BoxFit.scaleDown,
+                              alignment: Alignment.centerLeft,
+                              child: Text('Play on Tap',
+                                  style:
+                                      TextStyle(fontSize: 15 * scaleFactor))),
+                          subtitle: FittedBox(
+                              fit: BoxFit.scaleDown,
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                  'Tap track in inactive source to play',
+                                  style:
+                                      TextStyle(fontSize: 12.0 * scaleFactor))),
                           value: settingsProvider.playOnTap,
                           onChanged: (value) {
                             HapticFeedback.lightImpact();
@@ -1291,11 +1484,19 @@ class _SettingsScreenState extends State<SettingsScreen>
                         child: SwitchListTile(
                           dense: true,
                           visualDensity: VisualDensity.compact,
-                          title: Text('Show Playback Messages',
-                              style: TextStyle(fontSize: 15 * scaleFactor)),
-                          subtitle: Text(
-                              'Display detailed status, buffered time, and errors',
-                              style: TextStyle(fontSize: 12.0 * scaleFactor)),
+                          title: FittedBox(
+                              fit: BoxFit.scaleDown,
+                              alignment: Alignment.centerLeft,
+                              child: Text('Show Playback Messages',
+                                  style:
+                                      TextStyle(fontSize: 15 * scaleFactor))),
+                          subtitle: FittedBox(
+                              fit: BoxFit.scaleDown,
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                  'Display detailed status, buffered time, and errors',
+                                  style:
+                                      TextStyle(fontSize: 12.0 * scaleFactor))),
                           value: settingsProvider.showPlaybackMessages,
                           onChanged: (value) {
                             context
@@ -1315,14 +1516,21 @@ class _SettingsScreenState extends State<SettingsScreen>
                         child: SwitchListTile(
                           dense: true,
                           visualDensity: VisualDensity.compact,
-                          title: Text('Advanced Cache',
-                              style: TextStyle(fontSize: 15 * scaleFactor)),
-                          subtitle: Text(
-                            settingsProvider.offlineBuffering
-                                ? 'Cached ${audioProvider.cachedTrackCount} of (${audioProvider.currentSource?.tracks.length ?? 0} + 5) tracks'
-                                : 'Cache tracks to disk for deep sleep playback',
-                            style: TextStyle(fontSize: 12.0 * scaleFactor),
-                          ),
+                          title: FittedBox(
+                              fit: BoxFit.scaleDown,
+                              alignment: Alignment.centerLeft,
+                              child: Text('Advanced Cache',
+                                  style:
+                                      TextStyle(fontSize: 15 * scaleFactor))),
+                          subtitle: FittedBox(
+                              fit: BoxFit.scaleDown,
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                settingsProvider.offlineBuffering
+                                    ? 'Cached ${audioProvider.cachedTrackCount} of (${audioProvider.currentSource?.tracks.length ?? 0} + 5) tracks'
+                                    : 'Cache tracks to disk for deep sleep playback',
+                                style: TextStyle(fontSize: 12.0 * scaleFactor),
+                              )),
                           value: settingsProvider.offlineBuffering,
                           onChanged: (value) {
                             HapticFeedback.lightImpact();
@@ -1370,12 +1578,16 @@ class _SettingsScreenState extends State<SettingsScreen>
                       visualDensity: VisualDensity.compact,
                       leading: Icon(Icons.library_books_rounded,
                           color: Theme.of(context).colorScheme.primary),
-                      title: Text(
-                        'Manage Rated Shows',
-                        style: TextStyle(
-                          color: Theme.of(context).colorScheme.primary,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 14 * scaleFactor,
+                      title: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          'Manage Rated Shows',
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.primary,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14 * scaleFactor,
+                          ),
                         ),
                       ),
                       trailing:
@@ -1407,12 +1619,16 @@ class _SettingsScreenState extends State<SettingsScreen>
                           visualDensity: VisualDensity.compact,
                           leading: Icon(Icons.info_outline,
                               color: Theme.of(context).colorScheme.primary),
-                          title: Text(
-                            'About App',
-                            style: TextStyle(
-                                color: Theme.of(context).colorScheme.primary,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 14 * scaleFactor),
+                          title: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                              'About App',
+                              style: TextStyle(
+                                  color: Theme.of(context).colorScheme.primary,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14 * scaleFactor),
+                            ),
                           ),
                           trailing: const Icon(Icons.arrow_forward_ios_rounded,
                               size: 12),
