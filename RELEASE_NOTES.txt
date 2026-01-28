@@ -1,3 +1,7 @@
+Release 1.0.11:
+- **Internal**: Maintenance release to verify build pipeline consistency.
+- **Fixed**: Playback Panel "sliding" issue resolved (included in 1.0.10).
+
 Release 1.0.10:
 - **Fixed**: Playback Panel "sliding" issue resolved; content now scales to fit instead of scrolling.
 - **Improved**: Playback Panel layout balanced by reducing bottom padding.
