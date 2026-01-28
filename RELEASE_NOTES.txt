@@ -1,3 +1,7 @@
+Release 1.0.12:
+- **Fixed**: Resolved visual overlap between "Venue" and "Location" text in Playback Panel on small screens.
+- **Improved**: Fine-tuned layout offsets in Sliding Panel for better spacing.
+
 Release 1.0.11:
 - **Internal**: Maintenance release to verify build pipeline consistency.
 - **Fixed**: Playback Panel "sliding" issue resolved (included in 1.0.10).

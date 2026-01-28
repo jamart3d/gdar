@@ -762,8 +762,8 @@ class _PlaybackScreenState extends State<PlaybackScreen>
                 // Closed (0.0): +100 (Hidden down)
                 // Open (1.0): -40 (Up more to create gap from bottom)
                 // We keep the offset logic but now allow scrolling
-                // Adjusted from 132.0 to 140.0 to move content 8 logical pixels higher when open
-                final double yOffset = (100.0 - 140.0 * value) * scaleFactor;
+                // Adjusted from 140.0 to 124.0 to reduce upward shift (-40 -> -24) and prevent overlapping the Venue
+                final double yOffset = (100.0 - 124.0 * value) * scaleFactor;
                 return Transform.translate(
                   offset: Offset(0, yOffset),
                   child: FittedBox(
