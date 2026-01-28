@@ -1,3 +1,9 @@
+Release 1.0.15:
+- **New**: Completed comprehensive Haptic Feedback Audit. All interactive elements now provide premium tactile feedback.
+- **Improved**: Redesigned "Collection Statistics" for visual consistency with the Playback section.
+- **Fixed**: Resolved "Interface" section expansion bug by implementing unique widget keys.
+- **Improved**: Fine-tuned "Rock Salt" font spacing and legibility across settings.
+
 Release 1.0.14:
 - **Fixed**: Resolved visual text wrapping issues in Settings Screen when "UI Scale" is enabled.
 - **Improved**: Strengthened automated testing for playback alignment stability.
