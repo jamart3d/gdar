@@ -384,208 +384,222 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     final colorScheme = theme.colorScheme;
 
     return LayoutBuilder(builder: (context, constraints) {
-      return SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 24.0),
-        child: ConstrainedBox(
-          constraints: BoxConstraints(minHeight: constraints.maxHeight),
-          child: TweenAnimationBuilder<double>(
-            duration: const Duration(
-                milliseconds: 600), // Material 3 expressive duration
-            curve: Curves.easeOutCubic, // Expressive deceleration
-            tween: Tween<double>(begin: 0.0, end: 1.0), // Animate from 0 to 1
-            builder: (context, animValue, child) {
-              return Transform.translate(
-                offset: Offset(0, 20 * (1 - animValue)), // Slide up 20px
-                child: Opacity(
-                  opacity: animValue, // Fade in
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      const SizedBox(height: 20),
-                      _buildSectionHeader(
-                          context, 'Customize Your Experience', scaleFactor),
-                      const SizedBox(height: 20),
-                      Text(
-                        'Font Selection',
-                        style: theme.textTheme.labelLarge?.copyWith(
-                          color: colorScheme.onSurface,
-                          fontSize:
-                              AppTypography.responsiveFontSize(context, 14.0),
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      Wrap(
-                        spacing: 8.0,
-                        runSpacing: 8.0,
+      return SizedBox(
+        width: constraints.maxWidth,
+        height: constraints.maxHeight,
+        child: FittedBox(
+          fit: BoxFit.scaleDown,
+          alignment: Alignment.topCenter,
+          child: SizedBox(
+            width: constraints.maxWidth,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24.0),
+              child: TweenAnimationBuilder<double>(
+                duration: const Duration(
+                    milliseconds: 600), // Material 3 expressive duration
+                curve: Curves.easeOutCubic, // Expressive deceleration
+                tween:
+                    Tween<double>(begin: 0.0, end: 1.0), // Animate from 0 to 1
+                builder: (context, animValue, child) {
+                  return Transform.translate(
+                    offset: Offset(0, 20 * (1 - animValue)), // Slide up 20px
+                    child: Opacity(
+                      opacity: animValue, // Fade in
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        mainAxisAlignment: MainAxisAlignment.start,
                         children: [
-                          _buildFontChip(context, 'default', 'Roboto', settings,
-                              scaleFactor),
-                          _buildFontChip(context, 'caveat', 'Caveat', settings,
-                              scaleFactor),
-                          _buildFontChip(context, 'permanent_marker',
-                              'Permanent Marker', settings, scaleFactor),
-                          _buildFontChip(context, 'rock_salt', 'Rock Salt',
-                              settings, scaleFactor),
-                        ],
-                      ),
-                      const SizedBox(height: 24),
-                      Text(
-                        'Preferences',
-                        style: theme.textTheme.labelLarge?.copyWith(
-                          color: colorScheme.onSurface,
-                          fontSize:
-                              AppTypography.responsiveFontSize(context, 14.0),
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      Wrap(
-                        spacing: 8.0,
-                        runSpacing: 8.0,
-                        children: [
-                          FilterChip(
-                            label: Text('UI Scale',
-                                style: TextStyle(
-                                    fontSize: AppTypography.responsiveFontSize(
-                                        context, 12.0))),
-                            selected: settings.uiScale,
-                            onSelected: (bool selected) {
-                              HapticFeedback.selectionClick();
-                              settings.toggleUiScale();
-                            },
-                            showCheckmark: false,
-                            selectedColor: colorScheme.primaryContainer,
-                            labelStyle: TextStyle(
-                              color: settings.uiScale
-                                  ? colorScheme.onPrimaryContainer
-                                  : colorScheme.onSurface,
-                              fontWeight: FontWeight.normal,
+                          const SizedBox(height: 20),
+                          _buildSectionHeader(context,
+                              'Customize Your Experience', scaleFactor),
+                          const SizedBox(height: 20),
+                          Text(
+                            'Font Selection',
+                            style: theme.textTheme.labelLarge?.copyWith(
+                              color: colorScheme.onSurface,
+                              fontSize: AppTypography.responsiveFontSize(
+                                  context, 14.0),
                             ),
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 12, vertical: 8),
                           ),
-                          FilterChip(
-                            label: Text('Dark Mode',
-                                style: TextStyle(
-                                    fontSize: AppTypography.responsiveFontSize(
-                                        context, 12.0))),
-                            selected: themeProvider.isDarkMode,
-                            onSelected: (bool selected) {
-                              HapticFeedback.selectionClick();
-                              themeProvider.toggleTheme();
-
-                              // Sync True Black with Dark Mode
-                              if (selected) {
-                                // Turning ON Dark Mode -> Turn ON True Black
-                                if (!settings.useTrueBlack) {
-                                  settings.toggleUseTrueBlack();
-                                }
-                              } else {
-                                // Turning OFF Dark Mode -> Turn OFF True Black
-                                if (settings.useTrueBlack) {
-                                  settings.toggleUseTrueBlack();
-                                }
-                              }
-                            },
-                            showCheckmark: false,
-                            selectedColor: colorScheme.primaryContainer,
-                            labelStyle: TextStyle(
-                              color: themeProvider.isDarkMode
-                                  ? colorScheme.onPrimaryContainer
-                                  : colorScheme.onSurface,
-                              fontWeight: FontWeight.normal,
-                            ),
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 12, vertical: 8),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 32),
-                      InkWell(
-                        onTap: () {
-                          setState(() {
-                            _dontShowAgain = !_dontShowAgain;
-                          });
-                        },
-                        borderRadius: BorderRadius.circular(8),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 8.0),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
+                          const SizedBox(height: 12),
+                          Wrap(
+                            spacing: 8.0,
+                            runSpacing: 8.0,
                             children: [
-                              SizedBox(
-                                width: 24,
-                                height: 24,
-                                child: Checkbox(
-                                  value: _dontShowAgain,
-                                  onChanged: (val) {
-                                    setState(() {
-                                      _dontShowAgain = val ?? false;
-                                    });
-                                  },
-                                  materialTapTargetSize:
-                                      MaterialTapTargetSize.shrinkWrap,
+                              _buildFontChip(context, 'default', 'Roboto',
+                                  settings, scaleFactor),
+                              _buildFontChip(context, 'caveat', 'Caveat',
+                                  settings, scaleFactor),
+                              _buildFontChip(context, 'permanent_marker',
+                                  'Permanent Marker', settings, scaleFactor),
+                              _buildFontChip(context, 'rock_salt', 'Rock Salt',
+                                  settings, scaleFactor),
+                            ],
+                          ),
+                          const SizedBox(height: 24),
+                          Text(
+                            'Preferences',
+                            style: theme.textTheme.labelLarge?.copyWith(
+                              color: colorScheme.onSurface,
+                              fontSize: AppTypography.responsiveFontSize(
+                                  context, 14.0),
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          Wrap(
+                            spacing: 8.0,
+                            runSpacing: 8.0,
+                            children: [
+                              FilterChip(
+                                label: Text('UI Scale',
+                                    style: TextStyle(
+                                        fontSize:
+                                            AppTypography.responsiveFontSize(
+                                                context, 12.0))),
+                                selected: settings.uiScale,
+                                onSelected: (bool selected) {
+                                  HapticFeedback.selectionClick();
+                                  settings.toggleUiScale();
+                                },
+                                showCheckmark: false,
+                                selectedColor: colorScheme.primaryContainer,
+                                labelStyle: TextStyle(
+                                  color: settings.uiScale
+                                      ? colorScheme.onPrimaryContainer
+                                      : colorScheme.onSurface,
+                                  fontWeight: FontWeight.normal,
                                 ),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 12, vertical: 8),
                               ),
-                              const SizedBox(width: 8),
-                              Text(
-                                "Don't show again",
-                                style: theme.textTheme.bodyMedium?.copyWith(
-                                  fontSize: AppTypography.responsiveFontSize(
-                                      context, 12.0),
+                              FilterChip(
+                                label: Text('Dark Mode',
+                                    style: TextStyle(
+                                        fontSize:
+                                            AppTypography.responsiveFontSize(
+                                                context, 12.0))),
+                                selected: themeProvider.isDarkMode,
+                                onSelected: (bool selected) {
+                                  HapticFeedback.selectionClick();
+                                  themeProvider.toggleTheme();
+
+                                  // Sync True Black with Dark Mode
+                                  if (selected) {
+                                    // Turning ON Dark Mode -> Turn ON True Black
+                                    if (!settings.useTrueBlack) {
+                                      settings.toggleUseTrueBlack();
+                                    }
+                                  } else {
+                                    // Turning OFF Dark Mode -> Turn OFF True Black
+                                    if (settings.useTrueBlack) {
+                                      settings.toggleUseTrueBlack();
+                                    }
+                                  }
+                                },
+                                showCheckmark: false,
+                                selectedColor: colorScheme.primaryContainer,
+                                labelStyle: TextStyle(
+                                  color: themeProvider.isDarkMode
+                                      ? colorScheme.onPrimaryContainer
+                                      : colorScheme.onSurface,
+                                  fontWeight: FontWeight.normal,
                                 ),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 12, vertical: 8),
                               ),
                             ],
                           ),
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      AnimatedGradientBorder(
-                        borderRadius: 30,
-                        borderWidth: 3,
-                        colors: const [
-                          Colors.red,
-                          Colors.orange,
-                          Colors.yellow,
-                          Colors.green,
-                          Colors.blue,
-                          Colors.purple,
-                          Colors.red,
-                        ],
-                        animationSpeed: 0.5,
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: colorScheme.surface,
-                            borderRadius: BorderRadius.circular(30),
+                          const SizedBox(height: 32),
+                          InkWell(
+                            onTap: () {
+                              setState(() {
+                                _dontShowAgain = !_dontShowAgain;
+                              });
+                            },
+                            borderRadius: BorderRadius.circular(8),
+                            child: Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(vertical: 8.0),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  SizedBox(
+                                    width: 24,
+                                    height: 24,
+                                    child: Checkbox(
+                                      value: _dontShowAgain,
+                                      onChanged: (val) {
+                                        setState(() {
+                                          _dontShowAgain = val ?? false;
+                                        });
+                                      },
+                                      materialTapTargetSize:
+                                          MaterialTapTargetSize.shrinkWrap,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    "Don't show again",
+                                    style: theme.textTheme.bodyMedium?.copyWith(
+                                      fontSize:
+                                          AppTypography.responsiveFontSize(
+                                              context, 12.0),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
                           ),
-                          child: ElevatedButton(
-                            onPressed: _finishOnboarding,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.transparent,
-                              shadowColor: Colors.transparent,
-                              padding: const EdgeInsets.symmetric(vertical: 16),
-                              shape: RoundedRectangleBorder(
+                          const SizedBox(height: 16),
+                          AnimatedGradientBorder(
+                            borderRadius: 30,
+                            borderWidth: 3,
+                            colors: const [
+                              Colors.red,
+                              Colors.orange,
+                              Colors.yellow,
+                              Colors.green,
+                              Colors.blue,
+                              Colors.purple,
+                              Colors.red,
+                            ],
+                            animationSpeed: 0.5,
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: colorScheme.surface,
                                 borderRadius: BorderRadius.circular(30),
                               ),
-                            ),
-                            child: Text(
-                              'Get Started',
-                              style: theme.textTheme.titleMedium?.copyWith(
-                                fontWeight: FontWeight.bold,
-                                fontSize: AppTypography.responsiveFontSize(
-                                    context, 16.0),
-                                color: colorScheme.primary,
+                              child: ElevatedButton(
+                                onPressed: _finishOnboarding,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.transparent,
+                                  shadowColor: Colors.transparent,
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 16),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(30),
+                                  ),
+                                ),
+                                child: Text(
+                                  'Get Started',
+                                  style: theme.textTheme.titleMedium?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: AppTypography.responsiveFontSize(
+                                        context, 16.0),
+                                    color: colorScheme.primary,
+                                  ),
+                                ),
                               ),
                             ),
                           ),
-                        ),
+                          const SizedBox(height: 24),
+                        ],
                       ),
-                      const SizedBox(height: 24),
-                    ],
-                  ),
-                ),
-              );
-            },
+                    ),
+                  );
+                },
+              ),
+            ),
           ),
         ),
       );

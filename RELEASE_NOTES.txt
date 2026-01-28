@@ -1,3 +1,7 @@
+Release 1.0.13:
+- **Fixed**: Refactored Onboarding Screen to use UI scaling logic instead of scrolling for improved small-screen experience.
+- **Improved**: Refined Playback Panel layout to prevent unintended scrolling when UI Scale is enabled.
+
 Release 1.0.12:
 - **Fixed**: Resolved visual overlap between "Venue" and "Location" text in Playback Panel on small screens.
 - **Improved**: Fine-tuned layout offsets in Sliding Panel for better spacing.
