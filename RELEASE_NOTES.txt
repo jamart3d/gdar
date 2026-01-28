@@ -1,3 +1,8 @@
+Release 1.0.10:
+- **Fixed**: Playback Panel now scrolls correctly to prevent text overflow when using large handwritten fonts (Caveat) with UI Scaling enabled.
+- **Improved**: Tuned "Rock Salt" font scaling in Settings for better legibility.
+- **Improved**: Settings screen responsiveness for smaller devices.
+
 Release 1.0.9:
 - **Improved**: Smoother splash screen transition with tuned timing (1.9s) for a more majestic entry.
 - **Fixed**: Onboarding screen layout issues on some device sizes.

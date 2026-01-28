@@ -248,6 +248,9 @@ class _SplashScreenState extends State<SplashScreen>
                               : 'Archive.org unreachable (offline mode)')
                           : 'Checking archive.org...',
                       isDone: showListProvider.hasCheckedArchive,
+                      isSuccess: showListProvider.hasCheckedArchive
+                          ? showListProvider.isArchiveReachable
+                          : true, // Default to true while loading
                       scaleFactor: effectiveScale,
                     ),
 
@@ -273,9 +276,11 @@ class _SplashScreenState extends State<SplashScreen>
   Widget _buildChecklistItem({
     required String label,
     required bool isDone,
+    bool isSuccess = true,
     double scaleFactor = 1.0,
   }) {
     final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme; // Use local var for consistency
 
     // Use a balanced base size that works well with the centralized scale factors
     const double baseSize = 16.0;
@@ -289,9 +294,14 @@ class _SplashScreenState extends State<SplashScreen>
           child: AnimatedSwitcher(
             duration: const Duration(milliseconds: 300),
             child: isDone
-                ? Icon(Icons.check_circle,
-                    key: const ValueKey('done'),
-                    color: theme.colorScheme.primary,
+                ? Icon(
+                    isSuccess
+                        ? Icons.check_circle
+                        : Icons.warning_rounded, // Use Warning for failure
+                    key: ValueKey(isSuccess ? 'done' : 'error'),
+                    color: isSuccess
+                        ? colorScheme.primary
+                        : colorScheme.error, // Red for error
                     size: 20 *
                         (scaleFactor > 1.2
                             ? 1.2
@@ -313,6 +323,8 @@ class _SplashScreenState extends State<SplashScreen>
             label,
             style: theme.textTheme.titleMedium?.copyWith(
               fontSize: baseSize * scaleFactor,
+              color: isSuccess ? null : colorScheme.error, // Red Text for error
+              fontWeight: isSuccess ? null : FontWeight.bold,
             ),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,

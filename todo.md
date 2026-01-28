@@ -244,6 +244,9 @@ This file tracks planned features, enhancements, and bug fixes for the gdar appl
        - [x] **Centralized Typography:** Create `AppTextStyles` helper to unify font scaling logic and eliminate ad-hoc `fontSize * scale` calculations.
 
     3. **Layout Logic (Fixing "Too Big" Collisions)**
+        - [ ] **FittedBox Candidate 1 (Playback Screen Track List):** Move track title to FittedBox(ConditionalMarquee) to match header scaling logic.
+        - [ ] **FittedBox Candidate 2 (Source List Item):** Use FittedBox for Source ID text to prevent wrapping and maintain valid list item height.
+        - [ ] **FittedBox Candidate 3 (Show List Card Header):** Use FittedBox for Venue/Date header text to prevent wrapping and maintain valid card height.
        - [ ] **Kill the "Double-Scaling" Bug:**
          - Wrap the Venue and Date text widgets in a `SizedBox` with a fixed height (e.g., `height: 32.0 * scaleFactor`).
          - **Crucial:** Set `textScaleFactor: 1.0` inside these widgets. This ensures that the system font size doesn't multiply with your 1.5x factor, which is currently causing the "Too Big" vertical overlap.

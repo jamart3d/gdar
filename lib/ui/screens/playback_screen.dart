@@ -700,49 +700,55 @@ class _PlaybackScreenState extends State<PlaybackScreen>
                     ),
                   ],
                 ),
-                GestureDetector(
-                  behavior: HitTestBehavior.opaque,
-                  onTap: () {
-                    _scrollToCurrentTrack(force: true);
-                    if (_panelController.isAttached) {
-                      if (_panelController.isPanelClosed) {
-                        _panelController.open();
-                      }
-                    }
-                  },
-                  child: Padding(
-                    // Reduced bottom padding to prevent overflow with large fonts (Caveat)
-                    padding: EdgeInsets.only(
-                        left: 16.0, right: 16.0, bottom: 24.0 + bottomPadding),
-                    child: Row(
-                      mainAxisAlignment: settingsProvider.hideTrackDuration
-                          ? MainAxisAlignment.center
-                          : MainAxisAlignment.start,
-                      children: [
-                        Flexible(
-                          child: SizedBox(
-                            // Slightly reduced multiplier from 2.2 to 2.0 to tighten vertical space
-                            height: AppTypography.responsiveFontSize(
-                                    context, 18.0) *
-                                2.0,
-                            child: ConditionalMarquee(
-                              text: currentShow.venue,
-                              style: textTheme.headlineSmall?.copyWith(
-                                fontSize: AppTypography.responsiveFontSize(
-                                    context, 18.0),
-                                color: colorScheme.onSurface,
+                Flexible(
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.bottomCenter,
+                    child: GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      onTap: () {
+                        _scrollToCurrentTrack(force: true);
+                        if (_panelController.isAttached) {
+                          if (_panelController.isPanelClosed) {
+                            _panelController.open();
+                          }
+                        }
+                      },
+                      child: Padding(
+                        padding: EdgeInsets.only(
+                            left: 16.0,
+                            right: 16.0,
+                            bottom: 24.0 + bottomPadding),
+                        child: Row(
+                          mainAxisAlignment: settingsProvider.hideTrackDuration
+                              ? MainAxisAlignment.center
+                              : MainAxisAlignment.start,
+                          children: [
+                            SizedBox(
+                              height: AppTypography.responsiveFontSize(
+                                      context, 18.0) *
+                                  2.0,
+                              width: MediaQuery.of(context).size.width -
+                                  32, // explicit width for marquee in fitted box
+                              child: ConditionalMarquee(
+                                text: currentShow.venue,
+                                style: textTheme.headlineSmall?.copyWith(
+                                  fontSize: AppTypography.responsiveFontSize(
+                                      context, 18.0),
+                                  color: colorScheme.onSurface,
+                                ),
+                                blankSpace: 60.0,
+                                pauseAfterRound: const Duration(seconds: 3),
+                                textAlign: settingsProvider.hideTrackDuration
+                                    ? TextAlign.center
+                                    : TextAlign.start,
                               ),
-                              blankSpace: 60.0,
-                              pauseAfterRound: const Duration(seconds: 3),
-                              textAlign: settingsProvider.hideTrackDuration
-                                  ? TextAlign.center
-                                  : TextAlign.start,
                             ),
-                          ),
+                            if (!settingsProvider.hideTrackDuration)
+                              const SizedBox(width: 8),
+                          ],
                         ),
-                        if (!settingsProvider.hideTrackDuration)
-                          const SizedBox(width: 8),
-                      ],
+                      ),
                     ),
                   ),
                 ),
@@ -760,220 +766,226 @@ class _PlaybackScreenState extends State<PlaybackScreen>
                 final double yOffset = (100.0 - 140.0 * value) * scaleFactor;
                 return Transform.translate(
                   offset: Offset(0, yOffset),
-                  child: SingleChildScrollView(
-                    physics: const ClampingScrollPhysics(),
-                    padding: EdgeInsets.fromLTRB(
-                        16,
-                        0,
-                        16,
-                        (settingsProvider.uiScale &&
-                                settingsProvider.appFont == 'caveat')
-                            ? 56 * scaleFactor
-                            : 32 * scaleFactor),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Align(
-                                    alignment: Alignment.centerLeft,
-                                    child: Text(
-                                      currentSource.location ?? 'Location N/A',
-                                      style: textTheme.titleSmall?.copyWith(
-                                        fontSize:
-                                            AppTypography.responsiveFontSize(
-                                                context, 16.0),
-                                        color: colorScheme.secondary,
-                                        fontWeight: FontWeight.w500,
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.topCenter,
+                    child: Container(
+                      width: MediaQuery.of(context).size.width,
+                      padding: EdgeInsets.fromLTRB(
+                          16,
+                          0,
+                          16,
+                          16 *
+                              scaleFactor), // Reduced to ~2x top gap (8px spacer * 2)
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Align(
+                                      alignment: Alignment.centerLeft,
+                                      child: Text(
+                                        currentSource.location ??
+                                            'Location N/A',
+                                        style: textTheme.titleSmall?.copyWith(
+                                          fontSize:
+                                              AppTypography.responsiveFontSize(
+                                                  context, 16.0),
+                                          color: colorScheme.secondary,
+                                          fontWeight: FontWeight.w500,
+                                        ),
                                       ),
                                     ),
-                                  ),
-                                  const SizedBox(
-                                      height:
-                                          4), // Reduced from 8 to bring Location closer to Date
-                                  Row(
-                                    children: [
-                                      const SizedBox(
-                                          width:
-                                              4), // Slight indentation for Date
-                                      Flexible(
-                                        child: Transform.translate(
-                                          offset: const Offset(0, 2),
-                                          child: SizedBox(
-                                            height: AppTypography
-                                                    .responsiveFontSize(
-                                                        context, 14.0) *
-                                                2.2,
-                                            child: Padding(
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                      horizontal: 4.0),
-                                              child: ConditionalMarquee(
-                                                text: formattedDate,
-                                                style: textTheme.titleMedium
-                                                    ?.copyWith(
-                                                  fontSize: AppTypography
+                                    const SizedBox(
+                                        height:
+                                            4), // Reduced from 8 to bring Location closer to Date
+                                    Row(
+                                      children: [
+                                        const SizedBox(
+                                            width:
+                                                4), // Slight indentation for Date
+                                        Flexible(
+                                          child: Transform.translate(
+                                            offset: const Offset(0, 2),
+                                            child: SizedBox(
+                                              height: AppTypography
                                                       .responsiveFontSize(
-                                                          context, 14.0),
-                                                  color: colorScheme
-                                                      .onSurfaceVariant,
-                                                  height: 1.2,
+                                                          context, 14.0) *
+                                                  2.2,
+                                              child: Padding(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                        horizontal: 4.0),
+                                                child: ConditionalMarquee(
+                                                  text: formattedDate,
+                                                  style: textTheme.titleMedium
+                                                      ?.copyWith(
+                                                    fontSize: AppTypography
+                                                        .responsiveFontSize(
+                                                            context, 14.0),
+                                                    color: colorScheme
+                                                        .onSurfaceVariant,
+                                                    height: 1.2,
+                                                  ),
                                                 ),
                                               ),
                                             ),
                                           ),
                                         ),
-                                      ),
-                                      IconButton(
-                                        constraints: const BoxConstraints(),
-                                        padding: const EdgeInsets.only(left: 8),
-                                        icon: Icon(Icons.copy_rounded,
-                                            size: 20 * scaleFactor,
-                                            color:
-                                                colorScheme.onSurfaceVariant),
-                                        onPressed: () {
-                                          final track = currentSource.tracks[
-                                              audioProvider.audioPlayer
-                                                      .currentIndex ??
-                                                  0];
-                                          final locationStr = currentSource
-                                                      .location !=
-                                                  null
-                                              ? " - ${currentSource.location}"
-                                              : "";
-                                          final info =
-                                              "${currentShow.venue}$locationStr - $formattedDate - ${currentSource.id}\n${track.title}\n${track.url.replaceAll('/download/', '/details/').split('/').sublist(0, 5).join('/')}";
-                                          Clipboard.setData(
-                                              ClipboardData(text: info));
-                                          HapticFeedback
-                                              .selectionClick(); // Confirm copy action
-                                          ScaffoldMessenger.of(context)
-                                              .showSnackBar(
-                                            SnackBar(
-                                              content: Row(
-                                                children: [
-                                                  Icon(
-                                                    Icons
-                                                        .check_circle_outline_rounded,
-                                                    color: colorScheme
-                                                        .onPrimaryContainer,
-                                                    size: 20 * scaleFactor,
-                                                  ),
-                                                  const SizedBox(width: 12),
-                                                  Expanded(
-                                                    child: Text(
-                                                      'Details copied to clipboard',
-                                                      style: textTheme
-                                                          .labelLarge
-                                                          ?.copyWith(
-                                                        color: colorScheme
-                                                            .onPrimaryContainer,
-                                                        fontWeight:
-                                                            FontWeight.bold,
+                                        IconButton(
+                                          constraints: const BoxConstraints(),
+                                          padding:
+                                              const EdgeInsets.only(left: 8),
+                                          icon: Icon(Icons.copy_rounded,
+                                              size: 20 * scaleFactor,
+                                              color:
+                                                  colorScheme.onSurfaceVariant),
+                                          onPressed: () {
+                                            final track = currentSource.tracks[
+                                                audioProvider.audioPlayer
+                                                        .currentIndex ??
+                                                    0];
+                                            final locationStr = currentSource
+                                                        .location !=
+                                                    null
+                                                ? " - ${currentSource.location}"
+                                                : "";
+                                            final info =
+                                                "${currentShow.venue}$locationStr - $formattedDate - ${currentSource.id}\n${track.title}\n${track.url.replaceAll('/download/', '/details/').split('/').sublist(0, 5).join('/')}";
+                                            Clipboard.setData(
+                                                ClipboardData(text: info));
+                                            HapticFeedback
+                                                .selectionClick(); // Confirm copy action
+                                            ScaffoldMessenger.of(context)
+                                                .showSnackBar(
+                                              SnackBar(
+                                                content: Row(
+                                                  children: [
+                                                    Icon(
+                                                      Icons
+                                                          .check_circle_outline_rounded,
+                                                      color: colorScheme
+                                                          .onPrimaryContainer,
+                                                      size: 20 * scaleFactor,
+                                                    ),
+                                                    const SizedBox(width: 12),
+                                                    Expanded(
+                                                      child: Text(
+                                                        'Details copied to clipboard',
+                                                        style: textTheme
+                                                            .labelLarge
+                                                            ?.copyWith(
+                                                          color: colorScheme
+                                                              .onPrimaryContainer,
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                        ),
                                                       ),
                                                     ),
+                                                  ],
+                                                ),
+                                                behavior:
+                                                    SnackBarBehavior.floating,
+                                                backgroundColor: colorScheme
+                                                    .primaryContainer,
+                                                elevation: 4,
+                                                duration: const Duration(
+                                                    milliseconds: 1500),
+                                                margin: EdgeInsets.only(
+                                                  bottom:
+                                                      (MediaQuery.of(context)
+                                                                  .size
+                                                                  .height *
+                                                              (settingsProvider
+                                                                      .uiScale
+                                                                  ? 0.45
+                                                                  : 0.40)) -
+                                                          minHeight +
+                                                          (75 * scaleFactor),
+                                                  left: 48,
+                                                  right: 48,
+                                                ),
+                                                shape: RoundedRectangleBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                          100),
+                                                  side: BorderSide(
+                                                    color: colorScheme
+                                                        .onPrimaryContainer
+                                                        .withValues(alpha: 0.1),
+                                                    width: 1,
                                                   ),
-                                                ],
-                                              ),
-                                              behavior:
-                                                  SnackBarBehavior.floating,
-                                              backgroundColor:
-                                                  colorScheme.primaryContainer,
-                                              elevation: 4,
-                                              duration: const Duration(
-                                                  milliseconds: 1500),
-                                              margin: EdgeInsets.only(
-                                                bottom: (MediaQuery.of(context)
-                                                            .size
-                                                            .height *
-                                                        (settingsProvider
-                                                                .uiScale
-                                                            ? 0.45
-                                                            : 0.40)) -
-                                                    minHeight +
-                                                    (75 * scaleFactor),
-                                                left: 48,
-                                                right: 48,
-                                              ),
-                                              shape: RoundedRectangleBorder(
-                                                borderRadius:
-                                                    BorderRadius.circular(100),
-                                                side: BorderSide(
-                                                  color: colorScheme
-                                                      .onPrimaryContainer
-                                                      .withValues(alpha: 0.1),
-                                                  width: 1,
                                                 ),
                                               ),
-                                            ),
-                                          );
-                                        },
-                                      ),
-                                    ],
+                                            );
+                                          },
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: [
+                                  // Rating Stars
+                                  ConstrainedBox(
+                                    constraints: const BoxConstraints(
+                                        minWidth: 48, minHeight: 48),
+                                    child: Center(
+                                      child: _buildRatingButton(
+                                          context, currentShow, currentSource),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  // SrcBadge
+                                  // SrcBadge
+                                  if (currentSource.src != null)
+                                    SrcBadge(
+                                      src: currentSource.src!,
+                                      matchShnidLook: true,
+                                    ),
+                                  const SizedBox(height: 4),
+                                  // Shnid Badge
+                                  InkWell(
+                                    onTap: () {
+                                      if (currentSource.tracks.isNotEmpty) {
+                                        launchArchivePage(
+                                            currentSource.tracks.first.url);
+                                      }
+                                    },
+                                    borderRadius: BorderRadius.circular(8),
+                                    child: ShnidBadge(
+                                      text: currentSource.id,
+                                      showUnderline: true,
+                                    ),
                                   ),
                                 ],
                               ),
-                            ),
-                            const SizedBox(width: 8),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.end,
-                              children: [
-                                // Rating Stars
-                                ConstrainedBox(
-                                  constraints: const BoxConstraints(
-                                      minWidth: 48, minHeight: 48),
-                                  child: Center(
-                                    child: _buildRatingButton(
-                                        context, currentShow, currentSource),
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                // SrcBadge
-                                // SrcBadge
-                                if (currentSource.src != null)
-                                  SrcBadge(
-                                    src: currentSource.src!,
-                                    matchShnidLook: true,
-                                  ),
-                                const SizedBox(height: 4),
-                                // Shnid Badge
-                                InkWell(
-                                  onTap: () {
-                                    if (currentSource.tracks.isNotEmpty) {
-                                      launchArchivePage(
-                                          currentSource.tracks.first.url);
-                                    }
-                                  },
-                                  borderRadius: BorderRadius.circular(8),
-                                  child: ShnidBadge(
-                                    text: currentSource.id,
-                                    showUnderline: true,
-                                  ),
-                                ),
-                              ],
-                            ),
+                            ],
+                          ),
+                          const SizedBox(height: 8), // Reduced from 16 to 8
+                          const PlaybackProgressBar(),
+                          const SizedBox(height: 8),
+                          ValueListenableBuilder<double>(
+                            valueListenable: panelPositionNotifier,
+                            builder: (context, position, _) {
+                              return PlaybackControls(panelPosition: position);
+                            },
+                          ),
+                          if (settingsProvider.showPlaybackMessages) ...[
+                            SizedBox(height: 12 * scaleFactor),
+                            _buildStatusMessages(context, audioProvider),
                           ],
-                        ),
-                        const SizedBox(height: 8), // Reduced from 16 to 8
-                        const PlaybackProgressBar(),
-                        const SizedBox(height: 8),
-                        ValueListenableBuilder<double>(
-                          valueListenable: panelPositionNotifier,
-                          builder: (context, position, _) {
-                            return PlaybackControls(panelPosition: position);
-                          },
-                        ),
-                        if (settingsProvider.showPlaybackMessages) ...[
-                          SizedBox(height: 12 * scaleFactor),
-                          _buildStatusMessages(context, audioProvider),
                         ],
-                      ],
+                      ),
                     ),
                   ),
                 );

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:shakedown/providers/settings_provider.dart';
@@ -24,11 +25,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   int _currentPage = 0;
   bool _dontShowAgain = false;
   String? _version;
+  bool? _archiveReachable;
 
   @override
   void initState() {
     super.initState();
     _loadVersion();
+    _checkArchiveReachability();
   }
 
   @override
@@ -43,6 +46,25 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       setState(() {
         _version = info.version;
       });
+    }
+  }
+
+  Future<void> _checkArchiveReachability() async {
+    try {
+      await http
+          .head(Uri.parse('https://archive.org'))
+          .timeout(const Duration(seconds: 3));
+      if (mounted) {
+        setState(() {
+          _archiveReachable = true;
+        });
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(() {
+          _archiveReachable = false;
+        });
+      }
     }
   }
 
@@ -246,6 +268,56 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 32),
+              // Archive.org Item (Top Priority)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8.0),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '•',
+                      style: TextStyle(
+                        color: colorScheme.primary,
+                        fontSize:
+                            AppTypography.responsiveFontSize(context, 18.0),
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: RichText(
+                        text: TextSpan(
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            color: colorScheme.onSurfaceVariant,
+                            height: 1.3,
+                            fontSize: AppTypography.responsiveFontSize(
+                                context,
+                                (settings.uiScale &&
+                                        settings.appFont == 'caveat')
+                                    ? 12.5
+                                    : 14.0),
+                          ),
+                          children: [
+                            const TextSpan(
+                                text: 'All audio is streamed directly from '),
+                            TextSpan(
+                              text: 'Archive.org',
+                              style: TextStyle(
+                                color: (_archiveReachable == false)
+                                    ? const Color(0xFFEF4444) // Explicit Red
+                                    : null,
+                                fontWeight: (_archiveReachable == false)
+                                    ? FontWeight.bold
+                                    : null,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
               _buildBulletPoint(
                   context,
                   'Dive into an almost endless list of live Grateful Dead shows',
@@ -255,10 +327,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               _buildBulletPoint(
                   context,
                   'Filter source types: Matrix, Betty Board, Soundboard, etc.',
-                  scaleFactor),
-              _buildBulletPoint(
-                  context,
-                  'All audio is streamed directly from Archive.org',
                   scaleFactor),
               _buildBulletPoint(context, 'Gapless playback', scaleFactor),
               const SizedBox(height: 40),
