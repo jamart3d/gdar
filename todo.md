@@ -369,19 +369,18 @@ Balanced app size with performance and robust user data storage.
 
 ## Design Audit: Expressive Material 3 (Settings Screen)
 
-- [ ] **SectionCard Refinement:**
-  - [ ] Increase corner radius to 28 (M3 Extra Large).
-  - [ ] Update title typography to `titleLarge` for better hierarchy.
+- [x] **SectionCard Refinement:**
+  - [x] Increase corner radius to 28 (M3 Extra Large).
+  - [x] Update title typography to `titleLarge` for better hierarchy.
 
-- [ ] **Collection Statistics Dashboard:**
-  - [ ] Convert linear list to a 2-column Grid Layout for key stats (Shows, Songs, Runtime).
-  - [ ] "Stat Cards": Container with large number, small label.
+- [x] **Collection Statistics Dashboard:**
+  - [x] Convert linear list to a 2-column Grid Layout for key stats (Shows, Songs, Runtime).
+  - [x] "Stat Cards": Container with large number, small label.
 
-- [ ] **Expressive Interactive Elements:**
-  - [ ] **Glow Slider:** Add dynamic label or discrete tick marks.
-  - [ ] **Source Badges:** Add tactile feel / scale animation on press.
-  - [ ] **Navigation:** Use `OpenContainer` or M3 transitions for sub-screens ("Manage Rated Shows", "About").
+- [x] **Expressive Interactive Elements:**
+  - [x] **Glow Slider:** Add dynamic label or discrete tick marks.
+  - [x] **Source Badges:** Add tactile feel / scale animation on press.
+  - [x] **Navigation:** Use `OpenContainer` or M3 transitions for sub-screens ("Manage Rated Shows", "About").
 
-- [ ] **Typography Alignment:** Map headers/labels to M3 Type Scale (`labelSmall`, `bodyMedium`, `titleLarge`) while respecting `scaleFactor`.
-
-
+- [x] **Typography Alignment:** Map headers/labels to M3 Type Scale (`labelSmall`, `bodyMedium`, `titleLarge`) while respecting `scaleFactor`.
+  - [x] Audit `settings_screen.dart` and `collection_statistics.dart` for hardcoded styles.

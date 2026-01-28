@@ -165,6 +165,68 @@ class SourceFilterSettings extends StatelessWidget {
   Widget _buildFilterBadge(
       BuildContext context, String label, bool isActive, VoidCallback onTap,
       {VoidCallback? onLongPress}) {
+    return _TactileBadge(
+      label: label,
+      isActive: isActive,
+      onTap: onTap,
+      onLongPress: onLongPress,
+    );
+  }
+}
+
+class _TactileBadge extends StatefulWidget {
+  final String label;
+  final bool isActive;
+  final VoidCallback onTap;
+  final VoidCallback? onLongPress;
+
+  const _TactileBadge({
+    required this.label,
+    required this.isActive,
+    required this.onTap,
+    this.onLongPress,
+  });
+
+  @override
+  State<_TactileBadge> createState() => _TactileBadgeState();
+}
+
+class _TactileBadgeState extends State<_TactileBadge>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _scaleAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+        vsync: this, duration: const Duration(milliseconds: 100));
+    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.95).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _handleTapDown(TapDownDetails details) {
+    _controller.forward();
+  }
+
+  void _handleTapUp(TapUpDetails details) {
+    _controller.reverse();
+    widget.onTap();
+  }
+
+  void _handleTapCancel() {
+    _controller.reverse();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final settingsProvider = context.watch<SettingsProvider>();
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
@@ -172,54 +234,68 @@ class SourceFilterSettings extends StatelessWidget {
     final scaleFactor =
         FontLayoutConfig.getEffectiveScale(context, settingsProvider);
 
-    return InkWell(
-      onTap: onTap,
-      onLongPress: onLongPress != null
+    return GestureDetector(
+      onTapDown: _handleTapDown,
+      onTapUp: _handleTapUp,
+      onTapCancel: _handleTapCancel,
+      onLongPress: widget.onLongPress != null
           ? () {
               HapticFeedback.mediumImpact();
-              onLongPress();
+              widget.onLongPress!();
             }
           : null,
-      borderRadius: BorderRadius.circular(10),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-        decoration: BoxDecoration(
-          gradient: isActive
-              ? (isTrueBlackMode
-                  ? const LinearGradient(colors: [Colors.black, Colors.black])
-                  : LinearGradient(
-                      colors: [
-                        colorScheme.secondaryContainer.withValues(alpha: 0.9),
-                        colorScheme.secondaryContainer.withValues(alpha: 0.7),
-                      ],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ))
-              : null,
-          color: isActive ? null : Colors.transparent,
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(
-            color: isActive
+      child: ScaleTransition(
+        scale: _scaleAnimation,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+          decoration: BoxDecoration(
+            gradient: widget.isActive
                 ? (isTrueBlackMode
-                    ? colorScheme.outlineVariant
-                    : Colors.transparent)
-                : colorScheme.outline.withValues(alpha: 0.3),
-            width: 1,
+                    ? const LinearGradient(colors: [Colors.black, Colors.black])
+                    : LinearGradient(
+                        colors: [
+                          colorScheme.secondaryContainer.withValues(alpha: 0.9),
+                          colorScheme.secondaryContainer.withValues(alpha: 0.7),
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ))
+                : null,
+            color: widget.isActive ? null : Colors.transparent,
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(
+              color: widget.isActive
+                  ? (isTrueBlackMode
+                      ? colorScheme.outlineVariant
+                      : Colors.transparent)
+                  : colorScheme.outline.withValues(alpha: 0.3),
+              width: 1,
+            ),
+            boxShadow: widget.isActive && !isTrueBlackMode
+                ? [
+                    BoxShadow(
+                      color:
+                          colorScheme.secondaryContainer.withValues(alpha: 0.3),
+                      blurRadius: 4,
+                      offset: const Offset(0, 2),
+                    )
+                  ]
+                : null,
           ),
-        ),
-        child: FittedBox(
-          fit: BoxFit.scaleDown,
-          child: Text(
-            label.toUpperCase(),
-            style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                  color: isActive
-                      ? colorScheme.onSecondaryContainer
-                      : colorScheme.onSurface,
-                  fontWeight: FontWeight.w700,
-                  fontSize: 9 * scaleFactor,
-                  letterSpacing: 0.5,
-                ),
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              widget.label.toUpperCase(),
+              style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                    color: widget.isActive
+                        ? colorScheme.onSecondaryContainer
+                        : colorScheme.onSurface,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 9 * scaleFactor,
+                    letterSpacing: 0.5,
+                  ),
+            ),
           ),
         ),
       ),

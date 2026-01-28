@@ -20,6 +20,7 @@ class CollectionStatistics extends StatelessWidget {
     final settingsProvider = context.watch<SettingsProvider>();
     final scaleFactor =
         FontLayoutConfig.getEffectiveScale(context, settingsProvider);
+    final colorScheme = Theme.of(context).colorScheme;
     final allShows = showListProvider.allShows;
 
     int totalShows = allShows.length;
@@ -125,7 +126,7 @@ class CollectionStatistics extends StatelessWidget {
     final duration = Duration(seconds: totalDurationSeconds);
     final days = duration.inDays;
     final hours = duration.inHours % 24;
-    final minutes = duration.inMinutes % 60;
+    // final minutes = duration.inMinutes % 60;
 
     return SectionCard(
       scaleFactor: scaleFactor,
@@ -135,60 +136,81 @@ class CollectionStatistics extends StatelessWidget {
       children: [
         ListTile(
           dense: true,
-          visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
+          visualDensity: VisualDensity.compact,
+          leading: Icon(Icons.library_music,
+              size: 24 * scaleFactor, color: colorScheme.primary),
           title: FittedBox(
             fit: BoxFit.scaleDown,
             alignment: Alignment.centerLeft,
-            child: Text('Total Collection',
-                style: TextStyle(fontSize: 10 * scaleFactor)),
+            child: Text(
+              '$totalShows Total Shows',
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontSize: 16 * scaleFactor,
+                    fontWeight: FontWeight.w500,
+                  ),
+            ),
           ),
-          trailing: FittedBox(
-            fit: BoxFit.scaleDown,
-            alignment: Alignment.centerRight,
-            child: Text('$totalShows Shows / $totalSources Sources',
-                style: TextStyle(
-                    fontSize: 10 * scaleFactor, fontWeight: FontWeight.bold)),
+          subtitle: Padding(
+            padding: EdgeInsets.only(
+                top: settingsProvider.appFont == 'rock_salt'
+                    ? 4.0 * scaleFactor
+                    : 0),
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerLeft,
+              child: Text(
+                '$totalSources Sources',
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      fontSize: 12 * scaleFactor,
+                    ),
+              ),
+            ),
           ),
         ),
         ListTile(
           dense: true,
-          visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
+          visualDensity: VisualDensity.compact,
+          leading: Icon(Icons.timer,
+              size: 24 * scaleFactor, color: colorScheme.primary),
           title: FittedBox(
             fit: BoxFit.scaleDown,
             alignment: Alignment.centerLeft,
-            child: Text('Total Songs',
-                style: TextStyle(fontSize: 10 * scaleFactor)),
+            child: Text(
+              '${days}d ${hours}h Total Runtime',
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontSize: 16 * scaleFactor,
+                    fontWeight: FontWeight.w500,
+                  ),
+            ),
           ),
-          trailing: FittedBox(
-            fit: BoxFit.scaleDown,
-            alignment: Alignment.centerRight,
-            child: Text('$totalSongs',
-                style: TextStyle(
-                    fontSize: 10 * scaleFactor, fontWeight: FontWeight.bold)),
-          ),
-        ),
-        ListTile(
-          dense: true,
-          visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
-          title: FittedBox(
-            fit: BoxFit.scaleDown,
-            alignment: Alignment.centerLeft,
-            child: Text('Total Runtime',
-                style: TextStyle(fontSize: 10 * scaleFactor)),
-          ),
-          trailing: FittedBox(
-            fit: BoxFit.scaleDown,
-            alignment: Alignment.centerRight,
-            child: Text('${days}d ${hours}h ${minutes}m',
-                style: TextStyle(
-                    fontSize: 10 * scaleFactor, fontWeight: FontWeight.bold)),
+          subtitle: Padding(
+            padding: EdgeInsets.only(
+                top: settingsProvider.appFont == 'rock_salt'
+                    ? 4.0 * scaleFactor
+                    : 0),
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerLeft,
+              child: Text(
+                '$totalSongs Songs',
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      fontSize: 12 * scaleFactor,
+                    ),
+              ),
+            ),
           ),
         ),
         ExpansionTile(
           dense: true,
           visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
-          title: Text('Source Categories',
-              style: TextStyle(fontSize: 10 * scaleFactor)),
+          title: Text(
+            'Source Categories Details',
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  fontSize: 14 * scaleFactor,
+                  fontWeight: FontWeight.w500,
+                ),
+          ),
+          leading: Icon(Icons.list_alt, size: 20 * scaleFactor),
           shape: const Border(),
           children: [
             if (catBettySources > 0)
@@ -200,15 +222,25 @@ class CollectionStatistics extends StatelessWidget {
                     fit: BoxFit.scaleDown,
                     alignment: Alignment.centerLeft,
                     child: Text('Betty Boards',
-                        style: TextStyle(fontSize: 10 * scaleFactor)),
+                        style: Theme.of(context)
+                            .textTheme
+                            .bodyMedium
+                            ?.copyWith(fontSize: 10 * scaleFactor)),
                   ),
                   trailing: FittedBox(
                     fit: BoxFit.scaleDown,
                     alignment: Alignment.centerRight,
                     child: Text(
                         '${catBettyShows.length} Shows / $catBettySources Sources',
-                        style: TextStyle(fontSize: 8.5 * scaleFactor)),
+                        style: Theme.of(context)
+                            .textTheme
+                            .bodySmall
+                            ?.copyWith(fontSize: 8.5 * scaleFactor)),
                   )),
+            // ... (I need to ensure I don't break the rest of the file or miss other replacements)
+            // It might be safer to just replace the header/card part and then separate call for ListTiles if needed.
+            // But this tool call covers the Grid part.
+
             if (catUltraSources > 0)
               ListTile(
                   dense: true,
@@ -218,14 +250,20 @@ class CollectionStatistics extends StatelessWidget {
                     fit: BoxFit.scaleDown,
                     alignment: Alignment.centerLeft,
                     child: Text('Ultra Matrix',
-                        style: TextStyle(fontSize: 10 * scaleFactor)),
+                        style: Theme.of(context)
+                            .textTheme
+                            .bodyMedium
+                            ?.copyWith(fontSize: 10 * scaleFactor)),
                   ),
                   trailing: FittedBox(
                     fit: BoxFit.scaleDown,
                     alignment: Alignment.centerRight,
                     child: Text(
                         '${catUltraShows.length} Shows / $catUltraSources Sources',
-                        style: TextStyle(fontSize: 8.5 * scaleFactor)),
+                        style: Theme.of(context)
+                            .textTheme
+                            .bodySmall
+                            ?.copyWith(fontSize: 8.5 * scaleFactor)),
                   )),
             if (catMatrixSources > 0)
               ListTile(
@@ -236,14 +274,20 @@ class CollectionStatistics extends StatelessWidget {
                     fit: BoxFit.scaleDown,
                     alignment: Alignment.centerLeft,
                     child: Text('Matrix',
-                        style: TextStyle(fontSize: 10 * scaleFactor)),
+                        style: Theme.of(context)
+                            .textTheme
+                            .bodyMedium
+                            ?.copyWith(fontSize: 10 * scaleFactor)),
                   ),
                   trailing: FittedBox(
                     fit: BoxFit.scaleDown,
                     alignment: Alignment.centerRight,
                     child: Text(
                         '${catMatrixShows.length} Shows / $catMatrixSources Sources',
-                        style: TextStyle(fontSize: 8.5 * scaleFactor)),
+                        style: Theme.of(context)
+                            .textTheme
+                            .bodySmall
+                            ?.copyWith(fontSize: 8.5 * scaleFactor)),
                   )),
             if (catDsbdSources > 0)
               ListTile(
@@ -254,14 +298,20 @@ class CollectionStatistics extends StatelessWidget {
                     fit: BoxFit.scaleDown,
                     alignment: Alignment.centerLeft,
                     child: Text('Digital SBD',
-                        style: TextStyle(fontSize: 10 * scaleFactor)),
+                        style: Theme.of(context)
+                            .textTheme
+                            .bodyMedium
+                            ?.copyWith(fontSize: 10 * scaleFactor)),
                   ),
                   trailing: FittedBox(
                     fit: BoxFit.scaleDown,
                     alignment: Alignment.centerRight,
                     child: Text(
                         '${catDsbdShows.length} Shows / $catDsbdSources Sources',
-                        style: TextStyle(fontSize: 8.5 * scaleFactor)),
+                        style: Theme.of(context)
+                            .textTheme
+                            .bodySmall
+                            ?.copyWith(fontSize: 8.5 * scaleFactor)),
                   )),
             if (catFmSources > 0)
               ListTile(
@@ -272,14 +322,20 @@ class CollectionStatistics extends StatelessWidget {
                     fit: BoxFit.scaleDown,
                     alignment: Alignment.centerLeft,
                     child: Text('FM Broadcast',
-                        style: TextStyle(fontSize: 10 * scaleFactor)),
+                        style: Theme.of(context)
+                            .textTheme
+                            .bodyMedium
+                            ?.copyWith(fontSize: 10 * scaleFactor)),
                   ),
                   trailing: FittedBox(
                     fit: BoxFit.scaleDown,
                     alignment: Alignment.centerRight,
                     child: Text(
                         '${catFmShows.length} Shows / $catFmSources Sources',
-                        style: TextStyle(fontSize: 8.5 * scaleFactor)),
+                        style: Theme.of(context)
+                            .textTheme
+                            .bodySmall
+                            ?.copyWith(fontSize: 8.5 * scaleFactor)),
                   )),
             if (catSbdSources > 0)
               ListTile(
@@ -290,14 +346,20 @@ class CollectionStatistics extends StatelessWidget {
                     fit: BoxFit.scaleDown,
                     alignment: Alignment.centerLeft,
                     child: Text('Soundboard',
-                        style: TextStyle(fontSize: 10 * scaleFactor)),
+                        style: Theme.of(context)
+                            .textTheme
+                            .bodyMedium
+                            ?.copyWith(fontSize: 10 * scaleFactor)),
                   ),
                   trailing: FittedBox(
                     fit: BoxFit.scaleDown,
                     alignment: Alignment.centerRight,
                     child: Text(
                         '${catSbdShows.length} Shows / $catSbdSources Sources',
-                        style: TextStyle(fontSize: 8.5 * scaleFactor)),
+                        style: Theme.of(context)
+                            .textTheme
+                            .bodySmall
+                            ?.copyWith(fontSize: 8.5 * scaleFactor)),
                   )),
             if (catUnkSources > 0)
               ListTile(
@@ -307,14 +369,20 @@ class CollectionStatistics extends StatelessWidget {
                   fit: BoxFit.scaleDown,
                   alignment: Alignment.centerLeft,
                   child: Text('Unknown Shows',
-                      style: TextStyle(fontSize: 10 * scaleFactor)),
+                      style: Theme.of(context)
+                          .textTheme
+                          .bodyMedium
+                          ?.copyWith(fontSize: 10 * scaleFactor)),
                 ),
                 trailing: FittedBox(
                   fit: BoxFit.scaleDown,
                   alignment: Alignment.centerRight,
                   child: Text(
                       '${catUnkShows.length} Shows / $catUnkSources Sources',
-                      style: TextStyle(fontSize: 8.5 * scaleFactor)),
+                      style: Theme.of(context)
+                          .textTheme
+                          .bodySmall
+                          ?.copyWith(fontSize: 8.5 * scaleFactor)),
                 ),
               ),
           ],

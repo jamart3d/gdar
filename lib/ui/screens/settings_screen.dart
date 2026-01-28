@@ -1,3 +1,4 @@
+import 'package:animations/animations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
@@ -135,6 +136,7 @@ class _SettingsScreenState extends State<SettingsScreen>
               ),
               child: const Text('Default'),
               onPressed: () {
+                HapticFeedback.lightImpact();
                 settingsProvider.setSeedColor(null);
                 Navigator.of(context).pop();
               },
@@ -148,6 +150,7 @@ class _SettingsScreenState extends State<SettingsScreen>
             TextButton(
               child: const Text('Save'),
               onPressed: () {
+                HapticFeedback.lightImpact();
                 settingsProvider.setSeedColor(pickerColor);
                 Navigator.of(context).pop();
               },
@@ -187,6 +190,7 @@ class _SettingsScreenState extends State<SettingsScreen>
               groupValue: settingsProvider.appFont,
               onChanged: (String? value) {
                 if (value != null) {
+                  HapticFeedback.selectionClick();
                   settingsProvider.setAppFont(value);
                   Navigator.of(context).pop();
                 }
@@ -260,7 +264,10 @@ class _SettingsScreenState extends State<SettingsScreen>
           ),
         ),
       ),
-      onTap: () => _launchUrl(url),
+      onTap: () {
+        HapticFeedback.lightImpact();
+        _launchUrl(url);
+      },
     );
   }
 
@@ -389,7 +396,10 @@ class _SettingsScreenState extends State<SettingsScreen>
                             fit: BoxFit.scaleDown,
                             alignment: Alignment.centerLeft,
                             child: Text('Random Selection',
-                                style: TextStyle(fontSize: 15 * scaleFactor))),
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .titleMedium
+                                    ?.copyWith(fontSize: 16 * scaleFactor))),
                         subtitle: Text.rich(
                           TextSpan(
                             style: Theme.of(context)
@@ -424,7 +434,10 @@ class _SettingsScreenState extends State<SettingsScreen>
                             fit: BoxFit.scaleDown,
                             alignment: Alignment.centerLeft,
                             child: Text('Player Controls',
-                                style: TextStyle(fontSize: 15 * scaleFactor))),
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .titleMedium
+                                    ?.copyWith(fontSize: 16 * scaleFactor))),
                         subtitle: Text.rich(
                           TextSpan(
                             style: Theme.of(context)
@@ -459,7 +472,10 @@ class _SettingsScreenState extends State<SettingsScreen>
                             fit: BoxFit.scaleDown,
                             alignment: Alignment.centerLeft,
                             child: Text('Search',
-                                style: TextStyle(fontSize: 15 * scaleFactor))),
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .titleMedium
+                                    ?.copyWith(fontSize: 16 * scaleFactor))),
                         subtitle: Text.rich(
                           TextSpan(
                             style: Theme.of(context)
@@ -486,7 +502,10 @@ class _SettingsScreenState extends State<SettingsScreen>
                             fit: BoxFit.scaleDown,
                             alignment: Alignment.centerLeft,
                             child: Text('Rate Show',
-                                style: TextStyle(fontSize: 15 * scaleFactor))),
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .titleMedium
+                                    ?.copyWith(fontSize: 16 * scaleFactor))),
                         subtitle: Text.rich(
                           TextSpan(
                             style: Theme.of(context)
@@ -513,7 +532,10 @@ class _SettingsScreenState extends State<SettingsScreen>
                             fit: BoxFit.scaleDown,
                             alignment: Alignment.centerLeft,
                             child: Text('Quick Block',
-                                style: TextStyle(fontSize: 15 * scaleFactor))),
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .titleMedium
+                                    ?.copyWith(fontSize: 16 * scaleFactor))),
                         subtitle: Text.rich(
                           TextSpan(
                             style: Theme.of(context)
@@ -540,7 +562,10 @@ class _SettingsScreenState extends State<SettingsScreen>
                             fit: BoxFit.scaleDown,
                             alignment: Alignment.centerLeft,
                             child: Text('Expand Show',
-                                style: TextStyle(fontSize: 15 * scaleFactor))),
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .titleMedium
+                                    ?.copyWith(fontSize: 16 * scaleFactor))),
                         subtitle: Text.rich(
                           TextSpan(
                             style: Theme.of(context)
@@ -567,7 +592,10 @@ class _SettingsScreenState extends State<SettingsScreen>
                             fit: BoxFit.scaleDown,
                             alignment: Alignment.centerLeft,
                             child: Text('View Source Page',
-                                style: TextStyle(fontSize: 15 * scaleFactor))),
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .titleMedium
+                                    ?.copyWith(fontSize: 16 * scaleFactor))),
                         subtitle: Text.rich(
                           TextSpan(
                             style: Theme.of(context)
@@ -594,7 +622,10 @@ class _SettingsScreenState extends State<SettingsScreen>
                             fit: BoxFit.scaleDown,
                             alignment: Alignment.centerLeft,
                             child: Text('Share Track with Friends',
-                                style: TextStyle(fontSize: 15 * scaleFactor))),
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .titleMedium
+                                    ?.copyWith(fontSize: 16 * scaleFactor))),
                         subtitle: Text.rich(
                           TextSpan(
                             style: Theme.of(context)
@@ -621,7 +652,10 @@ class _SettingsScreenState extends State<SettingsScreen>
                             fit: BoxFit.scaleDown,
                             alignment: Alignment.centerLeft,
                             child: Text('Play from Shared Link',
-                                style: TextStyle(fontSize: 15 * scaleFactor))),
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .titleMedium
+                                    ?.copyWith(fontSize: 16 * scaleFactor))),
                         subtitle: Text.rich(
                           TextSpan(
                             style: Theme.of(context)
@@ -656,7 +690,10 @@ class _SettingsScreenState extends State<SettingsScreen>
                             fit: BoxFit.scaleDown,
                             alignment: Alignment.centerLeft,
                             child: Text('Dark',
-                                style: TextStyle(fontSize: 15 * scaleFactor))),
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .titleMedium
+                                    ?.copyWith(fontSize: 16 * scaleFactor))),
                         value: themeProvider.isDarkMode,
                         onChanged: (value) {
                           HapticFeedback.lightImpact();
@@ -675,13 +712,18 @@ class _SettingsScreenState extends State<SettingsScreen>
                             fit: BoxFit.scaleDown,
                             alignment: Alignment.centerLeft,
                             child: Text('Dynamic Color',
-                                style: TextStyle(fontSize: 15 * scaleFactor))),
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .titleMedium
+                                    ?.copyWith(fontSize: 16 * scaleFactor))),
                         subtitle: FittedBox(
                             fit: BoxFit.scaleDown,
                             alignment: Alignment.centerLeft,
                             child: Text('Theme from wallpaper',
-                                style:
-                                    TextStyle(fontSize: 12.0 * scaleFactor))),
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodySmall
+                                    ?.copyWith(fontSize: 12 * scaleFactor))),
                         value: settingsProvider.useDynamicColor,
                         onChanged: (value) {
                           HapticFeedback.lightImpact();
@@ -700,14 +742,18 @@ class _SettingsScreenState extends State<SettingsScreen>
                               fit: BoxFit.scaleDown,
                               alignment: Alignment.centerLeft,
                               child: Text('True Black',
-                                  style:
-                                      TextStyle(fontSize: 15 * scaleFactor))),
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .titleMedium
+                                      ?.copyWith(fontSize: 16 * scaleFactor))),
                           subtitle: FittedBox(
                               fit: BoxFit.scaleDown,
                               alignment: Alignment.centerLeft,
                               child: Text('Shadows and blur disabled',
-                                  style:
-                                      TextStyle(fontSize: 12.0 * scaleFactor))),
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .bodySmall
+                                      ?.copyWith(fontSize: 12 * scaleFactor))),
                           value: settingsProvider.useTrueBlack,
                           onChanged: (value) {
                             HapticFeedback.lightImpact();
@@ -726,14 +772,18 @@ class _SettingsScreenState extends State<SettingsScreen>
                               fit: BoxFit.scaleDown,
                               alignment: Alignment.centerLeft,
                               child: Text('Custom Theme Color',
-                                  style:
-                                      TextStyle(fontSize: 15 * scaleFactor))),
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .titleMedium
+                                      ?.copyWith(fontSize: 16 * scaleFactor))),
                           subtitle: FittedBox(
                               fit: BoxFit.scaleDown,
                               alignment: Alignment.centerLeft,
                               child: Text('Overrides the default theme color',
-                                  style:
-                                      TextStyle(fontSize: 12.0 * scaleFactor))),
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .bodySmall
+                                      ?.copyWith(fontSize: 12 * scaleFactor))),
                           onTap: () => _showColorPickerDialog(context),
                           trailing: Container(
                             width: 18,
@@ -756,7 +806,10 @@ class _SettingsScreenState extends State<SettingsScreen>
                             fit: BoxFit.scaleDown,
                             alignment: Alignment.centerLeft,
                             child: Text('Glow Border',
-                                style: TextStyle(fontSize: 15 * scaleFactor))),
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .titleMedium
+                                    ?.copyWith(fontSize: 16 * scaleFactor))),
                         value: settingsProvider.glowMode > 0,
                         onChanged: (value) {
                           context
@@ -785,12 +838,19 @@ class _SettingsScreenState extends State<SettingsScreen>
                                     ),
                                     Expanded(
                                       child: Slider(
+                                        onChangeStart: (_) =>
+                                            HapticFeedback.lightImpact(),
                                         value: settingsProvider.glowMode
                                             .toDouble(),
                                         min: 10,
                                         max: 100,
-                                        divisions: 18, // 10, 15, 20, ..., 100
+                                        divisions: 18, // 5% steps
+                                        label: '${settingsProvider.glowMode}%',
                                         onChanged: (value) {
+                                          if (value.round() !=
+                                              settingsProvider.glowMode) {
+                                            HapticFeedback.selectionClick();
+                                          }
                                           context
                                               .read<SettingsProvider>()
                                               .setGlowMode(value.round());
@@ -798,14 +858,18 @@ class _SettingsScreenState extends State<SettingsScreen>
                                       ),
                                     ),
                                     SizedBox(
-                                      width: 35 * scaleFactor,
+                                      width: 40 * scaleFactor,
                                       child: Text(
                                         '${settingsProvider.glowMode}%',
                                         style: Theme.of(context)
                                             .textTheme
-                                            .bodySmall
+                                            .labelLarge
                                             ?.copyWith(
-                                                fontSize: 12.0 * scaleFactor),
+                                                fontSize: 12.0 * scaleFactor,
+                                                fontWeight: FontWeight.bold,
+                                                color: Theme.of(context)
+                                                    .colorScheme
+                                                    .primary),
                                         textAlign: TextAlign.end,
                                       ),
                                     ),
@@ -824,13 +888,18 @@ class _SettingsScreenState extends State<SettingsScreen>
                             fit: BoxFit.scaleDown,
                             alignment: Alignment.centerLeft,
                             child: Text('Highlight Playing with RGB',
-                                style: TextStyle(fontSize: 15 * scaleFactor))),
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .titleMedium
+                                    ?.copyWith(fontSize: 16 * scaleFactor))),
                         subtitle: FittedBox(
                             fit: BoxFit.scaleDown,
                             alignment: Alignment.centerLeft,
                             child: Text('Animate border with RGB colors',
-                                style:
-                                    TextStyle(fontSize: 12.0 * scaleFactor))),
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodySmall
+                                    ?.copyWith(fontSize: 12 * scaleFactor))),
                         value: settingsProvider.highlightPlayingWithRgb,
                         onChanged: (value) {
                           final provider = context.read<SettingsProvider>();
@@ -909,6 +978,7 @@ class _SettingsScreenState extends State<SettingsScreen>
                                   },
                                   onSelectionChanged:
                                       (Set<double> newSelection) {
+                                    HapticFeedback.lightImpact();
                                     context
                                         .read<SettingsProvider>()
                                         .setRgbAnimationSpeed(
@@ -971,20 +1041,29 @@ class _SettingsScreenState extends State<SettingsScreen>
                             fit: BoxFit.scaleDown,
                             alignment: Alignment.centerLeft,
                             child: Text('App Font',
-                                style: TextStyle(fontSize: 15 * scaleFactor))),
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .titleMedium
+                                    ?.copyWith(fontSize: 16 * scaleFactor))),
                         subtitle: FittedBox(
                             fit: BoxFit.scaleDown,
                             alignment: Alignment.centerLeft,
                             child: Text(
                                 _getFontDisplayName(settingsProvider.appFont),
-                                style:
-                                    TextStyle(fontSize: 12.0 * scaleFactor))),
-                        onTap: () => _showFontSelectionDialog(context),
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodySmall
+                                    ?.copyWith(fontSize: 12 * scaleFactor))),
+                        onTap: () {
+                          HapticFeedback.lightImpact();
+                          _showFontSelectionDialog(context);
+                        },
                       ),
                     ],
                   ),
 
                   SectionCard(
+                    key: const ValueKey('interface_section'),
                     scaleFactor: scaleFactor,
                     title: 'Interface',
                     icon: Icons.view_quilt_outlined,
@@ -998,15 +1077,21 @@ class _SettingsScreenState extends State<SettingsScreen>
                             fit: BoxFit.scaleDown,
                             alignment: Alignment.centerLeft,
                             child: Text('UI Scale',
-                                style: TextStyle(fontSize: 15 * scaleFactor))),
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .titleMedium
+                                    ?.copyWith(fontSize: 16 * scaleFactor))),
                         subtitle: FittedBox(
                             fit: BoxFit.scaleDown,
                             alignment: Alignment.centerLeft,
                             child: Text('Increase text size across the app',
-                                style:
-                                    TextStyle(fontSize: 12.0 * scaleFactor))),
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodySmall
+                                    ?.copyWith(fontSize: 12 * scaleFactor))),
                         value: settingsProvider.uiScale,
                         onChanged: (value) {
+                          HapticFeedback.lightImpact();
                           context.read<SettingsProvider>().toggleUiScale();
                         },
                         secondary: const Icon(Icons.text_fields_rounded),
@@ -1018,15 +1103,21 @@ class _SettingsScreenState extends State<SettingsScreen>
                             fit: BoxFit.scaleDown,
                             alignment: Alignment.centerLeft,
                             child: Text('Show Splash Screen',
-                                style: TextStyle(fontSize: 15 * scaleFactor))),
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .titleMedium
+                                    ?.copyWith(fontSize: 16 * scaleFactor))),
                         subtitle: FittedBox(
                             fit: BoxFit.scaleDown,
                             alignment: Alignment.centerLeft,
                             child: Text('Show a loading screen on startup',
-                                style:
-                                    TextStyle(fontSize: 12.0 * scaleFactor))),
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodySmall
+                                    ?.copyWith(fontSize: 12 * scaleFactor))),
                         value: settingsProvider.showSplashScreen,
                         onChanged: (value) {
+                          HapticFeedback.lightImpact();
                           context
                               .read<SettingsProvider>()
                               .toggleShowSplashScreen();
@@ -1046,15 +1137,21 @@ class _SettingsScreenState extends State<SettingsScreen>
                             fit: BoxFit.scaleDown,
                             alignment: Alignment.centerLeft,
                             child: Text('Show date first in show cards',
-                                style: TextStyle(fontSize: 15 * scaleFactor))),
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .titleMedium
+                                    ?.copyWith(fontSize: 16 * scaleFactor))),
                         subtitle: FittedBox(
                             fit: BoxFit.scaleDown,
                             alignment: Alignment.centerLeft,
                             child: Text('Display the date before the venue',
-                                style:
-                                    TextStyle(fontSize: 12.0 * scaleFactor))),
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodySmall
+                                    ?.copyWith(fontSize: 12 * scaleFactor))),
                         value: settingsProvider.dateFirstInShowCard,
                         onChanged: (value) {
+                          HapticFeedback.lightImpact();
                           context
                               .read<SettingsProvider>()
                               .toggleDateFirstInShowCard();
@@ -1068,15 +1165,21 @@ class _SettingsScreenState extends State<SettingsScreen>
                             fit: BoxFit.scaleDown,
                             alignment: Alignment.centerLeft,
                             child: Text('Show Day of Week',
-                                style: TextStyle(fontSize: 15 * scaleFactor))),
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .titleMedium
+                                    ?.copyWith(fontSize: 16 * scaleFactor))),
                         subtitle: FittedBox(
                             fit: BoxFit.scaleDown,
                             alignment: Alignment.centerLeft,
                             child: Text('Includes the day name in dates',
-                                style:
-                                    TextStyle(fontSize: 12.0 * scaleFactor))),
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodySmall
+                                    ?.copyWith(fontSize: 12 * scaleFactor))),
                         value: settingsProvider.showDayOfWeek,
                         onChanged: (value) {
+                          HapticFeedback.lightImpact();
                           context
                               .read<SettingsProvider>()
                               .toggleShowDayOfWeek();
@@ -1091,16 +1194,21 @@ class _SettingsScreenState extends State<SettingsScreen>
                               fit: BoxFit.scaleDown,
                               alignment: Alignment.centerLeft,
                               child: Text('Abbreviate Day of Week',
-                                  style:
-                                      TextStyle(fontSize: 15 * scaleFactor))),
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .titleMedium
+                                      ?.copyWith(fontSize: 16 * scaleFactor))),
                           subtitle: FittedBox(
                               fit: BoxFit.scaleDown,
                               alignment: Alignment.centerLeft,
                               child: Text('Use short day names (e.g., Sat)',
-                                  style:
-                                      TextStyle(fontSize: 12.0 * scaleFactor))),
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .bodySmall
+                                      ?.copyWith(fontSize: 12 * scaleFactor))),
                           value: settingsProvider.abbreviateDayOfWeek,
                           onChanged: (value) {
+                            HapticFeedback.lightImpact();
                             context
                                 .read<SettingsProvider>()
                                 .toggleAbbreviateDayOfWeek();
@@ -1114,15 +1222,21 @@ class _SettingsScreenState extends State<SettingsScreen>
                             fit: BoxFit.scaleDown,
                             alignment: Alignment.centerLeft,
                             child: Text('Abbreviate Month',
-                                style: TextStyle(fontSize: 15 * scaleFactor))),
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .titleMedium
+                                    ?.copyWith(fontSize: 16 * scaleFactor))),
                         subtitle: FittedBox(
                             fit: BoxFit.scaleDown,
                             alignment: Alignment.centerLeft,
                             child: Text('Use short month names (e.g., Aug)',
-                                style:
-                                    TextStyle(fontSize: 12.0 * scaleFactor))),
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodySmall
+                                    ?.copyWith(fontSize: 12 * scaleFactor))),
                         value: settingsProvider.abbreviateMonth,
                         onChanged: (value) {
+                          HapticFeedback.lightImpact();
                           context
                               .read<SettingsProvider>()
                               .toggleAbbreviateMonth();
@@ -1142,15 +1256,21 @@ class _SettingsScreenState extends State<SettingsScreen>
                             fit: BoxFit.scaleDown,
                             alignment: Alignment.centerLeft,
                             child: Text('Sort Oldest First',
-                                style: TextStyle(fontSize: 15 * scaleFactor))),
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .titleMedium
+                                    ?.copyWith(fontSize: 16 * scaleFactor))),
                         subtitle: FittedBox(
                             fit: BoxFit.scaleDown,
                             alignment: Alignment.centerLeft,
                             child: Text('Show earliest shows at the top',
-                                style:
-                                    TextStyle(fontSize: 12.0 * scaleFactor))),
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodySmall
+                                    ?.copyWith(fontSize: 12 * scaleFactor))),
                         value: settingsProvider.sortOldestFirst,
                         onChanged: (value) {
+                          HapticFeedback.lightImpact();
                           context
                               .read<SettingsProvider>()
                               .toggleSortOldestFirst();
@@ -1164,16 +1284,22 @@ class _SettingsScreenState extends State<SettingsScreen>
                             fit: BoxFit.scaleDown,
                             alignment: Alignment.centerLeft,
                             child: Text('Show SHNID Badge (Single Source)',
-                                style: TextStyle(fontSize: 15 * scaleFactor))),
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .titleMedium
+                                    ?.copyWith(fontSize: 16 * scaleFactor))),
                         subtitle: FittedBox(
                             fit: BoxFit.scaleDown,
                             alignment: Alignment.centerLeft,
                             child: Text(
                                 'Display SHNID number on card if only one source',
-                                style:
-                                    TextStyle(fontSize: 12.0 * scaleFactor))),
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodySmall
+                                    ?.copyWith(fontSize: 12 * scaleFactor))),
                         value: settingsProvider.showSingleShnid,
                         onChanged: (value) {
+                          HapticFeedback.lightImpact();
                           context
                               .read<SettingsProvider>()
                               .toggleShowSingleShnid();
@@ -1192,15 +1318,21 @@ class _SettingsScreenState extends State<SettingsScreen>
                             fit: BoxFit.scaleDown,
                             alignment: Alignment.centerLeft,
                             child: Text('Show Track Numbers',
-                                style: TextStyle(fontSize: 15 * scaleFactor))),
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .titleMedium
+                                    ?.copyWith(fontSize: 16 * scaleFactor))),
                         subtitle: FittedBox(
                             fit: BoxFit.scaleDown,
                             alignment: Alignment.centerLeft,
                             child: Text('Display track numbers in lists',
-                                style:
-                                    TextStyle(fontSize: 12.0 * scaleFactor))),
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodySmall
+                                    ?.copyWith(fontSize: 12 * scaleFactor))),
                         value: settingsProvider.showTrackNumbers,
                         onChanged: (value) {
+                          HapticFeedback.lightImpact();
                           context
                               .read<SettingsProvider>()
                               .toggleShowTrackNumbers();
@@ -1214,15 +1346,21 @@ class _SettingsScreenState extends State<SettingsScreen>
                             fit: BoxFit.scaleDown,
                             alignment: Alignment.centerLeft,
                             child: Text('Hide Track Duration',
-                                style: TextStyle(fontSize: 15 * scaleFactor))),
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .titleMedium
+                                    ?.copyWith(fontSize: 16 * scaleFactor))),
                         subtitle: FittedBox(
                             fit: BoxFit.scaleDown,
                             alignment: Alignment.centerLeft,
                             child: Text('Hide duration and center track titles',
-                                style:
-                                    TextStyle(fontSize: 12.0 * scaleFactor))),
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodySmall
+                                    ?.copyWith(fontSize: 12 * scaleFactor))),
                         value: settingsProvider.hideTrackDuration,
                         onChanged: (value) {
+                          HapticFeedback.lightImpact();
                           context
                               .read<SettingsProvider>()
                               .toggleHideTrackDuration();
@@ -1232,7 +1370,8 @@ class _SettingsScreenState extends State<SettingsScreen>
                     ],
                   ),
 
-                  const SourceFilterSettings(),
+                  const SourceFilterSettings(
+                      key: ValueKey('source_filter_section')),
 
                   SectionCard(
                     scaleFactor: scaleFactor,
@@ -1248,14 +1387,19 @@ class _SettingsScreenState extends State<SettingsScreen>
                             fit: BoxFit.scaleDown,
                             alignment: Alignment.centerLeft,
                             child: Text('Play Random Show on Completion',
-                                style: TextStyle(fontSize: 15 * scaleFactor))),
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .titleMedium
+                                    ?.copyWith(fontSize: 16 * scaleFactor))),
                         subtitle: FittedBox(
                             fit: BoxFit.scaleDown,
                             alignment: Alignment.centerLeft,
                             child: Text(
                                 'When a show ends, play another one randomly',
-                                style:
-                                    TextStyle(fontSize: 12.0 * scaleFactor))),
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodySmall
+                                    ?.copyWith(fontSize: 12 * scaleFactor))),
                         value: settingsProvider.playRandomOnCompletion,
                         onChanged: (value) {
                           context
@@ -1295,14 +1439,19 @@ class _SettingsScreenState extends State<SettingsScreen>
                             fit: BoxFit.scaleDown,
                             alignment: Alignment.centerLeft,
                             child: Text('Play Random Show on Startup',
-                                style: TextStyle(fontSize: 15 * scaleFactor))),
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .titleMedium
+                                    ?.copyWith(fontSize: 16 * scaleFactor))),
                         subtitle: FittedBox(
                             fit: BoxFit.scaleDown,
                             alignment: Alignment.centerLeft,
                             child: Text(
                                 'Start playing a random show when the app opens',
-                                style:
-                                    TextStyle(fontSize: 12.0 * scaleFactor))),
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodySmall
+                                    ?.copyWith(fontSize: 12 * scaleFactor))),
                         value: settingsProvider.playRandomOnStartup,
                         onChanged: (value) {
                           context
@@ -1318,14 +1467,19 @@ class _SettingsScreenState extends State<SettingsScreen>
                             fit: BoxFit.scaleDown,
                             alignment: Alignment.centerLeft,
                             child: Text('Only Select Unplayed Shows',
-                                style: TextStyle(fontSize: 15 * scaleFactor))),
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .titleMedium
+                                    ?.copyWith(fontSize: 16 * scaleFactor))),
                         subtitle: FittedBox(
                             fit: BoxFit.scaleDown,
                             alignment: Alignment.centerLeft,
                             child: Text(
                                 'Random playback will prefer unplayed shows',
-                                style:
-                                    TextStyle(fontSize: 12.0 * scaleFactor))),
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodySmall
+                                    ?.copyWith(fontSize: 12 * scaleFactor))),
                         value: settingsProvider.randomOnlyUnplayed,
                         onChanged: (value) {
                           context
@@ -1341,14 +1495,19 @@ class _SettingsScreenState extends State<SettingsScreen>
                             fit: BoxFit.scaleDown,
                             alignment: Alignment.centerLeft,
                             child: Text('Only Select High Rated Shows',
-                                style: TextStyle(fontSize: 15 * scaleFactor))),
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .titleMedium
+                                    ?.copyWith(fontSize: 16 * scaleFactor))),
                         subtitle: FittedBox(
                             fit: BoxFit.scaleDown,
                             alignment: Alignment.centerLeft,
                             child: Text(
                                 'Random playback will prefer shows rated 2+ stars',
-                                style:
-                                    TextStyle(fontSize: 12.0 * scaleFactor))),
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodySmall
+                                    ?.copyWith(fontSize: 12 * scaleFactor))),
                         value: settingsProvider.randomOnlyHighRated,
                         onChanged: (value) {
                           context
@@ -1364,14 +1523,19 @@ class _SettingsScreenState extends State<SettingsScreen>
                             fit: BoxFit.scaleDown,
                             alignment: Alignment.centerLeft,
                             child: Text('Exclude Already Played Shows',
-                                style: TextStyle(fontSize: 15 * scaleFactor))),
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .titleMedium
+                                    ?.copyWith(fontSize: 16 * scaleFactor))),
                         subtitle: FittedBox(
                             fit: BoxFit.scaleDown,
                             alignment: Alignment.centerLeft,
                             child: Text(
                                 'Random playback will never select shows you have played',
-                                style:
-                                    TextStyle(fontSize: 12.0 * scaleFactor))),
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodySmall
+                                    ?.copyWith(fontSize: 12 * scaleFactor))),
                         value: settingsProvider.randomExcludePlayed,
                         onChanged: (value) {
                           context
@@ -1457,15 +1621,19 @@ class _SettingsScreenState extends State<SettingsScreen>
                               fit: BoxFit.scaleDown,
                               alignment: Alignment.centerLeft,
                               child: Text('Play on Tap',
-                                  style:
-                                      TextStyle(fontSize: 15 * scaleFactor))),
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .titleMedium
+                                      ?.copyWith(fontSize: 16 * scaleFactor))),
                           subtitle: FittedBox(
                               fit: BoxFit.scaleDown,
                               alignment: Alignment.centerLeft,
                               child: Text(
                                   'Tap track in inactive source to play',
-                                  style:
-                                      TextStyle(fontSize: 12.0 * scaleFactor))),
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .bodySmall
+                                      ?.copyWith(fontSize: 12 * scaleFactor))),
                           value: settingsProvider.playOnTap,
                           onChanged: (value) {
                             HapticFeedback.lightImpact();
@@ -1488,15 +1656,19 @@ class _SettingsScreenState extends State<SettingsScreen>
                               fit: BoxFit.scaleDown,
                               alignment: Alignment.centerLeft,
                               child: Text('Show Playback Messages',
-                                  style:
-                                      TextStyle(fontSize: 15 * scaleFactor))),
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .titleMedium
+                                      ?.copyWith(fontSize: 16 * scaleFactor))),
                           subtitle: FittedBox(
                               fit: BoxFit.scaleDown,
                               alignment: Alignment.centerLeft,
                               child: Text(
                                   'Display detailed status, buffered time, and errors',
-                                  style:
-                                      TextStyle(fontSize: 12.0 * scaleFactor))),
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .bodySmall
+                                      ?.copyWith(fontSize: 12 * scaleFactor))),
                           value: settingsProvider.showPlaybackMessages,
                           onChanged: (value) {
                             context
@@ -1520,8 +1692,10 @@ class _SettingsScreenState extends State<SettingsScreen>
                               fit: BoxFit.scaleDown,
                               alignment: Alignment.centerLeft,
                               child: Text('Advanced Cache',
-                                  style:
-                                      TextStyle(fontSize: 15 * scaleFactor))),
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .titleMedium
+                                      ?.copyWith(fontSize: 16 * scaleFactor))),
                           subtitle: FittedBox(
                               fit: BoxFit.scaleDown,
                               alignment: Alignment.centerLeft,
@@ -1529,7 +1703,10 @@ class _SettingsScreenState extends State<SettingsScreen>
                                 settingsProvider.offlineBuffering
                                     ? 'Cached ${audioProvider.cachedTrackCount} of (${audioProvider.currentSource?.tracks.length ?? 0} + 5) tracks'
                                     : 'Cache tracks to disk for deep sleep playback',
-                                style: TextStyle(fontSize: 12.0 * scaleFactor),
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodySmall
+                                    ?.copyWith(fontSize: 12 * scaleFactor),
                               )),
                           value: settingsProvider.offlineBuffering,
                           onChanged: (value) {
@@ -1573,29 +1750,41 @@ class _SettingsScreenState extends State<SettingsScreen>
                         .withValues(alpha: 0.3),
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(24)),
-                    child: ListTile(
-                      dense: true,
-                      visualDensity: VisualDensity.compact,
-                      leading: Icon(Icons.library_books_rounded,
-                          color: Theme.of(context).colorScheme.primary),
-                      title: FittedBox(
-                        fit: BoxFit.scaleDown,
-                        alignment: Alignment.centerLeft,
-                        child: Text(
-                          'Manage Rated Shows',
-                          style: TextStyle(
-                            color: Theme.of(context).colorScheme.primary,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 14 * scaleFactor,
+                    child: OpenContainer(
+                      openBuilder: (context, action) =>
+                          const RatedShowsScreen(),
+                      closedElevation: 0,
+                      closedColor: Colors.transparent,
+                      closedShape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(24)),
+                      transitionType: ContainerTransitionType.fadeThrough,
+                      openColor: Theme.of(context).colorScheme.surface,
+                      middleColor: Theme.of(context).colorScheme.surface,
+                      tappable: false,
+                      closedBuilder: (context, openContainer) {
+                        return ListTile(
+                          dense: true,
+                          visualDensity: VisualDensity.compact,
+                          leading: Icon(Icons.library_books_rounded,
+                              color: Theme.of(context).colorScheme.primary),
+                          title: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                              'Manage Rated Shows',
+                              style: TextStyle(
+                                color: Theme.of(context).colorScheme.primary,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14 * scaleFactor,
+                              ),
+                            ),
                           ),
-                        ),
-                      ),
-                      trailing:
-                          const Icon(Icons.arrow_forward_ios_rounded, size: 12),
-                      onTap: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                              builder: (_) => const RatedShowsScreen()),
+                          trailing: const Icon(Icons.arrow_forward_ios_rounded,
+                              size: 12),
+                          onTap: () {
+                            HapticFeedback.lightImpact();
+                            openContainer();
+                          },
                         );
                       },
                     ),
@@ -1614,28 +1803,41 @@ class _SettingsScreenState extends State<SettingsScreen>
                         borderRadius: BorderRadius.circular(24)),
                     child: Column(
                       children: [
-                        ListTile(
-                          dense: true,
-                          visualDensity: VisualDensity.compact,
-                          leading: Icon(Icons.info_outline,
-                              color: Theme.of(context).colorScheme.primary),
-                          title: FittedBox(
-                            fit: BoxFit.scaleDown,
-                            alignment: Alignment.centerLeft,
-                            child: Text(
-                              'About App',
-                              style: TextStyle(
-                                  color: Theme.of(context).colorScheme.primary,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 14 * scaleFactor),
-                            ),
-                          ),
-                          trailing: const Icon(Icons.arrow_forward_ios_rounded,
-                              size: 12),
-                          onTap: () {
-                            Navigator.of(context).push(
-                              MaterialPageRoute(
-                                  builder: (_) => const AboutScreen()),
+                        OpenContainer(
+                          openBuilder: (context, action) => const AboutScreen(),
+                          closedElevation: 0,
+                          closedColor: Colors.transparent,
+                          closedShape: const RoundedRectangleBorder(
+                              borderRadius: BorderRadius.zero),
+                          transitionType: ContainerTransitionType.fadeThrough,
+                          openColor: Theme.of(context).colorScheme.surface,
+                          middleColor: Theme.of(context).colorScheme.surface,
+                          tappable: false,
+                          closedBuilder: (context, openContainer) {
+                            return ListTile(
+                              dense: true,
+                              visualDensity: VisualDensity.compact,
+                              leading: Icon(Icons.info_outline,
+                                  color: Theme.of(context).colorScheme.primary),
+                              title: FittedBox(
+                                fit: BoxFit.scaleDown,
+                                alignment: Alignment.centerLeft,
+                                child: Text(
+                                  'About App',
+                                  style: TextStyle(
+                                      color:
+                                          Theme.of(context).colorScheme.primary,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 14 * scaleFactor),
+                                ),
+                              ),
+                              trailing: const Icon(
+                                  Icons.arrow_forward_ios_rounded,
+                                  size: 12),
+                              onTap: () {
+                                HapticFeedback.lightImpact();
+                                openContainer();
+                              },
                             );
                           },
                         ),

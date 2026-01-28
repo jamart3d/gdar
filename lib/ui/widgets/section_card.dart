@@ -23,7 +23,7 @@ class SectionCard extends StatelessWidget {
       margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
       elevation: 0,
       color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
       child: Theme(
         data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
         child: ExpansionTile(
@@ -31,9 +31,9 @@ class SectionCard extends StatelessWidget {
           dense: true,
           visualDensity: VisualDensity.compact,
           shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
           collapsedShape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
           leading:
               Icon(icon, color: colorScheme.primary, size: 24 * scaleFactor),
           title: FittedBox(
@@ -41,11 +41,14 @@ class SectionCard extends StatelessWidget {
             alignment: Alignment.centerLeft,
             child: Text(
               title,
-              style: TextStyle(
-                color: colorScheme.primary,
-                fontWeight: FontWeight.bold,
-                fontSize: 18 * scaleFactor,
-              ),
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    color: colorScheme.primary,
+                    fontWeight: FontWeight.bold,
+                    fontSize:
+                        (Theme.of(context).textTheme.titleLarge?.fontSize ??
+                                22.0) *
+                            scaleFactor,
+                  ),
             ),
           ),
           children: children,
