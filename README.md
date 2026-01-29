@@ -9,6 +9,8 @@ A Flutter application for browsing and playing concert recordings of the Gratefu
   - Dedicated playback screen with set list support (Set 1, Set 2, Encore).
   - Persistent mini-player for audio controls while browsing.
   - Random playback options: Play random show on startup/completion, filter by unplayed or high-rated shows.
+  - **Offline Buffering**: Pre-cache entire shows for uninterrupted playback during deep sleep or poor connectivity.
+  - **Buffer Agent**: Intelligent playback recovery that automatically detects and recovers from network issues and buffering failures.
 
 - **Clipboard Playback**:
   - **Instant Playback**: Paste an Archive.org share link into the **search field** to instantly trigger playback.
@@ -40,6 +42,8 @@ A Flutter application for browsing and playing concert recordings of the Gratefu
   - **Refined Settings**: Dedicated "Random Playback" section and clearer usage instructions with improved typography.
   - **Source-Only Blocking**: Blocking now applies specifically to Source IDs rather than the entire Show, allowing for finer curation.
   - **Native-Level Gapless**: Playback engine rewritten to use `ConcatenatingAudioSource` for true, precise gapless transitions.
+  - **Haptic Feedback**: Premium tactile feedback on all interactive elements for enhanced touch experience.
+  - **Material 3 Transitions**: Expressive navigation animations with scale + fade effects for a polished, premium feel.
 
 ## Usage Guide
 
@@ -63,6 +67,8 @@ Access settings via the gear icon in the top app bar.
 - **Appearance**: Toggle **Dark Mode**, **True Black Mode** (for OLED), **Dynamic Color** (Material You), and **Handwriting Font**.
 - **Playback**:
   - **Gapless Playback**: Seamless audio transitions.
+  - **Offline Buffering**: Pre-cache shows for uninterrupted playback.
+  - **Buffer Agent**: Automatic recovery from network issues.
   - **Random Playback**: Configure behavior for the random shuffle button.
 - **Interface**:
   - **UI Scale**: Adjust text size globally.
@@ -116,14 +122,36 @@ The output file will be located at:
 
 ## Testing & Debugging
 
-To test the "Play Random" deep link initialization (simulating a Google Assistant voice command) via ADB:
+### **Deep Link Reference**
+The app supports a wide range of deep links for testing and automation. Use `adb shell am start -W -a android.intent.action.VIEW -d "URI" com.jamart3d.shakedown` to trigger them.
 
+| Feature | URI Scheme (`shakedown://`) | Parameters | Description |
+| :--- | :--- | :--- | :--- |
+| **Play Random** | `play-random` | None | Immediately plays a random show (respects search filters). |
+| **Navigation** | `navigate` | `screen` | Navigate to specific screens: `home`, `settings`, `splash`, `onboarding`, `player`, `track_list`. |
+| | | `action` (for home) | `search` (opens search bar), `close_search`. |
+| | | `highlight` (for settings) | Highlights a specific setting key (e.g., `offline_buffering`). |
+| | | `panel` (for player) | `open` (starts with panel expanded). |
+| | | `index` (for track_list) | Index of the show to open from the current list (e.g., `0`). |
+| **Player Control** | `player` | `action` | `play`, `pause`, `resume`, `stop` (clears queue). |
+| **Settings** | `settings` | `key`, `value` | Toggle settings directly. Keys: `show_playback_messages`, `show_splash_screen`. |
+| **Debug Tools** | `debug` | `action` | `reset_prefs` (factory reset settings), `complete_onboarding`, `show_font_dialog`. |
+| **Font Test** | `font` | `name` | Force switch font: `caveat`, `permanent_marker`, `rock_salt`, `default`. |
+| **UI Scale** | `ui-scale` | `enabled` | `true`/`false` to toggle UI scaling. |
+
+#### **Example Commands**
 ```bash
-# Play Random Show
+# Play a random show
 adb shell am start -W -a android.intent.action.VIEW -d "shakedown://play-random" com.jamart3d.shakedown
 
-# Open Specific Feature
-adb shell am start -W -a android.intent.action.VIEW -d "shakedown://open?feature=play_random" com.jamart3d.shakedown
+# Open Settings and highlight 'Advanced Cache'
+adb shell am start -W -a android.intent.action.VIEW -d "shakedown://navigate?screen=settings&highlight=offline_buffering" com.jamart3d.shakedown
+
+# Pause Playback
+adb shell am start -W -a android.intent.action.VIEW -d "shakedown://player?action=pause" com.jamart3d.shakedown
+
+# Force UI Scale ON
+adb shell am start -W -a android.intent.action.VIEW -d "shakedown://ui-scale?enabled=true" com.jamart3d.shakedown
 ```
 
 

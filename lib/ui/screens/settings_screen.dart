@@ -431,6 +431,36 @@ class _SettingsScreenState extends State<SettingsScreen>
                       ListTile(
                         dense: true,
                         visualDensity: VisualDensity.compact,
+                        leading: const Icon(Icons.playlist_play_rounded),
+                        title: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: Alignment.centerLeft,
+                            child: Text('Auto-Play Modes',
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .titleMedium
+                                    ?.copyWith(fontSize: 16 * scaleFactor))),
+                        subtitle: Text.rich(
+                          TextSpan(
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodyMedium
+                                ?.copyWith(fontSize: 12.0 * scaleFactor),
+                            children: const [
+                              TextSpan(
+                                  text: 'Enable',
+                                  style:
+                                      TextStyle(fontWeight: FontWeight.bold)),
+                              TextSpan(
+                                  text:
+                                      ' "Play Random on Completion" for continuous radio-style playback, or "on Startup" for instant\u00A0music.'),
+                            ],
+                          ),
+                        ),
+                      ),
+                      ListTile(
+                        dense: true,
+                        visualDensity: VisualDensity.compact,
                         leading: const Icon(Icons.play_circle_outline_rounded),
                         title: FittedBox(
                             fit: BoxFit.scaleDown,
@@ -672,6 +702,36 @@ class _SettingsScreenState extends State<SettingsScreen>
                               TextSpan(
                                   text:
                                       ' a shared track link from your clipboard into search to jump directly to it.'),
+                            ],
+                          ),
+                        ),
+                      ),
+                      ListTile(
+                        dense: true,
+                        visualDensity: VisualDensity.compact,
+                        leading: const Icon(Icons.healing_rounded),
+                        title: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: Alignment.centerLeft,
+                            child: Text('Buffer Agent',
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .titleMedium
+                                    ?.copyWith(fontSize: 16 * scaleFactor))),
+                        subtitle: Text.rich(
+                          TextSpan(
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodyMedium
+                                ?.copyWith(fontSize: 12.0 * scaleFactor),
+                            children: const [
+                              TextSpan(
+                                  text: 'Auto-heals',
+                                  style:
+                                      TextStyle(fontWeight: FontWeight.bold)),
+                              TextSpan(
+                                  text:
+                                      ' playback by refreshing the stream if it gets stuck\u00A0buffering.'),
                             ],
                           ),
                         ),
@@ -1743,7 +1803,7 @@ class _SettingsScreenState extends State<SettingsScreen>
                               fit: BoxFit.scaleDown,
                               alignment: Alignment.centerLeft,
                               child: Text(
-                                'Automatically recover from network issues and buffering failures',
+                                'Auto-fix network and buffer issues',
                                 style: Theme.of(context)
                                     .textTheme
                                     .bodySmall

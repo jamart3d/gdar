@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:dynamic_color/dynamic_color.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shakedown/providers/audio_provider.dart';
@@ -132,6 +133,12 @@ class _GdarAppState extends State<GdarApp> {
               'Main: [Session #$_sessionId] Triggering playRandomShow from host: "play-random"');
           audioProvider.playRandomShow(filterBySearch: true);
         } else if (uri.host == 'ui-scale') {
+          // SAFETY: Disable debug tools in Release Mode
+          if (kReleaseMode) {
+            logger.w(
+                'Main: [Session #$_sessionId] Ignoring debug deep link (ui-scale) in Release Mode');
+            return;
+          }
           // Handle UI scale testing deep link
           final enabled =
               uri.queryParameters['enabled']?.toLowerCase() == 'true';
@@ -146,6 +153,12 @@ class _GdarAppState extends State<GdarApp> {
             settingsProvider.toggleUiScale();
           }
         } else if (uri.host == 'font') {
+          // SAFETY: Disable debug tools in Release Mode
+          if (kReleaseMode) {
+            logger.w(
+                'Main: [Session #$_sessionId] Ignoring debug deep link (font) in Release Mode');
+            return;
+          }
           // Handle font testing deep link: shakedown://font?name=caveat
           final fontName =
               uri.queryParameters['name']?.toLowerCase() ?? 'default';
@@ -250,6 +263,12 @@ class _GdarAppState extends State<GdarApp> {
             }
           }
         } else if (uri.host == 'debug') {
+          // SAFETY: Disable debug tools in Release Mode
+          if (kReleaseMode) {
+            logger.w(
+                'Main: [Session #$_sessionId] Ignoring debug deep link (debug) in Release Mode');
+            return;
+          }
           // Handle debug/reset intents
           final action = uri.queryParameters['action']?.toLowerCase();
           if (action == 'reset_prefs') {
