@@ -135,14 +135,14 @@ This file tracks planned features, enhancements, and bug fixes for the gdar appl
   - **Implementation:** Show a SnackBar or Dialog with message: "For best results during deep sleep, consider enabling Advanced Cache in Playback settings."
   - **Benefit:** Proactively guides users to optimal configuration for continuous random playback.
 
-- [ ] **Buffer Agent (Intelligent Playback Recovery):**
+- [x] **Buffer Agent (Intelligent Playback Recovery):**
   - **Feature:** Add a setting in Settings → Playback (enabled by default) called "Buffer Agent" that intelligently handles playback stalls and buffering failures.
-  - **Technical Context:**
-    - ExoPlayer (Android) defaults: 15-50 second buffer window, 3 automatic retry attempts
-    - No explicit "timeout" - detection based on buffering duration thresholds
-    - Current app uses default ExoPlayer `LoadControl` settings (not customized)
+  - **Implementation Status:** Completed.
+    - **Settings:** "Auto-fix network and buffer issues" toggle added to Playback settings.
+    - **Network Awareness:** Integrated `connectivity_plus` to pause recovery when offline and auto-recover immediately upon reconnection.
+    - **Usage Instructions:** Added explanation to Settings → Usage Instructions.
   - **Detection Thresholds:**
-    - **Stalled Buffering**: Player in buffering state for >20 seconds (aligns with ExoPlayer min buffer)
+    - **Stalled Buffering:** Player in buffering state for >20 seconds (aligns with ExoPlayer min buffer)
     - **Failed Start**: Playback fails to begin after ExoPlayer's 3 retry attempts are exhausted
     - Monitor `ProcessingState.buffering` duration and `playbackEventStream` errors
   - **Adaptive Response Behavior:**
@@ -242,7 +242,8 @@ This file tracks planned features, enhancements, and bug fixes for the gdar appl
   - [x] **Deep Link Consistency:** Ensured deep link actions wait for show list data initialization to resolve playback race conditions during cold start.
   - [ ] **User Instructions:** Add a section in Settings (or a Help dialog) explaining available voice commands ("Play random show") and deep link capabilities.
   - [ ] **Gemini Listing:** Investigate requirements for getting the app listed in "Gemini Connected Apps" (or equivalent discovery surfaces).
-  - [ ] **Deep Link Intent Audit:** Create a report of all deep link intents in the app, separating testing intents from production ones.
+  - [x] **Deep Link Intent Audit:** Create a report of all deep link intents in the app, separating testing intents from production ones.
+    - **Status:** Completed. Comprehensive reference table added to `README.md`. Secure-mode check added for release builds.
 
 - [ ] **Calendar Feature:** View shows by date on a calendar interface (e.g., "On This Day").
 

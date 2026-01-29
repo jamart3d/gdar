@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/widgets.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:shakedown/utils/logger.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 
 /// Intelligent playback recovery agent that monitors buffering state and
 /// automatically attempts recovery from network issues and buffering failures.
@@ -17,11 +18,15 @@ class BufferAgent with WidgetsBindingObserver {
   Timer? _bufferingTimer;
   StreamSubscription<PlayerState>? _playerStateSubscription;
   StreamSubscription<PlaybackEvent>? _playbackEventSubscription;
+  StreamSubscription<List<ConnectivityResult>>? _connectivitySubscription;
 
   bool _isBuffering = false;
   DateTime? _bufferingStartTime;
   bool _isRecovering = false;
   AppLifecycleState _appLifecycleState = AppLifecycleState.resumed;
+  bool _hasNetworkConnection = true;
+
+  final Connectivity _connectivity = Connectivity();
 
   /// Creates a new Buffer Agent.
   ///
@@ -39,6 +44,13 @@ class BufferAgent with WidgetsBindingObserver {
     // Register as lifecycle observer
     WidgetsBinding.instance.addObserver(this);
 
+    // check connectivity
+    _checkInitialConnection();
+
+    // Monitor connectivity
+    _connectivitySubscription =
+        _connectivity.onConnectivityChanged.listen(_updateConnectionStatus);
+
     // Listen to player state changes
     _playerStateSubscription =
         _audioPlayer.playerStateStream.listen(_onPlayerStateChanged);
@@ -50,6 +62,97 @@ class BufferAgent with WidgetsBindingObserver {
     );
 
     logger.i('BufferAgent: Initialized and monitoring playback');
+  }
+
+  Future<void> _checkInitialConnection() async {
+    try {
+      final results = await _connectivity.checkConnectivity();
+      _updateConnectionStatus(results);
+    } catch (e) {
+      logger.e('BufferAgent: Failed to check initial connectivity', error: e);
+    }
+  }
+
+  void _updateConnectionStatus(List<ConnectivityResult> results) {
+    // Determine if we have *any* valid connection in the list
+    final bool isConnected = results.any((result) =>
+        result != ConnectivityResult.none &&
+        result != ConnectivityResult.bluetooth);
+
+    if (isConnected != _hasNetworkConnection) {
+      _hasNetworkConnection = isConnected;
+      logger.i(
+          'BufferAgent: Network Status Changed -> ${isConnected ? "ONLINE" : "OFFLINE"}');
+
+      // If we just came back online and were stuck buffering, recover immediately!
+      if (isConnected && _isBuffering) {
+        logger.i(
+            'BufferAgent: Network restored while buffering! Recovering NOW.');
+        _cancelBufferingTimer(); // Stop waiting for timeout
+        _performRecovery();
+      }
+    }
+  }
+
+  void _attemptRecovery() {
+    if (_isRecovering) {
+      logger.d('BufferAgent: Recovery already in progress, skipping');
+      return;
+    }
+
+    // INTELLIGENT CHECK: Are we offline?
+    if (!_hasNetworkConnection) {
+      logger.w(
+          'BufferAgent: Cannot recover (Offline). Pausing checks until network returns.');
+      // We don't verify recovery here; we wait for _updateConnectionStatus to trigger it
+      return;
+    }
+
+    _isRecovering = true;
+    final isAppVisible = _appLifecycleState == AppLifecycleState.resumed;
+
+    if (isAppVisible) {
+      // App is visible: Notify user via callback
+      logger.i('BufferAgent: App visible, showing recovery notification');
+      _onRecoveryNotification?.call(
+        'Network issue detected. Retrying playback...',
+        _performRecovery,
+      );
+
+      // Also attempt automatic recovery after a short delay
+      Future.delayed(const Duration(seconds: 2), _performRecovery);
+    } else {
+      // App is in background/deep sleep: Silent recovery after delay
+      logger.i('BufferAgent: App in background, scheduling silent recovery');
+      final delaySeconds =
+          15 + (DateTime.now().millisecondsSinceEpoch % 16); // 15-30 seconds
+      Future.delayed(Duration(seconds: delaySeconds), _performRecovery);
+    }
+  }
+
+  void _performRecovery() {
+    if (!_isRecovering) return;
+
+    final currentPosition = _audioPlayer.position;
+    logger.i(
+        'BufferAgent: Performing recovery (position: ${currentPosition.inSeconds}s)');
+
+    try {
+      // Attempt recovery by seeking to current position (triggers rebuffering)
+      _audioPlayer.seek(currentPosition).then((_) {
+        logger.i('BufferAgent: Seek completed, attempting play');
+        return _audioPlayer.play();
+      }).then((_) {
+        logger.i('BufferAgent: Recovery successful');
+        _isRecovering = false;
+      }).catchError((error) {
+        logger.e('BufferAgent: Recovery failed', error: error);
+        _isRecovering = false;
+      });
+    } catch (e) {
+      logger.e('BufferAgent: Recovery attempt threw exception', error: e);
+      _isRecovering = false;
+    }
   }
 
   @override
@@ -116,59 +219,6 @@ class BufferAgent with WidgetsBindingObserver {
     }
   }
 
-  void _attemptRecovery() {
-    if (_isRecovering) {
-      logger.d('BufferAgent: Recovery already in progress, skipping');
-      return;
-    }
-
-    _isRecovering = true;
-    final isAppVisible = _appLifecycleState == AppLifecycleState.resumed;
-
-    if (isAppVisible) {
-      // App is visible: Notify user via callback
-      logger.i('BufferAgent: App visible, showing recovery notification');
-      _onRecoveryNotification?.call(
-        'Network issue detected. Retrying playback...',
-        _performRecovery,
-      );
-
-      // Also attempt automatic recovery after a short delay
-      Future.delayed(const Duration(seconds: 2), _performRecovery);
-    } else {
-      // App is in background/deep sleep: Silent recovery after delay
-      logger.i('BufferAgent: App in background, scheduling silent recovery');
-      final delaySeconds =
-          15 + (DateTime.now().millisecondsSinceEpoch % 16); // 15-30 seconds
-      Future.delayed(Duration(seconds: delaySeconds), _performRecovery);
-    }
-  }
-
-  void _performRecovery() {
-    if (!_isRecovering) return;
-
-    final currentPosition = _audioPlayer.position;
-    logger.i(
-        'BufferAgent: Performing recovery (position: ${currentPosition.inSeconds}s)');
-
-    try {
-      // Attempt recovery by seeking to current position (triggers rebuffering)
-      _audioPlayer.seek(currentPosition).then((_) {
-        logger.i('BufferAgent: Seek completed, attempting play');
-        return _audioPlayer.play();
-      }).then((_) {
-        logger.i('BufferAgent: Recovery successful');
-        _isRecovering = false;
-      }).catchError((error) {
-        logger.e('BufferAgent: Recovery failed', error: error);
-        _isRecovering = false;
-      });
-    } catch (e) {
-      logger.e('BufferAgent: Recovery attempt threw exception', error: e);
-      _isRecovering = false;
-    }
-  }
-
   /// Disposes of the buffer agent and cleans up resources.
   void dispose() {
     logger.i('BufferAgent: Disposing');
@@ -176,5 +226,6 @@ class BufferAgent with WidgetsBindingObserver {
     _cancelBufferingTimer();
     _playerStateSubscription?.cancel();
     _playbackEventSubscription?.cancel();
+    _connectivitySubscription?.cancel();
   }
 }

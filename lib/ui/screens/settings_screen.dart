@@ -731,7 +731,37 @@ class _SettingsScreenState extends State<SettingsScreen>
                                       TextStyle(fontWeight: FontWeight.bold)),
                               TextSpan(
                                   text:
-                                      ' playback by refreshing the stream if it gets stuck\u00A0buffering.'),
+                                      ' playback when stuck buffering, and auto-resumes when connection\u00A0returns.'),
+                            ],
+                          ),
+                        ),
+                      ),
+                      ListTile(
+                        dense: true,
+                        visualDensity: VisualDensity.compact,
+                        leading: const Icon(Icons.download_for_offline_rounded),
+                        title: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: Alignment.centerLeft,
+                            child: Text('Advanced Cache',
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .titleMedium
+                                    ?.copyWith(fontSize: 16 * scaleFactor))),
+                        subtitle: Text.rich(
+                          TextSpan(
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodyMedium
+                                ?.copyWith(fontSize: 12.0 * scaleFactor),
+                            children: const [
+                              TextSpan(
+                                  text: 'Pre-caches',
+                                  style:
+                                      TextStyle(fontWeight: FontWeight.bold)),
+                              TextSpan(
+                                  text:
+                                      ' entire shows to ensure uninterrupted playback during deep sleep or poor connectivity.'),
                             ],
                           ),
                         ),
@@ -1764,7 +1794,7 @@ class _SettingsScreenState extends State<SettingsScreen>
                               child: Text(
                                 settingsProvider.offlineBuffering
                                     ? 'Cached ${audioProvider.cachedTrackCount} of (${audioProvider.currentSource?.tracks.length ?? 0} + 5) tracks'
-                                    : 'Cache tracks to disk for deep sleep playback',
+                                    : 'Cache current show tracks to disk',
                                 style: Theme.of(context)
                                     .textTheme
                                     .bodySmall
