@@ -40,6 +40,7 @@ class SettingsProvider with ChangeNotifier {
   static const String _useStrictSrcCategorizationKey =
       'use_strict_src_categorization';
   static const String _offlineBufferingKey = 'offline_buffering';
+  static const String _enableBufferAgentKey = 'enable_buffer_agent';
 
   static const String _marqueeEnabledKey =
       'marquee_enabled'; // Logic for disabling marquee in tests
@@ -89,6 +90,7 @@ class SettingsProvider with ChangeNotifier {
   late bool _sortOldestFirst;
   late bool _useStrictSrcCategorization;
   late bool _offlineBuffering;
+  late bool _enableBufferAgent;
   late bool _showDayOfWeek;
   late bool _abbreviateDayOfWeek;
   late bool _abbreviateMonth;
@@ -125,6 +127,7 @@ class SettingsProvider with ChangeNotifier {
   bool get sortOldestFirst => _sortOldestFirst;
   bool get useStrictSrcCategorization => _useStrictSrcCategorization;
   bool get offlineBuffering => _offlineBuffering;
+  bool get enableBufferAgent => _enableBufferAgent;
   bool get highlightCurrentShowCard => true;
   bool get useMaterial3 => true;
   bool get showDayOfWeek => _showDayOfWeek;
@@ -323,6 +326,8 @@ class SettingsProvider with ChangeNotifier {
             DefaultSettings.useStrictSrcCategorization;
     _offlineBuffering = _prefs.getBool(_offlineBufferingKey) ??
         DefaultSettings.offlineBuffering;
+    _enableBufferAgent = _prefs.getBool(_enableBufferAgentKey) ??
+        DefaultSettings.enableBufferAgent;
 
     _marqueeEnabled = _prefs.getBool(_marqueeEnabledKey) ?? true;
     _showDebugLayout = _prefs.getBool(_showDebugLayoutKey) ?? false;
@@ -429,6 +434,9 @@ class SettingsProvider with ChangeNotifier {
 
   void toggleOfflineBuffering() => _updatePreference(
       _offlineBufferingKey, _offlineBuffering = !_offlineBuffering);
+
+  void toggleEnableBufferAgent() => _updatePreference(
+      _enableBufferAgentKey, _enableBufferAgent = !_enableBufferAgent);
 
   static const String _rgbAnimationSpeedKey = 'rgb_animation_speed';
   double _rgbAnimationSpeed = 1.0;

@@ -581,6 +581,13 @@ class MockSettingsProvider extends _i1.Mock implements _i8.SettingsProvider {
       ) as bool);
 
   @override
+  bool get enableBufferAgent => (super.noSuchMethod(
+        Invocation.getter(#enableBufferAgent),
+        returnValue: false,
+        returnValueForMissingStub: false,
+      ) as bool);
+
+  @override
   bool get highlightCurrentShowCard => (super.noSuchMethod(
         Invocation.getter(#highlightCurrentShowCard),
         returnValue: false,
@@ -926,6 +933,15 @@ class MockSettingsProvider extends _i1.Mock implements _i8.SettingsProvider {
       );
 
   @override
+  void toggleEnableBufferAgent() => super.noSuchMethod(
+        Invocation.method(
+          #toggleEnableBufferAgent,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
   void setRgbAnimationSpeed(double? speed) => super.noSuchMethod(
         Invocation.method(
           #setRgbAnimationSpeed,
@@ -1140,6 +1156,16 @@ class MockAudioProvider extends _i1.Mock implements _i11.AudioProvider {
             returnValueForMissingStub:
                 _i4.Stream<({_i6.Show show, _i9.Source source})>.empty(),
           ) as _i4.Stream<({_i6.Show show, _i9.Source source})>);
+
+  @override
+  _i4.Stream<({String message, _i10.VoidCallback? retryAction})>
+      get bufferAgentNotificationStream => (super.noSuchMethod(
+            Invocation.getter(#bufferAgentNotificationStream),
+            returnValue: _i4.Stream<
+                ({String message, _i10.VoidCallback? retryAction})>.empty(),
+            returnValueForMissingStub: _i4.Stream<
+                ({String message, _i10.VoidCallback? retryAction})>.empty(),
+          ) as _i4.Stream<({String message, _i10.VoidCallback? retryAction})>);
 
   @override
   int get cachedTrackCount => (super.noSuchMethod(

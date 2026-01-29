@@ -32,6 +32,25 @@ This file tracks planned features, enhancements, and bug fixes for the gdar appl
   - **Requirement:** Implement an expressive "shake" animation for the `ShakedownTitle` when it reaches the AppBar (after splash transition).
   - **Style:** Material 3 expressive, dampened spring/sine wave.
 
+- [ ] **Non-Random (Chronological Playback):**
+  - **Requirement:** Add a "Non-Random" toggle that changes the behavior of random playback settings to play shows in list order instead.
+  - **Location:** Settings → Random Playback section
+  - **UI Label:** "Non-Random" with subtitle "Play next show by order in list instead of randomly"
+  - **Behavior When Enabled:**
+    - Changes "Play Random Show on Completion" text to "Play **Next** Show on Completion"
+    - Changes "Play Random Show on Startup" text to "Play **Next** Show on Startup"
+    - When either setting is enabled, plays the next show in the current list order (respecting "Sort Oldest First" setting)
+    - Wraps to the first show when reaching the end of the list
+  - **Mutual Exclusivity:** 
+    - When "Non-Random" is turned ON, it automatically turns OFF "Play Random Show on Completion" and "Play Random Show on Startup" if they were on
+    - When either "Play Random Show on Completion" or "Play Random Show on Startup" is turned ON, it automatically turns OFF "Non-Random" if it was on
+  - **Integration:** Works with existing filters (unplayed, high-rated, exclude played, source categories).
+  - **Implementation:**
+    - Add `nonRandom` boolean setting to `SettingsProvider`
+    - Modify `AudioProvider.playRandomShow()` and `AudioProvider.queueRandomShow()` to check `nonRandom` setting
+    - If `nonRandom` is true, find current show index in filtered list and select next index (with wraparound)
+    - Update Settings UI to dynamically change text based on `nonRandom` state
+  - **Note:** This provides a "listen through the catalog in order" experience as an alternative to random discovery.
 
 ## Medium Priority
 
@@ -115,6 +134,37 @@ This file tracks planned features, enhancements, and bug fixes for the gdar appl
   - [ ] When user enables "Play Random Show on Completion" in Settings → Random Playback, suggest also enabling "Advanced Cache" (Settings → Playback) to improve playback reliability while device sleeps.
   - **Implementation:** Show a SnackBar or Dialog with message: "For best results during deep sleep, consider enabling Advanced Cache in Playback settings."
   - **Benefit:** Proactively guides users to optimal configuration for continuous random playback.
+
+- [ ] **Buffer Agent (Intelligent Playback Recovery):**
+  - **Feature:** Add a setting in Settings → Playback (enabled by default) called "Buffer Agent" that intelligently handles playback stalls and buffering failures.
+  - **Technical Context:**
+    - ExoPlayer (Android) defaults: 15-50 second buffer window, 3 automatic retry attempts
+    - No explicit "timeout" - detection based on buffering duration thresholds
+    - Current app uses default ExoPlayer `LoadControl` settings (not customized)
+  - **Detection Thresholds:**
+    - **Stalled Buffering**: Player in buffering state for >20 seconds (aligns with ExoPlayer min buffer)
+    - **Failed Start**: Playback fails to begin after ExoPlayer's 3 retry attempts are exhausted
+    - Monitor `ProcessingState.buffering` duration and `playbackEventStream` errors
+  - **Adaptive Response Behavior:**
+    - **App Not Visible / Deep Sleep:**
+      - After ExoPlayer retries exhausted, wait 15-30 seconds, then attempt manual `play()` or `seek(currentPosition)`
+      - Log retry attempt with timestamp and network state for diagnostics
+    - **App Awake / Visible:**
+      - Display Material 3 expressive SnackBar: "Network issue detected. Retrying playback..."
+      - Add subtle flash/ripple animation to Play button to draw attention
+      - Provide manual "Retry Now" action in notification to trigger immediate recovery
+      - Show estimated buffer percentage if available
+  - **UX Polish:**
+    - Use Material 3 motion principles (spring animations, fade-through transitions)
+  - **Implementation Notes:**
+    - Listen to `playerStateStream` and track `buffering` duration with a `Timer`
+    - Coordinate with ExoPlayer's existing retry mechanism (don't interfere with native retries)
+    - **MP3 Streaming Context:** App streams MP3s from archive.org (no Icecast/burst-on-connect optimization)
+    - **Optional LoadControl Tuning:** For faster recovery, consider custom ExoPlayer `LoadControl`:
+      - `minBufferMs: 20000` (20s, faster than 15s default)
+      - `maxBufferMs: 60000` (60s, prevents memory bloat)
+      - Requires platform channel implementation (advanced)
+  - **Benefit:** Improves reliability during network instability and prevents silent playback failures, especially during deep sleep or background operation.
 
 - [ ] **Improve Playback Controls:** Enhance the layout and interactivity of controls in the Playback Screen.
   - [ ] **Venue Name Positioning:**

@@ -1,4 +1,3 @@
-import 'package:animations/animations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
@@ -52,6 +51,9 @@ class _SettingsScreenState extends State<SettingsScreen>
     // Pre-register offline_buffering key so we can scroll to it if needed
     if (!_settingKeys.containsKey('offline_buffering')) {
       _settingKeys['offline_buffering'] = GlobalKey();
+    }
+    if (!_settingKeys.containsKey('enable_buffer_agent')) {
+      _settingKeys['enable_buffer_agent'] = GlobalKey();
     }
 
     // Trigger Font Selection Dialog if requested
@@ -1719,6 +1721,44 @@ class _SettingsScreenState extends State<SettingsScreen>
                               const Icon(Icons.download_for_offline_rounded),
                         ),
                       ),
+                      _HighlightableSetting(
+                        key: ValueKey(
+                            'enable_buffer_agent_${_highlightTriggerCount}_${_activeHighlightKey == 'enable_buffer_agent'}'),
+                        startWithHighlight: _activeHighlightKey ==
+                                'enable_buffer_agent' ||
+                            widget.highlightSetting == 'enable_buffer_agent',
+                        settingKey: _settingKeys['enable_buffer_agent'],
+                        child: SwitchListTile(
+                          dense: true,
+                          visualDensity: VisualDensity.compact,
+                          title: FittedBox(
+                              fit: BoxFit.scaleDown,
+                              alignment: Alignment.centerLeft,
+                              child: Text('Buffer Agent',
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .titleMedium
+                                      ?.copyWith(fontSize: 16 * scaleFactor))),
+                          subtitle: FittedBox(
+                              fit: BoxFit.scaleDown,
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                'Automatically recover from network issues and buffering failures',
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodySmall
+                                    ?.copyWith(fontSize: 12 * scaleFactor),
+                              )),
+                          value: settingsProvider.enableBufferAgent,
+                          onChanged: (value) {
+                            HapticFeedback.lightImpact();
+                            context
+                                .read<SettingsProvider>()
+                                .toggleEnableBufferAgent();
+                          },
+                          secondary: const Icon(Icons.healing_rounded),
+                        ),
+                      ),
                     ],
                   ),
 
@@ -1750,43 +1790,61 @@ class _SettingsScreenState extends State<SettingsScreen>
                         .withValues(alpha: 0.3),
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(24)),
-                    child: OpenContainer(
-                      openBuilder: (context, action) =>
-                          const RatedShowsScreen(),
-                      closedElevation: 0,
-                      closedColor: Colors.transparent,
-                      closedShape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(24)),
-                      transitionType: ContainerTransitionType.fadeThrough,
-                      openColor: Theme.of(context).colorScheme.surface,
-                      middleColor: Theme.of(context).colorScheme.surface,
-                      tappable: false,
-                      closedBuilder: (context, openContainer) {
-                        return ListTile(
-                          dense: true,
-                          visualDensity: VisualDensity.compact,
-                          leading: Icon(Icons.library_books_rounded,
-                              color: Theme.of(context).colorScheme.primary),
-                          title: FittedBox(
-                            fit: BoxFit.scaleDown,
-                            alignment: Alignment.centerLeft,
-                            child: Text(
-                              'Manage Rated Shows',
-                              style: TextStyle(
-                                color: Theme.of(context).colorScheme.primary,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 14 * scaleFactor,
-                              ),
-                            ),
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(24),
+                      onTap: () {
+                        HapticFeedback.lightImpact();
+                        Navigator.of(context).push(
+                          PageRouteBuilder(
+                            pageBuilder:
+                                (context, animation, secondaryAnimation) =>
+                                    const RatedShowsScreen(),
+                            transitionsBuilder: (context, animation,
+                                secondaryAnimation, child) {
+                              const begin = 0.92;
+                              const end = 1.0;
+                              const curve = Curves.easeOutCubic;
+
+                              var scaleTween = Tween(begin: begin, end: end)
+                                  .chain(CurveTween(curve: curve));
+                              var fadeTween = Tween(begin: 0.0, end: 1.0)
+                                  .chain(CurveTween(curve: curve));
+
+                              return FadeTransition(
+                                opacity: animation.drive(fadeTween),
+                                child: ScaleTransition(
+                                  scale: animation.drive(scaleTween),
+                                  child: child,
+                                ),
+                              );
+                            },
+                            transitionDuration:
+                                const Duration(milliseconds: 400),
+                            reverseTransitionDuration:
+                                const Duration(milliseconds: 350),
                           ),
-                          trailing: const Icon(Icons.arrow_forward_ios_rounded,
-                              size: 12),
-                          onTap: () {
-                            HapticFeedback.lightImpact();
-                            openContainer();
-                          },
                         );
                       },
+                      child: ListTile(
+                        dense: true,
+                        visualDensity: VisualDensity.compact,
+                        leading: Icon(Icons.library_books_rounded,
+                            color: Theme.of(context).colorScheme.primary),
+                        title: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            'Manage Rated Shows',
+                            style: TextStyle(
+                              color: Theme.of(context).colorScheme.primary,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14 * scaleFactor,
+                            ),
+                          ),
+                        ),
+                        trailing: const Icon(Icons.arrow_forward_ios_rounded,
+                            size: 12),
+                      ),
                     ),
                   ),
 
@@ -1803,43 +1861,63 @@ class _SettingsScreenState extends State<SettingsScreen>
                         borderRadius: BorderRadius.circular(24)),
                     child: Column(
                       children: [
-                        OpenContainer(
-                          openBuilder: (context, action) => const AboutScreen(),
-                          closedElevation: 0,
-                          closedColor: Colors.transparent,
-                          closedShape: const RoundedRectangleBorder(
-                              borderRadius: BorderRadius.zero),
-                          transitionType: ContainerTransitionType.fadeThrough,
-                          openColor: Theme.of(context).colorScheme.surface,
-                          middleColor: Theme.of(context).colorScheme.surface,
-                          tappable: false,
-                          closedBuilder: (context, openContainer) {
-                            return ListTile(
-                              dense: true,
-                              visualDensity: VisualDensity.compact,
-                              leading: Icon(Icons.info_outline,
-                                  color: Theme.of(context).colorScheme.primary),
-                              title: FittedBox(
-                                fit: BoxFit.scaleDown,
-                                alignment: Alignment.centerLeft,
-                                child: Text(
-                                  'About App',
-                                  style: TextStyle(
-                                      color:
-                                          Theme.of(context).colorScheme.primary,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 14 * scaleFactor),
-                                ),
+                        InkWell(
+                          borderRadius: const BorderRadius.vertical(
+                              top: Radius.circular(24)),
+                          onTap: () {
+                            HapticFeedback.lightImpact();
+                            Navigator.of(context).push(
+                              PageRouteBuilder(
+                                pageBuilder:
+                                    (context, animation, secondaryAnimation) =>
+                                        const AboutScreen(),
+                                transitionsBuilder: (context, animation,
+                                    secondaryAnimation, child) {
+                                  const begin = 0.92;
+                                  const end = 1.0;
+                                  const curve = Curves.easeOutCubic;
+
+                                  var scaleTween = Tween(begin: begin, end: end)
+                                      .chain(CurveTween(curve: curve));
+                                  var fadeTween = Tween(begin: 0.0, end: 1.0)
+                                      .chain(CurveTween(curve: curve));
+
+                                  return FadeTransition(
+                                    opacity: animation.drive(fadeTween),
+                                    child: ScaleTransition(
+                                      scale: animation.drive(scaleTween),
+                                      child: child,
+                                    ),
+                                  );
+                                },
+                                transitionDuration:
+                                    const Duration(milliseconds: 400),
+                                reverseTransitionDuration:
+                                    const Duration(milliseconds: 350),
                               ),
-                              trailing: const Icon(
-                                  Icons.arrow_forward_ios_rounded,
-                                  size: 12),
-                              onTap: () {
-                                HapticFeedback.lightImpact();
-                                openContainer();
-                              },
                             );
                           },
+                          child: ListTile(
+                            dense: true,
+                            visualDensity: VisualDensity.compact,
+                            leading: Icon(Icons.info_outline,
+                                color: Theme.of(context).colorScheme.primary),
+                            title: FittedBox(
+                              fit: BoxFit.scaleDown,
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                'About App',
+                                style: TextStyle(
+                                    color:
+                                        Theme.of(context).colorScheme.primary,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 14 * scaleFactor),
+                              ),
+                            ),
+                            trailing: const Icon(
+                                Icons.arrow_forward_ios_rounded,
+                                size: 12),
+                          ),
                         ),
                         _buildClickableLink(
                           context,

@@ -1513,6 +1513,13 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
       ) as bool);
 
   @override
+  bool get enableBufferAgent => (super.noSuchMethod(
+        Invocation.getter(#enableBufferAgent),
+        returnValue: false,
+        returnValueForMissingStub: false,
+      ) as bool);
+
+  @override
   bool get highlightCurrentShowCard => (super.noSuchMethod(
         Invocation.getter(#highlightCurrentShowCard),
         returnValue: false,
@@ -1852,6 +1859,15 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
   void toggleOfflineBuffering() => super.noSuchMethod(
         Invocation.method(
           #toggleOfflineBuffering,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void toggleEnableBufferAgent() => super.noSuchMethod(
+        Invocation.method(
+          #toggleEnableBufferAgent,
           [],
         ),
         returnValueForMissingStub: null,

@@ -17,6 +17,7 @@ import 'package:just_audio/just_audio.dart';
 import 'package:just_audio_background/just_audio_background.dart';
 import 'package:crypto/crypto.dart'; // For cache key generation
 import 'dart:convert'; // For utf8 encoding
+import 'package:shakedown/services/buffer_agent.dart';
 
 class AudioProvider with ChangeNotifier {
   static final Random _random = Random();
@@ -28,9 +29,12 @@ class AudioProvider with ChangeNotifier {
   final _errorController = StreamController<String>.broadcast();
   final _randomShowRequestController =
       StreamController<({Show show, Source source})>.broadcast();
+  final _bufferAgentNotificationController = StreamController<
+      ({String message, VoidCallback? retryAction})>.broadcast();
 
   ShowListProvider? _showListProvider;
   SettingsProvider? _settingsProvider;
+  BufferAgent? _bufferAgent;
 
   AudioPlayer get audioPlayer => _audioPlayer;
   bool get isPlaying => _audioPlayer.playing;
@@ -109,6 +113,9 @@ class AudioProvider with ChangeNotifier {
   Stream<String> get playbackErrorStream => _errorController.stream;
   Stream<({Show show, Source source})> get randomShowRequestStream =>
       _randomShowRequestController.stream;
+  Stream<({String message, VoidCallback? retryAction})>
+      get bufferAgentNotificationStream =>
+          _bufferAgentNotificationController.stream;
 
   /// Returns the current number of cached audio files.
   /// This is a synchronous getter that counts SHA-256 hash files in the temp directory.
@@ -174,6 +181,29 @@ class AudioProvider with ChangeNotifier {
   ) {
     _showListProvider = showListProvider;
     _settingsProvider = settingsProvider;
+    _updateBufferAgent();
+  }
+
+  void _updateBufferAgent() {
+    final shouldEnable = _settingsProvider?.enableBufferAgent ?? false;
+
+    if (shouldEnable && _bufferAgent == null) {
+      // Create buffer agent
+      _bufferAgent = BufferAgent(
+        _audioPlayer,
+        onRecoveryNotification: (message, retryAction) {
+          _bufferAgentNotificationController.add(
+            (message: message, retryAction: retryAction),
+          );
+        },
+      );
+      logger.i('AudioProvider: Buffer Agent enabled');
+    } else if (!shouldEnable && _bufferAgent != null) {
+      // Dispose buffer agent
+      _bufferAgent?.dispose();
+      _bufferAgent = null;
+      logger.i('AudioProvider: Buffer Agent disabled');
+    }
   }
 
   void _listenForPlaybackProgress() {
@@ -241,6 +271,8 @@ class AudioProvider with ChangeNotifier {
     _indexSubscription?.cancel();
     _errorController.close();
     _randomShowRequestController.close();
+    _bufferAgentNotificationController.close();
+    _bufferAgent?.dispose();
     _audioPlayer.dispose();
     super.dispose();
   }

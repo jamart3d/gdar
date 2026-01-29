@@ -4,7 +4,7 @@
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'dart:async' as _i4;
-import 'dart:ui' as _i9;
+import 'dart:ui' as _i7;
 
 import 'package:audio_session/audio_session.dart' as _i11;
 import 'package:just_audio/just_audio.dart' as _i2;
@@ -13,8 +13,8 @@ import 'package:mockito/src/dummies.dart' as _i10;
 import 'package:shakedown/models/show.dart' as _i5;
 import 'package:shakedown/models/source.dart' as _i6;
 import 'package:shakedown/providers/audio_provider.dart' as _i3;
-import 'package:shakedown/providers/settings_provider.dart' as _i8;
-import 'package:shakedown/providers/show_list_provider.dart' as _i7;
+import 'package:shakedown/providers/settings_provider.dart' as _i9;
+import 'package:shakedown/providers/show_list_provider.dart' as _i8;
 
 // ignore_for_file: type=lint
 // ignore_for_file: avoid_redundant_argument_values
@@ -157,6 +157,14 @@ class MockAudioProvider extends _i1.Mock implements _i3.AudioProvider {
           ) as _i4.Stream<({_i5.Show show, _i6.Source source})>);
 
   @override
+  _i4.Stream<({String message, _i7.VoidCallback? retryAction})>
+      get bufferAgentNotificationStream => (super.noSuchMethod(
+            Invocation.getter(#bufferAgentNotificationStream),
+            returnValue: _i4.Stream<
+                ({String message, _i7.VoidCallback? retryAction})>.empty(),
+          ) as _i4.Stream<({String message, _i7.VoidCallback? retryAction})>);
+
+  @override
   int get cachedTrackCount => (super.noSuchMethod(
         Invocation.getter(#cachedTrackCount),
         returnValue: 0,
@@ -179,8 +187,8 @@ class MockAudioProvider extends _i1.Mock implements _i3.AudioProvider {
 
   @override
   void update(
-    _i7.ShowListProvider? showListProvider,
-    _i8.SettingsProvider? settingsProvider,
+    _i8.ShowListProvider? showListProvider,
+    _i9.SettingsProvider? settingsProvider,
   ) =>
       super.noSuchMethod(
         Invocation.method(
@@ -357,7 +365,7 @@ class MockAudioProvider extends _i1.Mock implements _i3.AudioProvider {
       );
 
   @override
-  void addListener(_i9.VoidCallback? listener) => super.noSuchMethod(
+  void addListener(_i7.VoidCallback? listener) => super.noSuchMethod(
         Invocation.method(
           #addListener,
           [listener],
@@ -366,7 +374,7 @@ class MockAudioProvider extends _i1.Mock implements _i3.AudioProvider {
       );
 
   @override
-  void removeListener(_i9.VoidCallback? listener) => super.noSuchMethod(
+  void removeListener(_i7.VoidCallback? listener) => super.noSuchMethod(
         Invocation.method(
           #removeListener,
           [listener],

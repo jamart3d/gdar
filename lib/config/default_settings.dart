@@ -38,6 +38,7 @@ class DefaultSettings {
   static const bool sortOldestFirst = true;
   static const bool useStrictSrcCategorization = true;
   static const bool offlineBuffering = false;
+  static const bool enableBufferAgent = true;
 
   // Random Show Filters
   static const bool randomOnlyUnplayed = false;

@@ -1,3 +1,7 @@
+Release 1.0.16:
+- **Improved**: Enhanced Settings navigation with Material 3 expressive transitions for "Manage Rated Shows" and "About App".
+- **Improved**: Navigation now features smooth scale + fade animations for a more premium feel.
+
 Release 1.0.15:
 - **New**: Completed comprehensive Haptic Feedback Audit. All interactive elements now provide premium tactile feedback.
 - **Improved**: Redesigned "Collection Statistics" for visual consistency with the Playback section.
