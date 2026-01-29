@@ -1,3 +1,9 @@
+Release 1.0.17:
+- **Refactor**: Comprehensive modularization of Settings and Playback screens into specialized widgets.
+- **New**: Introduced `RandomShowSelector` service for improved random playback logic.
+- **Improved**: Optimized `AudioProvider` cache management and background service interactions.
+- **Internal**: Expanded test suite to cover new settings components and random show logic.
+
 Release 1.0.16:
 - **Improved**: Enhanced Settings navigation with Material 3 expressive transitions for "Manage Rated Shows" and "About App".
 - **Improved**: Navigation now features smooth scale + fade animations for a more premium feel.

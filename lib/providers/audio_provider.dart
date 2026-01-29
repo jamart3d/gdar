@@ -15,8 +15,8 @@ import 'package:shakedown/utils/logger.dart';
 import 'package:shakedown/utils/share_link_parser.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:just_audio_background/just_audio_background.dart';
-import 'package:crypto/crypto.dart'; // For cache key generation
-import 'dart:convert'; // For utf8 encoding
+import 'package:crypto/crypto.dart';
+import 'dart:convert';
 import 'package:shakedown/services/buffer_agent.dart';
 import 'package:shakedown/services/random_show_selector.dart';
 
@@ -79,8 +79,6 @@ class AudioProvider with ChangeNotifier {
         }
       }
 
-      // 2. Fallback: Parse from ID (current implementation)
-      // Format: showName_sourceId_index
       try {
         final parts = item.id.split('_');
         if (parts.isNotEmpty) {
@@ -170,7 +168,6 @@ class AudioProvider with ChangeNotifier {
     _listenForPlaybackProgress();
     _listenForErrors();
     _listenForProcessingState();
-    // Initial cache count fetch
     refreshCacheCount();
   }
 
@@ -201,7 +198,6 @@ class AudioProvider with ChangeNotifier {
     final shouldEnable = _settingsProvider?.enableBufferAgent ?? false;
 
     if (shouldEnable && _bufferAgent == null) {
-      // Create buffer agent
       _bufferAgent = BufferAgent(
         _audioPlayer,
         onRecoveryNotification: (message, retryAction) {
@@ -212,7 +208,6 @@ class AudioProvider with ChangeNotifier {
       );
       logger.i('AudioProvider: Buffer Agent enabled');
     } else if (!shouldEnable && _bufferAgent != null) {
-      // Dispose buffer agent
       _bufferAgent?.dispose();
       _bufferAgent = null;
       logger.i('AudioProvider: Buffer Agent disabled');
@@ -241,9 +236,6 @@ class AudioProvider with ChangeNotifier {
         }
       }
 
-      // 2. Metadata Update (Parity)
-      // When index changes, check if the Show changed by inspecting the tag.
-      // Tags are usually formatted as keys, but here they are MediaItems.
       final currentSource = sequence[index];
       if (currentSource.tag is MediaItem) {
         final item = currentSource.tag as MediaItem;
@@ -343,12 +335,11 @@ class AudioProvider with ChangeNotifier {
 
     final show = selection.show;
     final source = selection.source;
-    final catalog = _catalogService; // Use injected service
+    final catalog = _catalogService;
 
     logger.i(
         'Playing random source: ${source.id} (Rating: ${catalog.getRating(source.id)}, Played: ${catalog.isPlayed(source.id)})');
 
-    // Notify listeners/UI that a random show was requested
     _pendingRandomShowRequest = selection;
     _randomShowRequestController.add(selection);
     await playSource(show, source);
@@ -364,7 +355,6 @@ class AudioProvider with ChangeNotifier {
     _hasMarkedAsPlayed = false; // Reset for new source
     notifyListeners(); // Notify immediately so the UI can update
 
-    // Start audio loading in the background
     try {
       _isSwitchingSource = true;
       await _loadAndPlayAudio(source,
@@ -482,7 +472,6 @@ class AudioProvider with ChangeNotifier {
       artUri = await _getAlbumArtUri();
     } catch (_) {}
 
-    // Build the AudioSource children
     final nextSources = source.tracks.asMap().entries.map((entry) {
       int index = entry.key;
       Track track = entry.value;
@@ -597,7 +586,6 @@ class AudioProvider with ChangeNotifier {
     }
 
     try {
-      // Build AudioSource list directly
       final children = source.tracks.asMap().entries.map((entry) {
         int index = entry.key;
         Track track = entry.value;
@@ -633,7 +621,7 @@ class AudioProvider with ChangeNotifier {
         _error = 'Error playing source: ${e.toString()}';
         _errorController.add(_error!);
         notifyListeners();
-        stopAndClear(); // Clear state on error
+        stopAndClear();
       } else {
         logger.w(
             'Ignoring error from superseded playback request (Source: ${source.id}): $e');
@@ -708,7 +696,6 @@ class AudioProvider with ChangeNotifier {
   }
 
   Future<Uri?> _getAlbumArtUri() async {
-    // Check internal setting first
     if (_settingsProvider?.showGlobalAlbumArt != true) {
       return null;
     }
@@ -718,7 +705,6 @@ class AudioProvider with ChangeNotifier {
       final file = File('${docsDir.path}/album_art.png');
 
       if (!await file.exists()) {
-        // Load from assets and write to file
         final byteData = await rootBundle.load('assets/images/t_steal.webp');
         await file.writeAsBytes(byteData.buffer.asUint8List(
           byteData.offsetInBytes,
@@ -734,7 +720,6 @@ class AudioProvider with ChangeNotifier {
   }
 
   AudioSource _createAudioSource(Uri uri, MediaItem tag) {
-    // Check setting
     final useCache = _settingsProvider?.offlineBuffering ?? false;
 
     if (useCache) {

@@ -22,22 +22,17 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shakedown/ui/widgets/rgb_clock_wrapper.dart';
 
 Future<void> main() async {
-  // Ensure Flutter bindings are initialized
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Lock device orientation to portrait
   await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
   ]);
 
-  // Initialize your logger
   initLogger();
 
-  // Clear any stale audio cache files
   await AudioProvider.clearAudioCache();
 
-  // Initialize background audio service with your app-specific channel
   await JustAudioBackground.init(
     androidNotificationChannelId: 'com.jamart3d.shakedown.channel.audio',
     androidNotificationChannelName: 'Audio Playback',
@@ -82,8 +77,6 @@ class _GdarAppState extends State<GdarApp> {
         widget.settingsProvider ?? SettingsProvider(widget.prefs);
     _showListProvider = widget.showListProvider ?? ShowListProvider();
 
-    // Start initialization but don't block the UI
-    // Only init if it's the internal one (or if we want to force it, but for tests we might want to skip)
     if (widget.showListProvider == null) {
       _showListProvider.init(widget.prefs);
     }
@@ -139,7 +132,6 @@ class _GdarAppState extends State<GdarApp> {
                 'Main: [Session #$_sessionId] Ignoring debug deep link (ui-scale) in Release Mode');
             return;
           }
-          // Handle UI scale testing deep link
           final enabled =
               uri.queryParameters['enabled']?.toLowerCase() == 'true';
           final settingsProvider =
@@ -148,7 +140,6 @@ class _GdarAppState extends State<GdarApp> {
           logger
               .i('Main: [Session #$_sessionId] Setting UI scale to: $enabled');
 
-          // Update the setting directly
           if (enabled != settingsProvider.uiScale) {
             settingsProvider.toggleUiScale();
           }
@@ -159,13 +150,11 @@ class _GdarAppState extends State<GdarApp> {
                 'Main: [Session #$_sessionId] Ignoring debug deep link (font) in Release Mode');
             return;
           }
-          // Handle font testing deep link: shakedown://font?name=caveat
           final fontName =
               uri.queryParameters['name']?.toLowerCase() ?? 'default';
           final settingsProvider =
               Provider.of<SettingsProvider>(context, listen: false);
 
-          // Valid fonts: default, caveat, permanent_marker, rock_salt
           final validFonts = [
             'default',
             'caveat',
@@ -194,7 +183,6 @@ class _GdarAppState extends State<GdarApp> {
                 'Main: [Session #$_sessionId] Feature "$feature" does not require playback');
           }
         } else if (uri.host == 'navigate') {
-          // Handle navigation intents
           final screen = uri.queryParameters['screen']?.toLowerCase();
           logger.i('Main: [Session #$_sessionId] Navigating to: $screen');
 
@@ -215,7 +203,6 @@ class _GdarAppState extends State<GdarApp> {
               (route) => false,
             );
           } else if (screen == 'home') {
-            // Force reset to ShowListScreen (Home)
             Navigator.of(context).pushAndRemoveUntil(
               MaterialPageRoute(builder: (_) => const ShowListScreen()),
               (route) => false,
@@ -223,7 +210,6 @@ class _GdarAppState extends State<GdarApp> {
 
             final action = uri.queryParameters['action']?.toLowerCase();
             if (action == 'search') {
-              // Ensure we are on home frame before toggling
               WidgetsBinding.instance.addPostFrameCallback((_) {
                 Provider.of<ShowListProvider>(context, listen: false)
                     .setSearchVisible(true);
@@ -252,7 +238,6 @@ class _GdarAppState extends State<GdarApp> {
               final show = allShows[safeIndex];
 
               if (show.sources.isNotEmpty) {
-                // Default to first source
                 Navigator.of(context).push(
                   MaterialPageRoute(
                     builder: (_) =>
@@ -269,7 +254,6 @@ class _GdarAppState extends State<GdarApp> {
                 'Main: [Session #$_sessionId] Ignoring debug deep link (debug) in Release Mode');
             return;
           }
-          // Handle debug/reset intents
           final action = uri.queryParameters['action']?.toLowerCase();
           if (action == 'reset_prefs') {
             logger.w(
@@ -328,7 +312,6 @@ class _GdarAppState extends State<GdarApp> {
                 'Main: [Session #$_sessionId] Stopping and clearing playback via deep link');
             audioProvider.stopAndClear();
           } else {
-            // Default navigate behavior if no action or just screen=player
             Navigator.of(context).push(
               MaterialPageRoute(builder: (_) => const PlaybackScreen()),
             );
@@ -430,7 +413,6 @@ class _GdarAppState extends State<GdarApp> {
                     ),
                   );
 
-                  // Apply True Black if enabled
                   if (settingsProvider.useTrueBlack) {
                     final trueBlackDynamic = darkDynamic.copyWith(
                       surface: Colors.black,

@@ -27,7 +27,6 @@ class RandomShowSelector {
       return (error: 'No shows available for playback.', result: null).result;
     }
 
-    // --- Non-Random (Sequential) Playback Logic ---
     if (settings.nonRandom) {
       return _pickNextShow(
         candidates: candidates,
@@ -37,7 +36,6 @@ class RandomShowSelector {
       );
     }
 
-    // --- Weighted Random Selection Logic ---
     return _pickWeightedRandom(
       candidates: candidates,
       settings: settings,
@@ -52,7 +50,6 @@ class RandomShowSelector {
     required CatalogService catalog,
     required bool Function(Source)? isSourceAllowed,
   }) {
-    // Logic: Find current show, play next.
     int currentIndex = -1;
 
     if (currentShow != null) {
@@ -61,9 +58,6 @@ class RandomShowSelector {
           (s) => s.date == currentShow.date && s.venue == currentShow.venue);
     }
 
-    // If current show not found or no current show, start from beginning (or end if reversed?)
-    // Let's assume standard behavior: Next show in the list.
-    // If we are at the end, circle back to 0.
     int nextIndex = (currentIndex + 1) % candidates.length;
 
     // Infinite loop protection in case ALL shows are blocked
@@ -71,7 +65,6 @@ class RandomShowSelector {
     while (attempts < candidates.length) {
       final candidate = candidates[nextIndex];
 
-      // Find best source for this candidate
       final validSources = candidate.sources.where((s) {
         if (catalog.getRating(s.id) == -1) return false; // Blocked
         if (isSourceAllowed != null && !isSourceAllowed(s)) {
@@ -81,13 +74,11 @@ class RandomShowSelector {
       }).toList();
 
       if (validSources.isNotEmpty) {
-        // Success! Pick the first valid source (or best rated?)
         logger.i(
             'Sequential Playback: Selected next show ${candidate.date} (Index $nextIndex)');
         return (show: candidate, source: validSources.first);
       }
 
-      // If blocked/filtered, try next one
       nextIndex = (nextIndex + 1) % candidates.length;
       attempts++;
     }
@@ -144,7 +135,6 @@ class RandomShowSelector {
         continue;
       }
 
-      // Calculate Weight based on Source ID
       int weight = 10;
       if (settings.randomExcludePlayed && isPlayed) {
         weight = 0;
@@ -185,7 +175,6 @@ class RandomShowSelector {
       return null;
     }
 
-    // Weighted Random Selection
     int totalWeight = weights.values.fold(0, (sum, w) => sum + w);
     int randomWeight = _random.nextInt(totalWeight);
     int currentWeight = 0;

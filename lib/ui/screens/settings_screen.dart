@@ -37,7 +37,6 @@ class _SettingsScreenState extends State<SettingsScreen>
   @override
   void initState() {
     super.initState();
-    // Register keys for highlightable settings
     if (widget.highlightSetting != null) {
       _settingKeys[widget.highlightSetting!] = GlobalKey();
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -97,7 +96,7 @@ class _SettingsScreenState extends State<SettingsScreen>
         key!.currentContext!,
         duration: const Duration(milliseconds: 600),
         curve: Curves.easeInOutCubicEmphasized,
-        alignment: 0.5, // Center in viewport
+        alignment: 0.5,
       );
     }
   }
@@ -127,7 +126,6 @@ class _SettingsScreenState extends State<SettingsScreen>
           brightness: Theme.of(context).brightness);
     }
 
-    // Create a theme that includes the background color override if applicable
     final baseTheme = Theme.of(context);
     final effectiveBackgroundColor =
         backgroundColor ?? baseTheme.scaffoldBackgroundColor;
@@ -158,7 +156,6 @@ class _SettingsScreenState extends State<SettingsScreen>
             slivers: [
               const SliverAppBar.large(
                 title: Text('Settings'),
-                // No explicit background color needed
               ),
               SliverList(
                 delegate: SliverChildListDelegate([
@@ -194,9 +191,6 @@ class _SettingsScreenState extends State<SettingsScreen>
                     isHighlightSettingMatching:
                         widget.highlightSetting == 'playback',
                   ),
-
-                  // Statistics
-                  // Collection Statistics
                   Builder(builder: (context) {
                     // Register key for scrolling
                     if (!_settingKeys.containsKey('collection_statistics')) {
@@ -211,13 +205,9 @@ class _SettingsScreenState extends State<SettingsScreen>
                       ),
                     );
                   }),
-
-                  // Manage Rated Shows (Moved out of Collection Statistics)
                   DataSection(scaleFactor: scaleFactor),
-
-                  // About Section (Not collapsible)
                   AboutSection(scaleFactor: scaleFactor),
-                  const SizedBox(height: 50), // Bottom padding
+                  const SizedBox(height: 50),
                 ]),
               ),
             ],

@@ -86,7 +86,6 @@ class AboutSection extends StatelessWidget {
   Widget _buildClickableLink(
       BuildContext context, String text, String url, double scaleFactor,
       {IconData? icon, Widget? customIcon}) {
-    // Re-implement or import shared logic if extracted
     // For now, implementing locally as it was private in SettingsScreen
     return InkWell(
       onTap: () => _launchUrl(context, url),
