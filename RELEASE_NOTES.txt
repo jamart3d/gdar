@@ -1,3 +1,7 @@
+Release 1.0.18:
+- **Internal**: Performed comprehensive codebase cleanup, removing over 50+ redundant comments for improved maintainability.
+- **Improved**: Verified UI alignment and rendering across all font/scale configurations using automated visual regression tests.
+
 Release 1.0.17:
 - **Refactor**: Comprehensive modularization of Settings and Playback screens into specialized widgets.
 - **New**: Introduced `RandomShowSelector` service for improved random playback logic.
