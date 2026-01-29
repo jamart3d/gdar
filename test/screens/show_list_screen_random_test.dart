@@ -46,6 +46,15 @@ class MockSettingsProvider extends SettingsProvider {
   bool get uiScale => false;
   @override
   bool get playRandomOnStartup => false;
+
+  bool _nonRandom = false;
+  void setNonRandom(bool value) {
+    _nonRandom = value;
+    notifyListeners();
+  }
+
+  @override
+  bool get nonRandom => _nonRandom;
 }
 
 class MockCatalogService extends Mock implements CatalogService {}
@@ -272,6 +281,31 @@ void main() {
       await tester.pump(const Duration(
           milliseconds:
               500)); // Allow pulse animation to visually stop/fade if needed
+    });
+  });
+
+  group('ShowListScreen Non-Random Mode', () {
+    testWidgets('Displays sequential icon and disables pulse animation',
+        (WidgetTester tester) async {
+      // Enable Non-Random mode
+      mockSettingsProvider.setNonRandom(true);
+      mockShowListProvider
+          .setHasUsedRandomButton(false); // Should pulse if it were random
+
+      await tester.pumpWidget(createWidgetUnderTest());
+      await tester.pump();
+
+      // 1. Verify Icon is NOT question mark, but playlist_play
+      expect(find.byIcon(Icons.question_mark_rounded), findsNothing);
+      expect(find.byIcon(Icons.playlist_play_rounded), findsOneWidget);
+
+      // 2. Verify NO ScaleTransition ancestor for this icon
+      final iconFinder = find.byIcon(Icons.playlist_play_rounded);
+      final scaleTransitionFinder = find.ancestor(
+        of: iconFinder,
+        matching: find.byType(ScaleTransition),
+      );
+      expect(scaleTransitionFinder, findsNothing);
     });
   });
 }

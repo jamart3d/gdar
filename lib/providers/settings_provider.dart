@@ -14,6 +14,7 @@ class SettingsProvider with ChangeNotifier {
   static const String _showSingleShnidKey = 'show_single_shnid';
   static const String _hideTrackDurationKey = 'hide_track_duration';
   static const String _playRandomOnCompletionKey = 'play_random_on_completion';
+  static const String _nonRandomKey = 'non_random';
 
   static const String _playRandomOnStartupKey = 'play_random_on_startup';
   static const String _dateFirstInShowCardKey = 'date_first_in_show_card';
@@ -79,6 +80,7 @@ class SettingsProvider with ChangeNotifier {
   late bool _playOnTap;
   late bool _showSingleShnid;
   late bool _playRandomOnCompletion;
+  late bool _nonRandom;
   late bool _playRandomOnStartup;
   late bool _dateFirstInShowCard;
   late bool _useDynamicColor;
@@ -114,6 +116,7 @@ class SettingsProvider with ChangeNotifier {
   bool get showSingleShnid => _showSingleShnid;
   bool get hideTrackCountInSourceList => true;
   bool get playRandomOnCompletion => _playRandomOnCompletion;
+  bool get nonRandom => _nonRandom;
   bool get playRandomOnStartup => _playRandomOnStartup;
   bool get dateFirstInShowCard => _dateFirstInShowCard;
   bool get useDynamicColor => _useDynamicColor;
@@ -242,6 +245,7 @@ class SettingsProvider with ChangeNotifier {
         _prefs.getBool(_showSingleShnidKey) ?? DefaultSettings.showSingleShnid;
     _playRandomOnCompletion = _prefs.getBool(_playRandomOnCompletionKey) ??
         DefaultSettings.playRandomOnCompletion;
+    _nonRandom = _prefs.getBool(_nonRandomKey) ?? DefaultSettings.nonRandom;
     _playRandomOnStartup = _prefs.getBool(_playRandomOnStartupKey) ??
         DefaultSettings.playRandomOnStartup;
     _dateFirstInShowCard = _prefs.getBool(_dateFirstInShowCardKey) ??
@@ -392,6 +396,8 @@ class SettingsProvider with ChangeNotifier {
   void togglePlayRandomOnCompletion() => _updatePreference(
       _playRandomOnCompletionKey,
       _playRandomOnCompletion = !_playRandomOnCompletion);
+  void toggleNonRandom() =>
+      _updatePreference(_nonRandomKey, _nonRandom = !_nonRandom);
   void togglePlayRandomOnStartup() => _updatePreference(
       _playRandomOnStartupKey, _playRandomOnStartup = !_playRandomOnStartup);
   void toggleDateFirstInShowCard() => _updatePreference(

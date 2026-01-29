@@ -79,14 +79,14 @@ class AboutScreen extends StatelessWidget {
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 24),
-                  _buildInfoCard(
-                    context,
-                    icon: Icons.cloud_download_rounded,
-                    title: 'Powered by Archive.org',
-                    description:
-                        'All audio is streamed directly from Archive.org.',
+                  Text(
+                    'All audio is streamed directly from Archive.org.',
+                    style: textTheme.bodyMedium?.copyWith(
+                      color: colorScheme.onSurfaceVariant,
+                      fontStyle: FontStyle.italic,
+                    ),
+                    textAlign: TextAlign.center,
                   ),
-                  const SizedBox(height: 24),
                   _buildClickableLink(
                     context,
                     'Archive.org Terms of Use',
@@ -124,45 +124,6 @@ class AboutScreen extends StatelessWidget {
             ),
           ),
         ));
-  }
-
-  Widget _buildInfoCard(BuildContext context,
-      {required IconData icon,
-      required String title,
-      required String description}) {
-    final colorScheme = Theme.of(context).colorScheme;
-    return Container(
-      padding: const EdgeInsets.all(16),
-      // decoration: BoxDecoration(
-      //   color: colorScheme.surfaceContainer,
-      //   borderRadius: BorderRadius.circular(16),
-      //   border: Border.all(color: colorScheme.outlineVariant),
-      // ),
-      child: Row(
-        children: [
-          Icon(icon, size: 32, color: colorScheme.primary),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  description,
-                  style: Theme.of(context).textTheme.bodyMedium,
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
   }
 
   Future<void> _launchUrl(String url) async {

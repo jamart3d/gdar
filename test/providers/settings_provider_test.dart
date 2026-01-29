@@ -48,4 +48,39 @@ void main() {
       expect(provider.enableShakedownTween, true);
     });
   });
+
+  group('SettingsProvider Non-Random Playback', () {
+    test('initializes nonRandom to false by default', () {
+      expect(settingsProvider.nonRandom, false);
+    });
+
+    test('toggleNonRandom toggles value and persists', () async {
+      // Verify initial state
+      expect(settingsProvider.nonRandom, false);
+
+      // Toggle ON
+      settingsProvider.toggleNonRandom();
+      expect(settingsProvider.nonRandom, true);
+
+      // Verify persistence
+      final prefs = await SharedPreferences.getInstance();
+      expect(prefs.getBool('non_random'), true);
+
+      // Toggle OFF
+      settingsProvider.toggleNonRandom();
+      expect(settingsProvider.nonRandom, false);
+      expect(prefs.getBool('non_random'), false);
+    });
+
+    test('initializes with true if saved in prefs', () async {
+      SharedPreferences.setMockInitialValues({
+        'first_run_check_done': true,
+        'non_random': true,
+      });
+      final prefs = await SharedPreferences.getInstance();
+      final provider = SettingsProvider(prefs);
+
+      expect(provider.nonRandom, true);
+    });
+  });
 }

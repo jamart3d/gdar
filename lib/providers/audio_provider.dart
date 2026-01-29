@@ -18,9 +18,9 @@ import 'package:just_audio_background/just_audio_background.dart';
 import 'package:crypto/crypto.dart'; // For cache key generation
 import 'dart:convert'; // For utf8 encoding
 import 'package:shakedown/services/buffer_agent.dart';
+import 'package:shakedown/services/random_show_selector.dart';
 
 class AudioProvider with ChangeNotifier {
-  static final Random _random = Random();
   late final AudioPlayer _audioPlayer;
   StreamSubscription<ProcessingState>? _processingStateSubscription;
   StreamSubscription<Duration>? _positionSubscription;
@@ -117,29 +117,40 @@ class AudioProvider with ChangeNotifier {
       get bufferAgentNotificationStream =>
           _bufferAgentNotificationController.stream;
 
-  /// Returns the current number of cached audio files.
-  /// This is a synchronous getter that counts SHA-256 hash files in the temp directory.
-  int get cachedTrackCount {
+  int _cachedTrackCount = 0;
+
+  /// Returns the current number of cached audio files (non-blocking).
+  /// Value is updated via [refreshCacheCount].
+  int get cachedTrackCount => _cachedTrackCount;
+
+  /// Asynchronously updates the cached track count to avoid blocking the UI thread.
+  Future<void> refreshCacheCount() async {
     try {
       final cacheDir = Directory.systemTemp;
-      if (!cacheDir.existsSync()) return 0;
+      if (!await cacheDir.exists()) {
+        _cachedTrackCount = 0;
+        notifyListeners();
+        return;
+      }
 
-      final files = cacheDir.listSync();
+      // Run I/O in a separate future (though Directory.list is already async stream, strictly speaking)
+      // listSync was the blocker. list() returns a Stream.
       int count = 0;
-
-      for (final entity in files) {
+      await for (final entity in cacheDir.list()) {
         if (entity is File) {
           final name = entity.uri.pathSegments.last;
-          // Identify our cache files (SHA-256 hash length is 64)
           if (name.length == 64) {
             count++;
           }
         }
       }
 
-      return count;
+      if (_cachedTrackCount != count) {
+        _cachedTrackCount = count;
+        notifyListeners();
+      }
     } catch (e) {
-      return 0;
+      logger.w('Failed to refresh cache count: $e');
     }
   }
 
@@ -159,6 +170,8 @@ class AudioProvider with ChangeNotifier {
     _listenForPlaybackProgress();
     _listenForErrors();
     _listenForProcessingState();
+    // Initial cache count fetch
+    refreshCacheCount();
   }
 
   void _listenForProcessingState() {
@@ -280,7 +293,7 @@ class AudioProvider with ChangeNotifier {
   ({Show show, Source source})? pickRandomShow({bool filterBySearch = true}) {
     final settings = _settingsProvider;
     if (settings == null) return null;
-    final catalog = _catalogService; // Use CatalogService for data
+    final catalog = _catalogService;
 
     List<Show>? sourceList;
     if (filterBySearch) {
@@ -290,117 +303,29 @@ class AudioProvider with ChangeNotifier {
     }
 
     if (sourceList == null || sourceList.isEmpty) {
-      _setError('No shows available for random playback.');
+      _setError('No shows available for playback.');
       return null;
     }
 
-    final List<Show> candidates = [];
-    final Map<Show, int> weights = {};
-    final Map<Show, Source> selectedSourceMap = {};
-
-    // For better feedback
-    int totalCount = sourceList.length;
-    int blockedCount = 0;
-    int unplayedFilterCount = 0;
-    int highRatedFilterCount = 0;
-
-    for (final show in sourceList) {
-      // Find valid sources for this show
-      final validSources = show.sources.where((s) {
-        // Must be unblocked
-        if (catalog.getRating(s.id) == -1) return false;
-        // Must match active filters (SBD, Matrix, etc.)
-        if (_showListProvider != null &&
-            !_showListProvider!.isSourceAllowed(s)) {
-          return false;
+    final result = RandomShowSelector.pick(
+      candidates: sourceList,
+      settings: settings,
+      catalog: catalog,
+      currentShow: _currentShow,
+      isSourceAllowed: (source) {
+        if (_showListProvider != null) {
+          return _showListProvider!.isSourceAllowed(source);
         }
         return true;
-      }).toList();
+      },
+    );
 
-      if (validSources.isEmpty) {
-        blockedCount++;
-        continue;
-      }
-
-      // If Highest SHNID is on, it's already filtered by ShowListProvider.
-      // We pick the first valid source as the representative for weighting.
-      final source = validSources.first;
-      final rating = catalog.getRating(source.id);
-      final isPlayed = catalog.isPlayed(source.id);
-
-      // Filter by Settings
-      if (settings.randomOnlyUnplayed && isPlayed) {
-        unplayedFilterCount++;
-        continue;
-      }
-      if (settings.randomOnlyHighRated && rating < 2) {
-        highRatedFilterCount++;
-        continue;
-      }
-
-      // Calculate Weight based on Source ID
-      int weight = 10;
-      if (settings.randomExcludePlayed && isPlayed) {
-        weight = 0;
-      } else if (rating == 3) {
-        weight = 200; // Favorite shows are highly preferred
-      } else if (rating == 2) {
-        weight = 100; // High rated shows
-      } else if (rating == 1) {
-        weight = 40; // Rated shows
-      } else if (rating == 0) {
-        weight =
-            isPlayed ? 10 : 60; // Unplayed is preferred over general played
-      }
-
-      if (weight > 0) {
-        candidates.add(show);
-        weights[show] = weight;
-        selectedSourceMap[show] = source;
-      }
+    if (result == null) {
+      // The selector logs warnings, but we can set a generic error if silent
+      if (_error == null) _setError('No shows found matching criteria.');
     }
 
-    if (candidates.isEmpty) {
-      String msg = 'No shows match criteria.';
-      if (highRatedFilterCount > 0 &&
-          highRatedFilterCount + blockedCount == totalCount) {
-        msg = 'No shows match "High Rated" filter.';
-      } else if (unplayedFilterCount > 0 &&
-          unplayedFilterCount + blockedCount == totalCount) {
-        msg = 'No unplayed shows available.';
-      } else if (blockedCount == totalCount) {
-        msg = 'All available shows are blocked.';
-      } else if (totalCount > 0) {
-        msg = 'All shows filtered out by source settings.';
-      }
-
-      logger.w(
-          'Random Selection: $msg (Filtered: $totalCount, Blocked: $blockedCount, Unplayed: $unplayedFilterCount, HighRated: $highRatedFilterCount)');
-      _setError(msg);
-      return null;
-    }
-
-    // Weighted Random Selection
-    int totalWeight = weights.values.fold(0, (sum, w) => sum + w);
-    int randomWeight = _random.nextInt(totalWeight);
-    int currentWeight = 0;
-    Show? selectedShow;
-
-    for (final show in candidates) {
-      currentWeight += weights[show]!;
-      if (randomWeight < currentWeight) {
-        selectedShow = show;
-        break;
-      }
-    }
-
-    selectedShow ??= candidates.first;
-    final sourceToPlay = selectedSourceMap[selectedShow]!;
-
-    logger.i(
-        'Weighted selection: ${selectedShow.date} (Weight: ${weights[selectedShow]}/$totalWeight) - Sources: ${selectedShow.sources.length}');
-
-    return (show: selectedShow, source: sourceToPlay);
+    return result;
   }
 
   Future<Show?> playRandomShow({bool filterBySearch = true}) async {
@@ -900,7 +825,7 @@ class AudioProvider with ChangeNotifier {
         logger.i(
             'Cache Cleanup: Removed $deletedCount old files. Remaining: $maxFiles');
         // Notify listeners so UI can update the cache count
-        notifyListeners();
+        refreshCacheCount();
       }
     } catch (e) {
       logger.w('Cache Cleanup Failed: $e');

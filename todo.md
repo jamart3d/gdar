@@ -22,17 +22,21 @@ This file tracks planned features, enhancements, and bug fixes for the gdar appl
 - [x] **App Icon:** Update application icon.
 - [x] **Bug Investigation:** Check into why RGB border is not visible on Android 16 vs 15.
 - [x] **Album Art:** Update default album art to `assets/images/t_steal.webp`.
-- [x] **Deep Sleep Buffering:** Investigate "track buffers and does not play" issue during deep sleep.
-  - **Goal:** Ensure the next track is fully buffered before playback starts to prevent stalling when the OS restricts network/CPU in deep sleep.
-  - **Solution:** Implemented `LockCachingAudioSource` as a toggleable "Offline Buffering" setting.
-  - **Status:** Completed. Toggle added to Settings -> Playback. Cache clears on startup.
-  - [ ] **Enhancement:** Add periodic timer to update cache count in real-time as tracks are cached (currently only updates on cleanup/source change).
+  - [x] **Deep Sleep Buffering:** Investigate "track buffers and does not play" issue during deep sleep.
+    - **Goal:** Ensure the next track is fully buffered before playback starts to prevent stalling when the OS restricts network/CPU in deep sleep.
+    - **Solution:** Implemented `LockCachingAudioSource` as a toggleable "Offline Buffering" setting.
+    - **Status:** Completed. Toggle added to Settings -> Playback. Cache clears on startup.
+    - [x] **Enhancement:** Add periodic timer to update cache count in real-time as tracks are cached (currently only updates on cleanup/source change).
+  - [ ] **Optimize `AudioProvider`**
+    - [x] Audit for performance bottlenecks (found blocking I/O)
+    - [x] Convert `cachedTrackCount` to async pattern to prevent UI jank
+    - [ ] Refactor cache management into `AudioCacheService` (Future)
 
-- [ ] **Shakedown Animation:**
+- [x] **Shakedown Animation:**
   - **Requirement:** Implement an expressive "shake" animation for the `ShakedownTitle` when it reaches the AppBar (after splash transition).
   - **Style:** Material 3 expressive, dampened spring/sine wave.
 
-- [ ] **Non-Random (Chronological Playback):**
+- [/] **Non-Random (Chronological Playback):**
   - **Requirement:** Add a "Non-Random" toggle that changes the behavior of random playback settings to play shows in list order instead.
   - **Location:** Settings → Random Playback section
   - **UI Label:** "Non-Random" with subtitle "Play next show by order in list instead of randomly"
@@ -46,10 +50,21 @@ This file tracks planned features, enhancements, and bug fixes for the gdar appl
     - When either "Play Random Show on Completion" or "Play Random Show on Startup" is turned ON, it automatically turns OFF "Non-Random" if it was on
   - **Integration:** Works with existing filters (unplayed, high-rated, exclude played, source categories).
   - **Implementation:**
-    - Add `nonRandom` boolean setting to `SettingsProvider`
-    - Modify `AudioProvider.playRandomShow()` and `AudioProvider.queueRandomShow()` to check `nonRandom` setting
-    - If `nonRandom` is true, find current show index in filtered list and select next index (with wraparound)
-    - Update Settings UI to dynamically change text based on `nonRandom` state
+    - [x] Add `nonRandom` boolean setting to `SettingsProvider`
+    - [x] Update Settings UI to dynamically change text based on `nonRandom` state
+    - [x] Implement "Non-Random" toggle in Settings Screen
+    - [x] Modify `AudioProvider.playRandomShow()` and `AudioProvider.queueRandomShow()` to check `nonRandom` setting
+    - [x] If `nonRandom` is true, find current show index in filtered list and select next index (with wraparound)
+    - [ ] **Expressive Animated Dice (Material 3):**
+      - **Concept:** Replace the "Question Mark" icon with a 2D expressive animated dice for the Random button.
+      - **Behavior:**
+        - **Random Mode:** Dice spins/rolls (cycling numbers 1-6) on tap, utilizing "squash and stretch" scaling and elastic curves.
+        - **Non-Random Mode:** Dice logic is **disabled**. Show a static "Sequential/Play Next" icon instead.
+      - **Implementation Details:**
+        - Use `CustomPainter` for dice face.
+        - Use `AnimationController` for spin (value change) and squash (scale/rotation).
+        - **Haptics:** `HapticFeedback.lightImpact()` on every number change during spin.
+        - **Colors:** `primaryContainer` (body) and `onPrimaryContainer` (dots).
   - **Note:** This provides a "listen through the catalog in order" experience as an alternative to random discovery.
 
 ## Medium Priority
@@ -435,3 +450,11 @@ Balanced app size with performance and robust user data storage.
 
 - [x] **Typography Alignment:** Map headers/labels to M3 Type Scale (`labelSmall`, `bodyMedium`, `titleLarge`) while respecting `scaleFactor`.
   - [x] Audit `settings_screen.dart` and `collection_statistics.dart` for hardcoded styles.
+
+## Optimization & Refactoring
+- [x] **Project Audit:** Identified large files (`ShowListScreen`, `AudioProvider`) and architectural bottlenecks.
+- [x] **AudioProvider Refactor:** Extracted complex random show selection logic into pure service `RandomShowSelector`.
+- [x] **ShowListScreen Decomposition:**
+  - [x] Extracted `_buildAppBarActions` into `ShowListAppBar` widget.
+  - [x] Extracted `_buildSearchBar` into `ShowListSearchBar` widget.
+- [x] **ShowListScreen Logic:** Refactored layout and search components.

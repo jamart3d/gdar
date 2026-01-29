@@ -126,7 +126,7 @@ class _ShakedownTitleState extends State<ShakedownTitle>
     return Hero(
       tag: 'app_title',
       createRectTween: (begin, end) {
-        return MaterialRectCenterArcTween(begin: begin, end: end);
+        return GravityRectTween(begin: begin, end: end);
       },
       // Custom flight shuttle to smooth out text style interpolation
       flightShuttleBuilder: (
@@ -146,5 +146,64 @@ class _ShakedownTitleState extends State<ShakedownTitle>
         child: animWidget,
       ),
     );
+  }
+}
+
+/// A custom RectTween that creates a "Gravity" arc effect (parabolic curve).
+/// Moves high up first, then settles into the target.
+class GravityRectTween extends RectTween {
+  GravityRectTween({super.begin, super.end});
+
+  @override
+  Rect lerp(double t) {
+    // If t is 0 or 1, return precise begin/end
+    if (t == 0) return begin!;
+    if (t == 1) return end!;
+
+    // Quadratic Bezier Curve logic
+    // Control point determines the "height" of the arc.
+    // We want it to go slightly "Up" relative to the path.
+
+    // Center points
+    final double startX = begin!.center.dx;
+    final double startY = begin!.center.dy;
+    final double endX = end!.center.dx;
+    final double endY = end!.center.dy;
+
+    // Control Point Calculation:
+    // We want the curve to "bulge" upwards (negative Y).
+    // Let's place the control point above the midpoint.
+    // The "Up and Left" request implies we want to arc towards the top-left quadrant?
+    // Actually, usually Hero flies from Center -> Top-Left (AppBar).
+    // A standard arc goes straight there.
+    // To go "Up then Left", we need the control Point to be near (startX, endY) or even higher (startX, endY - extra).
+
+    // Let's aim for a control point that is horizontally near the start, but vertically significantly above the end.
+    // This forces the "vertical launch" look.
+    final double controlX = startX; // Stay near center horizontal for launch
+    final double controlY =
+        endY - 40.0; // Go 40px ABOVE the target (Very subtle arc)
+
+    // Quadratic Bezier formula:
+    // P = (1-t)^2 * P0 + 2(1-t)t * P1 + t^2 * P2
+    final double curveX =
+        (1 - t) * (1 - t) * startX + 2 * (1 - t) * t * controlX + t * t * endX;
+    final double curveY =
+        (1 - t) * (1 - t) * startY + 2 * (1 - t) * t * controlY + t * t * endY;
+
+    // Current Size interpolation
+    final double width = lerpDouble(begin!.width, end!.width, t);
+    final double height = lerpDouble(begin!.height, end!.height, t);
+
+    return Rect.fromCenter(
+      center: Offset(curveX, curveY),
+      width: width,
+      height: height,
+    );
+  }
+
+  // Helper for double lerp since `dart:ui` lerpDouble is nullable
+  double lerpDouble(double a, double b, double t) {
+    return a + (b - a) * t;
   }
 }
