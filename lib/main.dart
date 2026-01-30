@@ -124,7 +124,10 @@ class _GdarAppState extends State<GdarApp> {
         if (uri.host == 'play-random') {
           logger.i(
               'Main: [Session #$_sessionId] Triggering playRandomShow from host: "play-random"');
-          audioProvider.playRandomShow(filterBySearch: true);
+          final animationOnly =
+              uri.queryParameters['animation_only']?.toLowerCase() == 'true';
+          audioProvider.playRandomShow(
+              filterBySearch: true, animationOnly: animationOnly);
         } else if (uri.host == 'ui-scale') {
           // SAFETY: Disable debug tools in Release Mode
           if (kReleaseMode) {
@@ -177,7 +180,10 @@ class _GdarAppState extends State<GdarApp> {
           if (feature.contains('play') || feature.contains('random')) {
             logger.i(
                 'Main: [Session #$_sessionId] Triggering playRandomShow based on feature: "$feature"');
-            audioProvider.playRandomShow(filterBySearch: true);
+            final animationOnly =
+                uri.queryParameters['animation_only']?.toLowerCase() == 'true';
+            audioProvider.playRandomShow(
+                filterBySearch: true, animationOnly: animationOnly);
           } else {
             logger.i(
                 'Main: [Session #$_sessionId] Feature "$feature" does not require playback');

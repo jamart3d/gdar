@@ -12,6 +12,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shakedown/ui/widgets/shakedown_title.dart';
 import 'package:shakedown/ui/styles/app_typography.dart';
 import 'package:shakedown/ui/styles/font_config.dart';
+import 'package:shakedown/ui/widgets/show_list/animated_dice_icon.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -352,22 +353,36 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               const SizedBox(height: 20),
               _buildTipRow(
                   context,
-                  Icons.touch_app_rounded,
+                  _buildIconBubble(context, Icons.touch_app_rounded),
                   'Long press a show card for playing, single tap track play is off by default',
                   scaleFactor),
               const SizedBox(height: 16),
               _buildTipRow(
                   context,
-                  Icons.question_mark_rounded,
+                  SizedBox(
+                    width: 28 * scaleFactor,
+                    height: 28 * scaleFactor,
+                    child: FittedBox(
+                      child: AnimatedDiceIcon(
+                        onPressed: () {}, // Dummy callback
+                        isLoading: true, // Spin it!
+                        changeFaces:
+                            false, // Don't change faces per user request
+                      ),
+                    ),
+                  ),
                   'Tap to randomly select and discover a show you may not have heard',
                   scaleFactor),
               const SizedBox(height: 16),
-              _buildTipRow(context, Icons.star_rate_rounded,
-                  'Rate shows for random selection to use', scaleFactor),
+              _buildTipRow(
+                  context,
+                  _buildIconBubble(context, Icons.star_rate_rounded),
+                  'Rate shows for random selection to use',
+                  scaleFactor),
               const SizedBox(height: 16),
               _buildTipRow(
                   context,
-                  Icons.settings_rounded,
+                  _buildIconBubble(context, Icons.settings_rounded),
                   'Check out the settings for more options and usage instructions',
                   scaleFactor),
               const SizedBox(height: 40),
@@ -693,21 +708,26 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     );
   }
 
+  Widget _buildIconBubble(BuildContext context, IconData icon) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Container(
+      padding: const EdgeInsets.all(8),
+      decoration: BoxDecoration(
+        color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+        shape: BoxShape.circle,
+      ),
+      child: Icon(icon,
+          size: AppTypography.responsiveFontSize(context, 20.0),
+          color: colorScheme.primary),
+    );
+  }
+
   Widget _buildTipRow(
-      BuildContext context, IconData icon, String text, double scaleFactor) {
+      BuildContext context, Widget leading, String text, double scaleFactor) {
     final colorScheme = Theme.of(context).colorScheme;
     return Row(
       children: [
-        Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
-            shape: BoxShape.circle,
-          ),
-          child: Icon(icon,
-              size: AppTypography.responsiveFontSize(context, 20.0),
-              color: colorScheme.primary),
-        ),
+        leading,
         const SizedBox(width: 16),
         Expanded(
           child: Text(

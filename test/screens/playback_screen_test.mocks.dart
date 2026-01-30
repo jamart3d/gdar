@@ -186,6 +186,16 @@ class MockAudioProvider extends _i1.Mock implements _i3.AudioProvider {
       );
 
   @override
+  _i4.Future<void> refreshCacheCount() => (super.noSuchMethod(
+        Invocation.method(
+          #refreshCacheCount,
+          [],
+        ),
+        returnValue: _i4.Future<void>.value(),
+        returnValueForMissingStub: _i4.Future<void>.value(),
+      ) as _i4.Future<void>);
+
+  @override
   void update(
     _i8.ShowListProvider? showListProvider,
     _i9.SettingsProvider? settingsProvider,
@@ -220,12 +230,18 @@ class MockAudioProvider extends _i1.Mock implements _i3.AudioProvider {
       )) as ({_i5.Show show, _i6.Source source})?);
 
   @override
-  _i4.Future<_i5.Show?> playRandomShow({bool? filterBySearch = true}) =>
+  _i4.Future<_i5.Show?> playRandomShow({
+    bool? filterBySearch = true,
+    bool? animationOnly = false,
+  }) =>
       (super.noSuchMethod(
         Invocation.method(
           #playRandomShow,
           [],
-          {#filterBySearch: filterBySearch},
+          {
+            #filterBySearch: filterBySearch,
+            #animationOnly: animationOnly,
+          },
         ),
         returnValue: _i4.Future<_i5.Show?>.value(),
       ) as _i4.Future<_i5.Show?>);

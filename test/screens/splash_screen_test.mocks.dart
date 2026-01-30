@@ -490,6 +490,13 @@ class MockSettingsProvider extends _i1.Mock implements _i8.SettingsProvider {
       ) as bool);
 
   @override
+  bool get nonRandom => (super.noSuchMethod(
+        Invocation.getter(#nonRandom),
+        returnValue: false,
+        returnValueForMissingStub: false,
+      ) as bool);
+
+  @override
   bool get playRandomOnStartup => (super.noSuchMethod(
         Invocation.getter(#playRandomOnStartup),
         returnValue: false,
@@ -618,6 +625,13 @@ class MockSettingsProvider extends _i1.Mock implements _i8.SettingsProvider {
   @override
   bool get abbreviateMonth => (super.noSuchMethod(
         Invocation.getter(#abbreviateMonth),
+        returnValue: false,
+        returnValueForMissingStub: false,
+      ) as bool);
+
+  @override
+  bool get simpleRandomIcon => (super.noSuchMethod(
+        Invocation.getter(#simpleRandomIcon),
         returnValue: false,
         returnValueForMissingStub: false,
       ) as bool);
@@ -807,6 +821,15 @@ class MockSettingsProvider extends _i1.Mock implements _i8.SettingsProvider {
       );
 
   @override
+  void toggleNonRandom() => super.noSuchMethod(
+        Invocation.method(
+          #toggleNonRandom,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
   void togglePlayRandomOnStartup() => super.noSuchMethod(
         Invocation.method(
           #togglePlayRandomOnStartup,
@@ -864,6 +887,15 @@ class MockSettingsProvider extends _i1.Mock implements _i8.SettingsProvider {
   void toggleAbbreviateMonth() => super.noSuchMethod(
         Invocation.method(
           #toggleAbbreviateMonth,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void toggleSimpleRandomIcon() => super.noSuchMethod(
+        Invocation.method(
+          #toggleSimpleRandomIcon,
           [],
         ),
         returnValueForMissingStub: null,
@@ -1191,6 +1223,16 @@ class MockAudioProvider extends _i1.Mock implements _i11.AudioProvider {
       );
 
   @override
+  _i4.Future<void> refreshCacheCount() => (super.noSuchMethod(
+        Invocation.method(
+          #refreshCacheCount,
+          [],
+        ),
+        returnValue: _i4.Future<void>.value(),
+        returnValueForMissingStub: _i4.Future<void>.value(),
+      ) as _i4.Future<void>);
+
+  @override
   void update(
     _i3.ShowListProvider? showListProvider,
     _i8.SettingsProvider? settingsProvider,
@@ -1228,12 +1270,18 @@ class MockAudioProvider extends _i1.Mock implements _i11.AudioProvider {
       ) as ({_i6.Show show, _i9.Source source})?);
 
   @override
-  _i4.Future<_i6.Show?> playRandomShow({bool? filterBySearch = true}) =>
+  _i4.Future<_i6.Show?> playRandomShow({
+    bool? filterBySearch = true,
+    bool? animationOnly = false,
+  }) =>
       (super.noSuchMethod(
         Invocation.method(
           #playRandomShow,
           [],
-          {#filterBySearch: filterBySearch},
+          {
+            #filterBySearch: filterBySearch,
+            #animationOnly: animationOnly,
+          },
         ),
         returnValue: _i4.Future<_i6.Show?>.value(),
         returnValueForMissingStub: _i4.Future<_i6.Show?>.value(),

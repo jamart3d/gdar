@@ -341,6 +341,13 @@ class MockSettingsProvider extends _i1.Mock implements _i9.SettingsProvider {
       ) as bool);
 
   @override
+  bool get nonRandom => (super.noSuchMethod(
+        Invocation.getter(#nonRandom),
+        returnValue: false,
+        returnValueForMissingStub: false,
+      ) as bool);
+
+  @override
   bool get playRandomOnStartup => (super.noSuchMethod(
         Invocation.getter(#playRandomOnStartup),
         returnValue: false,
@@ -469,6 +476,13 @@ class MockSettingsProvider extends _i1.Mock implements _i9.SettingsProvider {
   @override
   bool get abbreviateMonth => (super.noSuchMethod(
         Invocation.getter(#abbreviateMonth),
+        returnValue: false,
+        returnValueForMissingStub: false,
+      ) as bool);
+
+  @override
+  bool get simpleRandomIcon => (super.noSuchMethod(
+        Invocation.getter(#simpleRandomIcon),
         returnValue: false,
         returnValueForMissingStub: false,
       ) as bool);
@@ -658,6 +672,15 @@ class MockSettingsProvider extends _i1.Mock implements _i9.SettingsProvider {
       );
 
   @override
+  void toggleNonRandom() => super.noSuchMethod(
+        Invocation.method(
+          #toggleNonRandom,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
   void togglePlayRandomOnStartup() => super.noSuchMethod(
         Invocation.method(
           #togglePlayRandomOnStartup,
@@ -715,6 +738,15 @@ class MockSettingsProvider extends _i1.Mock implements _i9.SettingsProvider {
   void toggleAbbreviateMonth() => super.noSuchMethod(
         Invocation.method(
           #toggleAbbreviateMonth,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void toggleSimpleRandomIcon() => super.noSuchMethod(
+        Invocation.method(
+          #toggleSimpleRandomIcon,
           [],
         ),
         returnValueForMissingStub: null,

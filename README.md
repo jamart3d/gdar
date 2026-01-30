@@ -79,7 +79,7 @@ Access settings via the gear icon in the top app bar.
 
 ### **Random Selection Logic**
 
-- **Manual Random (Button)**: Respects your current search query and filters.
+- **Manual Random (Dice)**: Tap the **animated dice icon** in the app bar. It spins and changes faces to indicate selection, respecting your current search query and filters.
 - **Auto-Play Random**: When a show finishes, the app creates a "radio" experience by picking a new random show. This mode **ignores** current search filters to select from your entire library, ensuring variety.
 - **Non-Random (Chronological)**: Toggle this in Settings to play shows in sequential order (based on list sort) instead of randomly. Great for listening through a tour or year.
 - **Exclusions**: Blocked shows (Red Star) are **never** selected.

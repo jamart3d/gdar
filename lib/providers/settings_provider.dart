@@ -42,6 +42,7 @@ class SettingsProvider with ChangeNotifier {
       'use_strict_src_categorization';
   static const String _offlineBufferingKey = 'offline_buffering';
   static const String _enableBufferAgentKey = 'enable_buffer_agent';
+  static const String _simpleRandomIconKey = 'simple_random_icon';
 
   static const String _marqueeEnabledKey =
       'marquee_enabled'; // Logic for disabling marquee in tests
@@ -96,6 +97,7 @@ class SettingsProvider with ChangeNotifier {
   late bool _showDayOfWeek;
   late bool _abbreviateDayOfWeek;
   late bool _abbreviateMonth;
+  late bool _simpleRandomIcon;
   late bool _marqueeEnabled;
 
   Color? _seedColor;
@@ -136,6 +138,7 @@ class SettingsProvider with ChangeNotifier {
   bool get showDayOfWeek => _showDayOfWeek;
   bool get abbreviateDayOfWeek => _abbreviateDayOfWeek;
   bool get abbreviateMonth => _abbreviateMonth;
+  bool get simpleRandomIcon => _simpleRandomIcon;
   bool get marqueeEnabled => _marqueeEnabled;
 
   Color? get seedColor => _seedColor;
@@ -258,6 +261,8 @@ class SettingsProvider with ChangeNotifier {
         DefaultSettings.abbreviateDayOfWeek;
     _abbreviateMonth =
         _prefs.getBool(_abbreviateMonthKey) ?? DefaultSettings.abbreviateMonth;
+    _simpleRandomIcon =
+        _prefs.getBool(_simpleRandomIconKey) ?? false; // Default false
     // Font Migration Logic
     if (_prefs.containsKey('use_handwriting_font')) {
       bool oldHandwriting = _prefs.getBool('use_handwriting_font') ?? false;
@@ -412,6 +417,8 @@ class SettingsProvider with ChangeNotifier {
       _abbreviateDayOfWeekKey, _abbreviateDayOfWeek = !_abbreviateDayOfWeek);
   void toggleAbbreviateMonth() => _updatePreference(
       _abbreviateMonthKey, _abbreviateMonth = !_abbreviateMonth);
+  void toggleSimpleRandomIcon() => _updatePreference(
+      _simpleRandomIconKey, _simpleRandomIcon = !_simpleRandomIcon);
   void toggleUiScale() {
     _uiScale = !_uiScale;
     _updatePreference(_uiScaleKey, _uiScale);

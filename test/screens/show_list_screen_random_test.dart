@@ -35,7 +35,8 @@ class MockAudioProvider extends Mock implements AudioProvider {
   @override
   Future<void> stopAndClear() async {}
   @override
-  Future<Show?> playRandomShow({bool filterBySearch = false}) async {
+  Future<Show?> playRandomShow(
+      {bool filterBySearch = false, bool animationOnly = false}) async {
     return null;
   }
 }

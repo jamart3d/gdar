@@ -320,7 +320,8 @@ class AudioProvider with ChangeNotifier {
     return result;
   }
 
-  Future<Show?> playRandomShow({bool filterBySearch = true}) async {
+  Future<Show?> playRandomShow(
+      {bool filterBySearch = true, bool animationOnly = false}) async {
     // If we're still loading and have no shows, wait for initialization
     if (_showListProvider != null &&
         _showListProvider!.isLoading &&
@@ -342,6 +343,14 @@ class AudioProvider with ChangeNotifier {
 
     _pendingRandomShowRequest = selection;
     _randomShowRequestController.add(selection);
+
+    if (animationOnly) {
+      logger.i(
+          'playRandomShow: [TEST MODE] Skipping playback, triggering animation/scroll only.');
+      // Ensure UI has time to react to the stream event
+      return show;
+    }
+
     await playSource(show, source);
     return show;
   }

@@ -4,6 +4,7 @@ import 'package:shakedown/providers/settings_provider.dart';
 import 'package:shakedown/providers/show_list_provider.dart';
 import 'package:shakedown/ui/widgets/shakedown_title.dart';
 import 'package:shakedown/ui/screens/settings_screen.dart';
+import 'package:shakedown/ui/widgets/show_list/animated_dice_icon.dart';
 
 class ShowListAppBar extends StatelessWidget implements PreferredSizeWidget {
   final Animation<double> randomPulseAnimation;
@@ -50,29 +51,48 @@ class ShowListAppBar extends StatelessWidget implements PreferredSizeWidget {
     final showListProvider = context.watch<ShowListProvider>();
 
     return [
-      if (isRandomShowLoading)
-        const Padding(
-          padding: EdgeInsets.all(12.0),
-          child: SizedBox(
-              width: 24,
-              height: 24,
-              child: CircularProgressIndicator(strokeWidth: 2.5)),
-        )
-      else if (settingsProvider.nonRandom)
-        IconButton(
-          icon: const Icon(Icons.playlist_play_rounded),
-          onPressed: onRandomPlay,
-          tooltip: 'Play Next Show',
-        )
-      else
-        ScaleTransition(
-          scale: randomPulseAnimation,
-          child: IconButton(
-            icon: const Icon(Icons.question_mark_rounded),
+      if (settingsProvider.nonRandom)
+        if (isRandomShowLoading)
+          const Padding(
+            padding: EdgeInsets.all(12.0),
+            child: SizedBox(
+                width: 24,
+                height: 24,
+                child: CircularProgressIndicator(strokeWidth: 2.5)),
+          )
+        else
+          IconButton(
+            icon: const Icon(Icons.playlist_play_rounded),
             onPressed: onRandomPlay,
-            tooltip: 'Play Random Show',
-          ),
+            tooltip: 'Play Next Show',
+          )
+      else if (settingsProvider.simpleRandomIcon)
+        if (isRandomShowLoading)
+          const Padding(
+            padding: EdgeInsets.all(12.0),
+            child: SizedBox(
+                width: 24,
+                height: 24,
+                child: CircularProgressIndicator(strokeWidth: 2.5)),
+          )
+        else
+          ScaleTransition(
+            scale: randomPulseAnimation,
+            child: IconButton(
+              icon: const Icon(Icons.question_mark_rounded),
+              onPressed: onRandomPlay,
+              tooltip: 'Play Random Show',
+            ),
+          )
+      else
+        // Expressive Animated Dice (M3)
+        // Handles its own loading state (spinning)
+        AnimatedDiceIcon(
+          onPressed: onRandomPlay,
+          isLoading: isRandomShowLoading,
+          tooltip: 'Play Random Show',
         ),
+      // Gap removed to match spacing between Search and Settings (standard AppBar spacing)
       ScaleTransition(
         scale: searchPulseAnimation,
         child: IconButton(

@@ -56,6 +56,7 @@ class _ShowListScreenState extends State<ShowListScreen>
 
   // Track pending selection for when app resumes from background
   ({Show show, Source source})? _pendingBackgroundSelection;
+  bool _isAnimationTest = false;
 
   static const Duration _animationDuration = Duration(milliseconds: 300);
 
@@ -211,6 +212,9 @@ class _ShowListScreenState extends State<ShowListScreen>
     final processingState = state.processingState;
 
     if (_isRandomShowLoading) {
+      // If running a visual test, ignore player state (which might be idle)
+      if (_isAnimationTest) return;
+
       if (processingState == ProcessingState.ready ||
           processingState == ProcessingState.completed ||
           processingState == ProcessingState.idle) {
@@ -594,8 +598,21 @@ class _ShowListScreenState extends State<ShowListScreen>
       }
     });
 
-    // Ensure loading state is cleared
-    setState(() => _isRandomShowLoading = false);
+    // If not already loading (e.g. triggered via deep link), trigger animation feedback
+    if (!_isRandomShowLoading) {
+      setState(() {
+        _isRandomShowLoading = true;
+        _isAnimationTest = true;
+      });
+      Future.delayed(const Duration(milliseconds: 12200), () {
+        if (mounted) {
+          setState(() {
+            _isRandomShowLoading = false;
+            _isAnimationTest = false;
+          });
+        }
+      });
+    }
   }
 
   Future<void> _handlePlayRandomShow() async {
@@ -618,15 +635,16 @@ class _ShowListScreenState extends State<ShowListScreen>
 
     setState(() => _isRandomShowLoading = true);
 
+    // Ensure animation runs for full cycle (12000ms) + buffer
+    final minWait = Future.delayed(const Duration(milliseconds: 12200));
+
     // Call unified random playback logic.
     // ShowListScreen will react to the selection via the subscription in initState.
-    final show = await audioProvider.playRandomShow(filterBySearch: true);
+    await audioProvider.playRandomShow(filterBySearch: true);
 
-    if (show == null && mounted) {
-      // If we failed, wait a moment before hiding the loading indicator to prevent flicker
-      await Future.delayed(const Duration(milliseconds: 300));
-      setState(() => _isRandomShowLoading = false);
-    }
+    await minWait;
+
+    if (mounted) setState(() => _isRandomShowLoading = false);
   }
 
   bool _showPasteFeedback = false; // Add class member

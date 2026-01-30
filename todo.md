@@ -55,7 +55,7 @@ This file tracks planned features, enhancements, and bug fixes for the gdar appl
     - [x] Implement "Non-Random" toggle in Settings Screen
     - [x] Modify `AudioProvider.playRandomShow()` and `AudioProvider.queueRandomShow()` to check `nonRandom` setting
     - [x] If `nonRandom` is true, find current show index in filtered list and select next index (with wraparound)
-    - [ ] **Expressive Animated Dice (Material 3):**
+    - [x] **Expressive Animated Dice (Material 3):**
       - **Concept:** Replace the "Question Mark" icon with a 2D expressive animated dice for the Random button.
       - **Behavior:**
         - **Random Mode:** Dice spins/rolls (cycling numbers 1-6) on tap, utilizing "squash and stretch" scaling and elastic curves.
@@ -216,7 +216,7 @@ This file tracks planned features, enhancements, and bug fixes for the gdar appl
 
 - [ ] **Staggered List Motion:** Animate ShowListCards sliding/fading in when the list loads or search results update for a fluid, premium feel.
 
-- [ ] **Random Icon Animation:** When going from splash screen to show list screen, make the select random button (question mark) pulse in a Material 3 design way until it's been used once (per app start).
+- [ ] **Random Icon Animation:** When going from splash screen to show list screen, make the select random button (animated dice) pulse in a Material 3 design way until it's been used once (per app start).
 
 - [ ] **Miniplayer Fix:** Fix miniplayer rebuild when navigating between shows screen and track list screen, or integrate it better with the playback controls from the playback screen.
 
@@ -248,6 +248,14 @@ This file tracks planned features, enhancements, and bug fixes for the gdar appl
   - **Feature:** Add a **Setting** to toggle this behavior (Default: TBD).
   - **Behavior (Enabled):** The "Previous" button is grey/inactive at the first track; "Next" button is grey/inactive at the last track of the *current show*.
   - **Behavior (Disabled):** Buttons allow seamless navigation into the pre-queued/history tracks (crossing show boundaries).
+
+- [ ] **Dice & Location Animation Test Script:**
+  - **Goal:** Create a script (or test procedure) to verify dice bounces and location updates using deep link intents.
+  - **Requirement:** Simulate the "Random Show" flow to test animations (Dice bounce, List scroll/expansion) *without* triggering actual audio playback.
+  - **Implementation:**
+    - Use `adb shell am start ...` to fire intents.
+    - specialized intent extra (e.g., `test_animation_only: true`) to bypass `AudioProvider.play()`.
+
 
 ## Low Priority / Ideas
 
@@ -359,7 +367,7 @@ This file tracks planned features, enhancements, and bug fixes for the gdar appl
     - **Usage Instructions:**
       - **Browse**: Explore concerts by date in the main list
       - **Search**: Find shows by date, month, venue, or location
-      - **Random**: Tap the ? icon in app bar for random show
+      - **Random**: Tap the animated dice icon in app bar for random show
       - **Rating**: Tap stars (1-3), red star = blocked, grey = played/unrated
       - **Playback**: Long-press source for quick play, single tap to browse tracks
       - **Collection**: Access rated shows from Settings → Rated Shows Library

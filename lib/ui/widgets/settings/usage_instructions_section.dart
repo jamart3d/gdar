@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shakedown/ui/widgets/section_card.dart';
+import 'package:shakedown/ui/widgets/show_list/animated_dice_icon.dart';
 
 class UsageInstructionsSection extends StatelessWidget {
   final double scaleFactor;
@@ -22,7 +23,18 @@ class UsageInstructionsSection extends StatelessWidget {
         ListTile(
           dense: true,
           visualDensity: VisualDensity.compact,
-          leading: const Icon(Icons.shuffle_rounded),
+          leading: SizedBox(
+            width: 24,
+            height: 24,
+            child: FittedBox(
+              child: AnimatedDiceIcon(
+                onPressed: () {}, // Dummy callback to enable button
+                isLoading: true, // Spin as requested
+                changeFaces: false, // Don't change faces, just spin
+                tooltip: 'Random Selection',
+              ),
+            ),
+          ),
           title: FittedBox(
               fit: BoxFit.scaleDown,
               alignment: Alignment.centerLeft,
@@ -42,7 +54,7 @@ class UsageInstructionsSection extends StatelessWidget {
                     text: 'Tap', style: TextStyle(fontWeight: FontWeight.bold)),
                 TextSpan(
                     text:
-                        ' the ? icon in the app bar to play a random show. Selection respects "Random\u00A0Playback"\u00A0settings.\n'),
+                        ' the dice icon in the app bar to play a random show. Selection respects "Random\u00A0Playback"\u00A0settings.\n'),
                 TextSpan(
                     text: 'Long-press',
                     style: TextStyle(fontWeight: FontWeight.bold)),
