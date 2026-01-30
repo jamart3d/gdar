@@ -10,6 +10,7 @@ import 'package:audio_session/audio_session.dart' as _i6;
 import 'package:flutter/foundation.dart' as _i3;
 import 'package:hive_flutter/hive_flutter.dart' as _i14;
 import 'package:just_audio/just_audio.dart' as _i2;
+import 'package:just_audio_background/just_audio_background.dart' as _i17;
 import 'package:mockito/mockito.dart' as _i1;
 import 'package:mockito/src/dummies.dart' as _i5;
 import 'package:shakedown/models/rating.dart' as _i15;
@@ -17,6 +18,7 @@ import 'package:shakedown/models/show.dart' as _i8;
 import 'package:shakedown/models/source.dart' as _i11;
 import 'package:shakedown/providers/settings_provider.dart' as _i10;
 import 'package:shakedown/providers/show_list_provider.dart' as _i7;
+import 'package:shakedown/services/audio_cache_service.dart' as _i16;
 import 'package:shakedown/services/catalog_service.dart' as _i13;
 import 'package:shared_preferences/shared_preferences.dart' as _i9;
 
@@ -86,6 +88,16 @@ class _FakeSequenceState_4 extends _i1.SmartFake implements _i2.SequenceState {
 class _FakeValueListenable_5<T> extends _i1.SmartFake
     implements _i3.ValueListenable<T> {
   _FakeValueListenable_5(
+    Object parent,
+    Invocation parentInvocation,
+  ) : super(
+          parent,
+          parentInvocation,
+        );
+}
+
+class _FakeAudioSource_6 extends _i1.SmartFake implements _i2.AudioSource {
+  _FakeAudioSource_6(
     Object parent,
     Invocation parentInvocation,
   ) : super(
@@ -2249,4 +2261,142 @@ class MockCatalogService extends _i1.Mock implements _i13.CatalogService {
         returnValue: _i4.Future<void>.value(),
         returnValueForMissingStub: _i4.Future<void>.value(),
       ) as _i4.Future<void>);
+}
+
+/// A class which mocks [AudioCacheService].
+///
+/// See the documentation for Mockito's code generation for more information.
+class MockAudioCacheService extends _i1.Mock implements _i16.AudioCacheService {
+  @override
+  int get cachedTrackCount => (super.noSuchMethod(
+        Invocation.getter(#cachedTrackCount),
+        returnValue: 0,
+        returnValueForMissingStub: 0,
+      ) as int);
+
+  @override
+  bool get hasListeners => (super.noSuchMethod(
+        Invocation.getter(#hasListeners),
+        returnValue: false,
+        returnValueForMissingStub: false,
+      ) as bool);
+
+  @override
+  void dispose() => super.noSuchMethod(
+        Invocation.method(
+          #dispose,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  _i2.AudioSource createAudioSource({
+    required Uri? uri,
+    required _i17.MediaItem? tag,
+    required bool? useCache,
+  }) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #createAudioSource,
+          [],
+          {
+            #uri: uri,
+            #tag: tag,
+            #useCache: useCache,
+          },
+        ),
+        returnValue: _FakeAudioSource_6(
+          this,
+          Invocation.method(
+            #createAudioSource,
+            [],
+            {
+              #uri: uri,
+              #tag: tag,
+              #useCache: useCache,
+            },
+          ),
+        ),
+        returnValueForMissingStub: _FakeAudioSource_6(
+          this,
+          Invocation.method(
+            #createAudioSource,
+            [],
+            {
+              #uri: uri,
+              #tag: tag,
+              #useCache: useCache,
+            },
+          ),
+        ),
+      ) as _i2.AudioSource);
+
+  @override
+  void monitorCache(bool? isEnabled) => super.noSuchMethod(
+        Invocation.method(
+          #monitorCache,
+          [isEnabled],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  _i4.Future<void> refreshCacheCount() => (super.noSuchMethod(
+        Invocation.method(
+          #refreshCacheCount,
+          [],
+        ),
+        returnValue: _i4.Future<void>.value(),
+        returnValueForMissingStub: _i4.Future<void>.value(),
+      ) as _i4.Future<void>);
+
+  @override
+  _i4.Future<void> clearAudioCache() => (super.noSuchMethod(
+        Invocation.method(
+          #clearAudioCache,
+          [],
+        ),
+        returnValue: _i4.Future<void>.value(),
+        returnValueForMissingStub: _i4.Future<void>.value(),
+      ) as _i4.Future<void>);
+
+  @override
+  _i4.Future<void> performCacheCleanup({int? maxFiles = 20}) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #performCacheCleanup,
+          [],
+          {#maxFiles: maxFiles},
+        ),
+        returnValue: _i4.Future<void>.value(),
+        returnValueForMissingStub: _i4.Future<void>.value(),
+      ) as _i4.Future<void>);
+
+  @override
+  void addListener(_i12.VoidCallback? listener) => super.noSuchMethod(
+        Invocation.method(
+          #addListener,
+          [listener],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void removeListener(_i12.VoidCallback? listener) => super.noSuchMethod(
+        Invocation.method(
+          #removeListener,
+          [listener],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void notifyListeners() => super.noSuchMethod(
+        Invocation.method(
+          #notifyListeners,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
 }

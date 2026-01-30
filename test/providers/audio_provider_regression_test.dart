@@ -12,6 +12,7 @@ import 'package:just_audio/just_audio.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:shakedown/services/catalog_service.dart';
+import 'package:shakedown/services/audio_cache_service.dart';
 
 import 'audio_provider_test.mocks.dart';
 
@@ -21,6 +22,7 @@ import 'audio_provider_test.mocks.dart';
   MockSpec<ShowListProvider>(),
   MockSpec<SettingsProvider>(),
   MockSpec<CatalogService>(),
+  MockSpec<AudioCacheService>(),
 ])
 void main() {
   late AudioProvider audioProvider;
@@ -28,6 +30,7 @@ void main() {
   late MockShowListProvider mockShowListProvider;
   late MockSettingsProvider mockSettingsProvider;
   late MockCatalogService mockCatalogService;
+  late MockAudioCacheService mockAudioCacheService;
 
   // Stream Controllers for mocks
   late StreamController<ProcessingState> processingStateController;
@@ -45,7 +48,9 @@ void main() {
     mockSettingsProvider = MockSettingsProvider();
     mockShowListProvider = MockShowListProvider();
     mockAudioPlayer = MockAudioPlayerRelaxed();
+    mockAudioPlayer = MockAudioPlayerRelaxed();
     mockCatalogService = MockCatalogService();
+    mockAudioCacheService = MockAudioCacheService();
 
     processingStateController = StreamController<ProcessingState>.broadcast();
     positionController = StreamController<Duration>.broadcast();
@@ -102,6 +107,7 @@ void main() {
     audioProvider = AudioProvider(
       audioPlayer: mockAudioPlayer,
       catalogService: mockCatalogService,
+      audioCacheService: mockAudioCacheService,
     );
     audioProvider.update(mockShowListProvider, mockSettingsProvider);
   });

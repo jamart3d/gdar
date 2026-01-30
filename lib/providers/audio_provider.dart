@@ -15,10 +15,9 @@ import 'package:shakedown/utils/logger.dart';
 import 'package:shakedown/utils/share_link_parser.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:just_audio_background/just_audio_background.dart';
-import 'package:crypto/crypto.dart';
-import 'dart:convert';
 import 'package:shakedown/services/buffer_agent.dart';
 import 'package:shakedown/services/random_show_selector.dart';
+import 'package:shakedown/services/audio_cache_service.dart';
 
 class AudioProvider with ChangeNotifier {
   late final AudioPlayer _audioPlayer;
@@ -115,42 +114,8 @@ class AudioProvider with ChangeNotifier {
       get bufferAgentNotificationStream =>
           _bufferAgentNotificationController.stream;
 
-  int _cachedTrackCount = 0;
-
-  /// Returns the current number of cached audio files (non-blocking).
-  /// Value is updated via [refreshCacheCount].
-  int get cachedTrackCount => _cachedTrackCount;
-
-  /// Asynchronously updates the cached track count to avoid blocking the UI thread.
-  Future<void> refreshCacheCount() async {
-    try {
-      final cacheDir = Directory.systemTemp;
-      if (!await cacheDir.exists()) {
-        _cachedTrackCount = 0;
-        notifyListeners();
-        return;
-      }
-
-      // Run I/O in a separate future (though Directory.list is already async stream, strictly speaking)
-      // listSync was the blocker. list() returns a Stream.
-      int count = 0;
-      await for (final entity in cacheDir.list()) {
-        if (entity is File) {
-          final name = entity.uri.pathSegments.last;
-          if (name.length == 64) {
-            count++;
-          }
-        }
-      }
-
-      if (_cachedTrackCount != count) {
-        _cachedTrackCount = count;
-        notifyListeners();
-      }
-    } catch (e) {
-      logger.w('Failed to refresh cache count: $e');
-    }
-  }
+  /// Proxy for cached track count from [AudioCacheService]
+  int get cachedTrackCount => _audioCacheService.cachedTrackCount;
 
   bool _isTransitioning = false;
 
@@ -159,16 +124,21 @@ class AudioProvider with ChangeNotifier {
 
   // Dependency Injection for easier testing
   final CatalogService _catalogService;
+  final AudioCacheService _audioCacheService;
 
   AudioProvider({
     AudioPlayer? audioPlayer,
     CatalogService? catalogService,
-  }) : _catalogService = catalogService ?? CatalogService() {
+    AudioCacheService? audioCacheService,
+  })  : _catalogService = catalogService ?? CatalogService(),
+        _audioCacheService = audioCacheService ?? AudioCacheService() {
     _audioPlayer = audioPlayer ?? AudioPlayer();
     _listenForPlaybackProgress();
     _listenForErrors();
     _listenForProcessingState();
-    refreshCacheCount();
+
+    // Listen to cache updates
+    _audioCacheService.addListener(notifyListeners);
   }
 
   void _listenForProcessingState() {
@@ -192,6 +162,9 @@ class AudioProvider with ChangeNotifier {
     _showListProvider = showListProvider;
     _settingsProvider = settingsProvider;
     _updateBufferAgent();
+    // Update cache monitoring based on setting
+    _audioCacheService
+        .monitorCache(_settingsProvider?.offlineBuffering ?? false);
   }
 
   void _updateBufferAgent() {
@@ -270,6 +243,7 @@ class AudioProvider with ChangeNotifier {
 
   @override
   void dispose() {
+    _audioCacheService.removeListener(notifyListeners);
     _processingStateSubscription?.cancel();
     _positionSubscription?.cancel();
     _playbackEventSubscription?.cancel();
@@ -470,7 +444,7 @@ class AudioProvider with ChangeNotifier {
     final dynamicLimit = max(20, currentTrackCount + 5);
 
     // Fire and forget (don't await) to not block the UI.
-    _performCacheCleanup(maxFiles: dynamicLimit);
+    _audioCacheService.performCacheCleanup(maxFiles: dynamicLimit);
 
     final show = selection.show;
     final source = selection.source;
@@ -729,100 +703,19 @@ class AudioProvider with ChangeNotifier {
   }
 
   AudioSource _createAudioSource(Uri uri, MediaItem tag) {
-    final useCache = _settingsProvider?.offlineBuffering ?? false;
-
-    if (useCache) {
-      // Create a stable cache key based on the URL
-      final key = sha256.convert(utf8.encode(uri.toString())).toString();
-      return LockCachingAudioSource(
-        uri,
-        tag: tag,
-        cacheFile: File('${Directory.systemTemp.path}/$key'),
-      );
-    } else {
-      return AudioSource.uri(uri, tag: tag);
-    }
+    return _audioCacheService.createAudioSource(
+      uri: uri,
+      tag: tag,
+      useCache: _settingsProvider?.offlineBuffering ?? false,
+    );
   }
 
-  /// Clears all cached audio files from the temporary directory.
-  /// Should be called on app startup.
+  /// Delegates to AudioCacheService to clear cache
   static Future<void> clearAudioCache() async {
-    try {
-      final cacheDir = Directory.systemTemp;
-      if (await cacheDir.exists()) {
-        final List<FileSystemEntity> files = cacheDir.listSync();
-        for (final file in files) {
-          // We only delete files that look like our sha256 hashes (64 hex chars)
-          // or generally safe temp files?
-          // For safety, let's just delete files if possible, or maybe check extension?
-          // Our cache files have no extension.
-          if (file is File) {
-            // Basic check to avoid deleting system temp stuff if shared (though usually app specific on mobile)
-            final name = file.uri.pathSegments.last;
-            if (name.length == 64 && double.tryParse(name) == null) {
-              try {
-                await file.delete();
-              } catch (_) {}
-            }
-          }
-        }
-        logger.i('Cleared audio cache.');
-      }
-    } catch (e) {
-      logger.w('Failed to clear audio cache: $e');
-    }
+    final service = AudioCacheService();
+    await service.clearAudioCache();
+    service.dispose();
   }
 
-  /// Keep only the most recent [maxFiles] files in the cache.
-  Future<void> _performCacheCleanup({int maxFiles = 20}) async {
-    try {
-      final cacheDir = Directory.systemTemp;
-      if (!await cacheDir.exists()) return;
-
-      final List<FileSystemEntity> files = cacheDir.listSync();
-      final List<File> audioFiles = [];
-
-      for (final entity in files) {
-        if (entity is File) {
-          final name = entity.uri.pathSegments.last;
-          // Identify our cache files (SHA-256 hash length is 64)
-          if (name.length == 64) {
-            audioFiles.add(entity);
-          }
-        }
-      }
-
-      // If we are within limits, do nothing
-      if (audioFiles.length <= maxFiles) return;
-
-      // Sort by Modification Time (Newest First)
-      audioFiles.sort((a, b) {
-        return b.lastModifiedSync().compareTo(a.lastModifiedSync());
-      });
-
-      // Delete files exceeding the limit
-      // (The files currently playing/buffering will likely be locked by OS/waiting,
-      // so we use a try-catch block for safety, though typically we just delete old ones).
-      final filesToDelete = audioFiles.sublist(maxFiles);
-      int deletedCount = 0;
-
-      for (final file in filesToDelete) {
-        try {
-          await file.delete();
-          deletedCount++;
-        } catch (_) {
-          // Ignore errors (file might be in use)
-        }
-      }
-
-      if (deletedCount > 0) {
-        logger.i(
-            'Cache Cleanup: Removed $deletedCount old files. Remaining: $maxFiles');
-        // Notify listeners so UI can update the cache count
-        refreshCacheCount();
-      }
-    } catch (e) {
-      logger.w('Cache Cleanup Failed: $e');
-    }
-  }
+  // Removed _performCacheCleanup as it is now in AudioCacheService
 }

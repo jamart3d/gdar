@@ -186,16 +186,6 @@ class MockAudioProvider extends _i1.Mock implements _i3.AudioProvider {
       );
 
   @override
-  _i4.Future<void> refreshCacheCount() => (super.noSuchMethod(
-        Invocation.method(
-          #refreshCacheCount,
-          [],
-        ),
-        returnValue: _i4.Future<void>.value(),
-        returnValueForMissingStub: _i4.Future<void>.value(),
-      ) as _i4.Future<void>);
-
-  @override
   void update(
     _i8.ShowListProvider? showListProvider,
     _i9.SettingsProvider? settingsProvider,

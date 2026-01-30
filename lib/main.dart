@@ -20,6 +20,7 @@ import 'package:app_links/app_links.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shakedown/ui/widgets/rgb_clock_wrapper.dart';
+import 'package:shakedown/services/audio_cache_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -353,6 +354,7 @@ class _GdarAppState extends State<GdarApp> {
       providers: [
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
         ChangeNotifierProvider.value(value: _settingsProvider),
+        ChangeNotifierProvider(create: (_) => AudioCacheService()),
         ChangeNotifierProxyProvider<SettingsProvider, ShowListProvider>(
           create: (_) => _showListProvider,
           update: (_, settingsProvider, showListProvider) =>
@@ -360,7 +362,10 @@ class _GdarAppState extends State<GdarApp> {
         ),
         ChangeNotifierProxyProvider2<ShowListProvider, SettingsProvider,
             AudioProvider>(
-          create: (_) => AudioProvider(),
+          create: (context) => AudioProvider(
+            audioCacheService:
+                Provider.of<AudioCacheService>(context, listen: false),
+          ),
           update: (_, showListProvider, settingsProvider, audioProvider) =>
               audioProvider!
                 ..update(
