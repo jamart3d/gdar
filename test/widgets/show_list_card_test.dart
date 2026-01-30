@@ -10,11 +10,7 @@ import 'package:shakedown/ui/widgets/show_list_card.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:flutter/services.dart';
 import 'package:shakedown/services/catalog_service.dart';
-import 'package:hive/hive.dart'; // Needed for Box type
-import 'package:flutter/foundation.dart'; // Needed for ValueListenable
-import 'package:shakedown/models/rating.dart';
 import '../mocks/fake_catalog_service.dart';
 
 void main() {
@@ -287,7 +283,6 @@ void main() {
 
   testWidgets('ShowListCard meets accessibility guidelines',
       (WidgetTester tester) async {
-    final semantics = tester.binding.pipelineOwner.semanticsOwner;
     await tester.pumpWidget(createTestableWidget(show: dummyShow));
     await tester.pumpAndSettle();
 

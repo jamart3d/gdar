@@ -1,3 +1,9 @@
+Release 1.0.19:
+- **Improved**: Standardized rating UI scaling across all screens using responsive font tokens.
+- **Improved**: Refined the "Random Play" dice animation.
+- **New**: Improved "Swipe to Block" feedback with a simplified "Blocked" notification.
+- **New**: Added "Undo & Resume" logic to the block action—accidentally blocked a show? Tapping Undo now instantly restores the show and resumes playback at the exact second you left off.
+
 Release 1.0.18:
 - **Internal**: Performed comprehensive codebase cleanup, removing over 50+ redundant comments for improved maintainability.
 - **Improved**: Verified UI alignment and rendering across all font/scale configurations using automated visual regression tests.

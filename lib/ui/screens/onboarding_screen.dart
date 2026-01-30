@@ -13,6 +13,8 @@ import 'package:shakedown/ui/widgets/shakedown_title.dart';
 import 'package:shakedown/ui/styles/app_typography.dart';
 import 'package:shakedown/ui/styles/font_config.dart';
 import 'package:shakedown/ui/widgets/show_list/animated_dice_icon.dart';
+import 'package:shakedown/services/update_service.dart';
+import 'package:in_app_update/in_app_update.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -27,12 +29,50 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   bool _dontShowAgain = false;
   String? _version;
   bool? _archiveReachable;
+  final UpdateService _updateService = UpdateService();
+  AppUpdateInfo? _updateInfo;
+  bool _isDownloading = false;
 
   @override
   void initState() {
     super.initState();
     _loadVersion();
     _checkArchiveReachability();
+    _checkForUpdate();
+  }
+
+  Future<void> _checkForUpdate() async {
+    // Only check if on Android
+    if (Theme.of(context).platform == TargetPlatform.android) {
+      final info = await _updateService.checkForUpdate();
+      if (mounted) {
+        setState(() {
+          _updateInfo = info;
+        });
+      }
+    }
+  }
+
+  Future<void> _startUpdate() async {
+    if (_updateInfo == null) return;
+
+    final result = await _updateService.startFlexibleUpdate();
+    if (result == AppUpdateResult.success) {
+      if (mounted) {
+        setState(() {
+          _isDownloading = true;
+        });
+
+        // After some time or when download completes, we could show a SnackBar.
+        // For now, Play Store handles the background download UI.
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Downloading update in background...'),
+            duration: Duration(seconds: 5),
+          ),
+        );
+      }
+    }
   }
 
   @override
@@ -253,7 +293,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
-              const SizedBox(height: 20),
+              const SizedBox(height: 12),
+              _buildUpdateBanner(context, scaleFactor),
+              const SizedBox(height: 8),
               Text(
                 'Welcome friend! and many thanks for helping with this closed test.\nThis app is a lightweight streaming music player.',
                 style: theme.textTheme.titleMedium?.copyWith(
@@ -785,6 +827,122 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildUpdateBanner(BuildContext context, double scaleFactor) {
+    if (_updateInfo == null ||
+        _updateInfo!.updateAvailability != UpdateAvailability.updateAvailable) {
+      return const SizedBox.shrink();
+    }
+
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 500),
+      child: _isDownloading
+          ? Padding(
+              padding: const EdgeInsets.only(bottom: 24.0),
+              child: Card(
+                elevation: 0,
+                color: colorScheme.secondaryContainer.withValues(alpha: 0.5),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 16.0, vertical: 12.0),
+                  child: Row(
+                    children: [
+                      SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                              colorScheme.primary),
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Text(
+                          'Downloading update...',
+                          style: TextStyle(
+                            fontSize:
+                                AppTypography.responsiveFontSize(context, 13.0),
+                            color: colorScheme.onSecondaryContainer,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            )
+          : Padding(
+              padding: const EdgeInsets.only(bottom: 24.0),
+              child: Card(
+                elevation: 0,
+                color: colorScheme.primaryContainer,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: InkWell(
+                  onTap: _startUpdate,
+                  borderRadius: BorderRadius.circular(16),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.system_update_rounded,
+                          color: colorScheme.onPrimaryContainer,
+                          size: 24 * scaleFactor,
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Update Available',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: colorScheme.onPrimaryContainer,
+                                  fontSize: AppTypography.responsiveFontSize(
+                                      context, 14.0),
+                                ),
+                              ),
+                              Text(
+                                'A new version is ready to install.',
+                                style: TextStyle(
+                                  color: colorScheme.onPrimaryContainer
+                                      .withValues(alpha: 0.8),
+                                  fontSize: AppTypography.responsiveFontSize(
+                                      context, 12.0),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        TextButton(
+                          onPressed: _startUpdate,
+                          style: TextButton.styleFrom(
+                            backgroundColor: colorScheme.primary,
+                            foregroundColor: colorScheme.onPrimary,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                          ),
+                          child: const Text('UPDATE'),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
     );
   }
 }

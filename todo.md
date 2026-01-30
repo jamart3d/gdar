@@ -127,6 +127,11 @@ This file tracks planned features, enhancements, and bug fixes for the gdar appl
     - [x] **Rated Shows Library**: Added dynamic counts to each tab label (e.g., "Played (5)").
     - [ ] **Data Sharding:** Split the monolithic JSON data by year (e.g., `years/1972.json`) and use a lightweight master index to improve app startup performance and reduce memory usage.
  
+- [ ] **Update Notification:** 
+  - **Feature:** Implement a mechanism to notify users when a new version of the app is available in the store.
+  - **Logic:** Check current version against a remote source (e.g., GitHub, simple API, or `upgrader` package).
+  - **UI (Onboarding Integration):** Show a non-intrusive Material 3 banner on **Onboarding Screen 1**. This allows the "Flexible Update" to download in the background while the user proceeds through the remaining onboarding steps.
+  - **Status:** Plan approved to use `in_app_update` package for background downloading.
 
 - [x] **Smart Random Playback**:
   - Manual Random (Button) respects search filter.
@@ -390,6 +395,15 @@ This file tracks planned features, enhancements, and bug fixes for the gdar appl
   - **UI:** Use a multi-page carousel or single scrollable page with dismiss button.
 
 
+
+## Production Readiness
+
+- [ ] **Clean Codebase:**
+  - [ ] Remove all redundant/legacy comments and "TODO" comments that are no longer relevant.
+  - [ ] Identify and remove dead code, unused functions, and orphaned variables.
+  - [ ] Run `dart fix --apply` and `flutter format .` across the entire project.
+- [ ] **Lints & Warnings:** Resolve all remaining analysis warnings and ensure the app is "Lint Clean".
+- [ ] **Logging Audit:** Review all `print` statements and `Logger` calls to ensure sensitive data isn't logged and logs are appropriate for production.
 
 ## Footprint Reduction
 
