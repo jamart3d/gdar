@@ -16,9 +16,11 @@ enum CatalogLoadingStrategy {
 /// - Shows: Loaded from JSON (in-memory)
 /// - Ratings: Stored in Hive (persistent)
 class CatalogService {
-  static CatalogService _instance = CatalogService._internal();
+  static CatalogService _instance = CatalogService.internal();
   factory CatalogService() => _instance;
-  CatalogService._internal();
+
+  @visibleForTesting
+  CatalogService.internal(); // Exposed for testing subclassing
 
   @visibleForTesting
   static void setMock(CatalogService mock) {

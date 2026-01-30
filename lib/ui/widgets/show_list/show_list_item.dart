@@ -53,11 +53,15 @@ class ShowListItem extends StatelessWidget {
           direction: show.sources.length > 1
               ? DismissDirection.none
               : DismissDirection.endToStart,
+          dismissThresholds: const {
+            DismissDirection.endToStart: 0.6,
+          },
           background: const SwipeActionBackground(
             borderRadius: 12.0,
           ),
           confirmDismiss: (direction) async {
-            return await _showBlockConfirmation(context, show, audioProvider);
+            return await _showBlockConfirmation(
+                context, show, audioProvider, settingsProvider);
           },
           onDismissed: (direction) {
             // Optimistically remove from list.
@@ -92,8 +96,8 @@ class ShowListItem extends StatelessWidget {
     );
   }
 
-  Future<bool> _showBlockConfirmation(
-      BuildContext context, Show show, AudioProvider audioProvider) async {
+  Future<bool> _showBlockConfirmation(BuildContext context, Show show,
+      AudioProvider audioProvider, SettingsProvider settingsProvider) async {
     // Haptic Feedback
     HapticFeedback.mediumImpact();
 
@@ -110,8 +114,16 @@ class ShowListItem extends StatelessWidget {
       }
     } catch (_) {}
 
-    // Stop playback if this specific show is playing
-    if (audioProvider.currentShow == show) {
+    // Capture playback state for resume if UNDO is pressed
+    final isCurrentlyPlaying = audioProvider.currentShow == show;
+    final resumeSource =
+        isCurrentlyPlaying ? audioProvider.currentSource : null;
+    final resumeIndex =
+        isCurrentlyPlaying ? audioProvider.audioPlayer.currentIndex : 0;
+    final resumePosition =
+        isCurrentlyPlaying ? audioProvider.audioPlayer.position : Duration.zero;
+
+    if (isCurrentlyPlaying) {
       audioProvider.stopAndClear();
     }
 
@@ -127,15 +139,48 @@ class ShowListItem extends StatelessWidget {
               color: Theme.of(context).colorScheme.onPrimaryContainer,
               size: 20,
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: 8),
             Expanded(
               child: Text(
-                'Blocked "${show.venue}"',
+                'Blocked',
                 style: TextStyle(
                     color: Theme.of(context).colorScheme.onPrimaryContainer,
                     fontWeight: FontWeight.bold),
               ),
             ),
+            // Block & Roll Button - Only if this was the playing show
+            if (audioProvider.currentShow == show)
+              TextButton(
+                onPressed: () {
+                  audioProvider.playRandomShow();
+                  ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                },
+                style: TextButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  minimumSize: const Size(0, 0),
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                        settingsProvider.nonRandom
+                            ? Icons.playlist_play_rounded
+                            : Icons.casino_rounded,
+                        size: 16,
+                        color:
+                            Theme.of(context).colorScheme.onPrimaryContainer),
+                    const SizedBox(width: 4),
+                    Text(
+                      settingsProvider.nonRandom ? 'NEXT' : 'ROLL',
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.onPrimaryContainer,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
           ],
         ),
         backgroundColor: Theme.of(context).colorScheme.primaryContainer,
@@ -158,6 +203,16 @@ class ShowListItem extends StatelessWidget {
           onPressed: () {
             // Restore rating
             CatalogService().setRating(show.sources.first.id, 0);
+
+            // Resume playback if it was currently playing
+            if (isCurrentlyPlaying && resumeSource != null) {
+              audioProvider.playSource(
+                show,
+                resumeSource,
+                initialIndex: resumeIndex ?? 0,
+                initialPosition: resumePosition,
+              );
+            }
           },
         ),
       ),

@@ -458,7 +458,7 @@ class PlaybackPanel extends StatelessWidget {
         return RatingControl(
           rating: rating,
           isPlayed: isPlayed,
-          size: AppTypography.responsiveFontSize(context, 24.0),
+          size: 24.0,
           onTap: () async {
             await showDialog(
               context: context,

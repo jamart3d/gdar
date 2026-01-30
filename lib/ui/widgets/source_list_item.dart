@@ -155,7 +155,7 @@ class SourceListItem extends StatelessWidget {
 
                               return RatingControl(
                                 rating: rating,
-                                size: 18 * scaleFactor,
+                                size: 18,
                                 isPlayed: isPlayed,
                                 onTap: (isSourcePlaying ||
                                         alwaysShowRatingInteraction)

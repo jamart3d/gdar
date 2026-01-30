@@ -365,7 +365,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     child: FittedBox(
                       child: AnimatedDiceIcon(
                         onPressed: () {}, // Dummy callback
-                        isLoading: true, // Spin it!
+                        isLoading: false, // Match idle AppBar speed
                         changeFaces:
                             false, // Don't change faces per user request
                       ),

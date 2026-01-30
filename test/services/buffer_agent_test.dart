@@ -5,6 +5,7 @@ import 'package:just_audio/just_audio.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:shakedown/services/buffer_agent.dart';
+import 'package:flutter/services.dart';
 
 import 'buffer_agent_test.mocks.dart';
 
@@ -23,6 +24,16 @@ void main() {
       playerStateController = StreamController<PlayerState>.broadcast();
       playbackEventController = StreamController<PlaybackEvent>.broadcast();
       notifications = [];
+
+      // Mock connectivity_plus channel
+      const channel = MethodChannel('dev.fluttercommunity.plus/connectivity');
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(channel, (MethodCall methodCall) async {
+        if (methodCall.method == 'check') {
+          return 'wifi'; // Return a valid connectivity status
+        }
+        return null;
+      });
 
       // Stub streams
       when(mockAudioPlayer.playerStateStream)

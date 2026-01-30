@@ -4,6 +4,7 @@ import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:provider/provider.dart';
 import 'package:shakedown/providers/settings_provider.dart';
 import 'package:shakedown/services/catalog_service.dart';
+import 'package:shakedown/ui/styles/app_typography.dart';
 import 'package:shakedown/utils/utils.dart';
 
 class RatingControl extends StatelessWidget {
@@ -24,6 +25,8 @@ class RatingControl extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scaledSize = AppTypography.responsiveFontSize(context, size);
+
     Widget content;
 
     if (rating == -1) {
@@ -32,7 +35,7 @@ class RatingControl extends StatelessWidget {
         label: 'Blocked show',
         child: Icon(
           Icons.star,
-          size: size,
+          size: scaledSize,
           color: Colors.red,
         ),
       );
@@ -47,7 +50,7 @@ class RatingControl extends StatelessWidget {
           direction: Axis.horizontal,
           allowHalfRating: false,
           itemCount: 3,
-          itemSize: size,
+          itemSize: scaledSize,
           ignoreGestures: true,
           ratingWidget: RatingWidget(
             full: const Icon(Icons.star, color: Colors.grey),
@@ -68,7 +71,7 @@ class RatingControl extends StatelessWidget {
           direction: Axis.horizontal,
           allowHalfRating: false,
           itemCount: 3,
-          itemSize: size,
+          itemSize: scaledSize,
           ignoreGestures: true,
           ratingWidget: RatingWidget(
             full: const Icon(Icons.star, color: Colors.amber),
@@ -196,40 +199,49 @@ class _RatingDialogState extends State<RatingDialog> {
                   ignoring: _currentRating == -1,
                   child: Opacity(
                     opacity: _currentRating == -1 ? 0.3 : 1.0,
-                    child: RatingBar(
-                      initialRating: (_currentRating == 0 && _isPlayed)
-                          ? 1.0
-                          : (_currentRating > 0
-                              ? _currentRating.toDouble()
-                              : 0.0),
-                      minRating: 1,
-                      direction: Axis.horizontal,
-                      allowHalfRating: false,
-                      itemCount: 3,
-                      itemPadding: const EdgeInsets.symmetric(horizontal: 4.0),
-                      ratingWidget: RatingWidget(
-                        full: Icon(
-                          Icons.star,
-                          color: (_currentRating == 0 && _isPlayed)
-                              ? Colors.grey
-                              : Colors.amber,
+                    child: SizedBox(
+                      width: MediaQuery.of(context).size.width * 0.8,
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: RatingBar(
+                          initialRating: (_currentRating == 0 && _isPlayed)
+                              ? 1.0
+                              : (_currentRating > 0
+                                  ? _currentRating.toDouble()
+                                  : 0.0),
+                          minRating: 1,
+                          direction: Axis.horizontal,
+                          allowHalfRating: false,
+                          itemCount: 3,
+                          itemSize:
+                              AppTypography.responsiveFontSize(context, 40.0),
+                          itemPadding:
+                              const EdgeInsets.symmetric(horizontal: 4.0),
+                          ratingWidget: RatingWidget(
+                            full: Icon(
+                              Icons.star,
+                              color: (_currentRating == 0 && _isPlayed)
+                                  ? Colors.grey
+                                  : Colors.amber,
+                            ),
+                            half: Icon(
+                              Icons.star_half,
+                              color: (_currentRating == 0 && _isPlayed)
+                                  ? Colors.grey
+                                  : Colors.amber,
+                            ),
+                            empty: const Icon(Icons.star_border,
+                                color: Colors.grey),
+                          ),
+                          onRatingUpdate: (rating) {
+                            HapticFeedback.selectionClick();
+                            setState(() {
+                              _currentRating = rating.toInt();
+                            });
+                            widget.onRatingChanged(rating.toInt());
+                          },
                         ),
-                        half: Icon(
-                          Icons.star_half,
-                          color: (_currentRating == 0 && _isPlayed)
-                              ? Colors.grey
-                              : Colors.amber,
-                        ),
-                        empty:
-                            const Icon(Icons.star_border, color: Colors.grey),
                       ),
-                      onRatingUpdate: (rating) {
-                        HapticFeedback.selectionClick();
-                        setState(() {
-                          _currentRating = rating.toInt();
-                        });
-                        widget.onRatingChanged(rating.toInt());
-                      },
                     ),
                   ),
                 ),

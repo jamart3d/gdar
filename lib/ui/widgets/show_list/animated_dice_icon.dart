@@ -1,6 +1,9 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
+import 'package:shakedown/providers/settings_provider.dart';
+import 'package:shakedown/utils/font_layout_config.dart';
 
 class AnimatedDiceIcon extends StatefulWidget {
   final VoidCallback onPressed;
@@ -46,12 +49,12 @@ class _AnimatedDiceIconState extends State<AnimatedDiceIcon>
 
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 12000),
+      duration: const Duration(milliseconds: 10000),
     );
 
     _idleController = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 15),
+      duration: const Duration(seconds: 30),
     );
 
     _controller.addListener(_onAnimationTick);
@@ -66,7 +69,7 @@ class _AnimatedDiceIconState extends State<AnimatedDiceIcon>
   void _generateRollSequence() {
     // 3 or 4 faces
     final int count = 3 + math.Random().nextInt(2);
-    _rollSequence = List.generate(count, (_) => 1 + math.Random().nextInt(6));
+    _rollSequence = List.generate(count, (_) => 2 + math.Random().nextInt(5));
   }
 
   void _randomizeStaticState() {
@@ -130,84 +133,99 @@ class _AnimatedDiceIconState extends State<AnimatedDiceIcon>
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final settingsProvider = context.watch<SettingsProvider>();
+    final effectiveScale =
+        FontLayoutConfig.getEffectiveScale(context, settingsProvider);
+    final scaledIconSize = 32.0 * effectiveScale;
 
-    return IconButton(
-      iconSize: 32, // explicit icon size
-      padding: const EdgeInsets.all(12.0), // Standard padding (total 56x56)
-      onPressed: widget.onPressed,
-      tooltip: widget.tooltip,
-      style: IconButton.styleFrom(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12.0),
-        ),
-      ),
-      icon: AnimatedBuilder(
-        animation: Listenable.merge([_controller, _idleController]),
-        builder: (context, child) {
-          double angle;
-          double scaleX = 1.0;
-          double scaleY = 1.0;
-
-          int currentFace = _staticFace;
-
-          if (_controller.isAnimating || widget.isLoading) {
-            final t = _controller.value;
-
-            // --- Rotation (Spin) ---
-            // 4 full rotations over 12s = 0.33 rotations per second. Slow spin.
-            final directionMultiplier = _rollLeft ? -1.0 : 1.0;
-            angle = t * 4 * 2 * math.pi * directionMultiplier;
-
-            // --- Wobble (Scale) ---
-            // A slow, readable "breathing" wobble.
-            // Frequency matches roughly the duration?
-            // Let's do 6 wobbles over 12s = 0.5Hz. Very slow.
-            // t goes 0 -> 1.
-            // Smooth Scale Pulse (Sin^2)
-            // Removes cusps/shear illusion from abs(sin).
-            // Range 0.0 -> 1.0 -> 0.0 smoothly.
-            final double sinVal = math.sin(t * 6 * math.pi);
-            final double wobble = sinVal * sinVal; // sin^2 is smooth
-
-            // Uniform Scale Pulse (Breathing)
-            final double scale = 1.0 + (0.10 * wobble);
-            scaleX = scale;
-            scaleY = scale;
-
-            // --- Face Selection ---
-            if (widget.changeFaces && _rollSequence.isNotEmpty) {
-              final int phaseCount = _rollSequence.length;
-              final int index =
-                  (t * phaseCount).floor().clamp(0, phaseCount - 1);
-              currentFace = _rollSequence[index];
-            }
-          } else {
-            // Idle
-            if (_enableIdleRotation) {
-              final directionMultiplier = _rollLeft ? -1.0 : 1.0;
-              angle = _staticAngle +
-                  (_idleController.value * 2 * math.pi * directionMultiplier);
-            } else {
-              angle = _staticAngle;
-            }
-          }
-
-          return Transform.rotate(
-            angle: angle,
-            child: Transform(
-              transform: Matrix4.diagonal3Values(scaleX, scaleY, 1.0),
-              alignment: Alignment.center,
-              child: CustomPaint(
-                size: const Size(32, 32),
-                painter: DicePainter(
-                  face: currentFace,
-                  color: colorScheme.primaryContainer,
-                  dotColor: colorScheme.onPrimaryContainer,
-                ),
-              ),
+    return SizedBox(
+      width: 56.0 * effectiveScale,
+      height: kToolbarHeight, // Keep AppBar height consistency
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        child: IconButton(
+          iconSize: scaledIconSize,
+          padding:
+              const EdgeInsets.all(12.0), // Standard padding (total 56x56 base)
+          onPressed: widget.onPressed,
+          tooltip: widget.tooltip,
+          style: IconButton.styleFrom(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12.0),
             ),
-          );
-        },
+          ),
+          icon: AnimatedBuilder(
+            animation: Listenable.merge([_controller, _idleController]),
+            builder: (context, child) {
+              double angle;
+              double scaleX = 1.0;
+              double scaleY = 1.0;
+
+              int currentFace = _staticFace;
+
+              if (_controller.isAnimating || widget.isLoading) {
+                final t = _controller.value;
+
+                // --- Rotation (Spin) ---
+                // 1 full rotation over 10s = 0.1 rotations per second.
+                final directionMultiplier = _rollLeft ? -1.0 : 1.0;
+                angle = t * 1 * 2 * math.pi * directionMultiplier;
+
+                // --- Wobble (Scale) ---
+                // A slow, readable "breathing" wobble.
+                // Frequency matches roughly the duration?
+                // Let's do 6 wobbles over 12s = 0.5Hz. Very slow.
+                // t goes 0 -> 1.
+                // Smooth Scale Pulse (Sin^2)
+                // Removes cusps/shear illusion from abs(sin).
+                // Range 0.0 -> 1.0 -> 0.0 smoothly.
+                final double sinVal = math.sin(t * 6 * math.pi);
+                final double wobble = sinVal * sinVal; // sin^2 is smooth
+
+                // Uniform Scale Pulse (Breathing)
+                final double scale = 1.0 + (0.10 * wobble);
+                scaleX = scale;
+                scaleY = scale;
+
+                // --- Face Selection ---
+                if (widget.changeFaces && _rollSequence.isNotEmpty) {
+                  final int phaseCount = _rollSequence.length;
+                  final int index =
+                      (t * phaseCount).floor().clamp(0, phaseCount - 1);
+                  currentFace = _rollSequence[index];
+                }
+              } else {
+                // Idle
+                if (_enableIdleRotation) {
+                  final directionMultiplier = _rollLeft ? -1.0 : 1.0;
+                  angle = _staticAngle +
+                      (_idleController.value *
+                          2 *
+                          math.pi *
+                          directionMultiplier);
+                } else {
+                  angle = _staticAngle;
+                }
+              }
+
+              return Transform.rotate(
+                angle: angle,
+                child: Transform(
+                  transform: Matrix4.diagonal3Values(scaleX, scaleY, 1.0),
+                  alignment: Alignment.center,
+                  child: CustomPaint(
+                    size: Size(scaledIconSize, scaledIconSize),
+                    painter: DicePainter(
+                      face: currentFace,
+                      color: colorScheme.primaryContainer,
+                      dotColor: colorScheme.onPrimaryContainer,
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
       ),
     );
   }

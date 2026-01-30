@@ -338,7 +338,7 @@ class _RatedShowListState extends State<_RatedShowList> {
             children: [
               RatingControl(
                 rating: catalog.getRating(source.id),
-                size: 18 * scaleFactor,
+                size: 18,
                 isPlayed: catalog.isPlayed(source.id),
                 onTap: () async {
                   final currentRating = catalog.getRating(source.id);

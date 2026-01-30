@@ -101,14 +101,48 @@ class _ShowListItemDetailsState extends State<ShowListItemDetails> {
                     color: Theme.of(context).colorScheme.onPrimaryContainer,
                     size: 20,
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: 8),
                   Expanded(
                     child: Text(
                       'Blocked Source "${source.id}"',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: TextStyle(
                           color:
                               Theme.of(context).colorScheme.onPrimaryContainer,
                           fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  // Block & Roll Button
+                  TextButton(
+                    onPressed: () {
+                      context.read<AudioProvider>().playRandomShow();
+                      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                    },
+                    style: TextButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      minimumSize: const Size(0, 0),
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(Icons.shuffle,
+                            size: 16,
+                            color: Theme.of(context)
+                                .colorScheme
+                                .onPrimaryContainer),
+                        const SizedBox(width: 4),
+                        Text(
+                          'ROLL',
+                          style: TextStyle(
+                            color: Theme.of(context)
+                                .colorScheme
+                                .onPrimaryContainer,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],
@@ -151,6 +185,9 @@ class _ShowListItemDetailsState extends State<ShowListItemDetails> {
             return Dismissible(
               key: ValueKey(source.id),
               direction: DismissDirection.endToStart,
+              dismissThresholds: const {
+                DismissDirection.endToStart: 0.6,
+              },
               background: Container(
                 alignment: Alignment.centerRight,
                 padding: const EdgeInsets.only(right: 16.0),
@@ -182,6 +219,9 @@ class _ShowListItemDetailsState extends State<ShowListItemDetails> {
             return Dismissible(
               key: ValueKey(source.id),
               direction: DismissDirection.endToStart,
+              dismissThresholds: const {
+                DismissDirection.endToStart: 0.6,
+              },
               background: const SwipeActionBackground(borderRadius: 20),
               confirmDismiss: (direction) => handleConfirmDismiss(),
               onDismissed: (direction) => handleOnDismissed(),

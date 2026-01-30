@@ -604,7 +604,7 @@ class _ShowListScreenState extends State<ShowListScreen>
         _isRandomShowLoading = true;
         _isAnimationTest = true;
       });
-      Future.delayed(const Duration(milliseconds: 12200), () {
+      Future.delayed(const Duration(milliseconds: 10100), () {
         if (mounted) {
           setState(() {
             _isRandomShowLoading = false;
@@ -635,8 +635,8 @@ class _ShowListScreenState extends State<ShowListScreen>
 
     setState(() => _isRandomShowLoading = true);
 
-    // Ensure animation runs for full cycle (12000ms) + buffer
-    final minWait = Future.delayed(const Duration(milliseconds: 12200));
+    // Ensure animation runs for full cycle (10000ms) + buffer
+    final minWait = Future.delayed(const Duration(milliseconds: 10100));
 
     // Call unified random playback logic.
     // ShowListScreen will react to the selection via the subscription in initState.

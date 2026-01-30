@@ -29,7 +29,7 @@ class UsageInstructionsSection extends StatelessWidget {
             child: FittedBox(
               child: AnimatedDiceIcon(
                 onPressed: () {}, // Dummy callback to enable button
-                isLoading: true, // Spin as requested
+                isLoading: false, // Match idle AppBar speed
                 changeFaces: false, // Don't change faces, just spin
                 tooltip: 'Random Selection',
               ),

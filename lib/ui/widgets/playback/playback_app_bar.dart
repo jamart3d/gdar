@@ -121,9 +121,7 @@ class PlaybackAppBar extends StatelessWidget {
                                   key: ValueKey(
                                       '${ratingKey}_${rating}_$isPlayed'),
                                   rating: rating,
-                                  size: AppTypography.responsiveFontSize(
-                                          context, 16.0) *
-                                      scaleFactor,
+                                  size: 16.0,
                                   isPlayed: isPlayed,
                                   onTap: () async {
                                     final currentRating =

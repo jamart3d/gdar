@@ -95,7 +95,9 @@ void main() {
 
     // Pump widget
     await tester.pumpWidget(createTestableWidget(settingsProvider));
-    await tester.pumpAndSettle(); // Wait for animations
+    await tester.pump(const Duration(
+        seconds:
+            2)); // Wait for animations (pumpAndSettle might timeout due to infinite animations)
 
     // 1. Open "Playback" section if not open
     final playbackTitle = find.text('Playback');
@@ -103,7 +105,7 @@ void main() {
 
     if (find.text('Random').evaluate().isEmpty) {
       await tester.tap(playbackTitle);
-      await tester.pumpAndSettle();
+      await tester.pump(const Duration(milliseconds: 500));
     }
 
     // 2. Verify initial state (Random is ON, because non_random is false)
@@ -126,15 +128,15 @@ void main() {
     // 3. Toggle "Random" OFF (Enabling Non-Random mode)
     // Ensure it's visible by scrolling
     await tester.drag(find.byType(Scrollable), const Offset(0, -600));
-    await tester.pumpAndSettle();
+    await tester.pump(const Duration(milliseconds: 500));
 
     final randomFinder = find.text('Random');
     await tester.scrollUntilVisible(randomFinder, 100,
         scrollable: find.byType(Scrollable));
-    await tester.pumpAndSettle();
+    await tester.pump(const Duration(milliseconds: 500));
 
     await tester.tap(randomFinder);
-    await tester.pumpAndSettle();
+    await tester.pump(const Duration(milliseconds: 500));
 
     // 4. Verify new state (Random is OFF -> Non-Random mode is ON)
     expect(settingsProvider.nonRandom, true);

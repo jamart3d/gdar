@@ -280,7 +280,7 @@ This file tracks planned features, enhancements, and bug fixes for the gdar appl
 - [ ] **Track Progress Indicator:** Add setting to show a progress indicator on the currently playing track list item. Should not show time labels and must respect the "Hide Track Duration" setting.
 - [ ] **Marquee Control:** In playback screen, when "Show Track Number" is enabled and a track title marquees, the track number itself should NOT marquee (stay fixed).
 
-- [ ] **Swipe to Block Follow-up:** When using "Swipe to Block" to remove a show, provide an option (or setting) to immediately trigger a new random selection.
+- [ ] **Swipe to Block Follow-up:** When using "Swipe to Block" to remove a show, provide an option in snackbar to immediately trigger a new random selection.
 - [ ] **Swipe to Block Undo Animation:** When undoing a block (restoring the show), animate the "opposite" of the block action slowly for clear feedback.
 
 - [x] **RGB Glow Setting:** Add a setting to control/boost the "glow" intensity of the RGB border effect.
