@@ -9,7 +9,8 @@ class ThemeProvider with ChangeNotifier {
   bool _isDarkMode = false;
   bool get isDarkMode => _isDarkMode;
 
-  ThemeMode get currentThemeMode => _isDarkMode ? ThemeMode.dark : ThemeMode.light;
+  ThemeMode get currentThemeMode =>
+      _isDarkMode ? ThemeMode.dark : ThemeMode.light;
 
   ThemeProvider() {
     _loadThemePreference();
@@ -31,7 +32,8 @@ class ThemeProvider with ChangeNotifier {
   // Loads the saved theme choice when the app starts.
   Future<void> _loadThemePreference() async {
     final prefs = await SharedPreferences.getInstance();
-    _isDarkMode = prefs.getBool(_themePreferenceKey) ?? false; // Default to light mode
+    _isDarkMode =
+        prefs.getBool(_themePreferenceKey) ?? false; // Default to light mode
     notifyListeners();
   }
 }

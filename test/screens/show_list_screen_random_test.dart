@@ -56,6 +56,12 @@ class MockSettingsProvider extends SettingsProvider {
 
   @override
   bool get nonRandom => _nonRandom;
+  @override
+  bool get simpleRandomIcon => true;
+  @override
+  bool get highlightCurrentShowCard => true;
+  @override
+  bool get useTrueBlack => false;
 }
 
 class MockCatalogService extends Mock implements CatalogService {}

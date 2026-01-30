@@ -238,9 +238,6 @@ class AudioProvider with ChangeNotifier {
     });
   }
 
-  // Removed _listenForIndexChanges as it is now merged into _listenForPlaybackProgress
-  // to avoid multiple listeners on the same stream.
-
   @override
   void dispose() {
     _audioCacheService.removeListener(notifyListeners);
@@ -502,7 +499,6 @@ class AudioProvider with ChangeNotifier {
     Show? foundShow;
     Source? foundSource;
 
-    // Efficient lookup? We iterate for now.
     for (final show in _showListProvider!.allShows) {
       for (final source in show.sources) {
         if (source.id == sourceId) {
@@ -716,6 +712,4 @@ class AudioProvider with ChangeNotifier {
     await service.clearAudioCache();
     service.dispose();
   }
-
-  // Removed _performCacheCleanup as it is now in AudioCacheService
 }

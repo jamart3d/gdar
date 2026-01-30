@@ -90,6 +90,10 @@ class MockSettingsProvider extends Mock implements SettingsProvider {
   bool get marqueeEnabled => false;
   @override
   bool get showExpandIcon => true;
+  @override
+  bool get simpleRandomIcon => false;
+  @override
+  bool get nonRandom => false;
 }
 
 class MockShowListProvider extends Mock implements ShowListProvider {

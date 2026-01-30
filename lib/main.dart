@@ -387,7 +387,6 @@ class _GdarAppState extends State<GdarApp> {
                     lightDynamic != null &&
                     darkDynamic != null) {
                   // Use dynamic colors if the setting is on and they are available
-                  // Use dynamic colors if the setting is on and they are available
                   final baseLight = ThemeData(
                     useMaterial3: settingsProvider.useMaterial3,
                     colorScheme: lightDynamic,

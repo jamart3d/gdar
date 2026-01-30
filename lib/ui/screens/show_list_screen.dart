@@ -1,28 +1,22 @@
 import 'dart:async';
-import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:shakedown/models/show.dart';
 import 'package:shakedown/models/source.dart';
 import 'package:shakedown/providers/audio_provider.dart';
 import 'package:shakedown/providers/settings_provider.dart';
 import 'package:shakedown/providers/show_list_provider.dart';
-import 'package:shakedown/ui/screens/playback_screen.dart';
 import 'package:shakedown/ui/screens/settings_screen.dart';
-import 'package:shakedown/ui/screens/track_list_screen.dart';
 
-import 'package:shakedown/ui/widgets/mini_player.dart';
 import 'package:shakedown/utils/color_generator.dart';
 import 'package:shakedown/utils/logger.dart';
 
 import 'package:just_audio/just_audio.dart';
 import 'package:provider/provider.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
-import 'package:shakedown/ui/widgets/show_list/show_list_app_bar.dart';
-import 'package:shakedown/ui/widgets/show_list/show_list_search_bar.dart';
-import 'package:shakedown/ui/widgets/show_list/clipboard_feedback_overlay.dart';
-import 'package:shakedown/ui/widgets/show_list/show_list_item.dart';
+import 'package:shakedown/ui/screens/show_list/show_list_logic_mixin.dart';
+import 'package:shakedown/ui/widgets/show_list/show_list_shell.dart';
+import 'package:shakedown/ui/widgets/show_list/show_list_body.dart';
 
 class ShowListScreen extends StatefulWidget {
   const ShowListScreen({super.key});
@@ -32,12 +26,24 @@ class ShowListScreen extends StatefulWidget {
 }
 
 class _ShowListScreenState extends State<ShowListScreen>
-    with TickerProviderStateMixin, WidgetsBindingObserver {
+    with
+        TickerProviderStateMixin,
+        WidgetsBindingObserver,
+        ShowListLogicMixin<ShowListScreen> {
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _searchFocusNode = FocusNode();
   final ItemScrollController _itemScrollController = ItemScrollController();
   final ItemPositionsListener _itemPositionsListener =
       ItemPositionsListener.create();
+
+  @override
+  ItemScrollController get itemScrollController => _itemScrollController;
+  @override
+  AnimationController get animationController => _animationController;
+  @override
+  TextEditingController get searchController => _searchController;
+  @override
+  FocusNode get searchFocusNode => _searchFocusNode;
 
   late AnimationController _animationController;
   late Animation<double> _animation;
@@ -50,13 +56,7 @@ class _ShowListScreenState extends State<ShowListScreen>
   late ShowListProvider _showListProvider;
   late AudioProvider _audioProvider;
 
-  // bool _isSearchVisible = false; // Moved to Provider
-  bool _isRandomShowLoading = false;
   bool _randomShowPlayed = false;
-
-  // Track pending selection for when app resumes from background
-  ({Show show, Source source})? _pendingBackgroundSelection;
-  bool _isAnimationTest = false;
 
   static const Duration _animationDuration = Duration(milliseconds: 300);
 
@@ -64,8 +64,6 @@ class _ShowListScreenState extends State<ShowListScreen>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    // ... animation controllers init ...
-    // ... animation controllers init ...
 
     _animationController = AnimationController(
       vsync: this,
@@ -117,7 +115,7 @@ class _ShowListScreenState extends State<ShowListScreen>
     _randomShowSubscription =
         _audioProvider.randomShowRequestStream.listen((selection) {
       if (mounted) {
-        _handleRandomShowSelection(selection);
+        handleRandomShowSelection(selection);
       }
     });
 
@@ -125,34 +123,32 @@ class _ShowListScreenState extends State<ShowListScreen>
     _showListProvider = context.read<ShowListProvider>();
     _showListProvider.addListener(_syncSearchState);
 
-    // ... pending selection logic ...
+    _audioProvider.addListener(_onAudioProviderUpdate);
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         final pending = _audioProvider.pendingRandomShowRequest;
         if (pending != null) {
           logger.i('ShowListScreen: Found pending random selection on mount.');
-          _handleRandomShowSelection(pending);
+          handleRandomShowSelection(pending);
           _audioProvider.clearPendingRandomShowRequest();
         }
       }
     });
 
-    // ... random startup logic ...
     final settingsProvider = context.read<SettingsProvider>();
     if (settingsProvider.playRandomOnStartup) {
-      // ... existing logic ...
       _handleStartupRandomPlay(_showListProvider, _audioProvider);
     }
 
     _searchController.addListener(() {
-      // ... existing listener ...
       final text = _searchController.text;
       final isPastePattern =
           RegExp(r'(19[6-9]\d|20[0-2]\d).*?-\s*\d+').hasMatch(text);
       final hasArchiveUrl = text.contains('archive.org/details/gd');
 
       if (isPastePattern || hasArchiveUrl) {
-        _handleClipboardPlayback(text);
+        handleClipboardPlayback(text, onSuccess: openPlaybackScreen);
       } else {
         context.read<ShowListProvider>().setSearchQuery(text);
       }
@@ -162,11 +158,7 @@ class _ShowListScreenState extends State<ShowListScreen>
       setState(() {});
     });
 
-    // Listen to player state ...
-    _audioProvider.addListener(_onAudioProviderUpdate);
-
     _playerStateSubscription = _audioProvider.playerStateStream.listen((state) {
-      // ... existing listener logic ...
       _onPlayerStateChange(state);
     });
   }
@@ -199,7 +191,6 @@ class _ShowListScreenState extends State<ShowListScreen>
   }
 
   void _onAudioProviderUpdate() {
-    // ... logic from lines 188-212 ...
     final audioProvider = context.read<AudioProvider>(); // safe?
     if (audioProvider.error != null) {
       if (mounted) _showErrorSnackBar(audioProvider.error!);
@@ -211,20 +202,20 @@ class _ShowListScreenState extends State<ShowListScreen>
     if (!mounted) return;
     final processingState = state.processingState;
 
-    if (_isRandomShowLoading) {
+    if (isRandomShowLoading) {
       // If running a visual test, ignore player state (which might be idle)
-      if (_isAnimationTest) return;
+      if (isAnimationTest) return;
 
       if (processingState == ProcessingState.ready ||
           processingState == ProcessingState.completed ||
           processingState == ProcessingState.idle) {
-        setState(() => _isRandomShowLoading = false);
+        setState(() => isRandomShowLoading = false);
       }
     }
 
     final showListProvider = context.read<ShowListProvider>();
     final audioProvider = context.read<AudioProvider>();
-    // ... existing logic ...
+
     if (showListProvider.loadingShowKey != null &&
         showListProvider.loadingShowKey ==
             (audioProvider.currentShow != null
@@ -293,453 +284,13 @@ class _ShowListScreenState extends State<ShowListScreen>
   }
 
   @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed &&
-        _pendingBackgroundSelection != null) {
-      logger.i(
-          'ShowListScreen: App resumed, handling pending random show selection.');
-      final selection = _pendingBackgroundSelection!;
-      _pendingBackgroundSelection = null;
-      _handleRandomShowSelection(selection);
-    }
-  }
-
-  void _toggleSearch() {
-    HapticFeedback.lightImpact();
-    context.read<ShowListProvider>().toggleSearchVisible();
-  }
-
-  /// Scrolls a show into view, centering it in the viewport.
-  Future<void> _reliablyScrollToShow(Show show,
-      {Duration duration = _animationDuration}) async {
-    final showListProvider = context.read<ShowListProvider>();
-    final targetIndex = showListProvider.filteredShows.indexOf(show);
-    logger.i('Attempting to scroll to "${show.name}" at index $targetIndex.');
-
-    if (targetIndex == -1) {
-      logger.w('Show "${show.name}" not found in filtered list for scrolling.');
-      return;
-    }
-
-    // Align to (0.4) if collapsed.
-    // If expanded, adjust alignment based on number of sources to show more context.
-    final key = showListProvider.getShowKey(show);
-    final isExpanded = showListProvider.expandedShowKey == key;
-    double alignment = 0.4;
-
-    if (isExpanded) {
-      if (show.sources.length > 4) {
-        alignment = 0.05; // Was 0.02 - Top but with more breathing room
-      } else if (show.sources.length > 2) {
-        alignment = 0.15; // Was 0.20 - Upper area
-      } else if (show.sources.length > 1) {
-        alignment = 0.25; // Was 0.35 - Above center
-      }
-    }
-
-    try {
-      await _itemScrollController.scrollTo(
-        index: targetIndex,
-        duration: duration,
-        curve: Curves.easeInOutCubicEmphasized,
-        alignment: alignment,
-      );
-      logger.i(
-          'Scroll animation initiated for item at index $targetIndex with duration ${duration.inMilliseconds}ms.');
-    } catch (e) {
-      logger.e('Error during scroll to show: $e');
-    }
-  }
-
-  /// Handles tapping on a show card based on the current playback state and show structure.
-  Future<void> _onShowTapped(Show show) async {
-    final audioProvider = context.read<AudioProvider>();
-    final showListProvider = context.read<ShowListProvider>();
-    final isPlayingThisShow = audioProvider.currentShow == show;
-    final key = showListProvider.getShowKey(show);
-    final isExpanded = showListProvider.expandedShowKey == key;
-
-    // Tapping never directly plays a show.
-    // It either expands, collapses (if already expanded), navigates to track list, or goes to player if already playing.
-    if (isPlayingThisShow) {
-      if (show.sources.length > 1) {
-        if (isExpanded) {
-          // USER REQUEST: Tapping an expanded card should collapse it, even if it's playing.
-          // Navigation to player is now handled by tapping the specific source item in the list.
-          await _handleShowExpansion(show);
-        } else {
-          await _handleShowExpansion(
-              show); // Expand if playing and not expanded
-        }
-      } else {
-        await _openPlaybackScreen(); // Go to player if playing single source show (no expanded state)
-      }
-    } else {
-      // Not playing this show
-      if (show.sources.length > 1) {
-        // Multi-source: Always expand/collapse toggle
-        await _handleShowExpansion(show);
-      } else {
-        // Single source: Go to track list
-        final shouldOpenPlayer = await Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (_) =>
-                TrackListScreen(show: show, source: show.sources.first),
-          ),
-        );
-        if (shouldOpenPlayer == true && mounted) {
-          await _openPlaybackScreen();
-        }
-      }
-    }
-  }
-
-  /// Manages the logic for expanding and collapsing a show card.
-  Future<void> _handleShowExpansion(Show show) async {
-    final showListProvider = context.read<ShowListProvider>();
-    final previouslyExpanded = showListProvider.expandedShowKey;
-    final key = showListProvider.getShowKey(show);
-    final isCollapsingCurrent = previouslyExpanded == key;
-
-    // If tapping an already expanded show, collapse it.
-    if (isCollapsingCurrent) {
-      HapticFeedback.selectionClick(); // Confirm collapse action
-      showListProvider.collapseCurrentShow();
-      _animationController.reverse();
-      return;
-    }
-
-    // If tapping a new or collapsed show, expand it.
-    HapticFeedback.selectionClick(); // Confirm expand action
-    final wasSomethingExpanded = previouslyExpanded != null;
-    showListProvider.toggleShowExpansion(key);
-
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      if (!mounted) return;
-      // Animate it open. If another was open, it closes instantly and this one opens.
-      if (wasSomethingExpanded) {
-        await _animationController.forward(from: 0.0);
-      } else {
-        await _animationController.forward();
-      }
-      if (!mounted) return;
-      await _reliablyScrollToShow(show);
-    });
-  }
-
-  /// Handles tapping a source row inside an expanded show card.
-  Future<void> _onSourceTapped(Show show, Source source) async {
-    final audioProvider = context.read<AudioProvider>();
-    final isPlayingThisSource = audioProvider.currentSource?.id == source.id;
-
-    if (isPlayingThisSource) {
-      await _openPlaybackScreen();
-    } else {
-      // Create a "virtual" show containing only the selected source to pass
-      // to the track list screen.
-      final singleSourceShow = Show(
-        name: show.name,
-        artist: show.artist,
-        date: show.date,
-        venue: show.venue,
-        sources: [source],
-        hasFeaturedTrack: show.hasFeaturedTrack,
-      );
-      final shouldOpenPlayer = await Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (_) => TrackListScreen(
-              show: singleSourceShow, source: singleSourceShow.sources.first),
-        ),
-      );
-      if (shouldOpenPlayer == true && mounted) {
-        await _openPlaybackScreen();
-      }
-    }
-  }
-
-  /// Plays a random source on long press if the show has multiple sources,
-  /// otherwise plays the first source.
-  Future<void> _onCardLongPressed(Show show) async {
-    logger.d('Long pressed on show card: ${show.name}');
-    if (show.sources.isEmpty) return;
-
-    Source sourceToPlay;
-    if (show.sources.length > 1) {
-      final random = Random();
-      final index = random.nextInt(show.sources.length);
-      sourceToPlay = show.sources[index];
-      logger.i(
-          'Multiple sources found. Playing random source: ${sourceToPlay.id}');
-    } else {
-      sourceToPlay = show.sources.first;
-    }
-    _playSource(show, sourceToPlay);
-  }
-
-  /// Plays a specific source from a show on long press inside an expanded card.
-  void _onSourceLongPressed(Show show, Source source) {
-    logger.d('Long pressed on source row: ${source.id}');
-    _playSource(show, source);
-  }
-
-  /// Common logic to play a source and update the UI.
-  void _playSource(Show show, Source source) {
-    HapticFeedback.mediumImpact();
-    final showListProvider = context.read<ShowListProvider>();
-    final audioProvider = context.read<AudioProvider>();
-    final key = showListProvider.getShowKey(show);
-
-    showListProvider.setLoadingShow(key);
-    // Only expand the parent show if it has multiple sources and is not already expanded.
-    if (show.sources.length > 1 && showListProvider.expandedShowKey != key) {
-      showListProvider.expandShow(key);
-      _animationController.forward(from: 0.0);
-    }
-    audioProvider.playSource(show, source);
-  }
-
-  Future<void> _openPlaybackScreen() async {
-    await Navigator.of(context).push(PageRouteBuilder(
-      pageBuilder: (context, animation, secondaryAnimation) =>
-          const PlaybackScreen(),
-      transitionsBuilder: (context, animation, secondaryAnimation, child) {
-        const begin = Offset(0.0, 1.0);
-        const end = Offset.zero;
-        const curve = Curves.easeInOut;
-
-        var tween =
-            Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-
-        return SlideTransition(
-          position: animation.drive(tween),
-          child: child,
-        );
-      },
-      transitionDuration: const Duration(milliseconds: 300),
-    ));
-
-    // This code runs *after* the PlaybackScreen is popped.
-    if (!mounted) return;
-    _collapseAndScrollOnReturn();
-  }
-
-  /// Collapses/Adds show and scrolls to the current show on return.
-  void _collapseAndScrollOnReturn() {
-    logger.i(
-        'ShowListScreen: Returning from playback, scrolling to current show...');
-    final showListProvider = context.read<ShowListProvider>();
-    final audioProvider = context.read<AudioProvider>();
-    final currentShow = audioProvider.currentShow;
-
-    if (currentShow == null) {
-      logger.w('ShowListScreen: No current show to scroll to');
-      return;
-    }
-
-    // If multi-source, ensure it's expanded.
-    if (currentShow.sources.length > 1) {
-      final key = showListProvider.getShowKey(currentShow);
-      if (showListProvider.expandedShowKey != key) {
-        showListProvider.expandShow(key);
-        _animationController.forward(from: 0.0);
-      }
-    } else {
-      // If single source (or no sources), collapse any expanded show.
-      if (showListProvider.expandedShowKey != null) {
-        showListProvider.collapseCurrentShow();
-        _animationController.reverse();
-      }
-    }
-
-    // After a short delay to allow the animation to start and layout to settle,
-    // scroll to the currently playing show.
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      if (mounted) {
-        // yield to ensure layout pass is complete
-        await Future.delayed(const Duration(milliseconds: 100));
-        if (mounted) {
-          // Re-fetch the current show to ensure we don't scroll to a stale one
-          // if the track changed during the delay.
-          final freshCurrentShow = context.read<AudioProvider>().currentShow;
-          if (freshCurrentShow != null) {
-            _reliablyScrollToShow(freshCurrentShow);
-          }
-        }
-      }
-    });
-  }
-
-  void _handleRandomShowSelection(({Show show, Source source}) selection) {
-    if (!mounted) return;
-
-    // Check lifecycle state. If hidden/paused, defer UI updates.
-    final lifecycleState = WidgetsBinding.instance.lifecycleState;
-    if (lifecycleState != null && lifecycleState != AppLifecycleState.resumed) {
-      logger.i(
-          'ShowListScreen: handleRandomShowSelection called in background ($lifecycleState). Deferring UI update.');
-      _pendingBackgroundSelection = selection;
-      return;
-    }
-
-    final showListProvider = context.read<ShowListProvider>();
-    final show = selection.show;
-
-    // 1. Expand UI if needed
-    if (show.sources.length > 1) {
-      showListProvider.expandShow(showListProvider.getShowKey(show));
-      _animationController.forward(from: 0.0);
-    }
-
-    // 2. Scroll to show
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        _reliablyScrollToShow(show,
-            duration: const Duration(milliseconds: 1000));
-      }
-    });
-
-    // If not already loading (e.g. triggered via deep link), trigger animation feedback
-    if (!_isRandomShowLoading) {
-      setState(() {
-        _isRandomShowLoading = true;
-        _isAnimationTest = true;
-      });
-      Future.delayed(const Duration(milliseconds: 10100), () {
-        if (mounted) {
-          setState(() {
-            _isRandomShowLoading = false;
-            _isAnimationTest = false;
-          });
-        }
-      });
-    }
-  }
-
-  Future<void> _handlePlayRandomShow() async {
-    HapticFeedback.mediumImpact();
-    final showListProvider = context.read<ShowListProvider>();
-    final audioProvider = context.read<AudioProvider>();
-
-    // Mark used and stop animation
-    if (!showListProvider.hasUsedRandomButton) {
-      showListProvider.markRandomButtonUsed();
-      _randomPulseController.stop();
-      _randomPulseController.reset();
-    }
-
-    // Check if a show is currently expanded and collapse it first.
-    if (showListProvider.expandedShowKey != null) {
-      showListProvider.collapseCurrentShow();
-      _animationController.reverse();
-    }
-
-    setState(() => _isRandomShowLoading = true);
-
-    // Ensure animation runs for full cycle (10000ms) + buffer
-    final minWait = Future.delayed(const Duration(milliseconds: 10100));
-
-    // Call unified random playback logic.
-    // ShowListScreen will react to the selection via the subscription in initState.
-    await audioProvider.playRandomShow(filterBySearch: true);
-
-    await minWait;
-
-    if (mounted) setState(() => _isRandomShowLoading = false);
-  }
-
-  bool _showPasteFeedback = false; // Add class member
-
-  Future<bool> _handleClipboardPlayback(String text) async {
-    logger.i('ShowListScreen: Attempting clipboard playback for: "$text"');
-
-    // 1. Show Top Notification
-    setState(() => _showPasteFeedback = true);
-
-    if (!mounted) return false;
-
-    // 2. Start Processing (Delay is purely data fetching)
-    final audioProvider = context.read<AudioProvider>();
-    final success = await audioProvider.playFromShareString(text);
-
-    // 3. Handle Result
-    if (mounted) {
-      if (success) {
-        HapticFeedback.mediumImpact();
-        _searchController.clear();
-        _searchFocusNode.unfocus();
-        context.read<ShowListProvider>().setSearchVisible(false);
-        setState(() {
-          _showPasteFeedback = false; // Hide on success before nav
-        });
-
-        // Trigger UI Parity
-        final show = audioProvider.currentShow;
-        final source = audioProvider.currentSource;
-        if (show != null && source != null) {
-          _handleRandomShowSelection((show: show, source: source));
-        }
-
-        _openPlaybackScreen();
-      } else {
-        // Hide feedback if failed (maybe show error snackbar here instead?)
-        setState(() => _showPasteFeedback = false);
-      }
-    }
-    return success;
-  }
-
-  void _onSearchSubmitted(String text) {
-    logger.i('ShowListScreen: Search submitted: "$text"');
-    if (text.isEmpty) return;
-
-    // 1. Try clipboard playback first
-    if (text.contains('https://archive.org/details/gd')) {
-      _handleClipboardPlayback(text);
-      return;
-    }
-
-    // 2. Otherwise, treat like "Play on Tap" for the first result
-    final showListProvider = context.read<ShowListProvider>();
-    final audioProvider = context.read<AudioProvider>();
-
-    if (showListProvider.filteredShows.isNotEmpty) {
-      HapticFeedback.selectionClick(); // Confirm search submit action
-      final topShow = showListProvider.filteredShows.first;
-      if (topShow.sources.isNotEmpty) {
-        final topSource = topShow.sources.first;
-        audioProvider.playSource(topShow, topSource);
-
-        // Trigger UI Parity: Scroll to show and update selection state
-        _handleRandomShowSelection((show: topShow, source: topSource));
-
-        // Navigate to Playback Screen
-        _openPlaybackScreen();
-
-        _searchController.clear();
-        _searchFocusNode.unfocus();
-      }
-    }
-  }
-
-  @override
   Widget build(BuildContext context) {
     final settingsProvider = context.watch<SettingsProvider>();
-
-    if (settingsProvider.useSliverAppBar) {
-      return _buildSliverLayout();
-    } else {
-      return _buildStandardLayout();
-    }
-  }
-
-  Widget _buildStandardLayout() {
     final audioProvider = context.watch<AudioProvider>();
     final showListProvider = context.watch<ShowListProvider>();
-    final settingsProvider = context.watch<SettingsProvider>();
 
     Color? backgroundColor;
     // Only apply custom background color if NOT in "True Black" mode.
-    // True Black mode = Dark Mode + Custom Seed + No Dynamic Color.
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     final isTrueBlackMode = isDarkMode && settingsProvider.useTrueBlack;
 
@@ -755,112 +306,51 @@ class _ShowListScreenState extends State<ShowListScreen>
           brightness: Theme.of(context).brightness);
     }
 
-    return Scaffold(
-      backgroundColor: backgroundColor,
-      appBar: ShowListAppBar(
-        backgroundColor: backgroundColor,
-        randomPulseAnimation: _randomPulseAnimation,
-        searchPulseAnimation: _searchPulseAnimation,
-        isRandomShowLoading: _isRandomShowLoading,
-        onRandomPlay: _handlePlayRandomShow,
-        onToggleSearch: _toggleSearch,
-        onTitleTap: () async {
-          // Pause global clock before navigating to generic pages (Settings)
-          // to prevent "visual jumps" when returning.
-          try {
-            context.read<AnimationController>().stop();
-          } catch (_) {}
+    return ShowListShell(
+      backgroundColor: backgroundColor ?? Theme.of(context).colorScheme.surface,
+      randomPulseAnimation: _randomPulseAnimation,
+      searchPulseAnimation: _searchPulseAnimation,
+      isRandomShowLoading: isRandomShowLoading,
+      onRandomPlay: handlePlayRandomShow,
+      onToggleSearch: toggleSearch,
+      searchController: _searchController,
+      searchFocusNode: _searchFocusNode,
+      onSearchSubmitted: onSearchSubmitted,
+      animationDuration: _animationDuration,
+      onOpenPlaybackScreen: openPlaybackScreen,
+      showPasteFeedback: showPasteFeedback,
+      onTitleTap: () async {
+        try {
+          context.read<AnimationController>().stop();
+        } catch (_) {}
 
-          await Navigator.of(context).push(
-            PageRouteBuilder(
-              pageBuilder: (context, animation, secondaryAnimation) =>
-                  const SettingsScreen(),
-              transitionDuration: Duration.zero,
-            ),
-          );
-
-          // Resume global clock
-          if (mounted) {
-            try {
-              final controller = context.read<AnimationController>();
-              if (!controller.isAnimating) controller.repeat();
-            } catch (_) {}
-          }
-        },
-      ),
-      body: Stack(
-        children: [
-          Column(
-            children: [
-              ShowListSearchBar(
-                controller: _searchController,
-                focusNode: _searchFocusNode,
-                onSubmitted: _onSearchSubmitted,
-                animationDuration: _animationDuration,
-              ),
-              Expanded(
-                  child: _buildBody(
-                      showListProvider, audioProvider, settingsProvider)),
-            ],
+        await Navigator.of(context).push(
+          PageRouteBuilder(
+            pageBuilder: (context, animation, secondaryAnimation) =>
+                const SettingsScreen(),
+            transitionDuration: Duration.zero,
           ),
-          // Hide MiniPlayer if search is active AND has focus (keyboard likely open)
-          if (audioProvider.currentShow != null &&
-              !(context.watch<ShowListProvider>().isSearchVisible &&
-                  _searchFocusNode.hasFocus))
-            Positioned(
-              left: 0,
-              right: 0,
-              bottom: 0,
-              child: MiniPlayer(
-                onTap: _openPlaybackScreen,
-              ),
-            ),
-          // Custom Top Notification
-          ClipboardFeedbackOverlay(isVisible: _showPasteFeedback),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSliverLayout() {
-    // Reverting to a standard layout as requested ("revert to before messing with appbar").
-    // This removes the custom floating/hiding/transparency logic.
-    return _buildStandardLayout();
-  }
-
-  Widget _buildBody(ShowListProvider showListProvider,
-      AudioProvider audioProvider, SettingsProvider settingsProvider) {
-    if (showListProvider.isLoading) {
-      return const Center(child: CircularProgressIndicator());
-    }
-    if (showListProvider.error != null) {
-      return Center(child: Text(showListProvider.error!));
-    }
-    if (showListProvider.filteredShows.isEmpty) {
-      return const Center(
-          child: Text('No shows match your search or filters.'));
-    }
-
-    return ScrollablePositionedList.builder(
-      itemScrollController: _itemScrollController,
-      itemPositionsListener: _itemPositionsListener,
-      padding: const EdgeInsets.only(bottom: 160),
-      itemCount: showListProvider.filteredShows.length,
-      itemBuilder: (context, index) {
-        final show = showListProvider.filteredShows[index];
-        final key = showListProvider.getShowKey(show);
-        final isExpanded = showListProvider.expandedShowKey == key;
-
-        return ShowListItem(
-          show: show,
-          isExpanded: isExpanded,
-          animation: _animation,
-          onTap: () => _onShowTapped(show),
-          onLongPress: () => _onCardLongPressed(show),
-          onSourceTap: (source) => _onSourceTapped(show, source),
-          onSourceLongPress: (source) => _onSourceLongPressed(show, source),
         );
+
+        if (context.mounted) {
+          try {
+            final controller = context.read<AnimationController>();
+            if (!controller.isAnimating) controller.repeat();
+          } catch (_) {}
+        }
       },
+      body: ShowListBody(
+        showListProvider: showListProvider,
+        audioProvider: audioProvider,
+        settingsProvider: settingsProvider,
+        itemScrollController: _itemScrollController,
+        itemPositionsListener: _itemPositionsListener,
+        animation: _animation,
+        onShowTapped: onShowTapped,
+        onCardLongPressed: onCardLongPressed,
+        onSourceTapped: onSourceTapped,
+        onSourceLongPressed: onSourceLongPressed,
+      ),
     );
   }
 }

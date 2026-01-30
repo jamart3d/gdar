@@ -7,7 +7,7 @@ import 'package:shakedown/providers/audio_provider.dart';
 import 'package:shakedown/providers/settings_provider.dart';
 import 'package:shakedown/providers/show_list_provider.dart';
 import 'package:shakedown/services/catalog_service.dart';
-import 'package:shakedown/ui/widgets/show_list_card.dart';
+import 'package:shakedown/ui/widgets/show_list/show_list_card.dart';
 import 'package:shakedown/ui/widgets/show_list_item_details.dart';
 import 'package:shakedown/ui/widgets/swipe_action_background.dart';
 
