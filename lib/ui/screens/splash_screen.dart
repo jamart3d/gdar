@@ -245,7 +245,7 @@ class _SplashScreenState extends State<SplashScreen>
                       label: showListProvider.hasCheckedArchive
                           ? (showListProvider.isArchiveReachable
                               ? 'Archive.org reachable'
-                              : 'Archive.org unreachable')
+                              : 'Archive.org ?')
                           : 'Checking archive.org...',
                       isDone: showListProvider.hasCheckedArchive,
                       isSuccess: showListProvider.hasCheckedArchive

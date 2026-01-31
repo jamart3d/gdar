@@ -366,7 +366,7 @@ class _GdarAppState extends State<GdarApp> {
       providers: [
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
         ChangeNotifierProvider.value(value: _settingsProvider),
-        ChangeNotifierProvider(create: (_) => AudioCacheService()),
+        ChangeNotifierProvider(create: (_) => AudioCacheService()..init()),
         ChangeNotifierProxyProvider<SettingsProvider, ShowListProvider>(
           create: (_) => _showListProvider,
           update: (_, settingsProvider, showListProvider) =>

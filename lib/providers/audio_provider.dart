@@ -708,7 +708,7 @@ class AudioProvider with ChangeNotifier {
 
   /// Delegates to AudioCacheService to clear cache
   static Future<void> clearAudioCache() async {
-    final service = AudioCacheService();
+    final service = AudioCacheService()..init();
     await service.clearAudioCache();
     service.dispose();
   }

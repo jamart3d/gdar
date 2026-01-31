@@ -11,16 +11,37 @@ import 'package:shakedown/utils/logger.dart';
 /// LockCachingAudioSource. Handles file counting, cleanup, and monitoring.
 class AudioCacheService with ChangeNotifier {
   Timer? _cacheRefreshTimer;
-  final Directory _cacheDir;
+  Directory? _cacheDir;
 
   int _cachedTrackCount = 0;
 
   /// Returns the current number of cached audio files (non-blocking).
   int get cachedTrackCount => _cachedTrackCount;
 
-  AudioCacheService({Directory? cacheDir})
-      : _cacheDir = cacheDir ?? Directory.systemTemp {
-    refreshCacheCount();
+  /// Regex to identify cache files (SHA-256 hex hash)
+  static final _cacheFileRegex = RegExp(r'^[a-f0-9]{64}$');
+
+  AudioCacheService({Directory? cacheDir}) : _cacheDir = cacheDir {
+    // Note: init() must be called to ensure directory is ready if no cacheDir provided
+    if (_cacheDir != null) {
+      refreshCacheCount();
+    }
+  }
+
+  /// Initializes the dedicated cache directory.
+  Future<void> init() async {
+    if (_cacheDir == null) {
+      final baseDir = Directory.systemTemp;
+      _cacheDir = Directory('${baseDir.path}/shakedown_audio_cache');
+      logger.i(
+          'AudioCacheService: Using dedicated cache directory: ${_cacheDir!.path}');
+    }
+
+    if (!await _cacheDir!.exists()) {
+      await _cacheDir!.create(recursive: true);
+    }
+
+    await refreshCacheCount();
   }
 
   @override
@@ -36,12 +57,19 @@ class AudioCacheService with ChangeNotifier {
     required bool useCache,
   }) {
     if (useCache) {
+      // Ensure initialization
+      if (_cacheDir == null) {
+        // Fallback sync init for immediate source creation if init() wasn't called/awaited
+        final baseDir = Directory.systemTemp;
+        _cacheDir = Directory('${baseDir.path}/shakedown_audio_cache');
+      }
+
       // Create a stable cache key based on the URL
       final key = sha256.convert(utf8.encode(uri.toString())).toString();
       return LockCachingAudioSource(
         uri,
         tag: tag,
-        cacheFile: File('${_cacheDir.path}/$key'),
+        cacheFile: File('${_cacheDir!.path}/$key'),
       );
     } else {
       return AudioSource.uri(uri, tag: tag);
@@ -71,16 +99,16 @@ class AudioCacheService with ChangeNotifier {
   /// Asynchronously updates the cached track count.
   Future<void> refreshCacheCount() async {
     try {
-      if (!await _cacheDir.exists()) {
+      if (_cacheDir == null || !await _cacheDir!.exists()) {
         _updateCount(0);
         return;
       }
 
       int count = 0;
-      await for (final entity in _cacheDir.list()) {
+      await for (final entity in _cacheDir!.list()) {
         if (entity is File) {
           final name = entity.uri.pathSegments.last;
-          if (name.length == 64) {
+          if (_cacheFileRegex.hasMatch(name)) {
             count++;
           }
         }
@@ -102,13 +130,13 @@ class AudioCacheService with ChangeNotifier {
   /// Clears all cached audio files.
   Future<void> clearAudioCache() async {
     try {
-      if (await _cacheDir.exists()) {
-        final List<FileSystemEntity> files = _cacheDir.listSync();
+      if (_cacheDir != null && await _cacheDir!.exists()) {
+        final List<FileSystemEntity> files = _cacheDir!.listSync();
         for (final file in files) {
           if (file is File) {
             final name = file.uri.pathSegments.last;
-            // Identify our cache files (SHA-256 hash length is 64)
-            if (name.length == 64 && double.tryParse(name) == null) {
+            // Identify our cache files
+            if (_cacheFileRegex.hasMatch(name)) {
               try {
                 await file.delete();
               } catch (_) {}
@@ -126,15 +154,15 @@ class AudioCacheService with ChangeNotifier {
   /// Keep only the most recent [maxFiles] files in the cache.
   Future<void> performCacheCleanup({int maxFiles = 20}) async {
     try {
-      if (!await _cacheDir.exists()) return;
+      if (_cacheDir == null || !await _cacheDir!.exists()) return;
 
-      final List<FileSystemEntity> files = _cacheDir.listSync();
+      final List<FileSystemEntity> files = _cacheDir!.listSync();
       final List<File> audioFiles = [];
 
       for (final entity in files) {
         if (entity is File) {
           final name = entity.uri.pathSegments.last;
-          if (name.length == 64) {
+          if (_cacheFileRegex.hasMatch(name)) {
             audioFiles.add(entity);
           }
         }
