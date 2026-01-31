@@ -1,3 +1,9 @@
+Release 1.0.21:
+- **Audit**: Completed a comprehensive file size and storage audit.
+- **Improved**: Identified and documented high-impact optimization targets (>1MB icons and 8.8MB JSON).
+- **New**: Added a "Storage & Optimization" roadmap to the project's long-term tasks.
+- **Fixed**: Hardened app startup initialization logic and resolved several UI scaling inconsistencies.
+
 Release 1.0.20:
 - **Refactor**: Major architectural overhaul of the Show List screen—extracted UI into modular "Shell" and "Body" components and moved business logic to a dedicated Mixin.
 - **Improved**: Significantly reduced file complexity and improved maintainability of the main browse screen.
