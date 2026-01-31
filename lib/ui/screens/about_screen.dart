@@ -6,7 +6,9 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'package:shakedown/providers/settings_provider.dart';
+import 'package:shakedown/providers/audio_provider.dart';
 import 'package:provider/provider.dart';
+import 'package:shakedown/utils/color_generator.dart';
 
 class AboutScreen extends StatelessWidget {
   const AboutScreen({super.key});
@@ -16,8 +18,42 @@ class AboutScreen extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
     final settingsProvider = context.watch<SettingsProvider>();
+    final audioProvider = context.watch<AudioProvider>();
 
-    return MediaQuery(
+    Color? backgroundColor;
+    // Only apply custom background color if NOT in "True Black" mode.
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final isTrueBlackMode = isDarkMode && settingsProvider.useTrueBlack;
+
+    if (!isTrueBlackMode &&
+        settingsProvider.highlightCurrentShowCard &&
+        audioProvider.currentShow != null) {
+      String seed = audioProvider.currentShow!.name;
+      if (audioProvider.currentShow!.sources.length > 1 &&
+          audioProvider.currentSource != null) {
+        seed = audioProvider.currentSource!.id;
+      }
+      backgroundColor = ColorGenerator.getColor(seed,
+          brightness: Theme.of(context).brightness);
+    }
+
+    final baseTheme = Theme.of(context);
+    final effectiveBackgroundColor =
+        backgroundColor ?? baseTheme.scaffoldBackgroundColor;
+
+    final effectiveTheme = baseTheme.copyWith(
+      scaffoldBackgroundColor: effectiveBackgroundColor,
+      appBarTheme: baseTheme.appBarTheme.copyWith(
+        backgroundColor: effectiveBackgroundColor,
+        surfaceTintColor: Colors.transparent,
+      ),
+    );
+
+    return AnimatedTheme(
+      data: effectiveTheme,
+      duration: const Duration(milliseconds: 500),
+      curve: Curves.easeInOut,
+      child: MediaQuery(
         data: MediaQuery.of(context).copyWith(
           textScaler: settingsProvider.uiScale
               ? const TextScaler.linear(1.2)
@@ -123,7 +159,9 @@ class AboutScreen extends StatelessWidget {
               ),
             ),
           ),
-        ));
+        ),
+      ),
+    );
   }
 
   Future<void> _launchUrl(String url) async {

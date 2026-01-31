@@ -15,6 +15,7 @@ import 'package:shakedown/ui/widgets/src_badge.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:shakedown/models/rating.dart';
 import 'package:shakedown/utils/font_layout_config.dart';
+import 'package:shakedown/utils/color_generator.dart';
 
 class RatedShowsScreen extends StatefulWidget {
   const RatedShowsScreen({super.key});
@@ -128,39 +129,74 @@ class _RatedShowsScreenState extends State<RatedShowsScreen>
       fontSize: 9.0 * scaleFactor,
     );
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          'Rated Shows Library',
-          style: appBarTitleStyle,
-        ),
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(kToolbarHeight),
-          child: ValueListenableBuilder<Box<bool>>(
-            valueListenable: CatalogService().historyListenable,
-            builder: (context, historyBox, _) {
-              return ValueListenableBuilder<Box<Rating>>(
-                  valueListenable: CatalogService().ratingsListenable,
-                  builder: (context, ratingsBox, _) {
-                    return TabBar(
-                      controller: _tabController,
-                      isScrollable: true,
-                      labelStyle: tabLabelStyle,
-                      unselectedLabelStyle: tabLabelStyle,
-                      tabs: _tabs.map((r) {
-                        final count = _getShowCount(r, showListProvider);
-                        return Tab(text: _getTabLabel(r, count));
-                      }).toList(),
-                    );
-                  });
-            },
+    final audioProvider = context.watch<AudioProvider>();
+
+    Color? backgroundColor;
+    // Only apply custom background color if NOT in "True Black" mode.
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final isTrueBlackMode = isDarkMode && settingsProvider.useTrueBlack;
+
+    if (!isTrueBlackMode &&
+        settingsProvider.highlightCurrentShowCard &&
+        audioProvider.currentShow != null) {
+      String seed = audioProvider.currentShow!.name;
+      if (audioProvider.currentShow!.sources.length > 1 &&
+          audioProvider.currentSource != null) {
+        seed = audioProvider.currentSource!.id;
+      }
+      backgroundColor = ColorGenerator.getColor(seed,
+          brightness: Theme.of(context).brightness);
+    }
+
+    final baseTheme = Theme.of(context);
+    final effectiveBackgroundColor =
+        backgroundColor ?? baseTheme.scaffoldBackgroundColor;
+
+    final effectiveTheme = baseTheme.copyWith(
+      scaffoldBackgroundColor: effectiveBackgroundColor,
+      appBarTheme: baseTheme.appBarTheme.copyWith(
+        backgroundColor: effectiveBackgroundColor,
+        surfaceTintColor: Colors.transparent,
+      ),
+    );
+
+    return AnimatedTheme(
+      data: effectiveTheme,
+      duration: const Duration(milliseconds: 500),
+      curve: Curves.easeInOut,
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(
+            'Rated Shows Library',
+            style: appBarTitleStyle,
+          ),
+          bottom: PreferredSize(
+            preferredSize: const Size.fromHeight(kToolbarHeight),
+            child: ValueListenableBuilder<Box<bool>>(
+              valueListenable: CatalogService().historyListenable,
+              builder: (context, historyBox, _) {
+                return ValueListenableBuilder<Box<Rating>>(
+                    valueListenable: CatalogService().ratingsListenable,
+                    builder: (context, ratingsBox, _) {
+                      return TabBar(
+                        controller: _tabController,
+                        isScrollable: true,
+                        labelStyle: tabLabelStyle,
+                        unselectedLabelStyle: tabLabelStyle,
+                        tabs: _tabs.map((r) {
+                          final count = _getShowCount(r, showListProvider);
+                          return Tab(text: _getTabLabel(r, count));
+                        }).toList(),
+                      );
+                    });
+              },
+            ),
           ),
         ),
-      ),
-      body: ValueListenableBuilder<Box<bool>>(
-        valueListenable: CatalogService().historyListenable,
-        builder: (context, historyBox, _) {
-          return ValueListenableBuilder<Box<Rating>>(
+        body: ValueListenableBuilder<Box<bool>>(
+          valueListenable: CatalogService().historyListenable,
+          builder: (context, historyBox, _) {
+            return ValueListenableBuilder<Box<Rating>>(
               valueListenable: CatalogService().ratingsListenable,
               builder: (context, ratingsBox, _) {
                 return TabBarView(
@@ -169,8 +205,10 @@ class _RatedShowsScreenState extends State<RatedShowsScreen>
                       .map((rating) => _RatedShowList(rating: rating))
                       .toList(),
                 );
-              });
-        },
+              },
+            );
+          },
+        ),
       ),
     );
   }
@@ -308,157 +346,162 @@ class _RatedShowListState extends State<_RatedShowList> {
     final colorScheme = Theme.of(context).colorScheme;
 
     // Use SourceListItem logic but wrapped with Show info
-    return Material(
-      color: isPlaying
-          ? colorScheme.tertiaryContainer
-          : colorScheme.surfaceContainerHighest,
-      child: InkWell(
-        onTap: () async {
-          if (isPlaying) {
-            // Pause global clock
-            try {
-              context.read<AnimationController>().stop();
-            } catch (_) {}
-
-            await Navigator.of(context).push(
-              PageRouteBuilder(
-                pageBuilder: (context, animation, secondaryAnimation) =>
-                    const PlaybackScreen(),
-                transitionDuration: const Duration(milliseconds: 300),
-                transitionsBuilder:
-                    (context, animation, secondaryAnimation, child) {
-                  const begin = Offset(0.0, 1.0);
-                  const end = Offset.zero;
-                  const curve = Curves.easeInOut;
-                  var tween = Tween(begin: begin, end: end)
-                      .chain(CurveTween(curve: curve));
-                  return SlideTransition(
-                      position: animation.drive(tween), child: child);
-                },
-              ),
-            );
-
-            // Resume clock
-            if (context.mounted) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8.0),
+      child: Material(
+        color: isPlaying
+            ? colorScheme.tertiaryContainer.withValues(alpha: 0.5)
+            : colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+        borderRadius: BorderRadius.circular(16),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: () async {
+            if (isPlaying) {
+              // Pause global clock
               try {
-                final controller = context.read<AnimationController>();
-                if (!controller.isAnimating) controller.repeat();
+                context.read<AnimationController>().stop();
               } catch (_) {}
-            }
-          } else {
-            final singleSourceShow = show.copyWith(sources: [source]);
 
-            // Pause global clock
-            try {
-              context.read<AnimationController>().stop();
-            } catch (_) {}
-
-            await Navigator.of(context).push(
-              PageRouteBuilder(
-                pageBuilder: (context, animation, secondaryAnimation) =>
-                    TrackListScreen(
-                        show: singleSourceShow,
-                        source: singleSourceShow.sources.first),
-                transitionDuration: Duration.zero,
-              ),
-            );
-
-            // Resume clock
-            if (context.mounted) {
-              try {
-                final controller = context.read<AnimationController>();
-                if (!controller.isAnimating) controller.repeat();
-              } catch (_) {}
-            }
-          }
-        },
-        onLongPress: () {
-          HapticFeedback.mediumImpact();
-          audioProvider.playSource(show, source);
-        },
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 0),
-          child: Row(
-            children: [
-              RatingControl(
-                rating: catalog.getRating(source.id),
-                size: 18,
-                isPlayed: catalog.isPlayed(source.id),
-                onTap: () async {
-                  final currentRating = catalog.getRating(source.id);
-                  await showDialog(
-                    context: context,
-                    builder: (context) => RatingDialog(
-                      initialRating: currentRating,
-                      sourceId: source.id,
-                      sourceUrl: source.tracks.isNotEmpty
-                          ? source.tracks.first.url
-                          : null,
-                      isPlayed: catalog.isPlayed(source.id),
-                      onRatingChanged: (newRating) {
-                        catalog.setRating(source.id, newRating);
-                      },
-                      onPlayedChanged: (bool isPlayed) {
-                        if (isPlayed != catalog.isPlayed(source.id)) {
-                          catalog.togglePlayed(source.id);
-                        }
-                      },
-                    ),
-                  );
-                },
-              ),
-              const SizedBox(width: 12),
-              // Content: Just the Date
-              Expanded(
-                child: Text(
-                  show.formattedDateYearFirst,
-                  style: Theme.of(context)
-                      .textTheme
-                      .titleMedium
-                      ?.copyWith(
-                        fontSize: 9.5,
-                        fontWeight: FontWeight.bold,
-                        color: isPlaying
-                            ? colorScheme.onTertiaryContainer
-                            : colorScheme.onSurface,
-                      )
-                      .apply(fontSizeFactor: scaleFactor),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+              await Navigator.of(context).push(
+                PageRouteBuilder(
+                  pageBuilder: (context, animation, secondaryAnimation) =>
+                      const PlaybackScreen(),
+                  transitionDuration: const Duration(milliseconds: 300),
+                  transitionsBuilder:
+                      (context, animation, secondaryAnimation, child) {
+                    const begin = Offset(0.0, 1.0);
+                    const end = Offset.zero;
+                    const curve = Curves.easeInOut;
+                    var tween = Tween(begin: begin, end: end)
+                        .chain(CurveTween(curve: curve));
+                    return SlideTransition(
+                        position: animation.drive(tween), child: child);
+                  },
                 ),
-              ),
-              // Play Count
-              ValueListenableBuilder(
-                valueListenable: CatalogService().playCountsListenable,
-                builder: (context, box, _) {
-                  final count = box.get(source.id) ?? 0;
-                  if (count > 0) {
-                    return Padding(
-                      padding: const EdgeInsets.only(right: 8.0),
-                      child: Text(
-                        '${count}x played',
-                        style: Theme.of(context)
-                            .textTheme
-                            .bodySmall
-                            ?.copyWith(
-                              fontSize: 7.0,
-                              color: isPlaying
-                                  ? colorScheme.onTertiaryContainer
-                                      .withValues(alpha: 0.7)
-                                  : colorScheme.onSurfaceVariant,
-                            )
-                            .apply(fontSizeFactor: scaleFactor),
+              );
+
+              // Resume clock
+              if (context.mounted) {
+                try {
+                  final controller = context.read<AnimationController>();
+                  if (!controller.isAnimating) controller.repeat();
+                } catch (_) {}
+              }
+            } else {
+              final singleSourceShow = show.copyWith(sources: [source]);
+
+              // Pause global clock
+              try {
+                context.read<AnimationController>().stop();
+              } catch (_) {}
+
+              await Navigator.of(context).push(
+                PageRouteBuilder(
+                  pageBuilder: (context, animation, secondaryAnimation) =>
+                      TrackListScreen(
+                          show: singleSourceShow,
+                          source: singleSourceShow.sources.first),
+                  transitionDuration: Duration.zero,
+                ),
+              );
+
+              // Resume clock
+              if (context.mounted) {
+                try {
+                  final controller = context.read<AnimationController>();
+                  if (!controller.isAnimating) controller.repeat();
+                } catch (_) {}
+              }
+            }
+          },
+          onLongPress: () {
+            HapticFeedback.mediumImpact();
+            audioProvider.playSource(show, source);
+          },
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 0),
+            child: Row(
+              children: [
+                RatingControl(
+                  rating: catalog.getRating(source.id),
+                  size: 18,
+                  isPlayed: catalog.isPlayed(source.id),
+                  onTap: () async {
+                    final currentRating = catalog.getRating(source.id);
+                    await showDialog(
+                      context: context,
+                      builder: (context) => RatingDialog(
+                        initialRating: currentRating,
+                        sourceId: source.id,
+                        sourceUrl: source.tracks.isNotEmpty
+                            ? source.tracks.first.url
+                            : null,
+                        isPlayed: catalog.isPlayed(source.id),
+                        onRatingChanged: (newRating) {
+                          catalog.setRating(source.id, newRating);
+                        },
+                        onPlayedChanged: (bool isPlayed) {
+                          if (isPlayed != catalog.isPlayed(source.id)) {
+                            catalog.togglePlayed(source.id);
+                          }
+                        },
                       ),
                     );
-                  }
-                  return const SizedBox.shrink();
-                },
-              ),
-              // Badge
-              if (source.src != null) ...[
-                SrcBadge(src: source.src!, isPlaying: isPlaying),
+                  },
+                ),
+                const SizedBox(width: 12),
+                // Content: Just the Date
+                Expanded(
+                  child: Text(
+                    show.formattedDateYearFirst,
+                    style: Theme.of(context)
+                        .textTheme
+                        .titleMedium
+                        ?.copyWith(
+                          fontSize: 9.5,
+                          fontWeight: FontWeight.bold,
+                          color: isPlaying
+                              ? colorScheme.onTertiaryContainer
+                              : colorScheme.onSurface,
+                        )
+                        .apply(fontSizeFactor: scaleFactor),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                // Play Count
+                ValueListenableBuilder(
+                  valueListenable: CatalogService().playCountsListenable,
+                  builder: (context, box, _) {
+                    final count = box.get(source.id) ?? 0;
+                    if (count > 0) {
+                      return Padding(
+                        padding: const EdgeInsets.only(right: 8.0),
+                        child: Text(
+                          '${count}x played',
+                          style: Theme.of(context)
+                              .textTheme
+                              .bodySmall
+                              ?.copyWith(
+                                fontSize: 7.0,
+                                color: isPlaying
+                                    ? colorScheme.onTertiaryContainer
+                                        .withValues(alpha: 0.7)
+                                    : colorScheme.onSurfaceVariant,
+                              )
+                              .apply(fontSizeFactor: scaleFactor),
+                        ),
+                      );
+                    }
+                    return const SizedBox.shrink();
+                  },
+                ),
+                // Badge
+                if (source.src != null) ...[
+                  SrcBadge(src: source.src!, isPlaying: isPlaying),
+                ],
               ],
-            ],
+            ),
           ),
         ),
       ),
