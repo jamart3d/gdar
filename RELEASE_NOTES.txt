@@ -1,3 +1,8 @@
+Release 1.0.22:
+- **Improved**: Aligned styling for "About App" and "Rated Shows" sections in Settings for visual consistency.
+- **Improved**: Completed integration of the update banner in the Settings screen.
+- **Fixed**: Ensured update availability is visible even if onboarding is skipped.
+
 Release 1.0.21:
 - **Audit**: Completed a comprehensive file size and storage audit.
 - **Improved**: Identified and documented high-impact optimization targets (>1MB icons and 8.8MB JSON).
