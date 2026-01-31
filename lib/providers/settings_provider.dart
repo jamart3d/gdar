@@ -191,15 +191,14 @@ class SettingsProvider with ChangeNotifier {
 
           // Smart Abbreviation for ADB
           if (_uiScale) {
-            if (!_abbreviateDayOfWeek) {
-              _abbreviateDayOfWeek = true;
-              await _prefs.setBool(_abbreviateDayOfWeekKey, true);
-            }
-            if (!_abbreviateMonth) {
-              _abbreviateMonth = true;
-              await _prefs.setBool(_abbreviateMonthKey, true);
-            }
+            _abbreviateDayOfWeek = true;
+            _abbreviateMonth = true;
+          } else {
+            _abbreviateDayOfWeek = false;
+            _abbreviateMonth = false;
           }
+          await _prefs.setBool(_abbreviateDayOfWeekKey, _abbreviateDayOfWeek);
+          await _prefs.setBool(_abbreviateMonthKey, _abbreviateMonth);
 
           notifyListeners();
           logger.i(
@@ -218,16 +217,17 @@ class SettingsProvider with ChangeNotifier {
         _prefs.getBool(_uiScaleKey) ?? DefaultSettings.uiScaleDesktopDefault;
 
     if (!firstRunCheckDone) {
-      // Get physical screen size
-      // We use the first view, which is standard for mobile apps
-      final view = WidgetsBinding.instance.platformDispatcher.views.first;
-      final physicalWidth = view.physicalSize.width;
+      final views = WidgetsBinding.instance.platformDispatcher.views;
+      if (views.isNotEmpty) {
+        final view = views.first;
+        final physicalWidth = view.physicalSize.width;
 
-      if (physicalWidth <= 720) {
-        // Small screen: Default scale settings to false
-        _uiScale = DefaultSettings.uiScaleMobileDefault;
-        // Save these defaults immediately so they persist
-        _prefs.setBool(_uiScaleKey, DefaultSettings.uiScaleMobileDefault);
+        if (physicalWidth <= 720) {
+          // Small screen: Default scale settings to false
+          _uiScale = DefaultSettings.uiScaleMobileDefault;
+          // Save these defaults immediately so they persist
+          _prefs.setBool(_uiScaleKey, DefaultSettings.uiScaleMobileDefault);
+        }
       }
 
       _isFirstRun = true; // Mark as first run for Splash Screen
@@ -421,13 +421,21 @@ class SettingsProvider with ChangeNotifier {
       _simpleRandomIconKey, _simpleRandomIcon = !_simpleRandomIcon);
   void toggleUiScale() {
     _uiScale = !_uiScale;
-    _updatePreference(_uiScaleKey, _uiScale);
+    _prefs.setBool(_uiScaleKey, _uiScale);
 
-    // Smart Abbreviation: If UI Scale is ON, auto-enable abbreviations
+    // Smart Abbreviation: Sync with UI Scale
     if (_uiScale) {
-      if (!_abbreviateDayOfWeek) toggleAbbreviateDayOfWeek();
-      if (!_abbreviateMonth) toggleAbbreviateMonth();
+      _abbreviateDayOfWeek = true;
+      _abbreviateMonth = true;
+    } else {
+      _abbreviateDayOfWeek = false;
+      _abbreviateMonth = false;
     }
+
+    _prefs.setBool(_abbreviateDayOfWeekKey, _abbreviateDayOfWeek);
+    _prefs.setBool(_abbreviateMonthKey, _abbreviateMonth);
+
+    notifyListeners();
   }
 
   void setGlowMode(int mode) {

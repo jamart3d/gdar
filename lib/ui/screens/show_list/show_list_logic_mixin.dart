@@ -103,11 +103,8 @@ mixin ShowListLogicMixin<T extends StatefulWidget>
       if (show.sources.length > 1) {
         await handleShowExpansion(show);
       } else {
-        final shouldOpenPlayer = await Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (_) =>
-                TrackListScreen(show: show, source: show.sources.first),
-          ),
+        final shouldOpenPlayer = await navigateTo(
+          TrackListScreen(show: show, source: show.sources.first),
         );
         if (shouldOpenPlayer == true && mounted) {
           await openPlaybackScreen();
@@ -160,11 +157,9 @@ mixin ShowListLogicMixin<T extends StatefulWidget>
         sources: [source],
         hasFeaturedTrack: show.hasFeaturedTrack,
       );
-      final shouldOpenPlayer = await Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (_) => TrackListScreen(
-              show: singleSourceShow, source: singleSourceShow.sources.first),
-        ),
+      final shouldOpenPlayer = await navigateTo(
+        TrackListScreen(
+            show: singleSourceShow, source: singleSourceShow.sources.first),
       );
       if (shouldOpenPlayer == true && mounted) {
         await openPlaybackScreen();
@@ -201,20 +196,44 @@ mixin ShowListLogicMixin<T extends StatefulWidget>
     audioProvider.playSource(show, source);
   }
 
+  Future<dynamic> navigateTo(Widget screen, {bool instant = true}) async {
+    // Pause global clock before navigating
+    try {
+      context.read<AnimationController>().stop();
+    } catch (_) {}
+
+    final result = await Navigator.of(context).push(
+      PageRouteBuilder(
+        pageBuilder: (context, animation, secondaryAnimation) => screen,
+        transitionDuration:
+            instant ? Duration.zero : const Duration(milliseconds: 300),
+        transitionsBuilder: instant
+            ? (context, animation, secondaryAnimation, child) => child
+            : (context, animation, secondaryAnimation, child) {
+                const begin = Offset(0.0, 1.0);
+                const end = Offset.zero;
+                const curve = Curves.easeInOut;
+                var tween = Tween(begin: begin, end: end)
+                    .chain(CurveTween(curve: curve));
+                return SlideTransition(
+                    position: animation.drive(tween), child: child);
+              },
+      ),
+    );
+
+    // Resume clock on return if needed
+    if (mounted) {
+      try {
+        final controller = context.read<AnimationController>();
+        if (!controller.isAnimating) controller.repeat();
+      } catch (_) {}
+    }
+
+    return result;
+  }
+
   Future<void> openPlaybackScreen() async {
-    await Navigator.of(context).push(PageRouteBuilder(
-      pageBuilder: (context, animation, secondaryAnimation) =>
-          const PlaybackScreen(),
-      transitionsBuilder: (context, animation, secondaryAnimation, child) {
-        const begin = Offset(0.0, 1.0);
-        const end = Offset.zero;
-        const curve = Curves.easeInOut;
-        var tween =
-            Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-        return SlideTransition(position: animation.drive(tween), child: child);
-      },
-      transitionDuration: const Duration(milliseconds: 300),
-    ));
+    await navigateTo(const PlaybackScreen(), instant: false);
 
     if (!mounted) return;
     collapseAndScrollOnReturn();

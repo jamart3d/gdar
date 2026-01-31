@@ -70,6 +70,11 @@ class _AnimatedDiceIconState extends State<AnimatedDiceIcon>
     // 3 or 4 faces
     final int count = 3 + math.Random().nextInt(2);
     _rollSequence = List.generate(count, (_) => 2 + math.Random().nextInt(5));
+
+    // Ensure last face is different from current static face so it doesn't "land" where it started
+    while (_rollSequence.last == _staticFace) {
+      _rollSequence[_rollSequence.length - 1] = 2 + math.Random().nextInt(5);
+    }
   }
 
   void _randomizeStaticState() {
@@ -95,7 +100,13 @@ class _AnimatedDiceIconState extends State<AnimatedDiceIcon>
         }
 
         setState(() {
-          _randomizeStaticState();
+          // Instead of randomizing entirely, adopt the final face of the roll
+          // This prevents a visual "jump" and ensures we land where we expected.
+          if (_rollSequence.isNotEmpty) {
+            _staticFace = _rollSequence.last;
+          }
+          // Still randomize the static angle for variety
+          _staticAngle = (math.Random().nextDouble() - 0.5) * (math.pi / 6);
         });
         if (_enableIdleRotation) {
           _idleController.value = 0;

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
 import 'package:shakedown/ui/screens/rated_shows_screen.dart';
 
 class DataSection extends StatelessWidget {
@@ -22,9 +23,15 @@ class DataSection extends StatelessWidget {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
       child: InkWell(
         borderRadius: BorderRadius.circular(24),
-        onTap: () {
+        onTap: () async {
           HapticFeedback.lightImpact();
-          Navigator.of(context).push(
+
+          // Pause global clock
+          try {
+            context.read<AnimationController>().stop();
+          } catch (_) {}
+
+          await Navigator.of(context).push(
             PageRouteBuilder(
               pageBuilder: (context, animation, secondaryAnimation) =>
                   const RatedShowsScreen(),
@@ -51,6 +58,14 @@ class DataSection extends StatelessWidget {
               reverseTransitionDuration: const Duration(milliseconds: 350),
             ),
           );
+
+          // Resume clock
+          if (context.mounted) {
+            try {
+              final controller = context.read<AnimationController>();
+              if (!controller.isAnimating) controller.repeat();
+            } catch (_) {}
+          }
         },
         child: ListTile(
           dense: true,

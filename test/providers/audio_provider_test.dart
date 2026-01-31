@@ -46,7 +46,6 @@ void main() {
     mockSettingsProvider = MockSettingsProvider();
     mockShowListProvider = MockShowListProvider();
     mockAudioPlayer = MockAudioPlayerRelaxed();
-    mockAudioPlayer = MockAudioPlayerRelaxed();
     mockCatalogService = MockCatalogService();
     mockAudioCacheService = MockAudioCacheService();
     processingStateController = StreamController<ProcessingState>.broadcast();
@@ -83,6 +82,17 @@ void main() {
             initialIndex: anyNamed('initialIndex'),
             preload: anyNamed('preload')))
         .thenAnswer((_) async => const Duration(seconds: 100));
+
+    // Stub AudioCacheService
+    when(mockAudioCacheService.createAudioSource(
+      uri: anyNamed('uri'),
+      tag: anyNamed('tag'),
+      useCache: anyNamed('useCache'),
+    )).thenAnswer((invocation) {
+      final uri = invocation.namedArguments[#uri] as Uri;
+      final tag = invocation.namedArguments[#tag];
+      return AudioSource.uri(uri, tag: tag);
+    });
 
     when(mockShowListProvider.isLoading).thenReturn(false);
     when(mockShowListProvider.allShows).thenReturn([]);

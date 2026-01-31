@@ -339,14 +339,15 @@ This file tracks planned features, enhancements, and bug fixes for the gdar appl
        - [x] **Create "8-Look" Audit Script:** Script created at `tool/adb_ui_scale_test.py` to generate screenshots for 4 standard system font sizes (0.85, 1.0, 1.15, 1.3) crossed with `uiScale` (True/False).
        - [x] **Create "Trigger Point" Script:** Script created at `tool/adb_trigger_point_test.py` using fine-grained font increments (1.0 to 1.5, step 0.05) to find exactly when the text becomes "too big" and triggers the Marquee.
        - [ ] **Run Scripts and Generate Screenshots:** Execute both scripts with device connected to capture test screenshots.
-       - [ ] **Visual Verification:** Check that the Marquee only activates horizontally and that the vertical gap between "Venue" and "Date" never shrinks to 0px.
+       - [x] **Visual Verification:** Check that the Marquee only activates horizontally and that the vertical gap between "Venue" and "Date" never shrinks to 0px.
+        - [x] **Verification of Swipe-to-Block:** Fixed and verified `show_list_screen_swipe_test.dart` to ensure dismissal logic works correctly with UI Scaling and edge-swipes.
 
     4. **Final Goal:**
        - [ ] **Achieve "Fluid Scaling":**
          - **Case A (Small):** Text is static, gap is clear.
          - **Case B (Medium):** Text fills width, gap is clear.
          - **Case C (Too Big):** Marquee activates horizontally, vertical height is locked to the card's `82.0 * scaleFactor`, gap is strictly preserved.
-       - [ ] **Smart Abbreviation:** When checking "UI Scale" on, automatically enable "Abbreviate Day & Month" (if not already handled) to save space.
+       - [x] **Smart Abbreviation:** Logic synchronized to automatically toggle date abbreviations when UI Scale is toggled (Both directions verified).
 
     5. **Normalization of Font Logic (Refactoring)**
        - **Problem:** Currently, font-specific adjustments (e.g., "reduce Caveat by 15% in panel") are scattered across multiple files (`playback_controls.dart`, `playback_screen.dart`, `onboarding_screen.dart`).
@@ -405,11 +406,19 @@ This file tracks planned features, enhancements, and bug fixes for the gdar appl
 - [ ] **Lints & Warnings:** Resolve all remaining analysis warnings and ensure the app is "Lint Clean".
 - [ ] **Logging Audit:** Review all `print` statements and `Logger` calls to ensure sensitive data isn't logged and logs are appropriate for production.
 
-## Footprint Reduction
+## Storage & Optimization
 
-- [ ] **Font Optimization:** Verify `google_fonts` usage. Bundling frequently used weights (Inter/Roboto) as assets can rely less on runtime caching and network calls.
-- [ ]  Ensure `flutter build --release` effectively tree-shakes unused icon code points (SettingsProvider uses simple booleans, but large icon sets can bloat).
-
+- [ ] **Asset Footprint Reduction:**
+  - [ ] Convert `assets/images/gdar_icon*.png` to WebP or compress significantly (currently 1.1MB-1.6MB each).
+  - [ ] Audit `assets/fonts/` for unused weights/glyphs if manually bundled.
+- [ ] **Data Architecture Refactor (Mega-JSON):**
+  - [ ] **Strategy:** The 8.8MB `output.optimized_src.json` is a bottleneck for memory and startup.
+  - [ ] **Step 3 (Refactor):** Split the monolithic JSON by year (e.g., `years/1972.json`) or migrate to a lazy-loaded SQLite database to reduce memory pressure.
+- [ ] **Code Modularity (Mega-Files):**
+  - [ ] Refactor `main.dart` (23KB): Extract deep link trigger logic into `DeepLinkService`.
+  - [ ] Refactor `audio_provider.dart` (24KB): Extract share string parsing and more random selection logic.
+  - [ ] Refactor `settings_provider.dart` (21KB): Group settings into mixins or separate configuration objects.
+  - [ ] Refactor `track_list_screen.dart` (23KB): Extract complex header and item builders into dedicated widgets.
 
 
 ## Data & Persistence Architecture (Completed)

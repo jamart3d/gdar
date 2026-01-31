@@ -1,3 +1,9 @@
+Release 1.0.20:
+- **Refactor**: Major architectural overhaul of the Show List screen—extracted UI into modular "Shell" and "Body" components and moved business logic to a dedicated Mixin.
+- **Improved**: Significantly reduced file complexity and improved maintainability of the main browse screen.
+- **Fixed**: Hardened random playback logic with better background deferral and timer management, resolving several edge-case failures.
+- **Internal**: Expanded test coverage for the refactored Show List architecture and lifecycle stability.
+
 Release 1.0.19:
 - **Improved**: Standardized rating UI scaling across all screens using responsive font tokens.
 - **Improved**: Refined the "Random Play" dice animation.

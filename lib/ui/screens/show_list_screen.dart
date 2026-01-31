@@ -319,26 +319,7 @@ class _ShowListScreenState extends State<ShowListScreen>
       animationDuration: _animationDuration,
       onOpenPlaybackScreen: openPlaybackScreen,
       showPasteFeedback: showPasteFeedback,
-      onTitleTap: () async {
-        try {
-          context.read<AnimationController>().stop();
-        } catch (_) {}
-
-        await Navigator.of(context).push(
-          PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) =>
-                const SettingsScreen(),
-            transitionDuration: Duration.zero,
-          ),
-        );
-
-        if (context.mounted) {
-          try {
-            final controller = context.read<AnimationController>();
-            if (!controller.isAnimating) controller.repeat();
-          } catch (_) {}
-        }
-      },
+      onTitleTap: () => navigateTo(const SettingsScreen()),
       body: ShowListBody(
         showListProvider: showListProvider,
         audioProvider: audioProvider,

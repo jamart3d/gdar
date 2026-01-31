@@ -111,16 +111,34 @@ class _TrackListScreenState extends State<TrackListScreen> {
                     ),
                   ),
                   TextButton(
-                    onPressed: () {
+                    onPressed: () async {
                       _overlayEntry?.remove();
                       _overlayEntry = null;
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (_) => const SettingsScreen(
+
+                      // Pause global clock
+                      try {
+                        context.read<AnimationController>().stop();
+                      } catch (_) {}
+
+                      await Navigator.of(context).push(
+                        PageRouteBuilder(
+                          pageBuilder:
+                              (context, animation, secondaryAnimation) =>
+                                  const SettingsScreen(
                             highlightSetting: 'play_on_tap',
                           ),
+                          transitionDuration: Duration.zero,
                         ),
                       );
+
+                      // Resume clock
+                      if (context.mounted) {
+                        try {
+                          final controller =
+                              context.read<AnimationController>();
+                          if (!controller.isAnimating) controller.repeat();
+                        } catch (_) {}
+                      }
                     },
                     child: Text(
                       'SETTINGS',
@@ -148,10 +166,37 @@ class _TrackListScreenState extends State<TrackListScreen> {
     });
   }
 
-  void _openPlaybackScreen() {
-    Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => const PlaybackScreen()),
+  Future<void> _openPlaybackScreen() async {
+    final localContext = context;
+    // Pause global clock
+    try {
+      localContext.read<AnimationController>().stop();
+    } catch (_) {}
+
+    await Navigator.of(localContext).push(
+      PageRouteBuilder(
+        pageBuilder: (context, animation, secondaryAnimation) =>
+            const PlaybackScreen(),
+        transitionDuration: const Duration(milliseconds: 300),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          const begin = Offset(0.0, 1.0);
+          const end = Offset.zero;
+          const curve = Curves.easeInOut;
+          var tween =
+              Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+          return SlideTransition(
+              position: animation.drive(tween), child: child);
+        },
+      ),
     );
+
+    // Resume clock
+    if (localContext.mounted) {
+      try {
+        final controller = localContext.read<AnimationController>();
+        if (!controller.isAnimating) controller.repeat();
+      } catch (_) {}
+    }
   }
 
   @override
@@ -239,10 +284,27 @@ class _TrackListScreenState extends State<TrackListScreen> {
           IconButton(
             icon: const Icon(Icons.settings_rounded),
             iconSize: 24 * (settingsProvider.uiScale ? 1.25 : 1.0),
-            onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const SettingsScreen()),
+            onPressed: () async {
+              // Pause global clock
+              try {
+                context.read<AnimationController>().stop();
+              } catch (_) {}
+
+              await Navigator.of(context).push(
+                PageRouteBuilder(
+                  pageBuilder: (context, animation, secondaryAnimation) =>
+                      const SettingsScreen(),
+                  transitionDuration: Duration.zero,
+                ),
               );
+
+              // Resume clock
+              if (context.mounted) {
+                try {
+                  final controller = context.read<AnimationController>();
+                  if (!controller.isAnimating) controller.repeat();
+                } catch (_) {}
+              }
             },
           ),
         ],
@@ -432,14 +494,42 @@ class _TrackListScreenState extends State<TrackListScreen> {
         child: isPlaying
             ? headerContent
             : InkWell(
-                onLongPress: () {
+                onLongPress: () async {
                   HapticFeedback.mediumImpact();
                   context
                       .read<AudioProvider>()
                       .playSource(widget.show, widget.source);
-                  Navigator.of(context).push(
-                    MaterialPageRoute(builder: (_) => const PlaybackScreen()),
+
+                  // Pause global clock
+                  try {
+                    context.read<AnimationController>().stop();
+                  } catch (_) {}
+
+                  await Navigator.of(context).push(
+                    PageRouteBuilder(
+                      pageBuilder: (context, animation, secondaryAnimation) =>
+                          const PlaybackScreen(),
+                      transitionDuration: const Duration(milliseconds: 300),
+                      transitionsBuilder:
+                          (context, animation, secondaryAnimation, child) {
+                        const begin = Offset(0.0, 1.0);
+                        const end = Offset.zero;
+                        const curve = Curves.easeInOut;
+                        var tween = Tween(begin: begin, end: end)
+                            .chain(CurveTween(curve: curve));
+                        return SlideTransition(
+                            position: animation.drive(tween), child: child);
+                      },
+                    ),
                   );
+
+                  // Resume clock
+                  if (context.mounted) {
+                    try {
+                      final controller = context.read<AnimationController>();
+                      if (!controller.isAnimating) controller.repeat();
+                    } catch (_) {}
+                  }
                 },
                 child: headerContent,
               ),

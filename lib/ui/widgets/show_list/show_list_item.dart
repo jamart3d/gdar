@@ -128,7 +128,7 @@ class ShowListItem extends StatelessWidget {
     }
 
     // Mark as Blocked (Red Star / -1)
-    CatalogService().setRating(show.sources.first.id, -1);
+    context.read<CatalogService>().setRating(show.sources.first.id, -1);
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -202,7 +202,7 @@ class ShowListItem extends StatelessWidget {
           textColor: Theme.of(context).colorScheme.primary,
           onPressed: () {
             // Restore rating
-            CatalogService().setRating(show.sources.first.id, 0);
+            context.read<CatalogService>().setRating(show.sources.first.id, 0);
 
             // Resume playback if it was currently playing
             if (isCurrentlyPlaying && resumeSource != null) {

@@ -138,4 +138,45 @@ void main() {
       expect(prefs.getBool('offline_buffering'), false);
     });
   });
+  group('SettingsProvider UI Scale Sync', () {
+    test('turning UI Scale ON enables abbreviations', () {
+      // Setup: Scale OFF, Abbr OFF
+      settingsProvider
+          .toggleUiScale(); // First ensure it's OFF if default is ON
+      if (settingsProvider.uiScale) settingsProvider.toggleUiScale();
+
+      // Force OFF states to be sure
+      if (settingsProvider.abbreviateDayOfWeek) {
+        settingsProvider.toggleAbbreviateDayOfWeek();
+      }
+      if (settingsProvider.abbreviateMonth) {
+        settingsProvider.toggleAbbreviateMonth();
+      }
+
+      expect(settingsProvider.uiScale, false);
+      expect(settingsProvider.abbreviateDayOfWeek, false);
+      expect(settingsProvider.abbreviateMonth, false);
+
+      // Toggle ON
+      settingsProvider.toggleUiScale();
+      expect(settingsProvider.uiScale, true);
+      expect(settingsProvider.abbreviateDayOfWeek, true);
+      expect(settingsProvider.abbreviateMonth, true);
+    });
+
+    test('turning UI Scale OFF disables abbreviations', () {
+      // Setup: Scale ON, Abbr ON
+      if (!settingsProvider.uiScale) settingsProvider.toggleUiScale();
+
+      expect(settingsProvider.uiScale, true);
+      expect(settingsProvider.abbreviateDayOfWeek, true);
+      expect(settingsProvider.abbreviateMonth, true);
+
+      // Toggle OFF
+      settingsProvider.toggleUiScale();
+      expect(settingsProvider.uiScale, false);
+      expect(settingsProvider.abbreviateDayOfWeek, false);
+      expect(settingsProvider.abbreviateMonth, false);
+    });
+  });
 }

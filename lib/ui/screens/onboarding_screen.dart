@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
@@ -74,7 +75,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   }
 
   Future<void> _checkForUpdate() async {
-    if (Theme.of(context).platform == TargetPlatform.android) {
+    if (defaultTargetPlatform == TargetPlatform.android) {
       final info = await _updateService.checkForUpdate();
       if (mounted) {
         setState(() {

@@ -31,7 +31,7 @@ A Flutter application for browsing and playing concert recordings of the Gratefu
   - **Glow Effects**: Adjustable glow intensity for the playback card, adding a premium feel.
   - **Accessibility**: Semantic labels for screen readers.
   - **Hide Track Duration** option for a minimalist interface.
-  - **Global UI Scale**: Consistent text scaling across all screens.
+  - **Global UI Scale**: Consistent text scaling across all screens. Automatically synchronizes date abbreviations (Day/Month) for optimal space usage when toggled.
   - **Font Selection**: Choose from 3 curated handwriting fonts (Caveat, Permanent Marker, Rock Salt).
 - **Enhanced UX**:
   - **Smart Rating Dialog**: Toggle "Played" status, confirmation dialogs for safety, and mutually exclusive rating/blocking logic.

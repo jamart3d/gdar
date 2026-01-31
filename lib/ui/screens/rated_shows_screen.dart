@@ -313,19 +313,63 @@ class _RatedShowListState extends State<_RatedShowList> {
           ? colorScheme.tertiaryContainer
           : colorScheme.surfaceContainerHighest,
       child: InkWell(
-        onTap: () {
+        onTap: () async {
           if (isPlaying) {
-            Navigator.of(context).push(
-              MaterialPageRoute(builder: (_) => const PlaybackScreen()),
+            // Pause global clock
+            try {
+              context.read<AnimationController>().stop();
+            } catch (_) {}
+
+            await Navigator.of(context).push(
+              PageRouteBuilder(
+                pageBuilder: (context, animation, secondaryAnimation) =>
+                    const PlaybackScreen(),
+                transitionDuration: const Duration(milliseconds: 300),
+                transitionsBuilder:
+                    (context, animation, secondaryAnimation, child) {
+                  const begin = Offset(0.0, 1.0);
+                  const end = Offset.zero;
+                  const curve = Curves.easeInOut;
+                  var tween = Tween(begin: begin, end: end)
+                      .chain(CurveTween(curve: curve));
+                  return SlideTransition(
+                      position: animation.drive(tween), child: child);
+                },
+              ),
             );
+
+            // Resume clock
+            if (context.mounted) {
+              try {
+                final controller = context.read<AnimationController>();
+                if (!controller.isAnimating) controller.repeat();
+              } catch (_) {}
+            }
           } else {
             final singleSourceShow = show.copyWith(sources: [source]);
-            Navigator.of(context).push(
-              MaterialPageRoute(
-                  builder: (_) => TrackListScreen(
-                      show: singleSourceShow,
-                      source: singleSourceShow.sources.first)),
+
+            // Pause global clock
+            try {
+              context.read<AnimationController>().stop();
+            } catch (_) {}
+
+            await Navigator.of(context).push(
+              PageRouteBuilder(
+                pageBuilder: (context, animation, secondaryAnimation) =>
+                    TrackListScreen(
+                        show: singleSourceShow,
+                        source: singleSourceShow.sources.first),
+                transitionDuration: Duration.zero,
+              ),
             );
+
+            // Resume clock
+            if (context.mounted) {
+              try {
+                final controller = context.read<AnimationController>();
+                if (!controller.isAnimating) controller.repeat();
+              } catch (_) {}
+            }
           }
         },
         onLongPress: () {
