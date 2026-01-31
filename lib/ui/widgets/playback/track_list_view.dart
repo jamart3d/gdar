@@ -15,6 +15,7 @@ import 'package:shakedown/utils/utils.dart';
 class TrackListView extends StatelessWidget {
   final Source source;
   final double bottomPadding;
+  final double topPadding;
   final ItemScrollController itemScrollController;
   final ItemPositionsListener itemPositionsListener;
   final AudioProvider audioProvider;
@@ -23,6 +24,7 @@ class TrackListView extends StatelessWidget {
     super.key,
     required this.source,
     required this.bottomPadding,
+    this.topPadding = 0.0,
     required this.itemScrollController,
     required this.itemPositionsListener,
     required this.audioProvider,
@@ -57,7 +59,7 @@ class TrackListView extends StatelessWidget {
     return ScrollablePositionedList.builder(
       itemScrollController: itemScrollController,
       itemPositionsListener: itemPositionsListener,
-      padding: EdgeInsets.fromLTRB(8, 16, 8, bottomPadding),
+      padding: EdgeInsets.fromLTRB(8, topPadding, 8, bottomPadding),
       itemCount: listItems.length,
       itemBuilder: (context, index) {
         final item = listItems[index];

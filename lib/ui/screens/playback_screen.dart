@@ -264,20 +264,47 @@ class _PlaybackScreenState extends State<PlaybackScreen>
                 60.0 +
                 ((maxPanelHeight - minPanelHeight) * panelPosition);
 
-            return Column(
+            // M3 Expressive: Immersive track list aligned to standard AppBar height
+            // Using kToolbarHeight (56.0) to match ShowListScreen
+            const double topGap = 0.0;
+            const double appBarHeight = kToolbarHeight;
+            final double immersiveTopPadding =
+                MediaQuery.paddingOf(context).top + topGap + appBarHeight;
+
+            return Stack(
               children: [
-                PlaybackAppBar(
-                    currentShow: currentShow,
-                    currentSource: currentSource,
-                    backgroundColor: backgroundColor,
-                    panelPosition: panelPosition),
-                Expanded(
-                  child: TrackListView(
-                      source: currentSource,
-                      bottomPadding: dynamicBottomPadding,
-                      itemScrollController: _itemScrollController,
-                      itemPositionsListener: _itemPositionsListener,
-                      audioProvider: audioProvider),
+                // Layer 1: Track list scrolls under the status bar area
+                TrackListView(
+                  source: currentSource,
+                  bottomPadding: dynamicBottomPadding,
+                  topPadding: immersiveTopPadding,
+                  itemScrollController: _itemScrollController,
+                  itemPositionsListener: _itemPositionsListener,
+                  audioProvider: audioProvider,
+                ),
+                // Layer 2: Top barrier to hide tracks in the gap (fades out with App Bar)
+                Positioned(
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  height: immersiveTopPadding,
+                  child: Opacity(
+                    opacity: (1.0 - (panelPosition * 5.0)).clamp(0.0, 1.0),
+                    child: Container(
+                      color: backgroundColor,
+                    ),
+                  ),
+                ),
+                // Layer 3: Adaptive App Bar positioned on top
+                Positioned(
+                  top: MediaQuery.paddingOf(context).top + topGap,
+                  left: 0,
+                  right: 0,
+                  child: PlaybackAppBar(
+                      currentShow: currentShow,
+                      currentSource: currentSource,
+                      backgroundColor: backgroundColor,
+                      panelPosition: panelPosition),
                 ),
               ],
             );
