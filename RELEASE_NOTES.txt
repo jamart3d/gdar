@@ -1,3 +1,13 @@
+Release 1.0.24:
+- **Improved**: Polished Splash Screen checklist items for better brevity.
+- **Fixed**: Updated Archive.org connection labels.
+
+Release 1.0.23:
+- **Refactor**: Premium M3 Expressive Playback UI overhaul with a layered architecture and immersive scrolling.
+- **Improved**: Standardized Playback App Bar height to 56.0 (kToolbarHeight) for visual consistency with the main show list.
+- **Improved**: Compacted Playback App Bar by removing redundant venue information and centering key metadata (Date, Source, Rating).
+- **New**: Implemented "Top Area Stabilizers" to ensure smooth visual transitions and hide track list artifacts during edge-to-edge scrolling.
+
 Release 1.0.22:
 - **Improved**: Aligned styling for "About App" and "Rated Shows" sections in Settings for visual consistency.
 - **Improved**: Completed integration of the update banner in the Settings screen.

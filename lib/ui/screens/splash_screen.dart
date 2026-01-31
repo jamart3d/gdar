@@ -245,7 +245,7 @@ class _SplashScreenState extends State<SplashScreen>
                       label: showListProvider.hasCheckedArchive
                           ? (showListProvider.isArchiveReachable
                               ? 'Archive.org reachable'
-                              : 'Archive.org unreachable (offline mode)')
+                              : 'Archive.org unreachable')
                           : 'Checking archive.org...',
                       isDone: showListProvider.hasCheckedArchive,
                       isSuccess: showListProvider.hasCheckedArchive
@@ -258,7 +258,7 @@ class _SplashScreenState extends State<SplashScreen>
                     if (settingsProvider.playRandomOnStartup) ...[
                       const SizedBox(height: 12),
                       _buildChecklistItem(
-                        label: 'Play random show on startup',
+                        label: 'Play random show...',
                         isDone: true,
                         scaleFactor: effectiveScale,
                       ),
