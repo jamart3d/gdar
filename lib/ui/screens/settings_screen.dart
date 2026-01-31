@@ -12,6 +12,8 @@ import 'package:shakedown/ui/widgets/settings/source_filter_settings.dart';
 import 'package:shakedown/ui/widgets/settings/usage_instructions_section.dart';
 import 'package:shakedown/utils/color_generator.dart';
 import 'package:shakedown/utils/font_layout_config.dart';
+import 'package:shakedown/providers/update_provider.dart';
+import 'package:shakedown/ui/widgets/onboarding/update_banner.dart';
 
 class SettingsScreen extends StatefulWidget {
   final String? highlightSetting;
@@ -108,6 +110,8 @@ class _SettingsScreenState extends State<SettingsScreen>
     final scaleFactor =
         FontLayoutConfig.getEffectiveScale(context, settingsProvider);
 
+    final updateProvider = context.watch<UpdateProvider>();
+
     Color? backgroundColor;
     // Only apply custom background color if NOT in "True Black" mode.
     // True Black mode = Dark Mode + Custom Seed + No Dynamic Color.
@@ -159,6 +163,16 @@ class _SettingsScreenState extends State<SettingsScreen>
               ),
               SliverList(
                 delegate: SliverChildListDelegate([
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    child: UpdateBanner(
+                      updateInfo: updateProvider.updateInfo,
+                      isDownloading: updateProvider.isDownloading,
+                      isSimulated: updateProvider.isSimulated,
+                      onUpdateSelected: () => updateProvider.startUpdate(),
+                      scaleFactor: scaleFactor,
+                    ),
+                  ),
                   UsageInstructionsSection(
                     scaleFactor: scaleFactor,
                     initiallyExpanded:

@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:shakedown/providers/settings_provider.dart';
 import 'package:shakedown/utils/font_layout_config.dart';
+import 'package:shakedown/utils/logger.dart';
 
 class AnimatedDiceIcon extends StatefulWidget {
   final VoidCallback onPressed;
@@ -17,7 +18,10 @@ class AnimatedDiceIcon extends StatefulWidget {
     this.isLoading = false,
     this.tooltip,
     this.changeFaces = true,
+    this.enableHaptics = false,
   });
+
+  final bool enableHaptics;
 
   @override
   State<AnimatedDiceIcon> createState() => _AnimatedDiceIconState();
@@ -34,12 +38,13 @@ class _AnimatedDiceIconState extends State<AnimatedDiceIcon>
   // Roll direction logic
   bool _rollLeft = false;
   List<int> _rollSequence = [];
+  bool _hapticsEnabledForCurrentRoll = false;
 
   // Travel positions
   // Travel positions - REMOVED
 
   // Internal variable to enable slow idle rotation
-  final bool _enableIdleRotation = true;
+  final bool _enableIdleRotation = false;
 
   @override
   void initState() {
@@ -49,7 +54,7 @@ class _AnimatedDiceIconState extends State<AnimatedDiceIcon>
 
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 10000),
+      duration: const Duration(seconds: 2),
     );
 
     _idleController = AnimationController(
@@ -58,6 +63,14 @@ class _AnimatedDiceIconState extends State<AnimatedDiceIcon>
     );
 
     _controller.addListener(_onAnimationTick);
+    _controller.addStatusListener((status) {
+      if (status == AnimationStatus.completed &&
+          _hapticsEnabledForCurrentRoll) {
+        // Landing "Thud" haptic
+        logger.t('AnimatedDiceIcon: Landing Haptic (status=completed)');
+        HapticFeedback.mediumImpact();
+      }
+    });
 
     if (widget.isLoading) {
       _controller.repeat();
@@ -79,40 +92,34 @@ class _AnimatedDiceIconState extends State<AnimatedDiceIcon>
 
   void _randomizeStaticState() {
     _staticFace = 2 + math.Random().nextInt(5);
-    _staticAngle = (math.Random().nextDouble() - 0.5) * (math.pi / 6);
+    // Always start flat for a cleaner initial look (e.g. from splash)
+    _staticAngle = 0.0;
   }
 
   @override
   void didUpdateWidget(AnimatedDiceIcon oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.isLoading != oldWidget.isLoading) {
-      if (widget.isLoading) {
-        // --- Determine Direction ---
-        // Simply toggle direction for shake variety
-        _rollLeft = !_rollLeft;
-
-        _generateRollSequence();
-        _controller.forward(from: 0.0);
-        if (_enableIdleRotation) _idleController.stop();
-      } else {
-        if (_controller.isAnimating) {
-          _controller.stop();
-        }
-
-        setState(() {
-          // Instead of randomizing entirely, adopt the final face of the roll
-          // This prevents a visual "jump" and ensures we land where we expected.
-          if (_rollSequence.isNotEmpty) {
-            _staticFace = _rollSequence.last;
-          }
-          // Still randomize the static angle for variety
-          _staticAngle = (math.Random().nextDouble() - 0.5) * (math.pi / 6);
-        });
-        if (_enableIdleRotation) {
-          _idleController.value = 0;
-          _idleController.repeat();
-        }
+    if (widget.isLoading && !oldWidget.isLoading) {
+      logger.d(
+          'AnimatedDiceIcon: Roll STARTED (isLoading=true, enableHaptics=${widget.enableHaptics})');
+      _rollLeft = !_rollLeft;
+      _hapticsEnabledForCurrentRoll = widget.enableHaptics;
+      _generateRollSequence();
+      _controller.forward(from: 0.0);
+      if (_enableIdleRotation) _idleController.stop();
+    } else if (!widget.isLoading && oldWidget.isLoading) {
+      logger.d('AnimatedDiceIcon: Roll ENDED (isLoading=false)');
+      if (_enableIdleRotation) {
+        _idleController.value = 0;
+        _idleController.repeat();
       }
+      setState(() {
+        if (_rollSequence.isNotEmpty) {
+          _staticFace = _rollSequence.last;
+        }
+        // Ensure perfectly flat landing
+        _staticAngle = 0.0;
+      });
     }
   }
 
@@ -129,7 +136,11 @@ class _AnimatedDiceIconState extends State<AnimatedDiceIcon>
     final int face = _rollSequence[index];
 
     if (widget.changeFaces && face != _lastHapticFace) {
-      HapticFeedback.lightImpact();
+      if (_hapticsEnabledForCurrentRoll) {
+        logger.t(
+            'AnimatedDiceIcon: Face Change Haptic -> $face (t: ${t.toStringAsFixed(2)})');
+        HapticFeedback.lightImpact();
+      }
       _lastHapticFace = face;
     }
   }
@@ -174,27 +185,33 @@ class _AnimatedDiceIconState extends State<AnimatedDiceIcon>
 
               int currentFace = _staticFace;
 
-              if (_controller.isAnimating || widget.isLoading) {
+              if (_controller.isAnimating) {
                 final t = _controller.value;
 
                 // --- Rotation (Spin) ---
-                // 1 full rotation over 10s = 0.1 rotations per second.
+                // Exactly 1 full rotation over 2s.
                 final directionMultiplier = _rollLeft ? -1.0 : 1.0;
-                angle = t * 1 * 2 * math.pi * directionMultiplier;
+                // Force perfectly flat landing (0 or 2pi)
+                angle = t * 2 * math.pi * directionMultiplier;
 
-                // --- Wobble (Scale) ---
-                // A slow, readable "breathing" wobble.
-                // Frequency matches roughly the duration?
-                // Let's do 6 wobbles over 12s = 0.5Hz. Very slow.
-                // t goes 0 -> 1.
-                // Smooth Scale Pulse (Sin^2)
-                // Removes cusps/shear illusion from abs(sin).
-                // Range 0.0 -> 1.0 -> 0.0 smoothly.
-                final double sinVal = math.sin(t * 6 * math.pi);
-                final double wobble = sinVal * sinVal; // sin^2 is smooth
+                // --- Squash & Stretch (Landing Bump) ---
+                // We want 3 quick pulses, and then a BIGGER bump at the end.
+                // Final bump peaks at t=0.9 and settles.
+                double scale;
+                if (t < 0.8) {
+                  // Fast cycling pulses
+                  final double pulse = math.sin(t * 10 * math.pi);
+                  scale = 1.0 + (0.08 * pulse * pulse);
+                } else {
+                  // Final landing "Thud" (Impact & Settle)
+                  // Range t: 0.8 -> 1.0. normalized t2: 0 -> 1.
+                  final double t2 = (t - 0.8) / 0.2;
 
-                // Uniform Scale Pulse (Breathing)
-                final double scale = 1.0 + (0.10 * wobble);
+                  // Asymmetric Bounce: Sharper rise (impact), slower settle.
+                  // Uses sqrt(t2) to front-load the sine wave for "impact" feel.
+                  final double bump = math.sin(math.pow(t2, 0.5) * math.pi);
+                  scale = 1.0 + (0.12 * bump); // Reduced intensity (1.12x)
+                }
                 scaleX = scale;
                 scaleY = scale;
 
@@ -204,6 +221,14 @@ class _AnimatedDiceIconState extends State<AnimatedDiceIcon>
                   final int index =
                       (t * phaseCount).floor().clamp(0, phaseCount - 1);
                   currentFace = _rollSequence[index];
+                }
+              } else if (widget.isLoading) {
+                // Decoupled: Finished roll but still loading.
+                // Landed flat.
+                angle = 0.0;
+                scaleX = scaleY = 1.0;
+                if (_rollSequence.isNotEmpty) {
+                  currentFace = _rollSequence.last;
                 }
               } else {
                 // Idle

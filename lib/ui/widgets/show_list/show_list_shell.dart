@@ -13,6 +13,7 @@ class ShowListShell extends StatelessWidget {
   final Animation<double> randomPulseAnimation;
   final Animation<double> searchPulseAnimation;
   final bool isRandomShowLoading;
+  final bool enableDiceHaptics;
   final VoidCallback onRandomPlay;
   final VoidCallback onToggleSearch;
   final TextEditingController searchController;
@@ -40,6 +41,7 @@ class ShowListShell extends StatelessWidget {
     required this.onOpenPlaybackScreen,
     required this.showPasteFeedback,
     required this.onTitleTap,
+    this.enableDiceHaptics = false,
   });
 
   @override
@@ -54,6 +56,7 @@ class ShowListShell extends StatelessWidget {
         randomPulseAnimation: randomPulseAnimation,
         searchPulseAnimation: searchPulseAnimation,
         isRandomShowLoading: isRandomShowLoading,
+        enableDiceHaptics: enableDiceHaptics,
         onRandomPlay: onRandomPlay,
         onToggleSearch: onToggleSearch,
         onTitleTap: onTitleTap,

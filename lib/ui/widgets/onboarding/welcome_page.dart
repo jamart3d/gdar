@@ -11,6 +11,7 @@ class WelcomePage extends StatelessWidget {
   final bool? archiveReachable;
   final AppUpdateInfo? updateInfo;
   final bool isDownloading;
+  final bool isSimulated;
   final VoidCallback onUpdateSelected;
 
   const WelcomePage({
@@ -20,6 +21,7 @@ class WelcomePage extends StatelessWidget {
     required this.updateInfo,
     required this.isDownloading,
     required this.onUpdateSelected,
+    this.isSimulated = false,
   });
 
   @override
@@ -40,6 +42,7 @@ class WelcomePage extends StatelessWidget {
               UpdateBanner(
                 updateInfo: updateInfo,
                 isDownloading: isDownloading,
+                isSimulated: isSimulated,
                 onUpdateSelected: onUpdateSelected,
                 scaleFactor: scaleFactor,
               ),

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:shakedown/models/show.dart';
@@ -207,9 +208,30 @@ class _ShowListScreenState extends State<ShowListScreen>
       if (isAnimationTest) return;
 
       if (processingState == ProcessingState.ready ||
-          processingState == ProcessingState.completed ||
-          processingState == ProcessingState.idle) {
-        setState(() => isRandomShowLoading = false);
+          processingState == ProcessingState.completed) {
+        // Minimum 2s roll duration for visual consistency
+        final now = DateTime.now();
+        final startTime = lastRollStartTime ?? now;
+        final elapsed = now.difference(startTime).inMilliseconds;
+        final remaining = math.max(0, 2000 - elapsed);
+
+        if (remaining > 0) {
+          logger.d(
+              'ShowListScreen: Player READY fast. Delaying reset by ${remaining}ms.');
+          Future.delayed(Duration(milliseconds: remaining), () {
+            if (mounted) {
+              setState(() {
+                isRandomShowLoading = false;
+                userInitiatedRoll = false;
+              });
+            }
+          });
+        } else {
+          setState(() {
+            isRandomShowLoading = false;
+            userInitiatedRoll = false;
+          });
+        }
       }
     }
 
@@ -311,6 +333,7 @@ class _ShowListScreenState extends State<ShowListScreen>
       randomPulseAnimation: _randomPulseAnimation,
       searchPulseAnimation: _searchPulseAnimation,
       isRandomShowLoading: isRandomShowLoading,
+      enableDiceHaptics: userInitiatedRoll,
       onRandomPlay: handlePlayRandomShow,
       onToggleSearch: toggleSearch,
       searchController: _searchController,

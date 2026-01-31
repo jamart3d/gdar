@@ -1,5 +1,5 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 import 'package:shakedown/providers/settings_provider.dart';
@@ -9,11 +9,10 @@ import 'package:shakedown/utils/font_layout_config.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shakedown/ui/widgets/shakedown_title.dart';
 import 'package:shakedown/ui/styles/app_typography.dart';
-import 'package:shakedown/services/update_service.dart';
-import 'package:in_app_update/in_app_update.dart';
 import 'package:shakedown/ui/widgets/onboarding/welcome_page.dart';
 import 'package:shakedown/ui/widgets/onboarding/tips_page.dart';
 import 'package:shakedown/ui/widgets/onboarding/setup_page.dart';
+import 'package:shakedown/providers/update_provider.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -28,16 +27,19 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   bool _dontShowAgain = false;
   String? _version;
   bool? _archiveReachable;
-  final UpdateService _updateService = UpdateService();
-  AppUpdateInfo? _updateInfo;
-  bool _isDownloading = false;
 
   @override
   void initState() {
     super.initState();
     _loadVersion();
     _checkArchiveReachability();
-    _checkForUpdate();
+
+    // Check for updates via provider (Skip in Debug to avoid ownership errors)
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && !kDebugMode) {
+        context.read<UpdateProvider>().checkForUpdate();
+      }
+    });
   }
 
   @override
@@ -74,34 +76,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     }
   }
 
-  Future<void> _checkForUpdate() async {
-    if (defaultTargetPlatform == TargetPlatform.android) {
-      final info = await _updateService.checkForUpdate();
-      if (mounted) {
-        setState(() {
-          _updateInfo = info;
-        });
-      }
-    }
-  }
-
-  Future<void> _startUpdate() async {
-    if (_updateInfo == null) return;
-
-    final result = await _updateService.startFlexibleUpdate();
-    if (result == AppUpdateResult.success) {
-      if (mounted) {
-        setState(() {
-          _isDownloading = true;
-        });
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Downloading update in background...'),
-            duration: Duration(seconds: 5),
-          ),
-        );
-      }
-    }
+  void _startUpdate() {
+    context.read<UpdateProvider>().startUpdate();
   }
 
   void _finishOnboarding() {
@@ -144,6 +120,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     final settings = context.watch<SettingsProvider>();
     final scaleFactor = FontLayoutConfig.getEffectiveScale(context, settings);
 
+    final updateProvider = context.watch<UpdateProvider>();
+
     return Scaffold(
       backgroundColor: colorScheme.surface,
       body: SafeArea(
@@ -162,8 +140,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   WelcomePage(
                     scaleFactor: scaleFactor,
                     archiveReachable: _archiveReachable,
-                    updateInfo: _updateInfo,
-                    isDownloading: _isDownloading,
+                    updateInfo: updateProvider.updateInfo,
+                    isDownloading: updateProvider.isDownloading,
+                    isSimulated: updateProvider.isSimulated,
                     onUpdateSelected: _startUpdate,
                   ),
                   TipsPage(scaleFactor: scaleFactor),

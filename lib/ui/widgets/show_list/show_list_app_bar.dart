@@ -14,6 +14,7 @@ class ShowListAppBar extends StatelessWidget implements PreferredSizeWidget {
   final VoidCallback onToggleSearch;
   final VoidCallback onTitleTap;
   final Color? backgroundColor;
+  final bool enableDiceHaptics;
 
   const ShowListAppBar({
     super.key,
@@ -24,6 +25,7 @@ class ShowListAppBar extends StatelessWidget implements PreferredSizeWidget {
     required this.onToggleSearch,
     required this.onTitleTap,
     this.backgroundColor,
+    this.enableDiceHaptics = false,
   });
 
   @override
@@ -90,6 +92,7 @@ class ShowListAppBar extends StatelessWidget implements PreferredSizeWidget {
         AnimatedDiceIcon(
           onPressed: onRandomPlay,
           isLoading: isRandomShowLoading,
+          enableHaptics: enableDiceHaptics,
           tooltip: 'Play Random Show',
         ),
       // Gap removed to match spacing between Search and Settings (standard AppBar spacing)

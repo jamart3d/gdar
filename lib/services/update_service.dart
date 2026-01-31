@@ -11,7 +11,12 @@ class UpdateService {
       final info = await InAppUpdate.checkForUpdate();
       return info;
     } catch (e) {
-      _logger.e('Error checking for update: $e');
+      if (e.toString().contains('-10')) {
+        _logger.i(
+            'UpdateService: App not owned by Play Store user (side-loaded). Skipping check.');
+      } else {
+        _logger.e('UpdateService: Error checking for update: $e');
+      }
       return null;
     }
   }

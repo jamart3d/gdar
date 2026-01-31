@@ -7,6 +7,7 @@ import 'package:shakedown/providers/theme_provider.dart';
 import 'package:shakedown/providers/show_list_provider.dart';
 import 'package:shakedown/providers/audio_provider.dart';
 import 'package:shakedown/ui/screens/onboarding_screen.dart';
+import 'package:shakedown/providers/update_provider.dart';
 
 import 'splash_screen_test.mocks.dart';
 
@@ -35,12 +36,14 @@ void main() {
   late MockShowListProvider mockShowListProvider;
   late MockAudioProvider mockAudioProvider;
   late MockThemeProvider mockThemeProvider;
+  late MockUpdateProvider mockUpdateProvider;
 
   setUp(() {
     mockSettingsProvider = MockSettingsProvider();
     mockShowListProvider = MockShowListProvider();
     mockAudioProvider = MockAudioProvider();
     mockThemeProvider = MockThemeProvider();
+    mockUpdateProvider = MockUpdateProvider();
   });
 
   Widget createSubject() {
@@ -52,6 +55,7 @@ void main() {
             value: mockShowListProvider),
         ChangeNotifierProvider<AudioProvider>.value(value: mockAudioProvider),
         ChangeNotifierProvider<ThemeProvider>.value(value: mockThemeProvider),
+        ChangeNotifierProvider<UpdateProvider>.value(value: mockUpdateProvider),
       ],
       child: const MaterialApp(
         home: OnboardingScreen(),
@@ -72,6 +76,9 @@ void main() {
           .thenReturn(false); // Added missing stub
       when(mockSettingsProvider.marqueeEnabled)
           .thenReturn(false); // Disable marquee
+      when(mockUpdateProvider.updateInfo).thenReturn(null);
+      when(mockUpdateProvider.isDownloading).thenReturn(false);
+      when(mockUpdateProvider.isSimulated).thenReturn(false);
     });
 
     testWidgets('renders key UI elements correctly',
@@ -189,6 +196,27 @@ void main() {
       await tester.tap(find.text('Dark Mode'));
       await tester.pump(const Duration(milliseconds: 500));
       expect(mockThemeProvider.isDarkMode, false);
+    });
+
+    testWidgets('shows UpdateBanner when update is simulated',
+        (WidgetTester tester) async {
+      when(mockUpdateProvider.isSimulated).thenReturn(true);
+      when(mockUpdateProvider.updateInfo).thenReturn(null);
+
+      await tester.pumpWidget(createSubject());
+      await tester.pump(const Duration(milliseconds: 500));
+
+      // Page 0 (WelcomePage)
+      expect(find.text('Update Available'), findsOneWidget);
+      expect(find.text('A new version is ready to install.'), findsOneWidget);
+
+      // Tap UPDATE button
+      final updateBtn = find.text('UPDATE');
+      expect(updateBtn, findsOneWidget);
+      await tester.tap(updateBtn);
+      await tester.pump();
+
+      verify(mockUpdateProvider.startUpdate()).called(1);
     });
   });
 }

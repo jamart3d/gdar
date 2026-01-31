@@ -61,10 +61,14 @@ This file tracks planned features, enhancements, and bug fixes for the gdar appl
         - **Random Mode:** Dice spins/rolls (cycling numbers 1-6) on tap, utilizing "squash and stretch" scaling and elastic curves.
         - **Non-Random Mode:** Dice logic is **disabled**. Show a static "Sequential/Play Next" icon instead.
       - **Implementation Details:**
-        - Use `CustomPainter` for dice face.
-        - Use `AnimationController` for spin (value change) and squash (scale/rotation).
-        - **Haptics:** `HapticFeedback.lightImpact()` on every number change during spin.
-        - **Colors:** `primaryContainer` (body) and `onPrimaryContainer` (dots).
+        - [x] Use `CustomPainter` for dice face.
+        - [x] Use `AnimationController` for spin (value change) and squash (scale/rotation).
+        - [x] **Haptics:** `HapticFeedback.lightImpact()` on every number change during spin.
+        - [x] **Colors:** `primaryContainer` (body) and `onPrimaryContainer` (dots).
+        - [x] **Refinement:**
+          - [x] Disable rotation at idle.
+          - [x] Shorten rolling state to 3 seconds.
+          - [x] Slow down face cycling to be clearly visible.
   - **Note:** This provides a "listen through the catalog in order" experience as an alternative to random discovery.
 
 ## Medium Priority
@@ -116,6 +120,18 @@ This file tracks planned features, enhancements, and bug fixes for the gdar appl
   - [x] **Hide Track Duration:** Added setting to hide duration and center titles in track lists.
   - [x] **Scroll Fix:** Fixed bug where scrolling to current show failed on return (implemented model equality).
   - [x] **UI Scale Compliance:** Audited and fixed UI scaling across all screens (About, ShowList AppBar, TrackList Headers).
+  - [ ] **Thematic Branding (Deadhead Copy):**
+    - [ ] **Splash Screen Checklist:**
+      - [ ] "Tuning the instruments..." (Settings)
+      - [ ] "Cataloging the master tapes..." (Shnids)
+      - [ ] "Gathering the tour dates..." (Shows)
+      - [ ] "Tapping into the Dead stash..." (Archive.org)
+      - [ ] "NFA (Not Fade Away)..." (Startup Random)
+    - [ ] **Onboarding & Preferences:**
+      - [ ] "Dark Star Mode" (Dark Mode)
+      - [ ] "Magnify the Vibe" (UI Scaling)
+      - [ ] "Roll the Dice" (Random Discovery)
+      - [ ] "Nothing left to do but smile, smile, smile" (Dismiss/Skip)
   - [x] **Rating Dialog Improvements:**
     - [x] "Mark as Played" toggle with confirmation dialog.
     - [x] Mutual exclusivity between Blocked (Red) and Rated (Gold) stars.
@@ -127,11 +143,11 @@ This file tracks planned features, enhancements, and bug fixes for the gdar appl
     - [x] **Rated Shows Library**: Added dynamic counts to each tab label (e.g., "Played (5)").
     - [ ] **Data Sharding:** Split the monolithic JSON data by year (e.g., `years/1972.json`) and use a lightweight master index to improve app startup performance and reduce memory usage.
  
-- [ ] **Update Notification:** 
+- [x] **Update Notification:** 
   - **Feature:** Implement a mechanism to notify users when a new version of the app is available in the store.
   - **Logic:** Check current version against a remote source (e.g., GitHub, simple API, or `upgrader` package).
   - **UI (Onboarding Integration):** Show a non-intrusive Material 3 banner on **Onboarding Screen 1**. This allows the "Flexible Update" to download in the background while the user proceeds through the remaining onboarding steps.
-  - **Status:** Plan approved to use `in_app_update` package for background downloading.
+  - **Status:** **Completed**. Implemented `UpdateProvider` and `UpdateBanner`. Added `shakedown://debug?action=simulate_update` deep link for testing.
 
 - [x] **Smart Random Playback**:
   - Manual Random (Button) respects search filter.

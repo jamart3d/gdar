@@ -22,6 +22,7 @@ mixin ShowListLogicMixin<T extends StatefulWidget>
   FocusNode get searchFocusNode;
 
   bool isRandomShowLoading = false;
+  bool userInitiatedRoll = false;
   bool isAnimationTest = false;
   bool showPasteFeedback = false;
 
@@ -29,6 +30,8 @@ mixin ShowListLogicMixin<T extends StatefulWidget>
 
   // Track pending selection for when app resumes from background
   ({Show show, Source source})? _pendingBackgroundSelection;
+
+  DateTime? lastRollStartTime;
 
   @override
   void dispose() {
@@ -298,17 +301,9 @@ mixin ShowListLogicMixin<T extends StatefulWidget>
 
     if (!isRandomShowLoading) {
       setState(() {
+        lastRollStartTime = DateTime.now();
         isRandomShowLoading = true;
-        isAnimationTest = true;
-      });
-      _loadingTimer?.cancel();
-      _loadingTimer = Timer(const Duration(milliseconds: 10100), () {
-        if (mounted) {
-          setState(() {
-            isRandomShowLoading = false;
-            isAnimationTest = false;
-          });
-        }
+        isAnimationTest = false;
       });
     }
   }
@@ -327,14 +322,15 @@ mixin ShowListLogicMixin<T extends StatefulWidget>
       animationController.reverse();
     }
 
-    setState(() => isRandomShowLoading = true);
-    _loadingTimer?.cancel();
-    _loadingTimer = Timer(const Duration(milliseconds: 10100), () {
-      if (mounted) {
-        setState(() => isRandomShowLoading = false);
-      }
+    logger.d(
+        'ShowListScreen: handlePlayRandomShow() - Triggering random show roll.');
+    setState(() {
+      lastRollStartTime = DateTime.now();
+      isRandomShowLoading = true;
+      userInitiatedRoll = true;
     });
-
+    // Timer removed: Dice animation is decoupled and runs for 2s.
+    // AppBar loading state is controlled by _onPlayerStateChange.
     await audioProvider.playRandomShow(filterBySearch: true);
   }
 

@@ -6,6 +6,7 @@ import 'package:shakedown/ui/styles/app_typography.dart';
 class UpdateBanner extends StatelessWidget {
   final AppUpdateInfo? updateInfo;
   final bool isDownloading;
+  final bool isSimulated;
   final VoidCallback onUpdateSelected;
   final double scaleFactor;
 
@@ -15,12 +16,17 @@ class UpdateBanner extends StatelessWidget {
     required this.isDownloading,
     required this.onUpdateSelected,
     required this.scaleFactor,
+    this.isSimulated = false,
   });
 
   @override
   Widget build(BuildContext context) {
-    if (updateInfo == null ||
-        updateInfo!.updateAvailability != UpdateAvailability.updateAvailable) {
+    bool hasUpdate = isSimulated ||
+        (updateInfo != null &&
+            updateInfo!.updateAvailability ==
+                UpdateAvailability.updateAvailable);
+
+    if (!hasUpdate) {
       return const SizedBox.shrink();
     }
 

@@ -21,6 +21,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shakedown/ui/widgets/rgb_clock_wrapper.dart';
 import 'package:shakedown/services/audio_cache_service.dart';
+import 'package:shakedown/providers/update_provider.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -282,6 +283,17 @@ class _GdarAppState extends State<GdarApp> {
                   builder: (_) =>
                       const SettingsScreen(showFontSelection: true)),
             );
+          } else if (action == 'simulate_update') {
+            logger.i(
+                'Main: [Session #$_sessionId] Simulating Update via Deep Link');
+            Provider.of<UpdateProvider>(context, listen: false)
+                .simulateUpdate();
+
+            // Navigate to onboarding to see the banner
+            Navigator.of(context).pushAndRemoveUntil(
+              MaterialPageRoute(builder: (_) => const OnboardingScreen()),
+              (route) => false,
+            );
           }
         } else if (uri.host == 'settings') {
           final key = uri.queryParameters['key'];
@@ -373,6 +385,7 @@ class _GdarAppState extends State<GdarApp> {
                   settingsProvider,
                 ),
         ),
+        ChangeNotifierProvider(create: (_) => UpdateProvider()),
       ],
       child: Consumer2<ThemeProvider, SettingsProvider>(
         builder: (context, themeProvider, settingsProvider, child) {

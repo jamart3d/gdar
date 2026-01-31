@@ -14,6 +14,7 @@ import 'package:shakedown/models/source.dart' as _i9;
 import 'package:shakedown/providers/audio_provider.dart' as _i11;
 import 'package:shakedown/providers/settings_provider.dart' as _i8;
 import 'package:shakedown/providers/show_list_provider.dart' as _i3;
+import 'package:shakedown/providers/update_provider.dart' as _i12;
 import 'package:shared_preferences/shared_preferences.dart' as _i7;
 
 // ignore_for_file: type=lint
@@ -1426,6 +1427,97 @@ class MockAudioProvider extends _i1.Mock implements _i11.AudioProvider {
         Invocation.method(
           #removeListener,
           [listener],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void notifyListeners() => super.noSuchMethod(
+        Invocation.method(
+          #notifyListeners,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
+}
+
+/// A class which mocks [UpdateProvider].
+///
+/// See the documentation for Mockito's code generation for more information.
+class MockUpdateProvider extends _i1.Mock implements _i12.UpdateProvider {
+  @override
+  bool get isDownloading => (super.noSuchMethod(
+        Invocation.getter(#isDownloading),
+        returnValue: false,
+        returnValueForMissingStub: false,
+      ) as bool);
+
+  @override
+  bool get isSimulated => (super.noSuchMethod(
+        Invocation.getter(#isSimulated),
+        returnValue: false,
+        returnValueForMissingStub: false,
+      ) as bool);
+
+  @override
+  bool get hasListeners => (super.noSuchMethod(
+        Invocation.getter(#hasListeners),
+        returnValue: false,
+        returnValueForMissingStub: false,
+      ) as bool);
+
+  @override
+  _i4.Future<void> checkForUpdate() => (super.noSuchMethod(
+        Invocation.method(
+          #checkForUpdate,
+          [],
+        ),
+        returnValue: _i4.Future<void>.value(),
+        returnValueForMissingStub: _i4.Future<void>.value(),
+      ) as _i4.Future<void>);
+
+  @override
+  _i4.Future<void> startUpdate() => (super.noSuchMethod(
+        Invocation.method(
+          #startUpdate,
+          [],
+        ),
+        returnValue: _i4.Future<void>.value(),
+        returnValueForMissingStub: _i4.Future<void>.value(),
+      ) as _i4.Future<void>);
+
+  @override
+  void simulateUpdate() => super.noSuchMethod(
+        Invocation.method(
+          #simulateUpdate,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void addListener(_i10.VoidCallback? listener) => super.noSuchMethod(
+        Invocation.method(
+          #addListener,
+          [listener],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void removeListener(_i10.VoidCallback? listener) => super.noSuchMethod(
+        Invocation.method(
+          #removeListener,
+          [listener],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void dispose() => super.noSuchMethod(
+        Invocation.method(
+          #dispose,
+          [],
         ),
         returnValueForMissingStub: null,
       );

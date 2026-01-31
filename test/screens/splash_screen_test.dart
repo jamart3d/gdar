@@ -8,12 +8,15 @@ import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:provider/provider.dart';
 
+import 'package:shakedown/providers/update_provider.dart';
+
 import 'splash_screen_test.mocks.dart';
 
 @GenerateNiceMocks([
   MockSpec<ShowListProvider>(),
   MockSpec<SettingsProvider>(),
-  MockSpec<AudioProvider>()
+  MockSpec<AudioProvider>(),
+  MockSpec<UpdateProvider>(),
 ])
 void main() {
   late MockShowListProvider mockShowListProvider;

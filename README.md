@@ -139,6 +139,7 @@ The app supports a wide range of deep links for testing and automation. Use `adb
 | **Debug Tools** | `debug` | `action` | `reset_prefs` (factory reset settings), `complete_onboarding`, `show_font_dialog`. |
 | **Font Test** | `font` | `name` | Force switch font: `caveat`, `permanent_marker`, `rock_salt`, `default`. |
 | **UI Scale** | `ui-scale` | `enabled` | `true`/`false` to toggle UI scaling. |
+| **Debug Update** | `debug` | `action` | `simulate_update` (Test the Update Banner). |
 
 #### **Example Commands**
 ```bash
