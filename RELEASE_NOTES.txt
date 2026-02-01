@@ -1,3 +1,13 @@
+Release 1.0.26:
+- **Fixed**: Resolved issue where update notifications could be missed if the app was closed during a download.
+- **Improved**: Update checks now persist and resume status correctly on cold start.
+- **Polished**: Refined usage instructions with better clarity on source filtering and deep link pasting.
+
+Release 1.0.25:
+- **Fixed**: Resolved issue where "Advanced Cache" description was not updating track counts.
+- **Improved**: Isolated audio cache to a dedicated directory for faster and safer file management.
+- **Improved**: Implemented robust SHA-256 regex scanner for identifying cached tracks.
+
 Release 1.0.24:
 - **Improved**: Polished Splash Screen checklist items for better brevity.
 - **Fixed**: Updated Archive.org connection labels.

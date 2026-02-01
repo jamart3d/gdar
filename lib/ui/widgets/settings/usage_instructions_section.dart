@@ -60,7 +60,7 @@ class UsageInstructionsSection extends StatelessWidget {
                     style: TextStyle(fontWeight: FontWeight.bold)),
                 TextSpan(
                     text:
-                        ' a show card to play a random source from\u00A0that\u00A0show.'),
+                        ' a show card to play a random source from\u00A0that\u00A0show. If source filtering highest shnid only is off.'),
               ],
             ),
           ),
@@ -153,7 +153,7 @@ class UsageInstructionsSection extends StatelessWidget {
                     text: 'Tap', style: TextStyle(fontWeight: FontWeight.bold)),
                 TextSpan(
                     text:
-                        ' the search icon in the app bar to filter shows by venue\u00A0or\u00A0date.'),
+                        ' the search icon in the app bar to filter shows by venue\u00A0or\u00A0date. Or paste a shared link!'),
               ],
             ),
           ),

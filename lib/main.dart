@@ -385,7 +385,7 @@ class _GdarAppState extends State<GdarApp> {
                   settingsProvider,
                 ),
         ),
-        ChangeNotifierProvider(create: (_) => UpdateProvider()),
+        ChangeNotifierProvider(create: (_) => UpdateProvider(widget.prefs)),
       ],
       child: Consumer2<ThemeProvider, SettingsProvider>(
         builder: (context, themeProvider, settingsProvider, child) {

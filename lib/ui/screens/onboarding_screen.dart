@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 import 'package:shakedown/providers/settings_provider.dart';
@@ -33,13 +32,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     super.initState();
     _loadVersion();
     _checkArchiveReachability();
-
-    // Check for updates via provider (Skip in Debug to avoid ownership errors)
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted && !kDebugMode) {
-        context.read<UpdateProvider>().checkForUpdate();
-      }
-    });
   }
 
   @override

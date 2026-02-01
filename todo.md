@@ -147,7 +147,8 @@ This file tracks planned features, enhancements, and bug fixes for the gdar appl
   - **Feature:** Implement a mechanism to notify users when a new version of the app is available in the store.
   - **Logic:** Check current version against a remote source (e.g., GitHub, simple API, or `upgrader` package).
   - **UI (Onboarding Integration):** Show a non-intrusive Material 3 banner on **Onboarding Screen 1**. This allows the "Flexible Update" to download in the background while the user proceeds through the remaining onboarding steps.
-  - **Status:** **Completed**. Implemented `UpdateProvider` and `UpdateBanner`. Added `shakedown://debug?action=simulate_update` deep link for testing.
+  - [x] **Bug Investigation (Persistence):** Investigate reports that if the app is closed while downloading an update, it fails to re-check for the update on the next launch. Ensure `UpdateProvider` resets its check/download state correctly on cold start.
+  - **Status:** **Completed** (Core Feature). Bug investigation pending. Implemented `UpdateProvider` and `UpdateBanner`. Added `shakedown://debug?action=simulate_update` deep link for testing.
 
 - [x] **Smart Random Playback**:
   - Manual Random (Button) respects search filter.
@@ -238,6 +239,10 @@ This file tracks planned features, enhancements, and bug fixes for the gdar appl
 - [ ] **Staggered List Motion:** Animate ShowListCards sliding/fading in when the list loads or search results update for a fluid, premium feel.
 
 - [ ] **Random Icon Animation:** When going from splash screen to show list screen, make the select random button (animated dice) pulse in a Material 3 design way until it's been used once (per app start).
+- [ ] **Dice Animation Exploration:** Propose 3 new variations of the expressive Material 3 dice animation. Implement them as separate buttons alongside the current one in the `ShowListScreen` AppBar for comparison and testing.
+  - **Variation 1: "The Spring Jiggle"** - Vertical micro-bounces with high-frequency spring settling and rapid face blurs.
+  - **Variation 2: "The Flip & Fold"** - Perspective-based 3D flip on X/Y axes using `Matrix4` skews.
+  - **Variation 3: "The Portal Burst"** - Rapid scale-down (0.0) and "burst" expansion with a subtle outer ring ripple/glow.
 
 - [ ] **Miniplayer Fix:** Fix miniplayer rebuild when navigating between shows screen and track list screen, or integrate it better with the playback controls from the playback screen.
 

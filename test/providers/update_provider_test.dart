@@ -1,12 +1,18 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shakedown/providers/update_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
   group('UpdateProvider', () {
     late UpdateProvider updateProvider;
+    late SharedPreferences prefs;
 
-    setUp(() {
-      updateProvider = UpdateProvider();
+    setUp(() async {
+      SharedPreferences.setMockInitialValues({});
+      prefs = await SharedPreferences.getInstance();
+      updateProvider = UpdateProvider(prefs);
     });
 
     test('initial state is correct', () {
