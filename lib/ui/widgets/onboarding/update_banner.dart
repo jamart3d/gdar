@@ -6,6 +6,7 @@ import 'package:shakedown/ui/styles/app_typography.dart';
 class UpdateBanner extends StatelessWidget {
   final AppUpdateInfo? updateInfo;
   final bool isDownloading;
+  final bool isWaitingToDownload;
   final bool isSimulated;
   final VoidCallback onUpdateSelected;
   final double scaleFactor;
@@ -14,6 +15,7 @@ class UpdateBanner extends StatelessWidget {
     super.key,
     required this.updateInfo,
     required this.isDownloading,
+    required this.isWaitingToDownload,
     required this.onUpdateSelected,
     required this.scaleFactor,
     this.isSimulated = false,
@@ -65,7 +67,9 @@ class UpdateBanner extends StatelessWidget {
               const SizedBox(width: 16),
               Expanded(
                 child: Text(
-                  'Downloading update...',
+                  isWaitingToDownload
+                      ? 'Waiting to download...'
+                      : 'Downloading update...',
                   style: TextStyle(
                     fontSize: AppTypography.responsiveFontSize(context, 13.0),
                     color: colorScheme.onSecondaryContainer,

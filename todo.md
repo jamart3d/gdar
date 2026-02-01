@@ -148,7 +148,8 @@ This file tracks planned features, enhancements, and bug fixes for the gdar appl
   - **Logic:** Check current version against a remote source (e.g., GitHub, simple API, or `upgrader` package).
   - **UI (Onboarding Integration):** Show a non-intrusive Material 3 banner on **Onboarding Screen 1**. This allows the "Flexible Update" to download in the background while the user proceeds through the remaining onboarding steps.
   - [x] **Bug Investigation (Persistence):** Investigate reports that if the app is closed while downloading an update, it fails to re-check for the update on the next launch. Ensure `UpdateProvider` resets its check/download state correctly on cold start.
-  - **Status:** **Completed** (Core Feature). Bug investigation pending. Implemented `UpdateProvider` and `UpdateBanner`. Added `shakedown://debug?action=simulate_update` deep link for testing.
+  - [x] **UI Polish (Banner Feedback):** After clicking "Upgrade" and confirming the Google Play dialog, immediately change the banner text to "Waiting to download..." to provide immediate feedback before the actual progress begins.
+  - **Status:** **Completed** (Core Feature & Persistence Fix). UI polish pending. Implemented `UpdateProvider` and `UpdateBanner`. Added `shakedown://debug?action=simulate_update` deep link for testing.
 
 - [x] **Smart Random Playback**:
   - Manual Random (Button) respects search filter.

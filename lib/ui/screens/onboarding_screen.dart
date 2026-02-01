@@ -68,10 +68,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     }
   }
 
-  void _startUpdate() {
-    context.read<UpdateProvider>().startUpdate();
-  }
-
   void _finishOnboarding() {
     final settingsProvider = context.read<SettingsProvider>();
 
@@ -134,8 +130,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     archiveReachable: _archiveReachable,
                     updateInfo: updateProvider.updateInfo,
                     isDownloading: updateProvider.isDownloading,
+                    isWaitingToDownload: updateProvider.isWaitingToDownload,
                     isSimulated: updateProvider.isSimulated,
-                    onUpdateSelected: _startUpdate,
+                    onUpdateSelected: () => updateProvider.startUpdate(),
                   ),
                   TipsPage(scaleFactor: scaleFactor),
                   SetupPage(

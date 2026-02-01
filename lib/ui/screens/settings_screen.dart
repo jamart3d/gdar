@@ -168,6 +168,7 @@ class _SettingsScreenState extends State<SettingsScreen>
                     child: UpdateBanner(
                       updateInfo: updateProvider.updateInfo,
                       isDownloading: updateProvider.isDownloading,
+                      isWaitingToDownload: updateProvider.isWaitingToDownload,
                       isSimulated: updateProvider.isSimulated,
                       onUpdateSelected: () => updateProvider.startUpdate(),
                       scaleFactor: scaleFactor,

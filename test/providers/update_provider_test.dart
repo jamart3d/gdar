@@ -37,5 +37,18 @@ void main() {
 
       expect(updateProvider.isDownloading, isTrue);
     });
+
+    test('startUpdate() briefly sets isWaitingToDownload in simulation',
+        () async {
+      updateProvider.simulateUpdate();
+      final future = updateProvider.startUpdate();
+
+      expect(updateProvider.isWaitingToDownload, isTrue);
+
+      await future;
+
+      expect(updateProvider.isWaitingToDownload, isFalse);
+      expect(updateProvider.isDownloading, isTrue);
+    });
   });
 }

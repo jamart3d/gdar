@@ -11,6 +11,7 @@ class UpdateProvider with ChangeNotifier {
 
   AppUpdateInfo? _updateInfo;
   bool _isDownloading = false;
+  bool _isWaitingToDownload = false;
   bool _isSimulated = false;
 
   static const String _kUpdateDownloadedKey = 'update_downloaded';
@@ -20,6 +21,9 @@ class UpdateProvider with ChangeNotifier {
 
   /// Whether a flexible update is currently being downloaded or ready to install.
   bool get isDownloading => _isDownloading;
+
+  /// Whether the app is waiting for the download to actually start after confirmation.
+  bool get isWaitingToDownload => _isWaitingToDownload;
 
   /// Whether the current update state is simulated for testing.
   bool get isSimulated => _isSimulated;
@@ -67,6 +71,10 @@ class UpdateProvider with ChangeNotifier {
   /// Starts the flexible update process.
   Future<void> startUpdate() async {
     if (_isSimulated) {
+      _isWaitingToDownload = true;
+      notifyListeners();
+      await Future.delayed(const Duration(seconds: 1)); // Simulate dialog delay
+      _isWaitingToDownload = false;
       _isDownloading = true;
       _prefs.setBool(_kUpdateDownloadedKey, true);
       notifyListeners();
@@ -77,9 +85,14 @@ class UpdateProvider with ChangeNotifier {
 
     final result = await _updateService.startFlexibleUpdate();
     if (result == AppUpdateResult.success) {
+      _isWaitingToDownload = true;
+      notifyListeners();
       _isDownloading = true;
       _prefs.setBool(_kUpdateDownloadedKey, true);
-      notifyListeners();
+      // We don't reset _isWaitingToDownload here manually because the real
+      // download progress will eventually take over, or we can reset it
+      // after a short delay if we had access to real progress events.
+      // For now, setting it to true gives that immediate feedback.
     }
   }
 
@@ -89,14 +102,14 @@ class UpdateProvider with ChangeNotifier {
       logger.i('UpdateProvider: Completing simulated update.');
       _isSimulated = false;
       _isDownloading = false;
+      _isWaitingToDownload = false;
       _prefs.setBool(_kUpdateDownloadedKey, false);
       notifyListeners();
       return;
     }
 
     await _updateService.completeFlexibleUpdate();
-    // SharedPreferences will be cleared after restart if we implement a version check,
-    // but for now we clear it before calling complete (though it might not finish writing).
+    _isWaitingToDownload = false;
     _prefs.setBool(_kUpdateDownloadedKey, false);
   }
 
@@ -104,6 +117,7 @@ class UpdateProvider with ChangeNotifier {
   void simulateUpdate() {
     _isSimulated = true;
     _isDownloading = false;
+    _isWaitingToDownload = false;
     _prefs.setBool(_kUpdateDownloadedKey, false);
     _updateInfo = null;
     notifyListeners();
