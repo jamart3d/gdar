@@ -1,3 +1,10 @@
+Release 1.0.29:
+- **GA Readiness**: Completed a full clinical audit and cleanup of the codebase for production.
+- **Production Hardening**: Strictly guarded all debug-only deep links (UI scaling, font selection, reset tools) for secure release builds.
+- **Improved**: Standardized internal documentation to explain "Why" over "What" logic across core providers and the main entry point.
+- **Stability**: Verified 100% test success (121/121) across the entire suite.
+- **Optimized**: Confirmed native WebP support for iOS 14+; initiated release asset footprint reduction roadmap.
+
 Release 1.0.28:
 - **Restored**: Swipe-to-block is now available for ALL shows on the main list.
 - **Improved**: Blocking a multi-source show from the main list now specifically blocks the representative source.

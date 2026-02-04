@@ -87,10 +87,15 @@ class _GdarAppState extends State<GdarApp> {
     _initDeepLinks();
   }
 
+  @override
+  void dispose() {
+    _linkSubscription?.cancel();
+    super.dispose();
+  }
+
   void _initDeepLinks() {
     _appLinks = AppLinks();
 
-    // Handle initial link if app was closed
     _appLinks.getInitialLink().then((uri) {
       if (uri != null) {
         logger
@@ -99,7 +104,6 @@ class _GdarAppState extends State<GdarApp> {
       }
     });
 
-    // Handle links while app is running
     _linkSubscription = _appLinks.uriLinkStream.listen((uri) {
       logger.i('Main: [Session #$_sessionId] Handling STREAM deep link: $uri');
       _handleDeepLink(uri);
@@ -132,12 +136,7 @@ class _GdarAppState extends State<GdarApp> {
           audioProvider.playRandomShow(
               filterBySearch: true, animationOnly: animationOnly);
         } else if (uri.host == 'ui-scale') {
-          // SAFETY: Disable debug tools in Release Mode
-          if (kReleaseMode) {
-            logger.w(
-                'Main: [Session #$_sessionId] Ignoring debug deep link (ui-scale) in Release Mode');
-            return;
-          }
+          if (kReleaseMode) return;
           final enabled =
               uri.queryParameters['enabled']?.toLowerCase() == 'true';
           final settingsProvider =
@@ -150,12 +149,7 @@ class _GdarAppState extends State<GdarApp> {
             settingsProvider.toggleUiScale();
           }
         } else if (uri.host == 'font') {
-          // SAFETY: Disable debug tools in Release Mode
-          if (kReleaseMode) {
-            logger.w(
-                'Main: [Session #$_sessionId] Ignoring debug deep link (font) in Release Mode');
-            return;
-          }
+          if (kReleaseMode) return;
           final fontName =
               uri.queryParameters['name']?.toLowerCase() ?? 'default';
           final settingsProvider =
@@ -187,9 +181,6 @@ class _GdarAppState extends State<GdarApp> {
                 uri.queryParameters['animation_only']?.toLowerCase() == 'true';
             audioProvider.playRandomShow(
                 filterBySearch: true, animationOnly: animationOnly);
-          } else {
-            logger.i(
-                'Main: [Session #$_sessionId] Feature "$feature" does not require playback');
           }
         } else if (uri.host == 'navigate') {
           final screen = uri.queryParameters['screen']?.toLowerCase();
@@ -257,12 +248,7 @@ class _GdarAppState extends State<GdarApp> {
             }
           }
         } else if (uri.host == 'debug') {
-          // SAFETY: Disable debug tools in Release Mode
-          if (kReleaseMode) {
-            logger.w(
-                'Main: [Session #$_sessionId] Ignoring debug deep link (debug) in Release Mode');
-            return;
-          }
+          if (kReleaseMode) return;
           final action = uri.queryParameters['action']?.toLowerCase();
           if (action == 'reset_prefs') {
             logger.w(
@@ -290,7 +276,6 @@ class _GdarAppState extends State<GdarApp> {
             Provider.of<UpdateProvider>(context, listen: false)
                 .simulateUpdate();
 
-            // Navigate to onboarding to see the banner
             Navigator.of(context).pushAndRemoveUntil(
               MaterialPageRoute(builder: (_) => const OnboardingScreen()),
               (route) => false,
@@ -320,8 +305,6 @@ class _GdarAppState extends State<GdarApp> {
         } else if (uri.host == 'player') {
           final action = uri.queryParameters['action']?.toLowerCase();
           logger.i('Main: [Session #$_sessionId] Player Action: $action');
-          final audioProvider =
-              Provider.of<AudioProvider>(context, listen: false);
 
           if (action == 'pause') {
             audioProvider.pause();
@@ -353,12 +336,6 @@ class _GdarAppState extends State<GdarApp> {
         }
       }
     });
-  }
-
-  @override
-  void dispose() {
-    _linkSubscription?.cancel();
-    super.dispose();
   }
 
   @override
@@ -401,7 +378,6 @@ class _GdarAppState extends State<GdarApp> {
                 if (settingsProvider.useDynamicColor &&
                     lightDynamic != null &&
                     darkDynamic != null) {
-                  // Use dynamic colors if the setting is on and they are available
                   final baseLight = ThemeData(
                     useMaterial3: settingsProvider.useMaterial3,
                     colorScheme: lightDynamic,

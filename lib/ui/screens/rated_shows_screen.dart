@@ -277,13 +277,9 @@ class _RatedShowListState extends State<_RatedShowList> {
 
         bool match = false;
 
-        // Blocked (-1)
         if (widget.rating == -1) {
-          // Strict check: Is this specific source effectively blocked?
           if (effectiveRating == -1) match = true;
-        }
-        // Stars (1, 2, 3)
-        else {
+        } else {
           if (effectiveRating == widget.rating) match = true;
         }
 

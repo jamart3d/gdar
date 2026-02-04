@@ -14,6 +14,7 @@ import 'package:shakedown/models/show.dart';
 import 'package:shakedown/models/source.dart';
 import 'dart:io';
 import 'package:flutter/services.dart';
+import 'package:shakedown/providers/update_provider.dart';
 
 // Mock Providers (Simple versions for testing)
 class MockAudioProvider extends ChangeNotifier implements AudioProvider {
@@ -38,6 +39,20 @@ class MockShowListProvider extends ChangeNotifier implements ShowListProvider {
   List<Show> get allShows => [];
   @override
   Set<String> get availableCategories => {};
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+class MockUpdateProvider extends ChangeNotifier implements UpdateProvider {
+  @override
+  bool get isWaitingToDownload => false;
+  @override
+  bool get isDownloading => false;
+  @override
+  bool get isSimulated => false;
+  @override
+  get updateInfo => null;
 
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
@@ -82,6 +97,8 @@ void main() {
             create: (_) => MockAudioProvider()),
         ChangeNotifierProvider<ShowListProvider>(
             create: (_) => MockShowListProvider()),
+        ChangeNotifierProvider<UpdateProvider>(
+            create: (_) => MockUpdateProvider()),
       ],
       child: const MaterialApp(
         home: SettingsScreen(),

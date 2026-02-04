@@ -147,7 +147,8 @@ class CardStyle {
     bool suppressOuterGlow = isExpanded && show.sources.length > 1;
     bool showGlow = settings.glowMode > 0;
     bool useRgb = settings.highlightPlayingWithRgb && isPlaying;
-    bool showShadow = settings.glowMode > 0 && !isTrueBlackMode;
+    bool showShadow =
+        settings.glowMode > 0 && (!isTrueBlackMode || settings.glowMode == 2);
 
     double baseOpacity = settings.glowMode / 100.0;
     double glowOpacity = isPlaying ? baseOpacity : baseOpacity * 0.25;

@@ -8,6 +8,33 @@ import 'package:shakedown/ui/widgets/animated_gradient_border.dart';
 import 'package:shakedown/ui/widgets/show_list/show_list_card.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:shakedown/services/catalog_service.dart';
+import 'package:mockito/mockito.dart';
+import 'package:shakedown/models/rating.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import 'package:flutter/foundation.dart';
+
+class MockCatalogService extends Mock implements CatalogService {
+  @override
+  ValueListenable<Box<Rating>> get ratingsListenable =>
+      ValueNotifier(MockBox<Rating>());
+  @override
+  ValueListenable<Box<bool>> get historyListenable =>
+      ValueNotifier(MockBox<bool>());
+  @override
+  ValueListenable<Box<int>> get playCountsListenable =>
+      ValueNotifier(MockBox<int>());
+
+  @override
+  int getRating(String? sourceId) => 0;
+  @override
+  bool isPlayed(String? sourceId) => false;
+}
+
+class MockBox<T> extends Mock implements Box<T> {
+  @override
+  T? get(dynamic key, {T? defaultValue}) => defaultValue;
+}
 
 void main() {
   late SharedPreferences prefs;
@@ -15,6 +42,7 @@ void main() {
   setUp(() async {
     SharedPreferences.setMockInitialValues({});
     prefs = await SharedPreferences.getInstance();
+    CatalogService.setMock(MockCatalogService());
   });
 
   // Helper function to create a dummy show
@@ -100,6 +128,10 @@ void main() {
     }
     // Set Glow Mode to HALF (2) to test reduced opacity
     settingsProvider.setGlowMode(2);
+    // Disable RGB highlighting to ensure we get the non-RGB multiplier (0.2)
+    if (settingsProvider.highlightPlayingWithRgb) {
+      settingsProvider.toggleHighlightPlayingWithRgb();
+    }
 
     final show = createDummyShow('Test Venue', '2025-01-01');
 

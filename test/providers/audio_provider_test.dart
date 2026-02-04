@@ -96,7 +96,7 @@ void main() {
 
     when(mockShowListProvider.isLoading).thenReturn(false);
     when(mockShowListProvider.allShows).thenReturn([]);
-    // when(mockShowListProvider.initializationComplete).thenAnswer((_) async {}); // Init removed from provider? Check later.
+    when(mockShowListProvider.initializationComplete).thenAnswer((_) async {});
     when(mockShowListProvider.initializationComplete).thenAnswer((_) async {});
     when(mockShowListProvider.isSourceAllowed(any)).thenReturn(true);
 
@@ -350,13 +350,6 @@ void main() {
       });
     });
 
-    // testWidgets('Auto-plays random show on completion if setting is enabled',
-    //     (WidgetTester tester) async {
-    //   // This test is commented out because it is proving difficult to test
-    //   // the stream listener in a reliable way.
-    //   final completer = Completer<void>();
-    //   when(mockSettingsProvider.playRandomOnCompletion).thenReturn(true);
-    //   when(mockShowListProvider.filteredShows)
     //       .thenReturn([createDummyShow(1)]);
     //   when(audioProvider.playRandomShow()).thenAnswer((_) async {
     //     completer.complete();

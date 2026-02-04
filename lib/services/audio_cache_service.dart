@@ -130,22 +130,22 @@ class AudioCacheService with ChangeNotifier {
   /// Clears all cached audio files.
   Future<void> clearAudioCache() async {
     try {
-      if (_cacheDir != null && await _cacheDir!.exists()) {
-        final List<FileSystemEntity> files = _cacheDir!.listSync();
-        for (final file in files) {
-          if (file is File) {
-            final name = file.uri.pathSegments.last;
-            // Identify our cache files
-            if (_cacheFileRegex.hasMatch(name)) {
-              try {
-                await file.delete();
-              } catch (_) {}
-            }
+      if (_cacheDir == null || !await _cacheDir!.exists()) return;
+
+      final List<FileSystemEntity> files = _cacheDir!.listSync();
+      for (final file in files) {
+        if (file is File) {
+          final name = file.uri.pathSegments.last;
+          // Identify our cache files
+          if (_cacheFileRegex.hasMatch(name)) {
+            try {
+              await file.delete();
+            } catch (_) {}
           }
         }
-        logger.i('Cleared audio cache.');
-        await refreshCacheCount();
       }
+      logger.i('Cleared audio cache.');
+      await refreshCacheCount();
     } catch (e) {
       logger.w('Failed to clear audio cache: $e');
     }

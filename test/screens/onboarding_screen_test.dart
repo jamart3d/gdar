@@ -24,9 +24,7 @@ class MockThemeProvider extends ChangeNotifier implements ThemeProvider {
 
   @override
   void toggleTheme() {
-    // print('MockThemeProvider: toggleTheme called. Current: $_isDarkMode');
     _isDarkMode = !_isDarkMode;
-    // print('MockThemeProvider: New state: $_isDarkMode');
     notifyListeners();
   }
 }

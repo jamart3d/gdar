@@ -170,6 +170,7 @@ void main() {
       final show = createDummyShow(1);
       when(mockShowListProvider.filteredShows).thenReturn([show]);
       when(mockShowListProvider.allShows).thenReturn([show]);
+      when(mockCatalogService.allShows).thenReturn([show]);
 
       // 4. Emit Index Update causing trigger (Start of Last Track)
       currentIndexController.add(1);

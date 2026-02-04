@@ -1460,6 +1460,13 @@ class MockUpdateProvider extends _i1.Mock implements _i12.UpdateProvider {
       ) as bool);
 
   @override
+  bool get isWaitingToDownload => (super.noSuchMethod(
+        Invocation.getter(#isWaitingToDownload),
+        returnValue: false,
+        returnValueForMissingStub: false,
+      ) as bool);
+
+  @override
   bool get hasListeners => (super.noSuchMethod(
         Invocation.getter(#hasListeners),
         returnValue: false,

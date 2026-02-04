@@ -7,6 +7,35 @@ import 'package:shakedown/ui/widgets/rating_control.dart';
 import 'package:shakedown/ui/widgets/show_list_item_details.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:shakedown/providers/show_list_provider.dart';
+import 'package:shakedown/services/catalog_service.dart';
+import 'package:shakedown/models/rating.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import 'package:flutter/foundation.dart';
+import 'package:mockito/mockito.dart';
+import '../screens/splash_screen_test.mocks.dart';
+
+class MockCatalogService extends Mock implements CatalogService {
+  @override
+  ValueListenable<Box<Rating>> get ratingsListenable =>
+      ValueNotifier(MockBox<Rating>());
+  @override
+  ValueListenable<Box<bool>> get historyListenable =>
+      ValueNotifier(MockBox<bool>());
+  @override
+  ValueListenable<Box<int>> get playCountsListenable =>
+      ValueNotifier(MockBox<int>());
+
+  @override
+  int getRating(String? sourceId) => 0;
+  @override
+  bool isPlayed(String? sourceId) => false;
+}
+
+class MockBox<T> extends Mock implements Box<T> {
+  @override
+  T? get(dynamic key, {T? defaultValue}) => defaultValue;
+}
 
 void main() {
   late SharedPreferences prefs;
@@ -14,6 +43,7 @@ void main() {
   setUp(() async {
     SharedPreferences.setMockInitialValues({});
     prefs = await SharedPreferences.getInstance();
+    CatalogService.setMock(MockCatalogService());
   });
 
   Show createDummyShow(String name, {int sourceCount = 2}) {
@@ -37,6 +67,8 @@ void main() {
       providers: [
         ChangeNotifierProvider(
             create: (_) => settingsProvider ?? SettingsProvider(prefs)),
+        ChangeNotifierProvider<ShowListProvider>.value(
+            value: MockShowListProvider()),
       ],
       child: MaterialApp(
         home: Scaffold(
@@ -84,7 +116,8 @@ void main() {
 
     // Tap it
     await tester.tap(ratingControl);
-    await tester.pumpAndSettle();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 500));
 
     // Verify dialog is open
     expect(find.text('Rate Show'), findsOneWidget);
@@ -103,7 +136,8 @@ void main() {
 
     // Tap it
     await tester.tap(ratingControl);
-    await tester.pumpAndSettle();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 500));
 
     // Verify dialog is NOT open
     expect(find.text('Rate Show'), findsNothing);
@@ -118,7 +152,8 @@ void main() {
     // Find the rating control for source0
     final ratingControl = find.byType(RatingControl).first;
     await tester.tap(ratingControl);
-    await tester.pumpAndSettle();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 500));
 
     // Verify dialog title contains source ID
     expect(

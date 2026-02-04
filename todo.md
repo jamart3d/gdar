@@ -90,10 +90,17 @@ This file tracks planned features, enhancements, and bug fixes for the gdar appl
 
 - [x] **Quick Block:** Left swipe on a Show Card (for single source shows) or an individual Source Item (for multi-source shows) to instantly mark it as "Red Star" (Blocked). Handles stopping playback and provides undo options.
 
-- [ ] **Smart Clipboard Integration:**
+- [/] **Smart Clipboard Integration:**
   - **Feature:** Automatically detect Archive.org share links in clipboard on app resume.
   - **Behavior:** Show a SnackBar or Dialog: "Found show [Show Name]. Play?".
   - **Feasibility:** Implement `WidgetsBindingObserver` to detect `AppLifecycleState.resumed`, then access `Clipboard.getData` to parsing URL.
+  - **GA Readiness:** Critical for smooth user sharing experience.
+
+- [ ] **Release Asset Optimization:**
+  - **Goal:** Reduce initial download size for GA.
+  - **Task:** Convert oversized PNG icons (gdar_icon.png, gdar_icon_forground.png) to WebP.
+  - **Target:** ~2.7MB -> <500KB.
+  - **Compatibility:** iOS 14+ / Android 4.0+.
 
 - [x] **Clipboard Playback:** Feature to parse a shared show/track string from the clipboard and instantly play that specific track/position.
 

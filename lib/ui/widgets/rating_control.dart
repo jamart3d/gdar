@@ -30,7 +30,6 @@ class RatingControl extends StatelessWidget {
     Widget content;
 
     if (rating == -1) {
-      // Blocked (Red Star)
       content = Semantics(
         label: 'Blocked show',
         child: Icon(
@@ -40,7 +39,6 @@ class RatingControl extends StatelessWidget {
         ),
       );
     } else if (rating == 0 && isPlayed) {
-      // Played but unrated (1 Grey Star, 2 Empty)
       content = Semantics(
         key: ValueKey('rating_0_played_$isPlayed'),
         label: 'Played, unrated',
@@ -61,7 +59,6 @@ class RatingControl extends StatelessWidget {
         ),
       );
     } else {
-      // 0-3 Stars (Amber or Empty)
       content = Semantics(
         key: ValueKey('rating_$rating'),
         label: 'Rated $rating stars',

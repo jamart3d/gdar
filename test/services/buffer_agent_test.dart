@@ -30,7 +30,7 @@ void main() {
       TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
           .setMockMethodCallHandler(channel, (MethodCall methodCall) async {
         if (methodCall.method == 'check') {
-          return 'wifi'; // Return a valid connectivity status
+          return <String>['wifi']; // Return a list for connectivity_plus 6.0+
         }
         return null;
       });
