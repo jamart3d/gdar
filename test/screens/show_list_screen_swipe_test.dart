@@ -295,4 +295,43 @@ void main() {
     // 2. The item should be GONE now.
     expect(find.text('Venue'), findsNothing);
   });
+
+  testWidgets(
+      'Dismissing a multi-source show blocks all sources and removes it from list',
+      (WidgetTester tester) async {
+    // Setup a multi-source show
+    final source1 = Source(id: 'source1', tracks: []);
+    final source2 = Source(id: 'source2', tracks: []);
+    final show = Show(
+        name: 'Multi Show',
+        date: '2025-01-02',
+        venue: 'Big Venue',
+        artist: 'Grateful Dead',
+        sources: [source1, source2],
+        hasFeaturedTrack: false);
+
+    mockShowListProvider.setShows([show]);
+
+    await tester.pumpWidget(createWidgetUnderTest());
+    await tester.pump(const Duration(seconds: 1));
+
+    expect(find.text('Big Venue'), findsOneWidget);
+
+    final dismissibleFinder = find.byType(Dismissible);
+    expect(dismissibleFinder, findsOneWidget);
+
+    // Swipe to dismiss
+    await tester.fling(dismissibleFinder, const Offset(-800.0, 0.0), 2000);
+    await tester.pump();
+    await tester.pump(const Duration(seconds: 1));
+    await tester.pump(const Duration(seconds: 1));
+
+    // Verification:
+    // 1. Only the representative source should be blocked
+    verify(mockCatalogService.setRating('source1', -1)).called(1);
+    verifyNever(mockCatalogService.setRating('source2', -1));
+
+    // 2. The item should be removed
+    expect(find.text('Big Venue'), findsNothing);
+  });
 }

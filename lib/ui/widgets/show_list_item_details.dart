@@ -73,7 +73,7 @@ class _ShowListItemDetailsState extends State<ShowListItemDetails> {
           }
 
           // Mark as Blocked (Red Star / -1)
-          CatalogService().setRating(source.id, -1);
+          context.read<CatalogService>().setRating(source.id, -1);
 
           // Calculate position for SnackBar
           double bottomMargin = 80; // Default fallback
@@ -97,7 +97,7 @@ class _ShowListItemDetailsState extends State<ShowListItemDetails> {
               content: Row(
                 children: [
                   Icon(
-                    Icons.block_flipped,
+                    Icons.block,
                     color: Theme.of(context).colorScheme.onPrimaryContainer,
                     size: 20,
                   ),
@@ -126,14 +126,17 @@ class _ShowListItemDetailsState extends State<ShowListItemDetails> {
                     ),
                     child: Row(
                       children: [
-                        Icon(Icons.shuffle,
+                        Icon(
+                            settingsProvider.nonRandom
+                                ? Icons.playlist_play_rounded
+                                : Icons.casino_rounded,
                             size: 16,
                             color: Theme.of(context)
                                 .colorScheme
                                 .onPrimaryContainer),
                         const SizedBox(width: 4),
                         Text(
-                          'ROLL',
+                          settingsProvider.nonRandom ? 'NEXT' : 'ROLL',
                           style: TextStyle(
                             color: Theme.of(context)
                                 .colorScheme
@@ -166,7 +169,7 @@ class _ShowListItemDetailsState extends State<ShowListItemDetails> {
                 label: 'UNDO',
                 textColor: Theme.of(context).colorScheme.primary,
                 onPressed: () {
-                  CatalogService().setRating(source.id, 0);
+                  context.read<CatalogService>().setRating(source.id, 0);
                 },
               ),
             ),

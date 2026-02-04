@@ -21,6 +21,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shakedown/ui/widgets/rgb_clock_wrapper.dart';
 import 'package:shakedown/services/audio_cache_service.dart';
+import 'package:shakedown/services/catalog_service.dart';
 import 'package:shakedown/providers/update_provider.dart';
 
 Future<void> main() async {
@@ -365,6 +366,7 @@ class _GdarAppState extends State<GdarApp> {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
+        Provider<CatalogService>(create: (_) => CatalogService()),
         ChangeNotifierProvider.value(value: _settingsProvider),
         ChangeNotifierProvider(create: (_) => AudioCacheService()..init()),
         ChangeNotifierProxyProvider<SettingsProvider, ShowListProvider>(

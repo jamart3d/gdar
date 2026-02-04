@@ -48,11 +48,9 @@ class ShowListItem extends StatelessWidget {
       children: [
         Dismissible(
           key: ValueKey('${show.name}_${show.date}'),
-          // Disable swipe on the main card if there are multiple sources.
-          // Sources must be blocked individually in the expanded view.
-          direction: show.sources.length > 1
-              ? DismissDirection.none
-              : DismissDirection.endToStart,
+          // Enable swipe for all shows. Blocking a show from the main list
+          // will block all of its sources.
+          direction: DismissDirection.endToStart,
           dismissThresholds: const {
             DismissDirection.endToStart: 0.6,
           },
@@ -127,7 +125,9 @@ class ShowListItem extends StatelessWidget {
       audioProvider.stopAndClear();
     }
 
-    // Mark as Blocked (Red Star / -1)
+    // Mark ONLY the representative source as Blocked (Red Star / -1)
+    // The user requested that swiping the main card should only block
+    // "that source" even if multiple sources exist.
     context.read<CatalogService>().setRating(show.sources.first.id, -1);
 
     ScaffoldMessenger.of(context).showSnackBar(
@@ -135,14 +135,18 @@ class ShowListItem extends StatelessWidget {
         content: Row(
           children: [
             Icon(
-              Icons.block_flipped,
+              Icons.block,
               color: Theme.of(context).colorScheme.onPrimaryContainer,
               size: 20,
             ),
             const SizedBox(width: 8),
             Expanded(
               child: Text(
-                'Blocked',
+                show.sources.length > 1
+                    ? 'Blocked source "${show.sources.first.id}"'
+                    : 'Blocked',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
                 style: TextStyle(
                     color: Theme.of(context).colorScheme.onPrimaryContainer,
                     fontWeight: FontWeight.bold),
@@ -201,7 +205,7 @@ class ShowListItem extends StatelessWidget {
           label: 'UNDO',
           textColor: Theme.of(context).colorScheme.primary,
           onPressed: () {
-            // Restore rating
+            // Restore rating for the specifically blocked source
             context.read<CatalogService>().setRating(show.sources.first.id, 0);
 
             // Resume playback if it was currently playing

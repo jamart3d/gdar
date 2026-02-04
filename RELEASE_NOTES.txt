@@ -1,3 +1,9 @@
+Release 1.0.28:
+- **Restored**: Swipe-to-block is now available for ALL shows on the main list.
+- **Improved**: Blocking a multi-source show from the main list now specifically blocks the representative source.
+- **Fixed**: Resolved a critical crash where the missing CatalogService provider prevented swiping functionality.
+- **Unified**: SnackBar feedback now correctly shows "ROLL" or "NEXT" based on your playback settings.
+
 Release 1.0.27:
 - **Polished**: Update banner now immediately shows "Waiting to download..." upon confirmation, providing instant feedback.
 

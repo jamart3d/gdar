@@ -104,9 +104,10 @@ void main() {
       providers: [
         ChangeNotifierProvider<SettingsProvider>.value(
             value: mockSettingsProvider),
-        Provider<AudioProvider>.value(value: mockAudioProvider),
+        ChangeNotifierProvider<AudioProvider>.value(value: mockAudioProvider),
         ChangeNotifierProvider<ShowListProvider>.value(
             value: mockShowListProvider),
+        Provider<CatalogService>.value(value: CatalogService()),
       ],
       child: MaterialApp(
         home: Scaffold(
