@@ -1,29 +1,0 @@
-00:00 +0: loading /home/jam/StudioProjects/gdar/test/screens/onboarding_screen_test.dart                                                                                                               00:01 +0: loading /home/jam/StudioProjects/gdar/test/screens/onboarding_screen_test.dart                                                                                                               00:02 +0: loading /home/jam/StudioProjects/gdar/test/screens/onboarding_screen_test.dart                                                                                                               00:03 +0: loading /home/jam/StudioProjects/gdar/test/screens/onboarding_screen_test.dart                                                                                                               00:04 +0: loading /home/jam/StudioProjects/gdar/test/screens/onboarding_screen_test.dart                                                                                                               00:05 +0: loading /home/jam/StudioProjects/gdar/test/screens/onboarding_screen_test.dart                                                                                                               00:06 +0: loading /home/jam/StudioProjects/gdar/test/screens/onboarding_screen_test.dart                                                                                                               00:07 +0: loading /home/jam/StudioProjects/gdar/test/screens/onboarding_screen_test.dart                                                                                                               00:07 +0: OnboardingScreen renders key UI elements correctly                                                                                                                                           00:07 +0 -1: OnboardingScreen renders key UI elements correctly [E]                                                                                                                                    
-  type 'Null' is not a subtype of type 'bool'
-  test/screens/splash_screen_test.mocks.dart 358:7  MockSettingsProvider.enableShakedownTween
-  test/screens/onboarding_screen_test.dart 71:33    main.<fn>.<fn>
-  
-
-To run this test again: /home/jam/development/flutter/bin/cache/dart-sdk/bin/dart test /home/jam/StudioProjects/gdar/test/screens/onboarding_screen_test.dart -p vm --plain-name 'OnboardingScreen renders key UI elements correctly'
-00:07 +0 -1: OnboardingScreen Get Started button triggers completion                                                                                                                                   00:07 +0 -2: OnboardingScreen Get Started button triggers completion [E]                                                                                                                               
-  Bad state: Cannot call `when` within a stub response
-  package:mockito/src/mock.dart 1207:5           when
-  test/screens/onboarding_screen_test.dart 65:7  main.<fn>.<fn>
-  
-
-To run this test again: /home/jam/development/flutter/bin/cache/dart-sdk/bin/dart test /home/jam/StudioProjects/gdar/test/screens/onboarding_screen_test.dart -p vm --plain-name 'OnboardingScreen Get Started button triggers completion'
-00:07 +0 -2: OnboardingScreen UI Scale chip updates SettingsProvider                                                                                                                                   00:07 +0 -3: OnboardingScreen UI Scale chip updates SettingsProvider [E]                                                                                                                               
-  Bad state: Cannot call `when` within a stub response
-  package:mockito/src/mock.dart 1207:5           when
-  test/screens/onboarding_screen_test.dart 65:7  main.<fn>.<fn>
-  
-
-To run this test again: /home/jam/development/flutter/bin/cache/dart-sdk/bin/dart test /home/jam/StudioProjects/gdar/test/screens/onboarding_screen_test.dart -p vm --plain-name 'OnboardingScreen UI Scale chip updates SettingsProvider'
-00:07 +0 -3: OnboardingScreen Dark Mode chip toggles ThemeProvider                                                                                                                                     00:07 +0 -4: OnboardingScreen Dark Mode chip toggles ThemeProvider [E]                                                                                                                                 
-  Bad state: Cannot call `when` within a stub response
-  package:mockito/src/mock.dart 1207:5           when
-  test/screens/onboarding_screen_test.dart 65:7  main.<fn>.<fn>
-  
-
-To run this test again: /home/jam/development/flutter/bin/cache/dart-sdk/bin/dart test /home/jam/StudioProjects/gdar/test/screens/onboarding_screen_test.dart -p vm --plain-name 'OnboardingScreen Dark Mode chip toggles ThemeProvider'
-00:07 +0 -4: Some tests failed.                                                                                                                                                                        

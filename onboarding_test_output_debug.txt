@@ -1,117 +1,0 @@
-00:00 +0: loading /home/jam/StudioProjects/gdar/test/screens/onboarding_screen_test.dart                                                                                                               00:01 +0: loading /home/jam/StudioProjects/gdar/test/screens/onboarding_screen_test.dart                                                                                                               00:02 +0: loading /home/jam/StudioProjects/gdar/test/screens/onboarding_screen_test.dart                                                                                                               00:03 +0: loading /home/jam/StudioProjects/gdar/test/screens/onboarding_screen_test.dart                                                                                                               00:04 +0: loading /home/jam/StudioProjects/gdar/test/screens/onboarding_screen_test.dart                                                                                                               00:05 +0: loading /home/jam/StudioProjects/gdar/test/screens/onboarding_screen_test.dart                                                                                                               00:05 +0: OnboardingScreen renders key UI elements correctly                                                                                                                                           00:06 +0: OnboardingScreen renders key UI elements correctly                                                                                                                                           00:06 +0: OnboardingScreen renders key UI elements correctly                                                                                                                                           
-DEBUG_TEST: Navigation to Page 1 FAILED
-DEBUG_TEST: Visible text: [Shakedown, Welcome friend! and many thanks for helping with this closed test.
-This app is a lightweight streaming music player., •, Dive into an almost endless list of live Grateful Dead shows, •, Play a random show or choose a specific date, •, Filter source types: Matrix, Betty Board, Soundboard, etc., •, All audio is streamed directly from Archive.org, •, Gapless playback, Next]
-DEBUG_TEST: Navigation to Page 2 FAILED
-DEBUG_TEST: Visible text: [Shakedown, Welcome friend! and many thanks for helping with this closed test.
-This app is a lightweight streaming music player., •, Dive into an almost endless list of live Grateful Dead shows, •, Play a random show or choose a specific date, •, Filter source types: Matrix, Betty Board, Soundboard, etc., •, All audio is streamed directly from Archive.org, •, Gapless playback, Next]
-══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞════════════════════════════════════════════════════
-The following TestFailure was thrown running a test:
-Expected: exactly one matching candidate
-  Actual: _TextWidgetFinder:<Found 0 widgets with text "Font Selection": []>
-   Which: means none were found but one was expected
-
-When the exception was thrown, this was the stack:
-#4      main.<anonymous closure>.<anonymous closure> (file:///home/jam/StudioProjects/gdar/test/screens/onboarding_screen_test.dart:117:7)
-<asynchronous suspension>
-#5      testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
-<asynchronous suspension>
-#6      TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1059:5)
-<asynchronous suspension>
-<asynchronous suspension>
-(elided one frame from package:stack_trace)
-
-This was caught by the test expectation on the following line:
-  file:///home/jam/StudioProjects/gdar/test/screens/onboarding_screen_test.dart line 117
-The test description was:
-  renders key UI elements correctly
-════════════════════════════════════════════════════════════════════════════════════════════════════
-00:06 +0 -1: OnboardingScreen renders key UI elements correctly [E]                                                                                                                                    
-  Test failed. See exception logs above.
-  The test description was: renders key UI elements correctly
-  
-
-To run this test again: /home/jam/development/flutter/bin/cache/dart-sdk/bin/dart test /home/jam/StudioProjects/gdar/test/screens/onboarding_screen_test.dart -p vm --plain-name 'OnboardingScreen renders key UI elements correctly'
-00:06 +0 -1: OnboardingScreen Get Started button triggers completion                                                                                                                                   00:06 +0 -1: OnboardingScreen Get Started button triggers completion                                                                                                                                   
-══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞════════════════════════════════════════════════════
-The following TestFailure was thrown running a test:
-Expected: exactly one matching candidate
-  Actual: _TextWidgetFinder:<Found 0 widgets with text "Get Started": []>
-   Which: means none were found but one was expected
-
-When the exception was thrown, this was the stack:
-#4      main.<anonymous closure>.<anonymous closure> (file:///home/jam/StudioProjects/gdar/test/screens/onboarding_screen_test.dart:139:7)
-<asynchronous suspension>
-#5      testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
-<asynchronous suspension>
-#6      TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1059:5)
-<asynchronous suspension>
-<asynchronous suspension>
-(elided one frame from package:stack_trace)
-
-This was caught by the test expectation on the following line:
-  file:///home/jam/StudioProjects/gdar/test/screens/onboarding_screen_test.dart line 139
-The test description was:
-  Get Started button triggers completion
-════════════════════════════════════════════════════════════════════════════════════════════════════
-00:06 +0 -2: OnboardingScreen Get Started button triggers completion [E]                                                                                                                               
-  Test failed. See exception logs above.
-  The test description was: Get Started button triggers completion
-  
-
-To run this test again: /home/jam/development/flutter/bin/cache/dart-sdk/bin/dart test /home/jam/StudioProjects/gdar/test/screens/onboarding_screen_test.dart -p vm --plain-name 'OnboardingScreen Get Started button triggers completion'
-00:06 +0 -2: OnboardingScreen UI Scale chip updates SettingsProvider                                                                                                                                   00:07 +0 -2: OnboardingScreen UI Scale chip updates SettingsProvider                                                                                                                                   00:07 +0 -2: OnboardingScreen UI Scale chip updates SettingsProvider                                                                                                                                   
-══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞════════════════════════════════════════════════════
-The following StateError was thrown running a test:
-Bad state: No element
-
-When the exception was thrown, this was the stack:
-#0      Iterable.single (dart:core/iterable.dart:694:25)
-#1      WidgetController.element (package:flutter_test/src/controller.dart:864:30)
-#2      WidgetController.ensureVisible (package:flutter_test/src/controller.dart:2301:32)
-#3      main.<anonymous closure>.<anonymous closure> (file:///home/jam/StudioProjects/gdar/test/screens/onboarding_screen_test.dart:171:20)
-<asynchronous suspension>
-#4      testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
-<asynchronous suspension>
-#5      TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1059:5)
-<asynchronous suspension>
-<asynchronous suspension>
-(elided one frame from package:stack_trace)
-
-The test description was:
-  UI Scale chip updates SettingsProvider
-════════════════════════════════════════════════════════════════════════════════════════════════════
-00:07 +0 -3: OnboardingScreen UI Scale chip updates SettingsProvider [E]                                                                                                                               
-  Test failed. See exception logs above.
-  The test description was: UI Scale chip updates SettingsProvider
-  
-
-To run this test again: /home/jam/development/flutter/bin/cache/dart-sdk/bin/dart test /home/jam/StudioProjects/gdar/test/screens/onboarding_screen_test.dart -p vm --plain-name 'OnboardingScreen UI Scale chip updates SettingsProvider'
-00:07 +0 -3: OnboardingScreen Dark Mode chip toggles ThemeProvider                                                                                                                                     00:07 +0 -3: OnboardingScreen Dark Mode chip toggles ThemeProvider                                                                                                                                     
-══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞════════════════════════════════════════════════════
-The following StateError was thrown running a test:
-Bad state: No element
-
-When the exception was thrown, this was the stack:
-#0      Iterable.single (dart:core/iterable.dart:694:25)
-#1      WidgetController.element (package:flutter_test/src/controller.dart:864:30)
-#2      WidgetController.ensureVisible (package:flutter_test/src/controller.dart:2301:32)
-#3      main.<anonymous closure>.<anonymous closure> (file:///home/jam/StudioProjects/gdar/test/screens/onboarding_screen_test.dart:195:20)
-<asynchronous suspension>
-#4      testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
-<asynchronous suspension>
-#5      TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1059:5)
-<asynchronous suspension>
-<asynchronous suspension>
-(elided one frame from package:stack_trace)
-
-The test description was:
-  Dark Mode chip toggles ThemeProvider
-════════════════════════════════════════════════════════════════════════════════════════════════════
-00:07 +0 -4: OnboardingScreen Dark Mode chip toggles ThemeProvider [E]                                                                                                                                 
-  Test failed. See exception logs above.
-  The test description was: Dark Mode chip toggles ThemeProvider
-  
-
-To run this test again: /home/jam/development/flutter/bin/cache/dart-sdk/bin/dart test /home/jam/StudioProjects/gdar/test/screens/onboarding_screen_test.dart -p vm --plain-name 'OnboardingScreen Dark Mode chip toggles ThemeProvider'
-00:07 +0 -4: Some tests failed.                                                                                                                                                                        

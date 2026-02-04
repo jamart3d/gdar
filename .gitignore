@@ -45,6 +45,16 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 
-# Test Output
+# Test Output & Artifacts
+*.log
+*_test_output*.txt
+test_results.txt
 test_output.txt
+test_ui_output*.txt
+
+# Hive Databases
+*.hive
+*.lock
+
+# Credentials
 gen-lang-client-*.json
