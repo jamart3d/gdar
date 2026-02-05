@@ -5,8 +5,6 @@ import 'package:shakedown/ui/styles/app_typography.dart';
 /// A Material 3 banner that notifies the user of an available update.
 class UpdateBanner extends StatelessWidget {
   final AppUpdateInfo? updateInfo;
-  final bool isDownloading;
-  final bool isWaitingToDownload;
   final bool isSimulated;
   final VoidCallback onUpdateSelected;
   final double scaleFactor;
@@ -14,8 +12,6 @@ class UpdateBanner extends StatelessWidget {
   const UpdateBanner({
     super.key,
     required this.updateInfo,
-    required this.isDownloading,
-    required this.isWaitingToDownload,
     required this.onUpdateSelected,
     required this.scaleFactor,
     this.isSimulated = false,
@@ -34,53 +30,7 @@ class UpdateBanner extends StatelessWidget {
 
     final colorScheme = Theme.of(context).colorScheme;
 
-    return AnimatedSwitcher(
-      duration: const Duration(milliseconds: 500),
-      child: isDownloading
-          ? _buildDownloadingCard(context, colorScheme)
-          : _buildUpdateActionCard(context, colorScheme),
-    );
-  }
-
-  Widget _buildDownloadingCard(BuildContext context, ColorScheme colorScheme) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 24.0),
-      child: Card(
-        elevation: 0,
-        color: colorScheme.secondaryContainer.withValues(alpha: 0.5),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
-          child: Row(
-            children: [
-              SizedBox(
-                width: 16,
-                height: 16,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  valueColor:
-                      AlwaysStoppedAnimation<Color>(colorScheme.primary),
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Text(
-                  isWaitingToDownload
-                      ? 'Waiting to download...'
-                      : 'Downloading update...',
-                  style: TextStyle(
-                    fontSize: AppTypography.responsiveFontSize(context, 13.0),
-                    color: colorScheme.onSecondaryContainer,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
+    return _buildUpdateActionCard(context, colorScheme);
   }
 
   Widget _buildUpdateActionCard(BuildContext context, ColorScheme colorScheme) {

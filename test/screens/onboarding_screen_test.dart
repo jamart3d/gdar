@@ -75,7 +75,6 @@ void main() {
       when(mockSettingsProvider.marqueeEnabled)
           .thenReturn(false); // Disable marquee
       when(mockUpdateProvider.updateInfo).thenReturn(null);
-      when(mockUpdateProvider.isDownloading).thenReturn(false);
       when(mockUpdateProvider.isSimulated).thenReturn(false);
     });
 

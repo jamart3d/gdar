@@ -1,3 +1,8 @@
+Release 1.0.30:
+- **Improved**: Refactored the app update mechanism to redirect users directly to the Google Play Store for a smoother, native update experience.
+- **Fixed**: Resolved a critical Android compilation error caused by stale plugin registration files.
+- **Internal**: Regenerated test mocks and verified consistency across the entire project.
+
 Release 1.0.29:
 - **GA Readiness**: Completed a full clinical audit and cleanup of the codebase for production.
 - **Production Hardening**: Strictly guarded all debug-only deep links (UI scaling, font selection, reset tools) for secure release builds.

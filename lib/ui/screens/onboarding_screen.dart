@@ -129,8 +129,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     scaleFactor: scaleFactor,
                     archiveReachable: _archiveReachable,
                     updateInfo: updateProvider.updateInfo,
-                    isDownloading: updateProvider.isDownloading,
-                    isWaitingToDownload: updateProvider.isWaitingToDownload,
                     isSimulated: updateProvider.isSimulated,
                     onUpdateSelected: () => updateProvider.startUpdate(),
                   ),

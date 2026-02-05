@@ -1446,22 +1446,8 @@ class MockAudioProvider extends _i1.Mock implements _i11.AudioProvider {
 /// See the documentation for Mockito's code generation for more information.
 class MockUpdateProvider extends _i1.Mock implements _i12.UpdateProvider {
   @override
-  bool get isDownloading => (super.noSuchMethod(
-        Invocation.getter(#isDownloading),
-        returnValue: false,
-        returnValueForMissingStub: false,
-      ) as bool);
-
-  @override
   bool get isSimulated => (super.noSuchMethod(
         Invocation.getter(#isSimulated),
-        returnValue: false,
-        returnValueForMissingStub: false,
-      ) as bool);
-
-  @override
-  bool get isWaitingToDownload => (super.noSuchMethod(
-        Invocation.getter(#isWaitingToDownload),
         returnValue: false,
         returnValueForMissingStub: false,
       ) as bool);

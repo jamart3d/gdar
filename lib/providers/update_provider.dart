@@ -1,46 +1,25 @@
 import 'package:flutter/foundation.dart';
 import 'package:in_app_update/in_app_update.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shakedown/services/update_service.dart';
 import 'package:shakedown/utils/logger.dart';
 
 /// Provider to manage the app update state and lifecycle.
 class UpdateProvider with ChangeNotifier {
-  final SharedPreferences _prefs;
   final UpdateService _updateService = UpdateService();
 
   AppUpdateInfo? _updateInfo;
-  bool _isDownloading = false;
-  bool _isWaitingToDownload = false;
   bool _isSimulated = false;
-
-  static const String _kUpdateDownloadedKey = 'update_downloaded';
 
   /// Current update information from the Play Store or simulation.
   AppUpdateInfo? get updateInfo => _updateInfo;
 
-  /// Whether a flexible update is currently being downloaded or ready to install.
-  bool get isDownloading => _isDownloading;
-
-  /// Whether the app is waiting for the download to actually start after confirmation.
-  bool get isWaitingToDownload => _isWaitingToDownload;
-
   /// Whether the current update state is simulated for testing.
   bool get isSimulated => _isSimulated;
 
-  UpdateProvider(this._prefs) {
-    _loadPersistedState();
+  UpdateProvider() {
     // Auto-check on cold start
     if (!kDebugMode) {
       checkForUpdate();
-    }
-  }
-
-  void _loadPersistedState() {
-    _isDownloading = _prefs.getBool(_kUpdateDownloadedKey) ?? false;
-    if (_isDownloading) {
-      logger.i(
-          'UpdateProvider: Restored "Update Downloaded" state from persistence.');
     }
   }
 
@@ -58,8 +37,6 @@ class UpdateProvider with ChangeNotifier {
     final info = await _updateService.checkForUpdate();
     _updateInfo = info;
 
-    // If we were in "downloading" state but the check says no update or different status,
-    // we might need to reset. But for now, we trust the persistence for the "Ready to Install" banner.
     if (info?.updateAvailability == UpdateAvailability.updateAvailable) {
       logger.i(
           'UpdateProvider: New update available: ${info?.availableVersionCode}');
@@ -68,57 +45,21 @@ class UpdateProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  /// Starts the flexible update process.
+  /// Redirects the user to the Play Store for the update.
   Future<void> startUpdate() async {
     if (_isSimulated) {
-      _isWaitingToDownload = true;
-      notifyListeners();
-      await Future.delayed(const Duration(seconds: 1)); // Simulate dialog delay
-      _isWaitingToDownload = false;
-      _isDownloading = true;
-      _prefs.setBool(_kUpdateDownloadedKey, true);
-      notifyListeners();
+      logger.i('UpdateProvider: Simulating store redirect.');
+      await _updateService.openStore();
       return;
     }
 
     if (_updateInfo == null) return;
-
-    final result = await _updateService.startFlexibleUpdate();
-    if (result == AppUpdateResult.success) {
-      _isWaitingToDownload = true;
-      notifyListeners();
-      _isDownloading = true;
-      _prefs.setBool(_kUpdateDownloadedKey, true);
-      // We don't reset _isWaitingToDownload here manually because the real
-      // download progress will eventually take over, or we can reset it
-      // after a short delay if we had access to real progress events.
-      // For now, setting it to true gives that immediate feedback.
-    }
-  }
-
-  /// Completes the flexible update process by restarting the app.
-  Future<void> completeUpdate() async {
-    if (_isSimulated) {
-      logger.i('UpdateProvider: Completing simulated update.');
-      _isSimulated = false;
-      _isDownloading = false;
-      _isWaitingToDownload = false;
-      _prefs.setBool(_kUpdateDownloadedKey, false);
-      notifyListeners();
-      return;
-    }
-
-    await _updateService.completeFlexibleUpdate();
-    _isWaitingToDownload = false;
-    _prefs.setBool(_kUpdateDownloadedKey, false);
+    await _updateService.openStore();
   }
 
   /// Simulates an available update for debug/testing purposes.
   void simulateUpdate() {
     _isSimulated = true;
-    _isDownloading = false;
-    _isWaitingToDownload = false;
-    _prefs.setBool(_kUpdateDownloadedKey, false);
     _updateInfo = null;
     notifyListeners();
   }

@@ -10,18 +10,13 @@ class WelcomePage extends StatelessWidget {
   final double scaleFactor;
   final bool? archiveReachable;
   final AppUpdateInfo? updateInfo;
-  final bool isDownloading;
-  final bool isWaitingToDownload;
   final bool isSimulated;
   final VoidCallback onUpdateSelected;
-
   const WelcomePage({
     super.key,
     required this.scaleFactor,
     required this.archiveReachable,
     required this.updateInfo,
-    required this.isDownloading,
-    required this.isWaitingToDownload,
     required this.onUpdateSelected,
     this.isSimulated = false,
   });
@@ -43,8 +38,6 @@ class WelcomePage extends StatelessWidget {
               const SizedBox(height: 12),
               UpdateBanner(
                 updateInfo: updateInfo,
-                isDownloading: isDownloading,
-                isWaitingToDownload: isWaitingToDownload,
                 isSimulated: isSimulated,
                 onUpdateSelected: onUpdateSelected,
                 scaleFactor: scaleFactor,

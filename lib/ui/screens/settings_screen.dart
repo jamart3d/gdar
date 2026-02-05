@@ -167,8 +167,6 @@ class _SettingsScreenState extends State<SettingsScreen>
                     padding: const EdgeInsets.symmetric(horizontal: 16.0),
                     child: UpdateBanner(
                       updateInfo: updateProvider.updateInfo,
-                      isDownloading: updateProvider.isDownloading,
-                      isWaitingToDownload: updateProvider.isWaitingToDownload,
                       isSimulated: updateProvider.isSimulated,
                       onUpdateSelected: () => updateProvider.startUpdate(),
                       scaleFactor: scaleFactor,

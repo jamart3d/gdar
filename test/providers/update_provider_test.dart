@@ -1,23 +1,18 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shakedown/providers/update_provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   group('UpdateProvider', () {
     late UpdateProvider updateProvider;
-    late SharedPreferences prefs;
 
     setUp(() async {
-      SharedPreferences.setMockInitialValues({});
-      prefs = await SharedPreferences.getInstance();
-      updateProvider = UpdateProvider(prefs);
+      updateProvider = UpdateProvider();
     });
 
     test('initial state is correct', () {
       expect(updateProvider.updateInfo, isNull);
-      expect(updateProvider.isDownloading, isFalse);
       expect(updateProvider.isSimulated, isFalse);
     });
 
@@ -25,30 +20,13 @@ void main() {
       updateProvider.simulateUpdate();
 
       expect(updateProvider.isSimulated, isTrue);
-      expect(updateProvider.isDownloading, isFalse);
-      // Since we defined simulateUpdate to set updateInfo to null (for now), check that
       expect(updateProvider.updateInfo, isNull);
     });
 
-    test('startUpdate() in simulation mode sets isDownloading to true',
-        () async {
+    test('startUpdate() in simulation mode completes successfully', () async {
       updateProvider.simulateUpdate();
       await updateProvider.startUpdate();
-
-      expect(updateProvider.isDownloading, isTrue);
-    });
-
-    test('startUpdate() briefly sets isWaitingToDownload in simulation',
-        () async {
-      updateProvider.simulateUpdate();
-      final future = updateProvider.startUpdate();
-
-      expect(updateProvider.isWaitingToDownload, isTrue);
-
-      await future;
-
-      expect(updateProvider.isWaitingToDownload, isFalse);
-      expect(updateProvider.isDownloading, isTrue);
+      // No exception thrown means success for now as it just calls openStore
     });
   });
 }

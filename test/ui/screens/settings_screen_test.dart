@@ -46,10 +46,6 @@ class MockShowListProvider extends ChangeNotifier implements ShowListProvider {
 
 class MockUpdateProvider extends ChangeNotifier implements UpdateProvider {
   @override
-  bool get isWaitingToDownload => false;
-  @override
-  bool get isDownloading => false;
-  @override
   bool get isSimulated => false;
   @override
   get updateInfo => null;
