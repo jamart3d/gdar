@@ -1,4 +1,4 @@
-Release 1.0.34 (Build 35):
+Release 1.0.36:
 - **New**: Smart Pre-Load Agent for "Advanced Cache"—show tracks are now gracefully pre-loaded in the background.
 - **Improved**: Playback stability during transitions; pre-loading begins automatically for the next show in the queue.
 - **Audit**: Refined `AUDIO_CACHE_AUDIT.md` to reflect full-source graceful caching behavior.
