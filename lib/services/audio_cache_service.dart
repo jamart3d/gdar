@@ -3,17 +3,25 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:crypto/crypto.dart';
 import 'package:flutter/foundation.dart';
+import 'package:shakedown/utils/logger.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:just_audio_background/just_audio_background.dart';
-import 'package:shakedown/utils/logger.dart';
+import 'package:http/http.dart' as http;
+import 'package:shakedown/models/source.dart';
+import 'package:shakedown/models/track.dart';
 
 /// Service responsible for managing audio file caching using just_audio's
 /// LockCachingAudioSource. Handles file counting, cleanup, and monitoring.
 class AudioCacheService with ChangeNotifier {
   Timer? _cacheRefreshTimer;
   Directory? _cacheDir;
-
   int _cachedTrackCount = 0;
+
+  // Preloading State
+  String? _activePreloadSourceId;
+  final Set<String> _preloadingUrls = {};
+  bool _isPreloadCancelled = false;
+  http.Client? _httpClient;
 
   /// Returns the current number of cached audio files (non-blocking).
   int get cachedTrackCount => _cachedTrackCount;
@@ -47,7 +55,15 @@ class AudioCacheService with ChangeNotifier {
   @override
   void dispose() {
     _cacheRefreshTimer?.cancel();
+    _cancelPreload();
+    _httpClient?.close();
     super.dispose();
+  }
+
+  void _cancelPreload() {
+    _isPreloadCancelled = true;
+    _activePreloadSourceId = null;
+    _preloadingUrls.clear();
   }
 
   /// Creates an AudioSource that is either cached or streaming based on [useCache].
@@ -77,22 +93,18 @@ class AudioCacheService with ChangeNotifier {
   }
 
   /// Starts or stops the cache monitoring timer based on [isEnabled].
-  void monitorCache(bool isEnabled) {
-    if (isEnabled) {
-      if (_cacheRefreshTimer == null || !_cacheRefreshTimer!.isActive) {
-        logger.i('AudioCacheService: Starting cache refresh timer (5s)');
-        // Initial refresh
+  void monitorCache(bool enabled) {
+    if (enabled && _cacheRefreshTimer == null) {
+      logger.i('AudioCacheService: Starting cache refresh timer (5s)');
+      refreshCacheCount();
+      _cacheRefreshTimer = Timer.periodic(const Duration(seconds: 5), (_) {
         refreshCacheCount();
-        _cacheRefreshTimer = Timer.periodic(const Duration(seconds: 5), (_) {
-          refreshCacheCount();
-        });
-      }
-    } else {
-      if (_cacheRefreshTimer != null) {
-        logger.i('AudioCacheService: Stopping cache refresh timer');
-        _cacheRefreshTimer?.cancel();
-        _cacheRefreshTimer = null;
-      }
+      });
+    } else if (!enabled && _cacheRefreshTimer != null) {
+      logger.i('AudioCacheService: Stopping cache refresh timer');
+      _cacheRefreshTimer?.cancel();
+      _cacheRefreshTimer = null;
+      _cancelPreload(); // Also cancel any active background downloads
     }
   }
 
@@ -194,6 +206,80 @@ class AudioCacheService with ChangeNotifier {
       }
     } catch (e) {
       logger.w('Cache Cleanup Failed: $e');
+    }
+  }
+
+  /// Gracefully pre-loads all tracks for a given [source] in the background.
+  Future<void> preloadSource(Source source, {int startIndex = 0}) async {
+    // 1. Check if we are already preloading this specific source
+    if (_activePreloadSourceId == source.id) {
+      return;
+    }
+
+    // 2. Cancel any existing preload
+    _cancelPreload();
+    _isPreloadCancelled = false;
+    _activePreloadSourceId = source.id;
+    _httpClient ??= http.Client();
+
+    logger.i('Smart Pre-Load: Starting for source ${source.id}...');
+
+    // 3. Process tracks sequentially starting from startIndex
+    final tracksToProcess = source.tracks.sublist(startIndex);
+
+    for (final track in tracksToProcess) {
+      if (_isPreloadCancelled) {
+        logger.d('Smart Pre-Load: Cancelled for ${source.id}');
+        return;
+      }
+
+      await _preloadTrack(track);
+    }
+
+    logger.i('Smart Pre-Load: Finished for source ${source.id}');
+    _activePreloadSourceId = null;
+  }
+
+  Future<void> _preloadTrack(Track track) async {
+    final key = sha256.convert(utf8.encode(track.url)).toString();
+    final file = File('${_cacheDir!.path}/$key');
+
+    // 1. Skip if already cached
+    if (await file.exists()) {
+      return;
+    }
+
+    // 2. Skip if already preloading this URL (safety)
+    if (_preloadingUrls.contains(track.url)) {
+      return;
+    }
+
+    _preloadingUrls.add(track.url);
+
+    try {
+      final tempFile = File('${file.path}.part');
+      logger.d('Smart Pre-Load: Downloading ${track.title}...');
+
+      final response = await _httpClient!.get(Uri.parse(track.url));
+      if (_isPreloadCancelled) return;
+
+      if (response.statusCode == 200) {
+        await tempFile.writeAsBytes(response.bodyBytes);
+        if (_isPreloadCancelled) {
+          if (await tempFile.exists()) await tempFile.delete();
+          return;
+        }
+        await tempFile.rename(file.path);
+        logger.d('Smart Pre-Load: ✓ Cached ${track.title}');
+        await refreshCacheCount();
+      } else {
+        logger.w(
+            'Smart Pre-Load: Failed to download ${track.title} (HTTP ${response.statusCode})');
+      }
+    } catch (e) {
+      logger.w('Smart Pre-Load: Error downloading ${track.title}: $e');
+    } finally {
+      _preloadingUrls.remove(track.url);
     }
   }
 }

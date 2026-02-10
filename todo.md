@@ -324,6 +324,7 @@ This file tracks planned features, enhancements, and bug fixes for the gdar appl
 - [ ] **Compact Player Mode:** Move the play/pause control to an icon on the currently playing track in the list. When enabled and expanded, do not show any playback controls.
 - [ ] **Track Progress Indicator:** Add setting to show a progress indicator on the currently playing track list item. Should not show time labels and must respect the "Hide Track Duration" setting.
 - [ ] **Cache Progress Visualization:** In the playback screen track list, show how much of each track is currently cached (similar to YouTube's buffer bar) to provide visual feedback on "Advanced Cache" status.
+  - [ ] **Track Cache Indicator:** Update track UI in Playback Screen to indicate cached percentage/state (e.g. "Cached", "75%") for the currently playing source.
 - [ ] **Context-Aware Playback Messages:** Update playback status messages to distinguish between "Caching..." (first time loading) and "Playing from Cache" when Advanced Cache is enabled.
 - [ ] **Marquee Control:** In playback screen, when "Show Track Number" is enabled and a track title marquees, the track number itself should NOT marquee (stay fixed).
 

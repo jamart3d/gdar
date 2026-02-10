@@ -1,7 +1,7 @@
 # Audio Cache Implementation Audit
 
 **Date**: 2026-02-10
-**App Version**: 1.0.31+31
+**App Version**: 1.0.32+32
 **AI Model**: Gemini 2.0
 **Project**: Shakedown (GDAR)
 
@@ -74,3 +74,20 @@ The caching logic is encapsulated within `AudioCacheService` and utilized by `Au
 - **Resilience**:
   - **Network Drops**: You are safe for the duration of the look-ahead buffer.
   - **Deep Sleep**: Buffering continues in the background until the buffer goal is met, then pauses to save battery/data.
+
+---
+
+## 🔁 Buffering & Caching Logic Details
+
+### How many tracks ahead are cached?
+- **Full Source (Graceful)**: When "Offline Buffering" (Advanced Cache) is enabled, a background **Smart Pre-Load Agent** is activated.
+- **Behavior**: 
+  - It prioritizes the **Active Track + Next Track** using the player's native `preload` mechanism for immediate playback stability.
+  - Simultaneously, it works through a **sequential background queue** to download every remaining track in the current `Source` (Show).
+- **Network Resilience**: Once the agent is finished, the entire show is available offline.
+- **Lifecycle**: The agent automatically cancels and restarts if you switch shows or toggle the setting off.
+
+### Does play/pause state affect caching?
+- **Paused**: **No**, it does not immediately stop caching. If you pause, the `LockCachingAudioSource` continues to download data until the player's internal look-ahead buffer is full (typically 2-6 minutes of audio). Once the buffer goal is reached, the download will wait until playback resumes.
+- **Stopped**: **Yes**. When playback is fully stopped (releasing resources), the caching proxy is deactivated to save data and battery.
+- **Buffering**: When the app is "Buffering", it is effectively in an aggressive caching state, trying to fill the minimum requirement to resume playback.

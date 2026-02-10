@@ -346,6 +346,11 @@ class AudioProvider with ChangeNotifier {
       _isSwitchingSource = false;
       _isTransitioning = false;
     }
+
+    // Trigger Smart Pre-Load if enabled
+    if (_settingsProvider?.offlineBuffering ?? false) {
+      _audioCacheService.preloadSource(source, startIndex: initialIndex);
+    }
   }
 
   /// Parses a share string and starts playback if valid.
@@ -474,6 +479,12 @@ class AudioProvider with ChangeNotifier {
     try {
       await _audioPlayer.addAudioSources(nextSources);
       logger.i('Successfully appended ${nextSources.length} tracks.');
+
+      // Trigger Smart Pre-Load for the queued show
+      if (_settingsProvider?.offlineBuffering ?? false) {
+        _audioCacheService.preloadSource(source);
+      }
+
       _isTransitioning = false;
     } catch (e) {
       // If this fails (e.g. native Shuffle Order bug), we just log it and abort pre-queueing.
