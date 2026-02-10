@@ -1,3 +1,10 @@
+Release 1.0.31:
+- **New**: Deep Link Manifest workflow (`/report_deep_links`) for generating comprehensive documentation.
+- **Improved**: Consolidated agent configuration and workflows into a unified `.agent` directory.
+- **Security**: Hardened production builds by restricting internal navigation and configuration deep links to debug mode only.
+- **Polished**: Refined Onboarding pages with clearer instructions and improved Gemini Assistant usage tips.
+- **Improved**: Aligned Android build configuration with AGP 8.9.1 and Kotlin 2.1.0 for modern dependency compatibility.
+
 Release 1.0.30:
 - **Improved**: Refactored the app update mechanism to redirect users directly to the Google Play Store for a smoother, native update experience.
 - **Fixed**: Resolved a critical Android compilation error caused by stale plugin registration files.
