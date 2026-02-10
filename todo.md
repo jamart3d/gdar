@@ -285,6 +285,15 @@ This file tracks planned features, enhancements, and bug fixes for the gdar appl
   - **Behavior (Enabled):** The "Previous" button is grey/inactive at the first track; "Next" button is grey/inactive at the last track of the *current show*.
   - **Behavior (Disabled):** Buttons allow seamless navigation into the pre-queued/history tracks (crossing show boundaries).
 
+- [ ] **Advanced Source Caching (Smart Pre-Load):**
+  - **Goal:** When "Advanced Cache" is enabled, gracefully download the **entire current source** in the background so the user has the full show offline-ready.
+  - **Strategy (Decoupled Pre-Load Agent):**
+    1.  **Trigger:** On playback start (or setting toggle), the agent identifies the *current source*.
+    2.  **Queue:** It adds all remaining tracks of that source to a low-priority download queue.
+    3.  **Process:** It downloads files one-by-one to `.tmp`, verifying SHA-256 keys, then renaming to the final cache key.
+    4.  **Graceful:** It pauses if the player needs bandwidth (buffering) or if the device overheats/throttles.
+  - **Benefit:** Guarantees the full show is available even if the network drops later, without blocking the immediate playback.
+
 - [ ] **Dice & Location Animation Test Script:**
   - **Goal:** Create a script (or test procedure) to verify dice bounces and location updates using deep link intents.
   - **Requirement:** Simulate the "Random Show" flow to test animations (Dice bounce, List scroll/expansion) *without* triggering actual audio playback.

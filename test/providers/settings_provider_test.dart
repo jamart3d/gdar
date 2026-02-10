@@ -109,11 +109,8 @@ void main() {
   });
 
   group('SettingsProvider Advanced Cache (Offline Buffering)', () {
-    test('initializes offlineBuffering to true by default', () {
-      // DefaultSettings.offlineBuffering is likely true or false based on config
-      // Let's assume default is checked in provider or defaults
-      // Based on code reading: _prefs.getBool(_offlineBufferingKey) ?? DefaultSettings.offlineBuffering;
-      // We should check what the default is, but for now we test persistence.
+    test('initializes offlineBuffering to false by default', () {
+      expect(settingsProvider.offlineBuffering, false);
     });
 
     test('toggleOfflineBuffering toggles value and persists', () async {
@@ -136,6 +133,32 @@ void main() {
       provider.toggleOfflineBuffering();
       expect(provider.offlineBuffering, false);
       expect(prefs.getBool('offline_buffering'), false);
+    });
+
+    test('initializes enableBufferAgent to true by default', () {
+      expect(settingsProvider.enableBufferAgent, true);
+    });
+
+    test('toggleEnableBufferAgent toggles value and persists', () async {
+      // Force initial state
+      SharedPreferences.setMockInitialValues({
+        'first_run_check_done': true,
+        'enable_buffer_agent': true,
+      });
+      final prefs = await SharedPreferences.getInstance();
+      final provider = SettingsProvider(prefs);
+
+      expect(provider.enableBufferAgent, true);
+
+      // Toggle OFF
+      provider.toggleEnableBufferAgent();
+      expect(provider.enableBufferAgent, false);
+      expect(prefs.getBool('enable_buffer_agent'), false);
+
+      // Toggle ON
+      provider.toggleEnableBufferAgent();
+      expect(provider.enableBufferAgent, true);
+      expect(prefs.getBool('enable_buffer_agent'), true);
     });
   });
   group('SettingsProvider UI Scale Sync', () {
