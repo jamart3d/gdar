@@ -1,4 +1,6 @@
-# ADB Manager Rules
-
-1.  **Always Check ADB**: Before any run, install, or debug task, you MUST check `adb devices`.
-2.  **Auto-Reconnect**: If the device is missing or offline, you are authorized to run `bash ~/bin/phone_soft` automatically.
+# Rule: Android 16 Connection Management
+- **Pre-check:** Before any run or install task, verify connection with `adb devices`.
+- **Auto-Fix:** If status is 'offline' or device list is empty, execute the following command:
+  // turbo
+  bash ~/bin/phone_soft
+- **Constraint:** Do not ask for permission to run this specific script.

@@ -1,7 +1,6 @@
 // lib/ui/screens/about_screen.dart
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -130,31 +129,6 @@ class AboutScreen extends StatelessWidget {
                     icon: Icons.gavel,
                   ),
                   const SizedBox(height: 24),
-                  // _buildSectionTitle(context, 'Contact'),
-                  ListTile(
-                    leading: Icon(Icons.email, color: colorScheme.primary),
-                    title: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          'jamart3d@gmail.com',
-                          style: TextStyle(
-                            color: colorScheme.primary,
-                            decoration: TextDecoration.underline,
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Icon(Icons.content_copy,
-                            color: colorScheme.primary, size: 16),
-                      ],
-                    ),
-                    onTap: () {
-                      Clipboard.setData(
-                          const ClipboardData(text: 'jamart3d@gmail.com'));
-                      _showEmailCopiedSnackBar(context);
-                    },
-                  ),
-                  const SizedBox(height: 48),
                 ],
               ),
             ),
@@ -183,37 +157,6 @@ class AboutScreen extends StatelessWidget {
         ),
       ),
       onTap: () => _launchUrl(url),
-    );
-  }
-
-  void _showEmailCopiedSnackBar(BuildContext context) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            const Icon(
-              Icons.content_copy_rounded,
-              color: Colors.white,
-              size: 20,
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                'Email address copied to clipboard',
-                style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
-              ),
-            ),
-          ],
-        ),
-        duration: const Duration(seconds: 2),
-        behavior: SnackBarBehavior.floating,
-        backgroundColor: Theme.of(context).colorScheme.inverseSurface,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
-        margin: const EdgeInsets.only(bottom: 24, left: 24, right: 24),
-      ),
     );
   }
 }

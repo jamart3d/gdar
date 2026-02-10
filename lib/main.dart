@@ -183,6 +183,7 @@ class _GdarAppState extends State<GdarApp> {
                 filterBySearch: true, animationOnly: animationOnly);
           }
         } else if (uri.host == 'navigate') {
+          if (kReleaseMode) return;
           final screen = uri.queryParameters['screen']?.toLowerCase();
           logger.i('Main: [Session #$_sessionId] Navigating to: $screen');
 
@@ -282,6 +283,7 @@ class _GdarAppState extends State<GdarApp> {
             );
           }
         } else if (uri.host == 'settings') {
+          if (kReleaseMode) return;
           final key = uri.queryParameters['key'];
           final value = uri.queryParameters['value'];
           logger.i('Main: [Session #$_sessionId] Setting $key to $value');

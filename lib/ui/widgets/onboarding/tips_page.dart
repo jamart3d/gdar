@@ -58,6 +58,20 @@ class TipsPage extends StatelessWidget {
                       context, Icons.settings_rounded),
                   'Check out the settings for more options and usage instructions',
                   scaleFactor),
+              const SizedBox(height: 16),
+              OnboardingComponents.buildTipRow(
+                  context,
+                  OnboardingComponents.buildIconBubble(
+                      context, Icons.info_rounded),
+                  'Enable playback, play show on startup, next time opening shakedown, it will start and play a random show!',
+                  scaleFactor),
+              const SizedBox(height: 16),
+              OnboardingComponents.buildTipRow(
+                  context,
+                  OnboardingComponents.buildIconBubble(
+                      context, Icons.settings_voice_rounded),
+                  'Gemini Assistant can open shakedown and play a random show',
+                  scaleFactor),
               const SizedBox(height: 40),
             ],
           ),

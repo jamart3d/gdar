@@ -44,7 +44,7 @@ class WelcomePage extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               Text(
-                'Welcome friend! and many thanks for helping with this closed test.\nThis app is a lightweight streaming music player.',
+                'Welcome friend!\nThis is a lightweight streaming music player for online Grateful Dead shows.',
                 style: theme.textTheme.titleMedium?.copyWith(
                   color: colorScheme.onSurfaceVariant,
                   height: 1.4,
@@ -62,7 +62,7 @@ class WelcomePage extends StatelessWidget {
               _buildArchiveStatusRow(context, theme, colorScheme, settings),
               OnboardingComponents.buildBulletPoint(
                   context,
-                  'Dive into an almost endless list of live Grateful Dead shows',
+                  'Dive into an almost endless list of live shows',
                   scaleFactor),
               OnboardingComponents.buildBulletPoint(context,
                   'Play a random show or choose a specific date', scaleFactor),
