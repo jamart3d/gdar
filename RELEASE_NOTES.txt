@@ -2,6 +2,8 @@ Release 1.0.32:
 - **Audit**: Completed a comprehensive Release & Optimization audit.
 - **Performance**: Verified build size (23MB) and asset health; identified key optimization targets.
 - **Quality**: Confirmed 100% test pass rate (122/122) and verified code linting/formatting.
+- **Stability**: Hardened Offline Buffering and Buffer Agent logic with comprehensive regression tests.
+- **Audit**: Completed a technical audit of the SHA-256 audio cache implementation and LRU cleanup strategy.
 - **Improved**: Hardened dependency management and identified discontinued packages for future migration.
 
 Release 1.0.31:
