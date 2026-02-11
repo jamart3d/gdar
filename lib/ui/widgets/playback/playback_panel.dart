@@ -8,6 +8,7 @@ import 'package:shakedown/models/source.dart';
 import 'package:shakedown/providers/audio_provider.dart';
 import 'package:shakedown/providers/settings_provider.dart';
 import 'package:shakedown/services/catalog_service.dart';
+import 'package:shakedown/services/device_service.dart';
 import 'package:shakedown/ui/styles/app_typography.dart';
 import 'package:shakedown/ui/widgets/conditional_marquee.dart';
 import 'package:shakedown/ui/widgets/playback/playback_controls.dart';
@@ -65,6 +66,17 @@ class PlaybackPanel extends StatelessWidget {
         return currentShow.date;
       }
     }();
+
+    final deviceService = context.watch<DeviceService>();
+    if (deviceService.isTv) {
+      return _buildTvLayout(
+        context,
+        audioProvider,
+        settingsProvider,
+        scaleFactor,
+        formattedDate,
+      );
+    }
 
     return Container(
       decoration: BoxDecoration(
@@ -373,6 +385,88 @@ class PlaybackPanel extends StatelessWidget {
               },
             ),
           ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTvLayout(
+    BuildContext context,
+    AudioProvider audioProvider,
+    SettingsProvider settingsProvider,
+    double scaleFactor,
+    String formattedDate,
+  ) {
+    final track = audioProvider.currentTrack;
+    if (track == null) return const SizedBox.shrink();
+
+    final textTheme = Theme.of(context).textTheme;
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Container(
+      padding: const EdgeInsets.all(24.0),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          // 1. Current Track Title (Hero)
+          SizedBox(
+            height: AppTypography.responsiveFontSize(context, 28.0) * 1.5,
+            child: ConditionalMarquee(
+              text: track.title,
+              style: textTheme.headlineMedium?.copyWith(
+                fontSize: AppTypography.responsiveFontSize(context, 28.0),
+                fontWeight: FontWeight.bold,
+                color: colorScheme.onSurface,
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          // 2. Metadata Row: Venue | Location | Date
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  currentShow.venue,
+                  style: textTheme.titleMedium?.copyWith(
+                    color: colorScheme.secondary,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                Text(
+                  "  •  ",
+                  style: TextStyle(
+                    color: colorScheme.onSurfaceVariant.withValues(alpha: 0.3),
+                  ),
+                ),
+                Text(
+                  currentSource.location ?? 'N/A',
+                  style: textTheme.titleMedium?.copyWith(
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+                ),
+                Text(
+                  "  •  ",
+                  style: TextStyle(
+                    color: colorScheme.onSurfaceVariant.withValues(alpha: 0.3),
+                  ),
+                ),
+                Text(
+                  formattedDate,
+                  style: textTheme.titleMedium?.copyWith(
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 32),
+          // 3. Progress Bar
+          const PlaybackProgressBar(),
+          const SizedBox(height: 16),
+          // 4. Controls
+          const PlaybackControls(panelPosition: 1.0),
         ],
       ),
     );

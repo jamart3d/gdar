@@ -230,11 +230,43 @@ class _PlaybackScreenState extends State<PlaybackScreen>
     final Widget playbackContent = ValueListenableBuilder<double>(
       valueListenable: _panelPositionNotifier,
       builder: (context, panelPosition, _) {
-        final double dynamicBottomPadding = widget.isPane
-            ? 16.0
-            : minPanelHeight +
-                60.0 +
-                ((maxPanelHeight - minPanelHeight) * panelPosition);
+        if (widget.isPane) {
+          return Column(
+            children: [
+              // Top Part (70%): Track list
+              Expanded(
+                flex: 7,
+                child: TrackListView(
+                  source: currentSource,
+                  bottomPadding: 16.0,
+                  topPadding: 0.0,
+                  itemScrollController: _itemScrollController,
+                  itemPositionsListener: _itemPositionsListener,
+                  audioProvider: audioProvider,
+                ),
+              ),
+              // Bottom Part (30%): Controls and Now Playing
+              Expanded(
+                flex: 3,
+                child: Container(
+                  color: panelColor,
+                  child: PlaybackPanel(
+                    currentShow: currentShow,
+                    currentSource: currentSource,
+                    minHeight: 0,
+                    bottomPadding: 16.0,
+                    panelPositionNotifier: ValueNotifier(1.0),
+                    onVenueTap: () {},
+                  ),
+                ),
+              ),
+            ],
+          );
+        }
+
+        final double dynamicBottomPadding = minPanelHeight +
+            60.0 +
+            ((maxPanelHeight - minPanelHeight) * panelPosition);
 
         // M3 Expressive: Immersive track list aligned to standard AppBar height
         const double topGap = 0.0;
@@ -254,50 +286,29 @@ class _PlaybackScreenState extends State<PlaybackScreen>
               audioProvider: audioProvider,
             ),
             // Layer 2: Top barrier to hide tracks in the gap (fades out with App Bar)
-            if (!widget.isPane)
-              Positioned(
-                top: 0,
-                left: 0,
-                right: 0,
-                height: immersiveTopPadding,
-                child: Opacity(
-                  opacity: (1.0 - (panelPosition * 5.0)).clamp(0.0, 1.0),
-                  child: Container(
-                    color: backgroundColor,
-                  ),
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              height: immersiveTopPadding,
+              child: Opacity(
+                opacity: (1.0 - (panelPosition * 5.0)).clamp(0.0, 1.0),
+                child: Container(
+                  color: backgroundColor,
                 ),
               ),
+            ),
             // Layer 3: Adaptive App Bar positioned on top
             Positioned(
-              top: widget.isPane
-                  ? 0
-                  : MediaQuery.paddingOf(context).top + topGap,
+              top: MediaQuery.paddingOf(context).top + topGap,
               left: 0,
               right: 0,
               child: PlaybackAppBar(
                   currentShow: currentShow,
                   currentSource: currentSource,
                   backgroundColor: backgroundColor,
-                  panelPosition: widget.isPane ? 1.0 : panelPosition),
+                  panelPosition: panelPosition),
             ),
-            // Layer 4: Controls on TV
-            if (widget.isPane)
-              Positioned(
-                left: 0,
-                right: 0,
-                bottom: 0,
-                child: Container(
-                  color: panelColor,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  child: PlaybackPanel(
-                      currentShow: currentShow,
-                      currentSource: currentSource,
-                      minHeight: minPanelHeight,
-                      bottomPadding: bottomPadding,
-                      panelPositionNotifier: ValueNotifier(1.0), // Always open
-                      onVenueTap: () {}),
-                ),
-              ),
           ],
         );
       },

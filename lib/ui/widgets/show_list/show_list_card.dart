@@ -10,6 +10,7 @@ import 'package:provider/provider.dart';
 import 'package:shakedown/ui/widgets/rating_control.dart';
 import 'package:shakedown/ui/widgets/src_badge.dart';
 import 'package:shakedown/services/catalog_service.dart';
+import 'package:shakedown/services/device_service.dart';
 import 'package:shakedown/ui/widgets/show_list/card_style_utils.dart';
 
 /// A card displaying summary information for a [Show].
@@ -46,6 +47,8 @@ class _ShowListCardState extends State<ShowListCard> {
   Widget build(BuildContext context) {
     final settingsProvider = context.watch<SettingsProvider>();
     final colorScheme = Theme.of(context).colorScheme;
+    final deviceService = context.watch<DeviceService>();
+    final isTv = deviceService.isTv;
 
     final style = CardStyle.compute(
       context: context,
@@ -103,6 +106,7 @@ class _ShowListCardState extends State<ShowListCard> {
               style: style,
               settingsProvider: settingsProvider,
               colorScheme: colorScheme,
+              isTv: isTv,
             ),
           ),
         ),
@@ -110,7 +114,8 @@ class _ShowListCardState extends State<ShowListCard> {
     }
 
     return Padding(
-      padding: EdgeInsets.fromLTRB(16, 6, 16, widget.isExpanded ? 2 : 6),
+      padding: EdgeInsets.fromLTRB(
+          16, isTv ? 8 : 6, 16, widget.isExpanded ? 2 : (isTv ? 8 : 6)),
       child: Card(
         margin: EdgeInsets.zero,
         elevation: widget.isExpanded ? 2 : 0,
@@ -129,6 +134,7 @@ class _ShowListCardState extends State<ShowListCard> {
           style: style,
           settingsProvider: settingsProvider,
           colorScheme: colorScheme,
+          isTv: isTv,
         ),
       ),
     );
@@ -141,8 +147,9 @@ class _ShowListCardState extends State<ShowListCard> {
     required CardStyle style,
     required SettingsProvider settingsProvider,
     required ColorScheme colorScheme,
+    required bool isTv,
   }) {
-    final double cardHeight = 58.0 * style.effectiveScale;
+    final double cardHeight = (isTv ? 66.0 : 58.0) * style.effectiveScale;
     final double controlZoneWidth =
         style.config.baseControlZoneWidth * style.effectiveScale;
 
@@ -177,6 +184,7 @@ class _ShowListCardState extends State<ShowListCard> {
                             : Colors.transparent,
                         width: 2),
                   ),
+                  padding: const EdgeInsets.symmetric(horizontal: 12.0),
                   child: Column(
                     children: [
                       Expanded(
@@ -184,20 +192,16 @@ class _ShowListCardState extends State<ShowListCard> {
                         child: Container(
                           alignment: Alignment.centerLeft,
                           width: double.infinity,
-                          decoration: BoxDecoration(
-                            border: Border.all(
-                                color: settingsProvider.showDebugLayout
-                                    ? Colors.yellow.withValues(alpha: 0.5)
-                                    : Colors.transparent,
-                                width: 1),
-                          ),
-                          padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                          child: ConditionalMarquee(
-                            text: settingsProvider.dateFirstInShowCard
-                                ? style.formattedDate
-                                : widget.show.venue,
-                            style: style.topStyle.copyWith(height: 1.3),
-                            enableAnimation: settingsProvider.marqueeEnabled,
+                          child: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: Alignment.centerLeft,
+                            child: ConditionalMarquee(
+                              text: settingsProvider.dateFirstInShowCard
+                                  ? style.formattedDate
+                                  : widget.show.venue,
+                              style: style.topStyle.copyWith(height: 1.3),
+                              enableAnimation: settingsProvider.marqueeEnabled,
+                            ),
                           ),
                         ),
                       ),
@@ -206,25 +210,18 @@ class _ShowListCardState extends State<ShowListCard> {
                         child: Container(
                           alignment: Alignment.centerLeft,
                           margin: const EdgeInsets.only(left: 4.0),
-                          decoration: BoxDecoration(
-                            color: settingsProvider.showDebugLayout
-                                ? Colors.orange.withValues(alpha: 0.2)
-                                : Colors.transparent,
-                            border: Border.all(
-                                color: settingsProvider.showDebugLayout
-                                    ? Colors.orange.withValues(alpha: 0.8)
-                                    : Colors.transparent,
-                                width: 2),
-                          ),
                           width: double.infinity,
-                          padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                          child: Text(
-                            settingsProvider.dateFirstInShowCard
-                                ? widget.show.venue
-                                : style.formattedDate,
-                            style: style.bottomStyle.copyWith(height: 1.3),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
+                          child: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                              settingsProvider.dateFirstInShowCard
+                                  ? widget.show.venue
+                                  : style.formattedDate,
+                              style: style.bottomStyle.copyWith(height: 1.3),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
                           ),
                         ),
                       ),

@@ -130,6 +130,20 @@ class CardStyle {
       }
     }
 
+    if (deviceService.isTv) {
+      // On TV, we give the Venue and Date more balanced authority in the Row
+      topSize = 18.0;
+      bottomSize = 15.0;
+
+      if (isRockSalt) {
+        topSize = 14.0;
+        bottomSize = 12.0;
+      } else if (isCaveat) {
+        topSize = 24.0;
+        bottomSize = 20.0;
+      }
+    }
+
     final finalTopStyle =
         venueStyle.copyWith(fontSize: topSize * effectiveScale);
     final finalBottomStyle =

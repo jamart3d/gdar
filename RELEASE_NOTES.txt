@@ -1,3 +1,9 @@
+Release 1.0.44:
+- **Polished**: Enhanced TV Show List visuals with authoritative "Scale Fit" typography for Venue and Date.
+- **Improved**: Increased Show List Card height and vertical spacing on TV for a more spacious, premium feel.
+- **Visuals**: Added a subtle vertical glass divider and expanded horizontal margins (24.0) to frame the 50/50 dual-pane layout.
+- **Dynamic**: Implemented inactive pane dimming (60% opacity) to clearly guide the user's focus during navigation.
+
 Release 1.0.43:
 - **Improved**: Refined Google TV UI scaling by reducing the global multiplier (1.5x -> 1.2x) for a cleaner, high-density experience.
 - **Fixed**: Resolved "Duplicate AppBar" issue on Google TV where the Header appeared twice in dual-pane mode.
