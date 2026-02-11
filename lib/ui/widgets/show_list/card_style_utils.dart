@@ -5,6 +5,8 @@ import 'package:shakedown/models/source.dart';
 import 'package:shakedown/providers/settings_provider.dart';
 import 'package:shakedown/utils/color_generator.dart';
 import 'package:shakedown/utils/font_layout_config.dart';
+import 'package:provider/provider.dart';
+import 'package:shakedown/services/device_service.dart';
 
 /// Holds computed style values for [ShowListCard].
 class CardStyle {
@@ -61,8 +63,14 @@ class CardStyle {
             (show.sources.length == 1 && settings.showSingleShnid));
 
     final config = FontLayoutConfig.getConfig(settings.appFont);
-    final effectiveScale =
+    double effectiveScale =
         FontLayoutConfig.getEffectiveScale(context, settings);
+
+    // Apply the same TV multiplier used in AppTypography (1.2x)
+    final deviceService = Provider.of<DeviceService>(context, listen: false);
+    if (deviceService.isTv) {
+      effectiveScale *= 1.2;
+    }
 
     // Venue Style
     final baseVenueStyle = textTheme.bodyLarge?.copyWith(fontSize: 15.0) ??

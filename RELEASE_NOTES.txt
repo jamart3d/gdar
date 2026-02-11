@@ -1,3 +1,8 @@
+Release 1.0.43:
+- **Improved**: Refined Google TV UI scaling by reducing the global multiplier (1.5x -> 1.2x) for a cleaner, high-density experience.
+- **Fixed**: Resolved "Duplicate AppBar" issue on Google TV where the Header appeared twice in dual-pane mode.
+- **Polished**: Standardized Show List card scaling on TV to maintain visual harmony with the Playback pane.
+
 Release 1.0.42:
 - **Improved**: Hardened Screen Tests by implementing robust `DeviceService` mocking, resolving all provider-related failures.
 - **Stability**: Verified 100% test pass rate for all Providers and Screen components.

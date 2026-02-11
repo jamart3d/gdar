@@ -92,16 +92,18 @@ class ShowListShell extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: backgroundColor,
-      appBar: ShowListAppBar(
-        backgroundColor: backgroundColor,
-        randomPulseAnimation: randomPulseAnimation,
-        searchPulseAnimation: searchPulseAnimation,
-        isRandomShowLoading: isRandomShowLoading,
-        enableDiceHaptics: enableDiceHaptics,
-        onRandomPlay: onRandomPlay,
-        onToggleSearch: onToggleSearch,
-        onTitleTap: onTitleTap,
-      ),
+      appBar: isPane
+          ? null
+          : ShowListAppBar(
+              backgroundColor: backgroundColor,
+              randomPulseAnimation: randomPulseAnimation,
+              searchPulseAnimation: searchPulseAnimation,
+              isRandomShowLoading: isRandomShowLoading,
+              enableDiceHaptics: enableDiceHaptics,
+              onRandomPlay: onRandomPlay,
+              onToggleSearch: onToggleSearch,
+              onTitleTap: onTitleTap,
+            ),
       body: bodyContent,
     );
   }

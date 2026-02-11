@@ -23,7 +23,7 @@ class AppTypography {
         FontLayoutConfig.getEffectiveScale(context, settingsProvider);
 
     // Additional boost for TV "10-foot" UI
-    final double tvMultiplier = deviceService.isTv ? 1.5 : 1.0;
+    final double tvMultiplier = deviceService.isTv ? 1.2 : 1.0;
 
     // Font-specific size corrections relative to Roboto
     // Caveat is naturally small/thin, so we boost it for readability.
