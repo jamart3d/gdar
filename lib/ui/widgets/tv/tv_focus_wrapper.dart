@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 /// A wrapper widget that handles TV focus states with premium animations.
 /// It provides a spring-based scale effect and a Material 3 focus border.
@@ -44,6 +45,18 @@ class _TvFocusWrapperState extends State<TvFocusWrapper> {
       focusNode: widget.focusNode,
       autofocus: widget.autofocus,
       onFocusChange: _handleFocusChange,
+      onKeyEvent: (node, event) {
+        if (event is KeyDownEvent) {
+          if (event.logicalKey == LogicalKeyboardKey.select ||
+              event.logicalKey == LogicalKeyboardKey.enter ||
+              event.logicalKey == LogicalKeyboardKey.numpadEnter ||
+              event.logicalKey == LogicalKeyboardKey.gameButtonA) {
+            widget.onTap?.call();
+            return KeyEventResult.handled;
+          }
+        }
+        return KeyEventResult.ignored;
+      },
       child: GestureDetector(
         onTap: widget.onTap,
         onLongPress: widget.onLongPress,

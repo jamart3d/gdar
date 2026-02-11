@@ -1,3 +1,7 @@
+Release 1.0.40:
+- **New**: Optimized Google TV Onboarding—The app now supports Landscape orientation for cinematic TV experience.
+- **Improved**: Tailored D-pad navigation on TV—"Next" button now correctly responds to the remote control "Select" click.
+
 Release 1.0.39:
 - **Internal**: Targeted Android 15 (API Level 35) to comply with updated Google Play Store requirements.
 

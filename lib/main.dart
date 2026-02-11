@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -29,10 +30,30 @@ import 'package:shakedown/ui/widgets/tv/tv_dual_pane_layout.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  await SystemChrome.setPreferredOrientations([
-    DeviceOrientation.portraitUp,
-    DeviceOrientation.portraitDown,
-  ]);
+  bool isTv = false;
+  try {
+    if (Platform.isAndroid) {
+      const deviceChannel = MethodChannel('com.jamart3d.shakedown/device');
+      final bool? result = await deviceChannel.invokeMethod<bool>('isTv');
+      isTv = result ?? false;
+    }
+  } catch (e) {
+    debugPrint('Error detecting TV in main: $e');
+  }
+
+  if (!isTv) {
+    await SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+    ]);
+  } else {
+    // For TV, we might want to ensure landscape, or just let it be free.
+    // Usually TV is landscape only.
+    await SystemChrome.setPreferredOrientations([
+      DeviceOrientation.landscapeLeft,
+      DeviceOrientation.landscapeRight,
+    ]);
+  }
 
   initLogger();
 
