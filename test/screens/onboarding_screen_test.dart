@@ -8,6 +8,7 @@ import 'package:shakedown/providers/show_list_provider.dart';
 import 'package:shakedown/providers/audio_provider.dart';
 import 'package:shakedown/ui/screens/onboarding_screen.dart';
 import 'package:shakedown/providers/update_provider.dart';
+import 'package:shakedown/services/device_service.dart';
 
 import 'splash_screen_test.mocks.dart';
 
@@ -29,12 +30,22 @@ class MockThemeProvider extends ChangeNotifier implements ThemeProvider {
   }
 }
 
+class MockDeviceService extends ChangeNotifier implements DeviceService {
+  @override
+  bool get isTv => false;
+  @override
+  String? get deviceName => 'Mock Device';
+  @override
+  Future<void> refresh() async {}
+}
+
 void main() {
   late MockSettingsProvider mockSettingsProvider;
   late MockShowListProvider mockShowListProvider;
   late MockAudioProvider mockAudioProvider;
   late MockThemeProvider mockThemeProvider;
   late MockUpdateProvider mockUpdateProvider;
+  late MockDeviceService mockDeviceService;
 
   setUp(() {
     mockSettingsProvider = MockSettingsProvider();
@@ -42,6 +53,7 @@ void main() {
     mockAudioProvider = MockAudioProvider();
     mockThemeProvider = MockThemeProvider();
     mockUpdateProvider = MockUpdateProvider();
+    mockDeviceService = MockDeviceService();
   });
 
   Widget createSubject() {
@@ -54,6 +66,7 @@ void main() {
         ChangeNotifierProvider<AudioProvider>.value(value: mockAudioProvider),
         ChangeNotifierProvider<ThemeProvider>.value(value: mockThemeProvider),
         ChangeNotifierProvider<UpdateProvider>.value(value: mockUpdateProvider),
+        ChangeNotifierProvider<DeviceService>.value(value: mockDeviceService),
       ],
       child: const MaterialApp(
         home: OnboardingScreen(),

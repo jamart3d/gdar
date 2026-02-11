@@ -114,6 +114,71 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
     final updateProvider = context.watch<UpdateProvider>();
 
+    final deviceService = context.watch<DeviceService>();
+    final isTv = deviceService.isTv;
+
+    if (isTv) {
+      return Scaffold(
+        backgroundColor: colorScheme.surface,
+        body: Row(
+          children: [
+            // Left Pane: Sidebar branding
+            Container(
+              width: 280,
+              padding: const EdgeInsets.all(40),
+              color: colorScheme.surfaceContainerLow,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  _buildCommonHeader(context, scaleFactor),
+                  const Spacer(),
+                  _buildPageIndicator(context, scaleFactor),
+                ],
+              ),
+            ),
+            // Right Pane: Content
+            Expanded(
+              child: Column(
+                children: [
+                  Expanded(
+                    child: PageView(
+                      controller: _pageController,
+                      onPageChanged: (int page) {
+                        setState(() {
+                          _currentPage = page;
+                        });
+                      },
+                      children: [
+                        WelcomePage(
+                          scaleFactor: scaleFactor,
+                          archiveReachable: _archiveReachable,
+                          updateInfo: updateProvider.updateInfo,
+                          isSimulated: updateProvider.isSimulated,
+                          onUpdateSelected: () => updateProvider.startUpdate(),
+                        ),
+                        TipsPage(scaleFactor: scaleFactor),
+                        SetupPage(
+                          scaleFactor: scaleFactor,
+                          dontShowAgain: _dontShowAgain,
+                          onDontShowAgainChanged: (val) {
+                            setState(() {
+                              _dontShowAgain = val;
+                            });
+                          },
+                          onFinish: _finishOnboarding,
+                        ),
+                      ],
+                    ),
+                  ),
+                  _buildBottomNav(context, scaleFactor, hideIndicators: true),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
     return Scaffold(
       backgroundColor: colorScheme.surface,
       body: SafeArea(
@@ -157,8 +222,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     );
   }
 
-  Widget _buildBottomNav(BuildContext context, double scaleFactor) {
-    final colorScheme = Theme.of(context).colorScheme;
+  Widget _buildBottomNav(BuildContext context, double scaleFactor,
+      {bool hideIndicators = false}) {
     final isLastPage = _currentPage == 2;
 
     return Padding(
@@ -166,22 +231,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Row(
-            children: List.generate(3, (index) {
-              return AnimatedContainer(
-                duration: const Duration(milliseconds: 300),
-                margin: const EdgeInsets.only(right: 8),
-                height: 8 * scaleFactor,
-                width: (_currentPage == index ? 24 : 8) * scaleFactor,
-                decoration: BoxDecoration(
-                  color: _currentPage == index
-                      ? colorScheme.primary
-                      : colorScheme.surfaceContainerHighest,
-                  borderRadius: BorderRadius.circular(4),
-                ),
-              );
-            }),
-          ),
+          if (!hideIndicators) _buildPageIndicator(context, scaleFactor),
           IgnorePointer(
             ignoring: isLastPage,
             child: AnimatedOpacity(
@@ -219,13 +269,34 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     );
   }
 
+  Widget _buildPageIndicator(BuildContext context, double scaleFactor) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: List.generate(3, (index) {
+        final colorScheme = Theme.of(context).colorScheme;
+        return AnimatedContainer(
+          duration: const Duration(milliseconds: 300),
+          margin: const EdgeInsets.only(right: 8),
+          height: 8 * scaleFactor,
+          width: (_currentPage == index ? 24 : 8) * scaleFactor,
+          decoration: BoxDecoration(
+            color: _currentPage == index
+                ? colorScheme.primary
+                : colorScheme.surfaceContainerHighest,
+            borderRadius: BorderRadius.circular(4),
+          ),
+        );
+      }),
+    );
+  }
+
   Widget _buildCommonHeader(BuildContext context, double scaleFactor) {
     final colorScheme = Theme.of(context).colorScheme;
     final theme = Theme.of(context);
 
     return Column(
       children: [
-        const SizedBox(height: 20),
+        SizedBox(height: context.read<DeviceService>().isTv ? 0 : 20),
         Container(
           width: 80 * scaleFactor,
           height: 80 * scaleFactor,

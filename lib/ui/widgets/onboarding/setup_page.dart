@@ -37,6 +37,161 @@ class _SetupPageState extends State<SetupPage> {
     final themeProvider = context.watch<ThemeProvider>();
 
     return LayoutBuilder(builder: (context, constraints) {
+      final isTv = context.watch<DeviceService>().isTv;
+
+      Widget content = Padding(
+        padding: EdgeInsets.symmetric(horizontal: isTv ? 48.0 : 24.0),
+        child: TweenAnimationBuilder<double>(
+          duration: const Duration(milliseconds: 600),
+          curve: Curves.easeOutCubic,
+          tween: Tween<double>(begin: 0.0, end: 1.0),
+          builder: (context, animValue, child) {
+            return Transform.translate(
+              offset: Offset(0, 20 * (1 - animValue)),
+              child: Opacity(
+                opacity: animValue,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    const SizedBox(height: 20),
+                    OnboardingComponents.buildSectionHeader(context,
+                        'Customize Your Experience', widget.scaleFactor),
+                    const SizedBox(height: 20),
+                    Text(
+                      'Font Selection',
+                      style: theme.textTheme.labelLarge?.copyWith(
+                        color: colorScheme.onSurface,
+                        fontSize:
+                            AppTypography.responsiveFontSize(context, 14.0),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Wrap(
+                      spacing: 8.0,
+                      runSpacing: 8.0,
+                      children: [
+                        _buildFontChip(context, 'default', 'Roboto', settings,
+                            widget.scaleFactor),
+                        _buildFontChip(context, 'caveat', 'Caveat', settings,
+                            widget.scaleFactor),
+                        _buildFontChip(context, 'permanent_marker',
+                            'Permanent Marker', settings, widget.scaleFactor),
+                        _buildFontChip(context, 'rock_salt', 'Rock Salt',
+                            settings, widget.scaleFactor),
+                      ],
+                    ),
+                    const SizedBox(height: 24),
+                    Text(
+                      'Preferences',
+                      style: theme.textTheme.labelLarge?.copyWith(
+                        color: colorScheme.onSurface,
+                        fontSize:
+                            AppTypography.responsiveFontSize(context, 14.0),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Wrap(
+                      spacing: 8.0,
+                      runSpacing: 8.0,
+                      children: [
+                        Builder(
+                          builder: (context) {
+                            final isTv = context.watch<DeviceService>().isTv;
+                            Widget chip = FilterChip(
+                              label: Text('UI Scale',
+                                  style: TextStyle(
+                                      fontSize:
+                                          AppTypography.responsiveFontSize(
+                                              context, 12.0))),
+                              selected: settings.uiScale,
+                              onSelected: (bool selected) {
+                                HapticFeedback.selectionClick();
+                                settings.toggleUiScale();
+                              },
+                              showCheckmark: false,
+                              selectedColor: colorScheme.primaryContainer,
+                              labelStyle: TextStyle(
+                                color: settings.uiScale
+                                    ? colorScheme.onPrimaryContainer
+                                    : colorScheme.onSurface,
+                                fontWeight: FontWeight.normal,
+                              ),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 12, vertical: 8),
+                            );
+
+                            if (isTv) {
+                              chip = TvFocusWrapper(
+                                onTap: () {
+                                  HapticFeedback.selectionClick();
+                                  settings.toggleUiScale();
+                                },
+                                borderRadius: BorderRadius.circular(8),
+                                child: chip,
+                              );
+                            }
+                            return chip;
+                          },
+                        ),
+                        Builder(
+                          builder: (context) {
+                            final isTv = context.watch<DeviceService>().isTv;
+                            Widget chip = FilterChip(
+                              label: Text('Dark Mode',
+                                  style: TextStyle(
+                                      fontSize:
+                                          AppTypography.responsiveFontSize(
+                                              context, 12.0))),
+                              selected: themeProvider.isDarkMode,
+                              onSelected: (bool selected) {
+                                _handleDarkModeToggle(
+                                    selected, themeProvider, settings);
+                              },
+                              showCheckmark: false,
+                              selectedColor: colorScheme.primaryContainer,
+                              labelStyle: TextStyle(
+                                color: themeProvider.isDarkMode
+                                    ? colorScheme.onPrimaryContainer
+                                    : colorScheme.onSurface,
+                                fontWeight: FontWeight.normal,
+                              ),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 12, vertical: 8),
+                            );
+
+                            if (isTv) {
+                              chip = TvFocusWrapper(
+                                onTap: () {
+                                  _handleDarkModeToggle(
+                                      !themeProvider.isDarkMode,
+                                      themeProvider,
+                                      settings);
+                                },
+                                borderRadius: BorderRadius.circular(8),
+                                child: chip,
+                              );
+                            }
+                            return chip;
+                          },
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 32),
+                    _buildDontShowAgainCheckbox(context, theme),
+                    const SizedBox(height: 16),
+                    _buildGetStartedButton(context, colorScheme, theme),
+                    const SizedBox(height: 24),
+                  ],
+                ),
+              ),
+            );
+          },
+        ),
+      );
+
+      if (isTv) return content;
+
       return SizedBox(
         width: constraints.maxWidth,
         height: constraints.maxHeight,
@@ -45,162 +200,7 @@ class _SetupPageState extends State<SetupPage> {
           alignment: Alignment.topCenter,
           child: SizedBox(
             width: constraints.maxWidth,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0),
-              child: TweenAnimationBuilder<double>(
-                duration: const Duration(milliseconds: 600),
-                curve: Curves.easeOutCubic,
-                tween: Tween<double>(begin: 0.0, end: 1.0),
-                builder: (context, animValue, child) {
-                  return Transform.translate(
-                    offset: Offset(0, 20 * (1 - animValue)),
-                    child: Opacity(
-                      opacity: animValue,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: [
-                          const SizedBox(height: 20),
-                          OnboardingComponents.buildSectionHeader(context,
-                              'Customize Your Experience', widget.scaleFactor),
-                          const SizedBox(height: 20),
-                          Text(
-                            'Font Selection',
-                            style: theme.textTheme.labelLarge?.copyWith(
-                              color: colorScheme.onSurface,
-                              fontSize: AppTypography.responsiveFontSize(
-                                  context, 14.0),
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-                          Wrap(
-                            spacing: 8.0,
-                            runSpacing: 8.0,
-                            children: [
-                              _buildFontChip(context, 'default', 'Roboto',
-                                  settings, widget.scaleFactor),
-                              _buildFontChip(context, 'caveat', 'Caveat',
-                                  settings, widget.scaleFactor),
-                              _buildFontChip(
-                                  context,
-                                  'permanent_marker',
-                                  'Permanent Marker',
-                                  settings,
-                                  widget.scaleFactor),
-                              _buildFontChip(context, 'rock_salt', 'Rock Salt',
-                                  settings, widget.scaleFactor),
-                            ],
-                          ),
-                          const SizedBox(height: 24),
-                          Text(
-                            'Preferences',
-                            style: theme.textTheme.labelLarge?.copyWith(
-                              color: colorScheme.onSurface,
-                              fontSize: AppTypography.responsiveFontSize(
-                                  context, 14.0),
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-                          Wrap(
-                            spacing: 8.0,
-                            runSpacing: 8.0,
-                            children: [
-                              Builder(
-                                builder: (context) {
-                                  final isTv =
-                                      context.watch<DeviceService>().isTv;
-                                  Widget chip = FilterChip(
-                                    label: Text('UI Scale',
-                                        style: TextStyle(
-                                            fontSize: AppTypography
-                                                .responsiveFontSize(
-                                                    context, 12.0))),
-                                    selected: settings.uiScale,
-                                    onSelected: (bool selected) {
-                                      HapticFeedback.selectionClick();
-                                      settings.toggleUiScale();
-                                    },
-                                    showCheckmark: false,
-                                    selectedColor: colorScheme.primaryContainer,
-                                    labelStyle: TextStyle(
-                                      color: settings.uiScale
-                                          ? colorScheme.onPrimaryContainer
-                                          : colorScheme.onSurface,
-                                      fontWeight: FontWeight.normal,
-                                    ),
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 12, vertical: 8),
-                                  );
-
-                                  if (isTv) {
-                                    chip = TvFocusWrapper(
-                                      onTap: () {
-                                        HapticFeedback.selectionClick();
-                                        settings.toggleUiScale();
-                                      },
-                                      borderRadius: BorderRadius.circular(8),
-                                      child: chip,
-                                    );
-                                  }
-                                  return chip;
-                                },
-                              ),
-                              Builder(
-                                builder: (context) {
-                                  final isTv =
-                                      context.watch<DeviceService>().isTv;
-                                  Widget chip = FilterChip(
-                                    label: Text('Dark Mode',
-                                        style: TextStyle(
-                                            fontSize: AppTypography
-                                                .responsiveFontSize(
-                                                    context, 12.0))),
-                                    selected: themeProvider.isDarkMode,
-                                    onSelected: (bool selected) {
-                                      _handleDarkModeToggle(
-                                          selected, themeProvider, settings);
-                                    },
-                                    showCheckmark: false,
-                                    selectedColor: colorScheme.primaryContainer,
-                                    labelStyle: TextStyle(
-                                      color: themeProvider.isDarkMode
-                                          ? colorScheme.onPrimaryContainer
-                                          : colorScheme.onSurface,
-                                      fontWeight: FontWeight.normal,
-                                    ),
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 12, vertical: 8),
-                                  );
-
-                                  if (isTv) {
-                                    chip = TvFocusWrapper(
-                                      onTap: () {
-                                        _handleDarkModeToggle(
-                                            !themeProvider.isDarkMode,
-                                            themeProvider,
-                                            settings);
-                                      },
-                                      borderRadius: BorderRadius.circular(8),
-                                      child: chip,
-                                    );
-                                  }
-                                  return chip;
-                                },
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 32),
-                          _buildDontShowAgainCheckbox(context, theme),
-                          const SizedBox(height: 16),
-                          _buildGetStartedButton(context, colorScheme, theme),
-                          const SizedBox(height: 24),
-                        ],
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ),
+            child: content,
           ),
         ),
       );

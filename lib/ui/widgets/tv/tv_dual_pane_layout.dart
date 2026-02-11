@@ -8,22 +8,20 @@ class TvDualPaneLayout extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Row(
-        children: [
-          const Expanded(
-            flex: 4,
-            child: ShowListScreen(isPane: true),
-          ),
-          VerticalDivider(
-            width: 1,
-            thickness: 1,
-            color: Theme.of(context).dividerColor.withValues(alpha: 0.1),
-          ),
-          const Expanded(
-            flex: 6,
-            child: PlaybackScreen(isPane: true),
-          ),
-        ],
+      body: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+        child: Row(
+          children: [
+            const Expanded(
+              flex: 3,
+              child: ShowListScreen(isPane: true),
+            ),
+            const Expanded(
+              flex: 7,
+              child: PlaybackScreen(isPane: true),
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -16,6 +16,7 @@ import 'package:shakedown/ui/widgets/rating_control.dart';
 import 'package:flutter/services.dart';
 import 'package:shakedown/services/catalog_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:shakedown/services/device_service.dart';
 
 import 'playback_screen_test.mocks.dart';
 
@@ -121,11 +122,21 @@ class MockSettingsProvider extends Mock implements SettingsProvider {
   bool get showGlobalAlbumArt => true;
 }
 
+class MockDeviceService extends ChangeNotifier implements DeviceService {
+  @override
+  bool get isTv => false;
+  @override
+  String? get deviceName => 'Mock Device';
+  @override
+  Future<void> refresh() async {}
+}
+
 @GenerateMocks([AudioProvider, AudioPlayer])
 void main() {
   late MockAudioProvider mockAudioProvider;
   late MockSettingsProvider mockSettingsProvider;
   late MockAudioPlayer mockAudioPlayer;
+  late MockDeviceService mockDeviceService;
 
   // Dummy data
   final dummyTrack1 = Track(
@@ -163,6 +174,7 @@ void main() {
     mockAudioProvider = MockAudioProvider();
     mockSettingsProvider = MockSettingsProvider();
     mockAudioPlayer = MockAudioPlayer();
+    mockDeviceService = MockDeviceService();
 
     // Stub the audio player on the audio provider
     when(mockAudioProvider.audioPlayer).thenReturn(mockAudioPlayer);
@@ -198,6 +210,7 @@ void main() {
         ChangeNotifierProvider<AudioProvider>.value(value: mockAudioProvider),
         ChangeNotifierProvider<SettingsProvider>.value(
             value: mockSettingsProvider),
+        ChangeNotifierProvider<DeviceService>.value(value: mockDeviceService),
       ],
       child: MaterialApp(
         home: child,

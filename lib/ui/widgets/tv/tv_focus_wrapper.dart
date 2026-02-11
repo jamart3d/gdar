@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -29,11 +30,35 @@ class TvFocusWrapper extends StatefulWidget {
 
 class _TvFocusWrapperState extends State<TvFocusWrapper> {
   bool _isFocused = false;
+  Timer? _longPressTimer;
+  bool _longPressHandled = false;
 
   void _handleFocusChange(bool focused) {
     setState(() {
       _isFocused = focused;
+      if (!focused) {
+        _cancelLongPressTimer();
+      }
     });
+  }
+
+  void _cancelLongPressTimer() {
+    _longPressTimer?.cancel();
+    _longPressTimer = null;
+    _longPressHandled = false;
+  }
+
+  bool _isActionKey(LogicalKeyboardKey key) {
+    return key == LogicalKeyboardKey.select ||
+        key == LogicalKeyboardKey.enter ||
+        key == LogicalKeyboardKey.numpadEnter ||
+        key == LogicalKeyboardKey.gameButtonA;
+  }
+
+  @override
+  void dispose() {
+    _cancelLongPressTimer();
+    super.dispose();
   }
 
   @override
@@ -46,15 +71,29 @@ class _TvFocusWrapperState extends State<TvFocusWrapper> {
       autofocus: widget.autofocus,
       onFocusChange: _handleFocusChange,
       onKeyEvent: (node, event) {
+        if (!_isActionKey(event.logicalKey)) return KeyEventResult.ignored;
+
         if (event is KeyDownEvent) {
-          if (event.logicalKey == LogicalKeyboardKey.select ||
-              event.logicalKey == LogicalKeyboardKey.enter ||
-              event.logicalKey == LogicalKeyboardKey.numpadEnter ||
-              event.logicalKey == LogicalKeyboardKey.gameButtonA) {
-            widget.onTap?.call();
-            return KeyEventResult.handled;
+          if (_longPressTimer == null && !_longPressHandled) {
+            _longPressTimer = Timer(const Duration(milliseconds: 600), () {
+              if (mounted) {
+                _longPressHandled = true;
+                widget.onLongPress?.call();
+                HapticFeedback.mediumImpact();
+              }
+            });
           }
+          return KeyEventResult.handled;
+        } else if (event is KeyUpEvent) {
+          final wasLongPress = _longPressHandled;
+          _cancelLongPressTimer();
+
+          if (!wasLongPress) {
+            widget.onTap?.call();
+          }
+          return KeyEventResult.handled;
         }
+
         return KeyEventResult.ignored;
       },
       child: GestureDetector(

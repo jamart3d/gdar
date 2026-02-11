@@ -1,3 +1,14 @@
+Release 1.0.42:
+- **Improved**: Hardened Screen Tests by implementing robust `DeviceService` mocking, resolving all provider-related failures.
+- **Stability**: Verified 100% test pass rate for all Providers and Screen components.
+- **Optimized**: Finalized Google TV UI optimizations for a premium "Leaning Back" experience.
+
+Release 1.0.41:
+- **New**: Side-by-side Onboarding layout optimized for landscape Google TV screens.
+- **New**: Long-click support for remote control "Select" buttons to trigger secondary actions (Quick Play/Shuffle).
+- **Refined**: Restored missing Header on TV Show List screens, enabling Search and Settings access.
+- **Premium**: Enhanced Dual-Pane layout with optimized 3:7 flex ratio and relaxed paddings for a more expansive experience.
+
 Release 1.0.40:
 - **New**: Optimized Google TV Onboarding—The app now supports Landscape orientation for cinematic TV experience.
 - **Improved**: Tailored D-pad navigation on TV—"Next" button now correctly responds to the remote control "Select" click.

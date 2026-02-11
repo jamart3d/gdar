@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:shakedown/models/show.dart';
 import 'package:shakedown/models/source.dart';
 import 'package:shakedown/providers/audio_provider.dart';
 import 'package:shakedown/providers/settings_provider.dart';
 import 'package:shakedown/providers/show_list_provider.dart';
+import 'package:shakedown/services/device_service.dart';
 import 'package:shakedown/ui/widgets/show_list/show_list_item.dart';
 
 /// The scrollable list of shows displayed in [ShowListScreen].
@@ -47,10 +49,12 @@ class ShowListBody extends StatelessWidget {
           child: Text('No shows match your search or filters.'));
     }
 
+    final isTv = context.read<DeviceService>().isTv;
+
     return ScrollablePositionedList.builder(
       itemScrollController: itemScrollController,
       itemPositionsListener: itemPositionsListener,
-      padding: const EdgeInsets.only(bottom: 160),
+      padding: EdgeInsets.only(bottom: isTv ? 40 : 160),
       itemCount: showListProvider.filteredShows.length,
       itemBuilder: (context, index) {
         final show = showListProvider.filteredShows[index];

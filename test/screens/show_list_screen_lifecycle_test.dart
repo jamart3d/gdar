@@ -16,6 +16,7 @@ import 'package:shakedown/providers/show_list_provider.dart';
 import 'package:shakedown/services/catalog_service.dart';
 import 'package:shakedown/ui/screens/show_list_screen.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:shakedown/services/device_service.dart';
 
 // Manual Mocks for simplicity
 class MockAudioProvider extends Mock implements AudioProvider {
@@ -157,11 +158,21 @@ class MockCatalogService extends Mock implements CatalogService {
 
 class MockBox<T> extends Mock implements Box<T> {}
 
+class MockDeviceService extends ChangeNotifier implements DeviceService {
+  @override
+  bool get isTv => false;
+  @override
+  String? get deviceName => 'Mock Device';
+  @override
+  Future<void> refresh() async {}
+}
+
 void main() {
   late MockAudioProvider mockAudioProvider;
   late MockSettingsProvider mockSettingsProvider;
   late MockShowListProvider mockShowListProvider;
   late MockCatalogService mockCatalogService;
+  late MockDeviceService mockDeviceService;
 
   setUp(() async {
     SharedPreferences.setMockInitialValues({});
@@ -169,6 +180,7 @@ void main() {
     mockSettingsProvider = MockSettingsProvider();
     mockShowListProvider = MockShowListProvider();
     mockCatalogService = MockCatalogService();
+    mockDeviceService = MockDeviceService();
     CatalogService.setMock(mockCatalogService);
   });
 
@@ -180,6 +192,7 @@ void main() {
         ChangeNotifierProvider<AudioProvider>.value(value: mockAudioProvider),
         ChangeNotifierProvider<ShowListProvider>.value(
             value: mockShowListProvider),
+        ChangeNotifierProvider<DeviceService>.value(value: mockDeviceService),
       ],
       child: const MaterialApp(
         home: ShowListScreen(),

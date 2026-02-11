@@ -231,7 +231,7 @@ class _PlaybackScreenState extends State<PlaybackScreen>
       valueListenable: _panelPositionNotifier,
       builder: (context, panelPosition, _) {
         final double dynamicBottomPadding = widget.isPane
-            ? 0.0
+            ? 16.0
             : minPanelHeight +
                 60.0 +
                 ((maxPanelHeight - minPanelHeight) * panelPosition);

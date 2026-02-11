@@ -11,6 +11,7 @@ import 'package:mockito/mockito.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:shakedown/services/device_service.dart';
 
 // Mocks - Reuse mocks from show_list_screen_swipe_test.dart
 // Ideally, we'd centralize these, but for this task we'll duplicate relevant parts
@@ -62,6 +63,15 @@ class MockSettingsProvider extends SettingsProvider {
   bool get highlightCurrentShowCard => true;
   @override
   bool get useTrueBlack => false;
+}
+
+class MockDeviceService extends ChangeNotifier implements DeviceService {
+  @override
+  bool get isTv => false;
+  @override
+  String? get deviceName => 'Mock Device';
+  @override
+  Future<void> refresh() async {}
 }
 
 class MockCatalogService extends Mock implements CatalogService {}
@@ -170,6 +180,7 @@ void main() {
   late MockSettingsProvider mockSettingsProvider;
   late MockShowListProvider mockShowListProvider;
   late MockCatalogService mockCatalogService;
+  late MockDeviceService mockDeviceService;
 
   setUp(() async {
     SharedPreferences.setMockInitialValues({});
@@ -178,6 +189,7 @@ void main() {
     mockSettingsProvider = MockSettingsProvider(prefs);
     mockShowListProvider = MockShowListProvider();
     mockCatalogService = MockCatalogService();
+    mockDeviceService = MockDeviceService();
   });
 
   Widget createWidgetUnderTest() {
@@ -188,6 +200,7 @@ void main() {
         ChangeNotifierProvider<AudioProvider>.value(value: mockAudioProvider),
         ChangeNotifierProvider<ShowListProvider>.value(
             value: mockShowListProvider),
+        ChangeNotifierProvider<DeviceService>.value(value: mockDeviceService),
         Provider<CatalogService>.value(value: mockCatalogService),
       ],
       child: const MaterialApp(

@@ -55,6 +55,17 @@ class ShowListShell extends StatelessWidget {
       children: [
         Column(
           children: [
+            if (isPane)
+              ShowListAppBar(
+                backgroundColor: backgroundColor,
+                randomPulseAnimation: randomPulseAnimation,
+                searchPulseAnimation: searchPulseAnimation,
+                isRandomShowLoading: isRandomShowLoading,
+                enableDiceHaptics: enableDiceHaptics,
+                onRandomPlay: onRandomPlay,
+                onToggleSearch: onToggleSearch,
+                onTitleTap: onTitleTap,
+              ),
             ShowListSearchBar(
               controller: searchController,
               focusNode: searchFocusNode,
@@ -78,8 +89,6 @@ class ShowListShell extends StatelessWidget {
         ClipboardFeedbackOverlay(isVisible: showPasteFeedback),
       ],
     );
-
-    if (isPane) return bodyContent;
 
     return Scaffold(
       backgroundColor: backgroundColor,

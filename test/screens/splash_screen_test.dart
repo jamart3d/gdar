@@ -9,6 +9,7 @@ import 'package:mockito/mockito.dart';
 import 'package:provider/provider.dart';
 
 import 'package:shakedown/providers/update_provider.dart';
+import 'package:shakedown/services/device_service.dart';
 
 import 'splash_screen_test.mocks.dart';
 
@@ -18,15 +19,26 @@ import 'splash_screen_test.mocks.dart';
   MockSpec<AudioProvider>(),
   MockSpec<UpdateProvider>(),
 ])
+class MockDeviceService extends ChangeNotifier implements DeviceService {
+  @override
+  bool get isTv => false;
+  @override
+  String? get deviceName => 'Mock Device';
+  @override
+  Future<void> refresh() async {}
+}
+
 void main() {
   late MockShowListProvider mockShowListProvider;
   late MockSettingsProvider mockSettingsProvider;
   late MockAudioProvider mockAudioProvider;
+  late MockDeviceService mockDeviceService;
 
   setUp(() {
     mockShowListProvider = MockShowListProvider();
     mockSettingsProvider = MockSettingsProvider();
     mockAudioProvider = MockAudioProvider();
+    mockDeviceService = MockDeviceService();
 
     when(mockSettingsProvider.isFirstRun).thenReturn(false);
     when(mockSettingsProvider.showSplashScreen).thenReturn(true);
@@ -66,6 +78,7 @@ void main() {
         ChangeNotifierProvider<SettingsProvider>.value(
             value: mockSettingsProvider),
         ChangeNotifierProvider<AudioProvider>.value(value: mockAudioProvider),
+        ChangeNotifierProvider<DeviceService>.value(value: mockDeviceService),
       ],
       child: const MaterialApp(
         home: SplashScreen(),
