@@ -24,6 +24,7 @@ class ShowListShell extends StatelessWidget {
   final VoidCallback onOpenPlaybackScreen;
   final bool showPasteFeedback;
   final VoidCallback onTitleTap;
+  final bool isPane;
 
   const ShowListShell({
     super.key,
@@ -41,6 +42,7 @@ class ShowListShell extends StatelessWidget {
     required this.onOpenPlaybackScreen,
     required this.showPasteFeedback,
     required this.onTitleTap,
+    this.isPane = false,
     this.enableDiceHaptics = false,
   });
 
@@ -48,6 +50,36 @@ class ShowListShell extends StatelessWidget {
   Widget build(BuildContext context) {
     final audioProvider = context.watch<AudioProvider>();
     final showListProvider = context.watch<ShowListProvider>();
+
+    final bodyContent = Stack(
+      children: [
+        Column(
+          children: [
+            ShowListSearchBar(
+              controller: searchController,
+              focusNode: searchFocusNode,
+              onSubmitted: onSearchSubmitted,
+              animationDuration: animationDuration,
+            ),
+            Expanded(child: body),
+          ],
+        ),
+        if (audioProvider.currentShow != null &&
+            !(showListProvider.isSearchVisible && searchFocusNode.hasFocus) &&
+            !isPane)
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: MiniPlayer(
+              onTap: onOpenPlaybackScreen,
+            ),
+          ),
+        ClipboardFeedbackOverlay(isVisible: showPasteFeedback),
+      ],
+    );
+
+    if (isPane) return bodyContent;
 
     return Scaffold(
       backgroundColor: backgroundColor,
@@ -61,32 +93,7 @@ class ShowListShell extends StatelessWidget {
         onToggleSearch: onToggleSearch,
         onTitleTap: onTitleTap,
       ),
-      body: Stack(
-        children: [
-          Column(
-            children: [
-              ShowListSearchBar(
-                controller: searchController,
-                focusNode: searchFocusNode,
-                onSubmitted: onSearchSubmitted,
-                animationDuration: animationDuration,
-              ),
-              Expanded(child: body),
-            ],
-          ),
-          if (audioProvider.currentShow != null &&
-              !(showListProvider.isSearchVisible && searchFocusNode.hasFocus))
-            Positioned(
-              left: 0,
-              right: 0,
-              bottom: 0,
-              child: MiniPlayer(
-                onTap: onOpenPlaybackScreen,
-              ),
-            ),
-          ClipboardFeedbackOverlay(isVisible: showPasteFeedback),
-        ],
-      ),
+      body: bodyContent,
     );
   }
 }

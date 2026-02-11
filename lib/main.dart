@@ -23,6 +23,8 @@ import 'package:shakedown/ui/widgets/rgb_clock_wrapper.dart';
 import 'package:shakedown/services/audio_cache_service.dart';
 import 'package:shakedown/services/catalog_service.dart';
 import 'package:shakedown/providers/update_provider.dart';
+import 'package:shakedown/services/device_service.dart';
+import 'package:shakedown/ui/widgets/tv/tv_dual_pane_layout.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -367,6 +369,7 @@ class _GdarAppState extends State<GdarApp> {
                 ),
         ),
         ChangeNotifierProvider(create: (_) => UpdateProvider()),
+        ChangeNotifierProvider(create: (_) => DeviceService()),
       ],
       child: Consumer2<ThemeProvider, SettingsProvider>(
         builder: (context, themeProvider, settingsProvider, child) {
@@ -530,7 +533,9 @@ class _GdarAppState extends State<GdarApp> {
                       ? const OnboardingScreen()
                       : (settingsProvider.showSplashScreen
                           ? const SplashScreen()
-                          : const ShowListScreen()),
+                          : (context.watch<DeviceService>().isTv
+                              ? const TvDualPaneLayout()
+                              : const ShowListScreen())),
                   builder: (context, child) {
                     final isTrueBlack = themeProvider.isDarkMode &&
                         settingsProvider.useTrueBlack;

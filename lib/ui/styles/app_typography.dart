@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shakedown/providers/settings_provider.dart';
+import 'package:shakedown/services/device_service.dart';
 import 'package:shakedown/utils/font_layout_config.dart';
 
 class AppTypography {
@@ -17,8 +18,12 @@ class AppTypography {
   /// 3. [SettingsProvider.appFont]: Adjustments for specific fonts (Caveat needs to be bigger)
   static double responsiveFontSize(BuildContext context, double baseSize) {
     final settingsProvider = context.watch<SettingsProvider>();
+    final deviceService = context.watch<DeviceService>();
     final scaleFactor =
         FontLayoutConfig.getEffectiveScale(context, settingsProvider);
+
+    // Additional boost for TV "10-foot" UI
+    final double tvMultiplier = deviceService.isTv ? 1.5 : 1.0;
 
     // Font-specific size corrections relative to Roboto
     // Caveat is naturally small/thin, so we boost it for readability.
@@ -38,7 +43,7 @@ class AppTypography {
         fontMultiplier = 1.0;
     }
 
-    return baseSize * fontMultiplier * scaleFactor;
+    return baseSize * fontMultiplier * scaleFactor * tvMultiplier;
   }
 
   /// Helper for commonly used text styles

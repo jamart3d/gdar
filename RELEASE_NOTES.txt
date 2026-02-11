@@ -1,3 +1,12 @@
+Release 1.0.37:
+- **New**: Google TV / Android TV Support! Experience the app on the big screen with a tailored "10-foot UI".
+- **New**: TV Dual-Pane Layout—Show browsing on the left, immersive playback on the right.
+- **Premium**: Integrated Material 3 Focus states with spring-based scaling and glow borders for D-pad navigation.
+- **Improved**: Adaptive Typography—Font sizes now scale up by 1.5x on TV for maximum legibility from a distance.
+- **Polished**: Glassmorphism and Backdrop Blur effects applied across the TV interface for a premium, modern feel.
+- **Feature**: Full Onboarding and Splash Screen support on TV with D-pad focus management.
+- **Hardened**: Targeted Android 14 (API 34) for modern platform compatibility and performance.
+
 Release 1.0.36:
 - **New**: Smart Pre-Load Agent for "Advanced Cache"—show tracks are now gracefully pre-loaded in the background.
 - **Improved**: Playback stability during transitions; pre-loading begins automatically for the next show in the queue.

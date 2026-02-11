@@ -1,7 +1,7 @@
 name: shakedown
 description: gapless playback of select grateful dead shows from archive.org
 publish_to: 'none'
-version: 1.0.36+36
+version: 1.0.37+37
 
 environment:
   sdk: '>=3.0.0 <4.0.0'
@@ -48,6 +48,7 @@ dependencies:
   crypto: ^3.0.3
   connectivity_plus: ^7.0.0
   in_app_update: ^4.2.5
+  device_info_plus: ^11.3.0
 
 
 dev_dependencies:

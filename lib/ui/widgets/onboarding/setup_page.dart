@@ -3,10 +3,12 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:shakedown/providers/settings_provider.dart';
 import 'package:shakedown/providers/theme_provider.dart';
+import 'package:shakedown/services/device_service.dart';
 import 'package:shakedown/ui/styles/app_typography.dart';
 import 'package:shakedown/ui/styles/font_config.dart';
 import 'package:shakedown/ui/widgets/animated_gradient_border.dart';
 import 'package:shakedown/ui/widgets/onboarding/onboarding_components.dart';
+import 'package:shakedown/ui/widgets/tv/tv_focus_wrapper.dart';
 
 class SetupPage extends StatefulWidget {
   final double scaleFactor;
@@ -103,60 +105,87 @@ class _SetupPageState extends State<SetupPage> {
                             spacing: 8.0,
                             runSpacing: 8.0,
                             children: [
-                              FilterChip(
-                                label: Text('UI Scale',
-                                    style: TextStyle(
-                                        fontSize:
-                                            AppTypography.responsiveFontSize(
-                                                context, 12.0))),
-                                selected: settings.uiScale,
-                                onSelected: (bool selected) {
-                                  HapticFeedback.selectionClick();
-                                  settings.toggleUiScale();
-                                },
-                                showCheckmark: false,
-                                selectedColor: colorScheme.primaryContainer,
-                                labelStyle: TextStyle(
-                                  color: settings.uiScale
-                                      ? colorScheme.onPrimaryContainer
-                                      : colorScheme.onSurface,
-                                  fontWeight: FontWeight.normal,
-                                ),
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 12, vertical: 8),
-                              ),
-                              FilterChip(
-                                label: Text('Dark Mode',
-                                    style: TextStyle(
-                                        fontSize:
-                                            AppTypography.responsiveFontSize(
-                                                context, 12.0))),
-                                selected: themeProvider.isDarkMode,
-                                onSelected: (bool selected) {
-                                  HapticFeedback.selectionClick();
-                                  themeProvider.toggleTheme();
+                              Builder(
+                                builder: (context) {
+                                  final isTv =
+                                      context.watch<DeviceService>().isTv;
+                                  Widget chip = FilterChip(
+                                    label: Text('UI Scale',
+                                        style: TextStyle(
+                                            fontSize: AppTypography
+                                                .responsiveFontSize(
+                                                    context, 12.0))),
+                                    selected: settings.uiScale,
+                                    onSelected: (bool selected) {
+                                      HapticFeedback.selectionClick();
+                                      settings.toggleUiScale();
+                                    },
+                                    showCheckmark: false,
+                                    selectedColor: colorScheme.primaryContainer,
+                                    labelStyle: TextStyle(
+                                      color: settings.uiScale
+                                          ? colorScheme.onPrimaryContainer
+                                          : colorScheme.onSurface,
+                                      fontWeight: FontWeight.normal,
+                                    ),
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 12, vertical: 8),
+                                  );
 
-                                  // Sync True Black with Dark Mode
-                                  if (selected) {
-                                    if (!settings.useTrueBlack) {
-                                      settings.toggleUseTrueBlack();
-                                    }
-                                  } else {
-                                    if (settings.useTrueBlack) {
-                                      settings.toggleUseTrueBlack();
-                                    }
+                                  if (isTv) {
+                                    chip = TvFocusWrapper(
+                                      onTap: () {
+                                        HapticFeedback.selectionClick();
+                                        settings.toggleUiScale();
+                                      },
+                                      borderRadius: BorderRadius.circular(8),
+                                      child: chip,
+                                    );
                                   }
+                                  return chip;
                                 },
-                                showCheckmark: false,
-                                selectedColor: colorScheme.primaryContainer,
-                                labelStyle: TextStyle(
-                                  color: themeProvider.isDarkMode
-                                      ? colorScheme.onPrimaryContainer
-                                      : colorScheme.onSurface,
-                                  fontWeight: FontWeight.normal,
-                                ),
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 12, vertical: 8),
+                              ),
+                              Builder(
+                                builder: (context) {
+                                  final isTv =
+                                      context.watch<DeviceService>().isTv;
+                                  Widget chip = FilterChip(
+                                    label: Text('Dark Mode',
+                                        style: TextStyle(
+                                            fontSize: AppTypography
+                                                .responsiveFontSize(
+                                                    context, 12.0))),
+                                    selected: themeProvider.isDarkMode,
+                                    onSelected: (bool selected) {
+                                      _handleDarkModeToggle(
+                                          selected, themeProvider, settings);
+                                    },
+                                    showCheckmark: false,
+                                    selectedColor: colorScheme.primaryContainer,
+                                    labelStyle: TextStyle(
+                                      color: themeProvider.isDarkMode
+                                          ? colorScheme.onPrimaryContainer
+                                          : colorScheme.onSurface,
+                                      fontWeight: FontWeight.normal,
+                                    ),
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 12, vertical: 8),
+                                  );
+
+                                  if (isTv) {
+                                    chip = TvFocusWrapper(
+                                      onTap: () {
+                                        _handleDarkModeToggle(
+                                            !themeProvider.isDarkMode,
+                                            themeProvider,
+                                            settings);
+                                      },
+                                      borderRadius: BorderRadius.circular(8),
+                                      child: chip,
+                                    );
+                                  }
+                                  return chip;
+                                },
                               ),
                             ],
                           ),
@@ -202,37 +231,56 @@ class _SetupPageState extends State<SetupPage> {
                 fontFamily: config.fontFamily,
               ),
         ),
-        child: FilterChip(
-          label: Text(
-            label,
-            style: normalizedStyle,
-            textAlign: TextAlign.center,
-          ),
-          selected: isSelected,
-          onSelected: (bool selected) {
-            if (selected) {
-              HapticFeedback.selectionClick();
-              settings.setAppFont(fontKey);
+        child: Builder(
+          builder: (context) {
+            final isTv = context.watch<DeviceService>().isTv;
+            Widget chip = FilterChip(
+              label: Text(
+                label,
+                style: normalizedStyle,
+                textAlign: TextAlign.center,
+              ),
+              selected: isSelected,
+              onSelected: (bool selected) {
+                if (selected) {
+                  HapticFeedback.selectionClick();
+                  settings.setAppFont(fontKey);
+                }
+              },
+              showCheckmark: false,
+              selectedColor: colorScheme.primaryContainer,
+              labelStyle: normalizedStyle.copyWith(
+                color: isSelected
+                    ? colorScheme.onPrimaryContainer
+                    : colorScheme.onSurface,
+              ),
+              padding: EdgeInsets.symmetric(
+                horizontal: 12 * scaleFactor,
+                vertical: 8 * scaleFactor,
+              ),
+            );
+
+            if (isTv) {
+              chip = TvFocusWrapper(
+                onTap: () {
+                  HapticFeedback.selectionClick();
+                  settings.setAppFont(fontKey);
+                },
+                borderRadius: BorderRadius.circular(8),
+                child: chip,
+              );
             }
+            return chip;
           },
-          showCheckmark: false,
-          selectedColor: colorScheme.primaryContainer,
-          labelStyle: normalizedStyle.copyWith(
-            color: isSelected
-                ? colorScheme.onPrimaryContainer
-                : colorScheme.onSurface,
-          ),
-          padding: EdgeInsets.symmetric(
-            horizontal: 12 * scaleFactor,
-            vertical: 8 * scaleFactor,
-          ),
         ),
       ),
     );
   }
 
   Widget _buildDontShowAgainCheckbox(BuildContext context, ThemeData theme) {
-    return InkWell(
+    final isTv = context.watch<DeviceService>().isTv;
+
+    Widget checkbox = InkWell(
       onTap: () => widget.onDontShowAgainChanged(!widget.dontShowAgain),
       borderRadius: BorderRadius.circular(8),
       child: Padding(
@@ -260,11 +308,40 @@ class _SetupPageState extends State<SetupPage> {
         ),
       ),
     );
+
+    if (isTv) {
+      checkbox = TvFocusWrapper(
+        onTap: () => widget.onDontShowAgainChanged(!widget.dontShowAgain),
+        borderRadius: BorderRadius.circular(8),
+        child: checkbox,
+      );
+    }
+
+    return checkbox;
+  }
+
+  void _handleDarkModeToggle(
+      bool selected, ThemeProvider themeProvider, SettingsProvider settings) {
+    HapticFeedback.selectionClick();
+    themeProvider.toggleTheme();
+
+    // Sync True Black with Dark Mode
+    if (selected) {
+      if (!settings.useTrueBlack) {
+        settings.toggleUseTrueBlack();
+      }
+    } else {
+      if (settings.useTrueBlack) {
+        settings.toggleUseTrueBlack();
+      }
+    }
   }
 
   Widget _buildGetStartedButton(
       BuildContext context, ColorScheme colorScheme, ThemeData theme) {
-    return AnimatedGradientBorder(
+    final isTv = context.watch<DeviceService>().isTv;
+
+    Widget button = AnimatedGradientBorder(
       borderRadius: 30,
       borderWidth: 3,
       colors: const [
@@ -303,5 +380,15 @@ class _SetupPageState extends State<SetupPage> {
         ),
       ),
     );
+
+    if (isTv) {
+      button = TvFocusWrapper(
+        onTap: widget.onFinish,
+        borderRadius: BorderRadius.circular(30),
+        child: button,
+      );
+    }
+
+    return button;
   }
 }

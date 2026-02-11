@@ -20,7 +20,8 @@ import 'package:shakedown/ui/widgets/show_list/show_list_shell.dart';
 import 'package:shakedown/ui/widgets/show_list/show_list_body.dart';
 
 class ShowListScreen extends StatefulWidget {
-  const ShowListScreen({super.key});
+  final bool isPane;
+  const ShowListScreen({super.key, this.isPane = false});
 
   @override
   State<ShowListScreen> createState() => _ShowListScreenState();
@@ -329,6 +330,7 @@ class _ShowListScreenState extends State<ShowListScreen>
     }
 
     return ShowListShell(
+      isPane: widget.isPane,
       backgroundColor: backgroundColor ?? Theme.of(context).colorScheme.surface,
       randomPulseAnimation: _randomPulseAnimation,
       searchPulseAnimation: _searchPulseAnimation,

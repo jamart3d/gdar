@@ -304,7 +304,27 @@ This file tracks planned features, enhancements, and bug fixes for the gdar appl
 
 ## Low Priority / Ideas
 
-- [ ] **Google TV Support:** Create a dedicated screen/layout optimized for Google TV and Android TV.
+- [ ] **Google TV / Android TV Support:**
+  - **Goal:** Create a premium "10-foot" experience optimized for large screens and remote navigation.
+  - **Layout & Navigation:**
+    - **Split-Screen Design:**
+      - **Left Pane:** Show List / Navigation (Browsing).
+      - **Right Pane:** Playback / Track List / Metadata.
+    - **Expressive Material 3:**
+      - **Dynamic Color:** UI themes that adapt to album art or "Atmospheric Colors".
+      - **Typography:** Bold `Display` and `Headline` scales for distance visibility.
+      - **Glassmorphism:** `BackdropFilter` frosted-glass effects on overlays/sidebars.
+      - **Motion:** Expressive transitions (shared axis) and spring-based focus animations.
+    - **Focus Management:** Robust `FocusNode` handling for D-pad navigation with prominent visual indicators (e.g., elevated cards with "glow" borders).
+  - **TV-Specific Features:**
+    - **Leanback Browsing:** Remote-optimized horizontal/vertical list scrolling.
+    - **Screensaver Mode:** Low-power playback view with scrolling art or atmospheric weather glow.
+  - **Technical Implementation:**
+    - **Device Detection:**
+      - **UiModeManager:** Check for `UI_MODE_TYPE_TELEVISION` via platform channel.
+      - **Focus Mode:** Detect `navigationMode == directional` via `MediaQuery`.
+    - **Adaptive Layout:** Use `LayoutBuilder` / `OrientationBuilder` for dual-pane switching.
+    - **Overscan:** Safe Area management to prevent TV panel cropping.
 
 - [x] **Google Assistant Integration:** Add support for voice commands (e.g., "Hey Google, play a random show on gdar") using App Actions.
   - [x] **Deep Link Consistency:** Ensured deep link actions wait for show list data initialization to resolve playback race conditions during cold start.

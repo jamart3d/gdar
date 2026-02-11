@@ -12,6 +12,9 @@ import 'package:shakedown/ui/widgets/onboarding/welcome_page.dart';
 import 'package:shakedown/ui/widgets/onboarding/tips_page.dart';
 import 'package:shakedown/ui/widgets/onboarding/setup_page.dart';
 import 'package:shakedown/providers/update_provider.dart';
+import 'package:shakedown/services/device_service.dart';
+import 'package:shakedown/ui/widgets/tv/tv_dual_pane_layout.dart';
+import 'package:shakedown/ui/widgets/tv/tv_focus_wrapper.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -75,9 +78,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       settingsProvider.completeOnboarding();
     }
 
+    final isTv = context.read<DeviceService>().isTv;
     final nextScreen = settingsProvider.showSplashScreen
         ? const SplashScreen()
-        : const ShowListScreen();
+        : (isTv ? const TvDualPaneLayout() : const ShowListScreen());
 
     Navigator.of(context).pushReplacement(
       PageRouteBuilder(
@@ -183,15 +187,30 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             child: AnimatedOpacity(
               opacity: isLastPage ? 0.0 : 1.0,
               duration: const Duration(milliseconds: 300),
-              child: TextButton(
-                onPressed: _nextPage,
-                child: Text(
-                  'Next',
-                  style: TextStyle(
-                    fontSize: AppTypography.responsiveFontSize(context, 16.0),
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
+              child: Builder(
+                builder: (context) {
+                  final isTv = context.watch<DeviceService>().isTv;
+                  Widget button = TextButton(
+                    onPressed: _nextPage,
+                    child: Text(
+                      'Next',
+                      style: TextStyle(
+                        fontSize:
+                            AppTypography.responsiveFontSize(context, 16.0),
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  );
+
+                  if (isTv) {
+                    button = TvFocusWrapper(
+                      onTap: _nextPage,
+                      borderRadius: BorderRadius.circular(8),
+                      child: button,
+                    );
+                  }
+                  return button;
+                },
               ),
             ),
           ),

@@ -6,9 +6,11 @@ import 'package:shakedown/models/source.dart';
 import 'package:shakedown/models/track.dart';
 import 'package:shakedown/providers/audio_provider.dart';
 import 'package:shakedown/providers/settings_provider.dart';
+import 'package:shakedown/services/device_service.dart';
 import 'package:shakedown/ui/styles/app_typography.dart';
 import 'package:shakedown/ui/widgets/animated_gradient_border.dart';
 import 'package:shakedown/ui/widgets/conditional_marquee.dart';
+import 'package:shakedown/ui/widgets/tv/tv_focus_wrapper.dart';
 import 'package:shakedown/utils/font_layout_config.dart';
 import 'package:shakedown/utils/utils.dart';
 
@@ -109,10 +111,12 @@ class TrackListView extends StatelessWidget {
             currentTrack.title == track.title &&
             currentTrack.trackNumber == track.trackNumber;
 
+        final deviceService = context.watch<DeviceService>();
+        final isTv = deviceService.isTv;
         final double scaleFactor =
             FontLayoutConfig.getEffectiveScale(context, settingsProvider);
 
-        return Container(
+        Widget trackItem = Container(
           margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 1),
           decoration: BoxDecoration(
             color: (isPlaying && settingsProvider.highlightPlayingWithRgb)
@@ -164,6 +168,21 @@ class TrackListView extends StatelessWidget {
                       index, isPlaying, scaleFactor),
                 ),
         );
+
+        if (isTv) {
+          trackItem = TvFocusWrapper(
+            onTap: () {
+              if (!isPlaying) {
+                HapticFeedback.lightImpact();
+                audioProvider.seekToTrack(index);
+              }
+            },
+            borderRadius: BorderRadius.circular(12),
+            child: trackItem,
+          );
+        }
+
+        return trackItem;
       },
     );
   }

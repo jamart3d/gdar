@@ -7,9 +7,11 @@ import 'package:shakedown/providers/audio_provider.dart';
 import 'package:shakedown/providers/settings_provider.dart';
 import 'package:shakedown/providers/show_list_provider.dart';
 import 'package:shakedown/services/catalog_service.dart';
+import 'package:shakedown/services/device_service.dart';
 import 'package:shakedown/ui/widgets/show_list/show_list_card.dart';
 import 'package:shakedown/ui/widgets/show_list_item_details.dart';
 import 'package:shakedown/ui/widgets/swipe_action_background.dart';
+import 'package:shakedown/ui/widgets/tv/tv_focus_wrapper.dart';
 
 class ShowListItem extends StatelessWidget {
   final Show show;
@@ -43,39 +45,51 @@ class ShowListItem extends StatelessWidget {
     final isLoading =
         showListProvider.isShowLoading(showListProvider.getShowKey(show));
 
+    final deviceService = context.watch<DeviceService>();
+    final isTv = deviceService.isTv;
+
+    Widget card = ShowListCard(
+      show: show,
+      isExpanded: isExpanded,
+      isPlaying: isPlaying,
+      playingSource: playingSource,
+      isLoading: isLoading,
+      onTap: onTap,
+      onLongPress: onLongPress,
+    );
+
+    if (isTv) {
+      card = TvFocusWrapper(
+        onTap: onTap,
+        onLongPress: onLongPress,
+        child: card,
+      );
+    }
+
     return Column(
       key: ValueKey('${show.name}_${show.date}'),
       children: [
-        Dismissible(
-          key: ValueKey('${show.name}_${show.date}'),
-          // Enable swipe for all shows. Blocking a show from the main list
-          // will block all of its sources.
-          direction: DismissDirection.endToStart,
-          dismissThresholds: const {
-            DismissDirection.endToStart: 0.6,
-          },
-          background: const SwipeActionBackground(
-            borderRadius: 12.0,
+        if (isTv)
+          card
+        else
+          Dismissible(
+            key: ValueKey('${show.name}_${show.date}'),
+            direction: DismissDirection.endToStart,
+            dismissThresholds: const {
+              DismissDirection.endToStart: 0.6,
+            },
+            background: const SwipeActionBackground(
+              borderRadius: 12.0,
+            ),
+            confirmDismiss: (direction) async {
+              return await _showBlockConfirmation(
+                  context, show, audioProvider, settingsProvider);
+            },
+            onDismissed: (direction) {
+              context.read<ShowListProvider>().dismissShow(show);
+            },
+            child: card,
           ),
-          confirmDismiss: (direction) async {
-            return await _showBlockConfirmation(
-                context, show, audioProvider, settingsProvider);
-          },
-          onDismissed: (direction) {
-            // Optimistically remove from list.
-            // setRating was already called in confirmDismiss.
-            context.read<ShowListProvider>().dismissShow(show);
-          },
-          child: ShowListCard(
-            show: show,
-            isExpanded: isExpanded,
-            isPlaying: isPlaying,
-            playingSource: playingSource,
-            isLoading: isLoading,
-            onTap: onTap,
-            onLongPress: onLongPress,
-          ),
-        ),
         SizeTransition(
           sizeFactor: animation,
           axisAlignment: -1.0,

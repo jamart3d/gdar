@@ -6,6 +6,9 @@ import 'package:shakedown/providers/settings_provider.dart';
 import 'package:shakedown/ui/screens/show_list_screen.dart';
 
 import 'package:shakedown/ui/widgets/shakedown_title.dart';
+import 'package:shakedown/services/device_service.dart';
+import 'package:shakedown/ui/widgets/tv/tv_dual_pane_layout.dart';
+import 'package:shakedown/ui/styles/app_typography.dart';
 import 'package:shakedown/utils/font_layout_config.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -127,10 +130,13 @@ class _SplashScreenState extends State<SplashScreen>
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
+        final isTv = context.read<DeviceService>().isTv;
+        final nextScreen =
+            isTv ? const TvDualPaneLayout() : const ShowListScreen();
+
         Navigator.of(context).pushReplacement(
           PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) =>
-                const ShowListScreen(),
+            pageBuilder: (context, animation, secondaryAnimation) => nextScreen,
             transitionsBuilder:
                 (context, animation, secondaryAnimation, child) {
               final curvedAnimation = CurvedAnimation(
@@ -302,10 +308,7 @@ class _SplashScreenState extends State<SplashScreen>
                     color: isSuccess
                         ? colorScheme.primary
                         : colorScheme.error, // Red for error
-                    size: 20 *
-                        (scaleFactor > 1.2
-                            ? 1.2
-                            : scaleFactor)) // Cap icon growth
+                    size: AppTypography.responsiveFontSize(context, 20.0))
                 : SizedBox(
                     width: 14 * scaleFactor,
                     height: 14 * scaleFactor,
@@ -322,7 +325,7 @@ class _SplashScreenState extends State<SplashScreen>
           child: Text(
             label,
             style: theme.textTheme.titleMedium?.copyWith(
-              fontSize: baseSize * scaleFactor,
+              fontSize: AppTypography.responsiveFontSize(context, baseSize),
               color: isSuccess ? null : colorScheme.error, // Red Text for error
               fontWeight: isSuccess ? null : FontWeight.bold,
             ),
