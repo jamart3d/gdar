@@ -1,3 +1,6 @@
+Release 1.0.39:
+- **Internal**: Targeted Android 15 (API Level 35) to comply with updated Google Play Store requirements.
+
 Release 1.0.38:
 - **Fixed**: Restored support for Phone and Tablet devices. 1.0.37 inadvertently limited support to TV devices only.
 

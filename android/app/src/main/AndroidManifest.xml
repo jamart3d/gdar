@@ -2,7 +2,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="com.jamart3d.shakedown">
 
-    <uses-sdk android:minSdkVersion="21" android:targetSdkVersion="34" />
+    <uses-sdk android:minSdkVersion="21" android:targetSdkVersion="35" />
 
     <uses-feature android:name="android.software.leanback" android:required="false" />
     <uses-feature android:name="android.hardware.touchscreen" android:required="false" />
