@@ -4,9 +4,9 @@
 
     <uses-sdk android:minSdkVersion="21" android:targetSdkVersion="34" />
 
-    <uses-feature android:name="android.software.leanback" android:required="true" />
+    <uses-feature android:name="android.software.leanback" android:required="false" />
     <uses-feature android:name="android.hardware.touchscreen" android:required="false" />
-    <uses-feature android:name="android.hardware.type.television" android:required="true" />
+    <uses-feature android:name="android.hardware.type.television" android:required="false" />
 
     <!-- Permissions for background audio -->
     <uses-permission android:name="android.permission.WAKE_LOCK"/>
