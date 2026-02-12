@@ -148,7 +148,7 @@ class TrackListView extends StatelessWidget {
                       Colors.red,
                     ],
                     showGlow: true,
-                    showShadow: settingsProvider.glowMode > 0,
+                    showShadow: !isTv && settingsProvider.glowMode > 0,
                     glowOpacity: 0.5 * (settingsProvider.glowMode / 100.0),
                     animationSpeed: settingsProvider.rgbAnimationSpeed,
                     child: Material(

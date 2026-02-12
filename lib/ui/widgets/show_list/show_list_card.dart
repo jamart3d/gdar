@@ -102,8 +102,8 @@ class _ShowListCardState extends State<ShowListCard> {
                     colorScheme.secondary,
                     colorScheme.primary,
                   ],
-            showGlow: !isTv,
-            showShadow: style.showShadow,
+            showGlow: true,
+            showShadow: !isTv && style.showShadow,
             glowOpacity: (style.useRgb ? 0.5 : 0.2) * style.glowOpacity,
             animationSpeed: settingsProvider.rgbAnimationSpeed,
             child: _buildCardContent(
@@ -171,6 +171,7 @@ class _ShowListCardState extends State<ShowListCard> {
       child: Material(
         color: Colors.transparent,
         child: InkWell(
+          canRequestFocus: !isTv,
           borderRadius: BorderRadius.circular(borderRadius),
           onTap: () {
             HapticFeedback.selectionClick();

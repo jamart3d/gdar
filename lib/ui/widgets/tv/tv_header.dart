@@ -1,25 +1,29 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:shakedown/providers/show_list_provider.dart';
 import 'package:shakedown/ui/widgets/show_list/animated_dice_icon.dart';
 import 'package:shakedown/ui/widgets/tv/tv_focus_wrapper.dart';
 import 'package:shakedown/ui/screens/settings_screen.dart';
 
 class TvHeader extends StatelessWidget {
-  final bool isRandomShowLoading;
   final VoidCallback onRandomPlay;
   final Animation<double>? randomPulseAnimation;
   final bool enableDiceHaptics;
+  final bool autofocusDice;
 
   const TvHeader({
     super.key,
-    required this.isRandomShowLoading,
     required this.onRandomPlay,
     this.randomPulseAnimation,
     this.enableDiceHaptics = false,
+    this.autofocusDice = false,
   });
 
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final showListProvider = context.watch<ShowListProvider>();
+    final isChoosingRandomShow = showListProvider.isChoosingRandomShow;
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
@@ -28,16 +32,16 @@ class TvHeader extends StatelessWidget {
           // 1. Dice Icon (Large)
           TvFocusWrapper(
             onTap: onRandomPlay,
+            autofocus: autofocusDice,
             borderRadius: BorderRadius.circular(12),
             child: SizedBox(
               width: 56, // Reduced from 72
               height: 56, // Reduced from 72
               child: AnimatedDiceIcon(
                 onPressed: onRandomPlay,
-                isLoading: isRandomShowLoading,
+                isLoading: isChoosingRandomShow,
                 enableHaptics: enableDiceHaptics,
                 tooltip: 'Play Random Show',
-                // size: 48, // Removed: widget controls its own size via FontLayoutConfig
               ),
             ),
           ),

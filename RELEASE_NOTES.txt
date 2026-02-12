@@ -1,3 +1,9 @@
+Release 1.0.48:
+- **Polished**: Synchronized Random Play dice animations across all mobile and TV screens.
+- **Improved**: TV Main Screen—Floating playback bar now stays hidden until music is actively loaded.
+- **Fixed**: TV Long Press—Resolved issues with D-pad repeat events to ensure reliable long-press detection.
+- **Cleaned**: Refined dual-pane layout logic and synchronized state management for a smoother TV experience.
+
 Release 1.0.47:
 - **Visuals**: Cleaned up the Google TV main screen by disabling the unwanted shadow glow on focused items.
 - **Improved**: Playback Navigation—Fixed the "stuck" progress slider; Left/Right now seeks while Up/Down moves focus normally.

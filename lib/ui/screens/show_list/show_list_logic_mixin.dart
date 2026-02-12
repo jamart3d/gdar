@@ -319,6 +319,7 @@ mixin ShowListLogicMixin<T extends StatefulWidget>
     });
 
     if (!isRandomShowLoading) {
+      context.read<ShowListProvider>().setIsChoosingRandomShow(true);
       setState(() {
         lastRollStartTime = DateTime.now();
         isRandomShowLoading = true;
@@ -343,6 +344,7 @@ mixin ShowListLogicMixin<T extends StatefulWidget>
 
     logger.d(
         'ShowListScreen: handlePlayRandomShow() - Triggering random show roll.');
+    showListProvider.setIsChoosingRandomShow(true);
     setState(() {
       lastRollStartTime = DateTime.now();
       isRandomShowLoading = true;

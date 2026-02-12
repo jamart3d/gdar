@@ -5,7 +5,7 @@ import 'package:shakedown/providers/settings_provider.dart';
 import 'package:shakedown/ui/widgets/rating_control.dart';
 import 'package:shakedown/ui/widgets/src_badge.dart';
 import 'package:shakedown/services/catalog_service.dart';
-
+import 'package:shakedown/services/device_service.dart';
 import 'package:provider/provider.dart';
 
 class SourceListItem extends StatelessWidget {
@@ -101,6 +101,7 @@ class SourceListItem extends StatelessWidget {
               child: Material(
                 color: Colors.transparent,
                 child: InkWell(
+                  canRequestFocus: !context.read<DeviceService>().isTv,
                   borderRadius: BorderRadius.circular(effectiveRadius),
                   onTap: onTap,
                   onLongPress: onLongPress,
@@ -260,7 +261,7 @@ class SourceListItem extends StatelessWidget {
                     colorScheme.primary,
                   ],
             showGlow: true,
-            showShadow: false, // Handled by outer container
+            showShadow: !context.read<DeviceService>().isTv && showShadow,
             glowOpacity: 0.5 * glowOpacity,
             animationSpeed: settingsProvider.rgbAnimationSpeed,
             child: ClipRRect(

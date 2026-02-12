@@ -173,6 +173,15 @@ class MockShowListProvider extends ChangeNotifier implements ShowListProvider {
 
   @override
   void dismissSource(Show show, String sourceId) {}
+
+  bool _isChoosingRandomShow = false;
+  @override
+  bool get isChoosingRandomShow => _isChoosingRandomShow;
+  @override
+  void setIsChoosingRandomShow(bool value) {
+    _isChoosingRandomShow = value;
+    notifyListeners();
+  }
 }
 
 void main() {

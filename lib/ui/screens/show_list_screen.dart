@@ -216,11 +216,14 @@ class _ShowListScreenState extends State<ShowListScreen>
         final elapsed = now.difference(startTime).inMilliseconds;
         final remaining = math.max(0, 2000 - elapsed);
 
+        final showListProvider = context.read<ShowListProvider>();
+
         if (remaining > 0) {
           logger.d(
               'ShowListScreen: Player READY fast. Delaying reset by ${remaining}ms.');
           Future.delayed(Duration(milliseconds: remaining), () {
             if (mounted) {
+              showListProvider.setIsChoosingRandomShow(false);
               setState(() {
                 isRandomShowLoading = false;
                 userInitiatedRoll = false;
@@ -228,6 +231,7 @@ class _ShowListScreenState extends State<ShowListScreen>
             }
           });
         } else {
+          showListProvider.setIsChoosingRandomShow(false);
           setState(() {
             isRandomShowLoading = false;
             userInitiatedRoll = false;

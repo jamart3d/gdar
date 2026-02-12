@@ -88,6 +88,9 @@ class _TvFocusWrapperState extends State<TvFocusWrapper> {
             });
           }
           return KeyEventResult.handled;
+        } else if (event is KeyRepeatEvent) {
+          // Keep the timer running, just prevent bubbling
+          return KeyEventResult.handled;
         } else if (event is KeyUpEvent) {
           final wasLongPress = _longPressHandled;
           _cancelLongPressTimer();

@@ -233,6 +233,15 @@ class MockShowListProvider extends ChangeNotifier implements ShowListProvider {
 
   @override
   Future<void> get initializationComplete => Future.value();
+
+  bool _isChoosingRandomShow = false;
+  @override
+  bool get isChoosingRandomShow => _isChoosingRandomShow;
+  @override
+  void setIsChoosingRandomShow(bool value) {
+    _isChoosingRandomShow = value;
+    notifyListeners();
+  }
 }
 
 void main() {
