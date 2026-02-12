@@ -4,14 +4,30 @@ import 'package:provider/provider.dart';
 import 'package:shakedown/providers/audio_provider.dart';
 import 'package:shakedown/ui/widgets/tv/tv_focus_wrapper.dart';
 
-class TvPlaybackBar extends StatelessWidget {
+class TvPlaybackBar extends StatefulWidget {
   final VoidCallback? onDown;
-  const TvPlaybackBar({super.key, this.onDown});
+  final VoidCallback? onUp;
+  const TvPlaybackBar({super.key, this.onDown, this.onUp});
+
+  @override
+  State<TvPlaybackBar> createState() => _TvPlaybackBarState();
+}
+
+class _TvPlaybackBarState extends State<TvPlaybackBar> {
+  final FocusNode _playPauseFocusNode = FocusNode();
+  final FocusNode _progressFocusNode = FocusNode();
+
+  @override
+  void dispose() {
+    _playPauseFocusNode.dispose();
+    _progressFocusNode.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final audioProvider = context.watch<AudioProvider>();
-    final player = audioProvider.audioPlayer; // Corrected getter
+    final player = audioProvider.audioPlayer;
     final colorScheme = Theme.of(context).colorScheme;
 
     // Use a translucent "Glass" color for the capsule
@@ -34,6 +50,7 @@ class TvPlaybackBar extends StatelessWidget {
         children: [
           // 1. Play/Pause Icon
           TvFocusWrapper(
+            focusNode: _playPauseFocusNode,
             onTap: () {
               if (player.playing) {
                 player.pause();
@@ -42,10 +59,17 @@ class TvPlaybackBar extends StatelessWidget {
               }
             },
             onKeyEvent: (node, event) {
-              if (event is KeyDownEvent &&
-                  event.logicalKey == LogicalKeyboardKey.arrowDown) {
-                onDown?.call();
-                return KeyEventResult.handled;
+              if (event is KeyDownEvent) {
+                if (event.logicalKey == LogicalKeyboardKey.arrowDown) {
+                  // DOWN from Play/Pause goes to Progress Indicator
+                  _progressFocusNode.requestFocus();
+                  return KeyEventResult.handled;
+                } else if (event.logicalKey == LogicalKeyboardKey.arrowUp) {
+                  if (widget.onUp != null) {
+                    widget.onUp!.call();
+                    return KeyEventResult.handled;
+                  }
+                }
               }
               return KeyEventResult.ignored;
             },
@@ -80,70 +104,81 @@ class TvPlaybackBar extends StatelessWidget {
 
           // 3. Progress Bar (Standard Slider)
           Expanded(
-            child: StreamBuilder<Duration>(
-              stream: player.positionStream,
-              builder: (context, snapshot) {
-                final position = snapshot.data ?? Duration.zero;
-                return StreamBuilder<Duration?>(
-                  stream: player.durationStream,
-                  builder: (context, durationSnapshot) {
-                    final total = durationSnapshot.data ?? Duration.zero;
-                    final maxSeconds = total.inSeconds.toDouble();
-                    final value = position.inSeconds
-                        .toDouble()
-                        .clamp(0.0, maxSeconds > 0 ? maxSeconds : 1.0);
+            child: TvFocusWrapper(
+              focusNode: _progressFocusNode,
+              borderRadius: BorderRadius.circular(20),
+              onKeyEvent: (node, event) {
+                if (event is KeyDownEvent) {
+                  if (event.logicalKey == LogicalKeyboardKey.arrowLeft) {
+                    player.seek(Duration(
+                        seconds: (player.position.inSeconds - 10)
+                            .clamp(0, player.duration?.inSeconds ?? 0)));
+                    return KeyEventResult.handled;
+                  } else if (event.logicalKey ==
+                      LogicalKeyboardKey.arrowRight) {
+                    player.seek(Duration(
+                        seconds: (player.position.inSeconds + 10)
+                            .clamp(0, player.duration?.inSeconds ?? 0)));
+                    return KeyEventResult.handled;
+                  } else if (event.logicalKey == LogicalKeyboardKey.arrowDown) {
+                    if (widget.onDown != null) {
+                      widget.onDown!.call();
+                      return KeyEventResult.handled;
+                    }
+                  } else if (event.logicalKey == LogicalKeyboardKey.arrowUp) {
+                    // UP from progress goes to Play/Pause button
+                    _playPauseFocusNode.requestFocus();
+                    return KeyEventResult.handled;
+                  }
+                }
+                return KeyEventResult.ignored;
+              },
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 4),
+                child: StreamBuilder<Duration>(
+                  stream: player.positionStream,
+                  builder: (context, snapshot) {
+                    final position = snapshot.data ?? Duration.zero;
+                    return StreamBuilder<Duration?>(
+                      stream: player.durationStream,
+                      builder: (context, durationSnapshot) {
+                        final total = durationSnapshot.data ?? Duration.zero;
+                        final maxSeconds = total.inSeconds.toDouble();
+                        final value = position.inSeconds
+                            .toDouble()
+                            .clamp(0.0, maxSeconds > 0 ? maxSeconds : 1.0);
 
-                    return Focus(
-                      onKeyEvent: (node, event) {
-                        // Allow D-pad left/right to seek, but don't trap up/down
-                        if (event is KeyDownEvent) {
-                          if (event.logicalKey ==
-                              LogicalKeyboardKey.arrowLeft) {
-                            player.seek(Duration(
-                                seconds: (position.inSeconds - 10)
-                                    .clamp(0, maxSeconds.toInt())));
-                            return KeyEventResult.handled;
-                          } else if (event.logicalKey ==
-                              LogicalKeyboardKey.arrowRight) {
-                            player.seek(Duration(
-                                seconds: (position.inSeconds + 10)
-                                    .clamp(0, maxSeconds.toInt())));
-                            return KeyEventResult.handled;
-                          } else if (event.logicalKey ==
-                              LogicalKeyboardKey.arrowDown) {
-                            onDown?.call();
-                            return KeyEventResult.handled;
-                          }
-                        }
-                        return KeyEventResult.ignored;
+                        return SliderTheme(
+                          data: SliderTheme.of(context).copyWith(
+                            trackHeight: 4,
+                            thumbShape: const RoundSliderThumbShape(
+                                enabledThumbRadius: 6),
+                            overlayShape: const RoundSliderOverlayShape(
+                                overlayRadius: 12),
+                            activeTrackColor: colorScheme.primary,
+                            inactiveTrackColor:
+                                colorScheme.onSurface.withValues(alpha: 0.2),
+                            thumbColor: colorScheme.primary,
+                            overlayColor:
+                                colorScheme.primary.withValues(alpha: 0.2),
+                          ),
+                          child: ExcludeFocus(
+                            child: Slider(
+                              min: 0.0,
+                              max: maxSeconds > 0 ? maxSeconds : 1.0,
+                              value: value,
+                              onChanged: (newValue) {
+                                player
+                                    .seek(Duration(seconds: newValue.round()));
+                              },
+                            ),
+                          ),
+                        );
                       },
-                      child: SliderTheme(
-                        data: SliderTheme.of(context).copyWith(
-                          trackHeight: 4,
-                          thumbShape: const RoundSliderThumbShape(
-                              enabledThumbRadius: 6),
-                          overlayShape:
-                              const RoundSliderOverlayShape(overlayRadius: 12),
-                          activeTrackColor: colorScheme.primary,
-                          inactiveTrackColor:
-                              colorScheme.onSurface.withValues(alpha: 0.2),
-                          thumbColor: colorScheme.primary,
-                          overlayColor:
-                              colorScheme.primary.withValues(alpha: 0.2),
-                        ),
-                        child: Slider(
-                          min: 0.0,
-                          max: maxSeconds > 0 ? maxSeconds : 1.0,
-                          value: value,
-                          onChanged: (newValue) {
-                            player.seek(Duration(seconds: newValue.round()));
-                          },
-                        ),
-                      ),
                     );
                   },
-                );
-              },
+                ),
+              ),
             ),
           ),
           const SizedBox(width: 16),

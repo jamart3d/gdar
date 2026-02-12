@@ -18,11 +18,13 @@ class TvDualPaneLayout extends StatefulWidget {
 class _TvDualPaneLayoutState extends State<TvDualPaneLayout> {
   int _focusedPane = 0; // 0 for left (ShowList), 1 for right (Playback)
   final FocusNode _diceFocusNode = FocusNode();
+  final FocusNode _gearsFocusNode = FocusNode();
   final FocusNode _rightScrollbarFocusNode = FocusNode();
 
   @override
   void dispose() {
     _diceFocusNode.dispose();
+    _gearsFocusNode.dispose();
     _rightScrollbarFocusNode.dispose();
     super.dispose();
   }
@@ -62,12 +64,16 @@ class _TvDualPaneLayoutState extends State<TvDualPaneLayout> {
                             TvHeader(
                               autofocusDice: true,
                               diceFocusNode: _diceFocusNode,
+                              gearsFocusNode: _gearsFocusNode,
                               onRandomPlay: () {
                                 context.read<AudioProvider>().playRandomShow();
                               },
                               onLeft: () {
                                 // Wrap around from Dice (far left) to Right Scrollbar (far right)
-                                _rightScrollbarFocusNode.requestFocus();
+                                // Only if there's actually a show/tracks to focus on the right
+                                if (audioProvider.currentShow != null) {
+                                  _rightScrollbarFocusNode.requestFocus();
+                                }
                               },
                             ),
                             const Expanded(
@@ -136,6 +142,16 @@ class _TvDualPaneLayoutState extends State<TvDualPaneLayout> {
                     child: TvPlaybackBar(
                       onDown: () {
                         _diceFocusNode.requestFocus();
+                      },
+                      onUp: () {
+                        // Move back into the appropriate pane
+                        if (audioProvider.currentShow != null) {
+                          // If we have tracks, go to the track list
+                          _rightScrollbarFocusNode.requestFocus();
+                        } else {
+                          // Otherwise go to the show list (Dice icon)
+                          _diceFocusNode.requestFocus();
+                        }
                       },
                     ),
                   ),

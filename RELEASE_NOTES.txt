@@ -1,3 +1,9 @@
+Release 1.0.50:
+- **Navigation**: Implemented "leak-proof" circular navigation for TV—focus now wraps seamlessly between edges and vertical layers.
+- **TV Controls**: Upgraded the Playback Bar with an intuitive "staircase" vertical flow (Progress ↔ Play/Pause ↔ Content).
+- **Settings**: Standardized premium focus indicators across all settings sections using new TV-optimized list tiles.
+- **Improved**: Optimized TV Header by removing unused elements and ensuring direct Dice-to-Settings navigation.
+
 Release 1.0.49:
 - **New**: Circular Navigation Wrap-Around—Focus now jumps between far-left and far-right elements for a "leak-proof" TV experience.
 - **Improved**: Settings Focus Safety—Upgraded all interactive settings sections (Appearance, Data, About) with premium focus indicators.

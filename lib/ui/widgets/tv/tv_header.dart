@@ -12,6 +12,7 @@ class TvHeader extends StatelessWidget {
   final bool enableDiceHaptics;
   final bool autofocusDice;
   final FocusNode? diceFocusNode;
+  final FocusNode? gearsFocusNode;
   final VoidCallback? onLeft;
 
   const TvHeader({
@@ -21,6 +22,7 @@ class TvHeader extends StatelessWidget {
     this.enableDiceHaptics = false,
     this.autofocusDice = false,
     this.diceFocusNode,
+    this.gearsFocusNode,
     this.onLeft,
   });
 
@@ -40,10 +42,14 @@ class TvHeader extends StatelessWidget {
             autofocus: autofocusDice,
             focusNode: diceFocusNode,
             onKeyEvent: (node, event) {
-              if (event is KeyDownEvent &&
-                  event.logicalKey == LogicalKeyboardKey.arrowLeft) {
-                onLeft?.call();
-                return KeyEventResult.handled;
+              if (event is KeyDownEvent) {
+                if (event.logicalKey == LogicalKeyboardKey.arrowLeft) {
+                  onLeft?.call();
+                  return KeyEventResult.handled;
+                } else if (event.logicalKey == LogicalKeyboardKey.arrowRight) {
+                  gearsFocusNode?.requestFocus();
+                  return KeyEventResult.handled;
+                }
               }
               return KeyEventResult.ignored;
             },
@@ -89,6 +95,15 @@ class TvHeader extends StatelessWidget {
                   transitionDuration: Duration.zero,
                 ),
               );
+            },
+            focusNode: gearsFocusNode,
+            onKeyEvent: (node, event) {
+              if (event is KeyDownEvent &&
+                  event.logicalKey == LogicalKeyboardKey.arrowLeft) {
+                diceFocusNode?.requestFocus();
+                return KeyEventResult.handled;
+              }
+              return KeyEventResult.ignored;
             },
             borderRadius: BorderRadius.circular(50),
             child: Container(
