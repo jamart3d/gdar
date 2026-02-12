@@ -12,6 +12,8 @@ class TvFocusWrapper extends StatefulWidget {
   final FocusNode? focusNode;
   final bool autofocus;
   final BorderRadius? borderRadius;
+  final Color? focusColor;
+  final bool showGlow;
 
   const TvFocusWrapper({
     super.key,
@@ -22,6 +24,8 @@ class TvFocusWrapper extends StatefulWidget {
     this.focusNode,
     this.autofocus = false,
     this.borderRadius,
+    this.focusColor,
+    this.showGlow = false,
   });
 
   @override
@@ -109,14 +113,16 @@ class _TvFocusWrapperState extends State<TvFocusWrapper> {
               borderRadius: radius,
               border: Border.all(
                 color: _isFocused
-                    ? colorScheme.primary.withValues(alpha: 0.6)
+                    ? (widget.focusColor ?? colorScheme.primary)
+                        .withValues(alpha: 0.6)
                     : Colors.transparent,
                 width: 2.5,
               ),
-              boxShadow: _isFocused
+              boxShadow: (widget.showGlow && _isFocused)
                   ? [
                       BoxShadow(
-                        color: colorScheme.primary.withValues(alpha: 0.2),
+                        color: (widget.focusColor ?? colorScheme.primary)
+                            .withValues(alpha: 0.2),
                         blurRadius: 15,
                         spreadRadius: 3,
                       ),

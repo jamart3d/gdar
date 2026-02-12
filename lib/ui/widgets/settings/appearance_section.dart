@@ -7,6 +7,7 @@ import 'package:shakedown/ui/widgets/animated_gradient_border.dart';
 import 'package:shakedown/ui/widgets/section_card.dart';
 import 'package:shakedown/ui/widgets/settings/color_picker_dialog.dart';
 import 'package:shakedown/ui/widgets/settings/font_selection_dialog.dart';
+import 'package:shakedown/ui/widgets/tv/tv_switch_list_tile.dart';
 
 class AppearanceSection extends StatefulWidget {
   final double scaleFactor;
@@ -64,7 +65,7 @@ class _AppearanceSectionState extends State<AppearanceSection> {
       icon: Icons.palette_outlined,
       initiallyExpanded: widget.initiallyExpanded,
       children: [
-        SwitchListTile(
+        TvSwitchListTile(
           dense: true,
           visualDensity: VisualDensity.compact,
           title: FittedBox(
@@ -86,7 +87,7 @@ class _AppearanceSectionState extends State<AppearanceSection> {
                 : Icons.light_mode_rounded,
           ),
         ),
-        SwitchListTile(
+        TvSwitchListTile(
           dense: true,
           visualDensity: VisualDensity.compact,
           title: FittedBox(
@@ -114,7 +115,7 @@ class _AppearanceSectionState extends State<AppearanceSection> {
         ),
         // True Black Mode (only in Dark Mode)
         if (isDarkMode)
-          SwitchListTile(
+          TvSwitchListTile(
             dense: true,
             visualDensity: VisualDensity.compact,
             title: FittedBox(
@@ -175,7 +176,7 @@ class _AppearanceSectionState extends State<AppearanceSection> {
               ),
             ),
           ),
-        SwitchListTile(
+        TvSwitchListTile(
           dense: true,
           visualDensity: VisualDensity.compact,
           title: FittedBox(
@@ -250,7 +251,7 @@ class _AppearanceSectionState extends State<AppearanceSection> {
               ],
             ),
           ),
-        SwitchListTile(
+        TvSwitchListTile(
           dense: true,
           visualDensity: VisualDensity.compact,
           title: FittedBox(

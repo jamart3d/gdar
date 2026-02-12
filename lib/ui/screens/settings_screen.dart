@@ -14,6 +14,8 @@ import 'package:shakedown/utils/color_generator.dart';
 import 'package:shakedown/utils/font_layout_config.dart';
 import 'package:shakedown/providers/update_provider.dart';
 import 'package:shakedown/ui/widgets/onboarding/update_banner.dart';
+import 'package:shakedown/services/device_service.dart';
+import 'package:shakedown/ui/screens/tv_settings_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   final String? highlightSetting;
@@ -111,6 +113,14 @@ class _SettingsScreenState extends State<SettingsScreen>
         FontLayoutConfig.getEffectiveScale(context, settingsProvider);
 
     final updateProvider = context.watch<UpdateProvider>();
+
+    // Check for TV mode and return dedicated screen
+    if (context.read<DeviceService>().isTv) {
+      // We need to pass necessary props if any, or TvSettingsScreen manages its own state.
+      // The current settings screen manages `highlightSetting` which might be deep-linked.
+      // TvSettingsScreen doesn't support deep-linking yet, but we can add it later.
+      return const TvSettingsScreen();
+    }
 
     Color? backgroundColor;
     // Only apply custom background color if NOT in "True Black" mode.

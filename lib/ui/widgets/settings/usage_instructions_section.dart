@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shakedown/ui/widgets/section_card.dart';
 import 'package:shakedown/ui/widgets/show_list/animated_dice_icon.dart';
+import 'package:shakedown/ui/widgets/tv/tv_focus_wrapper.dart';
 
 class UsageInstructionsSection extends StatelessWidget {
   final double scaleFactor;
@@ -14,13 +15,22 @@ class UsageInstructionsSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Helper to wrap list tiles for focus (enabling scrolling on TV)
+    Widget wrapForTv(Widget child) {
+      return TvFocusWrapper(
+        onTap: () {}, // No-op, just for focus
+        borderRadius: BorderRadius.circular(12),
+        child: IgnorePointer(ignoring: true, child: child),
+      );
+    }
+
     return SectionCard(
       scaleFactor: scaleFactor,
       title: 'Usage Instructions',
       icon: Icons.help_outline,
       initiallyExpanded: initiallyExpanded,
       children: [
-        ListTile(
+        wrapForTv(ListTile(
           dense: true,
           visualDensity: VisualDensity.compact,
           leading: SizedBox(
@@ -65,8 +75,8 @@ class UsageInstructionsSection extends StatelessWidget {
             ),
           ),
           isThreeLine: true,
-        ),
-        ListTile(
+        )),
+        wrapForTv(ListTile(
           dense: true,
           visualDensity: VisualDensity.compact,
           leading: const Icon(Icons.playlist_play_rounded),
@@ -94,8 +104,8 @@ class UsageInstructionsSection extends StatelessWidget {
               ],
             ),
           ),
-        ),
-        ListTile(
+        )),
+        wrapForTv(ListTile(
           dense: true,
           visualDensity: VisualDensity.compact,
           leading: const Icon(Icons.play_circle_outline_rounded),
@@ -129,8 +139,8 @@ class UsageInstructionsSection extends StatelessWidget {
             ),
           ),
           isThreeLine: true,
-        ),
-        ListTile(
+        )),
+        wrapForTv(ListTile(
           dense: true,
           visualDensity: VisualDensity.compact,
           leading: const Icon(Icons.search_rounded),
@@ -157,8 +167,8 @@ class UsageInstructionsSection extends StatelessWidget {
               ],
             ),
           ),
-        ),
-        ListTile(
+        )),
+        wrapForTv(ListTile(
           dense: true,
           visualDensity: VisualDensity.compact,
           leading: const Icon(Icons.star_rate_rounded),
@@ -185,8 +195,8 @@ class UsageInstructionsSection extends StatelessWidget {
               ],
             ),
           ),
-        ),
-        ListTile(
+        )),
+        wrapForTv(ListTile(
           dense: true,
           visualDensity: VisualDensity.compact,
           leading: const Icon(Icons.block_rounded),
@@ -214,8 +224,8 @@ class UsageInstructionsSection extends StatelessWidget {
               ],
             ),
           ),
-        ),
-        ListTile(
+        )),
+        wrapForTv(ListTile(
           dense: true,
           visualDensity: VisualDensity.compact,
           leading: const Icon(Icons.touch_app_rounded),
@@ -242,8 +252,8 @@ class UsageInstructionsSection extends StatelessWidget {
               ],
             ),
           ),
-        ),
-        ListTile(
+        )),
+        wrapForTv(ListTile(
           dense: true,
           visualDensity: VisualDensity.compact,
           leading: const Icon(Icons.link_rounded),
@@ -270,8 +280,8 @@ class UsageInstructionsSection extends StatelessWidget {
               ],
             ),
           ),
-        ),
-        ListTile(
+        )),
+        wrapForTv(ListTile(
           dense: true,
           visualDensity: VisualDensity.compact,
           leading: const Icon(Icons.copy_rounded),
@@ -298,8 +308,8 @@ class UsageInstructionsSection extends StatelessWidget {
               ],
             ),
           ),
-        ),
-        ListTile(
+        )),
+        wrapForTv(ListTile(
           dense: true,
           visualDensity: VisualDensity.compact,
           leading: const Icon(Icons.content_paste_rounded),
@@ -327,8 +337,8 @@ class UsageInstructionsSection extends StatelessWidget {
               ],
             ),
           ),
-        ),
-        ListTile(
+        )),
+        wrapForTv(ListTile(
           dense: true,
           visualDensity: VisualDensity.compact,
           leading: const Icon(Icons.healing_rounded),
@@ -356,8 +366,8 @@ class UsageInstructionsSection extends StatelessWidget {
               ],
             ),
           ),
-        ),
-        ListTile(
+        )),
+        wrapForTv(ListTile(
           dense: true,
           visualDensity: VisualDensity.compact,
           leading: const Icon(Icons.download_for_offline_rounded),
@@ -385,7 +395,7 @@ class UsageInstructionsSection extends StatelessWidget {
               ],
             ),
           ),
-        ),
+        )),
       ],
     );
   }

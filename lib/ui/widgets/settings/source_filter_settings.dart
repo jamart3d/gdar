@@ -1,10 +1,13 @@
-import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
 import 'package:shakedown/providers/settings_provider.dart';
 import 'package:shakedown/providers/show_list_provider.dart';
+import 'package:shakedown/services/device_service.dart';
 import 'package:shakedown/ui/widgets/section_card.dart';
+import 'package:shakedown/ui/widgets/tv/tv_focus_wrapper.dart';
+import 'package:shakedown/ui/widgets/tv/tv_switch_list_tile.dart';
 import 'package:shakedown/utils/font_layout_config.dart';
-import 'package:provider/provider.dart';
 
 class SourceFilterSettings extends StatelessWidget {
   const SourceFilterSettings({super.key});
@@ -21,7 +24,7 @@ class SourceFilterSettings extends StatelessWidget {
       title: 'Source Filtering',
       icon: Icons.filter_alt_outlined,
       children: [
-        SwitchListTile(
+        TvSwitchListTile(
           dense: true,
           visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
           title: FittedBox(
@@ -165,12 +168,31 @@ class SourceFilterSettings extends StatelessWidget {
   Widget _buildFilterBadge(
       BuildContext context, String label, bool isActive, VoidCallback onTap,
       {VoidCallback? onLongPress}) {
-    return _TactileBadge(
+    final isTv = context.read<DeviceService>().isTv;
+
+    Widget badge = _TactileBadge(
       label: label,
       isActive: isActive,
       onTap: onTap,
       onLongPress: onLongPress,
     );
+
+    if (isTv) {
+      return TvFocusWrapper(
+        onTap: onTap,
+        onLongPress: onLongPress,
+        borderRadius: BorderRadius.circular(20), // Match badge rounding roughly
+        focusColor: isActive
+            ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.4)
+            : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.2),
+        child: IgnorePointer(
+          ignoring: true,
+          child: badge,
+        ),
+      );
+    }
+
+    return badge;
   }
 }
 

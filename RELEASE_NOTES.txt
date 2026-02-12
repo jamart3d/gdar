@@ -1,3 +1,9 @@
+Release 1.0.46:
+- **New**: Google TV Settings Overhaul—Implemented a dedicated split-view layout for faster navigation on large screens.
+- **Improved**: D-pad accessibility—All usage instructions and filter badges are now focusable and interactive via the TV remote.
+- **Visuals**: Enhanced TV focus states with customizable highlight colors and refined "Pill" card aesthetics.
+- **Polished**: Integrated TvSwitchListTile and TvFocusWrapper across the settings screen for a premium, native TV experience.
+
 Release 1.0.45:
 - **New**: Multi-Source Focus—D-pad now correctly highlights and selects individual sources in the show details.
 - **Convenience**: Long-press any show on Google TV to play immediately; the app automatically finds the highest-rated source for you.

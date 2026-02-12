@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:shakedown/providers/settings_provider.dart';
 import 'package:shakedown/ui/widgets/section_card.dart';
+import 'package:shakedown/ui/widgets/tv/tv_switch_list_tile.dart';
 
 class InterfaceSection extends StatelessWidget {
   final double scaleFactor;
@@ -26,7 +27,7 @@ class InterfaceSection extends StatelessWidget {
       initiallyExpanded: initiallyExpanded,
       children: [
         // 1. General UI Group
-        SwitchListTile(
+        TvSwitchListTile(
           dense: true,
           visualDensity: VisualDensity.compact,
           title: FittedBox(
@@ -52,7 +53,7 @@ class InterfaceSection extends StatelessWidget {
           },
           secondary: const Icon(Icons.text_fields_rounded),
         ),
-        SwitchListTile(
+        TvSwitchListTile(
           dense: true,
           visualDensity: VisualDensity.compact,
           title: FittedBox(
@@ -84,7 +85,7 @@ class InterfaceSection extends StatelessWidget {
         const SizedBox(height: 8),
 
         // 2. Date & Time Group
-        SwitchListTile(
+        TvSwitchListTile(
           dense: true,
           visualDensity: VisualDensity.compact,
           title: FittedBox(
@@ -110,7 +111,7 @@ class InterfaceSection extends StatelessWidget {
           },
           secondary: const Icon(Icons.date_range_rounded),
         ),
-        SwitchListTile(
+        TvSwitchListTile(
           dense: true,
           visualDensity: VisualDensity.compact,
           title: FittedBox(
@@ -137,7 +138,7 @@ class InterfaceSection extends StatelessWidget {
           secondary: const Icon(Icons.today_rounded),
         ),
         if (settingsProvider.showDayOfWeek)
-          SwitchListTile(
+          TvSwitchListTile(
             dense: true,
             visualDensity: VisualDensity.compact,
             title: FittedBox(
@@ -163,7 +164,7 @@ class InterfaceSection extends StatelessWidget {
             },
             secondary: const Icon(Icons.short_text_rounded),
           ),
-        SwitchListTile(
+        TvSwitchListTile(
           dense: true,
           visualDensity: VisualDensity.compact,
           title: FittedBox(
@@ -194,7 +195,7 @@ class InterfaceSection extends StatelessWidget {
         const SizedBox(height: 8),
 
         // 3. List Sorting & Badges
-        SwitchListTile(
+        TvSwitchListTile(
           dense: true,
           visualDensity: VisualDensity.compact,
           title: FittedBox(
@@ -220,7 +221,7 @@ class InterfaceSection extends StatelessWidget {
           },
           secondary: const Icon(Icons.sort_rounded),
         ),
-        SwitchListTile(
+        TvSwitchListTile(
           dense: true,
           visualDensity: VisualDensity.compact,
           title: FittedBox(
@@ -251,7 +252,7 @@ class InterfaceSection extends StatelessWidget {
         const SizedBox(height: 8),
 
         // 4. Track List Options
-        SwitchListTile(
+        TvSwitchListTile(
           dense: true,
           visualDensity: VisualDensity.compact,
           title: FittedBox(
@@ -277,7 +278,7 @@ class InterfaceSection extends StatelessWidget {
           },
           secondary: const Icon(Icons.pin_rounded),
         ),
-        SwitchListTile(
+        TvSwitchListTile(
           dense: true,
           visualDensity: VisualDensity.compact,
           title: FittedBox(

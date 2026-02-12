@@ -6,6 +6,7 @@ import 'package:shakedown/providers/settings_provider.dart';
 import 'package:shakedown/ui/widgets/section_card.dart';
 import 'package:shakedown/ui/widgets/settings/highlightable_setting.dart';
 import 'package:shakedown/ui/widgets/settings/random_probability_card.dart';
+import 'package:shakedown/ui/widgets/tv/tv_switch_list_tile.dart';
 
 class PlaybackSection extends StatelessWidget {
   final double scaleFactor;
@@ -45,7 +46,7 @@ class PlaybackSection extends StatelessWidget {
               'play_on_tap_${highlightTriggerCount}_${activeHighlightKey == 'play_on_tap'}'),
           startWithHighlight: activeHighlightKey == 'play_on_tap',
           settingKey: settingKeys['play_on_tap'],
-          child: SwitchListTile(
+          child: TvSwitchListTile(
             dense: true,
             visualDensity: VisualDensity.compact,
             title: FittedBox(
@@ -77,7 +78,7 @@ class PlaybackSection extends StatelessWidget {
               'playback_messages_${highlightTriggerCount}_${activeHighlightKey == 'playback_messages'}'),
           startWithHighlight: activeHighlightKey == 'playback_messages',
           settingKey: settingKeys['playback_messages'],
-          child: SwitchListTile(
+          child: TvSwitchListTile(
             dense: true,
             visualDensity: VisualDensity.compact,
             title: FittedBox(
@@ -109,7 +110,7 @@ class PlaybackSection extends StatelessWidget {
               'offline_buffering_${highlightTriggerCount}_${activeHighlightKey == 'offline_buffering'}'),
           startWithHighlight: activeHighlightKey == 'offline_buffering',
           settingKey: settingKeys['offline_buffering'],
-          child: SwitchListTile(
+          child: TvSwitchListTile(
             dense: true,
             visualDensity: VisualDensity.compact,
             title: FittedBox(
@@ -145,7 +146,7 @@ class PlaybackSection extends StatelessWidget {
               'enable_buffer_agent_${highlightTriggerCount}_${activeHighlightKey == 'enable_buffer_agent'}'),
           startWithHighlight: activeHighlightKey == 'enable_buffer_agent',
           settingKey: settingKeys['enable_buffer_agent'],
-          child: SwitchListTile(
+          child: TvSwitchListTile(
             dense: true,
             visualDensity: VisualDensity.compact,
             title: FittedBox(
@@ -174,7 +175,7 @@ class PlaybackSection extends StatelessWidget {
             secondary: const Icon(Icons.healing_rounded),
           ),
         ),
-        SwitchListTile(
+        TvSwitchListTile(
           dense: true,
           visualDensity: VisualDensity.compact,
           title: FittedBox(
@@ -204,7 +205,7 @@ class PlaybackSection extends StatelessWidget {
                     .withValues(alpha: 0.5),
           ),
         ),
-        SwitchListTile(
+        TvSwitchListTile(
           dense: true,
           visualDensity: VisualDensity.compact,
           title: FittedBox(
@@ -254,7 +255,7 @@ class PlaybackSection extends StatelessWidget {
           },
           secondary: const Icon(Icons.repeat_rounded),
         ),
-        SwitchListTile(
+        TvSwitchListTile(
           dense: true,
           visualDensity: VisualDensity.compact,
           title: FittedBox(
@@ -285,7 +286,7 @@ class PlaybackSection extends StatelessWidget {
           },
           secondary: const Icon(Icons.start_rounded),
         ),
-        SwitchListTile(
+        TvSwitchListTile(
           dense: true,
           visualDensity: VisualDensity.compact,
           title: FittedBox(
@@ -310,7 +311,7 @@ class PlaybackSection extends StatelessWidget {
           },
           secondary: const Icon(Icons.new_releases_rounded),
         ),
-        SwitchListTile(
+        TvSwitchListTile(
           dense: true,
           visualDensity: VisualDensity.compact,
           title: FittedBox(
@@ -335,7 +336,7 @@ class PlaybackSection extends StatelessWidget {
           },
           secondary: const Icon(Icons.star_rate_rounded),
         ),
-        SwitchListTile(
+        TvSwitchListTile(
           dense: true,
           visualDensity: VisualDensity.compact,
           title: FittedBox(

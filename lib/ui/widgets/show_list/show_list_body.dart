@@ -8,6 +8,7 @@ import 'package:shakedown/providers/settings_provider.dart';
 import 'package:shakedown/providers/show_list_provider.dart';
 import 'package:shakedown/services/device_service.dart';
 import 'package:shakedown/ui/widgets/show_list/show_list_item.dart';
+import 'package:shakedown/ui/widgets/tv/tv_scrollbar.dart';
 
 /// The scrollable list of shows displayed in [ShowListScreen].
 class ShowListBody extends StatelessWidget {
@@ -51,7 +52,7 @@ class ShowListBody extends StatelessWidget {
 
     final isTv = context.read<DeviceService>().isTv;
 
-    return ScrollablePositionedList.builder(
+    final list = ScrollablePositionedList.builder(
       itemScrollController: itemScrollController,
       itemPositionsListener: itemPositionsListener,
       padding: EdgeInsets.only(bottom: isTv ? 40 : 160),
@@ -72,5 +73,28 @@ class ShowListBody extends StatelessWidget {
         );
       },
     );
+
+    if (isTv) {
+      return Row(
+        children: [
+          Expanded(child: list),
+          TvScrollbar(
+            itemPositionsListener: itemPositionsListener,
+            itemScrollController: itemScrollController,
+            itemCount: showListProvider.filteredShows.length,
+            onLeft: () {
+              // Move focus back to the show list
+              FocusScope.of(context).focusInDirection(TraversalDirection.left);
+            },
+            onRight: () {
+              // Move focus to the right pane (track list)
+              FocusScope.of(context).focusInDirection(TraversalDirection.right);
+            },
+          ),
+        ],
+      );
+    }
+
+    return list;
   }
 }

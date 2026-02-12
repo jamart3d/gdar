@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:shakedown/services/device_service.dart';
 
 class SectionCard extends StatelessWidget {
   final String title;
@@ -18,6 +20,35 @@ class SectionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (context.read<DeviceService>().isTv) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding:
+                const EdgeInsets.symmetric(horizontal: 16.0, vertical: 24.0),
+            child: Row(
+              children: [
+                Icon(icon,
+                    color: Theme.of(context).colorScheme.primary,
+                    size: 28 * scaleFactor),
+                const SizedBox(width: 16),
+                Text(
+                  title,
+                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                        color: Theme.of(context).colorScheme.onSurface,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 28 * scaleFactor,
+                      ),
+                ),
+              ],
+            ),
+          ),
+          ...children,
+        ],
+      );
+    }
+
     final colorScheme = Theme.of(context).colorScheme;
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),

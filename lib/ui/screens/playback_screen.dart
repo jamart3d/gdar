@@ -13,7 +13,10 @@ import 'package:shakedown/ui/widgets/playback/playback_app_bar.dart';
 import 'package:shakedown/utils/font_layout_config.dart';
 import 'package:shakedown/utils/color_generator.dart';
 import 'package:shakedown/models/track.dart';
+import 'package:shakedown/models/source.dart';
 import 'dart:async';
+import 'package:shakedown/services/device_service.dart';
+import 'package:shakedown/ui/widgets/tv/tv_scrollbar.dart';
 
 class PlaybackScreen extends StatefulWidget {
   final bool initiallyOpen;
@@ -166,6 +169,24 @@ class _PlaybackScreenState extends State<PlaybackScreen>
     }
   }
 
+  int _calculateTotalItems(Source source) {
+    // Logic must match what TrackListView uses to build its list.
+    // TrackListView uses grouping by set.
+    final Map<String, List<Track>> tracksBySet = {};
+    for (var track in source.tracks) {
+      if (!tracksBySet.containsKey(track.setName)) {
+        tracksBySet[track.setName] = [];
+      }
+      tracksBySet[track.setName]!.add(track);
+    }
+    int count = 0;
+    tracksBySet.forEach((key, value) {
+      count++; // Header
+      count += value.length; // Tracks
+    });
+    return count;
+  }
+
   @override
   Widget build(BuildContext context) {
     final audioProvider = context.watch<AudioProvider>();
@@ -231,33 +252,57 @@ class _PlaybackScreenState extends State<PlaybackScreen>
       valueListenable: _panelPositionNotifier,
       builder: (context, panelPosition, _) {
         if (widget.isPane) {
+          // TV Layout: Header + Track List + Scrollbar
           return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Top Part (70%): Track list
-              Expanded(
-                flex: 7,
-                child: TrackListView(
-                  source: currentSource,
-                  bottomPadding: 16.0,
-                  topPadding: 0.0,
-                  itemScrollController: _itemScrollController,
-                  itemPositionsListener: _itemPositionsListener,
-                  audioProvider: audioProvider,
+              Padding(
+                padding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
+                child: Text(
+                  'TRACK LIST',
+                  style: TextStyle(
+                    fontFamily: 'Rock Salt',
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: colorScheme.onSurface,
+                  ),
                 ),
               ),
-              // Bottom Part (30%): Controls and Now Playing
               Expanded(
-                flex: 3,
-                child: Container(
-                  color: panelColor,
-                  child: PlaybackPanel(
-                    currentShow: currentShow,
-                    currentSource: currentSource,
-                    minHeight: 0,
-                    bottomPadding: 16.0,
-                    panelPositionNotifier: ValueNotifier(1.0),
-                    onVenueTap: () {},
-                  ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: TrackListView(
+                        source: currentSource,
+                        bottomPadding:
+                            16.0, // Reduced padding as bar is floating
+                        topPadding: 0.0,
+                        itemScrollController: _itemScrollController,
+                        itemPositionsListener: _itemPositionsListener,
+                        audioProvider: audioProvider,
+                      ),
+                    ),
+                    if (context.read<DeviceService>().isTv)
+                      TvScrollbar(
+                        itemPositionsListener: _itemPositionsListener,
+                        itemScrollController: _itemScrollController,
+                        itemCount: _calculateTotalItems(currentSource),
+                        onLeft: () {
+                          // Move focus left back to the track list
+                          FocusScope.of(context)
+                              .focusInDirection(TraversalDirection.left);
+                        },
+                        onRight: () {
+                          // Looping: Move focus back to the far left (Show List)
+                          // We find the primary focus scope and move focus to the first node
+                          // Or simply look for a node in the left pane.
+                          // For now, we'll try a simple directional move, but if it fails,
+                          // we might need a more direct approach.
+                          FocusScope.of(context)
+                              .focusInDirection(TraversalDirection.right);
+                        },
+                      ),
+                  ],
                 ),
               ),
             ],

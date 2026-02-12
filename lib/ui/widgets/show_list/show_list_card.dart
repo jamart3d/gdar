@@ -102,7 +102,7 @@ class _ShowListCardState extends State<ShowListCard> {
                     colorScheme.secondary,
                     colorScheme.primary,
                   ],
-            showGlow: true,
+            showGlow: !isTv,
             showShadow: style.showShadow,
             glowOpacity: (style.useRgb ? 0.5 : 0.2) * style.glowOpacity,
             animationSpeed: settingsProvider.rgbAnimationSpeed,
@@ -127,7 +127,7 @@ class _ShowListCardState extends State<ShowListCard> {
         elevation: widget.isExpanded ? 2 : 0,
         shadowColor: colorScheme.shadow.withValues(alpha: 0.1),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(28),
+          borderRadius: BorderRadius.circular(isTv ? 100 : 28),
           side: BorderSide(
             color: style.cardBorderColor,
             width: 3,

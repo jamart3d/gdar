@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:shakedown/services/device_service.dart';
 import 'package:shakedown/providers/audio_provider.dart';
 import 'package:shakedown/providers/show_list_provider.dart';
 import 'package:shakedown/ui/widgets/mini_player.dart';
@@ -55,7 +56,7 @@ class ShowListShell extends StatelessWidget {
       children: [
         Column(
           children: [
-            if (isPane)
+            if (isPane && !context.read<DeviceService>().isTv)
               ShowListAppBar(
                 backgroundColor: backgroundColor,
                 randomPulseAnimation: randomPulseAnimation,

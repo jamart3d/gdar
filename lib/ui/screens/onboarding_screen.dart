@@ -35,6 +35,17 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     super.initState();
     _loadVersion();
     _checkArchiveReachability();
+
+    // Secondary safety: If we somehow landed here on TV, skip immediately.
+    // The main entry point also handles this, but this is a fail-safe.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        final isTv = context.read<DeviceService>().isTv;
+        if (isTv) {
+          _finishOnboarding();
+        }
+      }
+    });
   }
 
   @override
