@@ -6,9 +6,11 @@ import 'package:shakedown/providers/audio_provider.dart';
 import 'package:shakedown/providers/settings_provider.dart';
 import 'package:shakedown/providers/show_list_provider.dart'; // Add import
 import 'package:shakedown/services/catalog_service.dart';
+import 'package:shakedown/services/device_service.dart';
 
 import 'package:shakedown/ui/widgets/source_list_item.dart';
 import 'package:shakedown/ui/widgets/swipe_action_background.dart';
+import 'package:shakedown/ui/widgets/tv/tv_focus_wrapper.dart';
 import 'package:provider/provider.dart';
 
 /// A widget that displays a list of sources (SHNIDs) for a given show.
@@ -215,6 +217,24 @@ class _ShowListItemDetailsState extends State<ShowListItemDetails> {
           });
         }
 
+        Widget item = SourceListItem(
+          source: source,
+          isSourcePlaying: isPlaying,
+          scaleFactor: scaleFactor,
+          borderRadius: 20,
+          onTap: () => widget.onSourceTapped(source),
+          onLongPress: () => widget.onSourceLongPress(source),
+        );
+
+        if (context.watch<DeviceService>().isTv) {
+          item = TvFocusWrapper(
+            onTap: () => widget.onSourceTapped(source),
+            onLongPress: () => widget.onSourceLongPress(source),
+            borderRadius: BorderRadius.circular(20),
+            child: item,
+          );
+        }
+
         // Standard Item
         return Padding(
           padding: const EdgeInsets.symmetric(vertical: 1),
@@ -228,14 +248,7 @@ class _ShowListItemDetailsState extends State<ShowListItemDetails> {
               background: const SwipeActionBackground(borderRadius: 20),
               confirmDismiss: (direction) => handleConfirmDismiss(),
               onDismissed: (direction) => handleOnDismissed(),
-              child: SourceListItem(
-                source: source,
-                isSourcePlaying: isPlaying,
-                scaleFactor: scaleFactor,
-                borderRadius: 20,
-                onTap: () => widget.onSourceTapped(source),
-                onLongPress: () => widget.onSourceLongPress(source),
-              ),
+              child: item,
             );
           }),
         );

@@ -550,7 +550,8 @@ class _GdarAppState extends State<GdarApp> {
                   themeAnimationDuration: Duration.zero, // Instant font changes
                   themeAnimationCurve:
                       Curves.linear, // Not used with zero duration
-                  home: settingsProvider.showOnboarding
+                  home: settingsProvider.showOnboarding &&
+                          !context.read<DeviceService>().isTv
                       ? const OnboardingScreen()
                       : (settingsProvider.showSplashScreen
                           ? const SplashScreen()

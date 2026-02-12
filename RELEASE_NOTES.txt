@@ -1,3 +1,11 @@
+Release 1.0.45:
+- **New**: Multi-Source Focus—D-pad now correctly highlights and selects individual sources in the show details.
+- **Convenience**: Long-press any show on Google TV to play immediately; the app automatically finds the highest-rated source for you.
+- **Smart Onboarding**: Application now intelligently skips the initial setup when running on a TV for a faster "Leaning Back" entry.
+- **Visuals**: Refined Dual-Pane layout with 48dp horizontal breathing room, improved inactive pane dimming (40% opacity), and a more subtle glass divider.
+- **Improved**: Significantly increased Show List Card height (76.0) and vertical spacing (12.0) for better visibility on large screens.
+- **Polished**: Enhanced Material 3 focus rings with smoother spring-based scaling animations and optimized text scaling.
+
 Release 1.0.44:
 - **Polished**: Enhanced TV Show List visuals with authoritative "Scale Fit" typography for Venue and Date.
 - **Improved**: Increased Show List Card height and vertical spacing on TV for a more spacious, premium feel.

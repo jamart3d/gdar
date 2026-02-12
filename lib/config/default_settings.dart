@@ -16,7 +16,7 @@ class DefaultSettings {
       false; // Default for small screens (<720)
   static const bool highlightPlayingWithRgb = true;
   static const int glowMode =
-      65; // 0=Off, 1-100=Intensity Percentage (e.g. 50=Half)
+      0; // 0=Off, 1-100=Intensity Percentage (e.g. 50=Half)
   static const double rgbAnimationSpeed = 0.5;
 
   // Show Card & content

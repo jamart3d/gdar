@@ -59,9 +59,16 @@ class _ShowListCardState extends State<ShowListCard> {
       settings: settingsProvider,
     );
 
+    final outerPadding = EdgeInsets.fromLTRB(
+      16,
+      isTv ? 12 : 6,
+      16,
+      widget.isExpanded ? 2 : (isTv ? 12 : 6),
+    );
+
     if ((style.showGlow || style.useRgb) && !style.suppressOuterGlow) {
       return Padding(
-        padding: EdgeInsets.fromLTRB(16, 6, 16, widget.isExpanded ? 2 : 6),
+        padding: outerPadding,
         child: Container(
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(28),
@@ -114,8 +121,7 @@ class _ShowListCardState extends State<ShowListCard> {
     }
 
     return Padding(
-      padding: EdgeInsets.fromLTRB(
-          16, isTv ? 8 : 6, 16, widget.isExpanded ? 2 : (isTv ? 8 : 6)),
+      padding: outerPadding,
       child: Card(
         margin: EdgeInsets.zero,
         elevation: widget.isExpanded ? 2 : 0,
@@ -149,7 +155,7 @@ class _ShowListCardState extends State<ShowListCard> {
     required ColorScheme colorScheme,
     required bool isTv,
   }) {
-    final double cardHeight = (isTv ? 66.0 : 58.0) * style.effectiveScale;
+    final double cardHeight = (isTv ? 76.0 : 58.0) * style.effectiveScale;
     final double controlZoneWidth =
         style.config.baseControlZoneWidth * style.effectiveScale;
 

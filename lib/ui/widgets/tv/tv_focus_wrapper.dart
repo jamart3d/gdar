@@ -109,16 +109,16 @@ class _TvFocusWrapperState extends State<TvFocusWrapper> {
               borderRadius: radius,
               border: Border.all(
                 color: _isFocused
-                    ? colorScheme.primary.withValues(alpha: 0.8)
+                    ? colorScheme.primary.withValues(alpha: 0.6)
                     : Colors.transparent,
-                width: 3.0,
+                width: 2.5,
               ),
               boxShadow: _isFocused
                   ? [
                       BoxShadow(
-                        color: colorScheme.primary.withValues(alpha: 0.3),
-                        blurRadius: 12,
-                        spreadRadius: 2,
+                        color: colorScheme.primary.withValues(alpha: 0.2),
+                        blurRadius: 15,
+                        spreadRadius: 3,
                       ),
                     ]
                   : [],

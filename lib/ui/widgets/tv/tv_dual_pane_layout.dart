@@ -16,7 +16,7 @@ class _TvDualPaneLayoutState extends State<TvDualPaneLayout> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24.0),
+        padding: const EdgeInsets.symmetric(horizontal: 48.0),
         child: Row(
           children: [
             Expanded(
@@ -28,7 +28,7 @@ class _TvDualPaneLayoutState extends State<TvDualPaneLayout> {
                 child: AnimatedOpacity(
                   duration: const Duration(milliseconds: 400),
                   curve: Curves.easeInOut,
-                  opacity: _focusedPane == 0 ? 1.0 : 0.6,
+                  opacity: _focusedPane == 0 ? 1.0 : 0.4,
                   child: const ShowListScreen(isPane: true),
                 ),
               ),
@@ -38,15 +38,15 @@ class _TvDualPaneLayoutState extends State<TvDualPaneLayout> {
               width: 1.0,
               height: double.infinity,
               margin:
-                  const EdgeInsets.symmetric(vertical: 64.0, horizontal: 8.0),
+                  const EdgeInsets.symmetric(vertical: 96.0, horizontal: 16.0),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                   colors: [
                     Colors.white.withValues(alpha: 0.0),
-                    Colors.white.withValues(alpha: 0.15),
-                    Colors.white.withValues(alpha: 0.15),
+                    Colors.white.withValues(alpha: 0.08),
+                    Colors.white.withValues(alpha: 0.08),
                     Colors.white.withValues(alpha: 0.0),
                   ],
                 ),
@@ -61,7 +61,7 @@ class _TvDualPaneLayoutState extends State<TvDualPaneLayout> {
                 child: AnimatedOpacity(
                   duration: const Duration(milliseconds: 400),
                   curve: Curves.easeInOut,
-                  opacity: _focusedPane == 1 ? 1.0 : 0.6,
+                  opacity: _focusedPane == 1 ? 1.0 : 0.4,
                   child: const PlaybackScreen(isPane: true),
                 ),
               ),

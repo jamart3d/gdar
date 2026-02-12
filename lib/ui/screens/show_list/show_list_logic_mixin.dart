@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -10,6 +9,8 @@ import 'package:shakedown/providers/show_list_provider.dart';
 import 'package:shakedown/ui/screens/playback_screen.dart';
 import 'package:shakedown/ui/screens/track_list_screen.dart';
 import 'package:shakedown/utils/logger.dart';
+import 'package:shakedown/services/catalog_service.dart';
+import 'package:shakedown/services/device_service.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
 /// Mixin providing business logic and event handlers for [ShowListScreen].
@@ -172,13 +173,31 @@ mixin ShowListLogicMixin<T extends StatefulWidget>
 
   Future<void> onCardLongPressed(Show show) async {
     if (show.sources.isEmpty) return;
-    Source sourceToPlay;
-    if (show.sources.length > 1) {
-      sourceToPlay = show.sources[Random().nextInt(show.sources.length)];
-    } else {
-      sourceToPlay = show.sources.first;
+
+    // Trigger Playback immediately on long press for TV consistency
+    final catalog = context.read<CatalogService>();
+
+    // Find the highest rated source, or fallback to the first one
+    Source sourceToPlay = show.sources.first;
+    int maxRating = -100;
+
+    for (var src in show.sources) {
+      final rating = catalog.getRating(src.id);
+      if (rating > maxRating) {
+        maxRating = rating;
+        sourceToPlay = src;
+      }
     }
+
     _playSource(show, sourceToPlay);
+
+    // If on TV, and we just started playing, open playback screen
+    if (context.read<DeviceService>().isTv) {
+      // In dual pane, it's already there, but we might want to ensure focus
+      // However, usually we just want it to start playing.
+    } else {
+      await openPlaybackScreen();
+    }
   }
 
   void onSourceLongPressed(Show show, Source source) {
