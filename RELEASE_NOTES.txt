@@ -1,3 +1,9 @@
+Release 1.0.47:
+- **Visuals**: Cleaned up the Google TV main screen by disabling the unwanted shadow glow on focused items.
+- **Improved**: Playback Navigation—Fixed the "stuck" progress slider; Left/Right now seeks while Up/Down moves focus normally.
+- **Navigation**: Enhanced TV Scrollbars—You can now scroll lists using Up/Down while focused on the scrollbar, and Left/Right switches panes.
+- **Stability**: Implemented multi-layer guards to ensure the onboarding flow is always skipped on TV devices.
+
 Release 1.0.46:
 - **New**: Google TV Settings Overhaul—Implemented a dedicated split-view layout for faster navigation on large screens.
 - **Improved**: D-pad accessibility—All usage instructions and filter badges are now focusable and interactive via the TV remote.
