@@ -14,6 +14,7 @@ class TvFocusWrapper extends StatefulWidget {
   final BorderRadius? borderRadius;
   final Color? focusColor;
   final bool showGlow;
+  final FocusOnKeyEventCallback? onKeyEvent;
 
   const TvFocusWrapper({
     super.key,
@@ -26,6 +27,7 @@ class TvFocusWrapper extends StatefulWidget {
     this.borderRadius,
     this.focusColor,
     this.showGlow = false,
+    this.onKeyEvent,
   });
 
   @override
@@ -75,6 +77,13 @@ class _TvFocusWrapperState extends State<TvFocusWrapper> {
       autofocus: widget.autofocus,
       onFocusChange: _handleFocusChange,
       onKeyEvent: (node, event) {
+        // 1. Give external listener a chance first
+        if (widget.onKeyEvent != null) {
+          final result = widget.onKeyEvent!(node, event);
+          if (result != KeyEventResult.ignored) return result;
+        }
+
+        // 2. Internal action key logic (Select/Enter)
         if (!_isActionKey(event.logicalKey)) return KeyEventResult.ignored;
 
         if (event is KeyDownEvent) {

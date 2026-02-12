@@ -22,6 +22,7 @@ class ShowListBody extends StatelessWidget {
   final Function(Show) onCardLongPressed;
   final Function(Show, Source) onSourceTapped;
   final Function(Show, Source) onSourceLongPressed;
+  final FocusNode? scrollbarFocusNode;
 
   const ShowListBody({
     super.key,
@@ -35,6 +36,7 @@ class ShowListBody extends StatelessWidget {
     required this.onCardLongPressed,
     required this.onSourceTapped,
     required this.onSourceLongPressed,
+    this.scrollbarFocusNode,
   });
 
   @override
@@ -82,6 +84,7 @@ class ShowListBody extends StatelessWidget {
             itemPositionsListener: itemPositionsListener,
             itemScrollController: itemScrollController,
             itemCount: showListProvider.filteredShows.length,
+            focusNode: scrollbarFocusNode,
             onLeft: () {
               // Move focus back to the show list
               FocusScope.of(context).focusInDirection(TraversalDirection.left);

@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:shakedown/providers/settings_provider.dart';
 import 'package:shakedown/utils/font_layout_config.dart';
+import 'package:shakedown/ui/widgets/tv/tv_radio_list_tile.dart';
 
 class FontSelectionDialog extends StatelessWidget {
   const FontSelectionDialog({super.key});
@@ -43,7 +44,7 @@ class FontSelectionDialog extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: fonts.entries.map((entry) {
-              return RadioListTile<String>(
+              return TvRadioListTile<String>(
                 title: Text(
                   displayNames[entry.key]!,
                   style: entry.value?.copyWith(

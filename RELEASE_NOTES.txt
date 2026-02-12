@@ -1,3 +1,8 @@
+Release 1.0.49:
+- **New**: Circular Navigation Wrap-Around—Focus now jumps between far-left and far-right elements for a "leak-proof" TV experience.
+- **Improved**: Settings Focus Safety—Upgraded all interactive settings sections (Appearance, Data, About) with premium focus indicators.
+- **Polished**: Consistent Focus Logic—Introduced `TvListTile` and `TvRadioListTile` to ensure high-quality tactile feedback across the TV UI.
+
 Release 1.0.48:
 - **Polished**: Synchronized Random Play dice animations across all mobile and TV screens.
 - **Improved**: TV Main Screen—Floating playback bar now stays hidden until music is actively loaded.

@@ -5,7 +5,8 @@ import 'package:shakedown/providers/audio_provider.dart';
 import 'package:shakedown/ui/widgets/tv/tv_focus_wrapper.dart';
 
 class TvPlaybackBar extends StatelessWidget {
-  const TvPlaybackBar({super.key});
+  final VoidCallback? onDown;
+  const TvPlaybackBar({super.key, this.onDown});
 
   @override
   Widget build(BuildContext context) {
@@ -39,6 +40,14 @@ class TvPlaybackBar extends StatelessWidget {
               } else {
                 player.play();
               }
+            },
+            onKeyEvent: (node, event) {
+              if (event is KeyDownEvent &&
+                  event.logicalKey == LogicalKeyboardKey.arrowDown) {
+                onDown?.call();
+                return KeyEventResult.handled;
+              }
+              return KeyEventResult.ignored;
             },
             borderRadius: BorderRadius.circular(50),
             child: Container(
@@ -99,6 +108,10 @@ class TvPlaybackBar extends StatelessWidget {
                             player.seek(Duration(
                                 seconds: (position.inSeconds + 10)
                                     .clamp(0, maxSeconds.toInt())));
+                            return KeyEventResult.handled;
+                          } else if (event.logicalKey ==
+                              LogicalKeyboardKey.arrowDown) {
+                            onDown?.call();
                             return KeyEventResult.handled;
                           }
                         }

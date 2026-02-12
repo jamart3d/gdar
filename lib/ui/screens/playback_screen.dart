@@ -23,6 +23,8 @@ class PlaybackScreen extends StatefulWidget {
   final bool isPane;
   final VoidCallback? onTitleTap;
   final bool enableDiceHaptics;
+  final FocusNode? scrollbarFocusNode;
+  final VoidCallback? onScrollbarRight;
 
   const PlaybackScreen({
     super.key,
@@ -30,6 +32,8 @@ class PlaybackScreen extends StatefulWidget {
     this.onTitleTap,
     this.isPane = false,
     this.enableDiceHaptics = false,
+    this.scrollbarFocusNode,
+    this.onScrollbarRight,
   });
 
   @override
@@ -287,19 +291,12 @@ class _PlaybackScreenState extends State<PlaybackScreen>
                         itemPositionsListener: _itemPositionsListener,
                         itemScrollController: _itemScrollController,
                         itemCount: _calculateTotalItems(currentSource),
+                        focusNode: widget.scrollbarFocusNode,
+                        onRight: widget.onScrollbarRight,
                         onLeft: () {
                           // Move focus left back to the track list
                           FocusScope.of(context)
                               .focusInDirection(TraversalDirection.left);
-                        },
-                        onRight: () {
-                          // Looping: Move focus back to the far left (Show List)
-                          // We find the primary focus scope and move focus to the first node
-                          // Or simply look for a node in the left pane.
-                          // For now, we'll try a simple directional move, but if it fails,
-                          // we might need a more direct approach.
-                          FocusScope.of(context)
-                              .focusInDirection(TraversalDirection.right);
                         },
                       ),
                   ],

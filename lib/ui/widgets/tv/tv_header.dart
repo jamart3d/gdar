@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:shakedown/providers/show_list_provider.dart';
 import 'package:shakedown/ui/widgets/show_list/animated_dice_icon.dart';
@@ -10,6 +11,8 @@ class TvHeader extends StatelessWidget {
   final Animation<double>? randomPulseAnimation;
   final bool enableDiceHaptics;
   final bool autofocusDice;
+  final FocusNode? diceFocusNode;
+  final VoidCallback? onLeft;
 
   const TvHeader({
     super.key,
@@ -17,6 +20,8 @@ class TvHeader extends StatelessWidget {
     this.randomPulseAnimation,
     this.enableDiceHaptics = false,
     this.autofocusDice = false,
+    this.diceFocusNode,
+    this.onLeft,
   });
 
   @override
@@ -33,6 +38,15 @@ class TvHeader extends StatelessWidget {
           TvFocusWrapper(
             onTap: onRandomPlay,
             autofocus: autofocusDice,
+            focusNode: diceFocusNode,
+            onKeyEvent: (node, event) {
+              if (event is KeyDownEvent &&
+                  event.logicalKey == LogicalKeyboardKey.arrowLeft) {
+                onLeft?.call();
+                return KeyEventResult.handled;
+              }
+              return KeyEventResult.ignored;
+            },
             borderRadius: BorderRadius.circular(12),
             child: SizedBox(
               width: 56, // Reduced from 72

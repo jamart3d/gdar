@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shakedown/ui/screens/about_screen.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:shakedown/ui/widgets/tv/tv_list_tile.dart';
+import 'package:shakedown/ui/widgets/tv/tv_focus_wrapper.dart';
 
 class AboutSection extends StatelessWidget {
   final double scaleFactor;
@@ -23,8 +25,7 @@ class AboutSection extends StatelessWidget {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
       child: Column(
         children: [
-          InkWell(
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          TvListTile(
             onTap: () {
               HapticFeedback.lightImpact();
               Navigator.of(context).push(
@@ -55,24 +56,22 @@ class AboutSection extends StatelessWidget {
                 ),
               );
             },
-            child: ListTile(
-              dense: true,
-              visualDensity: VisualDensity.compact,
-              leading: Icon(Icons.info_outline,
-                  color: Theme.of(context).colorScheme.primary),
-              title: FittedBox(
-                fit: BoxFit.scaleDown,
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  'About App',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      color: Theme.of(context).colorScheme.primary,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16 * scaleFactor),
-                ),
+            dense: true,
+            visualDensity: VisualDensity.compact,
+            leading: Icon(Icons.info_outline,
+                color: Theme.of(context).colorScheme.primary),
+            title: FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerLeft,
+              child: Text(
+                'About App',
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    color: Theme.of(context).colorScheme.primary,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16 * scaleFactor),
               ),
-              trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 12),
             ),
+            trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 12),
           ),
           _buildClickableLink(
             context,
@@ -90,8 +89,9 @@ class AboutSection extends StatelessWidget {
       BuildContext context, String text, String url, double scaleFactor,
       {IconData? icon, Widget? customIcon}) {
     // For now, implementing locally as it was private in SettingsScreen
-    return InkWell(
+    return TvFocusWrapper(
       onTap: () => _launchUrl(context, url),
+      borderRadius: BorderRadius.circular(12),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         child: Row(

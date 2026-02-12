@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:shakedown/ui/screens/rated_shows_screen.dart';
+import 'package:shakedown/ui/widgets/tv/tv_list_tile.dart';
 
 class DataSection extends StatelessWidget {
   final double scaleFactor;
@@ -21,8 +22,23 @@ class DataSection extends StatelessWidget {
           .surfaceContainerHighest
           .withValues(alpha: 0.3),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(24),
+      child: TvListTile(
+        dense: true,
+        visualDensity: VisualDensity.compact,
+        leading: Icon(Icons.library_books_rounded,
+            color: Theme.of(context).colorScheme.primary),
+        title: FittedBox(
+          fit: BoxFit.scaleDown,
+          alignment: Alignment.centerLeft,
+          child: Text(
+            'Manage Rated Shows',
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                color: Theme.of(context).colorScheme.primary,
+                fontWeight: FontWeight.bold,
+                fontSize: 16 * scaleFactor),
+          ),
+        ),
+        trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 12),
         onTap: () async {
           HapticFeedback.lightImpact();
 
@@ -67,24 +83,6 @@ class DataSection extends StatelessWidget {
             } catch (_) {}
           }
         },
-        child: ListTile(
-          dense: true,
-          visualDensity: VisualDensity.compact,
-          leading: Icon(Icons.library_books_rounded,
-              color: Theme.of(context).colorScheme.primary),
-          title: FittedBox(
-            fit: BoxFit.scaleDown,
-            alignment: Alignment.centerLeft,
-            child: Text(
-              'Manage Rated Shows',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  color: Theme.of(context).colorScheme.primary,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16 * scaleFactor),
-            ),
-          ),
-          trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 12),
-        ),
       ),
     );
   }

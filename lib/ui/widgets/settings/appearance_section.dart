@@ -8,6 +8,7 @@ import 'package:shakedown/ui/widgets/section_card.dart';
 import 'package:shakedown/ui/widgets/settings/color_picker_dialog.dart';
 import 'package:shakedown/ui/widgets/settings/font_selection_dialog.dart';
 import 'package:shakedown/ui/widgets/tv/tv_switch_list_tile.dart';
+import 'package:shakedown/ui/widgets/tv/tv_list_tile.dart';
 
 class AppearanceSection extends StatefulWidget {
   final double scaleFactor;
@@ -142,7 +143,7 @@ class _AppearanceSectionState extends State<AppearanceSection> {
             secondary: const Icon(Icons.brightness_1_rounded),
           ),
         if (!settingsProvider.useDynamicColor)
-          ListTile(
+          TvListTile(
             dense: true,
             visualDensity: VisualDensity.compact,
             leading: const Icon(Icons.palette_rounded),
@@ -387,7 +388,7 @@ class _AppearanceSectionState extends State<AppearanceSection> {
               ],
             ),
           ),
-        ListTile(
+        TvListTile(
           dense: true,
           visualDensity: VisualDensity.compact,
           leading: const Icon(Icons.text_format_rounded),

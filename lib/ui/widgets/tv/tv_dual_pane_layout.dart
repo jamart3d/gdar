@@ -17,6 +17,15 @@ class TvDualPaneLayout extends StatefulWidget {
 
 class _TvDualPaneLayoutState extends State<TvDualPaneLayout> {
   int _focusedPane = 0; // 0 for left (ShowList), 1 for right (Playback)
+  final FocusNode _diceFocusNode = FocusNode();
+  final FocusNode _rightScrollbarFocusNode = FocusNode();
+
+  @override
+  void dispose() {
+    _diceFocusNode.dispose();
+    _rightScrollbarFocusNode.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -52,8 +61,13 @@ class _TvDualPaneLayoutState extends State<TvDualPaneLayout> {
                           children: [
                             TvHeader(
                               autofocusDice: true,
+                              diceFocusNode: _diceFocusNode,
                               onRandomPlay: () {
                                 context.read<AudioProvider>().playRandomShow();
+                              },
+                              onLeft: () {
+                                // Wrap around from Dice (far left) to Right Scrollbar (far right)
+                                _rightScrollbarFocusNode.requestFocus();
                               },
                             ),
                             const Expanded(
@@ -94,7 +108,14 @@ class _TvDualPaneLayoutState extends State<TvDualPaneLayout> {
                         duration: const Duration(milliseconds: 400),
                         curve: Curves.easeInOut,
                         opacity: _focusedPane == 1 ? 1.0 : 0.4,
-                        child: const PlaybackScreen(isPane: true),
+                        child: PlaybackScreen(
+                          isPane: true,
+                          scrollbarFocusNode: _rightScrollbarFocusNode,
+                          onScrollbarRight: () {
+                            // Wrap around from Right Scrollbar (far right) to Dice (far left)
+                            _diceFocusNode.requestFocus();
+                          },
+                        ),
                       ),
                     ),
                   ),
@@ -112,7 +133,11 @@ class _TvDualPaneLayoutState extends State<TvDualPaneLayout> {
                   opacity: audioProvider.currentShow != null ? 1.0 : 0.0,
                   child: IgnorePointer(
                     ignoring: audioProvider.currentShow == null,
-                    child: const TvPlaybackBar(),
+                    child: TvPlaybackBar(
+                      onDown: () {
+                        _diceFocusNode.requestFocus();
+                      },
+                    ),
                   ),
                 ),
               ),
