@@ -24,6 +24,7 @@ class ShowListBody extends StatelessWidget {
   final Function(Show, Source) onSourceLongPressed;
   final FocusNode? scrollbarFocusNode;
   final VoidCallback? onFocusLeft;
+  final ValueChanged<int>? onShowFocused;
   final Map<int, FocusNode>? showFocusNodes;
   final ValueChanged<int>? onFocusShow;
 
@@ -41,6 +42,7 @@ class ShowListBody extends StatelessWidget {
     required this.onSourceLongPressed,
     this.scrollbarFocusNode,
     this.onFocusLeft,
+    this.onShowFocused,
     this.showFocusNodes,
     this.onFocusShow,
   });
@@ -79,6 +81,7 @@ class ShowListBody extends StatelessWidget {
           onSourceTap: (source) => onSourceTapped(show, source),
           onSourceLongPress: (source) => onSourceLongPressed(show, source),
           onFocusLeft: onFocusLeft,
+          onFocusChange: onShowFocused,
           onWrapAround: onFocusShow,
           focusNode: showFocusNodes?[index],
           index: index,

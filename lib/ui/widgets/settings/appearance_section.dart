@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:shakedown/providers/settings_provider.dart';
 import 'package:shakedown/providers/theme_provider.dart';
+import 'package:shakedown/services/device_service.dart';
 import 'package:shakedown/ui/widgets/animated_gradient_border.dart';
 import 'package:shakedown/ui/widgets/section_card.dart';
 import 'package:shakedown/ui/widgets/settings/color_picker_dialog.dart';
@@ -10,6 +11,8 @@ import 'package:shakedown/ui/widgets/settings/font_selection_dialog.dart';
 import 'package:shakedown/ui/widgets/tv/tv_switch_list_tile.dart';
 import 'package:shakedown/ui/widgets/tv/tv_list_tile.dart';
 import 'package:shakedown/ui/widgets/tv/tv_focus_wrapper.dart';
+import 'package:shakedown/ui/widgets/settings/rainbow_color_picker.dart';
+import 'package:shakedown/ui/screens/rated_shows_screen.dart';
 
 class AppearanceSection extends StatefulWidget {
   final double scaleFactor;
@@ -144,59 +147,62 @@ class _AppearanceSectionState extends State<AppearanceSection> {
             secondary: const Icon(Icons.brightness_1_rounded),
           ),
         if (!settingsProvider.useDynamicColor)
-          TvListTile(
+          context.watch<DeviceService>().isTv
+              ? RainbowColorPicker(scaleFactor: widget.scaleFactor)
+              : TvListTile(
+                  dense: true,
+                  visualDensity: VisualDensity.compact,
+                  leading: const Icon(Icons.palette_rounded),
+                  title: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerLeft,
+                      child: Text('Custom Theme Color',
+                          style: Theme.of(context)
+                              .textTheme
+                              .titleMedium
+                              ?.copyWith(fontSize: 16 * widget.scaleFactor))),
+                  subtitle: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerLeft,
+                      child: Text('Overrides the default theme color',
+                          style: Theme.of(context)
+                              .textTheme
+                              .bodySmall
+                              ?.copyWith(fontSize: 12 * widget.scaleFactor))),
+                  onTap: () => ColorPickerDialog.show(context),
+                  trailing: Container(
+                    width: 18,
+                    height: 18,
+                    decoration: BoxDecoration(
+                      color: settingsProvider.seedColor ?? Colors.purple,
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: colorScheme.outline,
+                        width: 1.5,
+                      ),
+                    ),
+                  ),
+                ),
+        if (!context.read<DeviceService>().isTv)
+          TvSwitchListTile(
             dense: true,
             visualDensity: VisualDensity.compact,
-            leading: const Icon(Icons.palette_rounded),
             title: FittedBox(
                 fit: BoxFit.scaleDown,
                 alignment: Alignment.centerLeft,
-                child: Text('Custom Theme Color',
+                child: Text('Glow Border',
                     style: Theme.of(context)
                         .textTheme
                         .titleMedium
                         ?.copyWith(fontSize: 16 * widget.scaleFactor))),
-            subtitle: FittedBox(
-                fit: BoxFit.scaleDown,
-                alignment: Alignment.centerLeft,
-                child: Text('Overrides the default theme color',
-                    style: Theme.of(context)
-                        .textTheme
-                        .bodySmall
-                        ?.copyWith(fontSize: 12 * widget.scaleFactor))),
-            onTap: () => ColorPickerDialog.show(context),
-            trailing: Container(
-              width: 18,
-              height: 18,
-              decoration: BoxDecoration(
-                color: settingsProvider.seedColor ?? Colors.purple,
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: colorScheme.outline,
-                  width: 1.5,
-                ),
-              ),
-            ),
+            value: settingsProvider.glowMode > 0,
+            onChanged: (value) {
+              context
+                  .read<SettingsProvider>()
+                  .setGlowMode(value ? 65 : 0); // 65% or Off
+            },
+            secondary: const Icon(Icons.blur_on_rounded),
           ),
-        TvSwitchListTile(
-          dense: true,
-          visualDensity: VisualDensity.compact,
-          title: FittedBox(
-              fit: BoxFit.scaleDown,
-              alignment: Alignment.centerLeft,
-              child: Text('Glow Border',
-                  style: Theme.of(context)
-                      .textTheme
-                      .titleMedium
-                      ?.copyWith(fontSize: 16 * widget.scaleFactor))),
-          value: settingsProvider.glowMode > 0,
-          onChanged: (value) {
-            context
-                .read<SettingsProvider>()
-                .setGlowMode(value ? 65 : 0); // 65% or Off
-          },
-          secondary: const Icon(Icons.blur_on_rounded),
-        ),
         if (settingsProvider.glowMode > 0)
           Padding(
             padding:
@@ -283,36 +289,37 @@ class _AppearanceSectionState extends State<AppearanceSection> {
               ],
             ),
           ),
-        TvSwitchListTile(
-          dense: true,
-          visualDensity: VisualDensity.compact,
-          title: FittedBox(
-              fit: BoxFit.scaleDown,
-              alignment: Alignment.centerLeft,
-              child: Text('Highlight Playing with RGB',
-                  style: Theme.of(context)
-                      .textTheme
-                      .titleMedium
-                      ?.copyWith(fontSize: 16 * widget.scaleFactor))),
-          subtitle: FittedBox(
-              fit: BoxFit.scaleDown,
-              alignment: Alignment.centerLeft,
-              child: Text('Animate border with RGB colors',
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodySmall
-                      ?.copyWith(fontSize: 12 * widget.scaleFactor))),
-          value: settingsProvider.highlightPlayingWithRgb,
-          onChanged: (value) {
-            final provider = context.read<SettingsProvider>();
-            provider.toggleHighlightPlayingWithRgb();
-            // If turning RGB OFF and True Black is ON, turn off Glow too
-            if (!value && provider.useTrueBlack) {
-              provider.setGlowMode(0);
-            }
-          },
-          secondary: const Icon(Icons.animation_rounded),
-        ),
+        if (!context.read<DeviceService>().isTv)
+          TvSwitchListTile(
+            dense: true,
+            visualDensity: VisualDensity.compact,
+            title: FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: Text('Highlight Playing with RGB',
+                    style: Theme.of(context)
+                        .textTheme
+                        .titleMedium
+                        ?.copyWith(fontSize: 16 * widget.scaleFactor))),
+            subtitle: FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: Text('Animate border with RGB colors',
+                    style: Theme.of(context)
+                        .textTheme
+                        .bodySmall
+                        ?.copyWith(fontSize: 12 * widget.scaleFactor))),
+            value: settingsProvider.highlightPlayingWithRgb,
+            onChanged: (value) {
+              final provider = context.read<SettingsProvider>();
+              provider.toggleHighlightPlayingWithRgb();
+              // If turning RGB OFF and True Black is ON, turn off Glow too
+              if (!value && provider.useTrueBlack) {
+                provider.setGlowMode(0);
+              }
+            },
+            secondary: const Icon(Icons.animation_rounded),
+          ),
         if (settingsProvider.highlightPlayingWithRgb)
           Padding(
             padding:
@@ -448,6 +455,33 @@ class _AppearanceSectionState extends State<AppearanceSection> {
           onTap: () {
             HapticFeedback.lightImpact();
             FontSelectionDialog.show(context);
+          },
+        ),
+        TvListTile(
+          dense: true,
+          visualDensity: VisualDensity.compact,
+          leading: const Icon(Icons.stars_rounded),
+          title: FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerLeft,
+              child: Text('Rated Shows Library',
+                  style: Theme.of(context)
+                      .textTheme
+                      .titleMedium
+                      ?.copyWith(fontSize: 16 * widget.scaleFactor))),
+          subtitle: FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerLeft,
+              child: Text('View played, rated, and blocked shows',
+                  style: Theme.of(context)
+                      .textTheme
+                      .bodySmall
+                      ?.copyWith(fontSize: 12 * widget.scaleFactor))),
+          onTap: () {
+            HapticFeedback.lightImpact();
+            Navigator.of(context).push(
+              MaterialPageRoute(builder: (context) => const RatedShowsScreen()),
+            );
           },
         ),
       ],

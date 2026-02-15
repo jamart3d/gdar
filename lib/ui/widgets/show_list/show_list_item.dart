@@ -22,6 +22,7 @@ class ShowListItem extends StatelessWidget {
   final Function(Source) onSourceTap;
   final Function(Source) onSourceLongPress;
   final VoidCallback? onFocusLeft;
+  final ValueChanged<int>? onFocusChange;
   final Function(int)? onWrapAround;
   final FocusNode? focusNode;
   final int index;
@@ -36,6 +37,7 @@ class ShowListItem extends StatelessWidget {
     required this.onSourceTap,
     required this.onSourceLongPress,
     this.onFocusLeft,
+    this.onFocusChange,
     this.onWrapAround,
     this.focusNode,
     required this.index,
@@ -75,6 +77,9 @@ class ShowListItem extends StatelessWidget {
         focusBackgroundColor: Colors.transparent, // Transparent background
         focusColor: Theme.of(context).colorScheme.primary, // Primary border
         borderRadius: BorderRadius.circular(12),
+        onFocusChange: (focused) {
+          if (focused) onFocusChange?.call(index);
+        },
         onKeyEvent: (node, event) {
           if (event.logicalKey == LogicalKeyboardKey.arrowLeft) {
             if (event is KeyDownEvent) onFocusLeft?.call();

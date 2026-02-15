@@ -5,6 +5,9 @@ import 'package:provider/provider.dart';
 import 'package:shakedown/providers/settings_provider.dart';
 import 'package:shakedown/services/catalog_service.dart';
 import 'package:shakedown/ui/styles/app_typography.dart';
+import 'package:shakedown/ui/widgets/tv/tv_focus_wrapper.dart';
+import 'package:shakedown/ui/widgets/tv/tv_list_tile.dart';
+import 'package:shakedown/ui/widgets/tv/tv_switch_list_tile.dart';
 import 'package:shakedown/utils/utils.dart';
 
 class RatingControl extends StatelessWidget {
@@ -200,43 +203,75 @@ class _RatingDialogState extends State<RatingDialog> {
                       width: MediaQuery.of(context).size.width * 0.8,
                       child: FittedBox(
                         fit: BoxFit.scaleDown,
-                        child: RatingBar(
-                          initialRating: (_currentRating == 0 && _isPlayed)
-                              ? 1.0
-                              : (_currentRating > 0
-                                  ? _currentRating.toDouble()
-                                  : 0.0),
-                          minRating: 1,
-                          direction: Axis.horizontal,
-                          allowHalfRating: false,
-                          itemCount: 3,
-                          itemSize:
-                              AppTypography.responsiveFontSize(context, 40.0),
-                          itemPadding:
-                              const EdgeInsets.symmetric(horizontal: 4.0),
-                          ratingWidget: RatingWidget(
-                            full: Icon(
-                              Icons.star,
-                              color: (_currentRating == 0 && _isPlayed)
-                                  ? Colors.grey
-                                  : Colors.amber,
-                            ),
-                            half: Icon(
-                              Icons.star_half,
-                              color: (_currentRating == 0 && _isPlayed)
-                                  ? Colors.grey
-                                  : Colors.amber,
-                            ),
-                            empty: const Icon(Icons.star_border,
-                                color: Colors.grey),
-                          ),
-                          onRatingUpdate: (rating) {
-                            HapticFeedback.selectionClick();
-                            setState(() {
-                              _currentRating = rating.toInt();
-                            });
-                            widget.onRatingChanged(rating.toInt());
+                        child: TvFocusWrapper(
+                          onKeyEvent: (node, event) {
+                            if (event is KeyDownEvent) {
+                              if (event.logicalKey ==
+                                  LogicalKeyboardKey.arrowLeft) {
+                                final newRating =
+                                    (_currentRating - 1).clamp(1, 3);
+                                if (newRating != _currentRating) {
+                                  HapticFeedback.selectionClick();
+                                  setState(() {
+                                    _currentRating = newRating;
+                                  });
+                                  widget.onRatingChanged(newRating);
+                                }
+                                return KeyEventResult.handled;
+                              } else if (event.logicalKey ==
+                                  LogicalKeyboardKey.arrowRight) {
+                                final newRating =
+                                    (_currentRating + 1).clamp(1, 3);
+                                if (newRating != _currentRating) {
+                                  HapticFeedback.selectionClick();
+                                  setState(() {
+                                    _currentRating = newRating;
+                                  });
+                                  widget.onRatingChanged(newRating);
+                                }
+                                return KeyEventResult.handled;
+                              }
+                            }
+                            return KeyEventResult.ignored;
                           },
+                          child: RatingBar(
+                            initialRating: (_currentRating == 0 && _isPlayed)
+                                ? 1.0
+                                : (_currentRating > 0
+                                    ? _currentRating.toDouble()
+                                    : 0.0),
+                            minRating: 1,
+                            direction: Axis.horizontal,
+                            allowHalfRating: false,
+                            itemCount: 3,
+                            itemSize:
+                                AppTypography.responsiveFontSize(context, 40.0),
+                            itemPadding:
+                                const EdgeInsets.symmetric(horizontal: 4.0),
+                            ratingWidget: RatingWidget(
+                              full: Icon(
+                                Icons.star,
+                                color: (_currentRating == 0 && _isPlayed)
+                                    ? Colors.grey
+                                    : Colors.amber,
+                              ),
+                              half: Icon(
+                                Icons.star_half,
+                                color: (_currentRating == 0 && _isPlayed)
+                                    ? Colors.grey
+                                    : Colors.amber,
+                              ),
+                              empty: const Icon(Icons.star_border,
+                                  color: Colors.grey),
+                            ),
+                            onRatingUpdate: (rating) {
+                              HapticFeedback.selectionClick();
+                              setState(() {
+                                _currentRating = rating.toInt();
+                              });
+                              widget.onRatingChanged(rating.toInt());
+                            },
+                          ),
                         ),
                       ),
                     ),
@@ -270,7 +305,7 @@ class _RatingDialogState extends State<RatingDialog> {
         ),
         if (widget.onPlayedChanged != null) ...[
           const Divider(),
-          SwitchListTile(
+          TvSwitchListTile(
             title: const Text('Mark as Played'),
             secondary: Icon(
               _isPlayed ? Icons.check_circle_rounded : Icons.circle_outlined,
@@ -318,8 +353,8 @@ class _RatingDialogState extends State<RatingDialog> {
 
   Widget _buildActionOption(BuildContext context, String text, IconData icon,
       Color color, int rating) {
-    return SimpleDialogOption(
-      onPressed: () async {
+    return TvListTile(
+      onTap: () async {
         // Confirmation Logic
         if (rating == -1 && _currentRating > 0) {
           // Confirm before blocking a rated show
@@ -345,20 +380,10 @@ class _RatingDialogState extends State<RatingDialog> {
         widget.onRatingChanged(rating);
         if (context.mounted) Navigator.pop(context);
       },
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8.0),
-        child: Row(
-          children: [
-            Icon(icon, color: color),
-            const SizedBox(width: 12),
-            Text(text),
-            if (_currentRating == rating) ...[
-              const Spacer(),
-              const Icon(Icons.check, size: 16),
-            ]
-          ],
-        ),
-      ),
+      leading: Icon(icon, color: color),
+      title: Text(text),
+      trailing:
+          _currentRating == rating ? const Icon(Icons.check, size: 16) : null,
     );
   }
 

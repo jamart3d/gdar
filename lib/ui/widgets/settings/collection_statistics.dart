@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:shakedown/models/show.dart';
 import 'package:shakedown/providers/show_list_provider.dart';
 import 'package:shakedown/ui/widgets/section_card.dart';
-import 'package:shakedown/providers/settings_provider.dart';
-import 'package:shakedown/utils/font_layout_config.dart';
 import 'package:provider/provider.dart';
+import 'package:shakedown/models/show.dart';
+import 'package:shakedown/services/device_service.dart';
 
 class CollectionStatistics extends StatelessWidget {
   final bool initiallyExpanded;
@@ -17,18 +16,15 @@ class CollectionStatistics extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final showListProvider = context.watch<ShowListProvider>();
-    final settingsProvider = context.watch<SettingsProvider>();
-    final scaleFactor =
-        FontLayoutConfig.getEffectiveScale(context, settingsProvider);
-    final colorScheme = Theme.of(context).colorScheme;
     final allShows = showListProvider.allShows;
+    final isTv = context.watch<DeviceService>().isTv;
+    final scaleFactor = isTv ? 1.0 : 1.0; // Keep it simple for now
 
     int totalShows = allShows.length;
     int totalSources = 0;
     int totalSongs = 0;
     int totalDurationSeconds = 0;
 
-    // Category IDs
     int catBettySources = 0;
     int catUltraSources = 0;
     int catMatrixSources = 0;
@@ -53,7 +49,6 @@ class CollectionStatistics extends StatelessWidget {
           totalDurationSeconds += track.duration;
         }
 
-        // Count Categories
         final srcType = source.src?.toLowerCase() ?? '';
         final url = source.tracks.isNotEmpty
             ? source.tracks.first.url.toLowerCase()
@@ -85,7 +80,6 @@ class CollectionStatistics extends StatelessWidget {
         if (srcType == 'sbd' || url.contains('sbd')) {
           cats.add('sbd');
         }
-        // Check for 'unk' (featured tracks)
         bool hasFeatTrack = source.tracks
             .any((track) => track.title.toLowerCase().startsWith('gd'));
         if (hasFeatTrack) {
@@ -123,10 +117,60 @@ class CollectionStatistics extends StatelessWidget {
       }
     }
 
+    final List<Map<String, dynamic>> categories = [];
+    if (catBettySources > 0) {
+      categories.add({
+        'name': 'Betty Boards',
+        'shows': catBettyShows.length,
+        'sources': catBettySources
+      });
+    }
+    if (catUltraSources > 0) {
+      categories.add({
+        'name': 'Ultra Matrix',
+        'shows': catUltraShows.length,
+        'sources': catUltraSources
+      });
+    }
+    if (catMatrixSources > 0) {
+      categories.add({
+        'name': 'Matrix',
+        'shows': catMatrixShows.length,
+        'sources': catMatrixSources
+      });
+    }
+    if (catDsbdSources > 0) {
+      categories.add({
+        'name': 'Digital SBD',
+        'shows': catDsbdShows.length,
+        'sources': catDsbdSources
+      });
+    }
+    if (catFmSources > 0) {
+      categories.add({
+        'name': 'FM Broadcast',
+        'shows': catFmShows.length,
+        'sources': catFmSources
+      });
+    }
+    if (catSbdSources > 0) {
+      categories.add({
+        'name': 'Soundboard',
+        'shows': catSbdShows.length,
+        'sources': catSbdSources
+      });
+    }
+    if (catUnkSources > 0) {
+      categories.add({
+        'name': 'Unknown Shows',
+        'shows': catUnkShows.length,
+        'sources': catUnkSources
+      });
+    }
+
     final duration = Duration(seconds: totalDurationSeconds);
     final days = duration.inDays;
     final hours = duration.inHours % 24;
-    // final minutes = duration.inMinutes % 60;
 
     return SectionCard(
       scaleFactor: scaleFactor,
@@ -136,256 +180,24 @@ class CollectionStatistics extends StatelessWidget {
       children: [
         ListTile(
           dense: true,
-          visualDensity: VisualDensity.compact,
-          leading: Icon(Icons.library_music,
-              size: 24 * scaleFactor, color: colorScheme.primary),
-          title: FittedBox(
-            fit: BoxFit.scaleDown,
-            alignment: Alignment.centerLeft,
-            child: Text(
-              '$totalShows Total Shows',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontSize: 16 * scaleFactor,
-                    fontWeight: FontWeight.w500,
-                  ),
-            ),
-          ),
-          subtitle: Padding(
-            padding: EdgeInsets.only(
-                top: settingsProvider.appFont == 'rock_salt'
-                    ? 4.0 * scaleFactor
-                    : 0),
-            child: FittedBox(
-              fit: BoxFit.scaleDown,
-              alignment: Alignment.centerLeft,
-              child: Text(
-                '$totalSources Sources',
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      fontSize: 12 * scaleFactor,
-                    ),
-              ),
-            ),
-          ),
+          title: Text('$totalShows Total Shows'),
+          subtitle: Text('$totalSources Sources / $totalSongs Songs'),
         ),
         ListTile(
           dense: true,
-          visualDensity: VisualDensity.compact,
-          leading: Icon(Icons.timer,
-              size: 24 * scaleFactor, color: colorScheme.primary),
-          title: FittedBox(
-            fit: BoxFit.scaleDown,
-            alignment: Alignment.centerLeft,
-            child: Text(
-              '${days}d ${hours}h Total Runtime',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontSize: 16 * scaleFactor,
-                    fontWeight: FontWeight.w500,
-                  ),
-            ),
-          ),
-          subtitle: Padding(
-            padding: EdgeInsets.only(
-                top: settingsProvider.appFont == 'rock_salt'
-                    ? 4.0 * scaleFactor
-                    : 0),
-            child: FittedBox(
-              fit: BoxFit.scaleDown,
-              alignment: Alignment.centerLeft,
-              child: Text(
-                '$totalSongs Songs',
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      fontSize: 12 * scaleFactor,
-                    ),
-              ),
-            ),
-          ),
+          title: Text('${days}d ${hours}h Total Runtime'),
         ),
         ExpansionTile(
           dense: true,
-          visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
-          title: Text(
-            'Source Categories Details',
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontSize: 14 * scaleFactor,
-                  fontWeight: FontWeight.w500,
-                ),
-          ),
-          leading: Icon(Icons.list_alt, size: 20 * scaleFactor),
-          shape: const Border(),
-          children: [
-            if (catBettySources > 0)
-              ListTile(
-                  dense: true,
-                  visualDensity:
-                      const VisualDensity(horizontal: 0, vertical: -4),
-                  title: FittedBox(
-                    fit: BoxFit.scaleDown,
-                    alignment: Alignment.centerLeft,
-                    child: Text('Betty Boards',
-                        style: Theme.of(context)
-                            .textTheme
-                            .bodyMedium
-                            ?.copyWith(fontSize: 10 * scaleFactor)),
-                  ),
-                  trailing: FittedBox(
-                    fit: BoxFit.scaleDown,
-                    alignment: Alignment.centerRight,
-                    child: Text(
-                        '${catBettyShows.length} Shows / $catBettySources Sources',
-                        style: Theme.of(context)
-                            .textTheme
-                            .bodySmall
-                            ?.copyWith(fontSize: 8.5 * scaleFactor)),
-                  )),
-            // ... (I need to ensure I don't break the rest of the file or miss other replacements)
-            // It might be safer to just replace the header/card part and then separate call for ListTiles if needed.
-            // But this tool call covers the Grid part.
-
-            if (catUltraSources > 0)
-              ListTile(
-                  dense: true,
-                  visualDensity:
-                      const VisualDensity(horizontal: 0, vertical: -4),
-                  title: FittedBox(
-                    fit: BoxFit.scaleDown,
-                    alignment: Alignment.centerLeft,
-                    child: Text('Ultra Matrix',
-                        style: Theme.of(context)
-                            .textTheme
-                            .bodyMedium
-                            ?.copyWith(fontSize: 10 * scaleFactor)),
-                  ),
-                  trailing: FittedBox(
-                    fit: BoxFit.scaleDown,
-                    alignment: Alignment.centerRight,
-                    child: Text(
-                        '${catUltraShows.length} Shows / $catUltraSources Sources',
-                        style: Theme.of(context)
-                            .textTheme
-                            .bodySmall
-                            ?.copyWith(fontSize: 8.5 * scaleFactor)),
-                  )),
-            if (catMatrixSources > 0)
-              ListTile(
-                  dense: true,
-                  visualDensity:
-                      const VisualDensity(horizontal: 0, vertical: -4),
-                  title: FittedBox(
-                    fit: BoxFit.scaleDown,
-                    alignment: Alignment.centerLeft,
-                    child: Text('Matrix',
-                        style: Theme.of(context)
-                            .textTheme
-                            .bodyMedium
-                            ?.copyWith(fontSize: 10 * scaleFactor)),
-                  ),
-                  trailing: FittedBox(
-                    fit: BoxFit.scaleDown,
-                    alignment: Alignment.centerRight,
-                    child: Text(
-                        '${catMatrixShows.length} Shows / $catMatrixSources Sources',
-                        style: Theme.of(context)
-                            .textTheme
-                            .bodySmall
-                            ?.copyWith(fontSize: 8.5 * scaleFactor)),
-                  )),
-            if (catDsbdSources > 0)
-              ListTile(
-                  dense: true,
-                  visualDensity:
-                      const VisualDensity(horizontal: 0, vertical: -4),
-                  title: FittedBox(
-                    fit: BoxFit.scaleDown,
-                    alignment: Alignment.centerLeft,
-                    child: Text('Digital SBD',
-                        style: Theme.of(context)
-                            .textTheme
-                            .bodyMedium
-                            ?.copyWith(fontSize: 10 * scaleFactor)),
-                  ),
-                  trailing: FittedBox(
-                    fit: BoxFit.scaleDown,
-                    alignment: Alignment.centerRight,
-                    child: Text(
-                        '${catDsbdShows.length} Shows / $catDsbdSources Sources',
-                        style: Theme.of(context)
-                            .textTheme
-                            .bodySmall
-                            ?.copyWith(fontSize: 8.5 * scaleFactor)),
-                  )),
-            if (catFmSources > 0)
-              ListTile(
-                  dense: true,
-                  visualDensity:
-                      const VisualDensity(horizontal: 0, vertical: -4),
-                  title: FittedBox(
-                    fit: BoxFit.scaleDown,
-                    alignment: Alignment.centerLeft,
-                    child: Text('FM Broadcast',
-                        style: Theme.of(context)
-                            .textTheme
-                            .bodyMedium
-                            ?.copyWith(fontSize: 10 * scaleFactor)),
-                  ),
-                  trailing: FittedBox(
-                    fit: BoxFit.scaleDown,
-                    alignment: Alignment.centerRight,
-                    child: Text(
-                        '${catFmShows.length} Shows / $catFmSources Sources',
-                        style: Theme.of(context)
-                            .textTheme
-                            .bodySmall
-                            ?.copyWith(fontSize: 8.5 * scaleFactor)),
-                  )),
-            if (catSbdSources > 0)
-              ListTile(
-                  dense: true,
-                  visualDensity:
-                      const VisualDensity(horizontal: 0, vertical: -4),
-                  title: FittedBox(
-                    fit: BoxFit.scaleDown,
-                    alignment: Alignment.centerLeft,
-                    child: Text('Soundboard',
-                        style: Theme.of(context)
-                            .textTheme
-                            .bodyMedium
-                            ?.copyWith(fontSize: 10 * scaleFactor)),
-                  ),
-                  trailing: FittedBox(
-                    fit: BoxFit.scaleDown,
-                    alignment: Alignment.centerRight,
-                    child: Text(
-                        '${catSbdShows.length} Shows / $catSbdSources Sources',
-                        style: Theme.of(context)
-                            .textTheme
-                            .bodySmall
-                            ?.copyWith(fontSize: 8.5 * scaleFactor)),
-                  )),
-            if (catUnkSources > 0)
-              ListTile(
-                dense: true,
-                visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
-                title: FittedBox(
-                  fit: BoxFit.scaleDown,
-                  alignment: Alignment.centerLeft,
-                  child: Text('Unknown Shows',
-                      style: Theme.of(context)
-                          .textTheme
-                          .bodyMedium
-                          ?.copyWith(fontSize: 10 * scaleFactor)),
-                ),
-                trailing: FittedBox(
-                  fit: BoxFit.scaleDown,
-                  alignment: Alignment.centerRight,
-                  child: Text(
-                      '${catUnkShows.length} Shows / $catUnkSources Sources',
-                      style: Theme.of(context)
-                          .textTheme
-                          .bodySmall
-                          ?.copyWith(fontSize: 8.5 * scaleFactor)),
-                ),
-              ),
-          ],
+          title: const Text('Source Categories Details'),
+          leading: const Icon(Icons.list_alt_rounded),
+          children: categories.map((cat) {
+            return ListTile(
+              dense: true,
+              title: Text(cat['name']),
+              trailing: Text('${cat['shows']} Shows / ${cat['sources']} Src'),
+            );
+          }).toList(),
         ),
       ],
     );

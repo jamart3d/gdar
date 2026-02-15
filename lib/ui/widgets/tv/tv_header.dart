@@ -14,6 +14,7 @@ class TvHeader extends StatelessWidget {
   final FocusNode? diceFocusNode;
   final FocusNode? gearsFocusNode;
   final VoidCallback? onLeft;
+  final VoidCallback? onRight;
 
   const TvHeader({
     super.key,
@@ -24,6 +25,7 @@ class TvHeader extends StatelessWidget {
     this.diceFocusNode,
     this.gearsFocusNode,
     this.onLeft,
+    this.onRight,
   });
 
   @override
@@ -98,10 +100,14 @@ class TvHeader extends StatelessWidget {
             },
             focusNode: gearsFocusNode,
             onKeyEvent: (node, event) {
-              if (event is KeyDownEvent &&
-                  event.logicalKey == LogicalKeyboardKey.arrowLeft) {
-                diceFocusNode?.requestFocus();
-                return KeyEventResult.handled;
+              if (event is KeyDownEvent) {
+                if (event.logicalKey == LogicalKeyboardKey.arrowLeft) {
+                  diceFocusNode?.requestFocus();
+                  return KeyEventResult.handled;
+                } else if (event.logicalKey == LogicalKeyboardKey.arrowRight) {
+                  onRight?.call();
+                  return KeyEventResult.handled;
+                }
               }
               return KeyEventResult.ignored;
             },

@@ -11,6 +11,8 @@ import 'package:shakedown/ui/screens/track_list_screen.dart';
 import 'package:shakedown/utils/logger.dart';
 import 'package:shakedown/services/catalog_service.dart';
 import 'package:shakedown/services/device_service.dart';
+import 'package:shakedown/ui/widgets/rating_control.dart';
+import 'package:shakedown/ui/widgets/tv/tv_interaction_modal.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
 /// Mixin providing business logic and event handlers for [ShowListScreen].
@@ -174,7 +176,6 @@ mixin ShowListLogicMixin<T extends StatefulWidget>
   Future<void> onCardLongPressed(Show show) async {
     if (show.sources.isEmpty) return;
 
-    // Trigger Playback immediately on long press for TV consistency
     final catalog = context.read<CatalogService>();
 
     // Find the highest rated source, or fallback to the first one
@@ -189,19 +190,57 @@ mixin ShowListLogicMixin<T extends StatefulWidget>
       }
     }
 
-    _playSource(show, sourceToPlay);
-
-    // If on TV, and we just started playing, open playback screen
     if (context.read<DeviceService>().isTv) {
-      // In dual pane, it's already there, but we might want to ensure focus
-      // However, usually we just want it to start playing.
-    } else {
-      await openPlaybackScreen();
+      TvInteractionModal.show(
+        context,
+        title: show.name,
+        subtitle: show.formattedDateYearFirst,
+        onPlay: () => _playSource(show, sourceToPlay),
+        onRate: () => _showRatingDialog(show, sourceToPlay),
+      );
+      return;
     }
+
+    _playSource(show, sourceToPlay);
+    await openPlaybackScreen();
   }
 
   void onSourceLongPressed(Show show, Source source) {
+    if (context.read<DeviceService>().isTv) {
+      TvInteractionModal.show(
+        context,
+        title: source.id,
+        subtitle: show.name,
+        onPlay: () => _playSource(show, source),
+        onRate: () => _showRatingDialog(show, source),
+      );
+      return;
+    }
     _playSource(show, source);
+  }
+
+  Future<void> _showRatingDialog(Show show, Source source) async {
+    final catalog = context.read<CatalogService>();
+    final rating = catalog.getRating(source.id);
+    final isPlayed = catalog.isPlayed(source.id);
+
+    await showDialog(
+      context: context,
+      builder: (context) => RatingDialog(
+        initialRating: rating,
+        sourceId: source.id,
+        sourceUrl: source.tracks.isNotEmpty ? source.tracks.first.url : null,
+        isPlayed: isPlayed,
+        onRatingChanged: (newRating) {
+          catalog.setRating(source.id, newRating);
+        },
+        onPlayedChanged: (bool newIsPlayed) {
+          if (newIsPlayed != catalog.isPlayed(source.id)) {
+            catalog.togglePlayed(source.id);
+          }
+        },
+      ),
+    );
   }
 
   void _playSource(Show show, Source source) {

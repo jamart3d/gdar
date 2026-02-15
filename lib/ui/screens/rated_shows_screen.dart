@@ -8,10 +8,13 @@ import 'package:shakedown/providers/audio_provider.dart';
 import 'package:shakedown/providers/settings_provider.dart';
 import 'package:shakedown/providers/show_list_provider.dart';
 import 'package:shakedown/services/catalog_service.dart';
+import 'package:shakedown/services/device_service.dart';
 import 'package:shakedown/ui/screens/playback_screen.dart';
 import 'package:shakedown/ui/screens/track_list_screen.dart';
 import 'package:shakedown/ui/widgets/rating_control.dart';
 import 'package:shakedown/ui/widgets/src_badge.dart';
+import 'package:shakedown/ui/widgets/tv/tv_focus_wrapper.dart';
+import 'package:shakedown/ui/widgets/tv/tv_interaction_modal.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:shakedown/models/rating.dart';
 import 'package:shakedown/utils/font_layout_config.dart';
@@ -341,162 +344,207 @@ class _RatedShowListState extends State<_RatedShowList> {
         FontLayoutConfig.getEffectiveScale(context, settingsProvider);
     final colorScheme = Theme.of(context).colorScheme;
 
+    final isTv = context.read<DeviceService>().isTv;
+
     // Use SourceListItem logic but wrapped with Show info
     return Padding(
       padding: const EdgeInsets.only(bottom: 8.0),
-      child: Material(
-        color: isPlaying
-            ? colorScheme.tertiaryContainer.withValues(alpha: 0.5)
-            : colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
-        borderRadius: BorderRadius.circular(16),
-        clipBehavior: Clip.antiAlias,
-        child: InkWell(
-          onTap: () async {
-            if (isPlaying) {
-              // Pause global clock
+      child: TvFocusWrapper(
+        onTap: () async {
+          if (isPlaying) {
+            // Pause global clock
+            try {
+              context.read<AnimationController>().stop();
+            } catch (_) {}
+
+            await Navigator.of(context).push(
+              PageRouteBuilder(
+                pageBuilder: (context, animation, secondaryAnimation) =>
+                    const PlaybackScreen(),
+                transitionDuration: const Duration(milliseconds: 300),
+                transitionsBuilder:
+                    (context, animation, secondaryAnimation, child) {
+                  const begin = Offset(0.0, 1.0);
+                  const end = Offset.zero;
+                  const curve = Curves.easeInOut;
+                  var tween = Tween(begin: begin, end: end)
+                      .chain(CurveTween(curve: curve));
+                  return SlideTransition(
+                      position: animation.drive(tween), child: child);
+                },
+              ),
+            );
+
+            // Resume clock
+            if (context.mounted) {
               try {
-                context.read<AnimationController>().stop();
+                final controller = context.read<AnimationController>();
+                if (!controller.isAnimating) controller.repeat();
               } catch (_) {}
-
-              await Navigator.of(context).push(
-                PageRouteBuilder(
-                  pageBuilder: (context, animation, secondaryAnimation) =>
-                      const PlaybackScreen(),
-                  transitionDuration: const Duration(milliseconds: 300),
-                  transitionsBuilder:
-                      (context, animation, secondaryAnimation, child) {
-                    const begin = Offset(0.0, 1.0);
-                    const end = Offset.zero;
-                    const curve = Curves.easeInOut;
-                    var tween = Tween(begin: begin, end: end)
-                        .chain(CurveTween(curve: curve));
-                    return SlideTransition(
-                        position: animation.drive(tween), child: child);
-                  },
-                ),
-              );
-
-              // Resume clock
-              if (context.mounted) {
-                try {
-                  final controller = context.read<AnimationController>();
-                  if (!controller.isAnimating) controller.repeat();
-                } catch (_) {}
-              }
-            } else {
-              final singleSourceShow = show.copyWith(sources: [source]);
-
-              // Pause global clock
-              try {
-                context.read<AnimationController>().stop();
-              } catch (_) {}
-
-              await Navigator.of(context).push(
-                PageRouteBuilder(
-                  pageBuilder: (context, animation, secondaryAnimation) =>
-                      TrackListScreen(
-                          show: singleSourceShow,
-                          source: singleSourceShow.sources.first),
-                  transitionDuration: Duration.zero,
-                ),
-              );
-
-              // Resume clock
-              if (context.mounted) {
-                try {
-                  final controller = context.read<AnimationController>();
-                  if (!controller.isAnimating) controller.repeat();
-                } catch (_) {}
-              }
             }
-          },
-          onLongPress: () {
-            HapticFeedback.mediumImpact();
-            audioProvider.playSource(show, source);
-          },
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 0),
-            child: Row(
-              children: [
-                RatingControl(
-                  rating: catalog.getRating(source.id),
-                  size: 18,
-                  isPlayed: catalog.isPlayed(source.id),
-                  onTap: () async {
-                    final currentRating = catalog.getRating(source.id);
-                    await showDialog(
-                      context: context,
-                      builder: (context) => RatingDialog(
-                        initialRating: currentRating,
-                        sourceId: source.id,
-                        sourceUrl: source.tracks.isNotEmpty
-                            ? source.tracks.first.url
-                            : null,
-                        isPlayed: catalog.isPlayed(source.id),
-                        onRatingChanged: (newRating) {
-                          catalog.setRating(source.id, newRating);
-                        },
-                        onPlayedChanged: (bool isPlayed) {
-                          if (isPlayed != catalog.isPlayed(source.id)) {
-                            catalog.togglePlayed(source.id);
-                          }
-                        },
-                      ),
-                    );
-                  },
-                ),
-                const SizedBox(width: 12),
-                // Content: Just the Date
-                Expanded(
-                  child: Text(
-                    show.formattedDateYearFirst,
-                    style: Theme.of(context)
-                        .textTheme
-                        .titleMedium
-                        ?.copyWith(
-                          fontSize: 9.5,
-                          fontWeight: FontWeight.bold,
-                          color: isPlaying
-                              ? colorScheme.onTertiaryContainer
-                              : colorScheme.onSurface,
-                        )
-                        .apply(fontSizeFactor: scaleFactor),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
+          } else {
+            final singleSourceShow = show.copyWith(sources: [source]);
+
+            // Pause global clock
+            try {
+              context.read<AnimationController>().stop();
+            } catch (_) {}
+
+            await Navigator.of(context).push(
+              PageRouteBuilder(
+                pageBuilder: (context, animation, secondaryAnimation) =>
+                    TrackListScreen(
+                        show: singleSourceShow,
+                        source: singleSourceShow.sources.first),
+                transitionDuration: Duration.zero,
+              ),
+            );
+
+            // Resume clock
+            if (context.mounted) {
+              try {
+                final controller = context.read<AnimationController>();
+                if (!controller.isAnimating) controller.repeat();
+              } catch (_) {}
+            }
+          }
+        },
+        onLongPress: () {
+          if (isTv) {
+            TvInteractionModal.show(
+              context,
+              title: source.id,
+              subtitle: show.name,
+              onPlay: () {
+                HapticFeedback.mediumImpact();
+                audioProvider.playSource(show, source);
+              },
+              onRate: () async {
+                final currentRating = catalog.getRating(source.id);
+                await showDialog(
+                  context: context,
+                  builder: (context) => RatingDialog(
+                    initialRating: currentRating,
+                    sourceId: source.id,
+                    sourceUrl: source.tracks.isNotEmpty
+                        ? source.tracks.first.url
+                        : null,
+                    isPlayed: catalog.isPlayed(source.id),
+                    onRatingChanged: (newRating) {
+                      catalog.setRating(source.id, newRating);
+                    },
+                    onPlayedChanged: (bool isPlayed) {
+                      if (isPlayed != catalog.isPlayed(source.id)) {
+                        catalog.togglePlayed(source.id);
+                      }
+                    },
                   ),
-                ),
-                // Play Count
-                ValueListenableBuilder(
-                  valueListenable: CatalogService().playCountsListenable,
-                  builder: (context, box, _) {
-                    final count = box.get(source.id) ?? 0;
-                    if (count > 0) {
-                      return Padding(
-                        padding: const EdgeInsets.only(right: 8.0),
-                        child: Text(
-                          '${count}x played',
-                          style: Theme.of(context)
-                              .textTheme
-                              .bodySmall
-                              ?.copyWith(
-                                fontSize: 7.0,
-                                color: isPlaying
-                                    ? colorScheme.onTertiaryContainer
-                                        .withValues(alpha: 0.7)
-                                    : colorScheme.onSurfaceVariant,
-                              )
-                              .apply(fontSizeFactor: scaleFactor),
+                );
+              },
+            );
+            return;
+          }
+          HapticFeedback.mediumImpact();
+          audioProvider.playSource(show, source);
+        },
+        borderRadius: BorderRadius.circular(16),
+        child: Material(
+          color: isPlaying
+              ? colorScheme.tertiaryContainer.withValues(alpha: 0.5)
+              : colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+          borderRadius: BorderRadius.circular(16),
+          clipBehavior: Clip.antiAlias,
+          child: InkWell(
+            canRequestFocus: !isTv,
+            onTap: isTv
+                ? null
+                : () {}, // InkWell needs a non-null onTap to show splash/handle tap on mobile, but for TV we override
+            onLongPress: isTv ? null : () {},
+            child: Padding(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 12.0, vertical: 0),
+              child: Row(
+                children: [
+                  RatingControl(
+                    rating: catalog.getRating(source.id),
+                    size: 18,
+                    isPlayed: catalog.isPlayed(source.id),
+                    onTap: () async {
+                      final currentRating = catalog.getRating(source.id);
+                      await showDialog(
+                        context: context,
+                        builder: (context) => RatingDialog(
+                          initialRating: currentRating,
+                          sourceId: source.id,
+                          sourceUrl: source.tracks.isNotEmpty
+                              ? source.tracks.first.url
+                              : null,
+                          isPlayed: catalog.isPlayed(source.id),
+                          onRatingChanged: (newRating) {
+                            catalog.setRating(source.id, newRating);
+                          },
+                          onPlayedChanged: (bool isPlayed) {
+                            if (isPlayed != catalog.isPlayed(source.id)) {
+                              catalog.togglePlayed(source.id);
+                            }
+                          },
                         ),
                       );
-                    }
-                    return const SizedBox.shrink();
-                  },
-                ),
-                // Badge
-                if (source.src != null) ...[
-                  SrcBadge(src: source.src!, isPlaying: isPlaying),
+                    },
+                  ),
+                  const SizedBox(width: 12),
+                  // Content: Just the Date
+                  Expanded(
+                    child: Text(
+                      show.formattedDateYearFirst,
+                      style: Theme.of(context)
+                          .textTheme
+                          .titleMedium
+                          ?.copyWith(
+                            fontSize: 9.5,
+                            fontWeight: FontWeight.bold,
+                            color: isPlaying
+                                ? colorScheme.onTertiaryContainer
+                                : colorScheme.onSurface,
+                          )
+                          .apply(fontSizeFactor: scaleFactor),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  // Play Count
+                  ValueListenableBuilder(
+                    valueListenable: CatalogService().playCountsListenable,
+                    builder: (context, box, _) {
+                      final count = box.get(source.id) ?? 0;
+                      if (count > 0) {
+                        return Padding(
+                          padding: const EdgeInsets.only(right: 8.0),
+                          child: Text(
+                            '${count}x played',
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodySmall
+                                ?.copyWith(
+                                  fontSize: 7.0,
+                                  color: isPlaying
+                                      ? colorScheme.onTertiaryContainer
+                                          .withValues(alpha: 0.7)
+                                      : colorScheme.onSurfaceVariant,
+                                )
+                                .apply(fontSizeFactor: scaleFactor),
+                          ),
+                        );
+                      }
+                      return const SizedBox.shrink();
+                    },
+                  ),
+                  // Badge
+                  if (source.src != null) ...[
+                    SrcBadge(src: source.src!, isPlaying: isPlaying),
+                  ],
                 ],
-              ],
+              ),
             ),
           ),
         ),

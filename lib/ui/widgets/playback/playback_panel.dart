@@ -427,12 +427,23 @@ class PlaybackPanel extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text(
-                  currentShow.venue,
-                  style: textTheme.titleMedium?.copyWith(
-                    color: colorScheme.secondary,
-                    fontWeight: FontWeight.w500,
-                  ),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.stadium_rounded,
+                      size: 20,
+                      color: colorScheme.secondary,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      currentShow.venue,
+                      style: textTheme.titleMedium?.copyWith(
+                        color: colorScheme.secondary,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
                 ),
                 Text(
                   "  •  ",
@@ -440,11 +451,22 @@ class PlaybackPanel extends StatelessWidget {
                     color: colorScheme.onSurfaceVariant.withValues(alpha: 0.3),
                   ),
                 ),
-                Text(
-                  currentSource.location ?? 'N/A',
-                  style: textTheme.titleMedium?.copyWith(
-                    color: colorScheme.onSurfaceVariant,
-                  ),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.place_outlined,
+                      size: 20,
+                      color: colorScheme.onSurfaceVariant,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      currentSource.location ?? 'N/A',
+                      style: textTheme.titleMedium?.copyWith(
+                        color: colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
                 ),
                 Text(
                   "  •  ",

@@ -8,6 +8,7 @@ import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:shakedown/providers/audio_provider.dart';
 import 'package:shakedown/providers/settings_provider.dart';
 import 'package:shakedown/ui/widgets/playback/playback_panel.dart';
+import 'package:shakedown/ui/widgets/playback/playback_messages.dart';
 import 'package:shakedown/ui/widgets/playback/track_list_view.dart';
 import 'package:shakedown/ui/widgets/playback/playback_app_bar.dart';
 import 'package:shakedown/utils/font_layout_config.dart';
@@ -94,7 +95,7 @@ class _PlaybackScreenState extends State<PlaybackScreen>
           );
         }
       });
-      _scrollToCurrentTrack(animate: false);
+      _scrollToCurrentTrack(false);
     });
   }
 
@@ -110,13 +111,17 @@ class _PlaybackScreenState extends State<PlaybackScreen>
   }
 
   void _scrollToCurrentTrack(
-      {bool animate = true, bool force = false, double maxVisibleY = 1.0}) {
+    bool animate, {
+    bool force = false,
+    int? forceTargetIndex,
+    double alignment = 0.3,
+    double maxVisibleY = 1.0,
+  }) {
     if (!mounted) return;
     final audioProvider = context.read<AudioProvider>();
     final currentTrack = audioProvider.currentTrack;
-    if (currentTrack == null) return;
-
     final currentSource = audioProvider.currentSource;
+    if (currentTrack == null && forceTargetIndex == null) return;
     if (currentSource == null) return;
 
     // Build the list structure to find the index
@@ -134,14 +139,16 @@ class _PlaybackScreenState extends State<PlaybackScreen>
       listItems.addAll(tracks);
     });
 
-    int targetIndex = -1;
-    for (int i = 0; i < listItems.length; i++) {
-      final item = listItems[i];
-      if (item is Track &&
-          item.title == currentTrack.title &&
-          item.trackNumber == currentTrack.trackNumber) {
-        targetIndex = i;
-        break;
+    int targetIndex = forceTargetIndex ?? -1;
+    if (targetIndex == -1 && currentTrack != null) {
+      for (int i = 0; i < listItems.length; i++) {
+        final item = listItems[i];
+        if (item is Track &&
+            item.title == currentTrack.title &&
+            item.trackNumber == currentTrack.trackNumber) {
+          targetIndex = i;
+          break;
+        }
       }
     }
 
@@ -151,10 +158,11 @@ class _PlaybackScreenState extends State<PlaybackScreen>
       // Smart check to prevent jank
       if (positions.isNotEmpty) {
         if (force) {
-          // If forced (manual tap), only skip if we are already close to the target alignment (0.3)
+          // If forced (manual tap/focus), only skip if we are already close to the target alignment
           final isAligned = positions.any((position) =>
               position.index == targetIndex &&
-              (position.itemLeadingEdge - 0.3).abs() < 0.05); // 5% tolerance
+              (position.itemLeadingEdge - alignment).abs() <
+                  0.05); // 5% tolerance
           if (isAligned) return;
         } else {
           // If auto-scroll, skip if fully visible within the allowed range
@@ -171,12 +179,12 @@ class _PlaybackScreenState extends State<PlaybackScreen>
           index: targetIndex,
           duration: const Duration(milliseconds: 500),
           curve: Curves.easeInOutCubic,
-          alignment: 0.3,
+          alignment: alignment,
         );
       } else {
         _itemScrollController.jumpTo(
           index: targetIndex,
-          alignment: 0.3,
+          alignment: alignment,
         );
       }
     }
@@ -281,7 +289,7 @@ class _PlaybackScreenState extends State<PlaybackScreen>
       WidgetsBinding.instance.addPostFrameCallback((_) {
         // If panel is open (or opening), limit visibility to top 40%
         final isPanelOpen = _panelPositionNotifier.value > 0.1;
-        _scrollToCurrentTrack(maxVisibleY: isPanelOpen ? 0.4 : 1.0);
+        _scrollToCurrentTrack(true, maxVisibleY: isPanelOpen ? 0.4 : 1.0);
       });
     }
 
@@ -334,25 +342,72 @@ class _PlaybackScreenState extends State<PlaybackScreen>
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(
-                      currentShow.formattedDate,
-                      style: TextStyle(
-                        fontFamily: 'Rock Salt',
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: colorScheme.onSurface,
-                      ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.baseline,
+                      textBaseline: TextBaseline.alphabetic,
+                      children: [
+                        Text(
+                          currentShow.formattedDate,
+                          style: TextStyle(
+                            fontFamily: 'Rock Salt',
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                            color: colorScheme.onSurface,
+                          ),
+                        ),
+                        if (settingsProvider.showPlaybackMessages)
+                          const PlaybackMessages(
+                            textAlign: TextAlign.right,
+                            showDivider: true,
+                          ),
+                      ],
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      currentShow.venue,
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
-                        color: colorScheme.onSurfaceVariant,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+                    Wrap(
+                      spacing: 16,
+                      runSpacing: 8,
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      children: [
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.stadium_rounded,
+                              size: 18,
+                              color: colorScheme.primary,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              currentShow.venue,
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: colorScheme.primary,
+                              ),
+                            ),
+                          ],
+                        ),
+                        if (currentSource.location != null)
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.place_outlined,
+                                size: 18,
+                                color: colorScheme.onSurfaceVariant,
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                currentSource.location!,
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w500,
+                                  color: colorScheme.onSurfaceVariant,
+                                ),
+                              ),
+                            ],
+                          ),
+                      ],
                     ),
                   ],
                 ),
@@ -370,11 +425,18 @@ class _PlaybackScreenState extends State<PlaybackScreen>
                         itemPositionsListener: _itemPositionsListener,
                         audioProvider: audioProvider,
                         trackFocusNodes: _trackFocusNodes,
-                        onFocusLeft: widget.onTrackListLeft,
+                        onFocusLeft: () {
+                          // Center the current playing track when navigating away (to keep it visible in side pane)
+                          _scrollToCurrentTrack(true,
+                              force: true, alignment: 0.5);
+                          widget.onTrackListLeft?.call();
+                        },
                         onFocusRight: widget
                             .onTrackListRight, // Or internal scrollbar focus?
                         onTrackFocused: (index) {
-                          // Focus callback
+                          // Auto-scroll when navigating with D-pad
+                          _scrollToCurrentTrack(true,
+                              force: true, forceTargetIndex: index);
                         },
                         onWrapAround: _focusTrack,
                       ),
@@ -482,7 +544,7 @@ class _PlaybackScreenState extends State<PlaybackScreen>
         },
         onPanelOpened: () {
           // Panel covers significant portion, ensure track is in top 40%
-          _scrollToCurrentTrack(maxVisibleY: 0.4);
+          _scrollToCurrentTrack(true, maxVisibleY: 0.4);
         },
         panel: PlaybackPanel(
             currentShow: currentShow,
@@ -491,7 +553,7 @@ class _PlaybackScreenState extends State<PlaybackScreen>
             bottomPadding: bottomPadding,
             panelPositionNotifier: _panelPositionNotifier,
             onVenueTap: () {
-              _scrollToCurrentTrack(force: true);
+              _scrollToCurrentTrack(true, force: true);
               if (_panelController.isAttached) {
                 if (_panelController.isPanelClosed) {
                   _panelController.open();

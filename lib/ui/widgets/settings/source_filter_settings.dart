@@ -7,6 +7,7 @@ import 'package:shakedown/services/device_service.dart';
 import 'package:shakedown/ui/widgets/section_card.dart';
 import 'package:shakedown/ui/widgets/tv/tv_focus_wrapper.dart';
 import 'package:shakedown/ui/widgets/tv/tv_switch_list_tile.dart';
+import 'package:shakedown/ui/widgets/animated_gradient_border.dart';
 import 'package:shakedown/utils/font_layout_config.dart';
 
 class SourceFilterSettings extends StatelessWidget {
@@ -178,6 +179,16 @@ class SourceFilterSettings extends StatelessWidget {
     );
 
     if (isTv) {
+      if (isActive) {
+        badge = AnimatedGradientBorder(
+          borderRadius: 10,
+          borderWidth: 2,
+          showGlow: true,
+          showShadow: true,
+          backgroundColor: Colors.transparent,
+          child: badge,
+        );
+      }
       return TvFocusWrapper(
         onTap: onTap,
         onLongPress: onLongPress,

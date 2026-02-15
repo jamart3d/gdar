@@ -59,15 +59,24 @@ class TrackListView extends StatelessWidget {
 
     final List<dynamic> listItems = [];
     final Map<int, int> listItemToTrackIndex = {};
+    final Map<int, int> trackToListItemIndex = {};
     int currentTrackIndex = 0;
 
     tracksBySet.forEach((setName, tracks) {
       listItems.add(setName);
       for (var track in tracks) {
-        listItemToTrackIndex[listItems.length] = currentTrackIndex++;
+        final lIdx = listItems.length;
+        listItemToTrackIndex[lIdx] = currentTrackIndex;
+        trackToListItemIndex[currentTrackIndex] = lIdx;
+        currentTrackIndex++;
         listItems.add(track);
       }
     });
+
+    final int firstTrackListIndex = trackToListItemIndex[0] ?? 1;
+    final int lastTrackListIndex =
+        trackToListItemIndex[source.tracks.length - 1] ??
+            (listItems.length - 1);
 
     return ScrollablePositionedList.builder(
       itemScrollController: itemScrollController,
@@ -81,7 +90,15 @@ class TrackListView extends StatelessWidget {
         } else if (item is Track) {
           final trackIndex = listItemToTrackIndex[index] ?? 0;
           return _buildTrackItem(
-              context, audioProvider, item, trackIndex, isTrueBlackMode);
+            context,
+            audioProvider,
+            item,
+            trackIndex,
+            index, // Pass list index
+            isTrueBlackMode,
+            firstTrackListIndex,
+            lastTrackListIndex,
+          );
         }
         return const SizedBox.shrink();
       },
@@ -106,8 +123,11 @@ class TrackListView extends StatelessWidget {
     BuildContext context,
     AudioProvider audioProvider,
     Track track,
-    int index,
+    int trackIndex,
+    int listIndex,
     bool isTrueBlackMode,
+    int firstTrackListIndex,
+    int lastTrackListIndex,
   ) {
     final colorScheme = Theme.of(context).colorScheme;
     final settingsProvider = context.watch<SettingsProvider>();
@@ -172,7 +192,7 @@ class TrackListView extends StatelessWidget {
                           context,
                           audioProvider,
                           track,
-                          index,
+                          trackIndex,
                           isPlaying,
                           scaleFactor,
                           false), // Pass false or handle differently if needed
@@ -182,7 +202,7 @@ class TrackListView extends StatelessWidget {
               : Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: _buildTrackListTile(context, audioProvider, track,
-                      index, isPlaying, scaleFactor, false),
+                      trackIndex, isPlaying, scaleFactor, false),
                 ),
         );
 
@@ -191,7 +211,7 @@ class TrackListView extends StatelessWidget {
               context,
               audioProvider,
               track,
-              index,
+              trackIndex,
               isPlaying,
               scaleFactor,
               true); // Pass focused state if needed, or just rely on wrapper
@@ -225,11 +245,14 @@ class TrackListView extends StatelessWidget {
           }
 
           trackItem = TvFocusWrapper(
-            focusNode: trackFocusNodes?[index],
+            focusNode: trackFocusNodes?[listIndex],
             scaleOnFocus: 1.0, // Disable scaling as requested
             focusBackgroundColor: Colors.transparent, // Disable background fill
             focusColor: colorScheme.primary, // Show focus border
             borderRadius: BorderRadius.circular(8), // Tighter radius
+            onFocusChange: (focused) {
+              if (focused) onTrackFocused?.call(listIndex);
+            },
             onKeyEvent: (node, event) {
               if (event.logicalKey == LogicalKeyboardKey.arrowLeft) {
                 if (event is KeyDownEvent) onFocusLeft?.call();
@@ -238,19 +261,19 @@ class TrackListView extends StatelessWidget {
                 if (event is KeyDownEvent) onFocusRight?.call();
                 return KeyEventResult.handled;
               } else if (event.logicalKey == LogicalKeyboardKey.arrowDown) {
-                // Wrap-around logic: If last item, go to first
-                if (index == source.tracks.length - 1) {
+                // Wrap-around logic: If last track item, go to first track item
+                if (trackIndex == source.tracks.length - 1) {
                   if (event is KeyDownEvent) {
-                    onWrapAround?.call(0);
+                    onWrapAround?.call(firstTrackListIndex);
                   }
                   return KeyEventResult
                       .handled; // Consume repeats to prevent bubbling/jumps
                 }
               } else if (event.logicalKey == LogicalKeyboardKey.arrowUp) {
-                // Wrap-around logic: If first item, go to last
-                if (index == 0) {
+                // Wrap-around logic: If first track item, go to last track item
+                if (trackIndex == 0) {
                   if (event is KeyDownEvent) {
-                    onWrapAround?.call(source.tracks.length - 1);
+                    onWrapAround?.call(lastTrackListIndex);
                   }
                   return KeyEventResult
                       .handled; // Consume repeats to prevent bubbling/jumps
@@ -269,7 +292,7 @@ class TrackListView extends StatelessWidget {
                 }
               } else {
                 HapticFeedback.lightImpact();
-                audioProvider.seekToTrack(index);
+                audioProvider.seekToTrack(trackIndex);
               }
             },
             child: content,
@@ -282,7 +305,7 @@ class TrackListView extends StatelessWidget {
   }
 
   Widget _buildTrackListTile(BuildContext context, AudioProvider audioProvider,
-      Track track, int index, bool isPlaying, double scaleFactor,
+      Track track, int trackIndex, bool isPlaying, double scaleFactor,
       [bool isTvFocus = false]) {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
@@ -335,7 +358,7 @@ class TrackListView extends StatelessWidget {
       );
     }
 
-    return ListTile(
+    final Widget listTile = ListTile(
       leading: leadingWidget,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
@@ -362,21 +385,108 @@ class TrackListView extends StatelessWidget {
       ),
       trailing: settingsProvider.hideTrackDuration
           ? null
-          : Text(
-              formatDuration(Duration(seconds: track.duration)),
-              style: textTheme.bodyMedium
-                  ?.apply(fontSizeFactor: scaleFactor)
-                  .copyWith(
+          : (isPlaying && isTv
+              ? StreamBuilder<Duration>(
+                  stream: audioProvider.positionStream,
+                  builder: (context, snapshot) {
+                    final position = snapshot.data ?? Duration.zero;
+                    return Text(
+                      '${formatDuration(position)} / ${formatDuration(Duration(seconds: track.duration))}',
+                      style: textTheme.bodyMedium
+                          ?.apply(fontSizeFactor: scaleFactor)
+                          .copyWith(
+                        color: colorScheme.onSurfaceVariant,
+                        fontWeight: FontWeight.w500,
+                        fontFeatures: const [FontFeature.tabularFigures()],
+                      ),
+                    );
+                  },
+                )
+              : Text(
+                  formatDuration(Duration(seconds: track.duration)),
+                  style: textTheme.bodyMedium
+                      ?.apply(fontSizeFactor: scaleFactor)
+                      .copyWith(
                     color: colorScheme.onSurfaceVariant,
                     fontWeight: FontWeight.w500,
+                    fontFeatures: const [FontFeature.tabularFigures()],
                   ),
-            ),
+                )),
       onTap: () {
         if (!isPlaying) {
           HapticFeedback.lightImpact();
-          audioProvider.seekToTrack(index);
+          audioProvider.seekToTrack(trackIndex);
         }
       },
     );
+
+    if (isPlaying) {
+      return Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          listTile,
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(2),
+              child: SizedBox(
+                height: 2,
+                child: StreamBuilder<Duration>(
+                  stream: audioProvider.positionStream,
+                  builder: (context, snapshot) {
+                    final position = snapshot.data ?? Duration.zero;
+                    final duration = Duration(seconds: track.duration);
+                    final progress = duration.inSeconds > 0
+                        ? position.inSeconds / duration.inSeconds
+                        : 0.0;
+
+                    return StreamBuilder<Duration>(
+                      stream: audioProvider.bufferedPositionStream,
+                      builder: (context, buffSnapshot) {
+                        final buffered = buffSnapshot.data ?? Duration.zero;
+                        final bufferedProgress = duration.inSeconds > 0
+                            ? buffered.inSeconds / duration.inSeconds
+                            : 0.0;
+
+                        return Stack(
+                          children: [
+                            Container(
+                                color: colorScheme.onSurface
+                                    .withValues(alpha: 0.1)),
+                            FractionallySizedBox(
+                              widthFactor: bufferedProgress.clamp(0.0, 1.0),
+                              child: Container(
+                                color: colorScheme.tertiary
+                                    .withValues(alpha: 0.25),
+                              ),
+                            ),
+                            FractionallySizedBox(
+                              widthFactor: progress.clamp(0.0, 1.0),
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    colors: [
+                                      colorScheme.primary,
+                                      colorScheme.tertiary,
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        );
+                      },
+                    );
+                  },
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 4),
+        ],
+      );
+    }
+
+    return listTile;
   }
 }

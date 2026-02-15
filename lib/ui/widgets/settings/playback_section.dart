@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:shakedown/providers/audio_provider.dart';
 import 'package:shakedown/providers/settings_provider.dart';
+import 'package:shakedown/services/device_service.dart';
 import 'package:shakedown/ui/widgets/section_card.dart';
 import 'package:shakedown/ui/widgets/settings/highlightable_setting.dart';
 import 'package:shakedown/ui/widgets/settings/random_probability_card.dart';
@@ -105,42 +106,43 @@ class PlaybackSection extends StatelessWidget {
             secondary: const Icon(Icons.message_rounded),
           ),
         ),
-        HighlightableSetting(
-          key: ValueKey(
-              'offline_buffering_${highlightTriggerCount}_${activeHighlightKey == 'offline_buffering'}'),
-          startWithHighlight: activeHighlightKey == 'offline_buffering',
-          settingKey: settingKeys['offline_buffering'],
-          child: TvSwitchListTile(
-            dense: true,
-            visualDensity: VisualDensity.compact,
-            title: FittedBox(
-                fit: BoxFit.scaleDown,
-                alignment: Alignment.centerLeft,
-                child: Text('Advanced Cache',
+        if (!context.read<DeviceService>().isTv)
+          HighlightableSetting(
+            key: ValueKey(
+                'offline_buffering_${highlightTriggerCount}_${activeHighlightKey == 'offline_buffering'}'),
+            startWithHighlight: activeHighlightKey == 'offline_buffering',
+            settingKey: settingKeys['offline_buffering'],
+            child: TvSwitchListTile(
+              dense: true,
+              visualDensity: VisualDensity.compact,
+              title: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child: Text('Advanced Cache',
+                      style: Theme.of(context)
+                          .textTheme
+                          .titleMedium
+                          ?.copyWith(fontSize: 16 * scaleFactor))),
+              subtitle: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    settingsProvider.offlineBuffering
+                        ? 'Cached ${audioProvider.cachedTrackCount} of (${audioProvider.currentSource?.tracks.length ?? 0} + 5) tracks'
+                        : 'Cache current show tracks to disk',
                     style: Theme.of(context)
                         .textTheme
-                        .titleMedium
-                        ?.copyWith(fontSize: 16 * scaleFactor))),
-            subtitle: FittedBox(
-                fit: BoxFit.scaleDown,
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  settingsProvider.offlineBuffering
-                      ? 'Cached ${audioProvider.cachedTrackCount} of (${audioProvider.currentSource?.tracks.length ?? 0} + 5) tracks'
-                      : 'Cache current show tracks to disk',
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodySmall
-                      ?.copyWith(fontSize: 12 * scaleFactor),
-                )),
-            value: settingsProvider.offlineBuffering,
-            onChanged: (value) {
-              HapticFeedback.lightImpact();
-              context.read<SettingsProvider>().toggleOfflineBuffering();
-            },
-            secondary: const Icon(Icons.download_for_offline_rounded),
+                        .bodySmall
+                        ?.copyWith(fontSize: 12 * scaleFactor),
+                  )),
+              value: settingsProvider.offlineBuffering,
+              onChanged: (value) {
+                HapticFeedback.lightImpact();
+                context.read<SettingsProvider>().toggleOfflineBuffering();
+              },
+              secondary: const Icon(Icons.download_for_offline_rounded),
+            ),
           ),
-        ),
         HighlightableSetting(
           key: ValueKey(
               'enable_buffer_agent_${highlightTriggerCount}_${activeHighlightKey == 'enable_buffer_agent'}'),

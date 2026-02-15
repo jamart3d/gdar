@@ -59,6 +59,33 @@ class _ShowListScreenState extends State<ShowListScreen>
   final Map<int, FocusNode> _showFocusNodes =
       {}; // Added for TV focus management
 
+  void _scrollToShow(int index, {bool animate = true, double alignment = 0.3}) {
+    if (index < 0 || !_itemScrollController.isAttached) return;
+
+    final positions = _itemPositionsListener.itemPositions.value;
+    if (positions.isNotEmpty) {
+      final isVisible = positions.any((position) =>
+          position.index == index &&
+          position.itemLeadingEdge >= 0 &&
+          position.itemTrailingEdge <= 1.0);
+      if (isVisible) return;
+    }
+
+    if (animate) {
+      _itemScrollController.scrollTo(
+        index: index,
+        duration: const Duration(milliseconds: 500),
+        curve: Curves.easeInOutCubic,
+        alignment: alignment,
+      );
+    } else {
+      _itemScrollController.jumpTo(
+        index: index,
+        alignment: alignment,
+      );
+    }
+  }
+
   void _focusShow(int index) {
     if (index < 0) return;
 
@@ -395,6 +422,7 @@ class _ShowListScreenState extends State<ShowListScreen>
         onSourceTapped: onSourceTapped,
         onSourceLongPressed: onSourceLongPressed,
         showFocusNodes: _showFocusNodes,
+        onShowFocused: (index) => _scrollToShow(index),
         onFocusShow: _focusShow,
       ),
     );

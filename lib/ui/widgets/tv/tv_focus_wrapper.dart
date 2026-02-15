@@ -16,6 +16,7 @@ class TvFocusWrapper extends StatefulWidget {
   final Color? focusColor;
   final bool showGlow;
   final FocusOnKeyEventCallback? onKeyEvent;
+  final ValueChanged<bool>? onFocusChange;
 
   const TvFocusWrapper({
     super.key,
@@ -30,6 +31,7 @@ class TvFocusWrapper extends StatefulWidget {
     this.showGlow = false,
     this.onKeyEvent,
     this.focusBackgroundColor,
+    this.onFocusChange,
   });
 
   @override
@@ -48,6 +50,7 @@ class _TvFocusWrapperState extends State<TvFocusWrapper> {
         _cancelLongPressTimer();
       }
     });
+    widget.onFocusChange?.call(focused);
   }
 
   void _cancelLongPressTimer() {

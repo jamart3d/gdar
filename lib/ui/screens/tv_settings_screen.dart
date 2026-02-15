@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shakedown/ui/widgets/settings/appearance_section.dart';
-import 'package:shakedown/ui/widgets/settings/collection_statistics.dart';
 import 'package:shakedown/ui/widgets/settings/interface_section.dart';
+import 'package:shakedown/ui/widgets/settings/library_section.dart';
 import 'package:shakedown/ui/widgets/settings/playback_section.dart';
 import 'package:shakedown/ui/widgets/settings/source_filter_settings.dart';
 import 'package:shakedown/ui/widgets/settings/usage_instructions_section.dart';
@@ -21,7 +21,7 @@ class _TvSettingsScreenState extends State<TvSettingsScreen> {
     'Playback',
     'Appearance',
     'Interface',
-    'Collection',
+    'Library',
     'Sources',
     'Help',
   ];
@@ -30,7 +30,7 @@ class _TvSettingsScreenState extends State<TvSettingsScreen> {
     Icons.play_circle_outline_rounded,
     Icons.palette_outlined,
     Icons.view_quilt_outlined,
-    Icons.bar_chart_rounded,
+    Icons.library_music_outlined,
     Icons.filter_list_rounded,
     Icons.help_outline_rounded,
   ];
@@ -69,7 +69,8 @@ class _TvSettingsScreenState extends State<TvSettingsScreen> {
         );
         break;
       case 3:
-        activeSection = CollectionStatistics(
+        activeSection = LibrarySection(
+          scaleFactor: scaleFactor,
           initiallyExpanded: initiallyExpanded,
         );
         break;

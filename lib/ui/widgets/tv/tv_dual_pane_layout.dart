@@ -79,6 +79,11 @@ class _TvDualPaneLayoutState extends State<TvDualPaneLayout> {
                                   _rightScrollbarFocusNode.requestFocus();
                                 }
                               },
+                              onRight: () {
+                                // From Settings (far right of header), go DOWN to Track List
+                                // This completes the loop described by the user
+                                _rightScrollbarFocusNode.requestFocus();
+                              },
                             ),
                             Expanded(
                               child: ShowListScreen(
