@@ -7,10 +7,12 @@ import 'package:shakedown/services/device_service.dart';
 
 class CollectionStatistics extends StatelessWidget {
   final bool initiallyExpanded;
+  final bool asBody;
 
   const CollectionStatistics({
     super.key,
     this.initiallyExpanded = false,
+    this.asBody = false,
   });
 
   @override
@@ -172,34 +174,43 @@ class CollectionStatistics extends StatelessWidget {
     final days = duration.inDays;
     final hours = duration.inHours % 24;
 
+    final children = [
+      ListTile(
+        dense: true,
+        title: Text('$totalShows Total Shows'),
+        subtitle: Text('$totalSources Sources / $totalSongs Songs'),
+      ),
+      ListTile(
+        dense: true,
+        title: Text('${days}d ${hours}h Total Runtime'),
+      ),
+      ExpansionTile(
+        dense: true,
+        title: const Text('Source Categories Details'),
+        leading: const Icon(Icons.list_alt_rounded),
+        children: categories.map((cat) {
+          return ListTile(
+            dense: true,
+            title: Text(cat['name']),
+            trailing: Text('${cat['shows']} Shows / ${cat['sources']} Src'),
+          );
+        }).toList(),
+      ),
+    ];
+
+    if (asBody) {
+      return Column(
+        mainAxisSize: MainAxisSize.min,
+        children: children,
+      );
+    }
+
     return SectionCard(
       scaleFactor: scaleFactor,
       title: 'Collection Statistics',
       initiallyExpanded: initiallyExpanded,
       icon: Icons.bar_chart,
-      children: [
-        ListTile(
-          dense: true,
-          title: Text('$totalShows Total Shows'),
-          subtitle: Text('$totalSources Sources / $totalSongs Songs'),
-        ),
-        ListTile(
-          dense: true,
-          title: Text('${days}d ${hours}h Total Runtime'),
-        ),
-        ExpansionTile(
-          dense: true,
-          title: const Text('Source Categories Details'),
-          leading: const Icon(Icons.list_alt_rounded),
-          children: categories.map((cat) {
-            return ListTile(
-              dense: true,
-              title: Text(cat['name']),
-              trailing: Text('${cat['shows']} Shows / ${cat['sources']} Src'),
-            );
-          }).toList(),
-        ),
-      ],
+      children: children,
     );
   }
 }

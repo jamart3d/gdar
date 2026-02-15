@@ -4,9 +4,8 @@ import 'package:shakedown/providers/audio_provider.dart';
 import 'package:shakedown/providers/settings_provider.dart';
 import 'package:shakedown/ui/widgets/settings/about_section.dart';
 import 'package:shakedown/ui/widgets/settings/appearance_section.dart';
-import 'package:shakedown/ui/widgets/settings/collection_statistics.dart';
-import 'package:shakedown/ui/widgets/settings/data_section.dart';
 import 'package:shakedown/ui/widgets/settings/interface_section.dart';
+import 'package:shakedown/ui/widgets/settings/library_section.dart';
 import 'package:shakedown/ui/widgets/settings/playback_section.dart';
 import 'package:shakedown/ui/widgets/settings/source_filter_settings.dart';
 import 'package:shakedown/ui/widgets/settings/usage_instructions_section.dart';
@@ -216,19 +215,20 @@ class _SettingsScreenState extends State<SettingsScreen>
                   ),
                   Builder(builder: (context) {
                     // Register key for scrolling
-                    if (!_settingKeys.containsKey('collection_statistics')) {
-                      _settingKeys['collection_statistics'] =
-                          GlobalKey(debugLabel: 'collection_statistics');
+                    if (!_settingKeys.containsKey('library')) {
+                      _settingKeys['library'] =
+                          GlobalKey(debugLabel: 'library');
                     }
                     return Container(
-                      key: _settingKeys['collection_statistics'],
-                      child: CollectionStatistics(
-                        initiallyExpanded:
+                      key: _settingKeys['library'],
+                      child: LibrarySection(
+                        scaleFactor: scaleFactor,
+                        initiallyExpanded: widget.highlightSetting ==
+                                'library' ||
                             widget.highlightSetting == 'collection_statistics',
                       ),
                     );
                   }),
-                  DataSection(scaleFactor: scaleFactor),
                   AboutSection(scaleFactor: scaleFactor),
                   const SizedBox(height: 50),
                 ]),

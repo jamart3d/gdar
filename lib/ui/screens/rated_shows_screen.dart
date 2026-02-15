@@ -117,10 +117,14 @@ class _RatedShowsScreenState extends State<RatedShowsScreen>
 
   @override
   Widget build(BuildContext context) {
-    // Only watch ShowListProvider, not SettingsProvider (at least for data)
     final showListProvider = context.watch<ShowListProvider>();
-    final settingsProvider =
-        context.watch<SettingsProvider>(); // Still needed for uiScale? Yes.
+    final settingsProvider = context.watch<SettingsProvider>();
+    final isTv = context.read<DeviceService>().isTv;
+
+    if (isTv) {
+      return _buildTvLayout(context, showListProvider, settingsProvider);
+    }
+
     final scaleFactor =
         FontLayoutConfig.getEffectiveScale(context, settingsProvider);
     final textTheme = Theme.of(context).textTheme;
@@ -135,7 +139,6 @@ class _RatedShowsScreenState extends State<RatedShowsScreen>
     final audioProvider = context.watch<AudioProvider>();
 
     Color? backgroundColor;
-    // Only apply custom background color if NOT in "True Black" mode.
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     final isTrueBlackMode = isDarkMode && settingsProvider.useTrueBlack;
 
@@ -212,6 +215,77 @@ class _RatedShowsScreenState extends State<RatedShowsScreen>
             );
           },
         ),
+      ),
+    );
+  }
+
+  Widget _buildTvLayout(BuildContext context, ShowListProvider showListProvider,
+      SettingsProvider settingsProvider) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
+    return Scaffold(
+      backgroundColor: colorScheme.surface,
+      appBar: AppBar(
+        toolbarHeight: 80,
+        title: Row(
+          children: [
+            Icon(Icons.stars_rounded, size: 32, color: colorScheme.primary),
+            const SizedBox(width: 16),
+            Text(
+              'Rated Shows Library',
+              style: textTheme.headlineSmall?.copyWith(
+                fontWeight: FontWeight.bold,
+                color: colorScheme.onSurface,
+              ),
+            ),
+          ],
+        ),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(60),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: TabBar(
+                controller: _tabController,
+                isScrollable: true,
+                tabAlignment: TabAlignment.start,
+                labelStyle: textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18,
+                ),
+                unselectedLabelStyle: textTheme.titleMedium?.copyWith(
+                  fontSize: 18,
+                ),
+                indicatorWeight: 4,
+                indicatorSize: TabBarIndicatorSize.label,
+                indicatorColor: colorScheme.primary,
+                dividerColor: Colors.transparent,
+                labelPadding: const EdgeInsets.symmetric(horizontal: 24),
+                tabs: _tabs.map((r) {
+                  final count = _getShowCount(r, showListProvider);
+                  // Use shorter labels for TV tabs to keep focus clear
+                  String label;
+                  if (r == -2) {
+                    label = 'Played ($count)';
+                  } else if (r == -1) {
+                    label = 'Blocked ($count)';
+                  } else {
+                    label = '$r Star${r > 1 ? 's' : ''} ($count)';
+                  }
+
+                  return Tab(text: label);
+                }).toList(),
+              ),
+            ),
+          ),
+        ),
+      ),
+      body: TabBarView(
+        controller: _tabController,
+        children:
+            _tabs.map((rating) => _RatedShowList(rating: rating)).toList(),
       ),
     );
   }
@@ -303,6 +377,39 @@ class _RatedShowListState extends State<_RatedShowList> {
       );
     }
 
+    final isTv = context.read<DeviceService>().isTv;
+
+    if (isTv) {
+      return GridView.builder(
+        padding: const EdgeInsets.all(24),
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 5,
+          childAspectRatio: 2.2,
+          crossAxisSpacing: 16,
+          mainAxisSpacing: 16,
+        ),
+        itemCount: flatSources.length,
+        itemBuilder: (context, index) {
+          final item = flatSources[index];
+          final show = item.show;
+          final source = item.source;
+
+          final isPlaying = audioProvider.currentSource?.id == source.id;
+          final rating = catalog.getRating(source.id);
+
+          return _buildTvRatedSourceItem(
+            context,
+            show,
+            source,
+            isPlaying,
+            rating,
+            settingsProvider,
+            audioProvider,
+          );
+        },
+      );
+    }
+
     return ListView.builder(
       itemCount: flatSources.length,
       padding: const EdgeInsets.all(16),
@@ -314,7 +421,6 @@ class _RatedShowListState extends State<_RatedShowList> {
         final isPlaying = audioProvider.currentSource?.id == source.id;
         final rating = catalog.getRating(source.id);
 
-        // Customize the item presentation
         return Padding(
           padding: EdgeInsets.zero,
           child: _buildRatedSourceItem(
@@ -328,6 +434,121 @@ class _RatedShowListState extends State<_RatedShowList> {
           ),
         );
       },
+    );
+  }
+
+  Widget _buildTvRatedSourceItem(
+      BuildContext context,
+      Show show,
+      Source source,
+      bool isPlaying,
+      int rating,
+      SettingsProvider settingsProvider,
+      AudioProvider audioProvider) {
+    final catalog = CatalogService();
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
+    return TvFocusWrapper(
+      onTap: () async {
+        if (isPlaying) {
+          await Navigator.of(context).push(
+            MaterialPageRoute(builder: (context) => const PlaybackScreen()),
+          );
+        } else {
+          final singleSourceShow = show.copyWith(sources: [source]);
+          await Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) => TrackListScreen(
+                show: singleSourceShow,
+                source: singleSourceShow.sources.first,
+              ),
+            ),
+          );
+        }
+      },
+      onLongPress: () {
+        TvInteractionModal.show(
+          context,
+          title: source.id,
+          subtitle: show.name,
+          onPlay: () {
+            HapticFeedback.mediumImpact();
+            audioProvider.playSource(show, source);
+          },
+          onRate: () async {
+            final currentRating = catalog.getRating(source.id);
+            await showDialog(
+              context: context,
+              builder: (context) => RatingDialog(
+                initialRating: currentRating,
+                sourceId: source.id,
+                sourceUrl:
+                    source.tracks.isNotEmpty ? source.tracks.first.url : null,
+                isPlayed: catalog.isPlayed(source.id),
+                onRatingChanged: (newRating) {
+                  catalog.setRating(source.id, newRating);
+                },
+                onPlayedChanged: (bool isPlayed) {
+                  if (isPlayed != catalog.isPlayed(source.id)) {
+                    catalog.togglePlayed(source.id);
+                  }
+                },
+              ),
+            );
+          },
+        );
+      },
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: isPlaying
+              ? colorScheme.primaryContainer.withValues(alpha: 0.4)
+              : colorScheme.surfaceContainerHighest.withValues(alpha: 0.2),
+          borderRadius: BorderRadius.circular(12),
+          border: isPlaying
+              ? Border.all(color: colorScheme.primary, width: 2)
+              : null,
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                RatingControl(
+                  rating: rating,
+                  size: 16,
+                  isPlayed: catalog.isPlayed(source.id),
+                  compact: true,
+                ),
+                const Spacer(),
+                if (source.src != null)
+                  SrcBadge(src: source.src!, isPlaying: isPlaying),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Text(
+              show.formattedDateYearFirst,
+              style: textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+                color: isPlaying ? colorScheme.primary : colorScheme.onSurface,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            Text(
+              source.id,
+              style: textTheme.labelSmall?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+        ),
+      ),
     );
   }
 

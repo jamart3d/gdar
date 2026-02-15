@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:shakedown/ui/widgets/settings/about_section.dart';
 import 'package:shakedown/ui/widgets/settings/appearance_section.dart';
-import 'package:shakedown/ui/widgets/settings/interface_section.dart';
 import 'package:shakedown/ui/widgets/settings/library_section.dart';
+import 'package:shakedown/ui/widgets/settings/interface_section.dart';
 import 'package:shakedown/ui/widgets/settings/playback_section.dart';
 import 'package:shakedown/ui/widgets/settings/source_filter_settings.dart';
 import 'package:shakedown/ui/widgets/settings/usage_instructions_section.dart';
@@ -18,21 +19,23 @@ class _TvSettingsScreenState extends State<TvSettingsScreen> {
   int _selectedIndex = 0;
 
   final List<String> _categories = [
-    'Playback',
+    'Help',
     'Appearance',
     'Interface',
-    'Library',
     'Sources',
-    'Help',
+    'Playback',
+    'Library',
+    'About',
   ];
 
   final List<IconData> _icons = [
-    Icons.play_circle_outline_rounded,
+    Icons.help_outline_rounded,
     Icons.palette_outlined,
     Icons.view_quilt_outlined,
-    Icons.library_music_outlined,
     Icons.filter_list_rounded,
-    Icons.help_outline_rounded,
+    Icons.play_circle_outline_rounded,
+    Icons.local_library_rounded,
+    Icons.info_outline_rounded,
   ];
 
   @override
@@ -46,14 +49,9 @@ class _TvSettingsScreenState extends State<TvSettingsScreen> {
 
     switch (_selectedIndex) {
       case 0:
-        activeSection = PlaybackSection(
+        activeSection = UsageInstructionsSection(
           scaleFactor: scaleFactor,
           initiallyExpanded: initiallyExpanded,
-          activeHighlightKey: null,
-          highlightTriggerCount: 0,
-          settingKeys: {},
-          onScrollToSetting: (_) {},
-          isHighlightSettingMatching: false,
         );
         break;
       case 1:
@@ -69,18 +67,28 @@ class _TvSettingsScreenState extends State<TvSettingsScreen> {
         );
         break;
       case 3:
-        activeSection = LibrarySection(
+        activeSection = const SourceFilterSettings();
+        break;
+      case 4:
+        activeSection = PlaybackSection(
+          scaleFactor: scaleFactor,
+          initiallyExpanded: initiallyExpanded,
+          activeHighlightKey: null,
+          highlightTriggerCount: 0,
+          settingKeys: {},
+          onScrollToSetting: (_) {},
+          isHighlightSettingMatching: false,
+        );
+        break;
+      case 5:
+        activeSection = const LibrarySection(
           scaleFactor: scaleFactor,
           initiallyExpanded: initiallyExpanded,
         );
         break;
-      case 4:
-        activeSection = const SourceFilterSettings();
-        break;
-      case 5:
-        activeSection = UsageInstructionsSection(
+      case 6:
+        activeSection = const AboutSection(
           scaleFactor: scaleFactor,
-          initiallyExpanded: initiallyExpanded,
         );
         break;
       default:

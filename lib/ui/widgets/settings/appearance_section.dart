@@ -12,7 +12,6 @@ import 'package:shakedown/ui/widgets/tv/tv_switch_list_tile.dart';
 import 'package:shakedown/ui/widgets/tv/tv_list_tile.dart';
 import 'package:shakedown/ui/widgets/tv/tv_focus_wrapper.dart';
 import 'package:shakedown/ui/widgets/settings/rainbow_color_picker.dart';
-import 'package:shakedown/ui/screens/rated_shows_screen.dart';
 
 class AppearanceSection extends StatefulWidget {
   final double scaleFactor;
@@ -455,33 +454,6 @@ class _AppearanceSectionState extends State<AppearanceSection> {
           onTap: () {
             HapticFeedback.lightImpact();
             FontSelectionDialog.show(context);
-          },
-        ),
-        TvListTile(
-          dense: true,
-          visualDensity: VisualDensity.compact,
-          leading: const Icon(Icons.stars_rounded),
-          title: FittedBox(
-              fit: BoxFit.scaleDown,
-              alignment: Alignment.centerLeft,
-              child: Text('Rated Shows Library',
-                  style: Theme.of(context)
-                      .textTheme
-                      .titleMedium
-                      ?.copyWith(fontSize: 16 * widget.scaleFactor))),
-          subtitle: FittedBox(
-              fit: BoxFit.scaleDown,
-              alignment: Alignment.centerLeft,
-              child: Text('View played, rated, and blocked shows',
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodySmall
-                      ?.copyWith(fontSize: 12 * widget.scaleFactor))),
-          onTap: () {
-            HapticFeedback.lightImpact();
-            Navigator.of(context).push(
-              MaterialPageRoute(builder: (context) => const RatedShowsScreen()),
-            );
           },
         ),
       ],

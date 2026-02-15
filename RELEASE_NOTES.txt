@@ -1,9 +1,14 @@
+Release 1.0.55:
+- **TV Rated Shows Grid**: Implemented a high-density 5-column grid for the Rated Shows Library on Google TV, allowing users to see 25+ shows at once.
+- **Unified Library Section**: Consolidated Collection Statistics and Rated Shows management into a new 'Library' section across both mobile and TV apps.
+- **TV Tabbed Layout**: Standardized the Rated Shows screen on TV with a top-level tabbed navigation (Played, Stars, Blocked), matching the mobile flow but scaled for the big screen.
+- **Premium Aesthetics**: Enhanced TV tab labels and indicators with larger typography and optimized D-pad focus management for a seamless "lean-back" experience.
+
 Release 1.0.54:
-- **Integrated Library Dashboard**: Created a unified "Library" section for Google TV, consolidating Rated Shows and Collection Statistics into a premium layout.
+- **Unified Library Category**: Reorganized Google TV settings to include a dedicated "Library" category, consolidating the Rated Shows link and Collection Statistics.
 - **TV Interaction Modal**: Added a specialized "Play or Rate" choice when long-pressing shows or sources on TV, optimized for remote controls.
 - **Optimized Rating Dialog**: Re-engineered the rating interface for Google TV, supporting D-pad horizontal adjustment and tactile feedback.
 - **TV Playback Visuals**: Added venue/location icons and integrated operational messages into the track list header for a cleaner, unified aesthetic.
-- **Mobile Experience Preserved**: Re-implemented the classic settings and playback layouts for mobile devices, ensuring zero regressions for phone users.
 
 Release 1.0.53:
 - **TV Navigation Refinement**: Implemented "Wrap + Anchor" focus logic for both Track List and Show List. Focus now wraps at boundaries on initial press and stays anchored during button holds to prevent unintended jumps.
