@@ -22,6 +22,9 @@ class ShowListItem extends StatelessWidget {
   final Function(Source) onSourceTap;
   final Function(Source) onSourceLongPress;
   final VoidCallback? onFocusLeft;
+  final Function(int)? onWrapAround;
+  final FocusNode? focusNode;
+  final int index;
 
   const ShowListItem({
     super.key,
@@ -33,6 +36,9 @@ class ShowListItem extends StatelessWidget {
     required this.onSourceTap,
     required this.onSourceLongPress,
     this.onFocusLeft,
+    this.onWrapAround,
+    this.focusNode,
+    required this.index,
   });
 
   @override
@@ -62,6 +68,7 @@ class ShowListItem extends StatelessWidget {
 
     if (isTv) {
       card = TvFocusWrapper(
+        focusNode: focusNode,
         onTap: onTap,
         onLongPress: onLongPress,
         scaleOnFocus: 1.0, // Disable scaling
@@ -69,10 +76,25 @@ class ShowListItem extends StatelessWidget {
         focusColor: Theme.of(context).colorScheme.primary, // Primary border
         borderRadius: BorderRadius.circular(12),
         onKeyEvent: (node, event) {
-          if (event is KeyDownEvent &&
-              event.logicalKey == LogicalKeyboardKey.arrowLeft) {
-            onFocusLeft?.call();
+          if (event.logicalKey == LogicalKeyboardKey.arrowLeft) {
+            if (event is KeyDownEvent) onFocusLeft?.call();
             return KeyEventResult.handled;
+          } else if (event.logicalKey == LogicalKeyboardKey.arrowDown) {
+            final shows = context.read<ShowListProvider>().filteredShows;
+            if (index == shows.length - 1) {
+              if (event is KeyDownEvent) {
+                onWrapAround?.call(0);
+              }
+              return KeyEventResult.handled; // Anchor
+            }
+          } else if (event.logicalKey == LogicalKeyboardKey.arrowUp) {
+            if (index == 0) {
+              if (event is KeyDownEvent) {
+                final shows = context.read<ShowListProvider>().filteredShows;
+                onWrapAround?.call(shows.length - 1);
+              }
+              return KeyEventResult.handled; // Anchor
+            }
           }
           return KeyEventResult.ignored;
         },

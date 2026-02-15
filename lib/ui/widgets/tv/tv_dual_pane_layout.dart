@@ -60,7 +60,9 @@ class _TvDualPaneLayoutState extends State<TvDualPaneLayout> {
                       child: AnimatedOpacity(
                         duration: const Duration(milliseconds: 400),
                         curve: Curves.easeInOut,
-                        opacity: _focusedPane == 0 ? 1.0 : 0.4,
+                        opacity: _focusedPane == 0
+                            ? 1.0
+                            : 0.2, // Increased dimming from 0.4
                         child: Column(
                           children: [
                             TvHeader(
@@ -104,8 +106,10 @@ class _TvDualPaneLayoutState extends State<TvDualPaneLayout> {
                         end: Alignment.bottomCenter,
                         colors: [
                           Colors.white.withValues(alpha: 0.0),
-                          Colors.white.withValues(alpha: 0.08),
-                          Colors.white.withValues(alpha: 0.08),
+                          Colors.white
+                              .withValues(alpha: 0.15), // Increased from 0.08
+                          Colors.white
+                              .withValues(alpha: 0.15), // Increased from 0.08
                           Colors.white.withValues(alpha: 0.0),
                         ],
                       ),
@@ -121,7 +125,9 @@ class _TvDualPaneLayoutState extends State<TvDualPaneLayout> {
                       child: AnimatedOpacity(
                         duration: const Duration(milliseconds: 400),
                         curve: Curves.easeInOut,
-                        opacity: _focusedPane == 1 ? 1.0 : 0.4,
+                        opacity: _focusedPane == 1
+                            ? 1.0
+                            : 0.2, // Increased dimming from 0.4
                         child: PlaybackScreen(
                           isPane: true,
                           scrollbarFocusNode: _rightScrollbarFocusNode,

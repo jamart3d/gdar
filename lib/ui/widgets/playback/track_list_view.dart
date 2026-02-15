@@ -26,6 +26,7 @@ class TrackListView extends StatelessWidget {
   final VoidCallback? onFocusLeft;
   final VoidCallback? onFocusRight;
   final ValueChanged<int>? onTrackFocused;
+  final ValueChanged<int>? onWrapAround; // Added for robust wrap-around
 
   const TrackListView({
     super.key,
@@ -39,6 +40,7 @@ class TrackListView extends StatelessWidget {
     this.onFocusLeft,
     this.onFocusRight,
     this.onTrackFocused,
+    this.onWrapAround,
   });
 
   @override
@@ -229,21 +231,29 @@ class TrackListView extends StatelessWidget {
             focusColor: colorScheme.primary, // Show focus border
             borderRadius: BorderRadius.circular(8), // Tighter radius
             onKeyEvent: (node, event) {
-              if (event is KeyDownEvent) {
-                if (event.logicalKey == LogicalKeyboardKey.arrowLeft) {
-                  onFocusLeft?.call();
-                  return KeyEventResult.handled;
-                } else if (event.logicalKey == LogicalKeyboardKey.arrowRight) {
-                  onFocusRight?.call();
-                  return KeyEventResult.handled;
-                } else if (event.logicalKey == LogicalKeyboardKey.arrowDown) {
-                  // Wrap-around logic: If last item, go to first
-                  if (index == source.tracks.length - 1) {
-                    // Wrap to first track
-                    trackFocusNodes?[0]?.requestFocus();
-                    itemScrollController.jumpTo(index: 0); // Jump to top
-                    return KeyEventResult.handled;
+              if (event.logicalKey == LogicalKeyboardKey.arrowLeft) {
+                if (event is KeyDownEvent) onFocusLeft?.call();
+                return KeyEventResult.handled;
+              } else if (event.logicalKey == LogicalKeyboardKey.arrowRight) {
+                if (event is KeyDownEvent) onFocusRight?.call();
+                return KeyEventResult.handled;
+              } else if (event.logicalKey == LogicalKeyboardKey.arrowDown) {
+                // Wrap-around logic: If last item, go to first
+                if (index == source.tracks.length - 1) {
+                  if (event is KeyDownEvent) {
+                    onWrapAround?.call(0);
                   }
+                  return KeyEventResult
+                      .handled; // Consume repeats to prevent bubbling/jumps
+                }
+              } else if (event.logicalKey == LogicalKeyboardKey.arrowUp) {
+                // Wrap-around logic: If first item, go to last
+                if (index == 0) {
+                  if (event is KeyDownEvent) {
+                    onWrapAround?.call(source.tracks.length - 1);
+                  }
+                  return KeyEventResult
+                      .handled; // Consume repeats to prevent bubbling/jumps
                 }
               }
               return KeyEventResult.ignored;

@@ -24,6 +24,8 @@ class ShowListBody extends StatelessWidget {
   final Function(Show, Source) onSourceLongPressed;
   final FocusNode? scrollbarFocusNode;
   final VoidCallback? onFocusLeft;
+  final Map<int, FocusNode>? showFocusNodes;
+  final ValueChanged<int>? onFocusShow;
 
   const ShowListBody({
     super.key,
@@ -39,6 +41,8 @@ class ShowListBody extends StatelessWidget {
     required this.onSourceLongPressed,
     this.scrollbarFocusNode,
     this.onFocusLeft,
+    this.showFocusNodes,
+    this.onFocusShow,
   });
 
   @override
@@ -75,6 +79,9 @@ class ShowListBody extends StatelessWidget {
           onSourceTap: (source) => onSourceTapped(show, source),
           onSourceLongPress: (source) => onSourceLongPressed(show, source),
           onFocusLeft: onFocusLeft,
+          onWrapAround: onFocusShow,
+          focusNode: showFocusNodes?[index],
+          index: index,
         );
       },
     );
@@ -89,8 +96,31 @@ class ShowListBody extends StatelessWidget {
             itemCount: showListProvider.filteredShows.length,
             focusNode: scrollbarFocusNode,
             onLeft: () {
-              // Move focus back to the show list
-              FocusScope.of(context).focusInDirection(TraversalDirection.left);
+              // Move focus back to the show list - find middle visible item
+              final positions = itemPositionsListener.itemPositions.value;
+              int targetIndex = -1;
+
+              if (positions.isNotEmpty) {
+                final sorted = positions.toList()
+                  ..sort((a, b) => a.index.compareTo(b.index));
+
+                double bestDistance = 999.0;
+                for (var pos in sorted) {
+                  final itemCenter =
+                      (pos.itemLeadingEdge + pos.itemTrailingEdge) / 2;
+                  final distance = (itemCenter - 0.5).abs();
+                  if (distance < bestDistance) {
+                    bestDistance = distance;
+                    targetIndex = pos.index;
+                  }
+                }
+              }
+
+              if (targetIndex != -1) {
+                onFocusShow?.call(targetIndex);
+              } else {
+                onFocusShow?.call(0); // Fallback
+              }
             },
             onRight: () {
               // Move focus to the right pane (track list)

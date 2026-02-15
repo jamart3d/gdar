@@ -376,6 +376,7 @@ class _PlaybackScreenState extends State<PlaybackScreen>
                         onTrackFocused: (index) {
                           // Focus callback
                         },
+                        onWrapAround: _focusTrack,
                       ),
                     ),
                     if (context.read<DeviceService>().isTv)

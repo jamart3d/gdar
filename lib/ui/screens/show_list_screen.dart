@@ -56,6 +56,26 @@ class _ShowListScreenState extends State<ShowListScreen>
   FocusNode get searchFocusNode => _searchFocusNode;
 
   late AnimationController _animationController;
+  final Map<int, FocusNode> _showFocusNodes =
+      {}; // Added for TV focus management
+
+  void _focusShow(int index) {
+    if (index < 0) return;
+
+    // Ensure the focus node exists
+    if (!_showFocusNodes.containsKey(index)) {
+      _showFocusNodes[index] = FocusNode();
+    }
+
+    // Scroll to the show to ensure it's built and visible
+    _itemScrollController.jumpTo(index: index, alignment: 0.3);
+
+    // Wait for a frame to ensure the Focus widget is mounted
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _showFocusNodes[index]?.requestFocus();
+    });
+  }
+
   late Animation<double> _animation;
   late AnimationController _searchPulseController;
   late Animation<double> _searchPulseAnimation;
@@ -295,6 +315,9 @@ class _ShowListScreenState extends State<ShowListScreen>
     _randomPulseController.dispose();
     _randomShowSubscription?.cancel();
     _playerStateSubscription?.cancel();
+    for (var node in _showFocusNodes.values) {
+      node.dispose();
+    }
     super.dispose();
   }
 
@@ -371,6 +394,8 @@ class _ShowListScreenState extends State<ShowListScreen>
         onCardLongPressed: onCardLongPressed,
         onSourceTapped: onSourceTapped,
         onSourceLongPressed: onSourceLongPressed,
+        showFocusNodes: _showFocusNodes,
+        onFocusShow: _focusShow,
       ),
     );
   }

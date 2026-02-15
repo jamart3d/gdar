@@ -9,6 +9,7 @@ import 'package:shakedown/ui/widgets/settings/color_picker_dialog.dart';
 import 'package:shakedown/ui/widgets/settings/font_selection_dialog.dart';
 import 'package:shakedown/ui/widgets/tv/tv_switch_list_tile.dart';
 import 'package:shakedown/ui/widgets/tv/tv_list_tile.dart';
+import 'package:shakedown/ui/widgets/tv/tv_focus_wrapper.dart';
 
 class AppearanceSection extends StatefulWidget {
   final double scaleFactor;
@@ -214,21 +215,51 @@ class _AppearanceSectionState extends State<AppearanceSection> {
                             ?.copyWith(fontSize: 12.0 * widget.scaleFactor),
                       ),
                       Expanded(
-                        child: Slider(
-                          onChangeStart: (_) => HapticFeedback.lightImpact(),
-                          value: settingsProvider.glowMode.toDouble(),
-                          min: 10,
-                          max: 100,
-                          divisions: 18, // 5% steps
-                          label: '${settingsProvider.glowMode}%',
-                          onChanged: (value) {
-                            if (value.round() != settingsProvider.glowMode) {
-                              HapticFeedback.selectionClick();
+                        child: TvFocusWrapper(
+                          onKeyEvent: (node, event) {
+                            if (event is KeyDownEvent) {
+                              if (event.logicalKey ==
+                                  LogicalKeyboardKey.arrowLeft) {
+                                final newVal = (settingsProvider.glowMode - 5)
+                                    .clamp(10, 100);
+                                if (newVal != settingsProvider.glowMode) {
+                                  HapticFeedback.selectionClick();
+                                  context
+                                      .read<SettingsProvider>()
+                                      .setGlowMode(newVal);
+                                }
+                                return KeyEventResult.handled;
+                              } else if (event.logicalKey ==
+                                  LogicalKeyboardKey.arrowRight) {
+                                final newVal = (settingsProvider.glowMode + 5)
+                                    .clamp(10, 100);
+                                if (newVal != settingsProvider.glowMode) {
+                                  HapticFeedback.selectionClick();
+                                  context
+                                      .read<SettingsProvider>()
+                                      .setGlowMode(newVal);
+                                }
+                                return KeyEventResult.handled;
+                              }
                             }
-                            context
-                                .read<SettingsProvider>()
-                                .setGlowMode(value.round());
+                            return KeyEventResult.ignored;
                           },
+                          child: Slider(
+                            onChangeStart: (_) => HapticFeedback.lightImpact(),
+                            value: settingsProvider.glowMode.toDouble(),
+                            min: 10,
+                            max: 100,
+                            divisions: 18, // 5% steps
+                            label: '${settingsProvider.glowMode}%',
+                            onChanged: (value) {
+                              if (value.round() != settingsProvider.glowMode) {
+                                HapticFeedback.selectionClick();
+                              }
+                              context
+                                  .read<SettingsProvider>()
+                                  .setGlowMode(value.round());
+                            },
+                          ),
                         ),
                       ),
                       SizedBox(
@@ -321,66 +352,72 @@ class _AppearanceSectionState extends State<AppearanceSection> {
                   ignoreGlobalClock: true,
                   // Transparent background to blend with SectionCard
                   backgroundColor: Colors.transparent,
-                  child: SegmentedButton<double>(
-                    segments: const [
-                      ButtonSegment(
-                        value: 1.0,
-                        label: Text('1x'),
-                        icon: Icon(Icons.speed),
-                      ),
-                      ButtonSegment(
-                        value: 0.5,
-                        label: Text('0.5x'),
-                      ),
-                      ButtonSegment(
-                        value: 0.25,
-                        label: Text('0.25x'),
-                      ),
-                      ButtonSegment(
-                        value: 0.1,
-                        label: Text('0.1x'),
-                      ),
-                    ],
-                    selected: {settingsProvider.rgbAnimationSpeed},
-                    onSelectionChanged: (Set<double> newSelection) {
-                      HapticFeedback.lightImpact();
-                      context
-                          .read<SettingsProvider>()
-                          .setRgbAnimationSpeed(newSelection.first);
-                    },
-                    showSelectedIcon: false,
-                    style: ButtonStyle(
-                      // Match proper inner radius (24 - 3 = 21)
-                      shape: WidgetStateProperty.all(
-                        RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(21)),
-                      ),
-                      // Make border transparent to let gradient show
-                      side: WidgetStateProperty.all(BorderSide.none),
-                      backgroundColor: WidgetStateProperty.resolveWith<Color?>(
-                        (states) {
-                          // Always use transparent background for a cleaner look
-                          // Rely on text color to show selection
-                          return Colors.transparent;
-                        },
-                      ),
-                      foregroundColor: WidgetStateProperty.resolveWith<Color?>(
-                        (states) {
-                          if (states.contains(WidgetState.selected)) {
-                            return Theme.of(context).colorScheme.primary;
-                          }
-                          // Unselected: Use white70 in dark mode for contrast, or default grey
-                          final isDark =
-                              Theme.of(context).brightness == Brightness.dark;
-                          return isDark ? Colors.white70 : null;
-                        },
-                      ),
-                      textStyle: WidgetStateProperty.resolveWith<TextStyle?>(
-                        (states) {
-                          // Rock Salt doesn't support bold well, and we rely on color for highlight.
-                          // Returning null allows it to inherit the Theme's labelLarge (which has the correct font).
-                          return null;
-                        },
+                  child: TvFocusWrapper(
+                    showGlow: true,
+                    borderRadius: BorderRadius.circular(24),
+                    child: SegmentedButton<double>(
+                      segments: const [
+                        ButtonSegment(
+                          value: 1.0,
+                          label: Text('1x'),
+                          icon: Icon(Icons.speed),
+                        ),
+                        ButtonSegment(
+                          value: 0.5,
+                          label: Text('0.5x'),
+                        ),
+                        ButtonSegment(
+                          value: 0.25,
+                          label: Text('0.25x'),
+                        ),
+                        ButtonSegment(
+                          value: 0.1,
+                          label: Text('0.1x'),
+                        ),
+                      ],
+                      selected: {settingsProvider.rgbAnimationSpeed},
+                      onSelectionChanged: (Set<double> newSelection) {
+                        HapticFeedback.lightImpact();
+                        context
+                            .read<SettingsProvider>()
+                            .setRgbAnimationSpeed(newSelection.first);
+                      },
+                      showSelectedIcon: false,
+                      style: ButtonStyle(
+                        // Match proper inner radius (24 - 3 = 21)
+                        shape: WidgetStateProperty.all(
+                          RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(21)),
+                        ),
+                        // Make border transparent to let gradient show
+                        side: WidgetStateProperty.all(BorderSide.none),
+                        backgroundColor:
+                            WidgetStateProperty.resolveWith<Color?>(
+                          (states) {
+                            // Always use transparent background for a cleaner look
+                            // Rely on text color to show selection
+                            return Colors.transparent;
+                          },
+                        ),
+                        foregroundColor:
+                            WidgetStateProperty.resolveWith<Color?>(
+                          (states) {
+                            if (states.contains(WidgetState.selected)) {
+                              return Theme.of(context).colorScheme.primary;
+                            }
+                            // Unselected: Use white70 in dark mode for contrast, or default grey
+                            final isDark =
+                                Theme.of(context).brightness == Brightness.dark;
+                            return isDark ? Colors.white70 : null;
+                          },
+                        ),
+                        textStyle: WidgetStateProperty.resolveWith<TextStyle?>(
+                          (states) {
+                            // Rock Salt doesn't support bold well, and we rely on color for highlight.
+                            // Returning null allows it to inherit the Theme's labelLarge (which has the correct font).
+                            return null;
+                          },
+                        ),
                       ),
                     ),
                   ),
