@@ -3,25 +3,25 @@ import 'package:shakedown/providers/show_list_provider.dart';
 import 'package:shakedown/ui/widgets/section_card.dart';
 import 'package:provider/provider.dart';
 import 'package:shakedown/models/show.dart';
-import 'package:shakedown/services/device_service.dart';
 
 class CollectionStatistics extends StatelessWidget {
   final bool initiallyExpanded;
   final bool asBody;
+  final double scaleFactor;
 
   const CollectionStatistics({
     super.key,
     this.initiallyExpanded = false,
     this.asBody = false,
+    this.scaleFactor = 1.0,
   });
 
   @override
   Widget build(BuildContext context) {
     final showListProvider = context.watch<ShowListProvider>();
     final allShows = showListProvider.allShows;
-    final isTv = context.watch<DeviceService>().isTv;
-    final scaleFactor = isTv ? 1.0 : 1.0; // Keep it simple for now
 
+    // Logic for durations and counts
     int totalShows = allShows.length;
     int totalSources = 0;
     int totalSongs = 0;
@@ -177,22 +177,40 @@ class CollectionStatistics extends StatelessWidget {
     final children = [
       ListTile(
         dense: true,
-        title: Text('$totalShows Total Shows'),
-        subtitle: Text('$totalSources Sources / $totalSongs Songs'),
+        title: Text(
+          '$totalShows Total Shows',
+          style: TextStyle(fontSize: 14 * scaleFactor),
+        ),
+        subtitle: Text(
+          '$totalSources Sources / $totalSongs Songs',
+          style: TextStyle(fontSize: 12 * scaleFactor),
+        ),
       ),
       ListTile(
         dense: true,
-        title: Text('${days}d ${hours}h Total Runtime'),
+        title: Text(
+          '${days}d ${hours}h Total Runtime',
+          style: TextStyle(fontSize: 14 * scaleFactor),
+        ),
       ),
       ExpansionTile(
         dense: true,
-        title: const Text('Source Categories Details'),
-        leading: const Icon(Icons.list_alt_rounded),
+        title: Text(
+          'Source Categories Details',
+          style: TextStyle(fontSize: 14 * scaleFactor),
+        ),
+        leading: Icon(Icons.list_alt_rounded, size: 20 * scaleFactor),
         children: categories.map((cat) {
           return ListTile(
             dense: true,
-            title: Text(cat['name']),
-            trailing: Text('${cat['shows']} Shows / ${cat['sources']} Src'),
+            title: Text(
+              cat['name'],
+              style: TextStyle(fontSize: 13 * scaleFactor),
+            ),
+            trailing: Text(
+              '${cat['shows']} Shows / ${cat['sources']} Src',
+              style: TextStyle(fontSize: 11 * scaleFactor),
+            ),
           );
         }).toList(),
       ),
@@ -201,7 +219,21 @@ class CollectionStatistics extends StatelessWidget {
     if (asBody) {
       return Column(
         mainAxisSize: MainAxisSize.min,
-        children: children,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(left: 16.0, top: 16.0, bottom: 8.0),
+            child: Text(
+              'STATISTICS',
+              style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                    color: Theme.of(context).colorScheme.primary,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 1.2,
+                  ),
+            ),
+          ),
+          ...children,
+        ],
       );
     }
 
