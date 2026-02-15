@@ -152,9 +152,9 @@ class _RatingDialogState extends State<RatingDialog> {
             InkWell(
               onTap: () {
                 if (widget.sourceUrl != null && widget.sourceUrl!.isNotEmpty) {
-                  launchArchivePage(widget.sourceUrl!);
+                  launchArchivePage(widget.sourceUrl!, context);
                 } else {
-                  launchArchiveDetails(widget.sourceId!);
+                  launchArchiveDetails(widget.sourceId!, context);
                 }
               },
               borderRadius: BorderRadius.circular(8),

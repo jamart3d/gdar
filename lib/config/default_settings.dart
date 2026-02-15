@@ -14,7 +14,7 @@ class DefaultSettings {
   static const bool uiScaleDesktopDefault = false; // Default for large screens
   static const bool uiScaleMobileDefault =
       false; // Default for small screens (<720)
-  static const bool highlightPlayingWithRgb = false;
+  static const bool highlightPlayingWithRgb = true;
   static const int glowMode =
       0; // 0=Off, 1-100=Intensity Percentage (e.g. 50=Half)
   static const double rgbAnimationSpeed = 0.5;

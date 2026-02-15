@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:shakedown/ui/widgets/settings/about_section.dart';
 import 'package:shakedown/ui/widgets/settings/appearance_section.dart';
-import 'package:shakedown/ui/widgets/settings/library_section.dart';
+import 'package:shakedown/ui/widgets/settings/collection_statistics.dart';
+import 'package:shakedown/ui/widgets/settings/data_section.dart';
 import 'package:shakedown/ui/widgets/settings/interface_section.dart';
 import 'package:shakedown/ui/widgets/settings/playback_section.dart';
 import 'package:shakedown/ui/widgets/settings/source_filter_settings.dart';
@@ -19,22 +20,24 @@ class _TvSettingsScreenState extends State<TvSettingsScreen> {
   int _selectedIndex = 0;
 
   final List<String> _categories = [
-    'Help',
+    'Playback',
     'Appearance',
     'Interface',
+    'Collection Statistics',
     'Sources',
-    'Playback',
-    'Library',
+    'Manage Rated Shows',
+    'Help',
     'About',
   ];
 
   final List<IconData> _icons = [
-    Icons.help_outline_rounded,
+    Icons.play_circle_outline_rounded,
     Icons.palette_outlined,
     Icons.view_quilt_outlined,
+    Icons.bar_chart_rounded,
     Icons.filter_list_rounded,
-    Icons.play_circle_outline_rounded,
-    Icons.local_library_rounded,
+    Icons.star_rounded,
+    Icons.help_outline_rounded,
     Icons.info_outline_rounded,
   ];
 
@@ -49,27 +52,6 @@ class _TvSettingsScreenState extends State<TvSettingsScreen> {
 
     switch (_selectedIndex) {
       case 0:
-        activeSection = UsageInstructionsSection(
-          scaleFactor: scaleFactor,
-          initiallyExpanded: initiallyExpanded,
-        );
-        break;
-      case 1:
-        activeSection = AppearanceSection(
-          scaleFactor: scaleFactor,
-          initiallyExpanded: initiallyExpanded,
-        );
-        break;
-      case 2:
-        activeSection = InterfaceSection(
-          scaleFactor: scaleFactor,
-          initiallyExpanded: initiallyExpanded,
-        );
-        break;
-      case 3:
-        activeSection = const SourceFilterSettings();
-        break;
-      case 4:
         activeSection = PlaybackSection(
           scaleFactor: scaleFactor,
           initiallyExpanded: initiallyExpanded,
@@ -80,13 +62,39 @@ class _TvSettingsScreenState extends State<TvSettingsScreen> {
           isHighlightSettingMatching: false,
         );
         break;
-      case 5:
-        activeSection = const LibrarySection(
+      case 1:
+        activeSection = AppearanceSection(
+          scaleFactor: scaleFactor,
+          initiallyExpanded: initiallyExpanded,
+          showFontSelection: true,
+        );
+        break;
+      case 2:
+        activeSection = InterfaceSection(
           scaleFactor: scaleFactor,
           initiallyExpanded: initiallyExpanded,
         );
         break;
+      case 3:
+        activeSection = CollectionStatistics(
+          initiallyExpanded: initiallyExpanded,
+        );
+        break;
+      case 4:
+        activeSection = const SourceFilterSettings();
+        break;
+      case 5:
+        activeSection = const DataSection(
+          scaleFactor: scaleFactor,
+        );
+        break;
       case 6:
+        activeSection = UsageInstructionsSection(
+          scaleFactor: scaleFactor,
+          initiallyExpanded: initiallyExpanded,
+        );
+        break;
+      case 7:
         activeSection = const AboutSection(
           scaleFactor: scaleFactor,
         );

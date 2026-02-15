@@ -420,7 +420,7 @@ class TrackListView extends StatelessWidget {
       },
     );
 
-    if (isPlaying) {
+    if (isPlaying && isTv) {
       return Column(
         mainAxisSize: MainAxisSize.min,
         children: [

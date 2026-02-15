@@ -16,6 +16,8 @@ import 'dart:io';
 import 'package:flutter/services.dart';
 import 'package:shakedown/providers/update_provider.dart';
 import 'package:shakedown/services/device_service.dart';
+import 'package:shakedown/ui/widgets/settings/collection_statistics.dart';
+import 'package:shakedown/ui/widgets/settings/data_section.dart';
 import '../../helpers/test_helpers.dart';
 
 // Mock Providers (Simple versions for testing)
@@ -167,5 +169,33 @@ void main() {
     expect(find.text('Play Next Show on Startup'), findsOneWidget);
     expect(find.text('Play Random Show on Completion'), findsNothing);
     expect(find.text('Play Random Show on Startup'), findsNothing);
+  });
+
+  testWidgets('Verifies CollectionStatistics and DataSection are present',
+      (WidgetTester tester) async {
+    final settingsProvider = SettingsProvider(prefs);
+
+    await tester.pumpWidget(createTestableWidget(settingsProvider));
+    await tester.pump(const Duration(seconds: 1));
+
+    // Scroll to bottom to ensure widgets are built
+    await tester.drag(find.byType(Scrollable), const Offset(0, -1000));
+    await tester.pump(const Duration(seconds: 1));
+
+    // Verify Collection Statistics is present
+    expect(find.byType(CollectionStatistics), findsOneWidget);
+    expect(find.text('Collection Statistics'), findsOneWidget);
+
+    // Verify DataSection (Manage Rated Shows) is present
+    expect(find.byType(DataSection), findsOneWidget);
+    expect(find.text('Manage Rated Shows'), findsOneWidget);
+
+    // Verify "Library" title from LibrarySection is NOT present (unless it matches something else, but LibrarySection is gone)
+    // Note: LibrarySection title was "Library"
+    // However, if "Library" word is used elsewhere, this might be flaky.
+    // But in SettingsScreen context, "Library" was the section title.
+    // Let's verify we don't see the specific LibrarySection widget (which we can't import if deleted).
+    // So checking text "Library" is a reasonable proxy IF we are sure it doesn't appear elsewhere.
+    // Actually, checking for 'Collection Statistics' and 'Manage Rated Shows' is sufficient positive verification.
   });
 }

@@ -351,7 +351,8 @@ class PlaybackPanel extends StatelessWidget {
                                     onTap: () {
                                       if (currentSource.tracks.isNotEmpty) {
                                         launchArchivePage(
-                                            currentSource.tracks.first.url);
+                                            currentSource.tracks.first.url,
+                                            context);
                                       }
                                     },
                                     borderRadius: BorderRadius.circular(8),

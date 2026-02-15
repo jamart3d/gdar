@@ -1,5 +1,4 @@
-// lib/utils/utils.dart
-
+import 'package:flutter/material.dart';
 import 'package:shakedown/utils/logger.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -48,7 +47,8 @@ String? transformArchiveUrl(String url) {
   return newUrl;
 }
 
-Future<void> launchArchivePage(String firstTrackUrl) async {
+Future<void> launchArchivePage(String firstTrackUrl,
+    [BuildContext? context]) async {
   // Example URL: "https://archive.org/download/gd1990-10-13.141088.UltraMatrix.sbd.miller.flac1644/07BirdSong.mp3"
   // Target URL: "https://archive.org/details/gd1990-10-13.141088.UltraMatrix.sbd.miller.flac1644/"
 
@@ -56,28 +56,41 @@ Future<void> launchArchivePage(String firstTrackUrl) async {
     final targetUrl = transformArchiveUrl(firstTrackUrl);
     if (targetUrl != null) {
       final uri = Uri.parse(targetUrl);
-      if (await canLaunchUrl(uri)) {
-        await launchUrl(uri);
-      } else {
-        logger.w('Could not launch $targetUrl');
+      if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+        throw Exception('Could not launch $targetUrl');
       }
     }
   } catch (e) {
     logger.e('Error parsing URL or launching archive page: $e');
+    if (context != null && context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Could not open browser: $e'),
+          duration: const Duration(seconds: 3),
+        ),
+      );
+    }
   }
 }
 
-Future<void> launchArchiveDetails(String identifier) async {
+Future<void> launchArchiveDetails(String identifier,
+    [BuildContext? context]) async {
   final detailsUrl = 'https://archive.org/details/$identifier';
   final detailsUri = Uri.parse(detailsUrl);
 
   try {
-    if (await canLaunchUrl(detailsUri)) {
-      await launchUrl(detailsUri);
-    } else {
-      logger.w('Could not launch $detailsUrl');
+    if (!await launchUrl(detailsUri, mode: LaunchMode.externalApplication)) {
+      throw Exception('Could not launch $detailsUrl');
     }
   } catch (e) {
     logger.e('Error launching archive details page: $e');
+    if (context != null && context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Could not open browser: $e'),
+          duration: const Duration(seconds: 3),
+        ),
+      );
+    }
   }
 }

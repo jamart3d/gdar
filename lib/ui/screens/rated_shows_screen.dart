@@ -8,13 +8,10 @@ import 'package:shakedown/providers/audio_provider.dart';
 import 'package:shakedown/providers/settings_provider.dart';
 import 'package:shakedown/providers/show_list_provider.dart';
 import 'package:shakedown/services/catalog_service.dart';
-import 'package:shakedown/services/device_service.dart';
 import 'package:shakedown/ui/screens/playback_screen.dart';
 import 'package:shakedown/ui/screens/track_list_screen.dart';
 import 'package:shakedown/ui/widgets/rating_control.dart';
 import 'package:shakedown/ui/widgets/src_badge.dart';
-import 'package:shakedown/ui/widgets/tv/tv_focus_wrapper.dart';
-import 'package:shakedown/ui/widgets/tv/tv_interaction_modal.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:shakedown/models/rating.dart';
 import 'package:shakedown/utils/font_layout_config.dart';
@@ -117,14 +114,10 @@ class _RatedShowsScreenState extends State<RatedShowsScreen>
 
   @override
   Widget build(BuildContext context) {
+    // Only watch ShowListProvider, not SettingsProvider (at least for data)
     final showListProvider = context.watch<ShowListProvider>();
-    final settingsProvider = context.watch<SettingsProvider>();
-    final isTv = context.read<DeviceService>().isTv;
-
-    if (isTv) {
-      return _buildTvLayout(context, showListProvider, settingsProvider);
-    }
-
+    final settingsProvider =
+        context.watch<SettingsProvider>(); // Still needed for uiScale? Yes.
     final scaleFactor =
         FontLayoutConfig.getEffectiveScale(context, settingsProvider);
     final textTheme = Theme.of(context).textTheme;
@@ -139,6 +132,7 @@ class _RatedShowsScreenState extends State<RatedShowsScreen>
     final audioProvider = context.watch<AudioProvider>();
 
     Color? backgroundColor;
+    // Only apply custom background color if NOT in "True Black" mode.
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     final isTrueBlackMode = isDarkMode && settingsProvider.useTrueBlack;
 
@@ -215,77 +209,6 @@ class _RatedShowsScreenState extends State<RatedShowsScreen>
             );
           },
         ),
-      ),
-    );
-  }
-
-  Widget _buildTvLayout(BuildContext context, ShowListProvider showListProvider,
-      SettingsProvider settingsProvider) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
-
-    return Scaffold(
-      backgroundColor: colorScheme.surface,
-      appBar: AppBar(
-        toolbarHeight: 80,
-        title: Row(
-          children: [
-            Icon(Icons.stars_rounded, size: 32, color: colorScheme.primary),
-            const SizedBox(width: 16),
-            Text(
-              'Rated Shows Library',
-              style: textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.bold,
-                color: colorScheme.onSurface,
-              ),
-            ),
-          ],
-        ),
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(60),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24),
-            child: Align(
-              alignment: Alignment.centerLeft,
-              child: TabBar(
-                controller: _tabController,
-                isScrollable: true,
-                tabAlignment: TabAlignment.start,
-                labelStyle: textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 18,
-                ),
-                unselectedLabelStyle: textTheme.titleMedium?.copyWith(
-                  fontSize: 18,
-                ),
-                indicatorWeight: 4,
-                indicatorSize: TabBarIndicatorSize.label,
-                indicatorColor: colorScheme.primary,
-                dividerColor: Colors.transparent,
-                labelPadding: const EdgeInsets.symmetric(horizontal: 24),
-                tabs: _tabs.map((r) {
-                  final count = _getShowCount(r, showListProvider);
-                  // Use shorter labels for TV tabs to keep focus clear
-                  String label;
-                  if (r == -2) {
-                    label = 'Played ($count)';
-                  } else if (r == -1) {
-                    label = 'Blocked ($count)';
-                  } else {
-                    label = '$r Star${r > 1 ? 's' : ''} ($count)';
-                  }
-
-                  return Tab(text: label);
-                }).toList(),
-              ),
-            ),
-          ),
-        ),
-      ),
-      body: TabBarView(
-        controller: _tabController,
-        children:
-            _tabs.map((rating) => _RatedShowList(rating: rating)).toList(),
       ),
     );
   }
@@ -377,39 +300,6 @@ class _RatedShowListState extends State<_RatedShowList> {
       );
     }
 
-    final isTv = context.read<DeviceService>().isTv;
-
-    if (isTv) {
-      return GridView.builder(
-        padding: const EdgeInsets.all(24),
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 5,
-          childAspectRatio: 2.2,
-          crossAxisSpacing: 16,
-          mainAxisSpacing: 16,
-        ),
-        itemCount: flatSources.length,
-        itemBuilder: (context, index) {
-          final item = flatSources[index];
-          final show = item.show;
-          final source = item.source;
-
-          final isPlaying = audioProvider.currentSource?.id == source.id;
-          final rating = catalog.getRating(source.id);
-
-          return _buildTvRatedSourceItem(
-            context,
-            show,
-            source,
-            isPlaying,
-            rating,
-            settingsProvider,
-            audioProvider,
-          );
-        },
-      );
-    }
-
     return ListView.builder(
       itemCount: flatSources.length,
       padding: const EdgeInsets.all(16),
@@ -421,6 +311,7 @@ class _RatedShowListState extends State<_RatedShowList> {
         final isPlaying = audioProvider.currentSource?.id == source.id;
         final rating = catalog.getRating(source.id);
 
+        // Customize the item presentation
         return Padding(
           padding: EdgeInsets.zero,
           child: _buildRatedSourceItem(
@@ -437,121 +328,6 @@ class _RatedShowListState extends State<_RatedShowList> {
     );
   }
 
-  Widget _buildTvRatedSourceItem(
-      BuildContext context,
-      Show show,
-      Source source,
-      bool isPlaying,
-      int rating,
-      SettingsProvider settingsProvider,
-      AudioProvider audioProvider) {
-    final catalog = CatalogService();
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
-
-    return TvFocusWrapper(
-      onTap: () async {
-        if (isPlaying) {
-          await Navigator.of(context).push(
-            MaterialPageRoute(builder: (context) => const PlaybackScreen()),
-          );
-        } else {
-          final singleSourceShow = show.copyWith(sources: [source]);
-          await Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (context) => TrackListScreen(
-                show: singleSourceShow,
-                source: singleSourceShow.sources.first,
-              ),
-            ),
-          );
-        }
-      },
-      onLongPress: () {
-        TvInteractionModal.show(
-          context,
-          title: source.id,
-          subtitle: show.name,
-          onPlay: () {
-            HapticFeedback.mediumImpact();
-            audioProvider.playSource(show, source);
-          },
-          onRate: () async {
-            final currentRating = catalog.getRating(source.id);
-            await showDialog(
-              context: context,
-              builder: (context) => RatingDialog(
-                initialRating: currentRating,
-                sourceId: source.id,
-                sourceUrl:
-                    source.tracks.isNotEmpty ? source.tracks.first.url : null,
-                isPlayed: catalog.isPlayed(source.id),
-                onRatingChanged: (newRating) {
-                  catalog.setRating(source.id, newRating);
-                },
-                onPlayedChanged: (bool isPlayed) {
-                  if (isPlayed != catalog.isPlayed(source.id)) {
-                    catalog.togglePlayed(source.id);
-                  }
-                },
-              ),
-            );
-          },
-        );
-      },
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        decoration: BoxDecoration(
-          color: isPlaying
-              ? colorScheme.primaryContainer.withValues(alpha: 0.4)
-              : colorScheme.surfaceContainerHighest.withValues(alpha: 0.2),
-          borderRadius: BorderRadius.circular(12),
-          border: isPlaying
-              ? Border.all(color: colorScheme.primary, width: 2)
-              : null,
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                RatingControl(
-                  rating: rating,
-                  size: 16,
-                  isPlayed: catalog.isPlayed(source.id),
-                  compact: true,
-                ),
-                const Spacer(),
-                if (source.src != null)
-                  SrcBadge(src: source.src!, isPlaying: isPlaying),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Text(
-              show.formattedDateYearFirst,
-              style: textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-                color: isPlaying ? colorScheme.primary : colorScheme.onSurface,
-              ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-            Text(
-              source.id,
-              style: textTheme.labelSmall?.copyWith(
-                color: colorScheme.onSurfaceVariant,
-              ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   Widget _buildRatedSourceItem(
       BuildContext context,
       Show show,
@@ -565,207 +341,162 @@ class _RatedShowListState extends State<_RatedShowList> {
         FontLayoutConfig.getEffectiveScale(context, settingsProvider);
     final colorScheme = Theme.of(context).colorScheme;
 
-    final isTv = context.read<DeviceService>().isTv;
-
     // Use SourceListItem logic but wrapped with Show info
     return Padding(
       padding: const EdgeInsets.only(bottom: 8.0),
-      child: TvFocusWrapper(
-        onTap: () async {
-          if (isPlaying) {
-            // Pause global clock
-            try {
-              context.read<AnimationController>().stop();
-            } catch (_) {}
-
-            await Navigator.of(context).push(
-              PageRouteBuilder(
-                pageBuilder: (context, animation, secondaryAnimation) =>
-                    const PlaybackScreen(),
-                transitionDuration: const Duration(milliseconds: 300),
-                transitionsBuilder:
-                    (context, animation, secondaryAnimation, child) {
-                  const begin = Offset(0.0, 1.0);
-                  const end = Offset.zero;
-                  const curve = Curves.easeInOut;
-                  var tween = Tween(begin: begin, end: end)
-                      .chain(CurveTween(curve: curve));
-                  return SlideTransition(
-                      position: animation.drive(tween), child: child);
-                },
-              ),
-            );
-
-            // Resume clock
-            if (context.mounted) {
-              try {
-                final controller = context.read<AnimationController>();
-                if (!controller.isAnimating) controller.repeat();
-              } catch (_) {}
-            }
-          } else {
-            final singleSourceShow = show.copyWith(sources: [source]);
-
-            // Pause global clock
-            try {
-              context.read<AnimationController>().stop();
-            } catch (_) {}
-
-            await Navigator.of(context).push(
-              PageRouteBuilder(
-                pageBuilder: (context, animation, secondaryAnimation) =>
-                    TrackListScreen(
-                        show: singleSourceShow,
-                        source: singleSourceShow.sources.first),
-                transitionDuration: Duration.zero,
-              ),
-            );
-
-            // Resume clock
-            if (context.mounted) {
-              try {
-                final controller = context.read<AnimationController>();
-                if (!controller.isAnimating) controller.repeat();
-              } catch (_) {}
-            }
-          }
-        },
-        onLongPress: () {
-          if (isTv) {
-            TvInteractionModal.show(
-              context,
-              title: source.id,
-              subtitle: show.name,
-              onPlay: () {
-                HapticFeedback.mediumImpact();
-                audioProvider.playSource(show, source);
-              },
-              onRate: () async {
-                final currentRating = catalog.getRating(source.id);
-                await showDialog(
-                  context: context,
-                  builder: (context) => RatingDialog(
-                    initialRating: currentRating,
-                    sourceId: source.id,
-                    sourceUrl: source.tracks.isNotEmpty
-                        ? source.tracks.first.url
-                        : null,
-                    isPlayed: catalog.isPlayed(source.id),
-                    onRatingChanged: (newRating) {
-                      catalog.setRating(source.id, newRating);
-                    },
-                    onPlayedChanged: (bool isPlayed) {
-                      if (isPlayed != catalog.isPlayed(source.id)) {
-                        catalog.togglePlayed(source.id);
-                      }
-                    },
-                  ),
-                );
-              },
-            );
-            return;
-          }
-          HapticFeedback.mediumImpact();
-          audioProvider.playSource(show, source);
-        },
+      child: Material(
+        color: isPlaying
+            ? colorScheme.tertiaryContainer.withValues(alpha: 0.5)
+            : colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
         borderRadius: BorderRadius.circular(16),
-        child: Material(
-          color: isPlaying
-              ? colorScheme.tertiaryContainer.withValues(alpha: 0.5)
-              : colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
-          borderRadius: BorderRadius.circular(16),
-          clipBehavior: Clip.antiAlias,
-          child: InkWell(
-            canRequestFocus: !isTv,
-            onTap: isTv
-                ? null
-                : () {}, // InkWell needs a non-null onTap to show splash/handle tap on mobile, but for TV we override
-            onLongPress: isTv ? null : () {},
-            child: Padding(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 12.0, vertical: 0),
-              child: Row(
-                children: [
-                  RatingControl(
-                    rating: catalog.getRating(source.id),
-                    size: 18,
-                    isPlayed: catalog.isPlayed(source.id),
-                    onTap: () async {
-                      final currentRating = catalog.getRating(source.id);
-                      await showDialog(
-                        context: context,
-                        builder: (context) => RatingDialog(
-                          initialRating: currentRating,
-                          sourceId: source.id,
-                          sourceUrl: source.tracks.isNotEmpty
-                              ? source.tracks.first.url
-                              : null,
-                          isPlayed: catalog.isPlayed(source.id),
-                          onRatingChanged: (newRating) {
-                            catalog.setRating(source.id, newRating);
-                          },
-                          onPlayedChanged: (bool isPlayed) {
-                            if (isPlayed != catalog.isPlayed(source.id)) {
-                              catalog.togglePlayed(source.id);
-                            }
-                          },
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: () async {
+            if (isPlaying) {
+              // Pause global clock
+              try {
+                context.read<AnimationController>().stop();
+              } catch (_) {}
+
+              await Navigator.of(context).push(
+                PageRouteBuilder(
+                  pageBuilder: (context, animation, secondaryAnimation) =>
+                      const PlaybackScreen(),
+                  transitionDuration: const Duration(milliseconds: 300),
+                  transitionsBuilder:
+                      (context, animation, secondaryAnimation, child) {
+                    const begin = Offset(0.0, 1.0);
+                    const end = Offset.zero;
+                    const curve = Curves.easeInOut;
+                    var tween = Tween(begin: begin, end: end)
+                        .chain(CurveTween(curve: curve));
+                    return SlideTransition(
+                        position: animation.drive(tween), child: child);
+                  },
+                ),
+              );
+
+              // Resume clock
+              if (context.mounted) {
+                try {
+                  final controller = context.read<AnimationController>();
+                  if (!controller.isAnimating) controller.repeat();
+                } catch (_) {}
+              }
+            } else {
+              final singleSourceShow = show.copyWith(sources: [source]);
+
+              // Pause global clock
+              try {
+                context.read<AnimationController>().stop();
+              } catch (_) {}
+
+              await Navigator.of(context).push(
+                PageRouteBuilder(
+                  pageBuilder: (context, animation, secondaryAnimation) =>
+                      TrackListScreen(
+                          show: singleSourceShow,
+                          source: singleSourceShow.sources.first),
+                  transitionDuration: Duration.zero,
+                ),
+              );
+
+              // Resume clock
+              if (context.mounted) {
+                try {
+                  final controller = context.read<AnimationController>();
+                  if (!controller.isAnimating) controller.repeat();
+                } catch (_) {}
+              }
+            }
+          },
+          onLongPress: () {
+            HapticFeedback.mediumImpact();
+            audioProvider.playSource(show, source);
+          },
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 0),
+            child: Row(
+              children: [
+                RatingControl(
+                  rating: catalog.getRating(source.id),
+                  size: 18,
+                  isPlayed: catalog.isPlayed(source.id),
+                  onTap: () async {
+                    final currentRating = catalog.getRating(source.id);
+                    await showDialog(
+                      context: context,
+                      builder: (context) => RatingDialog(
+                        initialRating: currentRating,
+                        sourceId: source.id,
+                        sourceUrl: source.tracks.isNotEmpty
+                            ? source.tracks.first.url
+                            : null,
+                        isPlayed: catalog.isPlayed(source.id),
+                        onRatingChanged: (newRating) {
+                          catalog.setRating(source.id, newRating);
+                        },
+                        onPlayedChanged: (bool isPlayed) {
+                          if (isPlayed != catalog.isPlayed(source.id)) {
+                            catalog.togglePlayed(source.id);
+                          }
+                        },
+                      ),
+                    );
+                  },
+                ),
+                const SizedBox(width: 12),
+                // Content: Just the Date
+                Expanded(
+                  child: Text(
+                    show.formattedDateYearFirst,
+                    style: Theme.of(context)
+                        .textTheme
+                        .titleMedium
+                        ?.copyWith(
+                          fontSize: 9.5,
+                          fontWeight: FontWeight.bold,
+                          color: isPlaying
+                              ? colorScheme.onTertiaryContainer
+                              : colorScheme.onSurface,
+                        )
+                        .apply(fontSizeFactor: scaleFactor),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                // Play Count
+                ValueListenableBuilder(
+                  valueListenable: CatalogService().playCountsListenable,
+                  builder: (context, box, _) {
+                    final count = box.get(source.id) ?? 0;
+                    if (count > 0) {
+                      return Padding(
+                        padding: const EdgeInsets.only(right: 8.0),
+                        child: Text(
+                          '${count}x played',
+                          style: Theme.of(context)
+                              .textTheme
+                              .bodySmall
+                              ?.copyWith(
+                                fontSize: 7.0,
+                                color: isPlaying
+                                    ? colorScheme.onTertiaryContainer
+                                        .withValues(alpha: 0.7)
+                                    : colorScheme.onSurfaceVariant,
+                              )
+                              .apply(fontSizeFactor: scaleFactor),
                         ),
                       );
-                    },
-                  ),
-                  const SizedBox(width: 12),
-                  // Content: Just the Date
-                  Expanded(
-                    child: Text(
-                      show.formattedDateYearFirst,
-                      style: Theme.of(context)
-                          .textTheme
-                          .titleMedium
-                          ?.copyWith(
-                            fontSize: 9.5,
-                            fontWeight: FontWeight.bold,
-                            color: isPlaying
-                                ? colorScheme.onTertiaryContainer
-                                : colorScheme.onSurface,
-                          )
-                          .apply(fontSizeFactor: scaleFactor),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                  // Play Count
-                  ValueListenableBuilder(
-                    valueListenable: CatalogService().playCountsListenable,
-                    builder: (context, box, _) {
-                      final count = box.get(source.id) ?? 0;
-                      if (count > 0) {
-                        return Padding(
-                          padding: const EdgeInsets.only(right: 8.0),
-                          child: Text(
-                            '${count}x played',
-                            style: Theme.of(context)
-                                .textTheme
-                                .bodySmall
-                                ?.copyWith(
-                                  fontSize: 7.0,
-                                  color: isPlaying
-                                      ? colorScheme.onTertiaryContainer
-                                          .withValues(alpha: 0.7)
-                                      : colorScheme.onSurfaceVariant,
-                                )
-                                .apply(fontSizeFactor: scaleFactor),
-                          ),
-                        );
-                      }
-                      return const SizedBox.shrink();
-                    },
-                  ),
-                  // Badge
-                  if (source.src != null) ...[
-                    SrcBadge(src: source.src!, isPlaying: isPlaying),
-                  ],
+                    }
+                    return const SizedBox.shrink();
+                  },
+                ),
+                // Badge
+                if (source.src != null) ...[
+                  SrcBadge(src: source.src!, isPlaying: isPlaying),
                 ],
-              ),
+              ],
             ),
           ),
         ),

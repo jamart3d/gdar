@@ -1,8 +1,7 @@
-// lib/ui/screens/about_screen.dart
-
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:shakedown/ui/widgets/tv/tv_list_tile.dart';
 
 import 'package:shakedown/providers/settings_provider.dart';
 import 'package:shakedown/providers/audio_provider.dart';
@@ -138,16 +137,28 @@ class AboutScreen extends StatelessWidget {
     );
   }
 
-  Future<void> _launchUrl(String url) async {
-    if (!await launchUrl(Uri.parse(url))) {
-      throw Exception('Could not launch $url');
+  Future<void> _launchUrl(BuildContext context, String url) async {
+    final uri = Uri.parse(url);
+    try {
+      if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+        throw Exception('Could not launch $url');
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Could not open browser: $e'),
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
     }
   }
 
   Widget _buildClickableLink(BuildContext context, String text, String url,
       {IconData? icon}) {
     final colorScheme = Theme.of(context).colorScheme;
-    return ListTile(
+    return TvListTile(
       leading: icon != null ? Icon(icon, color: colorScheme.primary) : null,
       title: Text(
         text,
@@ -156,7 +167,7 @@ class AboutScreen extends StatelessWidget {
           decoration: TextDecoration.underline,
         ),
       ),
-      onTap: () => _launchUrl(url),
+      onTap: () => _launchUrl(context, url),
     );
   }
 }

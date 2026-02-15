@@ -124,10 +124,17 @@ class AboutSection extends StatelessWidget {
 
   Future<void> _launchUrl(BuildContext context, String url) async {
     final uri = Uri.parse(url);
-    if (!await launchUrl(uri)) {
+    try {
+      if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+        throw Exception('Could not launch $url');
+      }
+    } catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Could not launch $url')),
+          SnackBar(
+            content: Text('Could not open browser: $e'),
+            duration: const Duration(seconds: 3),
+          ),
         );
       }
     }
