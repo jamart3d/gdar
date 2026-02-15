@@ -26,6 +26,7 @@ class ShowListShell extends StatelessWidget {
   final bool showPasteFeedback;
   final VoidCallback onTitleTap;
   final bool isPane;
+  final FocusNode? scrollbarFocusNode;
 
   const ShowListShell({
     super.key,
@@ -45,6 +46,7 @@ class ShowListShell extends StatelessWidget {
     required this.onTitleTap,
     this.isPane = false,
     this.enableDiceHaptics = false,
+    this.scrollbarFocusNode,
   });
 
   @override

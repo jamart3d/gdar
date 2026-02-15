@@ -61,9 +61,9 @@ class _ShowListCardState extends State<ShowListCard> {
 
     final outerPadding = EdgeInsets.fromLTRB(
       16,
-      isTv ? 12 : 6,
+      isTv ? 2 : 6, // Minimal top padding for TV
       16,
-      widget.isExpanded ? 2 : (isTv ? 12 : 6),
+      widget.isExpanded ? 2 : (isTv ? 2 : 6), // Minimal bottom padding for TV
     );
 
     if ((style.showGlow || style.useRgb) && !style.suppressOuterGlow) {
@@ -127,7 +127,8 @@ class _ShowListCardState extends State<ShowListCard> {
         elevation: widget.isExpanded ? 2 : 0,
         shadowColor: colorScheme.shadow.withValues(alpha: 0.1),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(isTv ? 100 : 28),
+          borderRadius:
+              BorderRadius.circular(isTv ? 12 : 28), // Match TrackList radius
           side: BorderSide(
             color: style.cardBorderColor,
             width: 3,
@@ -155,7 +156,8 @@ class _ShowListCardState extends State<ShowListCard> {
     required ColorScheme colorScheme,
     required bool isTv,
   }) {
-    final double cardHeight = (isTv ? 76.0 : 58.0) * style.effectiveScale;
+    final double cardHeight = (isTv ? 48.0 : 58.0) *
+        style.effectiveScale; // Reduced to 48.0 for 10+ items
     final double controlZoneWidth =
         style.config.baseControlZoneWidth * style.effectiveScale;
 

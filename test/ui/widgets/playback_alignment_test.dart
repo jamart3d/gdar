@@ -13,6 +13,8 @@ import 'package:shakedown/ui/screens/playback_screen.dart';
 import 'package:hive/hive.dart';
 import 'package:shakedown/models/rating.dart';
 import 'package:shakedown/services/catalog_service.dart';
+import 'package:shakedown/services/device_service.dart';
+import '../../helpers/test_helpers.dart';
 
 import 'mini_player_test.mocks.dart'; // Reuse mocks
 
@@ -141,6 +143,8 @@ void main() {
           ChangeNotifierProvider<AudioProvider>.value(value: mockAudioProvider),
           ChangeNotifierProvider<SettingsProvider>.value(
               value: mockSettingsProvider),
+          ChangeNotifierProvider<DeviceService>(
+              create: (_) => MockDeviceService()),
         ],
         child: MaterialApp(
           home: PlaybackScreen(),

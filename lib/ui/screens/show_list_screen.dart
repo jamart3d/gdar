@@ -21,7 +21,15 @@ import 'package:shakedown/ui/widgets/show_list/show_list_body.dart';
 
 class ShowListScreen extends StatefulWidget {
   final bool isPane;
-  const ShowListScreen({super.key, this.isPane = false});
+  final FocusNode? scrollbarFocusNode;
+  final VoidCallback? onFocusLeft;
+
+  const ShowListScreen({
+    super.key,
+    this.isPane = false,
+    this.scrollbarFocusNode,
+    this.onFocusLeft,
+  });
 
   @override
   State<ShowListScreen> createState() => _ShowListScreenState();
@@ -349,6 +357,7 @@ class _ShowListScreenState extends State<ShowListScreen>
       onOpenPlaybackScreen: openPlaybackScreen,
       showPasteFeedback: showPasteFeedback,
       onTitleTap: () => navigateTo(const SettingsScreen()),
+      scrollbarFocusNode: widget.scrollbarFocusNode,
       body: ShowListBody(
         showListProvider: showListProvider,
         audioProvider: audioProvider,
@@ -357,6 +366,8 @@ class _ShowListScreenState extends State<ShowListScreen>
         itemPositionsListener: _itemPositionsListener,
         animation: _animation,
         onShowTapped: onShowTapped,
+        scrollbarFocusNode: widget.scrollbarFocusNode,
+        onFocusLeft: widget.onFocusLeft,
         onCardLongPressed: onCardLongPressed,
         onSourceTapped: onSourceTapped,
         onSourceLongPressed: onSourceLongPressed,

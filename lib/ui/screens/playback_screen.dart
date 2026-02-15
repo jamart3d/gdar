@@ -25,6 +25,8 @@ class PlaybackScreen extends StatefulWidget {
   final bool enableDiceHaptics;
   final FocusNode? scrollbarFocusNode;
   final VoidCallback? onScrollbarRight;
+  final VoidCallback? onTrackListLeft;
+  final VoidCallback? onTrackListRight;
 
   const PlaybackScreen({
     super.key,
@@ -34,6 +36,8 @@ class PlaybackScreen extends StatefulWidget {
     this.enableDiceHaptics = false,
     this.scrollbarFocusNode,
     this.onScrollbarRight,
+    this.onTrackListLeft,
+    this.onTrackListRight,
   });
 
   @override
@@ -50,6 +54,8 @@ class _PlaybackScreenState extends State<PlaybackScreen>
   final ValueNotifier<double> _panelPositionNotifier = ValueNotifier(0.0);
   StreamSubscription? _errorSubscription;
   String? _lastTrackTitle;
+  // Map of track index to FocusNode
+  final Map<int, FocusNode> _trackFocusNodes = {};
 
   @override
   void initState() {
@@ -97,6 +103,9 @@ class _PlaybackScreenState extends State<PlaybackScreen>
     _pulseController.dispose();
     _panelPositionNotifier.dispose();
     _errorSubscription?.cancel();
+    for (var node in _trackFocusNodes.values) {
+      node.dispose();
+    }
     super.dispose();
   }
 
@@ -191,6 +200,65 @@ class _PlaybackScreenState extends State<PlaybackScreen>
     return count;
   }
 
+  void _focusTrack(int index) {
+    if (index < 0) return;
+
+    // Ensure the focus node exists
+    if (!_trackFocusNodes.containsKey(index)) {
+      _trackFocusNodes[index] = FocusNode();
+    }
+
+    // Scroll to the track to ensure it's built and visible
+    _itemScrollController.jumpTo(index: index, alignment: 0.3);
+
+    // Wait for a frame to ensure the PlaybackScreen is rebuilt and the Focus widget is mounted
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _trackFocusNodes[index]?.requestFocus();
+    });
+  }
+
+  void _handleScrollbarLeft() {
+    // 1. Try to find the middle visible item
+    final positions = _itemPositionsListener.itemPositions.value;
+    int targetIndex = -1;
+
+    if (positions.isNotEmpty) {
+      // Sort positions by index just in case
+      final sorted = positions.toList()
+        ..sort((a, b) => a.index.compareTo(b.index));
+
+      // Find item closest to center (0.5)
+      double bestDistance = 999.0;
+
+      for (var pos in sorted) {
+        // Center of the item
+        final itemCenter = (pos.itemLeadingEdge + pos.itemTrailingEdge) / 2;
+        final distance = (itemCenter - 0.5).abs();
+
+        if (distance < bestDistance) {
+          bestDistance = distance;
+          targetIndex = pos.index;
+        }
+      }
+    }
+
+    // 2. If valid target found, focus it
+    if (targetIndex != -1) {
+      _focusTrack(targetIndex);
+      return;
+    }
+
+    // 3. Fallback: Current Playing Track
+    final audioProvider = context.read<AudioProvider>();
+    if (audioProvider.audioPlayer.currentIndex != null) {
+      _focusTrack(audioProvider.audioPlayer.currentIndex!);
+      return;
+    }
+
+    // 4. Fallback: First track
+    _focusTrack(0);
+  }
+
   @override
   Widget build(BuildContext context) {
     final audioProvider = context.watch<AudioProvider>();
@@ -262,14 +330,31 @@ class _PlaybackScreenState extends State<PlaybackScreen>
             children: [
               Padding(
                 padding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
-                child: Text(
-                  'TRACK LIST',
-                  style: TextStyle(
-                    fontFamily: 'Rock Salt',
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: colorScheme.onSurface,
-                  ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      currentShow.formattedDate,
+                      style: TextStyle(
+                        fontFamily: 'Rock Salt',
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: colorScheme.onSurface,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      currentShow.venue,
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                        color: colorScheme.onSurfaceVariant,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
                 ),
               ),
               Expanded(
@@ -284,6 +369,13 @@ class _PlaybackScreenState extends State<PlaybackScreen>
                         itemScrollController: _itemScrollController,
                         itemPositionsListener: _itemPositionsListener,
                         audioProvider: audioProvider,
+                        trackFocusNodes: _trackFocusNodes,
+                        onFocusLeft: widget.onTrackListLeft,
+                        onFocusRight: widget
+                            .onTrackListRight, // Or internal scrollbar focus?
+                        onTrackFocused: (index) {
+                          // Focus callback
+                        },
                       ),
                     ),
                     if (context.read<DeviceService>().isTv)
@@ -293,11 +385,7 @@ class _PlaybackScreenState extends State<PlaybackScreen>
                         itemCount: _calculateTotalItems(currentSource),
                         focusNode: widget.scrollbarFocusNode,
                         onRight: widget.onScrollbarRight,
-                        onLeft: () {
-                          // Move focus left back to the track list
-                          FocusScope.of(context)
-                              .focusInDirection(TraversalDirection.left);
-                        },
+                        onLeft: _handleScrollbarLeft,
                       ),
                   ],
                 ),

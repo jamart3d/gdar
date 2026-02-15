@@ -11,7 +11,9 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:shakedown/services/catalog_service.dart';
+import 'package:shakedown/services/device_service.dart';
 import '../mocks/fake_catalog_service.dart';
+import '../helpers/test_helpers.dart';
 
 void main() {
   late SharedPreferences prefs;
@@ -66,6 +68,8 @@ void main() {
         ChangeNotifierProvider(
             create: (_) => settingsProvider ?? SettingsProvider(prefs)),
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
+        ChangeNotifierProvider<DeviceService>(
+            create: (_) => MockDeviceService()),
       ],
       child: MaterialApp(
         home: Scaffold(

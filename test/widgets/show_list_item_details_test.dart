@@ -13,7 +13,9 @@ import 'package:shakedown/models/rating.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:flutter/foundation.dart';
 import 'package:mockito/mockito.dart';
+import 'package:shakedown/services/device_service.dart';
 import '../screens/splash_screen_test.mocks.dart';
+import '../helpers/test_helpers.dart';
 
 class MockCatalogService extends Mock implements CatalogService {
   @override
@@ -69,6 +71,8 @@ void main() {
             create: (_) => settingsProvider ?? SettingsProvider(prefs)),
         ChangeNotifierProvider<ShowListProvider>.value(
             value: MockShowListProvider()),
+        ChangeNotifierProvider<DeviceService>(
+            create: (_) => MockDeviceService()),
       ],
       child: MaterialApp(
         home: Scaffold(

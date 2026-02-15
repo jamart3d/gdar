@@ -21,6 +21,7 @@ class ShowListItem extends StatelessWidget {
   final VoidCallback onLongPress;
   final Function(Source) onSourceTap;
   final Function(Source) onSourceLongPress;
+  final VoidCallback? onFocusLeft;
 
   const ShowListItem({
     super.key,
@@ -31,6 +32,7 @@ class ShowListItem extends StatelessWidget {
     required this.onLongPress,
     required this.onSourceTap,
     required this.onSourceLongPress,
+    this.onFocusLeft,
   });
 
   @override
@@ -62,6 +64,18 @@ class ShowListItem extends StatelessWidget {
       card = TvFocusWrapper(
         onTap: onTap,
         onLongPress: onLongPress,
+        scaleOnFocus: 1.0, // Disable scaling
+        focusBackgroundColor: Colors.transparent, // Transparent background
+        focusColor: Theme.of(context).colorScheme.primary, // Primary border
+        borderRadius: BorderRadius.circular(12),
+        onKeyEvent: (node, event) {
+          if (event is KeyDownEvent &&
+              event.logicalKey == LogicalKeyboardKey.arrowLeft) {
+            onFocusLeft?.call();
+            return KeyEventResult.handled;
+          }
+          return KeyEventResult.ignored;
+        },
         child: card,
       );
     }

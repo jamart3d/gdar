@@ -13,6 +13,8 @@ import 'package:mockito/mockito.dart';
 import 'package:shakedown/models/rating.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:flutter/foundation.dart';
+import 'package:shakedown/services/device_service.dart';
+import '../helpers/test_helpers.dart';
 
 class MockCatalogService extends Mock implements CatalogService {
   @override
@@ -64,6 +66,8 @@ void main() {
       providers: [
         ChangeNotifierProvider.value(value: settingsProvider),
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
+        ChangeNotifierProvider<DeviceService>(
+            create: (_) => MockDeviceService()),
       ],
       child: MaterialApp(
         // Force Dark Mode to test True Black logic
@@ -139,6 +143,8 @@ void main() {
       providers: [
         ChangeNotifierProvider.value(value: settingsProvider),
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
+        ChangeNotifierProvider<DeviceService>(
+            create: (_) => MockDeviceService()),
       ],
       child: MaterialApp(
         theme: ThemeData.dark(),

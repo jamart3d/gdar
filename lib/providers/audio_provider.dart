@@ -349,6 +349,14 @@ class AudioProvider with ChangeNotifier {
 
     // Trigger Smart Pre-Load if enabled
     if (_settingsProvider?.offlineBuffering ?? false) {
+      // Opportunistic Cache Cleanup (Same logic as queueRandomShow)
+      // Ensure we have space for this new show + buffer
+      final currentTrackCount = source.tracks.length;
+      final dynamicLimit = max(20, currentTrackCount + 5);
+
+      // Fire and forget, but DO IT before preloading starts to clear space
+      _audioCacheService.performCacheCleanup(maxFiles: dynamicLimit);
+
       _audioCacheService.preloadSource(source, startIndex: initialIndex);
     }
   }

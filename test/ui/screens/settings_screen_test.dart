@@ -15,6 +15,8 @@ import 'package:shakedown/models/source.dart';
 import 'dart:io';
 import 'package:flutter/services.dart';
 import 'package:shakedown/providers/update_provider.dart';
+import 'package:shakedown/services/device_service.dart';
+import '../../helpers/test_helpers.dart';
 
 // Mock Providers (Simple versions for testing)
 class MockAudioProvider extends ChangeNotifier implements AudioProvider {
@@ -95,6 +97,8 @@ void main() {
             create: (_) => MockShowListProvider()),
         ChangeNotifierProvider<UpdateProvider>(
             create: (_) => MockUpdateProvider()),
+        ChangeNotifierProvider<DeviceService>(
+            create: (_) => MockDeviceService()),
       ],
       child: const MaterialApp(
         home: SettingsScreen(),

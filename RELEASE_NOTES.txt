@@ -1,3 +1,15 @@
+Release 1.0.52:
+- **TV Visuals**: Implemented RGB animated border for the currently playing track on TV, matching the mobile experience.
+- **TV Navigation**: Improved focus styles on TV for tracks and show list items (border-only highlight).
+- **TV Controls**: Center D-pad (Select) now toggles Play/Pause on the currently playing track.
+- **TV Polish**: Replaced "TRACK LIST" header with Show Date and Venue, and fixed the blurry TV launcher icon.
+
+Release 1.0.51:
+- **TV UI Density**: Optimized list sizing for 10-foot UI to show more items (10+).
+- **Focus Navigation**: Improved D-pad navigation flow and "High Contrast" focus indicators.
+- **Performance**: Removed focus scaling on track lists to prevent layout shifts.
+- **Verification**: Comprehensive test suite passed with no regressions.
+
 Release 1.0.50:
 - **Navigation**: Implemented "leak-proof" circular navigation for TV—focus now wraps seamlessly between edges and vertical layers.
 - **TV Controls**: Upgraded the Playback Bar with an intuitive "staircase" vertical flow (Progress ↔ Play/Pause ↔ Content).

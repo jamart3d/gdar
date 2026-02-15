@@ -23,6 +23,7 @@ class ShowListBody extends StatelessWidget {
   final Function(Show, Source) onSourceTapped;
   final Function(Show, Source) onSourceLongPressed;
   final FocusNode? scrollbarFocusNode;
+  final VoidCallback? onFocusLeft;
 
   const ShowListBody({
     super.key,
@@ -37,6 +38,7 @@ class ShowListBody extends StatelessWidget {
     required this.onSourceTapped,
     required this.onSourceLongPressed,
     this.scrollbarFocusNode,
+    this.onFocusLeft,
   });
 
   @override
@@ -72,6 +74,7 @@ class ShowListBody extends StatelessWidget {
           onLongPress: () => onCardLongPressed(show),
           onSourceTap: (source) => onSourceTapped(show, source),
           onSourceLongPress: (source) => onSourceLongPressed(show, source),
+          onFocusLeft: onFocusLeft,
         );
       },
     );

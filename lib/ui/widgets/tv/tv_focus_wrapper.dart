@@ -12,6 +12,7 @@ class TvFocusWrapper extends StatefulWidget {
   final FocusNode? focusNode;
   final bool autofocus;
   final BorderRadius? borderRadius;
+  final Color? focusBackgroundColor;
   final Color? focusColor;
   final bool showGlow;
   final FocusOnKeyEventCallback? onKeyEvent;
@@ -28,6 +29,7 @@ class TvFocusWrapper extends StatefulWidget {
     this.focusColor,
     this.showGlow = false,
     this.onKeyEvent,
+    this.focusBackgroundColor,
   });
 
   @override
@@ -122,6 +124,7 @@ class _TvFocusWrapperState extends State<TvFocusWrapper> {
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 200),
             decoration: BoxDecoration(
+              color: _isFocused ? widget.focusBackgroundColor : null,
               borderRadius: radius,
               border: Border.all(
                 color: _isFocused

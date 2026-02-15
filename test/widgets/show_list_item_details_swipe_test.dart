@@ -12,6 +12,8 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/services.dart';
 import 'package:shakedown/services/catalog_service.dart';
+import 'package:shakedown/services/device_service.dart';
+import '../helpers/test_helpers.dart';
 
 // Mock AudioProvider since it's used in onDismissed
 class MockAudioProvider extends Mock implements AudioProvider {
@@ -108,6 +110,8 @@ void main() {
         ChangeNotifierProvider<ShowListProvider>.value(
             value: mockShowListProvider),
         Provider<CatalogService>.value(value: CatalogService()),
+        ChangeNotifierProvider<DeviceService>(
+            create: (_) => MockDeviceService()),
       ],
       child: MaterialApp(
         home: Scaffold(

@@ -11,6 +11,8 @@ import 'package:shakedown/providers/audio_provider.dart';
 import 'package:shakedown/providers/settings_provider.dart';
 import 'package:shakedown/ui/widgets/mini_player.dart';
 import 'package:shakedown/ui/widgets/conditional_marquee.dart';
+import '../../helpers/test_helpers.dart';
+import 'package:shakedown/services/device_service.dart';
 
 // Generate mocks
 @GenerateMocks([AudioProvider, SettingsProvider, AudioPlayer])
@@ -88,6 +90,8 @@ void main() {
           ChangeNotifierProvider<AudioProvider>.value(value: mockAudioProvider),
           ChangeNotifierProvider<SettingsProvider>.value(
               value: mockSettingsProvider),
+          ChangeNotifierProvider<DeviceService>(
+              create: (_) => MockDeviceService()),
         ],
         child: MaterialApp(
           home: Scaffold(

@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:shakedown/ui/screens/playback_screen.dart';
 import 'package:shakedown/ui/screens/show_list_screen.dart';
 import 'package:shakedown/ui/widgets/tv/tv_header.dart';
-import 'package:shakedown/ui/widgets/tv/tv_playback_bar.dart';
+
 import 'package:shakedown/ui/widgets/tv/tv_exit_dialog.dart';
 import 'package:provider/provider.dart';
 import 'package:shakedown/providers/audio_provider.dart';
@@ -20,12 +20,14 @@ class _TvDualPaneLayoutState extends State<TvDualPaneLayout> {
   final FocusNode _diceFocusNode = FocusNode();
   final FocusNode _gearsFocusNode = FocusNode();
   final FocusNode _rightScrollbarFocusNode = FocusNode();
+  final FocusNode _showListScrollbarFocusNode = FocusNode();
 
   @override
   void dispose() {
     _diceFocusNode.dispose();
     _gearsFocusNode.dispose();
     _rightScrollbarFocusNode.dispose();
+    _showListScrollbarFocusNode.dispose();
     super.dispose();
   }
 
@@ -76,8 +78,14 @@ class _TvDualPaneLayoutState extends State<TvDualPaneLayout> {
                                 }
                               },
                             ),
-                            const Expanded(
-                              child: ShowListScreen(isPane: true),
+                            Expanded(
+                              child: ShowListScreen(
+                                isPane: true,
+                                scrollbarFocusNode: _showListScrollbarFocusNode,
+                                onFocusLeft: () {
+                                  _diceFocusNode.requestFocus();
+                                },
+                              ),
                             ),
                           ],
                         ),
@@ -121,41 +129,19 @@ class _TvDualPaneLayoutState extends State<TvDualPaneLayout> {
                             // Wrap around from Right Scrollbar (far right) to Dice (far left)
                             _diceFocusNode.requestFocus();
                           },
+                          onTrackListLeft: () {
+                            // From Track List, go LEFT to the Show List scrollbar
+                            _showListScrollbarFocusNode.requestFocus();
+                          },
+                          onTrackListRight: () {
+                            // From Track List, go RIGHT to the Track List scrollbar
+                            _rightScrollbarFocusNode.requestFocus();
+                          },
                         ),
                       ),
                     ),
                   ),
                 ],
-              ),
-            ),
-            // Floating Playback Bar (Bottom Center)
-            Positioned(
-              bottom: 32,
-              left: 0,
-              right: 0,
-              child: Center(
-                child: AnimatedOpacity(
-                  duration: const Duration(milliseconds: 300),
-                  opacity: audioProvider.currentShow != null ? 1.0 : 0.0,
-                  child: IgnorePointer(
-                    ignoring: audioProvider.currentShow == null,
-                    child: TvPlaybackBar(
-                      onDown: () {
-                        _diceFocusNode.requestFocus();
-                      },
-                      onUp: () {
-                        // Move back into the appropriate pane
-                        if (audioProvider.currentShow != null) {
-                          // If we have tracks, go to the track list
-                          _rightScrollbarFocusNode.requestFocus();
-                        } else {
-                          // Otherwise go to the show list (Dice icon)
-                          _diceFocusNode.requestFocus();
-                        }
-                      },
-                    ),
-                  ),
-                ),
               ),
             ),
           ],
