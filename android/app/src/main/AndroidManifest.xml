@@ -18,6 +18,9 @@
     <!-- Permissions for audio visualization -->
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
+    
+    <!-- Microphone is optional effectively (for visualizer), required for visualizer but optional for app -->
+    <uses-feature android:name="android.hardware.microphone" android:required="false" />
 
     <queries>
         <intent>
