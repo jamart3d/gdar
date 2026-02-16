@@ -1611,6 +1611,129 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
       ) as bool);
 
   @override
+  bool get useOilScreensaver => (super.noSuchMethod(
+        Invocation.getter(#useOilScreensaver),
+        returnValue: false,
+        returnValueForMissingStub: false,
+      ) as bool);
+
+  @override
+  String get oilScreensaverMode => (super.noSuchMethod(
+        Invocation.getter(#oilScreensaverMode),
+        returnValue: _i5.dummyValue<String>(
+          this,
+          Invocation.getter(#oilScreensaverMode),
+        ),
+        returnValueForMissingStub: _i5.dummyValue<String>(
+          this,
+          Invocation.getter(#oilScreensaverMode),
+        ),
+      ) as String);
+
+  @override
+  int get oilScreensaverInactivityMinutes => (super.noSuchMethod(
+        Invocation.getter(#oilScreensaverInactivityMinutes),
+        returnValue: 0,
+        returnValueForMissingStub: 0,
+      ) as int);
+
+  @override
+  double get oilViscosity => (super.noSuchMethod(
+        Invocation.getter(#oilViscosity),
+        returnValue: 0.0,
+        returnValueForMissingStub: 0.0,
+      ) as double);
+
+  @override
+  double get oilFlowSpeed => (super.noSuchMethod(
+        Invocation.getter(#oilFlowSpeed),
+        returnValue: 0.0,
+        returnValueForMissingStub: 0.0,
+      ) as double);
+
+  @override
+  double get oilPulseIntensity => (super.noSuchMethod(
+        Invocation.getter(#oilPulseIntensity),
+        returnValue: 0.0,
+        returnValueForMissingStub: 0.0,
+      ) as double);
+
+  @override
+  String get oilPalette => (super.noSuchMethod(
+        Invocation.getter(#oilPalette),
+        returnValue: _i5.dummyValue<String>(
+          this,
+          Invocation.getter(#oilPalette),
+        ),
+        returnValueForMissingStub: _i5.dummyValue<String>(
+          this,
+          Invocation.getter(#oilPalette),
+        ),
+      ) as String);
+
+  @override
+  double get oilFilmGrain => (super.noSuchMethod(
+        Invocation.getter(#oilFilmGrain),
+        returnValue: 0.0,
+        returnValueForMissingStub: 0.0,
+      ) as double);
+
+  @override
+  double get oilHeatDrift => (super.noSuchMethod(
+        Invocation.getter(#oilHeatDrift),
+        returnValue: 0.0,
+        returnValueForMissingStub: 0.0,
+      ) as double);
+
+  @override
+  bool get oilEnableAudioReactivity => (super.noSuchMethod(
+        Invocation.getter(#oilEnableAudioReactivity),
+        returnValue: false,
+        returnValueForMissingStub: false,
+      ) as bool);
+
+  @override
+  bool get oilPerformanceMode => (super.noSuchMethod(
+        Invocation.getter(#oilPerformanceMode),
+        returnValue: false,
+        returnValueForMissingStub: false,
+      ) as bool);
+
+  @override
+  bool get oilEasterEggsEnabled => (super.noSuchMethod(
+        Invocation.getter(#oilEasterEggsEnabled),
+        returnValue: false,
+        returnValueForMissingStub: false,
+      ) as bool);
+
+  @override
+  bool get oilPaletteCycle => (super.noSuchMethod(
+        Invocation.getter(#oilPaletteCycle),
+        returnValue: false,
+        returnValueForMissingStub: false,
+      ) as bool);
+
+  @override
+  double get oilPaletteTransitionSpeed => (super.noSuchMethod(
+        Invocation.getter(#oilPaletteTransitionSpeed),
+        returnValue: 0.0,
+        returnValueForMissingStub: 0.0,
+      ) as double);
+
+  @override
+  String get oilVisualMode => (super.noSuchMethod(
+        Invocation.getter(#oilVisualMode),
+        returnValue: _i5.dummyValue<String>(
+          this,
+          Invocation.getter(#oilVisualMode),
+        ),
+        returnValueForMissingStub: _i5.dummyValue<String>(
+          this,
+          Invocation.getter(#oilVisualMode),
+        ),
+      ) as String);
+
+  @override
   bool get randomOnlyUnplayed => (super.noSuchMethod(
         Invocation.getter(#randomOnlyUnplayed),
         returnValue: false,
@@ -1994,6 +2117,148 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
         ),
         returnValueForMissingStub: null,
       );
+
+  @override
+  void toggleUseOilScreensaver() => super.noSuchMethod(
+        Invocation.method(
+          #toggleUseOilScreensaver,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void setOilScreensaverMode(String? mode) => super.noSuchMethod(
+        Invocation.method(
+          #setOilScreensaverMode,
+          [mode],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void setOilScreensaverInactivityMinutes(int? minutes) => super.noSuchMethod(
+        Invocation.method(
+          #setOilScreensaverInactivityMinutes,
+          [minutes],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  _i4.Future<void> setOilViscosity(double? value) => (super.noSuchMethod(
+        Invocation.method(
+          #setOilViscosity,
+          [value],
+        ),
+        returnValue: _i4.Future<void>.value(),
+        returnValueForMissingStub: _i4.Future<void>.value(),
+      ) as _i4.Future<void>);
+
+  @override
+  _i4.Future<void> setOilFlowSpeed(double? value) => (super.noSuchMethod(
+        Invocation.method(
+          #setOilFlowSpeed,
+          [value],
+        ),
+        returnValue: _i4.Future<void>.value(),
+        returnValueForMissingStub: _i4.Future<void>.value(),
+      ) as _i4.Future<void>);
+
+  @override
+  _i4.Future<void> setOilPulseIntensity(double? value) => (super.noSuchMethod(
+        Invocation.method(
+          #setOilPulseIntensity,
+          [value],
+        ),
+        returnValue: _i4.Future<void>.value(),
+        returnValueForMissingStub: _i4.Future<void>.value(),
+      ) as _i4.Future<void>);
+
+  @override
+  _i4.Future<void> setOilPalette(String? palette) => (super.noSuchMethod(
+        Invocation.method(
+          #setOilPalette,
+          [palette],
+        ),
+        returnValue: _i4.Future<void>.value(),
+        returnValueForMissingStub: _i4.Future<void>.value(),
+      ) as _i4.Future<void>);
+
+  @override
+  _i4.Future<void> setOilFilmGrain(double? value) => (super.noSuchMethod(
+        Invocation.method(
+          #setOilFilmGrain,
+          [value],
+        ),
+        returnValue: _i4.Future<void>.value(),
+        returnValueForMissingStub: _i4.Future<void>.value(),
+      ) as _i4.Future<void>);
+
+  @override
+  _i4.Future<void> setOilHeatDrift(double? value) => (super.noSuchMethod(
+        Invocation.method(
+          #setOilHeatDrift,
+          [value],
+        ),
+        returnValue: _i4.Future<void>.value(),
+        returnValueForMissingStub: _i4.Future<void>.value(),
+      ) as _i4.Future<void>);
+
+  @override
+  void toggleOilEnableAudioReactivity() => super.noSuchMethod(
+        Invocation.method(
+          #toggleOilEnableAudioReactivity,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void toggleOilPerformanceMode() => super.noSuchMethod(
+        Invocation.method(
+          #toggleOilPerformanceMode,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void toggleOilEasterEggsEnabled() => super.noSuchMethod(
+        Invocation.method(
+          #toggleOilEasterEggsEnabled,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void toggleOilPaletteCycle() => super.noSuchMethod(
+        Invocation.method(
+          #toggleOilPaletteCycle,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void setOilPaletteTransitionSpeed(double? seconds) => super.noSuchMethod(
+        Invocation.method(
+          #setOilPaletteTransitionSpeed,
+          [seconds],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  _i4.Future<void> setOilVisualMode(String? mode) => (super.noSuchMethod(
+        Invocation.method(
+          #setOilVisualMode,
+          [mode],
+        ),
+        returnValue: _i4.Future<void>.value(),
+        returnValueForMissingStub: _i4.Future<void>.value(),
+      ) as _i4.Future<void>);
 
   @override
   void toggleFilterHighestShnid() => super.noSuchMethod(

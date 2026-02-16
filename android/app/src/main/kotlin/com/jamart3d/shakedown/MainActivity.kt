@@ -10,6 +10,7 @@ import android.content.res.Configuration
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
+import io.flutter.plugin.common.EventChannel
 import com.ryanheise.audioservice.AudioServicePlugin
 
 class MainActivity: FlutterActivity() {
@@ -43,6 +44,14 @@ class MainActivity: FlutterActivity() {
 
         // Set up MethodChannel for ADB UI scale testing
         uiScaleChannel = MethodChannel(flutterEngine.dartExecutor.binaryMessenger, UI_SCALE_CHANNEL)
+        
+        // Register Visualizer plugin
+        val visualizerPlugin = VisualizerPlugin()
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "shakedown/visualizer")
+            .setMethodCallHandler(visualizerPlugin)
+        EventChannel(flutterEngine.dartExecutor.binaryMessenger, "shakedown/visualizer_events")
+            .setStreamHandler(visualizerPlugin)
+        
         Log.d(TAG, "MethodChannels configured")
     }
 

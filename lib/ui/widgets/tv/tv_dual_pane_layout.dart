@@ -26,6 +26,7 @@ class _TvDualPaneLayoutState extends State<TvDualPaneLayout> {
   final FocusNode _rightScrollbarFocusNode = FocusNode();
   final FocusNode _showListScrollbarFocusNode = FocusNode();
   final GlobalKey<PlaybackScreenState> _playbackScreenKey = GlobalKey();
+  final GlobalKey<ShowListScreenState> _showListScreenKey = GlobalKey();
   StreamSubscription? _randomSubscription;
 
   @override
@@ -35,19 +36,34 @@ class _TvDualPaneLayoutState extends State<TvDualPaneLayout> {
       final audioProvider = context.read<AudioProvider>();
       _randomSubscription =
           audioProvider.randomShowRequestStream.listen((event) {
-        // Wait for ShowList scroll animation to settle (visual continuity)
-        Future.delayed(const Duration(milliseconds: 600), () {
-          if (mounted) {
-            setState(() {
-              _focusedPane = 1; // Highlight Right Pane (Playback/Tracks)
-            });
-            // Focus the track list directly via key
-            if (_playbackScreenKey.currentState != null) {
-              _playbackScreenKey.currentState!.focusCurrentTrack();
-            } else {
-              _rightScrollbarFocusNode.requestFocus();
+        // Stage 2: Wait for ShowList scroll animation to settle (visual continuity)
+        Future.delayed(const Duration(milliseconds: 1200), () {
+          if (!mounted) return;
+
+          // Focus the selected show card directly
+          _showListScreenKey.currentState?.focusShowByObject(event.show);
+
+          // Stage 3: Wait 2000ms on the show card before switching panes
+          Future.delayed(const Duration(milliseconds: 2000), () {
+            if (mounted) {
+              setState(() {
+                _focusedPane = 1; // Highlight Right Pane (Playback/Tracks)
+              });
+              // Focus the track list directly via key
+              if (_playbackScreenKey.currentState != null) {
+                _playbackScreenKey.currentState!.focusCurrentTrack();
+              } else {
+                _rightScrollbarFocusNode.requestFocus();
+              }
+
+              // Stage 4: Wait 2000ms after track list gets focus before starting playback
+              Future.delayed(const Duration(milliseconds: 2000), () {
+                if (mounted) {
+                  audioProvider.playPendingSelection();
+                }
+              });
             }
-          }
+          });
         });
       });
     }
@@ -103,7 +119,9 @@ class _TvDualPaneLayoutState extends State<TvDualPaneLayout> {
                               diceFocusNode: _diceFocusNode,
                               gearsFocusNode: _gearsFocusNode,
                               onRandomPlay: () {
-                                context.read<AudioProvider>().playRandomShow();
+                                context
+                                    .read<AudioProvider>()
+                                    .playRandomShow(delayPlayback: true);
                               },
                               onLeft: () {
                                 // Wrap around from Dice (far left) to Right Pane
@@ -128,6 +146,7 @@ class _TvDualPaneLayoutState extends State<TvDualPaneLayout> {
                             ),
                             Expanded(
                               child: ShowListScreen(
+                                key: _showListScreenKey,
                                 isPane: true,
                                 scrollbarFocusNode: _showListScrollbarFocusNode,
                                 onFocusLeft: () {
@@ -201,7 +220,7 @@ class _TvDualPaneLayoutState extends State<TvDualPaneLayout> {
             if (settingsProvider.showPlaybackMessages)
               const Positioned(
                 top: 0,
-                right: 0,
+                right: 5,
                 child: PlaybackMessages(
                   textAlign: TextAlign.right,
                   showDivider: true,

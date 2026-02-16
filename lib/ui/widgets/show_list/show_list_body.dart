@@ -26,7 +26,7 @@ class ShowListBody extends StatelessWidget {
   final VoidCallback? onFocusLeft;
   final ValueChanged<int>? onShowFocused;
   final Map<int, FocusNode>? showFocusNodes;
-  final ValueChanged<int>? onFocusShow;
+  final void Function(int, {bool shouldScroll})? onFocusShow;
 
   const ShowListBody({
     super.key,
@@ -105,7 +105,7 @@ class ShowListBody extends StatelessWidget {
                     showListProvider.getShowKey(s) ==
                     showListProvider.expandedShowKey);
                 if (index != -1) {
-                  onFocusShow?.call(index);
+                  onFocusShow?.call(index, shouldScroll: false);
                   return;
                 }
               }
@@ -131,9 +131,9 @@ class ShowListBody extends StatelessWidget {
               }
 
               if (targetIndex != -1) {
-                onFocusShow?.call(targetIndex);
+                onFocusShow?.call(targetIndex, shouldScroll: false);
               } else {
-                onFocusShow?.call(0); // Fallback
+                onFocusShow?.call(0, shouldScroll: false); // Fallback
               }
             },
             onRight: () {

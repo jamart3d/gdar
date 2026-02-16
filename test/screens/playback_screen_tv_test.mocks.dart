@@ -223,6 +223,7 @@ class MockAudioProvider extends _i1.Mock implements _i3.AudioProvider {
   _i4.Future<_i5.Show?> playRandomShow({
     bool? filterBySearch = true,
     bool? animationOnly = false,
+    bool? delayPlayback = false,
   }) =>
       (super.noSuchMethod(
         Invocation.method(
@@ -231,10 +232,21 @@ class MockAudioProvider extends _i1.Mock implements _i3.AudioProvider {
           {
             #filterBySearch: filterBySearch,
             #animationOnly: animationOnly,
+            #delayPlayback: delayPlayback,
           },
         ),
         returnValue: _i4.Future<_i5.Show?>.value(),
       ) as _i4.Future<_i5.Show?>);
+
+  @override
+  _i4.Future<void> playPendingSelection() => (super.noSuchMethod(
+        Invocation.method(
+          #playPendingSelection,
+          [],
+        ),
+        returnValue: _i4.Future<void>.value(),
+        returnValueForMissingStub: _i4.Future<void>.value(),
+      ) as _i4.Future<void>);
 
   @override
   _i4.Future<void> playSource(
@@ -360,6 +372,16 @@ class MockAudioProvider extends _i1.Mock implements _i3.AudioProvider {
         ),
         returnValueForMissingStub: null,
       );
+
+  @override
+  _i4.Future<void> retryCurrentSource() => (super.noSuchMethod(
+        Invocation.method(
+          #retryCurrentSource,
+          [],
+        ),
+        returnValue: _i4.Future<void>.value(),
+        returnValueForMissingStub: _i4.Future<void>.value(),
+      ) as _i4.Future<void>);
 
   @override
   void seekToTrack(int? localIndex) => super.noSuchMethod(

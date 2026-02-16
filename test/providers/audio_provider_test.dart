@@ -14,6 +14,7 @@ import 'package:mockito/mockito.dart';
 import 'package:just_audio_background/just_audio_background.dart';
 import 'package:shakedown/services/catalog_service.dart';
 import 'package:shakedown/services/audio_cache_service.dart';
+import 'package:shakedown/services/wakelock_service.dart';
 
 import 'audio_provider_test.mocks.dart';
 
@@ -24,6 +25,7 @@ import 'audio_provider_test.mocks.dart';
   MockSpec<SettingsProvider>(),
   MockSpec<CatalogService>(),
   MockSpec<AudioCacheService>(),
+  MockSpec<WakelockService>(),
 ])
 void main() {
   late AudioProvider audioProvider;
@@ -32,22 +34,27 @@ void main() {
   late MockSettingsProvider mockSettingsProvider;
   late MockCatalogService mockCatalogService;
   late MockAudioCacheService mockAudioCacheService;
+  late MockWakelockService mockWakelockService;
   late StreamController<ProcessingState> processingStateController;
   late StreamController<Duration> positionController;
   late StreamController<int?> currentIndexController;
 
   setUp(() {
-    const channel = MethodChannel('plugins.flutter.io/path_provider');
-    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-        .setMockMethodCallHandler(channel, (MethodCall methodCall) async {
-      return '.';
-    });
-
     mockSettingsProvider = MockSettingsProvider();
     mockShowListProvider = MockShowListProvider();
     mockAudioPlayer = MockAudioPlayerRelaxed();
     mockCatalogService = MockCatalogService();
     mockAudioCacheService = MockAudioCacheService();
+    mockWakelockService = MockWakelockService();
+
+    // Mock path_provider
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(
+      const MethodChannel('plugins.flutter.io/path_provider'),
+      (MethodCall methodCall) async {
+        return '.';
+      },
+    );
     processingStateController = StreamController<ProcessingState>.broadcast();
     positionController = StreamController<Duration>.broadcast();
     currentIndexController = StreamController<int?>.broadcast();
@@ -94,6 +101,11 @@ void main() {
       return AudioSource.uri(uri, tag: tag);
     });
 
+    // Stub WakelockService
+    when(mockWakelockService.enabled).thenAnswer((_) async => false);
+    when(mockWakelockService.enable()).thenAnswer((_) async {});
+    when(mockWakelockService.disable()).thenAnswer((_) async {});
+
     when(mockShowListProvider.isLoading).thenReturn(false);
     when(mockShowListProvider.allShows).thenReturn([]);
     when(mockShowListProvider.initializationComplete).thenAnswer((_) async {});
@@ -105,6 +117,7 @@ void main() {
       audioPlayer: mockAudioPlayer,
       catalogService: mockCatalogService,
       audioCacheService: mockAudioCacheService,
+      wakelockService: mockWakelockService,
     );
     audioProvider.update(mockShowListProvider, mockSettingsProvider);
   });

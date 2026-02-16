@@ -163,6 +163,14 @@ class FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
   @override
   Map<String, bool> get sourceCategoryFilters => {};
   @override
+  bool get oilPaletteCycle => false;
+  @override
+  double get oilPaletteTransitionSpeed => 5.0;
+  @override
+  void toggleOilPaletteCycle() {}
+  @override
+  void setOilPaletteTransitionSpeed(double seconds) {}
+  @override
   Future<void> setSourceCategoryFilter(String category, bool isActive) async {}
   @override
   Future<void> setSoloSourceCategoryFilter(String category) async {}
@@ -222,6 +230,71 @@ class FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
   bool get preventScreensaver => true;
   @override
   void togglePreventScreensaver() {}
+
+  @override
+  bool get useOilScreensaver => false;
+  @override
+  void toggleUseOilScreensaver() {}
+
+  @override
+  String get oilScreensaverMode => 'visualizer';
+  @override
+  void setOilScreensaverMode(String mode) {}
+
+  @override
+  int get oilScreensaverInactivityMinutes => 5;
+  @override
+  void setOilScreensaverInactivityMinutes(int minutes) {}
+
+  @override
+  double get oilViscosity => 1.0;
+  @override
+  Future<void> setOilViscosity(double value) async {}
+
+  @override
+  double get oilFlowSpeed => 1.0;
+  @override
+  Future<void> setOilFlowSpeed(double value) async {}
+
+  @override
+  double get oilPulseIntensity => 1.0;
+  @override
+  Future<void> setOilPulseIntensity(double value) async {}
+
+  @override
+  String get oilPalette => 'psychedelic';
+  @override
+  Future<void> setOilPalette(String palette) async {}
+
+  @override
+  double get oilFilmGrain => 0.5;
+  @override
+  Future<void> setOilFilmGrain(double value) async {}
+
+  @override
+  double get oilHeatDrift => 0.5;
+  @override
+  Future<void> setOilHeatDrift(double value) async {}
+
+  @override
+  bool get oilEnableAudioReactivity => true;
+  @override
+  void toggleOilEnableAudioReactivity() {}
+
+  @override
+  String get oilVisualMode => 'psychedelic';
+  @override
+  Future<void> setOilVisualMode(String mode) async {}
+
+  @override
+  bool get oilPerformanceMode => false;
+  @override
+  void toggleOilPerformanceMode() {}
+
+  @override
+  bool get oilEasterEggsEnabled => false;
+  @override
+  void toggleOilEasterEggsEnabled() {}
 
   @override
   bool get hasListeners => super.hasListeners;

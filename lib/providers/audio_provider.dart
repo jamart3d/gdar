@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'dart:math';
-import 'package:wakelock_plus/wakelock_plus.dart';
+import 'package:shakedown/services/wakelock_service.dart';
 
 import 'dart:io';
 import 'package:flutter/services.dart';
@@ -126,13 +126,16 @@ class AudioProvider with ChangeNotifier {
   // Dependency Injection for easier testing
   final CatalogService _catalogService;
   final AudioCacheService _audioCacheService;
+  final WakelockService _wakelockService;
 
   AudioProvider({
     AudioPlayer? audioPlayer,
     CatalogService? catalogService,
     AudioCacheService? audioCacheService,
+    WakelockService? wakelockService,
   })  : _catalogService = catalogService ?? CatalogService(),
-        _audioCacheService = audioCacheService ?? AudioCacheService() {
+        _audioCacheService = audioCacheService ?? AudioCacheService(),
+        _wakelockService = wakelockService ?? WakelockService() {
     _audioPlayer = audioPlayer ?? AudioPlayer();
     _listenForPlaybackProgress();
     _listenForErrors();
@@ -174,8 +177,8 @@ class AudioProvider with ChangeNotifier {
 
     if (shouldPreventScreensaver && isPlaying) {
       try {
-        if (!(await WakelockPlus.enabled)) {
-          await WakelockPlus.enable();
+        if (!(await _wakelockService.enabled)) {
+          await _wakelockService.enable();
           logger.d('AudioProvider: Wake Lock ENABLED (Prevent Screensaver)');
         }
       } catch (e) {
@@ -183,8 +186,8 @@ class AudioProvider with ChangeNotifier {
       }
     } else {
       try {
-        if (await WakelockPlus.enabled) {
-          await WakelockPlus.disable();
+        if (await _wakelockService.enabled) {
+          await _wakelockService.disable();
           logger.d('AudioProvider: Wake Lock DISABLED');
         }
       } catch (e) {
@@ -288,7 +291,7 @@ class AudioProvider with ChangeNotifier {
     _bufferAgentNotificationController.close();
     _bufferAgent?.dispose();
     _audioPlayer.dispose();
-    WakelockPlus.disable(); // Ensure we don't leave it on
+    _wakelockService.disable(); // Ensure we don't leave it on
     super.dispose();
   }
 
@@ -330,8 +333,11 @@ class AudioProvider with ChangeNotifier {
     return result;
   }
 
-  Future<Show?> playRandomShow(
-      {bool filterBySearch = true, bool animationOnly = false}) async {
+  Future<Show?> playRandomShow({
+    bool filterBySearch = true,
+    bool animationOnly = false,
+    bool delayPlayback = false,
+  }) async {
     // If we're still loading and have no shows, wait for initialization
     if (_showListProvider != null &&
         _showListProvider!.isLoading &&
@@ -361,8 +367,32 @@ class AudioProvider with ChangeNotifier {
       return show;
     }
 
+    if (delayPlayback) {
+      logger.i('playRandomShow: Playback delayed as requested.');
+      // Update UI state to show WHICH show is pending, but don't start audio yet.
+      _currentShow = show;
+      _currentSource = source;
+      _showListProvider?.setPlayingShow(show.name, source.id);
+      notifyListeners();
+      return show;
+    }
+
     await playSource(show, source);
     return show;
+  }
+
+  /// Triggers playback for the most recent pending random selection.
+  Future<void> playPendingSelection() async {
+    if (_pendingRandomShowRequest == null) {
+      logger.w('playPendingSelection: No pending selection to play.');
+      return;
+    }
+
+    final show = _pendingRandomShowRequest!.show;
+    final source = _pendingRandomShowRequest!.source;
+
+    logger.i('playPendingSelection: Starting playback for ${show.name}');
+    await playSource(show, source);
   }
 
   Future<void> playSource(Show show, Source source,
@@ -693,11 +723,54 @@ class AudioProvider with ChangeNotifier {
 
   void seek(Duration position) => _audioPlayer.seek(position);
 
+  /// Retries loading the current source, maintaining the current track index.
+  Future<void> retryCurrentSource() async {
+    if (_currentShow == null || _currentSource == null) {
+      logger.w('retryCurrentSource: No current show or source to retry.');
+      return;
+    }
+
+    // Find local index from the current track if available, else fallback to player index
+    int localIndex = 0;
+    if (_audioPlayer.currentIndex != null) {
+      try {
+        final sequence = _audioPlayer.sequence;
+        if (sequence.isNotEmpty &&
+            _audioPlayer.currentIndex! < sequence.length) {
+          final currentItem =
+              sequence[_audioPlayer.currentIndex!].tag as MediaItem;
+          localIndex = currentItem.extras?['track_index'] as int? ?? 0;
+        }
+      } catch (e) {
+        logger.w('retryCurrentSource: Error resolving local index: $e');
+        localIndex = _audioPlayer.currentIndex!;
+      }
+    }
+
+    logger.i(
+        'retryCurrentSource: Retrying ${_currentShow!.name} at local index $localIndex');
+    await playSource(_currentShow!, _currentSource!, initialIndex: localIndex);
+  }
+
   void seekToTrack(int localIndex) {
     if (_currentSource == null) return;
 
-    // Find the global index that corresponds to this local index for the current source
+    // If the player is stuck loading or buffering and has no sequence yet,
+    // we should re-trigger playSource to "force" a fresh start at the new index.
+    final playerState = _audioPlayer.processingState;
+    final isStuck = playerState == ProcessingState.loading ||
+        playerState == ProcessingState.buffering;
     final sequence = _audioPlayer.sequence;
+
+    if (isStuck &&
+        (sequence.isEmpty || _audioPlayer.currentIndex != localIndex)) {
+      logger.i(
+          'seekToTrack: Player is stuck/loading. Re-triggering playSource at index $localIndex');
+      if (_currentShow != null) {
+        playSource(_currentShow!, _currentSource!, initialIndex: localIndex);
+        return;
+      }
+    }
 
     int? globalIndex;
 

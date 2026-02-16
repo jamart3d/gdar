@@ -353,7 +353,7 @@ mixin ShowListLogicMixin<T extends StatefulWidget>
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         reliablyScrollToShow(show,
-            duration: const Duration(milliseconds: 1000));
+            duration: const Duration(milliseconds: 1200));
       }
     });
 
@@ -389,9 +389,10 @@ mixin ShowListLogicMixin<T extends StatefulWidget>
       isRandomShowLoading = true;
       userInitiatedRoll = true;
     });
-    // Timer removed: Dice animation is decoupled and runs for 2s.
-    // AppBar loading state is controlled by _onPlayerStateChange.
-    await audioProvider.playRandomShow(filterBySearch: true);
+
+    final isTv = context.read<DeviceService>().isTv;
+    await audioProvider.playRandomShow(
+        filterBySearch: true, delayPlayback: isTv);
   }
 
   Future<bool> handleClipboardPlayback(String text,

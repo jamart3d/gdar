@@ -13,6 +13,7 @@ import 'package:shakedown/ui/widgets/conditional_marquee.dart';
 import 'package:shakedown/ui/widgets/tv/tv_focus_wrapper.dart';
 import 'package:shakedown/utils/font_layout_config.dart';
 import 'package:shakedown/utils/utils.dart';
+import 'package:shakedown/ui/widgets/tv/tv_reload_dialog.dart';
 import 'package:just_audio/just_audio.dart';
 
 class TrackListView extends StatelessWidget {
@@ -26,7 +27,8 @@ class TrackListView extends StatelessWidget {
   final VoidCallback? onFocusLeft;
   final VoidCallback? onFocusRight;
   final ValueChanged<int>? onTrackFocused;
-  final ValueChanged<int>? onWrapAround; // Added for robust wrap-around
+  final void Function(int, {bool shouldScroll})?
+      onWrapAround; // Added for robust wrap-around
 
   const TrackListView({
     super.key,
@@ -281,6 +283,7 @@ class TrackListView extends StatelessWidget {
               }
               return KeyEventResult.ignored;
             },
+            onLongPress: () => _handleLongPress(context, audioProvider, track),
             onTap: () {
               if (isPlaying) {
                 // Toggle Play/Pause if this is the current track
@@ -420,6 +423,7 @@ class TrackListView extends StatelessWidget {
                 audioProvider.seekToTrack(trackIndex);
               }
             },
+      onLongPress: () => _handleLongPress(context, audioProvider, track),
     );
 
     if (isPlaying && isTv) {
@@ -490,5 +494,72 @@ class TrackListView extends StatelessWidget {
     }
 
     return listTile;
+  }
+
+  void _handleLongPress(
+      BuildContext context, AudioProvider audioProvider, Track track) {
+    // Only show recovery options if the player is in a loading or buffering state
+    // and the track being long-pressed is the one currently handled by the player.
+    final playerState = audioProvider.audioPlayer.processingState;
+    final isStuck = playerState == ProcessingState.loading ||
+        playerState == ProcessingState.buffering;
+
+    final currentTrack = audioProvider.currentTrack;
+    final isThisTrack = currentTrack != null &&
+        currentTrack.title == track.title &&
+        currentTrack.trackNumber == track.trackNumber;
+
+    if (!isStuck || !isThisTrack) return;
+
+    final isTv = context.read<DeviceService>().isTv;
+
+    if (isTv) {
+      TvReloadDialog.show(
+        context,
+        onReload: () => audioProvider.retryCurrentSource(),
+      );
+    } else {
+      showModalBottomSheet(
+        context: context,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        builder: (context) => SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(height: 16),
+              Text(
+                'Track Loading',
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+              const SizedBox(height: 8),
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 24.0),
+                child: Text(
+                  'This track is taking a while to load. Would you like to try reloading the show?',
+                  textAlign: TextAlign.center,
+                ),
+              ),
+              const SizedBox(height: 16),
+              ListTile(
+                leading: const Icon(Icons.refresh),
+                title: const Text('Reload Show'),
+                onTap: () {
+                  Navigator.pop(context);
+                  audioProvider.retryCurrentSource();
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.close),
+                title: const Text('Cancel'),
+                onTap: () => Navigator.pop(context),
+              ),
+              const SizedBox(height: 16),
+            ],
+          ),
+        ),
+      );
+    }
   }
 }

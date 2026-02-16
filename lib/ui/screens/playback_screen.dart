@@ -115,6 +115,7 @@ class PlaybackScreenState extends State<PlaybackScreen>
     int? forceTargetIndex,
     double alignment = 0.3,
     double maxVisibleY = 1.0,
+    bool syncFocus = false,
   }) {
     if (!mounted) return;
     final audioProvider = context.read<AudioProvider>();
@@ -151,40 +152,64 @@ class PlaybackScreenState extends State<PlaybackScreen>
       }
     }
 
-    if (targetIndex != -1 && _itemScrollController.isAttached) {
-      final positions = _itemPositionsListener.itemPositions.value;
+    if (targetIndex != -1) {
+      // 1. Handle Scrolling
+      if (_itemScrollController.isAttached) {
+        final positions = _itemPositionsListener.itemPositions.value;
 
-      // Smart check to prevent jank
-      if (positions.isNotEmpty) {
-        if (force) {
-          // If forced (manual tap/focus), only skip if we are already close to the target alignment
-          final isAligned = positions.any((position) =>
-              position.index == targetIndex &&
-              (position.itemLeadingEdge - alignment).abs() <
-                  0.05); // 5% tolerance
-          if (isAligned) return;
-        } else {
-          // If auto-scroll, skip if fully visible within the allowed range
-          final isVisible = positions.any((position) =>
-              position.index == targetIndex &&
-              position.itemLeadingEdge >= 0 &&
-              position.itemTrailingEdge <= maxVisibleY);
-          if (isVisible) return;
+        // Smart check to prevent jank
+        bool skipScroll = false;
+        if (positions.isNotEmpty) {
+          if (force) {
+            // If forced (manual tap/focus), only skip if we are already close to the target alignment
+            final isAligned = positions.any((position) =>
+                position.index == targetIndex &&
+                (position.itemLeadingEdge - alignment).abs() <
+                    0.05); // 5% tolerance
+            if (isAligned) skipScroll = true;
+          } else {
+            // If auto-scroll, skip if fully visible within the allowed range
+            final isVisible = positions.any((position) =>
+                position.index == targetIndex &&
+                position.itemLeadingEdge >= 0 &&
+                position.itemTrailingEdge <= maxVisibleY);
+            if (isVisible) skipScroll = true;
+          }
+        }
+
+        if (!skipScroll) {
+          if (animate) {
+            _itemScrollController.scrollTo(
+              index: targetIndex,
+              duration: const Duration(milliseconds: 500),
+              curve: Curves.easeInOutCubic,
+              alignment: alignment,
+            );
+          } else {
+            _itemScrollController.jumpTo(
+              index: targetIndex,
+              alignment: alignment,
+            );
+          }
         }
       }
 
-      if (animate) {
-        _itemScrollController.scrollTo(
-          index: targetIndex,
-          duration: const Duration(milliseconds: 500),
-          curve: Curves.easeInOutCubic,
-          alignment: alignment,
-        );
-      } else {
-        _itemScrollController.jumpTo(
-          index: targetIndex,
-          alignment: alignment,
-        );
+      // 2. Handle Focus Sync (TV only)
+      if (syncFocus && context.read<DeviceService>().isTv) {
+        // Only move focus if the track list (or one of its items) already has focus.
+        // We check if any of our managed track focus nodes is currently the primary focus.
+        bool listHasFocus = false;
+        for (var node in _trackFocusNodes.values) {
+          if (node.hasFocus) {
+            listHasFocus = true;
+            break;
+          }
+        }
+
+        if (listHasFocus) {
+          // Move focus to the new target
+          _focusTrack(targetIndex, shouldScroll: false);
+        }
       }
     }
   }
@@ -264,7 +289,7 @@ class PlaybackScreenState extends State<PlaybackScreen>
     return count;
   }
 
-  void _focusTrack(int index) {
+  void _focusTrack(int index, {bool shouldScroll = true}) {
     if (index < 0) return;
 
     // Ensure the focus node exists
@@ -272,7 +297,7 @@ class PlaybackScreenState extends State<PlaybackScreen>
       _trackFocusNodes[index] = FocusNode();
     }
 
-    if (_itemScrollController.isAttached) {
+    if (shouldScroll && _itemScrollController.isAttached) {
       // Scroll to the track to ensure it's built and visible
       _itemScrollController.jumpTo(index: index, alignment: 0.3);
     }
@@ -310,19 +335,19 @@ class PlaybackScreenState extends State<PlaybackScreen>
 
     // 2. If valid target found, focus it
     if (targetIndex != -1) {
-      _focusTrack(targetIndex);
+      _focusTrack(targetIndex, shouldScroll: false);
       return;
     }
 
     // 3. Fallback: Current Playing Track
     final audioProvider = context.read<AudioProvider>();
     if (audioProvider.audioPlayer.currentIndex != null) {
-      _focusTrack(audioProvider.audioPlayer.currentIndex!);
+      _focusTrack(audioProvider.audioPlayer.currentIndex!, shouldScroll: false);
       return;
     }
 
     // 4. Fallback: First track
-    _focusTrack(0);
+    _focusTrack(0, shouldScroll: false);
   }
 
   @override
@@ -347,7 +372,8 @@ class PlaybackScreenState extends State<PlaybackScreen>
       WidgetsBinding.instance.addPostFrameCallback((_) {
         // If panel is open (or opening), limit visibility to top 40%
         final isPanelOpen = _panelPositionNotifier.value > 0.1;
-        _scrollToCurrentTrack(true, maxVisibleY: isPanelOpen ? 0.4 : 1.0);
+        _scrollToCurrentTrack(true,
+            maxVisibleY: isPanelOpen ? 0.4 : 1.0, syncFocus: true);
       });
     }
 

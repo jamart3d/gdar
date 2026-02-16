@@ -1,7 +1,7 @@
 name: shakedown
 description: gapless playback of select grateful dead shows from archive.org
 publish_to: 'none'
-version: 1.0.57+57
+version: 1.0.58+58
 
 environment:
   sdk: '>=3.0.0 <4.0.0'
@@ -51,6 +51,8 @@ dependencies:
   device_info_plus: ^11.3.0
   wakelock_plus: ^1.4.0
 
+  # For oil_slide visualizer game loop
+  flame: ^1.22.0
 
 dev_dependencies:
   flutter_test:
@@ -66,9 +68,11 @@ flutter:
   uses-material-design: true
 
   assets:
-    
     - assets/data/output.optimized_src.json
     - assets/images/
+
+  shaders:
+    - shaders/oil_slide.frag
 
   fonts:
     - family: RockSalt

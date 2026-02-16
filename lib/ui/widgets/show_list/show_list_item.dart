@@ -23,7 +23,7 @@ class ShowListItem extends StatelessWidget {
   final Function(Source) onSourceLongPress;
   final VoidCallback? onFocusLeft;
   final ValueChanged<int>? onFocusChange;
-  final Function(int)? onWrapAround;
+  final void Function(int, {bool shouldScroll})? onWrapAround;
   final FocusNode? focusNode;
   final int index;
 

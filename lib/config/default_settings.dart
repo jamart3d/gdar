@@ -59,4 +59,24 @@ class DefaultSettings {
 
   // Misc
   static const bool showSplashScreen = true;
+
+  // Screensaver (oil_slide)
+  static const bool useOilScreensaver = false;
+  static const String oilScreensaverMode = 'standard'; // 'standard' or 'kiosk'
+  static const int oilScreensaverInactivityMinutes = 5;
+
+  // oil_slide Visual Parameters
+  static const double oilViscosity = 0.7;
+  static const double oilFlowSpeed = 0.5;
+  static const double oilPulseIntensity = 0.8;
+  static const String oilPalette =
+      'acid_green'; // 'acid_green', 'lava_gold', etc.
+  static const double oilFilmGrain = 0.15; // Film grain intensity (0.0-1.0)
+  static const double oilHeatDrift =
+      0.3; // Heat drift for OLED safety (0.0-1.0)
+  static const bool oilEnableAudioReactivity = true;
+  static const bool oilPerformanceMode = false; // Auto-detected for TV
+  static const bool oilEasterEggsEnabled = true;
+  static const String oilVisualMode =
+      'psychedelic'; // 'lava_lamp', 'silk', 'psychedelic', 'custom'
 }

@@ -28,4 +28,5 @@ This list tracks the next steps for polishing the 10-foot experience of gdar.
 
 ## Future Ideas
 - [ ] **Voice Search**: "Play shows from Winterland 1973" via Google Assistant.
-- [ ] **Leanback Screensaver**: A dedicated high-art playback view with scrolling credits and atmospheric glow for when the app is left idle during music.
+- [x] **Leanback Screensaver**: High-art psychedelic oil lamp visualizer with audio reactivity and multiple visual styles (Lava Lamp, Silk).
+- [ ] **Flutter GPU Investigation**: explore `flutter_gpu` for the lava lamp screensaver. Current Flame/Shader shading is too simple; need higher fidelity fluid simulation and advanced lighting/shading.

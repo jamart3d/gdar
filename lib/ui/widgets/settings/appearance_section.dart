@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -12,6 +13,7 @@ import 'package:shakedown/ui/widgets/tv/tv_switch_list_tile.dart';
 import 'package:shakedown/ui/widgets/tv/tv_list_tile.dart';
 import 'package:shakedown/ui/widgets/tv/tv_focus_wrapper.dart';
 import 'package:shakedown/ui/widgets/settings/rainbow_color_picker.dart';
+import 'package:shakedown/ui/screens/screensaver_screen.dart';
 
 class AppearanceSection extends StatefulWidget {
   final double scaleFactor;
@@ -456,6 +458,244 @@ class _AppearanceSectionState extends State<AppearanceSection> {
             FontSelectionDialog.show(context);
           },
         ),
+        // Screensaver (oil_slide) - Show on TV OR in Debug/Profile mode for testing
+        if (Provider.of<DeviceService>(context, listen: false).isTv ||
+            !kReleaseMode) ...[
+          TvSwitchListTile(
+            dense: true,
+            visualDensity: VisualDensity.compact,
+            title: FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: Text('Screen Saver',
+                    style: Theme.of(context)
+                        .textTheme
+                        .titleMedium
+                        ?.copyWith(fontSize: 16 * widget.scaleFactor))),
+            subtitle: FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: Text('Psychedelic oil lamp visualizer',
+                    style: Theme.of(context)
+                        .textTheme
+                        .bodySmall
+                        ?.copyWith(fontSize: 12 * widget.scaleFactor))),
+            value: settingsProvider.useOilScreensaver,
+            onChanged: (value) {
+              HapticFeedback.lightImpact();
+              context.read<SettingsProvider>().toggleUseOilScreensaver();
+            },
+            secondary: const Icon(Icons.blur_circular_rounded),
+          ),
+          if (settingsProvider.useOilScreensaver) ...[
+            Padding(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 8),
+                  const SizedBox(height: 8),
+                  // Visual Style Selection
+                  Text(
+                    'Visual Style',
+                    style: Theme.of(context)
+                        .textTheme
+                        .bodyMedium
+                        ?.copyWith(fontSize: 12.0 * widget.scaleFactor),
+                  ),
+                  const SizedBox(height: 8),
+                  TvFocusWrapper(
+                    showGlow: true,
+                    borderRadius: BorderRadius.circular(24),
+                    child: SegmentedButton<String>(
+                      segments: const [
+                        ButtonSegment(
+                          value: 'psychedelic',
+                          label: Text('Standard'),
+                          icon: Icon(Icons.auto_awesome_rounded),
+                        ),
+                        ButtonSegment(
+                          value: 'lava_lamp',
+                          label: Text('Lava Lamp'),
+                          icon: Icon(Icons.waves_rounded),
+                        ),
+                        ButtonSegment(
+                          value: 'silk',
+                          label: Text('Silk'),
+                          icon: Icon(Icons.texture_rounded),
+                        ),
+                      ],
+                      selected: {settingsProvider.oilVisualMode},
+                      onSelectionChanged: (Set<String> newSelection) {
+                        HapticFeedback.lightImpact();
+                        context
+                            .read<SettingsProvider>()
+                            .setOilVisualMode(newSelection.first);
+                      },
+                      showSelectedIcon: false,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  // App Mode Selection (Standard vs Kiosk)
+                  Text(
+                    'App Mode',
+                    style: Theme.of(context)
+                        .textTheme
+                        .bodyMedium
+                        ?.copyWith(fontSize: 12.0 * widget.scaleFactor),
+                  ),
+                  const SizedBox(height: 8),
+                  TvFocusWrapper(
+                    showGlow: true,
+                    borderRadius: BorderRadius.circular(24),
+                    child: SegmentedButton<String>(
+                      segments: const [
+                        ButtonSegment(
+                          value: 'standard',
+                          label: Text('Standard'),
+                          icon: Icon(Icons.tv_rounded),
+                        ),
+                        ButtonSegment(
+                          value: 'kiosk',
+                          label: Text('Kiosk'),
+                          icon: Icon(Icons.settings_remote_rounded),
+                        ),
+                      ],
+                      selected: {settingsProvider.oilScreensaverMode},
+                      onSelectionChanged: (Set<String> newSelection) {
+                        HapticFeedback.lightImpact();
+                        context
+                            .read<SettingsProvider>()
+                            .setOilScreensaverMode(newSelection.first);
+                      },
+                      showSelectedIcon: false,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  // Inactivity Timeout
+                  Row(
+                    children: [
+                      Text(
+                        'Inactivity Timeout',
+                        style: Theme.of(context)
+                            .textTheme
+                            .bodySmall
+                            ?.copyWith(fontSize: 12.0 * widget.scaleFactor),
+                      ),
+                      Expanded(
+                        child: TvFocusWrapper(
+                          onKeyEvent: (node, event) {
+                            if (event is KeyDownEvent) {
+                              if (event.logicalKey ==
+                                  LogicalKeyboardKey.arrowLeft) {
+                                final newVal = (settingsProvider
+                                            .oilScreensaverInactivityMinutes -
+                                        1)
+                                    .clamp(1, 30);
+                                if (newVal !=
+                                    settingsProvider
+                                        .oilScreensaverInactivityMinutes) {
+                                  HapticFeedback.selectionClick();
+                                  context
+                                      .read<SettingsProvider>()
+                                      .setOilScreensaverInactivityMinutes(
+                                          newVal);
+                                }
+                                return KeyEventResult.handled;
+                              } else if (event.logicalKey ==
+                                  LogicalKeyboardKey.arrowRight) {
+                                final newVal = (settingsProvider
+                                            .oilScreensaverInactivityMinutes +
+                                        1)
+                                    .clamp(1, 30);
+                                if (newVal !=
+                                    settingsProvider
+                                        .oilScreensaverInactivityMinutes) {
+                                  HapticFeedback.selectionClick();
+                                  context
+                                      .read<SettingsProvider>()
+                                      .setOilScreensaverInactivityMinutes(
+                                          newVal);
+                                }
+                                return KeyEventResult.handled;
+                              }
+                            }
+                            return KeyEventResult.ignored;
+                          },
+                          child: Slider(
+                            onChangeStart: (_) => HapticFeedback.lightImpact(),
+                            value: settingsProvider
+                                .oilScreensaverInactivityMinutes
+                                .toDouble(),
+                            min: 1,
+                            max: 30,
+                            divisions: 29,
+                            label:
+                                '${settingsProvider.oilScreensaverInactivityMinutes} min',
+                            onChanged: (value) {
+                              if (value.round() !=
+                                  settingsProvider
+                                      .oilScreensaverInactivityMinutes) {
+                                HapticFeedback.selectionClick();
+                              }
+                              context
+                                  .read<SettingsProvider>()
+                                  .setOilScreensaverInactivityMinutes(
+                                      value.round());
+                            },
+                          ),
+                        ),
+                      ),
+                      SizedBox(
+                        width: 60 * widget.scaleFactor,
+                        child: Text(
+                          '${settingsProvider.oilScreensaverInactivityMinutes} min',
+                          style: Theme.of(context)
+                              .textTheme
+                              .labelLarge
+                              ?.copyWith(
+                                  fontSize: 12.0 * widget.scaleFactor,
+                                  fontWeight: FontWeight.bold,
+                                  color: Theme.of(context).colorScheme.primary),
+                          textAlign: TextAlign.end,
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  // Manual Start Button
+                  TvListTile(
+                    dense: true,
+                    visualDensity: VisualDensity.compact,
+                    leading: const Icon(Icons.play_circle_outline_rounded),
+                    title: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.centerLeft,
+                        child: Text('Start Screen Saver',
+                            style: Theme.of(context)
+                                .textTheme
+                                .titleMedium
+                                ?.copyWith(fontSize: 16 * widget.scaleFactor))),
+                    subtitle: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.centerLeft,
+                        child: Text('Test the psychedelic oil lamp effect now',
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodySmall
+                                ?.copyWith(fontSize: 12 * widget.scaleFactor))),
+                    onTap: () {
+                      HapticFeedback.lightImpact();
+                      ScreensaverScreen.show(context);
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ],
       ],
     );
   }

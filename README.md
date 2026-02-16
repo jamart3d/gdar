@@ -29,6 +29,11 @@ A Flutter application for browsing and playing concert recordings of the Gratefu
   - Light and Dark theme support with dynamic color options.
   - **True Black Mode**: Pitch black backgrounds for OLED screens.
   - **Glow Effects**: Adjustable glow intensity for the playback card, adding a premium feel.
+  - **Oil Slide Screensaver**: 
+    - A high-art, psychedelic visualizer that activates during inactivity.
+    - **Visual Styles**: Choose between **Standard (Psychedelic)**, **Lava Lamp**, and **Silk** modes.
+    - **Customization**: Adjust viscosity, flow speed, and palettes.
+    - **Audio Reactivity**: The visualizer pulses and reacts to the music's frequency and intensity.
   - **Accessibility**: Semantic labels for screen readers.
   - **Hide Track Duration** option for a minimalist interface.
   - **Global UI Scale**: Consistent text scaling across all screens. Automatically synchronizes date abbreviations (Day/Month) for optimal space usage when toggled.

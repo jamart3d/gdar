@@ -1,3 +1,9 @@
+Release 1.0.58:
+- **Visuals**: Introduced "Lava Lamp" and "Silk" visual modes for the screensaver with high-fidelity effects.
+- **Improved**: Screensaver now supports vertical convection for Lava Lamp and flowing ribbon simulation for Silk.
+- **Fixed**: Resolved `WakelockPlus` platform channel issues to ensure robust audio playback reliability.
+- **Tests**: Enhanced test coverage for `AudioProvider` and `ScreensaverScreen` to prevent regressions.
+
 Release 1.0.57:
 - **TV Reliability**: Integrated specific "Network issue" notifications into the playback UI, ensuring users are informed of buffer recovery attempts.
 - **Unit Tests**: Added comprehensive test suite for `PlaybackMessages` to verify buffer agent notification logic.

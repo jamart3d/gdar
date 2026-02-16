@@ -30,7 +30,9 @@ void main() {
   late MockShowListProvider mockShowListProvider;
   late MockSettingsProvider mockSettingsProvider;
   late MockCatalogService mockCatalogService;
+
   late MockAudioCacheService mockAudioCacheService;
+  late MockWakelockService mockWakelockService;
 
   // Stream Controllers for mocks
   late StreamController<ProcessingState> processingStateController;
@@ -39,18 +41,23 @@ void main() {
   late StreamController<List<IndexedAudioSource>> sequenceController;
 
   setUp(() {
-    const channel = MethodChannel('plugins.flutter.io/path_provider');
-    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-        .setMockMethodCallHandler(channel, (MethodCall methodCall) async {
-      return '.';
-    });
-
     mockSettingsProvider = MockSettingsProvider();
     mockShowListProvider = MockShowListProvider();
     mockAudioPlayer = MockAudioPlayerRelaxed();
-    mockAudioPlayer = MockAudioPlayerRelaxed();
+
     mockCatalogService = MockCatalogService();
+
     mockAudioCacheService = MockAudioCacheService();
+    mockWakelockService = MockWakelockService();
+
+    // Mock path_provider
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(
+      const MethodChannel('plugins.flutter.io/path_provider'),
+      (MethodCall methodCall) async {
+        return '.';
+      },
+    );
 
     processingStateController = StreamController<ProcessingState>.broadcast();
     positionController = StreamController<Duration>.broadcast();
@@ -103,11 +110,17 @@ void main() {
     when(mockShowListProvider.initializationComplete).thenAnswer((_) async {});
     when(mockShowListProvider.isSourceAllowed(any)).thenReturn(true);
 
+    // Stub WakelockService
+    when(mockWakelockService.enabled).thenAnswer((_) async => false);
+    when(mockWakelockService.enable()).thenAnswer((_) async {});
+    when(mockWakelockService.disable()).thenAnswer((_) async {});
+
     // Create AudioProvider
     audioProvider = AudioProvider(
       audioPlayer: mockAudioPlayer,
       catalogService: mockCatalogService,
       audioCacheService: mockAudioCacheService,
+      wakelockService: mockWakelockService,
     );
     audioProvider.update(mockShowListProvider, mockSettingsProvider);
   });
