@@ -446,6 +446,13 @@ class MockSettingsProvider extends _i1.Mock implements _i9.SettingsProvider {
       ) as bool);
 
   @override
+  bool get preventScreensaver => (super.noSuchMethod(
+        Invocation.getter(#preventScreensaver),
+        returnValue: false,
+        returnValueForMissingStub: false,
+      ) as bool);
+
+  @override
   bool get highlightCurrentShowCard => (super.noSuchMethod(
         Invocation.getter(#highlightCurrentShowCard),
         returnValue: false,
@@ -819,6 +826,15 @@ class MockSettingsProvider extends _i1.Mock implements _i9.SettingsProvider {
   void toggleEnableBufferAgent() => super.noSuchMethod(
         Invocation.method(
           #toggleEnableBufferAgent,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void togglePreventScreensaver() => super.noSuchMethod(
+        Invocation.method(
+          #togglePreventScreensaver,
           [],
         ),
         returnValueForMissingStub: null,

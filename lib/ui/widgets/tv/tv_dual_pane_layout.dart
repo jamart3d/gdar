@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shakedown/ui/screens/playback_screen.dart';
@@ -6,7 +7,10 @@ import 'package:shakedown/ui/widgets/tv/tv_header.dart';
 
 import 'package:shakedown/ui/widgets/tv/tv_exit_dialog.dart';
 import 'package:provider/provider.dart';
+
 import 'package:shakedown/providers/audio_provider.dart';
+import 'package:shakedown/providers/settings_provider.dart';
+import 'package:shakedown/ui/widgets/playback/playback_messages.dart';
 
 class TvDualPaneLayout extends StatefulWidget {
   const TvDualPaneLayout({super.key});
@@ -21,6 +25,33 @@ class _TvDualPaneLayoutState extends State<TvDualPaneLayout> {
   final FocusNode _gearsFocusNode = FocusNode();
   final FocusNode _rightScrollbarFocusNode = FocusNode();
   final FocusNode _showListScrollbarFocusNode = FocusNode();
+  final GlobalKey<PlaybackScreenState> _playbackScreenKey = GlobalKey();
+  StreamSubscription? _randomSubscription;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_randomSubscription == null) {
+      final audioProvider = context.read<AudioProvider>();
+      _randomSubscription =
+          audioProvider.randomShowRequestStream.listen((event) {
+        // Wait for ShowList scroll animation to settle (visual continuity)
+        Future.delayed(const Duration(milliseconds: 600), () {
+          if (mounted) {
+            setState(() {
+              _focusedPane = 1; // Highlight Right Pane (Playback/Tracks)
+            });
+            // Focus the track list directly via key
+            if (_playbackScreenKey.currentState != null) {
+              _playbackScreenKey.currentState!.focusCurrentTrack();
+            } else {
+              _rightScrollbarFocusNode.requestFocus();
+            }
+          }
+        });
+      });
+    }
+  }
 
   @override
   void dispose() {
@@ -28,12 +59,14 @@ class _TvDualPaneLayoutState extends State<TvDualPaneLayout> {
     _gearsFocusNode.dispose();
     _rightScrollbarFocusNode.dispose();
     _showListScrollbarFocusNode.dispose();
+    _randomSubscription?.cancel();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final audioProvider = context.watch<AudioProvider>();
+    final settingsProvider = context.watch<SettingsProvider>();
 
     // We use a Stack to float the Playback Bar at the bottom
     return PopScope(
@@ -73,16 +106,24 @@ class _TvDualPaneLayoutState extends State<TvDualPaneLayout> {
                                 context.read<AudioProvider>().playRandomShow();
                               },
                               onLeft: () {
-                                // Wrap around from Dice (far left) to Right Scrollbar (far right)
-                                // Only if there's actually a show/tracks to focus on the right
+                                // Wrap around from Dice (far left) to Right Pane
                                 if (audioProvider.currentShow != null) {
-                                  _rightScrollbarFocusNode.requestFocus();
+                                  if (_playbackScreenKey.currentState != null) {
+                                    _playbackScreenKey.currentState!
+                                        .focusCurrentTrack();
+                                  } else {
+                                    _rightScrollbarFocusNode.requestFocus();
+                                  }
                                 }
                               },
                               onRight: () {
                                 // From Settings (far right of header), go DOWN to Track List
-                                // This completes the loop described by the user
-                                _rightScrollbarFocusNode.requestFocus();
+                                if (_playbackScreenKey.currentState != null) {
+                                  _playbackScreenKey.currentState!
+                                      .focusCurrentTrack();
+                                } else {
+                                  _rightScrollbarFocusNode.requestFocus();
+                                }
                               },
                             ),
                             Expanded(
@@ -134,6 +175,7 @@ class _TvDualPaneLayoutState extends State<TvDualPaneLayout> {
                             ? 1.0
                             : 0.2, // Increased dimming from 0.4
                         child: PlaybackScreen(
+                          key: _playbackScreenKey,
                           isPane: true,
                           scrollbarFocusNode: _rightScrollbarFocusNode,
                           onScrollbarRight: () {
@@ -155,6 +197,16 @@ class _TvDualPaneLayoutState extends State<TvDualPaneLayout> {
                 ],
               ),
             ),
+            // Playback Messages (Top Right - No Gap)
+            if (settingsProvider.showPlaybackMessages)
+              const Positioned(
+                top: 0,
+                right: 0,
+                child: PlaybackMessages(
+                  textAlign: TextAlign.right,
+                  showDivider: true,
+                ),
+              ),
           ],
         ),
       ),

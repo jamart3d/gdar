@@ -1050,6 +1050,13 @@ class MockShowListProvider extends _i1.Mock implements _i7.ShowListProvider {
       ) as bool);
 
   @override
+  bool get isChoosingRandomShow => (super.noSuchMethod(
+        Invocation.getter(#isChoosingRandomShow),
+        returnValue: false,
+        returnValueForMissingStub: false,
+      ) as bool);
+
+  @override
   int get totalShnids => (super.noSuchMethod(
         Invocation.getter(#totalShnids),
         returnValue: 0,
@@ -1100,6 +1107,15 @@ class MockShowListProvider extends _i1.Mock implements _i7.ShowListProvider {
         Invocation.method(
           #markRandomButtonUsed,
           [],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void setIsChoosingRandomShow(bool? value) => super.noSuchMethod(
+        Invocation.method(
+          #setIsChoosingRandomShow,
+          [value],
         ),
         returnValueForMissingStub: null,
       );
@@ -1539,6 +1555,13 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
       ) as bool);
 
   @override
+  bool get preventScreensaver => (super.noSuchMethod(
+        Invocation.getter(#preventScreensaver),
+        returnValue: false,
+        returnValueForMissingStub: false,
+      ) as bool);
+
+  @override
   bool get highlightCurrentShowCard => (super.noSuchMethod(
         Invocation.getter(#highlightCurrentShowCard),
         returnValue: false,
@@ -1912,6 +1935,15 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
   void toggleEnableBufferAgent() => super.noSuchMethod(
         Invocation.method(
           #toggleEnableBufferAgent,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void togglePreventScreensaver() => super.noSuchMethod(
+        Invocation.method(
+          #togglePreventScreensaver,
           [],
         ),
         returnValueForMissingStub: null,
@@ -2343,10 +2375,10 @@ class MockAudioCacheService extends _i1.Mock implements _i16.AudioCacheService {
       ) as _i2.AudioSource);
 
   @override
-  void monitorCache(bool? isEnabled) => super.noSuchMethod(
+  void monitorCache(bool? enabled) => super.noSuchMethod(
         Invocation.method(
           #monitorCache,
-          [isEnabled],
+          [enabled],
         ),
         returnValueForMissingStub: null,
       );
@@ -2378,6 +2410,21 @@ class MockAudioCacheService extends _i1.Mock implements _i16.AudioCacheService {
           #performCacheCleanup,
           [],
           {#maxFiles: maxFiles},
+        ),
+        returnValue: _i4.Future<void>.value(),
+        returnValueForMissingStub: _i4.Future<void>.value(),
+      ) as _i4.Future<void>);
+
+  @override
+  _i4.Future<void> preloadSource(
+    _i11.Source? source, {
+    int? startIndex = 0,
+  }) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #preloadSource,
+          [source],
+          {#startIndex: startIndex},
         ),
         returnValue: _i4.Future<void>.value(),
         returnValueForMissingStub: _i4.Future<void>.value(),

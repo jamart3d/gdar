@@ -99,7 +99,18 @@ class ShowListBody extends StatelessWidget {
             itemCount: showListProvider.filteredShows.length,
             focusNode: scrollbarFocusNode,
             onLeft: () {
-              // Move focus back to the show list - find middle visible item
+              // 1. Prioritize currently expanded show
+              if (showListProvider.expandedShowKey != null) {
+                final index = showListProvider.filteredShows.indexWhere((s) =>
+                    showListProvider.getShowKey(s) ==
+                    showListProvider.expandedShowKey);
+                if (index != -1) {
+                  onFocusShow?.call(index);
+                  return;
+                }
+              }
+
+              // 2. Fallback: Find middle visible item
               final positions = itemPositionsListener.itemPositions.value;
               int targetIndex = -1;
 

@@ -42,6 +42,39 @@ class PlaybackSection extends StatelessWidget {
       icon: Icons.play_circle_outline_rounded,
       initiallyExpanded: initiallyExpanded,
       children: [
+        if (context.read<DeviceService>().isTv)
+          HighlightableSetting(
+            key: ValueKey(
+                'prevent_screensaver_${highlightTriggerCount}_${activeHighlightKey == 'prevent_screensaver'}'),
+            startWithHighlight: activeHighlightKey == 'prevent_screensaver',
+            settingKey: settingKeys['prevent_screensaver'],
+            child: TvSwitchListTile(
+              dense: true,
+              visualDensity: VisualDensity.compact,
+              title: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child: Text('Prevent Screensaver',
+                      style: Theme.of(context)
+                          .textTheme
+                          .titleMedium
+                          ?.copyWith(fontSize: 16 * scaleFactor))),
+              subtitle: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child: Text('Keep screen on while playing music',
+                      style: Theme.of(context)
+                          .textTheme
+                          .bodySmall
+                          ?.copyWith(fontSize: 12 * scaleFactor))),
+              value: settingsProvider.preventScreensaver,
+              onChanged: (value) {
+                HapticFeedback.lightImpact();
+                context.read<SettingsProvider>().togglePreventScreensaver();
+              },
+              secondary: const Icon(Icons.screen_lock_portrait_rounded),
+            ),
+          ),
         HighlightableSetting(
           key: ValueKey(
               'play_on_tap_${highlightTriggerCount}_${activeHighlightKey == 'play_on_tap'}'),

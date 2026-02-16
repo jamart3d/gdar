@@ -8,7 +8,6 @@ import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:shakedown/providers/audio_provider.dart';
 import 'package:shakedown/providers/settings_provider.dart';
 import 'package:shakedown/ui/widgets/playback/playback_panel.dart';
-import 'package:shakedown/ui/widgets/playback/playback_messages.dart';
 import 'package:shakedown/ui/widgets/playback/track_list_view.dart';
 import 'package:shakedown/ui/widgets/playback/playback_app_bar.dart';
 import 'package:shakedown/utils/font_layout_config.dart';
@@ -42,10 +41,10 @@ class PlaybackScreen extends StatefulWidget {
   });
 
   @override
-  State<PlaybackScreen> createState() => _PlaybackScreenState();
+  State<PlaybackScreen> createState() => PlaybackScreenState();
 }
 
-class _PlaybackScreenState extends State<PlaybackScreen>
+class PlaybackScreenState extends State<PlaybackScreen>
     with SingleTickerProviderStateMixin {
   final ItemScrollController _itemScrollController = ItemScrollController();
   final ItemPositionsListener _itemPositionsListener =
@@ -130,7 +129,7 @@ class _PlaybackScreenState extends State<PlaybackScreen>
       if (!tracksBySet.containsKey(track.setName)) {
         tracksBySet[track.setName] = [];
       }
-      tracksBySet[track.setName]!.add(track);
+      tracksBySet[track.setName] = tracksBySet[track.setName]!..add(track);
     }
 
     final List<dynamic> listItems = [];
@@ -190,6 +189,63 @@ class _PlaybackScreenState extends State<PlaybackScreen>
     }
   }
 
+  /// Explicitly focuses the current track info in the list.
+  /// Used by external controllers (like TvDualPaneLayout) to direct focus.
+  void focusCurrentTrack() {
+    if (!mounted) return;
+    final audioProvider = context.read<AudioProvider>();
+    final currentTrack = audioProvider.currentTrack;
+    final currentSource = audioProvider.currentSource;
+
+    if (currentSource == null) {
+      // No source, can't focus anything really.
+      return;
+    }
+
+    // If no track playing, focus first item (index 1 usually as 0 is set header)
+    if (currentTrack == null) {
+      // Find first track index
+      // Logic assumes Set 1 Header is index 0, so index 1 is first track.
+      // But verify with list construction logic just in case.
+      // Safe bet: find first Track item.
+      _focusTrack(1);
+      return;
+    }
+
+    // Build the list structure to find the index
+    final Map<String, List<Track>> tracksBySet = {};
+    for (var track in currentSource.tracks) {
+      if (!tracksBySet.containsKey(track.setName)) {
+        tracksBySet[track.setName] = [];
+      }
+      tracksBySet[track.setName] = tracksBySet[track.setName]!..add(track);
+    }
+
+    final List<dynamic> listItems = [];
+    tracksBySet.forEach((setName, tracks) {
+      listItems.add(setName);
+      listItems.addAll(tracks);
+    });
+
+    int targetIndex = -1;
+    for (int i = 0; i < listItems.length; i++) {
+      final item = listItems[i];
+      if (item is Track &&
+          item.title == currentTrack.title &&
+          item.trackNumber == currentTrack.trackNumber) {
+        targetIndex = i;
+        break;
+      }
+    }
+
+    if (targetIndex != -1) {
+      _focusTrack(targetIndex);
+    } else {
+      // Fallback
+      _focusTrack(1);
+    }
+  }
+
   int _calculateTotalItems(Source source) {
     // Logic must match what TrackListView uses to build its list.
     // TrackListView uses grouping by set.
@@ -198,7 +254,7 @@ class _PlaybackScreenState extends State<PlaybackScreen>
       if (!tracksBySet.containsKey(track.setName)) {
         tracksBySet[track.setName] = [];
       }
-      tracksBySet[track.setName]!.add(track);
+      tracksBySet[track.setName] = tracksBySet[track.setName]!..add(track);
     }
     int count = 0;
     tracksBySet.forEach((key, value) {
@@ -216,8 +272,10 @@ class _PlaybackScreenState extends State<PlaybackScreen>
       _trackFocusNodes[index] = FocusNode();
     }
 
-    // Scroll to the track to ensure it's built and visible
-    _itemScrollController.jumpTo(index: index, alignment: 0.3);
+    if (_itemScrollController.isAttached) {
+      // Scroll to the track to ensure it's built and visible
+      _itemScrollController.jumpTo(index: index, alignment: 0.3);
+    }
 
     // Wait for a frame to ensure the PlaybackScreen is rebuilt and the Focus widget is mounted
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -356,11 +414,6 @@ class _PlaybackScreenState extends State<PlaybackScreen>
                             color: colorScheme.onSurface,
                           ),
                         ),
-                        if (settingsProvider.showPlaybackMessages)
-                          const PlaybackMessages(
-                            textAlign: TextAlign.right,
-                            showDivider: true,
-                          ),
                       ],
                     ),
                     Wrap(

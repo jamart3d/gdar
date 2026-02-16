@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:provider/provider.dart';
@@ -6,7 +7,7 @@ import 'package:shakedown/providers/settings_provider.dart';
 import 'package:shakedown/utils/font_layout_config.dart';
 import 'package:shakedown/utils/utils.dart';
 
-class PlaybackMessages extends StatelessWidget {
+class PlaybackMessages extends StatefulWidget {
   final TextAlign textAlign;
   final bool showDivider;
 
@@ -15,6 +16,62 @@ class PlaybackMessages extends StatelessWidget {
     this.textAlign = TextAlign.center,
     this.showDivider = true,
   });
+
+  @override
+  State<PlaybackMessages> createState() => _PlaybackMessagesState();
+}
+
+class _PlaybackMessagesState extends State<PlaybackMessages> {
+  String? _agentMessage;
+  StreamSubscription? _agentSubscription;
+  StreamSubscription? _playerStateSubscription;
+
+  @override
+  void initState() {
+    super.initState();
+    _subscribeToStreams();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _subscribeToStreams();
+  }
+
+  void _subscribeToStreams() {
+    final audioProvider = context.read<AudioProvider>();
+
+    _agentSubscription?.cancel();
+    _agentSubscription =
+        audioProvider.bufferAgentNotificationStream.listen((event) {
+      if (mounted) {
+        setState(() {
+          _agentMessage = event.message;
+        });
+      }
+    });
+
+    _playerStateSubscription?.cancel();
+    _playerStateSubscription = audioProvider.playerStateStream.listen((state) {
+      // Clear agent message if we are actively playing again
+      if (state.playing &&
+          state.processingState == ProcessingState.ready &&
+          _agentMessage != null) {
+        if (mounted) {
+          setState(() {
+            _agentMessage = null;
+          });
+        }
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _agentSubscription?.cancel();
+    _playerStateSubscription?.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -38,7 +95,12 @@ class PlaybackMessages extends StatelessWidget {
         final playing = playerState?.playing ?? false;
 
         String statusText = '';
-        if (processingState == ProcessingState.loading) {
+        Color? statusColor;
+
+        if (_agentMessage != null) {
+          statusText = _agentMessage!;
+          statusColor = colorScheme.error; // Highlight agent messages
+        } else if (processingState == ProcessingState.loading) {
           statusText = 'Loading...';
         } else if (processingState == ProcessingState.buffering) {
           statusText = 'Buffering...';
@@ -54,12 +116,12 @@ class PlaybackMessages extends StatelessWidget {
           Text(
             statusText,
             style: TextStyle(
-              color: colorScheme.onSurfaceVariant,
+              color: statusColor ?? colorScheme.onSurfaceVariant,
               fontWeight: FontWeight.bold,
               fontSize: labelsFontSize,
             ),
           ),
-          if (showDivider) ...[
+          if (widget.showDivider) ...[
             const SizedBox(width: 8),
             Text(
               '•',
@@ -88,9 +150,9 @@ class PlaybackMessages extends StatelessWidget {
 
         return Row(
           mainAxisSize: MainAxisSize.min,
-          mainAxisAlignment: textAlign == TextAlign.center
+          mainAxisAlignment: widget.textAlign == TextAlign.center
               ? MainAxisAlignment.center
-              : textAlign == TextAlign.right
+              : widget.textAlign == TextAlign.right
                   ? MainAxisAlignment.end
                   : MainAxisAlignment.start,
           children: children,

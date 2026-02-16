@@ -42,6 +42,7 @@ class SettingsProvider with ChangeNotifier {
       'use_strict_src_categorization';
   static const String _offlineBufferingKey = 'offline_buffering';
   static const String _enableBufferAgentKey = 'enable_buffer_agent';
+  static const String _preventScreensaverKey = 'prevent_screensaver';
   static const String _simpleRandomIconKey = 'simple_random_icon';
 
   static const String _marqueeEnabledKey =
@@ -94,6 +95,7 @@ class SettingsProvider with ChangeNotifier {
   late bool _useStrictSrcCategorization;
   late bool _offlineBuffering;
   late bool _enableBufferAgent;
+  late bool _preventScreensaver;
   late bool _showDayOfWeek;
   late bool _abbreviateDayOfWeek;
   late bool _abbreviateMonth;
@@ -133,6 +135,7 @@ class SettingsProvider with ChangeNotifier {
   bool get useStrictSrcCategorization => _useStrictSrcCategorization;
   bool get offlineBuffering => _offlineBuffering;
   bool get enableBufferAgent => _enableBufferAgent;
+  bool get preventScreensaver => _preventScreensaver;
   bool get highlightCurrentShowCard => true;
   bool get useMaterial3 => true;
   bool get showDayOfWeek => _showDayOfWeek;
@@ -337,6 +340,7 @@ class SettingsProvider with ChangeNotifier {
         DefaultSettings.offlineBuffering;
     _enableBufferAgent = _prefs.getBool(_enableBufferAgentKey) ??
         DefaultSettings.enableBufferAgent;
+    _preventScreensaver = _prefs.getBool(_preventScreensaverKey) ?? true;
 
     _marqueeEnabled = _prefs.getBool(_marqueeEnabledKey) ?? true;
     _showDebugLayout = _prefs.getBool(_showDebugLayoutKey) ?? false;
@@ -458,6 +462,9 @@ class SettingsProvider with ChangeNotifier {
 
   void toggleEnableBufferAgent() => _updatePreference(
       _enableBufferAgentKey, _enableBufferAgent = !_enableBufferAgent);
+
+  void togglePreventScreensaver() => _updatePreference(
+      _preventScreensaverKey, _preventScreensaver = !_preventScreensaver);
 
   static const String _rgbAnimationSpeedKey = 'rgb_animation_speed';
   double _rgbAnimationSpeed = 1.0;

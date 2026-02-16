@@ -412,12 +412,14 @@ class TrackListView extends StatelessWidget {
                     fontFeatures: const [FontFeature.tabularFigures()],
                   ),
                 )),
-      onTap: () {
-        if (!isPlaying) {
-          HapticFeedback.lightImpact();
-          audioProvider.seekToTrack(trackIndex);
-        }
-      },
+      onTap: isTv
+          ? null // TV: Let TvFocusWrapper handle the tap
+          : () {
+              if (!isPlaying) {
+                HapticFeedback.lightImpact();
+                audioProvider.seekToTrack(trackIndex);
+              }
+            },
     );
 
     if (isPlaying && isTv) {

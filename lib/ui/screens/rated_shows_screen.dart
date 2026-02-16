@@ -17,14 +17,78 @@ import 'package:shakedown/models/rating.dart';
 import 'package:shakedown/utils/font_layout_config.dart';
 import 'package:shakedown/utils/color_generator.dart';
 
-class RatedShowsScreen extends StatefulWidget {
+class RatedShowsScreen extends StatelessWidget {
   const RatedShowsScreen({super.key});
 
   @override
-  State<RatedShowsScreen> createState() => _RatedShowsScreenState();
+  Widget build(BuildContext context) {
+    // Only watch ShowListProvider, not SettingsProvider (at least for data)
+    final settingsProvider = context.watch<SettingsProvider>();
+    final scaleFactor =
+        FontLayoutConfig.getEffectiveScale(context, settingsProvider);
+    final textTheme = Theme.of(context).textTheme;
+
+    final appBarTitleStyle = textTheme.titleLarge?.copyWith(
+      fontSize: 12.0 * scaleFactor,
+    );
+
+    final audioProvider = context.watch<AudioProvider>();
+
+    Color? backgroundColor;
+    // Only apply custom background color if NOT in "True Black" mode.
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final isTrueBlackMode = isDarkMode && settingsProvider.useTrueBlack;
+
+    if (!isTrueBlackMode &&
+        settingsProvider.highlightCurrentShowCard &&
+        audioProvider.currentShow != null) {
+      String seed = audioProvider.currentShow!.name;
+      if (audioProvider.currentShow!.sources.length > 1 &&
+          audioProvider.currentSource != null) {
+        seed = audioProvider.currentSource!.id;
+      }
+      backgroundColor = ColorGenerator.getColor(seed,
+          brightness: Theme.of(context).brightness);
+    }
+
+    final baseTheme = Theme.of(context);
+    final effectiveBackgroundColor =
+        backgroundColor ?? baseTheme.scaffoldBackgroundColor;
+
+    final effectiveTheme = baseTheme.copyWith(
+      scaffoldBackgroundColor: effectiveBackgroundColor,
+      appBarTheme: baseTheme.appBarTheme.copyWith(
+        backgroundColor: effectiveBackgroundColor,
+        surfaceTintColor: Colors.transparent,
+      ),
+    );
+
+    return AnimatedTheme(
+      data: effectiveTheme,
+      duration: const Duration(milliseconds: 500),
+      curve: Curves.easeInOut,
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(
+            'Rated Shows Library',
+            style: appBarTitleStyle,
+          ),
+          elevation: 0,
+        ),
+        body: const RatedShowsBody(),
+      ),
+    );
+  }
 }
 
-class _RatedShowsScreenState extends State<RatedShowsScreen>
+class RatedShowsBody extends StatefulWidget {
+  const RatedShowsBody({super.key});
+
+  @override
+  State<RatedShowsBody> createState() => _RatedShowsBodyState();
+}
+
+class _RatedShowsBodyState extends State<RatedShowsBody>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   final List<int> _tabs = [
@@ -114,102 +178,55 @@ class _RatedShowsScreenState extends State<RatedShowsScreen>
 
   @override
   Widget build(BuildContext context) {
-    // Only watch ShowListProvider, not SettingsProvider (at least for data)
     final showListProvider = context.watch<ShowListProvider>();
-    final settingsProvider =
-        context.watch<SettingsProvider>(); // Still needed for uiScale? Yes.
+    final settingsProvider = context.watch<SettingsProvider>();
     final scaleFactor =
         FontLayoutConfig.getEffectiveScale(context, settingsProvider);
     final textTheme = Theme.of(context).textTheme;
-
-    final appBarTitleStyle = textTheme.titleLarge?.copyWith(
-      fontSize: 12.0 * scaleFactor,
-    );
     final tabLabelStyle = textTheme.labelLarge?.copyWith(
       fontSize: 9.0 * scaleFactor,
     );
 
-    final audioProvider = context.watch<AudioProvider>();
-
-    Color? backgroundColor;
-    // Only apply custom background color if NOT in "True Black" mode.
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    final isTrueBlackMode = isDarkMode && settingsProvider.useTrueBlack;
-
-    if (!isTrueBlackMode &&
-        settingsProvider.highlightCurrentShowCard &&
-        audioProvider.currentShow != null) {
-      String seed = audioProvider.currentShow!.name;
-      if (audioProvider.currentShow!.sources.length > 1 &&
-          audioProvider.currentSource != null) {
-        seed = audioProvider.currentSource!.id;
-      }
-      backgroundColor = ColorGenerator.getColor(seed,
-          brightness: Theme.of(context).brightness);
-    }
-
-    final baseTheme = Theme.of(context);
-    final effectiveBackgroundColor =
-        backgroundColor ?? baseTheme.scaffoldBackgroundColor;
-
-    final effectiveTheme = baseTheme.copyWith(
-      scaffoldBackgroundColor: effectiveBackgroundColor,
-      appBarTheme: baseTheme.appBarTheme.copyWith(
-        backgroundColor: effectiveBackgroundColor,
-        surfaceTintColor: Colors.transparent,
-      ),
-    );
-
-    return AnimatedTheme(
-      data: effectiveTheme,
-      duration: const Duration(milliseconds: 500),
-      curve: Curves.easeInOut,
-      child: Scaffold(
-        appBar: AppBar(
-          title: Text(
-            'Rated Shows Library',
-            style: appBarTitleStyle,
-          ),
-          bottom: PreferredSize(
-            preferredSize: const Size.fromHeight(kToolbarHeight),
-            child: ValueListenableBuilder<Box<bool>>(
-              valueListenable: CatalogService().historyListenable,
-              builder: (context, historyBox, _) {
-                return ValueListenableBuilder<Box<Rating>>(
-                    valueListenable: CatalogService().ratingsListenable,
-                    builder: (context, ratingsBox, _) {
-                      return TabBar(
-                        controller: _tabController,
-                        isScrollable: true,
-                        labelStyle: tabLabelStyle,
-                        unselectedLabelStyle: tabLabelStyle,
-                        tabs: _tabs.map((r) {
-                          final count = _getShowCount(r, showListProvider);
-                          return Tab(text: _getTabLabel(r, count));
-                        }).toList(),
-                      );
-                    });
-              },
-            ),
-          ),
-        ),
-        body: ValueListenableBuilder<Box<bool>>(
+    return Column(
+      children: [
+        ValueListenableBuilder<Box<bool>>(
           valueListenable: CatalogService().historyListenable,
           builder: (context, historyBox, _) {
             return ValueListenableBuilder<Box<Rating>>(
-              valueListenable: CatalogService().ratingsListenable,
-              builder: (context, ratingsBox, _) {
-                return TabBarView(
-                  controller: _tabController,
-                  children: _tabs
-                      .map((rating) => _RatedShowList(rating: rating))
-                      .toList(),
-                );
-              },
-            );
+                valueListenable: CatalogService().ratingsListenable,
+                builder: (context, ratingsBox, _) {
+                  return TabBar(
+                    controller: _tabController,
+                    isScrollable: true,
+                    labelStyle: tabLabelStyle,
+                    unselectedLabelStyle: tabLabelStyle,
+                    tabs: _tabs.map((r) {
+                      final count = _getShowCount(r, showListProvider);
+                      return Tab(text: _getTabLabel(r, count));
+                    }).toList(),
+                  );
+                });
           },
         ),
-      ),
+        Expanded(
+          child: ValueListenableBuilder<Box<bool>>(
+            valueListenable: CatalogService().historyListenable,
+            builder: (context, historyBox, _) {
+              return ValueListenableBuilder<Box<Rating>>(
+                valueListenable: CatalogService().ratingsListenable,
+                builder: (context, ratingsBox, _) {
+                  return TabBarView(
+                    controller: _tabController,
+                    children: _tabs
+                        .map((rating) => _RatedShowList(rating: rating))
+                        .toList(),
+                  );
+                },
+              );
+            },
+          ),
+        ),
+      ],
     );
   }
 }

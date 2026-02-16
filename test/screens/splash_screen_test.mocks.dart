@@ -107,6 +107,13 @@ class MockShowListProvider extends _i1.Mock implements _i3.ShowListProvider {
       ) as bool);
 
   @override
+  bool get isChoosingRandomShow => (super.noSuchMethod(
+        Invocation.getter(#isChoosingRandomShow),
+        returnValue: false,
+        returnValueForMissingStub: false,
+      ) as bool);
+
+  @override
   int get totalShnids => (super.noSuchMethod(
         Invocation.getter(#totalShnids),
         returnValue: 0,
@@ -157,6 +164,15 @@ class MockShowListProvider extends _i1.Mock implements _i3.ShowListProvider {
         Invocation.method(
           #markRandomButtonUsed,
           [],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void setIsChoosingRandomShow(bool? value) => super.noSuchMethod(
+        Invocation.method(
+          #setIsChoosingRandomShow,
+          [value],
         ),
         returnValueForMissingStub: null,
       );
@@ -596,6 +612,13 @@ class MockSettingsProvider extends _i1.Mock implements _i8.SettingsProvider {
       ) as bool);
 
   @override
+  bool get preventScreensaver => (super.noSuchMethod(
+        Invocation.getter(#preventScreensaver),
+        returnValue: false,
+        returnValueForMissingStub: false,
+      ) as bool);
+
+  @override
   bool get highlightCurrentShowCard => (super.noSuchMethod(
         Invocation.getter(#highlightCurrentShowCard),
         returnValue: false,
@@ -969,6 +992,15 @@ class MockSettingsProvider extends _i1.Mock implements _i8.SettingsProvider {
   void toggleEnableBufferAgent() => super.noSuchMethod(
         Invocation.method(
           #toggleEnableBufferAgent,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void togglePreventScreensaver() => super.noSuchMethod(
+        Invocation.method(
+          #togglePreventScreensaver,
           [],
         ),
         returnValueForMissingStub: null,

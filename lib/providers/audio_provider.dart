@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:math';
+import 'package:wakelock_plus/wakelock_plus.dart';
 
 import 'dart:io';
 import 'package:flutter/services.dart';
@@ -144,6 +145,9 @@ class AudioProvider with ChangeNotifier {
   void _listenForProcessingState() {
     _processingStateSubscription =
         _audioPlayer.processingStateStream.listen((state) {
+      // Manage Wake Lock based on playback state
+      _updateWakeLockState();
+
       if (state == ProcessingState.completed) {
         final shouldPlay = _settingsProvider?.playRandomOnCompletion ?? false;
         if (shouldPlay) {
@@ -153,6 +157,40 @@ class AudioProvider with ChangeNotifier {
         }
       }
     });
+
+    // Also listen to playing state changes for Wake Lock
+    _audioPlayer.playingStream.listen((playing) {
+      _updateWakeLockState();
+    });
+  }
+
+  Future<void> _updateWakeLockState() async {
+    final shouldPreventScreensaver =
+        _settingsProvider?.preventScreensaver ?? true;
+    final isPlaying = _audioPlayer.playing;
+    // We only care if playing AND processing state is NOT idle/completed/error
+    // But checking 'playing' is usually sufficient for user intent.
+    // Let's being conservative: Only enable if playing.
+
+    if (shouldPreventScreensaver && isPlaying) {
+      try {
+        if (!(await WakelockPlus.enabled)) {
+          await WakelockPlus.enable();
+          logger.d('AudioProvider: Wake Lock ENABLED (Prevent Screensaver)');
+        }
+      } catch (e) {
+        logger.w('Failed to enable Wake Lock: $e');
+      }
+    } else {
+      try {
+        if (await WakelockPlus.enabled) {
+          await WakelockPlus.disable();
+          logger.d('AudioProvider: Wake Lock DISABLED');
+        }
+      } catch (e) {
+        logger.w('Failed to disable Wake Lock: $e');
+      }
+    }
   }
 
   void update(
@@ -250,6 +288,7 @@ class AudioProvider with ChangeNotifier {
     _bufferAgentNotificationController.close();
     _bufferAgent?.dispose();
     _audioPlayer.dispose();
+    WakelockPlus.disable(); // Ensure we don't leave it on
     super.dispose();
   }
 
@@ -683,12 +722,14 @@ class AudioProvider with ChangeNotifier {
         _audioPlayer.play();
       }
     } else {
-      logger.w(
-          'seekToTrack: Could not find global index for local seek (Source: ${_currentSource!.id}, Track: $localIndex). Fallback to local index.');
       // Fallback (mostly for single-show scenarios)
-      _audioPlayer.seek(Duration.zero, index: localIndex);
-      if (!_audioPlayer.playing) {
-        _audioPlayer.play();
+      try {
+        _audioPlayer.seek(Duration.zero, index: localIndex);
+        if (!_audioPlayer.playing) {
+          _audioPlayer.play();
+        }
+      } catch (e) {
+        logger.e('seekToTrack fallback failed: $e');
       }
     }
   }

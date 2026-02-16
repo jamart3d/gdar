@@ -13,8 +13,6 @@ class AboutScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
     final settingsProvider = context.watch<SettingsProvider>();
     final audioProvider = context.watch<AudioProvider>();
 
@@ -61,78 +59,90 @@ class AboutScreen extends StatelessWidget {
           appBar: AppBar(
             title: const Text('About Shakedown'),
           ),
-          body: SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.all(24.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  const SizedBox(height: 24),
-                  // App Icon / Logo Placeholder
-                  Container(
-                    width: 100,
-                    height: 100,
-                    decoration: BoxDecoration(
-                      color: colorScheme.primaryContainer,
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(
-                      Icons.music_note_rounded,
-                      size: 50,
-                      color: colorScheme.onPrimaryContainer,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Shakedown',
-                    style: textTheme.displayMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: colorScheme.primary,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  // Version 1.0.0
-                  FutureBuilder<PackageInfo>(
-                    future: PackageInfo.fromPlatform(),
-                    builder: (context, snapshot) {
-                      if (!snapshot.hasData) {
-                        return const SizedBox.shrink();
-                      }
-                      return Text(
-                        'Version ${snapshot.data!.version}',
-                        style: textTheme.titleMedium?.copyWith(
-                          color: colorScheme.onSurfaceVariant,
-                        ),
-                      );
-                    },
-                  ),
-                  const SizedBox(height: 32),
-                  Text(
-                    'A simple, lightweight music player for select live grateful dead shows from Archive.org, featuring gapless playback and random show selection.',
-                    style: textTheme.bodyLarge,
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 24),
-                  Text(
-                    'All audio is streamed directly from Archive.org.',
-                    style: textTheme.bodyMedium?.copyWith(
-                      color: colorScheme.onSurfaceVariant,
-                      fontStyle: FontStyle.italic,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  _buildClickableLink(
-                    context,
-                    'Archive.org Terms of Use',
-                    'https://archive.org/about/terms.php',
-                    icon: Icons.gavel,
-                  ),
-                  const SizedBox(height: 24),
-                ],
-              ),
-            ),
+          body: const SingleChildScrollView(
+            child: AboutBody(),
           ),
         ),
+      ),
+    );
+  }
+}
+
+class AboutBody extends StatelessWidget {
+  const AboutBody({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
+    return Padding(
+      padding: const EdgeInsets.all(24.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          const SizedBox(height: 24),
+          // App Icon / Logo Placeholder
+          Container(
+            width: 100,
+            height: 100,
+            decoration: BoxDecoration(
+              color: colorScheme.primaryContainer,
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              Icons.music_note_rounded,
+              size: 50,
+              color: colorScheme.onPrimaryContainer,
+            ),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'Shakedown',
+            style: textTheme.displayMedium?.copyWith(
+              fontWeight: FontWeight.bold,
+              color: colorScheme.primary,
+            ),
+          ),
+          const SizedBox(height: 8),
+          // Version 1.0.0
+          FutureBuilder<PackageInfo>(
+            future: PackageInfo.fromPlatform(),
+            builder: (context, snapshot) {
+              if (!snapshot.hasData) {
+                return const SizedBox.shrink();
+              }
+              return Text(
+                'Version ${snapshot.data!.version}',
+                style: textTheme.titleMedium?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                ),
+              );
+            },
+          ),
+          const SizedBox(height: 32),
+          Text(
+            'A simple, lightweight music player for select live grateful dead shows from Archive.org, featuring gapless playback and random show selection.',
+            style: textTheme.bodyLarge,
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 24),
+          Text(
+            'All audio is streamed directly from Archive.org.',
+            style: textTheme.bodyMedium?.copyWith(
+              color: colorScheme.onSurfaceVariant,
+              fontStyle: FontStyle.italic,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          _buildClickableLink(
+            context,
+            'Archive.org Terms of Use',
+            'https://archive.org/about/terms.php',
+            icon: Icons.gavel,
+          ),
+          const SizedBox(height: 24),
+        ],
       ),
     );
   }

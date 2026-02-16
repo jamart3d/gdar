@@ -219,6 +219,11 @@ class FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
   bool get marqueeEnabled => true;
 
   @override
+  bool get preventScreensaver => true;
+  @override
+  void togglePreventScreensaver() {}
+
+  @override
   bool get hasListeners => super.hasListeners;
 }
 

@@ -8,6 +8,8 @@ import 'package:shakedown/ui/widgets/settings/playback_section.dart';
 import 'package:shakedown/ui/widgets/settings/source_filter_settings.dart';
 import 'package:shakedown/ui/widgets/settings/usage_instructions_section.dart';
 import 'package:shakedown/ui/widgets/tv/tv_focus_wrapper.dart';
+import 'package:shakedown/ui/screens/rated_shows_screen.dart';
+import 'package:shakedown/ui/screens/about_screen.dart';
 
 class TvSettingsScreen extends StatefulWidget {
   const TvSettingsScreen({super.key});
@@ -41,6 +43,14 @@ class _TvSettingsScreenState extends State<TvSettingsScreen> {
     Icons.info_outline_rounded,
   ];
 
+  final Map<String, GlobalKey> _settingKeys = {};
+
+  @override
+  void initState() {
+    super.initState();
+    _settingKeys['prevent_screensaver'] = GlobalKey();
+  }
+
   @override
   Widget build(BuildContext context) {
     // Determine which section to show
@@ -57,7 +67,7 @@ class _TvSettingsScreenState extends State<TvSettingsScreen> {
           initiallyExpanded: initiallyExpanded,
           activeHighlightKey: null,
           highlightTriggerCount: 0,
-          settingKeys: {},
+          settingKeys: _settingKeys,
           onScrollToSetting: (_) {},
           isHighlightSettingMatching: false,
         );
@@ -200,11 +210,20 @@ class _TvSettingsScreenState extends State<TvSettingsScreen> {
             flex: 2,
             child: AnimatedSwitcher(
               duration: const Duration(milliseconds: 300),
-              child: SingleChildScrollView(
-                key: ValueKey(_selectedIndex),
-                padding: const EdgeInsets.all(32),
-                child: activeSection,
-              ),
+              child: _selectedIndex == 5
+                  ? const RatedShowsBody(key: ValueKey(5))
+                  : _selectedIndex == 7
+                      ? const SingleChildScrollView(
+                          // About Body needs scrolling
+                          key: ValueKey(7),
+                          padding: EdgeInsets.all(32),
+                          child: AboutBody(),
+                        )
+                      : SingleChildScrollView(
+                          key: ValueKey(_selectedIndex),
+                          padding: const EdgeInsets.all(32),
+                          child: activeSection,
+                        ),
             ),
           ),
         ],
