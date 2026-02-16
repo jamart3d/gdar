@@ -1,4 +1,9 @@
 
+Release 1.0.65:
+- **Visuals**: Switched to a high-fidelity screensaver texture (`t_steal_ss.png`) for the "Steal Your Face" mode.
+- **Improved**: Optimized logo rendering to use native 192px resolution for maximum clarity on 4K and 1080p screens.
+- **Internal**: Fixed an SkSL shader compilation error related to dynamic loop limits, ensuring compatibility with all Flutter renderers.
+- **Fixed**: Removed temporary test files and resolved IDE mock generation issues.
 
 Release 1.0.64:
 - **Restricted**: Screensaver execution is now strictly limited to Google TV devices only.

@@ -69,8 +69,9 @@ float fbm(vec2 p) {
     float amplitude = 0.5;
     float frequency = 1.0;
     
-    int octaves = (uPerformanceMode == 1.0) ? 2 : 4;
-    for (int i = 0; i < octaves; i++) {
+    int maxOctaves = (uPerformanceMode == 1.0) ? 2 : 4;
+    for (int i = 0; i < 4; i++) {
+        if (i >= maxOctaves) break;
         value += amplitude * noise(p * frequency);
         frequency *= 2.0;
         amplitude *= 0.5;
@@ -302,8 +303,8 @@ void main() {
         centeredUV.x *= aspect; 
         
         // Scale/Size - Pulse with bass
-        // Reduced by 25% from 0.6 per user request
-        float baseScale = 0.45; 
+        // Native 192x192 size (Scale relative to screen height)
+        float baseScale = 192.0 / uResolution.y; 
         float scale = baseScale * (1.0 + uBassEnergy * 0.2 * uPulseIntensity);
         
         // Texture UVs

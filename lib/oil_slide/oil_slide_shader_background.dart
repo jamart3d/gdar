@@ -48,7 +48,7 @@ class OilSlideShaderBackground extends PositionComponent {
   Future<void> _loadTextures() async {
     try {
       // Load the image using Flame's image cache (accessed via game)
-      _stealTexture = await game.images.load('t_steal.webp');
+      _stealTexture = await game.images.load('t_steal_ss.png');
     } catch (e) {
       debugPrint('Error loading texture: $e. Generating fallback.');
       _loadError = 'Texture Load Error: $e'; // Keep track of error

@@ -249,6 +249,13 @@ class MockCatalogService extends _i1.Mock implements _i3.CatalogService {
 /// See the documentation for Mockito's code generation for more information.
 class MockSettingsProvider extends _i1.Mock implements _i9.SettingsProvider {
   @override
+  bool get isTv => (super.noSuchMethod(
+        Invocation.getter(#isTv),
+        returnValue: false,
+        returnValueForMissingStub: false,
+      ) as bool);
+
+  @override
   bool get showExpandIcon => (super.noSuchMethod(
         Invocation.getter(#showExpandIcon),
         returnValue: false,

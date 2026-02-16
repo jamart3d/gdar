@@ -429,6 +429,12 @@ class MockSettingsProvider extends _i1.Mock implements _i9.SettingsProvider {
   }
 
   @override
+  bool get isTv => (super.noSuchMethod(
+        Invocation.getter(#isTv),
+        returnValue: false,
+      ) as bool);
+
+  @override
   bool get showExpandIcon => (super.noSuchMethod(
         Invocation.getter(#showExpandIcon),
         returnValue: false,

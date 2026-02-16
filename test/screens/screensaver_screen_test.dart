@@ -8,7 +8,13 @@ import 'package:shakedown/ui/screens/screensaver_screen.dart';
 import 'package:shakedown/oil_slide/oil_slide_visualizer.dart';
 import 'package:shakedown/services/device_service.dart';
 import 'package:flutter/services.dart';
+import 'package:mockito/annotations.dart';
 import 'screensaver_screen_test.mocks.dart';
+
+@GenerateNiceMocks([
+  MockSpec<SettingsProvider>(),
+  MockSpec<AudioProvider>(),
+])
 
 // Manual mock to avoid build_runner for this quick fix
 class MockDeviceService extends ChangeNotifier implements DeviceService {

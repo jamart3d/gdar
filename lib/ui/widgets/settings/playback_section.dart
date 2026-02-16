@@ -8,7 +8,6 @@ import 'package:shakedown/ui/widgets/section_card.dart';
 import 'package:shakedown/ui/widgets/settings/highlightable_setting.dart';
 import 'package:shakedown/ui/widgets/settings/random_probability_card.dart';
 import 'package:shakedown/ui/widgets/tv/tv_switch_list_tile.dart';
-import 'package:flutter/foundation.dart';
 import 'package:shakedown/ui/widgets/tv/tv_list_tile.dart';
 import 'package:shakedown/ui/widgets/tv/tv_focus_wrapper.dart';
 import 'package:shakedown/ui/screens/screensaver_screen.dart';
