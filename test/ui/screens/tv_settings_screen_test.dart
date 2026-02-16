@@ -7,7 +7,7 @@ import 'package:shakedown/providers/theme_provider.dart';
 import 'package:shakedown/providers/audio_provider.dart';
 import 'package:shakedown/providers/show_list_provider.dart';
 import 'package:shakedown/ui/screens/tv_settings_screen.dart';
-import 'package:shakedown/ui/widgets/settings/about_section.dart';
+import 'package:shakedown/ui/screens/about_screen.dart';
 import 'package:shakedown/services/catalog_service.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:shakedown/models/rating.dart';
@@ -134,9 +134,9 @@ void main() {
     await tester
         .pump(const Duration(seconds: 1)); // Wait enough for transition/build
 
-    // Verify AboutSection is displayed
-    expect(find.byType(AboutSection), findsOneWidget);
-    // Use a text finder that is definitely in AboutSection
-    expect(find.text('About App'), findsOneWidget);
+    // Verify AboutBody is displayed (TV uses full body instead of just a section card)
+    expect(find.byType(AboutBody), findsOneWidget);
+    // Use a text finder that is definitely in AboutBody
+    expect(find.text('Shakedown'), findsOneWidget);
   });
 }

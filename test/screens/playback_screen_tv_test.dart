@@ -43,7 +43,10 @@ class FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
   @override
   bool get showSingleShnid => false;
   @override
-  bool get showTrackNumbers => false;
+  bool get isTv => false;
+
+  @override
+  bool get showTrackNumbers => true;
   @override
   int get glowMode => 0;
 
@@ -227,9 +230,9 @@ class FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
   bool get marqueeEnabled => true;
 
   @override
-  bool get preventScreensaver => true;
+  bool get preventSleep => true;
   @override
-  void togglePreventScreensaver() {}
+  void togglePreventSleep() {}
 
   @override
   bool get useOilScreensaver => false;

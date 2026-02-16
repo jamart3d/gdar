@@ -105,8 +105,8 @@ class _GdarAppState extends State<GdarApp> {
   @override
   void initState() {
     super.initState();
-    _settingsProvider =
-        widget.settingsProvider ?? SettingsProvider(widget.prefs);
+    _settingsProvider = widget.settingsProvider ??
+        SettingsProvider(widget.prefs, isTv: widget.isTv);
     _showListProvider = widget.showListProvider ?? ShowListProvider();
 
     if (widget.showListProvider == null) {
@@ -417,7 +417,8 @@ class _GdarAppState extends State<GdarApp> {
           _inactivityService.updateDuration(Duration(
               minutes: settingsProvider.oilScreensaverInactivityMinutes));
 
-          if (settingsProvider.useOilScreensaver) {
+          if (settingsProvider.useOilScreensaver &&
+              context.read<DeviceService>().isTv) {
             _inactivityService.start();
           } else {
             _inactivityService.stop();

@@ -32,6 +32,7 @@ class DefaultSettings {
   static const bool playRandomOnStartup = false;
   static const bool playRandomOnCompletion = true;
   static const bool nonRandom = false;
+  static const bool preventSleep = true;
   static const bool showPlaybackMessages = false;
 
   // Data & Filtering

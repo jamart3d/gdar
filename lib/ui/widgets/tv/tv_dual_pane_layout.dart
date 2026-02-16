@@ -38,18 +38,25 @@ class _TvDualPaneLayoutState extends State<TvDualPaneLayout> {
       final audioProvider = context.read<AudioProvider>();
       _randomSubscription =
           audioProvider.randomShowRequestStream.listen((event) {
-        // Debounce: Prevent double-triggering the sequence
+        debugPrint('TvDualPaneLayout: Random show request received!');
         if (_isProcessingRandomRequest) {
           debugPrint(
               'TvDualPaneLayout: Ignoring duplicate random show request.');
           return;
         }
 
-        // Set flag to true immediately
         _isProcessingRandomRequest = true;
 
-        // Stage 2: Wait for ShowList scroll animation to settle (visual continuity)
+        // Sequence:
+        // 1. Show the "Picking Random Show..." UI / Dice Animation
+        // 2. Wait for visual confirmation (animations)
+        // 3. Select the show in the list (scroll to it)
+        // 4. Focus the track list
+        // 5. Start playback
+
+        // Stage 1: Wait for dice animation/logic (approx 1.2s)
         Future.delayed(const Duration(milliseconds: 1200), () {
+          debugPrint('TvDualPaneLayout: Stage 1 complete (1200ms)');
           if (!mounted) {
             _isProcessingRandomRequest = false;
             return;
@@ -57,13 +64,14 @@ class _TvDualPaneLayoutState extends State<TvDualPaneLayout> {
 
           // Focus the selected show card directly
           _showListScreenKey.currentState?.focusShowByObject(event.show);
+          setState(() => _focusedPane = 0); // Focus Show List pane
 
-          // Stage 3: Wait 2000ms on the show card before switching panes
+          // Stage 3: Wait for scroll to finish and user to see the show (2.0s)
           Future.delayed(const Duration(milliseconds: 2000), () {
+            debugPrint('TvDualPaneLayout: Stage 2 complete (2000ms)');
             if (mounted) {
-              setState(() {
-                _focusedPane = 1; // Highlight Right Pane (Playback/Tracks)
-              });
+              setState(() => _focusedPane = 1); // Focus Track List pane (Right)
+
               // Focus the track list directly via key
               if (_playbackScreenKey.currentState != null) {
                 _playbackScreenKey.currentState!.focusCurrentTrack();
@@ -73,8 +81,30 @@ class _TvDualPaneLayoutState extends State<TvDualPaneLayout> {
 
               // Stage 4: Wait 2000ms after track list gets focus before starting playback
               Future.delayed(const Duration(milliseconds: 2000), () {
+                debugPrint(
+                    'TvDualPaneLayout: Stage 3 complete (2000ms), checking if playback needed');
                 if (mounted) {
-                  audioProvider.playPendingSelection();
+                  // Check if we are ALREADY playing the requested show/source
+                  // This prevents double-playback if focus/tap triggered it early
+                  final pending = audioProvider.pendingRandomShowRequest;
+                  final currentShow = audioProvider.currentShow;
+                  final currentSource = audioProvider.currentSource;
+                  final isPlaying = audioProvider.isPlaying;
+
+                  bool alreadyPlayingRequest = isPlaying &&
+                      pending != null &&
+                      currentShow?.name == pending.show.name &&
+                      currentSource?.id == pending.source.id;
+
+                  if (alreadyPlayingRequest) {
+                    debugPrint(
+                        'TvDualPaneLayout: Requested show is already playing. Skipping explicit playPendingSelection.');
+                  } else {
+                    debugPrint(
+                        'TvDualPaneLayout: Calling playPendingSelection.');
+                    audioProvider.playPendingSelection();
+                  }
+
                   // Sequence complete, allow new requests
                   // Add a small buffer to ensure playback has definitely started/stabilized
                   Future.delayed(const Duration(milliseconds: 500), () {

@@ -49,16 +49,16 @@ class PlaybackSection extends StatelessWidget {
         if (context.read<DeviceService>().isTv)
           HighlightableSetting(
             key: ValueKey(
-                'prevent_screensaver_${highlightTriggerCount}_${activeHighlightKey == 'prevent_screensaver'}'),
-            startWithHighlight: activeHighlightKey == 'prevent_screensaver',
-            settingKey: settingKeys['prevent_screensaver'],
+                'prevent_sleep_${highlightTriggerCount}_${activeHighlightKey == 'prevent_sleep'}'),
+            startWithHighlight: activeHighlightKey == 'prevent_sleep',
+            settingKey: settingKeys['prevent_sleep'],
             child: TvSwitchListTile(
               dense: true,
               visualDensity: VisualDensity.compact,
               title: FittedBox(
                   fit: BoxFit.scaleDown,
                   alignment: Alignment.centerLeft,
-                  child: Text('Prevent Screensaver',
+                  child: Text('Prevent Sleep',
                       style: Theme.of(context)
                           .textTheme
                           .titleMedium
@@ -66,23 +66,21 @@ class PlaybackSection extends StatelessWidget {
               subtitle: FittedBox(
                   fit: BoxFit.scaleDown,
                   alignment: Alignment.centerLeft,
-                  child: Text(
-                      'Prevent system screensaver while music is playing',
+                  child: Text('Prevent system sleep while music is playing',
                       style: Theme.of(context)
                           .textTheme
                           .bodySmall
                           ?.copyWith(fontSize: 12 * scaleFactor))),
-              value: settingsProvider.preventScreensaver,
+              value: settingsProvider.preventSleep,
               onChanged: (value) {
                 HapticFeedback.lightImpact();
-                context.read<SettingsProvider>().togglePreventScreensaver();
+                context.read<SettingsProvider>().togglePreventSleep();
               },
               secondary: const Icon(Icons.screen_lock_portrait_rounded),
             ),
           ),
-        // Screensaver (oil_slide) - Show on TV OR in Debug/Profile mode for testing
-        if (Provider.of<DeviceService>(context, listen: false).isTv ||
-            !kReleaseMode) ...[
+        // Screensaver (oil_slide) - Show on TV ONLY
+        if (Provider.of<DeviceService>(context, listen: false).isTv) ...[
           TvSwitchListTile(
             dense: true,
             visualDensity: VisualDensity.compact,

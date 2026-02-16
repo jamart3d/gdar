@@ -1,0 +1,19 @@
+﻿Analyzing gdar...
+
+warning - test\tv_regression_test.dart:390:18 - The getter doesn't override an inherited getter. Try updating this class to match the superclass, or removing the override annotation. - override_on_non_overriding_member
+warning - test\tv_regression_test.dart:402:11 - The getter doesn't override an inherited getter. Try updating this class to match the superclass, or removing the override annotation. - override_on_non_overriding_member
+warning - test\tv_regression_test.dart:404:24 - The getter doesn't override an inherited getter. Try updating this class to match the superclass, or removing the override annotation. - override_on_non_overriding_member
+warning - test\tv_regression_test.dart:406:24 - The getter doesn't override an inherited getter. Try updating this class to match the superclass, or removing the override annotation. - override_on_non_overriding_member
+warning - test\tv_regression_test.dart:408:14 - The getter doesn't override an inherited getter. Try updating this class to match the superclass, or removing the override annotation. - override_on_non_overriding_member
+warning - test\tv_regression_test.dart:410:14 - The getter doesn't override an inherited getter. Try updating this class to match the superclass, or removing the override annotation. - override_on_non_overriding_member
+warning - test\tv_regression_test.dart:412:12 - The getter doesn't override an inherited getter. Try updating this class to match the superclass, or removing the override annotation. - override_on_non_overriding_member
+warning - test\tv_regression_test.dart:435:16 - The method doesn't override an inherited method. Try updating this class to match the superclass, or removing the override annotation. - override_on_non_overriding_member
+warning - test\tv_regression_test.dart:439:8 - The method doesn't override an inherited method. Try updating this class to match the superclass, or removing the override annotation. - override_on_non_overriding_member
+warning - test\tv_regression_test.dart:441:8 - The method doesn't override an inherited method. Try updating this class to match the superclass, or removing the override annotation. - override_on_non_overriding_member
+warning - test\tv_regression_test.dart:443:8 - The method doesn't override an inherited method. Try updating this class to match the superclass, or removing the override annotation. - override_on_non_overriding_member
+warning - test\tv_regression_test.dart:445:16 - The method doesn't override an inherited method. Try updating this class to match the superclass, or removing the override annotation. - override_on_non_overriding_member
+   info - lib\oil_slide\oil_slide_config.dart:1:1 - Dangling library doc comment. Add a 'library' directive after the library comment. - dangling_library_doc_comments
+   info - test\tv_regression_test.dart:66:8 - Unnecessary override. Try adding behavior in the overriding member or removing the override. - unnecessary_overrides
+   info - test\tv_regression_test.dart:504:10 - 'setMockMethodCallHandler' is deprecated and shouldn't be used. Use tester.binding.defaultBinaryMessenger.setMockMethodCallHandler or TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler instead. Pass the channel as the first argument. This feature was deprecated after v3.9.0-19.0.pre. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+
+15 issues found.

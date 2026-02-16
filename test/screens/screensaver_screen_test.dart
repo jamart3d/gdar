@@ -1,29 +1,36 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:provider/provider.dart';
 import 'package:shakedown/providers/audio_provider.dart';
 import 'package:shakedown/providers/settings_provider.dart';
 import 'package:shakedown/ui/screens/screensaver_screen.dart';
 import 'package:shakedown/oil_slide/oil_slide_visualizer.dart';
+import 'package:shakedown/services/device_service.dart';
 import 'package:flutter/services.dart';
-
 import 'screensaver_screen_test.mocks.dart';
 
-@GenerateNiceMocks([
-  MockSpec<SettingsProvider>(),
-  MockSpec<AudioProvider>(),
-])
+// Manual mock to avoid build_runner for this quick fix
+class MockDeviceService extends ChangeNotifier implements DeviceService {
+  @override
+  bool get isTv => false;
+  @override
+  String? get deviceName => 'Mock Device';
+  @override
+  Future<void> refresh() async {}
+}
+
 void main() {
   late MockSettingsProvider mockSettingsProvider;
   late MockAudioProvider mockAudioProvider;
+  late MockDeviceService mockDeviceService;
 
   setUp(() {
     mockSettingsProvider = MockSettingsProvider();
     mockAudioProvider = MockAudioProvider();
+    mockDeviceService = MockDeviceService();
 
-    // Default mock behavior
+    // Default mock behavior for SettingsProvider
     when(mockSettingsProvider.oilEnableAudioReactivity).thenReturn(true);
     when(mockSettingsProvider.oilViscosity).thenReturn(0.5);
     when(mockSettingsProvider.oilFlowSpeed).thenReturn(1.0);
@@ -35,11 +42,6 @@ void main() {
     when(mockSettingsProvider.oilHeatDrift).thenReturn(0.1);
     when(mockSettingsProvider.oilScreensaverMode).thenReturn('default');
     when(mockSettingsProvider.oilEasterEggsEnabled).thenReturn(true);
-
-    // Mock AudioProvider
-    // Using a fake AudioPlayer or mocking the property
-    // For now, just ensuring it doesn't crash on sessionId access
-    // Note: in a real test we might need more exhaustive mocks for AudioPlayer
   });
 
   Widget createWidgetUnderTest() {
@@ -48,6 +50,7 @@ void main() {
         ChangeNotifierProvider<SettingsProvider>.value(
             value: mockSettingsProvider),
         ChangeNotifierProvider<AudioProvider>.value(value: mockAudioProvider),
+        ChangeNotifierProvider<DeviceService>.value(value: mockDeviceService),
       ],
       child: const MaterialApp(
         home: ScreensaverScreen(),

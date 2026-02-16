@@ -1555,8 +1555,8 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
       ) as bool);
 
   @override
-  bool get preventScreensaver => (super.noSuchMethod(
-        Invocation.getter(#preventScreensaver),
+  bool get preventSleep => (super.noSuchMethod(
+        Invocation.getter(#preventSleep),
         returnValue: false,
         returnValueForMissingStub: false,
       ) as bool);
@@ -2071,9 +2071,9 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
       );
 
   @override
-  void togglePreventScreensaver() => super.noSuchMethod(
+  void togglePreventSleep() => super.noSuchMethod(
         Invocation.method(
-          #togglePreventScreensaver,
+          #togglePreventSleep,
           [],
         ),
         returnValueForMissingStub: null,

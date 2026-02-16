@@ -120,6 +120,8 @@ class MockSettingsProvider extends Mock implements SettingsProvider {
   bool get hideTrackDuration => false;
   @override
   bool get showGlobalAlbumArt => true;
+  @override
+  bool get isTv => false;
 }
 
 class MockDeviceService extends ChangeNotifier implements DeviceService {

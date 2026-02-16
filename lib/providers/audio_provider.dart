@@ -168,8 +168,7 @@ class AudioProvider with ChangeNotifier {
   }
 
   Future<void> _updateWakeLockState() async {
-    final shouldPreventScreensaver =
-        _settingsProvider?.preventScreensaver ?? true;
+    final shouldPreventScreensaver = _settingsProvider?.preventSleep ?? true;
     final isPlaying = _audioPlayer.playing;
     // We only care if playing AND processing state is NOT idle/completed/error
     // But checking 'playing' is usually sufficient for user intent.
@@ -179,7 +178,7 @@ class AudioProvider with ChangeNotifier {
       try {
         if (!(await _wakelockService.enabled)) {
           await _wakelockService.enable();
-          logger.d('AudioProvider: Wake Lock ENABLED (Prevent Screensaver)');
+          logger.d('AudioProvider: Wake Lock ENABLED (Prevent Sleep)');
         }
       } catch (e) {
         logger.w('Failed to enable Wake Lock: $e');

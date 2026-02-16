@@ -8,6 +8,7 @@ import 'package:shakedown/utils/logger.dart';
 
 class SettingsProvider with ChangeNotifier {
   final SharedPreferences _prefs;
+  final bool isTv;
 
   // Preference Keys
   static const String _trackNumberKey = 'show_track_numbers';
@@ -43,7 +44,7 @@ class SettingsProvider with ChangeNotifier {
       'use_strict_src_categorization';
   static const String _offlineBufferingKey = 'offline_buffering';
   static const String _enableBufferAgentKey = 'enable_buffer_agent';
-  static const String _preventScreensaverKey = 'prevent_screensaver';
+  static const String _preventSleepKey = 'prevent_sleep';
   static const String _simpleRandomIconKey = 'simple_random_icon';
 
   // Screensaver (oil_slide)
@@ -117,7 +118,6 @@ class SettingsProvider with ChangeNotifier {
   late bool _useStrictSrcCategorization;
   late bool _offlineBuffering;
   late bool _enableBufferAgent;
-  late bool _preventScreensaver;
   late bool _showDayOfWeek;
   late bool _abbreviateDayOfWeek;
   late bool _abbreviateMonth;
@@ -136,6 +136,7 @@ class SettingsProvider with ChangeNotifier {
   late double _oilHeatDrift;
   late int _oilMetaballCount;
   late bool _oilEnableAudioReactivity;
+  late bool _preventSleep;
   late bool _oilPerformanceMode;
   late bool _oilEasterEggsEnabled;
   late bool _oilPaletteCycle;
@@ -175,7 +176,7 @@ class SettingsProvider with ChangeNotifier {
   bool get useStrictSrcCategorization => _useStrictSrcCategorization;
   bool get offlineBuffering => _offlineBuffering;
   bool get enableBufferAgent => _enableBufferAgent;
-  bool get preventScreensaver => _preventScreensaver;
+  bool get preventSleep => _preventSleep;
   bool get highlightCurrentShowCard => true;
   bool get useMaterial3 => true;
   bool get showDayOfWeek => _showDayOfWeek;
@@ -236,7 +237,7 @@ class SettingsProvider with ChangeNotifier {
   static const MethodChannel _uiScaleChannel =
       MethodChannel('com.jamart3d.shakedown/ui_scale');
 
-  SettingsProvider(this._prefs) {
+  SettingsProvider(this._prefs, {this.isTv = false}) {
     _init();
     _setupUiScaleChannel();
   }
@@ -398,7 +399,17 @@ class SettingsProvider with ChangeNotifier {
         DefaultSettings.offlineBuffering;
     _enableBufferAgent = _prefs.getBool(_enableBufferAgentKey) ??
         DefaultSettings.enableBufferAgent;
-    _preventScreensaver = _prefs.getBool(_preventScreensaverKey) ?? true;
+    // Prevent Sleep Migration
+    if (_prefs.containsKey('prevent_screensaver') &&
+        !_prefs.containsKey(_preventSleepKey)) {
+      _preventSleep =
+          _prefs.getBool('prevent_screensaver') ?? DefaultSettings.preventSleep;
+      _prefs.setBool(_preventSleepKey, _preventSleep);
+      _prefs.remove('prevent_screensaver');
+    } else {
+      _preventSleep =
+          _prefs.getBool(_preventSleepKey) ?? DefaultSettings.preventSleep;
+    }
 
     _marqueeEnabled = _prefs.getBool(_marqueeEnabledKey) ?? true;
     _showDebugLayout = _prefs.getBool(_showDebugLayoutKey) ?? false;
@@ -439,6 +450,11 @@ class SettingsProvider with ChangeNotifier {
             5.0; // 5 seconds default
     _oilVisualMode =
         _prefs.getString(_oilVisualModeKey) ?? DefaultSettings.oilVisualMode;
+
+    if (isTv) {
+      // Force 'steal' mode on TV, ignoring saved settings
+      _oilVisualMode = 'steal';
+    }
 
     final seedColorValue = _prefs.getInt(_seedColorKey);
     if (seedColorValue != null) {
@@ -556,8 +572,8 @@ class SettingsProvider with ChangeNotifier {
   void toggleEnableBufferAgent() => _updatePreference(
       _enableBufferAgentKey, _enableBufferAgent = !_enableBufferAgent);
 
-  void togglePreventScreensaver() => _updatePreference(
-      _preventScreensaverKey, _preventScreensaver = !_preventScreensaver);
+  void togglePreventSleep() =>
+      _updatePreference(_preventSleepKey, _preventSleep = !_preventSleep);
 
   static const String _rgbAnimationSpeedKey = 'rgb_animation_speed';
   double _rgbAnimationSpeed = 1.0;
@@ -634,6 +650,13 @@ class SettingsProvider with ChangeNotifier {
       _oilPaletteTransitionSpeedKey, _oilPaletteTransitionSpeed = seconds);
 
   Future<void> setOilVisualMode(String mode) async {
+    if (isTv) {
+      // Disable mode switching on TV
+      _oilVisualMode = 'steal';
+      notifyListeners();
+      return;
+    }
+
     _oilVisualMode = mode;
     await _prefs.setString(_oilVisualModeKey, mode);
 

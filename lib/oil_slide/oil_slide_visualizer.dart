@@ -3,7 +3,6 @@ import 'package:flame/game.dart';
 import 'package:shakedown/oil_slide/oil_slide_config.dart';
 import 'package:shakedown/oil_slide/oil_slide_audio_reactor.dart';
 import 'package:shakedown/oil_slide/oil_slide_game.dart';
-import 'package:shakedown/oil_slide/ghost_menu.dart';
 import 'package:shakedown/oil_slide/easter_egg_detector.dart';
 import 'package:shakedown/services/device_service.dart';
 import 'package:provider/provider.dart';
@@ -35,6 +34,7 @@ class OilSlideVisualizer extends StatefulWidget {
 class _OilSlideVisualizerState extends State<OilSlideVisualizer> {
   late OilSlideGame _game;
   late OilSlideConfig _currentConfig;
+  EasterEggDetector? _easterEggDetector;
 
   @override
   void initState() {
@@ -45,6 +45,12 @@ class _OilSlideVisualizerState extends State<OilSlideVisualizer> {
       audioReactor: widget.audioReactor,
       deviceService: Provider.of<DeviceService>(context, listen: false),
     );
+
+    if (widget.enableEasterEggs) {
+      _easterEggDetector = EasterEggDetector(
+        onEasterEggTriggered: _handleEasterEgg,
+      );
+    }
   }
 
   @override
@@ -61,6 +67,7 @@ class _OilSlideVisualizerState extends State<OilSlideVisualizer> {
   @override
   void dispose() {
     widget.audioReactor?.stop();
+    _easterEggDetector?.dispose();
     super.dispose();
   }
 
@@ -74,12 +81,6 @@ class _OilSlideVisualizerState extends State<OilSlideVisualizer> {
   void _handleEasterEgg(EasterEgg egg) {
     // Handle easter egg triggers
     switch (egg) {
-      case EasterEgg.konamiCode:
-        // Could trigger special palette or effect
-        // For now, just cycle to a fun palette
-        final newConfig = _currentConfig.copyWith(palette: 'psychedelic');
-        _handleConfigChanged(newConfig);
-        break;
       case EasterEgg.woodstockMode:
         // Trigger special Woodstock-themed palette
         final newConfig = _currentConfig.copyWith(palette: 'cosmic');
@@ -90,23 +91,17 @@ class _OilSlideVisualizerState extends State<OilSlideVisualizer> {
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        // Main visualizer
-        GameWidget(
-          game: _game,
-        ),
-
-        // Ghost Menu overlay
-        GhostMenu(
-          config: _currentConfig,
-          onConfigChanged: _handleConfigChanged,
-          onExit: widget.onExit,
-          kioskMode: widget.kioskMode,
-          enableEasterEggs: widget.enableEasterEggs,
-          onEasterEgg: _handleEasterEgg,
-        ),
-      ],
+    return GestureDetector(
+      onTap: widget.onExit,
+      behavior: HitTestBehavior.opaque,
+      child: Stack(
+        children: [
+          // Main visualizer
+          GameWidget(
+            game: _game,
+          ),
+        ],
+      ),
     );
   }
 }

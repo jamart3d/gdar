@@ -95,6 +95,8 @@ class MockSettingsProvider extends Mock implements SettingsProvider {
   bool get simpleRandomIcon => false;
   @override
   bool get nonRandom => false;
+  @override
+  bool get isTv => false;
 }
 
 class MockShowListProvider extends Mock implements ShowListProvider {

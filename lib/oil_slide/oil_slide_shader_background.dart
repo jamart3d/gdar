@@ -127,85 +127,9 @@ class OilSlideShaderBackground extends PositionComponent {
     }
   }
 
-  static const Map<String, List<Color>> _palettes = {
-    'psychedelic': [
-      Color(0xFFFF00FF),
-      Color(0xFF00FFFF),
-      Color(0xFFFFFF00),
-      Color(0xFFFF0000),
-    ],
-    'acid_green': [
-      Color(0xFF00FF00),
-      Color(0xFF00FFFF),
-      Color(0xFF00FF7F),
-      Color(0xFF7FFF00),
-    ],
-    'lava_gold': [
-      Color(0xFFFF4500),
-      Color(0xFFFFD700),
-      Color(0xFFFF8C00),
-      Color(0xFFFF6347),
-    ],
-    // Lava Lamp Mode Palettes
-    'lava_classic': [
-      Color(0xFF1a0505), // Very Dark Red (Background)
-      Color(0xFFd40000), // Vibrant Red
-      Color(0xFFFF5500), // Bright Orange
-      Color(0xFFFFcc00), // Yellow (Highlights)
-    ],
-    'purple_haze': [
-      Color(0xFF4B0082), // Indigo
-      Color(0xFF8B008B), // Dark magenta
-      Color(0xFFBA55D3), // Medium orchid
-      Color(0xFFDA70D6), // Orchid
-    ],
-    // Silk Mode Palettes
-    'ocean': [
-      Color(0xFF000080), // Navy
-      Color(0xFF0000CD), // Medium blue
-      Color(0xFF00CED1), // Dark turquoise
-      Color(0xFF40E0D0), // Turquoise
-    ],
-    'pearl': [
-      Color(0xFFe6e2d8), // Champagne / Off-white
-      Color(0xFFc7c2b8), // Silver / Grey
-      Color(0xFFa69f91), // Darker Champagne shadow
-      Color(0xFF8c8577), // Deep shadow
-    ],
-    'aurora': [
-      Color(0xFF00008B), // Dark Blue
-      Color(0xFF00FF7F), // Spring Green
-      Color(0xFF9400D3), // Dark Violet
-      Color(0xFF1E90FF), // Dodger Blue
-    ],
-    'deep_blue': [
-      Color(0xFF0000FF),
-      Color(0xFF0080FF),
-      Color(0xFF00FFFF),
-      Color(0xFF4B0082),
-    ],
-    'sunset': [
-      Color(0xFFFF7E5F),
-      Color(0xFFFEB47B),
-      Color(0xFFFFC371),
-      Color(0xFFFF5F6D),
-    ],
-    'cosmic': [
-      Color(0xFF0000FF), // Deep Blue
-      Color(0xFFFF00FF), // Magenta
-      Color(0xFFFF4500), // Orange Red
-      Color(0xFF00FFFF), // Cyan
-    ],
-  };
-
-  @override
-  void update(double dt) {
-    super.update(dt);
-    size = game.size;
-  }
-
   List<Color> _getPaletteColors(String palette) {
-    return _palettes[palette] ?? _palettes['psychedelic']!;
+    return OilSlideConfig.palettes[palette] ??
+        OilSlideConfig.palettes['psychedelic']!;
   }
 
   void _updateShaderUniforms() {

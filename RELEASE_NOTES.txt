@@ -1,4 +1,10 @@
 
+
+Release 1.0.64:
+- **Restricted**: Screensaver execution is now strictly limited to Google TV devices only.
+- **Restricted**: Screensaver settings (Style, Timeout) are now hidden on non-TV platforms, even in debug mode.
+- **Internal**: Fixed unit test compatibility issues and updated deprecated mock handlers for modern Flutter support.
+
 Release 1.0.63:
 - **Optimized**: Significant performance improvements for Google TV screensavers (Lava, Silk, Standard).
 - **Improved**: Automatic "Performance Mode" detection for TV hardware.

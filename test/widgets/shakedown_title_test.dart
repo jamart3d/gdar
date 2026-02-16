@@ -12,6 +12,8 @@ class MockSettingsProvider extends Mock implements SettingsProvider {
   bool get enableShakedownTween => true;
   @override
   bool get uiScale => false;
+  @override
+  bool get isTv => false;
 }
 
 void main() {

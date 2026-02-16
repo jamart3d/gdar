@@ -3,6 +3,10 @@
 /// This class encapsulates all visual and behavioral parameters for the
 /// oil_slide effect, making it easy to serialize/deserialize from settings
 /// and potentially extract into a standalone package.
+library;
+
+import 'package:flutter/material.dart';
+
 class OilSlideConfig {
   final double viscosity;
   final double flowSpeed;
@@ -12,8 +16,79 @@ class OilSlideConfig {
   final double heatDrift;
   final int metaballCount;
   final bool enableAudioReactivity;
-  final String visualMode;
+  final String
+      visualMode; // 'lava_lamp', 'silk', 'psychedelic', 'steal', 'custom'
   final bool oilPerformanceMode;
+
+  /// Centralized palette definitions for all visual modes.
+  static const Map<String, List<Color>> palettes = {
+    'psychedelic': [
+      Color(0xFFFF00FF),
+      Color(0xFF00FFFF),
+      Color(0xFFFFFF00),
+      Color(0xFFFF0000),
+    ],
+    'acid_green': [
+      Color(0xFF00FF00),
+      Color(0xFF00FFFF),
+      Color(0xFF00FF7F),
+      Color(0xFF7FFF00),
+    ],
+    'lava_gold': [
+      Color(0xFFFF4500),
+      Color(0xFFFFD700),
+      Color(0xFFFF8C00),
+      Color(0xFFFF6347),
+    ],
+    'lava_classic': [
+      Color(0xFF1a0505), // Very Dark Red (Background)
+      Color(0xFFd40000), // Vibrant Red
+      Color(0xFFFF5500), // Bright Orange
+      Color(0xFFFFcc00), // Yellow (Highlights)
+    ],
+    'purple_haze': [
+      Color(0xFF4B0082), // Indigo
+      Color(0xFF8B008B), // Dark magenta
+      Color(0xFFBA55D3), // Medium orchid
+      Color(0xFFDA70D6), // Orchid
+    ],
+    'ocean': [
+      Color(0xFF000080), // Navy
+      Color(0xFF0000CD), // Medium blue
+      Color(0xFF00CED1), // Dark turquoise
+      Color(0xFF40E0D0), // Turquoise
+    ],
+    'pearl': [
+      Color(0xFFe6e2d8), // Champagne / Off-white
+      Color(0xFFc7c2b8), // Silver / Grey
+      Color(0xFFa69f91), // Darker Champagne shadow
+      Color(0xFF8c8577), // Deep shadow
+    ],
+    'aurora': [
+      Color(0xFF00008B), // Dark Blue
+      Color(0xFF00FF7F), // Spring Green
+      Color(0xFF9400D3), // Dark Violet
+      Color(0xFF1E90FF), // Dodger Blue
+    ],
+    'deep_blue': [
+      Color(0xFF0000FF),
+      Color(0xFF0080FF),
+      Color(0xFF00FFFF),
+      Color(0xFF4B0082),
+    ],
+    'sunset': [
+      Color(0xFFFF7E5F),
+      Color(0xFFFEB47B),
+      Color(0xFFFFC371),
+      Color(0xFFFF5F6D),
+    ],
+    'cosmic': [
+      Color(0xFF0000FF), // Deep Blue
+      Color(0xFFFF00FF), // Magenta
+      Color(0xFFFF4500), // Orange Red
+      Color(0xFF00FFFF), // Cyan
+    ],
+  };
 
   const OilSlideConfig({
     this.viscosity = 0.7,
