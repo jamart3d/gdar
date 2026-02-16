@@ -1,5 +1,11 @@
 
-Release 1.0.59:
+Release 1.0.61:
+- **Fixed**: Resolved double-trigger of random show playback on TV devices.
+- **Fixed**: Resolved shader compilation error for `oil_slide.frag` and added regression testing.
+- **Fixed**: Corrected focus handling for "Visual Style" and "App Mode" settings on TV; users can now cycle options with D-pad.
+- **Refined**: "Steal Your Face" screensaver now applies color cycling to the logo instead of the background for a cleaner look.
+
+Release 1.0.60:
 - **Hotfix**: Restored Android TV support by marking microphone requirement as optional, while keeping the Visualizer active for supported devices. 
 
 Release 1.0.58:

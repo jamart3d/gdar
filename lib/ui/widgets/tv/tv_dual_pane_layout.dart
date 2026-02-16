@@ -29,6 +29,8 @@ class _TvDualPaneLayoutState extends State<TvDualPaneLayout> {
   final GlobalKey<ShowListScreenState> _showListScreenKey = GlobalKey();
   StreamSubscription? _randomSubscription;
 
+  bool _isProcessingRandomRequest = false;
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -36,9 +38,22 @@ class _TvDualPaneLayoutState extends State<TvDualPaneLayout> {
       final audioProvider = context.read<AudioProvider>();
       _randomSubscription =
           audioProvider.randomShowRequestStream.listen((event) {
+        // Debounce: Prevent double-triggering the sequence
+        if (_isProcessingRandomRequest) {
+          debugPrint(
+              'TvDualPaneLayout: Ignoring duplicate random show request.');
+          return;
+        }
+
+        // Set flag to true immediately
+        _isProcessingRandomRequest = true;
+
         // Stage 2: Wait for ShowList scroll animation to settle (visual continuity)
         Future.delayed(const Duration(milliseconds: 1200), () {
-          if (!mounted) return;
+          if (!mounted) {
+            _isProcessingRandomRequest = false;
+            return;
+          }
 
           // Focus the selected show card directly
           _showListScreenKey.currentState?.focusShowByObject(event.show);
@@ -60,8 +75,17 @@ class _TvDualPaneLayoutState extends State<TvDualPaneLayout> {
               Future.delayed(const Duration(milliseconds: 2000), () {
                 if (mounted) {
                   audioProvider.playPendingSelection();
+                  // Sequence complete, allow new requests
+                  // Add a small buffer to ensure playback has definitely started/stabilized
+                  Future.delayed(const Duration(milliseconds: 500), () {
+                    if (mounted) _isProcessingRandomRequest = false;
+                  });
+                } else {
+                  _isProcessingRandomRequest = false;
                 }
               });
+            } else {
+              _isProcessingRandomRequest = false;
             }
           });
         });

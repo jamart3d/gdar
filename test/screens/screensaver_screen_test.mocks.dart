@@ -371,6 +371,13 @@ class MockSettingsProvider extends _i1.Mock implements _i3.SettingsProvider {
       ) as double);
 
   @override
+  int get oilMetaballCount => (super.noSuchMethod(
+        Invocation.getter(#oilMetaballCount),
+        returnValue: 0,
+        returnValueForMissingStub: 0,
+      ) as int);
+
+  @override
   bool get oilEnableAudioReactivity => (super.noSuchMethod(
         Invocation.getter(#oilEnableAudioReactivity),
         returnValue: false,
@@ -884,6 +891,16 @@ class MockSettingsProvider extends _i1.Mock implements _i3.SettingsProvider {
   _i5.Future<void> setOilHeatDrift(double? value) => (super.noSuchMethod(
         Invocation.method(
           #setOilHeatDrift,
+          [value],
+        ),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
+
+  @override
+  _i5.Future<void> setOilMetaballCount(int? value) => (super.noSuchMethod(
+        Invocation.method(
+          #setOilMetaballCount,
           [value],
         ),
         returnValue: _i5.Future<void>.value(),

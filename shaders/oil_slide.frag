@@ -33,7 +33,8 @@ uniform vec3 uColor4;
 
 // Uniforms - Metaball configuration
 uniform float uMetaballCount;  // 4-10 metaballs
-uniform float uVisualMode;    // 0=lava, 1=silk, 2=psychedelic
+uniform float uVisualMode;    // 0=lava, 1=silk, 2=psychedelic, 3=steal
+uniform sampler2D uTexture;   // For sprite-based modes
 
 // Constants
 const int MAX_METABALLS = 15;  // Hard cap for performance
@@ -262,6 +263,81 @@ void main() {
     vec2 aspectUV = uv;
     aspectUV.x *= aspect;
     
+    // ---------------------------------------------------------
+    // Mode 1: High Fidelity Silk (Fabric Simulation)
+    // ---------------------------------------------------------
+    // ---------------------------------------------------------
+    // Mode 3: Steal Your Face (Floating Sprite with RGB effects)
+    // ---------------------------------------------------------
+    if (uVisualMode == 3.0) {
+        // Background - Dark psychedelic
+        vec3 bgColor = vec3(0.05, 0.05, 0.08);
+        
+        // Floating motion using Lissajous curve
+        float t = uTime * uFlowSpeed * 0.5;
+        vec2 pos = vec2(
+            0.5 + 0.25 * sin(t * 1.3) + 0.1 * sin(t * 2.9),
+            0.5 + 0.25 * cos(t * 1.7) + 0.1 * cos(t * 3.1)
+        );
+        
+        // Audio reactivity for position (jitter)
+        if (uOverallEnergy > 0.1) {
+             pos += vec2(uBassEnergy - 0.5, uMidEnergy - 0.5) * 0.05 * uPulseIntensity;
+        }
+
+        // Sprite rendering
+        // Correct for aspect ratio to keep image square
+        vec2 centeredUV = uv - pos;
+        centeredUV.x *= aspect; 
+        
+        // Scale/Size - Pulse with bass
+        float baseScale = 0.6; 
+        float scale = baseScale * (1.0 + uBassEnergy * 0.2 * uPulseIntensity);
+        
+        // Texture UVs
+        // centeredUV is (-scale/2, scale/2). Map to (0, 1).
+        vec2 texUV = centeredUV / scale + 0.5;
+        
+        vec4 texColor = vec4(0.0);
+        
+        // Check bounds (0.0 to 1.0)
+        // Use a small margin to avoid edge artifacts if clamping isn't perfect
+        if (texUV.x >= 0.01 && texUV.x <= 0.99 && texUV.y >= 0.01 && texUV.y <= 0.99) {
+           // RGB Shift (Chromatic Aberration) based on energy
+           float shift = 0.02 * (0.5 + uOverallEnergy * 2.0) * uPulseIntensity;
+           
+           // Sample texture channels with offsets
+           float r = texture(uTexture, texUV + vec2(shift, 0.0)).r;
+           float g = texture(uTexture, texUV).g;
+           float b = texture(uTexture, texUV - vec2(shift, 0.0)).b;
+           float a = texture(uTexture, texUV).a; 
+           
+           texColor = vec4(r, g, b, a);
+           
+           // Flash effect on high energy
+           texColor.rgb += vec3(uTrebleEnergy) * 0.3 * uPulseIntensity;
+        }
+        
+        // Simple radial gradient background
+        float bgDist = length(aspectUV - vec2(aspect * 0.5, 0.5));
+        // REMOVED: Background tint logic
+        // bgColor += uColor1 * (1.0 - smoothstep(0.0, 1.5, bgDist)) * 0.2;
+        
+        // Color Cycling for Texture
+        // Get a color from the current palette based on time
+        vec3 cycleColor = getPaletteColor(uTime * 0.2); 
+        
+        // Apply tint to the texture
+        // Mix original color with tinted version to preserve some detail but apply strong color shift
+        texColor.rgb = mix(texColor.rgb, texColor.rgb * cycleColor * 2.0, 0.8);
+
+        // Blend texture over background
+        vec3 finalColor = mix(bgColor, texColor.rgb, texColor.a);
+        
+        fragColor = vec4(finalColor, 1.0);
+        return;
+    }
+
     // ---------------------------------------------------------
     // Mode 1: High Fidelity Silk (Fabric Simulation)
     // ---------------------------------------------------------

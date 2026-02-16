@@ -30,6 +30,8 @@ void main() {
     when(mockSettingsProvider.oilPalette).thenReturn('psychedelic');
     when(mockSettingsProvider.oilFilmGrain).thenReturn(0.1);
     when(mockSettingsProvider.oilPulseIntensity).thenReturn(0.5);
+    when(mockSettingsProvider.oilVisualMode).thenReturn('psychedelic');
+    when(mockSettingsProvider.oilMetaballCount).thenReturn(6);
     when(mockSettingsProvider.oilHeatDrift).thenReturn(0.1);
     when(mockSettingsProvider.oilScreensaverMode).thenReturn('default');
     when(mockSettingsProvider.oilEasterEggsEnabled).thenReturn(true);

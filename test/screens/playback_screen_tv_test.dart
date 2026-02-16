@@ -277,6 +277,11 @@ class FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
   Future<void> setOilHeatDrift(double value) async {}
 
   @override
+  int get oilMetaballCount => 6;
+  @override
+  Future<void> setOilMetaballCount(int value) async {}
+
+  @override
   bool get oilEnableAudioReactivity => true;
   @override
   void toggleOilEnableAudioReactivity() {}

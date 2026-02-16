@@ -57,6 +57,7 @@ class SettingsProvider with ChangeNotifier {
   static const String _oilPaletteKey = 'oil_palette';
   static const String _oilFilmGrainKey = 'oil_film_grain';
   static const String _oilHeatDriftKey = 'oil_heat_drift';
+  static const String _oilMetaballCountKey = 'oil_metaball_count';
   static const String _oilEnableAudioReactivityKey =
       'oil_enable_audio_reactivity';
   static const String _oilPerformanceModeKey = 'oil_performance_mode';
@@ -133,6 +134,7 @@ class SettingsProvider with ChangeNotifier {
   late String _oilPalette;
   late double _oilFilmGrain;
   late double _oilHeatDrift;
+  late int _oilMetaballCount;
   late bool _oilEnableAudioReactivity;
   late bool _oilPerformanceMode;
   late bool _oilEasterEggsEnabled;
@@ -192,6 +194,7 @@ class SettingsProvider with ChangeNotifier {
   String get oilPalette => _oilPalette;
   double get oilFilmGrain => _oilFilmGrain;
   double get oilHeatDrift => _oilHeatDrift;
+  int get oilMetaballCount => _oilMetaballCount;
   bool get oilEnableAudioReactivity => _oilEnableAudioReactivity;
   bool get oilPerformanceMode => _oilPerformanceMode;
   bool get oilEasterEggsEnabled => _oilEasterEggsEnabled;
@@ -422,6 +425,8 @@ class SettingsProvider with ChangeNotifier {
         _prefs.getDouble(_oilFilmGrainKey) ?? DefaultSettings.oilFilmGrain;
     _oilHeatDrift =
         _prefs.getDouble(_oilHeatDriftKey) ?? DefaultSettings.oilHeatDrift;
+    _oilMetaballCount =
+        _prefs.getInt(_oilMetaballCountKey) ?? DefaultSettings.oilMetaballCount;
     _oilEnableAudioReactivity = _prefs.getBool(_oilEnableAudioReactivityKey) ??
         DefaultSettings.oilEnableAudioReactivity;
     _oilPerformanceMode = _prefs.getBool(_oilPerformanceModeKey) ??
@@ -609,6 +614,9 @@ class SettingsProvider with ChangeNotifier {
   Future<void> setOilHeatDrift(double value) =>
       _updateDoublePreference(_oilHeatDriftKey, _oilHeatDrift = value);
 
+  Future<void> setOilMetaballCount(int value) =>
+      _updateIntPreference(_oilMetaballCountKey, _oilMetaballCount = value);
+
   void toggleOilEnableAudioReactivity() => _updatePreference(
       _oilEnableAudioReactivityKey,
       _oilEnableAudioReactivity = !_oilEnableAudioReactivity);
@@ -637,11 +645,10 @@ class SettingsProvider with ChangeNotifier {
       await setOilPalette(preset.palette);
       await setOilFilmGrain(preset.filmGrain);
       await setOilPulseIntensity(preset.pulseIntensity);
+      await setOilFilmGrain(preset.filmGrain);
+      await setOilPulseIntensity(preset.pulseIntensity);
       await setOilHeatDrift(preset.heatDrift);
-      // We don't have a direct setter for metaballCount exposed in provider yet,
-      // but the other values are covered.
-      // Wait, we need to ensure metaballCount is also updated if we want Full Preset support.
-      // The Ghost Menu updates config directly, but SettingsProvider is the source of truth for persistence.
+      await setOilMetaballCount(preset.metaballCount);
     }
     notifyListeners();
   }

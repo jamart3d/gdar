@@ -62,6 +62,17 @@ class OilSlideConfig {
           heatDrift: 0.3,
           palette: 'psychedelic',
         );
+      case 'steal':
+        return const OilSlideConfig(
+          visualMode: 'steal',
+          viscosity: 0.6,
+          flowSpeed: 0.4,
+          metaballCount: 1, // Only one image
+          pulseIntensity: 0.5,
+          filmGrain: 0.1,
+          heatDrift: 0.2,
+          palette: 'psychedelic', // Not used but good to have a default
+        );
       default: // custom
         return const OilSlideConfig(
           visualMode: 'custom',

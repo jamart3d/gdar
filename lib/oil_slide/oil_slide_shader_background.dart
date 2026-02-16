@@ -12,6 +12,7 @@ class OilSlideShaderBackground extends PositionComponent {
   OilSlideConfig config;
   final OilSlideGame game;
   ui.FragmentShader? _shader;
+  ui.Image? _stealTexture;
   bool _shaderLoaded = false;
   String? _loadError;
 
@@ -29,7 +30,19 @@ class OilSlideShaderBackground extends PositionComponent {
   Future<void> onLoad() async {
     await super.onLoad();
     size = game.size;
-    await _loadShader();
+    await Future.wait([
+      _loadShader(),
+      _loadTextures(),
+    ]);
+  }
+
+  Future<void> _loadTextures() async {
+    try {
+      // Load the image using Flame's image cache (accessed via game)
+      _stealTexture = await game.images.load('t_steal.webp');
+    } catch (e) {
+      debugPrint('Error loading texture: $e');
+    }
   }
 
   Future<void> _loadShader() async {
@@ -211,8 +224,17 @@ class OilSlideShaderBackground extends PositionComponent {
       modeIndex = 0.0;
     } else if (config.visualMode == 'silk') {
       modeIndex = 1.0;
+    } else if (config.visualMode == 'steal') {
+      modeIndex = 3.0;
     }
     _shader!.setFloat(uniformIndex++, modeIndex); // uVisualMode
+
+    // Sampler uniforms
+    // We must bind the texture if we have it, as the shader expects a sampler.
+    // Even if we don't sample it in other modes, it's good practice to bind.
+    if (_stealTexture != null) {
+      _shader!.setImageSampler(0, _stealTexture!);
+    }
   }
 
   @override

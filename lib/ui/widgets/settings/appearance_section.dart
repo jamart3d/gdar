@@ -433,31 +433,32 @@ class _AppearanceSectionState extends State<AppearanceSection> {
               ],
             ),
           ),
-        TvListTile(
-          dense: true,
-          visualDensity: VisualDensity.compact,
-          leading: const Icon(Icons.text_format_rounded),
-          title: FittedBox(
-              fit: BoxFit.scaleDown,
-              alignment: Alignment.centerLeft,
-              child: Text('App Font',
-                  style: Theme.of(context)
-                      .textTheme
-                      .titleMedium
-                      ?.copyWith(fontSize: 16 * widget.scaleFactor))),
-          subtitle: FittedBox(
-              fit: BoxFit.scaleDown,
-              alignment: Alignment.centerLeft,
-              child: Text(_getFontDisplayName(settingsProvider.appFont),
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodySmall
-                      ?.copyWith(fontSize: 12 * widget.scaleFactor))),
-          onTap: () {
-            HapticFeedback.lightImpact();
-            FontSelectionDialog.show(context);
-          },
-        ),
+        if (!Provider.of<DeviceService>(context, listen: false).isTv)
+          TvListTile(
+            dense: true,
+            visualDensity: VisualDensity.compact,
+            leading: const Icon(Icons.text_format_rounded),
+            title: FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: Text('App Font',
+                    style: Theme.of(context)
+                        .textTheme
+                        .titleMedium
+                        ?.copyWith(fontSize: 16 * widget.scaleFactor))),
+            subtitle: FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: Text(_getFontDisplayName(settingsProvider.appFont),
+                    style: Theme.of(context)
+                        .textTheme
+                        .bodySmall
+                        ?.copyWith(fontSize: 12 * widget.scaleFactor))),
+            onTap: () {
+              HapticFeedback.lightImpact();
+              FontSelectionDialog.show(context);
+            },
+          ),
         // Screensaver (oil_slide) - Show on TV OR in Debug/Profile mode for testing
         if (Provider.of<DeviceService>(context, listen: false).isTv ||
             !kReleaseMode) ...[
@@ -508,6 +509,38 @@ class _AppearanceSectionState extends State<AppearanceSection> {
                   TvFocusWrapper(
                     showGlow: true,
                     borderRadius: BorderRadius.circular(24),
+                    onKeyEvent: (node, event) {
+                      if (event is KeyDownEvent) {
+                        final modes = [
+                          'psychedelic',
+                          'lava_lamp',
+                          'silk',
+                          'steal'
+                        ];
+                        final currentIndex =
+                            modes.indexOf(settingsProvider.oilVisualMode);
+
+                        if (event.logicalKey == LogicalKeyboardKey.arrowLeft) {
+                          if (currentIndex > 0) {
+                            HapticFeedback.selectionClick();
+                            context
+                                .read<SettingsProvider>()
+                                .setOilVisualMode(modes[currentIndex - 1]);
+                            return KeyEventResult.handled;
+                          }
+                        } else if (event.logicalKey ==
+                            LogicalKeyboardKey.arrowRight) {
+                          if (currentIndex < modes.length - 1) {
+                            HapticFeedback.selectionClick();
+                            context
+                                .read<SettingsProvider>()
+                                .setOilVisualMode(modes[currentIndex + 1]);
+                            return KeyEventResult.handled;
+                          }
+                        }
+                      }
+                      return KeyEventResult.ignored;
+                    },
                     child: SegmentedButton<String>(
                       segments: const [
                         ButtonSegment(
@@ -524,6 +557,11 @@ class _AppearanceSectionState extends State<AppearanceSection> {
                           value: 'silk',
                           label: Text('Silk'),
                           icon: Icon(Icons.texture_rounded),
+                        ),
+                        ButtonSegment(
+                          value: 'steal',
+                          label: Text('Steal'),
+                          icon: Icon(Icons.bolt_rounded),
                         ),
                       ],
                       selected: {settingsProvider.oilVisualMode},
@@ -549,6 +587,33 @@ class _AppearanceSectionState extends State<AppearanceSection> {
                   TvFocusWrapper(
                     showGlow: true,
                     borderRadius: BorderRadius.circular(24),
+                    onKeyEvent: (node, event) {
+                      if (event is KeyDownEvent) {
+                        final modes = ['standard', 'kiosk'];
+                        final currentIndex =
+                            modes.indexOf(settingsProvider.oilScreensaverMode);
+
+                        if (event.logicalKey == LogicalKeyboardKey.arrowLeft) {
+                          if (currentIndex > 0) {
+                            HapticFeedback.selectionClick();
+                            context
+                                .read<SettingsProvider>()
+                                .setOilScreensaverMode(modes[currentIndex - 1]);
+                            return KeyEventResult.handled;
+                          }
+                        } else if (event.logicalKey ==
+                            LogicalKeyboardKey.arrowRight) {
+                          if (currentIndex < modes.length - 1) {
+                            HapticFeedback.selectionClick();
+                            context
+                                .read<SettingsProvider>()
+                                .setOilScreensaverMode(modes[currentIndex + 1]);
+                            return KeyEventResult.handled;
+                          }
+                        }
+                      }
+                      return KeyEventResult.ignored;
+                    },
                     child: SegmentedButton<String>(
                       segments: const [
                         ButtonSegment(

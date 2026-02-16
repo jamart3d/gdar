@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:shakedown/utils/logger.dart';
 
 /// Service to monitor user inactivity and trigger screensaver.
@@ -10,13 +11,23 @@ import 'package:shakedown/utils/logger.dart';
 class InactivityService {
   Timer? _inactivityTimer;
   final void Function() onInactivityTimeout;
-  final Duration inactivityDuration;
+  Duration _inactivityDuration;
   bool _isEnabled = false;
 
   InactivityService({
     required this.onInactivityTimeout,
-    required this.inactivityDuration,
-  });
+    required Duration initialDuration,
+  }) : _inactivityDuration = initialDuration;
+
+  void updateDuration(Duration duration) {
+    if (_inactivityDuration == duration) return;
+    _inactivityDuration = duration;
+    if (_isEnabled) {
+      _resetTimer();
+    }
+    logger.d(
+        'InactivityService: Updated duration to ${_inactivityDuration.inMinutes} min');
+  }
 
   /// Start monitoring for inactivity.
   void start() {
@@ -24,7 +35,7 @@ class InactivityService {
     _isEnabled = true;
     _resetTimer();
     logger.i(
-        'InactivityService: Started monitoring (timeout: ${inactivityDuration.inMinutes} min)');
+        'InactivityService: Started monitoring (timeout: ${_inactivityDuration.inMinutes} min)');
   }
 
   /// Stop monitoring for inactivity.
@@ -43,7 +54,7 @@ class InactivityService {
 
   void _resetTimer() {
     _inactivityTimer?.cancel();
-    _inactivityTimer = Timer(inactivityDuration, () {
+    _inactivityTimer = Timer(_inactivityDuration, () {
       logger.i(
           'InactivityService: Inactivity timeout reached, triggering screensaver');
       onInactivityTimeout();
@@ -72,18 +83,32 @@ class InactivityDetector extends StatefulWidget {
 
 class _InactivityDetectorState extends State<InactivityDetector> {
   @override
+  void initState() {
+    super.initState();
+    HardwareKeyboard.instance.addHandler(_handleKeyEvent);
+  }
+
+  @override
+  void dispose() {
+    HardwareKeyboard.instance.removeHandler(_handleKeyEvent);
+    super.dispose();
+  }
+
+  bool _handleKeyEvent(KeyEvent event) {
+    // We only care about key down events to avoid double triggering
+    if (event is KeyDownEvent) {
+      widget.inactivityService?.onUserActivity();
+    }
+    return false; // Let the event propagate
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Listener(
       onPointerDown: (_) => widget.inactivityService?.onUserActivity(),
       onPointerMove: (_) => widget.inactivityService?.onUserActivity(),
       onPointerUp: (_) => widget.inactivityService?.onUserActivity(),
-      child: Focus(
-        onKeyEvent: (node, event) {
-          widget.inactivityService?.onUserActivity();
-          return KeyEventResult.ignored;
-        },
-        child: widget.child,
-      ),
+      child: widget.child,
     );
   }
 }

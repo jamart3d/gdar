@@ -229,6 +229,18 @@ void main() {
       expect(prefs.getString('oil_visual_mode'), 'lava_lamp');
     });
 
+    test('sets and persists oil visual mode (steal)', () async {
+      await settingsProvider.setOilVisualMode('steal');
+      expect(settingsProvider.oilVisualMode, 'steal');
+      // Verify preset values for steal
+      expect(settingsProvider.oilViscosity, 0.6);
+      expect(settingsProvider.oilFlowSpeed, 0.4);
+      expect(settingsProvider.oilMetaballCount, 1);
+
+      final prefs = await SharedPreferences.getInstance();
+      expect(prefs.getString('oil_visual_mode'), 'steal');
+    });
+
     test('toggles oil audio reactivity', () async {
       final initial = settingsProvider.oilEnableAudioReactivity;
       settingsProvider.toggleOilEnableAudioReactivity();

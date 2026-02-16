@@ -26,6 +26,8 @@ import 'package:shakedown/services/catalog_service.dart';
 import 'package:shakedown/providers/update_provider.dart';
 import 'package:shakedown/services/device_service.dart';
 import 'package:shakedown/ui/widgets/tv/tv_dual_pane_layout.dart';
+import 'package:shakedown/services/inactivity_service.dart';
+import 'package:shakedown/ui/screens/screensaver_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -96,6 +98,8 @@ class _GdarAppState extends State<GdarApp> {
   final String _sessionId =
       DateTime.now().millisecondsSinceEpoch.toString().substring(7);
 
+  late final InactivityService _inactivityService;
+
   @override
   void initState() {
     super.initState();
@@ -107,12 +111,24 @@ class _GdarAppState extends State<GdarApp> {
       _showListProvider.init(widget.prefs);
     }
 
+    _inactivityService = InactivityService(
+      initialDuration:
+          const Duration(minutes: 5), // Will be updated by settings
+      onInactivityTimeout: () {
+        final context = _navigatorKey.currentContext;
+        if (context != null) {
+          ScreensaverScreen.show(context);
+        }
+      },
+    );
+
     _initDeepLinks();
   }
 
   @override
   void dispose() {
     _linkSubscription?.cancel();
+    _inactivityService.dispose();
     super.dispose();
   }
 
@@ -394,6 +410,16 @@ class _GdarAppState extends State<GdarApp> {
       ],
       child: Consumer2<ThemeProvider, SettingsProvider>(
         builder: (context, themeProvider, settingsProvider, child) {
+          // Update Inactivity Service based on settings
+          _inactivityService.updateDuration(Duration(
+              minutes: settingsProvider.oilScreensaverInactivityMinutes));
+
+          if (settingsProvider.useOilScreensaver) {
+            _inactivityService.start();
+          } else {
+            _inactivityService.stop();
+          }
+
           return RgbClockWrapper(
             animationSpeed: settingsProvider.rgbAnimationSpeed,
             child: DynamicColorBuilder(
@@ -572,7 +598,10 @@ class _GdarAppState extends State<GdarApp> {
                       );
                     }
 
-                    return child!;
+                    return InactivityDetector(
+                      inactivityService: _inactivityService,
+                      child: child!,
+                    );
                   },
                 );
               },

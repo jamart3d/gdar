@@ -101,6 +101,7 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
       heatDrift: settings.oilHeatDrift,
       enableAudioReactivity: settings.oilEnableAudioReactivity,
       visualMode: settings.oilVisualMode,
+      metaballCount: settings.oilMetaballCount,
     );
 
     return Scaffold(

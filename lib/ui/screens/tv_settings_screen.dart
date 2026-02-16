@@ -76,7 +76,7 @@ class _TvSettingsScreenState extends State<TvSettingsScreen> {
         activeSection = AppearanceSection(
           scaleFactor: scaleFactor,
           initiallyExpanded: initiallyExpanded,
-          showFontSelection: true,
+          showFontSelection: false,
         );
         break;
       case 2:

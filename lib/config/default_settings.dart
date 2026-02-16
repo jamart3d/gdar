@@ -74,6 +74,7 @@ class DefaultSettings {
   static const double oilFilmGrain = 0.15; // Film grain intensity (0.0-1.0)
   static const double oilHeatDrift =
       0.3; // Heat drift for OLED safety (0.0-1.0)
+  static const int oilMetaballCount = 6;
   static const bool oilEnableAudioReactivity = true;
   static const bool oilPerformanceMode = false; // Auto-detected for TV
   static const bool oilEasterEggsEnabled = true;
