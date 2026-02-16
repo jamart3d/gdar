@@ -82,6 +82,7 @@ class AudioCacheService with ChangeNotifier {
 
       // Create a stable cache key based on the URL
       final key = sha256.convert(utf8.encode(uri.toString())).toString();
+      // ignore: experimental_member_use
       return LockCachingAudioSource(
         uri,
         tag: tag,

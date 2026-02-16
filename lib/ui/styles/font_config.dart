@@ -69,7 +69,9 @@ class FontConfig {
     // Enum indices are linear: w100, w200, ...
 
     // Easier mapping:
-    final int targetIndex = original.index + (weightAdjustment ~/ 100);
+    // FontWeight.index is deprecated, so we use value (100-900) to calculate index (0-8)
+    final int currentIndex = (original.value ~/ 100) - 1;
+    final int targetIndex = currentIndex + (weightAdjustment ~/ 100);
     final clampedIndex = targetIndex.clamp(0, FontWeight.values.length - 1);
 
     return FontWeight.values[clampedIndex];

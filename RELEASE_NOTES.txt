@@ -1,4 +1,10 @@
 
+Release 1.0.62:
+- **Fixed**: Resolved black screensaver on Google TV by ensuring fallback texture binding and consistent image sampler usage.
+- **Fixed**: Added "Start Screensaver" button to TV Settings for manual trigger.
+- **Improved**: Suppressed experimental lint warnings in `AudioCacheService` for a cleaner build.
+- **Polished**: Verified screensaver robustness with passing unit tests.
+
 Release 1.0.61:
 - **Fixed**: Resolved double-trigger of random show playback on TV devices.
 - **Fixed**: Resolved shader compilation error for `oil_slide.frag` and added regression testing.

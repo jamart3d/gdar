@@ -488,6 +488,32 @@ class _AppearanceSectionState extends State<AppearanceSection> {
             },
             secondary: const Icon(Icons.blur_circular_rounded),
           ),
+          // Manual Start Button
+          TvListTile(
+            dense: true,
+            visualDensity: VisualDensity.compact,
+            leading: const Icon(Icons.play_circle_outline_rounded),
+            title: FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: Text('Start Screen Saver',
+                    style: Theme.of(context)
+                        .textTheme
+                        .titleMedium
+                        ?.copyWith(fontSize: 16 * widget.scaleFactor))),
+            subtitle: FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: Text('Test the psychedelic oil lamp effect now',
+                    style: Theme.of(context)
+                        .textTheme
+                        .bodySmall
+                        ?.copyWith(fontSize: 12 * widget.scaleFactor))),
+            onTap: () {
+              HapticFeedback.lightImpact();
+              ScreensaverScreen.show(context);
+            },
+          ),
           if (settingsProvider.useOilScreensaver) ...[
             Padding(
               padding:
@@ -731,31 +757,6 @@ class _AppearanceSectionState extends State<AppearanceSection> {
                   ),
                   const SizedBox(height: 16),
                   // Manual Start Button
-                  TvListTile(
-                    dense: true,
-                    visualDensity: VisualDensity.compact,
-                    leading: const Icon(Icons.play_circle_outline_rounded),
-                    title: FittedBox(
-                        fit: BoxFit.scaleDown,
-                        alignment: Alignment.centerLeft,
-                        child: Text('Start Screen Saver',
-                            style: Theme.of(context)
-                                .textTheme
-                                .titleMedium
-                                ?.copyWith(fontSize: 16 * widget.scaleFactor))),
-                    subtitle: FittedBox(
-                        fit: BoxFit.scaleDown,
-                        alignment: Alignment.centerLeft,
-                        child: Text('Test the psychedelic oil lamp effect now',
-                            style: Theme.of(context)
-                                .textTheme
-                                .bodySmall
-                                ?.copyWith(fontSize: 12 * widget.scaleFactor))),
-                    onTap: () {
-                      HapticFeedback.lightImpact();
-                      ScreensaverScreen.show(context);
-                    },
-                  ),
                 ],
               ),
             ),

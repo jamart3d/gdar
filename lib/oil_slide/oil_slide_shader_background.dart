@@ -36,12 +36,37 @@ class OilSlideShaderBackground extends PositionComponent {
     ]);
   }
 
+  @override
+  void onRemove() {
+    _shader?.dispose();
+    // Do not dispose the image here as it might be cached by Flame.
+    // If we generated a fallback, we should technically dispose it,
+    // but a 1x1 image is negligible.
+    super.onRemove();
+  }
+
   Future<void> _loadTextures() async {
     try {
       // Load the image using Flame's image cache (accessed via game)
       _stealTexture = await game.images.load('t_steal.webp');
     } catch (e) {
-      debugPrint('Error loading texture: $e');
+      debugPrint('Error loading texture: $e. Generating fallback.');
+      _loadError = 'Texture Load Error: $e'; // Keep track of error
+      await _generateFallbackTexture();
+    }
+  }
+
+  Future<void> _generateFallbackTexture() async {
+    try {
+      final recorder = ui.PictureRecorder();
+      final canvas = Canvas(recorder);
+      final paint = Paint()..color = const Color(0x00000000); // Transparent
+      canvas.drawRect(const Rect.fromLTWH(0, 0, 1, 1), paint);
+      final picture = recorder.endRecording();
+      _stealTexture = await picture.toImage(1, 1);
+    } catch (e) {
+      debugPrint('CRITICAL: Failed to generate fallback texture: $e');
+      _loadError = 'Fallback Generation Error: $e';
     }
   }
 
@@ -54,6 +79,7 @@ class OilSlideShaderBackground extends PositionComponent {
     } catch (e) {
       _loadError = e.toString();
       _shaderLoaded = false;
+      debugPrint('Shader Load Error: $e');
     }
   }
 
@@ -61,8 +87,10 @@ class OilSlideShaderBackground extends PositionComponent {
   void render(Canvas canvas) {
     super.render(canvas);
 
-    if (!_shaderLoaded || _shader == null) {
+    if (!_shaderLoaded || _shader == null || _stealTexture == null) {
       // Fallback: render error or placeholder
+      // We must have a texture bound for the shader to work on strict drivers,
+      // even if we don't use it.
       _renderFallback(canvas);
       return;
     }
@@ -89,7 +117,7 @@ class OilSlideShaderBackground extends PositionComponent {
       // Draw error text
       final textPainter = TextPainter(
         text: TextSpan(
-          text: 'Shader Error:\n$_loadError',
+          text: 'Shader/Texture Error:\n$_loadError',
           style: const TextStyle(color: Colors.white70, fontSize: 14),
         ),
         textDirection: TextDirection.ltr,
@@ -234,12 +262,11 @@ class OilSlideShaderBackground extends PositionComponent {
     // Even if we don't sample it in other modes, it's good practice to bind.
     if (_stealTexture != null) {
       _shader!.setImageSampler(0, _stealTexture!);
+    } else {
+      // Should not happen if fallback generation works, but for safety:
+      // We can't do anything here without a texture.
+      // If we are strict, we might want to throw or log again.
+      // But _loadTextures handles fallback now.
     }
-  }
-
-  @override
-  void onRemove() {
-    _shader?.dispose();
-    super.onRemove();
   }
 }

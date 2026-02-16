@@ -89,13 +89,13 @@ BEGIN
     BEGIN
         BLOCK "040904e4"
         BEGIN
-            VALUE "CompanyName", "com.example" "\0"
-            VALUE "FileDescription", "gdar" "\0"
+            VALUE "CompanyName", "com.jamart3d" "\0"
+            VALUE "FileDescription", "shakedown" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
-            VALUE "InternalName", "gdar" "\0"
-            VALUE "LegalCopyright", "Copyright (C) 2025 com.example. All rights reserved." "\0"
-            VALUE "OriginalFilename", "gdar.exe" "\0"
-            VALUE "ProductName", "gdar" "\0"
+            VALUE "InternalName", "shakedown" "\0"
+            VALUE "LegalCopyright", "Copyright (C) 2026 com.jamart3d. All rights reserved." "\0"
+            VALUE "OriginalFilename", "shakedown.exe" "\0"
+            VALUE "ProductName", "shakedown" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END
