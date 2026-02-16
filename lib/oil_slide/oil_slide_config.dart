@@ -13,6 +13,7 @@ class OilSlideConfig {
   final int metaballCount;
   final bool enableAudioReactivity;
   final String visualMode;
+  final bool oilPerformanceMode;
 
   const OilSlideConfig({
     this.viscosity = 0.7,
@@ -24,6 +25,7 @@ class OilSlideConfig {
     this.metaballCount = 6,
     this.enableAudioReactivity = true,
     this.visualMode = 'custom', // 'lava_lamp', 'silk', 'psychedelic', 'custom'
+    this.oilPerformanceMode = false,
   });
 
   /// Create config from a preset mode
@@ -92,6 +94,7 @@ class OilSlideConfig {
       metaballCount: (map['metaballCount'] as int?) ?? 6,
       enableAudioReactivity: map['enableAudioReactivity'] as bool? ?? true,
       visualMode: map['visualMode'] as String? ?? 'custom',
+      oilPerformanceMode: map['oilPerformanceMode'] as bool? ?? false,
     );
   }
 
@@ -107,6 +110,7 @@ class OilSlideConfig {
       'metaballCount': metaballCount,
       'enableAudioReactivity': enableAudioReactivity,
       'visualMode': visualMode,
+      'oilPerformanceMode': oilPerformanceMode,
     };
   }
 
@@ -121,6 +125,7 @@ class OilSlideConfig {
     int? metaballCount,
     bool? enableAudioReactivity,
     String? visualMode,
+    bool? oilPerformanceMode,
   }) {
     return OilSlideConfig(
       viscosity: viscosity ?? this.viscosity,
@@ -133,6 +138,7 @@ class OilSlideConfig {
       enableAudioReactivity:
           enableAudioReactivity ?? this.enableAudioReactivity,
       visualMode: visualMode ?? this.visualMode,
+      oilPerformanceMode: oilPerformanceMode ?? this.oilPerformanceMode,
     );
   }
 
@@ -148,7 +154,8 @@ class OilSlideConfig {
         other.heatDrift == heatDrift &&
         other.metaballCount == metaballCount &&
         other.enableAudioReactivity == enableAudioReactivity &&
-        other.visualMode == visualMode;
+        other.visualMode == visualMode &&
+        other.oilPerformanceMode == oilPerformanceMode;
   }
 
   @override
@@ -163,6 +170,7 @@ class OilSlideConfig {
       metaballCount,
       enableAudioReactivity,
       visualMode,
+      oilPerformanceMode,
     );
   }
 
@@ -171,6 +179,7 @@ class OilSlideConfig {
     return 'OilSlideConfig(viscosity: $viscosity, flowSpeed: $flowSpeed, '
         'palette: $palette, filmGrain: $filmGrain, pulseIntensity: $pulseIntensity, '
         'heatDrift: $heatDrift, metaballCount: $metaballCount, '
-        'enableAudioReactivity: $enableAudioReactivity, visualMode: $visualMode)';
+        'enableAudioReactivity: $enableAudioReactivity, visualMode: $visualMode, '
+        'oilPerformanceMode: $oilPerformanceMode)';
   }
 }

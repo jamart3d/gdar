@@ -12,6 +12,8 @@ import 'package:shakedown/oil_slide/oil_slide_shader_background.dart';
 class OilSlideGame extends FlameGame {
   OilSlideConfig config;
   final OilSlideAudioReactor? audioReactor;
+  final dynamic
+      deviceService; // Using dynamic to avoid hard dependency on DeviceService here if it's awkward, but actually let's use the type.
 
   AudioEnergy _currentEnergy = const AudioEnergy.zero();
   double _time = 0.0;
@@ -20,6 +22,7 @@ class OilSlideGame extends FlameGame {
   OilSlideGame({
     required this.config,
     this.audioReactor,
+    this.deviceService,
   });
 
   @override

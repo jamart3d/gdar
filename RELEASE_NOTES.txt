@@ -1,4 +1,11 @@
 
+Release 1.0.63:
+- **Optimized**: Significant performance improvements for Google TV screensavers (Lava, Silk, Standard).
+- **Improved**: Automatic "Performance Mode" detection for TV hardware.
+- **Improved**: Reduced shader complexity (FBM octaves, metaballs, shading) for smoother frame rates.
+- **Fixed**: Resolved issue where onboarding was incorrectly showing on Google TV.
+- **Fixed**: Synchronized boot-up sequence for reliable TV status detection.
+
 Release 1.0.62:
 - **Fixed**: Resolved black screensaver on Google TV by ensuring fallback texture binding and consistent image sampler usage.
 - **Fixed**: Added "Start Screensaver" button to TV Settings for manual trigger.

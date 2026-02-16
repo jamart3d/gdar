@@ -12,7 +12,10 @@ class DeviceService extends ChangeNotifier {
   String? _deviceName;
   String? get deviceName => _deviceName;
 
-  DeviceService() {
+  DeviceService({bool? initialIsTv}) {
+    if (initialIsTv != null) {
+      _isTv = initialIsTv;
+    }
     _init();
   }
 

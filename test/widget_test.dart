@@ -13,6 +13,7 @@ void main() {
 
     await tester.pumpWidget(GdarApp(
       prefs: prefs,
+      isTv: false,
       showListProvider: showListProvider,
     ));
 

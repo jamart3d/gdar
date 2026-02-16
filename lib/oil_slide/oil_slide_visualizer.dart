@@ -5,6 +5,8 @@ import 'package:shakedown/oil_slide/oil_slide_audio_reactor.dart';
 import 'package:shakedown/oil_slide/oil_slide_game.dart';
 import 'package:shakedown/oil_slide/ghost_menu.dart';
 import 'package:shakedown/oil_slide/easter_egg_detector.dart';
+import 'package:shakedown/services/device_service.dart';
+import 'package:provider/provider.dart';
 
 /// Main oil_slide visualizer widget.
 ///
@@ -41,6 +43,7 @@ class _OilSlideVisualizerState extends State<OilSlideVisualizer> {
     _game = OilSlideGame(
       config: _currentConfig,
       audioReactor: widget.audioReactor,
+      deviceService: Provider.of<DeviceService>(context, listen: false),
     );
   }
 

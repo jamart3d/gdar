@@ -70,17 +70,19 @@ Future<void> main() async {
 
   final prefs = await SharedPreferences.getInstance();
 
-  runApp(GdarApp(prefs: prefs));
+  runApp(GdarApp(prefs: prefs, isTv: isTv));
 }
 
 class GdarApp extends StatefulWidget {
   final SharedPreferences prefs;
   final ShowListProvider? showListProvider;
   final SettingsProvider? settingsProvider;
+  final bool isTv;
 
   const GdarApp({
     super.key,
     required this.prefs,
+    required this.isTv,
     this.showListProvider,
     this.settingsProvider,
   });
@@ -406,7 +408,8 @@ class _GdarAppState extends State<GdarApp> {
                 ),
         ),
         ChangeNotifierProvider(create: (_) => UpdateProvider()),
-        ChangeNotifierProvider(create: (_) => DeviceService()),
+        ChangeNotifierProvider(
+            create: (_) => DeviceService(initialIsTv: widget.isTv)),
       ],
       child: Consumer2<ThemeProvider, SettingsProvider>(
         builder: (context, themeProvider, settingsProvider, child) {

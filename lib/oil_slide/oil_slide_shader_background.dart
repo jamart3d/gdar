@@ -257,6 +257,13 @@ class OilSlideShaderBackground extends PositionComponent {
     }
     _shader!.setFloat(uniformIndex++, modeIndex); // uVisualMode
 
+    // Performance Mode uniform (0.0=Off, 1.0=On)
+    // Auto-enable on TV OR respect manual setting
+    final bool performanceMode =
+        config.oilPerformanceMode || game.deviceService.isTv;
+    _shader!.setFloat(
+        uniformIndex++, performanceMode ? 1.0 : 0.0); // uPerformanceMode
+
     // Sampler uniforms
     // We must bind the texture if we have it, as the shader expects a sampler.
     // Even if we don't sample it in other modes, it's good practice to bind.

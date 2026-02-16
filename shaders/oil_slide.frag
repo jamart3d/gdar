@@ -34,10 +34,11 @@ uniform vec3 uColor4;
 // Uniforms - Metaball configuration
 uniform float uMetaballCount;  // 4-10 metaballs
 uniform float uVisualMode;    // 0=lava, 1=silk, 2=psychedelic, 3=steal
+uniform float uPerformanceMode; // 0=off, 1=on (Google TV)
 uniform sampler2D uTexture;   // For sprite-based modes
 
 // Constants
-const int MAX_METABALLS = 15;  // Hard cap for performance
+const int MAX_METABALLS = 10;  // Reduced from 15 for performance
 const float BLOB_BASE_RADIUS = 0.17; // Reduced from 0.22 per user feedback ("too large")
 const float METABALL_THRESHOLD = 1.0;
 
@@ -68,7 +69,8 @@ float fbm(vec2 p) {
     float amplitude = 0.5;
     float frequency = 1.0;
     
-    for (int i = 0; i < 4; i++) {
+    int octaves = (uPerformanceMode == 1.0) ? 2 : 4;
+    for (int i = 0; i < octaves; i++) {
         value += amplitude * noise(p * frequency);
         frequency *= 2.0;
         amplitude *= 0.5;
@@ -196,6 +198,13 @@ float filmGrain(vec2 uv, float time) {
 
 // Calculate normal from metaball field gradient
 vec3 getMetaballNormal(vec2 uv, float time) {
+    if (uPerformanceMode == 1.0) {
+        // Cheaper numeric gradient with single side lookup
+        float v = metaballField(uv, time);
+        float vx = metaballField(uv + vec2(0.02, 0.0), time) - v;
+        float vy = metaballField(uv + vec2(0.0, 0.02), time) - v;
+        return normalize(vec3(-vx, -vy, 0.02));
+    }
     vec2 e = vec2(0.01, 0.0);
     float v = metaballField(uv, time);
     float vx = metaballField(uv + e.xy, time) - metaballField(uv - e.xy, time);
@@ -238,8 +247,10 @@ float silkHeight(vec2 uv, float time) {
     // Medium details (diagonal folds)
     h += sin((uv.x + uv.y) * 8.0 + t * 1.5) * 0.2;
     
-    // Small ripples (wind/turbulence)
-    h += fbm(uv * 10.0 + vec2(t)) * 0.05 * uBassEnergy; // Audio reactivity
+    // Small ripples (wind/turbulence) - Skip in performance mode
+    if (uPerformanceMode == 0.0) {
+        h += fbm(uv * 10.0 + vec2(t)) * 0.05 * uBassEnergy; // Audio reactivity
+    }
     
     return h * 0.5 + 0.5;
 }
@@ -270,8 +281,8 @@ void main() {
     // Mode 3: Steal Your Face (Floating Sprite with RGB effects)
     // ---------------------------------------------------------
     if (uVisualMode == 3.0) {
-        // Background - Dark psychedelic
-        vec3 bgColor = vec3(0.05, 0.05, 0.08);
+        // Background - Pure black for OLED safety
+        vec3 bgColor = vec3(0.0);
         
         // Floating motion using Lissajous curve
         float t = uTime * uFlowSpeed * 0.5;
@@ -291,7 +302,8 @@ void main() {
         centeredUV.x *= aspect; 
         
         // Scale/Size - Pulse with bass
-        float baseScale = 0.6; 
+        // Reduced by 25% from 0.6 per user request
+        float baseScale = 0.45; 
         float scale = baseScale * (1.0 + uBassEnergy * 0.2 * uPulseIntensity);
         
         // Texture UVs
@@ -301,7 +313,6 @@ void main() {
         vec4 texColor = vec4(0.0);
         
         // Check bounds (0.0 to 1.0)
-        // Use a small margin to avoid edge artifacts if clamping isn't perfect
         if (texUV.x >= 0.01 && texUV.x <= 0.99 && texUV.y >= 0.01 && texUV.y <= 0.99) {
            // RGB Shift (Chromatic Aberration) based on energy
            float shift = 0.02 * (0.5 + uOverallEnergy * 2.0) * uPulseIntensity;
@@ -318,18 +329,20 @@ void main() {
            texColor.rgb += vec3(uTrebleEnergy) * 0.3 * uPulseIntensity;
         }
         
-        // Simple radial gradient background
-        float bgDist = length(aspectUV - vec2(aspect * 0.5, 0.5));
-        // REMOVED: Background tint logic
-        // bgColor += uColor1 * (1.0 - smoothstep(0.0, 1.5, bgDist)) * 0.2;
+        // Simple radial gradient background - REMOVED for OLED safety
         
         // Color Cycling for Texture
         // Get a color from the current palette based on time
         vec3 cycleColor = getPaletteColor(uTime * 0.2); 
         
+        // Gamma Color Trick: 
+        // Applying non-linear boost to make colors feel "electric" and avoid washing out
+        cycleColor = pow(cycleColor, vec3(0.6)); 
+        cycleColor *= 2.0; // Restoring intensity after gamma crunch
+        
         // Apply tint to the texture
-        // Mix original color with tinted version to preserve some detail but apply strong color shift
-        texColor.rgb = mix(texColor.rgb, texColor.rgb * cycleColor * 2.0, 0.8);
+        // Mix original color with tinted version to preserve some detail
+        texColor.rgb = mix(texColor.rgb, texColor.rgb * cycleColor, 0.85);
 
         // Blend texture over background
         vec3 finalColor = mix(bgColor, texColor.rgb, texColor.a);
