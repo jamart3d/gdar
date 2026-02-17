@@ -42,12 +42,14 @@ class _TvFocusWrapperState extends State<TvFocusWrapper> {
   bool _isFocused = false;
   Timer? _longPressTimer;
   bool _longPressHandled = false;
+  bool _isActionKeyPressed = false;
 
   void _handleFocusChange(bool focused) {
     setState(() {
       _isFocused = focused;
       if (!focused) {
         _cancelLongPressTimer();
+        _isActionKeyPressed = false;
       }
     });
     widget.onFocusChange?.call(focused);
@@ -92,6 +94,7 @@ class _TvFocusWrapperState extends State<TvFocusWrapper> {
         if (!_isActionKey(event.logicalKey)) return KeyEventResult.ignored;
 
         if (event is KeyDownEvent) {
+          _isActionKeyPressed = true;
           if (_longPressTimer == null && !_longPressHandled) {
             _longPressTimer = Timer(const Duration(milliseconds: 600), () {
               if (mounted) {
@@ -107,9 +110,11 @@ class _TvFocusWrapperState extends State<TvFocusWrapper> {
           return KeyEventResult.handled;
         } else if (event is KeyUpEvent) {
           final wasLongPress = _longPressHandled;
+          final wasPressed = _isActionKeyPressed;
           _cancelLongPressTimer();
+          _isActionKeyPressed = false;
 
-          if (!wasLongPress) {
+          if (!wasLongPress && wasPressed) {
             widget.onTap?.call();
           }
           return KeyEventResult.handled;

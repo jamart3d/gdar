@@ -1,4 +1,9 @@
 
+Release 1.0.67:
+- **Fixed**: Resolved a critical "Focus Loop" on Google TV where exiting the screensaver would immediately re-trigger it.
+- **Improved**: Hardened `TvFocusWrapper` to ensure tactile events only trigger when button press sequences match.
+- **Internal**: Stabilized automated test suite by resolving environmental hangs and improving mock reliability.
+
 Release 1.0.66:
 - **Fixed**: Resolved a persistent hang in the automated test suite related to shader/texture loading.
 - **Fixed**: Verified 100% pass rate for Screensaver and TV Playback logic after component refactoring.
