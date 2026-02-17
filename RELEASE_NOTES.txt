@@ -1,4 +1,10 @@
 
+
+Release 1.0.68:
+- **Improved**: Replaced the screensaver inactivity timeout slider with a discrete `SegmentedButton` (1, 5, 15 min) for better TV navigation.
+- **Fixed**: Enforced valid timeout values in `SettingsProvider` to ensure data integrity.
+- **Polished**: Verified screensaver timeout logic and focus handling with new unit tests.
+
 Release 1.0.67:
 - **Fixed**: Resolved a critical "Focus Loop" on Google TV where exiting the screensaver would immediately re-trigger it.
 - **Improved**: Hardened `TvFocusWrapper` to ensure tactile events only trigger when button press sequences match.

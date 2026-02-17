@@ -94,26 +94,16 @@ class _OilSlideVisualizerState extends State<OilSlideVisualizer> {
 
   @override
   Widget build(BuildContext context) {
-    return Focus(
-      autofocus: true,
-      onKeyEvent: (node, event) {
-        if (event is KeyDownEvent || event is KeyRepeatEvent) {
-          widget.onExit?.call();
-          return KeyEventResult.handled;
-        }
-        return KeyEventResult.ignored;
-      },
-      child: GestureDetector(
-        onTap: widget.onExit,
-        behavior: HitTestBehavior.opaque,
-        child: Stack(
-          children: [
-            // Main visualizer
-            GameWidget(
-              game: _game,
-            ),
-          ],
-        ),
+    return GestureDetector(
+      onTap: widget.onExit,
+      behavior: HitTestBehavior.opaque,
+      child: Stack(
+        children: [
+          // Main visualizer
+          GameWidget(
+            game: _game,
+          ),
+        ],
       ),
     );
   }

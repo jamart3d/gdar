@@ -255,5 +255,33 @@ void main() {
       final prefs = await SharedPreferences.getInstance();
       expect(prefs.getString('oil_palette'), 'ocean');
     });
+
+    test(
+        'sets and persists oil screensaver inactivity minutes (enforcing discrete values)',
+        () async {
+      // Test valid values
+      settingsProvider.setOilScreensaverInactivityMinutes(1);
+      expect(settingsProvider.oilScreensaverInactivityMinutes, 1);
+
+      settingsProvider.setOilScreensaverInactivityMinutes(15);
+      expect(settingsProvider.oilScreensaverInactivityMinutes, 15);
+
+      settingsProvider.setOilScreensaverInactivityMinutes(5);
+      expect(settingsProvider.oilScreensaverInactivityMinutes, 5);
+
+      // Verify persistence of last valid value
+      final prefs = await SharedPreferences.getInstance();
+      expect(prefs.getInt('oil_screensaver_inactivity_minutes'), 5);
+
+      // Test invalid values (should default to 5)
+      settingsProvider.setOilScreensaverInactivityMinutes(10);
+      expect(settingsProvider.oilScreensaverInactivityMinutes, 5);
+
+      settingsProvider.setOilScreensaverInactivityMinutes(30);
+      expect(settingsProvider.oilScreensaverInactivityMinutes, 5);
+
+      settingsProvider.setOilScreensaverInactivityMinutes(0);
+      expect(settingsProvider.oilScreensaverInactivityMinutes, 5);
+    });
   });
 }

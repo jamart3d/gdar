@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:shakedown/oil_slide/oil_slide_config.dart';
 import 'package:shakedown/oil_slide/oil_slide_visualizer.dart';
@@ -8,6 +9,7 @@ import 'package:shakedown/oil_slide/oil_slide_audio_reactor_factory.dart';
 import 'package:shakedown/oil_slide/visualizer_audio_reactor.dart';
 import 'package:shakedown/providers/settings_provider.dart';
 import 'package:shakedown/providers/audio_provider.dart';
+import 'package:shakedown/services/wakelock_service.dart';
 
 /// Screensaver screen displaying the oil_slide visualizer.
 ///
@@ -30,11 +32,33 @@ class ScreensaverScreen extends StatefulWidget {
 
 class _ScreensaverScreenState extends State<ScreensaverScreen> {
   OilSlideAudioReactor? _audioReactor;
+  WakelockService? _wakelockService;
 
   @override
   void initState() {
     super.initState();
     _initAudioReactor();
+    HardwareKeyboard.instance.addHandler(_handleGlobalKeyEvent);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_wakelockService == null) {
+      _wakelockService = Provider.of<WakelockService>(context, listen: false);
+      _wakelockService?.enable();
+    }
+  }
+
+  bool _handleGlobalKeyEvent(KeyEvent event) {
+    // Exit screensaver on any key down event
+    if (event is KeyDownEvent) {
+      if (mounted) {
+        Navigator.of(context).pop();
+        return true; // Handled
+      }
+    }
+    return false;
   }
 
   Future<void> _initAudioReactor() async {
@@ -83,6 +107,10 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
 
   @override
   void dispose() {
+    HardwareKeyboard.instance.removeHandler(_handleGlobalKeyEvent);
+    // Use true to ensure we are balanced, though AudioProvider might enable it back
+    // but typically we should release the one we specifically requested here.
+    _wakelockService?.disable();
     _audioReactor?.dispose();
     super.dispose();
   }
@@ -104,14 +132,20 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
       metaballCount: settings.oilMetaballCount,
     );
 
-    return Scaffold(
-      backgroundColor: Colors.black,
-      body: OilSlideVisualizer(
-        config: config,
-        audioReactor: _audioReactor,
-        onExit: () => Navigator.of(context).pop(),
-        kioskMode: settings.oilScreensaverMode == 'kiosk',
-        enableEasterEggs: settings.oilEasterEggsEnabled,
+    return PopScope(
+      canPop: true,
+      onPopInvokedWithResult: (didPop, result) {
+        // No extra logic needed, just ensures system back works predictably
+      },
+      child: Scaffold(
+        backgroundColor: Colors.black,
+        body: OilSlideVisualizer(
+          config: config,
+          audioReactor: _audioReactor,
+          onExit: () => Navigator.of(context).pop(),
+          kioskMode: settings.oilScreensaverMode == 'kiosk',
+          enableEasterEggs: settings.oilEasterEggsEnabled,
+        ),
       ),
     );
   }

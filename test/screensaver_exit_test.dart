@@ -1,20 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mockito/mockito.dart';
 import 'package:provider/provider.dart';
 import 'package:shakedown/providers/audio_provider.dart';
 import 'package:shakedown/providers/settings_provider.dart';
 import 'package:shakedown/ui/screens/screensaver_screen.dart';
 import 'package:shakedown/oil_slide/oil_slide_visualizer.dart';
 import 'package:shakedown/services/device_service.dart';
-import 'package:mockito/annotations.dart';
+import 'package:shakedown/services/wakelock_service.dart';
+import 'package:mockito/mockito.dart';
 import 'screensaver_exit_test.mocks.dart';
 
-@GenerateNiceMocks([
-  MockSpec<SettingsProvider>(),
-  MockSpec<AudioProvider>(),
-])
+class MockWakelockService extends Fake implements WakelockService {
+  @override
+  Future<void> enable() async {}
+  @override
+  Future<void> disable() async {}
+  @override
+  Future<void> toggle({required bool enable}) async {}
+}
+
 class MockDeviceService extends ChangeNotifier implements DeviceService {
   @override
   bool get isTv => true;
@@ -27,11 +32,13 @@ class MockDeviceService extends ChangeNotifier implements DeviceService {
 void main() {
   late MockSettingsProvider mockSettingsProvider;
   late MockAudioProvider mockAudioProvider;
+  late MockWakelockService mockWakelockService;
   late MockDeviceService mockDeviceService;
 
   setUp(() {
     mockSettingsProvider = MockSettingsProvider();
     mockAudioProvider = MockAudioProvider();
+    mockWakelockService = MockWakelockService();
     mockDeviceService = MockDeviceService();
 
     when(mockSettingsProvider.oilEnableAudioReactivity).thenReturn(false);
@@ -53,6 +60,7 @@ void main() {
         ChangeNotifierProvider<SettingsProvider>.value(
             value: mockSettingsProvider),
         ChangeNotifierProvider<AudioProvider>.value(value: mockAudioProvider),
+        Provider<WakelockService>.value(value: mockWakelockService),
         ChangeNotifierProvider<DeviceService>.value(value: mockDeviceService),
       ],
       child: const MaterialApp(
@@ -84,19 +92,7 @@ void main() {
 
     expect(find.byType(ScreensaverScreen), findsOneWidget);
 
-    // Ensure Focus widget has focus - Find the one inside OilSlideVisualizer
-    final visualizerFocus = find
-        .descendant(
-          of: find.byType(OilSlideVisualizer),
-          matching: find.byType(Focus),
-        )
-        .first;
-
-    // Request focus on the widget
-    await tester.tap(visualizerFocus);
-    await tester.pump();
-
-    // Simulate D-pad Center press
+    // Global key handler doesn't require focus on a specific widget
     await tester.sendKeyEvent(LogicalKeyboardKey.select);
     await tester.pump(const Duration(milliseconds: 500));
     await tester.pump(const Duration(milliseconds: 500));
@@ -110,18 +106,6 @@ void main() {
     await tester.pump(const Duration(milliseconds: 500));
 
     expect(find.byType(ScreensaverScreen), findsOneWidget);
-
-    // Ensure Focus widget has focus
-    final visualizerFocus = find
-        .descendant(
-          of: find.byType(OilSlideVisualizer),
-          matching: find.byType(Focus),
-        )
-        .first;
-
-    // Request focus on the widget
-    await tester.tap(visualizerFocus);
-    await tester.pump();
 
     // Simulate Back button press
     await tester.sendKeyEvent(LogicalKeyboardKey.escape);

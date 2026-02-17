@@ -608,9 +608,12 @@ class SettingsProvider with ChangeNotifier {
   void setOilScreensaverMode(String mode) => _updateStringPreference(
       _oilScreensaverModeKey, _oilScreensaverMode = mode);
 
-  void setOilScreensaverInactivityMinutes(int minutes) => _updateIntPreference(
-      _oilScreensaverInactivityMinutesKey,
-      _oilScreensaverInactivityMinutes = minutes);
+  void setOilScreensaverInactivityMinutes(int minutes) {
+    // Enforce discrete values: 1, 5, 15
+    final enforced = [1, 5, 15].contains(minutes) ? minutes : 5;
+    _updateIntPreference(_oilScreensaverInactivityMinutesKey,
+        _oilScreensaverInactivityMinutes = enforced);
+  }
 
   Future<void> setOilViscosity(double value) =>
       _updateDoublePreference(_oilViscosityKey, _oilViscosity = value);

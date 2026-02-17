@@ -135,95 +135,73 @@ class PlaybackSection extends StatelessWidget {
                   const SizedBox(height: 8),
                   const SizedBox(height: 8),
                   // Inactivity Timeout
-                  Row(
-                    children: [
-                      Text(
-                        'Inactivity Timeout',
-                        style: Theme.of(context)
-                            .textTheme
-                            .bodySmall
-                            ?.copyWith(fontSize: 12.0 * scaleFactor),
-                      ),
-                      Expanded(
-                        child: TvFocusWrapper(
-                          onKeyEvent: (node, event) {
-                            if (event is KeyDownEvent) {
-                              if (event.logicalKey ==
-                                  LogicalKeyboardKey.arrowLeft) {
-                                final newVal = (settingsProvider
-                                            .oilScreensaverInactivityMinutes -
-                                        1)
-                                    .clamp(1, 30);
-                                if (newVal !=
-                                    settingsProvider
-                                        .oilScreensaverInactivityMinutes) {
-                                  HapticFeedback.selectionClick();
-                                  context
-                                      .read<SettingsProvider>()
-                                      .setOilScreensaverInactivityMinutes(
-                                          newVal);
-                                }
-                                return KeyEventResult.handled;
-                              } else if (event.logicalKey ==
-                                  LogicalKeyboardKey.arrowRight) {
-                                final newVal = (settingsProvider
-                                            .oilScreensaverInactivityMinutes +
-                                        1)
-                                    .clamp(1, 30);
-                                if (newVal !=
-                                    settingsProvider
-                                        .oilScreensaverInactivityMinutes) {
-                                  HapticFeedback.selectionClick();
-                                  context
-                                      .read<SettingsProvider>()
-                                      .setOilScreensaverInactivityMinutes(
-                                          newVal);
-                                }
-                                return KeyEventResult.handled;
-                              }
-                            }
-                            return KeyEventResult.ignored;
-                          },
-                          child: Slider(
-                            onChangeStart: (_) => HapticFeedback.lightImpact(),
-                            value: settingsProvider
-                                .oilScreensaverInactivityMinutes
-                                .toDouble(),
-                            min: 1,
-                            max: 30,
-                            divisions: 29,
-                            label:
-                                '${settingsProvider.oilScreensaverInactivityMinutes} min',
-                            onChanged: (value) {
-                              if (value.round() !=
-                                  settingsProvider
-                                      .oilScreensaverInactivityMinutes) {
-                                HapticFeedback.selectionClick();
-                              }
-                              context
-                                  .read<SettingsProvider>()
-                                  .setOilScreensaverInactivityMinutes(
-                                      value.round());
-                            },
-                          ),
+                  Text(
+                    'Inactivity Timeout',
+                    style: Theme.of(context)
+                        .textTheme
+                        .bodySmall
+                        ?.copyWith(fontSize: 12.0 * scaleFactor),
+                  ),
+                  const SizedBox(height: 8),
+                  TvFocusWrapper(
+                    onKeyEvent: (node, event) {
+                      if (event is KeyDownEvent) {
+                        final current =
+                            settingsProvider.oilScreensaverInactivityMinutes;
+                        int? newVal;
+
+                        if (event.logicalKey == LogicalKeyboardKey.arrowLeft) {
+                          if (current == 15) {
+                            newVal = 5;
+                          } else if (current == 5) {
+                            newVal = 1;
+                          }
+                        } else if (event.logicalKey ==
+                            LogicalKeyboardKey.arrowRight) {
+                          if (current == 1) {
+                            newVal = 5;
+                          } else if (current == 5) {
+                            newVal = 15;
+                          }
+                        }
+
+                        if (newVal != null && newVal != current) {
+                          HapticFeedback.selectionClick();
+                          context
+                              .read<SettingsProvider>()
+                              .setOilScreensaverInactivityMinutes(newVal);
+                          return KeyEventResult.handled;
+                        }
+                      }
+                      return KeyEventResult.ignored;
+                    },
+                    child: SegmentedButton<int>(
+                      segments: const [
+                        ButtonSegment(
+                          value: 1,
+                          label: Text('1 min'),
                         ),
-                      ),
-                      SizedBox(
-                        width: 60 * scaleFactor,
-                        child: Text(
-                          '${settingsProvider.oilScreensaverInactivityMinutes} min',
-                          style: Theme.of(context)
-                              .textTheme
-                              .labelLarge
-                              ?.copyWith(
-                                  fontSize: 12.0 * scaleFactor,
-                                  fontWeight: FontWeight.bold,
-                                  color: Theme.of(context).colorScheme.primary),
-                          textAlign: TextAlign.end,
+                        ButtonSegment(
+                          value: 5,
+                          label: Text('5 min'),
                         ),
-                      ),
-                      const SizedBox(width: 16),
-                    ],
+                        ButtonSegment(
+                          value: 15,
+                          label: Text('15 min'),
+                        ),
+                      ],
+                      selected: {
+                        settingsProvider.oilScreensaverInactivityMinutes
+                      },
+                      onSelectionChanged: (Set<int> newSelection) {
+                        HapticFeedback.lightImpact();
+                        context
+                            .read<SettingsProvider>()
+                            .setOilScreensaverInactivityMinutes(
+                                newSelection.first);
+                      },
+                      showSelectedIcon: false,
+                    ),
                   ),
                   const SizedBox(height: 16),
                   // Color Palette Selector
