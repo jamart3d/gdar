@@ -93,7 +93,11 @@ class OilSlideShaderBackground extends PositionComponent {
   void render(Canvas canvas) {
     super.render(canvas);
 
-    if (!_shaderLoaded || _shader == null || _stealTexture == null) {
+    if (!_shaderLoaded ||
+        _shader == null ||
+        _stealTexture == null ||
+        size.x <= 10 ||
+        size.y <= 10) {
       // Fallback: render error or placeholder
       // We must have a texture bound for the shader to work on strict drivers,
       // even if we don't use it.

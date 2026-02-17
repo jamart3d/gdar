@@ -267,7 +267,12 @@ vec3 getSilkNormal(vec2 uv, float time) {
 
 void main() {
     // Normalize coordinates to 0-1
-    vec2 resolution = max(uResolution, vec2(1.0));
+    if (uResolution.x < 10.0 || uResolution.y < 10.0) {
+        fragColor = vec4(1.0, 0.0, 0.0, 1.0); // DIAGNOSTIC: RED
+        return;
+    }
+    
+    vec2 resolution = uResolution;
     vec2 uv = FlutterFragCoord().xy / resolution;
     
     // Adjust aspect ratio for shape calculations
@@ -348,7 +353,7 @@ void main() {
         // Blend texture over background
         vec3 finalColor = mix(bgColor, texColor.rgb, texColor.a);
         
-        fragColor = vec4(finalColor, 1.0);
+        fragColor = vec4(clamp(finalColor, 0.0, 1.0), 1.0);
         return;
     }
 
@@ -410,8 +415,8 @@ void main() {
     float colorPhase = field * 0.3 + uTime * 0.1 + uOverallEnergy * 0.2;
     vec3 blobColor = getPaletteColor(colorPhase);
     
-    // Background color (very dark, almost black)
-    vec3 bgColor = vec3(0.02, 0.02, 0.03);
+    // Background color (very dark purple - DIAGNOSTIC)
+    vec3 bgColor = vec3(0.1, 0.0, 0.1);
     
     // Lava Lamp Specific Effects
     if (abs(uVisualMode - 0.0) < 0.1) {
