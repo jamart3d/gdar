@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shakedown/config/default_settings.dart';
-import 'package:shakedown/oil_slide/oil_slide_config.dart';
 import 'package:shakedown/utils/logger.dart';
 
 class SettingsProvider with ChangeNotifier {
@@ -47,26 +46,22 @@ class SettingsProvider with ChangeNotifier {
   static const String _preventSleepKey = 'prevent_sleep';
   static const String _simpleRandomIconKey = 'simple_random_icon';
 
-  // Screensaver (oil_slide)
+  // Screensaver (steal)
   static const String _useOilScreensaverKey = 'use_oil_screensaver';
   static const String _oilScreensaverModeKey = 'oil_screensaver_mode';
   static const String _oilScreensaverInactivityMinutesKey =
       'oil_screensaver_inactivity_minutes';
-  static const String _oilViscosityKey = 'oil_viscosity';
   static const String _oilFlowSpeedKey = 'oil_flow_speed';
   static const String _oilPulseIntensityKey = 'oil_pulse_intensity';
   static const String _oilPaletteKey = 'oil_palette';
   static const String _oilFilmGrainKey = 'oil_film_grain';
   static const String _oilHeatDriftKey = 'oil_heat_drift';
-  static const String _oilMetaballCountKey = 'oil_metaball_count';
   static const String _oilEnableAudioReactivityKey =
       'oil_enable_audio_reactivity';
   static const String _oilPerformanceModeKey = 'oil_performance_mode';
-  static const String _oilEasterEggsEnabledKey = 'oil_easter_eggs_enabled';
   static const String _oilPaletteCycleKey = 'oil_palette_cycle';
   static const String _oilPaletteTransitionSpeedKey =
       'oil_palette_transition_speed';
-  static const String _oilVisualModeKey = 'oil_visual_mode';
 
   static const String _marqueeEnabledKey =
       'marquee_enabled'; // Logic for disabling marquee in tests
@@ -124,24 +119,20 @@ class SettingsProvider with ChangeNotifier {
   late bool _simpleRandomIcon;
   late bool _marqueeEnabled;
 
-  // Screensaver (oil_slide)
+  // Screensaver (steal)
   late bool _useOilScreensaver;
   late String _oilScreensaverMode;
   late int _oilScreensaverInactivityMinutes;
-  late double _oilViscosity;
   late double _oilFlowSpeed;
   late double _oilPulseIntensity;
   late String _oilPalette;
   late double _oilFilmGrain;
   late double _oilHeatDrift;
-  late int _oilMetaballCount;
   late bool _oilEnableAudioReactivity;
   late bool _preventSleep;
   late bool _oilPerformanceMode;
-  late bool _oilEasterEggsEnabled;
   late bool _oilPaletteCycle;
   late double _oilPaletteTransitionSpeed;
-  late String _oilVisualMode;
 
   Color? _seedColor;
 
@@ -185,23 +176,19 @@ class SettingsProvider with ChangeNotifier {
   bool get simpleRandomIcon => _simpleRandomIcon;
   bool get marqueeEnabled => _marqueeEnabled;
 
-  // Screensaver (oil_slide) getters
+  // Screensaver visualizer getters
   bool get useOilScreensaver => _useOilScreensaver;
   String get oilScreensaverMode => _oilScreensaverMode;
   int get oilScreensaverInactivityMinutes => _oilScreensaverInactivityMinutes;
-  double get oilViscosity => _oilViscosity;
   double get oilFlowSpeed => _oilFlowSpeed;
   double get oilPulseIntensity => _oilPulseIntensity;
   String get oilPalette => _oilPalette;
   double get oilFilmGrain => _oilFilmGrain;
   double get oilHeatDrift => _oilHeatDrift;
-  int get oilMetaballCount => _oilMetaballCount;
   bool get oilEnableAudioReactivity => _oilEnableAudioReactivity;
   bool get oilPerformanceMode => _oilPerformanceMode;
-  bool get oilEasterEggsEnabled => _oilEasterEggsEnabled;
   bool get oilPaletteCycle => _oilPaletteCycle;
   double get oilPaletteTransitionSpeed => _oilPaletteTransitionSpeed;
-  String get oilVisualMode => _oilVisualMode;
 
   Color? get seedColor => _seedColor;
 
@@ -416,7 +403,7 @@ class SettingsProvider with ChangeNotifier {
     _enableShakedownTween =
         _prefs.getBool(_enableShakedownTweenKey) ?? true; // Default OFF
 
-    // Screensaver (oil_slide)
+    // Screensaver (steal)
     _useOilScreensaver = _prefs.getBool(_useOilScreensaverKey) ??
         DefaultSettings.useOilScreensaver;
     _oilScreensaverMode = _prefs.getString(_oilScreensaverModeKey) ??
@@ -424,8 +411,6 @@ class SettingsProvider with ChangeNotifier {
     _oilScreensaverInactivityMinutes =
         _prefs.getInt(_oilScreensaverInactivityMinutesKey) ??
             DefaultSettings.oilScreensaverInactivityMinutes;
-    _oilViscosity =
-        _prefs.getDouble(_oilViscosityKey) ?? DefaultSettings.oilViscosity;
     _oilFlowSpeed =
         _prefs.getDouble(_oilFlowSpeedKey) ?? DefaultSettings.oilFlowSpeed;
     _oilPulseIntensity = _prefs.getDouble(_oilPulseIntensityKey) ??
@@ -436,24 +421,18 @@ class SettingsProvider with ChangeNotifier {
         _prefs.getDouble(_oilFilmGrainKey) ?? DefaultSettings.oilFilmGrain;
     _oilHeatDrift =
         _prefs.getDouble(_oilHeatDriftKey) ?? DefaultSettings.oilHeatDrift;
-    _oilMetaballCount =
-        _prefs.getInt(_oilMetaballCountKey) ?? DefaultSettings.oilMetaballCount;
     _oilEnableAudioReactivity = _prefs.getBool(_oilEnableAudioReactivityKey) ??
         DefaultSettings.oilEnableAudioReactivity;
     _oilPerformanceMode = _prefs.getBool(_oilPerformanceModeKey) ??
         DefaultSettings.oilPerformanceMode;
-    _oilEasterEggsEnabled = _prefs.getBool(_oilEasterEggsEnabledKey) ??
-        DefaultSettings.oilEasterEggsEnabled;
     _oilPaletteCycle = _prefs.getBool(_oilPaletteCycleKey) ?? false;
     _oilPaletteTransitionSpeed =
         _prefs.getDouble(_oilPaletteTransitionSpeedKey) ??
             5.0; // 5 seconds default
-    _oilVisualMode =
-        _prefs.getString(_oilVisualModeKey) ?? DefaultSettings.oilVisualMode;
 
     if (isTv) {
       // Force 'steal' mode on TV, ignoring saved settings
-      _oilVisualMode = 'steal';
+      _oilScreensaverMode = 'steal';
     }
 
     final seedColorValue = _prefs.getInt(_seedColorKey);
@@ -601,7 +580,7 @@ class SettingsProvider with ChangeNotifier {
   void toggleRandomExcludePlayed() => _updatePreference(
       _randomExcludePlayedKey, _randomExcludePlayed = !_randomExcludePlayed);
 
-  // Screensaver (oil_slide) toggles
+  // Screensaver visualizer toggles
   void toggleUseOilScreensaver() => _updatePreference(
       _useOilScreensaverKey, _useOilScreensaver = !_useOilScreensaver);
 
@@ -614,9 +593,6 @@ class SettingsProvider with ChangeNotifier {
     _updateIntPreference(_oilScreensaverInactivityMinutesKey,
         _oilScreensaverInactivityMinutes = enforced);
   }
-
-  Future<void> setOilViscosity(double value) =>
-      _updateDoublePreference(_oilViscosityKey, _oilViscosity = value);
 
   Future<void> setOilFlowSpeed(double value) =>
       _updateDoublePreference(_oilFlowSpeedKey, _oilFlowSpeed = value);
@@ -633,9 +609,6 @@ class SettingsProvider with ChangeNotifier {
   Future<void> setOilHeatDrift(double value) =>
       _updateDoublePreference(_oilHeatDriftKey, _oilHeatDrift = value);
 
-  Future<void> setOilMetaballCount(int value) =>
-      _updateIntPreference(_oilMetaballCountKey, _oilMetaballCount = value);
-
   void toggleOilEnableAudioReactivity() => _updatePreference(
       _oilEnableAudioReactivityKey,
       _oilEnableAudioReactivity = !_oilEnableAudioReactivity);
@@ -643,41 +616,11 @@ class SettingsProvider with ChangeNotifier {
   void toggleOilPerformanceMode() => _updatePreference(
       _oilPerformanceModeKey, _oilPerformanceMode = !_oilPerformanceMode);
 
-  void toggleOilEasterEggsEnabled() => _updatePreference(
-      _oilEasterEggsEnabledKey, _oilEasterEggsEnabled = !_oilEasterEggsEnabled);
-
   void toggleOilPaletteCycle() => _updatePreference(
       _oilPaletteCycleKey, _oilPaletteCycle = !_oilPaletteCycle);
 
   void setOilPaletteTransitionSpeed(double seconds) => _updateDoublePreference(
       _oilPaletteTransitionSpeedKey, _oilPaletteTransitionSpeed = seconds);
-
-  Future<void> setOilVisualMode(String mode) async {
-    if (isTv) {
-      // Disable mode switching on TV
-      _oilVisualMode = 'steal';
-      notifyListeners();
-      return;
-    }
-
-    _oilVisualMode = mode;
-    await _prefs.setString(_oilVisualModeKey, mode);
-
-    if (mode != 'custom') {
-      // Apply preset to individual config values
-      final preset = OilSlideConfig.fromMode(mode);
-      await setOilViscosity(preset.viscosity);
-      await setOilFlowSpeed(preset.flowSpeed);
-      await setOilPalette(preset.palette);
-      await setOilFilmGrain(preset.filmGrain);
-      await setOilPulseIntensity(preset.pulseIntensity);
-      await setOilFilmGrain(preset.filmGrain);
-      await setOilPulseIntensity(preset.pulseIntensity);
-      await setOilHeatDrift(preset.heatDrift);
-      await setOilMetaballCount(preset.metaballCount);
-    }
-    notifyListeners();
-  }
 
   // Source Filtering
   static const String _filterHighestShnidKey = 'filter_highest_shnid';

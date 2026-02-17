@@ -1,7 +1,7 @@
 /// Data class representing audio energy levels across frequency bands.
 ///
 /// This is used by audio reactors to communicate frequency data to the
-/// oil_slide visualizer for reactive animations.
+/// Screensaver visualizer for reactive animations.
 class AudioEnergy {
   final double bass; // Low frequencies (20-250 Hz)
   final double mid; // Mid frequencies (250-4000 Hz)
@@ -36,7 +36,7 @@ class AudioEnergy {
 /// Different platforms can provide different implementations:
 /// - Android: Use Visualizer API for real-time FFT analysis
 /// - Fallback: Use playback position heuristics
-abstract class OilSlideAudioReactor {
+abstract class AudioReactor {
   /// Stream of audio energy data.
   /// Emits new values as audio data is analyzed.
   Stream<AudioEnergy> get energyStream;
@@ -57,12 +57,11 @@ abstract class OilSlideAudioReactor {
   ///
   /// Note: This is a placeholder. Actual implementation will be in a separate
   /// factory class to avoid circular dependencies.
-  factory OilSlideAudioReactor.create({
+  factory AudioReactor.create({
     required bool isAndroid,
     int? audioSessionId,
   }) {
-    // This will be implemented in oil_slide_audio_reactor_factory.dart
-    throw UnimplementedError(
-        'Use OilSlideAudioReactorFactory.create() instead');
+    // This will be implemented in audio_reactor_factory.dart
+    throw UnimplementedError('Use AudioReactorFactory.create() instead');
   }
 }

@@ -10,7 +10,7 @@ import io.flutter.plugin.common.MethodChannel.Result
 import kotlin.math.sqrt
 
 /**
- * Android Visualizer API plugin for oil_slide screensaver.
+ * Android Visualizer API plugin for screensaver visualizer.
  * 
  * Performs FFT analysis on audio output and sends frequency band energy
  * data to Flutter via EventChannel.

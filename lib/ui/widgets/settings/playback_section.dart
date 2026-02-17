@@ -4,7 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:shakedown/providers/audio_provider.dart';
 import 'package:shakedown/providers/settings_provider.dart';
 import 'package:shakedown/services/device_service.dart';
-import 'package:shakedown/oil_slide/oil_slide_config.dart';
+import 'package:shakedown/steal_screensaver/steal_config.dart';
 import 'package:shakedown/ui/widgets/section_card.dart';
 import 'package:shakedown/ui/widgets/settings/highlightable_setting.dart';
 import 'package:shakedown/ui/widgets/settings/random_probability_card.dart';
@@ -79,7 +79,7 @@ class PlaybackSection extends StatelessWidget {
               secondary: const Icon(Icons.screen_lock_portrait_rounded),
             ),
           ),
-        // Screensaver (oil_slide) - Show on TV ONLY
+        // Screensaver (Steal) - Show on TV ONLY
         if (Provider.of<DeviceService>(context, listen: false).isTv) ...[
           TvSwitchListTile(
             dense: true,
@@ -115,7 +115,7 @@ class PlaybackSection extends StatelessWidget {
             subtitle: FittedBox(
                 fit: BoxFit.scaleDown,
                 alignment: Alignment.centerLeft,
-                child: Text('Test the psychedelic oil lamp effect now',
+                child: Text('Test the Steal Your Face visual effect now',
                     style: Theme.of(context)
                         .textTheme
                         .bodySmall
@@ -217,7 +217,7 @@ class PlaybackSection extends StatelessWidget {
                     height: 48 * scaleFactor,
                     child: ListView(
                       scrollDirection: Axis.horizontal,
-                      children: OilSlideConfig.palettes.keys.map((palette) {
+                      children: StealConfig.palettes.keys.map((palette) {
                         final isSelected =
                             settingsProvider.oilPalette == palette;
                         return Padding(

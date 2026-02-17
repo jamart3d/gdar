@@ -2,19 +2,17 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
-import 'package:shakedown/oil_slide/oil_slide_config.dart';
-import 'package:shakedown/oil_slide/oil_slide_visualizer.dart';
-import 'package:shakedown/oil_slide/oil_slide_audio_reactor.dart';
-import 'package:shakedown/oil_slide/oil_slide_audio_reactor_factory.dart';
-import 'package:shakedown/oil_slide/visualizer_audio_reactor.dart';
+import 'package:shakedown/steal_screensaver/steal_config.dart';
+import 'package:shakedown/steal_screensaver/steal_visualizer.dart';
+import 'package:shakedown/visualizer/audio_reactor.dart';
+import 'package:shakedown/visualizer/audio_reactor_factory.dart';
+import 'package:shakedown/visualizer/visualizer_audio_reactor.dart';
 import 'package:shakedown/providers/settings_provider.dart';
 import 'package:shakedown/providers/audio_provider.dart';
+import 'package:shakedown/services/device_service.dart';
 import 'package:shakedown/services/wakelock_service.dart';
 
-/// Screensaver screen displaying the oil_slide visualizer.
-///
-/// This screen is shown after a period of inactivity and displays
-/// the animated oil/lava lamp effect with audio reactivity.
+/// Screensaver screen displaying the Steal Your Face visualizer.
 class ScreensaverScreen extends StatefulWidget {
   const ScreensaverScreen({super.key});
 
@@ -31,7 +29,7 @@ class ScreensaverScreen extends StatefulWidget {
 }
 
 class _ScreensaverScreenState extends State<ScreensaverScreen> {
-  OilSlideAudioReactor? _audioReactor;
+  AudioReactor? _audioReactor;
   WakelockService? _wakelockService;
 
   @override
@@ -66,7 +64,7 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
 
     if (!settings.oilEnableAudioReactivity) {
       // Audio reactivity disabled
-      final reactor = await OilSlideAudioReactorFactory.create();
+      final reactor = await AudioReactorFactory.create();
       if (mounted) {
         setState(() => _audioReactor = reactor);
       }
@@ -82,7 +80,7 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
       final isAvailable = await VisualizerAudioReactor.isAvailable();
 
       if (isAvailable) {
-        final reactor = await OilSlideAudioReactorFactory.create(
+        final reactor = await AudioReactorFactory.create(
           audioSessionId: sessionId,
         );
 
@@ -91,14 +89,14 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
         }
       } else {
         // Fallback to mock
-        final reactor = await OilSlideAudioReactorFactory.create();
+        final reactor = await AudioReactorFactory.create();
         if (mounted) {
           setState(() => _audioReactor = reactor);
         }
       }
     } else {
       // Non-Android platforms use mock
-      final reactor = await OilSlideAudioReactorFactory.create();
+      final reactor = await AudioReactorFactory.create();
       if (mounted) {
         setState(() => _audioReactor = reactor);
       }
@@ -108,8 +106,6 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
   @override
   void dispose() {
     HardwareKeyboard.instance.removeHandler(_handleGlobalKeyEvent);
-    // Use true to ensure we are balanced, though AudioProvider might enable it back
-    // but typically we should release the one we specifically requested here.
     _wakelockService?.disable();
     _audioReactor?.dispose();
     super.dispose();
@@ -120,31 +116,28 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
     final settings = context.watch<SettingsProvider>();
 
     // Build config from settings
-    final config = OilSlideConfig(
-      viscosity: settings.oilViscosity,
+    final config = StealConfig(
       flowSpeed: settings.oilFlowSpeed,
       palette: settings.oilPalette,
       filmGrain: settings.oilFilmGrain,
       pulseIntensity: settings.oilPulseIntensity,
       heatDrift: settings.oilHeatDrift,
       enableAudioReactivity: settings.oilEnableAudioReactivity,
-      visualMode: settings.oilVisualMode,
-      metaballCount: settings.oilMetaballCount,
+      performanceMode: settings.oilPerformanceMode ||
+          Provider.of<DeviceService>(context, listen: false).isTv,
     );
 
     return PopScope(
       canPop: true,
       onPopInvokedWithResult: (didPop, result) {
-        // No extra logic needed, just ensures system back works predictably
+        // No extra logic needed
       },
       child: Scaffold(
         backgroundColor: Colors.black,
-        body: OilSlideVisualizer(
+        body: StealVisualizer(
           config: config,
           audioReactor: _audioReactor,
           onExit: () => Navigator.of(context).pop(),
-          kioskMode: settings.oilScreensaverMode == 'kiosk',
-          enableEasterEggs: settings.oilEasterEggsEnabled,
         ),
       ),
     );

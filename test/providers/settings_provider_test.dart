@@ -202,43 +202,11 @@ void main() {
       expect(settingsProvider.abbreviateMonth, false);
     });
   });
-  group('SettingsProvider Oil Slide', () {
+  group('SettingsProvider Screensaver (Steal)', () {
     test('initializes with default values', () {
       expect(settingsProvider.useOilScreensaver, false);
-      expect(settingsProvider.oilScreensaverMode, 'standard');
-      expect(settingsProvider.oilViscosity, 0.7);
-      expect(settingsProvider.oilFlowSpeed, 0.5);
       expect(settingsProvider.oilPalette, 'acid_green');
       expect(settingsProvider.oilEnableAudioReactivity, true);
-    });
-
-    test('sets and persists oil viscosity', () async {
-      await settingsProvider.setOilViscosity(0.85);
-      expect(settingsProvider.oilViscosity, 0.85);
-      final prefs = await SharedPreferences.getInstance();
-      expect(prefs.getDouble('oil_viscosity'), 0.85);
-    });
-
-    test('sets and persists oil visual mode', () async {
-      await settingsProvider.setOilVisualMode('lava_lamp');
-      expect(settingsProvider.oilVisualMode, 'lava_lamp');
-      // Verify it applied preset values (lava_lamp has viscosity 0.9)
-      expect(settingsProvider.oilViscosity, 0.9);
-
-      final prefs = await SharedPreferences.getInstance();
-      expect(prefs.getString('oil_visual_mode'), 'lava_lamp');
-    });
-
-    test('sets and persists oil visual mode (steal)', () async {
-      await settingsProvider.setOilVisualMode('steal');
-      expect(settingsProvider.oilVisualMode, 'steal');
-      // Verify preset values for steal
-      expect(settingsProvider.oilViscosity, 0.6);
-      expect(settingsProvider.oilFlowSpeed, 0.4);
-      expect(settingsProvider.oilMetaballCount, 1);
-
-      final prefs = await SharedPreferences.getInstance();
-      expect(prefs.getString('oil_visual_mode'), 'steal');
     });
 
     test('toggles oil audio reactivity', () async {
@@ -249,6 +217,7 @@ void main() {
       final prefs = await SharedPreferences.getInstance();
       expect(prefs.getBool('oil_enable_audio_reactivity'), !initial);
     });
+
     test('sets and persists oil palette', () async {
       await settingsProvider.setOilPalette('ocean');
       expect(settingsProvider.oilPalette, 'ocean');

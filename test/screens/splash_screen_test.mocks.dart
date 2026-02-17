@@ -702,13 +702,6 @@ class MockSettingsProvider extends _i1.Mock implements _i8.SettingsProvider {
       ) as int);
 
   @override
-  double get oilViscosity => (super.noSuchMethod(
-        Invocation.getter(#oilViscosity),
-        returnValue: 0.0,
-        returnValueForMissingStub: 0.0,
-      ) as double);
-
-  @override
   double get oilFlowSpeed => (super.noSuchMethod(
         Invocation.getter(#oilFlowSpeed),
         returnValue: 0.0,
@@ -750,13 +743,6 @@ class MockSettingsProvider extends _i1.Mock implements _i8.SettingsProvider {
       ) as double);
 
   @override
-  int get oilMetaballCount => (super.noSuchMethod(
-        Invocation.getter(#oilMetaballCount),
-        returnValue: 0,
-        returnValueForMissingStub: 0,
-      ) as int);
-
-  @override
   bool get oilEnableAudioReactivity => (super.noSuchMethod(
         Invocation.getter(#oilEnableAudioReactivity),
         returnValue: false,
@@ -766,13 +752,6 @@ class MockSettingsProvider extends _i1.Mock implements _i8.SettingsProvider {
   @override
   bool get oilPerformanceMode => (super.noSuchMethod(
         Invocation.getter(#oilPerformanceMode),
-        returnValue: false,
-        returnValueForMissingStub: false,
-      ) as bool);
-
-  @override
-  bool get oilEasterEggsEnabled => (super.noSuchMethod(
-        Invocation.getter(#oilEasterEggsEnabled),
         returnValue: false,
         returnValueForMissingStub: false,
       ) as bool);
@@ -790,19 +769,6 @@ class MockSettingsProvider extends _i1.Mock implements _i8.SettingsProvider {
         returnValue: 0.0,
         returnValueForMissingStub: 0.0,
       ) as double);
-
-  @override
-  String get oilVisualMode => (super.noSuchMethod(
-        Invocation.getter(#oilVisualMode),
-        returnValue: _i5.dummyValue<String>(
-          this,
-          Invocation.getter(#oilVisualMode),
-        ),
-        returnValueForMissingStub: _i5.dummyValue<String>(
-          this,
-          Invocation.getter(#oilVisualMode),
-        ),
-      ) as String);
 
   @override
   bool get randomOnlyUnplayed => (super.noSuchMethod(
@@ -1217,16 +1183,6 @@ class MockSettingsProvider extends _i1.Mock implements _i8.SettingsProvider {
       );
 
   @override
-  _i4.Future<void> setOilViscosity(double? value) => (super.noSuchMethod(
-        Invocation.method(
-          #setOilViscosity,
-          [value],
-        ),
-        returnValue: _i4.Future<void>.value(),
-        returnValueForMissingStub: _i4.Future<void>.value(),
-      ) as _i4.Future<void>);
-
-  @override
   _i4.Future<void> setOilFlowSpeed(double? value) => (super.noSuchMethod(
         Invocation.method(
           #setOilFlowSpeed,
@@ -1277,16 +1233,6 @@ class MockSettingsProvider extends _i1.Mock implements _i8.SettingsProvider {
       ) as _i4.Future<void>);
 
   @override
-  _i4.Future<void> setOilMetaballCount(int? value) => (super.noSuchMethod(
-        Invocation.method(
-          #setOilMetaballCount,
-          [value],
-        ),
-        returnValue: _i4.Future<void>.value(),
-        returnValueForMissingStub: _i4.Future<void>.value(),
-      ) as _i4.Future<void>);
-
-  @override
   void toggleOilEnableAudioReactivity() => super.noSuchMethod(
         Invocation.method(
           #toggleOilEnableAudioReactivity,
@@ -1299,15 +1245,6 @@ class MockSettingsProvider extends _i1.Mock implements _i8.SettingsProvider {
   void toggleOilPerformanceMode() => super.noSuchMethod(
         Invocation.method(
           #toggleOilPerformanceMode,
-          [],
-        ),
-        returnValueForMissingStub: null,
-      );
-
-  @override
-  void toggleOilEasterEggsEnabled() => super.noSuchMethod(
-        Invocation.method(
-          #toggleOilEasterEggsEnabled,
           [],
         ),
         returnValueForMissingStub: null,
@@ -1330,16 +1267,6 @@ class MockSettingsProvider extends _i1.Mock implements _i8.SettingsProvider {
         ),
         returnValueForMissingStub: null,
       );
-
-  @override
-  _i4.Future<void> setOilVisualMode(String? mode) => (super.noSuchMethod(
-        Invocation.method(
-          #setOilVisualMode,
-          [mode],
-        ),
-        returnValue: _i4.Future<void>.value(),
-        returnValueForMissingStub: _i4.Future<void>.value(),
-      ) as _i4.Future<void>);
 
   @override
   void toggleFilterHighestShnid() => super.noSuchMethod(

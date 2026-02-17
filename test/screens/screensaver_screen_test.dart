@@ -5,8 +5,9 @@ import 'package:provider/provider.dart';
 import 'package:shakedown/providers/audio_provider.dart';
 import 'package:shakedown/providers/settings_provider.dart';
 import 'package:shakedown/ui/screens/screensaver_screen.dart';
-import 'package:shakedown/oil_slide/oil_slide_visualizer.dart';
+import 'package:shakedown/steal_screensaver/steal_visualizer.dart';
 import 'package:shakedown/services/device_service.dart';
+import 'package:shakedown/services/wakelock_service.dart';
 import 'package:flutter/services.dart';
 import 'package:mockito/annotations.dart';
 import 'screensaver_screen_test.mocks.dart';
@@ -14,6 +15,7 @@ import 'screensaver_screen_test.mocks.dart';
 @GenerateNiceMocks([
   MockSpec<SettingsProvider>(),
   MockSpec<AudioProvider>(),
+  MockSpec<WakelockService>(),
 ])
 
 // Manual mock to avoid build_runner for this quick fix
@@ -30,24 +32,22 @@ void main() {
   late MockSettingsProvider mockSettingsProvider;
   late MockAudioProvider mockAudioProvider;
   late MockDeviceService mockDeviceService;
+  late MockWakelockService mockWakelockService;
 
   setUp(() {
     mockSettingsProvider = MockSettingsProvider();
     mockAudioProvider = MockAudioProvider();
     mockDeviceService = MockDeviceService();
+    mockWakelockService = MockWakelockService();
 
     // Default mock behavior for SettingsProvider
     when(mockSettingsProvider.oilEnableAudioReactivity).thenReturn(true);
-    when(mockSettingsProvider.oilViscosity).thenReturn(0.5);
-    when(mockSettingsProvider.oilFlowSpeed).thenReturn(1.0);
-    when(mockSettingsProvider.oilPalette).thenReturn('psychedelic');
-    when(mockSettingsProvider.oilFilmGrain).thenReturn(0.1);
-    when(mockSettingsProvider.oilPulseIntensity).thenReturn(0.5);
-    when(mockSettingsProvider.oilVisualMode).thenReturn('psychedelic');
-    when(mockSettingsProvider.oilMetaballCount).thenReturn(6);
-    when(mockSettingsProvider.oilHeatDrift).thenReturn(0.1);
-    when(mockSettingsProvider.oilScreensaverMode).thenReturn('default');
-    when(mockSettingsProvider.oilEasterEggsEnabled).thenReturn(true);
+    when(mockSettingsProvider.oilFlowSpeed).thenReturn(0.5);
+    when(mockSettingsProvider.oilPalette).thenReturn('acid_green');
+    when(mockSettingsProvider.oilFilmGrain).thenReturn(0.15);
+    when(mockSettingsProvider.oilPulseIntensity).thenReturn(0.8);
+    when(mockSettingsProvider.oilHeatDrift).thenReturn(0.3);
+    when(mockSettingsProvider.oilScreensaverMode).thenReturn('standard');
   });
 
   Widget createWidgetUnderTest() {
@@ -57,6 +57,7 @@ void main() {
             value: mockSettingsProvider),
         ChangeNotifierProvider<AudioProvider>.value(value: mockAudioProvider),
         ChangeNotifierProvider<DeviceService>.value(value: mockDeviceService),
+        Provider<WakelockService>.value(value: mockWakelockService),
       ],
       child: const MaterialApp(
         home: ScreensaverScreen(),
@@ -64,7 +65,7 @@ void main() {
     );
   }
 
-  testWidgets('ScreensaverScreen renders OilSlideVisualizer',
+  testWidgets('ScreensaverScreen renders StealVisualizer',
       (WidgetTester tester) async {
     // Mock MethodChannel for VisualizerAudioReactor.isAvailable
     const MethodChannel channel = MethodChannel('shakedown/visualizer');
@@ -79,15 +80,14 @@ void main() {
     await tester.pumpWidget(createWidgetUnderTest());
     await tester.pump(); // Allow initState async calls to proceed
 
-    expect(find.byType(OilSlideVisualizer), findsOneWidget);
+    expect(find.byType(StealVisualizer), findsOneWidget);
   });
 
   testWidgets(
-      'ScreensaverScreen passes correct configuration to OilSlideVisualizer',
+      'ScreensaverScreen passes correct configuration to StealVisualizer',
       (WidgetTester tester) async {
     // Setup specific mock values
-    when(mockSettingsProvider.oilViscosity).thenReturn(0.8);
-    when(mockSettingsProvider.oilVisualMode).thenReturn('lava_lamp');
+    when(mockSettingsProvider.oilFlowSpeed).thenReturn(0.8);
 
     // Mock MethodChannel for VisualizerAudioReactor.isAvailable
     const MethodChannel channel = MethodChannel('shakedown/visualizer');
@@ -103,12 +103,11 @@ void main() {
     await tester.pump();
 
     // Verify
-    final visualizerFinder = find.byType(OilSlideVisualizer);
+    final visualizerFinder = find.byType(StealVisualizer);
     expect(visualizerFinder, findsOneWidget);
 
-    final visualizer = tester.widget<OilSlideVisualizer>(visualizerFinder);
-    expect(visualizer.config.viscosity, 0.8);
-    expect(visualizer.config.visualMode, 'lava_lamp');
-    expect(visualizer.config.palette, 'psychedelic'); // Default mock value
+    final visualizer = tester.widget<StealVisualizer>(visualizerFinder);
+    expect(visualizer.config.flowSpeed, 0.8);
+    expect(visualizer.config.palette, 'acid_green'); // Default mock value
   });
 }

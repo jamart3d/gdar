@@ -5,12 +5,17 @@ import 'package:provider/provider.dart';
 import 'package:shakedown/providers/audio_provider.dart';
 import 'package:shakedown/providers/settings_provider.dart';
 import 'package:shakedown/ui/screens/screensaver_screen.dart';
-import 'package:shakedown/oil_slide/oil_slide_visualizer.dart';
+import 'package:shakedown/steal_screensaver/steal_visualizer.dart';
 import 'package:shakedown/services/device_service.dart';
 import 'package:shakedown/services/wakelock_service.dart';
 import 'package:mockito/mockito.dart';
+import 'package:mockito/annotations.dart';
 import 'screensaver_exit_test.mocks.dart';
 
+@GenerateNiceMocks([
+  MockSpec<SettingsProvider>(),
+  MockSpec<AudioProvider>(),
+])
 class MockWakelockService extends Fake implements WakelockService {
   @override
   Future<void> enable() async {}
@@ -42,16 +47,12 @@ void main() {
     mockDeviceService = MockDeviceService();
 
     when(mockSettingsProvider.oilEnableAudioReactivity).thenReturn(false);
-    when(mockSettingsProvider.oilViscosity).thenReturn(0.5);
-    when(mockSettingsProvider.oilFlowSpeed).thenReturn(1.0);
-    when(mockSettingsProvider.oilPalette).thenReturn('psychedelic');
-    when(mockSettingsProvider.oilFilmGrain).thenReturn(0.1);
-    when(mockSettingsProvider.oilPulseIntensity).thenReturn(0.5);
-    when(mockSettingsProvider.oilVisualMode).thenReturn('psychedelic');
-    when(mockSettingsProvider.oilMetaballCount).thenReturn(6);
-    when(mockSettingsProvider.oilHeatDrift).thenReturn(0.1);
-    when(mockSettingsProvider.oilScreensaverMode).thenReturn('default');
-    when(mockSettingsProvider.oilEasterEggsEnabled).thenReturn(false);
+    when(mockSettingsProvider.oilFlowSpeed).thenReturn(0.5);
+    when(mockSettingsProvider.oilPalette).thenReturn('acid_green');
+    when(mockSettingsProvider.oilFilmGrain).thenReturn(0.15);
+    when(mockSettingsProvider.oilPulseIntensity).thenReturn(0.8);
+    when(mockSettingsProvider.oilHeatDrift).thenReturn(0.3);
+    when(mockSettingsProvider.oilScreensaverMode).thenReturn('standard');
   });
 
   Widget createWidgetUnderTest() {
@@ -76,7 +77,7 @@ void main() {
     expect(find.byType(ScreensaverScreen), findsOneWidget);
 
     // Tap the visualizer
-    await tester.tap(find.byType(OilSlideVisualizer));
+    await tester.tap(find.byType(StealVisualizer));
     await tester.pump(const Duration(milliseconds: 500));
     await tester
         .pump(const Duration(milliseconds: 500)); // Second pump for transition

@@ -3,6 +3,13 @@
 
 
 
+
+Release 1.0.72:
+- **Simplified**: Screensaver has been simplified to the "Steal Your Face" mode only (Lava Lamp and Silk modes removed).
+- **Audit**: Completed a comprehensive Dead Code Audit, removing 9+ diagnostic files and cleaning up legacy comments.
+- **Fixed**: Resolved all IDE deprecation warnings in the screensaver (HasGameReference, Color getters) and updated test mocks.
+- **Improved**: Standardized naming conventions in internal comments for better maintainability.
+
 Release 1.0.71:
 - **Internal**: Implemented full-screen solid color diagnostics (Green=Steal, Blue=Lava, Yellow=Silk, Red=Error) to isolate hardware-specific rendering issues.
 

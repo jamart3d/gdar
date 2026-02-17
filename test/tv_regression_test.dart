@@ -146,8 +146,6 @@ class FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
   @override
   bool get preventSleep => true;
   @override
-  String get oilVisualMode => 'psychedelic';
-  @override
   int get oilScreensaverInactivityMinutes => 5;
   @override
   bool get isTv => true;
@@ -242,8 +240,6 @@ class FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
   @override
   String get oilScreensaverMode => 'visualizer';
   @override
-  double get oilViscosity => 1.0;
-  @override
   double get oilFlowSpeed => 1.0;
   @override
   double get oilPulseIntensity => 1.0;
@@ -254,8 +250,6 @@ class FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
   @override
   double get oilHeatDrift => 0.5;
   @override
-  int get oilMetaballCount => 6;
-  @override
   bool get oilEnableAudioReactivity => true;
   @override
   bool get oilPerformanceMode => false;
@@ -263,8 +257,6 @@ class FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
   bool get oilPaletteCycle => false;
   @override
   double get oilPaletteTransitionSpeed => 5.0;
-  @override
-  bool get oilEasterEggsEnabled => false;
   @override
   Map<String, bool> get sourceCategoryFilters => {};
 
@@ -353,8 +345,6 @@ class FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
   @override
   void setOilScreensaverInactivityMinutes(int minutes) {}
   @override
-  Future<void> setOilViscosity(double value) async {}
-  @override
   Future<void> setOilFlowSpeed(double value) async {}
   @override
   Future<void> setOilPulseIntensity(double value) async {}
@@ -365,19 +355,13 @@ class FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
   @override
   Future<void> setOilHeatDrift(double value) async {}
   @override
-  Future<void> setOilMetaballCount(int value) async {}
-  @override
   void toggleOilEnableAudioReactivity() {}
-  @override
-  Future<void> setOilVisualMode(String mode) async {}
   @override
   void toggleOilPerformanceMode() {}
   @override
   void toggleOilPaletteCycle() {}
   @override
   void setOilPaletteTransitionSpeed(double seconds) {}
-  @override
-  void toggleOilEasterEggsEnabled() {}
   @override
   bool get hasListeners => super.hasListeners;
 }

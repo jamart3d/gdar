@@ -1,12 +1,12 @@
 import 'dart:async';
-import 'package:shakedown/oil_slide/oil_slide_audio_reactor.dart';
+import 'package:shakedown/visualizer/audio_reactor.dart';
 
 /// Fallback audio reactor that uses playback position heuristics.
 ///
 /// This reactor doesn't analyze actual audio data, but instead generates
 /// pseudo-reactive energy values based on playback position and timing.
 /// It's used when the Android Visualizer API is not available.
-class PositionAudioReactor implements OilSlideAudioReactor {
+class PositionAudioReactor implements AudioReactor {
   final StreamController<AudioEnergy> _energyController =
       StreamController<AudioEnergy>.broadcast();
 

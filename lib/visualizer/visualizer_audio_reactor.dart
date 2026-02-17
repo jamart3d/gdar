@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:flutter/services.dart';
-import 'package:shakedown/oil_slide/oil_slide_audio_reactor.dart';
+import 'package:shakedown/visualizer/audio_reactor.dart';
 
 /// Android Visualizer API-based audio reactor.
 ///
@@ -8,7 +8,7 @@ import 'package:shakedown/oil_slide/oil_slide_audio_reactor.dart';
 /// analysis on the audio output, providing accurate frequency-based energy data.
 ///
 /// Requires Android platform and an active audio session.
-class VisualizerAudioReactor implements OilSlideAudioReactor {
+class VisualizerAudioReactor implements AudioReactor {
   static const MethodChannel _methodChannel =
       MethodChannel('shakedown/visualizer');
   static const EventChannel _eventChannel =

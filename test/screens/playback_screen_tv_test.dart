@@ -250,11 +250,6 @@ class FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
   void setOilScreensaverInactivityMinutes(int minutes) {}
 
   @override
-  double get oilViscosity => 1.0;
-  @override
-  Future<void> setOilViscosity(double value) async {}
-
-  @override
   double get oilFlowSpeed => 1.0;
   @override
   Future<void> setOilFlowSpeed(double value) async {}
@@ -280,29 +275,14 @@ class FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
   Future<void> setOilHeatDrift(double value) async {}
 
   @override
-  int get oilMetaballCount => 6;
-  @override
-  Future<void> setOilMetaballCount(int value) async {}
-
-  @override
   bool get oilEnableAudioReactivity => true;
   @override
   void toggleOilEnableAudioReactivity() {}
 
   @override
-  String get oilVisualMode => 'psychedelic';
-  @override
-  Future<void> setOilVisualMode(String mode) async {}
-
-  @override
   bool get oilPerformanceMode => false;
   @override
   void toggleOilPerformanceMode() {}
-
-  @override
-  bool get oilEasterEggsEnabled => false;
-  @override
-  void toggleOilEasterEggsEnabled() {}
 
   @override
   bool get hasListeners => super.hasListeners;

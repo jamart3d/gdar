@@ -9,22 +9,38 @@ void main() {
       (WidgetTester tester) async {
     int tapCount = 0;
 
+    final tvFocusNode = FocusNode();
+    addTearDown(tvFocusNode.dispose);
+
     await tester.pumpWidget(
       MaterialApp(
         home: Scaffold(
-          body: TvFocusWrapper(
-            onTap: () => tapCount++,
-            child: const Text('Focus Me'),
+          body: Column(
+            children: [
+              const Focus(
+                autofocus: true,
+                child: Text('Other Widget'),
+              ),
+              TvFocusWrapper(
+                focusNode: tvFocusNode,
+                onTap: () => tapCount++,
+                child: const Text('Focus Me'),
+              ),
+            ],
           ),
         ),
       ),
     );
 
-    // Give focus to the widget
-    await tester.tap(find.text('Focus Me'));
+    // 1. Press key while "Other Widget" is focused
+    await tester.sendKeyDownEvent(LogicalKeyboardKey.select);
     await tester.pump();
 
-    // Simulate only a KeyUp event (as if KeyDown was handled by a previous overlay)
+    // 2. Shift focus to TvFocusWrapper without tapping it
+    tvFocusNode.requestFocus();
+    await tester.pump();
+
+    // 3. Release key while TvFocusWrapper is focused
     await tester.sendKeyUpEvent(LogicalKeyboardKey.select);
     await tester.pump();
 
