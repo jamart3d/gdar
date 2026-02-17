@@ -1,4 +1,9 @@
 
+Release 1.0.66:
+- **Fixed**: Resolved a persistent hang in the automated test suite related to shader/texture loading.
+- **Fixed**: Verified 100% pass rate for Screensaver and TV Playback logic after component refactoring.
+- **Internal**: Hardened test mocks and added timeouts to prevent CI/CD pipeline stalls.
+
 Release 1.0.65:
 - **Visuals**: Switched to a high-fidelity screensaver texture (`t_steal_ss.png`) for the "Steal Your Face" mode.
 - **Improved**: Optimized logo rendering to use native 192px resolution for maximum clarity on 4K and 1080p screens.

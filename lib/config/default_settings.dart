@@ -80,5 +80,5 @@ class DefaultSettings {
   static const bool oilPerformanceMode = false; // Auto-detected for TV
   static const bool oilEasterEggsEnabled = true;
   static const String oilVisualMode =
-      'psychedelic'; // 'lava_lamp', 'silk', 'psychedelic', 'custom'
+      'steal'; // 'lava_lamp', 'silk', 'psychedelic', 'steal', 'custom'
 }

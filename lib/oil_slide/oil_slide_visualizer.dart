@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flame/game.dart';
 import 'package:shakedown/oil_slide/oil_slide_config.dart';
 import 'package:shakedown/oil_slide/oil_slide_audio_reactor.dart';
@@ -6,6 +7,7 @@ import 'package:shakedown/oil_slide/oil_slide_game.dart';
 import 'package:shakedown/oil_slide/easter_egg_detector.dart';
 import 'package:shakedown/services/device_service.dart';
 import 'package:provider/provider.dart';
+import 'package:shakedown/providers/settings_provider.dart';
 
 /// Main oil_slide visualizer widget.
 ///
@@ -44,6 +46,7 @@ class _OilSlideVisualizerState extends State<OilSlideVisualizer> {
       config: _currentConfig,
       audioReactor: widget.audioReactor,
       deviceService: Provider.of<DeviceService>(context, listen: false),
+      onPaletteCycleRequested: _handlePaletteCycle,
     );
 
     if (widget.enableEasterEggs) {
@@ -91,17 +94,39 @@ class _OilSlideVisualizerState extends State<OilSlideVisualizer> {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: widget.onExit,
-      behavior: HitTestBehavior.opaque,
-      child: Stack(
-        children: [
-          // Main visualizer
-          GameWidget(
-            game: _game,
-          ),
-        ],
+    return Focus(
+      autofocus: true,
+      onKeyEvent: (node, event) {
+        if (event is KeyDownEvent || event is KeyRepeatEvent) {
+          widget.onExit?.call();
+          return KeyEventResult.handled;
+        }
+        return KeyEventResult.ignored;
+      },
+      child: GestureDetector(
+        onTap: widget.onExit,
+        behavior: HitTestBehavior.opaque,
+        child: Stack(
+          children: [
+            // Main visualizer
+            GameWidget(
+              game: _game,
+            ),
+          ],
+        ),
       ),
     );
+  }
+
+  void _handlePaletteCycle() {
+    final settings = context.read<SettingsProvider>();
+    if (!settings.oilPaletteCycle) return;
+
+    final palettes = OilSlideConfig.palettes.keys.toList();
+    final currentIndex = palettes.indexOf(settings.oilPalette);
+    final nextIndex = (currentIndex + 1) % palettes.length;
+    final nextPalette = palettes[nextIndex];
+
+    settings.setOilPalette(nextPalette);
   }
 }

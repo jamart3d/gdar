@@ -302,9 +302,8 @@ void main() {
         vec2 centeredUV = uv - pos;
         centeredUV.x *= aspect; 
         
-        // Scale/Size - Pulse with bass
-        // Native 192x192 size (Scale relative to screen height)
-        float baseScale = 192.0 / uResolution.y; 
+        // Scale/Size - Pulse with bass (Half size of original 192x192)
+        float baseScale = 96.0 / uResolution.y; 
         float scale = baseScale * (1.0 + uBassEnergy * 0.2 * uPulseIntensity);
         
         // Texture UVs

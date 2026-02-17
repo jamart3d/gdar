@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:shakedown/providers/audio_provider.dart';
 import 'package:shakedown/providers/settings_provider.dart';
 import 'package:shakedown/services/device_service.dart';
+import 'package:shakedown/oil_slide/oil_slide_config.dart';
 import 'package:shakedown/ui/widgets/section_card.dart';
 import 'package:shakedown/ui/widgets/settings/highlightable_setting.dart';
 import 'package:shakedown/ui/widgets/settings/random_probability_card.dart';
@@ -133,85 +134,6 @@ class PlaybackSection extends StatelessWidget {
                 children: [
                   const SizedBox(height: 8),
                   const SizedBox(height: 8),
-                  // Visual Style Selection
-                  Text(
-                    'Visual Style',
-                    style: Theme.of(context)
-                        .textTheme
-                        .bodyMedium
-                        ?.copyWith(fontSize: 12.0 * scaleFactor),
-                  ),
-                  const SizedBox(height: 8),
-                  TvFocusWrapper(
-                    showGlow: true,
-                    borderRadius: BorderRadius.circular(24),
-                    onKeyEvent: (node, event) {
-                      if (event is KeyDownEvent) {
-                        final modes = [
-                          'psychedelic',
-                          'lava_lamp',
-                          'silk',
-                          'steal'
-                        ];
-                        final currentIndex =
-                            modes.indexOf(settingsProvider.oilVisualMode);
-
-                        if (event.logicalKey == LogicalKeyboardKey.arrowLeft) {
-                          if (currentIndex > 0) {
-                            HapticFeedback.selectionClick();
-                            context
-                                .read<SettingsProvider>()
-                                .setOilVisualMode(modes[currentIndex - 1]);
-                            return KeyEventResult.handled;
-                          }
-                        } else if (event.logicalKey ==
-                            LogicalKeyboardKey.arrowRight) {
-                          if (currentIndex < modes.length - 1) {
-                            HapticFeedback.selectionClick();
-                            context
-                                .read<SettingsProvider>()
-                                .setOilVisualMode(modes[currentIndex + 1]);
-                            return KeyEventResult.handled;
-                          }
-                        }
-                      }
-                      return KeyEventResult.ignored;
-                    },
-                    child: SegmentedButton<String>(
-                      segments: const [
-                        ButtonSegment(
-                          value: 'psychedelic',
-                          label: Text('Standard'),
-                          icon: Icon(Icons.auto_awesome_rounded),
-                        ),
-                        ButtonSegment(
-                          value: 'lava_lamp',
-                          label: Text('Lava Lamp'),
-                          icon: Icon(Icons.waves_rounded),
-                        ),
-                        ButtonSegment(
-                          value: 'silk',
-                          label: Text('Silk'),
-                          icon: Icon(Icons.texture_rounded),
-                        ),
-                        ButtonSegment(
-                          value: 'steal',
-                          label: Text('Steal'),
-                          icon: Icon(Icons.bolt_rounded),
-                        ),
-                      ],
-                      selected: {settingsProvider.oilVisualMode},
-                      onSelectionChanged: (Set<String> newSelection) {
-                        HapticFeedback.lightImpact();
-                        context
-                            .read<SettingsProvider>()
-                            .setOilVisualMode(newSelection.first);
-                      },
-                      showSelectedIcon: false,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-
                   // Inactivity Timeout
                   Row(
                     children: [
@@ -304,7 +226,69 @@ class PlaybackSection extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 16),
-                  // Manual Start Button
+                  // Color Palette Selector
+                  Text(
+                    'Color Palette',
+                    style: Theme.of(context)
+                        .textTheme
+                        .bodySmall
+                        ?.copyWith(fontSize: 12.0 * scaleFactor),
+                  ),
+                  const SizedBox(height: 8),
+                  SizedBox(
+                    height: 48 * scaleFactor,
+                    child: ListView(
+                      scrollDirection: Axis.horizontal,
+                      children: OilSlideConfig.palettes.keys.map((palette) {
+                        final isSelected =
+                            settingsProvider.oilPalette == palette;
+                        return Padding(
+                          padding: const EdgeInsets.only(right: 8.0),
+                          child: TvFocusWrapper(
+                            child: ChoiceChip(
+                              label: Text(
+                                palette
+                                    .split('_')
+                                    .map((e) =>
+                                        e[0].toUpperCase() + e.substring(1))
+                                    .join(' '),
+                                style: TextStyle(fontSize: 12 * scaleFactor),
+                              ),
+                              selected: isSelected,
+                              onSelected: (_) {
+                                HapticFeedback.lightImpact();
+                                context
+                                    .read<SettingsProvider>()
+                                    .setOilPalette(palette);
+                              },
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  // Auto-Cycle Toggle
+                  TvSwitchListTile(
+                    dense: true,
+                    visualDensity: VisualDensity.compact,
+                    title: Text('Auto-Cycle Palettes',
+                        style: Theme.of(context)
+                            .textTheme
+                            .titleMedium
+                            ?.copyWith(fontSize: 14 * scaleFactor)),
+                    subtitle: Text('Change colors automatically with music',
+                        style: Theme.of(context)
+                            .textTheme
+                            .bodySmall
+                            ?.copyWith(fontSize: 11 * scaleFactor)),
+                    value: settingsProvider.oilPaletteCycle,
+                    onChanged: (value) {
+                      HapticFeedback.lightImpact();
+                      context.read<SettingsProvider>().toggleOilPaletteCycle();
+                    },
+                  ),
+                  const SizedBox(height: 16),
                 ],
               ),
             ),
