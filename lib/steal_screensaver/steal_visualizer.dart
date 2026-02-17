@@ -66,6 +66,7 @@ class _StealVisualizerState extends State<StealVisualizer> {
       behavior: HitTestBehavior.opaque,
       child: GameWidget(
         game: _game,
+        backgroundBuilder: (context) => Container(color: Colors.black),
       ),
     );
   }

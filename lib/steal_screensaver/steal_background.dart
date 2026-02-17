@@ -91,10 +91,9 @@ class StealBackground extends PositionComponent
 
     final colors = _getPaletteColors(config.palette);
     for (final color in colors) {
-      // Use explicit red/255 for maximum compatibility across Flutter versions
-      _shader!.setFloat(idx++, color.red / 255.0);
-      _shader!.setFloat(idx++, color.green / 255.0);
-      _shader!.setFloat(idx++, color.blue / 255.0);
+      _shader!.setFloat(idx++, color.r);
+      _shader!.setFloat(idx++, color.g);
+      _shader!.setFloat(idx++, color.b);
     }
 
     _shader!.setImageSampler(0, _logoTexture!);

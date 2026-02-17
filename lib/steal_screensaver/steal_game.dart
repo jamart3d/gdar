@@ -29,6 +29,9 @@ class StealGame extends FlameGame {
   });
 
   @override
+  Color backgroundColor() => const Color(0xFF000000); // Black
+
+  @override
   Future<void> onLoad() async {
     await super.onLoad();
 

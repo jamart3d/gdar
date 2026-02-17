@@ -29,7 +29,7 @@ You will not make any changes or generate new content without explicit instructi
 - **Clarity:** Be direct and to the point.
 
 # My Project Context
-- **Flutter Version:** 3.35.6
+- **Flutter Version:** 3.41.1
 - **Key Packages:** `http`, `just_audio`, `just_audio_background`, `provider`, `shared_preferences`, 'logger'
 - **Goal:** I am building a very easy to read and use mp3 url player, that reads shows from a local json file , list shows and sublist shows by shnid (id) if more than one,  no album art, shows contain tracks.  Primary focus is gapless playback, material 3 design exxpressive
 - **Read Repo:** https://github.com/jamart3d/gdar
