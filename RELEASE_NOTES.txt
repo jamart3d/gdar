@@ -2,6 +2,10 @@
 
 
 
+
+Release 1.0.71:
+- **Internal**: Implemented full-screen solid color diagnostics (Green=Steal, Blue=Lava, Yellow=Silk, Red=Error) to isolate hardware-specific rendering issues.
+
 Release 1.0.70:
 - **Internal**: Added diagnostic rendering modes to the screensaver to troubleshoot "White Screen" issues on specific hardware.
 - **Fixed**: Hardened Dart-side component rendering to prevent initialization with zero resolution.
