@@ -72,25 +72,29 @@ class StealBackground extends PositionComponent
     final time = game.time;
 
     int idx = 0;
-    _shader!.setFloat(idx++, size.x);
-    _shader!.setFloat(idx++, size.y);
+    // Pass resolution with a minimum 1.0 to avoid division by zero in shader
+    final sw = size.x.clamp(1.0, 20000.0);
+    final sh = size.y.clamp(1.0, 20000.0);
+    _shader!.setFloat(idx++, sw);
+    _shader!.setFloat(idx++, sh);
     _shader!.setFloat(idx++, time);
 
-    _shader!.setFloat(idx++, config.flowSpeed);
-    _shader!.setFloat(idx++, config.filmGrain);
-    _shader!.setFloat(idx++, config.pulseIntensity);
-    _shader!.setFloat(idx++, config.heatDrift);
+    _shader!.setFloat(idx++, config.flowSpeed.clamp(0.0, 5.0));
+    _shader!.setFloat(idx++, config.filmGrain.clamp(0.0, 1.0));
+    _shader!.setFloat(idx++, config.pulseIntensity.clamp(0.0, 5.0));
+    _shader!.setFloat(idx++, config.heatDrift.clamp(0.0, 5.0));
 
-    _shader!.setFloat(idx++, energy.bass);
-    _shader!.setFloat(idx++, energy.mid);
-    _shader!.setFloat(idx++, energy.treble);
-    _shader!.setFloat(idx++, energy.overall);
+    _shader!.setFloat(idx++, energy.bass.clamp(0.0, 5.0));
+    _shader!.setFloat(idx++, energy.mid.clamp(0.0, 5.0));
+    _shader!.setFloat(idx++, energy.treble.clamp(0.0, 5.0));
+    _shader!.setFloat(idx++, energy.overall.clamp(0.0, 5.0));
 
     final colors = _getPaletteColors(config.palette);
     for (final color in colors) {
-      _shader!.setFloat(idx++, color.r);
-      _shader!.setFloat(idx++, color.g);
-      _shader!.setFloat(idx++, color.b);
+      // Use explicit red/255 for maximum compatibility across Flutter versions
+      _shader!.setFloat(idx++, color.red / 255.0);
+      _shader!.setFloat(idx++, color.green / 255.0);
+      _shader!.setFloat(idx++, color.blue / 255.0);
     }
 
     _shader!.setImageSampler(0, _logoTexture!);

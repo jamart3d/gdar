@@ -4,7 +4,12 @@
 
 
 
-Release 1.0.72:
+Release 1.0.73:
+- Fix "White Screen" issue on Google TV screensaver via shader hardening.
+- Implement high-precision floats and robust guards in visualizer shader.
+- Defensive color normalization for cross-version Flutter compatibility.
+
+1.0.72:
 - **Simplified**: Screensaver has been simplified to the "Steal Your Face" mode only (Lava Lamp and Silk modes removed).
 - **Audit**: Completed a comprehensive Dead Code Audit, removing 9+ diagnostic files and cleaning up legacy comments.
 - **Fixed**: Resolved all IDE deprecation warnings in the screensaver (HasGameReference, Color getters) and updated test mocks.

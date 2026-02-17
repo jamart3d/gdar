@@ -1,6 +1,6 @@
 #version 460 core
 
-precision mediump float;
+precision highp float;
 
 #include <flutter/runtime_effect.glsl>
 
@@ -31,12 +31,18 @@ uniform sampler2D uTexture;
 
 vec3 getPaletteColor(float t) {
     t = fract(t);
+    // Defense: Ensure palette colors are clamped
+    vec3 c1 = clamp(uColor1, 0.0, 1.0);
+    vec3 c2 = clamp(uColor2, 0.0, 1.0);
+    vec3 c3 = clamp(uColor3, 0.0, 1.0);
+    vec3 c4 = clamp(uColor4, 0.0, 1.0);
+
     if (t < 0.33) {
-        return mix(uColor1, uColor2, t * 3.0);
+        return mix(c1, c2, t * 3.0);
     } else if (t < 0.66) {
-        return mix(uColor2, uColor3, (t - 0.33) * 3.0);
+        return mix(c2, c3, (t - 0.33) * 3.0);
     } else {
-        return mix(uColor3, uColor4, (t - 0.66) * 3.0);
+        return mix(c3, c4, (t - 0.66) * 3.0);
     }
 }
 
@@ -47,8 +53,9 @@ float hash(vec2 p) {
 }
 
 void main() {
+    // Robust Resolution Detection
     vec2 resolution = uResolution;
-    if (resolution.x < 1.0 || resolution.y < 1.0) {
+    if (resolution.x < 2.0 || resolution.y < 2.0) {
         fragColor = vec4(0.0, 0.0, 0.0, 1.0);
         return;
     }
@@ -60,34 +67,44 @@ void main() {
     vec3 bgColor = vec3(0.0);
 
     // Floating motion using Lissajous curve
-    float t = uTime * uFlowSpeed * 0.5;
+    // Guard flowSpeed and time
+    float safeTime = max(uTime, 0.0);
+    float t = safeTime * clamp(uFlowSpeed, 0.0, 2.0) * 0.5;
+    
     vec2 pos = vec2(
         0.5 + 0.25 * sin(t * 1.3) + 0.1 * sin(t * 2.9),
         0.5 + 0.25 * cos(t * 1.7) + 0.1 * cos(t * 3.1)
     );
 
     // Audio reactivity for position (jitter)
-    if (uOverallEnergy > 0.1) {
-        pos += vec2(uBassEnergy - 0.5, uMidEnergy - 0.5) * 0.05 * uPulseIntensity;
+    float pulse = clamp(uPulseIntensity, 0.0, 2.0);
+    float ebass = clamp(uBassEnergy, 0.0, 2.0);
+    float emid = clamp(uMidEnergy, 0.0, 2.0);
+    float eover = clamp(uOverallEnergy, 0.0, 2.0);
+    float etreble = clamp(uTrebleEnergy, 0.0, 2.0);
+
+    if (eover > 0.01) {
+        pos += vec2(ebass - 0.5, emid - 0.5) * 0.05 * pulse;
     }
 
     // Sprite rendering
     vec2 centeredUV = uv - pos;
     centeredUV.x *= aspect; 
 
-    // Scale/Size - Pulse with bass (Half size adjustment)
-    float baseScale = 96.0 / resolution.y; 
-    float scale = baseScale * (1.0 + uBassEnergy * 0.2 * uPulseIntensity);
+    // Scale/Size - Pulse with bass
+    float baseScale = 110.0 / resolution.y; 
+    float scale = baseScale * (1.0 + ebass * 0.2 * pulse);
+    scale = max(scale, 0.001); // Prevent div by zero
 
     // Texture UVs
     vec2 texUV = centeredUV / scale + 0.5;
 
     vec4 texColor = vec4(0.0);
 
-    // Check bounds
-    if (texUV.x >= 0.01 && texUV.x <= 0.99 && texUV.y >= 0.01 && texUV.y <= 0.99) {
+    // Check bounds with margin
+    if (texUV.x >= 0.0 && texUV.x <= 1.0 && texUV.y >= 0.0 && texUV.y <= 1.0) {
         // RGB Shift (Chromatic Aberration)
-        float shift = 0.02 * (0.5 + uOverallEnergy * 2.0) * uPulseIntensity;
+        float shift = 0.02 * (0.5 + eover * 2.0) * pulse;
 
         float r = texture(uTexture, texUV + vec2(shift, 0.0)).r;
         float g = texture(uTexture, texUV).g;
@@ -97,23 +114,24 @@ void main() {
         texColor = vec4(r, g, b, a);
 
         // Flash effect
-        texColor.rgb += vec3(uTrebleEnergy) * 0.3 * uPulseIntensity;
+        texColor.rgb += vec3(etreble) * 0.3 * pulse;
     }
 
     // Color Cycling
-    vec3 cycleColor = getPaletteColor(uTime * 0.2); 
-    cycleColor = pow(cycleColor, vec3(0.6)); 
+    vec3 cycleColor = getPaletteColor(safeTime * 0.2); 
+    cycleColor = pow(clamp(cycleColor, 0.0, 1.0), vec3(0.6)); 
     cycleColor *= 2.0; 
 
     // Apply tint
     texColor.rgb = mix(texColor.rgb, texColor.rgb * cycleColor, 0.85);
 
     // Blend
-    vec3 finalColor = mix(bgColor, texColor.rgb, texColor.a);
+    vec3 finalColor = mix(bgColor, texColor.rgb, clamp(texColor.a, 0.0, 1.0));
 
     // Film Grain
-    if (uFilmGrain > 0.0) {
-        float grain = (hash(uv * uTime) * 2.0 - 1.0) * uFilmGrain * 0.05;
+    float grainAmt = clamp(uFilmGrain, 0.0, 1.0);
+    if (grainAmt > 0.0) {
+        float grain = (hash(uv * (safeTime + 1.0)) * 2.0 - 1.0) * grainAmt * 0.05;
         finalColor += vec3(grain);
     }
 
