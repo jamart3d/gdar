@@ -105,7 +105,7 @@ vec2 getBlobPosition(int index, float time) {
     float drift = sin(t * 0.1) * uHeatDrift * 0.05;
     
     // Lava Lamp Mode: Vertical Convection
-    if (uVisualMode == 0.0) {
+    if (abs(uVisualMode - 0.0) < 0.1) {
         // Slowed down by 1/3 (0.2 -> 0.13) as requested
         float cycle = t * 0.13 + indexFloat * 1.5;
         // Rising and falling motion (sine wave)
@@ -165,7 +165,7 @@ float metaballField(vec2 uv, float time) {
         float blobRadius = getBlobRadius(i, time);
         
         // Lava Lamp: Scale radius based on height (smaller at top)
-        if (uVisualMode == 0.0) {
+        if (abs(uVisualMode - 0.0) < 0.1) {
             // y=0 is top, y=1 is bottom. 
             // Scale from 0.5 (top) to 1.1 (bottom)
             float heightScale = 0.5 + 0.6 * clamp(blobPos.y, 0.0, 1.0);
@@ -267,13 +267,14 @@ vec3 getSilkNormal(vec2 uv, float time) {
 
 void main() {
     // Normalize coordinates to 0-1
-    vec2 uv = FlutterFragCoord().xy / uResolution;
+    vec2 resolution = max(uResolution, vec2(1.0));
+    vec2 uv = FlutterFragCoord().xy / resolution;
     
     // Adjust aspect ratio for shape calculations
-    float aspect = uResolution.x / uResolution.y;
+    float aspect = resolution.x / resolution.y;
     // We work in aspect-corrected coordinates for shapes and normals
     vec2 aspectUV = uv;
-    aspectUV.x *= aspect;
+    aspectUV.x *= aspect; 
     
     // ---------------------------------------------------------
     // Mode 1: High Fidelity Silk (Fabric Simulation)
@@ -281,7 +282,7 @@ void main() {
     // ---------------------------------------------------------
     // Mode 3: Steal Your Face (Floating Sprite with RGB effects)
     // ---------------------------------------------------------
-    if (uVisualMode == 3.0) {
+    if (abs(uVisualMode - 3.0) < 0.1) {
         // Background - Pure black for OLED safety
         vec3 bgColor = vec3(0.0);
         
@@ -303,7 +304,7 @@ void main() {
         centeredUV.x *= aspect; 
         
         // Scale/Size - Pulse with bass (Half size of original 192x192)
-        float baseScale = 96.0 / uResolution.y; 
+        float baseScale = 96.0 / resolution.y; 
         float scale = baseScale * (1.0 + uBassEnergy * 0.2 * uPulseIntensity);
         
         // Texture UVs
@@ -354,7 +355,7 @@ void main() {
     // ---------------------------------------------------------
     // Mode 1: High Fidelity Silk (Fabric Simulation)
     // ---------------------------------------------------------
-    if (uVisualMode == 1.0) {
+    if (abs(uVisualMode - 1.0) < 0.1) {
         vec3 normal = getSilkNormal(aspectUV, uTime);
         float height = silkHeight(aspectUV, uTime);
         
@@ -413,7 +414,7 @@ void main() {
     vec3 bgColor = vec3(0.02, 0.02, 0.03);
     
     // Lava Lamp Specific Effects
-    if (uVisualMode == 0.0) {
+    if (abs(uVisualMode - 0.0) < 0.1) {
         // High Fidelity Lava Lamp
         
         // 1. Bottle Shape Mask

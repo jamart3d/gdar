@@ -1,5 +1,11 @@
 
 
+
+Release 1.0.69:
+- **Fixed**: Resolved a "White Screen" issue on the screensaver by hardening the visualizer's resize handling and adding shader-level safeguards.
+- **Improved**: Added division-by-zero protection to the `oil_slide` shader for better hardware compatibility and stability.
+- **Improved**: Enhanced visual mode detection in the shader for more reliable rendering across different platforms.
+
 Release 1.0.68:
 - **Improved**: Replaced the screensaver inactivity timeout slider with a discrete `SegmentedButton` (1, 5, 15 min) for better TV navigation.
 - **Fixed**: Enforced valid timeout values in `SettingsProvider` to ensure data integrity.

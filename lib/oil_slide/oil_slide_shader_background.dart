@@ -37,6 +37,12 @@ class OilSlideShaderBackground extends PositionComponent {
   }
 
   @override
+  void onGameResize(Vector2 gameSize) {
+    super.onGameResize(gameSize);
+    size = gameSize;
+  }
+
+  @override
   void onRemove() {
     _shader?.dispose();
     // Do not dispose the image here as it might be cached by Flame.
