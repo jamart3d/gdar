@@ -1,3 +1,9 @@
+Release 1.0.85:
+- UI (TV): Refined left navigation flow from scrollbars in both Show List and Track List to intelligently focus the middle visible item without scrolling.
+- UI (TV): Fixed focus stability in Track List by ensuring robust mounting of dynamically created focus nodes.
+- UI (TV): Standardized Track List header with 'RockSalt' font branding (Date, Venue, Location).
+- UI (TV): Decluttered Playback settings by removing the manual Color Palette selector and redundant toggle sections.
+
 Release 1.0.84:
 - UI (TV): Finalized `TvStepperRow` integration across all screensaver parameters for precise D-Pad control.
 - UI (TV): Added a "Show Track Info" toggle to the Playback settings section.

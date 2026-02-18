@@ -99,41 +99,47 @@ class ShowListBody extends StatelessWidget {
             itemCount: showListProvider.filteredShows.length,
             focusNode: scrollbarFocusNode,
             onLeft: () {
-              // 1. Prioritize currently expanded show
+              final positions = itemPositionsListener.itemPositions.value;
+              if (positions.isEmpty) return;
+
+              final visibleIndices = positions.map((p) => p.index).toSet();
+              int targetIndex = -1;
+
+              // 1. Prioritize currently expanded show IF it is visible
               if (showListProvider.expandedShowKey != null) {
                 final index = showListProvider.filteredShows.indexWhere((s) =>
                     showListProvider.getShowKey(s) ==
                     showListProvider.expandedShowKey);
-                if (index != -1) {
+                if (index != -1 && visibleIndices.contains(index)) {
                   onFocusShow?.call(index, shouldScroll: false);
                   return;
                 }
               }
 
               // 2. Fallback: Find middle visible item
-              final positions = itemPositionsListener.itemPositions.value;
-              int targetIndex = -1;
+              final sorted = positions.toList()
+                ..sort((a, b) => a.index.compareTo(b.index));
 
-              if (positions.isNotEmpty) {
-                final sorted = positions.toList()
-                  ..sort((a, b) => a.index.compareTo(b.index));
-
-                double bestDistance = 999.0;
-                for (var pos in sorted) {
-                  final itemCenter =
-                      (pos.itemLeadingEdge + pos.itemTrailingEdge) / 2;
-                  final distance = (itemCenter - 0.5).abs();
-                  if (distance < bestDistance) {
-                    bestDistance = distance;
-                    targetIndex = pos.index;
-                  }
+              double bestDistance = 999.0;
+              for (var pos in sorted) {
+                final itemCenter =
+                    (pos.itemLeadingEdge + pos.itemTrailingEdge) / 2;
+                final distance = (itemCenter - 0.5).abs();
+                if (distance < bestDistance) {
+                  bestDistance = distance;
+                  targetIndex = pos.index;
                 }
               }
 
               if (targetIndex != -1) {
+                // Select (Expand) the show if nothing is expanded or expanded is off-screen
+                final show = showListProvider.filteredShows[targetIndex];
+                if (showListProvider.expandedShowKey !=
+                    showListProvider.getShowKey(show)) {
+                  showListProvider
+                      .expandShow(showListProvider.getShowKey(show));
+                }
                 onFocusShow?.call(targetIndex, shouldScroll: false);
-              } else {
-                onFocusShow?.call(0, shouldScroll: false); // Fallback
               }
             },
             onRight: () {

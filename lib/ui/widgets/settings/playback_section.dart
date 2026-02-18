@@ -4,7 +4,6 @@ import 'package:provider/provider.dart';
 import 'package:shakedown/providers/audio_provider.dart';
 import 'package:shakedown/providers/settings_provider.dart';
 import 'package:shakedown/services/device_service.dart';
-import 'package:shakedown/steal_screensaver/steal_config.dart';
 import 'package:shakedown/ui/widgets/section_card.dart';
 import 'package:shakedown/ui/widgets/settings/highlightable_setting.dart';
 import 'package:shakedown/ui/widgets/settings/random_probability_card.dart';
@@ -196,49 +195,6 @@ class PlaybackSection extends StatelessWidget {
                   ),
                   const SizedBox(height: 16),
 
-                  // Color Palette Selector
-                  Text(
-                    'Color Palette',
-                    style: Theme.of(context)
-                        .textTheme
-                        .bodySmall
-                        ?.copyWith(fontSize: 12.0 * scaleFactor),
-                  ),
-                  const SizedBox(height: 8),
-                  SizedBox(
-                    height: 48 * scaleFactor,
-                    child: ListView(
-                      scrollDirection: Axis.horizontal,
-                      children: StealConfig.palettes.keys.map((palette) {
-                        final isSelected =
-                            settingsProvider.oilPalette == palette;
-                        return Padding(
-                          padding: const EdgeInsets.only(right: 8.0),
-                          child: TvFocusWrapper(
-                            child: ChoiceChip(
-                              label: Text(
-                                palette
-                                    .split('_')
-                                    .map((e) =>
-                                        e[0].toUpperCase() + e.substring(1))
-                                    .join(' '),
-                                style: TextStyle(fontSize: 12 * scaleFactor),
-                              ),
-                              selected: isSelected,
-                              onSelected: (_) {
-                                HapticFeedback.lightImpact();
-                                context
-                                    .read<SettingsProvider>()
-                                    .setOilPalette(palette);
-                              },
-                            ),
-                          ),
-                        );
-                      }).toList(),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-
                   // Auto-Cycle Toggle
                   TvSwitchListTile(
                     dense: true,
@@ -286,29 +242,6 @@ class PlaybackSection extends StatelessWidget {
                   ),
                   const SizedBox(height: 16),
 
-                  // Show Track Info banner toggle
-                  TvSwitchListTile(
-                    dense: true,
-                    visualDensity: VisualDensity.compact,
-                    title: Text('Show Track Info',
-                        style: Theme.of(context)
-                            .textTheme
-                            .titleMedium
-                            ?.copyWith(fontSize: 14 * scaleFactor)),
-                    subtitle: Text(
-                        'Display track title, venue and date as circular text',
-                        style: Theme.of(context)
-                            .textTheme
-                            .bodySmall
-                            ?.copyWith(fontSize: 11 * scaleFactor)),
-                    value: settingsProvider.oilShowInfoBanner,
-                    onChanged: (value) {
-                      HapticFeedback.lightImpact();
-                      context
-                          .read<SettingsProvider>()
-                          .toggleOilShowInfoBanner();
-                    },
-                  ),
                   const SizedBox(height: 16),
 
                   // ── Audio Reactivity ──────────────────────────────────

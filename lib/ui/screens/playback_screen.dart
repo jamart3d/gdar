@@ -292,9 +292,15 @@ class PlaybackScreenState extends State<PlaybackScreen>
   void _focusTrack(int index, {bool shouldScroll = true}) {
     if (index < 0) return;
 
+    bool needsRebuild = false;
     // Ensure the focus node exists
     if (!_trackFocusNodes.containsKey(index)) {
       _trackFocusNodes[index] = FocusNode();
+      needsRebuild = true;
+    }
+
+    if (needsRebuild) {
+      if (mounted) setState(() {});
     }
 
     if (shouldScroll && _itemScrollController.isAttached) {
@@ -304,7 +310,9 @@ class PlaybackScreenState extends State<PlaybackScreen>
 
     // Wait for a frame to ensure the PlaybackScreen is rebuilt and the Focus widget is mounted
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _trackFocusNodes[index]?.requestFocus();
+      if (mounted) {
+        _trackFocusNodes[index]?.requestFocus();
+      }
     });
   }
 
@@ -339,15 +347,46 @@ class PlaybackScreenState extends State<PlaybackScreen>
       return;
     }
 
-    // 3. Fallback: Current Playing Track
+    // 3. Fallback: Current Playing Track (Mapped to list index)
     final audioProvider = context.read<AudioProvider>();
-    if (audioProvider.audioPlayer.currentIndex != null) {
-      _focusTrack(audioProvider.audioPlayer.currentIndex!, shouldScroll: false);
-      return;
+    final currentSource = audioProvider.currentSource;
+    final trackIndex = audioProvider.audioPlayer.currentIndex;
+
+    if (currentSource != null && trackIndex != null) {
+      // Find the list index for this track index
+      int listIdx = 0;
+      int tIdx = 0;
+      final Map<String, List<Track>> tracksBySet = {};
+      for (var track in currentSource.tracks) {
+        if (!tracksBySet.containsKey(track.setName)) {
+          tracksBySet[track.setName] = [];
+        }
+        tracksBySet[track.setName]!.add(track);
+      }
+
+      bool found = false;
+      tracksBySet.forEach((setName, tracks) {
+        if (found) return;
+        listIdx++; // Header
+        for (var _ in tracks) {
+          if (tIdx == trackIndex) {
+            targetIndex = listIdx;
+            found = true;
+            return;
+          }
+          listIdx++;
+          tIdx++;
+        }
+      });
+
+      if (found) {
+        _focusTrack(targetIndex, shouldScroll: false);
+        return;
+      }
     }
 
-    // 4. Fallback: First track
-    _focusTrack(0, shouldScroll: false);
+    // 4. Fallback: First track (Index 1 usually, after first header)
+    _focusTrack(1, shouldScroll: false);
   }
 
   @override
@@ -434,7 +473,7 @@ class PlaybackScreenState extends State<PlaybackScreen>
                         Text(
                           currentShow.formattedDate,
                           style: TextStyle(
-                            fontFamily: 'Rock Salt',
+                            fontFamily: 'RockSalt',
                             fontSize: 24,
                             fontWeight: FontWeight.bold,
                             color: colorScheme.onSurface,
@@ -459,6 +498,7 @@ class PlaybackScreenState extends State<PlaybackScreen>
                             Text(
                               currentShow.venue,
                               style: TextStyle(
+                                fontFamily: 'RockSalt',
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
                                 color: colorScheme.primary,
@@ -479,6 +519,7 @@ class PlaybackScreenState extends State<PlaybackScreen>
                               Text(
                                 currentSource.location!,
                                 style: TextStyle(
+                                  fontFamily: 'RockSalt',
                                   fontSize: 16,
                                   fontWeight: FontWeight.w500,
                                   color: colorScheme.onSurfaceVariant,
