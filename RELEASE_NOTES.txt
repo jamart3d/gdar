@@ -1,4 +1,7 @@
-Release 1.0.78:
+Release 1.0.79:
+- Native Black Themes: Updated styles.xml to use Theme.Black for both LaunchTheme and NormalTheme, eliminating initialization flashes on all devices.
+- Screensaver Robustness: Refined StealBackground to use canvas.drawPaint for more robust fallback rendering and cleaned up engine lifecycle handling.
+
 - Screensaver Hardening: Migrated StealBackground to HasGameReference and utilized rootBundle for texture loading to bypass Flame cache path issues.
 - Rendering Stability: Added numeric clamping to shader uniforms and safe-region checks to prevent initialization flashes or crashes on low-spec hardware.
 
