@@ -36,7 +36,11 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
   void initState() {
     super.initState();
     _initAudioReactor();
-    HardwareKeyboard.instance.addHandler(_handleGlobalKeyEvent);
+    Future.delayed(const Duration(milliseconds: 500), () {
+      if (mounted) {
+        HardwareKeyboard.instance.addHandler(_handleGlobalKeyEvent);
+      }
+    });
   }
 
   @override
