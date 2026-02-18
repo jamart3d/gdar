@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:ui';
 import 'package:flame/game.dart';
 import 'package:shakedown/steal_screensaver/steal_config.dart';
@@ -7,9 +8,11 @@ import 'package:shakedown/services/device_service.dart';
 
 class StealGame extends FlameGame {
   StealConfig config;
-  final AudioReactor? audioReactor;
   final DeviceService deviceService;
+  final VoidCallback? onPaletteCycleRequested;
 
+  AudioReactor? _audioReactor;
+  StreamSubscription<AudioEnergy>? _energySubscription;
   StealBackground? _background;
   double _time = 0;
   AudioEnergy _currentEnergy = const AudioEnergy.zero();
@@ -19,29 +22,38 @@ class StealGame extends FlameGame {
   double _lastCycleTime = 0.0;
   static const double kCycleEnergyThreshold = 100.0;
   static const double kMinCycleInterval = 10.0;
-  final VoidCallback? onPaletteCycleRequested;
 
   StealGame({
     required this.config,
-    this.audioReactor,
+    AudioReactor? audioReactor,
     required this.deviceService,
     this.onPaletteCycleRequested,
-  });
+  }) : _audioReactor = audioReactor;
 
   @override
-  Color backgroundColor() => const Color(0xFF000000); // Black
+  Color backgroundColor() => const Color(0xFF000000);
 
   @override
   Future<void> onLoad() async {
     await super.onLoad();
-
-    // Listen to audio energy updates
-    audioReactor?.energyStream.listen((energy) {
-      _currentEnergy = energy;
-    });
-
+    _subscribeToReactor(_audioReactor);
     _background = StealBackground(config: config);
     add(_background!);
+  }
+
+  void _subscribeToReactor(AudioReactor? reactor) {
+    _energySubscription?.cancel();
+    _energySubscription = null;
+    if (reactor != null) {
+      _energySubscription = reactor.energyStream.listen((energy) {
+        _currentEnergy = energy;
+      });
+    }
+  }
+
+  void updateAudioReactor(AudioReactor? newReactor) {
+    _audioReactor = newReactor;
+    _subscribeToReactor(newReactor);
   }
 
   @override
@@ -68,7 +80,12 @@ class StealGame extends FlameGame {
     _background?.updateConfig(newConfig);
   }
 
-  double get time => _time;
+  @override
+  void onRemove() {
+    _energySubscription?.cancel();
+    super.onRemove();
+  }
 
+  double get time => _time;
   AudioEnergy get currentEnergy => _currentEnergy;
 }

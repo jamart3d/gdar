@@ -7,6 +7,7 @@ import 'package:shakedown/ui/widgets/settings/interface_section.dart';
 import 'package:shakedown/ui/widgets/settings/playback_section.dart';
 import 'package:shakedown/ui/widgets/settings/source_filter_settings.dart';
 import 'package:shakedown/ui/widgets/settings/usage_instructions_section.dart';
+import 'package:shakedown/ui/widgets/settings/tv_screensaver_section.dart';
 import 'package:shakedown/ui/widgets/tv/tv_focus_wrapper.dart';
 import 'package:shakedown/ui/screens/rated_shows_screen.dart';
 import 'package:shakedown/ui/screens/about_screen.dart';
@@ -25,6 +26,7 @@ class _TvSettingsScreenState extends State<TvSettingsScreen> {
     'Playback',
     'Appearance',
     'Interface',
+    'Screensaver',
     'Collection Statistics',
     'Sources',
     'Manage Rated Shows',
@@ -36,6 +38,7 @@ class _TvSettingsScreenState extends State<TvSettingsScreen> {
     Icons.play_circle_outline_rounded,
     Icons.palette_outlined,
     Icons.view_quilt_outlined,
+    Icons.auto_awesome_rounded, // Screensaver
     Icons.bar_chart_rounded,
     Icons.filter_list_rounded,
     Icons.star_rounded,
@@ -53,12 +56,9 @@ class _TvSettingsScreenState extends State<TvSettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Determine which section to show
     Widget activeSection;
-    // Common props for sections
     const scaleFactor = 1.0;
     const initiallyExpanded = true;
-    // We expand all on TV because SectionCard handles "TV Mode" by being a Column
 
     switch (_selectedIndex) {
       case 0:
@@ -86,28 +86,27 @@ class _TvSettingsScreenState extends State<TvSettingsScreen> {
         );
         break;
       case 3:
+        activeSection = const TvScreensaverSection();
+        break;
+      case 4:
         activeSection = CollectionStatistics(
           initiallyExpanded: initiallyExpanded,
         );
         break;
-      case 4:
+      case 5:
         activeSection = const SourceFilterSettings();
         break;
-      case 5:
-        activeSection = const DataSection(
-          scaleFactor: scaleFactor,
-        );
-        break;
       case 6:
+        activeSection = const DataSection(scaleFactor: scaleFactor);
+        break;
+      case 7:
         activeSection = UsageInstructionsSection(
           scaleFactor: scaleFactor,
           initiallyExpanded: initiallyExpanded,
         );
         break;
-      case 7:
-        activeSection = const AboutSection(
-          scaleFactor: scaleFactor,
-        );
+      case 8:
+        activeSection = const AboutSection(scaleFactor: scaleFactor);
         break;
       default:
         activeSection = const SizedBox.shrink();
@@ -155,11 +154,7 @@ class _TvSettingsScreenState extends State<TvSettingsScreen> {
                           padding: const EdgeInsets.symmetric(
                               horizontal: 16, vertical: 4),
                           child: TvFocusWrapper(
-                            onTap: () {
-                              setState(() {
-                                _selectedIndex = index;
-                              });
-                            },
+                            onTap: () => setState(() => _selectedIndex = index),
                             borderRadius: BorderRadius.circular(12),
                             child: Container(
                               padding: const EdgeInsets.symmetric(
@@ -210,12 +205,11 @@ class _TvSettingsScreenState extends State<TvSettingsScreen> {
             flex: 2,
             child: AnimatedSwitcher(
               duration: const Duration(milliseconds: 300),
-              child: _selectedIndex == 5
-                  ? const RatedShowsBody(key: ValueKey(5))
-                  : _selectedIndex == 7
+              child: _selectedIndex == 6
+                  ? const RatedShowsBody(key: ValueKey(6))
+                  : _selectedIndex == 8
                       ? const SingleChildScrollView(
-                          // About Body needs scrolling
-                          key: ValueKey(7),
+                          key: ValueKey(8),
                           padding: EdgeInsets.all(32),
                           child: AboutBody(),
                         )

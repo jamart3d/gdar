@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:ui' as ui;
 import 'package:flame/components.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shakedown/steal_screensaver/steal_config.dart';
 import 'package:shakedown/steal_screensaver/steal_game.dart';
@@ -18,7 +17,7 @@ class StealBackground extends PositionComponent
   @override
   Future<void> onLoad() async {
     await super.onLoad();
-    size = game.size;
+    // Don't set size here — onGameResize handles it once game has real dimensions
     try {
       await _loadResources();
     } catch (_) {
@@ -27,23 +26,17 @@ class StealBackground extends PositionComponent
   }
 
   Future<void> _loadResources() async {
-    try {
-      // Load shader
-      final program = await ui.FragmentProgram.fromAsset('shaders/steal.frag');
-      _shader = program.fragmentShader();
+    // Load shader
+    final program = await ui.FragmentProgram.fromAsset('shaders/steal.frag');
+    _shader = program.fragmentShader();
 
-      // Load texture via rootBundle to avoid Flame image cache path issues
-      final ByteData data =
-          await rootBundle.load('assets/images/t_steal_ss.png');
-      final ui.Codec codec =
-          await ui.instantiateImageCodec(data.buffer.asUint8List());
-      final ui.FrameInfo frame = await codec.getNextFrame();
-      _logoTexture = frame.image;
+    // Load texture via rootBundle with explicit path — more reliable in release mode
+    final data = await rootBundle.load('assets/images/t_steal_ss.png');
+    final codec = await ui.instantiateImageCodec(data.buffer.asUint8List());
+    final frame = await codec.getNextFrame();
+    _logoTexture = frame.image;
 
-      _shaderLoaded = true;
-    } catch (e) {
-      // Fail silently — _renderFallback paints black
-    }
+    _shaderLoaded = true;
   }
 
   @override
@@ -57,7 +50,7 @@ class StealBackground extends PositionComponent
   }
 
   @override
-  void render(Canvas canvas) {
+  void render(ui.Canvas canvas) {
     if (!_shaderLoaded ||
         _shader == null ||
         _logoTexture == null ||
@@ -69,7 +62,7 @@ class StealBackground extends PositionComponent
 
     _updateShaderUniforms();
 
-    final paint = Paint()..shader = _shader;
+    final paint = ui.Paint()..shader = _shader;
     canvas.drawRect(Rect.fromLTWH(0, 0, size.x, size.y), paint);
   }
 
@@ -106,15 +99,12 @@ class StealBackground extends PositionComponent
     _shader!.setImageSampler(0, _logoTexture!);
   }
 
-  List<Color> _getPaletteColors(String name) {
+  List<ui.Color> _getPaletteColors(String name) {
     return StealConfig.palettes[name] ?? StealConfig.palettes['psychedelic']!;
   }
 
-  void _renderFallback(Canvas canvas) {
-    // Always paint black — never let white show through
-    canvas.drawRect(
-      Rect.fromLTWH(0, 0, size.x.clamp(1, 20000), size.y.clamp(1, 20000)),
-      Paint()..color = const Color(0xFF000000),
-    );
+  void _renderFallback(ui.Canvas canvas) {
+    // Fill entire canvas with black regardless of size
+    canvas.drawPaint(ui.Paint()..color = const ui.Color(0xFF000000));
   }
 }

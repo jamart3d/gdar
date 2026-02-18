@@ -74,6 +74,8 @@ class DefaultSettings {
   static const double oilHeatDrift = 0.3;
   static const bool oilEnableAudioReactivity = true;
   static const bool oilPerformanceMode = false;
+  static const bool oilPaletteCycle = false;
+  static const double oilPaletteTransitionSpeed = 5.0;
   static const double oilAudioReactivityStrength = 1.0;
   static const double oilAudioBassBoost = 2.0;
   static const double oilAudioPeakDecay = 0.995;

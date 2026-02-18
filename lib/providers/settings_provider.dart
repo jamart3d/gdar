@@ -414,9 +414,11 @@ class SettingsProvider with ChangeNotifier {
         DefaultSettings.oilEnableAudioReactivity;
     _oilPerformanceMode = _prefs.getBool(_oilPerformanceModeKey) ??
         DefaultSettings.oilPerformanceMode;
-    _oilPaletteCycle = _prefs.getBool(_oilPaletteCycleKey) ?? false;
+    _oilPaletteCycle =
+        _prefs.getBool(_oilPaletteCycleKey) ?? DefaultSettings.oilPaletteCycle;
     _oilPaletteTransitionSpeed =
-        _prefs.getDouble(_oilPaletteTransitionSpeedKey) ?? 5.0;
+        _prefs.getDouble(_oilPaletteTransitionSpeedKey) ??
+            DefaultSettings.oilPaletteTransitionSpeed;
     _oilAudioReactivityStrength =
         _prefs.getDouble(_oilAudioReactivityStrengthKey) ??
             DefaultSettings.oilAudioReactivityStrength;
@@ -541,8 +543,7 @@ class SettingsProvider with ChangeNotifier {
     if (color == null) {
       await _prefs.remove(_seedColorKey);
     } else {
-      // ignore: deprecated_member_use
-      await _prefs.setInt(_seedColorKey, color.value);
+      await _prefs.setInt(_seedColorKey, color.toARGB32());
     }
     notifyListeners();
   }

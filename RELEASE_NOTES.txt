@@ -1,3 +1,9 @@
+Release 1.0.82:
+- Stability: Resolved a critical issue where the screensaver could re-trigger and stack multiple instances (white screen bug) by silencing inactivity detection during active playback.
+- Defaults: Updated default application font to "Rock Salt" and the screensaver palette to "Acid Green" for a cleaner initial experience.
+- UI (TV): Standardized "Shakedown" branding on Google TV to always use the "Rock Salt" font regardless of global settings (Header, Splash, and About screens).
+- Internal: Migrated seed color serialization to `toARGB32()` to resolve Flutter deprecation warnings.
+
 Release 1.0.81:
 - Stability Fix: Resolved screensaver stacking/white-screen bug by properly pausing the inactivity service via a state-guarded lifecycle.
 - UI Refinements: Migrated all playback settings to the "Steal" branding and added audio reactivity sliders to the unified playback section.

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shakedown/providers/settings_provider.dart';
+import 'package:shakedown/services/device_service.dart';
 import 'package:shakedown/utils/font_layout_config.dart';
 
 /// A reusable widget for the app title "Shakedown" that handles
@@ -87,13 +88,16 @@ class _ShakedownTitleState extends State<ShakedownTitle>
     final scaleFactor =
         FontLayoutConfig.getEffectiveScale(context, settingsProvider);
 
+    final isTv = context.watch<DeviceService>().isTv;
+    final String activeFont = isTv ? 'rock_salt' : settingsProvider.appFont;
+
     final textStyle = theme.textTheme.displayLarge?.copyWith(
       fontSize: widget.fontSize * scaleFactor,
-      fontFamily: settingsProvider.appFont == 'default'
+      fontFamily: activeFont == 'default'
           ? 'Roboto'
-          : (settingsProvider.appFont == 'rock_salt'
+          : (activeFont == 'rock_salt'
               ? 'RockSalt'
-              : (settingsProvider.appFont == 'permanent_marker'
+              : (activeFont == 'permanent_marker'
                   ? 'Permanent Marker'
                   : 'Caveat')),
       fontWeight: FontWeight.bold,

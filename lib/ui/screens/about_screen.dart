@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:shakedown/ui/widgets/tv/tv_list_tile.dart';
+import 'package:shakedown/services/device_service.dart';
 
 import 'package:shakedown/providers/settings_provider.dart';
 import 'package:shakedown/providers/audio_provider.dart';
@@ -100,6 +101,8 @@ class AboutBody extends StatelessWidget {
           Text(
             'Shakedown',
             style: textTheme.displayMedium?.copyWith(
+              fontFamily:
+                  context.read<DeviceService>().isTv ? 'RockSalt' : null,
               fontWeight: FontWeight.bold,
               color: colorScheme.primary,
             ),

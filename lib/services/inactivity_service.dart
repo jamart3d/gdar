@@ -70,11 +70,13 @@ class InactivityService {
 class InactivityDetector extends StatefulWidget {
   final Widget child;
   final InactivityService? inactivityService;
+  final bool isScreensaverActive;
 
   const InactivityDetector({
     super.key,
     required this.child,
     this.inactivityService,
+    this.isScreensaverActive = false,
   });
 
   @override
@@ -95,9 +97,10 @@ class _InactivityDetectorState extends State<InactivityDetector> {
   }
 
   bool _handleKeyEvent(KeyEvent event) {
-    // We only care about key down events to avoid double triggering
     if (event is KeyDownEvent) {
-      widget.inactivityService?.onUserActivity();
+      if (!widget.isScreensaverActive) {
+        widget.inactivityService?.onUserActivity();
+      }
     }
     return false; // Let the event propagate
   }
@@ -105,9 +108,15 @@ class _InactivityDetectorState extends State<InactivityDetector> {
   @override
   Widget build(BuildContext context) {
     return Listener(
-      onPointerDown: (_) => widget.inactivityService?.onUserActivity(),
-      onPointerMove: (_) => widget.inactivityService?.onUserActivity(),
-      onPointerUp: (_) => widget.inactivityService?.onUserActivity(),
+      onPointerDown: (_) => widget.isScreensaverActive
+          ? null
+          : widget.inactivityService?.onUserActivity(),
+      onPointerMove: (_) => widget.isScreensaverActive
+          ? null
+          : widget.inactivityService?.onUserActivity(),
+      onPointerUp: (_) => widget.isScreensaverActive
+          ? null
+          : widget.inactivityService?.onUserActivity(),
       child: widget.child,
     );
   }

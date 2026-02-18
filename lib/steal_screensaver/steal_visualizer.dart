@@ -39,23 +39,19 @@ class _StealVisualizerState extends State<StealVisualizer> {
 
   void _handlePaletteCycle() {
     final settings = context.read<SettingsProvider>();
-    // We can't check settings.oilPaletteCycle directly if it's not and-ed with a check for Steal Mode
-    // But since this is ONLY for the Steal screensaver, we can assume it's relevant if enabled globally.
-    // For now, I'll just keep the existing settings logic logic.
-
     final palettes = StealConfig.palettes.keys.toList();
     final currentIndex = palettes.indexOf(settings.oilPalette);
     final nextIndex = (currentIndex + 1) % palettes.length;
     final nextPalette = palettes[nextIndex];
-
     settings.setOilPalette(nextPalette);
   }
 
   @override
   void didUpdateWidget(StealVisualizer oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.config != oldWidget.config) {
-      _game.updateConfig(widget.config);
+    _game.updateConfig(widget.config);
+    if (widget.audioReactor != oldWidget.audioReactor) {
+      _game.updateAudioReactor(widget.audioReactor);
     }
   }
 

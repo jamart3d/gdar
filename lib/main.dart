@@ -25,6 +25,7 @@ import 'package:shakedown/services/audio_cache_service.dart';
 import 'package:shakedown/services/catalog_service.dart';
 import 'package:shakedown/providers/update_provider.dart';
 import 'package:shakedown/services/device_service.dart';
+import 'package:shakedown/services/wakelock_service.dart';
 import 'package:shakedown/ui/widgets/tv/tv_dual_pane_layout.dart';
 import 'package:shakedown/services/inactivity_service.dart';
 import 'package:shakedown/ui/screens/screensaver_screen.dart';
@@ -100,6 +101,18 @@ class _GdarAppState extends State<GdarApp> {
 
   late final InactivityService _inactivityService;
 
+  /// Guards against double-launching the screensaver.
+  /// Also prevents Consumer2 from restarting the inactivity service
+  /// while the screensaver is active.
+  /// Uses setState so the builder rebuilds and passes the updated flag
+  /// to InactivityDetector, silencing its key/pointer handlers during
+  /// screensaver playback.
+  bool _isScreensaverActive = false;
+
+  void _setScreensaverActive(bool value) {
+    setState(() => _isScreensaverActive = value);
+  }
+
   @override
   void initState() {
     super.initState();
@@ -114,16 +127,22 @@ class _GdarAppState extends State<GdarApp> {
     _inactivityService = InactivityService(
       initialDuration: const Duration(minutes: 5),
       onInactivityTimeout: () {
+        // Guard: don't double-launch if screensaver is already active
+        if (_isScreensaverActive) return;
+
         final context = _navigatorKey.currentContext;
         if (context != null) {
-          // Stop the inactivity service BEFORE showing the screensaver.
-          // Without this, the InactivityDetector's HardwareKeyboard handler
-          // keeps firing while the screensaver is open, immediately re-triggering
-          // onInactivityTimeout and pushing a new screensaver on top — causing
-          // a white screen from stacked routes.
+          _setScreensaverActive(true);
+
+          // Stop inactivity monitoring while screensaver is active.
+          // Without this, InactivityDetector's HardwareKeyboard handler
+          // keeps firing, re-triggering onInactivityTimeout and stacking
+          // multiple screensaver routes — causing the white screen.
           _inactivityService.stop();
+
           ScreensaverScreen.show(context).then((_) {
-            // Restart monitoring after the screensaver exits
+            _setScreensaverActive(false);
+            // Restart monitoring after screensaver exits
             if (_settingsProvider.useOilScreensaver) {
               _inactivityService.start();
             }
@@ -138,6 +157,10 @@ class _GdarAppState extends State<GdarApp> {
   @override
   void dispose() {
     _linkSubscription?.cancel();
+    // InactivityService.dispose() calls stop() which cancels the timer.
+    // WakelockService is managed by ScreensaverScreen via enable()/disable()
+    // in didChangeDependencies/dispose — OS cleans up wakelocks on process death
+    // but ScreensaverScreen.dispose() always calls disable() for normal lifecycle.
     _inactivityService.dispose();
     super.dispose();
   }
@@ -395,6 +418,7 @@ class _GdarAppState extends State<GdarApp> {
       providers: [
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
         Provider<CatalogService>(create: (_) => CatalogService()),
+        Provider<WakelockService>(create: (_) => WakelockService()),
         ChangeNotifierProvider.value(value: _settingsProvider),
         ChangeNotifierProvider(create: (_) => AudioCacheService()..init()),
         ChangeNotifierProxyProvider<SettingsProvider, ShowListProvider>(
@@ -425,13 +449,14 @@ class _GdarAppState extends State<GdarApp> {
           _inactivityService.updateDuration(Duration(
               minutes: settingsProvider.oilScreensaverInactivityMinutes));
 
-          // Start/stop based on settings — only start if not already running
-          // Note: do NOT call start() here if the screensaver is active,
-          // as start/stop is managed by the onInactivityTimeout callback.
+          // Start/stop based on settings.
+          // Guard with _isScreensaverActive so Consumer2 rebuilds don't
+          // restart the service while the screensaver is running.
           if (settingsProvider.useOilScreensaver &&
-              context.read<DeviceService>().isTv) {
+              context.read<DeviceService>().isTv &&
+              !_isScreensaverActive) {
             _inactivityService.start();
-          } else {
+          } else if (!_isScreensaverActive) {
             _inactivityService.stop();
           }
 
@@ -609,6 +634,7 @@ class _GdarAppState extends State<GdarApp> {
 
                     return InactivityDetector(
                       inactivityService: _inactivityService,
+                      isScreensaverActive: _isScreensaverActive,
                       child: child!,
                     );
                   },

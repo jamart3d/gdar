@@ -75,9 +75,9 @@ class TvHeader extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  'SHAKEDOWN',
+                  'Shakedown',
                   style: TextStyle(
-                    fontFamily: 'Rock Salt', // Or similar authoritative font
+                    fontFamily: 'RockSalt', // Must match pubspec.yaml exactly
                     fontSize: 22, // Reduced from 32
                     height: 1.0,
                     fontWeight: FontWeight.bold,
