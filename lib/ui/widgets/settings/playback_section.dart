@@ -177,18 +177,9 @@ class PlaybackSection extends StatelessWidget {
                     },
                     child: SegmentedButton<int>(
                       segments: const [
-                        ButtonSegment(
-                          value: 1,
-                          label: Text('1 min'),
-                        ),
-                        ButtonSegment(
-                          value: 5,
-                          label: Text('5 min'),
-                        ),
-                        ButtonSegment(
-                          value: 15,
-                          label: Text('15 min'),
-                        ),
+                        ButtonSegment(value: 1, label: Text('1 min')),
+                        ButtonSegment(value: 5, label: Text('5 min')),
+                        ButtonSegment(value: 15, label: Text('15 min')),
                       ],
                       selected: {
                         settingsProvider.oilScreensaverInactivityMinutes
@@ -204,6 +195,7 @@ class PlaybackSection extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 16),
+
                   // Color Palette Selector
                   Text(
                     'Color Palette',
@@ -246,6 +238,7 @@ class PlaybackSection extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 16),
+
                   // Auto-Cycle Toggle
                   TvSwitchListTile(
                     dense: true,
@@ -266,6 +259,91 @@ class PlaybackSection extends StatelessWidget {
                       context.read<SettingsProvider>().toggleOilPaletteCycle();
                     },
                   ),
+                  const SizedBox(height: 16),
+
+                  // ── Audio Reactivity ──────────────────────────────────
+                  Text(
+                    'Audio Reactivity',
+                    style: Theme.of(context)
+                        .textTheme
+                        .bodySmall
+                        ?.copyWith(fontSize: 12.0 * scaleFactor),
+                  ),
+                  const SizedBox(height: 8),
+
+                  // Enable Audio Reactivity toggle
+                  TvSwitchListTile(
+                    dense: true,
+                    visualDensity: VisualDensity.compact,
+                    title: Text('Enable Audio Reactivity',
+                        style: Theme.of(context)
+                            .textTheme
+                            .titleMedium
+                            ?.copyWith(fontSize: 14 * scaleFactor)),
+                    subtitle: Text('Sync visuals to the music being played',
+                        style: Theme.of(context)
+                            .textTheme
+                            .bodySmall
+                            ?.copyWith(fontSize: 11 * scaleFactor)),
+                    value: settingsProvider.oilEnableAudioReactivity,
+                    onChanged: (value) {
+                      HapticFeedback.lightImpact();
+                      context
+                          .read<SettingsProvider>()
+                          .toggleOilEnableAudioReactivity();
+                    },
+                  ),
+
+                  if (settingsProvider.oilEnableAudioReactivity) ...[
+                    const SizedBox(height: 16),
+
+                    // Reactivity Strength
+                    _SliderSetting(
+                      label: 'Reactivity Strength',
+                      leftLabel: 'Subtle',
+                      rightLabel: 'Wild',
+                      value: settingsProvider.oilAudioReactivityStrength,
+                      min: 0.5,
+                      max: 2.0,
+                      divisions: 15,
+                      scaleFactor: scaleFactor,
+                      onChanged: (v) => context
+                          .read<SettingsProvider>()
+                          .setOilAudioReactivityStrength(v),
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Bass Boost
+                    _SliderSetting(
+                      label: 'Bass Boost',
+                      leftLabel: 'Normal',
+                      rightLabel: 'Punchy',
+                      value: settingsProvider.oilAudioBassBoost,
+                      min: 1.0,
+                      max: 3.0,
+                      divisions: 20,
+                      scaleFactor: scaleFactor,
+                      onChanged: (v) => context
+                          .read<SettingsProvider>()
+                          .setOilAudioBassBoost(v),
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Peak Decay
+                    _SliderSetting(
+                      label: 'Peak Decay',
+                      leftLabel: 'Fast adapt',
+                      rightLabel: 'Slow adapt',
+                      value: settingsProvider.oilAudioPeakDecay,
+                      min: 0.990,
+                      max: 0.999,
+                      divisions: 9,
+                      scaleFactor: scaleFactor,
+                      onChanged: (v) => context
+                          .read<SettingsProvider>()
+                          .setOilAudioPeakDecay(v),
+                    ),
+                  ],
                   const SizedBox(height: 16),
                 ],
               ),
@@ -417,11 +495,11 @@ class PlaybackSection extends StatelessWidget {
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         fontSize: 16 * scaleFactor,
                         color: !settingsProvider.nonRandom
-                            ? null // Use default active color
+                            ? null
                             : Theme.of(context)
                                 .colorScheme
                                 .onSurface
-                                .withValues(alpha: 0.5), // Dimmed when OFF
+                                .withValues(alpha: 0.5),
                       ))),
           value: !settingsProvider.nonRandom,
           onChanged: (value) {
@@ -463,7 +541,6 @@ class PlaybackSection extends StatelessWidget {
           onChanged: (value) {
             context.read<SettingsProvider>().togglePlayRandomOnCompletion();
 
-            // Suggest Advanced Cache if enabling and it's currently OFF
             if (value && !settingsProvider.offlineBuffering) {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
@@ -595,6 +672,87 @@ class PlaybackSection extends StatelessWidget {
           secondary: const Icon(Icons.history_toggle_off_rounded),
         ),
         RandomProbabilityCard(scaleFactor: scaleFactor),
+      ],
+    );
+  }
+}
+
+/// Reusable slider row matching the existing settings style.
+class _SliderSetting extends StatelessWidget {
+  final String label;
+  final String leftLabel;
+  final String rightLabel;
+  final double value;
+  final double min;
+  final double max;
+  final int divisions;
+  final double scaleFactor;
+  final ValueChanged<double> onChanged;
+
+  const _SliderSetting({
+    required this.label,
+    required this.leftLabel,
+    required this.rightLabel,
+    required this.value,
+    required this.min,
+    required this.max,
+    required this.divisions,
+    required this.scaleFactor,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              label,
+              style: Theme.of(context)
+                  .textTheme
+                  .titleMedium
+                  ?.copyWith(fontSize: 14 * scaleFactor),
+            ),
+            Text(
+              value.toStringAsFixed(2),
+              style: Theme.of(context)
+                  .textTheme
+                  .bodySmall
+                  ?.copyWith(fontSize: 11 * scaleFactor),
+            ),
+          ],
+        ),
+        Slider(
+          value: value.clamp(min, max),
+          min: min,
+          max: max,
+          divisions: divisions,
+          onChanged: (v) {
+            HapticFeedback.selectionClick();
+            onChanged(v);
+          },
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(leftLabel,
+                  style: Theme.of(context)
+                      .textTheme
+                      .bodySmall
+                      ?.copyWith(fontSize: 10 * scaleFactor)),
+              Text(rightLabel,
+                  style: Theme.of(context)
+                      .textTheme
+                      .bodySmall
+                      ?.copyWith(fontSize: 10 * scaleFactor)),
+            ],
+          ),
+        ),
       ],
     );
   }

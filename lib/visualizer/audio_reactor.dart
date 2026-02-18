@@ -47,6 +47,13 @@ abstract class AudioReactor {
   /// Stop listening to audio data.
   void stop();
 
+  /// Update tuning configuration.
+  void updateConfig({
+    double? peakDecay,
+    double? bassBoost,
+    double? reactivityStrength,
+  });
+
   /// Dispose of resources.
   void dispose();
 

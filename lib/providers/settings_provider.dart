@@ -62,6 +62,10 @@ class SettingsProvider with ChangeNotifier {
   static const String _oilPaletteCycleKey = 'oil_palette_cycle';
   static const String _oilPaletteTransitionSpeedKey =
       'oil_palette_transition_speed';
+  static const String _oilAudioReactivityStrengthKey =
+      'oil_audio_reactivity_strength';
+  static const String _oilAudioBassBoostKey = 'oil_audio_bass_boost';
+  static const String _oilAudioPeakDecayKey = 'oil_audio_peak_decay';
 
   static const String _marqueeEnabledKey =
       'marquee_enabled'; // Logic for disabling marquee in tests
@@ -96,7 +100,7 @@ class SettingsProvider with ChangeNotifier {
   // Private state
   late bool _showTrackNumbers;
   late bool _hideTrackDuration;
-  bool _isFirstRun = false; // Initialize explicitly
+  bool _isFirstRun = false;
   late bool _playOnTap;
   late bool _showSingleShnid;
   late bool _playRandomOnCompletion;
@@ -133,6 +137,9 @@ class SettingsProvider with ChangeNotifier {
   late bool _oilPerformanceMode;
   late bool _oilPaletteCycle;
   late double _oilPaletteTransitionSpeed;
+  late double _oilAudioReactivityStrength;
+  late double _oilAudioBassBoost;
+  late double _oilAudioPeakDecay;
 
   Color? _seedColor;
 
@@ -189,6 +196,9 @@ class SettingsProvider with ChangeNotifier {
   bool get oilPerformanceMode => _oilPerformanceMode;
   bool get oilPaletteCycle => _oilPaletteCycle;
   double get oilPaletteTransitionSpeed => _oilPaletteTransitionSpeed;
+  double get oilAudioReactivityStrength => _oilAudioReactivityStrength;
+  double get oilAudioBassBoost => _oilAudioBassBoost;
+  double get oilAudioPeakDecay => _oilAudioPeakDecay;
 
   Color? get seedColor => _seedColor;
 
@@ -196,10 +206,8 @@ class SettingsProvider with ChangeNotifier {
   bool get randomOnlyHighRated => _randomOnlyHighRated;
   bool get randomExcludePlayed => _randomExcludePlayed;
 
-  // Internal setting: Global Album Art
   bool get showGlobalAlbumArt => true;
 
-  // Session state for suggestions
   bool _hasShownAdvancedCacheSuggestion = false;
   bool get hasShownAdvancedCacheSuggestion => _hasShownAdvancedCacheSuggestion;
   void markAdvancedCacheSuggestionShown() {
@@ -213,14 +221,12 @@ class SettingsProvider with ChangeNotifier {
   void toggleShowDebugLayout() => _updatePreference(
       _showDebugLayoutKey, _showDebugLayout = !_showDebugLayout);
 
-  // Shakedown Tween Setting (Internal)
   static const String _enableShakedownTweenKey = 'enable_shakedown_tween';
   late bool _enableShakedownTween;
   bool get enableShakedownTween => _enableShakedownTween;
   void toggleEnableShakedownTween() => _updatePreference(
       _enableShakedownTweenKey, _enableShakedownTween = !_enableShakedownTween);
 
-  // MethodChannel for ADB UI scale testing
   static const MethodChannel _uiScaleChannel =
       MethodChannel('com.jamart3d.shakedown/ui_scale');
 
@@ -229,7 +235,6 @@ class SettingsProvider with ChangeNotifier {
     _setupUiScaleChannel();
   }
 
-  /// Set up MethodChannel listener for ADB UI scale testing
   void _setupUiScaleChannel() {
     _uiScaleChannel.setMethodCallHandler((call) async {
       if (call.method == 'setUiScale') {
@@ -237,8 +242,6 @@ class SettingsProvider with ChangeNotifier {
         if (enabled != _uiScale) {
           _uiScale = enabled;
           await _prefs.setBool(_uiScaleKey, enabled);
-
-          // Smart Abbreviation for ADB
           if (_uiScale) {
             _abbreviateDayOfWeek = true;
             _abbreviateMonth = true;
@@ -248,7 +251,6 @@ class SettingsProvider with ChangeNotifier {
           }
           await _prefs.setBool(_abbreviateDayOfWeekKey, _abbreviateDayOfWeek);
           await _prefs.setBool(_abbreviateMonthKey, _abbreviateMonth);
-
           notifyListeners();
           logger.i(
               'SettingsProvider: UI Scale set to $enabled via ADB (Smart Abbreviation applied)');
@@ -258,10 +260,8 @@ class SettingsProvider with ChangeNotifier {
   }
 
   void _init() {
-    // Check if this is the first run (or if we haven't checked screen size yet)
     bool firstRunCheckDone = _prefs.getBool('first_run_check_done') ?? false;
 
-    // Default values
     _uiScale =
         _prefs.getBool(_uiScaleKey) ?? DefaultSettings.uiScaleDesktopDefault;
 
@@ -270,18 +270,12 @@ class SettingsProvider with ChangeNotifier {
       if (views.isNotEmpty) {
         final view = views.first;
         final physicalWidth = view.physicalSize.width;
-
         if (physicalWidth <= 720) {
-          // Small screen: Default scale settings to false
           _uiScale = DefaultSettings.uiScaleMobileDefault;
-          // Save these defaults immediately so they persist
           _prefs.setBool(_uiScaleKey, DefaultSettings.uiScaleMobileDefault);
         }
       }
-
-      _isFirstRun = true; // Mark as first run for Splash Screen
-
-      // Mark check as done
+      _isFirstRun = true;
       _prefs.setBool('first_run_check_done', true);
     }
 
@@ -310,8 +304,8 @@ class SettingsProvider with ChangeNotifier {
         DefaultSettings.abbreviateDayOfWeek;
     _abbreviateMonth =
         _prefs.getBool(_abbreviateMonthKey) ?? DefaultSettings.abbreviateMonth;
-    _simpleRandomIcon =
-        _prefs.getBool(_simpleRandomIconKey) ?? false; // Default false
+    _simpleRandomIcon = _prefs.getBool(_simpleRandomIconKey) ?? false;
+
     // Font Migration Logic
     if (_prefs.containsKey('use_handwriting_font')) {
       bool oldHandwriting = _prefs.getBool('use_handwriting_font') ?? false;
@@ -329,36 +323,31 @@ class SettingsProvider with ChangeNotifier {
         'SettingsProvider: Active App Font = $_appFont (Default: ${DefaultSettings.appFont})');
 
     // Glow Border Migration Logic
-    // New system: 0=Off, 10-100=Intensity percentage
     if (_prefs.containsKey(_glowModeKey)) {
       _glowMode = _prefs.getInt(_glowModeKey) ?? DefaultSettings.glowMode;
-      // Migrate from old values to percentage
       if (_glowMode == 1) {
-        _glowMode = 25; // Old "Quarter" becomes 25%
+        _glowMode = 25;
         _prefs.setInt(_glowModeKey, _glowMode);
       } else if (_glowMode == 2) {
-        _glowMode = 50; // Old "Half" becomes 50%
+        _glowMode = 50;
         _prefs.setInt(_glowModeKey, _glowMode);
       } else if (_glowMode == 3) {
-        _glowMode = 100; // Old "Full" becomes 100%
+        _glowMode = 100;
         _prefs.setInt(_glowModeKey, _glowMode);
       }
     } else {
-      // Migrate from old boolean keys
       bool oldShow = _prefs.getBool(_showGlowBorderKey) ?? false;
       bool oldHalf = _prefs.getBool(_halfGlowDynamicKey) ?? false;
       if (oldHalf) {
-        _glowMode = 50; // Half = 50%
+        _glowMode = 50;
       } else if (oldShow) {
-        _glowMode = 100; // Full = 100%
+        _glowMode = 100;
       } else {
-        _glowMode = DefaultSettings.glowMode; // Off
+        _glowMode = DefaultSettings.glowMode;
       }
-      // Save matched value to new key
       _prefs.setInt(_glowModeKey, _glowMode);
     }
 
-    // True Black Migration: if user had halfGlowDynamic, they likely wanted True Black
     bool oldHalf = _prefs.getBool(_halfGlowDynamicKey) ?? false;
     if (oldHalf && !_prefs.containsKey(_useTrueBlackKey)) {
       _useTrueBlack = true;
@@ -386,6 +375,7 @@ class SettingsProvider with ChangeNotifier {
         DefaultSettings.offlineBuffering;
     _enableBufferAgent = _prefs.getBool(_enableBufferAgentKey) ??
         DefaultSettings.enableBufferAgent;
+
     // Prevent Sleep Migration
     if (_prefs.containsKey('prevent_screensaver') &&
         !_prefs.containsKey(_preventSleepKey)) {
@@ -400,8 +390,7 @@ class SettingsProvider with ChangeNotifier {
 
     _marqueeEnabled = _prefs.getBool(_marqueeEnabledKey) ?? true;
     _showDebugLayout = _prefs.getBool(_showDebugLayoutKey) ?? false;
-    _enableShakedownTween =
-        _prefs.getBool(_enableShakedownTweenKey) ?? true; // Default OFF
+    _enableShakedownTween = _prefs.getBool(_enableShakedownTweenKey) ?? true;
 
     // Screensaver (steal)
     _useOilScreensaver = _prefs.getBool(_useOilScreensaverKey) ??
@@ -427,11 +416,16 @@ class SettingsProvider with ChangeNotifier {
         DefaultSettings.oilPerformanceMode;
     _oilPaletteCycle = _prefs.getBool(_oilPaletteCycleKey) ?? false;
     _oilPaletteTransitionSpeed =
-        _prefs.getDouble(_oilPaletteTransitionSpeedKey) ??
-            5.0; // 5 seconds default
+        _prefs.getDouble(_oilPaletteTransitionSpeedKey) ?? 5.0;
+    _oilAudioReactivityStrength =
+        _prefs.getDouble(_oilAudioReactivityStrengthKey) ??
+            DefaultSettings.oilAudioReactivityStrength;
+    _oilAudioBassBoost = _prefs.getDouble(_oilAudioBassBoostKey) ??
+        DefaultSettings.oilAudioBassBoost;
+    _oilAudioPeakDecay = _prefs.getDouble(_oilAudioPeakDecayKey) ??
+        DefaultSettings.oilAudioPeakDecay;
 
     if (isTv) {
-      // Force 'steal' mode on TV, ignoring saved settings
       _oilScreensaverMode = 'steal';
     }
 
@@ -442,28 +436,22 @@ class SettingsProvider with ChangeNotifier {
       _seedColor = null;
     }
 
-    // Ratings initialized in CatalogService now.
     _initSourceFilters();
   }
 
-  // Renamed from _initRatings to just init filters since ratings are gone
   void _initSourceFilters() {
-    // Restore random settings
     _randomOnlyUnplayed = _prefs.getBool(_randomOnlyUnplayedKey) ??
         DefaultSettings.randomOnlyUnplayed;
     _randomOnlyHighRated = _prefs.getBool(_randomOnlyHighRatedKey) ??
         DefaultSettings.randomOnlyHighRated;
     _randomExcludePlayed = _prefs.getBool(_randomExcludePlayedKey) ??
         DefaultSettings.randomExcludePlayed;
-
-    // Restore source filters
     _filterHighestShnid = _prefs.getBool(_filterHighestShnidKey) ?? true;
 
     final String? catsJson = _prefs.getString(_sourceCategoryFiltersKey);
     if (catsJson != null) {
       try {
         final Map<String, dynamic> decoded = json.decode(catsJson);
-        // Merge with defaults to handle any new keys in future
         decoded.forEach((key, value) {
           if (_sourceCategoryFilters.containsKey(key) && value is bool) {
             _sourceCategoryFilters[key] = value;
@@ -473,7 +461,6 @@ class SettingsProvider with ChangeNotifier {
         // use defaults
       }
     } else {
-      // First run or no saved filters: Default to ONLY Matrix enabled
       _sourceCategoryFilters = Map.from(DefaultSettings.sourceCategoryFilters);
     }
   }
@@ -481,15 +468,12 @@ class SettingsProvider with ChangeNotifier {
   // Toggle methods
   void toggleShowTrackNumbers() => _updatePreference(
       _trackNumberKey, _showTrackNumbers = !_showTrackNumbers);
-
   void toggleHideTrackDuration() => _updatePreference(
       _hideTrackDurationKey, _hideTrackDuration = !_hideTrackDuration);
-
   void togglePlayOnTap() =>
       _updatePreference(_playOnTapKey, _playOnTap = !_playOnTap);
   void toggleShowSingleShnid() => _updatePreference(
       _showSingleShnidKey, _showSingleShnid = !_showSingleShnid);
-
   void togglePlayRandomOnCompletion() => _updatePreference(
       _playRandomOnCompletionKey,
       _playRandomOnCompletion = !_playRandomOnCompletion);
@@ -514,8 +498,6 @@ class SettingsProvider with ChangeNotifier {
   void toggleUiScale() {
     _uiScale = !_uiScale;
     _prefs.setBool(_uiScaleKey, _uiScale);
-
-    // Smart Abbreviation: Sync with UI Scale
     if (_uiScale) {
       _abbreviateDayOfWeek = true;
       _abbreviateMonth = true;
@@ -523,16 +505,13 @@ class SettingsProvider with ChangeNotifier {
       _abbreviateDayOfWeek = false;
       _abbreviateMonth = false;
     }
-
     _prefs.setBool(_abbreviateDayOfWeekKey, _abbreviateDayOfWeek);
     _prefs.setBool(_abbreviateMonthKey, _abbreviateMonth);
-
     notifyListeners();
   }
 
-  void setGlowMode(int mode) {
-    _updateIntPreference(_glowModeKey, _glowMode = mode);
-  }
+  void setGlowMode(int mode) =>
+      _updateIntPreference(_glowModeKey, _glowMode = mode);
 
   void toggleHighlightPlayingWithRgb() => _updatePreference(
       _highlightPlayingWithRgbKey,
@@ -544,13 +523,10 @@ class SettingsProvider with ChangeNotifier {
   void toggleUseStrictSrcCategorization() => _updatePreference(
       _useStrictSrcCategorizationKey,
       _useStrictSrcCategorization = !_useStrictSrcCategorization);
-
   void toggleOfflineBuffering() => _updatePreference(
       _offlineBufferingKey, _offlineBuffering = !_offlineBuffering);
-
   void toggleEnableBufferAgent() => _updatePreference(
       _enableBufferAgentKey, _enableBufferAgent = !_enableBufferAgent);
-
   void togglePreventSleep() =>
       _updatePreference(_preventSleepKey, _preventSleep = !_preventSleep);
 
@@ -573,22 +549,17 @@ class SettingsProvider with ChangeNotifier {
 
   void toggleRandomOnlyUnplayed() => _updatePreference(
       _randomOnlyUnplayedKey, _randomOnlyUnplayed = !_randomOnlyUnplayed);
-
   void toggleRandomOnlyHighRated() => _updatePreference(
       _randomOnlyHighRatedKey, _randomOnlyHighRated = !_randomOnlyHighRated);
-
   void toggleRandomExcludePlayed() => _updatePreference(
       _randomExcludePlayedKey, _randomExcludePlayed = !_randomExcludePlayed);
 
-  // Screensaver visualizer toggles
+  // Screensaver visualizer setters
   void toggleUseOilScreensaver() => _updatePreference(
       _useOilScreensaverKey, _useOilScreensaver = !_useOilScreensaver);
-
   void setOilScreensaverMode(String mode) => _updateStringPreference(
       _oilScreensaverModeKey, _oilScreensaverMode = mode);
-
   void setOilScreensaverInactivityMinutes(int minutes) {
-    // Enforce discrete values: 1, 5, 15
     final enforced = [1, 5, 15].contains(minutes) ? minutes : 5;
     _updateIntPreference(_oilScreensaverInactivityMinutesKey,
         _oilScreensaverInactivityMinutes = enforced);
@@ -596,31 +567,33 @@ class SettingsProvider with ChangeNotifier {
 
   Future<void> setOilFlowSpeed(double value) =>
       _updateDoublePreference(_oilFlowSpeedKey, _oilFlowSpeed = value);
-
   Future<void> setOilPulseIntensity(double value) => _updateDoublePreference(
       _oilPulseIntensityKey, _oilPulseIntensity = value);
-
   Future<void> setOilPalette(String palette) =>
       _updateStringPreference(_oilPaletteKey, _oilPalette = palette);
-
   Future<void> setOilFilmGrain(double value) =>
       _updateDoublePreference(_oilFilmGrainKey, _oilFilmGrain = value);
-
   Future<void> setOilHeatDrift(double value) =>
       _updateDoublePreference(_oilHeatDriftKey, _oilHeatDrift = value);
-
   void toggleOilEnableAudioReactivity() => _updatePreference(
       _oilEnableAudioReactivityKey,
       _oilEnableAudioReactivity = !_oilEnableAudioReactivity);
-
   void toggleOilPerformanceMode() => _updatePreference(
       _oilPerformanceModeKey, _oilPerformanceMode = !_oilPerformanceMode);
-
   void toggleOilPaletteCycle() => _updatePreference(
       _oilPaletteCycleKey, _oilPaletteCycle = !_oilPaletteCycle);
-
   void setOilPaletteTransitionSpeed(double seconds) => _updateDoublePreference(
       _oilPaletteTransitionSpeedKey, _oilPaletteTransitionSpeed = seconds);
+
+  Future<void> setOilAudioReactivityStrength(double value) =>
+      _updateDoublePreference(
+          _oilAudioReactivityStrengthKey, _oilAudioReactivityStrength = value);
+
+  Future<void> setOilAudioBassBoost(double value) => _updateDoublePreference(
+      _oilAudioBassBoostKey, _oilAudioBassBoost = value);
+
+  Future<void> setOilAudioPeakDecay(double value) => _updateDoublePreference(
+      _oilAudioPeakDecayKey, _oilAudioPeakDecay = value);
 
   // Source Filtering
   static const String _filterHighestShnidKey = 'filter_highest_shnid';
@@ -634,7 +607,7 @@ class SettingsProvider with ChangeNotifier {
     'sbd': true,
     'fm': true,
     'dsbd': true,
-    'unk': false, // Default to FALSE for Unknown
+    'unk': false,
   };
 
   bool get filterHighestShnid => _filterHighestShnid;
@@ -645,12 +618,9 @@ class SettingsProvider with ChangeNotifier {
 
   Future<void> setSourceCategoryFilter(String category, bool isActive) async {
     _sourceCategoryFilters[category] = isActive;
-
-    // Ensure at least one is active
     if (!_sourceCategoryFilters.containsValue(true)) {
-      _sourceCategoryFilters[category] = true; // Revert
+      _sourceCategoryFilters[category] = true;
     }
-
     notifyListeners();
     await _saveSourceCategoryFilters();
   }
@@ -659,7 +629,6 @@ class SettingsProvider with ChangeNotifier {
     _sourceCategoryFilters.forEach((key, value) {
       _sourceCategoryFilters[key] = (key == category);
     });
-
     notifyListeners();
     await _saveSourceCategoryFilters();
   }
@@ -698,11 +667,8 @@ class SettingsProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  /// TEST UTILITY: Resets all preferences to their default state.
-  /// Use via Deep Link: shakedown://debug?action=reset_prefs
   Future<void> resetToDefaults() async {
     await _prefs.clear();
-    // Re-initialize with defaults
     _init();
     notifyListeners();
   }

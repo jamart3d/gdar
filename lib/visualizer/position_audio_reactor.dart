@@ -37,6 +37,15 @@ class PositionAudioReactor implements AudioReactor {
   }
 
   @override
+  void updateConfig({
+    double? peakDecay,
+    double? bassBoost,
+    double? reactivityStrength,
+  }) {
+    // Positioning reactor doesn't support these tuning knobs
+  }
+
+  @override
   void dispose() {
     stop();
     _energyController.close();

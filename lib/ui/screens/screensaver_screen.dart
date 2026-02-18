@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -31,12 +32,14 @@ class ScreensaverScreen extends StatefulWidget {
 class _ScreensaverScreenState extends State<ScreensaverScreen> {
   AudioReactor? _audioReactor;
   WakelockService? _wakelockService;
+  Timer? _keyboardHandlerTimer; // Added Timer for keyboard handler
 
   @override
   void initState() {
     super.initState();
     _initAudioReactor();
-    Future.delayed(const Duration(milliseconds: 500), () {
+    // Delay key handler to avoid catching the launch key event on Google TV
+    _keyboardHandlerTimer = Timer(const Duration(milliseconds: 500), () {
       if (mounted) {
         HardwareKeyboard.instance.addHandler(_handleGlobalKeyEvent);
       }
@@ -52,12 +55,29 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
     }
   }
 
+  @override
+  void didUpdateWidget(ScreensaverScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    _pushAudioConfig();
+  }
+
+  /// Push current tuning knob values to the native visualizer.
+  void _pushAudioConfig() {
+    if (_audioReactor is VisualizerAudioReactor) {
+      final settings = Provider.of<SettingsProvider>(context, listen: false);
+      (_audioReactor as VisualizerAudioReactor).updateConfig(
+        peakDecay: settings.oilAudioPeakDecay,
+        bassBoost: settings.oilAudioBassBoost,
+        reactivityStrength: settings.oilAudioReactivityStrength,
+      );
+    }
+  }
+
   bool _handleGlobalKeyEvent(KeyEvent event) {
-    // Exit screensaver on any key down event
     if (event is KeyDownEvent) {
       if (mounted) {
         Navigator.of(context).pop();
-        return true; // Handled
+        return true;
       }
     }
     return false;
@@ -67,7 +87,6 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
     final settings = Provider.of<SettingsProvider>(context, listen: false);
 
     if (!settings.oilEnableAudioReactivity) {
-      // Audio reactivity disabled
       final reactor = await AudioReactorFactory.create();
       if (mounted) {
         setState(() => _audioReactor = reactor);
@@ -75,31 +94,27 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
       return;
     }
 
-    // Try to use Android Visualizer API if available
     if (Platform.isAndroid) {
-      // Get audio session ID from audio player BEFORE the async gap
       final audioProvider = Provider.of<AudioProvider>(context, listen: false);
       final sessionId = audioProvider.audioPlayer.androidAudioSessionId;
-
       final isAvailable = await VisualizerAudioReactor.isAvailable();
 
       if (isAvailable) {
         final reactor = await AudioReactorFactory.create(
           audioSessionId: sessionId,
         );
-
         if (mounted) {
           setState(() => _audioReactor = reactor);
+          // Push initial config once reactor is ready
+          _pushAudioConfig();
         }
       } else {
-        // Fallback to mock
         final reactor = await AudioReactorFactory.create();
         if (mounted) {
           setState(() => _audioReactor = reactor);
         }
       }
     } else {
-      // Non-Android platforms use mock
       final reactor = await AudioReactorFactory.create();
       if (mounted) {
         setState(() => _audioReactor = reactor);
@@ -109,6 +124,7 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
 
   @override
   void dispose() {
+    _keyboardHandlerTimer?.cancel();
     HardwareKeyboard.instance.removeHandler(_handleGlobalKeyEvent);
     _wakelockService?.disable();
     _audioReactor?.dispose();
@@ -119,7 +135,9 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
   Widget build(BuildContext context) {
     final settings = context.watch<SettingsProvider>();
 
-    // Build config from settings
+    // Push config whenever settings rebuild this widget
+    WidgetsBinding.instance.addPostFrameCallback((_) => _pushAudioConfig());
+
     final config = StealConfig(
       flowSpeed: settings.oilFlowSpeed,
       palette: settings.oilPalette,
@@ -133,9 +151,7 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
 
     return PopScope(
       canPop: true,
-      onPopInvokedWithResult: (didPop, result) {
-        // No extra logic needed
-      },
+      onPopInvokedWithResult: (didPop, result) {},
       child: Scaffold(
         backgroundColor: Colors.black,
         body: StealVisualizer(

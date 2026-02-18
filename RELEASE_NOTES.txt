@@ -1,3 +1,8 @@
+Release 1.0.81:
+- Stability Fix: Resolved screensaver stacking/white-screen bug by properly pausing the inactivity service via a state-guarded lifecycle.
+- UI Refinements: Migrated all playback settings to the "Steal" branding and added audio reactivity sliders to the unified playback section.
+- Native Improvements: Hardened app orientation for TV devices and finalized the migration to native black themes.
+
 Release 1.0.80:
 - Screensaver Logic: Fixed an issue where the screensaver could re-trigger and stack multiple instances by correctly managing the InactivityService lifecycle.
 - App Hardening: Streamlined main navigation and theme logic, ensuring clean transitions and stable orientation handling on TV hardware.
