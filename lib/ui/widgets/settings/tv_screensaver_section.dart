@@ -30,36 +30,40 @@ class TvScreensaverSection extends StatelessWidget {
           textTheme: textTheme,
         ),
         const SizedBox(height: 8),
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: StealConfig.palettes.keys.map((palette) {
-            final isSelected = settings.oilPalette == palette;
-            return TvFocusWrapper(
-              onTap: () => settings.setOilPalette(palette),
-              borderRadius: BorderRadius.circular(8),
-              child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                decoration: BoxDecoration(
-                  color: isSelected
-                      ? colorScheme.primaryContainer
-                      : colorScheme.surfaceContainerHighest,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(
-                  palette,
-                  style: TextStyle(
+        FocusTraversalGroup(
+          policy: WidgetOrderTraversalPolicy(),
+          child: Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: StealConfig.palettes.keys.map((palette) {
+              final isSelected = settings.oilPalette == palette;
+              return TvFocusWrapper(
+                autofocus: isSelected,
+                onTap: () => settings.setOilPalette(palette),
+                borderRadius: BorderRadius.circular(8),
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                  decoration: BoxDecoration(
                     color: isSelected
-                        ? colorScheme.onPrimaryContainer
-                        : colorScheme.onSurfaceVariant,
-                    fontWeight:
-                        isSelected ? FontWeight.bold : FontWeight.normal,
+                        ? colorScheme.primaryContainer
+                        : colorScheme.surfaceContainerHighest,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    palette,
+                    style: TextStyle(
+                      color: isSelected
+                          ? colorScheme.onPrimaryContainer
+                          : colorScheme.onSurfaceVariant,
+                      fontWeight:
+                          isSelected ? FontWeight.bold : FontWeight.normal,
+                    ),
                   ),
                 ),
-              ),
-            );
-          }).toList(),
+              );
+            }).toList(),
+          ),
         ),
 
         const SizedBox(height: 24),
@@ -343,8 +347,7 @@ class _SliderRow extends StatelessWidget {
           max: max,
           divisions: divisions,
           onChanged: onChanged,
-          activeColor:
-              colorScheme.primary, // SliderTheme can override if needed
+          activeColor: colorScheme.primary,
           inactiveColor: colorScheme.surfaceContainerHighest,
         ),
         Padding(

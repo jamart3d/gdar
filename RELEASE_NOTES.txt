@@ -1,3 +1,8 @@
+Release 1.0.83:
+- UI (TV): Introduced `TvStepperRow`, a native TV control for numeric settings (Flow Speed, Strength, etc.) featuring D-Pad focus and arrow-key repeat support.
+- Focus: Improved navigation in TV Screensaver settings with `FocusTraversalGroup` and `autofocus` on selected palettes.
+- UI: Unified palette selection logic in `PlaybackSection` with haptics and consistent focus wrapping.
+
 Release 1.0.82:
 - Stability: Resolved a critical issue where the screensaver could re-trigger and stack multiple instances (white screen bug) by silencing inactivity detection during active playback.
 - Defaults: Updated default application font to "Rock Salt" and the screensaver palette to "Acid Green" for a cleaner initial experience.
