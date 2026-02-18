@@ -1,3 +1,8 @@
+Release 1.0.77:
+- Visualizer Live Tuning: Introduced real-time adjustment of Peak Decay, Bass Boost, and Reactivity Strength in the native Android engine.
+- Google TV Screensaver Settings: Added a dedicated settings section with sliders for flow speed, pulse intensity, film grain, and audio reactivity.
+- Performance Enhancements: Optimized shader complexity and improved lifecycle management for the Screensaver on TV devices.
+- Test Stability: Fixed mock implementations to align with the expanded SettingsProvider interface.
 
 Release 1.0.76:
 - Visualizer Engine Upgrade: Implemented RMS logic, rolling peak normalization (AGC), and exponential smoothing in VisualizerPlugin.kt for a smoother, more responsive reactive experience.

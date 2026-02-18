@@ -170,9 +170,22 @@ class FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
   @override
   double get oilPaletteTransitionSpeed => 5.0;
   @override
+  double get oilAudioPeakDecay => 0.998;
+  @override
+  double get oilAudioBassBoost => 1.0;
+  @override
+  double get oilAudioReactivityStrength => 1.0;
+
+  @override
   void toggleOilPaletteCycle() {}
   @override
   void setOilPaletteTransitionSpeed(double seconds) {}
+  @override
+  Future<void> setOilAudioPeakDecay(double value) async {}
+  @override
+  Future<void> setOilAudioBassBoost(double value) async {}
+  @override
+  Future<void> setOilAudioReactivityStrength(double value) async {}
   @override
   Future<void> setSourceCategoryFilter(String category, bool isActive) async {}
   @override
