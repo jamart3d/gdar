@@ -11,6 +11,7 @@ import 'package:shakedown/ui/widgets/settings/random_probability_card.dart';
 import 'package:shakedown/ui/widgets/tv/tv_switch_list_tile.dart';
 import 'package:shakedown/ui/widgets/tv/tv_list_tile.dart';
 import 'package:shakedown/ui/widgets/tv/tv_focus_wrapper.dart';
+import 'package:shakedown/ui/widgets/tv/tv_stepper_row.dart';
 import 'package:shakedown/ui/screens/screensaver_screen.dart';
 
 class PlaybackSection extends StatelessWidget {
@@ -79,6 +80,7 @@ class PlaybackSection extends StatelessWidget {
               secondary: const Icon(Icons.screen_lock_portrait_rounded),
             ),
           ),
+
         // Screensaver (Steal) - Show on TV ONLY
         if (Provider.of<DeviceService>(context, listen: false).isTv) ...[
           TvSwitchListTile(
@@ -99,6 +101,7 @@ class PlaybackSection extends StatelessWidget {
             },
             secondary: const Icon(Icons.blur_circular_rounded),
           ),
+
           // Manual Start Button
           TvListTile(
             dense: true,
@@ -125,6 +128,7 @@ class PlaybackSection extends StatelessWidget {
               ScreensaverScreen.show(context);
             },
           ),
+
           if (settingsProvider.useOilScreensaver) ...[
             Padding(
               padding:
@@ -133,7 +137,7 @@ class PlaybackSection extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const SizedBox(height: 8),
-                  const SizedBox(height: 8),
+
                   // Inactivity Timeout
                   Text(
                     'Inactivity Timeout',
@@ -149,22 +153,18 @@ class PlaybackSection extends StatelessWidget {
                         final current =
                             settingsProvider.oilScreensaverInactivityMinutes;
                         int? newVal;
-
                         if (event.logicalKey == LogicalKeyboardKey.arrowLeft) {
                           if (current == 15) {
                             newVal = 5;
-                          } else if (current == 5) {
-                            newVal = 1;
-                          }
+                            // ignore: curly_braces_in_flow_control_structures
+                          } else if (current == 5) newVal = 1;
                         } else if (event.logicalKey ==
                             LogicalKeyboardKey.arrowRight) {
                           if (current == 1) {
                             newVal = 5;
-                          } else if (current == 5) {
-                            newVal = 15;
-                          }
+                            // ignore: curly_braces_in_flow_control_structures
+                          } else if (current == 5) newVal = 15;
                         }
-
                         if (newVal != null && newVal != current) {
                           HapticFeedback.selectionClick();
                           context
@@ -261,6 +261,56 @@ class PlaybackSection extends StatelessWidget {
                   ),
                   const SizedBox(height: 16),
 
+                  // Show Track Info Banner Toggle
+                  TvSwitchListTile(
+                    dense: true,
+                    visualDensity: VisualDensity.compact,
+                    title: Text('Show Track Info',
+                        style: Theme.of(context)
+                            .textTheme
+                            .titleMedium
+                            ?.copyWith(fontSize: 14 * scaleFactor)),
+                    subtitle: Text(
+                        'Display track title, venue and date as circular text',
+                        style: Theme.of(context)
+                            .textTheme
+                            .bodySmall
+                            ?.copyWith(fontSize: 11 * scaleFactor)),
+                    value: settingsProvider.oilShowInfoBanner,
+                    onChanged: (value) {
+                      HapticFeedback.lightImpact();
+                      context
+                          .read<SettingsProvider>()
+                          .toggleOilShowInfoBanner();
+                    },
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Show Track Info banner toggle
+                  TvSwitchListTile(
+                    dense: true,
+                    visualDensity: VisualDensity.compact,
+                    title: Text('Show Track Info',
+                        style: Theme.of(context)
+                            .textTheme
+                            .titleMedium
+                            ?.copyWith(fontSize: 14 * scaleFactor)),
+                    subtitle: Text(
+                        'Display track title, venue and date as circular text',
+                        style: Theme.of(context)
+                            .textTheme
+                            .bodySmall
+                            ?.copyWith(fontSize: 11 * scaleFactor)),
+                    value: settingsProvider.oilShowInfoBanner,
+                    onChanged: (value) {
+                      HapticFeedback.lightImpact();
+                      context
+                          .read<SettingsProvider>()
+                          .toggleOilShowInfoBanner();
+                    },
+                  ),
+                  const SizedBox(height: 16),
+
                   // ── Audio Reactivity ──────────────────────────────────
                   Text(
                     'Audio Reactivity',
@@ -298,15 +348,14 @@ class PlaybackSection extends StatelessWidget {
                     const SizedBox(height: 16),
 
                     // Reactivity Strength
-                    _SliderSetting(
+                    TvStepperRow(
                       label: 'Reactivity Strength',
                       leftLabel: 'Subtle',
                       rightLabel: 'Wild',
                       value: settingsProvider.oilAudioReactivityStrength,
                       min: 0.5,
                       max: 2.0,
-                      divisions: 15,
-                      scaleFactor: scaleFactor,
+                      step: 0.1,
                       onChanged: (v) => context
                           .read<SettingsProvider>()
                           .setOilAudioReactivityStrength(v),
@@ -314,15 +363,14 @@ class PlaybackSection extends StatelessWidget {
                     const SizedBox(height: 16),
 
                     // Bass Boost
-                    _SliderSetting(
+                    TvStepperRow(
                       label: 'Bass Boost',
                       leftLabel: 'Normal',
                       rightLabel: 'Punchy',
                       value: settingsProvider.oilAudioBassBoost,
                       min: 1.0,
                       max: 3.0,
-                      divisions: 20,
-                      scaleFactor: scaleFactor,
+                      step: 0.1,
                       onChanged: (v) => context
                           .read<SettingsProvider>()
                           .setOilAudioBassBoost(v),
@@ -330,15 +378,15 @@ class PlaybackSection extends StatelessWidget {
                     const SizedBox(height: 16),
 
                     // Peak Decay
-                    _SliderSetting(
+                    TvStepperRow(
                       label: 'Peak Decay',
                       leftLabel: 'Fast adapt',
                       rightLabel: 'Slow adapt',
                       value: settingsProvider.oilAudioPeakDecay,
                       min: 0.990,
                       max: 0.999,
-                      divisions: 9,
-                      scaleFactor: scaleFactor,
+                      step: 0.001,
+                      valueFormatter: (v) => v.toStringAsFixed(3),
                       onChanged: (v) => context
                           .read<SettingsProvider>()
                           .setOilAudioPeakDecay(v),
@@ -350,6 +398,7 @@ class PlaybackSection extends StatelessWidget {
             ),
           ],
         ],
+
         HighlightableSetting(
           key: ValueKey(
               'play_on_tap_${highlightTriggerCount}_${activeHighlightKey == 'play_on_tap'}'),
@@ -540,7 +589,6 @@ class PlaybackSection extends StatelessWidget {
           value: settingsProvider.playRandomOnCompletion,
           onChanged: (value) {
             context.read<SettingsProvider>().togglePlayRandomOnCompletion();
-
             if (value && !settingsProvider.offlineBuffering) {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
@@ -553,9 +601,7 @@ class PlaybackSection extends StatelessWidget {
                   content: const Text('Consider enabling Advanced Cache.'),
                   action: SnackBarAction(
                     label: 'GO',
-                    onPressed: () {
-                      onScrollToSetting('offline_buffering');
-                    },
+                    onPressed: () => onScrollToSetting('offline_buffering'),
                   ),
                   duration: const Duration(seconds: 4),
                 ),
@@ -672,87 +718,6 @@ class PlaybackSection extends StatelessWidget {
           secondary: const Icon(Icons.history_toggle_off_rounded),
         ),
         RandomProbabilityCard(scaleFactor: scaleFactor),
-      ],
-    );
-  }
-}
-
-/// Reusable slider row matching the existing settings style.
-class _SliderSetting extends StatelessWidget {
-  final String label;
-  final String leftLabel;
-  final String rightLabel;
-  final double value;
-  final double min;
-  final double max;
-  final int divisions;
-  final double scaleFactor;
-  final ValueChanged<double> onChanged;
-
-  const _SliderSetting({
-    required this.label,
-    required this.leftLabel,
-    required this.rightLabel,
-    required this.value,
-    required this.min,
-    required this.max,
-    required this.divisions,
-    required this.scaleFactor,
-    required this.onChanged,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              label,
-              style: Theme.of(context)
-                  .textTheme
-                  .titleMedium
-                  ?.copyWith(fontSize: 14 * scaleFactor),
-            ),
-            Text(
-              value.toStringAsFixed(2),
-              style: Theme.of(context)
-                  .textTheme
-                  .bodySmall
-                  ?.copyWith(fontSize: 11 * scaleFactor),
-            ),
-          ],
-        ),
-        Slider(
-          value: value.clamp(min, max),
-          min: min,
-          max: max,
-          divisions: divisions,
-          onChanged: (v) {
-            HapticFeedback.selectionClick();
-            onChanged(v);
-          },
-        ),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(leftLabel,
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodySmall
-                      ?.copyWith(fontSize: 10 * scaleFactor)),
-              Text(rightLabel,
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodySmall
-                      ?.copyWith(fontSize: 10 * scaleFactor)),
-            ],
-          ),
-        ),
       ],
     );
   }

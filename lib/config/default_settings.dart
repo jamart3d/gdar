@@ -78,5 +78,6 @@ class DefaultSettings {
   static const double oilPaletteTransitionSpeed = 5.0;
   static const double oilAudioReactivityStrength = 1.0;
   static const double oilAudioBassBoost = 2.0;
-  static const double oilAudioPeakDecay = 0.995;
+  static const double oilAudioPeakDecay = 0.95;
+  static const bool oilShowInfoBanner = true;
 }

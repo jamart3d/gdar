@@ -771,6 +771,34 @@ class MockSettingsProvider extends _i1.Mock implements _i8.SettingsProvider {
       ) as double);
 
   @override
+  double get oilAudioReactivityStrength => (super.noSuchMethod(
+        Invocation.getter(#oilAudioReactivityStrength),
+        returnValue: 0.0,
+        returnValueForMissingStub: 0.0,
+      ) as double);
+
+  @override
+  double get oilAudioBassBoost => (super.noSuchMethod(
+        Invocation.getter(#oilAudioBassBoost),
+        returnValue: 0.0,
+        returnValueForMissingStub: 0.0,
+      ) as double);
+
+  @override
+  double get oilAudioPeakDecay => (super.noSuchMethod(
+        Invocation.getter(#oilAudioPeakDecay),
+        returnValue: 0.0,
+        returnValueForMissingStub: 0.0,
+      ) as double);
+
+  @override
+  bool get oilShowInfoBanner => (super.noSuchMethod(
+        Invocation.getter(#oilShowInfoBanner),
+        returnValue: false,
+        returnValueForMissingStub: false,
+      ) as bool);
+
+  @override
   bool get randomOnlyUnplayed => (super.noSuchMethod(
         Invocation.getter(#randomOnlyUnplayed),
         returnValue: false,
@@ -1264,6 +1292,46 @@ class MockSettingsProvider extends _i1.Mock implements _i8.SettingsProvider {
         Invocation.method(
           #setOilPaletteTransitionSpeed,
           [seconds],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  _i4.Future<void> setOilAudioReactivityStrength(double? value) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #setOilAudioReactivityStrength,
+          [value],
+        ),
+        returnValue: _i4.Future<void>.value(),
+        returnValueForMissingStub: _i4.Future<void>.value(),
+      ) as _i4.Future<void>);
+
+  @override
+  _i4.Future<void> setOilAudioBassBoost(double? value) => (super.noSuchMethod(
+        Invocation.method(
+          #setOilAudioBassBoost,
+          [value],
+        ),
+        returnValue: _i4.Future<void>.value(),
+        returnValueForMissingStub: _i4.Future<void>.value(),
+      ) as _i4.Future<void>);
+
+  @override
+  _i4.Future<void> setOilAudioPeakDecay(double? value) => (super.noSuchMethod(
+        Invocation.method(
+          #setOilAudioPeakDecay,
+          [value],
+        ),
+        returnValue: _i4.Future<void>.value(),
+        returnValueForMissingStub: _i4.Future<void>.value(),
+      ) as _i4.Future<void>);
+
+  @override
+  void toggleOilShowInfoBanner() => super.noSuchMethod(
+        Invocation.method(
+          #toggleOilShowInfoBanner,
+          [],
         ),
         returnValueForMissingStub: null,
       );

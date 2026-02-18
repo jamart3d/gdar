@@ -9,6 +9,8 @@ class StealConfig {
   final double heatDrift;
   final bool enableAudioReactivity;
   final bool performanceMode;
+  final bool showInfoBanner;
+  final String bannerText;
 
   static const Map<String, List<Color>> palettes = {
     'psychedelic': [
@@ -57,6 +59,8 @@ class StealConfig {
     this.heatDrift = 0.2,
     this.enableAudioReactivity = true,
     this.performanceMode = false,
+    this.showInfoBanner = true,
+    this.bannerText = '',
   });
 
   factory StealConfig.fromMap(Map<String, dynamic> map) {
@@ -68,6 +72,8 @@ class StealConfig {
       heatDrift: (map['heatDrift'] as num?)?.toDouble() ?? 0.2,
       enableAudioReactivity: map['enableAudioReactivity'] as bool? ?? true,
       performanceMode: map['performanceMode'] as bool? ?? false,
+      showInfoBanner: map['showInfoBanner'] as bool? ?? true,
+      bannerText: map['bannerText'] as String? ?? '',
     );
   }
 
@@ -80,6 +86,8 @@ class StealConfig {
       'heatDrift': heatDrift,
       'enableAudioReactivity': enableAudioReactivity,
       'performanceMode': performanceMode,
+      'showInfoBanner': showInfoBanner,
+      'bannerText': bannerText,
     };
   }
 
@@ -91,6 +99,8 @@ class StealConfig {
     double? heatDrift,
     bool? enableAudioReactivity,
     bool? performanceMode,
+    bool? showInfoBanner,
+    String? bannerText,
   }) {
     return StealConfig(
       flowSpeed: flowSpeed ?? this.flowSpeed,
@@ -101,6 +111,8 @@ class StealConfig {
       enableAudioReactivity:
           enableAudioReactivity ?? this.enableAudioReactivity,
       performanceMode: performanceMode ?? this.performanceMode,
+      showInfoBanner: showInfoBanner ?? this.showInfoBanner,
+      bannerText: bannerText ?? this.bannerText,
     );
   }
 }

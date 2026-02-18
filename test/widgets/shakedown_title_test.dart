@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
 import 'package:provider/provider.dart';
 import 'package:shakedown/providers/settings_provider.dart';
+import 'package:shakedown/services/device_service.dart';
 import 'package:shakedown/ui/widgets/shakedown_title.dart';
 
 class MockSettingsProvider extends Mock implements SettingsProvider {
@@ -12,6 +13,13 @@ class MockSettingsProvider extends Mock implements SettingsProvider {
   bool get enableShakedownTween => true;
   @override
   bool get uiScale => false;
+  @override
+  bool get isTv => false;
+  @override
+  String get oilPalette => 'Psychedelic';
+}
+
+class MockDeviceService extends Mock implements DeviceService {
   @override
   bool get isTv => false;
 }
@@ -28,8 +36,12 @@ void main() {
     Duration shakeDelay = Duration.zero,
     bool enableHero = false,
   }) {
-    return ChangeNotifierProvider<SettingsProvider>.value(
-      value: mockSettingsProvider,
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider<SettingsProvider>.value(
+            value: mockSettingsProvider),
+        ChangeNotifierProvider<DeviceService>.value(value: MockDeviceService()),
+      ],
       child: MaterialApp(
         home: Scaffold(
           body: ShakedownTitle(

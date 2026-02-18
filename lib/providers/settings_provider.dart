@@ -66,6 +66,7 @@ class SettingsProvider with ChangeNotifier {
       'oil_audio_reactivity_strength';
   static const String _oilAudioBassBoostKey = 'oil_audio_bass_boost';
   static const String _oilAudioPeakDecayKey = 'oil_audio_peak_decay';
+  static const String _oilShowInfoBannerKey = 'oil_show_info_banner';
 
   static const String _marqueeEnabledKey =
       'marquee_enabled'; // Logic for disabling marquee in tests
@@ -140,6 +141,7 @@ class SettingsProvider with ChangeNotifier {
   late double _oilAudioReactivityStrength;
   late double _oilAudioBassBoost;
   late double _oilAudioPeakDecay;
+  late bool _oilShowInfoBanner;
 
   Color? _seedColor;
 
@@ -199,6 +201,7 @@ class SettingsProvider with ChangeNotifier {
   double get oilAudioReactivityStrength => _oilAudioReactivityStrength;
   double get oilAudioBassBoost => _oilAudioBassBoost;
   double get oilAudioPeakDecay => _oilAudioPeakDecay;
+  bool get oilShowInfoBanner => _oilShowInfoBanner;
 
   Color? get seedColor => _seedColor;
 
@@ -426,6 +429,8 @@ class SettingsProvider with ChangeNotifier {
         DefaultSettings.oilAudioBassBoost;
     _oilAudioPeakDecay = _prefs.getDouble(_oilAudioPeakDecayKey) ??
         DefaultSettings.oilAudioPeakDecay;
+    _oilShowInfoBanner = _prefs.getBool(_oilShowInfoBannerKey) ??
+        DefaultSettings.oilShowInfoBanner;
 
     if (isTv) {
       _oilScreensaverMode = 'steal';
@@ -585,16 +590,15 @@ class SettingsProvider with ChangeNotifier {
       _oilPaletteCycleKey, _oilPaletteCycle = !_oilPaletteCycle);
   void setOilPaletteTransitionSpeed(double seconds) => _updateDoublePreference(
       _oilPaletteTransitionSpeedKey, _oilPaletteTransitionSpeed = seconds);
-
   Future<void> setOilAudioReactivityStrength(double value) =>
       _updateDoublePreference(
           _oilAudioReactivityStrengthKey, _oilAudioReactivityStrength = value);
-
   Future<void> setOilAudioBassBoost(double value) => _updateDoublePreference(
       _oilAudioBassBoostKey, _oilAudioBassBoost = value);
-
   Future<void> setOilAudioPeakDecay(double value) => _updateDoublePreference(
       _oilAudioPeakDecayKey, _oilAudioPeakDecay = value);
+  void toggleOilShowInfoBanner() => _updatePreference(
+      _oilShowInfoBannerKey, _oilShowInfoBanner = !_oilShowInfoBanner);
 
   // Source Filtering
   static const String _filterHighestShnidKey = 'filter_highest_shnid';

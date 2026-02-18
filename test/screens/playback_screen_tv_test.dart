@@ -298,6 +298,11 @@ class FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
   void toggleOilPerformanceMode() {}
 
   @override
+  bool get oilShowInfoBanner => true;
+  @override
+  void toggleOilShowInfoBanner() {}
+
+  @override
   bool get hasListeners => super.hasListeners;
 }
 

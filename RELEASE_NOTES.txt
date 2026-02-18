@@ -1,3 +1,8 @@
+Release 1.0.84:
+- UI (TV): Finalized `TvStepperRow` integration across all screensaver parameters for precise D-Pad control.
+- UI (TV): Added a "Show Track Info" toggle to the Playback settings section.
+- Stability: Resolved critical unit test regressions in `ShakedownTitle` (mock services) and TV UI (Material ancestor requirements).
+
 Release 1.0.83:
 - UI (TV): Introduced `TvStepperRow`, a native TV control for numeric settings (Flow Speed, Strength, etc.) featuring D-Pad focus and arrow-key repeat support.
 - Focus: Improved navigation in TV Screensaver settings with `FocusTraversalGroup` and `autofocus` on selected palettes.

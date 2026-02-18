@@ -15,6 +15,9 @@ import 'package:shakedown/ui/widgets/tv/tv_dual_pane_layout.dart';
 import 'package:shakedown/ui/screens/show_list_screen.dart';
 import 'package:shakedown/ui/screens/playback_screen.dart';
 import 'package:shakedown/ui/widgets/show_list/animated_dice_icon.dart';
+import 'package:shakedown/ui/widgets/settings/tv_screensaver_section.dart';
+import 'package:shakedown/ui/widgets/settings/playback_section.dart';
+import 'package:shakedown/ui/widgets/tv/tv_stepper_row.dart';
 
 import 'package:flutter/services.dart';
 import 'package:mockito/mockito.dart';
@@ -366,6 +369,12 @@ class FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
   void toggleOilPerformanceMode() {}
   @override
   void toggleOilPaletteCycle() {}
+
+  @override
+  bool get oilShowInfoBanner => true;
+  @override
+  void toggleOilShowInfoBanner() {}
+
   @override
   void setOilPaletteTransitionSpeed(double seconds) {}
   @override
@@ -541,5 +550,37 @@ void main() {
 
     // Verify Dice is present
     expect(find.byType(AnimatedDiceIcon), findsOneWidget);
+  });
+
+  testWidgets('TV Settings UI displays new components',
+      (WidgetTester tester) async {
+    // We'll test the sections directly since DualPane hides them in sub-screens
+    await tester.pumpWidget(createTestableWidget(
+        child: Material(
+      child: SingleChildScrollView(
+        child: Column(
+          children: [
+            const TvScreensaverSection(),
+            PlaybackSection(
+              scaleFactor: 1.0,
+              initiallyExpanded: true,
+              activeHighlightKey: null,
+              highlightTriggerCount: 0,
+              settingKeys: {},
+              onScrollToSetting: (_) {},
+              isHighlightSettingMatching: false,
+            ),
+          ],
+        ),
+      ),
+    )));
+
+    // Verify TvStepperRow is used for Flow Speed
+    expect(find.text('Flow Speed'), findsOneWidget);
+    expect(find.byType(TvStepperRow),
+        findsAtLeastNWidgets(1)); // Should find several
+
+    // Verify Show Track Info toggle is present
+    expect(find.text('Show Track Info'), findsOneWidget);
   });
 }

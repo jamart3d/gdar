@@ -48,6 +48,8 @@ void main() {
     when(mockSettingsProvider.oilPulseIntensity).thenReturn(0.8);
     when(mockSettingsProvider.oilHeatDrift).thenReturn(0.3);
     when(mockSettingsProvider.oilScreensaverMode).thenReturn('standard');
+    when(mockSettingsProvider.oilPerformanceMode).thenReturn(false);
+    when(mockSettingsProvider.oilShowInfoBanner).thenReturn(true);
   });
 
   Widget createWidgetUnderTest() {
@@ -78,7 +80,8 @@ void main() {
     });
 
     await tester.pumpWidget(createWidgetUnderTest());
-    await tester.pump(); // Allow initState async calls to proceed
+    await tester.pump(const Duration(
+        milliseconds: 500)); // Allow initState delayed timer to fire
 
     expect(find.byType(StealVisualizer), findsOneWidget);
   });
@@ -100,7 +103,8 @@ void main() {
     });
 
     await tester.pumpWidget(createWidgetUnderTest());
-    await tester.pump();
+    await tester.pump(const Duration(
+        milliseconds: 500)); // Allow initState delayed timer to fire
 
     // Verify
     final visualizerFinder = find.byType(StealVisualizer);

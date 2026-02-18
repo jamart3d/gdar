@@ -50,6 +50,7 @@ class _StealVisualizerState extends State<StealVisualizer> {
   void didUpdateWidget(StealVisualizer oldWidget) {
     super.didUpdateWidget(oldWidget);
     _game.updateConfig(widget.config);
+    _game.updateBannerText(widget.config.bannerText);
     if (widget.audioReactor != oldWidget.audioReactor) {
       _game.updateAudioReactor(widget.audioReactor);
     }

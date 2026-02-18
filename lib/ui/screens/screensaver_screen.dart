@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -32,14 +31,13 @@ class ScreensaverScreen extends StatefulWidget {
 class _ScreensaverScreenState extends State<ScreensaverScreen> {
   AudioReactor? _audioReactor;
   WakelockService? _wakelockService;
-  Timer? _keyboardHandlerTimer; // Added Timer for keyboard handler
 
   @override
   void initState() {
     super.initState();
     _initAudioReactor();
     // Delay key handler to avoid catching the launch key event on Google TV
-    _keyboardHandlerTimer = Timer(const Duration(milliseconds: 500), () {
+    Future.delayed(const Duration(milliseconds: 500), () {
       if (mounted) {
         HardwareKeyboard.instance.addHandler(_handleGlobalKeyEvent);
       }
@@ -105,7 +103,6 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
         );
         if (mounted) {
           setState(() => _audioReactor = reactor);
-          // Push initial config once reactor is ready
           _pushAudioConfig();
         }
       } else {
@@ -122,9 +119,38 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
     }
   }
 
+  /// Compose banner text from current track + show metadata.
+  /// Format: "Track Title  •  Venue  •  Date"
+  /// Returns empty string if nothing is playing or banner is disabled.
+  String _composeBannerText(
+      SettingsProvider settings, AudioProvider audioProvider) {
+    if (!settings.oilShowInfoBanner) return '';
+
+    final track = audioProvider.currentTrack;
+    final show = audioProvider.currentShow;
+
+    if (track == null && show == null) return '';
+
+    final parts = <String>[];
+    if (track?.title != null && track!.title.isNotEmpty) {
+      parts.add(track.title);
+    }
+    if (show?.venue != null && show!.venue.isNotEmpty) {
+      parts.add(show.venue);
+    }
+    if (show?.date != null && show!.date.isNotEmpty) {
+      parts.add(show.date);
+    }
+
+    if (parts.isEmpty) return '';
+
+    // Join with spaced bullet separator and add trailing spaces so the
+    // circular text wraps cleanly without the end crashing into the start.
+    return '${parts.join('  •  ')}     ';
+  }
+
   @override
   void dispose() {
-    _keyboardHandlerTimer?.cancel();
     HardwareKeyboard.instance.removeHandler(_handleGlobalKeyEvent);
     _wakelockService?.disable();
     _audioReactor?.dispose();
@@ -134,8 +160,9 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
   @override
   Widget build(BuildContext context) {
     final settings = context.watch<SettingsProvider>();
+    final audioProvider = context.watch<AudioProvider>();
 
-    // Push config whenever settings rebuild this widget
+    // Push audio config whenever settings rebuild this widget
     WidgetsBinding.instance.addPostFrameCallback((_) => _pushAudioConfig());
 
     final config = StealConfig(
@@ -147,6 +174,8 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
       enableAudioReactivity: settings.oilEnableAudioReactivity,
       performanceMode: settings.oilPerformanceMode ||
           Provider.of<DeviceService>(context, listen: false).isTv,
+      showInfoBanner: settings.oilShowInfoBanner,
+      bannerText: _composeBannerText(settings, audioProvider),
     );
 
     return PopScope(

@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:shakedown/providers/settings_provider.dart';
 import 'package:shakedown/steal_screensaver/steal_config.dart';
 import 'package:shakedown/ui/widgets/tv/tv_focus_wrapper.dart';
+import 'package:shakedown/ui/widgets/tv/tv_stepper_row.dart';
 
 /// Screensaver settings section for the Google TV settings screen.
 /// Covers both visual settings and audio reactivity tuning.
@@ -69,75 +70,79 @@ class TvScreensaverSection extends StatelessWidget {
         const SizedBox(height: 24),
 
         // Flow Speed
-        _SliderRow(
+        TvStepperRow(
           label: 'Flow Speed',
           value: settings.oilFlowSpeed,
           min: 0.1,
           max: 3.0,
-          divisions: 29,
+          step: 0.1,
           leftLabel: 'Slow',
           rightLabel: 'Fast',
           onChanged: (v) => settings.setOilFlowSpeed(v),
-          colorScheme: colorScheme,
-          textTheme: textTheme,
         ),
 
         const SizedBox(height: 16),
 
         // Pulse Intensity
-        _SliderRow(
+        TvStepperRow(
           label: 'Pulse Intensity',
           value: settings.oilPulseIntensity,
           min: 0.0,
           max: 3.0,
-          divisions: 30,
+          step: 0.1,
           leftLabel: 'Subtle',
           rightLabel: 'Strong',
           onChanged: (v) => settings.setOilPulseIntensity(v),
-          colorScheme: colorScheme,
-          textTheme: textTheme,
         ),
 
         const SizedBox(height: 16),
 
         // Film Grain
-        _SliderRow(
+        TvStepperRow(
           label: 'Film Grain',
           value: settings.oilFilmGrain,
           min: 0.0,
           max: 1.0,
-          divisions: 20,
+          step: 0.05,
           leftLabel: 'None',
           rightLabel: 'Heavy',
           onChanged: (v) => settings.setOilFilmGrain(v),
+        ),
+
+        const SizedBox(height: 16),
+
+        // Heat Drift
+        TvStepperRow(
+          label: 'Heat Drift',
+          value: settings.oilHeatDrift,
+          min: 0.0,
+          max: 3.0,
+          step: 0.1,
+          leftLabel: 'Still',
+          rightLabel: 'Wavy',
+          onChanged: (v) => settings.setOilHeatDrift(v),
+        ),
+
+        const SizedBox(height: 24),
+
+        // Auto Palette Cycle toggle
+        _ToggleRow(
+          label: 'Auto Palette Cycle',
+          subtitle: 'Automatically rotate through palettes over time',
+          value: settings.oilPaletteCycle,
+          onChanged: (_) => settings.toggleOilPaletteCycle(),
           colorScheme: colorScheme,
           textTheme: textTheme,
         ),
 
         const SizedBox(height: 16),
 
-        // Heat Drift
-        _SliderRow(
-          label: 'Heat Drift',
-          value: settings.oilHeatDrift,
-          min: 0.0,
-          max: 3.0,
-          divisions: 30,
-          leftLabel: 'Still',
-          rightLabel: 'Wavy',
-          onChanged: (v) => settings.setOilHeatDrift(v),
-          colorScheme: colorScheme,
-          textTheme: textTheme,
-        ),
-
-        const SizedBox(height: 24),
-
-        // Palette Cycle toggle
+        // Show Track Info banner toggle
         _ToggleRow(
-          label: 'Auto Palette Cycle',
-          subtitle: 'Automatically rotate through palettes over time',
-          value: settings.oilPaletteCycle,
-          onChanged: (_) => settings.toggleOilPaletteCycle(),
+          label: 'Show Track Info',
+          subtitle: 'Display track title, venue and date as circular text',
+          value: settings.oilShowInfoBanner,
+          onChanged: (_) => settings.toggleOilShowInfoBanner(),
           colorScheme: colorScheme,
           textTheme: textTheme,
         ),
@@ -161,49 +166,44 @@ class TvScreensaverSection extends StatelessWidget {
           const SizedBox(height: 24),
 
           // Reactivity Strength
-          _SliderRow(
+          TvStepperRow(
             label: 'Reactivity Strength',
             value: settings.oilAudioReactivityStrength,
             min: 0.5,
             max: 2.0,
-            divisions: 15,
+            step: 0.1,
             leftLabel: 'Subtle',
             rightLabel: 'Wild',
             onChanged: (v) => settings.setOilAudioReactivityStrength(v),
-            colorScheme: colorScheme,
-            textTheme: textTheme,
           ),
 
           const SizedBox(height: 16),
 
           // Bass Boost
-          _SliderRow(
+          TvStepperRow(
             label: 'Bass Boost',
             value: settings.oilAudioBassBoost,
             min: 1.0,
             max: 3.0,
-            divisions: 20,
+            step: 0.1,
             leftLabel: 'Normal',
             rightLabel: 'Punchy',
             onChanged: (v) => settings.setOilAudioBassBoost(v),
-            colorScheme: colorScheme,
-            textTheme: textTheme,
           ),
 
           const SizedBox(height: 16),
 
           // Peak Decay
-          _SliderRow(
+          TvStepperRow(
             label: 'Peak Decay',
             value: settings.oilAudioPeakDecay,
             min: 0.990,
             max: 0.999,
-            divisions: 9,
+            step: 0.001,
             leftLabel: 'Fast adapt',
             rightLabel: 'Slow adapt',
+            valueFormatter: (v) => v.toStringAsFixed(3),
             onChanged: (v) => settings.setOilAudioPeakDecay(v),
-            colorScheme: colorScheme,
-            textTheme: textTheme,
           ),
 
           const SizedBox(height: 8),
@@ -292,78 +292,6 @@ class _LabelRow extends StatelessWidget {
         Text(value,
             style: textTheme.bodyMedium
                 ?.copyWith(color: colorScheme.onSurfaceVariant)),
-      ],
-    );
-  }
-}
-
-class _SliderRow extends StatelessWidget {
-  final String label;
-  final double value;
-  final double min;
-  final double max;
-  final int divisions;
-  final String leftLabel;
-  final String rightLabel;
-  final ValueChanged<double> onChanged;
-  final ColorScheme colorScheme;
-  final TextTheme textTheme;
-
-  const _SliderRow({
-    required this.label,
-    required this.value,
-    required this.min,
-    required this.max,
-    required this.divisions,
-    required this.leftLabel,
-    required this.rightLabel,
-    required this.onChanged,
-    required this.colorScheme,
-    required this.textTheme,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(label,
-                style: textTheme.bodyLarge
-                    ?.copyWith(color: colorScheme.onSurface)),
-            Text(
-              value.toStringAsFixed(2),
-              style: textTheme.bodyMedium
-                  ?.copyWith(color: colorScheme.onSurfaceVariant),
-            ),
-          ],
-        ),
-        const SizedBox(height: 4),
-        Slider(
-          value: value.clamp(min, max),
-          min: min,
-          max: max,
-          divisions: divisions,
-          onChanged: onChanged,
-          activeColor: colorScheme.primary,
-          inactiveColor: colorScheme.surfaceContainerHighest,
-        ),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(leftLabel,
-                  style: textTheme.labelSmall
-                      ?.copyWith(color: colorScheme.onSurfaceVariant)),
-              Text(rightLabel,
-                  style: textTheme.labelSmall
-                      ?.copyWith(color: colorScheme.onSurfaceVariant)),
-            ],
-          ),
-        ),
       ],
     );
   }

@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:ui';
 import 'package:flame/game.dart';
+import 'package:flutter/material.dart' show Color, Colors;
+import 'package:shakedown/steal_screensaver/steal_banner.dart';
 import 'package:shakedown/steal_screensaver/steal_config.dart';
 import 'package:shakedown/steal_screensaver/steal_background.dart';
 import 'package:shakedown/visualizer/audio_reactor.dart';
@@ -14,6 +16,7 @@ class StealGame extends FlameGame {
   AudioReactor? _audioReactor;
   StreamSubscription<AudioEnergy>? _energySubscription;
   StealBackground? _background;
+  StealBanner? _banner;
   double _time = 0;
   AudioEnergy _currentEnergy = const AudioEnergy.zero();
 
@@ -37,8 +40,13 @@ class StealGame extends FlameGame {
   Future<void> onLoad() async {
     await super.onLoad();
     _subscribeToReactor(_audioReactor);
+
     _background = StealBackground(config: config);
     add(_background!);
+
+    // Banner renders above the shader layer
+    _banner = StealBanner();
+    add(_banner!);
   }
 
   void _subscribeToReactor(AudioReactor? reactor) {
@@ -54,6 +62,12 @@ class StealGame extends FlameGame {
   void updateAudioReactor(AudioReactor? newReactor) {
     _audioReactor = newReactor;
     _subscribeToReactor(newReactor);
+  }
+
+  void updateBannerText(String text) {
+    if (config.bannerText != text) {
+      updateConfig(config.copyWith(bannerText: text));
+    }
   }
 
   @override
@@ -78,6 +92,15 @@ class StealGame extends FlameGame {
   void updateConfig(StealConfig newConfig) {
     config = newConfig;
     _background?.updateConfig(newConfig);
+
+    // Update banner palette color from first color of current palette
+    if (_banner != null) {
+      final paletteColors = StealConfig.palettes[newConfig.palette] ??
+          StealConfig.palettes['psychedelic']!;
+      final paletteColor =
+          paletteColors.isNotEmpty ? paletteColors.first : Colors.white;
+      _banner!.updateBanner(_banner!.currentText, paletteColor);
+    }
   }
 
   @override

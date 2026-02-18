@@ -53,6 +53,8 @@ void main() {
     when(mockSettingsProvider.oilPulseIntensity).thenReturn(0.8);
     when(mockSettingsProvider.oilHeatDrift).thenReturn(0.3);
     when(mockSettingsProvider.oilScreensaverMode).thenReturn('standard');
+    when(mockSettingsProvider.oilPerformanceMode).thenReturn(false);
+    when(mockSettingsProvider.oilShowInfoBanner).thenReturn(true);
   });
 
   Widget createWidgetUnderTest() {
