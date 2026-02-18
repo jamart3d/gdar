@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:ui' as ui;
 import 'package:flame/components.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:shakedown/steal_screensaver/steal_config.dart';
 import 'package:shakedown/steal_screensaver/steal_game.dart';
 
@@ -11,7 +12,6 @@ class StealBackground extends PositionComponent
   ui.FragmentShader? _shader;
   ui.Image? _logoTexture;
   bool _shaderLoaded = false;
-  String? _loadError;
 
   StealBackground({required this.config});
 
@@ -19,22 +19,30 @@ class StealBackground extends PositionComponent
   Future<void> onLoad() async {
     await super.onLoad();
     size = game.size;
-    await _loadResources();
+    try {
+      await _loadResources();
+    } catch (_) {
+      // Fail silently — _renderFallback paints black
+    }
   }
 
   Future<void> _loadResources() async {
     try {
-      // Load Shader
+      // Load shader
       final program = await ui.FragmentProgram.fromAsset('shaders/steal.frag');
       _shader = program.fragmentShader();
 
-      // Load Texture
-      _logoTexture = await game.images.load('t_steal_ss.png');
+      // Load texture via rootBundle to avoid Flame image cache path issues
+      final ByteData data =
+          await rootBundle.load('assets/images/t_steal_ss.png');
+      final ui.Codec codec =
+          await ui.instantiateImageCodec(data.buffer.asUint8List());
+      final ui.FrameInfo frame = await codec.getNextFrame();
+      _logoTexture = frame.image;
 
       _shaderLoaded = true;
     } catch (e) {
-      _loadError = e.toString();
-      debugPrint('Steal Screensaver Load Error: $e');
+      // Fail silently — _renderFallback paints black
     }
   }
 
@@ -72,7 +80,6 @@ class StealBackground extends PositionComponent
     final time = game.time;
 
     int idx = 0;
-    // Pass resolution with a minimum 1.0 to avoid division by zero in shader
     final sw = size.x.clamp(1.0, 20000.0);
     final sh = size.y.clamp(1.0, 20000.0);
     _shader!.setFloat(idx++, sw);
@@ -104,19 +111,10 @@ class StealBackground extends PositionComponent
   }
 
   void _renderFallback(Canvas canvas) {
-    final paint = Paint()..color = Colors.black;
-    canvas.drawRect(Rect.fromLTWH(0, 0, size.x, size.y), paint);
-
-    if (_loadError != null) {
-      final textPainter = TextPainter(
-        text: TextSpan(
-          text: 'Steal Screensaver Error:\n$_loadError',
-          style: const TextStyle(color: Colors.white70, fontSize: 14),
-        ),
-        textDirection: TextDirection.ltr,
-      );
-      textPainter.layout();
-      textPainter.paint(canvas, Offset(20, size.y / 2 - 50));
-    }
+    // Always paint black — never let white show through
+    canvas.drawRect(
+      Rect.fromLTWH(0, 0, size.x.clamp(1, 20000), size.y.clamp(1, 20000)),
+      Paint()..color = const Color(0xFF000000),
+    );
   }
 }

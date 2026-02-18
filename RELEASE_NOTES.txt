@@ -1,4 +1,7 @@
-Release 1.0.77:
+Release 1.0.78:
+- Screensaver Hardening: Migrated StealBackground to HasGameReference and utilized rootBundle for texture loading to bypass Flame cache path issues.
+- Rendering Stability: Added numeric clamping to shader uniforms and safe-region checks to prevent initialization flashes or crashes on low-spec hardware.
+
 - Visualizer Live Tuning: Introduced real-time adjustment of Peak Decay, Bass Boost, and Reactivity Strength in the native Android engine.
 - Google TV Screensaver Settings: Added a dedicated settings section with sliders for flow speed, pulse intensity, film grain, and audio reactivity.
 - Performance Enhancements: Optimized shader complexity and improved lifecycle management for the Screensaver on TV devices.
