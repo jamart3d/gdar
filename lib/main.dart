@@ -49,8 +49,6 @@ Future<void> main() async {
       DeviceOrientation.portraitDown,
     ]);
   } else {
-    // For TV, we might want to ensure landscape, or just let it be free.
-    // Usually TV is landscape only.
     await SystemChrome.setPreferredOrientations([
       DeviceOrientation.landscapeLeft,
       DeviceOrientation.landscapeRight,
@@ -114,12 +112,22 @@ class _GdarAppState extends State<GdarApp> {
     }
 
     _inactivityService = InactivityService(
-      initialDuration:
-          const Duration(minutes: 5), // Will be updated by settings
+      initialDuration: const Duration(minutes: 5),
       onInactivityTimeout: () {
         final context = _navigatorKey.currentContext;
         if (context != null) {
-          ScreensaverScreen.show(context);
+          // Stop the inactivity service BEFORE showing the screensaver.
+          // Without this, the InactivityDetector's HardwareKeyboard handler
+          // keeps firing while the screensaver is open, immediately re-triggering
+          // onInactivityTimeout and pushing a new screensaver on top — causing
+          // a white screen from stacked routes.
+          _inactivityService.stop();
+          ScreensaverScreen.show(context).then((_) {
+            // Restart monitoring after the screensaver exits
+            if (_settingsProvider.useOilScreensaver) {
+              _inactivityService.start();
+            }
+          });
         }
       },
     );
@@ -413,10 +421,13 @@ class _GdarAppState extends State<GdarApp> {
       ],
       child: Consumer2<ThemeProvider, SettingsProvider>(
         builder: (context, themeProvider, settingsProvider, child) {
-          // Update Inactivity Service based on settings
+          // Update inactivity duration from settings
           _inactivityService.updateDuration(Duration(
               minutes: settingsProvider.oilScreensaverInactivityMinutes));
 
+          // Start/stop based on settings — only start if not already running
+          // Note: do NOT call start() here if the screensaver is active,
+          // as start/stop is managed by the onInactivityTimeout callback.
           if (settingsProvider.useOilScreensaver &&
               context.read<DeviceService>().isTv) {
             _inactivityService.start();
@@ -493,7 +504,6 @@ class _GdarAppState extends State<GdarApp> {
                     );
                   }
                 } else {
-                  // If dynamic color is off, first get the base static themes.
                   lightTheme = AppThemes.lightTheme(
                     settingsProvider.appFont,
                     useMaterial3: settingsProvider.useMaterial3,
@@ -505,7 +515,6 @@ class _GdarAppState extends State<GdarApp> {
                     uiScale: settingsProvider.uiScale,
                   );
 
-                  // Then, check for a user-defined seed color to override the color scheme.
                   final seedColor = settingsProvider.seedColor;
                   if (seedColor != null) {
                     lightTheme = lightTheme.copyWith(
@@ -515,7 +524,6 @@ class _GdarAppState extends State<GdarApp> {
                       ),
                     );
 
-                    // Generate base dark scheme from seed
                     final baseDarkScheme = ColorScheme.fromSeed(
                       seedColor: seedColor,
                       brightness: Brightness.dark,
@@ -523,7 +531,6 @@ class _GdarAppState extends State<GdarApp> {
 
                     darkTheme = darkTheme.copyWith(colorScheme: baseDarkScheme);
 
-                    // Apply seed-based selection theme
                     lightTheme = lightTheme.copyWith(
                       textSelectionTheme: TextSelectionThemeData(
                         cursorColor: lightTheme.colorScheme.primary,
@@ -542,7 +549,6 @@ class _GdarAppState extends State<GdarApp> {
                     );
                   }
 
-                  // Override surfaces to be "True Black" if enabled
                   if (settingsProvider.useTrueBlack) {
                     final baseDarkScheme = darkTheme.colorScheme;
                     final trueBlackDarkScheme = baseDarkScheme.copyWith(
@@ -577,9 +583,8 @@ class _GdarAppState extends State<GdarApp> {
                   themeMode: themeProvider.isDarkMode
                       ? ThemeMode.dark
                       : ThemeMode.light,
-                  themeAnimationDuration: Duration.zero, // Instant font changes
-                  themeAnimationCurve:
-                      Curves.linear, // Not used with zero duration
+                  themeAnimationDuration: Duration.zero,
+                  themeAnimationCurve: Curves.linear,
                   home: settingsProvider.showOnboarding &&
                           !context.read<DeviceService>().isTv
                       ? const OnboardingScreen()
