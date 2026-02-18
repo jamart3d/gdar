@@ -101,8 +101,14 @@ void main() {
 
     vec4 texColor = vec4(0.0);
 
-    // Check bounds with margin
-    if (texUV.x >= 0.0 && texUV.x <= 1.0 && texUV.y >= 0.0 && texUV.y <= 1.0) {
+        // Heat Drift - Spatial distortion
+        float drift = clamp(uHeatDrift, 0.0, 2.0);
+        if (drift > 0.01) {
+            float wave = sin(texUV.y * 10.0 + safeTime * 2.0) * 0.01 * drift;
+            float wave2 = cos(texUV.x * 12.0 + safeTime * 1.5) * 0.01 * drift;
+            texUV += vec2(wave, wave2);
+        }
+
         // RGB Shift (Chromatic Aberration)
         float shift = 0.02 * (0.5 + eover * 2.0) * pulse;
 
@@ -115,7 +121,6 @@ void main() {
 
         // Flash effect
         texColor.rgb += vec3(etreble) * 0.3 * pulse;
-    }
 
     // Color Cycling
     vec3 cycleColor = getPaletteColor(safeTime * 0.2); 

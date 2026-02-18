@@ -416,7 +416,7 @@ class _GdarAppState extends State<GdarApp> {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => ThemeProvider()),
+        ChangeNotifierProvider(create: (_) => ThemeProvider(isTv: widget.isTv)),
         Provider<CatalogService>(create: (_) => CatalogService()),
         Provider<WakelockService>(create: (_) => WakelockService()),
         ChangeNotifierProvider.value(value: _settingsProvider),

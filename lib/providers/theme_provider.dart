@@ -6,13 +6,15 @@ import 'package:shared_preferences/shared_preferences.dart';
 class ThemeProvider with ChangeNotifier {
   static const String _themePreferenceKey = 'theme_preference';
 
-  bool _isDarkMode = false;
+  bool _isDarkMode;
   bool get isDarkMode => _isDarkMode;
+
+  final bool isTv;
 
   ThemeMode get currentThemeMode =>
       _isDarkMode ? ThemeMode.dark : ThemeMode.light;
 
-  ThemeProvider() {
+  ThemeProvider({this.isTv = false}) : _isDarkMode = isTv {
     _loadThemePreference();
   }
 
@@ -32,8 +34,8 @@ class ThemeProvider with ChangeNotifier {
   // Loads the saved theme choice when the app starts.
   Future<void> _loadThemePreference() async {
     final prefs = await SharedPreferences.getInstance();
-    _isDarkMode =
-        prefs.getBool(_themePreferenceKey) ?? false; // Default to light mode
+    _isDarkMode = prefs.getBool(_themePreferenceKey) ??
+        isTv; // Default to TV mode setting
     notifyListeners();
   }
 }

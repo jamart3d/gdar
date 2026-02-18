@@ -62,7 +62,7 @@ class DefaultSettings {
   static const bool showSplashScreen = true;
 
   // Screensaver (steal)
-  static const bool useOilScreensaver = false;
+  static const bool useOilScreensaver = true;
   static const String oilScreensaverMode = 'standard'; // 'standard' or 'kiosk'
   static const int oilScreensaverInactivityMinutes = 5;
 

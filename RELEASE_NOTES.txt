@@ -1,3 +1,11 @@
+Release 1.0.86:
+- UI (TV): Enabled the expressive "flying" Hero animation for the "Shakedown" title during app initialization.
+- UI (TV): Reorganized Screensaver settings, centralizing "Prevent Sleep" and "Inactivity Timeout" for better ergonomics.
+- UI (TV): Set the Screensaver to be enabled by default for new installations.
+- UI (TV): Fixed a text clipping issue on the Splash Screen affecting "Archive.org reachable" status labels.
+- Screensaver: Implemented the missing "Heat Drift" shader effect, enabling functional wavy distortion controls.
+- Stability: Resolved a critical unit test regression in the onboarding flow related to recent ThemeProvider updates.
+
 Release 1.0.85:
 - UI (TV): Refined left navigation flow from scrollbars in both Show List and Track List to intelligently focus the middle visible item without scrolling.
 - UI (TV): Fixed focus stability in Track List by ensuring robust mounting of dynamically created focus nodes.

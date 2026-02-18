@@ -321,7 +321,7 @@ class _SplashScreenState extends State<SplashScreen>
         Container(
           // Allow width to grow slightly with scale, but cap it to prevent overflow
           constraints: BoxConstraints(
-              maxWidth: 220.0 * (scaleFactor < 1.0 ? 1.0 : scaleFactor)),
+              maxWidth: 320.0 * (scaleFactor < 1.0 ? 1.0 : scaleFactor)),
           child: Text(
             label,
             style: theme.textTheme.titleMedium?.copyWith(

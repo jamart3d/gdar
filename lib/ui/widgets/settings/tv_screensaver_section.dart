@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:shakedown/providers/settings_provider.dart';
 import 'package:shakedown/steal_screensaver/steal_config.dart';
+import 'package:shakedown/ui/widgets/tv/tv_list_tile.dart';
+import 'package:shakedown/ui/screens/screensaver_screen.dart';
 import 'package:shakedown/ui/widgets/tv/tv_focus_wrapper.dart';
 import 'package:shakedown/ui/widgets/tv/tv_stepper_row.dart';
 
@@ -19,6 +22,108 @@ class TvScreensaverSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        // ── System Settings ────────────────────────────────────────────
+        _SectionHeader(title: 'System', colorScheme: colorScheme),
+        const SizedBox(height: 8),
+
+        _ToggleRow(
+          label: 'Prevent Sleep',
+          subtitle: 'Prevent system sleep while music is playing',
+          value: settings.preventSleep,
+          onChanged: (_) => settings.togglePreventSleep(),
+          colorScheme: colorScheme,
+          textTheme: textTheme,
+        ),
+        const SizedBox(height: 16),
+
+        _ToggleRow(
+          label: 'Shakedown Screen Saver',
+          subtitle: 'Enable the Steal Your Face visual effect',
+          value: settings.useOilScreensaver,
+          onChanged: (_) => settings.toggleUseOilScreensaver(),
+          colorScheme: colorScheme,
+          textTheme: textTheme,
+        ),
+        const SizedBox(height: 16),
+
+        if (settings.useOilScreensaver) ...[
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Inactivity Timeout',
+                  style: textTheme.bodySmall
+                      ?.copyWith(color: colorScheme.onSurfaceVariant),
+                ),
+                const SizedBox(height: 8),
+                TvFocusWrapper(
+                  onKeyEvent: (node, event) {
+                    if (event is KeyDownEvent) {
+                      final current = settings.oilScreensaverInactivityMinutes;
+                      int? newVal;
+                      if (event.logicalKey == LogicalKeyboardKey.arrowLeft) {
+                        if (current == 15) {
+                          newVal = 5;
+                        } else if (current == 5) {
+                          newVal = 1;
+                        }
+                      } else if (event.logicalKey ==
+                          LogicalKeyboardKey.arrowRight) {
+                        if (current == 1) {
+                          newVal = 5;
+                        } else if (current == 5) {
+                          newVal = 15;
+                        }
+                      }
+                      if (newVal != null && newVal != current) {
+                        HapticFeedback.selectionClick();
+                        settings.setOilScreensaverInactivityMinutes(newVal);
+                        return KeyEventResult.handled;
+                      }
+                    }
+                    return KeyEventResult.ignored;
+                  },
+                  child: SegmentedButton<int>(
+                    segments: const [
+                      ButtonSegment(value: 1, label: Text('1 min')),
+                      ButtonSegment(value: 5, label: Text('5 min')),
+                      ButtonSegment(value: 15, label: Text('15 min')),
+                    ],
+                    selected: {settings.oilScreensaverInactivityMinutes},
+                    onSelectionChanged: (Set<int> newSelection) {
+                      HapticFeedback.lightImpact();
+                      settings.setOilScreensaverInactivityMinutes(
+                          newSelection.first);
+                    },
+                    showSelectedIcon: false,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+        ],
+
+        TvListTile(
+          dense: true,
+          visualDensity: VisualDensity.compact,
+          leading: const Icon(Icons.play_circle_outline_rounded),
+          title: Text(
+            'Start Screen Saver',
+            style: textTheme.bodyLarge?.copyWith(color: colorScheme.onSurface),
+          ),
+          subtitle: Text(
+            'Test the Steal Your Face visual effect now',
+            style: textTheme.bodySmall
+                ?.copyWith(color: colorScheme.onSurfaceVariant),
+          ),
+          onTap: () => ScreensaverScreen.show(context),
+        ),
+
+        const SizedBox(height: 32),
+
         // ── Visual Settings ────────────────────────────────────────────
         _SectionHeader(title: 'Visual', colorScheme: colorScheme),
         const SizedBox(height: 8),
@@ -124,18 +229,6 @@ class TvScreensaverSection extends StatelessWidget {
         ),
 
         const SizedBox(height: 24),
-
-        // Auto Palette Cycle toggle
-        _ToggleRow(
-          label: 'Auto Palette Cycle',
-          subtitle: 'Automatically rotate through palettes over time',
-          value: settings.oilPaletteCycle,
-          onChanged: (_) => settings.toggleOilPaletteCycle(),
-          colorScheme: colorScheme,
-          textTheme: textTheme,
-        ),
-
-        const SizedBox(height: 16),
 
         // Show Track Info banner toggle
         _ToggleRow(

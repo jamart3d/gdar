@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:shakedown/providers/show_list_provider.dart';
+import 'package:shakedown/ui/widgets/shakedown_title.dart';
 import 'package:shakedown/ui/widgets/show_list/animated_dice_icon.dart';
 import 'package:shakedown/ui/widgets/tv/tv_focus_wrapper.dart';
 import 'package:shakedown/ui/screens/settings_screen.dart';
@@ -74,15 +75,10 @@ class TvHeader extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text(
-                  'Shakedown',
-                  style: TextStyle(
-                    fontFamily: 'RockSalt', // Must match pubspec.yaml exactly
-                    fontSize: 22, // Reduced from 32
-                    height: 1.0,
-                    fontWeight: FontWeight.bold,
-                    color: colorScheme.onSurface,
-                  ),
+                const ShakedownTitle(
+                  fontSize: 22,
+                  animateOnStart: true,
+                  shakeDelay: Duration(milliseconds: 1700),
                 ),
               ],
             ),
