@@ -59,7 +59,6 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
     _pushAudioConfig();
   }
 
-  /// Push current tuning knob values to the native visualizer.
   void _pushAudioConfig() {
     if (_audioReactor is VisualizerAudioReactor) {
       final settings = Provider.of<SettingsProvider>(context, listen: false);
@@ -86,9 +85,7 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
 
     if (!settings.oilEnableAudioReactivity) {
       final reactor = await AudioReactorFactory.create();
-      if (mounted) {
-        setState(() => _audioReactor = reactor);
-      }
+      if (mounted) setState(() => _audioReactor = reactor);
       return;
     }
 
@@ -107,42 +104,37 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
         }
       } else {
         final reactor = await AudioReactorFactory.create();
-        if (mounted) {
-          setState(() => _audioReactor = reactor);
-        }
+        if (mounted) setState(() => _audioReactor = reactor);
       }
     } else {
       final reactor = await AudioReactorFactory.create();
-      if (mounted) {
-        setState(() => _audioReactor = reactor);
-      }
+      if (mounted) setState(() => _audioReactor = reactor);
     }
   }
 
-  /// Track title only — goes to the inner ring.
-  String _composeBannerText(
-      SettingsProvider settings, AudioProvider audioProvider) {
+  // ── Banner text helpers ────────────────────────────────────────────────────
+
+  /// Inner ring: track title only.
+  /// Returns empty string if banner disabled or nothing playing.
+  String _composeBannerText(SettingsProvider settings, AudioProvider audio) {
     if (!settings.oilShowInfoBanner) return '';
-    final track = audioProvider.currentTrack;
-    if (track == null) return '';
-    final title = track.title;
-    if (title.isEmpty) return '';
-    return '$title     ';
+    final title = audio.currentTrack?.title ?? '';
+    return title;
   }
 
-  /// Venue — goes to the outer ring.
-  String _composeVenue(SettingsProvider settings, AudioProvider audioProvider) {
+  /// Outer ring: venue string.
+  String _composeVenue(SettingsProvider settings, AudioProvider audio) {
     if (!settings.oilShowInfoBanner) return '';
-    final show = audioProvider.currentShow;
-    return show?.venue ?? '';
+    return audio.currentShow?.venue ?? '';
   }
 
-  /// Date — goes to the outer ring alongside venue.
-  String _composeDate(SettingsProvider settings, AudioProvider audioProvider) {
+  /// Outer ring: date string.
+  String _composeDate(SettingsProvider settings, AudioProvider audio) {
     if (!settings.oilShowInfoBanner) return '';
-    final show = audioProvider.currentShow;
-    return show?.formattedDate ?? show?.date ?? '';
+    return audio.currentShow?.date ?? '';
   }
+
+  // ── Build ──────────────────────────────────────────────────────────────────
 
   @override
   void dispose() {
@@ -157,18 +149,22 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
     final settings = context.watch<SettingsProvider>();
     final audioProvider = context.watch<AudioProvider>();
 
-    // Push audio config whenever settings rebuild this widget
     WidgetsBinding.instance.addPostFrameCallback((_) => _pushAudioConfig());
 
     final config = StealConfig(
       flowSpeed: settings.oilFlowSpeed,
       palette: settings.oilPalette,
+      filmGrain: settings.oilFilmGrain,
       pulseIntensity: settings.oilPulseIntensity,
       heatDrift: settings.oilHeatDrift,
       enableAudioReactivity: settings.oilEnableAudioReactivity,
       performanceMode: settings.oilPerformanceMode ||
           Provider.of<DeviceService>(context, listen: false).isTv,
       logoScale: settings.oilLogoScale,
+      blurAmount: settings.oilBlurAmount,
+      flatColor: settings.oilFlatColor,
+      bannerGlow: settings.oilBannerGlow,
+      bannerFlicker: settings.oilBannerFlicker,
       showInfoBanner: settings.oilShowInfoBanner,
       bannerText: _composeBannerText(settings, audioProvider),
       venue: _composeVenue(settings, audioProvider),

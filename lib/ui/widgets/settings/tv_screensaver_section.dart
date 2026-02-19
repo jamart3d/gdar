@@ -8,8 +8,6 @@ import 'package:shakedown/ui/widgets/tv/tv_stepper_row.dart';
 import 'package:shakedown/ui/widgets/tv/tv_list_tile.dart';
 import 'package:shakedown/ui/screens/screensaver_screen.dart';
 
-/// Screensaver settings section for the Google TV settings screen.
-/// Covers system controls, visual settings, audio reactivity, and performance.
 class TvScreensaverSection extends StatelessWidget {
   const TvScreensaverSection({super.key});
 
@@ -67,14 +65,16 @@ class TvScreensaverSection extends StatelessWidget {
                       if (event.logicalKey == LogicalKeyboardKey.arrowLeft) {
                         if (current == 15) {
                           newVal = 5;
-                          // ignore: curly_braces_in_flow_control_structures
-                        } else if (current == 5) newVal = 1;
+                        } else if (current == 5) {
+                          newVal = 1;
+                        }
                       } else if (event.logicalKey ==
                           LogicalKeyboardKey.arrowRight) {
                         if (current == 1) {
                           newVal = 5;
-                          // ignore: curly_braces_in_flow_control_structures
-                        } else if (current == 5) newVal = 15;
+                        } else if (current == 5) {
+                          newVal = 15;
+                        }
                       }
                       if (newVal != null && newVal != current) {
                         settings.setOilScreensaverInactivityMinutes(newVal);
@@ -90,10 +90,8 @@ class TvScreensaverSection extends StatelessWidget {
                       ButtonSegment(value: 15, label: Text('15 min')),
                     ],
                     selected: {settings.oilScreensaverInactivityMinutes},
-                    onSelectionChanged: (Set<int> newSelection) {
-                      settings.setOilScreensaverInactivityMinutes(
-                          newSelection.first);
-                    },
+                    onSelectionChanged: (Set<int> s) =>
+                        settings.setOilScreensaverInactivityMinutes(s.first),
                     showSelectedIcon: false,
                   ),
                 ),
@@ -126,13 +124,43 @@ class TvScreensaverSection extends StatelessWidget {
         _SectionHeader(title: 'Visual', colorScheme: colorScheme),
         const SizedBox(height: 8),
 
-        // Palette — one focusable button per palette, showing color dots
-        _PaletteSelector(
-          selectedPalette: settings.oilPalette,
-          onChanged: (key) => settings.setOilPalette(key),
+        // Color Palette
+        Text(
+          'Color Palette',
+          style: textTheme.bodySmall
+              ?.copyWith(color: colorScheme.onSurfaceVariant),
+        ),
+        const SizedBox(height: 10),
+        _PaletteGrid(
+          selected: settings.oilPalette,
+          onSelect: (key) => settings.setOilPalette(key),
+          colorScheme: colorScheme,
+          textTheme: textTheme,
+        ),
+
+        const SizedBox(height: 24),
+
+        _ToggleRow(
+          label: 'Flat Color Mode',
+          subtitle: 'Use a single static palette color instead of animation',
+          value: settings.oilFlatColor,
+          onChanged: (_) => settings.toggleOilFlatColor(),
+          colorScheme: colorScheme,
+          textTheme: textTheme,
         ),
 
         const SizedBox(height: 16),
+
+        _ToggleRow(
+          label: 'Auto Palette Cycle',
+          subtitle: 'Automatically rotate through palettes over time',
+          value: settings.oilPaletteCycle,
+          onChanged: (_) => settings.toggleOilPaletteCycle(),
+          colorScheme: colorScheme,
+          textTheme: textTheme,
+        ),
+
+        const SizedBox(height: 24),
 
         TvStepperRow(
           label: 'Logo Scale',
@@ -147,6 +175,20 @@ class TvScreensaverSection extends StatelessWidget {
         ),
 
         const SizedBox(height: 16),
+
+        TvStepperRow(
+          label: 'Logo Blur',
+          value: settings.oilBlurAmount,
+          min: 0.0,
+          max: 1.0,
+          step: 0.05,
+          leftLabel: 'Sharp',
+          rightLabel: 'Soft',
+          valueFormatter: (v) => '${(v * 100).round()}%',
+          onChanged: (v) => settings.setOilBlurAmount(v),
+        ),
+
+        const SizedBox(height: 24),
 
         TvStepperRow(
           label: 'Flow Speed',
@@ -188,10 +230,10 @@ class TvScreensaverSection extends StatelessWidget {
         const SizedBox(height: 24),
 
         _ToggleRow(
-          label: 'Auto Palette Cycle',
-          subtitle: 'Automatically rotate through palettes over time',
-          value: settings.oilPaletteCycle,
-          onChanged: (_) => settings.toggleOilPaletteCycle(),
+          label: 'Show Track Info',
+          subtitle: 'Display track title, venue and date as circular text',
+          value: settings.oilShowInfoBanner,
+          onChanged: (_) => settings.toggleOilShowInfoBanner(),
           colorScheme: colorScheme,
           textTheme: textTheme,
         ),
@@ -199,12 +241,26 @@ class TvScreensaverSection extends StatelessWidget {
         const SizedBox(height: 16),
 
         _ToggleRow(
-          label: 'Show Track Info',
-          subtitle: 'Display track title, venue and date as circular text',
-          value: settings.oilShowInfoBanner,
-          onChanged: (_) => settings.toggleOilShowInfoBanner(),
+          label: 'Ring Neon Glow',
+          subtitle: 'Triple-layer neon glow effect on text rings',
+          value: settings.oilBannerGlow,
+          onChanged: (_) => settings.toggleOilBannerGlow(),
           colorScheme: colorScheme,
           textTheme: textTheme,
+        ),
+
+        const SizedBox(height: 16),
+
+        TvStepperRow(
+          label: 'Ring Flicker',
+          value: settings.oilBannerFlicker,
+          min: 0.0,
+          max: 1.0,
+          step: 0.05,
+          leftLabel: 'Steady',
+          rightLabel: 'Buzzing',
+          valueFormatter: (v) => '${(v * 100).round()}%',
+          onChanged: (v) => settings.setOilBannerFlicker(v),
         ),
 
         const SizedBox(height: 32),
@@ -261,8 +317,9 @@ class TvScreensaverSection extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 4),
             child: Text(
-              'Peak Decay controls how quickly the visualizer adapts to changes in volume. '
-              'Slow adapt keeps loud moments pumping longer; Fast adapt stays fresh with quiet passages.',
+              'Peak Decay controls how quickly the visualizer adapts to changes '
+              'in volume. Slow adapt keeps loud moments pumping longer; Fast '
+              'adapt stays fresh with quiet passages.',
               style: textTheme.bodySmall
                   ?.copyWith(color: colorScheme.onSurfaceVariant),
             ),
@@ -290,159 +347,143 @@ class TvScreensaverSection extends StatelessWidget {
   }
 }
 
-// ── Palette Selector ───────────────────────────────────────────────────────
+// ── Palette Grid ───────────────────────────────────────────────────────────
 
-class _PaletteSelector extends StatelessWidget {
-  const _PaletteSelector({
-    required this.selectedPalette,
-    required this.onChanged,
+class _PaletteGrid extends StatelessWidget {
+  final String selected;
+  final ValueChanged<String> onSelect;
+  final ColorScheme colorScheme;
+  final TextTheme textTheme;
+
+  const _PaletteGrid({
+    required this.selected,
+    required this.onSelect,
+    required this.colorScheme,
+    required this.textTheme,
   });
 
-  final String selectedPalette;
-  final ValueChanged<String> onChanged;
+  static const Map<String, String> _labels = {
+    'psychedelic': 'Psychedelic',
+    'acid_green': 'Acid Green',
+    'purple_haze': 'Purple Haze',
+    'ocean': 'Ocean',
+    'aurora': 'Aurora',
+    'cosmic': 'Cosmic',
+  };
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
-    final keys = StealConfig.palettes.keys.toList();
-
+    final entries = StealConfig.palettes.entries.toList();
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Color Palette',
-          style: textTheme.bodySmall?.copyWith(color: scheme.onSurfaceVariant),
-        ),
-        const SizedBox(height: 8),
-        Wrap(
-          spacing: 10,
-          runSpacing: 10,
-          children: keys.map((key) {
-            final colors = StealConfig.palettes[key]!;
-            final isSelected = key == selectedPalette;
-            return _PaletteButton(
-              paletteKey: key,
-              colors: colors,
-              isSelected: isSelected,
-              onTap: () => onChanged(key),
-            );
-          }).toList(),
-        ),
-      ],
+      children: entries.map((e) {
+        final isSelected = e.key == selected;
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 8),
+          child: _PaletteRow(
+            paletteKey: e.key,
+            label: _labels[e.key] ?? e.key,
+            colors: e.value,
+            isSelected: isSelected,
+            onTap: () => onSelect(e.key),
+            colorScheme: colorScheme,
+            textTheme: textTheme,
+          ),
+        );
+      }).toList(),
     );
   }
 }
 
-class _PaletteButton extends StatelessWidget {
-  const _PaletteButton({
-    required this.paletteKey,
-    required this.colors,
-    required this.isSelected,
-    required this.onTap,
-  });
-
+class _PaletteRow extends StatelessWidget {
   final String paletteKey;
+  final String label;
   final List<Color> colors;
   final bool isSelected;
   final VoidCallback onTap;
+  final ColorScheme colorScheme;
+  final TextTheme textTheme;
+
+  const _PaletteRow({
+    required this.paletteKey,
+    required this.label,
+    required this.colors,
+    required this.isSelected,
+    required this.onTap,
+    required this.colorScheme,
+    required this.textTheme,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    final bg =
-        isSelected ? scheme.primaryContainer : scheme.surfaceContainerHighest;
-
     return TvFocusWrapper(
       onTap: onTap,
       borderRadius: BorderRadius.circular(12),
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 180),
-        curve: Curves.easeInOut,
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        duration: const Duration(milliseconds: 150),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         decoration: BoxDecoration(
-          color: bg,
+          color: isSelected
+              ? colorScheme.primaryContainer
+              : colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isSelected ? scheme.primary : Colors.transparent,
-            width: 2,
+            color: isSelected
+                ? colorScheme.primary
+                : colorScheme.outlineVariant.withValues(alpha: 0.4),
+            width: isSelected ? 2.0 : 1.0,
           ),
         ),
-        child: _PaletteDot(colors: colors),
+        child: Row(
+          children: [
+            // Color dots
+            ...colors.map((c) => Container(
+                  width: 14,
+                  height: 14,
+                  margin: const EdgeInsets.only(right: 5),
+                  decoration: BoxDecoration(
+                    color: c,
+                    shape: BoxShape.circle,
+                    boxShadow: isSelected
+                        ? [
+                            BoxShadow(
+                              color: c.withValues(alpha: 0.6),
+                              blurRadius: 5,
+                              spreadRadius: 1,
+                            )
+                          ]
+                        : null,
+                  ),
+                )),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                label,
+                style: textTheme.bodyLarge?.copyWith(
+                  color: isSelected
+                      ? colorScheme.onPrimaryContainer
+                      : colorScheme.onSurface,
+                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                ),
+              ),
+            ),
+            if (isSelected)
+              Icon(
+                Icons.check_circle_rounded,
+                color: colorScheme.primary,
+                size: 20,
+              ),
+          ],
+        ),
       ),
     );
   }
 }
 
-/// Single dot per palette.
-/// - 1 color  → solid circle with matching glow
-/// - 2+ colors → sweep gradient circle (no glow, colors speak for themselves)
-class _PaletteDot extends StatelessWidget {
-  const _PaletteDot({required this.colors});
-
-  final List<Color> colors;
-
-  static const double _size = 18;
-
-  @override
-  Widget build(BuildContext context) {
-    if (colors.length == 1) {
-      final c = colors.first;
-      return Container(
-        width: _size,
-        height: _size,
-        decoration: BoxDecoration(
-          color: c,
-          shape: BoxShape.circle,
-          border: c == const Color(0xFFFFFFFF)
-              ? Border.all(color: Colors.white24, width: 1)
-              : null,
-          boxShadow: [
-            BoxShadow(
-              color: c.withValues(alpha: 0.7),
-              blurRadius: 6,
-              spreadRadius: 1,
-            ),
-          ],
-        ),
-      );
-    }
-
-    // Gradient dot for animated palettes (cmyk, rgb)
-    return CustomPaint(
-      size: const Size(_size, _size),
-      painter: _GradientDotPainter(colors: colors),
-    );
-  }
-}
-
-class _GradientDotPainter extends CustomPainter {
-  const _GradientDotPainter({required this.colors});
-
-  final List<Color> colors;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final rect = Offset.zero & size;
-    final paint = Paint()
-      ..shader = SweepGradient(
-        colors: [...colors, colors.first], // wrap back to start for smooth loop
-        tileMode: TileMode.clamp,
-      ).createShader(rect);
-
-    canvas.drawCircle(rect.center, size.width / 2, paint);
-  }
-
-  @override
-  bool shouldRepaint(_GradientDotPainter old) => old.colors != colors;
-}
-
-// ── Helper Widgets ─────────────────────────────────────────────────────────
+// ── Shared helpers ─────────────────────────────────────────────────────────
 
 class _SectionHeader extends StatelessWidget {
   final String title;
   final ColorScheme colorScheme;
-
   const _SectionHeader({required this.title, required this.colorScheme});
 
   @override

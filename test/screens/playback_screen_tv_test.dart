@@ -180,6 +180,16 @@ class FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
   double get oilAudioBassBoost => 1.0;
   @override
   double get oilAudioReactivityStrength => 1.0;
+  @override
+  double get oilFilmGrain => 0.15;
+  @override
+  double get oilBlurAmount => 0.0;
+  @override
+  bool get oilFlatColor => false;
+  @override
+  bool get oilBannerGlow => false;
+  @override
+  double get oilBannerFlicker => 0.0;
 
   @override
   void toggleOilPaletteCycle() {}
@@ -191,6 +201,16 @@ class FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
   Future<void> setOilAudioBassBoost(double value) async {}
   @override
   Future<void> setOilAudioReactivityStrength(double value) async {}
+  @override
+  Future<void> setOilFilmGrain(double value) async {}
+  @override
+  Future<void> setOilBlurAmount(double value) async {}
+  @override
+  void toggleOilFlatColor() {}
+  @override
+  void toggleOilBannerGlow() {}
+  @override
+  Future<void> setOilBannerFlicker(double value) async {}
   @override
   Future<void> setSourceCategoryFilter(String category, bool isActive) async {}
   @override

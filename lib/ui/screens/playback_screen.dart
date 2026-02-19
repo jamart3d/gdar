@@ -475,13 +475,10 @@ class PlaybackScreenState extends State<PlaybackScreen>
                                 builder: (context, _, __) {
                                   final r = CatalogService()
                                       .getRating(currentSource.id);
-                                  if (r > 0) {
-                                    return _RatingStars(
-                                      rating: r,
-                                      color: colorScheme.primary,
-                                    );
-                                  }
-                                  return const SizedBox.shrink();
+                                  return _RatingStars(
+                                    rating: r,
+                                    color: colorScheme.primary,
+                                  );
                                 },
                               ),
                               if (currentSource.src != null) ...[

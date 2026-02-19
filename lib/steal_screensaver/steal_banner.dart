@@ -10,6 +10,7 @@ import 'package:shakedown/steal_screensaver/steal_game.dart';
 /// Inner ring: track title, rotating counter-clockwise at a slower speed.
 ///
 /// Both rings fade through black when their content changes.
+/// Optional neon glow (triple-layer) and flicker are driven by StealConfig.
 class StealBanner extends Component with HasGameReference<StealGame> {
   // ── Tuning constants ───────────────────────────────────────────────────────
   static const double _outerRotationSpeed = 0.04;
@@ -21,6 +22,7 @@ class StealBanner extends Component with HasGameReference<StealGame> {
   static const double _ringFadeSpeed = 1.2;
   static const int _minArcChars = 28;
   static const double _letterSpacingBoost = 1.4;
+  static const double _flickerLerpSpeed = 18.0;
 
   // ── Outer ring state (venue · date) ───────────────────────────────────────
   String _outerCurrent = '';
@@ -42,6 +44,12 @@ class StealBanner extends Component with HasGameReference<StealGame> {
   double _outerAngle = 0.0;
   double _innerAngle = 0.0;
   double _opacity = 0.0;
+
+  // ── Flicker state ─────────────────────────────────────────────────────────
+  final _rng = Random();
+  double _flickerValue = 1.0;
+  double _flickerTarget = 1.0;
+  double _flickerTimer = 0.0;
 
   // ── Public API ─────────────────────────────────────────────────────────────
 
@@ -132,6 +140,36 @@ class StealBanner extends Component with HasGameReference<StealGame> {
         _outerOpacity = (_outerOpacity - _ringFadeSpeed * dt).clamp(0.0, 1.0);
       }
     }
+
+    _tickFlicker(dt);
+  }
+
+  void _tickFlicker(double dt) {
+    final strength = game.config.bannerFlicker.clamp(0.0, 1.0);
+    if (strength <= 0.0) {
+      // Smoothly restore full brightness when flicker is off
+      _flickerValue = (_flickerValue + _flickerLerpSpeed * dt).clamp(0.0, 1.0);
+      return;
+    }
+
+    // Lerp toward current target
+    _flickerValue += (_flickerTarget - _flickerValue) * _flickerLerpSpeed * dt;
+    _flickerValue = _flickerValue.clamp(0.0, 1.0);
+
+    // Schedule next random event
+    _flickerTimer -= dt;
+    if (_flickerTimer <= 0.0) {
+      // Higher strength = deeper dips
+      final minBrightness = 1.0 - strength * 0.85;
+      _flickerTarget =
+          minBrightness + _rng.nextDouble() * (1.0 - minBrightness);
+
+      // Higher strength = faster buzz (0.04–0.15s), lower = occasional dip (0.3–1.2s)
+      final minInterval = ui.lerpDouble(0.3, 0.04, strength)!;
+      final maxInterval = ui.lerpDouble(1.2, 0.15, strength)!;
+      _flickerTimer =
+          minInterval + _rng.nextDouble() * (maxInterval - minInterval);
+    }
   }
 
   @override
@@ -150,6 +188,9 @@ class StealBanner extends Component with HasGameReference<StealGame> {
     final outerRadius = min(w, h) * _outerRadiusRatio;
     final innerRadius = min(w, h) * _innerRadiusRatio;
 
+    final glowEnabled = game.config.bannerGlow;
+    final flicker = _flickerValue;
+
     // Outer ring: venue · date (clockwise)
     if (_outerCurrent.isNotEmpty && _outerOpacity > 0.01) {
       _drawCircularText(
@@ -158,8 +199,9 @@ class StealBanner extends Component with HasGameReference<StealGame> {
         center,
         outerRadius,
         _outerAngle,
-        effectiveOpacity: _opacity * _outerOpacity,
+        effectiveOpacity: _opacity * _outerOpacity * flicker,
         clockwise: true,
+        glowEnabled: glowEnabled,
       );
     }
 
@@ -171,8 +213,9 @@ class StealBanner extends Component with HasGameReference<StealGame> {
         center,
         innerRadius,
         _innerAngle,
-        effectiveOpacity: _opacity * _trackOpacity,
+        effectiveOpacity: _opacity * _trackOpacity * flicker,
         clockwise: false,
+        glowEnabled: glowEnabled,
       );
     }
   }
@@ -194,6 +237,7 @@ class StealBanner extends Component with HasGameReference<StealGame> {
     double startRotation, {
     required double effectiveOpacity,
     required bool clockwise,
+    required bool glowEnabled,
   }) {
     final chars = text.characters.toList();
     if (chars.isEmpty) return;
@@ -201,6 +245,21 @@ class StealBanner extends Component with HasGameReference<StealGame> {
     final arcCount = max(chars.length, _minArcChars);
     final anglePerSlot = (2 * pi) / arcCount;
     final startAngle = startRotation - pi / 2;
+
+    // Derive neon layer colors from current palette color
+    final hsl = HSLColor.fromColor(_currentColor);
+    final coreColor = hsl
+        .withSaturation(0.3)
+        .withLightness(0.95)
+        .toColor(); // near-white tinted core
+    final bloomColor = hsl
+        .withSaturation(1.0)
+        .withLightness(0.6)
+        .toColor(); // tight saturated bloom
+    final glowColor = hsl
+        .withSaturation(1.0)
+        .withLightness(0.5)
+        .toColor(); // wide soft outer glow
 
     for (int i = 0; i < chars.length; i++) {
       final slotAngle = clockwise
@@ -214,32 +273,87 @@ class StealBanner extends Component with HasGameReference<StealGame> {
       canvas.translate(x, y);
       canvas.rotate(clockwise ? slotAngle + pi / 2 : slotAngle - pi / 2);
 
-      final painter = TextPainter(
-        text: TextSpan(
-          text: chars[i],
-          style: TextStyle(
-            color: _currentColor.withValues(alpha: effectiveOpacity * 0.9),
-            fontSize: _fontSize,
-            fontWeight: FontWeight.w600,
-            letterSpacing: 0,
-            shadows: [
-              Shadow(
-                color: Colors.black.withValues(alpha: effectiveOpacity * 0.7),
-                blurRadius: 3,
-                offset: const Offset(1, 1),
-              ),
-            ],
-          ),
-        ),
-        textDirection: ui.TextDirection.ltr,
-      )..layout();
-
-      painter.paint(
-        canvas,
-        Offset(-painter.width / 2, -painter.height / 2),
-      );
+      if (glowEnabled) {
+        // Layer 1: wide outer glow
+        _paintChar(
+          canvas,
+          chars[i],
+          color: glowColor.withValues(alpha: effectiveOpacity * 0.45),
+          blurRadius: 10.0,
+        );
+        // Layer 2: tight inner bloom
+        _paintChar(
+          canvas,
+          chars[i],
+          color: bloomColor.withValues(alpha: effectiveOpacity * 0.75),
+          blurRadius: 3.5,
+        );
+        // Layer 3: sharp bright core
+        _paintChar(
+          canvas,
+          chars[i],
+          color: coreColor.withValues(alpha: effectiveOpacity * 0.95),
+          blurRadius: 0.0,
+        );
+      } else {
+        // Original single-pass with drop shadow
+        _paintChar(
+          canvas,
+          chars[i],
+          color: _currentColor.withValues(alpha: effectiveOpacity * 0.9),
+          blurRadius: 0.0,
+          withDropShadow: true,
+          dropShadowOpacity: effectiveOpacity,
+        );
+      }
 
       canvas.restore();
+    }
+  }
+
+  void _paintChar(
+    Canvas canvas,
+    String char, {
+    required Color color,
+    required double blurRadius,
+    bool withDropShadow = false,
+    double dropShadowOpacity = 1.0,
+  }) {
+    final painter = TextPainter(
+      text: TextSpan(
+        text: char,
+        style: TextStyle(
+          color: color,
+          fontSize: _fontSize,
+          fontWeight: FontWeight.w600,
+          letterSpacing: 0,
+          shadows: withDropShadow
+              ? [
+                  Shadow(
+                    color:
+                        Colors.black.withValues(alpha: dropShadowOpacity * 0.7),
+                    blurRadius: 3,
+                    offset: const Offset(1, 1),
+                  ),
+                ]
+              : null,
+        ),
+      ),
+      textDirection: ui.TextDirection.ltr,
+    )..layout();
+
+    final offset = Offset(-painter.width / 2, -painter.height / 2);
+
+    if (blurRadius > 0.0) {
+      canvas.saveLayer(
+        null,
+        Paint()
+          ..maskFilter = ui.MaskFilter.blur(ui.BlurStyle.normal, blurRadius),
+      );
+      painter.paint(canvas, offset);
+      canvas.restore();
+    } else {
+      painter.paint(canvas, offset);
     }
   }
 }

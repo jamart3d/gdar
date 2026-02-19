@@ -54,6 +54,7 @@ class SettingsProvider with ChangeNotifier {
   static const String _oilFlowSpeedKey = 'oil_flow_speed';
   static const String _oilPulseIntensityKey = 'oil_pulse_intensity';
   static const String _oilPaletteKey = 'oil_palette';
+  static const String _oilFilmGrainKey = 'oil_film_grain';
   static const String _oilHeatDriftKey = 'oil_heat_drift';
   static const String _oilEnableAudioReactivityKey =
       'oil_enable_audio_reactivity';
@@ -61,12 +62,18 @@ class SettingsProvider with ChangeNotifier {
   static const String _oilPaletteCycleKey = 'oil_palette_cycle';
   static const String _oilPaletteTransitionSpeedKey =
       'oil_palette_transition_speed';
+
+  // Audio Reactivity Tuning
+  static const String _oilAudioPeakDecayKey = 'oil_audio_peak_decay';
+  static const String _oilAudioBassBoostKey = 'oil_audio_bass_boost';
   static const String _oilAudioReactivityStrengthKey =
       'oil_audio_reactivity_strength';
-  static const String _oilAudioBassBoostKey = 'oil_audio_bass_boost';
-  static const String _oilAudioPeakDecayKey = 'oil_audio_peak_decay';
   static const String _oilShowInfoBannerKey = 'oil_show_info_banner';
   static const String _oilLogoScaleKey = 'oil_logo_scale';
+  static const String _oilBlurAmountKey = 'oil_blur_amount';
+  static const String _oilFlatColorKey = 'oil_flat_color';
+  static const String _oilBannerGlowKey = 'oil_banner_glow';
+  static const String _oilBannerFlickerKey = 'oil_banner_flicker';
 
   static const String _marqueeEnabledKey =
       'marquee_enabled'; // Logic for disabling marquee in tests
@@ -131,17 +138,24 @@ class SettingsProvider with ChangeNotifier {
   late double _oilFlowSpeed;
   late double _oilPulseIntensity;
   late String _oilPalette;
+  late double _oilFilmGrain;
   late double _oilHeatDrift;
   late bool _oilEnableAudioReactivity;
   late bool _preventSleep;
   late bool _oilPerformanceMode;
   late bool _oilPaletteCycle;
   late double _oilPaletteTransitionSpeed;
-  late double _oilAudioReactivityStrength;
-  late double _oilAudioBassBoost;
+
+  // Audio Reactivity Tuning
   late double _oilAudioPeakDecay;
+  late double _oilAudioBassBoost;
+  late double _oilAudioReactivityStrength;
   late bool _oilShowInfoBanner;
   late double _oilLogoScale;
+  late double _oilBlurAmount;
+  late bool _oilFlatColor;
+  late bool _oilBannerGlow;
+  late double _oilBannerFlicker;
 
   Color? _seedColor;
 
@@ -192,16 +206,23 @@ class SettingsProvider with ChangeNotifier {
   double get oilFlowSpeed => _oilFlowSpeed;
   double get oilPulseIntensity => _oilPulseIntensity;
   String get oilPalette => _oilPalette;
+  double get oilFilmGrain => _oilFilmGrain;
   double get oilHeatDrift => _oilHeatDrift;
   bool get oilEnableAudioReactivity => _oilEnableAudioReactivity;
   bool get oilPerformanceMode => _oilPerformanceMode;
   bool get oilPaletteCycle => _oilPaletteCycle;
   double get oilPaletteTransitionSpeed => _oilPaletteTransitionSpeed;
-  double get oilAudioReactivityStrength => _oilAudioReactivityStrength;
-  double get oilAudioBassBoost => _oilAudioBassBoost;
+
+  // Audio Reactivity Tuning getters
   double get oilAudioPeakDecay => _oilAudioPeakDecay;
+  double get oilAudioBassBoost => _oilAudioBassBoost;
+  double get oilAudioReactivityStrength => _oilAudioReactivityStrength;
   bool get oilShowInfoBanner => _oilShowInfoBanner;
   double get oilLogoScale => _oilLogoScale;
+  double get oilBlurAmount => _oilBlurAmount;
+  bool get oilFlatColor => _oilFlatColor;
+  bool get oilBannerGlow => _oilBannerGlow;
+  double get oilBannerFlicker => _oilBannerFlicker;
 
   Color? get seedColor => _seedColor;
 
@@ -409,28 +430,37 @@ class SettingsProvider with ChangeNotifier {
         DefaultSettings.oilPulseIntensity;
     _oilPalette =
         _prefs.getString(_oilPaletteKey) ?? DefaultSettings.oilPalette;
+    _oilFilmGrain =
+        _prefs.getDouble(_oilFilmGrainKey) ?? DefaultSettings.oilFilmGrain;
     _oilHeatDrift =
         _prefs.getDouble(_oilHeatDriftKey) ?? DefaultSettings.oilHeatDrift;
     _oilEnableAudioReactivity = _prefs.getBool(_oilEnableAudioReactivityKey) ??
         DefaultSettings.oilEnableAudioReactivity;
     _oilPerformanceMode = _prefs.getBool(_oilPerformanceModeKey) ??
         DefaultSettings.oilPerformanceMode;
-    _oilPaletteCycle =
-        _prefs.getBool(_oilPaletteCycleKey) ?? DefaultSettings.oilPaletteCycle;
+    _oilPaletteCycle = _prefs.getBool(_oilPaletteCycleKey) ?? false;
     _oilPaletteTransitionSpeed =
-        _prefs.getDouble(_oilPaletteTransitionSpeedKey) ??
-            DefaultSettings.oilPaletteTransitionSpeed;
+        _prefs.getDouble(_oilPaletteTransitionSpeedKey) ?? 5.0;
+
+    // Audio Reactivity Tuning
+    _oilAudioPeakDecay = _prefs.getDouble(_oilAudioPeakDecayKey) ?? 0.998;
+    _oilAudioBassBoost = _prefs.getDouble(_oilAudioBassBoostKey) ?? 1.0;
     _oilAudioReactivityStrength =
-        _prefs.getDouble(_oilAudioReactivityStrengthKey) ??
-            DefaultSettings.oilAudioReactivityStrength;
-    _oilAudioBassBoost = _prefs.getDouble(_oilAudioBassBoostKey) ??
-        DefaultSettings.oilAudioBassBoost;
-    _oilAudioPeakDecay = _prefs.getDouble(_oilAudioPeakDecayKey) ??
-        DefaultSettings.oilAudioPeakDecay;
+        _prefs.getDouble(_oilAudioReactivityStrengthKey) ?? 1.0;
+
+    // Banner & visual extras
     _oilShowInfoBanner = _prefs.getBool(_oilShowInfoBannerKey) ??
         DefaultSettings.oilShowInfoBanner;
     _oilLogoScale =
         _prefs.getDouble(_oilLogoScaleKey) ?? DefaultSettings.oilLogoScale;
+    _oilBlurAmount =
+        _prefs.getDouble(_oilBlurAmountKey) ?? DefaultSettings.oilBlurAmount;
+    _oilFlatColor =
+        _prefs.getBool(_oilFlatColorKey) ?? DefaultSettings.oilFlatColor;
+    _oilBannerGlow =
+        _prefs.getBool(_oilBannerGlowKey) ?? DefaultSettings.oilBannerGlow;
+    _oilBannerFlicker = _prefs.getDouble(_oilBannerFlickerKey) ??
+        DefaultSettings.oilBannerFlicker;
 
     if (isTv) {
       _oilScreensaverMode = 'steal';
@@ -577,6 +607,8 @@ class SettingsProvider with ChangeNotifier {
       _oilPulseIntensityKey, _oilPulseIntensity = value);
   Future<void> setOilPalette(String palette) =>
       _updateStringPreference(_oilPaletteKey, _oilPalette = palette);
+  Future<void> setOilFilmGrain(double value) =>
+      _updateDoublePreference(_oilFilmGrainKey, _oilFilmGrain = value);
   Future<void> setOilHeatDrift(double value) =>
       _updateDoublePreference(_oilHeatDriftKey, _oilHeatDrift = value);
   void toggleOilEnableAudioReactivity() => _updatePreference(
@@ -588,17 +620,27 @@ class SettingsProvider with ChangeNotifier {
       _oilPaletteCycleKey, _oilPaletteCycle = !_oilPaletteCycle);
   void setOilPaletteTransitionSpeed(double seconds) => _updateDoublePreference(
       _oilPaletteTransitionSpeedKey, _oilPaletteTransitionSpeed = seconds);
-  Future<void> setOilAudioReactivityStrength(double value) =>
-      _updateDoublePreference(
-          _oilAudioReactivityStrengthKey, _oilAudioReactivityStrength = value);
-  Future<void> setOilAudioBassBoost(double value) => _updateDoublePreference(
-      _oilAudioBassBoostKey, _oilAudioBassBoost = value);
+
+  // Audio Reactivity Tuning setters
   Future<void> setOilAudioPeakDecay(double value) => _updateDoublePreference(
-      _oilAudioPeakDecayKey, _oilAudioPeakDecay = value);
+      _oilAudioPeakDecayKey, _oilAudioPeakDecay = value.clamp(0.990, 0.999));
+  Future<void> setOilAudioBassBoost(double value) => _updateDoublePreference(
+      _oilAudioBassBoostKey, _oilAudioBassBoost = value.clamp(1.0, 3.0));
+  Future<void> setOilAudioReactivityStrength(double value) =>
+      _updateDoublePreference(_oilAudioReactivityStrengthKey,
+          _oilAudioReactivityStrength = value.clamp(0.5, 2.0));
   void toggleOilShowInfoBanner() => _updatePreference(
       _oilShowInfoBannerKey, _oilShowInfoBanner = !_oilShowInfoBanner);
   Future<void> setOilLogoScale(double value) =>
       _updateDoublePreference(_oilLogoScaleKey, _oilLogoScale = value);
+  Future<void> setOilBlurAmount(double value) =>
+      _updateDoublePreference(_oilBlurAmountKey, _oilBlurAmount = value);
+  void toggleOilFlatColor() =>
+      _updatePreference(_oilFlatColorKey, _oilFlatColor = !_oilFlatColor);
+  void toggleOilBannerGlow() =>
+      _updatePreference(_oilBannerGlowKey, _oilBannerGlow = !_oilBannerGlow);
+  Future<void> setOilBannerFlicker(double value) =>
+      _updateDoublePreference(_oilBannerFlickerKey, _oilBannerFlicker = value);
 
   // Source Filtering
   static const String _filterHighestShnidKey = 'filter_highest_shnid';

@@ -12,13 +12,13 @@ class StealBackground extends PositionComponent
   ui.Image? _logoTexture;
   bool _shaderLoaded = false;
 
-  // Smooth color transition state
-  // _currentColors lerps toward _targetColors each frame
+  // Always maintain exactly 4 colors for the shader.
+  // Shorter palettes pad with their last color.
+  static const int _colorCount = 4;
+
   List<Color> _currentColors = [];
   List<Color> _targetColors = [];
 
-  // Per-frame lerp factor — overridden by cycle system for speed-aware fades.
-  // Default 0.025 ≈ ~1.5s to 90% at 60fps (used for manual palette changes).
   double _colorLerpSpeed = 0.025;
 
   StealBackground({required this.config});
@@ -28,14 +28,10 @@ class StealBackground extends PositionComponent
     await super.onLoad();
     try {
       await _loadResources();
-      // Initialise both current and target to the starting palette
-      // so there's no lerp-from-black on first load
-      final initial = _getPaletteColors(config.palette);
+      final initial = _expandColors(_getPaletteColors(config.palette));
       _currentColors = List.of(initial);
       _targetColors = List.of(initial);
-    } catch (_) {
-      // Fail silently — _renderFallback paints black
-    }
+    } catch (_) {}
   }
 
   Future<void> _loadResources() async {
@@ -56,25 +52,18 @@ class StealBackground extends PositionComponent
     this.size = size;
   }
 
-  /// Directly override the target colors with an arbitrary list and lerp speed.
-  /// Used by easter egg modes that need colors outside the normal palette map.
-  /// Call again with the normal palette colors to restore.
   void overrideTargetColors(List<Color> colors, double lerpSpeed) {
     _colorLerpSpeed = lerpSpeed;
-    _targetColors = List.of(colors);
+    _targetColors = _expandColors(colors);
     if (_currentColors.isEmpty) {
-      _currentColors = List.of(colors);
+      _currentColors = List.of(_targetColors);
     }
   }
 
-  /// Standard config update — uses default lerp speed.
-  /// Called for manual palette changes (e.g. user picks in settings).
   void updateConfig(StealConfig newConfig) {
     _applyConfig(newConfig, lerpSpeed: 0.025);
   }
 
-  /// Config update driven by the cycle system — lerp speed calculated from
-  /// oilPaletteTransitionSpeed so the crossfade duration matches user intent.
   void updateConfigWithLerpSpeed(StealConfig newConfig, double lerpSpeed) {
     _applyConfig(newConfig, lerpSpeed: lerpSpeed);
   }
@@ -85,26 +74,40 @@ class StealBackground extends PositionComponent
     _colorLerpSpeed = lerpSpeed;
 
     if (newConfig.palette != oldPalette || _targetColors.isEmpty) {
-      _targetColors = _getPaletteColors(newConfig.palette);
-      // If currentColors not yet initialised, snap immediately
+      _targetColors = _expandColors(_getPaletteColors(newConfig.palette));
       if (_currentColors.isEmpty) {
         _currentColors = List.of(_targetColors);
       }
+      // Ensure current is also always length 4 — prevents lerp skip on mismatch
+      if (_currentColors.length != _colorCount) {
+        _currentColors = _expandColors(_currentColors);
+      }
     }
+  }
+
+  /// Pads or trims a color list to exactly [_colorCount] entries.
+  /// Shorter lists repeat their last color; longer lists are truncated.
+  List<Color> _expandColors(List<Color> colors) {
+    if (colors.isEmpty) {
+      return List.filled(_colorCount, const Color(0xFFFFFFFF));
+    }
+    final result = <Color>[];
+    for (int i = 0; i < _colorCount; i++) {
+      result.add(colors[i < colors.length ? i : colors.length - 1]);
+    }
+    return result;
   }
 
   @override
   void update(double dt) {
     super.update(dt);
-    // Lerp each color channel toward target
-    if (_currentColors.length == _targetColors.length) {
-      for (int i = 0; i < _currentColors.length; i++) {
-        _currentColors[i] = Color.lerp(
-          _currentColors[i],
-          _targetColors[i],
-          _colorLerpSpeed,
-        )!;
-      }
+    // Both lists are guaranteed to be length 4 so the lerp never skips
+    for (int i = 0; i < _colorCount; i++) {
+      _currentColors[i] = Color.lerp(
+        _currentColors[i],
+        _targetColors[i],
+        _colorLerpSpeed,
+      )!;
     }
   }
 
@@ -139,20 +142,22 @@ class StealBackground extends PositionComponent
     _shader!.setFloat(idx++, time);
 
     _shader!.setFloat(idx++, config.flowSpeed.clamp(0.0, 5.0));
-    _shader!.setFloat(idx++, 0.0); // filmGrain removed — hardcoded off
+    _shader!.setFloat(idx++, 0.0); // filmGrain hardcoded off
     _shader!.setFloat(idx++, config.pulseIntensity.clamp(0.0, 5.0));
     _shader!.setFloat(idx++, config.heatDrift.clamp(0.0, 5.0));
     _shader!.setFloat(idx++, config.logoScale.clamp(0.05, 1.0));
+    _shader!.setFloat(idx++, config.blurAmount.clamp(0.0, 1.0));
+    _shader!.setFloat(idx++, config.flatColor ? 1.0 : 0.0);
 
     _shader!.setFloat(idx++, energy.bass.clamp(0.0, 5.0));
     _shader!.setFloat(idx++, energy.mid.clamp(0.0, 5.0));
     _shader!.setFloat(idx++, energy.treble.clamp(0.0, 5.0));
     _shader!.setFloat(idx++, energy.overall.clamp(0.0, 5.0));
 
-    // Use lerped colors for smooth transitions
-    final colors = _currentColors.isNotEmpty
+    // Always write exactly 4 colors — shader always expects uColor1–uColor4
+    final colors = _currentColors.length == _colorCount
         ? _currentColors
-        : _getPaletteColors(config.palette);
+        : _expandColors(_getPaletteColors(config.palette));
 
     for (final color in colors) {
       _shader!.setFloat(idx++, color.r);
