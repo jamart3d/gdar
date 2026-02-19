@@ -263,8 +263,8 @@ class StealBanner extends Component with HasGameReference<StealGame> {
     if (w < 2 || h < 2) return;
 
     final config = game.config;
-    final drift = (config.orbitDrift as double).clamp(0.0, 2.0);
-    final t = game.time * (config.flowSpeed as double).clamp(0.0, 2.0) * 0.5;
+    final drift = (config.orbitDrift).clamp(0.0, 2.0);
+    final t = game.time * (config.flowSpeed).clamp(0.0, 2.0) * 0.5;
 
     final px = 0.5 + 0.25 * drift * sin(t * 1.3) + 0.1 * drift * sin(t * 2.9);
     final py = 0.5 + 0.25 * drift * cos(t * 1.7) + 0.1 * drift * cos(t * 3.1);
@@ -275,7 +275,7 @@ class StealBanner extends Component with HasGameReference<StealGame> {
     final middleR = _middleRadius(minDim, config, innerR);
     final outerR = _outerRadius(minDim, config, middleR);
 
-    final glowEnabled = config.bannerGlow as bool;
+    final glowEnabled = config.bannerGlow;
     final flicker = _flickerValue;
 
     if (_outerCurrent.isNotEmpty && _outerOpacity > 0.01) {

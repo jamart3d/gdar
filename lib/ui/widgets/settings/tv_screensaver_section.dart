@@ -63,14 +63,18 @@ class TvScreensaverSection extends StatelessWidget {
                       final current = settings.oilScreensaverInactivityMinutes;
                       int? newVal;
                       if (event.logicalKey == LogicalKeyboardKey.arrowLeft) {
-                        if (current == 15)
+                        if (current == 15) {
                           newVal = 5;
-                        else if (current == 5) newVal = 1;
+                        } else if (current == 5) {
+                          newVal = 1;
+                        }
                       } else if (event.logicalKey ==
                           LogicalKeyboardKey.arrowRight) {
-                        if (current == 1)
+                        if (current == 1) {
                           newVal = 5;
-                        else if (current == 5) newVal = 15;
+                        } else if (current == 5) {
+                          newVal = 15;
+                        }
                       }
                       if (newVal != null && newVal != current) {
                         settings.setOilScreensaverInactivityMinutes(newVal);
@@ -125,12 +129,11 @@ class TvScreensaverSection extends StatelessWidget {
           style: textTheme.bodySmall
               ?.copyWith(color: colorScheme.onSurfaceVariant),
         ),
-        const SizedBox(height: 10),
-        _PaletteGrid(
+        const SizedBox(height: 8),
+        _PaletteSegmentedButton(
           selected: settings.oilPalette,
           onSelect: (key) => settings.setOilPalette(key),
           colorScheme: colorScheme,
-          textTheme: textTheme,
         ),
 
         const SizedBox(height: 24),
@@ -414,129 +417,139 @@ class TvScreensaverSection extends StatelessWidget {
   }
 }
 
-// ── Palette Grid ───────────────────────────────────────────────────────────
+// ── Palette Segmented Button ───────────────────────────────────────────────
 
-class _PaletteGrid extends StatelessWidget {
+class _PaletteSegmentedButton extends StatelessWidget {
   final String selected;
   final ValueChanged<String> onSelect;
   final ColorScheme colorScheme;
-  final TextTheme textTheme;
 
-  const _PaletteGrid({
+  const _PaletteSegmentedButton({
     required this.selected,
     required this.onSelect,
     required this.colorScheme,
-    required this.textTheme,
   });
-
-  static const Map<String, String> _labels = {
-    'psychedelic': 'Psychedelic',
-    'acid_green': 'Acid Green',
-    'purple_haze': 'Purple Haze',
-    'ocean': 'Ocean',
-    'aurora': 'Aurora',
-    'cosmic': 'Cosmic',
-  };
 
   @override
   Widget build(BuildContext context) {
-    final entries = StealConfig.palettes.entries.toList();
-    return Column(
-      children: entries.map((e) {
-        final isSelected = e.key == selected;
-        return Padding(
-          padding: const EdgeInsets.only(bottom: 8),
-          child: _PaletteRow(
-            paletteKey: e.key,
-            label: _labels[e.key] ?? e.key,
-            colors: e.value,
-            isSelected: isSelected,
-            onTap: () => onSelect(e.key),
-            colorScheme: colorScheme,
-            textTheme: textTheme,
-          ),
-        );
-      }).toList(),
+    final keys = StealConfig.palettes.keys.toList();
+
+    return TvFocusWrapper(
+      onKeyEvent: (node, event) {
+        if (event is KeyDownEvent) {
+          final idx = keys.indexOf(selected);
+          if (event.logicalKey == LogicalKeyboardKey.arrowLeft && idx > 0) {
+            onSelect(keys[idx - 1]);
+            return KeyEventResult.handled;
+          } else if (event.logicalKey == LogicalKeyboardKey.arrowRight &&
+              idx < keys.length - 1) {
+            onSelect(keys[idx + 1]);
+            return KeyEventResult.handled;
+          }
+        }
+        return KeyEventResult.ignored;
+      },
+      child: SegmentedButton<String>(
+        style: ButtonStyle(
+          // Transparent background — _AnimatedPaletteSegment paints the color
+          backgroundColor: WidgetStateProperty.all(Colors.transparent),
+          foregroundColor: WidgetStateProperty.all(Colors.transparent),
+          iconColor: WidgetStateProperty.all(Colors.transparent),
+          side: WidgetStateProperty.all(BorderSide.none),
+          padding: WidgetStateProperty.all(EdgeInsets.zero),
+        ),
+        segments: keys.map((key) {
+          final isSelected = key == selected;
+          return ButtonSegment<String>(
+            value: key,
+            label: _AnimatedPaletteSegment(
+              paletteKey: key,
+              isSelected: isSelected,
+              colorScheme: colorScheme,
+            ),
+          );
+        }).toList(),
+        selected: {selected},
+        onSelectionChanged: (Set<String> s) => onSelect(s.first),
+        showSelectedIcon: false,
+      ),
     );
   }
 }
 
-class _PaletteRow extends StatelessWidget {
+/// Animates through a palette's colors as a solid segment background,
+/// cycling at roughly the same cadence as the screensaver shader.
+class _AnimatedPaletteSegment extends StatefulWidget {
   final String paletteKey;
-  final String label;
-  final List<Color> colors;
   final bool isSelected;
-  final VoidCallback onTap;
   final ColorScheme colorScheme;
-  final TextTheme textTheme;
 
-  const _PaletteRow({
+  const _AnimatedPaletteSegment({
     required this.paletteKey,
-    required this.label,
-    required this.colors,
     required this.isSelected,
-    required this.onTap,
     required this.colorScheme,
-    required this.textTheme,
   });
 
   @override
+  State<_AnimatedPaletteSegment> createState() =>
+      _AnimatedPaletteSegmentState();
+}
+
+class _AnimatedPaletteSegmentState extends State<_AnimatedPaletteSegment>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late List<Color> _colors;
+
+  // Cycle duration per color step — matches screensaver feel (~2s per color)
+  static const Duration _stepDuration = Duration(milliseconds: 2000);
+
+  @override
+  void initState() {
+    super.initState();
+    _colors = StealConfig.palettes[widget.paletteKey]!;
+    _controller = AnimationController(
+      vsync: this,
+      duration: _stepDuration * _colors.length,
+    )..repeat();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  Color get _currentColor {
+    final t = _controller.value * _colors.length;
+    final idx = t.floor() % _colors.length;
+    final next = (idx + 1) % _colors.length;
+    final frac = t - t.floor();
+    return Color.lerp(_colors[idx], _colors[next], frac)!;
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return TvFocusWrapper(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 150),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? colorScheme.primaryContainer
-              : colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: isSelected
-                ? colorScheme.primary
-                : colorScheme.outlineVariant.withValues(alpha: 0.4),
-            width: isSelected ? 2.0 : 1.0,
-          ),
-        ),
-        child: Row(
-          children: [
-            ...colors.map((c) => Container(
-                  width: 14,
-                  height: 14,
-                  margin: const EdgeInsets.only(right: 5),
-                  decoration: BoxDecoration(
-                    color: c,
-                    shape: BoxShape.circle,
-                    boxShadow: isSelected
-                        ? [
-                            BoxShadow(
-                                color: c.withValues(alpha: 0.6),
-                                blurRadius: 5,
-                                spreadRadius: 1)
-                          ]
-                        : null,
-                  ),
-                )),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                label,
-                style: textTheme.bodyLarge?.copyWith(
-                  color: isSelected
-                      ? colorScheme.onPrimaryContainer
-                      : colorScheme.onSurface,
-                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-                ),
-              ),
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, _) {
+        final color = _currentColor;
+        final isSelected = widget.isSelected;
+        return Container(
+          height: 48,
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: isSelected ? 0.85 : 0.28),
+            border: Border.all(
+              color: isSelected ? color : color.withValues(alpha: 0.0),
+              width: 2,
             ),
-            if (isSelected)
-              Icon(Icons.check_circle_rounded,
-                  color: colorScheme.primary, size: 20),
-          ],
-        ),
-      ),
+          ),
+          child: isSelected
+              ? Icon(Icons.check_rounded,
+                  color: Colors.white.withValues(alpha: 0.9), size: 18)
+              : const SizedBox.shrink(),
+        );
+      },
     );
   }
 }

@@ -12,6 +12,10 @@ import 'package:shakedown/services/device_service.dart';
 import 'package:shakedown/ui/widgets/tv/tv_dual_pane_layout.dart';
 import 'package:shakedown/ui/widgets/show_list/animated_dice_icon.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:shakedown/services/catalog_service.dart';
+import 'package:shakedown/models/rating.dart';
+import 'package:hive/hive.dart';
+import 'package:flutter/foundation.dart';
 
 // Manual Mock definitions to avoid code generation dependency for this quick test
 class MockAudioProvider extends ChangeNotifier implements AudioProvider {
@@ -131,9 +135,13 @@ class MockSettingsProvider extends ChangeNotifier implements SettingsProvider {
   @override
   int get glowMode => 0;
   @override
-  bool get hideTrackDuration => false;
+  bool get marqueeEnabled => true;
+  @override
+  bool get enableShakedownTween => true;
   @override
   bool get playRandomOnStartup => false;
+  @override
+  bool get hideTrackDuration => false;
 
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
@@ -175,6 +183,34 @@ class MockDeviceService extends ChangeNotifier implements DeviceService {
   Future<void> refresh() async {}
 }
 
+class MockCatalogService implements CatalogService {
+  @override
+  ValueListenable<Box<Rating>> get ratingsListenable =>
+      ValueNotifier(MockBox<Rating>());
+  @override
+  ValueListenable<Box<bool>> get historyListenable =>
+      ValueNotifier(MockBox<bool>());
+
+  @override
+  int getRating(String sourceId) => 0;
+
+  @override
+  bool get isInitialized => true;
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+class MockBox<T> extends ChangeNotifier implements Box<T> {
+  @override
+  T? get(dynamic key, {T? defaultValue}) => null;
+  @override
+  bool get isOpen => true;
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
 void main() {
   testWidgets(
       'TvDualPaneLayout debouncing fails to prevent double playback if playback starts early',
@@ -183,6 +219,8 @@ void main() {
     final mockSettingsProvider = MockSettingsProvider();
     final mockShowListProvider = MockShowListProvider();
     final mockDeviceService = MockDeviceService();
+
+    CatalogService.setMock(MockCatalogService());
 
     await tester.pumpWidget(
       MultiProvider(

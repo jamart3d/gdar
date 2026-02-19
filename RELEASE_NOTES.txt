@@ -1,3 +1,8 @@
+Release 1.0.97:
+- UI (Show List): Implemented M3 expressive `FastScrollbar` with year-chip overlay and spring-loaded thumb.
+- Stability: Added comprehensive widget tests for `FastScrollbar` and resolved timer lifecycle leaks.
+- Verification: Verified 100% test pass rate across 160+ unit and widget tests.
+
 Release 1.0.96:
 - Stability: Hardened `AudioCacheService` to prevent race conditions during cache directory iteration (fixes `PathNotFoundException`).
 - Stability: Resolved `ProviderNotFoundException` in playback message tests by properly mocking `DeviceService`.

@@ -181,7 +181,13 @@ class RandomShowSelector {
     Show? selectedShow;
 
     for (final show in playCandidates) {
-      currentWeight += weights[show]!;
+      final w = weights[show];
+      if (w == null) {
+        logger.e(
+            'BUG: Show in playCandidates but missing in weights! Show: ${show.date} ${show.venue}');
+        continue;
+      }
+      currentWeight += w;
       if (randomWeight < currentWeight) {
         selectedShow = show;
         break;

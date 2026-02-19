@@ -15,10 +15,22 @@ import 'package:provider/provider.dart';
 import 'package:shakedown/ui/widgets/rating_control.dart';
 import 'package:flutter/services.dart';
 import 'package:shakedown/services/catalog_service.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shakedown/services/device_service.dart';
 
+import 'package:flutter/foundation.dart';
+import 'package:hive/hive.dart';
+import 'package:shakedown/models/rating.dart';
+
 import 'playback_screen_test.mocks.dart';
+
+class MockDeviceService extends ChangeNotifier implements DeviceService {
+  @override
+  bool get isTv => false;
+  @override
+  String? get deviceName => 'Mock Device';
+  @override
+  Future<void> refresh() async {}
+}
 
 class MockSettingsProvider extends Mock implements SettingsProvider {
   @override
@@ -124,13 +136,34 @@ class MockSettingsProvider extends Mock implements SettingsProvider {
   bool get isTv => false;
 }
 
-class MockDeviceService extends ChangeNotifier implements DeviceService {
+class MockCatalogService extends Mock implements CatalogService {
   @override
-  bool get isTv => false;
+  bool get isInitialized => true;
+
   @override
-  String? get deviceName => 'Mock Device';
+  ValueListenable<Box<Rating>> get ratingsListenable =>
+      ValueNotifier(MockBox<Rating>());
+
   @override
-  Future<void> refresh() async {}
+  ValueListenable<Box<bool>> get historyListenable =>
+      ValueNotifier(MockBox<bool>());
+
+  @override
+  bool isPlayed(String sourceId) => false;
+
+  @override
+  Future<void> togglePlayed(String sourceId) async {}
+
+  @override
+  int getRating(String sourceId) => 0;
+
+  @override
+  Future<void> setRating(String sourceId, int rating) async {}
+}
+
+class MockBox<T> extends Mock implements Box<T> {
+  ValueListenable<Box<T>> listenable({List<dynamic>? keys}) =>
+      ValueNotifier(this);
 }
 
 @GenerateMocks([AudioProvider, AudioPlayer])
@@ -169,9 +202,7 @@ void main() {
       return '.';
     });
 
-    SharedPreferences.setMockInitialValues({});
-    final prefs = await SharedPreferences.getInstance();
-    await CatalogService().initialize(prefs: prefs);
+    CatalogService.setMock(MockCatalogService());
 
     mockAudioProvider = MockAudioProvider();
     mockSettingsProvider = MockSettingsProvider();

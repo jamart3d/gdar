@@ -133,8 +133,9 @@ class AudioCacheService with ChangeNotifier {
         // Directory might have been deleted during iteration (happens in tests)
         logger
             .d('refreshCacheCount: Directory disappeared during iteration: $e');
-        if (await dir.exists())
+        if (await dir.exists()) {
           rethrow; // If it still exists, something else is wrong
+        }
       }
 
       _updateCount(count);

@@ -7,6 +7,7 @@ import 'package:shakedown/providers/audio_provider.dart';
 import 'package:shakedown/providers/settings_provider.dart';
 import 'package:shakedown/providers/show_list_provider.dart';
 import 'package:shakedown/services/device_service.dart';
+import 'package:shakedown/ui/widgets/show_list/fast_scrollbar.dart';
 import 'package:shakedown/ui/widgets/show_list/show_list_item.dart';
 import 'package:shakedown/ui/widgets/tv/tv_scrollbar.dart';
 
@@ -65,7 +66,10 @@ class ShowListBody extends StatelessWidget {
     final list = ScrollablePositionedList.builder(
       itemScrollController: itemScrollController,
       itemPositionsListener: itemPositionsListener,
-      padding: EdgeInsets.only(bottom: isTv ? 40 : 160),
+      padding: EdgeInsets.only(
+        bottom: isTv ? 40 : 160,
+        right: isTv ? 0 : 28, // reserve space for fast scrollbar thumb
+      ),
       itemCount: showListProvider.filteredShows.length,
       itemBuilder: (context, index) {
         final show = showListProvider.filteredShows[index];
@@ -103,7 +107,6 @@ class ShowListBody extends StatelessWidget {
               if (positions.isEmpty) return;
 
               final visibleIndices = positions.map((p) => p.index).toSet();
-              int targetIndex = -1;
 
               // 1. Prioritize currently expanded show IF it is visible
               if (showListProvider.expandedShowKey != null) {
@@ -121,6 +124,7 @@ class ShowListBody extends StatelessWidget {
                 ..sort((a, b) => a.index.compareTo(b.index));
 
               double bestDistance = 999.0;
+              int targetIndex = -1;
               for (var pos in sorted) {
                 final itemCenter =
                     (pos.itemLeadingEdge + pos.itemTrailingEdge) / 2;
@@ -132,7 +136,6 @@ class ShowListBody extends StatelessWidget {
               }
 
               if (targetIndex != -1) {
-                // Select (Expand) the show if nothing is expanded or expanded is off-screen
                 final show = showListProvider.filteredShows[targetIndex];
                 if (showListProvider.expandedShowKey !=
                     showListProvider.getShowKey(show)) {
@@ -143,7 +146,6 @@ class ShowListBody extends StatelessWidget {
               }
             },
             onRight: () {
-              // Move focus to the right pane (track list)
               FocusScope.of(context).focusInDirection(TraversalDirection.right);
             },
           ),
@@ -151,6 +153,30 @@ class ShowListBody extends StatelessWidget {
       );
     }
 
-    return list;
+    // Phone: measure mini player height accurately from its layout constants
+    // rather than hardcoding, so it works across all device safe area sizes.
+    final bottomSafeArea = MediaQuery.of(context).padding.bottom;
+
+    // MiniPlayer content breakdown at scaleFactor=1.0:
+    //   progress bar:    4px
+    //   top padding:    20px
+    //   title:          19px * 2.2 lineHeight ≈ 42px
+    //   bottom padding: 20px
+    //   ─────────────────────
+    //   content total:  86px  + device bottom safe area
+    final miniPlayerHeight =
+        audioProvider.currentTrack != null ? 86.0 + bottomSafeArea : 0.0;
+
+    return Stack(
+      children: [
+        list,
+        FastScrollbar(
+          shows: showListProvider.filteredShows,
+          itemScrollController: itemScrollController,
+          itemPositionsListener: itemPositionsListener,
+          bottomPadding: miniPlayerHeight,
+        ),
+      ],
+    );
   }
 }
