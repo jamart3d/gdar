@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flame/game.dart';
 import 'package:shakedown/steal_screensaver/steal_config.dart';
 import 'package:shakedown/steal_screensaver/steal_game.dart';
+import 'package:shakedown/visualizer/easter_egg_detector.dart';
 import 'package:shakedown/visualizer/audio_reactor.dart';
 import 'package:shakedown/services/device_service.dart';
 import 'package:provider/provider.dart';
-import 'package:shakedown/providers/settings_provider.dart';
 
 class StealVisualizer extends StatefulWidget {
   final StealConfig config;
@@ -25,6 +25,7 @@ class StealVisualizer extends StatefulWidget {
 
 class _StealVisualizerState extends State<StealVisualizer> {
   late StealGame _game;
+  late EasterEggDetector _easterEggDetector;
 
   @override
   void initState() {
@@ -33,21 +34,27 @@ class _StealVisualizerState extends State<StealVisualizer> {
       config: widget.config,
       audioReactor: widget.audioReactor,
       deviceService: Provider.of<DeviceService>(context, listen: false),
-      onPaletteCycleRequested: _handlePaletteCycle,
     );
+
+    _easterEggDetector = EasterEggDetector(
+      onEasterEggTriggered: (egg) {
+        if (egg == EasterEgg.woodstockMode) {
+          _game.triggerWoodstockMode();
+        }
+      },
+    );
+
+    // Check immediately on launch — if it's already 4:20 when screensaver opens
+    if (EasterEggDetector.isWoodstockTime()) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _game.triggerWoodstockMode();
+      });
+    }
+
     // Push initial banner text — didUpdateWidget won't fire on first build
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _game.updateBannerText(widget.config.bannerText);
     });
-  }
-
-  void _handlePaletteCycle() {
-    final settings = context.read<SettingsProvider>();
-    final palettes = StealConfig.palettes.keys.toList();
-    final currentIndex = palettes.indexOf(settings.oilPalette);
-    final nextIndex = (currentIndex + 1) % palettes.length;
-    final nextPalette = palettes[nextIndex];
-    settings.setOilPalette(nextPalette);
   }
 
   @override
@@ -58,6 +65,12 @@ class _StealVisualizerState extends State<StealVisualizer> {
     if (widget.audioReactor != oldWidget.audioReactor) {
       _game.updateAudioReactor(widget.audioReactor);
     }
+  }
+
+  @override
+  void dispose() {
+    _easterEggDetector.dispose();
+    super.dispose();
   }
 
   @override

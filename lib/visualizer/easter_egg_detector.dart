@@ -8,7 +8,7 @@ enum EasterEgg {
 /// Helper class to detect easter egg triggers in the screensaver.
 ///
 /// Currently supports:
-/// - Woodstock Mode: Automatic trigger at 4:20 PM.
+/// - Woodstock Mode: Automatic trigger at 4:20 PM local time.
 class EasterEggDetector {
   final Function(EasterEgg) onEasterEggTriggered;
   Timer? _timer;
@@ -31,9 +31,9 @@ class EasterEggDetector {
     _timer?.cancel();
   }
 
-  /// Checks if the current time is exactly 4:20 PM.
+  /// Returns true if the current local time is 4:20 PM.
   static bool isWoodstockTime() {
     final now = DateTime.now();
-    return now.hour == 16 && now.minute == 20; // 4:20 PM
+    return now.hour == 16 && now.minute == 20;
   }
 }

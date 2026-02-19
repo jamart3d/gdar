@@ -1,3 +1,10 @@
+Release 1.0.90:
+- Feature: Woodstock Mode — A special 4:20 PM easter egg with a gold and green psychedelic theme.
+- UI (Screensaver): The text banner now orbits the logo in a meditative Lissajous path.
+- UI (Screensaver): Implemented automated, meditative palette cycling logic in the core visualizer.
+- UI (TV): Added a setting to toggle Source Category Details for a cleaner Collection Statistics view.
+- Maintenance: Removed all references to outdated `oilFilmGrain` setting and optimized shader performance.
+
 Release 1.0.88:
 - UI (TV): Improved `TvStepperRow` with repeat-key support, allowing for rapid adjustment when holding down D-pad Left/Right.
 - UI (TV): Refactored `StealBanner` for more efficient and robust rendering of circular show/track metadata.

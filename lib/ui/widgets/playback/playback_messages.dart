@@ -119,6 +119,8 @@ class _PlaybackMessagesState extends State<PlaybackMessages> {
               color: statusColor ?? colorScheme.onSurfaceVariant,
               fontWeight: FontWeight.bold,
               fontSize: labelsFontSize,
+              fontFamily: null,
+              fontFamilyFallback: null,
             ),
           ),
           if (widget.showDivider) ...[
@@ -128,6 +130,8 @@ class _PlaybackMessagesState extends State<PlaybackMessages> {
               style: TextStyle(
                 color: colorScheme.onSurfaceVariant,
                 fontSize: labelsFontSize,
+                fontFamily: null,
+                fontFamilyFallback: null,
               ),
             ),
             const SizedBox(width: 8),
@@ -142,6 +146,8 @@ class _PlaybackMessagesState extends State<PlaybackMessages> {
                 style: TextStyle(
                   color: colorScheme.onSurfaceVariant,
                   fontSize: labelsFontSize,
+                  fontFamily: null,
+                  fontFamilyFallback: null,
                 ),
               );
             },

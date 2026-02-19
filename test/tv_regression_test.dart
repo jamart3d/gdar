@@ -253,8 +253,6 @@ class FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
   @override
   String get oilPalette => 'psychedelic';
   @override
-  double get oilFilmGrain => 0.5;
-  @override
   double get oilHeatDrift => 0.5;
   @override
   bool get oilEnableAudioReactivity => true;
@@ -363,8 +361,6 @@ class FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
   Future<void> setOilPulseIntensity(double value) async {}
   @override
   Future<void> setOilPalette(String palette) async {}
-  @override
-  Future<void> setOilFilmGrain(double value) async {}
   @override
   Future<void> setOilHeatDrift(double value) async {}
   @override

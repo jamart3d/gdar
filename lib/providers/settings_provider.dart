@@ -54,7 +54,6 @@ class SettingsProvider with ChangeNotifier {
   static const String _oilFlowSpeedKey = 'oil_flow_speed';
   static const String _oilPulseIntensityKey = 'oil_pulse_intensity';
   static const String _oilPaletteKey = 'oil_palette';
-  static const String _oilFilmGrainKey = 'oil_film_grain';
   static const String _oilHeatDriftKey = 'oil_heat_drift';
   static const String _oilEnableAudioReactivityKey =
       'oil_enable_audio_reactivity';
@@ -132,7 +131,6 @@ class SettingsProvider with ChangeNotifier {
   late double _oilFlowSpeed;
   late double _oilPulseIntensity;
   late String _oilPalette;
-  late double _oilFilmGrain;
   late double _oilHeatDrift;
   late bool _oilEnableAudioReactivity;
   late bool _preventSleep;
@@ -194,7 +192,6 @@ class SettingsProvider with ChangeNotifier {
   double get oilFlowSpeed => _oilFlowSpeed;
   double get oilPulseIntensity => _oilPulseIntensity;
   String get oilPalette => _oilPalette;
-  double get oilFilmGrain => _oilFilmGrain;
   double get oilHeatDrift => _oilHeatDrift;
   bool get oilEnableAudioReactivity => _oilEnableAudioReactivity;
   bool get oilPerformanceMode => _oilPerformanceMode;
@@ -412,8 +409,6 @@ class SettingsProvider with ChangeNotifier {
         DefaultSettings.oilPulseIntensity;
     _oilPalette =
         _prefs.getString(_oilPaletteKey) ?? DefaultSettings.oilPalette;
-    _oilFilmGrain =
-        _prefs.getDouble(_oilFilmGrainKey) ?? DefaultSettings.oilFilmGrain;
     _oilHeatDrift =
         _prefs.getDouble(_oilHeatDriftKey) ?? DefaultSettings.oilHeatDrift;
     _oilEnableAudioReactivity = _prefs.getBool(_oilEnableAudioReactivityKey) ??
@@ -582,8 +577,6 @@ class SettingsProvider with ChangeNotifier {
       _oilPulseIntensityKey, _oilPulseIntensity = value);
   Future<void> setOilPalette(String palette) =>
       _updateStringPreference(_oilPaletteKey, _oilPalette = palette);
-  Future<void> setOilFilmGrain(double value) =>
-      _updateDoublePreference(_oilFilmGrainKey, _oilFilmGrain = value);
   Future<void> setOilHeatDrift(double value) =>
       _updateDoublePreference(_oilHeatDriftKey, _oilHeatDrift = value);
   void toggleOilEnableAudioReactivity() => _updatePreference(

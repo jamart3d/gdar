@@ -13,12 +13,6 @@ import 'package:shakedown/ui/screens/screensaver_screen.dart';
 class TvScreensaverSection extends StatelessWidget {
   const TvScreensaverSection({super.key});
 
-  int _paletteIndex(String palette) {
-    final keys = StealConfig.palettes.keys.toList();
-    final i = keys.indexOf(palette);
-    return i < 0 ? 0 : i;
-  }
-
   @override
   Widget build(BuildContext context) {
     final settings = context.watch<SettingsProvider>();
@@ -132,19 +126,10 @@ class TvScreensaverSection extends StatelessWidget {
         _SectionHeader(title: 'Visual', colorScheme: colorScheme),
         const SizedBox(height: 8),
 
-        // Palette — stepper navigates through palette names
-        TvStepperRow(
-          label: 'Color Palette',
-          value: _paletteIndex(settings.oilPalette).toDouble(),
-          min: 0,
-          max: (StealConfig.palettes.length - 1).toDouble(),
-          step: 1,
-          leftLabel: '◀  prev',
-          rightLabel: 'next  ▶',
-          valueFormatter: (v) => StealConfig.palettes.keys.elementAt(v.round()),
-          onChanged: (v) => settings.setOilPalette(
-            StealConfig.palettes.keys.elementAt(v.round()),
-          ),
+        // Palette — one focusable button per palette, showing color dots
+        _PaletteSelector(
+          selectedPalette: settings.oilPalette,
+          onChanged: (key) => settings.setOilPalette(key),
         ),
 
         const SizedBox(height: 16),
@@ -185,19 +170,6 @@ class TvScreensaverSection extends StatelessWidget {
           leftLabel: 'Subtle',
           rightLabel: 'Strong',
           onChanged: (v) => settings.setOilPulseIntensity(v),
-        ),
-
-        const SizedBox(height: 16),
-
-        TvStepperRow(
-          label: 'Film Grain',
-          value: settings.oilFilmGrain,
-          min: 0.0,
-          max: 1.0,
-          step: 0.05,
-          leftLabel: 'None',
-          rightLabel: 'Heavy',
-          onChanged: (v) => settings.setOilFilmGrain(v),
         ),
 
         const SizedBox(height: 16),
@@ -316,6 +288,153 @@ class TvScreensaverSection extends StatelessWidget {
       ],
     );
   }
+}
+
+// ── Palette Selector ───────────────────────────────────────────────────────
+
+class _PaletteSelector extends StatelessWidget {
+  const _PaletteSelector({
+    required this.selectedPalette,
+    required this.onChanged,
+  });
+
+  final String selectedPalette;
+  final ValueChanged<String> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+    final keys = StealConfig.palettes.keys.toList();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Color Palette',
+          style: textTheme.bodySmall?.copyWith(color: scheme.onSurfaceVariant),
+        ),
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 10,
+          runSpacing: 10,
+          children: keys.map((key) {
+            final colors = StealConfig.palettes[key]!;
+            final isSelected = key == selectedPalette;
+            return _PaletteButton(
+              paletteKey: key,
+              colors: colors,
+              isSelected: isSelected,
+              onTap: () => onChanged(key),
+            );
+          }).toList(),
+        ),
+      ],
+    );
+  }
+}
+
+class _PaletteButton extends StatelessWidget {
+  const _PaletteButton({
+    required this.paletteKey,
+    required this.colors,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  final String paletteKey;
+  final List<Color> colors;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final bg =
+        isSelected ? scheme.primaryContainer : scheme.surfaceContainerHighest;
+
+    return TvFocusWrapper(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        curve: Curves.easeInOut,
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        decoration: BoxDecoration(
+          color: bg,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isSelected ? scheme.primary : Colors.transparent,
+            width: 2,
+          ),
+        ),
+        child: _PaletteDot(colors: colors),
+      ),
+    );
+  }
+}
+
+/// Single dot per palette.
+/// - 1 color  → solid circle with matching glow
+/// - 2+ colors → sweep gradient circle (no glow, colors speak for themselves)
+class _PaletteDot extends StatelessWidget {
+  const _PaletteDot({required this.colors});
+
+  final List<Color> colors;
+
+  static const double _size = 18;
+
+  @override
+  Widget build(BuildContext context) {
+    if (colors.length == 1) {
+      final c = colors.first;
+      return Container(
+        width: _size,
+        height: _size,
+        decoration: BoxDecoration(
+          color: c,
+          shape: BoxShape.circle,
+          border: c == const Color(0xFFFFFFFF)
+              ? Border.all(color: Colors.white24, width: 1)
+              : null,
+          boxShadow: [
+            BoxShadow(
+              color: c.withValues(alpha: 0.7),
+              blurRadius: 6,
+              spreadRadius: 1,
+            ),
+          ],
+        ),
+      );
+    }
+
+    // Gradient dot for animated palettes (cmyk, rgb)
+    return CustomPaint(
+      size: const Size(_size, _size),
+      painter: _GradientDotPainter(colors: colors),
+    );
+  }
+}
+
+class _GradientDotPainter extends CustomPainter {
+  const _GradientDotPainter({required this.colors});
+
+  final List<Color> colors;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final rect = Offset.zero & size;
+    final paint = Paint()
+      ..shader = SweepGradient(
+        colors: [...colors, colors.first], // wrap back to start for smooth loop
+        tileMode: TileMode.clamp,
+      ).createShader(rect);
+
+    canvas.drawCircle(rect.center, size.width / 2, paint);
+  }
+
+  @override
+  bool shouldRepaint(_GradientDotPainter old) => old.colors != colors;
 }
 
 // ── Helper Widgets ─────────────────────────────────────────────────────────

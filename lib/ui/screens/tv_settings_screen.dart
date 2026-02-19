@@ -38,7 +38,7 @@ class _TvSettingsScreenState extends State<TvSettingsScreen> {
     Icons.play_circle_outline_rounded,
     Icons.palette_outlined,
     Icons.view_quilt_outlined,
-    Icons.auto_awesome_rounded, // Screensaver
+    Icons.auto_awesome_rounded,
     Icons.bar_chart_rounded,
     Icons.filter_list_rounded,
     Icons.star_rounded,
@@ -91,6 +91,7 @@ class _TvSettingsScreenState extends State<TvSettingsScreen> {
       case 4:
         activeSection = CollectionStatistics(
           initiallyExpanded: initiallyExpanded,
+          showCategoryDetails: false,
         );
         break;
       case 5:

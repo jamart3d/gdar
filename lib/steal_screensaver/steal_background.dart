@@ -16,7 +16,10 @@ class StealBackground extends PositionComponent
   // _currentColors lerps toward _targetColors each frame
   List<Color> _currentColors = [];
   List<Color> _targetColors = [];
-  static const double _colorLerpSpeed = 0.025; // ~1s transition at 60fps
+
+  // Per-frame lerp factor — overridden by cycle system for speed-aware fades.
+  // Default 0.025 ≈ ~1.5s to 90% at 60fps (used for manual palette changes).
+  double _colorLerpSpeed = 0.025;
 
   StealBackground({required this.config});
 
@@ -53,11 +56,34 @@ class StealBackground extends PositionComponent
     this.size = size;
   }
 
+  /// Directly override the target colors with an arbitrary list and lerp speed.
+  /// Used by easter egg modes that need colors outside the normal palette map.
+  /// Call again with the normal palette colors to restore.
+  void overrideTargetColors(List<Color> colors, double lerpSpeed) {
+    _colorLerpSpeed = lerpSpeed;
+    _targetColors = List.of(colors);
+    if (_currentColors.isEmpty) {
+      _currentColors = List.of(colors);
+    }
+  }
+
+  /// Standard config update — uses default lerp speed.
+  /// Called for manual palette changes (e.g. user picks in settings).
   void updateConfig(StealConfig newConfig) {
+    _applyConfig(newConfig, lerpSpeed: 0.025);
+  }
+
+  /// Config update driven by the cycle system — lerp speed calculated from
+  /// oilPaletteTransitionSpeed so the crossfade duration matches user intent.
+  void updateConfigWithLerpSpeed(StealConfig newConfig, double lerpSpeed) {
+    _applyConfig(newConfig, lerpSpeed: lerpSpeed);
+  }
+
+  void _applyConfig(StealConfig newConfig, {required double lerpSpeed}) {
     final oldPalette = config.palette;
     config = newConfig;
+    _colorLerpSpeed = lerpSpeed;
 
-    // Only update target colors when palette actually changes
     if (newConfig.palette != oldPalette || _targetColors.isEmpty) {
       _targetColors = _getPaletteColors(newConfig.palette);
       // If currentColors not yet initialised, snap immediately
@@ -113,7 +139,7 @@ class StealBackground extends PositionComponent
     _shader!.setFloat(idx++, time);
 
     _shader!.setFloat(idx++, config.flowSpeed.clamp(0.0, 5.0));
-    _shader!.setFloat(idx++, config.filmGrain.clamp(0.0, 1.0));
+    _shader!.setFloat(idx++, 0.0); // filmGrain removed — hardcoded off
     _shader!.setFloat(idx++, config.pulseIntensity.clamp(0.0, 5.0));
     _shader!.setFloat(idx++, config.heatDrift.clamp(0.0, 5.0));
     _shader!.setFloat(idx++, config.logoScale.clamp(0.05, 1.0));
@@ -138,7 +164,7 @@ class StealBackground extends PositionComponent
   }
 
   List<Color> _getPaletteColors(String name) {
-    return StealConfig.palettes[name] ?? StealConfig.palettes['psychedelic']!;
+    return StealConfig.palettes[name] ?? StealConfig.palettes.values.first;
   }
 
   void _renderFallback(ui.Canvas canvas) {

@@ -283,11 +283,6 @@ class FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
   Future<void> setOilPalette(String palette) async {}
 
   @override
-  double get oilFilmGrain => 0.5;
-  @override
-  Future<void> setOilFilmGrain(double value) async {}
-
-  @override
   double get oilHeatDrift => 0.5;
   @override
   Future<void> setOilHeatDrift(double value) async {}

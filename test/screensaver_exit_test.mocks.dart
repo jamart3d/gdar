@@ -357,13 +357,6 @@ class MockSettingsProvider extends _i1.Mock implements _i3.SettingsProvider {
       ) as String);
 
   @override
-  double get oilFilmGrain => (super.noSuchMethod(
-        Invocation.getter(#oilFilmGrain),
-        returnValue: 0.0,
-        returnValueForMissingStub: 0.0,
-      ) as double);
-
-  @override
   double get oilHeatDrift => (super.noSuchMethod(
         Invocation.getter(#oilHeatDrift),
         returnValue: 0.0,
@@ -425,6 +418,13 @@ class MockSettingsProvider extends _i1.Mock implements _i3.SettingsProvider {
         returnValue: false,
         returnValueForMissingStub: false,
       ) as bool);
+
+  @override
+  double get oilLogoScale => (super.noSuchMethod(
+        Invocation.getter(#oilLogoScale),
+        returnValue: 0.0,
+        returnValueForMissingStub: 0.0,
+      ) as double);
 
   @override
   bool get randomOnlyUnplayed => (super.noSuchMethod(
@@ -869,16 +869,6 @@ class MockSettingsProvider extends _i1.Mock implements _i3.SettingsProvider {
       ) as _i5.Future<void>);
 
   @override
-  _i5.Future<void> setOilFilmGrain(double? value) => (super.noSuchMethod(
-        Invocation.method(
-          #setOilFilmGrain,
-          [value],
-        ),
-        returnValue: _i5.Future<void>.value(),
-        returnValueForMissingStub: _i5.Future<void>.value(),
-      ) as _i5.Future<void>);
-
-  @override
   _i5.Future<void> setOilHeatDrift(double? value) => (super.noSuchMethod(
         Invocation.method(
           #setOilHeatDrift,
@@ -963,6 +953,16 @@ class MockSettingsProvider extends _i1.Mock implements _i3.SettingsProvider {
         ),
         returnValueForMissingStub: null,
       );
+
+  @override
+  _i5.Future<void> setOilLogoScale(double? value) => (super.noSuchMethod(
+        Invocation.method(
+          #setOilLogoScale,
+          [value],
+        ),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
 
   @override
   void toggleFilterHighestShnid() => super.noSuchMethod(

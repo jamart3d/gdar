@@ -168,7 +168,6 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
     final config = StealConfig(
       flowSpeed: settings.oilFlowSpeed,
       palette: settings.oilPalette,
-      filmGrain: settings.oilFilmGrain,
       pulseIntensity: settings.oilPulseIntensity,
       heatDrift: settings.oilHeatDrift,
       enableAudioReactivity: settings.oilEnableAudioReactivity,
@@ -177,6 +176,8 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
       logoScale: settings.oilLogoScale,
       showInfoBanner: settings.oilShowInfoBanner,
       bannerText: _composeBannerText(settings, audioProvider),
+      paletteCycle: settings.oilPaletteCycle,
+      paletteTransitionSpeed: settings.oilPaletteTransitionSpeed,
     );
 
     return PopScope(

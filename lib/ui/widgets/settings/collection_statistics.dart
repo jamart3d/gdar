@@ -9,9 +9,15 @@ import 'package:provider/provider.dart';
 class CollectionStatistics extends StatelessWidget {
   final bool initiallyExpanded;
 
+  /// When false the Source Categories Details expansion tile is hidden.
+  /// Set to false on TV where D-pad navigation makes nested expand/collapse
+  /// awkward and the category breakdown is not needed.
+  final bool showCategoryDetails;
+
   const CollectionStatistics({
     super.key,
     this.initiallyExpanded = false,
+    this.showCategoryDetails = true,
   });
 
   @override
@@ -126,7 +132,6 @@ class CollectionStatistics extends StatelessWidget {
     final duration = Duration(seconds: totalDurationSeconds);
     final days = duration.inDays;
     final hours = duration.inHours % 24;
-    // final minutes = duration.inMinutes % 60;
 
     return SectionCard(
       scaleFactor: scaleFactor,
@@ -200,189 +205,191 @@ class CollectionStatistics extends StatelessWidget {
             ),
           ),
         ),
-        ExpansionTile(
-          dense: true,
-          visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
-          title: Text(
-            'Source Categories Details',
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontSize: 14 * scaleFactor,
-                  fontWeight: FontWeight.w500,
+        if (showCategoryDetails)
+          ExpansionTile(
+            dense: true,
+            visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
+            title: Text(
+              'Source Categories Details',
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontSize: 14 * scaleFactor,
+                    fontWeight: FontWeight.w500,
+                  ),
+            ),
+            leading: Icon(Icons.list_alt, size: 20 * scaleFactor),
+            shape: const Border(),
+            children: [
+              if (catBettySources > 0)
+                ListTile(
+                    dense: true,
+                    visualDensity:
+                        const VisualDensity(horizontal: 0, vertical: -4),
+                    title: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerLeft,
+                      child: Text('Betty Boards',
+                          style: Theme.of(context)
+                              .textTheme
+                              .bodyMedium
+                              ?.copyWith(fontSize: 10 * scaleFactor)),
+                    ),
+                    trailing: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerRight,
+                      child: Text(
+                          '${catBettyShows.length} Shows / $catBettySources Sources',
+                          style: Theme.of(context)
+                              .textTheme
+                              .bodySmall
+                              ?.copyWith(fontSize: 8.5 * scaleFactor)),
+                    )),
+              if (catUltraSources > 0)
+                ListTile(
+                    dense: true,
+                    visualDensity:
+                        const VisualDensity(horizontal: 0, vertical: -4),
+                    title: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerLeft,
+                      child: Text('Ultra Matrix',
+                          style: Theme.of(context)
+                              .textTheme
+                              .bodyMedium
+                              ?.copyWith(fontSize: 10 * scaleFactor)),
+                    ),
+                    trailing: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerRight,
+                      child: Text(
+                          '${catUltraShows.length} Shows / $catUltraSources Sources',
+                          style: Theme.of(context)
+                              .textTheme
+                              .bodySmall
+                              ?.copyWith(fontSize: 8.5 * scaleFactor)),
+                    )),
+              if (catMatrixSources > 0)
+                ListTile(
+                    dense: true,
+                    visualDensity:
+                        const VisualDensity(horizontal: 0, vertical: -4),
+                    title: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerLeft,
+                      child: Text('Matrix',
+                          style: Theme.of(context)
+                              .textTheme
+                              .bodyMedium
+                              ?.copyWith(fontSize: 10 * scaleFactor)),
+                    ),
+                    trailing: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerRight,
+                      child: Text(
+                          '${catMatrixShows.length} Shows / $catMatrixSources Sources',
+                          style: Theme.of(context)
+                              .textTheme
+                              .bodySmall
+                              ?.copyWith(fontSize: 8.5 * scaleFactor)),
+                    )),
+              if (catDsbdSources > 0)
+                ListTile(
+                    dense: true,
+                    visualDensity:
+                        const VisualDensity(horizontal: 0, vertical: -4),
+                    title: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerLeft,
+                      child: Text('Digital SBD',
+                          style: Theme.of(context)
+                              .textTheme
+                              .bodyMedium
+                              ?.copyWith(fontSize: 10 * scaleFactor)),
+                    ),
+                    trailing: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerRight,
+                      child: Text(
+                          '${catDsbdShows.length} Shows / $catDsbdSources Sources',
+                          style: Theme.of(context)
+                              .textTheme
+                              .bodySmall
+                              ?.copyWith(fontSize: 8.5 * scaleFactor)),
+                    )),
+              if (catFmSources > 0)
+                ListTile(
+                    dense: true,
+                    visualDensity:
+                        const VisualDensity(horizontal: 0, vertical: -4),
+                    title: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerLeft,
+                      child: Text('FM Broadcast',
+                          style: Theme.of(context)
+                              .textTheme
+                              .bodyMedium
+                              ?.copyWith(fontSize: 10 * scaleFactor)),
+                    ),
+                    trailing: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerRight,
+                      child: Text(
+                          '${catFmShows.length} Shows / $catFmSources Sources',
+                          style: Theme.of(context)
+                              .textTheme
+                              .bodySmall
+                              ?.copyWith(fontSize: 8.5 * scaleFactor)),
+                    )),
+              if (catSbdSources > 0)
+                ListTile(
+                    dense: true,
+                    visualDensity:
+                        const VisualDensity(horizontal: 0, vertical: -4),
+                    title: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerLeft,
+                      child: Text('Soundboard',
+                          style: Theme.of(context)
+                              .textTheme
+                              .bodyMedium
+                              ?.copyWith(fontSize: 10 * scaleFactor)),
+                    ),
+                    trailing: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerRight,
+                      child: Text(
+                          '${catSbdShows.length} Shows / $catSbdSources Sources',
+                          style: Theme.of(context)
+                              .textTheme
+                              .bodySmall
+                              ?.copyWith(fontSize: 8.5 * scaleFactor)),
+                    )),
+              if (catUnkSources > 0)
+                ListTile(
+                  dense: true,
+                  visualDensity:
+                      const VisualDensity(horizontal: 0, vertical: -4),
+                  title: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerLeft,
+                    child: Text('Unknown Shows',
+                        style: Theme.of(context)
+                            .textTheme
+                            .bodyMedium
+                            ?.copyWith(fontSize: 10 * scaleFactor)),
+                  ),
+                  trailing: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerRight,
+                    child: Text(
+                        '${catUnkShows.length} Shows / $catUnkSources Sources',
+                        style: Theme.of(context)
+                            .textTheme
+                            .bodySmall
+                            ?.copyWith(fontSize: 8.5 * scaleFactor)),
+                  ),
                 ),
+            ],
           ),
-          leading: Icon(Icons.list_alt, size: 20 * scaleFactor),
-          shape: const Border(),
-          children: [
-            if (catBettySources > 0)
-              ListTile(
-                  dense: true,
-                  visualDensity:
-                      const VisualDensity(horizontal: 0, vertical: -4),
-                  title: FittedBox(
-                    fit: BoxFit.scaleDown,
-                    alignment: Alignment.centerLeft,
-                    child: Text('Betty Boards',
-                        style: Theme.of(context)
-                            .textTheme
-                            .bodyMedium
-                            ?.copyWith(fontSize: 10 * scaleFactor)),
-                  ),
-                  trailing: FittedBox(
-                    fit: BoxFit.scaleDown,
-                    alignment: Alignment.centerRight,
-                    child: Text(
-                        '${catBettyShows.length} Shows / $catBettySources Sources',
-                        style: Theme.of(context)
-                            .textTheme
-                            .bodySmall
-                            ?.copyWith(fontSize: 8.5 * scaleFactor)),
-                  )),
-            if (catUltraSources > 0)
-              ListTile(
-                  dense: true,
-                  visualDensity:
-                      const VisualDensity(horizontal: 0, vertical: -4),
-                  title: FittedBox(
-                    fit: BoxFit.scaleDown,
-                    alignment: Alignment.centerLeft,
-                    child: Text('Ultra Matrix',
-                        style: Theme.of(context)
-                            .textTheme
-                            .bodyMedium
-                            ?.copyWith(fontSize: 10 * scaleFactor)),
-                  ),
-                  trailing: FittedBox(
-                    fit: BoxFit.scaleDown,
-                    alignment: Alignment.centerRight,
-                    child: Text(
-                        '${catUltraShows.length} Shows / $catUltraSources Sources',
-                        style: Theme.of(context)
-                            .textTheme
-                            .bodySmall
-                            ?.copyWith(fontSize: 8.5 * scaleFactor)),
-                  )),
-            if (catMatrixSources > 0)
-              ListTile(
-                  dense: true,
-                  visualDensity:
-                      const VisualDensity(horizontal: 0, vertical: -4),
-                  title: FittedBox(
-                    fit: BoxFit.scaleDown,
-                    alignment: Alignment.centerLeft,
-                    child: Text('Matrix',
-                        style: Theme.of(context)
-                            .textTheme
-                            .bodyMedium
-                            ?.copyWith(fontSize: 10 * scaleFactor)),
-                  ),
-                  trailing: FittedBox(
-                    fit: BoxFit.scaleDown,
-                    alignment: Alignment.centerRight,
-                    child: Text(
-                        '${catMatrixShows.length} Shows / $catMatrixSources Sources',
-                        style: Theme.of(context)
-                            .textTheme
-                            .bodySmall
-                            ?.copyWith(fontSize: 8.5 * scaleFactor)),
-                  )),
-            if (catDsbdSources > 0)
-              ListTile(
-                  dense: true,
-                  visualDensity:
-                      const VisualDensity(horizontal: 0, vertical: -4),
-                  title: FittedBox(
-                    fit: BoxFit.scaleDown,
-                    alignment: Alignment.centerLeft,
-                    child: Text('Digital SBD',
-                        style: Theme.of(context)
-                            .textTheme
-                            .bodyMedium
-                            ?.copyWith(fontSize: 10 * scaleFactor)),
-                  ),
-                  trailing: FittedBox(
-                    fit: BoxFit.scaleDown,
-                    alignment: Alignment.centerRight,
-                    child: Text(
-                        '${catDsbdShows.length} Shows / $catDsbdSources Sources',
-                        style: Theme.of(context)
-                            .textTheme
-                            .bodySmall
-                            ?.copyWith(fontSize: 8.5 * scaleFactor)),
-                  )),
-            if (catFmSources > 0)
-              ListTile(
-                  dense: true,
-                  visualDensity:
-                      const VisualDensity(horizontal: 0, vertical: -4),
-                  title: FittedBox(
-                    fit: BoxFit.scaleDown,
-                    alignment: Alignment.centerLeft,
-                    child: Text('FM Broadcast',
-                        style: Theme.of(context)
-                            .textTheme
-                            .bodyMedium
-                            ?.copyWith(fontSize: 10 * scaleFactor)),
-                  ),
-                  trailing: FittedBox(
-                    fit: BoxFit.scaleDown,
-                    alignment: Alignment.centerRight,
-                    child: Text(
-                        '${catFmShows.length} Shows / $catFmSources Sources',
-                        style: Theme.of(context)
-                            .textTheme
-                            .bodySmall
-                            ?.copyWith(fontSize: 8.5 * scaleFactor)),
-                  )),
-            if (catSbdSources > 0)
-              ListTile(
-                  dense: true,
-                  visualDensity:
-                      const VisualDensity(horizontal: 0, vertical: -4),
-                  title: FittedBox(
-                    fit: BoxFit.scaleDown,
-                    alignment: Alignment.centerLeft,
-                    child: Text('Soundboard',
-                        style: Theme.of(context)
-                            .textTheme
-                            .bodyMedium
-                            ?.copyWith(fontSize: 10 * scaleFactor)),
-                  ),
-                  trailing: FittedBox(
-                    fit: BoxFit.scaleDown,
-                    alignment: Alignment.centerRight,
-                    child: Text(
-                        '${catSbdShows.length} Shows / $catSbdSources Sources',
-                        style: Theme.of(context)
-                            .textTheme
-                            .bodySmall
-                            ?.copyWith(fontSize: 8.5 * scaleFactor)),
-                  )),
-            if (catUnkSources > 0)
-              ListTile(
-                dense: true,
-                visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
-                title: FittedBox(
-                  fit: BoxFit.scaleDown,
-                  alignment: Alignment.centerLeft,
-                  child: Text('Unknown Shows',
-                      style: Theme.of(context)
-                          .textTheme
-                          .bodyMedium
-                          ?.copyWith(fontSize: 10 * scaleFactor)),
-                ),
-                trailing: FittedBox(
-                  fit: BoxFit.scaleDown,
-                  alignment: Alignment.centerRight,
-                  child: Text(
-                      '${catUnkShows.length} Shows / $catUnkSources Sources',
-                      style: Theme.of(context)
-                          .textTheme
-                          .bodySmall
-                          ?.copyWith(fontSize: 8.5 * scaleFactor)),
-                ),
-              ),
-          ],
-        ),
       ],
     );
   }

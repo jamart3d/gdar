@@ -2,27 +2,27 @@ import 'dart:math';
 import 'dart:ui' as ui;
 import 'package:flame/components.dart';
 import 'package:flutter/material.dart';
+import 'package:shakedown/steal_screensaver/steal_game.dart';
 
-/// Renders a circular rotating text banner around the Steal Your Face logo.
+/// Renders a circular rotating text banner that orbits the Steal Your Face logo.
 ///
-/// Text is drawn character-by-character around a circle whose center is the
-/// screen centre. The banner fades in when visible and fades out when hidden.
+/// The circle center tracks the same Lissajous path as the shader logo so the
+/// text wraps tightly around it as it drifts around the screen.
 ///
 /// Call [updateBanner] whenever track/show metadata or visibility changes.
-class StealBanner extends Component {
+class StealBanner extends Component with HasGameReference<StealGame> {
   // ── Tuning constants ───────────────────────────────────────────────────────
-  static const double _rotationSpeed = 0.05; // radians per second
-  static const double _radiusRatio = 0.42; // fraction of min screen dimension
-  static const double _fontSize = 17.0;
+  static const double _rotationSpeed = 0.04; // rad/sec — slow, meditative
+  static const double _radiusRatio = 0.13; // tight wrap around logo
+  static const double _fontSize = 11.0; // smaller text
   static const double _fadeSpeed = 0.6; // opacity units per second
-  static const int _minArcChars =
-      28; // min arc spread (prevents clumping on short text)
-  static const double _letterSpacingBoost =
-      1.4; // spread chars slightly wider than natural
+  static const int _minArcChars = 28; // floor to prevent clumping
+  static const double _letterSpacingBoost = 1.4;
 
   // ── State ──────────────────────────────────────────────────────────────────
   String _text = '';
   Color _color = Colors.white;
+  Color _currentColor = Colors.white; // lerps toward _color each frame
   bool _visible = false;
 
   double _rotationAngle = 0.0;
@@ -30,15 +30,13 @@ class StealBanner extends Component {
 
   // ── Public API ─────────────────────────────────────────────────────────────
 
-  /// Update text and color. Visibility is derived from [showBanner] and
-  /// whether [text] is non-empty — no need for a separate visible flag.
-  ///
-  /// [text]       — composed show/track string e.g. "12/31/78 • Winterland • Dark Star"
-  /// [color]      — first color of the current palette
-  /// [showBanner] — maps to the user's Show Track Info toggle
   void updateBanner(String text, Color color, {bool showBanner = true}) {
     _text = text;
     _color = color;
+    // Snap on first assignment so there's no lerp-from-white on init
+    if (_currentColor == Colors.white && _opacity == 0.0) {
+      _currentColor = color;
+    }
     _visible = showBanner && text.isNotEmpty;
   }
 
@@ -46,6 +44,9 @@ class StealBanner extends Component {
 
   @override
   void update(double dt) {
+    // Lerp color toward target — matches StealBackground crossfade feel
+    _currentColor = Color.lerp(_currentColor, _color, 0.025)!;
+
     if (_visible) {
       _rotationAngle += _rotationSpeed * dt;
       if (_rotationAngle > 2 * pi) _rotationAngle -= 2 * pi;
@@ -59,14 +60,21 @@ class StealBanner extends Component {
   void render(Canvas canvas) {
     if (_opacity <= 0.01 || _text.isEmpty) return;
 
-    // Use the game's viewport size via the canvas transform.
-    // We pull size from the parent FlameGame via findGame().
-    final game = findGame();
-    if (game == null) return;
-
     final w = game.size.x;
     final h = game.size.y;
-    final center = Offset(w / 2, h / 2);
+    if (w < 2 || h < 2) return;
+
+    // ── Mirror the shader's logo Lissajous path ────────────────────────────
+    // shader: pos = vec2(
+    //   0.5 + 0.25*sin(t*1.3) + 0.1*sin(t*2.9),
+    //   0.5 + 0.25*cos(t*1.7) + 0.1*cos(t*3.1)
+    // )
+    // where t = time * flowSpeed * 0.5
+    final t = game.time * game.config.flowSpeed.clamp(0.0, 2.0) * 0.5;
+    final px = 0.5 + 0.25 * sin(t * 1.3) + 0.1 * sin(t * 2.9);
+    final py = 0.5 + 0.25 * cos(t * 1.7) + 0.1 * cos(t * 3.1);
+
+    final center = Offset(px * w, py * h);
     final radius = min(w, h) * _radiusRatio;
 
     _drawCircularText(canvas, _text, center, radius);
@@ -83,12 +91,8 @@ class StealBanner extends Component {
     final chars = text.characters.toList();
     if (chars.isEmpty) return;
 
-    // Spread characters evenly. Use _minArcChars as floor so short strings
-    // don't clump at the top.
     final arcCount = max(chars.length, _minArcChars);
     final anglePerSlot = (2 * pi) / arcCount;
-
-    // Start at top of circle (−π/2) offset by current rotation
     final startAngle = _rotationAngle - pi / 2;
 
     for (int i = 0; i < chars.length; i++) {
@@ -99,21 +103,20 @@ class StealBanner extends Component {
 
       canvas.save();
       canvas.translate(x, y);
-      // Rotate so the character baseline is tangent to the circle
       canvas.rotate(charAngle + pi / 2);
 
       final painter = TextPainter(
         text: TextSpan(
           text: chars[i],
           style: TextStyle(
-            color: _color.withValues(alpha: _opacity * 0.9),
+            color: _currentColor.withValues(alpha: _opacity * 0.9),
             fontSize: _fontSize,
             fontWeight: FontWeight.w600,
             letterSpacing: 0,
             shadows: [
               Shadow(
-                color: Colors.black.withValues(alpha: _opacity * 0.6),
-                blurRadius: 4,
+                color: Colors.black.withValues(alpha: _opacity * 0.7),
+                blurRadius: 3,
                 offset: const Offset(1, 1),
               ),
             ],

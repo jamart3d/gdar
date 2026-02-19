@@ -44,7 +44,7 @@ void main() {
     when(mockSettingsProvider.oilEnableAudioReactivity).thenReturn(true);
     when(mockSettingsProvider.oilFlowSpeed).thenReturn(0.5);
     when(mockSettingsProvider.oilPalette).thenReturn('acid_green');
-    when(mockSettingsProvider.oilFilmGrain).thenReturn(0.15);
+
     when(mockSettingsProvider.oilPulseIntensity).thenReturn(0.8);
     when(mockSettingsProvider.oilHeatDrift).thenReturn(0.3);
     when(mockSettingsProvider.oilScreensaverMode).thenReturn('standard');

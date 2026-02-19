@@ -69,7 +69,6 @@ class DefaultSettings {
   static const double oilFlowSpeed = 0.5;
   static const double oilPulseIntensity = 0.8;
   static const String oilPalette = 'acid_green';
-  static const double oilFilmGrain = 0.15;
   static const double oilHeatDrift = 0.3;
   static const bool oilEnableAudioReactivity = true;
   static const bool oilPerformanceMode = false;
