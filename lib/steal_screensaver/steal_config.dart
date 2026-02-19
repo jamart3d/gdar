@@ -7,6 +7,7 @@ class StealConfig {
   final double filmGrain;
   final double pulseIntensity;
   final double heatDrift;
+  final double logoScale;
   final bool enableAudioReactivity;
   final bool performanceMode;
   final bool showInfoBanner;
@@ -57,6 +58,7 @@ class StealConfig {
     this.filmGrain = 0.1,
     this.pulseIntensity = 0.5,
     this.heatDrift = 0.2,
+    this.logoScale = 1.0,
     this.enableAudioReactivity = true,
     this.performanceMode = false,
     this.showInfoBanner = true,
@@ -70,6 +72,7 @@ class StealConfig {
       filmGrain: (map['filmGrain'] as num?)?.toDouble() ?? 0.1,
       pulseIntensity: (map['pulseIntensity'] as num?)?.toDouble() ?? 0.5,
       heatDrift: (map['heatDrift'] as num?)?.toDouble() ?? 0.2,
+      logoScale: (map['logoScale'] as num?)?.toDouble() ?? 1.0,
       enableAudioReactivity: map['enableAudioReactivity'] as bool? ?? true,
       performanceMode: map['performanceMode'] as bool? ?? false,
       showInfoBanner: map['showInfoBanner'] as bool? ?? true,
@@ -84,6 +87,7 @@ class StealConfig {
       'filmGrain': filmGrain,
       'pulseIntensity': pulseIntensity,
       'heatDrift': heatDrift,
+      'logoScale': logoScale,
       'enableAudioReactivity': enableAudioReactivity,
       'performanceMode': performanceMode,
       'showInfoBanner': showInfoBanner,
@@ -97,6 +101,7 @@ class StealConfig {
     double? filmGrain,
     double? pulseIntensity,
     double? heatDrift,
+    double? logoScale,
     bool? enableAudioReactivity,
     bool? performanceMode,
     bool? showInfoBanner,
@@ -108,6 +113,7 @@ class StealConfig {
       filmGrain: filmGrain ?? this.filmGrain,
       pulseIntensity: pulseIntensity ?? this.pulseIntensity,
       heatDrift: heatDrift ?? this.heatDrift,
+      logoScale: logoScale ?? this.logoScale,
       enableAudioReactivity:
           enableAudioReactivity ?? this.enableAudioReactivity,
       performanceMode: performanceMode ?? this.performanceMode,

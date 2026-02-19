@@ -66,7 +66,6 @@ class DefaultSettings {
   static const String oilScreensaverMode = 'standard'; // 'standard' or 'kiosk'
   static const int oilScreensaverInactivityMinutes = 5;
 
-  // Steal Visualizer Parameters
   static const double oilFlowSpeed = 0.5;
   static const double oilPulseIntensity = 0.8;
   static const String oilPalette = 'acid_green';
@@ -80,4 +79,5 @@ class DefaultSettings {
   static const double oilAudioBassBoost = 2.0;
   static const double oilAudioPeakDecay = 0.95;
   static const bool oilShowInfoBanner = true;
+  static const double oilLogoScale = 1.0;
 }

@@ -159,6 +159,10 @@ class FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
   @override
   bool get uiScale => false;
   @override
+  double get oilLogoScale => 1.0;
+  @override
+  Future<void> setOilLogoScale(double value) async {}
+  @override
   String get appFont => 'default';
   @override
   bool get highlightCurrentShowCard => false;

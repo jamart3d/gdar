@@ -3,15 +3,21 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:shakedown/providers/settings_provider.dart';
 import 'package:shakedown/steal_screensaver/steal_config.dart';
-import 'package:shakedown/ui/widgets/tv/tv_list_tile.dart';
-import 'package:shakedown/ui/screens/screensaver_screen.dart';
 import 'package:shakedown/ui/widgets/tv/tv_focus_wrapper.dart';
 import 'package:shakedown/ui/widgets/tv/tv_stepper_row.dart';
+import 'package:shakedown/ui/widgets/tv/tv_list_tile.dart';
+import 'package:shakedown/ui/screens/screensaver_screen.dart';
 
 /// Screensaver settings section for the Google TV settings screen.
-/// Covers both visual settings and audio reactivity tuning.
+/// Covers system controls, visual settings, audio reactivity, and performance.
 class TvScreensaverSection extends StatelessWidget {
   const TvScreensaverSection({super.key});
+
+  int _paletteIndex(String palette) {
+    final keys = StealConfig.palettes.keys.toList();
+    final i = keys.indexOf(palette);
+    return i < 0 ? 0 : i;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -22,7 +28,7 @@ class TvScreensaverSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // ── System Settings ────────────────────────────────────────────
+        // ── System ─────────────────────────────────────────────────────
         _SectionHeader(title: 'System', colorScheme: colorScheme),
         const SizedBox(height: 8),
 
@@ -34,6 +40,7 @@ class TvScreensaverSection extends StatelessWidget {
           colorScheme: colorScheme,
           textTheme: textTheme,
         ),
+
         const SizedBox(height: 16),
 
         _ToggleRow(
@@ -44,11 +51,11 @@ class TvScreensaverSection extends StatelessWidget {
           colorScheme: colorScheme,
           textTheme: textTheme,
         ),
-        const SizedBox(height: 16),
 
         if (settings.useOilScreensaver) ...[
+          const SizedBox(height: 16),
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
+            padding: const EdgeInsets.symmetric(horizontal: 4),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -66,19 +73,16 @@ class TvScreensaverSection extends StatelessWidget {
                       if (event.logicalKey == LogicalKeyboardKey.arrowLeft) {
                         if (current == 15) {
                           newVal = 5;
-                        } else if (current == 5) {
-                          newVal = 1;
-                        }
+                          // ignore: curly_braces_in_flow_control_structures
+                        } else if (current == 5) newVal = 1;
                       } else if (event.logicalKey ==
                           LogicalKeyboardKey.arrowRight) {
                         if (current == 1) {
                           newVal = 5;
-                        } else if (current == 5) {
-                          newVal = 15;
-                        }
+                          // ignore: curly_braces_in_flow_control_structures
+                        } else if (current == 5) newVal = 15;
                       }
                       if (newVal != null && newVal != current) {
-                        HapticFeedback.selectionClick();
                         settings.setOilScreensaverInactivityMinutes(newVal);
                         return KeyEventResult.handled;
                       }
@@ -93,7 +97,6 @@ class TvScreensaverSection extends StatelessWidget {
                     ],
                     selected: {settings.oilScreensaverInactivityMinutes},
                     onSelectionChanged: (Set<int> newSelection) {
-                      HapticFeedback.lightImpact();
                       settings.setOilScreensaverInactivityMinutes(
                           newSelection.first);
                     },
@@ -103,8 +106,9 @@ class TvScreensaverSection extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(height: 16),
         ],
+
+        const SizedBox(height: 16),
 
         TvListTile(
           dense: true,
@@ -128,53 +132,37 @@ class TvScreensaverSection extends StatelessWidget {
         _SectionHeader(title: 'Visual', colorScheme: colorScheme),
         const SizedBox(height: 8),
 
-        // Palette
-        _LabelRow(
+        // Palette — stepper navigates through palette names
+        TvStepperRow(
           label: 'Color Palette',
-          value: settings.oilPalette,
-          colorScheme: colorScheme,
-          textTheme: textTheme,
-        ),
-        const SizedBox(height: 8),
-        FocusTraversalGroup(
-          policy: WidgetOrderTraversalPolicy(),
-          child: Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: StealConfig.palettes.keys.map((palette) {
-              final isSelected = settings.oilPalette == palette;
-              return TvFocusWrapper(
-                autofocus: isSelected,
-                onTap: () => settings.setOilPalette(palette),
-                borderRadius: BorderRadius.circular(8),
-                child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                  decoration: BoxDecoration(
-                    color: isSelected
-                        ? colorScheme.primaryContainer
-                        : colorScheme.surfaceContainerHighest,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Text(
-                    palette,
-                    style: TextStyle(
-                      color: isSelected
-                          ? colorScheme.onPrimaryContainer
-                          : colorScheme.onSurfaceVariant,
-                      fontWeight:
-                          isSelected ? FontWeight.bold : FontWeight.normal,
-                    ),
-                  ),
-                ),
-              );
-            }).toList(),
+          value: _paletteIndex(settings.oilPalette).toDouble(),
+          min: 0,
+          max: (StealConfig.palettes.length - 1).toDouble(),
+          step: 1,
+          leftLabel: '◀  prev',
+          rightLabel: 'next  ▶',
+          valueFormatter: (v) => StealConfig.palettes.keys.elementAt(v.round()),
+          onChanged: (v) => settings.setOilPalette(
+            StealConfig.palettes.keys.elementAt(v.round()),
           ),
         ),
 
-        const SizedBox(height: 24),
+        const SizedBox(height: 16),
 
-        // Flow Speed
+        TvStepperRow(
+          label: 'Logo Scale',
+          value: settings.oilLogoScale,
+          min: 0.1,
+          max: 1.0,
+          step: 0.05,
+          leftLabel: 'Small',
+          rightLabel: 'Full',
+          valueFormatter: (v) => '${(v * 100).round()}%',
+          onChanged: (v) => settings.setOilLogoScale(v),
+        ),
+
+        const SizedBox(height: 16),
+
         TvStepperRow(
           label: 'Flow Speed',
           value: settings.oilFlowSpeed,
@@ -188,7 +176,6 @@ class TvScreensaverSection extends StatelessWidget {
 
         const SizedBox(height: 16),
 
-        // Pulse Intensity
         TvStepperRow(
           label: 'Pulse Intensity',
           value: settings.oilPulseIntensity,
@@ -202,7 +189,6 @@ class TvScreensaverSection extends StatelessWidget {
 
         const SizedBox(height: 16),
 
-        // Film Grain
         TvStepperRow(
           label: 'Film Grain',
           value: settings.oilFilmGrain,
@@ -216,7 +202,6 @@ class TvScreensaverSection extends StatelessWidget {
 
         const SizedBox(height: 16),
 
-        // Heat Drift
         TvStepperRow(
           label: 'Heat Drift',
           value: settings.oilHeatDrift,
@@ -230,7 +215,17 @@ class TvScreensaverSection extends StatelessWidget {
 
         const SizedBox(height: 24),
 
-        // Show Track Info banner toggle
+        _ToggleRow(
+          label: 'Auto Palette Cycle',
+          subtitle: 'Automatically rotate through palettes over time',
+          value: settings.oilPaletteCycle,
+          onChanged: (_) => settings.toggleOilPaletteCycle(),
+          colorScheme: colorScheme,
+          textTheme: textTheme,
+        ),
+
+        const SizedBox(height: 16),
+
         _ToggleRow(
           label: 'Show Track Info',
           subtitle: 'Display track title, venue and date as circular text',
@@ -257,8 +252,6 @@ class TvScreensaverSection extends StatelessWidget {
 
         if (settings.oilEnableAudioReactivity) ...[
           const SizedBox(height: 24),
-
-          // Reactivity Strength
           TvStepperRow(
             label: 'Reactivity Strength',
             value: settings.oilAudioReactivityStrength,
@@ -269,10 +262,7 @@ class TvScreensaverSection extends StatelessWidget {
             rightLabel: 'Wild',
             onChanged: (v) => settings.setOilAudioReactivityStrength(v),
           ),
-
           const SizedBox(height: 16),
-
-          // Bass Boost
           TvStepperRow(
             label: 'Bass Boost',
             value: settings.oilAudioBassBoost,
@@ -283,10 +273,7 @@ class TvScreensaverSection extends StatelessWidget {
             rightLabel: 'Punchy',
             onChanged: (v) => settings.setOilAudioBassBoost(v),
           ),
-
           const SizedBox(height: 16),
-
-          // Peak Decay
           TvStepperRow(
             label: 'Peak Decay',
             value: settings.oilAudioPeakDecay,
@@ -298,7 +285,6 @@ class TvScreensaverSection extends StatelessWidget {
             valueFormatter: (v) => v.toStringAsFixed(3),
             onChanged: (v) => settings.setOilAudioPeakDecay(v),
           ),
-
           const SizedBox(height: 8),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 4),
@@ -357,34 +343,6 @@ class _SectionHeader extends StatelessWidget {
         const SizedBox(height: 4),
         Divider(color: colorScheme.outlineVariant, height: 1),
         const SizedBox(height: 12),
-      ],
-    );
-  }
-}
-
-class _LabelRow extends StatelessWidget {
-  final String label;
-  final String value;
-  final ColorScheme colorScheme;
-  final TextTheme textTheme;
-
-  const _LabelRow({
-    required this.label,
-    required this.value,
-    required this.colorScheme,
-    required this.textTheme,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(label,
-            style: textTheme.bodyLarge?.copyWith(color: colorScheme.onSurface)),
-        Text(value,
-            style: textTheme.bodyMedium
-                ?.copyWith(color: colorScheme.onSurfaceVariant)),
       ],
     );
   }

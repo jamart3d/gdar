@@ -47,6 +47,9 @@ class StealGame extends FlameGame {
     // Banner renders above the shader layer
     _banner = StealBanner();
     add(_banner!);
+
+    // Initialize banner with current config
+    _applyBannerConfig(config);
   }
 
   void _subscribeToReactor(AudioReactor? reactor) {
@@ -92,15 +95,20 @@ class StealGame extends FlameGame {
   void updateConfig(StealConfig newConfig) {
     config = newConfig;
     _background?.updateConfig(newConfig);
+    _applyBannerConfig(newConfig);
+  }
 
-    // Update banner palette color from first color of current palette
-    if (_banner != null) {
-      final paletteColors = StealConfig.palettes[newConfig.palette] ??
-          StealConfig.palettes['psychedelic']!;
-      final paletteColor =
-          paletteColors.isNotEmpty ? paletteColors.first : Colors.white;
-      _banner!.updateBanner(_banner!.currentText, paletteColor);
-    }
+  void _applyBannerConfig(StealConfig cfg) {
+    if (_banner == null) return;
+    final paletteColors = StealConfig.palettes[cfg.palette] ??
+        StealConfig.palettes['psychedelic']!;
+    final paletteColor =
+        paletteColors.isNotEmpty ? paletteColors.first : Colors.white;
+    _banner!.updateBanner(
+      cfg.bannerText,
+      paletteColor,
+      showBanner: cfg.showInfoBanner,
+    );
   }
 
   @override

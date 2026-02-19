@@ -88,6 +88,11 @@ class FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
   set showExpandIcon(bool value) {}
 
   @override
+  double get oilLogoScale => 1.0;
+  @override
+  Future<void> setOilLogoScale(double value) async {}
+
+  @override
   bool get showDayOfWeek => true;
   @override
   bool get abbreviateDayOfWeek => true;

@@ -3,7 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:shakedown/ui/widgets/tv/tv_focus_wrapper.dart';
 
 /// A TV-optimized stepper row for adjusting numeric values.
-/// Captures DPAD Left/Right keys to increment/decrement the value.
+/// Captures D-pad Left/Right keys to decrement/increment the value.
+/// Supports held-down keys via [KeyRepeatEvent] for continuous adjustment.
 class TvStepperRow extends StatelessWidget {
   final String label;
   final double value;
@@ -35,20 +36,14 @@ class TvStepperRow extends StatelessWidget {
 
     return TvFocusWrapper(
       onKeyEvent: (node, event) {
-        if (event is KeyDownEvent) {
+        if (event is KeyDownEvent || event is KeyRepeatEvent) {
           if (event.logicalKey == LogicalKeyboardKey.arrowLeft) {
             final newValue = (value - step).clamp(min, max);
-            if (newValue != value) {
-              HapticFeedback.selectionClick();
-              onChanged(newValue);
-            }
+            if (newValue != value) onChanged(newValue);
             return KeyEventResult.handled;
           } else if (event.logicalKey == LogicalKeyboardKey.arrowRight) {
             final newValue = (value + step).clamp(min, max);
-            if (newValue != value) {
-              HapticFeedback.selectionClick();
-              onChanged(newValue);
-            }
+            if (newValue != value) onChanged(newValue);
             return KeyEventResult.handled;
           }
         }

@@ -1,3 +1,15 @@
+Release 1.0.88:
+- UI (TV): Improved `TvStepperRow` with repeat-key support, allowing for rapid adjustment when holding down D-pad Left/Right.
+- UI (TV): Refactored `StealBanner` for more efficient and robust rendering of circular show/track metadata.
+- UI (TV): Fixed tracked metadata visibility in the screensaver banner to correctly respect the "Show Track Info" setting.
+
+Release 1.0.87:
+- UI (TV): Implemented smooth, buttery palette transitions in the Shakedown Screensaver using color interpolation.
+- UI (TV): Added "Logo Scale" control to Screensaver settings for fine-tuning the visual impact.
+- UI (TV): Standardized Screensaver settings pane with consistent `TvStepperRow` controls.
+- Stability: Fixed a critical GLSL shader compilation error in `steal.frag` (stray brace).
+- Stability: Fixed mock providers in unit tests to match latest SettingsProvider interface.
+
 Release 1.0.86:
 - UI (TV): Enabled the expressive "flying" Hero animation for the "Shakedown" title during app initialization.
 - UI (TV): Reorganized Screensaver settings, centralizing "Prevent Sleep" and "Inactivity Timeout" for better ergonomics.

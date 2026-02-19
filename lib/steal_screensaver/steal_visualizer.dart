@@ -35,6 +35,10 @@ class _StealVisualizerState extends State<StealVisualizer> {
       deviceService: Provider.of<DeviceService>(context, listen: false),
       onPaletteCycleRequested: _handlePaletteCycle,
     );
+    // Push initial banner text — didUpdateWidget won't fire on first build
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _game.updateBannerText(widget.config.bannerText);
+    });
   }
 
   void _handlePaletteCycle() {

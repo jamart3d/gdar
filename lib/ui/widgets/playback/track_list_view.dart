@@ -96,7 +96,7 @@ class TrackListView extends StatelessWidget {
             audioProvider,
             item,
             trackIndex,
-            index, // Pass list index
+            index,
             isTrueBlackMode,
             firstTrackListIndex,
             lastTrackListIndex,
@@ -138,7 +138,6 @@ class TrackListView extends StatelessWidget {
       stream: audioProvider.currentIndexStream,
       initialData: audioProvider.audioPlayer.currentIndex,
       builder: (context, snapshot) {
-        // Use currentTrack equality for robust highlighting (handles seamless playback)
         final currentTrack = audioProvider.currentTrack;
         final isPlaying = currentTrack != null &&
             currentTrack.title == track.title &&
@@ -190,14 +189,8 @@ class TrackListView extends StatelessWidget {
                           : colorScheme.primaryContainer,
                       borderRadius: BorderRadius.circular(8),
                       clipBehavior: Clip.antiAlias,
-                      child: _buildTrackListTile(
-                          context,
-                          audioProvider,
-                          track,
-                          trackIndex,
-                          isPlaying,
-                          scaleFactor,
-                          false), // Pass false or handle differently if needed
+                      child: _buildTrackListTile(context, audioProvider, track,
+                          trackIndex, isPlaying, scaleFactor, false),
                     ),
                   ),
                 )
@@ -209,14 +202,8 @@ class TrackListView extends StatelessWidget {
         );
 
         if (isTv) {
-          Widget content = _buildTrackListTile(
-              context,
-              audioProvider,
-              track,
-              trackIndex,
-              isPlaying,
-              scaleFactor,
-              true); // Pass focused state if needed, or just rely on wrapper
+          Widget content = _buildTrackListTile(context, audioProvider, track,
+              trackIndex, isPlaying, scaleFactor, true);
 
           if (isPlaying && settingsProvider.highlightPlayingWithRgb) {
             content = AnimatedGradientBorder(
@@ -248,10 +235,10 @@ class TrackListView extends StatelessWidget {
 
           trackItem = TvFocusWrapper(
             focusNode: trackFocusNodes?[listIndex],
-            scaleOnFocus: 1.0, // Disable scaling as requested
-            focusBackgroundColor: Colors.transparent, // Disable background fill
-            focusColor: colorScheme.primary, // Show focus border
-            borderRadius: BorderRadius.circular(8), // Tighter radius
+            scaleOnFocus: 1.0,
+            focusBackgroundColor: Colors.transparent,
+            focusColor: colorScheme.primary,
+            borderRadius: BorderRadius.circular(8),
             onFocusChange: (focused) {
               if (focused) onTrackFocused?.call(listIndex);
             },
@@ -263,22 +250,18 @@ class TrackListView extends StatelessWidget {
                 if (event is KeyDownEvent) onFocusRight?.call();
                 return KeyEventResult.handled;
               } else if (event.logicalKey == LogicalKeyboardKey.arrowDown) {
-                // Wrap-around logic: If last track item, go to first track item
                 if (trackIndex == source.tracks.length - 1) {
                   if (event is KeyDownEvent) {
                     onWrapAround?.call(firstTrackListIndex);
                   }
-                  return KeyEventResult
-                      .handled; // Consume repeats to prevent bubbling/jumps
+                  return KeyEventResult.handled;
                 }
               } else if (event.logicalKey == LogicalKeyboardKey.arrowUp) {
-                // Wrap-around logic: If first track item, go to last track item
                 if (trackIndex == 0) {
                   if (event is KeyDownEvent) {
                     onWrapAround?.call(lastTrackListIndex);
                   }
-                  return KeyEventResult
-                      .handled; // Consume repeats to prevent bubbling/jumps
+                  return KeyEventResult.handled;
                 }
               }
               return KeyEventResult.ignored;
@@ -286,8 +269,6 @@ class TrackListView extends StatelessWidget {
             onLongPress: () => _handleLongPress(context, audioProvider, track),
             onTap: () {
               if (isPlaying) {
-                // Toggle Play/Pause if this is the current track
-                // We need to check actual player state to toggle correctly
                 if (audioProvider.isPlaying) {
                   audioProvider.pause();
                 } else {
@@ -307,6 +288,20 @@ class TrackListView extends StatelessWidget {
     );
   }
 
+  // Duration text style — always uses default system font regardless of app font setting
+  TextStyle _durationTextStyle(
+      TextTheme textTheme, ColorScheme colorScheme, double scaleFactor) {
+    return (textTheme.bodyMedium ?? const TextStyle())
+        .apply(fontSizeFactor: scaleFactor)
+        .copyWith(
+      fontFamily: null, // clear inherited app font
+      package: null,
+      color: colorScheme.onSurfaceVariant,
+      fontWeight: FontWeight.w500,
+      fontFeatures: const [FontFeature.tabularFigures()],
+    ).merge(const TextStyle(fontFamily: 'Roboto'));
+  }
+
   Widget _buildTrackListTile(BuildContext context, AudioProvider audioProvider,
       Track track, int trackIndex, bool isPlaying, double scaleFactor,
       [bool isTvFocus = false]) {
@@ -317,21 +312,16 @@ class TrackListView extends StatelessWidget {
     final baseTitleStyle =
         textTheme.bodyLarge ?? const TextStyle(fontSize: 16.0);
 
-    // Simplified centralized font sizing
     final double titleFontSize = AppTypography.responsiveFontSize(
-        context,
-        context.read<DeviceService>().isTv
-            ? 14.0
-            : 16.0); // Smaller font for TV
+        context, context.read<DeviceService>().isTv ? 14.0 : 16.0);
 
     final titleStyle = baseTitleStyle.copyWith(
       fontSize: titleFontSize,
       fontWeight: isPlaying ? FontWeight.w600 : FontWeight.normal,
       color: isPlaying ? colorScheme.primary : colorScheme.onSurface,
-      height: 1.1, // Fix vertical jump when bolding
+      height: 1.1,
     );
 
-    // TV Playback Indicator Logic
     Widget? leadingWidget;
     final isTv = context.read<DeviceService>().isTv;
 
@@ -361,17 +351,19 @@ class TrackListView extends StatelessWidget {
       );
     }
 
+    final durationStyle =
+        _durationTextStyle(textTheme, colorScheme, scaleFactor);
+
     final Widget listTile = ListTile(
       leading: leadingWidget,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
       ),
       visualDensity: context.read<DeviceService>().isTv
-          ? VisualDensity.compact // Reduce height on TV
+          ? VisualDensity.compact
           : VisualDensity.standard,
       contentPadding: context.read<DeviceService>().isTv
-          ? const EdgeInsets.symmetric(
-              horizontal: 12, vertical: 0) // Tighter padding
+          ? const EdgeInsets.symmetric(horizontal: 12, vertical: 0)
           : const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
       title: SizedBox(
         height: titleStyle.fontSize! *
@@ -395,28 +387,16 @@ class TrackListView extends StatelessWidget {
                     final position = snapshot.data ?? Duration.zero;
                     return Text(
                       '${formatDuration(position)} / ${formatDuration(Duration(seconds: track.duration))}',
-                      style: textTheme.bodyMedium
-                          ?.apply(fontSizeFactor: scaleFactor)
-                          .copyWith(
-                        color: colorScheme.onSurfaceVariant,
-                        fontWeight: FontWeight.w500,
-                        fontFeatures: const [FontFeature.tabularFigures()],
-                      ),
+                      style: durationStyle,
                     );
                   },
                 )
               : Text(
                   formatDuration(Duration(seconds: track.duration)),
-                  style: textTheme.bodyMedium
-                      ?.apply(fontSizeFactor: scaleFactor)
-                      .copyWith(
-                    color: colorScheme.onSurfaceVariant,
-                    fontWeight: FontWeight.w500,
-                    fontFeatures: const [FontFeature.tabularFigures()],
-                  ),
+                  style: durationStyle,
                 )),
       onTap: isTv
-          ? null // TV: Let TvFocusWrapper handle the tap
+          ? null
           : () {
               if (!isPlaying) {
                 HapticFeedback.lightImpact();
@@ -498,8 +478,6 @@ class TrackListView extends StatelessWidget {
 
   void _handleLongPress(
       BuildContext context, AudioProvider audioProvider, Track track) {
-    // Only show recovery options if the player is in a loading or buffering state
-    // and the track being long-pressed is the one currently handled by the player.
     final playerState = audioProvider.audioPlayer.processingState;
     final isStuck = playerState == ProcessingState.loading ||
         playerState == ProcessingState.buffering;

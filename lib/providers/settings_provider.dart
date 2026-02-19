@@ -67,6 +67,7 @@ class SettingsProvider with ChangeNotifier {
   static const String _oilAudioBassBoostKey = 'oil_audio_bass_boost';
   static const String _oilAudioPeakDecayKey = 'oil_audio_peak_decay';
   static const String _oilShowInfoBannerKey = 'oil_show_info_banner';
+  static const String _oilLogoScaleKey = 'oil_logo_scale';
 
   static const String _marqueeEnabledKey =
       'marquee_enabled'; // Logic for disabling marquee in tests
@@ -142,6 +143,7 @@ class SettingsProvider with ChangeNotifier {
   late double _oilAudioBassBoost;
   late double _oilAudioPeakDecay;
   late bool _oilShowInfoBanner;
+  late double _oilLogoScale;
 
   Color? _seedColor;
 
@@ -202,6 +204,7 @@ class SettingsProvider with ChangeNotifier {
   double get oilAudioBassBoost => _oilAudioBassBoost;
   double get oilAudioPeakDecay => _oilAudioPeakDecay;
   bool get oilShowInfoBanner => _oilShowInfoBanner;
+  double get oilLogoScale => _oilLogoScale;
 
   Color? get seedColor => _seedColor;
 
@@ -431,6 +434,8 @@ class SettingsProvider with ChangeNotifier {
         DefaultSettings.oilAudioPeakDecay;
     _oilShowInfoBanner = _prefs.getBool(_oilShowInfoBannerKey) ??
         DefaultSettings.oilShowInfoBanner;
+    _oilLogoScale =
+        _prefs.getDouble(_oilLogoScaleKey) ?? DefaultSettings.oilLogoScale;
 
     if (isTv) {
       _oilScreensaverMode = 'steal';
@@ -599,6 +604,8 @@ class SettingsProvider with ChangeNotifier {
       _oilAudioPeakDecayKey, _oilAudioPeakDecay = value);
   void toggleOilShowInfoBanner() => _updatePreference(
       _oilShowInfoBannerKey, _oilShowInfoBanner = !_oilShowInfoBanner);
+  Future<void> setOilLogoScale(double value) =>
+      _updateDoublePreference(_oilLogoScaleKey, _oilLogoScale = value);
 
   // Source Filtering
   static const String _filterHighestShnidKey = 'filter_highest_shnid';

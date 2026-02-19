@@ -174,6 +174,7 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
       enableAudioReactivity: settings.oilEnableAudioReactivity,
       performanceMode: settings.oilPerformanceMode ||
           Provider.of<DeviceService>(context, listen: false).isTv,
+      logoScale: settings.oilLogoScale,
       showInfoBanner: settings.oilShowInfoBanner,
       bannerText: _composeBannerText(settings, audioProvider),
     );
