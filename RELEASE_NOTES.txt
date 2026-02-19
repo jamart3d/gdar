@@ -1,3 +1,8 @@
+Release 1.0.93:
+- UI (Playback): Refined header layout with Rating stars and Source badge stacked in a clean right-aligned column.
+- UI (Playback): Native `SrcBadge` styling matched to the show list "shnid" look for visual consistency.
+- UI (Screensaver): Precision dual-ring metadata display with clockwise/counter-clockwise motion.
+
 Release 1.0.92:
 - UI (Screensaver): Dual-ring metadata display. Outer ring (Venue/Date) and Inner ring (Track) now rotate in opposite directions with smooth fade-through transitions.
 - UI (Playback): Redesigned header with reactive Rating stars, stadium icons, and location details.

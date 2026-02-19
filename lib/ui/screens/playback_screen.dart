@@ -84,7 +84,6 @@ class PlaybackScreenState extends State<PlaybackScreen>
   final ValueNotifier<double> _panelPositionNotifier = ValueNotifier(0.0);
   StreamSubscription? _errorSubscription;
   String? _lastTrackTitle;
-  // Map of track index to FocusNode
   final Map<int, FocusNode> _trackFocusNodes = {};
 
   @override
@@ -103,7 +102,6 @@ class PlaybackScreenState extends State<PlaybackScreen>
       }
     });
 
-    // Listen for errors
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final audioProvider = context.read<AudioProvider>();
       _errorSubscription = audioProvider.playbackErrorStream.listen((error) {
@@ -154,7 +152,6 @@ class PlaybackScreenState extends State<PlaybackScreen>
     if (currentTrack == null && forceTargetIndex == null) return;
     if (currentSource == null) return;
 
-    // Build the list structure to find the index
     final Map<String, List<Track>> tracksBySet = {};
     for (var track in currentSource.tracks) {
       if (!tracksBySet.containsKey(track.setName)) {
@@ -183,11 +180,9 @@ class PlaybackScreenState extends State<PlaybackScreen>
     }
 
     if (targetIndex != -1) {
-      // 1. Handle Scrolling
       if (_itemScrollController.isAttached) {
         final positions = _itemPositionsListener.itemPositions.value;
 
-        // Smart check to prevent jank
         bool skipScroll = false;
         if (positions.isNotEmpty) {
           if (force) {
@@ -221,7 +216,6 @@ class PlaybackScreenState extends State<PlaybackScreen>
         }
       }
 
-      // 2. Handle Focus Sync (TV only)
       if (syncFocus && context.read<DeviceService>().isTv) {
         bool listHasFocus = false;
         for (var node in _trackFocusNodes.values) {
@@ -237,8 +231,6 @@ class PlaybackScreenState extends State<PlaybackScreen>
     }
   }
 
-  /// Explicitly focuses the current track info in the list.
-  /// Used by external controllers (like TvDualPaneLayout) to direct focus.
   void focusCurrentTrack() {
     if (!mounted) return;
     final audioProvider = context.read<AudioProvider>();
@@ -294,8 +286,8 @@ class PlaybackScreenState extends State<PlaybackScreen>
     }
     int count = 0;
     tracksBySet.forEach((key, value) {
-      count++; // Header
-      count += value.length; // Tracks
+      count++;
+      count += value.length;
     });
     return count;
   }
@@ -366,7 +358,7 @@ class PlaybackScreenState extends State<PlaybackScreen>
       bool found = false;
       tracksBySet.forEach((setName, tracks) {
         if (found) return;
-        listIdx++; // Header
+        listIdx++;
         for (var _ in tracks) {
           if (tIdx == trackIndex) {
             targetIndex = listIdx;
@@ -403,7 +395,6 @@ class PlaybackScreenState extends State<PlaybackScreen>
       );
     }
 
-    // Auto-scroll when track changes
     if (audioProvider.currentTrack?.title != _lastTrackTitle) {
       _lastTrackTitle = audioProvider.currentTrack?.title;
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -456,9 +447,9 @@ class PlaybackScreenState extends State<PlaybackScreen>
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    // Row 1: date (smaller) + rating stars flush right
+                    // Row 1: date (left) + right column: rating stars + src badge
                     Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
                           currentShow.formattedDate,
@@ -471,25 +462,43 @@ class PlaybackScreenState extends State<PlaybackScreen>
                           ),
                         ),
                         const Spacer(),
-                        // Rating stars — reactive to Hive changes
-                        ValueListenableBuilder<Box<Rating>>(
-                          valueListenable: CatalogService().ratingsListenable,
-                          builder: (context, _, __) {
-                            final r =
-                                CatalogService().getRating(currentSource.id);
-                            if (r > 0) {
-                              return _RatingStars(
-                                rating: r,
-                                color: colorScheme.primary,
-                              );
-                            }
-                            return const SizedBox.shrink();
-                          },
+                        // Stars + badge stacked, both 3pt from right edge
+                        Padding(
+                          padding: const EdgeInsets.only(right: 3),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              ValueListenableBuilder<Box<Rating>>(
+                                valueListenable:
+                                    CatalogService().ratingsListenable,
+                                builder: (context, _, __) {
+                                  final r = CatalogService()
+                                      .getRating(currentSource.id);
+                                  if (r > 0) {
+                                    return _RatingStars(
+                                      rating: r,
+                                      color: colorScheme.primary,
+                                    );
+                                  }
+                                  return const SizedBox.shrink();
+                                },
+                              ),
+                              if (currentSource.src != null) ...[
+                                const SizedBox(height: 4),
+                                SrcBadge(
+                                  src: currentSource.src!,
+                                  isPlaying: false,
+                                  matchShnidLook: true,
+                                ),
+                              ],
+                            ],
+                          ),
                         ),
                       ],
                     ),
                     const SizedBox(height: 12),
-                    // Row 2: venue + location + SBD badge
+                    // Row 2: venue + location only
                     Wrap(
                       spacing: 14,
                       runSpacing: 8,
@@ -536,8 +545,6 @@ class PlaybackScreenState extends State<PlaybackScreen>
                               ),
                             ],
                           ),
-                        if (currentSource.src != null)
-                          SrcBadge(src: currentSource.src!, isPlaying: false),
                       ],
                     ),
                   ],
@@ -595,7 +602,6 @@ class PlaybackScreenState extends State<PlaybackScreen>
 
         return Stack(
           children: [
-            // Layer 1: Track list scrolls under the status bar area
             TrackListView(
               source: currentSource,
               bottomPadding: dynamicBottomPadding,
@@ -604,7 +610,6 @@ class PlaybackScreenState extends State<PlaybackScreen>
               itemPositionsListener: _itemPositionsListener,
               audioProvider: audioProvider,
             ),
-            // Layer 2: Top barrier to hide tracks in the gap (fades out with App Bar)
             Positioned(
               top: 0,
               left: 0,
@@ -617,7 +622,6 @@ class PlaybackScreenState extends State<PlaybackScreen>
                 ),
               ),
             ),
-            // Layer 3: Adaptive App Bar positioned on top
             Positioned(
               top: MediaQuery.paddingOf(context).top + topGap,
               left: 0,
@@ -669,7 +673,6 @@ class PlaybackScreenState extends State<PlaybackScreen>
           _panelPositionNotifier.value = position;
         },
         onPanelOpened: () {
-          // Panel covers significant portion, ensure track is in top 40%
           _scrollToCurrentTrack(true, maxVisibleY: 0.4);
         },
         panel: PlaybackPanel(
