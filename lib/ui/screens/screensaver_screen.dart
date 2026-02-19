@@ -119,34 +119,29 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
     }
   }
 
-  /// Compose banner text from current track + show metadata.
-  /// Format: "Track Title  •  Venue  •  Date"
-  /// Returns empty string if nothing is playing or banner is disabled.
+  /// Track title only — goes to the inner ring.
   String _composeBannerText(
       SettingsProvider settings, AudioProvider audioProvider) {
     if (!settings.oilShowInfoBanner) return '';
-
     final track = audioProvider.currentTrack;
+    if (track == null) return '';
+    final title = track.title;
+    if (title.isEmpty) return '';
+    return '$title     ';
+  }
+
+  /// Venue — goes to the outer ring.
+  String _composeVenue(SettingsProvider settings, AudioProvider audioProvider) {
+    if (!settings.oilShowInfoBanner) return '';
     final show = audioProvider.currentShow;
+    return show?.venue ?? '';
+  }
 
-    if (track == null && show == null) return '';
-
-    final parts = <String>[];
-    if (track?.title != null && track!.title.isNotEmpty) {
-      parts.add(track.title);
-    }
-    if (show?.venue != null && show!.venue.isNotEmpty) {
-      parts.add(show.venue);
-    }
-    if (show?.date != null && show!.date.isNotEmpty) {
-      parts.add(show.date);
-    }
-
-    if (parts.isEmpty) return '';
-
-    // Join with spaced bullet separator and add trailing spaces so the
-    // circular text wraps cleanly without the end crashing into the start.
-    return '${parts.join('  •  ')}     ';
+  /// Date — goes to the outer ring alongside venue.
+  String _composeDate(SettingsProvider settings, AudioProvider audioProvider) {
+    if (!settings.oilShowInfoBanner) return '';
+    final show = audioProvider.currentShow;
+    return show?.formattedDate ?? show?.date ?? '';
   }
 
   @override
@@ -176,6 +171,8 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
       logoScale: settings.oilLogoScale,
       showInfoBanner: settings.oilShowInfoBanner,
       bannerText: _composeBannerText(settings, audioProvider),
+      venue: _composeVenue(settings, audioProvider),
+      date: _composeDate(settings, audioProvider),
       paletteCycle: settings.oilPaletteCycle,
       paletteTransitionSpeed: settings.oilPaletteTransitionSpeed,
     );

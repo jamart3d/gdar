@@ -11,6 +11,8 @@ class StealConfig {
   final bool performanceMode;
   final bool showInfoBanner;
   final String bannerText;
+  final String venue;
+  final String date;
   final bool paletteCycle;
   final double paletteTransitionSpeed;
 
@@ -19,17 +21,16 @@ class StealConfig {
     'red': [Color(0xFFFF0000)],
     'green': [Color(0xFF00FF00)],
     'blue': [Color(0xFF0000FF)],
-    // Animated — color list drives the gradient dot; shader cycles through them
     'cmyk': [
-      Color(0xFF00FFFF), // cyan
-      Color(0xFFFF00FF), // magenta
-      Color(0xFFFFFF00), // yellow
-      Color(0xFF111111), // key (black)
+      Color(0xFF00FFFF),
+      Color(0xFFFF00FF),
+      Color(0xFFFFFF00),
+      Color(0xFF111111),
     ],
     'rgb': [
-      Color(0xFFFF0000), // red
-      Color(0xFF00FF00), // green
-      Color(0xFF0000FF), // blue
+      Color(0xFFFF0000),
+      Color(0xFF00FF00),
+      Color(0xFF0000FF),
     ],
   };
 
@@ -43,6 +44,8 @@ class StealConfig {
     this.performanceMode = false,
     this.showInfoBanner = true,
     this.bannerText = '',
+    this.venue = '',
+    this.date = '',
     this.paletteCycle = false,
     this.paletteTransitionSpeed = 5.0,
   });
@@ -58,6 +61,8 @@ class StealConfig {
       performanceMode: map['performanceMode'] as bool? ?? false,
       showInfoBanner: map['showInfoBanner'] as bool? ?? true,
       bannerText: map['bannerText'] as String? ?? '',
+      venue: map['venue'] as String? ?? '',
+      date: map['date'] as String? ?? '',
       paletteCycle: map['paletteCycle'] as bool? ?? false,
       paletteTransitionSpeed:
           (map['paletteTransitionSpeed'] as num?)?.toDouble() ?? 5.0,
@@ -75,6 +80,8 @@ class StealConfig {
       'performanceMode': performanceMode,
       'showInfoBanner': showInfoBanner,
       'bannerText': bannerText,
+      'venue': venue,
+      'date': date,
       'paletteCycle': paletteCycle,
       'paletteTransitionSpeed': paletteTransitionSpeed,
     };
@@ -90,6 +97,8 @@ class StealConfig {
     bool? performanceMode,
     bool? showInfoBanner,
     String? bannerText,
+    String? venue,
+    String? date,
     bool? paletteCycle,
     double? paletteTransitionSpeed,
   }) {
@@ -104,6 +113,8 @@ class StealConfig {
       performanceMode: performanceMode ?? this.performanceMode,
       showInfoBanner: showInfoBanner ?? this.showInfoBanner,
       bannerText: bannerText ?? this.bannerText,
+      venue: venue ?? this.venue,
+      date: date ?? this.date,
       paletteCycle: paletteCycle ?? this.paletteCycle,
       paletteTransitionSpeed:
           paletteTransitionSpeed ?? this.paletteTransitionSpeed,

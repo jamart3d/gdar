@@ -131,7 +131,7 @@ class CollectionStatistics extends StatelessWidget {
     final hours = duration.inHours % 24;
 
     // Flat category rows used on TV (no ExpansionTile)
-    Widget _catRow(String label, int showCount, int sourceCount) {
+    Widget catRow(String label, int showCount, int sourceCount) {
       return Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 3),
         child: Row(
@@ -158,19 +158,19 @@ class CollectionStatistics extends StatelessWidget {
 
     final flatCategoryRows = [
       if (catBettySources > 0)
-        _catRow('Betty Boards', catBettyShows.length, catBettySources),
+        catRow('Betty Boards', catBettyShows.length, catBettySources),
       if (catUltraSources > 0)
-        _catRow('Ultra Matrix', catUltraShows.length, catUltraSources),
+        catRow('Ultra Matrix', catUltraShows.length, catUltraSources),
       if (catMatrixSources > 0)
-        _catRow('Matrix', catMatrixShows.length, catMatrixSources),
+        catRow('Matrix', catMatrixShows.length, catMatrixSources),
       if (catDsbdSources > 0)
-        _catRow('Digital SBD', catDsbdShows.length, catDsbdSources),
+        catRow('Digital SBD', catDsbdShows.length, catDsbdSources),
       if (catFmSources > 0)
-        _catRow('FM Broadcast', catFmShows.length, catFmSources),
+        catRow('FM Broadcast', catFmShows.length, catFmSources),
       if (catSbdSources > 0)
-        _catRow('Soundboard', catSbdShows.length, catSbdSources),
+        catRow('Soundboard', catSbdShows.length, catSbdSources),
       if (catUnkSources > 0)
-        _catRow('Unknown Shows', catUnkShows.length, catUnkSources),
+        catRow('Unknown Shows', catUnkShows.length, catUnkSources),
     ];
 
     return SectionCard(
