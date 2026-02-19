@@ -50,6 +50,20 @@ void main() {
     when(mockSettingsProvider.oilScreensaverMode).thenReturn('standard');
     when(mockSettingsProvider.oilPerformanceMode).thenReturn(false);
     when(mockSettingsProvider.oilShowInfoBanner).thenReturn(true);
+    when(mockSettingsProvider.oilFilmGrain).thenReturn(0.15);
+    when(mockSettingsProvider.oilInnerRingScale).thenReturn(1.0);
+    when(mockSettingsProvider.oilInnerToMiddleGap).thenReturn(0.3);
+    when(mockSettingsProvider.oilMiddleToOuterGap).thenReturn(0.3);
+    when(mockSettingsProvider.oilOrbitDrift).thenReturn(1.0);
+    when(mockSettingsProvider.oilPaletteCycle).thenReturn(false);
+    when(mockSettingsProvider.oilPaletteTransitionSpeed).thenReturn(5.0);
+    when(mockSettingsProvider.oilBlurAmount).thenReturn(0.0);
+    when(mockSettingsProvider.oilFlatColor).thenReturn(false);
+    when(mockSettingsProvider.oilBannerGlow).thenReturn(false);
+    when(mockSettingsProvider.oilBannerFlicker).thenReturn(0.0);
+    when(mockSettingsProvider.oilAudioPeakDecay).thenReturn(0.998);
+    when(mockSettingsProvider.oilAudioBassBoost).thenReturn(1.0);
+    when(mockSettingsProvider.oilAudioReactivityStrength).thenReturn(1.0);
   });
 
   Widget createWidgetUnderTest() {

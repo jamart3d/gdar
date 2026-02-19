@@ -16,7 +16,6 @@ class SettingsProvider with ChangeNotifier {
   static const String _hideTrackDurationKey = 'hide_track_duration';
   static const String _playRandomOnCompletionKey = 'play_random_on_completion';
   static const String _nonRandomKey = 'non_random';
-
   static const String _playRandomOnStartupKey = 'play_random_on_startup';
   static const String _dateFirstInShowCardKey = 'date_first_in_show_card';
   static const String _useDynamicColorKey = 'use_dynamic_color';
@@ -32,7 +31,7 @@ class SettingsProvider with ChangeNotifier {
 
   static const String _uiScaleKey = 'ui_scale';
   static const String _seedColorKey = 'seed_color';
-  static const String _glowModeKey = 'glow_mode'; // 0=Off, 1=On, 2=Half
+  static const String _glowModeKey = 'glow_mode';
   static const String _showGlowBorderKey = 'show_glow_border'; // Deprecated
   static const String _halfGlowDynamicKey = 'half_glow_dynamic'; // Deprecated
   static const String _highlightPlayingWithRgbKey =
@@ -75,15 +74,13 @@ class SettingsProvider with ChangeNotifier {
   static const String _oilBannerGlowKey = 'oil_banner_glow';
   static const String _oilBannerFlickerKey = 'oil_banner_flicker';
 
-  // Ring controls
-  static const String _oilOuterRingScaleKey = 'oil_outer_ring_scale';
+  // Ring controls (3-ring gap model)
   static const String _oilInnerRingScaleKey = 'oil_inner_ring_scale';
-  static const String _oilRingGapKey = 'oil_ring_gap';
+  static const String _oilInnerToMiddleGapKey = 'oil_inner_to_middle_gap';
+  static const String _oilMiddleToOuterGapKey = 'oil_middle_to_outer_gap';
   static const String _oilOrbitDriftKey = 'oil_orbit_drift';
 
-  static const String _marqueeEnabledKey =
-      'marquee_enabled'; // Logic for disabling marquee in tests
-
+  static const String _marqueeEnabledKey = 'marquee_enabled';
   static const String _showSplashScreenKey = 'show_splash_screen';
   late bool _showSplashScreen;
   bool get showSplashScreen => _showSplashScreen;
@@ -93,7 +90,6 @@ class SettingsProvider with ChangeNotifier {
   static const String _onboardingCompletedVersionKey =
       'onboarding_completed_version';
   static const int kCurrentOnboardingVersion = 1;
-
   int _onboardingCompletedVersion = 0;
   bool get showOnboarding =>
       _onboardingCompletedVersion < kCurrentOnboardingVersion;
@@ -108,7 +104,6 @@ class SettingsProvider with ChangeNotifier {
   void toggleShowSplashScreen() => _updatePreference(
       _showSplashScreenKey, _showSplashScreen = !_showSplashScreen);
 
-  // Hard-coded setting.
   bool showExpandIcon = false;
 
   // Private state
@@ -164,18 +159,16 @@ class SettingsProvider with ChangeNotifier {
   late double _oilBannerFlicker;
 
   // Ring controls
-  late double _oilOuterRingScale;
   late double _oilInnerRingScale;
-  late double _oilRingGap;
+  late double _oilInnerToMiddleGap;
+  late double _oilMiddleToOuterGap;
   late double _oilOrbitDrift;
 
   Color? _seedColor;
 
-  // Ratings & Played Status moved to CatalogService (Hive)
   static const String _randomOnlyUnplayedKey = 'random_only_unplayed';
   static const String _randomOnlyHighRatedKey = 'random_only_high_rated';
   static const String _randomExcludePlayedKey = 'random_exclude_played';
-
   bool _randomOnlyUnplayed = false;
   bool _randomOnlyHighRated = false;
   bool _randomExcludePlayed = false;
@@ -211,7 +204,7 @@ class SettingsProvider with ChangeNotifier {
   bool get simpleRandomIcon => _simpleRandomIcon;
   bool get marqueeEnabled => _marqueeEnabled;
 
-  // Screensaver visualizer getters
+  // Screensaver getters
   bool get useOilScreensaver => _useOilScreensaver;
   String get oilScreensaverMode => _oilScreensaverMode;
   int get oilScreensaverInactivityMinutes => _oilScreensaverInactivityMinutes;
@@ -225,7 +218,7 @@ class SettingsProvider with ChangeNotifier {
   bool get oilPaletteCycle => _oilPaletteCycle;
   double get oilPaletteTransitionSpeed => _oilPaletteTransitionSpeed;
 
-  // Audio Reactivity Tuning getters
+  // Audio Reactivity getters
   double get oilAudioPeakDecay => _oilAudioPeakDecay;
   double get oilAudioBassBoost => _oilAudioBassBoost;
   double get oilAudioReactivityStrength => _oilAudioReactivityStrength;
@@ -237,17 +230,15 @@ class SettingsProvider with ChangeNotifier {
   double get oilBannerFlicker => _oilBannerFlicker;
 
   // Ring control getters
-  double get oilOuterRingScale => _oilOuterRingScale;
   double get oilInnerRingScale => _oilInnerRingScale;
-  double get oilRingGap => _oilRingGap;
+  double get oilInnerToMiddleGap => _oilInnerToMiddleGap;
+  double get oilMiddleToOuterGap => _oilMiddleToOuterGap;
   double get oilOrbitDrift => _oilOrbitDrift;
 
   Color? get seedColor => _seedColor;
-
   bool get randomOnlyUnplayed => _randomOnlyUnplayed;
   bool get randomOnlyHighRated => _randomOnlyHighRated;
   bool get randomExcludePlayed => _randomExcludePlayed;
-
   bool get showGlobalAlbumArt => true;
 
   bool _hasShownAdvancedCacheSuggestion = false;
@@ -294,8 +285,7 @@ class SettingsProvider with ChangeNotifier {
           await _prefs.setBool(_abbreviateDayOfWeekKey, _abbreviateDayOfWeek);
           await _prefs.setBool(_abbreviateMonthKey, _abbreviateMonth);
           notifyListeners();
-          logger.i(
-              'SettingsProvider: UI Scale set to $enabled via ADB (Smart Abbreviation applied)');
+          logger.i('SettingsProvider: UI Scale set to $enabled via ADB');
         }
       }
     });
@@ -303,7 +293,6 @@ class SettingsProvider with ChangeNotifier {
 
   void _init() {
     bool firstRunCheckDone = _prefs.getBool('first_run_check_done') ?? false;
-
     _uiScale =
         _prefs.getBool(_uiScaleKey) ?? DefaultSettings.uiScaleDesktopDefault;
 
@@ -323,7 +312,6 @@ class SettingsProvider with ChangeNotifier {
 
     _onboardingCompletedVersion =
         _prefs.getInt(_onboardingCompletedVersionKey) ?? 0;
-
     _showTrackNumbers =
         _prefs.getBool(_trackNumberKey) ?? DefaultSettings.showTrackNumbers;
     _hideTrackDuration = _prefs.getBool(_hideTrackDurationKey) ??
@@ -348,23 +336,18 @@ class SettingsProvider with ChangeNotifier {
         _prefs.getBool(_abbreviateMonthKey) ?? DefaultSettings.abbreviateMonth;
     _simpleRandomIcon = _prefs.getBool(_simpleRandomIconKey) ?? false;
 
-    // Font Migration Logic
+    // Font Migration
     if (_prefs.containsKey('use_handwriting_font')) {
       bool oldHandwriting = _prefs.getBool('use_handwriting_font') ?? false;
-      if (oldHandwriting) {
-        _appFont = 'caveat';
-        _prefs.setString(_appFontKey, 'caveat');
-      } else {
-        _appFont = 'default';
-      }
+      _appFont = oldHandwriting ? 'caveat' : 'default';
+      if (oldHandwriting) _prefs.setString(_appFontKey, 'caveat');
       _prefs.remove('use_handwriting_font');
     } else {
       _appFont = _prefs.getString(_appFontKey) ?? DefaultSettings.appFont;
     }
-    logger.i(
-        'SettingsProvider: Active App Font = $_appFont (Default: ${DefaultSettings.appFont})');
+    logger.i('SettingsProvider: Active App Font = $_appFont');
 
-    // Glow Border Migration Logic
+    // Glow Border Migration
     if (_prefs.containsKey(_glowModeKey)) {
       _glowMode = _prefs.getInt(_glowModeKey) ?? DefaultSettings.glowMode;
       if (_glowMode == 1) {
@@ -380,13 +363,11 @@ class SettingsProvider with ChangeNotifier {
     } else {
       bool oldShow = _prefs.getBool(_showGlowBorderKey) ?? false;
       bool oldHalf = _prefs.getBool(_halfGlowDynamicKey) ?? false;
-      if (oldHalf) {
-        _glowMode = 50;
-      } else if (oldShow) {
-        _glowMode = 100;
-      } else {
-        _glowMode = DefaultSettings.glowMode;
-      }
+      _glowMode = oldHalf
+          ? 50
+          : oldShow
+              ? 100
+              : DefaultSettings.glowMode;
       _prefs.setInt(_glowModeKey, _glowMode);
     }
 
@@ -403,7 +384,6 @@ class SettingsProvider with ChangeNotifier {
         DefaultSettings.highlightPlayingWithRgb;
     _rgbAnimationSpeed = _prefs.getDouble(_rgbAnimationSpeedKey) ??
         DefaultSettings.rgbAnimationSpeed;
-
     _showSplashScreen = _prefs.getBool(_showSplashScreenKey) ??
         DefaultSettings.showSplashScreen;
     _showPlaybackMessages = _prefs.getBool(_showPlaybackMessagesKey) ??
@@ -434,7 +414,7 @@ class SettingsProvider with ChangeNotifier {
     _showDebugLayout = _prefs.getBool(_showDebugLayoutKey) ?? false;
     _enableShakedownTween = _prefs.getBool(_enableShakedownTweenKey) ?? true;
 
-    // Screensaver (steal)
+    // Screensaver
     _useOilScreensaver = _prefs.getBool(_useOilScreensaverKey) ??
         DefaultSettings.useOilScreensaver;
     _oilScreensaverMode = _prefs.getString(_oilScreensaverModeKey) ??
@@ -460,13 +440,13 @@ class SettingsProvider with ChangeNotifier {
     _oilPaletteTransitionSpeed =
         _prefs.getDouble(_oilPaletteTransitionSpeedKey) ?? 5.0;
 
-    // Audio Reactivity Tuning
+    // Audio Reactivity
     _oilAudioPeakDecay = _prefs.getDouble(_oilAudioPeakDecayKey) ?? 0.998;
     _oilAudioBassBoost = _prefs.getDouble(_oilAudioBassBoostKey) ?? 1.0;
     _oilAudioReactivityStrength =
         _prefs.getDouble(_oilAudioReactivityStrengthKey) ?? 1.0;
 
-    // Banner & visual extras
+    // Banner & visual
     _oilShowInfoBanner = _prefs.getBool(_oilShowInfoBannerKey) ??
         DefaultSettings.oilShowInfoBanner;
     _oilLogoScale =
@@ -481,25 +461,19 @@ class SettingsProvider with ChangeNotifier {
         DefaultSettings.oilBannerFlicker;
 
     // Ring controls
-    _oilOuterRingScale = _prefs.getDouble(_oilOuterRingScaleKey) ??
-        DefaultSettings.oilOuterRingScale;
     _oilInnerRingScale = _prefs.getDouble(_oilInnerRingScaleKey) ??
         DefaultSettings.oilInnerRingScale;
-    _oilRingGap =
-        _prefs.getDouble(_oilRingGapKey) ?? DefaultSettings.oilRingGap;
+    _oilInnerToMiddleGap = _prefs.getDouble(_oilInnerToMiddleGapKey) ??
+        DefaultSettings.oilInnerToMiddleGap;
+    _oilMiddleToOuterGap = _prefs.getDouble(_oilMiddleToOuterGapKey) ??
+        DefaultSettings.oilMiddleToOuterGap;
     _oilOrbitDrift =
         _prefs.getDouble(_oilOrbitDriftKey) ?? DefaultSettings.oilOrbitDrift;
 
-    if (isTv) {
-      _oilScreensaverMode = 'steal';
-    }
+    if (isTv) _oilScreensaverMode = 'steal';
 
     final seedColorValue = _prefs.getInt(_seedColorKey);
-    if (seedColorValue != null) {
-      _seedColor = Color(seedColorValue);
-    } else {
-      _seedColor = null;
-    }
+    _seedColor = seedColorValue != null ? Color(seedColorValue) : null;
 
     _initSourceFilters();
   }
@@ -563,13 +537,8 @@ class SettingsProvider with ChangeNotifier {
   void toggleUiScale() {
     _uiScale = !_uiScale;
     _prefs.setBool(_uiScaleKey, _uiScale);
-    if (_uiScale) {
-      _abbreviateDayOfWeek = true;
-      _abbreviateMonth = true;
-    } else {
-      _abbreviateDayOfWeek = false;
-      _abbreviateMonth = false;
-    }
+    _abbreviateDayOfWeek = _uiScale;
+    _abbreviateMonth = _uiScale;
     _prefs.setBool(_abbreviateDayOfWeekKey, _abbreviateDayOfWeek);
     _prefs.setBool(_abbreviateMonthKey, _abbreviateMonth);
     notifyListeners();
@@ -577,7 +546,6 @@ class SettingsProvider with ChangeNotifier {
 
   void setGlowMode(int mode) =>
       _updateIntPreference(_glowModeKey, _glowMode = mode);
-
   void toggleHighlightPlayingWithRgb() => _updatePreference(
       _highlightPlayingWithRgbKey,
       _highlightPlayingWithRgb = !_highlightPlayingWithRgb);
@@ -618,7 +586,7 @@ class SettingsProvider with ChangeNotifier {
   void toggleRandomExcludePlayed() => _updatePreference(
       _randomExcludePlayedKey, _randomExcludePlayed = !_randomExcludePlayed);
 
-  // Screensaver visualizer setters
+  // Screensaver setters
   void toggleUseOilScreensaver() => _updatePreference(
       _useOilScreensaverKey, _useOilScreensaver = !_useOilScreensaver);
   void setOilScreensaverMode(String mode) => _updateStringPreference(
@@ -649,7 +617,7 @@ class SettingsProvider with ChangeNotifier {
   void setOilPaletteTransitionSpeed(double seconds) => _updateDoublePreference(
       _oilPaletteTransitionSpeedKey, _oilPaletteTransitionSpeed = seconds);
 
-  // Audio Reactivity Tuning setters
+  // Audio Reactivity setters
   Future<void> setOilAudioPeakDecay(double value) => _updateDoublePreference(
       _oilAudioPeakDecayKey, _oilAudioPeakDecay = value.clamp(0.990, 0.999));
   Future<void> setOilAudioBassBoost(double value) => _updateDoublePreference(
@@ -671,19 +639,18 @@ class SettingsProvider with ChangeNotifier {
       _updateDoublePreference(_oilBannerFlickerKey, _oilBannerFlicker = value);
 
   // Ring control setters
-  Future<void> setOilOuterRingScale(double value) => _updateDoublePreference(
-      _oilOuterRingScaleKey, _oilOuterRingScale = value.clamp(0.5, 2.0));
   Future<void> setOilInnerRingScale(double value) => _updateDoublePreference(
       _oilInnerRingScaleKey, _oilInnerRingScale = value.clamp(0.5, 2.0));
-  Future<void> setOilRingGap(double value) => _updateDoublePreference(
-      _oilRingGapKey, _oilRingGap = value.clamp(0.0, 1.0));
+  Future<void> setOilInnerToMiddleGap(double value) => _updateDoublePreference(
+      _oilInnerToMiddleGapKey, _oilInnerToMiddleGap = value.clamp(0.0, 1.0));
+  Future<void> setOilMiddleToOuterGap(double value) => _updateDoublePreference(
+      _oilMiddleToOuterGapKey, _oilMiddleToOuterGap = value.clamp(0.0, 1.0));
   Future<void> setOilOrbitDrift(double value) => _updateDoublePreference(
       _oilOrbitDriftKey, _oilOrbitDrift = value.clamp(0.0, 2.0));
 
   // Source Filtering
   static const String _filterHighestShnidKey = 'filter_highest_shnid';
   static const String _sourceCategoryFiltersKey = 'source_category_filters';
-
   bool _filterHighestShnid = false;
   Map<String, bool> _sourceCategoryFilters = {
     'matrix': true,
@@ -694,10 +661,8 @@ class SettingsProvider with ChangeNotifier {
     'dsbd': true,
     'unk': false,
   };
-
   bool get filterHighestShnid => _filterHighestShnid;
   Map<String, bool> get sourceCategoryFilters => _sourceCategoryFilters;
-
   void toggleFilterHighestShnid() => _updatePreference(
       _filterHighestShnidKey, _filterHighestShnid = !_filterHighestShnid);
 
@@ -719,8 +684,8 @@ class SettingsProvider with ChangeNotifier {
   }
 
   Future<void> _saveSourceCategoryFilters() async {
-    final String encoded = json.encode(_sourceCategoryFilters);
-    await _prefs.setString(_sourceCategoryFiltersKey, encoded);
+    await _prefs.setString(
+        _sourceCategoryFiltersKey, json.encode(_sourceCategoryFilters));
   }
 
   Future<void> enableAllSourceCategories() async {
@@ -731,7 +696,7 @@ class SettingsProvider with ChangeNotifier {
     await _saveSourceCategoryFilters();
   }
 
-  // Persistence Helpers
+  // Persistence helpers
   Future<void> _updatePreference(String key, bool value) async {
     await _prefs.setBool(key, value);
     notifyListeners();

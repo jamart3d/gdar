@@ -36,11 +36,8 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
   void initState() {
     super.initState();
     _initAudioReactor();
-    // Delay key handler to avoid catching the launch key event on Google TV
     Future.delayed(const Duration(milliseconds: 500), () {
-      if (mounted) {
-        HardwareKeyboard.instance.addHandler(_handleGlobalKeyEvent);
-      }
+      if (mounted) HardwareKeyboard.instance.addHandler(_handleGlobalKeyEvent);
     });
   }
 
@@ -95,9 +92,8 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
       final isAvailable = await VisualizerAudioReactor.isAvailable();
 
       if (isAvailable) {
-        final reactor = await AudioReactorFactory.create(
-          audioSessionId: sessionId,
-        );
+        final reactor =
+            await AudioReactorFactory.create(audioSessionId: sessionId);
         if (mounted) {
           setState(() => _audioReactor = reactor);
           _pushAudioConfig();
@@ -111,8 +107,6 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
       if (mounted) setState(() => _audioReactor = reactor);
     }
   }
-
-  // ── Banner text helpers ────────────────────────────────────────────────────
 
   String _composeBannerText(SettingsProvider settings, AudioProvider audio) {
     if (!settings.oilShowInfoBanner) return '';
@@ -128,8 +122,6 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
     if (!settings.oilShowInfoBanner) return '';
     return audio.currentShow?.date ?? '';
   }
-
-  // ── Build ──────────────────────────────────────────────────────────────────
 
   @override
   void dispose() {
@@ -166,9 +158,9 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
       date: _composeDate(settings, audioProvider),
       paletteCycle: settings.oilPaletteCycle,
       paletteTransitionSpeed: settings.oilPaletteTransitionSpeed,
-      outerRingScale: settings.oilOuterRingScale,
       innerRingScale: settings.oilInnerRingScale,
-      ringGap: settings.oilRingGap,
+      innerToMiddleGap: settings.oilInnerToMiddleGap,
+      middleToOuterGap: settings.oilMiddleToOuterGap,
       orbitDrift: settings.oilOrbitDrift,
     );
 

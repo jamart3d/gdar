@@ -8,6 +8,7 @@ import 'package:mockito/mockito.dart';
 import 'package:provider/provider.dart';
 import 'package:shakedown/providers/audio_provider.dart';
 import 'package:shakedown/providers/settings_provider.dart';
+import 'package:shakedown/services/device_service.dart';
 import 'package:shakedown/ui/widgets/playback/playback_messages.dart';
 
 import 'playback_messages_test.mocks.dart';
@@ -17,10 +18,20 @@ import 'playback_messages_test.mocks.dart';
   MockSpec<SettingsProvider>(),
   MockSpec<AudioPlayer>(),
 ])
+class MockDeviceService extends ChangeNotifier implements DeviceService {
+  @override
+  bool get isTv => false;
+  @override
+  String? get deviceName => 'Mock Device';
+  @override
+  Future<void> refresh() async {}
+}
+
 void main() {
   late MockAudioProvider mockAudioProvider;
   late MockSettingsProvider mockSettingsProvider;
   late MockAudioPlayer mockAudioPlayer;
+  late MockDeviceService mockDeviceService;
 
   // Stream Controllers
   late StreamController<PlayerState> playerStateController;
@@ -32,6 +43,7 @@ void main() {
     mockAudioProvider = MockAudioProvider();
     mockSettingsProvider = MockSettingsProvider();
     mockAudioPlayer = MockAudioPlayer();
+    mockDeviceService = MockDeviceService();
 
     // Initialize controllers
     playerStateController = StreamController<PlayerState>.broadcast();
@@ -73,6 +85,7 @@ void main() {
         ChangeNotifierProvider<AudioProvider>.value(value: mockAudioProvider),
         ChangeNotifierProvider<SettingsProvider>.value(
             value: mockSettingsProvider),
+        ChangeNotifierProvider<DeviceService>.value(value: mockDeviceService),
       ],
       child: const MaterialApp(
         home: Scaffold(

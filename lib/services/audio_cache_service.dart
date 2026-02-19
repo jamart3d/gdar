@@ -112,19 +112,29 @@ class AudioCacheService with ChangeNotifier {
   /// Asynchronously updates the cached track count.
   Future<void> refreshCacheCount() async {
     try {
-      if (_cacheDir == null || !await _cacheDir!.exists()) {
+      final dir = _cacheDir;
+      if (dir == null || !await dir.exists()) {
         _updateCount(0);
         return;
       }
 
       int count = 0;
-      await for (final entity in _cacheDir!.list()) {
-        if (entity is File) {
-          final name = entity.uri.pathSegments.last;
-          if (_cacheFileRegex.hasMatch(name)) {
-            count++;
+      // Use a try-catch around list() to handle case where dir is deleted during iteration
+      try {
+        await for (final entity in dir.list()) {
+          if (entity is File) {
+            final name = entity.uri.pathSegments.last;
+            if (_cacheFileRegex.hasMatch(name)) {
+              count++;
+            }
           }
         }
+      } on FileSystemException catch (e) {
+        // Directory might have been deleted during iteration (happens in tests)
+        logger
+            .d('refreshCacheCount: Directory disappeared during iteration: $e');
+        if (await dir.exists())
+          rethrow; // If it still exists, something else is wrong
       }
 
       _updateCount(count);

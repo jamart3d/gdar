@@ -63,18 +63,14 @@ class TvScreensaverSection extends StatelessWidget {
                       final current = settings.oilScreensaverInactivityMinutes;
                       int? newVal;
                       if (event.logicalKey == LogicalKeyboardKey.arrowLeft) {
-                        if (current == 15) {
+                        if (current == 15)
                           newVal = 5;
-                        } else if (current == 5) {
-                          newVal = 1;
-                        }
+                        else if (current == 5) newVal = 1;
                       } else if (event.logicalKey ==
                           LogicalKeyboardKey.arrowRight) {
-                        if (current == 1) {
+                        if (current == 1)
                           newVal = 5;
-                        } else if (current == 5) {
-                          newVal = 15;
-                        }
+                        else if (current == 5) newVal = 15;
                       }
                       if (newVal != null && newVal != current) {
                         settings.setOilScreensaverInactivityMinutes(newVal);
@@ -124,7 +120,6 @@ class TvScreensaverSection extends StatelessWidget {
         _SectionHeader(title: 'Visual', colorScheme: colorScheme),
         const SizedBox(height: 8),
 
-        // Color Palette
         Text(
           'Color Palette',
           style: textTheme.bodySmall
@@ -229,9 +224,10 @@ class TvScreensaverSection extends StatelessWidget {
 
         const SizedBox(height: 24),
 
+        // ── Track Info Rings ───────────────────────────────────────────
         _ToggleRow(
           label: 'Show Track Info',
-          subtitle: 'Display track title, venue and date as circular text',
+          subtitle: 'Three rings: venue (outer), title (middle), date (inner)',
           value: settings.oilShowInfoBanner,
           onChanged: (_) => settings.toggleOilShowInfoBanner(),
           colorScheme: colorScheme,
@@ -239,18 +235,6 @@ class TvScreensaverSection extends StatelessWidget {
         ),
 
         if (settings.oilShowInfoBanner) ...[
-          const SizedBox(height: 16),
-          TvStepperRow(
-            label: 'Outer Ring Size',
-            value: settings.oilOuterRingScale,
-            min: 0.5,
-            max: 2.0,
-            step: 0.05,
-            leftLabel: 'Small',
-            rightLabel: 'Large',
-            valueFormatter: (v) => '${(v * 100).round()}%',
-            onChanged: (v) => settings.setOilOuterRingScale(v),
-          ),
           const SizedBox(height: 16),
           TvStepperRow(
             label: 'Inner Ring Size',
@@ -265,15 +249,27 @@ class TvScreensaverSection extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           TvStepperRow(
-            label: 'Ring Separation',
-            value: settings.oilRingGap,
+            label: 'Title Ring Gap',
+            value: settings.oilInnerToMiddleGap,
             min: 0.0,
             max: 1.0,
             step: 0.05,
-            leftLabel: 'Close',
-            rightLabel: 'Wide',
+            leftLabel: 'Tight',
+            rightLabel: 'Spaced',
             valueFormatter: (v) => '${(v * 100).round()}%',
-            onChanged: (v) => settings.setOilRingGap(v),
+            onChanged: (v) => settings.setOilInnerToMiddleGap(v),
+          ),
+          const SizedBox(height: 16),
+          TvStepperRow(
+            label: 'Venue Ring Gap',
+            value: settings.oilMiddleToOuterGap,
+            min: 0.0,
+            max: 1.0,
+            step: 0.05,
+            leftLabel: 'Tight',
+            rightLabel: 'Spaced',
+            valueFormatter: (v) => '${(v * 100).round()}%',
+            onChanged: (v) => settings.setOilMiddleToOuterGap(v),
           ),
           const SizedBox(height: 16),
           TvStepperRow(
@@ -516,10 +512,9 @@ class _PaletteRow extends StatelessWidget {
                     boxShadow: isSelected
                         ? [
                             BoxShadow(
-                              color: c.withValues(alpha: 0.6),
-                              blurRadius: 5,
-                              spreadRadius: 1,
-                            )
+                                color: c.withValues(alpha: 0.6),
+                                blurRadius: 5,
+                                spreadRadius: 1)
                           ]
                         : null,
                   ),
@@ -537,11 +532,8 @@ class _PaletteRow extends StatelessWidget {
               ),
             ),
             if (isSelected)
-              Icon(
-                Icons.check_circle_rounded,
-                color: colorScheme.primary,
-                size: 20,
-              ),
+              Icon(Icons.check_circle_rounded,
+                  color: colorScheme.primary, size: 20),
           ],
         ),
       ),
@@ -623,10 +615,9 @@ class _ToggleRow extends StatelessWidget {
               ),
             ),
             Switch(
-              value: value,
-              onChanged: onChanged,
-              activeThumbColor: colorScheme.primary,
-            ),
+                value: value,
+                onChanged: onChanged,
+                activeThumbColor: colorScheme.primary),
           ],
         ),
       ),

@@ -204,7 +204,7 @@ void main() {
   });
   group('SettingsProvider Screensaver (Steal)', () {
     test('initializes with default values', () {
-      expect(settingsProvider.useOilScreensaver, false);
+      expect(settingsProvider.useOilScreensaver, true);
       expect(settingsProvider.oilPalette, 'acid_green');
       expect(settingsProvider.oilEnableAudioReactivity, true);
     });

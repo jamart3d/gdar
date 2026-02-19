@@ -357,6 +357,13 @@ class MockSettingsProvider extends _i1.Mock implements _i3.SettingsProvider {
       ) as String);
 
   @override
+  double get oilFilmGrain => (super.noSuchMethod(
+        Invocation.getter(#oilFilmGrain),
+        returnValue: 0.0,
+        returnValueForMissingStub: 0.0,
+      ) as double);
+
+  @override
   double get oilHeatDrift => (super.noSuchMethod(
         Invocation.getter(#oilHeatDrift),
         returnValue: 0.0,
@@ -392,8 +399,8 @@ class MockSettingsProvider extends _i1.Mock implements _i3.SettingsProvider {
       ) as double);
 
   @override
-  double get oilAudioReactivityStrength => (super.noSuchMethod(
-        Invocation.getter(#oilAudioReactivityStrength),
+  double get oilAudioPeakDecay => (super.noSuchMethod(
+        Invocation.getter(#oilAudioPeakDecay),
         returnValue: 0.0,
         returnValueForMissingStub: 0.0,
       ) as double);
@@ -406,8 +413,8 @@ class MockSettingsProvider extends _i1.Mock implements _i3.SettingsProvider {
       ) as double);
 
   @override
-  double get oilAudioPeakDecay => (super.noSuchMethod(
-        Invocation.getter(#oilAudioPeakDecay),
+  double get oilAudioReactivityStrength => (super.noSuchMethod(
+        Invocation.getter(#oilAudioReactivityStrength),
         returnValue: 0.0,
         returnValueForMissingStub: 0.0,
       ) as double);
@@ -422,6 +429,62 @@ class MockSettingsProvider extends _i1.Mock implements _i3.SettingsProvider {
   @override
   double get oilLogoScale => (super.noSuchMethod(
         Invocation.getter(#oilLogoScale),
+        returnValue: 0.0,
+        returnValueForMissingStub: 0.0,
+      ) as double);
+
+  @override
+  double get oilBlurAmount => (super.noSuchMethod(
+        Invocation.getter(#oilBlurAmount),
+        returnValue: 0.0,
+        returnValueForMissingStub: 0.0,
+      ) as double);
+
+  @override
+  bool get oilFlatColor => (super.noSuchMethod(
+        Invocation.getter(#oilFlatColor),
+        returnValue: false,
+        returnValueForMissingStub: false,
+      ) as bool);
+
+  @override
+  bool get oilBannerGlow => (super.noSuchMethod(
+        Invocation.getter(#oilBannerGlow),
+        returnValue: false,
+        returnValueForMissingStub: false,
+      ) as bool);
+
+  @override
+  double get oilBannerFlicker => (super.noSuchMethod(
+        Invocation.getter(#oilBannerFlicker),
+        returnValue: 0.0,
+        returnValueForMissingStub: 0.0,
+      ) as double);
+
+  @override
+  double get oilInnerRingScale => (super.noSuchMethod(
+        Invocation.getter(#oilInnerRingScale),
+        returnValue: 0.0,
+        returnValueForMissingStub: 0.0,
+      ) as double);
+
+  @override
+  double get oilInnerToMiddleGap => (super.noSuchMethod(
+        Invocation.getter(#oilInnerToMiddleGap),
+        returnValue: 0.0,
+        returnValueForMissingStub: 0.0,
+      ) as double);
+
+  @override
+  double get oilMiddleToOuterGap => (super.noSuchMethod(
+        Invocation.getter(#oilMiddleToOuterGap),
+        returnValue: 0.0,
+        returnValueForMissingStub: 0.0,
+      ) as double);
+
+  @override
+  double get oilOrbitDrift => (super.noSuchMethod(
+        Invocation.getter(#oilOrbitDrift),
         returnValue: 0.0,
         returnValueForMissingStub: 0.0,
       ) as double);
@@ -869,6 +932,16 @@ class MockSettingsProvider extends _i1.Mock implements _i3.SettingsProvider {
       ) as _i5.Future<void>);
 
   @override
+  _i5.Future<void> setOilFilmGrain(double? value) => (super.noSuchMethod(
+        Invocation.method(
+          #setOilFilmGrain,
+          [value],
+        ),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
+
+  @override
   _i5.Future<void> setOilHeatDrift(double? value) => (super.noSuchMethod(
         Invocation.method(
           #setOilHeatDrift,
@@ -915,10 +988,9 @@ class MockSettingsProvider extends _i1.Mock implements _i3.SettingsProvider {
       );
 
   @override
-  _i5.Future<void> setOilAudioReactivityStrength(double? value) =>
-      (super.noSuchMethod(
+  _i5.Future<void> setOilAudioPeakDecay(double? value) => (super.noSuchMethod(
         Invocation.method(
-          #setOilAudioReactivityStrength,
+          #setOilAudioPeakDecay,
           [value],
         ),
         returnValue: _i5.Future<void>.value(),
@@ -936,9 +1008,10 @@ class MockSettingsProvider extends _i1.Mock implements _i3.SettingsProvider {
       ) as _i5.Future<void>);
 
   @override
-  _i5.Future<void> setOilAudioPeakDecay(double? value) => (super.noSuchMethod(
+  _i5.Future<void> setOilAudioReactivityStrength(double? value) =>
+      (super.noSuchMethod(
         Invocation.method(
-          #setOilAudioPeakDecay,
+          #setOilAudioReactivityStrength,
           [value],
         ),
         returnValue: _i5.Future<void>.value(),
@@ -958,6 +1031,84 @@ class MockSettingsProvider extends _i1.Mock implements _i3.SettingsProvider {
   _i5.Future<void> setOilLogoScale(double? value) => (super.noSuchMethod(
         Invocation.method(
           #setOilLogoScale,
+          [value],
+        ),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
+
+  @override
+  _i5.Future<void> setOilBlurAmount(double? value) => (super.noSuchMethod(
+        Invocation.method(
+          #setOilBlurAmount,
+          [value],
+        ),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
+
+  @override
+  void toggleOilFlatColor() => super.noSuchMethod(
+        Invocation.method(
+          #toggleOilFlatColor,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void toggleOilBannerGlow() => super.noSuchMethod(
+        Invocation.method(
+          #toggleOilBannerGlow,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  _i5.Future<void> setOilBannerFlicker(double? value) => (super.noSuchMethod(
+        Invocation.method(
+          #setOilBannerFlicker,
+          [value],
+        ),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
+
+  @override
+  _i5.Future<void> setOilInnerRingScale(double? value) => (super.noSuchMethod(
+        Invocation.method(
+          #setOilInnerRingScale,
+          [value],
+        ),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
+
+  @override
+  _i5.Future<void> setOilInnerToMiddleGap(double? value) => (super.noSuchMethod(
+        Invocation.method(
+          #setOilInnerToMiddleGap,
+          [value],
+        ),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
+
+  @override
+  _i5.Future<void> setOilMiddleToOuterGap(double? value) => (super.noSuchMethod(
+        Invocation.method(
+          #setOilMiddleToOuterGap,
+          [value],
+        ),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
+
+  @override
+  _i5.Future<void> setOilOrbitDrift(double? value) => (super.noSuchMethod(
+        Invocation.method(
+          #setOilOrbitDrift,
           [value],
         ),
         returnValue: _i5.Future<void>.value(),

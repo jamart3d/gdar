@@ -8,22 +8,22 @@ class StealConfig {
   final double pulseIntensity;
   final double heatDrift;
   final double logoScale;
-  final double blurAmount; // 0.0 = sharp, 1.0 = soft
-  final bool flatColor; // true = static palette color, no animation
-  final bool bannerGlow; // true = triple-layer neon glow on rings
-  final double bannerFlicker; // 0.0 = steady, 1.0 = heavy neon buzz
+  final double blurAmount;
+  final bool flatColor;
+  final bool bannerGlow;
+  final double bannerFlicker;
   final bool enableAudioReactivity;
   final bool performanceMode;
   final bool showInfoBanner;
-  final String bannerText; // inner ring: track title
-  final String venue; // outer ring: venue
-  final String date; // outer ring: date
+  final String bannerText;
+  final String venue;
+  final String date;
   final bool paletteCycle;
   final double paletteTransitionSpeed;
-  final double outerRingScale; // 1.0 = default outer radius
-  final double innerRingScale; // 1.0 = default inner radius
-  final double ringGap; // 0.0 = default separation, >0 pushes rings apart
-  final double orbitDrift; // 1.0 = default drift amplitude
+  final double innerRingScale; // scales the base inner ring radius
+  final double innerToMiddleGap; // 0.0–1.0 gap from inner to middle ring
+  final double middleToOuterGap; // 0.0–1.0 gap from middle to outer ring
+  final double orbitDrift; // 0.0 = locked center, 1.0 = default drift
 
   static const Map<String, List<Color>> palettes = {
     'psychedelic': [
@@ -83,9 +83,9 @@ class StealConfig {
     this.date = '',
     this.paletteCycle = false,
     this.paletteTransitionSpeed = 5.0,
-    this.outerRingScale = 1.0,
     this.innerRingScale = 1.0,
-    this.ringGap = 0.0,
+    this.innerToMiddleGap = 0.3,
+    this.middleToOuterGap = 0.3,
     this.orbitDrift = 1.0,
   });
 
@@ -110,9 +110,9 @@ class StealConfig {
       paletteCycle: map['paletteCycle'] as bool? ?? false,
       paletteTransitionSpeed:
           (map['paletteTransitionSpeed'] as num?)?.toDouble() ?? 5.0,
-      outerRingScale: (map['outerRingScale'] as num?)?.toDouble() ?? 1.0,
       innerRingScale: (map['innerRingScale'] as num?)?.toDouble() ?? 1.0,
-      ringGap: (map['ringGap'] as num?)?.toDouble() ?? 0.0,
+      innerToMiddleGap: (map['innerToMiddleGap'] as num?)?.toDouble() ?? 0.3,
+      middleToOuterGap: (map['middleToOuterGap'] as num?)?.toDouble() ?? 0.3,
       orbitDrift: (map['orbitDrift'] as num?)?.toDouble() ?? 1.0,
     );
   }
@@ -137,9 +137,9 @@ class StealConfig {
       'date': date,
       'paletteCycle': paletteCycle,
       'paletteTransitionSpeed': paletteTransitionSpeed,
-      'outerRingScale': outerRingScale,
       'innerRingScale': innerRingScale,
-      'ringGap': ringGap,
+      'innerToMiddleGap': innerToMiddleGap,
+      'middleToOuterGap': middleToOuterGap,
       'orbitDrift': orbitDrift,
     };
   }
@@ -163,9 +163,9 @@ class StealConfig {
     String? date,
     bool? paletteCycle,
     double? paletteTransitionSpeed,
-    double? outerRingScale,
     double? innerRingScale,
-    double? ringGap,
+    double? innerToMiddleGap,
+    double? middleToOuterGap,
     double? orbitDrift,
   }) {
     return StealConfig(
@@ -189,9 +189,9 @@ class StealConfig {
       paletteCycle: paletteCycle ?? this.paletteCycle,
       paletteTransitionSpeed:
           paletteTransitionSpeed ?? this.paletteTransitionSpeed,
-      outerRingScale: outerRingScale ?? this.outerRingScale,
       innerRingScale: innerRingScale ?? this.innerRingScale,
-      ringGap: ringGap ?? this.ringGap,
+      innerToMiddleGap: innerToMiddleGap ?? this.innerToMiddleGap,
+      middleToOuterGap: middleToOuterGap ?? this.middleToOuterGap,
       orbitDrift: orbitDrift ?? this.orbitDrift,
     );
   }

@@ -6,17 +6,10 @@ class DefaultSettings {
   static const bool useDynamicColor = true;
   static const bool useTrueBlack = true;
   static const String appFont = 'rock_salt';
-  // Options:
-  // 'default' - Standard system font (clean, legible)
-  // 'caveat' - Handwriting style
-  // 'permanent_marker' - Bold marker style
-  // 'rock_salt' - Rough, hand-lettered style (Note: scaled down due to size)
-  static const bool uiScaleDesktopDefault = false; // Default for large screens
-  static const bool uiScaleMobileDefault =
-      false; // Default for small screens (<720)
+  static const bool uiScaleDesktopDefault = false;
+  static const bool uiScaleMobileDefault = false;
   static const bool highlightPlayingWithRgb = true;
-  static const int glowMode =
-      0; // 0=Off, 1-100=Intensity Percentage (e.g. 50=Half)
+  static const int glowMode = 0;
   static const double rgbAnimationSpeed = 0.5;
 
   // Show Card & content
@@ -63,7 +56,7 @@ class DefaultSettings {
 
   // Screensaver (steal)
   static const bool useOilScreensaver = true;
-  static const String oilScreensaverMode = 'standard'; // 'standard' or 'kiosk'
+  static const String oilScreensaverMode = 'standard';
   static const int oilScreensaverInactivityMinutes = 5;
 
   // Steal Visualizer Parameters
@@ -86,10 +79,9 @@ class DefaultSettings {
   static const double oilAudioPeakDecay = 0.95;
   static const bool oilShowInfoBanner = true;
 
-  // Ring controls
-  static const double oilOuterRingScale =
-      1.2; // slightly larger than code default
-  static const double oilInnerRingScale = 1.2;
-  static const double oilRingGap = 0.0;
-  static const double oilOrbitDrift = 1.0;
+  // Ring controls (3-ring gap model)
+  static const double oilInnerRingScale = 1.0; // base inner ring size
+  static const double oilInnerToMiddleGap = 0.3; // gap inner→middle (0–1)
+  static const double oilMiddleToOuterGap = 0.3; // gap middle→outer (0–1)
+  static const double oilOrbitDrift = 1.0; // 0=centered, 1=default drift
 }

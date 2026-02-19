@@ -1,3 +1,9 @@
+Release 1.0.96:
+- Stability: Hardened `AudioCacheService` to prevent race conditions during cache directory iteration (fixes `PathNotFoundException`).
+- Stability: Resolved `ProviderNotFoundException` in playback message tests by properly mocking `DeviceService`.
+- Stability: Synchronized screensaver test mocks with the 3-ring visualizer model to resolve null errors.
+- Internal: Refined `steal_banner.dart` casting and cleaned up lint warnings in TV settings components.
+
 Release 1.0.95:
 - UI (Screensaver): Added "Ring Controls" for deep customization of the text rings (Scale, Gap, and Orbit Drift).
 - UI (Screensaver): Increased default ring sizes for improved legibility on large TV displays.
