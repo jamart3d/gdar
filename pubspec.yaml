@@ -1,7 +1,7 @@
 name: shakedown
 description: gapless playback of select grateful dead shows from archive.org
 publish_to: 'none'
-version: 1.0.90+90
+version: 1.0.91+91
 
 environment:
   sdk: '>=3.0.0 <4.0.0'

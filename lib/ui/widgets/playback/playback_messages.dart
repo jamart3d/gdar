@@ -4,6 +4,7 @@ import 'package:just_audio/just_audio.dart';
 import 'package:provider/provider.dart';
 import 'package:shakedown/providers/audio_provider.dart';
 import 'package:shakedown/providers/settings_provider.dart';
+import 'package:shakedown/services/device_service.dart';
 import 'package:shakedown/utils/font_layout_config.dart';
 import 'package:shakedown/utils/utils.dart';
 
@@ -78,9 +79,13 @@ class _PlaybackMessagesState extends State<PlaybackMessages> {
     final colorScheme = Theme.of(context).colorScheme;
     final audioProvider = context.watch<AudioProvider>();
     final settingsProvider = context.watch<SettingsProvider>();
+    final isTv = context.read<DeviceService>().isTv;
     final double scaleFactor =
         FontLayoutConfig.getEffectiveScale(context, settingsProvider);
     final double labelsFontSize = 12.0 * scaleFactor;
+
+    // On TV force default system font regardless of app font setting
+    final String? fontFamily = isTv ? 'Roboto' : null;
 
     if (!settingsProvider.showPlaybackMessages) {
       return const SizedBox.shrink();
@@ -99,7 +104,7 @@ class _PlaybackMessagesState extends State<PlaybackMessages> {
 
         if (_agentMessage != null) {
           statusText = _agentMessage!;
-          statusColor = colorScheme.error; // Highlight agent messages
+          statusColor = colorScheme.error;
         } else if (processingState == ProcessingState.loading) {
           statusText = 'Loading...';
         } else if (processingState == ProcessingState.buffering) {
@@ -119,8 +124,7 @@ class _PlaybackMessagesState extends State<PlaybackMessages> {
               color: statusColor ?? colorScheme.onSurfaceVariant,
               fontWeight: FontWeight.bold,
               fontSize: labelsFontSize,
-              fontFamily: null,
-              fontFamilyFallback: null,
+              fontFamily: fontFamily,
             ),
           ),
           if (widget.showDivider) ...[
@@ -130,8 +134,7 @@ class _PlaybackMessagesState extends State<PlaybackMessages> {
               style: TextStyle(
                 color: colorScheme.onSurfaceVariant,
                 fontSize: labelsFontSize,
-                fontFamily: null,
-                fontFamilyFallback: null,
+                fontFamily: fontFamily,
               ),
             ),
             const SizedBox(width: 8),
@@ -146,8 +149,7 @@ class _PlaybackMessagesState extends State<PlaybackMessages> {
                 style: TextStyle(
                   color: colorScheme.onSurfaceVariant,
                   fontSize: labelsFontSize,
-                  fontFamily: null,
-                  fontFamilyFallback: null,
+                  fontFamily: fontFamily,
                 ),
               );
             },

@@ -9,9 +9,9 @@ import 'package:provider/provider.dart';
 class CollectionStatistics extends StatelessWidget {
   final bool initiallyExpanded;
 
-  /// When false the Source Categories Details expansion tile is hidden.
-  /// Set to false on TV where D-pad navigation makes nested expand/collapse
-  /// awkward and the category breakdown is not needed.
+  /// When false (TV) the Source Categories are rendered as plain flat rows —
+  /// no ExpansionTile, no expand/collapse chrome.
+  /// When true (mobile) the existing collapsible ExpansionTile is shown.
   final bool showCategoryDetails;
 
   const CollectionStatistics({
@@ -34,7 +34,6 @@ class CollectionStatistics extends StatelessWidget {
     int totalSongs = 0;
     int totalDurationSeconds = 0;
 
-    // Category IDs
     int catBettySources = 0;
     int catUltraSources = 0;
     int catMatrixSources = 0;
@@ -59,7 +58,6 @@ class CollectionStatistics extends StatelessWidget {
           totalDurationSeconds += track.duration;
         }
 
-        // Count Categories
         final srcType = source.src?.toLowerCase() ?? '';
         final url = source.tracks.isNotEmpty
             ? source.tracks.first.url.toLowerCase()
@@ -91,7 +89,6 @@ class CollectionStatistics extends StatelessWidget {
         if (srcType == 'sbd' || url.contains('sbd')) {
           cats.add('sbd');
         }
-        // Check for 'unk' (featured tracks)
         bool hasFeatTrack = source.tracks
             .any((track) => track.title.toLowerCase().startsWith('gd'));
         if (hasFeatTrack) {
@@ -132,6 +129,49 @@ class CollectionStatistics extends StatelessWidget {
     final duration = Duration(seconds: totalDurationSeconds);
     final days = duration.inDays;
     final hours = duration.inHours % 24;
+
+    // Flat category rows used on TV (no ExpansionTile)
+    Widget _catRow(String label, int showCount, int sourceCount) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 3),
+        child: Row(
+          children: [
+            Text(
+              label,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    fontSize: 10 * scaleFactor,
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+            ),
+            const Spacer(),
+            Text(
+              '$showCount Shows / $sourceCount Sources',
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    fontSize: 8.5 * scaleFactor,
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    final flatCategoryRows = [
+      if (catBettySources > 0)
+        _catRow('Betty Boards', catBettyShows.length, catBettySources),
+      if (catUltraSources > 0)
+        _catRow('Ultra Matrix', catUltraShows.length, catUltraSources),
+      if (catMatrixSources > 0)
+        _catRow('Matrix', catMatrixShows.length, catMatrixSources),
+      if (catDsbdSources > 0)
+        _catRow('Digital SBD', catDsbdShows.length, catDsbdSources),
+      if (catFmSources > 0)
+        _catRow('FM Broadcast', catFmShows.length, catFmSources),
+      if (catSbdSources > 0)
+        _catRow('Soundboard', catSbdShows.length, catSbdSources),
+      if (catUnkSources > 0)
+        _catRow('Unknown Shows', catUnkShows.length, catUnkSources),
+    ];
 
     return SectionCard(
       scaleFactor: scaleFactor,
@@ -205,6 +245,13 @@ class CollectionStatistics extends StatelessWidget {
             ),
           ),
         ),
+        // TV: flat rows, no expand/collapse chrome
+        if (!showCategoryDetails && flatCategoryRows.isNotEmpty) ...[
+          const SizedBox(height: 4),
+          ...flatCategoryRows,
+          const SizedBox(height: 4),
+        ],
+        // Mobile: collapsible ExpansionTile
         if (showCategoryDetails)
           ExpansionTile(
             dense: true,

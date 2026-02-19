@@ -1,3 +1,9 @@
+Release 1.0.91:
+- UI (Screensaver): Dual-ring metadata display. Outer ring (Venue/Date) and Inner ring (Track) now rotate in opposite directions with smooth fade-through transitions.
+- UI (Playback): Redesigned header with reactive Rating stars, stadium icons, and location details.
+- UI (TV): Improved font rendering in Playback Messages by forcing standard system fonts.
+- UI (TV): Cleaner Collection Statistics view with collapsible detail sections.
+
 Release 1.0.90:
 - Feature: Woodstock Mode — A special 4:20 PM easter egg with a gold and green psychedelic theme.
 - UI (Screensaver): The text banner now orbits the logo in a meditative Lissajous path.

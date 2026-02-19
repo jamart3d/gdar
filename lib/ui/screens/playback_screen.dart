@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
-
 import 'package:shakedown/providers/audio_provider.dart';
 import 'package:shakedown/providers/settings_provider.dart';
 import 'package:shakedown/ui/widgets/playback/playback_panel.dart';
@@ -14,9 +13,40 @@ import 'package:shakedown/utils/font_layout_config.dart';
 import 'package:shakedown/utils/color_generator.dart';
 import 'package:shakedown/models/track.dart';
 import 'package:shakedown/models/source.dart';
+import 'package:shakedown/models/rating.dart';
+import 'package:shakedown/services/catalog_service.dart';
+import 'package:shakedown/ui/widgets/src_badge.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'dart:async';
 import 'package:shakedown/services/device_service.dart';
 import 'package:shakedown/ui/widgets/tv/tv_scrollbar.dart';
+
+// ── Small private widgets ─────────────────────────────────────────────────────
+
+class _RatingStars extends StatelessWidget {
+  final int rating; // 1–3
+  final Color color;
+
+  const _RatingStars({required this.rating, required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    const int total = 3;
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      spacing: 2,
+      children: List.generate(total, (i) {
+        return Icon(
+          i < rating ? Icons.star_rounded : Icons.star_outline_rounded,
+          size: 16,
+          color: color,
+        );
+      }),
+    );
+  }
+}
+
+// ── Main widget ───────────────────────────────────────────────────────────────
 
 class PlaybackScreen extends StatefulWidget {
   final bool initiallyOpen;
@@ -161,14 +191,11 @@ class PlaybackScreenState extends State<PlaybackScreen>
         bool skipScroll = false;
         if (positions.isNotEmpty) {
           if (force) {
-            // If forced (manual tap/focus), only skip if we are already close to the target alignment
             final isAligned = positions.any((position) =>
                 position.index == targetIndex &&
-                (position.itemLeadingEdge - alignment).abs() <
-                    0.05); // 5% tolerance
+                (position.itemLeadingEdge - alignment).abs() < 0.05);
             if (isAligned) skipScroll = true;
           } else {
-            // If auto-scroll, skip if fully visible within the allowed range
             final isVisible = positions.any((position) =>
                 position.index == targetIndex &&
                 position.itemLeadingEdge >= 0 &&
@@ -196,8 +223,6 @@ class PlaybackScreenState extends State<PlaybackScreen>
 
       // 2. Handle Focus Sync (TV only)
       if (syncFocus && context.read<DeviceService>().isTv) {
-        // Only move focus if the track list (or one of its items) already has focus.
-        // We check if any of our managed track focus nodes is currently the primary focus.
         bool listHasFocus = false;
         for (var node in _trackFocusNodes.values) {
           if (node.hasFocus) {
@@ -205,9 +230,7 @@ class PlaybackScreenState extends State<PlaybackScreen>
             break;
           }
         }
-
         if (listHasFocus) {
-          // Move focus to the new target
           _focusTrack(targetIndex, shouldScroll: false);
         }
       }
@@ -222,22 +245,13 @@ class PlaybackScreenState extends State<PlaybackScreen>
     final currentTrack = audioProvider.currentTrack;
     final currentSource = audioProvider.currentSource;
 
-    if (currentSource == null) {
-      // No source, can't focus anything really.
-      return;
-    }
+    if (currentSource == null) return;
 
-    // If no track playing, focus first item (index 1 usually as 0 is set header)
     if (currentTrack == null) {
-      // Find first track index
-      // Logic assumes Set 1 Header is index 0, so index 1 is first track.
-      // But verify with list construction logic just in case.
-      // Safe bet: find first Track item.
       _focusTrack(1);
       return;
     }
 
-    // Build the list structure to find the index
     final Map<String, List<Track>> tracksBySet = {};
     for (var track in currentSource.tracks) {
       if (!tracksBySet.containsKey(track.setName)) {
@@ -266,14 +280,11 @@ class PlaybackScreenState extends State<PlaybackScreen>
     if (targetIndex != -1) {
       _focusTrack(targetIndex);
     } else {
-      // Fallback
       _focusTrack(1);
     }
   }
 
   int _calculateTotalItems(Source source) {
-    // Logic must match what TrackListView uses to build its list.
-    // TrackListView uses grouping by set.
     final Map<String, List<Track>> tracksBySet = {};
     for (var track in source.tracks) {
       if (!tracksBySet.containsKey(track.setName)) {
@@ -293,7 +304,6 @@ class PlaybackScreenState extends State<PlaybackScreen>
     if (index < 0) return;
 
     bool needsRebuild = false;
-    // Ensure the focus node exists
     if (!_trackFocusNodes.containsKey(index)) {
       _trackFocusNodes[index] = FocusNode();
       needsRebuild = true;
@@ -304,11 +314,9 @@ class PlaybackScreenState extends State<PlaybackScreen>
     }
 
     if (shouldScroll && _itemScrollController.isAttached) {
-      // Scroll to the track to ensure it's built and visible
       _itemScrollController.jumpTo(index: index, alignment: 0.3);
     }
 
-    // Wait for a frame to ensure the PlaybackScreen is rebuilt and the Focus widget is mounted
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         _trackFocusNodes[index]?.requestFocus();
@@ -317,23 +325,17 @@ class PlaybackScreenState extends State<PlaybackScreen>
   }
 
   void _handleScrollbarLeft() {
-    // 1. Try to find the middle visible item
     final positions = _itemPositionsListener.itemPositions.value;
     int targetIndex = -1;
 
     if (positions.isNotEmpty) {
-      // Sort positions by index just in case
       final sorted = positions.toList()
         ..sort((a, b) => a.index.compareTo(b.index));
 
-      // Find item closest to center (0.5)
       double bestDistance = 999.0;
-
       for (var pos in sorted) {
-        // Center of the item
         final itemCenter = (pos.itemLeadingEdge + pos.itemTrailingEdge) / 2;
         final distance = (itemCenter - 0.5).abs();
-
         if (distance < bestDistance) {
           bestDistance = distance;
           targetIndex = pos.index;
@@ -341,19 +343,16 @@ class PlaybackScreenState extends State<PlaybackScreen>
       }
     }
 
-    // 2. If valid target found, focus it
     if (targetIndex != -1) {
       _focusTrack(targetIndex, shouldScroll: false);
       return;
     }
 
-    // 3. Fallback: Current Playing Track (Mapped to list index)
     final audioProvider = context.read<AudioProvider>();
     final currentSource = audioProvider.currentSource;
     final trackIndex = audioProvider.audioPlayer.currentIndex;
 
     if (currentSource != null && trackIndex != null) {
-      // Find the list index for this track index
       int listIdx = 0;
       int tIdx = 0;
       final Map<String, List<Track>> tracksBySet = {};
@@ -385,7 +384,6 @@ class PlaybackScreenState extends State<PlaybackScreen>
       }
     }
 
-    // 4. Fallback: First track (Index 1 usually, after first header)
     _focusTrack(1, shouldScroll: false);
   }
 
@@ -409,7 +407,6 @@ class PlaybackScreenState extends State<PlaybackScreen>
     if (audioProvider.currentTrack?.title != _lastTrackTitle) {
       _lastTrackTitle = audioProvider.currentTrack?.title;
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        // If panel is open (or opening), limit visibility to top 40%
         final isPanelOpen = _panelPositionNotifier.value > 0.1;
         _scrollToCurrentTrack(true,
             maxVisibleY: isPanelOpen ? 0.4 : 1.0, syncFocus: true);
@@ -419,7 +416,6 @@ class PlaybackScreenState extends State<PlaybackScreen>
     final colorScheme = Theme.of(context).colorScheme;
     Color backgroundColor = colorScheme.surface;
 
-    // Check for True Black mode
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     final isTrueBlackMode = isDarkMode && settingsProvider.useTrueBlack;
 
@@ -439,15 +435,10 @@ class PlaybackScreenState extends State<PlaybackScreen>
     final double scaleFactor =
         FontLayoutConfig.getEffectiveScale(context, settingsProvider);
 
-    // minHeight covering the drag handle + Venue/Copy row.
     final double bottomPadding = MediaQuery.of(context).padding.bottom;
-    // Bumped from 92.0 to 96.0 to accommodate larger fonts like Caveat
-    // Adjusted: If scaled, use 75.0 base (75*1.35~=101.25) to accomodate Caveat + Scale
     final double baseHeight = settingsProvider.uiScale ? 75.0 : 96.0;
     final double minPanelHeight = (baseHeight * scaleFactor) + bottomPadding;
 
-    // maxHeight constraint to ~40% of screen (0.42 if scaled).
-    // user enforced strict height regardless of font.
     final double maxPanelHeight = MediaQuery.of(context).size.height *
         (settingsProvider.uiScale ? 0.42 : 0.40);
 
@@ -460,29 +451,47 @@ class PlaybackScreenState extends State<PlaybackScreen>
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Padding(
-                padding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
+                padding: const EdgeInsets.fromLTRB(24, 28, 24, 14),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: [
+                    // Row 1: date (smaller) + rating stars flush right
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.baseline,
-                      textBaseline: TextBaseline.alphabetic,
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Text(
                           currentShow.formattedDate,
                           style: TextStyle(
                             fontFamily: 'RockSalt',
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                            color: colorScheme.onSurface,
+                            fontSize: 17,
+                            fontWeight: FontWeight.w500,
+                            color:
+                                colorScheme.onSurface.withValues(alpha: 0.70),
                           ),
+                        ),
+                        const Spacer(),
+                        // Rating stars — reactive to Hive changes
+                        ValueListenableBuilder<Box<Rating>>(
+                          valueListenable: CatalogService().ratingsListenable,
+                          builder: (context, _, __) {
+                            final r =
+                                CatalogService().getRating(currentSource.id);
+                            if (r > 0) {
+                              return _RatingStars(
+                                rating: r,
+                                color: colorScheme.primary,
+                              );
+                            }
+                            return const SizedBox.shrink();
+                          },
                         ),
                       ],
                     ),
+                    const SizedBox(height: 12),
+                    // Row 2: venue + location + SBD badge
                     Wrap(
-                      spacing: 16,
+                      spacing: 14,
                       runSpacing: 8,
                       crossAxisAlignment: WrapCrossAlignment.center,
                       children: [
@@ -491,15 +500,15 @@ class PlaybackScreenState extends State<PlaybackScreen>
                           children: [
                             Icon(
                               Icons.stadium_rounded,
-                              size: 18,
+                              size: 17,
                               color: colorScheme.primary,
                             ),
-                            const SizedBox(width: 8),
+                            const SizedBox(width: 7),
                             Text(
                               currentShow.venue,
                               style: TextStyle(
                                 fontFamily: 'RockSalt',
-                                fontSize: 16,
+                                fontSize: 15,
                                 fontWeight: FontWeight.bold,
                                 color: colorScheme.primary,
                               ),
@@ -512,21 +521,23 @@ class PlaybackScreenState extends State<PlaybackScreen>
                             children: [
                               Icon(
                                 Icons.place_outlined,
-                                size: 18,
+                                size: 17,
                                 color: colorScheme.onSurfaceVariant,
                               ),
-                              const SizedBox(width: 8),
+                              const SizedBox(width: 7),
                               Text(
                                 currentSource.location!,
                                 style: TextStyle(
                                   fontFamily: 'RockSalt',
-                                  fontSize: 16,
+                                  fontSize: 14,
                                   fontWeight: FontWeight.w500,
                                   color: colorScheme.onSurfaceVariant,
                                 ),
                               ),
                             ],
                           ),
+                        if (currentSource.src != null)
+                          SrcBadge(src: currentSource.src!, isPlaying: false),
                       ],
                     ),
                   ],
@@ -538,23 +549,19 @@ class PlaybackScreenState extends State<PlaybackScreen>
                     Expanded(
                       child: TrackListView(
                         source: currentSource,
-                        bottomPadding:
-                            16.0, // Reduced padding as bar is floating
+                        bottomPadding: 16.0,
                         topPadding: 0.0,
                         itemScrollController: _itemScrollController,
                         itemPositionsListener: _itemPositionsListener,
                         audioProvider: audioProvider,
                         trackFocusNodes: _trackFocusNodes,
                         onFocusLeft: () {
-                          // Center the current playing track when navigating away (to keep it visible in side pane)
                           _scrollToCurrentTrack(true,
                               force: true, alignment: 0.5);
                           widget.onTrackListLeft?.call();
                         },
-                        onFocusRight: widget
-                            .onTrackListRight, // Or internal scrollbar focus?
+                        onFocusRight: widget.onTrackListRight,
                         onTrackFocused: (index) {
-                          // Auto-scroll when navigating with D-pad
                           _scrollToCurrentTrack(true,
                               force: true, forceTargetIndex: index);
                         },
@@ -581,7 +588,6 @@ class PlaybackScreenState extends State<PlaybackScreen>
             60.0 +
             ((maxPanelHeight - minPanelHeight) * panelPosition);
 
-        // M3 Expressive: Immersive track list aligned to standard AppBar height
         const double topGap = 0.0;
         const double appBarHeight = kToolbarHeight;
         final double immersiveTopPadding =
