@@ -85,4 +85,11 @@ class DefaultSettings {
   static const double oilAudioBassBoost = 2.0;
   static const double oilAudioPeakDecay = 0.95;
   static const bool oilShowInfoBanner = true;
+
+  // Ring controls
+  static const double oilOuterRingScale =
+      1.2; // slightly larger than code default
+  static const double oilInnerRingScale = 1.2;
+  static const double oilRingGap = 0.0;
+  static const double oilOrbitDrift = 1.0;
 }

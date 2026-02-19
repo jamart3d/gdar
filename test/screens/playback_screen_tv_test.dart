@@ -190,6 +190,14 @@ class FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
   bool get oilBannerGlow => false;
   @override
   double get oilBannerFlicker => 0.0;
+  @override
+  double get oilOuterRingScale => 1.2;
+  @override
+  double get oilInnerRingScale => 1.2;
+  @override
+  double get oilRingGap => 0.0;
+  @override
+  double get oilOrbitDrift => 1.0;
 
   @override
   void toggleOilPaletteCycle() {}
@@ -211,6 +219,14 @@ class FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
   void toggleOilBannerGlow() {}
   @override
   Future<void> setOilBannerFlicker(double value) async {}
+  @override
+  Future<void> setOilOuterRingScale(double value) async {}
+  @override
+  Future<void> setOilInnerRingScale(double value) async {}
+  @override
+  Future<void> setOilRingGap(double value) async {}
+  @override
+  Future<void> setOilOrbitDrift(double value) async {}
   @override
   Future<void> setSourceCategoryFilter(String category, bool isActive) async {}
   @override

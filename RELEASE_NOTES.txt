@@ -1,3 +1,9 @@
+Release 1.0.95:
+- UI (Screensaver): Added "Ring Controls" for deep customization of the text rings (Scale, Gap, and Orbit Drift).
+- UI (Screensaver): Increased default ring sizes for improved legibility on large TV displays.
+- UI (TV): Exposed new visualizer ring parameters in the Settings menu under Info Banner options.
+- Stability: Resolved test regressions in TV dual-pane and playback screen mocks.
+
 Release 1.0.94:
 - UI (Screensaver): Added Blur Amount and Flat Color modes for deeper visual customization.
 - UI (Screensaver): Implemented professional Neon Glow and Flicker effects for the circular banner.

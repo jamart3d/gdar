@@ -75,6 +75,12 @@ class SettingsProvider with ChangeNotifier {
   static const String _oilBannerGlowKey = 'oil_banner_glow';
   static const String _oilBannerFlickerKey = 'oil_banner_flicker';
 
+  // Ring controls
+  static const String _oilOuterRingScaleKey = 'oil_outer_ring_scale';
+  static const String _oilInnerRingScaleKey = 'oil_inner_ring_scale';
+  static const String _oilRingGapKey = 'oil_ring_gap';
+  static const String _oilOrbitDriftKey = 'oil_orbit_drift';
+
   static const String _marqueeEnabledKey =
       'marquee_enabled'; // Logic for disabling marquee in tests
 
@@ -157,6 +163,12 @@ class SettingsProvider with ChangeNotifier {
   late bool _oilBannerGlow;
   late double _oilBannerFlicker;
 
+  // Ring controls
+  late double _oilOuterRingScale;
+  late double _oilInnerRingScale;
+  late double _oilRingGap;
+  late double _oilOrbitDrift;
+
   Color? _seedColor;
 
   // Ratings & Played Status moved to CatalogService (Hive)
@@ -223,6 +235,12 @@ class SettingsProvider with ChangeNotifier {
   bool get oilFlatColor => _oilFlatColor;
   bool get oilBannerGlow => _oilBannerGlow;
   double get oilBannerFlicker => _oilBannerFlicker;
+
+  // Ring control getters
+  double get oilOuterRingScale => _oilOuterRingScale;
+  double get oilInnerRingScale => _oilInnerRingScale;
+  double get oilRingGap => _oilRingGap;
+  double get oilOrbitDrift => _oilOrbitDrift;
 
   Color? get seedColor => _seedColor;
 
@@ -462,6 +480,16 @@ class SettingsProvider with ChangeNotifier {
     _oilBannerFlicker = _prefs.getDouble(_oilBannerFlickerKey) ??
         DefaultSettings.oilBannerFlicker;
 
+    // Ring controls
+    _oilOuterRingScale = _prefs.getDouble(_oilOuterRingScaleKey) ??
+        DefaultSettings.oilOuterRingScale;
+    _oilInnerRingScale = _prefs.getDouble(_oilInnerRingScaleKey) ??
+        DefaultSettings.oilInnerRingScale;
+    _oilRingGap =
+        _prefs.getDouble(_oilRingGapKey) ?? DefaultSettings.oilRingGap;
+    _oilOrbitDrift =
+        _prefs.getDouble(_oilOrbitDriftKey) ?? DefaultSettings.oilOrbitDrift;
+
     if (isTv) {
       _oilScreensaverMode = 'steal';
     }
@@ -641,6 +669,16 @@ class SettingsProvider with ChangeNotifier {
       _updatePreference(_oilBannerGlowKey, _oilBannerGlow = !_oilBannerGlow);
   Future<void> setOilBannerFlicker(double value) =>
       _updateDoublePreference(_oilBannerFlickerKey, _oilBannerFlicker = value);
+
+  // Ring control setters
+  Future<void> setOilOuterRingScale(double value) => _updateDoublePreference(
+      _oilOuterRingScaleKey, _oilOuterRingScale = value.clamp(0.5, 2.0));
+  Future<void> setOilInnerRingScale(double value) => _updateDoublePreference(
+      _oilInnerRingScaleKey, _oilInnerRingScale = value.clamp(0.5, 2.0));
+  Future<void> setOilRingGap(double value) => _updateDoublePreference(
+      _oilRingGapKey, _oilRingGap = value.clamp(0.0, 1.0));
+  Future<void> setOilOrbitDrift(double value) => _updateDoublePreference(
+      _oilOrbitDriftKey, _oilOrbitDrift = value.clamp(0.0, 2.0));
 
   // Source Filtering
   static const String _filterHighestShnidKey = 'filter_highest_shnid';

@@ -20,6 +20,10 @@ class StealConfig {
   final String date; // outer ring: date
   final bool paletteCycle;
   final double paletteTransitionSpeed;
+  final double outerRingScale; // 1.0 = default outer radius
+  final double innerRingScale; // 1.0 = default inner radius
+  final double ringGap; // 0.0 = default separation, >0 pushes rings apart
+  final double orbitDrift; // 1.0 = default drift amplitude
 
   static const Map<String, List<Color>> palettes = {
     'psychedelic': [
@@ -79,6 +83,10 @@ class StealConfig {
     this.date = '',
     this.paletteCycle = false,
     this.paletteTransitionSpeed = 5.0,
+    this.outerRingScale = 1.0,
+    this.innerRingScale = 1.0,
+    this.ringGap = 0.0,
+    this.orbitDrift = 1.0,
   });
 
   factory StealConfig.fromMap(Map<String, dynamic> map) {
@@ -102,6 +110,10 @@ class StealConfig {
       paletteCycle: map['paletteCycle'] as bool? ?? false,
       paletteTransitionSpeed:
           (map['paletteTransitionSpeed'] as num?)?.toDouble() ?? 5.0,
+      outerRingScale: (map['outerRingScale'] as num?)?.toDouble() ?? 1.0,
+      innerRingScale: (map['innerRingScale'] as num?)?.toDouble() ?? 1.0,
+      ringGap: (map['ringGap'] as num?)?.toDouble() ?? 0.0,
+      orbitDrift: (map['orbitDrift'] as num?)?.toDouble() ?? 1.0,
     );
   }
 
@@ -125,6 +137,10 @@ class StealConfig {
       'date': date,
       'paletteCycle': paletteCycle,
       'paletteTransitionSpeed': paletteTransitionSpeed,
+      'outerRingScale': outerRingScale,
+      'innerRingScale': innerRingScale,
+      'ringGap': ringGap,
+      'orbitDrift': orbitDrift,
     };
   }
 
@@ -147,6 +163,10 @@ class StealConfig {
     String? date,
     bool? paletteCycle,
     double? paletteTransitionSpeed,
+    double? outerRingScale,
+    double? innerRingScale,
+    double? ringGap,
+    double? orbitDrift,
   }) {
     return StealConfig(
       flowSpeed: flowSpeed ?? this.flowSpeed,
@@ -169,6 +189,10 @@ class StealConfig {
       paletteCycle: paletteCycle ?? this.paletteCycle,
       paletteTransitionSpeed:
           paletteTransitionSpeed ?? this.paletteTransitionSpeed,
+      outerRingScale: outerRingScale ?? this.outerRingScale,
+      innerRingScale: innerRingScale ?? this.innerRingScale,
+      ringGap: ringGap ?? this.ringGap,
+      orbitDrift: orbitDrift ?? this.orbitDrift,
     );
   }
 }

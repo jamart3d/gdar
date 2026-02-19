@@ -12,11 +12,11 @@ import 'package:shakedown/steal_screensaver/steal_game.dart';
 /// Both rings fade through black when their content changes.
 /// Optional neon glow (triple-layer) and flicker are driven by StealConfig.
 class StealBanner extends Component with HasGameReference<StealGame> {
-  // ── Tuning constants ───────────────────────────────────────────────────────
+  // ── Base radius ratios (scaled by config at render time) ───────────────────
   static const double _outerRotationSpeed = 0.04;
   static const double _innerRotationSpeed = 0.028;
-  static const double _outerRadiusRatio = 0.155;
-  static const double _innerRadiusRatio = 0.105;
+  static const double _baseOuterRadiusRatio = 0.185; // slightly larger default
+  static const double _baseInnerRadiusRatio = 0.130;
   static const double _fontSize = 11.0;
   static const double _fadeSpeed = 0.6;
   static const double _ringFadeSpeed = 1.2;
@@ -147,24 +147,19 @@ class StealBanner extends Component with HasGameReference<StealGame> {
   void _tickFlicker(double dt) {
     final strength = game.config.bannerFlicker.clamp(0.0, 1.0);
     if (strength <= 0.0) {
-      // Smoothly restore full brightness when flicker is off
       _flickerValue = (_flickerValue + _flickerLerpSpeed * dt).clamp(0.0, 1.0);
       return;
     }
 
-    // Lerp toward current target
     _flickerValue += (_flickerTarget - _flickerValue) * _flickerLerpSpeed * dt;
     _flickerValue = _flickerValue.clamp(0.0, 1.0);
 
-    // Schedule next random event
     _flickerTimer -= dt;
     if (_flickerTimer <= 0.0) {
-      // Higher strength = deeper dips
       final minBrightness = 1.0 - strength * 0.85;
       _flickerTarget =
           minBrightness + _rng.nextDouble() * (1.0 - minBrightness);
 
-      // Higher strength = faster buzz (0.04–0.15s), lower = occasional dip (0.3–1.2s)
       final minInterval = ui.lerpDouble(0.3, 0.04, strength)!;
       final maxInterval = ui.lerpDouble(1.2, 0.15, strength)!;
       _flickerTimer =
@@ -180,15 +175,26 @@ class StealBanner extends Component with HasGameReference<StealGame> {
     final h = game.size.y;
     if (w < 2 || h < 2) return;
 
-    final t = game.time * game.config.flowSpeed.clamp(0.0, 2.0) * 0.5;
-    final px = 0.5 + 0.25 * sin(t * 1.3) + 0.1 * sin(t * 2.9);
-    final py = 0.5 + 0.25 * cos(t * 1.7) + 0.1 * cos(t * 3.1);
+    final config = game.config;
+    final drift = config.orbitDrift.clamp(0.0, 2.0);
+    final t = game.time * config.flowSpeed.clamp(0.0, 2.0) * 0.5;
+
+    // Orbit center drifts based on orbitDrift — 0 = locked to screen center
+    final px = 0.5 + 0.25 * drift * sin(t * 1.3) + 0.1 * drift * sin(t * 2.9);
+    final py = 0.5 + 0.25 * drift * cos(t * 1.7) + 0.1 * drift * cos(t * 3.1);
 
     final center = Offset(px * w, py * h);
-    final outerRadius = min(w, h) * _outerRadiusRatio;
-    final innerRadius = min(w, h) * _innerRadiusRatio;
+    final minDim = min(w, h);
 
-    final glowEnabled = game.config.bannerGlow;
+    // Apply per-ring scale + shared gap
+    final gap = config.ringGap.clamp(0.0, 1.0) * minDim * 0.05;
+    final outerRadius =
+        minDim * _baseOuterRadiusRatio * config.outerRingScale.clamp(0.5, 2.0) +
+            gap;
+    final innerRadius =
+        minDim * _baseInnerRadiusRatio * config.innerRingScale.clamp(0.5, 2.0);
+
+    final glowEnabled = config.bannerGlow;
     final flicker = _flickerValue;
 
     // Outer ring: venue · date (clockwise)
@@ -246,20 +252,10 @@ class StealBanner extends Component with HasGameReference<StealGame> {
     final anglePerSlot = (2 * pi) / arcCount;
     final startAngle = startRotation - pi / 2;
 
-    // Derive neon layer colors from current palette color
     final hsl = HSLColor.fromColor(_currentColor);
-    final coreColor = hsl
-        .withSaturation(0.3)
-        .withLightness(0.95)
-        .toColor(); // near-white tinted core
-    final bloomColor = hsl
-        .withSaturation(1.0)
-        .withLightness(0.6)
-        .toColor(); // tight saturated bloom
-    final glowColor = hsl
-        .withSaturation(1.0)
-        .withLightness(0.5)
-        .toColor(); // wide soft outer glow
+    final coreColor = hsl.withSaturation(0.3).withLightness(0.95).toColor();
+    final bloomColor = hsl.withSaturation(1.0).withLightness(0.6).toColor();
+    final glowColor = hsl.withSaturation(1.0).withLightness(0.5).toColor();
 
     for (int i = 0; i < chars.length; i++) {
       final slotAngle = clockwise
@@ -274,21 +270,18 @@ class StealBanner extends Component with HasGameReference<StealGame> {
       canvas.rotate(clockwise ? slotAngle + pi / 2 : slotAngle - pi / 2);
 
       if (glowEnabled) {
-        // Layer 1: wide outer glow
         _paintChar(
           canvas,
           chars[i],
           color: glowColor.withValues(alpha: effectiveOpacity * 0.45),
           blurRadius: 10.0,
         );
-        // Layer 2: tight inner bloom
         _paintChar(
           canvas,
           chars[i],
           color: bloomColor.withValues(alpha: effectiveOpacity * 0.75),
           blurRadius: 3.5,
         );
-        // Layer 3: sharp bright core
         _paintChar(
           canvas,
           chars[i],
@@ -296,7 +289,6 @@ class StealBanner extends Component with HasGameReference<StealGame> {
           blurRadius: 0.0,
         );
       } else {
-        // Original single-pass with drop shadow
         _paintChar(
           canvas,
           chars[i],

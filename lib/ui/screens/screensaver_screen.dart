@@ -114,21 +114,16 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
 
   // ── Banner text helpers ────────────────────────────────────────────────────
 
-  /// Inner ring: track title only.
-  /// Returns empty string if banner disabled or nothing playing.
   String _composeBannerText(SettingsProvider settings, AudioProvider audio) {
     if (!settings.oilShowInfoBanner) return '';
-    final title = audio.currentTrack?.title ?? '';
-    return title;
+    return audio.currentTrack?.title ?? '';
   }
 
-  /// Outer ring: venue string.
   String _composeVenue(SettingsProvider settings, AudioProvider audio) {
     if (!settings.oilShowInfoBanner) return '';
     return audio.currentShow?.venue ?? '';
   }
 
-  /// Outer ring: date string.
   String _composeDate(SettingsProvider settings, AudioProvider audio) {
     if (!settings.oilShowInfoBanner) return '';
     return audio.currentShow?.date ?? '';
@@ -171,6 +166,10 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
       date: _composeDate(settings, audioProvider),
       paletteCycle: settings.oilPaletteCycle,
       paletteTransitionSpeed: settings.oilPaletteTransitionSpeed,
+      outerRingScale: settings.oilOuterRingScale,
+      innerRingScale: settings.oilInnerRingScale,
+      ringGap: settings.oilRingGap,
+      orbitDrift: settings.oilOrbitDrift,
     );
 
     return PopScope(
