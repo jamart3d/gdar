@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:math';
+import 'dart:ui';
 import 'package:flame/game.dart';
 import 'package:flutter/material.dart' show Color, Colors;
 import 'package:shakedown/steal_screensaver/steal_banner.dart';
@@ -185,8 +186,6 @@ class StealGame extends FlameGame {
   void _applyWoodstockColors(List<Color> colors, double fadeDuration) {
     final lerpSpeed = _lerpSpeedFromFadeDuration(fadeDuration);
     _background?.overrideTargetColors(colors, lerpSpeed);
-    // Banner color follows woodstock — skip luminance check
-    // Venue and date are preserved unchanged during Woodstock
     _banner?.updateBanner(
       config.bannerText,
       colors.first,
@@ -202,7 +201,6 @@ class StealGame extends FlameGame {
     final lerpSpeed = _lerpSpeedFromFadeDuration(_woodstockFadeDuration * 2);
     _background?.overrideTargetColors(paletteColors, lerpSpeed);
     _applyBannerConfig(config);
-    // Fresh hold period after easter egg ends — prevents immediate re-cycle
     _resetHoldTimer();
   }
 
@@ -221,8 +219,6 @@ class StealGame extends FlameGame {
     final rawColor =
         paletteColors.isNotEmpty ? paletteColors.first : Colors.white;
 
-    // Near-white palettes are invisible against the bright shader — fall back
-    // to gold which reads clearly over any shader background.
     final bannerColor =
         rawColor.computeLuminance() > 0.7 ? const Color(0xFFFFD700) : rawColor;
 
@@ -243,6 +239,11 @@ class StealGame extends FlameGame {
 
   double get time => _time;
   AudioEnergy get currentEnergy => _currentEnergy;
+
+  /// Smoothed logo position in 0–1 UV space, driven by StealBackground.
+  /// Used by StealBanner to keep rings locked to the logo center.
+  Offset get smoothedLogoPos =>
+      _background?.smoothedLogoPos ?? const Offset(0.5, 0.5);
 }
 
 enum _WoodstockPhase { idle, yellow, green }

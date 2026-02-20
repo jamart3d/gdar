@@ -206,7 +206,7 @@ void main() {
     test('initializes with default values', () {
       expect(settingsProvider.useOilScreensaver, true);
       expect(settingsProvider.oilPalette, 'acid_green');
-      expect(settingsProvider.oilEnableAudioReactivity, true);
+      expect(settingsProvider.oilEnableAudioReactivity, false);
     });
 
     test('toggles oil audio reactivity', () async {

@@ -1,3 +1,9 @@
+Release 1.1.0:
+- Verification: Unified codebase health check passing with 160 unit and widget tests.
+- Internal: Resolved latent regression in SettingsProvider default values.
+- Internal: Finalized specialized neon flicker pattern logic in StealBanner.
+- Workflow: Standardized production health checks using Dart MCP.
+
 Release 1.0.99:
 - Steal Screensaver: Enhanced Neon Flicker effect with desynchronized buzzing, dropout, and recovery phases.
 - Checkup Workflow: Upgraded to use Dart MCP tools for structured analysis, formatting, and testing.

@@ -84,6 +84,39 @@ class StealBanner extends Component with HasGameReference<StealGame> {
 
   final _rng = Random();
 
+  // ── Date formatting ────────────────────────────────────────────────────────
+
+  /// Converts an ISO-style date string (e.g. "2024-08-15" or "20240815")
+  /// into a human-readable form like "Aug 15, 2024".
+  /// Returns the original string unchanged if it cannot be parsed.
+  static String _formatDate(String raw) {
+    if (raw.isEmpty) return raw;
+    try {
+      // Support both "YYYY-MM-DD" and compact "YYYYMMDD"
+      final normalized = (raw.length == 8 && !raw.contains('-'))
+          ? '${raw.substring(0, 4)}-${raw.substring(4, 6)}-${raw.substring(6, 8)}'
+          : raw;
+      final dt = DateTime.parse(normalized);
+      const months = [
+        'Jan',
+        'Feb',
+        'Mar',
+        'Apr',
+        'May',
+        'Jun',
+        'Jul',
+        'Aug',
+        'Sep',
+        'Oct',
+        'Nov',
+        'Dec',
+      ];
+      return '${months[dt.month - 1]} ${dt.day}, ${dt.year}';
+    } catch (_) {
+      return raw; // not a parseable date — show as-is
+    }
+  }
+
   // ── Public API ─────────────────────────────────────────────────────────────
 
   void updateBanner(
@@ -136,7 +169,7 @@ class StealBanner extends Component with HasGameReference<StealGame> {
       },
     );
     _queueRingUpdate(
-      newText: date,
+      newText: _formatDate(date), // ← formatted here
       current: _innerCurrent,
       opacity: _innerOpacity,
       setCurrent: (v) {
@@ -401,12 +434,11 @@ class StealBanner extends Component with HasGameReference<StealGame> {
     }
 
     final StealConfig config = game.config;
-    final drift = config.orbitDrift.clamp(0.0, 2.0);
-    final t = game.time * config.flowSpeed.clamp(0.0, 2.0) * 0.5;
 
-    final px = 0.5 + 0.25 * drift * sin(t * 1.3) + 0.1 * drift * sin(t * 2.9);
-    final py = 0.5 + 0.25 * drift * cos(t * 1.7) + 0.1 * drift * cos(t * 3.1);
-    final center = Offset(px * w, py * h);
+    // Use the same smoothed logo position that drives the shader —
+    // keeps rings locked to the logo through all translation and scaling.
+    final logoPos = game.smoothedLogoPos;
+    final center = Offset(logoPos.dx * w, logoPos.dy * h);
 
     final minDim = min(w, h);
     final innerR = _innerRadius(minDim, config);
