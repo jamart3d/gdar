@@ -1,3 +1,7 @@
+Release 1.0.99:
+- Steal Screensaver: Enhanced Neon Flicker effect with desynchronized buzzing, dropout, and recovery phases.
+- Checkup Workflow: Upgraded to use Dart MCP tools for structured analysis, formatting, and testing.
+
 Release 1.0.98:
 - UI: Refined `FastScrollbar` with Material 3 expressive design and smoother animation.
 - Stability: Hardened `AudioCacheService` to prevent race conditions during directory iteration.

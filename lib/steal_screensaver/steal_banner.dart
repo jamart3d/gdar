@@ -11,11 +11,29 @@ import 'package:shakedown/steal_screensaver/steal_game.dart';
 /// Middle ring: track title  — clockwise, medium
 /// Inner ring:  date         — clockwise, slowest (smallest radius)
 ///
-/// All rings rotate clockwise. Speed scales with radius so apparent letter
-/// velocity is consistent across all three rings.
-///
-/// Letter angle is derived directly from font size / radius so letters are
-/// always pixel-accurate — never spread around the circumference.
+/// When bannerGlow is enabled, each word gets independent neon-style flicker
+/// driven by a phase machine: idle → buzz → dropout → recover → idle.
+/// The bannerFlicker value (0–1) scales event frequency and amplitude.
+/// Plain text mode is unaffected.
+
+// ── Neon flicker per-word state ────────────────────────────────────────────
+
+enum _FlickerPhase { idle, buzz, dropout, recover }
+
+class _NeonWord {
+  final String text;
+  double brightness = 1.0; // applied as opacity multiplier per-word
+  double target = 1.0;
+  double eventTimer = 0.0; // time until next phase transition
+  _FlickerPhase phase = _FlickerPhase.idle;
+  double buzzFreq = 0.0; // oscillation rate during buzz phase
+  double buzzAmp = 0.0; // amplitude of buzz oscillation
+
+  _NeonWord(this.text);
+}
+
+// ── Main component ─────────────────────────────────────────────────────────
+
 class StealBanner extends Component with HasGameReference<StealGame> {
   // ── Rotation ───────────────────────────────────────────────────────────────
   static const double _baseRotationSpeed = 0.0006;
@@ -24,20 +42,17 @@ class StealBanner extends Component with HasGameReference<StealGame> {
   static const double _baseInnerRadiusRatio = 0.110;
 
   // ── Minimum ring clearance at gap=0 ───────────────────────────────────────
-  // Just enough so letters on adjacent rings don't clip (~19px on 1080p TV).
   static const double _minRingClearance = 0.018;
 
   // ── Font & letter spacing ──────────────────────────────────────────────────
   static const double _fontSize = 11.0;
-  // 1.0 = letters touching, 1.08 = small natural gap readable at TV distance
   static const double _letterSpacingBoost = 1.08;
+  // Extra angle between words (in addition to normal letter spacing)
+  static const double _wordSpacingExtra = 1.6;
 
   // ── Fade ───────────────────────────────────────────────────────────────────
   static const double _fadeSpeed = 0.6;
   static const double _ringFadeSpeed = 1.2;
-
-  // ── Flicker ────────────────────────────────────────────────────────────────
-  static const double _flickerLerpSpeed = 18.0;
 
   // ── Per-ring state ─────────────────────────────────────────────────────────
   String _outerCurrent = '';
@@ -45,18 +60,21 @@ class StealBanner extends Component with HasGameReference<StealGame> {
   double _outerOpacity = 0.0;
   bool _outerFadingOut = false;
   double _outerAngle = 0.0;
+  List<_NeonWord> _outerWords = [];
 
   String _middleCurrent = '';
   String _middlePending = '';
   double _middleOpacity = 0.0;
   bool _middleFadingOut = false;
   double _middleAngle = 0.0;
+  List<_NeonWord> _middleWords = [];
 
   String _innerCurrent = '';
   String _innerPending = '';
   double _innerOpacity = 0.0;
   bool _innerFadingOut = false;
   double _innerAngle = 0.0;
+  List<_NeonWord> _innerWords = [];
 
   // ── Shared ─────────────────────────────────────────────────────────────────
   Color _color = Colors.white;
@@ -64,11 +82,7 @@ class StealBanner extends Component with HasGameReference<StealGame> {
   bool _visible = false;
   double _opacity = 0.0;
 
-  // ── Flicker ────────────────────────────────────────────────────────────────
   final _rng = Random();
-  double _flickerValue = 1.0;
-  double _flickerTarget = 1.0;
-  double _flickerTimer = 0.0;
 
   // ── Public API ─────────────────────────────────────────────────────────────
 
@@ -91,25 +105,52 @@ class StealBanner extends Component with HasGameReference<StealGame> {
       newText: venue,
       current: _outerCurrent,
       opacity: _outerOpacity,
-      setCurrent: (v) => _outerCurrent = v,
-      setPending: (v) => _outerPending = v,
-      setFadingOut: (v) => _outerFadingOut = v,
+      setCurrent: (v) {
+        _outerCurrent = v;
+      },
+      setPending: (v) {
+        _outerPending = v;
+      },
+      setFadingOut: (v) {
+        _outerFadingOut = v;
+      },
+      setWords: (v) {
+        _outerWords = v;
+      },
     );
     _queueRingUpdate(
       newText: trackTitle,
       current: _middleCurrent,
       opacity: _middleOpacity,
-      setCurrent: (v) => _middleCurrent = v,
-      setPending: (v) => _middlePending = v,
-      setFadingOut: (v) => _middleFadingOut = v,
+      setCurrent: (v) {
+        _middleCurrent = v;
+      },
+      setPending: (v) {
+        _middlePending = v;
+      },
+      setFadingOut: (v) {
+        _middleFadingOut = v;
+      },
+      setWords: (v) {
+        _middleWords = v;
+      },
     );
     _queueRingUpdate(
       newText: date,
       current: _innerCurrent,
       opacity: _innerOpacity,
-      setCurrent: (v) => _innerCurrent = v,
-      setPending: (v) => _innerPending = v,
-      setFadingOut: (v) => _innerFadingOut = v,
+      setCurrent: (v) {
+        _innerCurrent = v;
+      },
+      setPending: (v) {
+        _innerPending = v;
+      },
+      setFadingOut: (v) {
+        _innerFadingOut = v;
+      },
+      setWords: (v) {
+        _innerWords = v;
+      },
     );
   }
 
@@ -120,6 +161,7 @@ class StealBanner extends Component with HasGameReference<StealGame> {
     required void Function(String) setCurrent,
     required void Function(String) setPending,
     required void Function(bool) setFadingOut,
+    required void Function(List<_NeonWord>) setWords,
   }) {
     if (newText == current) {
       return;
@@ -127,10 +169,26 @@ class StealBanner extends Component with HasGameReference<StealGame> {
     if (opacity <= 0.05 || current.isEmpty) {
       setCurrent(newText);
       setFadingOut(false);
+      setWords(_buildWords(newText));
     } else {
       setPending(newText);
       setFadingOut(true);
     }
+  }
+
+  /// Split text into words and create _NeonWord objects with randomised
+  /// initial timers so they never all fire at the same time.
+  List<_NeonWord> _buildWords(String text) {
+    if (text.isEmpty) {
+      return [];
+    }
+    final parts = text.split(' ').where((w) => w.isNotEmpty).toList();
+    return parts.map((w) {
+      final word = _NeonWord(w);
+      // Stagger initial idle timers 0–3s so words desync immediately
+      word.eventTimer = _rng.nextDouble() * 3.0;
+      return word;
+    }).toList();
   }
 
   // ── Flame update ───────────────────────────────────────────────────────────
@@ -163,35 +221,56 @@ class StealBanner extends Component with HasGameReference<StealGame> {
       _opacity = (_opacity - _fadeSpeed * dt).clamp(0.0, 1.0);
     }
 
-    _tickFade(
-        dt,
-        _outerFadingOut,
-        _outerOpacity,
-        _outerPending,
-        (v) => _outerOpacity = v,
-        (v) => _outerCurrent = v,
-        (v) => _outerPending = v,
-        (v) => _outerFadingOut = v);
-    _tickFade(
-        dt,
-        _middleFadingOut,
-        _middleOpacity,
-        _middlePending,
-        (v) => _middleOpacity = v,
-        (v) => _middleCurrent = v,
-        (v) => _middlePending = v,
-        (v) => _middleFadingOut = v);
-    _tickFade(
-        dt,
-        _innerFadingOut,
-        _innerOpacity,
-        _innerPending,
-        (v) => _innerOpacity = v,
-        (v) => _innerCurrent = v,
-        (v) => _innerPending = v,
-        (v) => _innerFadingOut = v);
+    _tickFade(dt, _outerFadingOut, _outerOpacity, _outerPending, (v) {
+      _outerOpacity = v;
+    }, (v) {
+      _outerCurrent = v;
+    }, (v) {
+      _outerPending = v;
+    }, (v) {
+      _outerFadingOut = v;
+    }, (v) {
+      _outerWords = v;
+    });
+    _tickFade(dt, _middleFadingOut, _middleOpacity, _middlePending, (v) {
+      _middleOpacity = v;
+    }, (v) {
+      _middleCurrent = v;
+    }, (v) {
+      _middlePending = v;
+    }, (v) {
+      _middleFadingOut = v;
+    }, (v) {
+      _middleWords = v;
+    });
+    _tickFade(dt, _innerFadingOut, _innerOpacity, _innerPending, (v) {
+      _innerOpacity = v;
+    }, (v) {
+      _innerCurrent = v;
+    }, (v) {
+      _innerPending = v;
+    }, (v) {
+      _innerFadingOut = v;
+    }, (v) {
+      _innerWords = v;
+    });
 
-    _tickFlicker(dt);
+    // Tick per-word flicker only when glow is on
+    if (config.bannerGlow && config.bannerFlicker > 0.0) {
+      final strength = config.bannerFlicker.clamp(0.0, 1.0);
+      for (final words in [_outerWords, _middleWords, _innerWords]) {
+        for (final word in words) {
+          _tickWordFlicker(word, dt, strength);
+        }
+      }
+    } else {
+      // Reset all word brightnesses when flicker is off
+      for (final words in [_outerWords, _middleWords, _innerWords]) {
+        for (final word in words) {
+          word.brightness = 1.0;
+        }
+      }
+    }
   }
 
   void _tickFade(
@@ -203,6 +282,7 @@ class StealBanner extends Component with HasGameReference<StealGame> {
     void Function(String) setCurrent,
     void Function(String) setPending,
     void Function(bool) setFadingOut,
+    void Function(List<_NeonWord>) setWords,
   ) {
     if (fadingOut) {
       final next = (opacity - _ringFadeSpeed * dt).clamp(0.0, 1.0);
@@ -211,6 +291,7 @@ class StealBanner extends Component with HasGameReference<StealGame> {
         setCurrent(pending);
         setPending('');
         setFadingOut(false);
+        setWords(_buildWords(pending));
       }
     } else {
       if (_visible) {
@@ -221,24 +302,73 @@ class StealBanner extends Component with HasGameReference<StealGame> {
     }
   }
 
-  void _tickFlicker(double dt) {
-    final strength = game.config.bannerFlicker.clamp(0.0, 1.0);
-    if (strength <= 0.0) {
-      _flickerValue = (_flickerValue + _flickerLerpSpeed * dt).clamp(0.0, 1.0);
-      return;
+  // ── Per-word neon flicker phase machine ────────────────────────────────────
+
+  void _tickWordFlicker(_NeonWord word, double dt, double strength) {
+    word.eventTimer -= dt;
+
+    switch (word.phase) {
+      case _FlickerPhase.idle:
+        // Subtle jitter — brightness near 1.0 with tiny noise
+        final jitter = (strength * 0.03) * (_rng.nextDouble() * 2 - 1);
+        word.brightness =
+            (word.brightness + (1.0 + jitter - word.brightness) * 8.0 * dt)
+                .clamp(0.85, 1.0);
+
+        if (word.eventTimer <= 0.0) {
+          // Decide: buzz or dropout, weighted by strength
+          final doBuzz = _rng.nextDouble() < 0.65;
+          if (doBuzz) {
+            word.phase = _FlickerPhase.buzz;
+            // Duration: 60–200ms, more frequent at high strength
+            word.eventTimer =
+                ui.lerpDouble(0.20, 0.06, strength)! + _rng.nextDouble() * 0.14;
+            word.buzzFreq = 15.0 + _rng.nextDouble() * 10.0; // 15–25 Hz
+            word.buzzAmp = ui.lerpDouble(0.04, 0.18, strength)!;
+          } else {
+            word.phase = _FlickerPhase.dropout;
+            word.eventTimer = 0.025 + _rng.nextDouble() * 0.035; // 25–60ms drop
+            word.target = ui.lerpDouble(0.55, 0.08, strength)!; // how dark
+          }
+          // Next idle: longer at low strength (rare events), shorter at high
+          // (but this sets the NEXT idle after recovery, updated in recover)
+        }
+
+      case _FlickerPhase.buzz:
+        // Fast oscillation around 1.0
+        final osc = sin(word.buzzFreq * 2 * pi * (1.0 - word.eventTimer));
+        word.brightness = (1.0 + osc * word.buzzAmp).clamp(0.7, 1.0);
+        if (word.eventTimer <= 0.0) {
+          word.brightness = 1.0;
+          word.phase = _FlickerPhase.idle;
+          word.eventTimer = _nextIdleTime(strength);
+        }
+
+      case _FlickerPhase.dropout:
+        // Lerp quickly toward dark target
+        word.brightness += (word.target - word.brightness) * 20.0 * dt;
+        if (word.eventTimer <= 0.0) {
+          word.phase = _FlickerPhase.recover;
+          word.eventTimer =
+              0.04 + _rng.nextDouble() * 0.08; // hold dark 40–120ms
+        }
+
+      case _FlickerPhase.recover:
+        // Snap back toward full brightness
+        word.brightness += (1.0 - word.brightness) * 12.0 * dt;
+        if (word.eventTimer <= 0.0) {
+          word.brightness = 1.0;
+          word.phase = _FlickerPhase.idle;
+          word.eventTimer = _nextIdleTime(strength);
+        }
     }
-    _flickerValue += (_flickerTarget - _flickerValue) * _flickerLerpSpeed * dt;
-    _flickerValue = _flickerValue.clamp(0.0, 1.0);
-    _flickerTimer -= dt;
-    if (_flickerTimer <= 0.0) {
-      final minBrightness = 1.0 - strength * 0.85;
-      _flickerTarget =
-          minBrightness + _rng.nextDouble() * (1.0 - minBrightness);
-      final minInterval = ui.lerpDouble(0.3, 0.04, strength)!;
-      final maxInterval = ui.lerpDouble(1.2, 0.15, strength)!;
-      _flickerTimer =
-          minInterval + _rng.nextDouble() * (maxInterval - minInterval);
-    }
+  }
+
+  double _nextIdleTime(double strength) {
+    // Low strength: long quiet periods (2–6s). High strength: short (0.3–1.2s).
+    final minIdle = ui.lerpDouble(2.0, 0.3, strength)!;
+    final maxIdle = ui.lerpDouble(6.0, 1.2, strength)!;
+    return minIdle + _rng.nextDouble() * (maxIdle - minIdle);
   }
 
   // ── Radius helpers ─────────────────────────────────────────────────────────
@@ -247,8 +377,6 @@ class StealBanner extends Component with HasGameReference<StealGame> {
       minDim * _baseInnerRadiusRatio * config.innerRingScale.clamp(0.5, 2.0);
 
   double _middleRadius(double minDim, StealConfig config, double innerR) {
-    // At gap=0: just enough clearance for letters not to clip.
-    // gap 0→1 adds up to ~8% of minDim of additional separation.
     final gap = config.innerToMiddleGap.clamp(0.0, 1.0);
     return innerR + minDim * (_minRingClearance + gap * 0.08);
   }
@@ -286,78 +414,123 @@ class StealBanner extends Component with HasGameReference<StealGame> {
     final outerR = _outerRadius(minDim, config, middleR);
 
     final glowEnabled = config.bannerGlow;
-    final flicker = _flickerValue;
 
     if (_outerCurrent.isNotEmpty && _outerOpacity > 0.01) {
-      _drawRing(canvas, _outerCurrent, center, outerR, _outerAngle,
-          _opacity * _outerOpacity * flicker, glowEnabled);
+      _drawRing(canvas, _outerCurrent, _outerWords, center, outerR, _outerAngle,
+          _opacity * _outerOpacity, glowEnabled);
     }
     if (_middleCurrent.isNotEmpty && _middleOpacity > 0.01) {
-      _drawRing(canvas, _middleCurrent, center, middleR, _middleAngle,
-          _opacity * _middleOpacity * flicker, glowEnabled);
+      _drawRing(canvas, _middleCurrent, _middleWords, center, middleR,
+          _middleAngle, _opacity * _middleOpacity, glowEnabled);
     }
     if (_innerCurrent.isNotEmpty && _innerOpacity > 0.01) {
-      _drawRing(canvas, _innerCurrent, center, innerR, _innerAngle,
-          _opacity * _innerOpacity * flicker, glowEnabled);
+      _drawRing(canvas, _innerCurrent, _innerWords, center, innerR, _innerAngle,
+          _opacity * _innerOpacity, glowEnabled);
     }
   }
 
   void _drawRing(
     Canvas canvas,
     String text,
+    List<_NeonWord> words,
     Offset center,
     double radius,
     double startAngle,
     double effectiveOpacity,
     bool glowEnabled,
   ) {
-    final chars = text.characters.toList();
-    if (chars.isEmpty) {
+    if (text.isEmpty) {
       return;
     }
 
-    // Pixel-accurate letter placement: derive angle from font size / radius.
-    // This means letters are always exactly as close as the font dictates,
-    // regardless of text length or ring size — never spread around the circle.
     final charAngle = (_fontSize * _letterSpacingBoost) / radius;
-
-    // Center the arc at the rotation origin (top of ring at startAngle)
-    final arcSpan = charAngle * (chars.length - 1);
-    final centeredStart = startAngle - pi / 2 - arcSpan / 2;
+    final wordSpaceAngle = charAngle * _wordSpacingExtra;
 
     final hsl = HSLColor.fromColor(_currentColor);
-    final coreColor = hsl.withSaturation(0.3).withLightness(0.95).toColor();
-    final bloomColor = hsl.withSaturation(1.0).withLightness(0.6).toColor();
-    final glowColor = hsl.withSaturation(1.0).withLightness(0.5).toColor();
 
-    for (int i = 0; i < chars.length; i++) {
-      final angle = centeredStart + i * charAngle;
-      final x = center.dx + radius * cos(angle);
-      final y = center.dy + radius * sin(angle);
+    // Tight glow layers (only computed if glow enabled)
+    // Core: near-white, no blur — the lit tube
+    final coreColor = hsl.withSaturation(0.15).withLightness(0.97).toColor();
+    // Inner halo: saturated, very tight blur — color fringe against letters
+    final innerHaloColor =
+        hsl.withSaturation(1.0).withLightness(0.65).toColor();
+    // Outer bloom: same hue, soft spread
+    final outerBloomColor =
+        hsl.withSaturation(1.0).withLightness(0.55).toColor();
+    // Deep bloom: faint wide cast
+    final deepBloomColor =
+        hsl.withSaturation(0.9).withLightness(0.45).toColor();
 
-      canvas.save();
-      canvas.translate(x, y);
-      canvas.rotate(angle + pi / 2);
+    // Build list of (wordIndex, charIndex, char) with angles
+    // so we can look up per-word brightness at render time
+    double angle = startAngle - pi / 2;
 
-      if (glowEnabled) {
-        _paintChar(canvas, chars[i],
-            color: glowColor.withValues(alpha: effectiveOpacity * 0.45),
-            blurRadius: 10.0);
-        _paintChar(canvas, chars[i],
-            color: bloomColor.withValues(alpha: effectiveOpacity * 0.75),
-            blurRadius: 3.5);
-        _paintChar(canvas, chars[i],
-            color: coreColor.withValues(alpha: effectiveOpacity * 0.95),
-            blurRadius: 0.0);
-      } else {
-        _paintChar(canvas, chars[i],
-            color: _currentColor.withValues(alpha: effectiveOpacity * 0.9),
-            blurRadius: 0.0,
-            withDropShadow: true,
-            dropShadowOpacity: effectiveOpacity);
+    // First pass: compute total arc span to center it
+    double totalSpan = 0.0;
+    final wordList = words.isNotEmpty
+        ? words
+        : text
+            .split(' ')
+            .where((w) => w.isNotEmpty)
+            .map(_NeonWord.new)
+            .toList();
+
+    for (int wi = 0; wi < wordList.length; wi++) {
+      totalSpan += charAngle * wordList[wi].text.characters.length;
+      if (wi < wordList.length - 1) {
+        totalSpan += wordSpaceAngle;
+      }
+    }
+    angle = startAngle - pi / 2 - totalSpan / 2;
+
+    for (int wi = 0; wi < wordList.length; wi++) {
+      final word = wordList[wi];
+      final wordBrightness = glowEnabled ? word.brightness : 1.0;
+      final chars = word.text.characters.toList();
+
+      for (int ci = 0; ci < chars.length; ci++) {
+        final charX = center.dx + radius * cos(angle);
+        final charY = center.dy + radius * sin(angle);
+
+        canvas.save();
+        canvas.translate(charX, charY);
+        canvas.rotate(angle + pi / 2);
+
+        final opacity = effectiveOpacity * wordBrightness;
+
+        if (glowEnabled) {
+          // Layer 1 — deep bloom: wide, faint
+          _paintChar(canvas, chars[ci],
+              color: deepBloomColor.withValues(alpha: opacity * 0.12),
+              blurRadius: 9.0);
+          // Layer 2 — outer bloom: medium spread
+          _paintChar(canvas, chars[ci],
+              color: outerBloomColor.withValues(alpha: opacity * 0.30),
+              blurRadius: 4.0);
+          // Layer 3 — inner halo: tight fringe right against letters
+          _paintChar(canvas, chars[ci],
+              color: innerHaloColor.withValues(alpha: opacity * 0.75),
+              blurRadius: 1.5);
+          // Layer 4 — core: crisp white tube
+          _paintChar(canvas, chars[ci],
+              color: coreColor.withValues(alpha: opacity * 0.95),
+              blurRadius: 0.0);
+        } else {
+          _paintChar(canvas, chars[ci],
+              color: _currentColor.withValues(alpha: opacity * 0.9),
+              blurRadius: 0.0,
+              withDropShadow: true,
+              dropShadowOpacity: opacity);
+        }
+
+        canvas.restore();
+        angle += charAngle;
       }
 
-      canvas.restore();
+      // Word gap
+      if (wi < wordList.length - 1) {
+        angle += wordSpaceAngle;
+      }
     }
   }
 

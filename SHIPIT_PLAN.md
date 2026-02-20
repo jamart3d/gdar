@@ -1,27 +1,36 @@
-# Shipit Workflow - v1.0.98+98 (2026-02-19 18:35)
+# Shipit Workflow - v1.0.99+99 (2026-02-19 18:50)
 
-This plan outlines the steps for releasing version 1.0.98+98 of the Shakedown app.
+This plan outlines the steps for releasing version 1.0.99+99 of the Shakedown app, incorporating recent screensaver enhancements and workflow upgrades.
 
 ## Proposed Changes
 
 ### Configuration & Documentation
 #### [MODIFY] [pubspec.yaml](file:///c:/Users/jeff/StudioProjects/gdar/pubspec.yaml)
-- Increment version from `1.0.97+97` to `1.0.98+98`.
+- Increment version from `1.0.98+98` to `1.0.99+99`.
 
 #### [MODIFY] [RELEASE_NOTES.txt](file:///c:/Users/jeff/StudioProjects/gdar/RELEASE_NOTES.txt)
-- Add release notes for 1.0.98 detailing stability fixes and verification results.
+- Add release notes for 1.0.99:
+    - **Steal Screensaver**: Sophisticated per-word neon flicker with desynchronized phases (buzz, dropout, recovery).
+    - **Checkup Workflow**: Upgraded to use Dart MCP tools for structured analysis and testing.
+
+### Refactoring & Enhancement
+#### [MODIFY] [.agent/workflows/checkup.md](file:///c:/Users/jeff/StudioProjects/gdar/.agent/workflows/checkup.md)
+- Transitioned to `mcp_dart-mcp-server` tools.
+
+#### [MODIFY] [lib/steal_screensaver/steal_banner.dart](file:///c:/Users/jeff/StudioProjects/gdar/lib/steal_screensaver/steal_banner.dart)
+- Implemented full neon flicker state machine.
 
 ## Build & Release Steps
-1. **Build AppBundle**: Run `flutter build appbundle --release` to generate the signed production bundle.
+1. **Build AppBundle**: Run `flutter build appbundle --release`.
 2. **Stage changes**: `git add .`
-3. **Commit**: `git commit -m "chore: release v1.0.98+98 - Stability hardening and test coverage"`
+3. **Commit**: `git commit -m "chore: release v1.0.99+99 - Neon flicker effect and MCP workflow upgrade"`
 4. **Push**: `git push`
 
 ## Verification Plan
 
 ### Automated Tests
-- I have already verified the project health with `/checkup`.
-- I will verify the build completion by checking for the existence of `build/app/outputs/bundle/release/app-release.aab`.
+- `/checkup` (already verified locally).
+- Verify build artifact existence.
 
 ### Manual Verification
-- None required as this is a build phase.
+- Visual check of neon flicker in Steal Screensaver.
