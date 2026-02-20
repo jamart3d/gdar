@@ -61,27 +61,28 @@ class DefaultSettings {
 
   // Steal Visualizer Parameters
   static const double oilFlowSpeed = 0.5;
-  static const double oilPulseIntensity = 0.8;
+  static const double oilPulseIntensity = 0.0; // was 0.8
   static const String oilPalette = 'acid_green';
   static const double oilFilmGrain = 0.15;
-  static const double oilHeatDrift = 0.3;
+  static const double oilHeatDrift = 0.1; // was 0.3
   static const double oilLogoScale = 1.0;
-  static const double oilBlurAmount = 0.0;
-  static const bool oilFlatColor = false;
+  static const double oilBlurAmount = 0.05; // was 0.0
+  static const bool oilFlatColor = true; // was false
   static const bool oilBannerGlow = false;
   static const double oilBannerFlicker = 0.0;
   static const bool oilEnableAudioReactivity = true;
   static const bool oilPerformanceMode = false;
-  static const bool oilPaletteCycle = false;
+  static const bool oilPaletteCycle = true; // was false
   static const double oilPaletteTransitionSpeed = 5.0;
   static const double oilAudioReactivityStrength = 1.0;
   static const double oilAudioBassBoost = 2.0;
   static const double oilAudioPeakDecay = 0.95;
   static const bool oilShowInfoBanner = true;
+  static const double oilTranslationSmoothing = 0.3;
 
   // Ring controls (3-ring gap model)
-  static const double oilInnerRingScale = 1.0; // base inner ring size
-  static const double oilInnerToMiddleGap = 0.3; // gap inner→middle (0–1)
-  static const double oilMiddleToOuterGap = 0.3; // gap middle→outer (0–1)
-  static const double oilOrbitDrift = 1.0; // 0=centered, 1=default drift
+  static const double oilInnerRingScale = 0.65; // was 1.0
+  static const double oilInnerToMiddleGap = 0.0; // was 0.3
+  static const double oilMiddleToOuterGap = 0.0; // was 0.3
+  static const double oilOrbitDrift = 1.0;
 }

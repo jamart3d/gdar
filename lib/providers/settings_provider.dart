@@ -69,6 +69,7 @@ class SettingsProvider with ChangeNotifier {
       'oil_audio_reactivity_strength';
   static const String _oilShowInfoBannerKey = 'oil_show_info_banner';
   static const String _oilLogoScaleKey = 'oil_logo_scale';
+  static const String _oilTranslationSmoothingKey = 'oil_translation_smoothing';
   static const String _oilBlurAmountKey = 'oil_blur_amount';
   static const String _oilFlatColorKey = 'oil_flat_color';
   static const String _oilBannerGlowKey = 'oil_banner_glow';
@@ -153,6 +154,7 @@ class SettingsProvider with ChangeNotifier {
   late double _oilAudioReactivityStrength;
   late bool _oilShowInfoBanner;
   late double _oilLogoScale;
+  late double _oilTranslationSmoothing;
   late double _oilBlurAmount;
   late bool _oilFlatColor;
   late bool _oilBannerGlow;
@@ -224,6 +226,7 @@ class SettingsProvider with ChangeNotifier {
   double get oilAudioReactivityStrength => _oilAudioReactivityStrength;
   bool get oilShowInfoBanner => _oilShowInfoBanner;
   double get oilLogoScale => _oilLogoScale;
+  double get oilTranslationSmoothing => _oilTranslationSmoothing;
   double get oilBlurAmount => _oilBlurAmount;
   bool get oilFlatColor => _oilFlatColor;
   bool get oilBannerGlow => _oilBannerGlow;
@@ -441,16 +444,21 @@ class SettingsProvider with ChangeNotifier {
         _prefs.getDouble(_oilPaletteTransitionSpeedKey) ?? 5.0;
 
     // Audio Reactivity
-    _oilAudioPeakDecay = _prefs.getDouble(_oilAudioPeakDecayKey) ?? 0.998;
-    _oilAudioBassBoost = _prefs.getDouble(_oilAudioBassBoostKey) ?? 1.0;
+    _oilAudioPeakDecay = _prefs.getDouble(_oilAudioPeakDecayKey) ??
+        DefaultSettings.oilAudioPeakDecay;
+    _oilAudioBassBoost = _prefs.getDouble(_oilAudioBassBoostKey) ??
+        DefaultSettings.oilAudioBassBoost;
     _oilAudioReactivityStrength =
-        _prefs.getDouble(_oilAudioReactivityStrengthKey) ?? 1.0;
+        _prefs.getDouble(_oilAudioReactivityStrengthKey) ??
+            DefaultSettings.oilAudioReactivityStrength;
 
     // Banner & visual
     _oilShowInfoBanner = _prefs.getBool(_oilShowInfoBannerKey) ??
         DefaultSettings.oilShowInfoBanner;
     _oilLogoScale =
         _prefs.getDouble(_oilLogoScaleKey) ?? DefaultSettings.oilLogoScale;
+    _oilTranslationSmoothing = _prefs.getDouble(_oilTranslationSmoothingKey) ??
+        DefaultSettings.oilTranslationSmoothing;
     _oilBlurAmount =
         _prefs.getDouble(_oilBlurAmountKey) ?? DefaultSettings.oilBlurAmount;
     _oilFlatColor =
@@ -629,6 +637,9 @@ class SettingsProvider with ChangeNotifier {
       _oilShowInfoBannerKey, _oilShowInfoBanner = !_oilShowInfoBanner);
   Future<void> setOilLogoScale(double value) =>
       _updateDoublePreference(_oilLogoScaleKey, _oilLogoScale = value);
+  Future<void> setOilTranslationSmoothing(double value) =>
+      _updateDoublePreference(
+          _oilTranslationSmoothingKey, _oilTranslationSmoothing = value);
   Future<void> setOilBlurAmount(double value) =>
       _updateDoublePreference(_oilBlurAmountKey, _oilBlurAmount = value);
   void toggleOilFlatColor() =>

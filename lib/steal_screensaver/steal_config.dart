@@ -8,6 +8,7 @@ class StealConfig {
   final double pulseIntensity;
   final double heatDrift;
   final double logoScale;
+  final double translationSmoothing; // 0.0 = instant, 1.0 = very smooth
   final double blurAmount;
   final bool flatColor;
   final bool bannerGlow;
@@ -20,9 +21,9 @@ class StealConfig {
   final String date;
   final bool paletteCycle;
   final double paletteTransitionSpeed;
-  final double innerRingScale; // scales the base inner ring radius
-  final double innerToMiddleGap; // 0.0–1.0 gap from inner to middle ring
-  final double middleToOuterGap; // 0.0–1.0 gap from middle to outer ring
+  final double innerRingScale;
+  final double innerToMiddleGap;
+  final double middleToOuterGap;
   final double orbitDrift; // 0.0 = locked center, 1.0 = default drift
 
   static const Map<String, List<Color>> palettes = {
@@ -65,12 +66,13 @@ class StealConfig {
   };
 
   const StealConfig({
-    this.flowSpeed = 0.4,
+    this.flowSpeed = 0.1,
     this.palette = 'psychedelic',
     this.filmGrain = 0.1,
     this.pulseIntensity = 0.5,
     this.heatDrift = 0.2,
-    this.logoScale = 1.0,
+    this.logoScale = 0.5,
+    this.translationSmoothing = 0.3,
     this.blurAmount = 0.0,
     this.flatColor = false,
     this.bannerGlow = false,
@@ -91,12 +93,14 @@ class StealConfig {
 
   factory StealConfig.fromMap(Map<String, dynamic> map) {
     return StealConfig(
-      flowSpeed: (map['flowSpeed'] as num?)?.toDouble() ?? 0.4,
+      flowSpeed: (map['flowSpeed'] as num?)?.toDouble() ?? 0.1,
       palette: map['palette'] as String? ?? 'psychedelic',
       filmGrain: (map['filmGrain'] as num?)?.toDouble() ?? 0.1,
       pulseIntensity: (map['pulseIntensity'] as num?)?.toDouble() ?? 0.5,
       heatDrift: (map['heatDrift'] as num?)?.toDouble() ?? 0.2,
-      logoScale: (map['logoScale'] as num?)?.toDouble() ?? 1.0,
+      logoScale: (map['logoScale'] as num?)?.toDouble() ?? 0.5,
+      translationSmoothing:
+          (map['translationSmoothing'] as num?)?.toDouble() ?? 0.3,
       blurAmount: (map['blurAmount'] as num?)?.toDouble() ?? 0.0,
       flatColor: map['flatColor'] as bool? ?? false,
       bannerGlow: map['bannerGlow'] as bool? ?? false,
@@ -125,6 +129,7 @@ class StealConfig {
       'pulseIntensity': pulseIntensity,
       'heatDrift': heatDrift,
       'logoScale': logoScale,
+      'translationSmoothing': translationSmoothing,
       'blurAmount': blurAmount,
       'flatColor': flatColor,
       'bannerGlow': bannerGlow,
@@ -151,6 +156,7 @@ class StealConfig {
     double? pulseIntensity,
     double? heatDrift,
     double? logoScale,
+    double? translationSmoothing,
     double? blurAmount,
     bool? flatColor,
     bool? bannerGlow,
@@ -175,6 +181,7 @@ class StealConfig {
       pulseIntensity: pulseIntensity ?? this.pulseIntensity,
       heatDrift: heatDrift ?? this.heatDrift,
       logoScale: logoScale ?? this.logoScale,
+      translationSmoothing: translationSmoothing ?? this.translationSmoothing,
       blurAmount: blurAmount ?? this.blurAmount,
       flatColor: flatColor ?? this.flatColor,
       bannerGlow: bannerGlow ?? this.bannerGlow,

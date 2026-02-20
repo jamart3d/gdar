@@ -148,6 +148,7 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
       performanceMode: settings.oilPerformanceMode ||
           Provider.of<DeviceService>(context, listen: false).isTv,
       logoScale: settings.oilLogoScale,
+      translationSmoothing: settings.oilTranslationSmoothing, // ← was missing
       blurAmount: settings.oilBlurAmount,
       flatColor: settings.oilFlatColor,
       bannerGlow: settings.oilBannerGlow,

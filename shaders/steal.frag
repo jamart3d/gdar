@@ -6,7 +6,7 @@ precision highp float;
 
 out vec4 fragColor;
 
-uniform vec2 uResolution;
+uniform vec2  uResolution;
 uniform float uTime;
 
 // Configuration
@@ -17,6 +17,12 @@ uniform float uHeatDrift;
 uniform float uLogoScale;
 uniform float uBlurAmount;   // 0.0 = sharp, 1.0 = soft box blur
 uniform float uFlatColor;    // 0.0 = animated cycling, 1.0 = static palette color
+
+// Smoothed logo position (0–1 UV space) — computed & lerped in Dart, passed in.
+// This replaces the old internal sin/cos computation so the shader and banner
+// canvas always use the exact same position.
+uniform float uLogoPosX;
+uniform float uLogoPosY;
 
 // Audio Energy
 uniform float uBassEnergy;
@@ -47,7 +53,7 @@ vec3 getPaletteColor(float t) {
     }
 }
 
-// Box blur: samples texture at 8 surrounding offsets + center
+// Box blur: 3×3 grid of samples around UV
 vec4 sampleBlurred(sampler2D tex, vec2 uv, float blurRadius) {
     if (blurRadius < 0.0001) return texture(tex, uv);
     vec4 col = vec4(0.0);
@@ -56,7 +62,7 @@ vec4 sampleBlurred(sampler2D tex, vec2 uv, float blurRadius) {
     col += texture(tex, uv + vec2( 0, -r));
     col += texture(tex, uv + vec2( r, -r));
     col += texture(tex, uv + vec2(-r,  0));
-    col += texture(tex, uv                );
+    col += texture(tex, uv               );
     col += texture(tex, uv + vec2( r,  0));
     col += texture(tex, uv + vec2(-r,  r));
     col += texture(tex, uv + vec2( 0,  r));
@@ -80,22 +86,18 @@ void main() {
     vec2 uv = FlutterFragCoord().xy / resolution;
     float aspect = resolution.x / resolution.y;
 
-    vec3 bgColor = vec3(0.0);
-
     float safeTime = max(uTime, 0.0);
-    float t = safeTime * clamp(uFlowSpeed, 0.0, 2.0) * 0.5;
 
-    vec2 pos = vec2(
-        0.5 + 0.25 * sin(t * 1.3) + 0.1 * sin(t * 2.9),
-        0.5 + 0.25 * cos(t * 1.7) + 0.1 * cos(t * 3.1)
-    );
+    // Use smoothed position passed from Dart (StealBackground.update())
+    vec2 pos = vec2(uLogoPosX, uLogoPosY);
 
-    float pulse = clamp(uPulseIntensity, 0.0, 2.0);
-    float ebass = clamp(uBassEnergy, 0.0, 2.0);
-    float emid = clamp(uMidEnergy, 0.0, 2.0);
-    float eover = clamp(uOverallEnergy, 0.0, 2.0);
-    float etreble = clamp(uTrebleEnergy, 0.0, 2.0);
+    float pulse  = clamp(uPulseIntensity, 0.0, 2.0);
+    float ebass  = clamp(uBassEnergy,     0.0, 2.0);
+    float emid   = clamp(uMidEnergy,      0.0, 2.0);
+    float eover  = clamp(uOverallEnergy,  0.0, 2.0);
+    float etreble = clamp(uTrebleEnergy,  0.0, 2.0);
 
+    // Audio nudge applied on top of smoothed pos
     if (eover > 0.01) {
         pos += vec2(ebass - 0.5, emid - 0.5) * 0.05 * pulse;
     }
@@ -118,34 +120,27 @@ void main() {
     }
 
     float shift = 0.02 * (0.5 + eover * 2.0) * pulse;
-
-    // Map blur 0–1 → UV offset 0–0.018 (≈18px at 1080p — soft but not mush)
     float blurRadius = clamp(uBlurAmount, 0.0, 1.0) * 0.018;
 
     float r = sampleBlurred(uTexture, texUV + vec2(shift, 0.0), blurRadius).r;
-    float g = sampleBlurred(uTexture, texUV,                     blurRadius).g;
+    float g = sampleBlurred(uTexture, texUV,                    blurRadius).g;
     float b = sampleBlurred(uTexture, texUV - vec2(shift, 0.0), blurRadius).b;
-    float a = sampleBlurred(uTexture, texUV,                     blurRadius).a;
+    float a = sampleBlurred(uTexture, texUV,                    blurRadius).a;
 
     vec4 texColor = vec4(r, g, b, a);
     texColor.rgb += vec3(etreble) * 0.3 * pulse;
 
-    // Flat color mode: use uColor1 directly; animated mode: cycle through palette
     vec3 cycleColor;
     if (uFlatColor > 0.5) {
-        // Static — just use the first palette color, boosted to match animated brightness
-        cycleColor = clamp(uColor1, 0.0, 1.0);
-        cycleColor = pow(cycleColor, vec3(0.6));
-        cycleColor *= 2.0;
+        cycleColor = pow(clamp(uColor1, 0.0, 1.0), vec3(0.6)) * 2.0;
     } else {
         cycleColor = getPaletteColor(safeTime * 0.2);
-        cycleColor = pow(clamp(cycleColor, 0.0, 1.0), vec3(0.6));
-        cycleColor *= 2.0;
+        cycleColor = pow(clamp(cycleColor, 0.0, 1.0), vec3(0.6)) * 2.0;
     }
 
     texColor.rgb = mix(texColor.rgb, texColor.rgb * cycleColor, 0.85);
 
-    vec3 finalColor = mix(bgColor, texColor.rgb, clamp(texColor.a, 0.0, 1.0));
+    vec3 finalColor = mix(vec3(0.0), texColor.rgb, clamp(texColor.a, 0.0, 1.0));
 
     float grainAmt = clamp(uFilmGrain, 0.0, 1.0);
     if (grainAmt > 0.0) {

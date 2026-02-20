@@ -145,7 +145,7 @@ class MockTvDeviceService extends ChangeNotifier implements DeviceService {
 
 class FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
   @override
-  bool get useOilScreensaver => false;
+  bool get useOilScreensaver => true;
   @override
   bool get preventSleep => true;
   @override
@@ -419,6 +419,12 @@ class FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
   Future<void> setOilMiddleToOuterGap(double value) async {}
   @override
   Future<void> setOilOrbitDrift(double value) async {}
+
+  @override
+  double get oilTranslationSmoothing => 1.0;
+  @override
+  Future<void> setOilTranslationSmoothing(double value) async {}
+
   @override
   bool get hasListeners => super.hasListeners;
 }

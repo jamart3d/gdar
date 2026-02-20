@@ -1,3 +1,9 @@
+Release 1.0.98:
+- UI: Refined `FastScrollbar` with Material 3 expressive design and smoother animation.
+- Stability: Hardened `AudioCacheService` to prevent race conditions during directory iteration.
+- Stability: Fixed `FakeSettingsProvider` compliance for TV playback tests.
+- Verification: Completed full project-wide health check with 160+ passing tests.
+
 Release 1.0.97:
 - UI (Show List): Implemented M3 expressive `FastScrollbar` with year-chip overlay and spring-loaded thumb.
 - Stability: Added comprehensive widget tests for `FastScrollbar` and resolved timer lifecycle leaks.

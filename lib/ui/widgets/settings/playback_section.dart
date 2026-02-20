@@ -226,11 +226,15 @@ class PlaybackSection extends StatelessWidget {
           subtitle: FittedBox(
               fit: BoxFit.scaleDown,
               alignment: Alignment.centerLeft,
-              child: Text('When a show ends, play another one randomly',
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodySmall
-                      ?.copyWith(fontSize: 12 * scaleFactor))),
+              child: Text(
+                settingsProvider.nonRandom
+                    ? 'When a show ends, play the next show in the list'
+                    : 'When a show ends, play another one randomly',
+                style: Theme.of(context)
+                    .textTheme
+                    .bodySmall
+                    ?.copyWith(fontSize: 12 * scaleFactor),
+              )),
           value: settingsProvider.playRandomOnCompletion,
           onChanged: (value) {
             context.read<SettingsProvider>().togglePlayRandomOnCompletion();

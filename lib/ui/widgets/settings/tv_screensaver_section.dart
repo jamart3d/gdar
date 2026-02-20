@@ -44,6 +44,7 @@ class TvScreensaverSection extends StatelessWidget {
           textTheme: textTheme,
         ),
 
+        // Everything below is hidden when screensaver is off
         if (settings.useOilScreensaver) ...[
           const SizedBox(height: 16),
           Padding(
@@ -98,320 +99,313 @@ class TvScreensaverSection extends StatelessWidget {
               ],
             ),
           ),
-        ],
 
-        const SizedBox(height: 16),
-
-        TvListTile(
-          dense: true,
-          visualDensity: VisualDensity.compact,
-          leading: const Icon(Icons.play_circle_outline_rounded),
-          title: Text(
-            'Start Screen Saver',
-            style: textTheme.bodyLarge?.copyWith(color: colorScheme.onSurface),
-          ),
-          subtitle: Text(
-            'Test the Steal Your Face visual effect now',
-            style: textTheme.bodySmall
-                ?.copyWith(color: colorScheme.onSurfaceVariant),
-          ),
-          onTap: () => ScreensaverScreen.show(context),
-        ),
-
-        const SizedBox(height: 32),
-
-        // ── Visual Settings ────────────────────────────────────────────
-        _SectionHeader(title: 'Visual', colorScheme: colorScheme),
-        const SizedBox(height: 8),
-
-        Text(
-          'Color Palette',
-          style: textTheme.bodySmall
-              ?.copyWith(color: colorScheme.onSurfaceVariant),
-        ),
-        const SizedBox(height: 8),
-        _PaletteSegmentedButton(
-          selected: settings.oilPalette,
-          onSelect: (key) => settings.setOilPalette(key),
-          colorScheme: colorScheme,
-        ),
-
-        const SizedBox(height: 24),
-
-        _ToggleRow(
-          label: 'Flat Color Mode',
-          subtitle: 'Use a single static palette color instead of animation',
-          value: settings.oilFlatColor,
-          onChanged: (_) => settings.toggleOilFlatColor(),
-          colorScheme: colorScheme,
-          textTheme: textTheme,
-        ),
-
-        const SizedBox(height: 16),
-
-        _ToggleRow(
-          label: 'Auto Palette Cycle',
-          subtitle: 'Automatically rotate through palettes over time',
-          value: settings.oilPaletteCycle,
-          onChanged: (_) => settings.toggleOilPaletteCycle(),
-          colorScheme: colorScheme,
-          textTheme: textTheme,
-        ),
-
-        const SizedBox(height: 24),
-
-        TvStepperRow(
-          label: 'Logo Scale',
-          value: settings.oilLogoScale,
-          min: 0.1,
-          max: 1.0,
-          step: 0.05,
-          leftLabel: 'Small',
-          rightLabel: 'Full',
-          valueFormatter: (v) => '${(v * 100).round()}%',
-          onChanged: (v) => settings.setOilLogoScale(v),
-        ),
-
-        const SizedBox(height: 16),
-
-        TvStepperRow(
-          label: 'Logo Blur',
-          value: settings.oilBlurAmount,
-          min: 0.0,
-          max: 1.0,
-          step: 0.05,
-          leftLabel: 'Sharp',
-          rightLabel: 'Soft',
-          valueFormatter: (v) => '${(v * 100).round()}%',
-          onChanged: (v) => settings.setOilBlurAmount(v),
-        ),
-
-        const SizedBox(height: 24),
-
-        TvStepperRow(
-          label: 'Flow Speed',
-          value: settings.oilFlowSpeed,
-          min: 0.1,
-          max: 3.0,
-          step: 0.1,
-          leftLabel: 'Slow',
-          rightLabel: 'Fast',
-          onChanged: (v) => settings.setOilFlowSpeed(v),
-        ),
-
-        const SizedBox(height: 16),
-
-        TvStepperRow(
-          label: 'Pulse Intensity',
-          value: settings.oilPulseIntensity,
-          min: 0.0,
-          max: 3.0,
-          step: 0.1,
-          leftLabel: 'Subtle',
-          rightLabel: 'Strong',
-          onChanged: (v) => settings.setOilPulseIntensity(v),
-        ),
-
-        const SizedBox(height: 16),
-
-        TvStepperRow(
-          label: 'Heat Drift',
-          value: settings.oilHeatDrift,
-          min: 0.0,
-          max: 3.0,
-          step: 0.1,
-          leftLabel: 'Still',
-          rightLabel: 'Wavy',
-          onChanged: (v) => settings.setOilHeatDrift(v),
-        ),
-
-        const SizedBox(height: 24),
-
-        // ── Track Info Rings ───────────────────────────────────────────
-        _ToggleRow(
-          label: 'Show Track Info',
-          subtitle: 'Three rings: venue (outer), title (middle), date (inner)',
-          value: settings.oilShowInfoBanner,
-          onChanged: (_) => settings.toggleOilShowInfoBanner(),
-          colorScheme: colorScheme,
-          textTheme: textTheme,
-        ),
-
-        if (settings.oilShowInfoBanner) ...[
           const SizedBox(height: 16),
-          TvStepperRow(
-            label: 'Inner Ring Size',
-            value: settings.oilInnerRingScale,
-            min: 0.5,
-            max: 2.0,
-            step: 0.05,
-            leftLabel: 'Small',
-            rightLabel: 'Large',
-            valueFormatter: (v) => '${(v * 100).round()}%',
-            onChanged: (v) => settings.setOilInnerRingScale(v),
-          ),
-          const SizedBox(height: 16),
-          TvStepperRow(
-            label: 'Title Ring Gap',
-            value: settings.oilInnerToMiddleGap,
-            min: 0.0,
-            max: 1.0,
-            step: 0.05,
-            leftLabel: 'Tight',
-            rightLabel: 'Spaced',
-            valueFormatter: (v) => '${(v * 100).round()}%',
-            onChanged: (v) => settings.setOilInnerToMiddleGap(v),
-          ),
-          const SizedBox(height: 16),
-          TvStepperRow(
-            label: 'Venue Ring Gap',
-            value: settings.oilMiddleToOuterGap,
-            min: 0.0,
-            max: 1.0,
-            step: 0.05,
-            leftLabel: 'Tight',
-            rightLabel: 'Spaced',
-            valueFormatter: (v) => '${(v * 100).round()}%',
-            onChanged: (v) => settings.setOilMiddleToOuterGap(v),
-          ),
-          const SizedBox(height: 16),
-          TvStepperRow(
-            label: 'Orbit Drift',
-            value: settings.oilOrbitDrift,
-            min: 0.0,
-            max: 2.0,
-            step: 0.1,
-            leftLabel: 'Centered',
-            rightLabel: 'Wide',
-            valueFormatter: (v) => v == 0.0 ? 'Off' : '${(v * 100).round()}%',
-            onChanged: (v) => settings.setOilOrbitDrift(v),
-          ),
-          const SizedBox(height: 16),
-          _ToggleRow(
-            label: 'Ring Neon Glow',
-            subtitle: 'Triple-layer neon glow effect on text rings',
-            value: settings.oilBannerGlow,
-            onChanged: (_) => settings.toggleOilBannerGlow(),
-            colorScheme: colorScheme,
-            textTheme: textTheme,
-          ),
-          const SizedBox(height: 16),
-          TvStepperRow(
-            label: 'Ring Flicker',
-            value: settings.oilBannerFlicker,
-            min: 0.0,
-            max: 1.0,
-            step: 0.05,
-            leftLabel: 'Steady',
-            rightLabel: 'Buzzing',
-            valueFormatter: (v) => '${(v * 100).round()}%',
-            onChanged: (v) => settings.setOilBannerFlicker(v),
-          ),
-        ],
 
-        if (!settings.oilShowInfoBanner) ...[
-          const SizedBox(height: 16),
-          _ToggleRow(
-            label: 'Ring Neon Glow',
-            subtitle: 'Triple-layer neon glow effect on text rings',
-            value: settings.oilBannerGlow,
-            onChanged: (_) => settings.toggleOilBannerGlow(),
-            colorScheme: colorScheme,
-            textTheme: textTheme,
-          ),
-          const SizedBox(height: 16),
-          TvStepperRow(
-            label: 'Ring Flicker',
-            value: settings.oilBannerFlicker,
-            min: 0.0,
-            max: 1.0,
-            step: 0.05,
-            leftLabel: 'Steady',
-            rightLabel: 'Buzzing',
-            valueFormatter: (v) => '${(v * 100).round()}%',
-            onChanged: (v) => settings.setOilBannerFlicker(v),
-          ),
-        ],
-
-        const SizedBox(height: 32),
-
-        // ── Audio Reactivity ───────────────────────────────────────────
-        _SectionHeader(title: 'Audio Reactivity', colorScheme: colorScheme),
-        const SizedBox(height: 8),
-
-        _ToggleRow(
-          label: 'Enable Audio Reactivity',
-          subtitle: 'Sync visuals to the music being played',
-          value: settings.oilEnableAudioReactivity,
-          onChanged: (_) => settings.toggleOilEnableAudioReactivity(),
-          colorScheme: colorScheme,
-          textTheme: textTheme,
-        ),
-
-        if (settings.oilEnableAudioReactivity) ...[
-          const SizedBox(height: 24),
-          TvStepperRow(
-            label: 'Reactivity Strength',
-            value: settings.oilAudioReactivityStrength,
-            min: 0.5,
-            max: 2.0,
-            step: 0.1,
-            leftLabel: 'Subtle',
-            rightLabel: 'Wild',
-            onChanged: (v) => settings.setOilAudioReactivityStrength(v),
-          ),
-          const SizedBox(height: 16),
-          TvStepperRow(
-            label: 'Bass Boost',
-            value: settings.oilAudioBassBoost,
-            min: 1.0,
-            max: 3.0,
-            step: 0.1,
-            leftLabel: 'Normal',
-            rightLabel: 'Punchy',
-            onChanged: (v) => settings.setOilAudioBassBoost(v),
-          ),
-          const SizedBox(height: 16),
-          TvStepperRow(
-            label: 'Peak Decay',
-            value: settings.oilAudioPeakDecay,
-            min: 0.990,
-            max: 0.999,
-            step: 0.001,
-            leftLabel: 'Fast adapt',
-            rightLabel: 'Slow adapt',
-            valueFormatter: (v) => v.toStringAsFixed(3),
-            onChanged: (v) => settings.setOilAudioPeakDecay(v),
-          ),
-          const SizedBox(height: 8),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 4),
-            child: Text(
-              'Peak Decay controls how quickly the visualizer adapts to changes '
-              'in volume. Slow adapt keeps loud moments pumping longer; Fast '
-              'adapt stays fresh with quiet passages.',
+          TvListTile(
+            dense: true,
+            visualDensity: VisualDensity.compact,
+            leading: const Icon(Icons.play_circle_outline_rounded),
+            title: Text(
+              'Start Screen Saver',
+              style:
+                  textTheme.bodyLarge?.copyWith(color: colorScheme.onSurface),
+            ),
+            subtitle: Text(
+              'Test the Steal Your Face visual effect now',
               style: textTheme.bodySmall
                   ?.copyWith(color: colorScheme.onSurfaceVariant),
             ),
+            onTap: () => ScreensaverScreen.show(context),
           ),
+
+          const SizedBox(height: 32),
+
+          // ── Visual Settings ──────────────────────────────────────────
+          _SectionHeader(title: 'Visual', colorScheme: colorScheme),
+          const SizedBox(height: 8),
+
+          Text(
+            'Color Palette',
+            style: textTheme.bodySmall
+                ?.copyWith(color: colorScheme.onSurfaceVariant),
+          ),
+          const SizedBox(height: 8),
+          _PaletteSegmentedButton(
+            selected: settings.oilPalette,
+            onSelect: (key) => settings.setOilPalette(key),
+            colorScheme: colorScheme,
+          ),
+
+          const SizedBox(height: 24),
+
+          _ToggleRow(
+            label: 'Flat Color Mode',
+            subtitle: 'Use a single static palette color instead of animation',
+            value: settings.oilFlatColor,
+            onChanged: (_) => settings.toggleOilFlatColor(),
+            colorScheme: colorScheme,
+            textTheme: textTheme,
+          ),
+
+          const SizedBox(height: 16),
+
+          _ToggleRow(
+            label: 'Auto Palette Cycle',
+            subtitle: 'Automatically rotate through palettes over time',
+            value: settings.oilPaletteCycle,
+            onChanged: (_) => settings.toggleOilPaletteCycle(),
+            colorScheme: colorScheme,
+            textTheme: textTheme,
+          ),
+
+          const SizedBox(height: 24),
+
+          TvStepperRow(
+            label: 'Logo Scale',
+            value: settings.oilLogoScale,
+            min: 0.1,
+            max: 1.0,
+            step: 0.05,
+            leftLabel: 'Small',
+            rightLabel: 'Full',
+            valueFormatter: (v) => '${(v * 100).round()}%',
+            onChanged: (v) => settings.setOilLogoScale(v),
+          ),
+
+          const SizedBox(height: 16),
+
+          TvStepperRow(
+            label: 'Logo Blur',
+            value: settings.oilBlurAmount,
+            min: 0.0,
+            max: 1.0,
+            step: 0.05,
+            leftLabel: 'Sharp',
+            rightLabel: 'Soft',
+            valueFormatter: (v) => '${(v * 100).round()}%',
+            onChanged: (v) => settings.setOilBlurAmount(v),
+          ),
+
+          const SizedBox(height: 16),
+
+          TvStepperRow(
+            label: 'Motion Smoothing',
+            value: settings.oilTranslationSmoothing,
+            min: 0.0,
+            max: 1.0,
+            step: 0.05,
+            leftLabel: 'Crisp',
+            rightLabel: 'Smooth',
+            valueFormatter: (v) => '${(v * 100).round()}%',
+            onChanged: (v) => settings.setOilTranslationSmoothing(v),
+          ),
+
+          const SizedBox(height: 24),
+
+          TvStepperRow(
+            label: 'Flow Speed',
+            value: settings.oilFlowSpeed,
+            min: 0.1,
+            max: 3.0,
+            step: 0.1,
+            leftLabel: 'Slow',
+            rightLabel: 'Fast',
+            onChanged: (v) => settings.setOilFlowSpeed(v),
+          ),
+
+          const SizedBox(height: 16),
+
+          TvStepperRow(
+            label: 'Pulse Intensity',
+            value: settings.oilPulseIntensity,
+            min: 0.0,
+            max: 3.0,
+            step: 0.1,
+            leftLabel: 'Subtle',
+            rightLabel: 'Strong',
+            onChanged: (v) => settings.setOilPulseIntensity(v),
+          ),
+
+          const SizedBox(height: 16),
+
+          TvStepperRow(
+            label: 'Heat Drift',
+            value: settings.oilHeatDrift,
+            min: 0.0,
+            max: 3.0,
+            step: 0.1,
+            leftLabel: 'Still',
+            rightLabel: 'Wavy',
+            onChanged: (v) => settings.setOilHeatDrift(v),
+          ),
+
+          const SizedBox(height: 24),
+
+          // ── Track Info Rings ─────────────────────────────────────────
+          _ToggleRow(
+            label: 'Show Track Info',
+            subtitle:
+                'Three rings: venue (outer), title (middle), date (inner)',
+            value: settings.oilShowInfoBanner,
+            onChanged: (_) => settings.toggleOilShowInfoBanner(),
+            colorScheme: colorScheme,
+            textTheme: textTheme,
+          ),
+
+          if (settings.oilShowInfoBanner) ...[
+            const SizedBox(height: 16),
+            TvStepperRow(
+              label: 'Inner Ring Size',
+              value: settings.oilInnerRingScale,
+              min: 0.5,
+              max: 2.0,
+              step: 0.05,
+              leftLabel: 'Small',
+              rightLabel: 'Large',
+              valueFormatter: (v) => '${(v * 100).round()}%',
+              onChanged: (v) => settings.setOilInnerRingScale(v),
+            ),
+            const SizedBox(height: 16),
+            TvStepperRow(
+              label: 'Title Ring Gap',
+              value: settings.oilInnerToMiddleGap,
+              min: 0.0,
+              max: 1.0,
+              step: 0.05,
+              leftLabel: 'Tight',
+              rightLabel: 'Spaced',
+              valueFormatter: (v) => '${(v * 100).round()}%',
+              onChanged: (v) => settings.setOilInnerToMiddleGap(v),
+            ),
+            const SizedBox(height: 16),
+            TvStepperRow(
+              label: 'Venue Ring Gap',
+              value: settings.oilMiddleToOuterGap,
+              min: 0.0,
+              max: 1.0,
+              step: 0.05,
+              leftLabel: 'Tight',
+              rightLabel: 'Spaced',
+              valueFormatter: (v) => '${(v * 100).round()}%',
+              onChanged: (v) => settings.setOilMiddleToOuterGap(v),
+            ),
+            const SizedBox(height: 16),
+            TvStepperRow(
+              label: 'Orbit Drift',
+              value: settings.oilOrbitDrift,
+              min: 0.0,
+              max: 2.0,
+              step: 0.1,
+              leftLabel: 'Centered',
+              rightLabel: 'Wide',
+              valueFormatter: (v) => v == 0.0 ? 'Off' : '${(v * 100).round()}%',
+              onChanged: (v) => settings.setOilOrbitDrift(v),
+            ),
+            const SizedBox(height: 16),
+            _ToggleRow(
+              label: 'Ring Neon Glow',
+              subtitle: 'Triple-layer neon glow effect on text rings',
+              value: settings.oilBannerGlow,
+              onChanged: (_) => settings.toggleOilBannerGlow(),
+              colorScheme: colorScheme,
+              textTheme: textTheme,
+            ),
+            const SizedBox(height: 16),
+            TvStepperRow(
+              label: 'Ring Flicker',
+              value: settings.oilBannerFlicker,
+              min: 0.0,
+              max: 1.0,
+              step: 0.05,
+              leftLabel: 'Steady',
+              rightLabel: 'Buzzing',
+              valueFormatter: (v) => '${(v * 100).round()}%',
+              onChanged: (v) => settings.setOilBannerFlicker(v),
+            ),
+          ],
+
+          const SizedBox(height: 32),
+
+          // ── Audio Reactivity ─────────────────────────────────────────
+          _SectionHeader(title: 'Audio Reactivity', colorScheme: colorScheme),
+          const SizedBox(height: 8),
+
+          _ToggleRow(
+            label: 'Enable Audio Reactivity',
+            subtitle: 'Sync visuals to the music being played',
+            value: settings.oilEnableAudioReactivity,
+            onChanged: (_) => settings.toggleOilEnableAudioReactivity(),
+            colorScheme: colorScheme,
+            textTheme: textTheme,
+          ),
+
+          if (settings.oilEnableAudioReactivity) ...[
+            const SizedBox(height: 24),
+            TvStepperRow(
+              label: 'Reactivity Strength',
+              value: settings.oilAudioReactivityStrength,
+              min: 0.5,
+              max: 2.0,
+              step: 0.1,
+              leftLabel: 'Subtle',
+              rightLabel: 'Wild',
+              onChanged: (v) => settings.setOilAudioReactivityStrength(v),
+            ),
+            const SizedBox(height: 16),
+            TvStepperRow(
+              label: 'Bass Boost',
+              value: settings.oilAudioBassBoost,
+              min: 1.0,
+              max: 3.0,
+              step: 0.1,
+              leftLabel: 'Normal',
+              rightLabel: 'Punchy',
+              onChanged: (v) => settings.setOilAudioBassBoost(v),
+            ),
+            const SizedBox(height: 16),
+            TvStepperRow(
+              label: 'Peak Decay',
+              value: settings.oilAudioPeakDecay,
+              min: 0.990,
+              max: 0.999,
+              step: 0.001,
+              leftLabel: 'Fast adapt',
+              rightLabel: 'Slow adapt',
+              valueFormatter: (v) => v.toStringAsFixed(3),
+              onChanged: (v) => settings.setOilAudioPeakDecay(v),
+            ),
+            const SizedBox(height: 8),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4),
+              child: Text(
+                'Peak Decay controls how quickly the visualizer adapts to changes '
+                'in volume. Slow adapt keeps loud moments pumping longer; Fast '
+                'adapt stays fresh with quiet passages.',
+                style: textTheme.bodySmall
+                    ?.copyWith(color: colorScheme.onSurfaceVariant),
+              ),
+            ),
+          ],
+
+          const SizedBox(height: 32),
+
+          // ── Performance ──────────────────────────────────────────────
+          _SectionHeader(title: 'Performance', colorScheme: colorScheme),
+          const SizedBox(height: 8),
+
+          _ToggleRow(
+            label: 'Performance Mode',
+            subtitle: 'Reduce shader complexity for smoother playback on TV',
+            value: settings.oilPerformanceMode,
+            onChanged: (_) => settings.toggleOilPerformanceMode(),
+            colorScheme: colorScheme,
+            textTheme: textTheme,
+          ),
+
+          const SizedBox(height: 32),
         ],
-
-        const SizedBox(height: 32),
-
-        // ── Performance ────────────────────────────────────────────────
-        _SectionHeader(title: 'Performance', colorScheme: colorScheme),
-        const SizedBox(height: 8),
-
-        _ToggleRow(
-          label: 'Performance Mode',
-          subtitle: 'Reduce shader complexity for smoother playback on TV',
-          value: settings.oilPerformanceMode,
-          onChanged: (_) => settings.toggleOilPerformanceMode(),
-          colorScheme: colorScheme,
-          textTheme: textTheme,
-        ),
-
-        const SizedBox(height: 32),
+        // End of useOilScreensaver block
       ],
     );
   }
@@ -451,7 +445,6 @@ class _PaletteSegmentedButton extends StatelessWidget {
       },
       child: SegmentedButton<String>(
         style: ButtonStyle(
-          // Transparent background — _AnimatedPaletteSegment paints the color
           backgroundColor: WidgetStateProperty.all(Colors.transparent),
           foregroundColor: WidgetStateProperty.all(Colors.transparent),
           iconColor: WidgetStateProperty.all(Colors.transparent),
@@ -477,8 +470,6 @@ class _PaletteSegmentedButton extends StatelessWidget {
   }
 }
 
-/// Animates through a palette's colors as a solid segment background,
-/// cycling at roughly the same cadence as the screensaver shader.
 class _AnimatedPaletteSegment extends StatefulWidget {
   final String paletteKey;
   final bool isSelected;
@@ -500,7 +491,6 @@ class _AnimatedPaletteSegmentState extends State<_AnimatedPaletteSegment>
   late AnimationController _controller;
   late List<Color> _colors;
 
-  // Cycle duration per color step — matches screensaver feel (~2s per color)
   static const Duration _stepDuration = Duration(milliseconds: 2000);
 
   @override
@@ -628,9 +618,10 @@ class _ToggleRow extends StatelessWidget {
               ),
             ),
             Switch(
-                value: value,
-                onChanged: onChanged,
-                activeThumbColor: colorScheme.primary),
+              value: value,
+              onChanged: onChanged,
+              activeThumbColor: colorScheme.primary,
+            ),
           ],
         ),
       ),

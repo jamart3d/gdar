@@ -304,6 +304,12 @@ class FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
   void setOilScreensaverInactivityMinutes(int minutes) {}
 
   @override
+  double get oilTranslationSmoothing => 0.1;
+
+  @override
+  Future<void> setOilTranslationSmoothing(double value) async {}
+
+  @override
   double get oilFlowSpeed => 1.0;
   @override
   Future<void> setOilFlowSpeed(double value) async {}

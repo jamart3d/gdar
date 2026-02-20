@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 import 'dart:ui' as ui;
 import 'package:flame/components.dart';
 import 'package:flutter/services.dart';
@@ -20,6 +21,14 @@ class StealBackground extends PositionComponent
   List<Color> _targetColors = [];
 
   double _colorLerpSpeed = 0.025;
+
+  // Smoothed logo position in 0–1 UV space.
+  // Lerped each frame toward the raw sin/cos target position.
+  // Read by StealBanner via game.smoothedLogoPos to keep rings locked to logo.
+  Offset _smoothedPos = const Offset(0.5, 0.5);
+
+  /// Current smoothed logo position (0–1 UV space). Used by StealBanner.
+  Offset get smoothedLogoPos => _smoothedPos;
 
   StealBackground({required this.config});
 
@@ -101,7 +110,8 @@ class StealBackground extends PositionComponent
   @override
   void update(double dt) {
     super.update(dt);
-    // Both lists are guaranteed to be length 4 so the lerp never skips
+
+    // Color lerp — both lists guaranteed length 4, never skips
     for (int i = 0; i < _colorCount; i++) {
       _currentColors[i] = Color.lerp(
         _currentColors[i],
@@ -109,6 +119,23 @@ class StealBackground extends PositionComponent
         _colorLerpSpeed,
       )!;
     }
+
+    // Compute raw logo target position (same formula as shader previously used)
+    final safeTime = game.time.clamp(0.0, double.infinity);
+    final t = safeTime * config.flowSpeed.clamp(0.0, 2.0) * 0.5;
+    final drift = config.orbitDrift.clamp(0.0, 2.0);
+    final rawX = 0.5 + 0.25 * drift * sin(t * 1.3) + 0.1 * drift * sin(t * 2.9);
+    final rawY = 0.5 + 0.25 * drift * cos(t * 1.7) + 0.1 * drift * cos(t * 3.1);
+
+    // Lerp smoothedPos toward raw pos.
+    // translationSmoothing 0.0 = instant (lerpFactor 1.0)
+    // translationSmoothing 1.0 = very smooth (lerpFactor 0.02)
+    final s = config.translationSmoothing.clamp(0.0, 1.0);
+    final lerpFactor = 1.0 - s * 0.98;
+    _smoothedPos = Offset(
+      _smoothedPos.dx + (rawX - _smoothedPos.dx) * lerpFactor,
+      _smoothedPos.dy + (rawY - _smoothedPos.dy) * lerpFactor,
+    );
   }
 
   @override
@@ -141,6 +168,12 @@ class StealBackground extends PositionComponent
     _shader!.setFloat(idx++, sh);
     _shader!.setFloat(idx++, time);
 
+    // Uniform index order must match steal.frag declarations exactly:
+    // flowSpeed(3) filmGrain(4) pulseIntensity(5) heatDrift(6)
+    // logoScale(7) blurAmount(8) flatColor(9)
+    // logoPosX(10) logoPosY(11)
+    // bass(12) mid(13) treble(14) overall(15)
+    // color1(16-18) color2(19-21) color3(22-24) color4(25-27)
     _shader!.setFloat(idx++, config.flowSpeed.clamp(0.0, 5.0));
     _shader!.setFloat(idx++, 0.0); // filmGrain hardcoded off
     _shader!.setFloat(idx++, config.pulseIntensity.clamp(0.0, 5.0));
@@ -148,6 +181,8 @@ class StealBackground extends PositionComponent
     _shader!.setFloat(idx++, config.logoScale.clamp(0.05, 1.0));
     _shader!.setFloat(idx++, config.blurAmount.clamp(0.0, 1.0));
     _shader!.setFloat(idx++, config.flatColor ? 1.0 : 0.0);
+    _shader!.setFloat(idx++, _smoothedPos.dx); // uLogoPosX
+    _shader!.setFloat(idx++, _smoothedPos.dy); // uLogoPosY
 
     _shader!.setFloat(idx++, energy.bass.clamp(0.0, 5.0));
     _shader!.setFloat(idx++, energy.mid.clamp(0.0, 5.0));

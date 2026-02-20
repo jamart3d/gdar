@@ -69,6 +69,7 @@ void main() {
     when(mockSettingsProvider.oilAudioPeakDecay).thenReturn(0.998);
     when(mockSettingsProvider.oilAudioBassBoost).thenReturn(1.0);
     when(mockSettingsProvider.oilAudioReactivityStrength).thenReturn(1.0);
+    when(mockSettingsProvider.oilTranslationSmoothing).thenReturn(0.1);
   });
 
   Widget createWidgetUnderTest() {

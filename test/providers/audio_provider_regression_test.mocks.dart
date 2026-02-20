@@ -1749,6 +1749,13 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
       ) as double);
 
   @override
+  double get oilTranslationSmoothing => (super.noSuchMethod(
+        Invocation.getter(#oilTranslationSmoothing),
+        returnValue: 0.0,
+        returnValueForMissingStub: 0.0,
+      ) as double);
+
+  @override
   double get oilBlurAmount => (super.noSuchMethod(
         Invocation.getter(#oilBlurAmount),
         returnValue: 0.0,
@@ -2346,6 +2353,17 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
   _i4.Future<void> setOilLogoScale(double? value) => (super.noSuchMethod(
         Invocation.method(
           #setOilLogoScale,
+          [value],
+        ),
+        returnValue: _i4.Future<void>.value(),
+        returnValueForMissingStub: _i4.Future<void>.value(),
+      ) as _i4.Future<void>);
+
+  @override
+  _i4.Future<void> setOilTranslationSmoothing(double? value) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #setOilTranslationSmoothing,
           [value],
         ),
         returnValue: _i4.Future<void>.value(),
