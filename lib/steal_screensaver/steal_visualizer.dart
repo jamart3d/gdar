@@ -60,8 +60,16 @@ class _StealVisualizerState extends State<StealVisualizer> {
   @override
   void didUpdateWidget(StealVisualizer oldWidget) {
     super.didUpdateWidget(oldWidget);
-    _game.updateConfig(widget.config);
-    _game.updateBannerText(widget.config.bannerText);
+    // Only push config into the game when something actually changed.
+    // StealConfig implements == so this is a value comparison, not identity.
+    // This prevents AudioProvider position ticks from triggering spurious
+    // updateConfig calls that were causing the translation jolt.
+    if (widget.config != oldWidget.config) {
+      _game.updateConfig(widget.config);
+    }
+    if (widget.config.bannerText != oldWidget.config.bannerText) {
+      _game.updateBannerText(widget.config.bannerText);
+    }
     if (widget.audioReactor != oldWidget.audioReactor) {
       _game.updateAudioReactor(widget.audioReactor);
     }

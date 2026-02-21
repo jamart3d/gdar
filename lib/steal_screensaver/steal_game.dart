@@ -220,7 +220,7 @@ class StealGame extends FlameGame {
         paletteColors.isNotEmpty ? paletteColors.first : Colors.white;
 
     final bannerColor =
-        rawColor.computeLuminance() > 0.7 ? const Color(0xFFFFD700) : rawColor;
+        rawColor.computeLuminance() > 0.85 ? const Color(0xFFFFD700) : rawColor;
 
     _banner!.updateBanner(
       cfg.bannerText,

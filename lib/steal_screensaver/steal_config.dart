@@ -83,7 +83,7 @@ class StealConfig {
     this.bannerText = '',
     this.venue = '',
     this.date = '',
-    this.paletteCycle = false,
+    this.paletteCycle = true,
     this.paletteTransitionSpeed = 5.0,
     this.innerRingScale = 1.0,
     this.innerToMiddleGap = 0.3,
@@ -202,4 +202,60 @@ class StealConfig {
       orbitDrift: orbitDrift ?? this.orbitDrift,
     );
   }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (other is! StealConfig) return false;
+    return flowSpeed == other.flowSpeed &&
+        palette == other.palette &&
+        filmGrain == other.filmGrain &&
+        pulseIntensity == other.pulseIntensity &&
+        heatDrift == other.heatDrift &&
+        logoScale == other.logoScale &&
+        translationSmoothing == other.translationSmoothing &&
+        blurAmount == other.blurAmount &&
+        flatColor == other.flatColor &&
+        bannerGlow == other.bannerGlow &&
+        bannerFlicker == other.bannerFlicker &&
+        enableAudioReactivity == other.enableAudioReactivity &&
+        performanceMode == other.performanceMode &&
+        showInfoBanner == other.showInfoBanner &&
+        bannerText == other.bannerText &&
+        venue == other.venue &&
+        date == other.date &&
+        paletteCycle == other.paletteCycle &&
+        paletteTransitionSpeed == other.paletteTransitionSpeed &&
+        innerRingScale == other.innerRingScale &&
+        innerToMiddleGap == other.innerToMiddleGap &&
+        middleToOuterGap == other.middleToOuterGap &&
+        orbitDrift == other.orbitDrift;
+  }
+
+  @override
+  int get hashCode => Object.hashAll([
+        flowSpeed,
+        palette,
+        filmGrain,
+        pulseIntensity,
+        heatDrift,
+        logoScale,
+        translationSmoothing,
+        blurAmount,
+        flatColor,
+        bannerGlow,
+        bannerFlicker,
+        enableAudioReactivity,
+        performanceMode,
+        showInfoBanner,
+        bannerText,
+        venue,
+        date,
+        paletteCycle,
+        paletteTransitionSpeed,
+        innerRingScale,
+        innerToMiddleGap,
+        middleToOuterGap,
+        orbitDrift,
+      ]);
 }

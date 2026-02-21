@@ -17,8 +17,9 @@ class StealBackground extends PositionComponent
   // Shorter palettes pad with their last color.
   static const int _colorCount = 4;
 
-  List<Color> _currentColors = [];
-  List<Color> _targetColors = [];
+  List<Color> _currentColors =
+      List.filled(_colorCount, const Color(0xFF000000));
+  List<Color> _targetColors = List.filled(_colorCount, const Color(0xFF000000));
 
   double _colorLerpSpeed = 0.025;
 
@@ -113,11 +114,13 @@ class StealBackground extends PositionComponent
 
     // Color lerp — both lists guaranteed length 4, never skips
     for (int i = 0; i < _colorCount; i++) {
-      _currentColors[i] = Color.lerp(
-        _currentColors[i],
-        _targetColors[i],
-        _colorLerpSpeed,
-      )!;
+      if (_currentColors.length > i && _targetColors.length > i) {
+        _currentColors[i] = Color.lerp(
+          _currentColors[i],
+          _targetColors[i],
+          _colorLerpSpeed,
+        )!;
+      }
     }
 
     // Compute raw logo target position (same formula as shader previously used)

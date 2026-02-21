@@ -72,7 +72,7 @@ class DefaultSettings {
   static const double oilBannerFlicker = 0.0;
   static const bool oilEnableAudioReactivity = false;
   static const bool oilPerformanceMode = false;
-  static const bool oilPaletteCycle = true; // was false
+  static const bool oilPaletteCycle = true;
   static const double oilPaletteTransitionSpeed = 5.0;
   static const double oilAudioReactivityStrength = 1.0;
   static const double oilAudioBassBoost = 2.0;

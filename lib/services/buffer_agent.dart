@@ -23,6 +23,7 @@ class BufferAgent with WidgetsBindingObserver {
   bool _isBuffering = false;
   DateTime? _bufferingStartTime;
   bool _isRecovering = false;
+  bool _isExecutingRecovery = false;
   AppLifecycleState _appLifecycleState = AppLifecycleState.resumed;
   bool _hasNetworkConnection = true;
 
@@ -131,7 +132,8 @@ class BufferAgent with WidgetsBindingObserver {
   }
 
   void _performRecovery() {
-    if (!_isRecovering) return;
+    if (!_isRecovering || _isExecutingRecovery) return;
+    _isExecutingRecovery = true;
 
     final currentPosition = _audioPlayer.position;
     logger.i(
@@ -145,13 +147,16 @@ class BufferAgent with WidgetsBindingObserver {
       }).then((_) {
         logger.i('BufferAgent: Recovery successful');
         _isRecovering = false;
+        _isExecutingRecovery = false;
       }).catchError((error) {
         logger.e('BufferAgent: Recovery failed', error: error);
         _isRecovering = false;
+        _isExecutingRecovery = false;
       });
     } catch (e) {
       logger.e('BufferAgent: Recovery attempt threw exception', error: e);
       _isRecovering = false;
+      _isExecutingRecovery = false;
     }
   }
 
