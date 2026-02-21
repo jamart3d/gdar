@@ -267,6 +267,11 @@ class AudioProvider with ChangeNotifier {
           }
         }
       }
+
+      // Notify listeners on every track index change so that UI components
+      // watching AudioProvider (e.g. screensaver banner rings) update the
+      // current track title for intra-show track changes.
+      notifyListeners();
     });
   }
 

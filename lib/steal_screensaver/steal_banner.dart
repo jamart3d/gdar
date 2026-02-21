@@ -48,7 +48,7 @@ class StealBanner extends Component with HasGameReference<StealGame> {
   static const double _fontSize = 11.0;
   static const double _letterSpacingBoost = 1.08;
   // Extra angle between words (in addition to normal letter spacing)
-  static const double _wordSpacingExtra = 1.6;
+  static const double _wordSpacingExtra = 0.8;
 
   // ── Fade ───────────────────────────────────────────────────────────────────
   static const double _fadeSpeed = 0.6;

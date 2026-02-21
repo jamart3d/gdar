@@ -439,11 +439,13 @@ class SettingsProvider with ChangeNotifier {
         DefaultSettings.oilEnableAudioReactivity;
     _oilPerformanceMode = _prefs.getBool(_oilPerformanceModeKey) ??
         DefaultSettings.oilPerformanceMode;
-    _oilPaletteCycle = _prefs.getBool(_oilPaletteCycleKey) ?? false;
+    _oilPaletteCycle =
+        _prefs.getBool(_oilPaletteCycleKey) ?? DefaultSettings.oilPaletteCycle;
     _oilPaletteTransitionSpeed =
-        _prefs.getDouble(_oilPaletteTransitionSpeedKey) ?? 5.0;
+        _prefs.getDouble(_oilPaletteTransitionSpeedKey) ??
+            DefaultSettings.oilPaletteTransitionSpeed;
 
-    // Audio Reactivity
+    // Audio Reactivity`
     _oilAudioPeakDecay = _prefs.getDouble(_oilAudioPeakDecayKey) ??
         DefaultSettings.oilAudioPeakDecay;
     _oilAudioBassBoost = _prefs.getDouble(_oilAudioBassBoostKey) ??
