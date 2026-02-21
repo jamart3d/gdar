@@ -622,20 +622,31 @@ class _GdarAppState extends State<GdarApp> {
                     final isTrueBlack = themeProvider.isDarkMode &&
                         settingsProvider.useTrueBlack;
 
-                    if (isTrueBlack) {
-                      child = AnnotatedRegion<SystemUiOverlayStyle>(
-                        value: const SystemUiOverlayStyle(
-                          systemNavigationBarColor: Colors.black,
-                          systemNavigationBarIconBrightness: Brightness.light,
-                        ),
-                        child: child!,
-                      );
-                    }
+                    // Android 15 enforces transparent nav bars — setNavigationBarColor
+                    // is ignored by the OS. We use transparent + contrastEnforced on
+                    // all versions. True Black AMOLED savings are preserved via the
+                    // scaffoldBackgroundColor and colorScheme set above.
+                    child = AnnotatedRegion<SystemUiOverlayStyle>(
+                      value: SystemUiOverlayStyle(
+                        statusBarColor: Colors.transparent,
+                        systemNavigationBarColor: Colors.transparent,
+                        systemNavigationBarContrastEnforced: true,
+                        statusBarIconBrightness: themeProvider.isDarkMode
+                            ? Brightness.light
+                            : Brightness.dark,
+                        systemNavigationBarIconBrightness: isTrueBlack
+                            ? Brightness.light
+                            : (themeProvider.isDarkMode
+                                ? Brightness.light
+                                : Brightness.dark),
+                      ),
+                      child: child!,
+                    );
 
                     return InactivityDetector(
                       inactivityService: _inactivityService,
                       isScreensaverActive: _isScreensaverActive,
-                      child: child!,
+                      child: child,
                     );
                   },
                 );

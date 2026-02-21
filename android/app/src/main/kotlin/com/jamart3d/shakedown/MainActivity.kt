@@ -7,6 +7,7 @@ import android.util.Log
 import android.app.UiModeManager
 import android.content.Context
 import android.content.res.Configuration
+import androidx.core.view.WindowCompat
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
@@ -62,6 +63,10 @@ class MainActivity: FlutterActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // Opt into edge-to-edge for Android 15 (SDK 35) compliance.
+        // Replaces the deprecated setNavigationBarColor / setStatusBarColor approach.
+        // Flutter's MediaQuery.padding will handle content insets on the Dart side.
+        WindowCompat.setDecorFitsSystemWindows(window, false)
         handleDeepLink(intent)
     }
 
