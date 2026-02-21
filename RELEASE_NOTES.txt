@@ -1,3 +1,7 @@
+Release 1.1.4+104:
+- Verification: Comprehensive health check passed with 160 unit/widget tests.
+- Style: Enforced consistent Dart formatting across the entire codebase.
+
 Release 1.1.3+103:
 - Verification: Unified health check passing (0 analysis errors, 160/160 tests, formatting verified).
 - Maintenance: Finalized session logs and internal documentation updates.
