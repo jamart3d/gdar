@@ -83,6 +83,30 @@ void main() {
       expect(provider.nonRandom, true);
     });
   });
+  group('SettingsProvider Swipe to Block', () {
+    test('initializes enableSwipeToBlock to false by default', () {
+      expect(settingsProvider.enableSwipeToBlock, false);
+    });
+
+    test('toggleEnableSwipeToBlock toggles value and persists', () async {
+      // Verify initial state
+      expect(settingsProvider.enableSwipeToBlock, false);
+
+      // Toggle ON
+      settingsProvider.toggleEnableSwipeToBlock();
+      expect(settingsProvider.enableSwipeToBlock, true);
+
+      // Verify persistence
+      final prefs = await SharedPreferences.getInstance();
+      expect(prefs.getBool('enable_swipe_to_block'), true);
+
+      // Toggle OFF
+      settingsProvider.toggleEnableSwipeToBlock();
+      expect(settingsProvider.enableSwipeToBlock, false);
+      expect(prefs.getBool('enable_swipe_to_block'), false);
+    });
+  });
+
   group('SettingsProvider Simple Random Legacy Icon', () {
     test('initializes simpleRandomIcon to false by default (internal only)',
         () {

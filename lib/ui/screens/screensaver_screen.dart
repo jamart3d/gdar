@@ -148,7 +148,7 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
       performanceMode: settings.oilPerformanceMode ||
           Provider.of<DeviceService>(context, listen: false).isTv,
       logoScale: settings.oilLogoScale,
-      translationSmoothing: settings.oilTranslationSmoothing, // ← was missing
+      translationSmoothing: settings.oilTranslationSmoothing,
       blurAmount: settings.oilBlurAmount,
       flatColor: settings.oilFlatColor,
       bannerGlow: settings.oilBannerGlow,
@@ -163,6 +163,7 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
       innerToMiddleGap: settings.oilInnerToMiddleGap,
       middleToOuterGap: settings.oilMiddleToOuterGap,
       orbitDrift: settings.oilOrbitDrift,
+      bannerDisplayMode: settings.oilBannerDisplayMode,
     );
 
     return PopScope(

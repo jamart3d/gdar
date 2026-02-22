@@ -2,19 +2,25 @@ import 'dart:math';
 import 'dart:ui' as ui;
 import 'package:flame/components.dart';
 import 'package:flutter/material.dart';
+import 'package:shakedown/utils/app_date_utils.dart';
 import 'package:shakedown/steal_screensaver/steal_config.dart';
 import 'package:shakedown/steal_screensaver/steal_game.dart';
 
-/// Renders three circular rotating text rings that orbit the Steal Your Face logo.
+/// Renders track info in one of two modes:
 ///
-/// Outer ring:  venue        — clockwise, fastest (largest radius)
-/// Middle ring: track title  — clockwise, medium
-/// Inner ring:  date         — clockwise, slowest (smallest radius)
+/// Ring mode (bannerDisplayMode == 'ring'):
+///   Three circular rotating text rings orbiting the Steal Your Face logo.
+///   Outer ring: venue — clockwise, fastest
+///   Middle ring: track title — clockwise, medium
+///   Inner ring: date — clockwise, slowest
 ///
-/// When bannerGlow is enabled, each word gets independent neon-style flicker
-/// driven by a phase machine: idle → buzz → dropout → recover → idle.
-/// The bannerFlicker value (0–1) scales event frequency and amplitude.
-/// Plain text mode is unaffected.
+/// Flat mode (bannerDisplayMode == 'flat'):
+///   Three stacked lines centered below the logo:
+///   Line 1: venue
+///   Line 2: track title
+///   Line 3: date
+///
+/// Both modes support neon glow and per-word flicker when bannerGlow is on.
 
 // ── Neon flicker per-word state ────────────────────────────────────────────
 
@@ -22,12 +28,12 @@ enum _FlickerPhase { idle, buzz, dropout, recover }
 
 class _NeonWord {
   final String text;
-  double brightness = 1.0; // applied as opacity multiplier per-word
+  double brightness = 1.0;
   double target = 1.0;
-  double eventTimer = 0.0; // time until next phase transition
+  double eventTimer = 0.0;
   _FlickerPhase phase = _FlickerPhase.idle;
-  double buzzFreq = 0.0; // oscillation rate during buzz phase
-  double buzzAmp = 0.0; // amplitude of buzz oscillation
+  double buzzFreq = 0.0;
+  double buzzAmp = 0.0;
 
   _NeonWord(this.text);
 }
@@ -47,8 +53,13 @@ class StealBanner extends Component with HasGameReference<StealGame> {
   // ── Font & letter spacing ──────────────────────────────────────────────────
   static const double _fontSize = 11.0;
   static const double _letterSpacingBoost = 1.08;
-  // Extra angle between words (in addition to normal letter spacing)
   static const double _wordSpacingExtra = 0.8;
+
+  // ── Flat mode layout ───────────────────────────────────────────────────────
+  // Vertical offset below logo center as a fraction of minDim
+  static const double _flatOffsetRatio = 0.18;
+  // Line height in pixels
+  static const double _flatLineHeight = 16.0;
 
   // ── Fade ───────────────────────────────────────────────────────────────────
   static const double _fadeSpeed = 0.6;
@@ -83,39 +94,6 @@ class StealBanner extends Component with HasGameReference<StealGame> {
   double _opacity = 0.0;
 
   final _rng = Random();
-
-  // ── Date formatting ────────────────────────────────────────────────────────
-
-  /// Converts an ISO-style date string (e.g. "2024-08-15" or "20240815")
-  /// into a human-readable form like "Aug 15, 2024".
-  /// Returns the original string unchanged if it cannot be parsed.
-  static String _formatDate(String raw) {
-    if (raw.isEmpty) return raw;
-    try {
-      // Support both "YYYY-MM-DD" and compact "YYYYMMDD"
-      final normalized = (raw.length == 8 && !raw.contains('-'))
-          ? '${raw.substring(0, 4)}-${raw.substring(4, 6)}-${raw.substring(6, 8)}'
-          : raw;
-      final dt = DateTime.parse(normalized);
-      const months = [
-        'Jan',
-        'Feb',
-        'Mar',
-        'Apr',
-        'May',
-        'Jun',
-        'Jul',
-        'Aug',
-        'Sep',
-        'Oct',
-        'Nov',
-        'Dec',
-      ];
-      return '${months[dt.month - 1]} ${dt.day}, ${dt.year}';
-    } catch (_) {
-      return raw; // not a parseable date — show as-is
-    }
-  }
 
   // ── Public API ─────────────────────────────────────────────────────────────
 
@@ -169,7 +147,7 @@ class StealBanner extends Component with HasGameReference<StealGame> {
       },
     );
     _queueRingUpdate(
-      newText: _formatDate(date), // ← formatted here
+      newText: AppDateUtils.formatDate(date),
       current: _innerCurrent,
       opacity: _innerOpacity,
       setCurrent: (v) {
@@ -196,9 +174,7 @@ class StealBanner extends Component with HasGameReference<StealGame> {
     required void Function(bool) setFadingOut,
     required void Function(List<_NeonWord>) setWords,
   }) {
-    if (newText == current) {
-      return;
-    }
+    if (newText == current) return;
     if (opacity <= 0.05 || current.isEmpty) {
       setCurrent(newText);
       setFadingOut(false);
@@ -209,16 +185,11 @@ class StealBanner extends Component with HasGameReference<StealGame> {
     }
   }
 
-  /// Split text into words and create _NeonWord objects with randomised
-  /// initial timers so they never all fire at the same time.
   List<_NeonWord> _buildWords(String text) {
-    if (text.isEmpty) {
-      return [];
-    }
+    if (text.isEmpty) return [];
     final parts = text.split(' ').where((w) => w.isNotEmpty).toList();
     return parts.map((w) {
       final word = _NeonWord(w);
-      // Stagger initial idle timers 0–3s so words desync immediately
       word.eventTimer = _rng.nextDouble() * 3.0;
       return word;
     }).toList();
@@ -240,15 +211,9 @@ class StealBanner extends Component with HasGameReference<StealGame> {
       _innerAngle += _baseRotationSpeed * innerR * dt;
       _middleAngle += _baseRotationSpeed * middleR * dt;
       _outerAngle += _baseRotationSpeed * outerR * dt;
-      if (_innerAngle > 2 * pi) {
-        _innerAngle -= 2 * pi;
-      }
-      if (_middleAngle > 2 * pi) {
-        _middleAngle -= 2 * pi;
-      }
-      if (_outerAngle > 2 * pi) {
-        _outerAngle -= 2 * pi;
-      }
+      if (_innerAngle > 2 * pi) _innerAngle -= 2 * pi;
+      if (_middleAngle > 2 * pi) _middleAngle -= 2 * pi;
+      if (_outerAngle > 2 * pi) _outerAngle -= 2 * pi;
       _opacity = (_opacity + _fadeSpeed * dt).clamp(0.0, 1.0);
     } else {
       _opacity = (_opacity - _fadeSpeed * dt).clamp(0.0, 1.0);
@@ -288,7 +253,6 @@ class StealBanner extends Component with HasGameReference<StealGame> {
       _innerWords = v;
     });
 
-    // Tick per-word flicker only when glow is on
     if (config.bannerGlow && config.bannerFlicker > 0.0) {
       final strength = config.bannerFlicker.clamp(0.0, 1.0);
       for (final words in [_outerWords, _middleWords, _innerWords]) {
@@ -297,7 +261,6 @@ class StealBanner extends Component with HasGameReference<StealGame> {
         }
       }
     } else {
-      // Reset all word brightnesses when flicker is off
       for (final words in [_outerWords, _middleWords, _innerWords]) {
         for (final word in words) {
           word.brightness = 1.0;
@@ -342,33 +305,27 @@ class StealBanner extends Component with HasGameReference<StealGame> {
 
     switch (word.phase) {
       case _FlickerPhase.idle:
-        // Subtle jitter — brightness near 1.0 with tiny noise
         final jitter = (strength * 0.03) * (_rng.nextDouble() * 2 - 1);
         word.brightness =
             (word.brightness + (1.0 + jitter - word.brightness) * 8.0 * dt)
                 .clamp(0.85, 1.0);
 
         if (word.eventTimer <= 0.0) {
-          // Decide: buzz or dropout, weighted by strength
           final doBuzz = _rng.nextDouble() < 0.65;
           if (doBuzz) {
             word.phase = _FlickerPhase.buzz;
-            // Duration: 60–200ms, more frequent at high strength
             word.eventTimer =
                 ui.lerpDouble(0.20, 0.06, strength)! + _rng.nextDouble() * 0.14;
-            word.buzzFreq = 15.0 + _rng.nextDouble() * 10.0; // 15–25 Hz
+            word.buzzFreq = 15.0 + _rng.nextDouble() * 10.0;
             word.buzzAmp = ui.lerpDouble(0.04, 0.18, strength)!;
           } else {
             word.phase = _FlickerPhase.dropout;
-            word.eventTimer = 0.025 + _rng.nextDouble() * 0.035; // 25–60ms drop
-            word.target = ui.lerpDouble(0.55, 0.08, strength)!; // how dark
+            word.eventTimer = 0.025 + _rng.nextDouble() * 0.035;
+            word.target = ui.lerpDouble(0.55, 0.08, strength)!;
           }
-          // Next idle: longer at low strength (rare events), shorter at high
-          // (but this sets the NEXT idle after recovery, updated in recover)
         }
 
       case _FlickerPhase.buzz:
-        // Fast oscillation around 1.0
         final osc = sin(word.buzzFreq * 2 * pi * (1.0 - word.eventTimer));
         word.brightness = (1.0 + osc * word.buzzAmp).clamp(0.7, 1.0);
         if (word.eventTimer <= 0.0) {
@@ -378,16 +335,13 @@ class StealBanner extends Component with HasGameReference<StealGame> {
         }
 
       case _FlickerPhase.dropout:
-        // Lerp quickly toward dark target
         word.brightness += (word.target - word.brightness) * 20.0 * dt;
         if (word.eventTimer <= 0.0) {
           word.phase = _FlickerPhase.recover;
-          word.eventTimer =
-              0.04 + _rng.nextDouble() * 0.08; // hold dark 40–120ms
+          word.eventTimer = 0.04 + _rng.nextDouble() * 0.08;
         }
 
       case _FlickerPhase.recover:
-        // Snap back toward full brightness
         word.brightness += (1.0 - word.brightness) * 12.0 * dt;
         if (word.eventTimer <= 0.0) {
           word.brightness = 1.0;
@@ -398,7 +352,6 @@ class StealBanner extends Component with HasGameReference<StealGame> {
   }
 
   double _nextIdleTime(double strength) {
-    // Low strength: long quiet periods (2–6s). High strength: short (0.3–1.2s).
     final minIdle = ui.lerpDouble(2.0, 0.3, strength)!;
     final maxIdle = ui.lerpDouble(6.0, 1.2, strength)!;
     return minIdle + _rng.nextDouble() * (maxIdle - minIdle);
@@ -423,29 +376,170 @@ class StealBanner extends Component with HasGameReference<StealGame> {
 
   @override
   void render(Canvas canvas) {
-    if (_opacity <= 0.01) {
-      return;
-    }
+    if (_opacity <= 0.01) return;
 
     final w = game.size.x;
     final h = game.size.y;
-    if (w < 2 || h < 2) {
-      return;
-    }
+    if (w < 2 || h < 2) return;
 
     final StealConfig config = game.config;
-
-    // Use the same smoothed logo position that drives the shader —
-    // keeps rings locked to the logo through all translation and scaling.
     final logoPos = game.smoothedLogoPos;
     final center = Offset(logoPos.dx * w, logoPos.dy * h);
-
     final minDim = min(w, h);
+    final glowEnabled = config.bannerGlow;
+    final isFlat = config.bannerDisplayMode == 'flat';
+
+    if (isFlat) {
+      _renderFlat(canvas, center, minDim, glowEnabled);
+    } else {
+      _renderRings(canvas, center, minDim, glowEnabled, config);
+    }
+  }
+
+  // ── Flat render ────────────────────────────────────────────────────────────
+
+  void _renderFlat(
+    Canvas canvas,
+    Offset center,
+    double minDim,
+    bool glowEnabled,
+  ) {
+    // Three lines: venue (top), title (middle), date (bottom)
+    // Stacked below the logo center
+    final baseY = center.dy + minDim * _flatOffsetRatio;
+
+    final lines = [
+      (_outerCurrent, _outerWords, _outerOpacity), // venue
+      (_middleCurrent, _middleWords, _middleOpacity), // title
+      (_innerCurrent, _innerWords, _innerOpacity), // date
+    ];
+
+    for (int i = 0; i < lines.length; i++) {
+      final text = lines[i].$1;
+      final words = lines[i].$2;
+      final lineOpacity = lines[i].$3;
+
+      if (text.isEmpty || lineOpacity <= 0.01) continue;
+
+      final y = baseY + (i - 1) * _flatLineHeight; // centered on middle line
+      final effectiveOpacity = _opacity * lineOpacity;
+
+      _drawFlatLine(canvas, text, words, Offset(center.dx, y), effectiveOpacity,
+          glowEnabled);
+    }
+  }
+
+  void _drawFlatLine(
+    Canvas canvas,
+    String text,
+    List<_NeonWord> words,
+    Offset center,
+    double effectiveOpacity,
+    bool glowEnabled,
+  ) {
+    if (text.isEmpty) return;
+
+    final hsl = HSLColor.fromColor(_currentColor);
+    final coreColor = hsl.withSaturation(0.15).withLightness(0.97).toColor();
+    final innerHaloColor =
+        hsl.withSaturation(1.0).withLightness(0.65).toColor();
+    final outerBloomColor =
+        hsl.withSaturation(1.0).withLightness(0.55).toColor();
+    final deepBloomColor =
+        hsl.withSaturation(0.9).withLightness(0.45).toColor();
+
+    final wordList = words.isNotEmpty
+        ? words
+        : text
+            .split(' ')
+            .where((w) => w.isNotEmpty)
+            .map(_NeonWord.new)
+            .toList();
+
+    // Measure total width to center the line
+    double totalWidth = 0.0;
+    for (int wi = 0; wi < wordList.length; wi++) {
+      for (final char in wordList[wi].text.characters) {
+        final p = _measureChar(char);
+        totalWidth += p;
+      }
+      if (wi < wordList.length - 1) {
+        totalWidth += _fontSize * 0.6; // word gap
+      }
+    }
+
+    double x = center.dx - totalWidth / 2;
+
+    for (int wi = 0; wi < wordList.length; wi++) {
+      final word = wordList[wi];
+      final wordBrightness = glowEnabled ? word.brightness : 1.0;
+      final chars = word.text.characters.toList();
+
+      for (final char in chars) {
+        final charWidth = _measureChar(char);
+
+        canvas.save();
+        canvas.translate(x + charWidth / 2, center.dy);
+
+        final opacity = effectiveOpacity * wordBrightness;
+
+        if (glowEnabled) {
+          _paintChar(canvas, char,
+              color: deepBloomColor.withValues(alpha: opacity * 0.12),
+              blurRadius: 9.0);
+          _paintChar(canvas, char,
+              color: outerBloomColor.withValues(alpha: opacity * 0.30),
+              blurRadius: 4.0);
+          _paintChar(canvas, char,
+              color: innerHaloColor.withValues(alpha: opacity * 0.75),
+              blurRadius: 1.5);
+          _paintChar(canvas, char,
+              color: coreColor.withValues(alpha: opacity * 0.95),
+              blurRadius: 0.0);
+        } else {
+          _paintChar(canvas, char,
+              color: _currentColor.withValues(alpha: opacity * 0.9),
+              blurRadius: 0.0,
+              withDropShadow: true,
+              dropShadowOpacity: opacity);
+        }
+
+        canvas.restore();
+        x += charWidth;
+      }
+
+      if (wi < wordList.length - 1) {
+        x += _fontSize * 0.6;
+      }
+    }
+  }
+
+  double _measureChar(String char) {
+    final painter = TextPainter(
+      text: TextSpan(
+        text: char,
+        style: const TextStyle(
+          fontSize: _fontSize,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+      textDirection: ui.TextDirection.ltr,
+    )..layout();
+    return painter.width;
+  }
+
+  // ── Ring render ────────────────────────────────────────────────────────────
+
+  void _renderRings(
+    Canvas canvas,
+    Offset center,
+    double minDim,
+    bool glowEnabled,
+    StealConfig config,
+  ) {
     final innerR = _innerRadius(minDim, config);
     final middleR = _middleRadius(minDim, config, innerR);
     final outerR = _outerRadius(minDim, config, middleR);
-
-    final glowEnabled = config.bannerGlow;
 
     if (_outerCurrent.isNotEmpty && _outerOpacity > 0.01) {
       _drawRing(canvas, _outerCurrent, _outerWords, center, outerR, _outerAngle,
@@ -471,33 +565,22 @@ class StealBanner extends Component with HasGameReference<StealGame> {
     double effectiveOpacity,
     bool glowEnabled,
   ) {
-    if (text.isEmpty) {
-      return;
-    }
+    if (text.isEmpty) return;
 
     final charAngle = (_fontSize * _letterSpacingBoost) / radius;
     final wordSpaceAngle = charAngle * _wordSpacingExtra;
 
     final hsl = HSLColor.fromColor(_currentColor);
-
-    // Tight glow layers (only computed if glow enabled)
-    // Core: near-white, no blur — the lit tube
     final coreColor = hsl.withSaturation(0.15).withLightness(0.97).toColor();
-    // Inner halo: saturated, very tight blur — color fringe against letters
     final innerHaloColor =
         hsl.withSaturation(1.0).withLightness(0.65).toColor();
-    // Outer bloom: same hue, soft spread
     final outerBloomColor =
         hsl.withSaturation(1.0).withLightness(0.55).toColor();
-    // Deep bloom: faint wide cast
     final deepBloomColor =
         hsl.withSaturation(0.9).withLightness(0.45).toColor();
 
-    // Build list of (wordIndex, charIndex, char) with angles
-    // so we can look up per-word brightness at render time
     double angle = startAngle - pi / 2;
 
-    // First pass: compute total arc span to center it
     double totalSpan = 0.0;
     final wordList = words.isNotEmpty
         ? words
@@ -509,9 +592,7 @@ class StealBanner extends Component with HasGameReference<StealGame> {
 
     for (int wi = 0; wi < wordList.length; wi++) {
       totalSpan += charAngle * wordList[wi].text.characters.length;
-      if (wi < wordList.length - 1) {
-        totalSpan += wordSpaceAngle;
-      }
+      if (wi < wordList.length - 1) totalSpan += wordSpaceAngle;
     }
     angle = startAngle - pi / 2 - totalSpan / 2;
 
@@ -531,19 +612,15 @@ class StealBanner extends Component with HasGameReference<StealGame> {
         final opacity = effectiveOpacity * wordBrightness;
 
         if (glowEnabled) {
-          // Layer 1 — deep bloom: wide, faint
           _paintChar(canvas, chars[ci],
               color: deepBloomColor.withValues(alpha: opacity * 0.12),
               blurRadius: 9.0);
-          // Layer 2 — outer bloom: medium spread
           _paintChar(canvas, chars[ci],
               color: outerBloomColor.withValues(alpha: opacity * 0.30),
               blurRadius: 4.0);
-          // Layer 3 — inner halo: tight fringe right against letters
           _paintChar(canvas, chars[ci],
               color: innerHaloColor.withValues(alpha: opacity * 0.75),
               blurRadius: 1.5);
-          // Layer 4 — core: crisp white tube
           _paintChar(canvas, chars[ci],
               color: coreColor.withValues(alpha: opacity * 0.95),
               blurRadius: 0.0);
@@ -559,10 +636,7 @@ class StealBanner extends Component with HasGameReference<StealGame> {
         angle += charAngle;
       }
 
-      // Word gap
-      if (wi < wordList.length - 1) {
-        angle += wordSpaceAngle;
-      }
+      if (wi < wordList.length - 1) angle += wordSpaceAngle;
     }
   }
 

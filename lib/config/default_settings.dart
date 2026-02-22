@@ -53,6 +53,7 @@ class DefaultSettings {
 
   // Misc
   static const bool showSplashScreen = true;
+  static const bool enableSwipeToBlock = false;
 
   // Screensaver (steal)
   static const bool useOilScreensaver = true;
@@ -61,13 +62,13 @@ class DefaultSettings {
 
   // Steal Visualizer Parameters
   static const double oilFlowSpeed = 0.1;
-  static const double oilPulseIntensity = 0.0; // was 0.8
+  static const double oilPulseIntensity = 0.0;
   static const String oilPalette = 'acid_green';
   static const double oilFilmGrain = 0.15;
-  static const double oilHeatDrift = 0.0; // was 0.3
+  static const double oilHeatDrift = 0.0;
   static const double oilLogoScale = .5;
-  static const double oilBlurAmount = 0.0; // was 0.0
-  static const bool oilFlatColor = true; // was false
+  static const double oilBlurAmount = 0.0;
+  static const bool oilFlatColor = true;
   static const bool oilBannerGlow = false;
   static const double oilBannerFlicker = 0.0;
   static const bool oilEnableAudioReactivity = false;
@@ -79,10 +80,11 @@ class DefaultSettings {
   static const double oilAudioPeakDecay = 0.95;
   static const bool oilShowInfoBanner = false;
   static const double oilTranslationSmoothing = 1.0;
+  static const String oilBannerDisplayMode = 'ring';
 
   // Ring controls (3-ring gap model)
-  static const double oilInnerRingScale = 0.75; // was 1.0
-  static const double oilInnerToMiddleGap = 0.05; // was 0.3
-  static const double oilMiddleToOuterGap = 0.05; // was 0.3
+  static const double oilInnerRingScale = 0.75;
+  static const double oilInnerToMiddleGap = 0.05;
+  static const double oilMiddleToOuterGap = 0.05;
   static const double oilOrbitDrift = 1.0;
 }

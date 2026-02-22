@@ -304,6 +304,33 @@ class InterfaceSection extends StatelessWidget {
           },
           secondary: const Icon(Icons.timer_off_rounded),
         ),
+        const SizedBox(height: 8),
+        const Divider(),
+        const SizedBox(height: 8),
+
+        // 5. Gestures Group
+        SwitchListTile(
+          dense: true,
+          visualDensity: VisualDensity.compact,
+          title: Text('Enable Swipe to Block',
+              style: Theme.of(context)
+                  .textTheme
+                  .titleMedium
+                  ?.copyWith(fontSize: 16 * scaleFactor)),
+          subtitle: Text('Allows swiping list items to block them',
+              style: Theme.of(context)
+                  .textTheme
+                  .bodySmall
+                  ?.copyWith(fontSize: 12 * scaleFactor)),
+          value: settingsProvider.enableSwipeToBlock,
+          onChanged: (value) {
+            HapticFeedback.lightImpact();
+            context.read<SettingsProvider>().toggleEnableSwipeToBlock();
+          },
+          secondary: const Icon(Icons.swipe_rounded),
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        ),
       ],
     );
   }

@@ -5,7 +5,7 @@ import 'package:shakedown/models/source.dart';
 import 'package:shakedown/providers/settings_provider.dart';
 import 'package:shakedown/ui/screens/settings_screen.dart';
 import 'package:shakedown/ui/styles/app_typography.dart';
-import 'package:intl/intl.dart';
+import 'package:shakedown/utils/app_date_utils.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:shakedown/models/rating.dart';
 import 'package:shakedown/services/catalog_service.dart';
@@ -32,23 +32,8 @@ class PlaybackAppBar extends StatelessWidget {
     final double opacity = (1.0 - (panelPosition * 5.0)).clamp(0.0, 1.0);
     final settingsProvider = context.watch<SettingsProvider>();
 
-    // Date Formatting Logic
-    String dateFormatPattern = '';
-    if (settingsProvider.showDayOfWeek) {
-      dateFormatPattern +=
-          settingsProvider.abbreviateDayOfWeek ? 'E, ' : 'EEEE, ';
-    }
-    dateFormatPattern += settingsProvider.abbreviateMonth ? 'MMM' : 'MMMM';
-    dateFormatPattern += ' d, y';
-
-    final String formattedDate = () {
-      try {
-        final date = DateTime.parse(currentShow.date);
-        return DateFormat(dateFormatPattern).format(date);
-      } catch (e) {
-        return currentShow.date;
-      }
-    }();
+    final String formattedDate =
+        AppDateUtils.formatDate(currentShow.date, settings: settingsProvider);
 
     return Opacity(
       opacity: opacity,

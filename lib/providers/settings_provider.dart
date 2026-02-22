@@ -61,6 +61,7 @@ class SettingsProvider with ChangeNotifier {
   static const String _oilPaletteCycleKey = 'oil_palette_cycle';
   static const String _oilPaletteTransitionSpeedKey =
       'oil_palette_transition_speed';
+  static const String _oilBannerDisplayModeKey = 'oil_banner_display_mode';
 
   // Audio Reactivity Tuning
   static const String _oilAudioPeakDecayKey = 'oil_audio_peak_decay';
@@ -82,6 +83,7 @@ class SettingsProvider with ChangeNotifier {
   static const String _oilOrbitDriftKey = 'oil_orbit_drift';
 
   static const String _marqueeEnabledKey = 'marquee_enabled';
+  static const String _enableSwipeToBlockKey = 'enable_swipe_to_block';
   static const String _showSplashScreenKey = 'show_splash_screen';
   late bool _showSplashScreen;
   bool get showSplashScreen => _showSplashScreen;
@@ -132,6 +134,7 @@ class SettingsProvider with ChangeNotifier {
   late bool _abbreviateMonth;
   late bool _simpleRandomIcon;
   late bool _marqueeEnabled;
+  late bool _enableSwipeToBlock;
 
   // Screensaver (steal)
   late bool _useOilScreensaver;
@@ -147,6 +150,7 @@ class SettingsProvider with ChangeNotifier {
   late bool _oilPerformanceMode;
   late bool _oilPaletteCycle;
   late double _oilPaletteTransitionSpeed;
+  late String _oilBannerDisplayMode;
 
   // Audio Reactivity Tuning
   late double _oilAudioPeakDecay;
@@ -205,6 +209,7 @@ class SettingsProvider with ChangeNotifier {
   bool get abbreviateMonth => _abbreviateMonth;
   bool get simpleRandomIcon => _simpleRandomIcon;
   bool get marqueeEnabled => _marqueeEnabled;
+  bool get enableSwipeToBlock => _enableSwipeToBlock;
 
   // Screensaver getters
   bool get useOilScreensaver => _useOilScreensaver;
@@ -219,6 +224,7 @@ class SettingsProvider with ChangeNotifier {
   bool get oilPerformanceMode => _oilPerformanceMode;
   bool get oilPaletteCycle => _oilPaletteCycle;
   double get oilPaletteTransitionSpeed => _oilPaletteTransitionSpeed;
+  String get oilBannerDisplayMode => _oilBannerDisplayMode;
 
   // Audio Reactivity getters
   double get oilAudioPeakDecay => _oilAudioPeakDecay;
@@ -414,6 +420,8 @@ class SettingsProvider with ChangeNotifier {
     }
 
     _marqueeEnabled = _prefs.getBool(_marqueeEnabledKey) ?? true;
+    _enableSwipeToBlock = _prefs.getBool(_enableSwipeToBlockKey) ??
+        DefaultSettings.enableSwipeToBlock;
     _showDebugLayout = _prefs.getBool(_showDebugLayoutKey) ?? false;
     _enableShakedownTween = _prefs.getBool(_enableShakedownTweenKey) ?? true;
 
@@ -444,8 +452,10 @@ class SettingsProvider with ChangeNotifier {
     _oilPaletteTransitionSpeed =
         _prefs.getDouble(_oilPaletteTransitionSpeedKey) ??
             DefaultSettings.oilPaletteTransitionSpeed;
+    _oilBannerDisplayMode = _prefs.getString(_oilBannerDisplayModeKey) ??
+        DefaultSettings.oilBannerDisplayMode;
 
-    // Audio Reactivity`
+    // Audio Reactivity
     _oilAudioPeakDecay = _prefs.getDouble(_oilAudioPeakDecayKey) ??
         DefaultSettings.oilAudioPeakDecay;
     _oilAudioBassBoost = _prefs.getDouble(_oilAudioBassBoostKey) ??
@@ -572,6 +582,8 @@ class SettingsProvider with ChangeNotifier {
       _enableBufferAgentKey, _enableBufferAgent = !_enableBufferAgent);
   void togglePreventSleep() =>
       _updatePreference(_preventSleepKey, _preventSleep = !_preventSleep);
+  void toggleEnableSwipeToBlock() => _updatePreference(
+      _enableSwipeToBlockKey, _enableSwipeToBlock = !_enableSwipeToBlock);
 
   static const String _rgbAnimationSpeedKey = 'rgb_animation_speed';
   double _rgbAnimationSpeed = 1.0;
@@ -626,6 +638,8 @@ class SettingsProvider with ChangeNotifier {
       _oilPaletteCycleKey, _oilPaletteCycle = !_oilPaletteCycle);
   void setOilPaletteTransitionSpeed(double seconds) => _updateDoublePreference(
       _oilPaletteTransitionSpeedKey, _oilPaletteTransitionSpeed = seconds);
+  Future<void> setOilBannerDisplayMode(String mode) => _updateStringPreference(
+      _oilBannerDisplayModeKey, _oilBannerDisplayMode = mode);
 
   // Audio Reactivity setters
   Future<void> setOilAudioPeakDecay(double value) => _updateDoublePreference(

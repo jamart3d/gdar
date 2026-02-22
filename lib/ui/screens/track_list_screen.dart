@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:intl/intl.dart';
+import 'package:shakedown/utils/app_date_utils.dart';
 import 'package:shakedown/models/show.dart';
 import 'package:shakedown/models/source.dart';
 import 'package:shakedown/models/track.dart';
@@ -378,28 +378,8 @@ class _TrackListScreenState extends State<TrackListScreen> {
         FontLayoutConfig.getEffectiveScale(context, settingsProvider);
     final colorScheme = Theme.of(context).colorScheme;
 
-    String dateText = widget.show.formattedDate;
-    try {
-      final date = DateTime.parse(widget.show.date);
-      String pattern = '';
-
-      // Month & Day & Year
-      if (settingsProvider.abbreviateMonth) {
-        pattern = 'MMM d, y';
-      } else {
-        pattern = 'MMMM d, y';
-      }
-
-      // Day of Week
-      if (settingsProvider.showDayOfWeek) {
-        if (settingsProvider.abbreviateDayOfWeek) {
-          pattern = 'E, $pattern';
-        } else {
-          pattern = 'EEEE, $pattern';
-        }
-      }
-      dateText = DateFormat(pattern).format(date);
-    } catch (_) {}
+    String dateText =
+        AppDateUtils.formatDate(widget.show.date, settings: settingsProvider);
 
     // USE CENTRALIZED METRICS
     final metrics = AppTypography.getHeaderMetrics(settingsProvider.appFont);

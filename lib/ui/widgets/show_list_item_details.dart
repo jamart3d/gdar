@@ -189,7 +189,9 @@ class _ShowListItemDetailsState extends State<ShowListItemDetails> {
           return Builder(builder: (context) {
             return Dismissible(
               key: ValueKey(source.id),
-              direction: DismissDirection.endToStart,
+              direction: settingsProvider.enableSwipeToBlock
+                  ? DismissDirection.endToStart
+                  : DismissDirection.none,
               dismissThresholds: const {
                 DismissDirection.endToStart: 0.6,
               },
@@ -241,7 +243,9 @@ class _ShowListItemDetailsState extends State<ShowListItemDetails> {
           child: Builder(builder: (context) {
             return Dismissible(
               key: ValueKey(source.id),
-              direction: DismissDirection.endToStart,
+              direction: settingsProvider.enableSwipeToBlock
+                  ? DismissDirection.endToStart
+                  : DismissDirection.none,
               dismissThresholds: const {
                 DismissDirection.endToStart: 0.6,
               },

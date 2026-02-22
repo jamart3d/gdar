@@ -198,6 +198,10 @@ class FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
   double get oilMiddleToOuterGap => 0.3;
   @override
   double get oilOrbitDrift => 1.0;
+  @override
+  String get oilBannerDisplayMode => 'ring';
+  @override
+  Future<void> setOilBannerDisplayMode(String mode) async {}
 
   @override
   void toggleOilPaletteCycle() {}
@@ -248,6 +252,11 @@ class FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
   bool get enableShakedownTween => false;
   @override
   void toggleEnableShakedownTween() {}
+
+  @override
+  bool get enableSwipeToBlock => false;
+  @override
+  void toggleEnableSwipeToBlock() {}
 
   @override
   Future<void> resetToDefaults() async {}

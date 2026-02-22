@@ -24,7 +24,8 @@ class StealConfig {
   final double innerRingScale;
   final double innerToMiddleGap;
   final double middleToOuterGap;
-  final double orbitDrift; // 0.0 = locked center, 1.0 = default drift
+  final double orbitDrift;
+  final String bannerDisplayMode; // 'ring' or 'flat'
 
   static const Map<String, List<Color>> palettes = {
     'psychedelic': [
@@ -89,6 +90,7 @@ class StealConfig {
     this.innerToMiddleGap = 0.3,
     this.middleToOuterGap = 0.3,
     this.orbitDrift = 1.0,
+    this.bannerDisplayMode = 'ring',
   });
 
   factory StealConfig.fromMap(Map<String, dynamic> map) {
@@ -111,13 +113,14 @@ class StealConfig {
       bannerText: map['bannerText'] as String? ?? '',
       venue: map['venue'] as String? ?? '',
       date: map['date'] as String? ?? '',
-      paletteCycle: map['paletteCycle'] as bool? ?? false,
+      paletteCycle: map['paletteCycle'] as bool? ?? true,
       paletteTransitionSpeed:
           (map['paletteTransitionSpeed'] as num?)?.toDouble() ?? 5.0,
       innerRingScale: (map['innerRingScale'] as num?)?.toDouble() ?? 1.0,
       innerToMiddleGap: (map['innerToMiddleGap'] as num?)?.toDouble() ?? 0.3,
       middleToOuterGap: (map['middleToOuterGap'] as num?)?.toDouble() ?? 0.3,
       orbitDrift: (map['orbitDrift'] as num?)?.toDouble() ?? 1.0,
+      bannerDisplayMode: map['bannerDisplayMode'] as String? ?? 'ring',
     );
   }
 
@@ -146,6 +149,7 @@ class StealConfig {
       'innerToMiddleGap': innerToMiddleGap,
       'middleToOuterGap': middleToOuterGap,
       'orbitDrift': orbitDrift,
+      'bannerDisplayMode': bannerDisplayMode,
     };
   }
 
@@ -173,6 +177,7 @@ class StealConfig {
     double? innerToMiddleGap,
     double? middleToOuterGap,
     double? orbitDrift,
+    String? bannerDisplayMode,
   }) {
     return StealConfig(
       flowSpeed: flowSpeed ?? this.flowSpeed,
@@ -200,6 +205,7 @@ class StealConfig {
       innerToMiddleGap: innerToMiddleGap ?? this.innerToMiddleGap,
       middleToOuterGap: middleToOuterGap ?? this.middleToOuterGap,
       orbitDrift: orbitDrift ?? this.orbitDrift,
+      bannerDisplayMode: bannerDisplayMode ?? this.bannerDisplayMode,
     );
   }
 
@@ -229,7 +235,8 @@ class StealConfig {
         innerRingScale == other.innerRingScale &&
         innerToMiddleGap == other.innerToMiddleGap &&
         middleToOuterGap == other.middleToOuterGap &&
-        orbitDrift == other.orbitDrift;
+        orbitDrift == other.orbitDrift &&
+        bannerDisplayMode == other.bannerDisplayMode;
   }
 
   @override
@@ -257,5 +264,6 @@ class StealConfig {
         innerToMiddleGap,
         middleToOuterGap,
         orbitDrift,
+        bannerDisplayMode,
       ]);
 }

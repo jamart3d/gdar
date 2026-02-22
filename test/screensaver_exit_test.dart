@@ -70,6 +70,8 @@ void main() {
     when(mockSettingsProvider.oilAudioBassBoost).thenReturn(1.0);
     when(mockSettingsProvider.oilAudioReactivityStrength).thenReturn(1.0);
     when(mockSettingsProvider.oilTranslationSmoothing).thenReturn(0.1);
+    when(mockSettingsProvider.oilBannerDisplayMode).thenReturn('ring');
+    when(mockSettingsProvider.oilLogoScale).thenReturn(0.5);
   });
 
   Widget createWidgetUnderTest() {

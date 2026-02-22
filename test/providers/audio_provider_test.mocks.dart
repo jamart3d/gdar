@@ -1619,6 +1619,13 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
       ) as bool);
 
   @override
+  bool get enableSwipeToBlock => (super.noSuchMethod(
+        Invocation.getter(#enableSwipeToBlock),
+        returnValue: false,
+        returnValueForMissingStub: false,
+      ) as bool);
+
+  @override
   bool get useOilScreensaver => (super.noSuchMethod(
         Invocation.getter(#useOilScreensaver),
         returnValue: false,
@@ -1713,6 +1720,19 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
         returnValue: 0.0,
         returnValueForMissingStub: 0.0,
       ) as double);
+
+  @override
+  String get oilBannerDisplayMode => (super.noSuchMethod(
+        Invocation.getter(#oilBannerDisplayMode),
+        returnValue: _i5.dummyValue<String>(
+          this,
+          Invocation.getter(#oilBannerDisplayMode),
+        ),
+        returnValueForMissingStub: _i5.dummyValue<String>(
+          this,
+          Invocation.getter(#oilBannerDisplayMode),
+        ),
+      ) as String);
 
   @override
   double get oilAudioPeakDecay => (super.noSuchMethod(
@@ -2152,6 +2172,15 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
       );
 
   @override
+  void toggleEnableSwipeToBlock() => super.noSuchMethod(
+        Invocation.method(
+          #toggleEnableSwipeToBlock,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
   void setRgbAnimationSpeed(double? speed) => super.noSuchMethod(
         Invocation.method(
           #setRgbAnimationSpeed,
@@ -2309,6 +2338,16 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
         ),
         returnValueForMissingStub: null,
       );
+
+  @override
+  _i4.Future<void> setOilBannerDisplayMode(String? mode) => (super.noSuchMethod(
+        Invocation.method(
+          #setOilBannerDisplayMode,
+          [mode],
+        ),
+        returnValue: _i4.Future<void>.value(),
+        returnValueForMissingStub: _i4.Future<void>.value(),
+      ) as _i4.Future<void>);
 
   @override
   _i4.Future<void> setOilAudioPeakDecay(double? value) => (super.noSuchMethod(

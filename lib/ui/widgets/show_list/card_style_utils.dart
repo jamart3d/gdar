@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
+import 'package:shakedown/utils/app_date_utils.dart';
 import 'package:shakedown/models/show.dart';
 import 'package:shakedown/models/source.dart';
 import 'package:shakedown/providers/settings_provider.dart';
@@ -80,22 +80,8 @@ class CardStyle {
               color: colorScheme.onSurface,
             );
 
-    // Date Formatting
-    String dateFormatPattern = '';
-    if (settings.showDayOfWeek) {
-      dateFormatPattern += settings.abbreviateDayOfWeek ? 'E, ' : 'EEEE, ';
-    }
-    dateFormatPattern += settings.abbreviateMonth ? 'MMM' : 'MMMM';
-    dateFormatPattern += ' d, y';
-
-    final String formattedDate = () {
-      try {
-        final date = DateTime.parse(show.date);
-        return DateFormat(dateFormatPattern).format(date);
-      } catch (e) {
-        return show.date;
-      }
-    }();
+    final String formattedDate =
+        AppDateUtils.formatDate(show.date, settings: settings);
 
     // Date Style
     final baseDateStyle = textTheme.bodySmall?.copyWith(fontSize: 9.5) ??

@@ -48,7 +48,7 @@ class ShowListItem extends StatelessWidget {
     // We watch only what we need for the card state
     final audioProvider = context.watch<AudioProvider>();
     final showListProvider = context.watch<ShowListProvider>();
-    final settingsProvider = context.read<SettingsProvider>();
+    final settingsProvider = context.watch<SettingsProvider>();
 
     final isPlaying = audioProvider.currentShow == show;
     final playingSource = audioProvider.currentSource;
@@ -115,7 +115,9 @@ class ShowListItem extends StatelessWidget {
         else
           Dismissible(
             key: ValueKey('${show.name}_${show.date}'),
-            direction: DismissDirection.endToStart,
+            direction: settingsProvider.enableSwipeToBlock
+                ? DismissDirection.endToStart
+                : DismissDirection.none,
             dismissThresholds: const {
               DismissDirection.endToStart: 0.6,
             },

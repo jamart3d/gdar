@@ -1,5 +1,5 @@
-import 'package:intl/intl.dart';
 import 'package:hive/hive.dart';
+import 'package:shakedown/utils/app_date_utils.dart';
 import 'source.dart';
 
 part 'show.g.dart';
@@ -41,23 +41,9 @@ class Show extends HiveObject {
     this.hasFeaturedTrack = false, // Default to false
   });
 
-  String get formattedDate {
-    try {
-      final dateTime = DateTime.parse(date);
-      return DateFormat.yMMMMd().format(dateTime);
-    } catch (e) {
-      return date;
-    }
-  }
+  String get formattedDate => AppDateUtils.formatDate(date);
 
-  String get formattedDateYearFirst {
-    try {
-      final dateTime = DateTime.parse(date);
-      return DateFormat('yyyy, MMMM d').format(dateTime);
-    } catch (e) {
-      return date;
-    }
-  }
+  String get formattedDateYearFirst => AppDateUtils.formatDateYearFirst(date);
 
   factory Show.fromJson(Map<String, dynamic> json) {
     final String? src = json['src'];

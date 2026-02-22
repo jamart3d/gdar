@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:intl/intl.dart';
+import 'package:shakedown/utils/app_date_utils.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:provider/provider.dart';
 import 'package:shakedown/models/show.dart';
@@ -49,23 +49,8 @@ class PlaybackPanel extends StatelessWidget {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     final isTrueBlackMode = isDarkMode && settingsProvider.useTrueBlack;
 
-    // Date Formatting Logic
-    String dateFormatPattern = '';
-    if (settingsProvider.showDayOfWeek) {
-      dateFormatPattern +=
-          settingsProvider.abbreviateDayOfWeek ? 'E, ' : 'EEEE, ';
-    }
-    dateFormatPattern += settingsProvider.abbreviateMonth ? 'MMM' : 'MMMM';
-    dateFormatPattern += ' d, y';
-
-    final String formattedDate = () {
-      try {
-        final date = DateTime.parse(currentShow.date);
-        return DateFormat(dateFormatPattern).format(date);
-      } catch (e) {
-        return currentShow.date;
-      }
-    }();
+    final String formattedDate =
+        AppDateUtils.formatDate(currentShow.date, settings: settingsProvider);
 
     final deviceService = context.watch<DeviceService>();
     if (deviceService.isTv) {

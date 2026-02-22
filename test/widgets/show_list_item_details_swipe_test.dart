@@ -33,6 +33,9 @@ class MockSettingsProvider extends SettingsProvider {
 
   @override
   bool get uiScale => false;
+
+  @override
+  bool get enableSwipeToBlock => true;
 }
 
 // Mock ShowListProvider for dismissal logic

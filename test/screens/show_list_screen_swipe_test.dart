@@ -58,6 +58,8 @@ class MockSettingsProvider extends SettingsProvider {
   bool get playRandomOnStartup => false;
   @override
   bool get marqueeEnabled => false;
+  @override
+  bool get enableSwipeToBlock => true;
 
   // Note: setRating/getRating removed as they are no longer in SettingsProvider
 }

@@ -1,3 +1,9 @@
+Release 1.1.5+105:
+- Feature: Added "Enable Swipe to Block" toggle in Settings -> Interface -> Gestures.
+- UI: Show list gestures now respect the "Swipe to Block" setting to prevent accidental blocks.
+- Stability: Resolved mock deficiencies in screensaver tests for improved consistency.
+- Quality: Passed comprehensive health check with zero analysis errors and 160+ passing tests.
+
 Release 1.1.4+104:
 - Verification: Comprehensive health check passed with 160 unit/widget tests.
 - Style: Enforced consistent Dart formatting across the entire codebase.

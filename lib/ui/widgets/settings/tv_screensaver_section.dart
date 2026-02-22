@@ -17,6 +17,8 @@ class TvScreensaverSection extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
+    final isRingMode = settings.oilBannerDisplayMode == 'ring';
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -44,7 +46,6 @@ class TvScreensaverSection extends StatelessWidget {
           textTheme: textTheme,
         ),
 
-        // Everything below is hidden when screensaver is off
         if (settings.useOilScreensaver) ...[
           const SizedBox(height: 16),
           Padding(
@@ -242,11 +243,10 @@ class TvScreensaverSection extends StatelessWidget {
 
           const SizedBox(height: 24),
 
-          // ── Track Info Rings ─────────────────────────────────────────
+          // ── Track Info ───────────────────────────────────────────────
           _ToggleRow(
             label: 'Show Track Info',
-            subtitle:
-                'Three rings: venue (outer), title (middle), date (inner)',
+            subtitle: 'Display venue, title, and date',
             value: settings.oilShowInfoBanner,
             onChanged: (_) => settings.toggleOilShowInfoBanner(),
             colorScheme: colorScheme,
@@ -255,57 +255,106 @@ class TvScreensaverSection extends StatelessWidget {
 
           if (settings.oilShowInfoBanner) ...[
             const SizedBox(height: 16),
-            TvStepperRow(
-              label: 'Inner Ring Size',
-              value: settings.oilInnerRingScale,
-              min: 0.5,
-              max: 2.0,
-              step: 0.05,
-              leftLabel: 'Small',
-              rightLabel: 'Large',
-              valueFormatter: (v) => '${(v * 100).round()}%',
-              onChanged: (v) => settings.setOilInnerRingScale(v),
+
+            // Ring / Flat toggle
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Display Style',
+                    style: textTheme.bodySmall
+                        ?.copyWith(color: colorScheme.onSurfaceVariant),
+                  ),
+                  const SizedBox(height: 8),
+                  TvFocusWrapper(
+                    onKeyEvent: (node, event) {
+                      if (event is KeyDownEvent) {
+                        if (event.logicalKey == LogicalKeyboardKey.arrowLeft) {
+                          settings.setOilBannerDisplayMode('ring');
+                          return KeyEventResult.handled;
+                        } else if (event.logicalKey ==
+                            LogicalKeyboardKey.arrowRight) {
+                          settings.setOilBannerDisplayMode('flat');
+                          return KeyEventResult.handled;
+                        }
+                      }
+                      return KeyEventResult.ignored;
+                    },
+                    child: SegmentedButton<String>(
+                      segments: const [
+                        ButtonSegment(value: 'ring', label: Text('Ring')),
+                        ButtonSegment(value: 'flat', label: Text('Flat')),
+                      ],
+                      selected: {settings.oilBannerDisplayMode},
+                      onSelectionChanged: (Set<String> s) =>
+                          settings.setOilBannerDisplayMode(s.first),
+                      showSelectedIcon: false,
+                    ),
+                  ),
+                ],
+              ),
             ),
-            const SizedBox(height: 16),
-            TvStepperRow(
-              label: 'Title Ring Gap',
-              value: settings.oilInnerToMiddleGap,
-              min: 0.0,
-              max: 1.0,
-              step: 0.05,
-              leftLabel: 'Tight',
-              rightLabel: 'Spaced',
-              valueFormatter: (v) => '${(v * 100).round()}%',
-              onChanged: (v) => settings.setOilInnerToMiddleGap(v),
-            ),
-            const SizedBox(height: 16),
-            TvStepperRow(
-              label: 'Venue Ring Gap',
-              value: settings.oilMiddleToOuterGap,
-              min: 0.0,
-              max: 1.0,
-              step: 0.05,
-              leftLabel: 'Tight',
-              rightLabel: 'Spaced',
-              valueFormatter: (v) => '${(v * 100).round()}%',
-              onChanged: (v) => settings.setOilMiddleToOuterGap(v),
-            ),
-            const SizedBox(height: 16),
-            TvStepperRow(
-              label: 'Orbit Drift',
-              value: settings.oilOrbitDrift,
-              min: 0.0,
-              max: 2.0,
-              step: 0.1,
-              leftLabel: 'Centered',
-              rightLabel: 'Wide',
-              valueFormatter: (v) => v == 0.0 ? 'Off' : '${(v * 100).round()}%',
-              onChanged: (v) => settings.setOilOrbitDrift(v),
-            ),
+
+            // Ring-only settings
+            if (isRingMode) ...[
+              const SizedBox(height: 16),
+              TvStepperRow(
+                label: 'Inner Ring Size',
+                value: settings.oilInnerRingScale,
+                min: 0.5,
+                max: 2.0,
+                step: 0.05,
+                leftLabel: 'Small',
+                rightLabel: 'Large',
+                valueFormatter: (v) => '${(v * 100).round()}%',
+                onChanged: (v) => settings.setOilInnerRingScale(v),
+              ),
+              const SizedBox(height: 16),
+              TvStepperRow(
+                label: 'Title Ring Gap',
+                value: settings.oilInnerToMiddleGap,
+                min: 0.0,
+                max: 1.0,
+                step: 0.05,
+                leftLabel: 'Tight',
+                rightLabel: 'Spaced',
+                valueFormatter: (v) => '${(v * 100).round()}%',
+                onChanged: (v) => settings.setOilInnerToMiddleGap(v),
+              ),
+              const SizedBox(height: 16),
+              TvStepperRow(
+                label: 'Venue Ring Gap',
+                value: settings.oilMiddleToOuterGap,
+                min: 0.0,
+                max: 1.0,
+                step: 0.05,
+                leftLabel: 'Tight',
+                rightLabel: 'Spaced',
+                valueFormatter: (v) => '${(v * 100).round()}%',
+                onChanged: (v) => settings.setOilMiddleToOuterGap(v),
+              ),
+              const SizedBox(height: 16),
+              TvStepperRow(
+                label: 'Orbit Drift',
+                value: settings.oilOrbitDrift,
+                min: 0.0,
+                max: 2.0,
+                step: 0.1,
+                leftLabel: 'Centered',
+                rightLabel: 'Wide',
+                valueFormatter: (v) =>
+                    v == 0.0 ? 'Off' : '${(v * 100).round()}%',
+                onChanged: (v) => settings.setOilOrbitDrift(v),
+              ),
+            ],
+
+            // Glow & flicker — available in both modes
             const SizedBox(height: 16),
             _ToggleRow(
-              label: 'Ring Neon Glow',
-              subtitle: 'Triple-layer neon glow effect on text rings',
+              label: 'Neon Glow',
+              subtitle: 'Multi-layer neon glow effect on text',
               value: settings.oilBannerGlow,
               onChanged: (_) => settings.toggleOilBannerGlow(),
               colorScheme: colorScheme,
@@ -313,7 +362,7 @@ class TvScreensaverSection extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             TvStepperRow(
-              label: 'Ring Flicker',
+              label: 'Flicker',
               value: settings.oilBannerFlicker,
               min: 0.0,
               max: 1.0,
@@ -405,7 +454,6 @@ class TvScreensaverSection extends StatelessWidget {
 
           const SizedBox(height: 32),
         ],
-        // End of useOilScreensaver block
       ],
     );
   }
