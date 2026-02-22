@@ -164,6 +164,9 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
       middleToOuterGap: settings.oilMiddleToOuterGap,
       orbitDrift: settings.oilOrbitDrift,
       bannerDisplayMode: settings.oilBannerDisplayMode,
+      logoTrailIntensity: settings.oilLogoTrailIntensity,
+      logoTrailSlices: settings.oilLogoTrailSlices,
+      logoTrailLength: settings.oilLogoTrailLength,
     );
 
     return PopScope(

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math';
 import 'dart:ui' as ui;
 import 'package:flame/components.dart';
+import 'package:flutter/material.dart' show Color, HSLColor;
 import 'package:flutter/services.dart';
 import 'package:shakedown/steal_screensaver/steal_config.dart';
 import 'package:shakedown/steal_screensaver/steal_game.dart';
@@ -152,10 +153,90 @@ class StealBackground extends PositionComponent
       return;
     }
 
+    // Draw trail ghost slices before the main shader pass so they sit behind
+    if (config.logoTrailIntensity > 0.0 && _logoTexture != null) {
+      _renderTrail(canvas);
+    }
+
     _updateShaderUniforms();
 
     final paint = ui.Paint()..shader = _shader;
     canvas.drawRect(ui.Rect.fromLTWH(0, 0, size.x, size.y), paint);
+  }
+
+  // ── Trail rendering ────────────────────────────────────────────────────────
+
+  void _renderTrail(ui.Canvas canvas) {
+    final slices = config.logoTrailSlices.clamp(2, 16);
+    final intensity = config.logoTrailIntensity.clamp(0.0, 1.0);
+    final positions = game.getTrailPositions(slices);
+    if (positions.isEmpty) return;
+
+    final logoTex = _logoTexture!;
+    final texW = logoTex.width.toDouble();
+    final texH = logoTex.height.toDouble();
+    final w = size.x;
+    final h = size.y;
+    final minDim = min(w, h);
+
+    // Logo render size matches shader: logoScale * minDim
+    final logoRenderSize = config.logoScale.clamp(0.05, 1.0) * minDim;
+
+    // Desaturated, darkened tint derived from current palette color
+    final baseColor =
+        _currentColors.isNotEmpty ? _currentColors[0] : const Color(0xFFFFFFFF);
+    final hsl = HSLColor.fromColor(baseColor);
+    final ghostTint = hsl
+        .withSaturation((hsl.saturation * 0.3).clamp(0.0, 1.0))
+        .withLightness((hsl.lightness * 0.6).clamp(0.0, 1.0))
+        .toColor();
+
+    final srcRect = ui.Rect.fromLTWH(0, 0, texW, texH);
+
+    for (int i = 0; i < positions.length; i++) {
+      // i=0 newest (closest), i=slices-1 oldest
+      final t = i / slices.toDouble(); // 0.0=newest, 1.0=oldest
+      // Quadratic fade: strong near the logo, invisible at the tail
+      final opacity = intensity * (1.0 - t) * (1.0 - t) * 0.45;
+      if (opacity < 0.01) continue;
+
+      // Slight scale reduction toward older slices
+      final scale = 1.0 - t * 0.12;
+      final renderSize = logoRenderSize * scale;
+
+      final pos = positions[i];
+      final cx = pos.dx * w;
+      final cy = pos.dy * h;
+
+      final dst = ui.Rect.fromCenter(
+        center: ui.Offset(cx, cy),
+        width: renderSize,
+        height: renderSize * (texH / texW),
+      );
+
+      final paint = ui.Paint()
+        ..colorFilter = ui.ColorFilter.mode(
+          ghostTint.withValues(alpha: opacity),
+          ui.BlendMode.modulate,
+        );
+
+      // Only blur the 3 newest slices — older ones are too faint to justify cost
+      final shouldBlur = i < 3 && config.blurAmount > 0.0;
+
+      if (shouldBlur) {
+        final sigma = config.blurAmount * 4.0 * (1.0 - t);
+        if (sigma > 0.5) {
+          final blurPaint = ui.Paint()
+            ..imageFilter = ui.ImageFilter.blur(sigmaX: sigma, sigmaY: sigma);
+          canvas.saveLayer(dst.inflate(sigma * 2), blurPaint);
+          canvas.drawImageRect(logoTex, srcRect, dst, paint);
+          canvas.restore();
+          continue;
+        }
+      }
+
+      canvas.drawImageRect(logoTex, srcRect, dst, paint);
+    }
   }
 
   void _updateShaderUniforms() {

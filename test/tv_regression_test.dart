@@ -290,6 +290,13 @@ class FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
   String get oilBannerDisplayMode => 'ring';
   @override
   Future<void> setOilBannerDisplayMode(String mode) async {}
+
+  @override
+  double get oilLogoTrailIntensity => 0.0;
+  @override
+  int get oilLogoTrailSlices => 6;
+  @override
+  double get oilLogoTrailLength => 0.5;
   @override
   Map<String, bool> get sourceCategoryFilters => {};
 
@@ -433,6 +440,13 @@ class FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
   double get oilTranslationSmoothing => 1.0;
   @override
   Future<void> setOilTranslationSmoothing(double value) async {}
+
+  @override
+  Future<void> setOilLogoTrailIntensity(double value) async {}
+  @override
+  Future<void> setOilLogoTrailSlices(int value) async {}
+  @override
+  Future<void> setOilLogoTrailLength(double value) async {}
 
   @override
   bool get hasListeners => super.hasListeners;

@@ -97,6 +97,14 @@ class MockSettingsProvider extends Mock implements SettingsProvider {
   bool get nonRandom => false;
   @override
   bool get isTv => false;
+  @override
+  double get oilLogoTrailIntensity => 0.0;
+  @override
+  int get oilLogoTrailSlices => 6;
+  @override
+  double get oilLogoTrailLength => 0.5;
+  @override
+  bool get enableSwipeToBlock => false;
 }
 
 class MockShowListProvider extends Mock implements ShowListProvider {

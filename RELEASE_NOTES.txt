@@ -1,3 +1,9 @@
+Release 1.1.6+106:
+- Stability: Finalized mock regeneration for MockSettingsProvider to resolve TypeError failures.
+- Verification: 162/162 unit and widget tests passing consistently.
+- Service: Confirmed BufferAgent robustness against simulated network errors.
+- Quality: Comprehensive health check passed with zero analysis errors.
+
 Release 1.1.5+105:
 - Feature: Added "Enable Swipe to Block" toggle in Settings -> Interface -> Gestures.
 - UI: Show list gestures now respect the "Swipe to Block" setting to prevent accidental blocks.

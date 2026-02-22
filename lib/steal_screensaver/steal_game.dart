@@ -32,6 +32,31 @@ class StealGame extends FlameGame {
   bool _cycling = false;
   String _lastPalette = '';
 
+  // ── Trail position ring buffer ─────────────────────────────────────────────
+  // Stores recent smoothed logo positions for ghost slice rendering.
+  // Max capacity = max supported slices. Sampled every N frames based on
+  // logoTrailLength (higher = more frames skipped = longer spread trail).
+  static const int _trailBufferCapacity = 16;
+  final List<Offset> _trailBuffer = List.filled(
+    _trailBufferCapacity,
+    const Offset(0.5, 0.5),
+  );
+  int _trailHead = 0;
+  int _trailFrameCount = 0;
+
+  /// Returns up to [count] trail positions, newest first.
+  List<Offset> getTrailPositions(int count) {
+    final clamped = count.clamp(0, _trailBufferCapacity);
+    final result = <Offset>[];
+    for (int i = 0; i < clamped; i++) {
+      final idx =
+          ((_trailHead - i) % _trailBufferCapacity + _trailBufferCapacity) %
+              _trailBufferCapacity;
+      result.add(_trailBuffer[idx]);
+    }
+    return result;
+  }
+
   StealGame({
     required this.config,
     AudioReactor? audioReactor,
@@ -89,6 +114,24 @@ class StealGame extends FlameGame {
     }
 
     _tickWoodstock(dt);
+    _tickTrailBuffer();
+  }
+
+  // ── Trail buffer ───────────────────────────────────────────────────────────
+
+  void _tickTrailBuffer() {
+    if (config.logoTrailIntensity <= 0.0) return;
+
+    // Sample interval: higher logoTrailLength = more frames between snapshots
+    // = positions spread further apart = longer visible trail.
+    // At 0.0 → every frame. At 1.0 → every 12 frames.
+    final interval = (1 + (config.logoTrailLength * 11).round()).clamp(1, 12);
+    _trailFrameCount++;
+    if (_trailFrameCount >= interval) {
+      _trailFrameCount = 0;
+      _trailHead = (_trailHead + 1) % _trailBufferCapacity;
+      _trailBuffer[_trailHead] = smoothedLogoPos;
+    }
   }
 
   // ── Cycle logic ────────────────────────────────────────────────────────────

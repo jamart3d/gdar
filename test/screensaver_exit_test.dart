@@ -72,6 +72,12 @@ void main() {
     when(mockSettingsProvider.oilTranslationSmoothing).thenReturn(0.1);
     when(mockSettingsProvider.oilBannerDisplayMode).thenReturn('ring');
     when(mockSettingsProvider.oilLogoScale).thenReturn(0.5);
+
+    // New trail properties
+    when(mockSettingsProvider.oilLogoTrailIntensity).thenReturn(0.0);
+    when(mockSettingsProvider.oilLogoTrailSlices).thenReturn(6);
+    when(mockSettingsProvider.oilLogoTrailLength).thenReturn(0.5);
+    when(mockSettingsProvider.enableSwipeToBlock).thenReturn(false);
   });
 
   Widget createWidgetUnderTest() {

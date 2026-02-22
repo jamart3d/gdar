@@ -66,6 +66,14 @@ class MockSettingsProvider extends SettingsProvider {
   bool get highlightCurrentShowCard => true;
   @override
   bool get useTrueBlack => false;
+  @override
+  double get oilLogoTrailIntensity => 0.0;
+  @override
+  int get oilLogoTrailSlices => 6;
+  @override
+  double get oilLogoTrailLength => 0.5;
+  @override
+  bool get enableSwipeToBlock => false;
 }
 
 class MockDeviceService extends ChangeNotifier implements DeviceService {

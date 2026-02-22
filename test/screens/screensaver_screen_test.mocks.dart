@@ -420,6 +420,27 @@ class MockSettingsProvider extends _i1.Mock implements _i3.SettingsProvider {
       ) as String);
 
   @override
+  double get oilLogoTrailIntensity => (super.noSuchMethod(
+        Invocation.getter(#oilLogoTrailIntensity),
+        returnValue: 0.0,
+        returnValueForMissingStub: 0.0,
+      ) as double);
+
+  @override
+  int get oilLogoTrailSlices => (super.noSuchMethod(
+        Invocation.getter(#oilLogoTrailSlices),
+        returnValue: 0,
+        returnValueForMissingStub: 0,
+      ) as int);
+
+  @override
+  double get oilLogoTrailLength => (super.noSuchMethod(
+        Invocation.getter(#oilLogoTrailLength),
+        returnValue: 0.0,
+        returnValueForMissingStub: 0.0,
+      ) as double);
+
+  @override
   double get oilAudioPeakDecay => (super.noSuchMethod(
         Invocation.getter(#oilAudioPeakDecay),
         returnValue: 0.0,
@@ -1029,6 +1050,37 @@ class MockSettingsProvider extends _i1.Mock implements _i3.SettingsProvider {
         Invocation.method(
           #setOilBannerDisplayMode,
           [mode],
+        ),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
+
+  @override
+  _i5.Future<void> setOilLogoTrailIntensity(double? value) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #setOilLogoTrailIntensity,
+          [value],
+        ),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
+
+  @override
+  _i5.Future<void> setOilLogoTrailSlices(int? value) => (super.noSuchMethod(
+        Invocation.method(
+          #setOilLogoTrailSlices,
+          [value],
+        ),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
+
+  @override
+  _i5.Future<void> setOilLogoTrailLength(double? value) => (super.noSuchMethod(
+        Invocation.method(
+          #setOilLogoTrailLength,
+          [value],
         ),
         returnValue: _i5.Future<void>.value(),
         returnValueForMissingStub: _i5.Future<void>.value(),

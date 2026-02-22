@@ -16,8 +16,8 @@ import 'package:shakedown/steal_screensaver/steal_game.dart';
 ///
 /// Flat mode (bannerDisplayMode == 'flat'):
 ///   Three stacked lines centered below the logo:
-///   Line 1: venue
-///   Line 2: track title
+///   Line 1: track title
+///   Line 2: venue
 ///   Line 3: date
 ///
 /// Both modes support neon glow and per-word flicker when bannerGlow is on.
@@ -56,14 +56,17 @@ class StealBanner extends Component with HasGameReference<StealGame> {
   static const double _wordSpacingExtra = 0.8;
 
   // ── Flat mode layout ───────────────────────────────────────────────────────
-  // Vertical offset below logo center as a fraction of minDim
-  static const double _flatOffsetRatio = 0.18;
+  // Gap between logo edge and first text line, as fraction of minDim
+  static const double _flatGapRatio = 0.03;
   // Line height in pixels
   static const double _flatLineHeight = 16.0;
 
   // ── Fade ───────────────────────────────────────────────────────────────────
   static const double _fadeSpeed = 0.6;
   static const double _ringFadeSpeed = 1.2;
+
+  // ── Char width cache (static — shared across instances) ───────────────────
+  static final Map<String, double> _charWidthCache = {};
 
   // ── Per-ring state ─────────────────────────────────────────────────────────
   String _outerCurrent = '';
@@ -305,10 +308,12 @@ class StealBanner extends Component with HasGameReference<StealGame> {
 
     switch (word.phase) {
       case _FlickerPhase.idle:
-        final jitter = (strength * 0.03) * (_rng.nextDouble() * 2 - 1);
+        // At low strength jitter is imperceptible — brightness stays near 1.0
+        final jitterAmp = strength * strength * 0.03;
+        final jitter = jitterAmp * (_rng.nextDouble() * 2 - 1);
         word.brightness =
-            (word.brightness + (1.0 + jitter - word.brightness) * 8.0 * dt)
-                .clamp(0.85, 1.0);
+            (word.brightness + (1.0 + jitter - word.brightness) * 4.0 * dt)
+                .clamp(0.93, 1.0);
 
         if (word.eventTimer <= 0.0) {
           final doBuzz = _rng.nextDouble() < 0.65;
@@ -321,32 +326,49 @@ class StealBanner extends Component with HasGameReference<StealGame> {
           } else {
             word.phase = _FlickerPhase.dropout;
             word.eventTimer = 0.025 + _rng.nextDouble() * 0.035;
-            word.target = ui.lerpDouble(0.55, 0.08, strength)!;
+            // Brightness floor scales with strength — barely a dip at low values
+            final minFloor = ui.lerpDouble(0.88, 0.08, strength)!;
+            word.target =
+                minFloor + _rng.nextDouble() * (1.0 - minFloor) * 0.15;
           }
         }
 
       case _FlickerPhase.buzz:
         final osc = sin(word.buzzFreq * 2 * pi * (1.0 - word.eventTimer));
-        word.brightness = (1.0 + osc * word.buzzAmp).clamp(0.7, 1.0);
+        // Sine envelope fades buzz in/out — no hard start or end
+        final buzzProgress =
+            (1.0 - (word.eventTimer / (word.buzzAmp * 4.0))).clamp(0.0, 1.0);
+        final envelope = sin(buzzProgress * pi).clamp(0.0, 1.0);
+        word.brightness =
+            (1.0 + osc * word.buzzAmp * envelope).clamp(0.82, 1.0);
         if (word.eventTimer <= 0.0) {
-          word.brightness = 1.0;
+          // Ease back rather than snap
+          word.brightness =
+              (word.brightness + (1.0 - word.brightness) * 0.4).clamp(0.9, 1.0);
           word.phase = _FlickerPhase.idle;
           word.eventTimer = _nextIdleTime(strength);
         }
 
       case _FlickerPhase.dropout:
-        word.brightness += (word.target - word.brightness) * 20.0 * dt;
+        // Slow lerp into dip — no hard snap
+        word.brightness += (word.target - word.brightness) * 6.0 * dt;
         if (word.eventTimer <= 0.0) {
           word.phase = _FlickerPhase.recover;
-          word.eventTimer = 0.04 + _rng.nextDouble() * 0.08;
+          word.eventTimer = 0.06 + _rng.nextDouble() * 0.10;
         }
 
       case _FlickerPhase.recover:
-        word.brightness += (1.0 - word.brightness) * 12.0 * dt;
+        // Gentle ease back to full brightness
+        word.brightness += (1.0 - word.brightness) * 5.0 * dt;
         if (word.eventTimer <= 0.0) {
-          word.brightness = 1.0;
-          word.phase = _FlickerPhase.idle;
-          word.eventTimer = _nextIdleTime(strength);
+          // Only exit when close enough — no snap-to-1.0
+          if (word.brightness > 0.92) {
+            word.brightness = 1.0;
+            word.phase = _FlickerPhase.idle;
+            word.eventTimer = _nextIdleTime(strength);
+          } else {
+            word.eventTimer = 0.04; // extend recover
+          }
         }
     }
   }
@@ -390,7 +412,7 @@ class StealBanner extends Component with HasGameReference<StealGame> {
     final isFlat = config.bannerDisplayMode == 'flat';
 
     if (isFlat) {
-      _renderFlat(canvas, center, minDim, glowEnabled);
+      _renderFlat(canvas, center, minDim, glowEnabled, config);
     } else {
       _renderRings(canvas, center, minDim, glowEnabled, config);
     }
@@ -403,14 +425,16 @@ class StealBanner extends Component with HasGameReference<StealGame> {
     Offset center,
     double minDim,
     bool glowEnabled,
+    StealConfig config,
   ) {
-    // Three lines: venue (top), title (middle), date (bottom)
-    // Stacked below the logo center
-    final baseY = center.dy + minDim * _flatOffsetRatio;
+    // Anchor text just below the logo edge
+    final logoRadius = minDim * 0.5 * config.logoScale.clamp(0.1, 1.0);
+    final topLineY = center.dy + logoRadius + minDim * _flatGapRatio;
 
+    // Line order: title, venue, date
     final lines = [
+      (_middleCurrent, _middleWords, _middleOpacity), // track title
       (_outerCurrent, _outerWords, _outerOpacity), // venue
-      (_middleCurrent, _middleWords, _middleOpacity), // title
       (_innerCurrent, _innerWords, _innerOpacity), // date
     ];
 
@@ -421,11 +445,17 @@ class StealBanner extends Component with HasGameReference<StealGame> {
 
       if (text.isEmpty || lineOpacity <= 0.01) continue;
 
-      final y = baseY + (i - 1) * _flatLineHeight; // centered on middle line
+      final y = topLineY + i * _flatLineHeight;
       final effectiveOpacity = _opacity * lineOpacity;
 
-      _drawFlatLine(canvas, text, words, Offset(center.dx, y), effectiveOpacity,
-          glowEnabled);
+      _drawFlatLine(
+        canvas,
+        text,
+        words,
+        Offset(center.dx, y),
+        effectiveOpacity,
+        glowEnabled,
+      );
     }
   }
 
@@ -456,15 +486,14 @@ class StealBanner extends Component with HasGameReference<StealGame> {
             .map(_NeonWord.new)
             .toList();
 
-    // Measure total width to center the line
+    // Measure total width using cache — no TextPainter.layout per frame
     double totalWidth = 0.0;
     for (int wi = 0; wi < wordList.length; wi++) {
       for (final char in wordList[wi].text.characters) {
-        final p = _measureChar(char);
-        totalWidth += p;
+        totalWidth += _measureChar(char);
       }
       if (wi < wordList.length - 1) {
-        totalWidth += _fontSize * 0.6; // word gap
+        totalWidth += _fontSize * 0.6;
       }
     }
 
@@ -473,9 +502,8 @@ class StealBanner extends Component with HasGameReference<StealGame> {
     for (int wi = 0; wi < wordList.length; wi++) {
       final word = wordList[wi];
       final wordBrightness = glowEnabled ? word.brightness : 1.0;
-      final chars = word.text.characters.toList();
 
-      for (final char in chars) {
+      for (final char in word.text.characters) {
         final charWidth = _measureChar(char);
 
         canvas.save();
@@ -514,18 +542,22 @@ class StealBanner extends Component with HasGameReference<StealGame> {
     }
   }
 
+  // ── Char width cache ───────────────────────────────────────────────────────
+
   double _measureChar(String char) {
-    final painter = TextPainter(
-      text: TextSpan(
-        text: char,
-        style: const TextStyle(
-          fontSize: _fontSize,
-          fontWeight: FontWeight.w600,
+    return _charWidthCache.putIfAbsent(char, () {
+      final painter = TextPainter(
+        text: TextSpan(
+          text: char,
+          style: const TextStyle(
+            fontSize: _fontSize,
+            fontWeight: FontWeight.w600,
+          ),
         ),
-      ),
-      textDirection: ui.TextDirection.ltr,
-    )..layout();
-    return painter.width;
+        textDirection: ui.TextDirection.ltr,
+      )..layout();
+      return painter.width;
+    });
   }
 
   // ── Ring render ────────────────────────────────────────────────────────────
@@ -579,9 +611,6 @@ class StealBanner extends Component with HasGameReference<StealGame> {
     final deepBloomColor =
         hsl.withSaturation(0.9).withLightness(0.45).toColor();
 
-    double angle = startAngle - pi / 2;
-
-    double totalSpan = 0.0;
     final wordList = words.isNotEmpty
         ? words
         : text
@@ -590,11 +619,13 @@ class StealBanner extends Component with HasGameReference<StealGame> {
             .map(_NeonWord.new)
             .toList();
 
+    double totalSpan = 0.0;
     for (int wi = 0; wi < wordList.length; wi++) {
       totalSpan += charAngle * wordList[wi].text.characters.length;
       if (wi < wordList.length - 1) totalSpan += wordSpaceAngle;
     }
-    angle = startAngle - pi / 2 - totalSpan / 2;
+
+    double angle = startAngle - pi / 2 - totalSpan / 2;
 
     for (int wi = 0; wi < wordList.length; wi++) {
       final word = wordList[wi];

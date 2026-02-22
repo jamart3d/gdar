@@ -82,6 +82,11 @@ class DefaultSettings {
   static const double oilTranslationSmoothing = 1.0;
   static const String oilBannerDisplayMode = 'ring';
 
+  // Trail effect
+  static const double oilLogoTrailIntensity = 0.0;
+  static const int oilLogoTrailSlices = 6;
+  static const double oilLogoTrailLength = 0.5;
+
   // Ring controls (3-ring gap model)
   static const double oilInnerRingScale = 0.75;
   static const double oilInnerToMiddleGap = 0.05;

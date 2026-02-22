@@ -26,6 +26,9 @@ class StealConfig {
   final double middleToOuterGap;
   final double orbitDrift;
   final String bannerDisplayMode; // 'ring' or 'flat'
+  final double logoTrailIntensity; // 0.0 = off, 1.0 = full
+  final int logoTrailSlices; // 2–16 ghost copies
+  final double logoTrailLength; // 0.0–1.0 spacing between snapshots
 
   static const Map<String, List<Color>> palettes = {
     'psychedelic': [
@@ -91,6 +94,9 @@ class StealConfig {
     this.middleToOuterGap = 0.3,
     this.orbitDrift = 1.0,
     this.bannerDisplayMode = 'ring',
+    this.logoTrailIntensity = 0.0,
+    this.logoTrailSlices = 6,
+    this.logoTrailLength = 0.5,
   });
 
   factory StealConfig.fromMap(Map<String, dynamic> map) {
@@ -121,6 +127,10 @@ class StealConfig {
       middleToOuterGap: (map['middleToOuterGap'] as num?)?.toDouble() ?? 0.3,
       orbitDrift: (map['orbitDrift'] as num?)?.toDouble() ?? 1.0,
       bannerDisplayMode: map['bannerDisplayMode'] as String? ?? 'ring',
+      logoTrailIntensity:
+          (map['logoTrailIntensity'] as num?)?.toDouble() ?? 0.0,
+      logoTrailSlices: (map['logoTrailSlices'] as int?) ?? 6,
+      logoTrailLength: (map['logoTrailLength'] as num?)?.toDouble() ?? 0.5,
     );
   }
 
@@ -150,6 +160,9 @@ class StealConfig {
       'middleToOuterGap': middleToOuterGap,
       'orbitDrift': orbitDrift,
       'bannerDisplayMode': bannerDisplayMode,
+      'logoTrailIntensity': logoTrailIntensity,
+      'logoTrailSlices': logoTrailSlices,
+      'logoTrailLength': logoTrailLength,
     };
   }
 
@@ -178,6 +191,9 @@ class StealConfig {
     double? middleToOuterGap,
     double? orbitDrift,
     String? bannerDisplayMode,
+    double? logoTrailIntensity,
+    int? logoTrailSlices,
+    double? logoTrailLength,
   }) {
     return StealConfig(
       flowSpeed: flowSpeed ?? this.flowSpeed,
@@ -206,6 +222,9 @@ class StealConfig {
       middleToOuterGap: middleToOuterGap ?? this.middleToOuterGap,
       orbitDrift: orbitDrift ?? this.orbitDrift,
       bannerDisplayMode: bannerDisplayMode ?? this.bannerDisplayMode,
+      logoTrailIntensity: logoTrailIntensity ?? this.logoTrailIntensity,
+      logoTrailSlices: logoTrailSlices ?? this.logoTrailSlices,
+      logoTrailLength: logoTrailLength ?? this.logoTrailLength,
     );
   }
 
@@ -236,7 +255,10 @@ class StealConfig {
         innerToMiddleGap == other.innerToMiddleGap &&
         middleToOuterGap == other.middleToOuterGap &&
         orbitDrift == other.orbitDrift &&
-        bannerDisplayMode == other.bannerDisplayMode;
+        bannerDisplayMode == other.bannerDisplayMode &&
+        logoTrailIntensity == other.logoTrailIntensity &&
+        logoTrailSlices == other.logoTrailSlices &&
+        logoTrailLength == other.logoTrailLength;
   }
 
   @override
@@ -265,5 +287,8 @@ class StealConfig {
         middleToOuterGap,
         orbitDrift,
         bannerDisplayMode,
+        logoTrailIntensity,
+        logoTrailSlices,
+        logoTrailLength,
       ]);
 }

@@ -142,6 +142,14 @@ class MockSettingsProvider extends ChangeNotifier implements SettingsProvider {
   bool get playRandomOnStartup => false;
   @override
   bool get hideTrackDuration => false;
+  @override
+  double get oilLogoTrailIntensity => 0.0;
+  @override
+  int get oilLogoTrailSlices => 6;
+  @override
+  double get oilLogoTrailLength => 0.5;
+  @override
+  bool get enableSwipeToBlock => false;
 
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);

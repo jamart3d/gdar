@@ -63,6 +63,11 @@ class SettingsProvider with ChangeNotifier {
       'oil_palette_transition_speed';
   static const String _oilBannerDisplayModeKey = 'oil_banner_display_mode';
 
+  // Trail effect
+  static const String _oilLogoTrailIntensityKey = 'oil_logo_trail_intensity';
+  static const String _oilLogoTrailSlicesKey = 'oil_logo_trail_slices';
+  static const String _oilLogoTrailLengthKey = 'oil_logo_trail_length';
+
   // Audio Reactivity Tuning
   static const String _oilAudioPeakDecayKey = 'oil_audio_peak_decay';
   static const String _oilAudioBassBoostKey = 'oil_audio_bass_boost';
@@ -152,6 +157,11 @@ class SettingsProvider with ChangeNotifier {
   late double _oilPaletteTransitionSpeed;
   late String _oilBannerDisplayMode;
 
+  // Trail effect
+  late double _oilLogoTrailIntensity;
+  late int _oilLogoTrailSlices;
+  late double _oilLogoTrailLength;
+
   // Audio Reactivity Tuning
   late double _oilAudioPeakDecay;
   late double _oilAudioBassBoost;
@@ -225,6 +235,11 @@ class SettingsProvider with ChangeNotifier {
   bool get oilPaletteCycle => _oilPaletteCycle;
   double get oilPaletteTransitionSpeed => _oilPaletteTransitionSpeed;
   String get oilBannerDisplayMode => _oilBannerDisplayMode;
+
+  // Trail effect getters
+  double get oilLogoTrailIntensity => _oilLogoTrailIntensity;
+  int get oilLogoTrailSlices => _oilLogoTrailSlices;
+  double get oilLogoTrailLength => _oilLogoTrailLength;
 
   // Audio Reactivity getters
   double get oilAudioPeakDecay => _oilAudioPeakDecay;
@@ -455,6 +470,14 @@ class SettingsProvider with ChangeNotifier {
     _oilBannerDisplayMode = _prefs.getString(_oilBannerDisplayModeKey) ??
         DefaultSettings.oilBannerDisplayMode;
 
+    // Trail effect
+    _oilLogoTrailIntensity = _prefs.getDouble(_oilLogoTrailIntensityKey) ??
+        DefaultSettings.oilLogoTrailIntensity;
+    _oilLogoTrailSlices = _prefs.getInt(_oilLogoTrailSlicesKey) ??
+        DefaultSettings.oilLogoTrailSlices;
+    _oilLogoTrailLength = _prefs.getDouble(_oilLogoTrailLengthKey) ??
+        DefaultSettings.oilLogoTrailLength;
+
     // Audio Reactivity
     _oilAudioPeakDecay = _prefs.getDouble(_oilAudioPeakDecayKey) ??
         DefaultSettings.oilAudioPeakDecay;
@@ -640,6 +663,15 @@ class SettingsProvider with ChangeNotifier {
       _oilPaletteTransitionSpeedKey, _oilPaletteTransitionSpeed = seconds);
   Future<void> setOilBannerDisplayMode(String mode) => _updateStringPreference(
       _oilBannerDisplayModeKey, _oilBannerDisplayMode = mode);
+
+  // Trail effect setters
+  Future<void> setOilLogoTrailIntensity(double value) =>
+      _updateDoublePreference(_oilLogoTrailIntensityKey,
+          _oilLogoTrailIntensity = value.clamp(0.0, 1.0));
+  Future<void> setOilLogoTrailSlices(int value) => _updateIntPreference(
+      _oilLogoTrailSlicesKey, _oilLogoTrailSlices = value.clamp(2, 16));
+  Future<void> setOilLogoTrailLength(double value) => _updateDoublePreference(
+      _oilLogoTrailLengthKey, _oilLogoTrailLength = value.clamp(0.0, 1.0));
 
   // Audio Reactivity setters
   Future<void> setOilAudioPeakDecay(double value) => _updateDoublePreference(
