@@ -90,19 +90,19 @@ class MockAudioProvider extends ChangeNotifier implements ap.AudioProvider {
   @override
   Future<void> stopAndClear() async {}
   @override
-  void play() {}
+  Future<void> play() async {}
   @override
-  void resume() {}
+  Future<void> resume() async {}
   @override
-  void pause() {}
+  Future<void> pause() async {}
   @override
-  void stop() {}
+  Future<void> stop() async {}
   @override
-  void seekToNext() {}
+  Future<void> seekToNext() async {}
   @override
-  void seekToPrevious() {}
+  Future<void> seekToPrevious() async {}
   @override
-  void seek(Duration position) {}
+  Future<void> seek(Duration position) async {}
   @override
   Future<void> retryCurrentSource() async {}
   @override

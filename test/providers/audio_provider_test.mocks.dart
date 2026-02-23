@@ -18,7 +18,7 @@ import 'package:shakedown/models/show.dart' as _i8;
 import 'package:shakedown/models/source.dart' as _i11;
 import 'package:shakedown/providers/settings_provider.dart' as _i10;
 import 'package:shakedown/providers/show_list_provider.dart' as _i7;
-import 'package:shakedown/services/audio_cache_service.dart' as _i16;
+import 'package:shakedown/services/audio_cache_service_io.dart' as _i16;
 import 'package:shakedown/services/catalog_service.dart' as _i13;
 import 'package:shakedown/services/wakelock_service.dart' as _i18;
 import 'package:shared_preferences/shared_preferences.dart' as _i9;
@@ -2974,6 +2974,16 @@ class MockAudioCacheService extends _i1.Mock implements _i16.AudioCacheService {
         returnValue: _i4.Future<void>.value(),
         returnValueForMissingStub: _i4.Future<void>.value(),
       ) as _i4.Future<void>);
+
+  @override
+  _i4.Future<Uri?> getAlbumArtUri() => (super.noSuchMethod(
+        Invocation.method(
+          #getAlbumArtUri,
+          [],
+        ),
+        returnValue: _i4.Future<Uri?>.value(),
+        returnValueForMissingStub: _i4.Future<Uri?>.value(),
+      ) as _i4.Future<Uri?>);
 
   @override
   void addListener(_i12.VoidCallback? listener) => super.noSuchMethod(

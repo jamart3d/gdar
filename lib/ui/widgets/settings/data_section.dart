@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -40,14 +41,14 @@ class DataSection extends StatelessWidget {
         ),
         trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 12),
         onTap: () async {
-          HapticFeedback.lightImpact();
+          unawaited(HapticFeedback.lightImpact());
 
           // Pause global clock
           try {
             context.read<AnimationController>().stop();
           } catch (_) {}
 
-          await Navigator.of(context).push(
+          unawaited(Navigator.of(context).push(
             PageRouteBuilder(
               pageBuilder: (context, animation, secondaryAnimation) =>
                   const RatedShowsScreen(),
@@ -73,13 +74,13 @@ class DataSection extends StatelessWidget {
               transitionDuration: const Duration(milliseconds: 400),
               reverseTransitionDuration: const Duration(milliseconds: 350),
             ),
-          );
+          ));
 
           // Resume clock
           if (context.mounted) {
             try {
               final controller = context.read<AnimationController>();
-              if (!controller.isAnimating) controller.repeat();
+              if (!controller.isAnimating) unawaited(controller.repeat());
             } catch (_) {}
           }
         },

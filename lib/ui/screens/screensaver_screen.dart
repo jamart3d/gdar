@@ -1,4 +1,4 @@
-import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -79,32 +79,34 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
 
   Future<void> _initAudioReactor() async {
     final settings = Provider.of<SettingsProvider>(context, listen: false);
+    final deviceService = Provider.of<DeviceService>(context, listen: false);
 
-    if (!settings.oilEnableAudioReactivity) {
-      final reactor = await AudioReactorFactory.create();
+    // Skip if audio reactivity is disabled or on Web
+    if (kIsWeb || !settings.oilEnableAudioReactivity) {
+      final reactor =
+          await AudioReactorFactory.create(isTv: deviceService.isTv);
       if (mounted) setState(() => _audioReactor = reactor);
       return;
     }
 
-    if (Platform.isAndroid) {
+    int? sessionId;
+    if (defaultTargetPlatform == TargetPlatform.android) {
       final audioProvider = Provider.of<AudioProvider>(context, listen: false);
-      final sessionId = audioProvider.audioPlayer.androidAudioSessionId;
-      final isAvailable = await VisualizerAudioReactor.isAvailable();
+      sessionId = audioProvider.audioPlayer.androidAudioSessionId;
+    }
 
-      if (isAvailable) {
-        final reactor =
-            await AudioReactorFactory.create(audioSessionId: sessionId);
-        if (mounted) {
-          setState(() => _audioReactor = reactor);
-          _pushAudioConfig();
-        }
-      } else {
-        final reactor = await AudioReactorFactory.create();
-        if (mounted) setState(() => _audioReactor = reactor);
+    // Factory handles logic: only returns real visualizer if isTv is true AND on Android
+    final reactor = await AudioReactorFactory.create(
+      audioSessionId: sessionId,
+      isTv: deviceService.isTv,
+    );
+
+    if (mounted) {
+      setState(() => _audioReactor = reactor);
+      // If we successfully got a real visualizer, push initial config
+      if (reactor is VisualizerAudioReactor) {
+        _pushAudioConfig();
       }
-    } else {
-      final reactor = await AudioReactorFactory.create();
-      if (mounted) setState(() => _audioReactor = reactor);
     }
   }
 

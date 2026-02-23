@@ -49,7 +49,7 @@ class MockUpdateProvider extends ChangeNotifier implements UpdateProvider {
   @override
   bool get isSimulated => false;
   @override
-  get updateInfo => null;
+  Null get updateInfo => null;
 
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);

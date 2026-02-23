@@ -166,8 +166,8 @@ class _SplashScreenState extends State<SplashScreen>
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Center(
-              child: const ShakedownTitle(fontSize: 24),
+            const Center(
+              child: ShakedownTitle(fontSize: 24),
             ),
             const SizedBox(height: 40),
             AnimatedOpacity(
@@ -312,8 +312,8 @@ class _SplashScreenState extends State<SplashScreen>
                 : SizedBox(
                     width: 14 * scaleFactor,
                     height: 14 * scaleFactor,
-                    child: CircularProgressIndicator(
-                        strokeWidth: 2, key: const ValueKey('loading')),
+                    child: const CircularProgressIndicator(
+                        strokeWidth: 2, key: ValueKey('loading')),
                   ),
           ),
         ),

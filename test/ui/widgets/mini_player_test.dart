@@ -33,17 +33,17 @@ void main() {
     when(mockAudioProvider.positionStream)
         .thenAnswer((_) => Stream.value(Duration.zero));
     when(mockAudioProvider.durationStream)
-        .thenAnswer((_) => Stream.value(Duration(minutes: 5)));
+        .thenAnswer((_) => Stream.value(const Duration(minutes: 5)));
     when(mockAudioProvider.bufferedPositionStream)
         .thenAnswer((_) => Stream.value(Duration.zero));
     when(mockAudioProvider.playerStateStream).thenAnswer(
         (_) => Stream.value(PlayerState(false, ProcessingState.ready)));
     when(mockAudioPlayer.position).thenReturn(Duration.zero);
-    when(mockAudioPlayer.duration).thenReturn(Duration(minutes: 5));
+    when(mockAudioPlayer.duration).thenReturn(const Duration(minutes: 5));
     when(mockAudioPlayer.bufferedPosition).thenReturn(Duration.zero);
     when(mockAudioPlayer.playerState)
         .thenReturn(PlayerState(false, ProcessingState.ready));
-    when(mockAudioPlayer.sequenceStateStream).thenAnswer((_) => Stream.empty());
+    when(mockAudioPlayer.sequenceStateStream).thenAnswer((_) => const Stream.empty());
 
     when(mockSettingsProvider.useTrueBlack).thenReturn(false);
     when(mockSettingsProvider.highlightCurrentShowCard).thenReturn(true);

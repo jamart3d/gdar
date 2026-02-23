@@ -115,6 +115,9 @@ void main() {
     when(mockWakelockService.enable()).thenAnswer((_) async {});
     when(mockWakelockService.disable()).thenAnswer((_) async {});
 
+    // Stub AudioCacheService
+    when(mockAudioCacheService.getAlbumArtUri()).thenAnswer((_) async => null);
+
     // Create AudioProvider
     audioProvider = AudioProvider(
       audioPlayer: mockAudioPlayer,

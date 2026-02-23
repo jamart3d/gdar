@@ -126,13 +126,13 @@ mixin ShowListLogicMixin<T extends StatefulWidget>
     final isCollapsingCurrent = previouslyExpanded == key;
 
     if (isCollapsingCurrent) {
-      HapticFeedback.selectionClick();
+      unawaited(HapticFeedback.selectionClick());
       showListProvider.collapseCurrentShow();
-      animationController.reverse();
+      unawaited(animationController.reverse());
       return;
     }
 
-    HapticFeedback.selectionClick();
+    unawaited(HapticFeedback.selectionClick());
     final wasSomethingExpanded = previouslyExpanded != null;
     showListProvider.toggleShowExpansion(key);
 
@@ -191,13 +191,13 @@ mixin ShowListLogicMixin<T extends StatefulWidget>
     }
 
     if (context.read<DeviceService>().isTv) {
-      TvInteractionModal.show(
+      unawaited(TvInteractionModal.show(
         context,
         title: show.name,
         subtitle: show.formattedDateYearFirst,
         onPlay: () => _playSource(show, sourceToPlay),
         onRate: () => _showRatingDialog(show, sourceToPlay),
-      );
+      ));
       return;
     }
 
@@ -207,13 +207,13 @@ mixin ShowListLogicMixin<T extends StatefulWidget>
 
   void onSourceLongPressed(Show show, Source source) {
     if (context.read<DeviceService>().isTv) {
-      TvInteractionModal.show(
+      unawaited(TvInteractionModal.show(
         context,
         title: source.id,
         subtitle: show.name,
         onPlay: () => _playSource(show, source),
         onRate: () => _showRatingDialog(show, source),
-      );
+      ));
       return;
     }
     _playSource(show, source);
@@ -244,7 +244,7 @@ mixin ShowListLogicMixin<T extends StatefulWidget>
   }
 
   void _playSource(Show show, Source source) {
-    HapticFeedback.mediumImpact();
+    unawaited(HapticFeedback.mediumImpact());
     final showListProvider = context.read<ShowListProvider>();
     final audioProvider = context.read<AudioProvider>();
     final key = showListProvider.getShowKey(show);
@@ -286,7 +286,7 @@ mixin ShowListLogicMixin<T extends StatefulWidget>
     if (mounted) {
       try {
         final controller = context.read<AnimationController>();
-        if (!controller.isAnimating) controller.repeat();
+        unawaited(controller.repeat());
       } catch (_) {}
     }
 
@@ -324,7 +324,7 @@ mixin ShowListLogicMixin<T extends StatefulWidget>
         if (mounted) {
           final freshCurrentShow = context.read<AudioProvider>().currentShow;
           if (freshCurrentShow != null) {
-            reliablyScrollToShow(freshCurrentShow);
+            unawaited(reliablyScrollToShow(freshCurrentShow));
           }
         }
       }
@@ -368,7 +368,7 @@ mixin ShowListLogicMixin<T extends StatefulWidget>
   }
 
   Future<void> handlePlayRandomShow() async {
-    HapticFeedback.mediumImpact();
+    unawaited(HapticFeedback.mediumImpact());
     final showListProvider = context.read<ShowListProvider>();
     final audioProvider = context.read<AudioProvider>();
 
@@ -378,7 +378,7 @@ mixin ShowListLogicMixin<T extends StatefulWidget>
 
     if (showListProvider.expandedShowKey != null) {
       showListProvider.collapseCurrentShow();
-      animationController.reverse();
+      unawaited(animationController.reverse());
     }
 
     logger.d(
@@ -403,7 +403,7 @@ mixin ShowListLogicMixin<T extends StatefulWidget>
 
     if (mounted) {
       if (success) {
-        HapticFeedback.mediumImpact();
+        unawaited(HapticFeedback.mediumImpact());
         searchController.clear();
         searchFocusNode.unfocus();
         context.read<ShowListProvider>().setSearchVisible(false);

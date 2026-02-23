@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:io';
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -35,7 +34,7 @@ Future<void> main() async {
 
   bool isTv = false;
   try {
-    if (Platform.isAndroid) {
+    if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
       const deviceChannel = MethodChannel('com.jamart3d.shakedown/device');
       final bool? result = await deviceChannel.invokeMethod<bool>('isTv');
       isTv = result ?? false;
@@ -44,28 +43,32 @@ Future<void> main() async {
     debugPrint('Error detecting TV in main: $e');
   }
 
-  if (!isTv) {
-    await SystemChrome.setPreferredOrientations([
-      DeviceOrientation.portraitUp,
-      DeviceOrientation.portraitDown,
-    ]);
-  } else {
-    await SystemChrome.setPreferredOrientations([
-      DeviceOrientation.landscapeLeft,
-      DeviceOrientation.landscapeRight,
-    ]);
+  if (!kIsWeb) {
+    if (!isTv) {
+      await SystemChrome.setPreferredOrientations([
+        DeviceOrientation.portraitUp,
+        DeviceOrientation.portraitDown,
+      ]);
+    } else {
+      await SystemChrome.setPreferredOrientations([
+        DeviceOrientation.landscapeLeft,
+        DeviceOrientation.landscapeRight,
+      ]);
+    }
   }
 
   initLogger();
 
   await AudioProvider.clearAudioCache();
 
-  await JustAudioBackground.init(
-    androidNotificationChannelId: 'com.jamart3d.shakedown.channel.audio',
-    androidNotificationChannelName: 'Audio Playback',
-    androidNotificationOngoing: true,
-    androidNotificationIcon: 'mipmap/ic_launcher',
-  );
+  if (!kIsWeb) {
+    await JustAudioBackground.init(
+      androidNotificationChannelId: 'com.jamart3d.shakedown.channel.audio',
+      androidNotificationChannelName: 'Audio Playback',
+      androidNotificationOngoing: true,
+      androidNotificationIcon: 'mipmap/ic_launcher',
+    );
+  }
 
   final prefs = await SharedPreferences.getInstance();
 
@@ -205,8 +208,8 @@ class _GdarAppState extends State<GdarApp> {
               'Main: [Session #$_sessionId] Triggering playRandomShow from host: "play-random"');
           final animationOnly =
               uri.queryParameters['animation_only']?.toLowerCase() == 'true';
-          audioProvider.playRandomShow(
-              filterBySearch: true, animationOnly: animationOnly);
+          unawaited(audioProvider.playRandomShow(
+              filterBySearch: true, animationOnly: animationOnly));
         } else if (uri.host == 'ui-scale') {
           if (kReleaseMode) return;
           final enabled =
@@ -251,8 +254,8 @@ class _GdarAppState extends State<GdarApp> {
                 'Main: [Session #$_sessionId] Triggering playRandomShow based on feature: "$feature"');
             final animationOnly =
                 uri.queryParameters['animation_only']?.toLowerCase() == 'true';
-            audioProvider.playRandomShow(
-                filterBySearch: true, animationOnly: animationOnly);
+            unawaited(audioProvider.playRandomShow(
+                filterBySearch: true, animationOnly: animationOnly));
           }
         } else if (uri.host == 'navigate') {
           if (kReleaseMode) return;
@@ -261,25 +264,25 @@ class _GdarAppState extends State<GdarApp> {
 
           if (screen == 'settings') {
             final highlight = uri.queryParameters['highlight'];
-            Navigator.of(context).push(
+            unawaited(Navigator.of(context).push(
               MaterialPageRoute(
                   builder: (_) => SettingsScreen(highlightSetting: highlight)),
-            );
+            ));
           } else if (screen == 'splash') {
-            Navigator.of(context).pushAndRemoveUntil(
+            unawaited(Navigator.of(context).pushAndRemoveUntil(
               MaterialPageRoute(builder: (_) => const SplashScreen()),
               (route) => false,
-            );
+            ));
           } else if (screen == 'onboarding') {
-            Navigator.of(context).pushAndRemoveUntil(
+            unawaited(Navigator.of(context).pushAndRemoveUntil(
               MaterialPageRoute(builder: (_) => const OnboardingScreen()),
               (route) => false,
-            );
+            ));
           } else if (screen == 'home') {
-            Navigator.of(context).pushAndRemoveUntil(
+            unawaited(Navigator.of(context).pushAndRemoveUntil(
               MaterialPageRoute(builder: (_) => const ShowListScreen()),
               (route) => false,
-            );
+            ));
 
             final action = uri.queryParameters['action']?.toLowerCase();
             if (action == 'search') {
@@ -295,10 +298,10 @@ class _GdarAppState extends State<GdarApp> {
             }
           } else if (screen == 'player') {
             final openPanel = uri.queryParameters['panel'] == 'open';
-            Navigator.of(context).push(
+            unawaited(Navigator.of(context).push(
               MaterialPageRoute(
                   builder: (_) => PlaybackScreen(initiallyOpen: openPanel)),
-            );
+            ));
           } else if (screen == 'track_list') {
             final indexStr = uri.queryParameters['index'];
             final showListProvider =
@@ -311,12 +314,12 @@ class _GdarAppState extends State<GdarApp> {
               final show = allShows[safeIndex];
 
               if (show.sources.isNotEmpty) {
-                Navigator.of(context).push(
+                unawaited(Navigator.of(context).push(
                   MaterialPageRoute(
                     builder: (_) =>
                         TrackListScreen(show: show, source: show.sources.first),
                   ),
-                );
+                ));
               }
             }
           }
@@ -328,31 +331,31 @@ class _GdarAppState extends State<GdarApp> {
                 'Main: [Session #$_sessionId] RESETTING ALL PREFERENCES via Deep Link');
             final settingsProvider =
                 Provider.of<SettingsProvider>(context, listen: false);
-            settingsProvider.resetToDefaults();
+            unawaited(settingsProvider.resetToDefaults());
           } else if (action == 'complete_onboarding') {
             logger.i(
                 'Main: [Session #$_sessionId] Completing Onboarding via Deep Link');
             final settingsProvider =
                 Provider.of<SettingsProvider>(context, listen: false);
-            settingsProvider.completeOnboarding();
+            unawaited(settingsProvider.completeOnboarding());
           } else if (action == 'show_font_dialog') {
             logger.i(
                 'Main: [Session #$_sessionId] Showing Font Dialog via Deep Link');
-            Navigator.of(context).push(
+            unawaited(Navigator.of(context).push(
               MaterialPageRoute(
                   builder: (_) =>
                       const SettingsScreen(showFontSelection: true)),
-            );
+            ));
           } else if (action == 'simulate_update') {
             logger.i(
                 'Main: [Session #$_sessionId] Simulating Update via Deep Link');
             Provider.of<UpdateProvider>(context, listen: false)
                 .simulateUpdate();
 
-            Navigator.of(context).pushAndRemoveUntil(
+            unawaited(Navigator.of(context).pushAndRemoveUntil(
               MaterialPageRoute(builder: (_) => const OnboardingScreen()),
               (route) => false,
-            );
+            ));
           }
         } else if (uri.host == 'settings') {
           if (kReleaseMode) return;
@@ -381,17 +384,17 @@ class _GdarAppState extends State<GdarApp> {
           logger.i('Main: [Session #$_sessionId] Player Action: $action');
 
           if (action == 'pause') {
-            audioProvider.pause();
+            unawaited(audioProvider.pause());
           } else if (action == 'resume' || action == 'play') {
-            audioProvider.resume();
+            unawaited(audioProvider.resume());
           } else if (action == 'stop') {
             logger.i(
                 'Main: [Session #$_sessionId] Stopping and clearing playback via deep link');
-            audioProvider.stopAndClear();
+            unawaited(audioProvider.stopAndClear());
           } else {
-            Navigator.of(context).push(
+            unawaited(Navigator.of(context).push(
               MaterialPageRoute(builder: (_) => const PlaybackScreen()),
-            );
+            ));
           }
         } else {
           logger.w(

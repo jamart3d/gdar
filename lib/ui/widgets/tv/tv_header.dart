@@ -70,12 +70,12 @@ class TvHeader extends StatelessWidget {
           ),
           const SizedBox(width: 16),
           // 2. Title Text
-          Expanded(
+          const Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
-                const ShakedownTitle(
+                ShakedownTitle(
                   fontSize: 22,
                   animateOnStart: true,
                   shakeDelay: Duration(milliseconds: 1700),

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shakedown/utils/app_date_utils.dart';
@@ -45,12 +46,12 @@ class _TrackListScreenState extends State<TrackListScreen> {
 
     // If Play on Tap is disabled, prevent switching sources by tap
     if (!isCurrentSource && !settingsProvider.playOnTap) {
-      HapticFeedback.mediumImpact(); // Distinct "blocked" feedback
+      unawaited(HapticFeedback.mediumImpact()); // Distinct "blocked" feedback
       _showContextualOverlay(itemContext);
       return;
     }
 
-    HapticFeedback.selectionClick(); // Success feedback
+    unawaited(HapticFeedback.selectionClick()); // Success feedback
     audioProvider.playSource(widget.show, source, initialIndex: trackIndex);
   }
 
@@ -120,7 +121,7 @@ class _TrackListScreenState extends State<TrackListScreen> {
                         context.read<AnimationController>().stop();
                       } catch (_) {}
 
-                      await Navigator.of(context).push(
+                      unawaited(Navigator.of(context).push(
                         PageRouteBuilder(
                           pageBuilder:
                               (context, animation, secondaryAnimation) =>
@@ -129,14 +130,14 @@ class _TrackListScreenState extends State<TrackListScreen> {
                           ),
                           transitionDuration: Duration.zero,
                         ),
-                      );
+                      ));
 
                       // Resume clock
                       if (context.mounted) {
                         try {
                           final controller =
                               context.read<AnimationController>();
-                          if (!controller.isAnimating) controller.repeat();
+                          unawaited(controller.repeat());
                         } catch (_) {}
                       }
                     },
@@ -173,7 +174,7 @@ class _TrackListScreenState extends State<TrackListScreen> {
       localContext.read<AnimationController>().stop();
     } catch (_) {}
 
-    await Navigator.of(localContext).push(
+    unawaited(Navigator.of(localContext).push(
       PageRouteBuilder(
         pageBuilder: (context, animation, secondaryAnimation) =>
             const PlaybackScreen(),
@@ -188,13 +189,13 @@ class _TrackListScreenState extends State<TrackListScreen> {
               position: animation.drive(tween), child: child);
         },
       ),
-    );
+    ));
 
     // Resume clock
     if (localContext.mounted) {
       try {
         final controller = localContext.read<AnimationController>();
-        if (!controller.isAnimating) controller.repeat();
+        unawaited(controller.repeat());
       } catch (_) {}
     }
   }
@@ -235,7 +236,7 @@ class _TrackListScreenState extends State<TrackListScreen> {
                           isPlayed: isPlayed,
                           compact: true,
                           onTap: () async {
-                            await showDialog(
+                            unawaited(showDialog(
                               context: context,
                               builder: (context) => RatingDialog(
                                 initialRating: catalog.getRating(ratingKey),
@@ -256,7 +257,7 @@ class _TrackListScreenState extends State<TrackListScreen> {
                                   }
                                 },
                               ),
-                            );
+                            ));
                           },
                         );
                       },
@@ -290,19 +291,19 @@ class _TrackListScreenState extends State<TrackListScreen> {
                 context.read<AnimationController>().stop();
               } catch (_) {}
 
-              await Navigator.of(context).push(
+              unawaited(Navigator.of(context).push(
                 PageRouteBuilder(
                   pageBuilder: (context, animation, secondaryAnimation) =>
                       const SettingsScreen(),
                   transitionDuration: Duration.zero,
                 ),
-              );
+              ));
 
               // Resume clock
               if (context.mounted) {
                 try {
                   final controller = context.read<AnimationController>();
-                  if (!controller.isAnimating) controller.repeat();
+                  unawaited(controller.repeat());
                 } catch (_) {}
               }
             },
@@ -475,17 +476,17 @@ class _TrackListScreenState extends State<TrackListScreen> {
             ? headerContent
             : InkWell(
                 onLongPress: () async {
-                  HapticFeedback.mediumImpact();
-                  context
+                  unawaited(HapticFeedback.mediumImpact());
+                  unawaited(context
                       .read<AudioProvider>()
-                      .playSource(widget.show, widget.source);
+                      .playSource(widget.show, widget.source));
 
                   // Pause global clock
                   try {
                     context.read<AnimationController>().stop();
                   } catch (_) {}
 
-                  await Navigator.of(context).push(
+                  unawaited(Navigator.of(context).push(
                     PageRouteBuilder(
                       pageBuilder: (context, animation, secondaryAnimation) =>
                           const PlaybackScreen(),
@@ -501,13 +502,13 @@ class _TrackListScreenState extends State<TrackListScreen> {
                             position: animation.drive(tween), child: child);
                       },
                     ),
-                  );
+                  ));
 
                   // Resume clock
                   if (context.mounted) {
                     try {
                       final controller = context.read<AnimationController>();
-                      if (!controller.isAnimating) controller.repeat();
+                      unawaited(controller.repeat());
                     } catch (_) {}
                   }
                 },

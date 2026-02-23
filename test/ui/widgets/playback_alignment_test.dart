@@ -80,7 +80,7 @@ void main() {
         .thenAnswer((_) => Stream.value(Duration.zero));
     when(mockAudioProvider.playerStateStream).thenAnswer(
         (_) => Stream.value(PlayerState(false, ProcessingState.ready)));
-    when(mockAudioPlayer.sequenceStateStream).thenAnswer((_) => Stream.empty());
+    when(mockAudioPlayer.sequenceStateStream).thenAnswer((_) => const Stream.empty());
     when(mockAudioPlayer.bufferedPosition).thenReturn(Duration.zero);
     when(mockAudioPlayer.position).thenReturn(Duration.zero);
     when(mockAudioPlayer.duration).thenReturn(Duration.zero);
@@ -146,7 +146,7 @@ void main() {
           ChangeNotifierProvider<DeviceService>(
               create: (_) => MockDeviceService()),
         ],
-        child: MaterialApp(
+        child: const MaterialApp(
           home: PlaybackScreen(),
         ),
       ),

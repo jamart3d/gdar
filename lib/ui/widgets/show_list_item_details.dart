@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shakedown/models/show.dart';
@@ -65,17 +66,17 @@ class _ShowListItemDetailsState extends State<ShowListItemDetails> {
         // Common Dismissible Logic
         Future<bool> handleConfirmDismiss() async {
           // Haptic Feedback for the block action
-          HapticFeedback.mediumImpact();
+          unawaited(HapticFeedback.selectionClick());
 
           // Stop playback if this specific source is playing
           if (isPlaying ||
               (context.read<AudioProvider>().currentSource?.id == source.id)) {
             final audioProvider = context.read<AudioProvider>();
-            audioProvider.stopAndClear();
+            unawaited(audioProvider.stopAndClear());
           }
 
           // Mark as Blocked (Red Star / -1)
-          context.read<CatalogService>().setRating(source.id, -1);
+          unawaited(context.read<CatalogService>().setRating(source.id, -1));
 
           // Calculate position for SnackBar
           double bottomMargin = 80; // Default fallback
@@ -118,7 +119,7 @@ class _ShowListItemDetailsState extends State<ShowListItemDetails> {
                   // Block & Roll Button
                   TextButton(
                     onPressed: () {
-                      context.read<AudioProvider>().playRandomShow();
+                      unawaited(context.read<AudioProvider>().playRandomShow());
                       ScaffoldMessenger.of(context).hideCurrentSnackBar();
                     },
                     style: TextButton.styleFrom(

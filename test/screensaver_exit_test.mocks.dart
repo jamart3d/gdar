@@ -1558,67 +1558,74 @@ class MockAudioProvider extends _i1.Mock implements _i7.AudioProvider {
       ) as _i5.Future<void>);
 
   @override
-  void play() => super.noSuchMethod(
+  _i5.Future<void> play() => (super.noSuchMethod(
         Invocation.method(
           #play,
           [],
         ),
-        returnValueForMissingStub: null,
-      );
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
 
   @override
-  void resume() => super.noSuchMethod(
+  _i5.Future<void> resume() => (super.noSuchMethod(
         Invocation.method(
           #resume,
           [],
         ),
-        returnValueForMissingStub: null,
-      );
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
 
   @override
-  void pause() => super.noSuchMethod(
+  _i5.Future<void> pause() => (super.noSuchMethod(
         Invocation.method(
           #pause,
           [],
         ),
-        returnValueForMissingStub: null,
-      );
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
 
   @override
-  void stop() => super.noSuchMethod(
+  _i5.Future<void> stop() => (super.noSuchMethod(
         Invocation.method(
           #stop,
           [],
         ),
-        returnValueForMissingStub: null,
-      );
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
 
   @override
-  void seekToNext() => super.noSuchMethod(
+  _i5.Future<void> seekToNext() => (super.noSuchMethod(
         Invocation.method(
           #seekToNext,
           [],
         ),
-        returnValueForMissingStub: null,
-      );
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
 
   @override
-  void seekToPrevious() => super.noSuchMethod(
+  _i5.Future<void> seekToPrevious() => (super.noSuchMethod(
         Invocation.method(
           #seekToPrevious,
           [],
         ),
-        returnValueForMissingStub: null,
-      );
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
 
   @override
-  void seek(Duration? position) => super.noSuchMethod(
+  _i5.Future<void> seek(Duration? position) => (super.noSuchMethod(
         Invocation.method(
           #seek,
           [position],
         ),
-        returnValueForMissingStub: null,
-      );
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
 
   @override
   _i5.Future<void> retryCurrentSource() => (super.noSuchMethod(

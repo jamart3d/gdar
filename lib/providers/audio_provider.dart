@@ -2,9 +2,6 @@ import 'dart:async';
 import 'dart:math';
 import 'package:shakedown/services/wakelock_service.dart';
 
-import 'dart:io';
-import 'package:flutter/services.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:shakedown/models/show.dart';
 import 'package:shakedown/models/source.dart';
@@ -428,9 +425,10 @@ class AudioProvider with ChangeNotifier {
       final dynamicLimit = max(20, currentTrackCount + 5);
 
       // Fire and forget, but DO IT before preloading starts to clear space
-      _audioCacheService.performCacheCleanup(maxFiles: dynamicLimit);
+      unawaited(_audioCacheService.performCacheCleanup(maxFiles: dynamicLimit));
 
-      _audioCacheService.preloadSource(source, startIndex: initialIndex);
+      unawaited(
+          _audioCacheService.preloadSource(source, startIndex: initialIndex));
     }
   }
 
@@ -527,7 +525,7 @@ class AudioProvider with ChangeNotifier {
     final dynamicLimit = max(20, currentTrackCount + 5);
 
     // Fire and forget (don't await) to not block the UI.
-    _audioCacheService.performCacheCleanup(maxFiles: dynamicLimit);
+    unawaited(_audioCacheService.performCacheCleanup(maxFiles: dynamicLimit));
 
     final show = selection.show;
     final source = selection.source;
@@ -535,7 +533,7 @@ class AudioProvider with ChangeNotifier {
     logger.i('Queueing next show: ${show.date} (${source.id})');
     Uri? artUri;
     try {
-      artUri = await _getAlbumArtUri();
+      artUri = await _audioCacheService.getAlbumArtUri();
     } catch (_) {}
 
     final nextSources = source.tracks.asMap().entries.map((entry) {
@@ -563,7 +561,7 @@ class AudioProvider with ChangeNotifier {
 
       // Trigger Smart Pre-Load for the queued show
       if (_settingsProvider?.offlineBuffering ?? false) {
-        _audioCacheService.preloadSource(source);
+        unawaited(_audioCacheService.preloadSource(source));
       }
 
       _isTransitioning = false;
@@ -638,7 +636,7 @@ class AudioProvider with ChangeNotifier {
         'Loading show: ${_currentShow!.name}, source: ${source.id}, starting at index: $initialIndex');
     Uri? artUri;
     try {
-      artUri = await _getAlbumArtUri();
+      artUri = await _audioCacheService.getAlbumArtUri();
     } catch (e) {
       logger.w('Failed to get album art URI: $e');
     }
@@ -684,7 +682,7 @@ class AudioProvider with ChangeNotifier {
         preload: _settingsProvider?.offlineBuffering ?? false,
       );
 
-      _audioPlayer.play();
+      unawaited(_audioPlayer.play());
     } catch (e, stackTrace) {
       // Only handle errors if this request corresponds to the current source.
       if (_currentSource?.id == source.id) {
@@ -692,7 +690,7 @@ class AudioProvider with ChangeNotifier {
         _error = 'Error playing source: ${e.toString()}';
         _errorController.add(_error!);
         notifyListeners();
-        stopAndClear();
+        unawaited(stopAndClear());
       } else {
         logger.w(
             'Ignoring error from superseded playback request (Source: ${source.id}): $e');
@@ -713,19 +711,19 @@ class AudioProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  void play() => _audioPlayer.play();
+  Future<void> play() => _audioPlayer.play();
 
-  void resume() => _audioPlayer.play();
+  Future<void> resume() => _audioPlayer.play();
 
-  void pause() => _audioPlayer.pause();
+  Future<void> pause() => _audioPlayer.pause();
 
-  void stop() => _audioPlayer.stop();
+  Future<void> stop() => _audioPlayer.stop();
 
-  void seekToNext() => _audioPlayer.seekToNext();
+  Future<void> seekToNext() => _audioPlayer.seekToNext();
 
-  void seekToPrevious() => _audioPlayer.seekToPrevious();
+  Future<void> seekToPrevious() => _audioPlayer.seekToPrevious();
 
-  void seek(Duration position) => _audioPlayer.seek(position);
+  Future<void> seek(Duration position) => _audioPlayer.seek(position);
 
   /// Retries loading the current source, maintaining the current track index.
   Future<void> retryCurrentSource() async {
@@ -811,30 +809,6 @@ class AudioProvider with ChangeNotifier {
     }
   }
 
-  Future<Uri?> _getAlbumArtUri() async {
-    if (_settingsProvider?.showGlobalAlbumArt != true) {
-      return null;
-    }
-
-    try {
-      final docsDir = await getApplicationDocumentsDirectory();
-      final file = File('${docsDir.path}/album_art.png');
-
-      if (!await file.exists()) {
-        final byteData = await rootBundle.load('assets/images/t_steal.webp');
-        await file.writeAsBytes(byteData.buffer.asUint8List(
-          byteData.offsetInBytes,
-          byteData.lengthInBytes,
-        ));
-      }
-
-      return Uri.file(file.path);
-    } catch (e) {
-      logger.e('Error preparing album art', error: e);
-      return null;
-    }
-  }
-
   AudioSource _createAudioSource(Uri uri, MediaItem tag) {
     return _audioCacheService.createAudioSource(
       uri: uri,
@@ -845,7 +819,8 @@ class AudioProvider with ChangeNotifier {
 
   /// Delegates to AudioCacheService to clear cache
   static Future<void> clearAudioCache() async {
-    final service = AudioCacheService()..init();
+    final service = AudioCacheService();
+    unawaited(service.init());
     await service.clearAudioCache();
     service.dispose();
   }

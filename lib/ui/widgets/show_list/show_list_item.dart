@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -154,7 +155,7 @@ class ShowListItem extends StatelessWidget {
   Future<bool> _showBlockConfirmation(BuildContext context, Show show,
       AudioProvider audioProvider, SettingsProvider settingsProvider) async {
     // Haptic Feedback
-    HapticFeedback.mediumImpact();
+    unawaited(HapticFeedback.selectionClick());
 
     // Calculate position for SnackBar
     double bottomMargin = 80;
@@ -179,13 +180,14 @@ class ShowListItem extends StatelessWidget {
         isCurrentlyPlaying ? audioProvider.audioPlayer.position : Duration.zero;
 
     if (isCurrentlyPlaying) {
-      audioProvider.stopAndClear();
+      unawaited(audioProvider.stopAndClear());
     }
 
     // Mark ONLY the representative source as Blocked (Red Star / -1)
     // The user requested that swiping the main card should only block
     // "that source" even if multiple sources exist.
-    context.read<CatalogService>().setRating(show.sources.first.id, -1);
+    unawaited(
+        context.read<CatalogService>().setRating(show.sources.first.id, -1));
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -213,7 +215,8 @@ class ShowListItem extends StatelessWidget {
             if (audioProvider.currentShow == show)
               TextButton(
                 onPressed: () {
-                  audioProvider.playRandomShow();
+                  unawaited(HapticFeedback.lightImpact());
+                  unawaited(audioProvider.playRandomShow());
                   ScaffoldMessenger.of(context).hideCurrentSnackBar();
                 },
                 style: TextButton.styleFrom(

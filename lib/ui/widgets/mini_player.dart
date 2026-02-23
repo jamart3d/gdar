@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shakedown/models/show.dart';
@@ -306,18 +307,18 @@ class _MiniPlayerState extends State<MiniPlayer>
                                   } else if (!playing &&
                                       _pulseController.isAnimating) {
                                     _pulseController.stop();
-                                    _pulseController.animateTo(0.0,
+                                    unawaited(_pulseController.animateTo(0.0,
                                         duration:
                                             const Duration(milliseconds: 200),
-                                        curve: Curves.easeOut);
+                                        curve: Curves.easeOut));
                                   }
 
                                   return ScaleTransition(
                                     scale: _scaleAnimation,
                                     child: GestureDetector(
                                       onLongPress: () {
-                                        HapticFeedback.heavyImpact();
-                                        audioProvider.stopAndClear();
+                                        unawaited(HapticFeedback.heavyImpact());
+                                        unawaited(audioProvider.stopAndClear());
                                       },
                                       child: Hero(
                                         tag: 'play_pause_button',
@@ -355,12 +356,14 @@ class _MiniPlayerState extends State<MiniPlayer>
                                                   iconSize: iconSize,
                                                   color: colorScheme.onPrimary,
                                                   onPressed: () {
-                                                    HapticFeedback
-                                                        .selectionClick();
+                                                    unawaited(HapticFeedback
+                                                        .selectionClick());
                                                     if (playing) {
-                                                      audioProvider.pause();
+                                                      unawaited(audioProvider
+                                                          .pause());
                                                     } else {
-                                                      audioProvider.play();
+                                                      unawaited(
+                                                          audioProvider.play());
                                                     }
                                                   },
                                                 ),

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shakedown/providers/settings_provider.dart';
@@ -150,19 +151,19 @@ class ShowListAppBar extends StatelessWidget implements PreferredSizeWidget {
               context.read<AnimationController>().stop();
             } catch (_) {}
 
-            await Navigator.of(context).push(
+            unawaited(Navigator.of(context).push(
               PageRouteBuilder(
                 pageBuilder: (context, animation, secondaryAnimation) =>
                     const SettingsScreen(),
                 transitionDuration: Duration.zero,
               ),
-            );
+            ));
 
             // Resume clock on return
             if (context.mounted) {
               try {
                 final controller = context.read<AnimationController>();
-                if (!controller.isAnimating) controller.repeat();
+                if (!controller.isAnimating) unawaited(controller.repeat());
               } catch (_) {}
             }
           },
@@ -173,18 +174,18 @@ class ShowListAppBar extends StatelessWidget implements PreferredSizeWidget {
             context.read<AnimationController>().stop();
           } catch (_) {}
 
-          await Navigator.of(context).push(
+          unawaited(Navigator.of(context).push(
             PageRouteBuilder(
               pageBuilder: (context, animation, secondaryAnimation) =>
                   const SettingsScreen(),
               transitionDuration: Duration.zero,
             ),
-          );
+          ));
 
           if (context.mounted) {
             try {
               final controller = context.read<AnimationController>();
-              if (!controller.isAnimating) controller.repeat();
+              if (!controller.isAnimating) unawaited(controller.repeat());
             } catch (_) {}
           }
         },

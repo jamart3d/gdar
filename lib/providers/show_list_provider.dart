@@ -315,7 +315,7 @@ class ShowListProvider with ChangeNotifier {
       _scanAvailableCategories();
       _sortShows();
     } catch (e) {
-      _error = "Failed to load shows.";
+      _error = 'Failed to load shows.';
       logger.e(e);
     } finally {
       _isLoading = false;

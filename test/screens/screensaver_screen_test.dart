@@ -9,6 +9,7 @@ import 'package:shakedown/steal_screensaver/steal_visualizer.dart';
 import 'package:shakedown/services/device_service.dart';
 import 'package:shakedown/services/wakelock_service.dart';
 import 'package:flutter/services.dart';
+import 'package:just_audio/just_audio.dart';
 import 'package:mockito/annotations.dart';
 import 'screensaver_screen_test.mocks.dart';
 
@@ -16,6 +17,8 @@ import 'screensaver_screen_test.mocks.dart';
   MockSpec<SettingsProvider>(),
   MockSpec<AudioProvider>(),
   MockSpec<WakelockService>(),
+  MockSpec<AudioPlayer>(
+      as: #MockAudioPlayerRelaxed, onMissingStub: OnMissingStub.returnDefault),
 ])
 
 // Manual mock to avoid build_runner for this quick fix
@@ -72,6 +75,11 @@ void main() {
     when(mockSettingsProvider.oilLogoTrailSlices).thenReturn(6);
     when(mockSettingsProvider.oilLogoTrailLength).thenReturn(0.5);
     when(mockSettingsProvider.enableSwipeToBlock).thenReturn(false);
+
+    // Mock AudioProvider's audioPlayer for ScreensaverScreen
+    final mockAudioPlayer = MockAudioPlayerRelaxed();
+    when(mockAudioProvider.audioPlayer).thenReturn(mockAudioPlayer);
+    when(mockAudioPlayer.androidAudioSessionId).thenReturn(0);
   });
 
   Widget createWidgetUnderTest() {

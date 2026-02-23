@@ -91,6 +91,7 @@ void main() {
         .thenAnswer((_) async => const Duration(seconds: 100));
 
     // Stub AudioCacheService
+    when(mockAudioCacheService.getAlbumArtUri()).thenAnswer((_) async => null);
     when(mockAudioCacheService.createAudioSource(
       uri: anyNamed('uri'),
       tag: anyNamed('tag'),
@@ -287,7 +288,7 @@ void main() {
         final source = show.sources.first; // 2 tracks
 
         // Simulate that we are playing this source
-        audioProvider.playSource(show, source);
+        unawaited(audioProvider.playSource(show, source));
 
         // Mock Sequence with an offset.
         // items [0, 1, 2] are dummy (previous show).

@@ -95,15 +95,15 @@ class MockAudioProvider extends ChangeNotifier implements AudioProvider {
 
   // Stubs for other used members
   @override
-  Stream<String> get playbackErrorStream => Stream.empty();
+  Stream<String> get playbackErrorStream => const Stream.empty();
   @override
-  Stream<PlayerState> get playerStateStream => Stream.empty();
+  Stream<PlayerState> get playerStateStream => const Stream.empty();
   @override
-  Stream<Duration> get positionStream => Stream.empty();
+  Stream<Duration> get positionStream => const Stream.empty();
   @override
-  Stream<Duration> get bufferedPositionStream => Stream.empty();
+  Stream<Duration> get bufferedPositionStream => const Stream.empty();
   @override
-  Stream<int?> get currentIndexStream => Stream.empty();
+  Stream<int?> get currentIndexStream => const Stream.empty();
   @override
   AudioPlayer get audioPlayer =>
       AudioPlayer(); // This might need a mock too if accessed deep
@@ -240,7 +240,7 @@ void main() {
               value: mockShowListProvider),
           ChangeNotifierProvider<DeviceService>.value(value: mockDeviceService),
         ],
-        child: MaterialApp(
+        child: const MaterialApp(
           home: TvDualPaneLayout(),
         ),
       ),

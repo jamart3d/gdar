@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
@@ -110,10 +111,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   }
 
   void _nextPage() {
-    _pageController.nextPage(
+    unawaited(_pageController.nextPage(
       duration: const Duration(milliseconds: 400),
       curve: Curves.easeInOut,
-    );
+    ));
   }
 
   @override
@@ -165,7 +166,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                           archiveReachable: _archiveReachable,
                           updateInfo: updateProvider.updateInfo,
                           isSimulated: updateProvider.isSimulated,
-                          onUpdateSelected: () => updateProvider.startUpdate(),
+                          onUpdateSelected: () =>
+                              unawaited(updateProvider.startUpdate()),
                         ),
                         TipsPage(scaleFactor: scaleFactor),
                         SetupPage(
@@ -210,7 +212,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     archiveReachable: _archiveReachable,
                     updateInfo: updateProvider.updateInfo,
                     isSimulated: updateProvider.isSimulated,
-                    onUpdateSelected: () => updateProvider.startUpdate(),
+                    onUpdateSelected: () =>
+                        unawaited(updateProvider.startUpdate()),
                   ),
                   TipsPage(scaleFactor: scaleFactor),
                   SetupPage(

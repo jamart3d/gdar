@@ -1,3 +1,8 @@
+Release 1.1.9+109:
+- Testing: Resolved TypeError and FakeUsedError in AudioProvider and ScreensaverScreen test suites.
+- Stability: All 162 unit and widget tests passing consistently.
+- Quality: Applied project-wide code formatting and synchronized mock generation.
+
 Release 1.1.8+108:
 - Visuals: Implemented secondary smoothing and sub-pixel precision for "flat" screensaver mode to eliminate residual jitter.
 - UI: Refined system bar transparency handling by relying on Material 3 theme defaults.

@@ -57,18 +57,18 @@ class VisualizerAudioReactor implements AudioReactor {
     double? reactivityStrength,
   }) {
     if (!_isRunning) return;
-    _methodChannel.invokeMethod('updateConfig', {
+    unawaited(_methodChannel.invokeMethod('updateConfig', {
       if (peakDecay != null) 'peakDecay': peakDecay,
       if (bassBoost != null) 'bassBoost': bassBoost,
       if (reactivityStrength != null) 'reactivityStrength': reactivityStrength,
-    });
+    }));
   }
 
   @override
-  void stop() async {
+  Future<void> stop() async {
     if (!_isRunning) return;
     _isRunning = false;
-    _eventSubscription?.cancel();
+    unawaited(_eventSubscription?.cancel());
     _eventSubscription = null;
     try {
       await _methodChannel.invokeMethod('stop');
@@ -80,7 +80,8 @@ class VisualizerAudioReactor implements AudioReactor {
 
   @override
   void dispose() {
-    stop();
+    // stop() returns Future<void> now, but we don't await in dispose
+    unawaited(stop());
     _energyController.close();
   }
 

@@ -236,8 +236,8 @@ class PlaybackPanel extends StatelessWidget {
                                             final locationStr = currentSource
                                                         .location !=
                                                     null
-                                                ? " - ${currentSource.location}"
-                                                : "";
+                                                ? ' - ${currentSource.location}'
+                                                : '';
                                             final info =
                                                 "${currentShow.venue}$locationStr - $formattedDate - ${currentSource.id}\n${track.title}\n${track.url.replaceAll('/download/', '/details/').split('/').sublist(0, 5).join('/')}";
                                             Clipboard.setData(
@@ -432,7 +432,7 @@ class PlaybackPanel extends StatelessWidget {
                   ],
                 ),
                 Text(
-                  "  •  ",
+                  '  •  ',
                   style: TextStyle(
                     color: colorScheme.onSurfaceVariant.withValues(alpha: 0.3),
                   ),
@@ -455,7 +455,7 @@ class PlaybackPanel extends StatelessWidget {
                   ],
                 ),
                 Text(
-                  "  •  ",
+                  '  •  ',
                   style: TextStyle(
                     color: colorScheme.onSurfaceVariant.withValues(alpha: 0.3),
                   ),

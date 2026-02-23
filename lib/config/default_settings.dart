@@ -79,7 +79,8 @@ class DefaultSettings {
   static const double oilAudioBassBoost = 2.0;
   static const double oilAudioPeakDecay = 0.95;
   static const bool oilShowInfoBanner = false;
-  static const double oilTranslationSmoothing = 1.0;
+  static const double oilTranslationSmoothing =
+      0.7; // Updated default for smoother feel
   static const String oilBannerDisplayMode = 'ring';
 
   // Trail effect

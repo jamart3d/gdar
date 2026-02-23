@@ -1,7 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:device_info_plus/device_info_plus.dart';
-import 'dart:io' show Platform;
 
 class DeviceService extends ChangeNotifier {
   static const _deviceChannel = MethodChannel('com.jamart3d.shakedown/device');
@@ -20,10 +19,14 @@ class DeviceService extends ChangeNotifier {
   }
 
   Future<void> _init() async {
-    if (kIsWeb) return;
+    if (kIsWeb) {
+      _deviceName = 'Web Browser';
+      notifyListeners();
+      return;
+    }
 
     try {
-      if (Platform.isAndroid) {
+      if (defaultTargetPlatform == TargetPlatform.android) {
         // Source of truth for Android TV
         final bool? result = await _deviceChannel.invokeMethod<bool>('isTv');
         _isTv = result ?? false;
@@ -31,7 +34,7 @@ class DeviceService extends ChangeNotifier {
         final deviceInfo = DeviceInfoPlugin();
         final androidInfo = await deviceInfo.androidInfo;
         _deviceName = '${androidInfo.brand} ${androidInfo.model}';
-      } else if (Platform.isIOS) {
+      } else if (defaultTargetPlatform == TargetPlatform.iOS) {
         final deviceInfo = DeviceInfoPlugin();
         final iosInfo = await deviceInfo.iosInfo;
         _isTv = iosInfo.model.toLowerCase().contains('appletv');

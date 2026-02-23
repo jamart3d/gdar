@@ -113,13 +113,16 @@ class StealBackground extends PositionComponent
   void update(double dt) {
     super.update(dt);
 
-    // Color lerp — both lists guaranteed length 4, never skips
+    // Color lerp — time corrected for frame-rate independence
+    // _colorLerpSpeed is based on 60fps frame factor
+    final colorAlpha = 1.0 - pow(1.0 - _colorLerpSpeed, dt * 60);
+
     for (int i = 0; i < _colorCount; i++) {
       if (_currentColors.length > i && _targetColors.length > i) {
         _currentColors[i] = Color.lerp(
           _currentColors[i],
           _targetColors[i],
-          _colorLerpSpeed,
+          colorAlpha,
         )!;
       }
     }
@@ -131,14 +134,17 @@ class StealBackground extends PositionComponent
     final rawX = 0.5 + 0.25 * drift * sin(t * 1.3) + 0.1 * drift * sin(t * 2.9);
     final rawY = 0.5 + 0.25 * drift * cos(t * 1.7) + 0.1 * drift * cos(t * 3.1);
 
-    // Lerp smoothedPos toward raw pos.
-    // translationSmoothing 0.0 = instant (lerpFactor 1.0)
-    // translationSmoothing 1.0 = very smooth (lerpFactor 0.02)
+    // Lerp smoothedPos toward raw pos using time-based decay
     final s = config.translationSmoothing.clamp(0.0, 1.0);
-    final lerpFactor = 1.0 - s * 0.98;
+    // Base alpha per frame (approx 60fps).
+    // s=0 -> baseAlpha=1 (instant). s=1 -> baseAlpha=0.01 (very slow).
+    final baseAlpha = 1.0 - s * 0.99;
+    // Time-corrected alpha: 1 - (1 - base)^dt_ratio
+    final posAlpha = 1.0 - pow(1.0 - baseAlpha, dt * 60);
+
     _smoothedPos = Offset(
-      _smoothedPos.dx + (rawX - _smoothedPos.dx) * lerpFactor,
-      _smoothedPos.dy + (rawY - _smoothedPos.dy) * lerpFactor,
+      _smoothedPos.dx + (rawX - _smoothedPos.dx) * posAlpha,
+      _smoothedPos.dy + (rawY - _smoothedPos.dy) * posAlpha,
     );
   }
 

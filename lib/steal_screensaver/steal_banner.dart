@@ -281,9 +281,11 @@ class StealBanner extends Component with HasGameReference<StealGame> {
     // Factor 0.15 adds ~2 frames of lag, invisible since logo is already smoothed.
     if (config.bannerDisplayMode == 'flat') {
       final target = game.smoothedLogoPos;
+      // Time-correct smoothing using 0.15 factor (base 60fps)
+      final alpha = 1.0 - pow(1.0 - 0.15, dt * 60);
       _flatSmoothPos = Offset(
-        _flatSmoothPos.dx + (target.dx - _flatSmoothPos.dx) * 0.15,
-        _flatSmoothPos.dy + (target.dy - _flatSmoothPos.dy) * 0.15,
+        _flatSmoothPos.dx + (target.dx - _flatSmoothPos.dx) * alpha,
+        _flatSmoothPos.dy + (target.dy - _flatSmoothPos.dy) * alpha,
       );
     }
   }

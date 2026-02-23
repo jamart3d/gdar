@@ -34,7 +34,7 @@ void main() {
         'createAudioSource returns LockCachingAudioSource when cache is enabled',
         () async {
       final uri = Uri.parse('https://example.com/audio.mp3');
-      final tag = MediaItem(id: '1', title: 'Test');
+      const tag = MediaItem(id: '1', title: 'Test');
 
       final source = service.createAudioSource(
         uri: uri,
@@ -51,7 +51,7 @@ void main() {
         'createAudioSource returns standard AudioSource when cache is disabled',
         () {
       final uri = Uri.parse('https://example.com/audio.mp3');
-      final tag = MediaItem(id: '1', title: 'Test');
+      const tag = MediaItem(id: '1', title: 'Test');
 
       final source = service.createAudioSource(
         uri: uri,

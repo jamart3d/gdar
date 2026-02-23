@@ -76,7 +76,8 @@ class StealConfig {
     this.pulseIntensity = 0.5,
     this.heatDrift = 0.2,
     this.logoScale = 0.5,
-    this.translationSmoothing = 0.3,
+    this.translationSmoothing =
+        0.7, // Increased default smoothing for floatier feel
     this.blurAmount = 0.0,
     this.flatColor = false,
     this.bannerGlow = false,
@@ -108,7 +109,7 @@ class StealConfig {
       heatDrift: (map['heatDrift'] as num?)?.toDouble() ?? 0.2,
       logoScale: (map['logoScale'] as num?)?.toDouble() ?? 0.5,
       translationSmoothing:
-          (map['translationSmoothing'] as num?)?.toDouble() ?? 0.3,
+          (map['translationSmoothing'] as num?)?.toDouble() ?? 0.7,
       blurAmount: (map['blurAmount'] as num?)?.toDouble() ?? 0.0,
       flatColor: map['flatColor'] as bool? ?? false,
       bannerGlow: map['bannerGlow'] as bool? ?? false,

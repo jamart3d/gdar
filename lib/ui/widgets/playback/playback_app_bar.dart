@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shakedown/models/show.dart';
@@ -136,20 +137,22 @@ class PlaybackAppBar extends StatelessWidget {
                         context.read<AnimationController>().stop();
                       } catch (_) {}
 
-                      await Navigator.of(context).push(
+                      unawaited(Navigator.of(context).push(
                         PageRouteBuilder(
                           pageBuilder:
                               (context, animation, secondaryAnimation) =>
                                   const SettingsScreen(),
                           transitionDuration: Duration.zero,
                         ),
-                      );
+                      ));
 
                       if (context.mounted) {
                         try {
                           final controller =
                               context.read<AnimationController>();
-                          if (!controller.isAnimating) controller.repeat();
+                          if (!controller.isAnimating) {
+                            unawaited(controller.repeat());
+                          }
                         } catch (_) {}
                       }
                     },

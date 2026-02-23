@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
@@ -151,7 +152,7 @@ class CatalogService {
     if (!_isInitialized) return; // Guard
 
     if (ratingValue == 0) {
-      _ratingsBox.delete(sourceId); // Remove if 0 (Unplayed)
+      unawaited(_ratingsBox.delete(sourceId)); // Remove if 0 (Unplayed)
     } else {
       final rating = Rating(
         sourceId: sourceId,

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/services.dart';
 
 import 'package:flutter/material.dart';
@@ -375,7 +376,7 @@ class _RatedShowListState extends State<_RatedShowList> {
                 context.read<AnimationController>().stop();
               } catch (_) {}
 
-              await Navigator.of(context).push(
+              unawaited(Navigator.of(context).push(
                 PageRouteBuilder(
                   pageBuilder: (context, animation, secondaryAnimation) =>
                       const PlaybackScreen(),
@@ -391,13 +392,13 @@ class _RatedShowListState extends State<_RatedShowList> {
                         position: animation.drive(tween), child: child);
                   },
                 ),
-              );
+              ));
 
               // Resume clock
               if (context.mounted) {
                 try {
                   final controller = context.read<AnimationController>();
-                  if (!controller.isAnimating) controller.repeat();
+                  if (!controller.isAnimating) unawaited(controller.repeat());
                 } catch (_) {}
               }
             } else {
@@ -408,7 +409,7 @@ class _RatedShowListState extends State<_RatedShowList> {
                 context.read<AnimationController>().stop();
               } catch (_) {}
 
-              await Navigator.of(context).push(
+              unawaited(Navigator.of(context).push(
                 PageRouteBuilder(
                   pageBuilder: (context, animation, secondaryAnimation) =>
                       TrackListScreen(
@@ -416,20 +417,20 @@ class _RatedShowListState extends State<_RatedShowList> {
                           source: singleSourceShow.sources.first),
                   transitionDuration: Duration.zero,
                 ),
-              );
+              ));
 
               // Resume clock
               if (context.mounted) {
                 try {
                   final controller = context.read<AnimationController>();
-                  if (!controller.isAnimating) controller.repeat();
+                  if (!controller.isAnimating) unawaited(controller.repeat());
                 } catch (_) {}
               }
             }
           },
           onLongPress: () {
-            HapticFeedback.mediumImpact();
-            audioProvider.playSource(show, source);
+            unawaited(HapticFeedback.mediumImpact());
+            unawaited(audioProvider.playSource(show, source));
           },
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 0),

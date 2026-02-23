@@ -73,14 +73,14 @@ class _TvSettingsScreenState extends State<TvSettingsScreen> {
         );
         break;
       case 1:
-        activeSection = AppearanceSection(
+        activeSection = const AppearanceSection(
           scaleFactor: scaleFactor,
           initiallyExpanded: initiallyExpanded,
           showFontSelection: false,
         );
         break;
       case 2:
-        activeSection = InterfaceSection(
+        activeSection = const InterfaceSection(
           scaleFactor: scaleFactor,
           initiallyExpanded: initiallyExpanded,
         );
@@ -89,7 +89,7 @@ class _TvSettingsScreenState extends State<TvSettingsScreen> {
         activeSection = const TvScreensaverSection();
         break;
       case 4:
-        activeSection = CollectionStatistics(
+        activeSection = const CollectionStatistics(
           initiallyExpanded: initiallyExpanded,
           showCategoryDetails: false,
         );
@@ -101,7 +101,7 @@ class _TvSettingsScreenState extends State<TvSettingsScreen> {
         activeSection = const DataSection(scaleFactor: scaleFactor);
         break;
       case 7:
-        activeSection = UsageInstructionsSection(
+        activeSection = const UsageInstructionsSection(
           scaleFactor: scaleFactor,
           initiallyExpanded: initiallyExpanded,
         );

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:in_app_update/in_app_update.dart';
 import 'package:logger/logger.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -9,6 +10,11 @@ class UpdateService {
 
   /// Checks if an update is available on the Play Store.
   Future<AppUpdateInfo?> checkForUpdate() async {
+    // In-app updates are only available on Android.
+    if (kIsWeb || defaultTargetPlatform != TargetPlatform.android) {
+      return null;
+    }
+
     try {
       final info = await InAppUpdate.checkForUpdate();
       return info;
@@ -48,6 +54,11 @@ class UpdateService {
   /// The user can continue using the app while the update downloads.
   /// [DEPRECATED] Use openStore() instead.
   Future<AppUpdateResult?> startFlexibleUpdate() async {
+    // In-app updates are only available on Android.
+    if (kIsWeb || defaultTargetPlatform != TargetPlatform.android) {
+      return AppUpdateResult.inAppUpdateFailed;
+    }
+
     try {
       return await InAppUpdate.startFlexibleUpdate();
     } catch (e) {
@@ -60,6 +71,11 @@ class UpdateService {
   /// Should only be called after the download is finished.
   /// [DEPRECATED] Use openStore() instead.
   Future<void> completeFlexibleUpdate() async {
+    // In-app updates are only available on Android.
+    if (kIsWeb || defaultTargetPlatform != TargetPlatform.android) {
+      return;
+    }
+
     try {
       await InAppUpdate.completeFlexibleUpdate();
     } catch (e) {
