@@ -628,8 +628,8 @@ class _GdarAppState extends State<GdarApp> {
                     // scaffoldBackgroundColor and colorScheme set above.
                     child = AnnotatedRegion<SystemUiOverlayStyle>(
                       value: SystemUiOverlayStyle(
-                        statusBarColor: Colors.transparent,
-                        systemNavigationBarColor: Colors.transparent,
+                        // statusBarColor: Colors.transparent,
+                        // systemNavigationBarColor: Colors.transparent,
                         systemNavigationBarContrastEnforced: true,
                         statusBarIconBrightness: themeProvider.isDarkMode
                             ? Brightness.light

@@ -58,7 +58,7 @@ class StealBanner extends Component with HasGameReference<StealGame> {
   // ── Flat mode layout ───────────────────────────────────────────────────────
   // Gap between logo edge and first text line.
   // Scales with logoScale so small logos get a tighter gap.
-  static const double _flatGapBase = 0.012;
+  static const double _flatGapBase = 0.0;
   // Line height in pixels
   static const double _flatLineHeight = 16.0;
 
@@ -98,6 +98,10 @@ class StealBanner extends Component with HasGameReference<StealGame> {
   double _opacity = 0.0;
 
   final _rng = Random();
+
+  // Secondary smoothing for flat mode — extra lerp pass on top of
+  // smoothedLogoPos to absorb any residual per-frame jitter.
+  Offset _flatSmoothPos = const Offset(0.5, 0.5);
 
   // ── Public API ─────────────────────────────────────────────────────────────
 
@@ -271,6 +275,17 @@ class StealBanner extends Component with HasGameReference<StealGame> {
         }
       }
     }
+
+    // Secondary smooth for flat mode — extra lerp on top of smoothedLogoPos
+    // absorbs residual per-frame jitter that ring mode hides via rotation.
+    // Factor 0.15 adds ~2 frames of lag, invisible since logo is already smoothed.
+    if (config.bannerDisplayMode == 'flat') {
+      final target = game.smoothedLogoPos;
+      _flatSmoothPos = Offset(
+        _flatSmoothPos.dx + (target.dx - _flatSmoothPos.dx) * 0.15,
+        _flatSmoothPos.dy + (target.dy - _flatSmoothPos.dy) * 0.15,
+      );
+    }
   }
 
   void _tickFade(
@@ -413,7 +428,9 @@ class StealBanner extends Component with HasGameReference<StealGame> {
     final isFlat = config.bannerDisplayMode == 'flat';
 
     if (isFlat) {
-      _renderFlat(canvas, center, minDim, glowEnabled, config);
+      // Use secondary-smoothed position for flat mode to absorb per-frame jitter
+      final flatCenter = Offset(_flatSmoothPos.dx * w, _flatSmoothPos.dy * h);
+      _renderFlat(canvas, flatCenter, minDim, glowEnabled, config);
     } else {
       _renderRings(canvas, center, minDim, glowEnabled, config);
     }
@@ -517,19 +534,24 @@ class StealBanner extends Component with HasGameReference<StealGame> {
 
         if (glowEnabled) {
           _paintChar(canvas, char,
+              charWidth: charWidth,
               color: deepBloomColor.withValues(alpha: opacity * 0.12),
               blurRadius: 9.0);
           _paintChar(canvas, char,
+              charWidth: charWidth,
               color: outerBloomColor.withValues(alpha: opacity * 0.30),
               blurRadius: 4.0);
           _paintChar(canvas, char,
+              charWidth: charWidth,
               color: innerHaloColor.withValues(alpha: opacity * 0.75),
               blurRadius: 1.5);
           _paintChar(canvas, char,
+              charWidth: charWidth,
               color: coreColor.withValues(alpha: opacity * 0.95),
               blurRadius: 0.0);
         } else {
           _paintChar(canvas, char,
+              charWidth: charWidth,
               color: _currentColor.withValues(alpha: opacity * 0.9),
               blurRadius: 0.0,
               withDropShadow: true,
@@ -678,6 +700,8 @@ class StealBanner extends Component with HasGameReference<StealGame> {
   void _paintChar(
     Canvas canvas,
     String char, {
+    double?
+        charWidth, // float width from cache — avoids painter.width integer snap
     required Color color,
     required double blurRadius,
     bool withDropShadow = false,
@@ -706,7 +730,10 @@ class StealBanner extends Component with HasGameReference<StealGame> {
       textDirection: ui.TextDirection.ltr,
     )..layout();
 
-    final offset = Offset(-painter.width / 2, -painter.height / 2);
+    // Use cached float charWidth if provided — prevents integer rounding
+    // from painter.width causing sub-pixel snapping in flat mode.
+    final cw = charWidth ?? painter.width;
+    final offset = Offset(-cw / 2, -painter.height / 2);
 
     if (blurRadius > 0.0) {
       canvas.saveLayer(

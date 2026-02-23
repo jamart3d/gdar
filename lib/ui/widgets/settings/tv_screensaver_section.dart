@@ -176,47 +176,9 @@ class TvScreensaverSection extends StatelessWidget {
 
           const SizedBox(height: 16),
 
-          // ── Trail Effect ─────────────────────────────────────────────
-          TvStepperRow(
-            label: 'Trail Intensity',
-            value: settings.oilLogoTrailIntensity,
-            min: 0.0,
-            max: 1.0,
-            step: 0.05,
-            leftLabel: 'Off',
-            rightLabel: 'Strong',
-            valueFormatter: (v) => v == 0.0 ? 'Off' : '${(v * 100).round()}%',
-            onChanged: (v) => settings.setOilLogoTrailIntensity(v),
-          ),
-
-          if (settings.oilLogoTrailIntensity > 0.0) ...[
-            const SizedBox(height: 16),
-            TvStepperRow(
-              label: 'Trail Slices',
-              value: settings.oilLogoTrailSlices.toDouble(),
-              min: 2,
-              max: 16,
-              step: 1,
-              leftLabel: 'Sparse',
-              rightLabel: 'Dense',
-              valueFormatter: (v) => v.round().toString(),
-              onChanged: (v) => settings.setOilLogoTrailSlices(v.round()),
-            ),
-            const SizedBox(height: 16),
-            TvStepperRow(
-              label: 'Trail Length',
-              value: settings.oilLogoTrailLength,
-              min: 0.0,
-              max: 1.0,
-              step: 0.05,
-              leftLabel: 'Short',
-              rightLabel: 'Long',
-              valueFormatter: (v) => '${(v * 100).round()}%',
-              onChanged: (v) => settings.setOilLogoTrailLength(v),
-            ),
-          ],
-
-          const SizedBox(height: 16),
+          // Trail effect controls hidden until effect is tuned
+          // TvStepperRow(Trail Intensity), TvStepperRow(Trail Slices),
+          // TvStepperRow(Trail Length) — restore when ready
 
           TvStepperRow(
             label: 'Logo Blur',
