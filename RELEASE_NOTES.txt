@@ -1,7 +1,8 @@
 Release 1.1.9+109:
-- Testing: Resolved TypeError and FakeUsedError in AudioProvider and ScreensaverScreen test suites.
-- Stability: All 162 unit and widget tests passing consistently.
-- Quality: Applied project-wide code formatting and synchronized mock generation.
+- Quality: Resolved project-wide unawaited_futures lint errors for improved code predictability.
+- Architecture: Refactored AudioProvider playback methods (play, pause, etc.) to return Future<void> for consistent async handling.
+- Stability: Synchronized test mocks with new AudioProvider signatures to ensure suite integrity.
+- Verification: Completed successful release build with 0 analysis errors.
 
 Release 1.1.8+108:
 - Visuals: Implemented secondary smoothing and sub-pixel precision for "flat" screensaver mode to eliminate residual jitter.
