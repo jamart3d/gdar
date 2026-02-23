@@ -56,8 +56,9 @@ class StealBanner extends Component with HasGameReference<StealGame> {
   static const double _wordSpacingExtra = 0.8;
 
   // ── Flat mode layout ───────────────────────────────────────────────────────
-  // Gap between logo edge and first text line, as fraction of minDim
-  static const double _flatGapRatio = 0.03;
+  // Gap between logo edge and first text line.
+  // Scales with logoScale so small logos get a tighter gap.
+  static const double _flatGapBase = 0.012;
   // Line height in pixels
   static const double _flatLineHeight = 16.0;
 
@@ -427,9 +428,12 @@ class StealBanner extends Component with HasGameReference<StealGame> {
     bool glowEnabled,
     StealConfig config,
   ) {
-    // Anchor text just below the logo edge
+    // Gap scales with logoScale — small logos get a tighter gap,
+    // large logos get proportionally more breathing room.
     final logoRadius = minDim * 0.5 * config.logoScale.clamp(0.1, 1.0);
-    final topLineY = center.dy + logoRadius + minDim * _flatGapRatio;
+    final gap =
+        minDim * _flatGapBase * (0.5 + config.logoScale.clamp(0.1, 1.0));
+    final topLineY = center.dy + logoRadius + gap;
 
     // Line order: title, venue, date
     final lines = [

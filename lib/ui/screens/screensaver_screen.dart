@@ -136,8 +136,6 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
     final settings = context.watch<SettingsProvider>();
     final audioProvider = context.watch<AudioProvider>();
 
-    WidgetsBinding.instance.addPostFrameCallback((_) => _pushAudioConfig());
-
     final config = StealConfig(
       flowSpeed: settings.oilFlowSpeed,
       palette: settings.oilPalette,

@@ -153,15 +153,20 @@ class StealBackground extends PositionComponent
       return;
     }
 
-    // Draw trail ghost slices before the main shader pass so they sit behind
-    if (config.logoTrailIntensity > 0.0 && _logoTexture != null) {
-      _renderTrail(canvas);
-    }
-
     _updateShaderUniforms();
 
     final paint = ui.Paint()..shader = _shader;
     canvas.drawRect(ui.Rect.fromLTWH(0, 0, size.x, size.y), paint);
+
+    // Draw trail ghost slices AFTER the shader so they appear in front of
+    // the background but are then composited — ghosts sit between background
+    // and the live logo which the shader draws on top.
+    // Note: shader renders the logo itself, so ghosts drawn after will
+    // appear in front. We use BlendMode.screen so they add light rather
+    // than occlude.
+    if (config.logoTrailIntensity > 0.0 && _logoTexture != null) {
+      _renderTrail(canvas);
+    }
   }
 
   // ── Trail rendering ────────────────────────────────────────────────────────
@@ -169,8 +174,9 @@ class StealBackground extends PositionComponent
   void _renderTrail(ui.Canvas canvas) {
     final slices = config.logoTrailSlices.clamp(2, 16);
     final intensity = config.logoTrailIntensity.clamp(0.0, 1.0);
-    final positions = game.getTrailPositions(slices);
-    if (positions.isEmpty) return;
+    // Request one extra so we can skip i=0 (current position = live logo)
+    final positions = game.getTrailPositions(slices + 1);
+    if (positions.length < 2) return;
 
     final logoTex = _logoTexture!;
     final texW = logoTex.width.toDouble();
@@ -182,26 +188,29 @@ class StealBackground extends PositionComponent
     // Logo render size matches shader: logoScale * minDim
     final logoRenderSize = config.logoScale.clamp(0.05, 1.0) * minDim;
 
-    // Desaturated, darkened tint derived from current palette color
+    // Use palette color desaturated — but keep it bright enough to see
     final baseColor =
         _currentColors.isNotEmpty ? _currentColors[0] : const Color(0xFFFFFFFF);
     final hsl = HSLColor.fromColor(baseColor);
     final ghostTint = hsl
-        .withSaturation((hsl.saturation * 0.3).clamp(0.0, 1.0))
-        .withLightness((hsl.lightness * 0.6).clamp(0.0, 1.0))
+        .withSaturation((hsl.saturation * 0.5).clamp(0.0, 1.0))
+        .withLightness((hsl.lightness * 0.85).clamp(0.2, 1.0))
         .toColor();
 
     final srcRect = ui.Rect.fromLTWH(0, 0, texW, texH);
 
-    for (int i = 0; i < positions.length; i++) {
-      // i=0 newest (closest), i=slices-1 oldest
-      final t = i / slices.toDouble(); // 0.0=newest, 1.0=oldest
-      // Quadratic fade: strong near the logo, invisible at the tail
-      final opacity = intensity * (1.0 - t) * (1.0 - t) * 0.45;
+    // Start from i=1 — i=0 is the current frame position (live logo)
+    for (int i = 1; i <= slices; i++) {
+      if (i >= positions.length) break;
+
+      // t: 0.0 = newest ghost (i=1), 1.0 = oldest ghost (i=slices)
+      final t = (i - 1) / (slices - 1).toDouble();
+      // Quadratic fade — strong at newest, invisible at oldest
+      final opacity = intensity * (1.0 - t) * (1.0 - t) * 0.75;
       if (opacity < 0.01) continue;
 
       // Slight scale reduction toward older slices
-      final scale = 1.0 - t * 0.12;
+      final scale = 1.0 - t * 0.10;
       final renderSize = logoRenderSize * scale;
 
       final pos = positions[i];
@@ -214,17 +223,19 @@ class StealBackground extends PositionComponent
         height: renderSize * (texH / texW),
       );
 
+      // Screen blend — adds light, works well on dark backgrounds
       final paint = ui.Paint()
+        ..blendMode = ui.BlendMode.screen
         ..colorFilter = ui.ColorFilter.mode(
           ghostTint.withValues(alpha: opacity),
           ui.BlendMode.modulate,
         );
 
-      // Only blur the 3 newest slices — older ones are too faint to justify cost
-      final shouldBlur = i < 3 && config.blurAmount > 0.0;
+      // Only blur the 2 newest slices
+      final shouldBlur = i <= 2 && config.blurAmount > 0.0;
 
       if (shouldBlur) {
-        final sigma = config.blurAmount * 4.0 * (1.0 - t);
+        final sigma = config.blurAmount * 3.0 * (1.0 - t);
         if (sigma > 0.5) {
           final blurPaint = ui.Paint()
             ..imageFilter = ui.ImageFilter.blur(sigmaX: sigma, sigmaY: sigma);
