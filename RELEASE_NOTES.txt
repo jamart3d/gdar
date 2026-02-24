@@ -1,3 +1,9 @@
+Release 1.1.10+110:
+- Screensaver: Implemented high-precision stability for flat mode, eliminating timing skew between update/render cycles.
+- Visuals: Added time-corrected motion smoothing for jitter-free logo tracking at any frame rate.
+- Layout: Dynamic ring scaling now tracks logoScale for proportional orbiting at all sizes.
+- Polished: Refined flat mode text spacing and optimized internal banner logic.
+
 Release 1.1.9+109:
 - Quality: Resolved project-wide unawaited_futures lint errors for improved code predictability.
 - Architecture: Refactored AudioProvider playback methods (play, pause, etc.) to return Future<void> for consistent async handling.
