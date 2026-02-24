@@ -325,6 +325,15 @@ class ShowListProvider with ChangeNotifier {
   }
 
   Future<void> checkArchiveStatus() async {
+    // On web, the browser blocks cross-origin HEAD requests to archive.org
+    // (CORS). Audio streaming still works via <audio> elements, so we
+    // optimistically assume reachable.
+    if (kIsWeb) {
+      logger.i('Web platform detected — skipping archive.org CORS check.');
+      setArchiveStatus(true);
+      return;
+    }
+
     const int maxRetries = 3;
     const Duration retryDelay = Duration(seconds: 2);
     const Duration timeout = Duration(seconds: 5);
