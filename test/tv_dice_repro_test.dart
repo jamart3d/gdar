@@ -12,6 +12,7 @@ import 'package:shakedown/services/device_service.dart';
 import 'package:shakedown/ui/widgets/tv/tv_dual_pane_layout.dart';
 import 'package:shakedown/ui/widgets/show_list/animated_dice_icon.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:shakedown/services/gapless_player/gapless_player.dart';
 import 'package:shakedown/services/catalog_service.dart';
 import 'package:shakedown/models/rating.dart';
 import 'package:hive/hive.dart';
@@ -105,8 +106,8 @@ class MockAudioProvider extends ChangeNotifier implements AudioProvider {
   @override
   Stream<int?> get currentIndexStream => const Stream.empty();
   @override
-  AudioPlayer get audioPlayer =>
-      AudioPlayer(); // This might need a mock too if accessed deep
+  GaplessPlayer get audioPlayer =>
+      GaplessPlayer(); // Satisfies AudioProvider interface
 
   @override
   void update(ShowListProvider slp, SettingsProvider sp) {}

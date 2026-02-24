@@ -14,12 +14,13 @@ import 'package:mockito/mockito.dart';
 import 'package:just_audio_background/just_audio_background.dart';
 import 'package:shakedown/services/catalog_service.dart';
 import 'package:shakedown/services/audio_cache_service.dart';
+import 'package:shakedown/services/gapless_player/gapless_player.dart';
 import 'package:shakedown/services/wakelock_service.dart';
 
 import 'audio_provider_test.mocks.dart';
 
 @GenerateNiceMocks([
-  MockSpec<AudioPlayer>(
+  MockSpec<GaplessPlayer>(
       as: #MockAudioPlayerRelaxed, onMissingStub: OnMissingStub.returnDefault),
   MockSpec<ShowListProvider>(),
   MockSpec<SettingsProvider>(),
@@ -85,7 +86,7 @@ void main() {
 
     when(mockAudioPlayer.play()).thenAnswer((_) async {});
     when(mockAudioPlayer.stop()).thenAnswer((_) async {});
-    when(mockAudioPlayer.setAudioSource(any,
+    when(mockAudioPlayer.setAudioSources(any,
             initialIndex: anyNamed('initialIndex'),
             preload: anyNamed('preload')))
         .thenAnswer((_) async => const Duration(seconds: 100));
@@ -496,9 +497,6 @@ void main() {
         (WidgetTester tester) async {
       await tester.runAsync(() async {
         final show = createDummyShow(1);
-        // Ensure audioSource returns something harmless or null
-        when(mockAudioPlayer.audioSource).thenReturn(null);
-
         await audioProvider.playSource(show, show.sources.first);
         expect(audioProvider.currentShow, isNotNull);
 

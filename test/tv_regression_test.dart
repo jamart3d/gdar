@@ -24,11 +24,12 @@ import 'package:mockito/mockito.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shakedown/services/catalog_service.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:shakedown/services/gapless_player/gapless_player.dart';
 
 // Manual mocks to avoid dependency on generated files in this regression test
 class MockAudioProvider extends ChangeNotifier implements ap.AudioProvider {
   @override
-  AudioPlayer get audioPlayer => MockAudioPlayer();
+  GaplessPlayer get audioPlayer => MockGaplessPlayer();
   @override
   bool get isPlaying => false;
   @override
@@ -111,7 +112,7 @@ class MockAudioProvider extends ChangeNotifier implements ap.AudioProvider {
   bool get hasListeners => super.hasListeners;
 }
 
-class MockAudioPlayer extends Mock implements AudioPlayer {
+class MockGaplessPlayer extends Mock implements GaplessPlayer {
   @override
   PlayerState get playerState => PlayerState(false, ProcessingState.idle);
   @override
@@ -131,7 +132,7 @@ class MockAudioPlayer extends Mock implements AudioPlayer {
   @override
   Stream<int?> get currentIndexStream => Stream.value(null);
   @override
-  Stream<SequenceState> get sequenceStateStream => const Stream.empty();
+  Stream<SequenceState?> get sequenceStateStream => const Stream.empty();
 }
 
 class MockTvDeviceService extends ChangeNotifier implements DeviceService {
@@ -290,6 +291,14 @@ class FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
   String get oilBannerDisplayMode => 'ring';
   @override
   Future<void> setOilBannerDisplayMode(String mode) async {}
+  @override
+  double get oilFlatTextProximity => 0.0;
+  @override
+  Future<void> setOilFlatTextProximity(double value) async {}
+  @override
+  String get oilFlatTextPlacement => 'below';
+  @override
+  Future<void> setOilFlatTextPlacement(String placement) async {}
 
   @override
   double get oilLogoTrailIntensity => 0.0;

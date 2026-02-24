@@ -56,7 +56,7 @@ class StealBanner extends Component with HasGameReference<StealGame> {
   static const double _wordSpacingExtra = 0.8;
 
   // ── Flat mode layout ───────────────────────────────────────────────────────
-  // Line height in pixels
+  // Line height in pixels. Gap is computed dynamically in _renderFlat.
   static const double _flatLineHeight = 16.0;
 
   // ── Fade ───────────────────────────────────────────────────────────────────
@@ -464,14 +464,12 @@ class StealBanner extends Component with HasGameReference<StealGame> {
     bool glowEnabled,
     StealConfig config,
   ) {
-    // Logo visual edge in pixels.
-    // topLineY is the CENTER of the first text line — painter draws ±height/2
-    // around it. Adding _flatLineHeight * 0.5 means the TOP of the first line
-    // sits at the logo edge, so text is flush with no gap.
-    // At small logoScale the radius shrinks proportionally so text always
-    // tracks the actual rendered logo edge regardless of scale setting.
+    // The shader logo has a soft falloff; 55% of logoRadius sits just beyond
+    // the visual edge. flatTextProximity=0 → full gap; =1 → text at center.
     final logoRadius = minDim * 0.5 * config.logoScale.clamp(0.1, 1.0);
-    final topLineY = center.dy + logoRadius + _flatLineHeight * 0.5;
+    final baseGap = logoRadius * 0.55;
+    final proximity = config.flatTextProximity.clamp(0.0, 1.0);
+    final effectiveGap = baseGap * (1.0 - proximity);
 
     // Line order: title, venue, date
     final lines = [
@@ -480,6 +478,23 @@ class StealBanner extends Component with HasGameReference<StealGame> {
       (_innerCurrent, _innerWords, _innerOpacity), // date
     ];
 
+    final isRight = config.flatTextPlacement == 'right';
+
+    // For 'right' placement, center the text block vertically on the logo
+    // and position the start x to the right of the logo.
+    final visibleCount =
+        lines.where((l) => l.$1.isNotEmpty && l.$3 > 0.01).length;
+    final blockHeight = visibleCount * _flatLineHeight;
+
+    // X anchor used only for 'right' placement: right edge of logo + gap.
+    final rightAnchorX = center.dx + effectiveGap + logoRadius * 0.45;
+    // Starting Y for right placement: vertically centered around logo center.
+    final rightStartY = center.dy - blockHeight / 2 + _flatLineHeight * 0.5;
+
+    // Starting Y for below placement: below the visual edge of the logo.
+    final belowStartY = center.dy + effectiveGap + _flatLineHeight * 0.5;
+
+    int visibleIndex = 0;
     for (int i = 0; i < lines.length; i++) {
       final text = lines[i].$1;
       final words = lines[i].$2;
@@ -487,17 +502,40 @@ class StealBanner extends Component with HasGameReference<StealGame> {
 
       if (text.isEmpty || lineOpacity <= 0.01) continue;
 
-      final y = topLineY + i * _flatLineHeight;
       final effectiveOpacity = _opacity * lineOpacity;
+
+      final Offset lineCenter;
+      if (isRight) {
+        // Placed to the right: lines stack top→bottom centered on the logo;
+        // x is the start of the text, so offset by half of the canvas width
+        // minus rightAnchorX. We draw left-aligned from rightAnchorX, so we
+        // keep x=center.dx and let _drawFlatLine handle centering — instead,
+        // shift offset so the text is left-anchored from the right edge.
+        // The simplest approach: pass rightAnchorX as the left edge and shift
+        // the offset to the right by half the remaining space. Because
+        // _drawFlatLine centers text at center.dx, we mirror that by passing
+        // the conceptual center of the right half of the screen.
+        final rightHalfCenter = (rightAnchorX + minDim) / 2;
+        lineCenter = Offset(
+          rightHalfCenter,
+          rightStartY + visibleIndex * _flatLineHeight,
+        );
+      } else {
+        lineCenter = Offset(
+          center.dx,
+          belowStartY + visibleIndex * _flatLineHeight,
+        );
+      }
 
       _drawFlatLine(
         canvas,
         text,
         words,
-        Offset(center.dx, y),
+        lineCenter,
         effectiveOpacity,
         glowEnabled,
       );
+      visibleIndex++;
     }
   }
 
@@ -510,17 +548,6 @@ class StealBanner extends Component with HasGameReference<StealGame> {
     bool glowEnabled,
   ) {
     if (text.isEmpty) return;
-
-    final hsl = HSLColor.fromColor(_currentColor);
-    final atmosphericColor =
-        hsl.withSaturation(0.9).withLightness(0.35).toColor();
-    final deepBloomColor =
-        hsl.withSaturation(1.0).withLightness(0.45).toColor();
-    final outerBloomColor =
-        hsl.withSaturation(1.0).withLightness(0.60).toColor();
-    final innerHaloColor =
-        hsl.withSaturation(1.0).withLightness(0.80).toColor();
-    final coreColor = hsl.withSaturation(0.05).withLightness(0.98).toColor();
 
     final wordList = words.isNotEmpty
         ? words
@@ -556,26 +583,15 @@ class StealBanner extends Component with HasGameReference<StealGame> {
         final opacity = effectiveOpacity * wordBrightness;
 
         if (glowEnabled) {
-          _paintChar(canvas, char,
-              charWidth: charWidth,
-              color: atmosphericColor.withValues(alpha: opacity * 0.08),
-              blurRadius: 16.0);
-          _paintChar(canvas, char,
-              charWidth: charWidth,
-              color: deepBloomColor.withValues(alpha: opacity * 0.20),
-              blurRadius: 8.0);
-          _paintChar(canvas, char,
-              charWidth: charWidth,
-              color: outerBloomColor.withValues(alpha: opacity * 0.45),
-              blurRadius: 3.5);
-          _paintChar(canvas, char,
-              charWidth: charWidth,
-              color: innerHaloColor.withValues(alpha: opacity * 0.80),
-              blurRadius: 1.2);
+          final glowShadows = _buildGlowShadows(_currentColor, opacity);
+          final hsl2 = HSLColor.fromColor(_currentColor);
+          final coreColor =
+              hsl2.withSaturation(0.05).withLightness(0.98).toColor();
           _paintChar(canvas, char,
               charWidth: charWidth,
               color: coreColor.withValues(alpha: opacity * 0.97),
-              blurRadius: 0.0);
+              blurRadius: 0.0,
+              glowShadows: glowShadows);
         } else {
           _paintChar(canvas, char,
               charWidth: charWidth,
@@ -655,23 +671,6 @@ class StealBanner extends Component with HasGameReference<StealGame> {
     final charAngle = (_fontSize * _letterSpacingBoost) / radius;
     final wordSpaceAngle = charAngle * _wordSpacingExtra;
 
-    final hsl = HSLColor.fromColor(_currentColor);
-    // 5-layer neon tube look:
-    // atmosphericColor — wide, very faint colored fog
-    // deepBloomColor   — broad colored bloom
-    // outerBloomColor  — tighter saturated bloom
-    // innerHaloColor   — tight bright halo, very saturated
-    // coreColor        — near-white hot core
-    final atmosphericColor =
-        hsl.withSaturation(0.9).withLightness(0.35).toColor();
-    final deepBloomColor =
-        hsl.withSaturation(1.0).withLightness(0.45).toColor();
-    final outerBloomColor =
-        hsl.withSaturation(1.0).withLightness(0.60).toColor();
-    final innerHaloColor =
-        hsl.withSaturation(1.0).withLightness(0.80).toColor();
-    final coreColor = hsl.withSaturation(0.05).withLightness(0.98).toColor();
-
     final wordList = words.isNotEmpty
         ? words
         : text
@@ -704,21 +703,14 @@ class StealBanner extends Component with HasGameReference<StealGame> {
         final opacity = effectiveOpacity * wordBrightness;
 
         if (glowEnabled) {
-          _paintChar(canvas, chars[ci],
-              color: atmosphericColor.withValues(alpha: opacity * 0.08),
-              blurRadius: 16.0);
-          _paintChar(canvas, chars[ci],
-              color: deepBloomColor.withValues(alpha: opacity * 0.20),
-              blurRadius: 8.0);
-          _paintChar(canvas, chars[ci],
-              color: outerBloomColor.withValues(alpha: opacity * 0.45),
-              blurRadius: 3.5);
-          _paintChar(canvas, chars[ci],
-              color: innerHaloColor.withValues(alpha: opacity * 0.80),
-              blurRadius: 1.2);
+          final glowShadows = _buildGlowShadows(_currentColor, opacity);
+          final hsl = HSLColor.fromColor(_currentColor);
+          final coreColor =
+              hsl.withSaturation(0.05).withLightness(0.98).toColor();
           _paintChar(canvas, chars[ci],
               color: coreColor.withValues(alpha: opacity * 0.97),
-              blurRadius: 0.0);
+              blurRadius: 0.0,
+              glowShadows: glowShadows);
         } else {
           _paintChar(canvas, chars[ci],
               color: _currentColor.withValues(alpha: opacity * 0.9),
@@ -738,12 +730,12 @@ class StealBanner extends Component with HasGameReference<StealGame> {
   void _paintChar(
     Canvas canvas,
     String char, {
-    double?
-        charWidth, // float width from cache — avoids painter.width integer snap
+    double? charWidth,
     required Color color,
     required double blurRadius,
     bool withDropShadow = false,
     double dropShadowOpacity = 1.0,
+    List<Shadow>? glowShadows,
   }) {
     final painter = TextPainter(
       text: TextSpan(
@@ -753,45 +745,51 @@ class StealBanner extends Component with HasGameReference<StealGame> {
           fontSize: _fontSize,
           fontWeight: FontWeight.w600,
           letterSpacing: 0,
-          shadows: withDropShadow
-              ? [
-                  Shadow(
-                    color:
-                        Colors.black.withValues(alpha: dropShadowOpacity * 0.7),
-                    blurRadius: 3,
-                    offset: const Offset(1, 1),
-                  ),
-                ]
-              : null,
+          shadows: glowShadows ??
+              (withDropShadow
+                  ? [
+                      Shadow(
+                        color: Colors.black
+                            .withValues(alpha: dropShadowOpacity * 0.7),
+                        blurRadius: 3,
+                        offset: const Offset(1, 1),
+                      ),
+                    ]
+                  : null),
         ),
       ),
       textDirection: ui.TextDirection.ltr,
     )..layout();
 
-    // Use cached float charWidth if provided — prevents integer rounding
-    // from painter.width causing sub-pixel snapping in flat mode.
     final cw = charWidth ?? painter.width;
     final offset = Offset(-cw / 2, -painter.height / 2);
+    painter.paint(canvas, offset);
+  }
 
-    if (blurRadius > 0.0) {
-      // ImageFilter.blur on saveLayer produces a cleaner bloom than MaskFilter —
-      // MaskFilter blurs the layer edge and anti-aliasing artifacts together,
-      // ImageFilter blurs the composited result for a true neon spread.
-      final blurRect = Rect.fromCenter(
-        center: Offset.zero,
-        width: _fontSize + blurRadius * 4,
-        height: _fontSize + blurRadius * 4,
-      );
-      canvas.saveLayer(
-        blurRect,
-        Paint()
-          ..imageFilter =
-              ui.ImageFilter.blur(sigmaX: blurRadius, sigmaY: blurRadius),
-      );
-      painter.paint(canvas, offset);
-      canvas.restore();
-    } else {
-      painter.paint(canvas, offset);
-    }
+  /// Builds a list of [Shadow]s that approximate a neon tube glow.
+  /// All layers baked into a single TextPainter — zero saveLayer cost.
+  List<Shadow> _buildGlowShadows(Color baseColor, double opacity) {
+    final hsl = HSLColor.fromColor(baseColor);
+    final atmospheric = hsl.withSaturation(0.9).withLightness(0.35).toColor();
+    final bloom = hsl.withSaturation(1.0).withLightness(0.50).toColor();
+    final halo = hsl.withSaturation(1.0).withLightness(0.75).toColor();
+
+    return [
+      // Wide atmospheric fog
+      Shadow(
+          color: atmospheric.withValues(alpha: opacity * 0.25),
+          blurRadius: 14,
+          offset: Offset.zero),
+      // Mid bloom
+      Shadow(
+          color: bloom.withValues(alpha: opacity * 0.50),
+          blurRadius: 6,
+          offset: Offset.zero),
+      // Tight halo
+      Shadow(
+          color: halo.withValues(alpha: opacity * 0.80),
+          blurRadius: 2,
+          offset: Offset.zero),
+    ];
   }
 }

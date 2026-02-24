@@ -355,6 +355,64 @@ class TvScreensaverSection extends StatelessWidget {
               ),
             ],
 
+            // Flat-only settings
+            if (!isRingMode) ...[
+              const SizedBox(height: 16),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 4),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Text Placement',
+                      style: textTheme.bodySmall
+                          ?.copyWith(color: colorScheme.onSurfaceVariant),
+                    ),
+                    const SizedBox(height: 8),
+                    TvFocusWrapper(
+                      onKeyEvent: (node, event) {
+                        if (event is KeyDownEvent) {
+                          if (event.logicalKey ==
+                              LogicalKeyboardKey.arrowLeft) {
+                            settings.setOilFlatTextPlacement('below');
+                            return KeyEventResult.handled;
+                          } else if (event.logicalKey ==
+                              LogicalKeyboardKey.arrowRight) {
+                            settings.setOilFlatTextPlacement('right');
+                            return KeyEventResult.handled;
+                          }
+                        }
+                        return KeyEventResult.ignored;
+                      },
+                      child: SegmentedButton<String>(
+                        segments: const [
+                          ButtonSegment(value: 'below', label: Text('Below')),
+                          ButtonSegment(value: 'right', label: Text('Right')),
+                        ],
+                        selected: {settings.oilFlatTextPlacement},
+                        onSelectionChanged: (Set<String> s) =>
+                            settings.setOilFlatTextPlacement(s.first),
+                        showSelectedIcon: false,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+              TvStepperRow(
+                label: 'Text Proximity',
+                value: settings.oilFlatTextProximity,
+                min: 0.0,
+                max: 1.0,
+                step: 0.05,
+                leftLabel: 'Away',
+                rightLabel: 'On Logo',
+                valueFormatter: (v) =>
+                    v == 0.0 ? 'Default' : '${(v * 100).round()}%',
+                onChanged: (v) => settings.setOilFlatTextProximity(v),
+              ),
+            ],
+
             // Glow & flicker — available in both modes
             const SizedBox(height: 16),
             _ToggleRow(

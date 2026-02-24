@@ -5,22 +5,23 @@ import 'package:just_audio/just_audio.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:shakedown/services/buffer_agent.dart';
+import 'package:shakedown/services/gapless_player/gapless_player.dart';
 import 'package:flutter/services.dart';
 
 import 'buffer_agent_test.mocks.dart';
 
-@GenerateMocks([AudioPlayer])
+@GenerateMocks([GaplessPlayer])
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   group('BufferAgent', () {
-    late MockAudioPlayer mockAudioPlayer;
+    late MockGaplessPlayer mockAudioPlayer;
     late StreamController<PlayerState> playerStateController;
     late StreamController<PlaybackEvent> playbackEventController;
     late List<({String message, VoidCallback? retryAction})> notifications;
 
     setUp(() {
-      mockAudioPlayer = MockAudioPlayer();
+      mockAudioPlayer = MockGaplessPlayer();
       playerStateController = StreamController<PlayerState>.broadcast();
       playbackEventController = StreamController<PlaybackEvent>.broadcast();
       notifications = [];

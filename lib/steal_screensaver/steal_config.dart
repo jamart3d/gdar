@@ -29,6 +29,13 @@ class StealConfig {
   final double logoTrailIntensity; // 0.0 = off, 1.0 = full
   final int logoTrailSlices; // 2–16 ghost copies
   final double logoTrailLength; // 0.0–1.0 spacing between snapshots
+  /// Flat mode: 0.0 = default gap (text just below visual edge),
+  /// 1.0 = text at logo center (fully overlapping).
+  final double flatTextProximity;
+
+  /// Flat mode: where the text block is positioned relative to the logo.
+  /// 'below' = stacked below logo, 'right' = beside logo to the right.
+  final String flatTextPlacement;
 
   static const Map<String, List<Color>> palettes = {
     'psychedelic': [
@@ -98,6 +105,8 @@ class StealConfig {
     this.logoTrailIntensity = 0.0,
     this.logoTrailSlices = 6,
     this.logoTrailLength = 0.5,
+    this.flatTextProximity = 0.0,
+    this.flatTextPlacement = 'below',
   });
 
   factory StealConfig.fromMap(Map<String, dynamic> map) {
@@ -132,6 +141,8 @@ class StealConfig {
           (map['logoTrailIntensity'] as num?)?.toDouble() ?? 0.0,
       logoTrailSlices: (map['logoTrailSlices'] as int?) ?? 6,
       logoTrailLength: (map['logoTrailLength'] as num?)?.toDouble() ?? 0.5,
+      flatTextProximity: (map['flatTextProximity'] as num?)?.toDouble() ?? 0.0,
+      flatTextPlacement: map['flatTextPlacement'] as String? ?? 'below',
     );
   }
 
@@ -164,6 +175,8 @@ class StealConfig {
       'logoTrailIntensity': logoTrailIntensity,
       'logoTrailSlices': logoTrailSlices,
       'logoTrailLength': logoTrailLength,
+      'flatTextProximity': flatTextProximity,
+      'flatTextPlacement': flatTextPlacement,
     };
   }
 
@@ -195,6 +208,8 @@ class StealConfig {
     double? logoTrailIntensity,
     int? logoTrailSlices,
     double? logoTrailLength,
+    double? flatTextProximity,
+    String? flatTextPlacement,
   }) {
     return StealConfig(
       flowSpeed: flowSpeed ?? this.flowSpeed,
@@ -226,6 +241,8 @@ class StealConfig {
       logoTrailIntensity: logoTrailIntensity ?? this.logoTrailIntensity,
       logoTrailSlices: logoTrailSlices ?? this.logoTrailSlices,
       logoTrailLength: logoTrailLength ?? this.logoTrailLength,
+      flatTextProximity: flatTextProximity ?? this.flatTextProximity,
+      flatTextPlacement: flatTextPlacement ?? this.flatTextPlacement,
     );
   }
 
@@ -259,7 +276,9 @@ class StealConfig {
         bannerDisplayMode == other.bannerDisplayMode &&
         logoTrailIntensity == other.logoTrailIntensity &&
         logoTrailSlices == other.logoTrailSlices &&
-        logoTrailLength == other.logoTrailLength;
+        logoTrailLength == other.logoTrailLength &&
+        flatTextProximity == other.flatTextProximity &&
+        flatTextPlacement == other.flatTextPlacement;
   }
 
   @override
@@ -291,5 +310,7 @@ class StealConfig {
         logoTrailIntensity,
         logoTrailSlices,
         logoTrailLength,
+        flatTextProximity,
+        flatTextPlacement,
       ]);
 }

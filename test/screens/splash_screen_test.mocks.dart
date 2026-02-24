@@ -6,7 +6,7 @@
 import 'dart:async' as _i4;
 import 'dart:ui' as _i10;
 
-import 'package:just_audio/just_audio.dart' as _i2;
+import 'package:just_audio/just_audio.dart' as _i12;
 import 'package:mockito/mockito.dart' as _i1;
 import 'package:mockito/src/dummies.dart' as _i5;
 import 'package:shakedown/models/show.dart' as _i6;
@@ -14,7 +14,8 @@ import 'package:shakedown/models/source.dart' as _i9;
 import 'package:shakedown/providers/audio_provider.dart' as _i11;
 import 'package:shakedown/providers/settings_provider.dart' as _i8;
 import 'package:shakedown/providers/show_list_provider.dart' as _i3;
-import 'package:shakedown/providers/update_provider.dart' as _i12;
+import 'package:shakedown/providers/update_provider.dart' as _i13;
+import 'package:shakedown/services/gapless_player/gapless_player.dart' as _i2;
 import 'package:shared_preferences/shared_preferences.dart' as _i7;
 
 // ignore_for_file: type=lint
@@ -30,8 +31,8 @@ import 'package:shared_preferences/shared_preferences.dart' as _i7;
 // ignore_for_file: camel_case_types
 // ignore_for_file: subtype_of_sealed_class
 
-class _FakeAudioPlayer_0 extends _i1.SmartFake implements _i2.AudioPlayer {
-  _FakeAudioPlayer_0(
+class _FakeGaplessPlayer_0 extends _i1.SmartFake implements _i2.GaplessPlayer {
+  _FakeGaplessPlayer_0(
     Object parent,
     Invocation parentInvocation,
   ) : super(
@@ -791,6 +792,26 @@ class MockSettingsProvider extends _i1.Mock implements _i8.SettingsProvider {
       ) as String);
 
   @override
+  double get oilFlatTextProximity => (super.noSuchMethod(
+        Invocation.getter(#oilFlatTextProximity),
+        returnValue: 0.0,
+        returnValueForMissingStub: 0.0,
+      ) as double);
+
+  @override
+  String get oilFlatTextPlacement => (super.noSuchMethod(
+        Invocation.getter(#oilFlatTextPlacement),
+        returnValue: _i5.dummyValue<String>(
+          this,
+          Invocation.getter(#oilFlatTextPlacement),
+        ),
+        returnValueForMissingStub: _i5.dummyValue<String>(
+          this,
+          Invocation.getter(#oilFlatTextPlacement),
+        ),
+      ) as String);
+
+  @override
   double get oilLogoTrailIntensity => (super.noSuchMethod(
         Invocation.getter(#oilLogoTrailIntensity),
         returnValue: 0.0,
@@ -1427,6 +1448,28 @@ class MockSettingsProvider extends _i1.Mock implements _i8.SettingsProvider {
       ) as _i4.Future<void>);
 
   @override
+  _i4.Future<void> setOilFlatTextProximity(double? value) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #setOilFlatTextProximity,
+          [value],
+        ),
+        returnValue: _i4.Future<void>.value(),
+        returnValueForMissingStub: _i4.Future<void>.value(),
+      ) as _i4.Future<void>);
+
+  @override
+  _i4.Future<void> setOilFlatTextPlacement(String? placement) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #setOilFlatTextPlacement,
+          [placement],
+        ),
+        returnValue: _i4.Future<void>.value(),
+        returnValueForMissingStub: _i4.Future<void>.value(),
+      ) as _i4.Future<void>);
+
+  @override
   _i4.Future<void> setOilLogoTrailIntensity(double? value) =>
       (super.noSuchMethod(
         Invocation.method(
@@ -1695,17 +1738,17 @@ class MockSettingsProvider extends _i1.Mock implements _i8.SettingsProvider {
 /// See the documentation for Mockito's code generation for more information.
 class MockAudioProvider extends _i1.Mock implements _i11.AudioProvider {
   @override
-  _i2.AudioPlayer get audioPlayer => (super.noSuchMethod(
+  _i2.GaplessPlayer get audioPlayer => (super.noSuchMethod(
         Invocation.getter(#audioPlayer),
-        returnValue: _FakeAudioPlayer_0(
+        returnValue: _FakeGaplessPlayer_0(
           this,
           Invocation.getter(#audioPlayer),
         ),
-        returnValueForMissingStub: _FakeAudioPlayer_0(
+        returnValueForMissingStub: _FakeGaplessPlayer_0(
           this,
           Invocation.getter(#audioPlayer),
         ),
-      ) as _i2.AudioPlayer);
+      ) as _i2.GaplessPlayer);
 
   @override
   bool get isPlaying => (super.noSuchMethod(
@@ -1715,11 +1758,11 @@ class MockAudioProvider extends _i1.Mock implements _i11.AudioProvider {
       ) as bool);
 
   @override
-  _i4.Stream<_i2.PlayerState> get playerStateStream => (super.noSuchMethod(
+  _i4.Stream<_i12.PlayerState> get playerStateStream => (super.noSuchMethod(
         Invocation.getter(#playerStateStream),
-        returnValue: _i4.Stream<_i2.PlayerState>.empty(),
-        returnValueForMissingStub: _i4.Stream<_i2.PlayerState>.empty(),
-      ) as _i4.Stream<_i2.PlayerState>);
+        returnValue: _i4.Stream<_i12.PlayerState>.empty(),
+        returnValueForMissingStub: _i4.Stream<_i12.PlayerState>.empty(),
+      ) as _i4.Stream<_i12.PlayerState>);
 
   @override
   _i4.Stream<int?> get currentIndexStream => (super.noSuchMethod(
@@ -2049,7 +2092,7 @@ class MockAudioProvider extends _i1.Mock implements _i11.AudioProvider {
 /// A class which mocks [UpdateProvider].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockUpdateProvider extends _i1.Mock implements _i12.UpdateProvider {
+class MockUpdateProvider extends _i1.Mock implements _i13.UpdateProvider {
   @override
   bool get isSimulated => (super.noSuchMethod(
         Invocation.getter(#isSimulated),

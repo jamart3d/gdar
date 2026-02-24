@@ -9,6 +9,7 @@ import 'package:provider/provider.dart';
 import 'package:shakedown/providers/audio_provider.dart';
 import 'package:shakedown/providers/settings_provider.dart';
 import 'package:shakedown/services/device_service.dart';
+import 'package:shakedown/services/gapless_player/gapless_player.dart';
 import 'package:shakedown/ui/widgets/playback/playback_messages.dart';
 
 import 'playback_messages_test.mocks.dart';
@@ -16,7 +17,7 @@ import 'playback_messages_test.mocks.dart';
 @GenerateNiceMocks([
   MockSpec<AudioProvider>(),
   MockSpec<SettingsProvider>(),
-  MockSpec<AudioPlayer>(),
+  MockSpec<GaplessPlayer>(),
 ])
 class MockDeviceService extends ChangeNotifier implements DeviceService {
   @override
@@ -30,7 +31,7 @@ class MockDeviceService extends ChangeNotifier implements DeviceService {
 void main() {
   late MockAudioProvider mockAudioProvider;
   late MockSettingsProvider mockSettingsProvider;
-  late MockAudioPlayer mockAudioPlayer;
+  late MockGaplessPlayer mockAudioPlayer;
   late MockDeviceService mockDeviceService;
 
   // Stream Controllers
@@ -42,7 +43,7 @@ void main() {
   setUp(() {
     mockAudioProvider = MockAudioProvider();
     mockSettingsProvider = MockSettingsProvider();
-    mockAudioPlayer = MockAudioPlayer();
+    mockAudioPlayer = MockGaplessPlayer();
     mockDeviceService = MockDeviceService();
 
     // Initialize controllers

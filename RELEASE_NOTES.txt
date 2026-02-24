@@ -1,3 +1,9 @@
+Release 1.1.12+112:
+- Screensaver: Implemented custom text proximity and placement (Below/Right) for flat mode.
+- SDK: Updated minimum Dart SDK to 3.3.0 to support modern language features.
+- Maintenance: Resolved project-wide static analysis warnings and enforced strict formatting.
+- Verification: 100% pass rate across 162 unit and widget tests.
+
 Release 1.1.11+111:
 - Screensaver: Implemented high-precision stability for flat mode, eliminating timing skew between update/render cycles.
 - Visuals: Added time-corrected motion smoothing for jitter-free logo tracking at any frame rate.

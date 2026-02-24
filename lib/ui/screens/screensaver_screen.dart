@@ -180,6 +180,8 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
       logoTrailIntensity: settings.oilLogoTrailIntensity,
       logoTrailSlices: settings.oilLogoTrailSlices,
       logoTrailLength: settings.oilLogoTrailLength,
+      flatTextProximity: settings.oilFlatTextProximity,
+      flatTextPlacement: settings.oilFlatTextPlacement,
     );
 
     return PopScope(

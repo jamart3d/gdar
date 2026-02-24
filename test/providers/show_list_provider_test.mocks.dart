@@ -625,6 +625,26 @@ class MockSettingsProvider extends _i1.Mock implements _i9.SettingsProvider {
       ) as String);
 
   @override
+  double get oilFlatTextProximity => (super.noSuchMethod(
+        Invocation.getter(#oilFlatTextProximity),
+        returnValue: 0.0,
+        returnValueForMissingStub: 0.0,
+      ) as double);
+
+  @override
+  String get oilFlatTextPlacement => (super.noSuchMethod(
+        Invocation.getter(#oilFlatTextPlacement),
+        returnValue: _i10.dummyValue<String>(
+          this,
+          Invocation.getter(#oilFlatTextPlacement),
+        ),
+        returnValueForMissingStub: _i10.dummyValue<String>(
+          this,
+          Invocation.getter(#oilFlatTextPlacement),
+        ),
+      ) as String);
+
+  @override
   double get oilLogoTrailIntensity => (super.noSuchMethod(
         Invocation.getter(#oilLogoTrailIntensity),
         returnValue: 0.0,
@@ -1255,6 +1275,28 @@ class MockSettingsProvider extends _i1.Mock implements _i9.SettingsProvider {
         Invocation.method(
           #setOilBannerDisplayMode,
           [mode],
+        ),
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
+
+  @override
+  _i7.Future<void> setOilFlatTextProximity(double? value) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #setOilFlatTextProximity,
+          [value],
+        ),
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
+
+  @override
+  _i7.Future<void> setOilFlatTextPlacement(String? placement) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #setOilFlatTextPlacement,
+          [placement],
         ),
         returnValue: _i7.Future<void>.value(),
         returnValueForMissingStub: _i7.Future<void>.value(),

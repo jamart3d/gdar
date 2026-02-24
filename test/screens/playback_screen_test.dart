@@ -9,6 +9,7 @@ import 'package:shakedown/providers/audio_provider.dart';
 import 'package:shakedown/providers/settings_provider.dart';
 import 'package:shakedown/ui/screens/playback_screen.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:shakedown/services/gapless_player/gapless_player.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:provider/provider.dart';
@@ -166,11 +167,11 @@ class MockBox<T> extends Mock implements Box<T> {
       ValueNotifier(this);
 }
 
-@GenerateMocks([AudioProvider, AudioPlayer])
+@GenerateMocks([AudioProvider, GaplessPlayer])
 void main() {
   late MockAudioProvider mockAudioProvider;
   late MockSettingsProvider mockSettingsProvider;
-  late MockAudioPlayer mockAudioPlayer;
+  late MockGaplessPlayer mockAudioPlayer;
   late MockDeviceService mockDeviceService;
 
   // Dummy data
@@ -206,7 +207,7 @@ void main() {
 
     mockAudioProvider = MockAudioProvider();
     mockSettingsProvider = MockSettingsProvider();
-    mockAudioPlayer = MockAudioPlayer();
+    mockAudioPlayer = MockGaplessPlayer();
     mockDeviceService = MockDeviceService();
 
     // Stub the audio player on the audio provider

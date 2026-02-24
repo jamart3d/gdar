@@ -13,20 +13,21 @@ import 'package:shakedown/ui/widgets/mini_player.dart';
 import 'package:shakedown/ui/widgets/conditional_marquee.dart';
 import '../../helpers/test_helpers.dart';
 import 'package:shakedown/services/device_service.dart';
+import 'package:shakedown/services/gapless_player/gapless_player.dart';
 
 // Generate mocks
-@GenerateMocks([AudioProvider, SettingsProvider, AudioPlayer])
+@GenerateMocks([AudioProvider, SettingsProvider, GaplessPlayer])
 import 'mini_player_test.mocks.dart';
 
 void main() {
   late MockAudioProvider mockAudioProvider;
   late MockSettingsProvider mockSettingsProvider;
-  late MockAudioPlayer mockAudioPlayer;
+  late MockGaplessPlayer mockAudioPlayer;
 
   setUp(() {
     mockAudioProvider = MockAudioProvider();
     mockSettingsProvider = MockSettingsProvider();
-    mockAudioPlayer = MockAudioPlayer();
+    mockAudioPlayer = MockGaplessPlayer();
 
     // Setup default mock behaviors
     when(mockAudioProvider.audioPlayer).thenReturn(mockAudioPlayer);

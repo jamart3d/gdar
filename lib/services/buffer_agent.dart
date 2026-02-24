@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/widgets.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:shakedown/services/gapless_player/gapless_player.dart';
 import 'package:shakedown/utils/logger.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 
@@ -11,7 +12,7 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 /// - **Background/Deep Sleep**: Silently attempts recovery after delay
 /// - **Foreground/Visible**: Notifies user via callback for UI feedback
 class BufferAgent with WidgetsBindingObserver {
-  final AudioPlayer _audioPlayer;
+  final GaplessPlayer _audioPlayer;
   final void Function(String message, VoidCallback? retryAction)?
       _onRecoveryNotification;
 

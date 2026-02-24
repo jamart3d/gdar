@@ -1,0 +1,9 @@
+targets:
+  $default:
+    builders:
+      hive_generator:
+        # Exclude web-only files that use Dart 3.3+ extension types (inline classes)
+        # which the older analyzer bundled with hive_generator cannot parse.
+        generate_for:
+          exclude:
+            - lib/services/gapless_player/gapless_player_web.dart

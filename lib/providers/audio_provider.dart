@@ -12,13 +12,14 @@ import 'package:shakedown/services/catalog_service.dart';
 import 'package:shakedown/utils/logger.dart';
 import 'package:shakedown/utils/share_link_parser.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:shakedown/services/gapless_player/gapless_player.dart';
 import 'package:just_audio_background/just_audio_background.dart';
 import 'package:shakedown/services/buffer_agent.dart';
 import 'package:shakedown/services/random_show_selector.dart';
 import 'package:shakedown/services/audio_cache_service.dart';
 
 class AudioProvider with ChangeNotifier {
-  late final AudioPlayer _audioPlayer;
+  late final GaplessPlayer _audioPlayer;
   StreamSubscription<ProcessingState>? _processingStateSubscription;
   StreamSubscription<Duration>? _positionSubscription;
   StreamSubscription<PlaybackEvent>? _playbackEventSubscription;
@@ -33,7 +34,7 @@ class AudioProvider with ChangeNotifier {
   SettingsProvider? _settingsProvider;
   BufferAgent? _bufferAgent;
 
-  AudioPlayer get audioPlayer => _audioPlayer;
+  GaplessPlayer get audioPlayer => _audioPlayer;
   bool get isPlaying => _audioPlayer.playing;
 
   Show? _currentShow;
@@ -126,14 +127,14 @@ class AudioProvider with ChangeNotifier {
   final WakelockService _wakelockService;
 
   AudioProvider({
-    AudioPlayer? audioPlayer,
+    GaplessPlayer? audioPlayer,
     CatalogService? catalogService,
     AudioCacheService? audioCacheService,
     WakelockService? wakelockService,
   })  : _catalogService = catalogService ?? CatalogService(),
         _audioCacheService = audioCacheService ?? AudioCacheService(),
         _wakelockService = wakelockService ?? WakelockService() {
-    _audioPlayer = audioPlayer ?? AudioPlayer();
+    _audioPlayer = audioPlayer ?? GaplessPlayer();
     _listenForPlaybackProgress();
     _listenForErrors();
     _listenForProcessingState();
@@ -678,7 +679,7 @@ class AudioProvider with ChangeNotifier {
       await _audioPlayer.setAudioSources(
         children,
         initialIndex: initialIndex,
-        initialPosition: initialPosition,
+        initialPosition: initialPosition ?? Duration.zero,
         preload: _settingsProvider?.offlineBuffering ?? false,
       );
 

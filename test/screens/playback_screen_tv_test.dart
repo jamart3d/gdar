@@ -10,6 +10,7 @@ import 'package:shakedown/providers/audio_provider.dart';
 import 'package:shakedown/providers/settings_provider.dart';
 import 'package:shakedown/ui/screens/playback_screen.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:shakedown/services/gapless_player/gapless_player.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:provider/provider.dart';
@@ -202,6 +203,14 @@ class FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
   String get oilBannerDisplayMode => 'ring';
   @override
   Future<void> setOilBannerDisplayMode(String mode) async {}
+  @override
+  double get oilFlatTextProximity => 0.0;
+  @override
+  Future<void> setOilFlatTextProximity(double value) async {}
+  @override
+  String get oilFlatTextPlacement => 'below';
+  @override
+  Future<void> setOilFlatTextPlacement(String placement) async {}
 
   @override
   double get oilLogoTrailIntensity => 0.0;
@@ -371,11 +380,11 @@ class FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
   bool get hasListeners => super.hasListeners;
 }
 
-@GenerateMocks([AudioProvider, AudioPlayer])
+@GenerateMocks([AudioProvider, GaplessPlayer])
 void main() {
   late MockAudioProvider mockAudioProvider;
   late FakeSettingsProvider mockSettingsProvider;
-  late MockAudioPlayer mockAudioPlayer;
+  late MockGaplessPlayer mockAudioPlayer;
   late MockTvDeviceService mockTvDeviceService;
 
   // Dummy data
@@ -408,7 +417,7 @@ void main() {
 
     mockAudioProvider = MockAudioProvider();
     mockSettingsProvider = FakeSettingsProvider();
-    mockAudioPlayer = MockAudioPlayer();
+    mockAudioPlayer = MockGaplessPlayer();
     mockTvDeviceService = MockTvDeviceService();
 
     when(mockAudioProvider.audioPlayer).thenReturn(mockAudioPlayer);

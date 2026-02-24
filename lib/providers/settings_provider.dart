@@ -62,6 +62,8 @@ class SettingsProvider with ChangeNotifier {
   static const String _oilPaletteTransitionSpeedKey =
       'oil_palette_transition_speed';
   static const String _oilBannerDisplayModeKey = 'oil_banner_display_mode';
+  static const String _oilFlatTextProximityKey = 'oil_flat_text_proximity';
+  static const String _oilFlatTextPlacementKey = 'oil_flat_text_placement';
 
   // Trail effect
   static const String _oilLogoTrailIntensityKey = 'oil_logo_trail_intensity';
@@ -156,6 +158,8 @@ class SettingsProvider with ChangeNotifier {
   late bool _oilPaletteCycle;
   late double _oilPaletteTransitionSpeed;
   late String _oilBannerDisplayMode;
+  late double _oilFlatTextProximity;
+  late String _oilFlatTextPlacement;
 
   // Trail effect
   late double _oilLogoTrailIntensity;
@@ -235,6 +239,8 @@ class SettingsProvider with ChangeNotifier {
   bool get oilPaletteCycle => _oilPaletteCycle;
   double get oilPaletteTransitionSpeed => _oilPaletteTransitionSpeed;
   String get oilBannerDisplayMode => _oilBannerDisplayMode;
+  double get oilFlatTextProximity => _oilFlatTextProximity;
+  String get oilFlatTextPlacement => _oilFlatTextPlacement;
 
   // Trail effect getters
   double get oilLogoTrailIntensity => _oilLogoTrailIntensity;
@@ -469,6 +475,10 @@ class SettingsProvider with ChangeNotifier {
             DefaultSettings.oilPaletteTransitionSpeed;
     _oilBannerDisplayMode = _prefs.getString(_oilBannerDisplayModeKey) ??
         DefaultSettings.oilBannerDisplayMode;
+    _oilFlatTextProximity = _prefs.getDouble(_oilFlatTextProximityKey) ??
+        DefaultSettings.oilFlatTextProximity;
+    _oilFlatTextPlacement = _prefs.getString(_oilFlatTextPlacementKey) ??
+        DefaultSettings.oilFlatTextPlacement;
 
     // Trail effect
     _oilLogoTrailIntensity = _prefs.getDouble(_oilLogoTrailIntensityKey) ??
@@ -663,6 +673,11 @@ class SettingsProvider with ChangeNotifier {
       _oilPaletteTransitionSpeedKey, _oilPaletteTransitionSpeed = seconds);
   Future<void> setOilBannerDisplayMode(String mode) => _updateStringPreference(
       _oilBannerDisplayModeKey, _oilBannerDisplayMode = mode);
+  Future<void> setOilFlatTextProximity(double value) => _updateDoublePreference(
+      _oilFlatTextProximityKey, _oilFlatTextProximity = value.clamp(0.0, 1.0));
+  Future<void> setOilFlatTextPlacement(String placement) =>
+      _updateStringPreference(
+          _oilFlatTextPlacementKey, _oilFlatTextPlacement = placement);
 
   // Trail effect setters
   Future<void> setOilLogoTrailIntensity(double value) =>

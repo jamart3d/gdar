@@ -44,7 +44,7 @@ class MockBox<T> extends Mock implements Box<T> {}
 void main() {
   late MockAudioProvider mockAudioProvider;
   late MockSettingsProvider mockSettingsProvider;
-  late MockAudioPlayer mockAudioPlayer;
+  late MockGaplessPlayer mockAudioPlayer;
   late FakeCatalogService fakeCatalogService;
   late MockBox<bool> mockHistoryBox;
   late MockBox<Rating> mockRatingsBox;
@@ -52,7 +52,7 @@ void main() {
   setUp(() {
     mockAudioProvider = MockAudioProvider();
     mockSettingsProvider = MockSettingsProvider();
-    mockAudioPlayer = MockAudioPlayer();
+    mockAudioPlayer = MockGaplessPlayer();
 
     mockHistoryBox = MockBox<bool>();
     mockRatingsBox = MockBox<Rating>();
@@ -88,7 +88,8 @@ void main() {
     when(mockAudioPlayer.playerState)
         .thenReturn(PlayerState(false, ProcessingState.ready));
     when(mockAudioPlayer.sequence).thenReturn([]);
-    when(mockAudioPlayer.sequenceStream).thenAnswer((_) => Stream.value([]));
+    when(mockAudioPlayer.sequenceStateStream)
+        .thenAnswer((_) => const Stream.empty());
 
     // Settings Provider setup
     when(mockSettingsProvider.useTrueBlack).thenReturn(false);

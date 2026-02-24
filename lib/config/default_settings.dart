@@ -82,6 +82,8 @@ class DefaultSettings {
   static const double oilTranslationSmoothing =
       0.7; // Updated default for smoother feel
   static const String oilBannerDisplayMode = 'ring';
+  static const double oilFlatTextProximity = 0.0;
+  static const String oilFlatTextPlacement = 'below';
 
   // Trail effect
   static const double oilLogoTrailIntensity = 0.0;

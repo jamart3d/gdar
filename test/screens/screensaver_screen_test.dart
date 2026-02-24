@@ -9,7 +9,7 @@ import 'package:shakedown/steal_screensaver/steal_visualizer.dart';
 import 'package:shakedown/services/device_service.dart';
 import 'package:shakedown/services/wakelock_service.dart';
 import 'package:flutter/services.dart';
-import 'package:just_audio/just_audio.dart';
+import 'package:shakedown/services/gapless_player/gapless_player.dart';
 import 'package:mockito/annotations.dart';
 import 'screensaver_screen_test.mocks.dart';
 
@@ -17,7 +17,7 @@ import 'screensaver_screen_test.mocks.dart';
   MockSpec<SettingsProvider>(),
   MockSpec<AudioProvider>(),
   MockSpec<WakelockService>(),
-  MockSpec<AudioPlayer>(
+  MockSpec<GaplessPlayer>(
       as: #MockAudioPlayerRelaxed, onMissingStub: OnMissingStub.returnDefault),
 ])
 

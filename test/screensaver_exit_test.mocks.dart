@@ -6,14 +6,15 @@
 import 'dart:async' as _i5;
 import 'dart:ui' as _i6;
 
-import 'package:just_audio/just_audio.dart' as _i2;
+import 'package:just_audio/just_audio.dart' as _i8;
 import 'package:mockito/mockito.dart' as _i1;
 import 'package:mockito/src/dummies.dart' as _i4;
-import 'package:shakedown/models/show.dart' as _i8;
-import 'package:shakedown/models/source.dart' as _i9;
+import 'package:shakedown/models/show.dart' as _i9;
+import 'package:shakedown/models/source.dart' as _i10;
 import 'package:shakedown/providers/audio_provider.dart' as _i7;
 import 'package:shakedown/providers/settings_provider.dart' as _i3;
-import 'package:shakedown/providers/show_list_provider.dart' as _i10;
+import 'package:shakedown/providers/show_list_provider.dart' as _i11;
+import 'package:shakedown/services/gapless_player/gapless_player.dart' as _i2;
 
 // ignore_for_file: type=lint
 // ignore_for_file: avoid_redundant_argument_values
@@ -28,8 +29,8 @@ import 'package:shakedown/providers/show_list_provider.dart' as _i10;
 // ignore_for_file: camel_case_types
 // ignore_for_file: subtype_of_sealed_class
 
-class _FakeAudioPlayer_0 extends _i1.SmartFake implements _i2.AudioPlayer {
-  _FakeAudioPlayer_0(
+class _FakeGaplessPlayer_0 extends _i1.SmartFake implements _i2.GaplessPlayer {
+  _FakeGaplessPlayer_0(
     Object parent,
     Invocation parentInvocation,
   ) : super(
@@ -415,6 +416,26 @@ class MockSettingsProvider extends _i1.Mock implements _i3.SettingsProvider {
         returnValueForMissingStub: _i4.dummyValue<String>(
           this,
           Invocation.getter(#oilBannerDisplayMode),
+        ),
+      ) as String);
+
+  @override
+  double get oilFlatTextProximity => (super.noSuchMethod(
+        Invocation.getter(#oilFlatTextProximity),
+        returnValue: 0.0,
+        returnValueForMissingStub: 0.0,
+      ) as double);
+
+  @override
+  String get oilFlatTextPlacement => (super.noSuchMethod(
+        Invocation.getter(#oilFlatTextPlacement),
+        returnValue: _i4.dummyValue<String>(
+          this,
+          Invocation.getter(#oilFlatTextPlacement),
+        ),
+        returnValueForMissingStub: _i4.dummyValue<String>(
+          this,
+          Invocation.getter(#oilFlatTextPlacement),
         ),
       ) as String);
 
@@ -1055,6 +1076,28 @@ class MockSettingsProvider extends _i1.Mock implements _i3.SettingsProvider {
       ) as _i5.Future<void>);
 
   @override
+  _i5.Future<void> setOilFlatTextProximity(double? value) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #setOilFlatTextProximity,
+          [value],
+        ),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
+
+  @override
+  _i5.Future<void> setOilFlatTextPlacement(String? placement) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #setOilFlatTextPlacement,
+          [placement],
+        ),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
+
+  @override
   _i5.Future<void> setOilLogoTrailIntensity(double? value) =>
       (super.noSuchMethod(
         Invocation.method(
@@ -1323,17 +1366,17 @@ class MockSettingsProvider extends _i1.Mock implements _i3.SettingsProvider {
 /// See the documentation for Mockito's code generation for more information.
 class MockAudioProvider extends _i1.Mock implements _i7.AudioProvider {
   @override
-  _i2.AudioPlayer get audioPlayer => (super.noSuchMethod(
+  _i2.GaplessPlayer get audioPlayer => (super.noSuchMethod(
         Invocation.getter(#audioPlayer),
-        returnValue: _FakeAudioPlayer_0(
+        returnValue: _FakeGaplessPlayer_0(
           this,
           Invocation.getter(#audioPlayer),
         ),
-        returnValueForMissingStub: _FakeAudioPlayer_0(
+        returnValueForMissingStub: _FakeGaplessPlayer_0(
           this,
           Invocation.getter(#audioPlayer),
         ),
-      ) as _i2.AudioPlayer);
+      ) as _i2.GaplessPlayer);
 
   @override
   bool get isPlaying => (super.noSuchMethod(
@@ -1343,11 +1386,11 @@ class MockAudioProvider extends _i1.Mock implements _i7.AudioProvider {
       ) as bool);
 
   @override
-  _i5.Stream<_i2.PlayerState> get playerStateStream => (super.noSuchMethod(
+  _i5.Stream<_i8.PlayerState> get playerStateStream => (super.noSuchMethod(
         Invocation.getter(#playerStateStream),
-        returnValue: _i5.Stream<_i2.PlayerState>.empty(),
-        returnValueForMissingStub: _i5.Stream<_i2.PlayerState>.empty(),
-      ) as _i5.Stream<_i2.PlayerState>);
+        returnValue: _i5.Stream<_i8.PlayerState>.empty(),
+        returnValueForMissingStub: _i5.Stream<_i8.PlayerState>.empty(),
+      ) as _i5.Stream<_i8.PlayerState>);
 
   @override
   _i5.Stream<int?> get currentIndexStream => (super.noSuchMethod(
@@ -1385,14 +1428,14 @@ class MockAudioProvider extends _i1.Mock implements _i7.AudioProvider {
       ) as _i5.Stream<String>);
 
   @override
-  _i5.Stream<({_i8.Show show, _i9.Source source})>
+  _i5.Stream<({_i9.Show show, _i10.Source source})>
       get randomShowRequestStream => (super.noSuchMethod(
             Invocation.getter(#randomShowRequestStream),
             returnValue:
-                _i5.Stream<({_i8.Show show, _i9.Source source})>.empty(),
+                _i5.Stream<({_i9.Show show, _i10.Source source})>.empty(),
             returnValueForMissingStub:
-                _i5.Stream<({_i8.Show show, _i9.Source source})>.empty(),
-          ) as _i5.Stream<({_i8.Show show, _i9.Source source})>);
+                _i5.Stream<({_i9.Show show, _i10.Source source})>.empty(),
+          ) as _i5.Stream<({_i9.Show show, _i10.Source source})>);
 
   @override
   _i5.Stream<({String message, _i6.VoidCallback? retryAction})>
@@ -1429,7 +1472,7 @@ class MockAudioProvider extends _i1.Mock implements _i7.AudioProvider {
 
   @override
   void update(
-    _i10.ShowListProvider? showListProvider,
+    _i11.ShowListProvider? showListProvider,
     _i3.SettingsProvider? settingsProvider,
   ) =>
       super.noSuchMethod(
@@ -1453,7 +1496,7 @@ class MockAudioProvider extends _i1.Mock implements _i7.AudioProvider {
       );
 
   @override
-  ({_i8.Show show, _i9.Source source})? pickRandomShow(
+  ({_i9.Show show, _i10.Source source})? pickRandomShow(
           {bool? filterBySearch = true}) =>
       (super.noSuchMethod(
         Invocation.method(
@@ -1462,10 +1505,10 @@ class MockAudioProvider extends _i1.Mock implements _i7.AudioProvider {
           {#filterBySearch: filterBySearch},
         ),
         returnValueForMissingStub: null,
-      ) as ({_i8.Show show, _i9.Source source})?);
+      ) as ({_i9.Show show, _i10.Source source})?);
 
   @override
-  _i5.Future<_i8.Show?> playRandomShow({
+  _i5.Future<_i9.Show?> playRandomShow({
     bool? filterBySearch = true,
     bool? animationOnly = false,
     bool? delayPlayback = false,
@@ -1480,9 +1523,9 @@ class MockAudioProvider extends _i1.Mock implements _i7.AudioProvider {
             #delayPlayback: delayPlayback,
           },
         ),
-        returnValue: _i5.Future<_i8.Show?>.value(),
-        returnValueForMissingStub: _i5.Future<_i8.Show?>.value(),
-      ) as _i5.Future<_i8.Show?>);
+        returnValue: _i5.Future<_i9.Show?>.value(),
+        returnValueForMissingStub: _i5.Future<_i9.Show?>.value(),
+      ) as _i5.Future<_i9.Show?>);
 
   @override
   _i5.Future<void> playPendingSelection() => (super.noSuchMethod(
@@ -1496,8 +1539,8 @@ class MockAudioProvider extends _i1.Mock implements _i7.AudioProvider {
 
   @override
   _i5.Future<void> playSource(
-    _i8.Show? show,
-    _i9.Source? source, {
+    _i9.Show? show,
+    _i10.Source? source, {
     int? initialIndex = 0,
     Duration? initialPosition,
   }) =>

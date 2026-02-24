@@ -13,16 +13,19 @@ import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:shakedown/services/catalog_service.dart';
 import 'package:shakedown/services/audio_cache_service.dart';
+import 'package:shakedown/services/gapless_player/gapless_player.dart';
+import 'package:shakedown/services/wakelock_service.dart';
 
 import 'audio_provider_test.mocks.dart';
 
 @GenerateNiceMocks([
-  MockSpec<AudioPlayer>(
+  MockSpec<GaplessPlayer>(
       as: #MockAudioPlayerRelaxed, onMissingStub: OnMissingStub.returnDefault),
   MockSpec<ShowListProvider>(),
   MockSpec<SettingsProvider>(),
   MockSpec<CatalogService>(),
   MockSpec<AudioCacheService>(),
+  MockSpec<WakelockService>(),
 ])
 void main() {
   late AudioProvider audioProvider;
@@ -38,7 +41,7 @@ void main() {
   late StreamController<ProcessingState> processingStateController;
   late StreamController<Duration> positionController;
   late StreamController<int?> currentIndexController;
-  late StreamController<List<IndexedAudioSource>> sequenceController;
+  late StreamController<SequenceState?> sequenceController;
 
   setUp(() {
     mockSettingsProvider = MockSettingsProvider();
@@ -62,7 +65,7 @@ void main() {
     processingStateController = StreamController<ProcessingState>.broadcast();
     positionController = StreamController<Duration>.broadcast();
     currentIndexController = StreamController<int?>.broadcast();
-    sequenceController = StreamController<List<IndexedAudioSource>>.broadcast();
+    sequenceController = StreamController<SequenceState?>.broadcast();
 
     // Stub SettingsProvider methods
     when(mockSettingsProvider.randomOnlyUnplayed).thenReturn(false);
@@ -82,8 +85,8 @@ void main() {
         .thenAnswer((_) => positionController.stream);
     when(mockAudioPlayer.currentIndexStream)
         .thenAnswer((_) => currentIndexController.stream);
-    when(mockAudioPlayer.sequenceStream)
-        .thenAnswer((_) => sequenceController.stream);
+    when(mockAudioPlayer.sequenceStateStream)
+        .thenAnswer((_) => sequenceController.stream.cast<SequenceState?>());
 
     // Default Stubs for other streams
     when(mockAudioPlayer.playbackEventStream)
@@ -100,7 +103,7 @@ void main() {
 
     when(mockAudioPlayer.play()).thenAnswer((_) async {});
     when(mockAudioPlayer.stop()).thenAnswer((_) async {});
-    when(mockAudioPlayer.setAudioSource(any,
+    when(mockAudioPlayer.setAudioSources(any,
             initialIndex: anyNamed('initialIndex'),
             preload: anyNamed('preload')))
         .thenAnswer((_) async => const Duration(seconds: 100));
@@ -180,7 +183,7 @@ void main() {
       when(mockAudioPlayer.currentIndex).thenReturn(1);
 
       // Stub addAudioSources to return success
-      when(mockAudioPlayer.addAudioSources(any)).thenAnswer((_) async => []);
+      when(mockAudioPlayer.addAudioSources(any)).thenAnswer((_) async {});
 
       // 3. Setup Show List for Random Pick
       final show = createDummyShow(1);
@@ -197,8 +200,8 @@ void main() {
       // 5. Verify Random Show Queued (addAudioSources called)
       verify(mockAudioPlayer.addAudioSources(any)).called(1);
 
-      // Verify setAudioSource was NOT called (we shouldn't stop playback)
-      verifyNever(mockAudioPlayer.setAudioSource(any,
+      // Verify setAudioSources was NOT called (we shouldn't stop playback)
+      verifyNever(mockAudioPlayer.setAudioSources(any,
           initialIndex: anyNamed('initialIndex'),
           preload: anyNamed('preload')));
     });
