@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:math';
 import 'package:shakedown/services/wakelock_service.dart';
 
-import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:shakedown/models/show.dart';
 import 'package:shakedown/models/source.dart';
 import 'package:shakedown/models/track.dart';
@@ -642,17 +642,21 @@ class AudioProvider with ChangeNotifier {
       logger.w('Failed to get album art URI: $e');
     }
 
-    // Explicitly stop before switching sources to prevent native crashes (MediaCodec/ExoPlayer).
-    // releasing the decoder is safer than just pausing.
-    try {
-      if (_audioPlayer.playing ||
-          _audioPlayer.processingState != ProcessingState.idle) {
-        await _audioPlayer.stop();
-        // Brief delay to allow native resources (MediaCodec) to fully release.
-        await Future.delayed(const Duration(milliseconds: 50));
+    // On native platforms, explicitly stop before switching sources to prevent
+    // MediaCodec/ExoPlayer crashes. On web there are no native decoders to
+    // release, so we skip this — the delay would also break the browser's
+    // user-gesture context and trigger the autoplay policy.
+    if (!kIsWeb) {
+      try {
+        if (_audioPlayer.playing ||
+            _audioPlayer.processingState != ProcessingState.idle) {
+          await _audioPlayer.stop();
+          // Brief delay to allow native resources (MediaCodec) to fully release.
+          await Future.delayed(const Duration(milliseconds: 50));
+        }
+      } catch (e) {
+        logger.w('Error stopping before source switch (non-fatal): $e');
       }
-    } catch (e) {
-      logger.w('Error stopping before source switch (non-fatal): $e');
     }
 
     try {
@@ -674,6 +678,14 @@ class AudioProvider with ChangeNotifier {
         );
       }).toList();
 
+      // On web, call play() BEFORE setAudioSources() to keep within the browser's
+      // user-gesture window. The player enters "play-when-ready" and starts audio
+      // as soon as the source is loaded, satisfying the autoplay policy.
+      // On native, we call play() after loading as usual.
+      if (kIsWeb) {
+        unawaited(_audioPlayer.play());
+      }
+
       // Use setAudioSources directly instead of ConcatenatingAudioSource.
       // This is the recommended replacement for the deprecated ConcatenatingAudioSource.
       await _audioPlayer.setAudioSources(
@@ -683,7 +695,9 @@ class AudioProvider with ChangeNotifier {
         preload: _settingsProvider?.offlineBuffering ?? false,
       );
 
-      unawaited(_audioPlayer.play());
+      if (!kIsWeb) {
+        unawaited(_audioPlayer.play());
+      }
     } catch (e, stackTrace) {
       // Only handle errors if this request corresponds to the current source.
       if (_currentSource?.id == source.id) {

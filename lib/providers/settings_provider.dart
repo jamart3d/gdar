@@ -43,6 +43,10 @@ class SettingsProvider with ChangeNotifier {
   static const String _offlineBufferingKey = 'offline_buffering';
   static const String _enableBufferAgentKey = 'enable_buffer_agent';
   static const String _preventSleepKey = 'prevent_sleep';
+
+  // Web Gapless Engine (web-only)
+  static const String _webGaplessEngineKey = 'web_gapless_engine';
+  static const String _webPrefetchSecondsKey = 'web_prefetch_seconds';
   static const String _simpleRandomIconKey = 'simple_random_icon';
 
   // Screensaver (steal)
@@ -143,6 +147,10 @@ class SettingsProvider with ChangeNotifier {
   late bool _marqueeEnabled;
   late bool _enableSwipeToBlock;
 
+  // Web Gapless Engine
+  late bool _webGaplessEngine;
+  late int _webPrefetchSeconds;
+
   // Screensaver (steal)
   late bool _useOilScreensaver;
   late String _oilScreensaverMode;
@@ -224,6 +232,12 @@ class SettingsProvider with ChangeNotifier {
   bool get simpleRandomIcon => _simpleRandomIcon;
   bool get marqueeEnabled => _marqueeEnabled;
   bool get enableSwipeToBlock => _enableSwipeToBlock;
+
+  /// Whether the custom gapless Web Audio engine is enabled (web-only).
+  bool get webGaplessEngine => _webGaplessEngine;
+
+  /// Seconds ahead of a track end to prefetch the next buffer (web-only).
+  int get webPrefetchSeconds => _webPrefetchSeconds;
 
   // Screensaver getters
   bool get useOilScreensaver => _useOilScreensaver;
@@ -446,6 +460,12 @@ class SettingsProvider with ChangeNotifier {
     _showDebugLayout = _prefs.getBool(_showDebugLayoutKey) ?? false;
     _enableShakedownTween = _prefs.getBool(_enableShakedownTweenKey) ?? true;
 
+    // Web Gapless Engine
+    _webGaplessEngine = _prefs.getBool(_webGaplessEngineKey) ??
+        DefaultSettings.webGaplessEngine;
+    _webPrefetchSeconds = _prefs.getInt(_webPrefetchSecondsKey) ??
+        DefaultSettings.webPrefetchSeconds;
+
     // Screensaver
     _useOilScreensaver = _prefs.getBool(_useOilScreensaverKey) ??
         DefaultSettings.useOilScreensaver;
@@ -617,6 +637,14 @@ class SettingsProvider with ChangeNotifier {
       _updatePreference(_preventSleepKey, _preventSleep = !_preventSleep);
   void toggleEnableSwipeToBlock() => _updatePreference(
       _enableSwipeToBlockKey, _enableSwipeToBlock = !_enableSwipeToBlock);
+
+  /// Toggles the custom gapless Web Audio engine on or off (web-only).
+  void toggleWebGaplessEngine() => _updatePreference(
+      _webGaplessEngineKey, _webGaplessEngine = !_webGaplessEngine);
+
+  /// Sets the prefetch-ahead duration in seconds for the web engine (web-only).
+  Future<void> setWebPrefetchSeconds(int seconds) => _updateIntPreference(
+      _webPrefetchSecondsKey, _webPrefetchSeconds = seconds.clamp(5, 60));
 
   static const String _rgbAnimationSpeedKey = 'rgb_animation_speed';
   double _rgbAnimationSpeed = 1.0;

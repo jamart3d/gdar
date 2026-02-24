@@ -1,26 +1,22 @@
-# SHIPIT PLAN - Release 1.1.9+109
-**Date**: 2026-02-23
-**Time**: 13:28
+# Shipit Plan: Release 1.1.14+114
+Date: 2026-02-24 12:51 PM
 
 ## Goal
-Prepare and release version 1.1.9+109 of GDAR.
+Release version 1.1.14+114 containing the web background playback stall fix and the web dice playback fix.
 
 ## Proposed Changes
 
-### [Component Name] GDAR Project
+### Configuration
+#### [MODIFY] [pubspec.yaml](file:///home/jam/StudioProjects/gdar/pubspec.yaml)
+- Increment version: `1.1.13+113` -> `1.1.14+114`.
 
-#### [MODIFY] [pubspec.yaml](file:///c:/Users/jeff/StudioProjects/gdar/pubspec.yaml)
-- Increment version: `1.1.8+108` -> `1.1.9+109`.
-
-#### [MODIFY] [RELEASE_NOTES.txt](file:///c:/Users/jeff/StudioProjects/gdar/RELEASE_NOTES.txt)
-- Add summary for Release 1.1.9+109:
-  - Testing: Resolved `TypeError` and `FakeUsedError` in `AudioProvider` and `ScreensaverScreen` test suites.
-  - Stability: All 162 unit and widget tests passing consistently.
-  - Quality: Applied project-wide code formatting and synchronized mock generation.
+#### [MODIFY] [RELEASE_NOTES.txt](file:///home/jam/StudioProjects/gdar/RELEASE_NOTES.txt)
+- Add entries for the web background playback and dice playback fixes.
 
 ## Verification Plan
 ### Automated Tests
-- `flutter test` (already verified in previous task, will confirm build success).
+- Run `flutter build appbundle --release` (This also triggers a build check).
+- Verify 162/162 tests passed in previous step.
 
 ### Manual Verification
-- Verify build artifact existence at `build/app/outputs/bundle/release/app-release.aab`.
+- Verify the aab exists at `build/app/outputs/bundle/release/app-release.aab`.

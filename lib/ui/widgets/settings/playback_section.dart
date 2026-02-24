@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -367,7 +368,83 @@ class PlaybackSection extends StatelessWidget {
           secondary: const Icon(Icons.history_toggle_off_rounded),
         ),
         RandomProbabilityCard(scaleFactor: scaleFactor),
+        // ── Web Gapless Engine (web-only) ──────────────────────────────────
+        if (kIsWeb)
+          ..._buildWebGaplessSection(context, settingsProvider, scaleFactor),
       ],
     );
+  }
+
+  /// Builds the web-only gapless engine settings block.
+  ///
+  /// Returns a list of widgets: the engine toggle and (when enabled) a
+  /// prefetch-ahead slider. These are only ever inserted when [kIsWeb] is true.
+  static List<Widget> _buildWebGaplessSection(
+    BuildContext context,
+    SettingsProvider sp,
+    double scaleFactor,
+  ) {
+    return [
+      const Divider(),
+      TvSwitchListTile(
+        dense: true,
+        visualDensity: VisualDensity.compact,
+        title: FittedBox(
+          fit: BoxFit.scaleDown,
+          alignment: Alignment.centerLeft,
+          child: Text(
+            'Gapless Engine',
+            style: Theme.of(context)
+                .textTheme
+                .titleMedium
+                ?.copyWith(fontSize: 16 * scaleFactor),
+          ),
+        ),
+        subtitle: FittedBox(
+          fit: BoxFit.scaleDown,
+          alignment: Alignment.centerLeft,
+          child: Text(
+            'Use Web Audio API for 0ms track transitions',
+            style: Theme.of(context)
+                .textTheme
+                .bodySmall
+                ?.copyWith(fontSize: 12 * scaleFactor),
+          ),
+        ),
+        value: sp.webGaplessEngine,
+        onChanged: (_) {
+          HapticFeedback.lightImpact();
+          context.read<SettingsProvider>().toggleWebGaplessEngine();
+        },
+        secondary: const Icon(Icons.graphic_eq_rounded),
+      ),
+      if (sp.webGaplessEngine)
+        ListTile(
+          dense: true,
+          visualDensity: VisualDensity.compact,
+          leading: const Icon(Icons.schedule_rounded),
+          title: FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Text(
+              'Prefetch Ahead: ${sp.webPrefetchSeconds}s',
+              style: Theme.of(context)
+                  .textTheme
+                  .bodyMedium
+                  ?.copyWith(fontSize: 14 * scaleFactor),
+            ),
+          ),
+          subtitle: Slider(
+            value: sp.webPrefetchSeconds.toDouble(),
+            min: 5,
+            max: 60,
+            divisions: 11,
+            label: '${sp.webPrefetchSeconds}s',
+            onChanged: (v) {
+              context.read<SettingsProvider>().setWebPrefetchSeconds(v.round());
+            },
+          ),
+        ),
+    ];
   }
 }

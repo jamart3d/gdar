@@ -28,6 +28,10 @@ class DefaultSettings {
   static const bool preventSleep = true;
   static const bool showPlaybackMessages = false;
 
+  // Web Gapless Engine (web-only)
+  static const bool webGaplessEngine = true;
+  static const int webPrefetchSeconds = 30;
+
   // Data & Filtering
   static const bool showSingleShnid = false;
   static const bool sortOldestFirst = true;

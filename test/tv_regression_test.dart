@@ -372,6 +372,16 @@ class FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
   bool get enableSwipeToBlock => false;
   @override
   void toggleEnableSwipeToBlock() {}
+
+  @override
+  bool get webGaplessEngine => true;
+  @override
+  void toggleWebGaplessEngine() {}
+  @override
+  int get webPrefetchSeconds => 30;
+  @override
+  Future<void> setWebPrefetchSeconds(int seconds) async {}
+
   @override
   Future<void> resetToDefaults() async {}
   @override

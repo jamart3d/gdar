@@ -46,6 +46,10 @@
   // Position polling.
   let _positionTimer = null;
 
+  // Watchdog — detects missed onended events (screen off / background tab).
+  let _watchdogTimer = null;
+  let _expectedEndContextTime = 0;
+
   // Callbacks registered by Dart.
   let _onStateChange = null;
   let _onTrackChange = null;
@@ -74,7 +78,7 @@
   // Safari: resume AudioContext on first user interaction.
   document.addEventListener('click', function _resumeCtx() {
     if (_ctx && _ctx.state === 'suspended') {
-      _ctx.resume().catch(() => {});
+      _ctx.resume().catch(() => { });
     }
     if (!_ctx && _playing) {
       _ensureContext();
@@ -83,9 +87,18 @@
 
   document.addEventListener('touchstart', function () {
     if (_ctx && _ctx.state === 'suspended') {
-      _ctx.resume().catch(() => {});
+      _ctx.resume().catch(() => { });
     }
   }, { capture: true, passive: true });
+
+  // Screen restore: resume AudioContext and immediately check for missed track endings.
+  document.addEventListener('visibilitychange', function () {
+    if (document.visibilityState !== 'visible') return;
+    if (_ctx && _ctx.state === 'suspended' && _playing) {
+      _ctx.resume().catch(() => { });
+    }
+    _checkWatchdog();
+  });
 
   // ─── Playlist Management ──────────────────────────────────────────────────
 
@@ -180,6 +193,10 @@
 
     src.start(_currentTrackStartContextTime, _currentTrackStartOffset);
 
+    // Record the expected end time so the watchdog can detect missed onended events.
+    _expectedEndContextTime = _currentTrackStartContextTime
+      + (_currentTrackDuration - _currentTrackStartOffset);
+
     src.onended = function () {
       // Only advance if this source is still the active one
       // (not already replaced by a seek or stop).
@@ -191,6 +208,7 @@
     _currentSource = src;
     _playing = true;
     _startPositionTimer();
+    _startWatchdog();
     _schedulePrefetch();
     _emitState();
     _updateMediaSession();
@@ -199,16 +217,18 @@
   function _stopCurrentSource() {
     if (_currentSource) {
       _currentSource.onended = null;
-      try { _currentSource.stop(); } catch (_) {}
+      try { _currentSource.stop(); } catch (_) { }
       _currentSource = null;
     }
     _stopPositionTimer();
+    _stopWatchdog();
+    _expectedEndContextTime = 0;
   }
 
   function _clearScheduled() {
     if (_scheduledSource) {
       _scheduledSource.onended = null;
-      try { _scheduledSource.stop(); } catch (_) {}
+      try { _scheduledSource.stop(); } catch (_) { }
       _scheduledSource = null;
     }
     _scheduledIndex = -1;
@@ -279,6 +299,11 @@
     const nextIndex = _currentIndex + 1;
     if (nextIndex >= _playlist.length) return;
 
+    // Eagerly start the network fetch immediately so the compressed bytes are
+    // in RAM before the decode timer fires. Background tabs throttle setTimeout
+    // but fetch() continues executing in the background.
+    _fetchCompressed(nextIndex).catch(() => { });
+
     const remaining = _getRemainingSeconds();
     const triggerIn = Math.max(0, (remaining - _prefetchSeconds) * 1000);
 
@@ -340,6 +365,41 @@
     if (_positionTimer) { clearInterval(_positionTimer); _positionTimer = null; }
   }
 
+  // ─── Watchdog ─────────────────────────────────────────────────────────────
+
+  /**
+   * Starts a 500ms interval that detects track endings missed while the
+   * screen was off or the JS thread was suspended by the browser.
+   */
+  function _startWatchdog() {
+    _stopWatchdog();
+    _watchdogTimer = setInterval(_checkWatchdog, 500);
+  }
+
+  function _stopWatchdog() {
+    if (_watchdogTimer) { clearInterval(_watchdogTimer); _watchdogTimer = null; }
+  }
+
+  /**
+   * Called every 500ms and immediately on visibilitychange. Compares
+   * AudioContext.currentTime against the expected track end time. If the
+   * JS thread was suspended (screen off), onended may not have fired —
+   * this catches that and manually advances the playlist.
+   */
+  function _checkWatchdog() {
+    if (!_playing || !_ctx || _currentIndex < 0) return;
+    if (_expectedEndContextTime <= 0) return;
+    if (_ctx.currentTime > _expectedEndContextTime + 0.25) {
+      // Track has ended but onended was not dispatched. Advance manually.
+      const missedSrc = _currentSource;
+      if (missedSrc) missedSrc.onended = null; // prevent double-fire
+      _currentSource = null;
+      _stopWatchdog();
+      _expectedEndContextTime = 0;
+      _onTrackEnded();
+    }
+  }
+
   // ─── Callbacks ───────────────────────────────────────────────────────────
 
   function _emitState() {
@@ -352,23 +412,23 @@
           duration: _currentTrackDuration,
           processingState: !_ctx ? 'idle'
             : _playing ? 'ready'
-            : _currentIndex < 0 ? 'idle'
-            : 'ready',
+              : _currentIndex < 0 ? 'idle'
+                : 'ready',
         });
-      } catch (_) {}
+      } catch (_) { }
     }
   }
 
   function _emitTrackChange(from, to) {
     if (_onTrackChange) {
-      try { _onTrackChange({ from: from, to: to }); } catch (_) {}
+      try { _onTrackChange({ from: from, to: to }); } catch (_) { }
     }
   }
 
   function _emitError(msg) {
     console.error('[gdar audio]', msg);
     if (_onError) {
-      try { _onError({ message: msg }); } catch (_) {}
+      try { _onError({ message: msg }); } catch (_) { }
     }
   }
 

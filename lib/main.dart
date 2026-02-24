@@ -613,14 +613,16 @@ class _GdarAppState extends State<GdarApp> {
                       : ThemeMode.light,
                   themeAnimationDuration: Duration.zero,
                   themeAnimationCurve: Curves.linear,
-                  home: settingsProvider.showOnboarding &&
-                          !context.read<DeviceService>().isTv
-                      ? const OnboardingScreen()
-                      : (settingsProvider.showSplashScreen
-                          ? const SplashScreen()
-                          : (context.watch<DeviceService>().isTv
-                              ? const TvDualPaneLayout()
-                              : const ShowListScreen())),
+                  home: kIsWeb
+                      ? const ShowListScreen()
+                      : (settingsProvider.showOnboarding &&
+                              !context.read<DeviceService>().isTv
+                          ? const OnboardingScreen()
+                          : (settingsProvider.showSplashScreen
+                              ? const SplashScreen()
+                              : (context.watch<DeviceService>().isTv
+                                  ? const TvDualPaneLayout()
+                                  : const ShowListScreen()))),
                   builder: (context, child) {
                     final isTrueBlack = themeProvider.isDarkMode &&
                         settingsProvider.useTrueBlack;
