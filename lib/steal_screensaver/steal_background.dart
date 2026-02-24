@@ -32,11 +32,33 @@ class StealBackground extends PositionComponent
   /// Current smoothed logo position (0–1 UV space). Used by StealBanner.
   Offset get smoothedLogoPos => _smoothedPos;
 
+  // Random phase offset applied to motion path so each session starts at a
+  // different point on the curve and traces a visually distinct path.
+  // Randomised once in onLoad, never changes during a session.
+  late final double _phaseOffset;
+
+  // Small random frequency nudges so the Lissajous curve shape itself varies
+  // slightly each session — prevents the path ever looking identical.
+  late final double _freqNudgeX1;
+  late final double _freqNudgeY1;
+  late final double _freqNudgeX2;
+  late final double _freqNudgeY2;
+
   StealBackground({required this.config});
 
   @override
   Future<void> onLoad() async {
     await super.onLoad();
+
+    // Randomise motion path for this session
+    final rng = Random();
+    _phaseOffset =
+        rng.nextDouble() * 2 * pi * 10; // random start anywhere on curve
+    _freqNudgeX1 = 1.3 + (rng.nextDouble() - 0.5) * 0.3; // 1.15 – 1.45
+    _freqNudgeY1 = 1.7 + (rng.nextDouble() - 0.5) * 0.3; // 1.55 – 1.85
+    _freqNudgeX2 = 2.9 + (rng.nextDouble() - 0.5) * 0.4; // 2.70 – 3.10
+    _freqNudgeY2 = 3.1 + (rng.nextDouble() - 0.5) * 0.4; // 2.90 – 3.30
+
     try {
       await _loadResources();
       final initial = _expandColors(_getPaletteColors(config.palette));
@@ -127,12 +149,19 @@ class StealBackground extends PositionComponent
       }
     }
 
-    // Compute raw logo target position (same formula as shader previously used)
+    // Compute raw logo target position.
+    // _phaseOffset randomised at init so each session starts at a different
+    // point. _freqNudge values vary the curve shape slightly each session.
     final safeTime = game.time.clamp(0.0, double.infinity);
-    final t = safeTime * config.flowSpeed.clamp(0.0, 2.0) * 0.5;
+    final t =
+        (safeTime + _phaseOffset) * config.flowSpeed.clamp(0.0, 2.0) * 0.5;
     final drift = config.orbitDrift.clamp(0.0, 2.0);
-    final rawX = 0.5 + 0.25 * drift * sin(t * 1.3) + 0.1 * drift * sin(t * 2.9);
-    final rawY = 0.5 + 0.25 * drift * cos(t * 1.7) + 0.1 * drift * cos(t * 3.1);
+    final rawX = 0.5 +
+        0.25 * drift * sin(t * _freqNudgeX1) +
+        0.1 * drift * sin(t * _freqNudgeX2);
+    final rawY = 0.5 +
+        0.25 * drift * cos(t * _freqNudgeY1) +
+        0.1 * drift * cos(t * _freqNudgeY2);
 
     // Lerp smoothedPos toward raw pos using time-based decay
     final s = config.translationSmoothing.clamp(0.0, 1.0);

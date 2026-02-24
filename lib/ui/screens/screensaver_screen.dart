@@ -18,8 +18,21 @@ class ScreensaverScreen extends StatefulWidget {
 
   static Future<void> show(BuildContext context) {
     return Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => const ScreensaverScreen(),
+      PageRouteBuilder(
+        opaque: false,
+        transitionDuration: const Duration(milliseconds: 800),
+        reverseTransitionDuration: const Duration(milliseconds: 400),
+        pageBuilder: (context, animation, secondaryAnimation) =>
+            const ScreensaverScreen(),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          return FadeTransition(
+            opacity: CurvedAnimation(
+              parent: animation,
+              curve: Curves.easeIn,
+            ),
+            child: child,
+          );
+        },
       ),
     );
   }

@@ -56,9 +56,6 @@ class StealBanner extends Component with HasGameReference<StealGame> {
   static const double _wordSpacingExtra = 0.8;
 
   // ── Flat mode layout ───────────────────────────────────────────────────────
-  // Gap between logo edge and first text line.
-  // Scales with logoScale so small logos get a tighter gap.
-  static const double _flatGapBase = 0.0;
   // Line height in pixels
   static const double _flatLineHeight = 16.0;
 
@@ -102,6 +99,10 @@ class StealBanner extends Component with HasGameReference<StealGame> {
   // Secondary smoothing for flat mode — extra lerp pass on top of
   // smoothedLogoPos to absorb any residual per-frame jitter.
   Offset _flatSmoothPos = const Offset(0.5, 0.5);
+
+  // Pre-computed pixel center for flat mode — set in update(), read in render().
+  // Avoids timing skew between update/render threads reading smoothedLogoPos.
+  Offset _flatPixelCenter = const Offset(0.0, 0.0);
 
   // ── Public API ─────────────────────────────────────────────────────────────
 
@@ -278,15 +279,19 @@ class StealBanner extends Component with HasGameReference<StealGame> {
 
     // Secondary smooth for flat mode — extra lerp on top of smoothedLogoPos
     // absorbs residual per-frame jitter that ring mode hides via rotation.
-    // Factor 0.15 adds ~2 frames of lag, invisible since logo is already smoothed.
+    // Time-corrected so behaviour is identical at any frame rate.
     if (config.bannerDisplayMode == 'flat') {
       final target = game.smoothedLogoPos;
-      // Time-correct smoothing using 0.15 factor (base 60fps)
       final alpha = 1.0 - pow(1.0 - 0.15, dt * 60);
       _flatSmoothPos = Offset(
         _flatSmoothPos.dx + (target.dx - _flatSmoothPos.dx) * alpha,
         _flatSmoothPos.dy + (target.dy - _flatSmoothPos.dy) * alpha,
       );
+      // Pre-compute pixel center here so render() reads a stable value
+      // from this update tick — avoids timing skew between update/render.
+      final w = game.size.x;
+      final h = game.size.y;
+      _flatPixelCenter = Offset(_flatSmoothPos.dx * w, _flatSmoothPos.dy * h);
     }
   }
 
@@ -398,18 +403,31 @@ class StealBanner extends Component with HasGameReference<StealGame> {
   }
 
   // ── Radius helpers ─────────────────────────────────────────────────────────
+  //
+  // Rings scale relative to logoScale so they always orbit proportionally
+  // to the rendered logo size. logoScale=0.5 (the default) is the neutral
+  // point — at that scale the rings sit exactly as designed by the gap settings.
+  // Doubling logoScale doubles ring radii; halving it halves them.
+
+  double _logoScaleFactor(StealConfig config) =>
+      config.logoScale.clamp(0.1, 1.0) / 0.5; // 1.0 at default logoScale=0.5
 
   double _innerRadius(double minDim, StealConfig config) =>
-      minDim * _baseInnerRadiusRatio * config.innerRingScale.clamp(0.5, 2.0);
+      minDim *
+      _baseInnerRadiusRatio *
+      config.innerRingScale.clamp(0.5, 2.0) *
+      _logoScaleFactor(config);
 
   double _middleRadius(double minDim, StealConfig config, double innerR) {
     final gap = config.innerToMiddleGap.clamp(0.0, 1.0);
-    return innerR + minDim * (_minRingClearance + gap * 0.08);
+    return innerR +
+        minDim * (_minRingClearance + gap * 0.08) * _logoScaleFactor(config);
   }
 
   double _outerRadius(double minDim, StealConfig config, double middleR) {
     final gap = config.middleToOuterGap.clamp(0.0, 1.0);
-    return middleR + minDim * (_minRingClearance + gap * 0.08);
+    return middleR +
+        minDim * (_minRingClearance + gap * 0.08) * _logoScaleFactor(config);
   }
 
   // ── Render ─────────────────────────────────────────────────────────────────
@@ -430,9 +448,8 @@ class StealBanner extends Component with HasGameReference<StealGame> {
     final isFlat = config.bannerDisplayMode == 'flat';
 
     if (isFlat) {
-      // Use secondary-smoothed position for flat mode to absorb per-frame jitter
-      final flatCenter = Offset(_flatSmoothPos.dx * w, _flatSmoothPos.dy * h);
-      _renderFlat(canvas, flatCenter, minDim, glowEnabled, config);
+      // Use pre-computed pixel center from update() — stable, no timing skew
+      _renderFlat(canvas, _flatPixelCenter, minDim, glowEnabled, config);
     } else {
       _renderRings(canvas, center, minDim, glowEnabled, config);
     }
@@ -447,12 +464,14 @@ class StealBanner extends Component with HasGameReference<StealGame> {
     bool glowEnabled,
     StealConfig config,
   ) {
-    // Gap scales with logoScale — small logos get a tighter gap,
-    // large logos get proportionally more breathing room.
+    // Logo visual edge in pixels.
+    // topLineY is the CENTER of the first text line — painter draws ±height/2
+    // around it. Adding _flatLineHeight * 0.5 means the TOP of the first line
+    // sits at the logo edge, so text is flush with no gap.
+    // At small logoScale the radius shrinks proportionally so text always
+    // tracks the actual rendered logo edge regardless of scale setting.
     final logoRadius = minDim * 0.5 * config.logoScale.clamp(0.1, 1.0);
-    final gap =
-        minDim * _flatGapBase * (0.5 + config.logoScale.clamp(0.1, 1.0));
-    final topLineY = center.dy + logoRadius + gap;
+    final topLineY = center.dy + logoRadius + _flatLineHeight * 0.5;
 
     // Line order: title, venue, date
     final lines = [
@@ -493,13 +512,15 @@ class StealBanner extends Component with HasGameReference<StealGame> {
     if (text.isEmpty) return;
 
     final hsl = HSLColor.fromColor(_currentColor);
-    final coreColor = hsl.withSaturation(0.15).withLightness(0.97).toColor();
-    final innerHaloColor =
-        hsl.withSaturation(1.0).withLightness(0.65).toColor();
-    final outerBloomColor =
-        hsl.withSaturation(1.0).withLightness(0.55).toColor();
+    final atmosphericColor =
+        hsl.withSaturation(0.9).withLightness(0.35).toColor();
     final deepBloomColor =
-        hsl.withSaturation(0.9).withLightness(0.45).toColor();
+        hsl.withSaturation(1.0).withLightness(0.45).toColor();
+    final outerBloomColor =
+        hsl.withSaturation(1.0).withLightness(0.60).toColor();
+    final innerHaloColor =
+        hsl.withSaturation(1.0).withLightness(0.80).toColor();
+    final coreColor = hsl.withSaturation(0.05).withLightness(0.98).toColor();
 
     final wordList = words.isNotEmpty
         ? words
@@ -537,19 +558,23 @@ class StealBanner extends Component with HasGameReference<StealGame> {
         if (glowEnabled) {
           _paintChar(canvas, char,
               charWidth: charWidth,
-              color: deepBloomColor.withValues(alpha: opacity * 0.12),
-              blurRadius: 9.0);
+              color: atmosphericColor.withValues(alpha: opacity * 0.08),
+              blurRadius: 16.0);
           _paintChar(canvas, char,
               charWidth: charWidth,
-              color: outerBloomColor.withValues(alpha: opacity * 0.30),
-              blurRadius: 4.0);
+              color: deepBloomColor.withValues(alpha: opacity * 0.20),
+              blurRadius: 8.0);
           _paintChar(canvas, char,
               charWidth: charWidth,
-              color: innerHaloColor.withValues(alpha: opacity * 0.75),
-              blurRadius: 1.5);
+              color: outerBloomColor.withValues(alpha: opacity * 0.45),
+              blurRadius: 3.5);
           _paintChar(canvas, char,
               charWidth: charWidth,
-              color: coreColor.withValues(alpha: opacity * 0.95),
+              color: innerHaloColor.withValues(alpha: opacity * 0.80),
+              blurRadius: 1.2);
+          _paintChar(canvas, char,
+              charWidth: charWidth,
+              color: coreColor.withValues(alpha: opacity * 0.97),
               blurRadius: 0.0);
         } else {
           _paintChar(canvas, char,
@@ -631,13 +656,21 @@ class StealBanner extends Component with HasGameReference<StealGame> {
     final wordSpaceAngle = charAngle * _wordSpacingExtra;
 
     final hsl = HSLColor.fromColor(_currentColor);
-    final coreColor = hsl.withSaturation(0.15).withLightness(0.97).toColor();
-    final innerHaloColor =
-        hsl.withSaturation(1.0).withLightness(0.65).toColor();
-    final outerBloomColor =
-        hsl.withSaturation(1.0).withLightness(0.55).toColor();
+    // 5-layer neon tube look:
+    // atmosphericColor — wide, very faint colored fog
+    // deepBloomColor   — broad colored bloom
+    // outerBloomColor  — tighter saturated bloom
+    // innerHaloColor   — tight bright halo, very saturated
+    // coreColor        — near-white hot core
+    final atmosphericColor =
+        hsl.withSaturation(0.9).withLightness(0.35).toColor();
     final deepBloomColor =
-        hsl.withSaturation(0.9).withLightness(0.45).toColor();
+        hsl.withSaturation(1.0).withLightness(0.45).toColor();
+    final outerBloomColor =
+        hsl.withSaturation(1.0).withLightness(0.60).toColor();
+    final innerHaloColor =
+        hsl.withSaturation(1.0).withLightness(0.80).toColor();
+    final coreColor = hsl.withSaturation(0.05).withLightness(0.98).toColor();
 
     final wordList = words.isNotEmpty
         ? words
@@ -672,16 +705,19 @@ class StealBanner extends Component with HasGameReference<StealGame> {
 
         if (glowEnabled) {
           _paintChar(canvas, chars[ci],
-              color: deepBloomColor.withValues(alpha: opacity * 0.12),
-              blurRadius: 9.0);
+              color: atmosphericColor.withValues(alpha: opacity * 0.08),
+              blurRadius: 16.0);
           _paintChar(canvas, chars[ci],
-              color: outerBloomColor.withValues(alpha: opacity * 0.30),
-              blurRadius: 4.0);
+              color: deepBloomColor.withValues(alpha: opacity * 0.20),
+              blurRadius: 8.0);
           _paintChar(canvas, chars[ci],
-              color: innerHaloColor.withValues(alpha: opacity * 0.75),
-              blurRadius: 1.5);
+              color: outerBloomColor.withValues(alpha: opacity * 0.45),
+              blurRadius: 3.5);
           _paintChar(canvas, chars[ci],
-              color: coreColor.withValues(alpha: opacity * 0.95),
+              color: innerHaloColor.withValues(alpha: opacity * 0.80),
+              blurRadius: 1.2);
+          _paintChar(canvas, chars[ci],
+              color: coreColor.withValues(alpha: opacity * 0.97),
               blurRadius: 0.0);
         } else {
           _paintChar(canvas, chars[ci],
@@ -738,10 +774,19 @@ class StealBanner extends Component with HasGameReference<StealGame> {
     final offset = Offset(-cw / 2, -painter.height / 2);
 
     if (blurRadius > 0.0) {
+      // ImageFilter.blur on saveLayer produces a cleaner bloom than MaskFilter —
+      // MaskFilter blurs the layer edge and anti-aliasing artifacts together,
+      // ImageFilter blurs the composited result for a true neon spread.
+      final blurRect = Rect.fromCenter(
+        center: Offset.zero,
+        width: _fontSize + blurRadius * 4,
+        height: _fontSize + blurRadius * 4,
+      );
       canvas.saveLayer(
-        null,
+        blurRect,
         Paint()
-          ..maskFilter = ui.MaskFilter.blur(ui.BlurStyle.normal, blurRadius),
+          ..imageFilter =
+              ui.ImageFilter.blur(sigmaX: blurRadius, sigmaY: blurRadius),
       );
       painter.paint(canvas, offset);
       canvas.restore();

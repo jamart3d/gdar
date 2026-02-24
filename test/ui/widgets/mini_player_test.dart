@@ -43,7 +43,8 @@ void main() {
     when(mockAudioPlayer.bufferedPosition).thenReturn(Duration.zero);
     when(mockAudioPlayer.playerState)
         .thenReturn(PlayerState(false, ProcessingState.ready));
-    when(mockAudioPlayer.sequenceStateStream).thenAnswer((_) => const Stream.empty());
+    when(mockAudioPlayer.sequenceStateStream)
+        .thenAnswer((_) => const Stream.empty());
 
     when(mockSettingsProvider.useTrueBlack).thenReturn(false);
     when(mockSettingsProvider.highlightCurrentShowCard).thenReturn(true);
