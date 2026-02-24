@@ -58,3 +58,4 @@ test_ui_output*.txt
 
 # Credentials
 gen-lang-client-*.json
+web/firebase-config.js

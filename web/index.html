@@ -37,24 +37,20 @@
 <body>
   <!-- Gapless Web Audio engine — must load before Flutter so window._gdarAudio exists. -->
   <script src="gapless_audio_engine.js"></script>
+  <!-- Firebase Config (Gitignored) -->
+  <script src="firebase-config.js"></script>
   <!-- Firebase SDKs -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js";
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyCYbLTAD93IJVc2lzDF8GnlHjMNWc4J4XI",
-      authDomain: "shakedown-pwa.firebaseapp.com",
-      projectId: "shakedown-pwa",
-      storageBucket: "shakedown-pwa.firebasestorage.app",
-      messagingSenderId: "59733200950",
-      appId: "1:59733200950:web:d30ec3f2654afa03870897",
-      measurementId: "G-R2RGK8ZPGR"
-    };
-
     // Initialize Firebase
-    const app = initializeApp(firebaseConfig);
-    const analytics = getAnalytics(app);
+    if (typeof firebaseConfig !== 'undefined') {
+      const app = initializeApp(firebaseConfig);
+      const analytics = getAnalytics(app);
+    } else {
+      console.warn("Firebase config not found. Analytics disabled.");
+    }
   </script>
 
   <script src="flutter_bootstrap.js" async></script>
