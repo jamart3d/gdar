@@ -23,7 +23,8 @@ This list tracks the next steps for polishing the 10-foot experience of gdar.
 ## Performance & Optimization
 - [ ] **App Size Audit**:
   - [ ] Run the optimization audit workflow specifically looking for TV-only assets that could be optimized.
-- [ ] **Overscan Margins**:
+- [ ] **Neon Glow Optimization**: [CRITICAL] Implement Rasterized Glyph Cache for `StealBanner` characters. Real-time Gaussian blurs are still way too expensive for standard Google TV SOCs.
+- [ ] **TV Safe Area**:
   - [ ] Add a global "TV Safe Area" setting to adjust margins for older TV panels that crop edges.
 
 ## Future Ideas
