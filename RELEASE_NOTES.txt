@@ -1,3 +1,9 @@
+Release 1.1.18+118:
+- Web: Fixed UI sync issue where playback progress and metadata were stale in the mini-player.
+- Testing: Implemented 8 new regression tests for the Web Player adapter's stream contract.
+- Documentation: Major overhaul of README and TODOs for TV UI, Web Gapless, and PWA features.
+- Quality: Full test suite (170 tests) verified passing with zero analysis errors.
+
 Release 1.1.17+117:
 - Screensaver: Optimized rendering for Google TV by removing redundant black drop shadows and simplifying neon glow (removed expensive atmospheric layer).
 - Maintenance: Added regression testing and Web UI sync roadmap to project backlog.

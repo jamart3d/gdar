@@ -13,12 +13,12 @@ This list tracks the next steps for polishing the 10-foot experience of gdar.
   - [ ] Redesign the Settings screen for 16:9 aspect ratios using a Master-Detail (Two-Pane) pattern.
 
 ## Visual & Motion
-- [ ] **Atmospheric TV Backgrounds**: 
-  - [ ] Implement dynamic background gradients that adapt to the currently selected/playing show.
+- [x] **Atmospheric TV Backgrounds**: 
+  - [x] Implemented dynamic "Glass" vertical divider and inactive pane dimming (0.2 opacity) for a moody, focused experience.
 - [ ] **Display Typography**:
   - [ ] Audit and upgrade headers to `DisplayMedium` or `DisplayLarge` on the right (Playback) pane.
-- [ ] **Glassmorphism Expansion**:
-  - [ ] Add `BackdropFilter` blur to the show list background for a more premium "Glass" look.
+- [x] **Glassmorphism Expansion**:
+  - [x] Added translucent vertical gradient divider in `TvDualPaneLayout`.
 
 ## Performance & Optimization
 - [ ] **App Size Audit**:

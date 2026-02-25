@@ -200,6 +200,18 @@ class GaplessPlayer {
     }
     _processingStateController.add(_processingState);
     _emitPlayerState();
+
+    // Emit a synthetic PlaybackEvent so widgets listening to
+    // playbackEventStream (progress bars, track metadata, etc.)
+    // receive updates on the Web platform.
+    _playbackEventController.add(PlaybackEvent(
+      processingState: _processingState,
+      updatePosition: Duration(milliseconds: (_positionSec * 1000).round()),
+      duration: _durationSec > 0
+          ? Duration(milliseconds: (_durationSec * 1000).round())
+          : null,
+      currentIndex: _currentIndex,
+    ));
   }
 
   void _emitPlayerState() {

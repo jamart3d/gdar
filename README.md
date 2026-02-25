@@ -11,6 +11,12 @@ A Flutter application for browsing and playing concert recordings of the Gratefu
   - Random playback options: Play random show on startup/completion, filter by unplayed or high-rated shows.
   - **Offline Buffering**: Pre-cache entire shows for uninterrupted playback during deep sleep or poor connectivity.
   - **Buffer Agent**: Intelligent playback recovery that automatically detects and recovers from network issues and buffering failures.
+  - **Premium Web Gapless**: A custom JavaScript-based audio engine for Web and PWA platforms, ensuring precise 0ms transitions by bypassing browser limitations.
+
+- **Multi-Platform Optimization**:
+  - **Google TV & Android TV**: Optimized dual-pane layout for large screens with full D-pad navigation support.
+  - **PWA (Progressive Web App)**: Installable on Mobile/Desktop browsers for a native-like experience with offline capabilities.
+  - **Glassmorphism UI**: High-end translucent design language that adapts across mobile, web, and TV.
 
 - **Clipboard Playback**:
   - **Instant Playback**: Paste an Archive.org share link into the **search field** to instantly trigger playback.
@@ -46,7 +52,8 @@ A Flutter application for browsing and playing concert recordings of the Gratefu
   - **Smart Random**: Manual triggers respect search filters; automated playback picks from the full library to keep music fresh.
   - **Refined Settings**: Dedicated "Random Playback" section and clearer usage instructions with improved typography.
   - **Source-Only Blocking**: Blocking now applies specifically to Source IDs rather than the entire Show, allowing for finer curation.
-  - **Native-Level Gapless**: Playback engine rewritten to use `ConcatenatingAudioSource` for true, precise gapless transitions.
+  - **Native-Level Gapless**: Playback engine rewritten to use `ConcatenatingAudioSource` for true, precise gapless transitions on Mobile.
+  - **JS-Interoperability (Web)**: Custom integration bridge between Flutter and a high-performance JavaScript audio scheduler for the Web.
   - **Haptic Feedback**: Premium tactile feedback on all interactive elements for enhanced touch experience.
   - **Material 3 Transitions**: Expressive navigation animations with scale + fade effects for a polished, premium feel.
 
@@ -167,5 +174,19 @@ adb shell am start -W -a android.intent.action.VIEW -d "shakedown://ui-scale?ena
 The application is **correctly configured** for standard background audio playback on Android 14+.
 
 - **Configuration**: Excellent (Manifest and Services are correct).
-- **Gapless Playback**: Excellent (Handled natively).
+- **Gapless Playback**: Excellent (Handled natively on Mobile, high-performance JS scheduler on Web).
 - **Deep Sleep Stability**: **Fixed**. Implemented "Native Pre-Queueing" where the next show is queued into the native player buffer at the start of the last track. This ensures continuous playback even if the Flutter UI isolate is suspended by Android's Doze mode.
+
+## Web & PWA Optimization (Feb 2024)
+
+The web version is now a full Progressive Web App (PWA) with a custom audio engine.
+
+- **Gapless Engine**: Bypasses browser audio latencies using `AudioBufferSourceNode` scheduling.
+- **Media Session API**: Full integration with browser/OS media controls (Play/Pause/Skip) and "Now Playing" metadata.
+- **Installable**: Full manifest support for "Add to Home Screen" on iOS and Android.
+
+## TV Experience (Feb 2024)
+
+- **Dual-Pane Layout**: Side-by-side show list and track list for efficient navigation on large screens.
+- **Focus Management**: Customized D-pad navigation logic to ensure natural movement between lists, scrollbars, and controls.
+- **Inactivity Handling**: Automatic screensaver activation with a "Ghost Menu" accessible via D-pad for quick visual adjustments.

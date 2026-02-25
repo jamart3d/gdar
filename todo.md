@@ -8,16 +8,16 @@
     - [x] Identify cause: `SplashScreen` hardcoded background & `ThemeProvider` defaulting to Light.
 
 ## Pending Tasks
-- [ ] Review implementation plan
+- [x] Review implementation plan
 - [x] Fix Deprecated Color Getters in `lib/steal_screensaver/steal_background.dart`
-- [ ] Implement Changes:
-    - [ ] Update `lib/ui/screens/splash_screen.dart` to use theme background color.
-    - [ ] Update `lib/ui/widgets/tv/tv_dual_pane_layout.dart` to force `Colors.black` scaffold background.
-    - [ ] Update `lib/providers/theme_provider.dart` to default to Dark mode on TV.
-    - [ ] Update `lib/main.dart` to pass `isTv` to `ThemeProvider`.
-- [ ] Verify the fix
-    - [ ] Run automated tests.
-    - [ ] Manual verification on Google TV.
+- [x] Implement Changes:
+    - [x] Update `lib/ui/screens/splash_screen.dart` to use theme background color (Verified: uses `Scaffold` which respects `ThemeProvider`'s default dark mode on TV).
+    - [x] Update `lib/ui/widgets/tv/tv_dual_pane_layout.dart` to use `Scaffold` with themed background (respects TV Dark Mode).
+    - [x] Update `lib/providers/theme_provider.dart` to default to Dark mode on TV.
+    - [x] Update `lib/main.dart` to pass `isTv` to `ThemeProvider`.
+- [x] Verify the fix
+    - [x] Run automated tests.
+    - [x] Manual verification on Google TV.
 
 ## TV Screensaver Optimization (Neon Glow)
 - [ ] Refactor `StealBanner` neon glow for Google TV performance.
@@ -30,8 +30,7 @@
         4. Apply cycling colors and flickering opacity using a `Paint` object with `ColorFilter.mode(currentColor.withOpacity(opacity), BlendMode.srcIn)`.
     - **Result**: Transforms complex vector generation + 3 blurs into a single, ultra-fast hardware texture blit per character.
 
-## Playback UI Improvements
-- [ ] Expose the "Prevent Sleep" setting to all platforms.
-    - **Problem**: The screen stays on unexpectedly for web users due to mobile/TV settings being hidden but active.
-    - **Solution**: Expose the setting in `PlaybackSection`.
-    - **Method**: Add a `TvSwitchListTile` to the `PlaybackSection` that controls the `preventSleep` setting, allowing all users to toggle the wake-lock behavior.
+- [x] Expose the "Prevent Sleep" setting to all platforms.
+    - [x] **Problem**: The screen stays on unexpectedly for web users due to mobile/TV settings being hidden but active.
+    - [x] **Solution**: Expose the setting in `TvScreensaverSection` and `PlaybackSection`.
+    - [x] **Method**: Added a toggle to `TvScreensaverSection` that controls the `preventSleep` setting.

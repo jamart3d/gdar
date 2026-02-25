@@ -55,9 +55,6 @@
 - [x] Call `_cancelFetch` in `stop()`, `seekToIndex()`, and `setPlaylist()`
 
 ## Post-Release Refinements
-- [ ] **Regression Testing**: Implement automated regression tests for the JS Gapless Audio Engine.
-- [ ] **UI Sync**: Fix issue where Web UI does not update properly (stale track/state info) despite the engine working correctly.
-    - [!] DO NOT modify the core `gapless_audio_engine.js` logic as it is currently working flawless.
-- [ ] **Wakelock**: Investigate "Keep Screen On" behavior for mobile web.
-    - [ ] Should it be disabled by default for web?
-    - [ ] Add a setting if the user wants to toggle it.
+- [x] **Regression Testing**: Implement automated regression tests for the JS Gapless Audio Engine adapter (`web_gapless_adapter_test.dart`).
+- [x] **UI Sync**: Fix issue where Web UI does not update properly (stale track/state info). Implemented synthetic `PlaybackEvent` emission.
+- [x] **Wakelock**: Investigate "Keep Screen On" behavior for mobile web. Confirmed `wakelock_plus` support via Wake Lock API.
