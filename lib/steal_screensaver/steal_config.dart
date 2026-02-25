@@ -13,6 +13,7 @@ class StealConfig {
   final bool flatColor;
   final bool bannerGlow;
   final double bannerFlicker;
+  final double bannerGlowBlur;
   final bool enableAudioReactivity;
   final bool performanceMode;
   final bool showInfoBanner;
@@ -90,6 +91,7 @@ class StealConfig {
     this.flatColor = false,
     this.bannerGlow = false,
     this.bannerFlicker = 0.0,
+    this.bannerGlowBlur = 0.5,
     this.enableAudioReactivity = true,
     this.performanceMode = false,
     this.showInfoBanner = true,
@@ -125,6 +127,7 @@ class StealConfig {
       flatColor: map['flatColor'] as bool? ?? false,
       bannerGlow: map['bannerGlow'] as bool? ?? false,
       bannerFlicker: (map['bannerFlicker'] as num?)?.toDouble() ?? 0.0,
+      bannerGlowBlur: (map['bannerGlowBlur'] as num?)?.toDouble() ?? 0.5,
       enableAudioReactivity: map['enableAudioReactivity'] as bool? ?? true,
       performanceMode: map['performanceMode'] as bool? ?? false,
       showInfoBanner: map['showInfoBanner'] as bool? ?? true,
@@ -162,6 +165,7 @@ class StealConfig {
       'flatColor': flatColor,
       'bannerGlow': bannerGlow,
       'bannerFlicker': bannerFlicker,
+      'bannerGlowBlur': bannerGlowBlur,
       'enableAudioReactivity': enableAudioReactivity,
       'performanceMode': performanceMode,
       'showInfoBanner': showInfoBanner,
@@ -196,6 +200,7 @@ class StealConfig {
     bool? flatColor,
     bool? bannerGlow,
     double? bannerFlicker,
+    double? bannerGlowBlur,
     bool? enableAudioReactivity,
     bool? performanceMode,
     bool? showInfoBanner,
@@ -228,6 +233,7 @@ class StealConfig {
       flatColor: flatColor ?? this.flatColor,
       bannerGlow: bannerGlow ?? this.bannerGlow,
       bannerFlicker: bannerFlicker ?? this.bannerFlicker,
+      bannerGlowBlur: bannerGlowBlur ?? this.bannerGlowBlur,
       enableAudioReactivity:
           enableAudioReactivity ?? this.enableAudioReactivity,
       performanceMode: performanceMode ?? this.performanceMode,
@@ -267,6 +273,7 @@ class StealConfig {
         flatColor == other.flatColor &&
         bannerGlow == other.bannerGlow &&
         bannerFlicker == other.bannerFlicker &&
+        bannerGlowBlur == other.bannerGlowBlur &&
         enableAudioReactivity == other.enableAudioReactivity &&
         performanceMode == other.performanceMode &&
         showInfoBanner == other.showInfoBanner &&
@@ -301,6 +308,7 @@ class StealConfig {
         flatColor,
         bannerGlow,
         bannerFlicker,
+        bannerGlowBlur,
         enableAudioReactivity,
         performanceMode,
         showInfoBanner,

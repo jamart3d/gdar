@@ -5,7 +5,6 @@ import 'package:just_audio/just_audio.dart';
 import 'package:provider/provider.dart';
 import 'package:shakedown/providers/audio_provider.dart';
 import 'package:shakedown/providers/settings_provider.dart';
-import 'package:shakedown/services/device_service.dart';
 import 'package:shakedown/utils/font_layout_config.dart';
 import 'package:shakedown/utils/utils.dart';
 
@@ -80,13 +79,12 @@ class _PlaybackMessagesState extends State<PlaybackMessages> {
     final colorScheme = Theme.of(context).colorScheme;
     final audioProvider = context.watch<AudioProvider>();
     final settingsProvider = context.watch<SettingsProvider>();
-    final isTv = context.read<DeviceService>().isTv;
     final double scaleFactor =
         FontLayoutConfig.getEffectiveScale(context, settingsProvider);
     final double labelsFontSize = 12.0 * scaleFactor;
 
-    // On TV force default system font regardless of app font setting
-    final String? fontFamily = isTv ? 'Roboto' : null;
+    // Force default system/Roboto font regardless of app font setting
+    const String? fontFamily = 'Roboto';
 
     if (!settingsProvider.showPlaybackMessages) {
       return const SizedBox.shrink();

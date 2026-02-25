@@ -89,6 +89,7 @@ class SettingsProvider with ChangeNotifier {
   static const String _oilFlatColorKey = 'oil_flat_color';
   static const String _oilBannerGlowKey = 'oil_banner_glow';
   static const String _oilBannerFlickerKey = 'oil_banner_flicker';
+  static const String _oilBannerGlowBlurKey = 'oil_banner_glow_blur';
 
   // Ring controls (3-ring gap model)
   static const String _oilInnerRingScaleKey = 'oil_inner_ring_scale';
@@ -189,6 +190,7 @@ class SettingsProvider with ChangeNotifier {
   late bool _oilFlatColor;
   late bool _oilBannerGlow;
   late double _oilBannerFlicker;
+  late double _oilBannerGlowBlur;
 
   // Ring controls
   late double _oilInnerRingScale;
@@ -277,6 +279,7 @@ class SettingsProvider with ChangeNotifier {
   bool get oilFlatColor => _oilFlatColor;
   bool get oilBannerGlow => _oilBannerGlow;
   double get oilBannerFlicker => _oilBannerFlicker;
+  double get oilBannerGlowBlur => _oilBannerGlowBlur;
 
   // Ring control getters
   double get oilInnerRingScale => _oilInnerRingScale;
@@ -539,6 +542,8 @@ class SettingsProvider with ChangeNotifier {
         _prefs.getBool(_oilBannerGlowKey) ?? DefaultSettings.oilBannerGlow;
     _oilBannerFlicker = _prefs.getDouble(_oilBannerFlickerKey) ??
         DefaultSettings.oilBannerFlicker;
+    _oilBannerGlowBlur = _prefs.getDouble(_oilBannerGlowBlurKey) ??
+        DefaultSettings.oilBannerGlowBlur;
 
     // Ring controls
     _oilInnerRingScale = _prefs.getDouble(_oilInnerRingScaleKey) ??
@@ -759,6 +764,8 @@ class SettingsProvider with ChangeNotifier {
       _updatePreference(_oilBannerGlowKey, _oilBannerGlow = !_oilBannerGlow);
   Future<void> setOilBannerFlicker(double value) =>
       _updateDoublePreference(_oilBannerFlickerKey, _oilBannerFlicker = value);
+  Future<void> setOilBannerGlowBlur(double value) => _updateDoublePreference(
+      _oilBannerGlowBlurKey, _oilBannerGlowBlur = value);
 
   // Ring control setters
   Future<void> setOilInnerRingScale(double value) => _updateDoublePreference(

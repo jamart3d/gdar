@@ -318,7 +318,7 @@ class TvScreensaverSection extends StatelessWidget {
                     onKeyEvent: (node, event) {
                       if (event is KeyDownEvent) {
                         if (event.logicalKey == LogicalKeyboardKey.arrowLeft) {
-                          settings.setOilBannerFont('Rock Salt');
+                          settings.setOilBannerFont('RockSalt');
                           return KeyEventResult.handled;
                         } else if (event.logicalKey ==
                             LogicalKeyboardKey.arrowRight) {
@@ -331,7 +331,7 @@ class TvScreensaverSection extends StatelessWidget {
                     child: SegmentedButton<String>(
                       segments: const [
                         ButtonSegment(
-                            value: 'Rock Salt', label: Text('Rock Salt')),
+                            value: 'RockSalt', label: Text('Rock Salt')),
                         ButtonSegment(value: 'Roboto', label: Text('Roboto')),
                       ],
                       selected: {settings.oilBannerFont},
@@ -477,6 +477,18 @@ class TvScreensaverSection extends StatelessWidget {
                 rightLabel: 'Buzzing',
                 valueFormatter: (v) => '${(v * 100).round()}%',
                 onChanged: (v) => settings.setOilBannerFlicker(v),
+              ),
+              const SizedBox(height: 16),
+              TvStepperRow(
+                label: 'Glow Blur',
+                value: settings.oilBannerGlowBlur,
+                min: 0.0,
+                max: 1.0,
+                step: 0.05,
+                leftLabel: 'Tight',
+                rightLabel: 'Wide',
+                valueFormatter: (v) => '${(v * 100).round()}%',
+                onChanged: (v) => settings.setOilBannerGlowBlur(v),
               ),
             ],
           ],

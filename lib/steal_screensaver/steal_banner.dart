@@ -38,6 +38,20 @@ class _NeonWord {
   _NeonWord(this.text);
 }
 
+class _RasterGlyph {
+  final ui.Image image;
+  final double coreWidth;
+  final double coreHeight;
+  final double padding;
+
+  _RasterGlyph({
+    required this.image,
+    required this.coreWidth,
+    required this.coreHeight,
+    required this.padding,
+  });
+}
+
 // ── Main component ─────────────────────────────────────────────────────────
 
 class StealBanner extends Component with HasGameReference<StealGame> {
@@ -65,6 +79,12 @@ class StealBanner extends Component with HasGameReference<StealGame> {
 
   // ── Char width cache (static — shared across instances) ───────────────────
   static final Map<String, double> _charWidthCache = {};
+
+  // ── Rasterized glyph cache ─────────────────────────────────────────────────
+  static final Map<String, _RasterGlyph> _glyphCache = {};
+  static double _lastGlowBlur = -1.0;
+  static bool _lastGlowEnabled = false;
+  static String? _lastFontFamily;
 
   // ── Per-ring state ─────────────────────────────────────────────────────────
   String _outerCurrent = '';
@@ -534,6 +554,7 @@ class StealBanner extends Component with HasGameReference<StealGame> {
         lineCenter,
         effectiveOpacity,
         glowEnabled,
+        config,
       );
       visibleIndex++;
     }
@@ -546,6 +567,7 @@ class StealBanner extends Component with HasGameReference<StealGame> {
     Offset center,
     double effectiveOpacity,
     bool glowEnabled,
+    StealConfig config,
   ) {
     if (text.isEmpty) return;
 
@@ -582,24 +604,15 @@ class StealBanner extends Component with HasGameReference<StealGame> {
 
         final opacity = effectiveOpacity * wordBrightness;
 
-        if (glowEnabled) {
-          final glowShadows = _buildGlowShadows(_currentColor, opacity);
-          final hsl2 = HSLColor.fromColor(_currentColor);
-          final coreColor =
-              hsl2.withSaturation(0.05).withLightness(0.98).toColor();
-          _paintChar(canvas, char,
-              charWidth: charWidth,
-              color: coreColor.withValues(alpha: opacity * 0.97),
-              blurRadius: 0.0,
-              glowShadows: glowShadows);
-        } else {
-          _paintChar(canvas, char,
-              charWidth: charWidth,
-              color: _currentColor.withValues(alpha: opacity * 0.9),
-              blurRadius: 0.0,
-              withDropShadow: true,
-              dropShadowOpacity: opacity);
-        }
+        _paintChar(
+          canvas,
+          char,
+          charWidth,
+          _currentColor,
+          opacity,
+          glowEnabled,
+          config,
+        );
 
         canvas.restore();
         x += charWidth;
@@ -645,15 +658,15 @@ class StealBanner extends Component with HasGameReference<StealGame> {
 
     if (_outerCurrent.isNotEmpty && _outerOpacity > 0.01) {
       _drawRing(canvas, _outerCurrent, _outerWords, center, outerR, _outerAngle,
-          _opacity * _outerOpacity, glowEnabled);
+          _opacity * _outerOpacity, glowEnabled, config);
     }
     if (_middleCurrent.isNotEmpty && _middleOpacity > 0.01) {
       _drawRing(canvas, _middleCurrent, _middleWords, center, middleR,
-          _middleAngle, _opacity * _middleOpacity, glowEnabled);
+          _middleAngle, _opacity * _middleOpacity, glowEnabled, config);
     }
     if (_innerCurrent.isNotEmpty && _innerOpacity > 0.01) {
       _drawRing(canvas, _innerCurrent, _innerWords, center, innerR, _innerAngle,
-          _opacity * _innerOpacity, glowEnabled);
+          _opacity * _innerOpacity, glowEnabled, config);
     }
   }
 
@@ -666,6 +679,7 @@ class StealBanner extends Component with HasGameReference<StealGame> {
     double startAngle,
     double effectiveOpacity,
     bool glowEnabled,
+    StealConfig config,
   ) {
     if (text.isEmpty) return;
 
@@ -703,22 +717,15 @@ class StealBanner extends Component with HasGameReference<StealGame> {
 
         final opacity = effectiveOpacity * wordBrightness;
 
-        if (glowEnabled) {
-          final glowShadows = _buildGlowShadows(_currentColor, opacity);
-          final hsl = HSLColor.fromColor(_currentColor);
-          final coreColor =
-              hsl.withSaturation(0.05).withLightness(0.98).toColor();
-          _paintChar(canvas, chars[ci],
-              color: coreColor.withValues(alpha: opacity * 0.97),
-              blurRadius: 0.0,
-              glowShadows: glowShadows);
-        } else {
-          _paintChar(canvas, chars[ci],
-              color: _currentColor.withValues(alpha: opacity * 0.9),
-              blurRadius: 0.0,
-              withDropShadow: true,
-              dropShadowOpacity: opacity);
-        }
+        _paintChar(
+          canvas,
+          chars[ci],
+          _measureChar(chars[ci]),
+          _currentColor,
+          opacity,
+          glowEnabled,
+          config,
+        );
 
         canvas.restore();
         angle += charAngle;
@@ -730,20 +737,66 @@ class StealBanner extends Component with HasGameReference<StealGame> {
 
   void _paintChar(
     Canvas canvas,
-    String char, {
-    double? charWidth,
-    required Color color,
-    required double blurRadius,
-    bool withDropShadow = false,
-    double dropShadowOpacity = 1.0,
-    List<Shadow>? glowShadows,
-  }) {
+    String char,
+    double charWidth,
+    Color color,
+    double opacity,
+    bool glowEnabled,
+    StealConfig config,
+  ) {
+    if (opacity <= 0.0) return;
+
+    final glyph = _getRasterizedGlyph(char, glowEnabled, config);
+
+    // Offset centers the 'core' text and accommodates the shadow padding
+    final offset = Offset(
+      -charWidth / 2 - glyph.padding,
+      -glyph.coreHeight / 2 - glyph.padding,
+    );
+
+    final paint = Paint()
+      ..colorFilter = ui.ColorFilter.mode(
+        color.withValues(alpha: opacity),
+        ui.BlendMode.srcIn,
+      )
+      ..isAntiAlias = true;
+
+    canvas.drawImage(glyph.image, offset, paint);
+  }
+
+  _RasterGlyph _getRasterizedGlyph(
+      String char, bool glowEnabled, StealConfig config) {
+    if (_lastGlowEnabled != glowEnabled ||
+        _lastGlowBlur != config.bannerGlowBlur ||
+        _lastFontFamily != config.bannerFont) {
+      for (final g in _glyphCache.values) {
+        g.image.dispose();
+      }
+      _glyphCache.clear();
+      _lastGlowEnabled = glowEnabled;
+      _lastGlowBlur = config.bannerGlowBlur;
+      _lastFontFamily = config.bannerFont;
+    }
+
+    if (_glyphCache.containsKey(char)) {
+      return _glyphCache[char]!;
+    }
+
+    const double padding = 24.0; // accommodate max blur radius
+    final recorder = ui.PictureRecorder();
+    final canvas = Canvas(recorder);
+
+    // Draw solid white so color filtering maps cleanly
+    final glowShadows = glowEnabled
+        ? _buildGlowShadows(Colors.white, 1.0, config.bannerGlowBlur)
+        : null;
+
     final painter = TextPainter(
       text: TextSpan(
         text: char,
         style: TextStyle(
-          fontFamily: game.config.bannerFont,
-          color: color,
+          fontFamily: config.bannerFont,
+          color: Colors.white,
           fontSize: _fontSize,
           fontWeight: FontWeight.w600,
           letterSpacing: 0,
@@ -753,17 +806,36 @@ class StealBanner extends Component with HasGameReference<StealGame> {
       textDirection: ui.TextDirection.ltr,
     )..layout();
 
-    final cw = charWidth ?? painter.width;
-    final offset = Offset(-cw / 2, -painter.height / 2);
-    painter.paint(canvas, offset);
+    final width = painter.width + padding * 2;
+    final height = painter.height + padding * 2;
+
+    painter.paint(canvas, const Offset(padding, padding));
+
+    final picture = recorder.endRecording();
+    final image = picture.toImageSync(width.ceil(), height.ceil());
+
+    final glyph = _RasterGlyph(
+      image: image,
+      coreWidth: painter.width,
+      coreHeight: painter.height,
+      padding: padding,
+    );
+    _glyphCache[char] = glyph;
+    return glyph;
   }
 
   /// Builds a list of [Shadow]s that approximate a neon tube glow.
   /// All layers baked into a single TextPainter — zero saveLayer cost.
-  List<Shadow> _buildGlowShadows(Color baseColor, double opacity) {
+  List<Shadow> _buildGlowShadows(
+      Color baseColor, double opacity, double blurFactor) {
     final hsl = HSLColor.fromColor(baseColor);
     final bloom = hsl.withSaturation(1.0).withLightness(0.50).toColor();
     final halo = hsl.withSaturation(1.0).withLightness(0.75).toColor();
+
+    // The halo blur scales from tight (1.0 blurRadius at 0% setting)
+    // to wide/scattered (15.0 blurRadius at 100% setting)
+    // Minimum 0 so there is still text
+    final currentHaloBlur = ui.lerpDouble(1.0, 15.0, blurFactor) ?? 2.0;
 
     return [
       // Mid bloom
@@ -774,7 +846,7 @@ class StealBanner extends Component with HasGameReference<StealGame> {
       // Tight halo
       Shadow(
           color: halo.withValues(alpha: opacity * 0.80),
-          blurRadius: 2,
+          blurRadius: currentHaloBlur,
           offset: Offset.zero),
     ];
   }

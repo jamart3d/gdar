@@ -1,3 +1,7 @@
+Release 1.1.19+119:
+- UI (Web & Mobile): Updated the playback messages (buffered time and next time indicator) to use the default Roboto font for better legibility.
+- UI (TV): Fixed an issue where the Steal Screensaver text font setting was not being correctly applied due to a font family name mismatch.
+
 Release 1.1.18+118:
 - Web: Fixed UI sync issue where playback progress and metadata were stale in the mini-player.
 - Testing: Implemented 8 new regression tests for the Web Player adapter's stream contract.

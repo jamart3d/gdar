@@ -288,6 +288,8 @@ class FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
   @override
   double get oilBannerFlicker => 0.0;
   @override
+  double get oilBannerGlowBlur => 0.5;
+  @override
   double get oilInnerRingScale => 1.0;
   @override
   double get oilInnerToMiddleGap => 0.3;
@@ -454,6 +456,8 @@ class FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
   void toggleOilBannerGlow() {}
   @override
   Future<void> setOilBannerFlicker(double value) async {}
+  @override
+  Future<void> setOilBannerGlowBlur(double value) async {}
   @override
   Future<void> setOilInnerRingScale(double value) async {}
   @override

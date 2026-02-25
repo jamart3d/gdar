@@ -75,6 +75,7 @@ class DefaultSettings {
   static const bool oilFlatColor = true;
   static const bool oilBannerGlow = false;
   static const double oilBannerFlicker = 0.0;
+  static const double oilBannerGlowBlur = 0.5;
   static const bool oilEnableAudioReactivity = false;
   static const bool oilPerformanceMode = false;
   static const bool oilPaletteCycle = true;
@@ -86,7 +87,7 @@ class DefaultSettings {
   static const double oilTranslationSmoothing =
       0.7; // Updated default for smoother feel
   static const String oilBannerDisplayMode = 'ring';
-  static const String oilBannerFont = 'Rock Salt';
+  static const String oilBannerFont = 'RockSalt';
   static const double oilFlatTextProximity = 0.0;
   static const String oilFlatTextPlacement = 'below';
 

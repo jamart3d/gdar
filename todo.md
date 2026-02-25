@@ -20,7 +20,7 @@
     - [x] Manual verification on Google TV.
 
 ## TV Screensaver Optimization (Neon Glow) [CRITICAL - HIGH PRIORITY]
-- [ ] **Major Performance Optimization**: Refactor `StealBanner` neon glow for Google TV.
+- [x] **Major Performance Optimization**: Refactor `StealBanner` neon glow for Google TV.
     - **Status**: Previous blur simplifications (1.1.17) still result in excessive GPU load on low-spec Google TV hardware.
     - **Problem**: Real-time Gaussian blurs on character glyphs are too expensive for TV SOCs.
     - **Solution**: Implement a Rasterized Glyph Cache (`Map<String, ui.Image>`).
