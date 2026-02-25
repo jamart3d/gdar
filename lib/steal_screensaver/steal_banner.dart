@@ -618,7 +618,8 @@ class StealBanner extends Component with HasGameReference<StealGame> {
       final painter = TextPainter(
         text: TextSpan(
           text: char,
-          style: const TextStyle(
+          style: TextStyle(
+            fontFamily: game.config.bannerFont,
             fontSize: _fontSize,
             fontWeight: FontWeight.w600,
           ),
@@ -741,6 +742,7 @@ class StealBanner extends Component with HasGameReference<StealGame> {
       text: TextSpan(
         text: char,
         style: TextStyle(
+          fontFamily: game.config.bannerFont,
           color: color,
           fontSize: _fontSize,
           fontWeight: FontWeight.w600,

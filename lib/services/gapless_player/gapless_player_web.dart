@@ -39,6 +39,15 @@ extension type _GdarState(JSObject _) {
   external double get duration;
   external int get playlistLength;
   external String get contextState;
+  external String get processingState;
+}
+
+/// Track change event sent from the JS engine.
+@JS()
+@anonymous
+extension type _JsTrackChangeEvent(JSObject _) {
+  external int get from;
+  external int get to;
 }
 
 /// A JS track object passed to [_GdarAudioEngine.setPlaylist].
@@ -82,11 +91,26 @@ class GaplessPlayer {
   ProcessingState _processingState = ProcessingState.idle;
   List<IndexedAudioSource> _sequence = [];
 
+  final bool _useJsEngine;
+  final AudioPlayer? _fallbackPlayer;
+
   /// Creates a [GaplessPlayer] (web implementation).
   ///
-  /// [audioPlayer] is intentionally ignored on web — provided only to satisfy
-  /// the same constructor signature as the native wrapper.
-  GaplessPlayer({AudioPlayer? audioPlayer}) {
+  /// If [useWebGaplessEngine] is true, it bridges to the custom JS engine
+  /// for perfect gapless playback. If false, it acts as a transparent proxy
+  /// to a standard `just_audio` [AudioPlayer].
+  GaplessPlayer({
+    AudioPlayer? audioPlayer,
+    bool useWebGaplessEngine = true,
+  })  : _useJsEngine = useWebGaplessEngine,
+        _fallbackPlayer =
+            useWebGaplessEngine ? null : (audioPlayer ?? AudioPlayer()) {
+    if (_useJsEngine) {
+      _initJsEngine();
+    }
+  }
+
+  void _initJsEngine() {
     _engine.init();
     _engine.onStateChange(
       ((JSObject raw) {
@@ -95,8 +119,8 @@ class GaplessPlayer {
     );
     _engine.onTrackChange(
       ((JSObject raw) {
-        final s = raw as _GdarState;
-        final to = s.index;
+        final e = raw as _JsTrackChangeEvent;
+        final to = e.to;
         _currentIndex = to >= 0 ? to : null;
         _indexController.add(_currentIndex);
         _emitSequenceState();
@@ -115,20 +139,34 @@ class GaplessPlayer {
     );
   }
 
+  /// Maps a JS processingState string to the [ProcessingState] enum.
+  ProcessingState _mapProcessingState(String jsState) {
+    switch (jsState) {
+      case 'loading':
+        return ProcessingState.loading;
+      case 'buffering':
+        return ProcessingState.buffering;
+      case 'ready':
+        return ProcessingState.ready;
+      case 'completed':
+        return ProcessingState.completed;
+      case 'idle':
+      default:
+        return ProcessingState.idle;
+    }
+  }
+
   void _onJsStateChange(_GdarState s) {
     final wasPlaying = _playing;
     final wasDuration = _durationSec;
+    final wasIndex = _currentIndex;
 
     _playing = s.playing;
     _positionSec = s.position;
     _durationSec = s.duration;
     _currentIndex = s.index >= 0 ? s.index : null;
 
-    _processingState = _playing
-        ? ProcessingState.ready
-        : (_currentIndex == null
-            ? ProcessingState.idle
-            : ProcessingState.ready);
+    _processingState = _mapProcessingState(s.processingState);
 
     _positionController
         .add(Duration(milliseconds: (_positionSec * 1000).round()));
@@ -140,6 +178,10 @@ class GaplessPlayer {
     }
     if (_playing != wasPlaying) {
       _playingController.add(_playing);
+    }
+    if (_currentIndex != wasIndex) {
+      _indexController.add(_currentIndex);
+      _emitSequenceState();
     }
     _processingStateController.add(_processingState);
     _emitPlayerState();
@@ -163,50 +205,72 @@ class GaplessPlayer {
 
   // ─── Getters ──────────────────────────────────────────────────────────────
 
-  /// Whether the engine is playing.
-  bool get playing => _playing;
+  bool get playing => _useJsEngine ? _playing : _fallbackPlayer!.playing;
 
-  /// Current playback position.
-  Duration get position =>
-      Duration(milliseconds: (_positionSec * 1000).round());
+  Duration get position => _useJsEngine
+      ? Duration(milliseconds: (_positionSec * 1000).round())
+      : _fallbackPlayer!.position;
 
-  /// Web has no separate buffered position concept; mirrors [position].
-  Duration get bufferedPosition => position;
+  Duration get bufferedPosition =>
+      _useJsEngine ? position : _fallbackPlayer!.bufferedPosition;
 
-  /// Current track duration, or null if not yet known.
-  Duration? get duration => _durationSec > 0
-      ? Duration(milliseconds: (_durationSec * 1000).round())
-      : null;
+  Duration? get duration => _useJsEngine
+      ? (_durationSec > 0
+          ? Duration(milliseconds: (_durationSec * 1000).round())
+          : null)
+      : _fallbackPlayer!.duration;
 
-  /// Index of the current track in [sequence].
-  int? get currentIndex => _currentIndex;
+  int? get currentIndex =>
+      _useJsEngine ? _currentIndex : _fallbackPlayer!.currentIndex;
 
-  /// The loaded [IndexedAudioSource] sequence.
-  List<IndexedAudioSource> get sequence => _sequence;
+  List<IndexedAudioSource> get sequence =>
+      _useJsEngine ? _sequence : _fallbackPlayer!.sequence;
 
-  /// Current [ProcessingState].
-  ProcessingState get processingState => _processingState;
+  ProcessingState get processingState =>
+      _useJsEngine ? _processingState : _fallbackPlayer!.processingState;
 
-  /// Synchronous [PlayerState] snapshot.
-  PlayerState get playerState => PlayerState(_playing, _processingState);
+  PlayerState get playerState => _useJsEngine
+      ? PlayerState(_playing, _processingState)
+      : _fallbackPlayer!.playerState;
 
-  /// Not applicable on web — always null.
   int? get androidAudioSessionId => null;
 
   // ─── Streams ──────────────────────────────────────────────────────────────
 
-  Stream<PlayerState> get playerStateStream => _playerStateController.stream;
-  Stream<PlaybackEvent> get playbackEventStream =>
-      _playbackEventController.stream;
-  Stream<bool> get playingStream => _playingController.stream;
-  Stream<ProcessingState> get processingStateStream =>
-      _processingStateController.stream;
-  Stream<Duration> get bufferedPositionStream => _positionController.stream;
-  Stream<Duration> get positionStream => _positionController.stream;
-  Stream<Duration?> get durationStream => _durationController.stream;
-  Stream<int?> get currentIndexStream => _indexController.stream;
-  Stream<SequenceState?> get sequenceStateStream =>
-      _sequenceStateController.stream;
+  Stream<PlayerState> get playerStateStream => _useJsEngine
+      ? _playerStateController.stream
+      : _fallbackPlayer!.playerStateStream;
+
+  Stream<PlaybackEvent> get playbackEventStream => _useJsEngine
+      ? _playbackEventController.stream
+      : _fallbackPlayer!.playbackEventStream;
+
+  Stream<bool> get playingStream =>
+      _useJsEngine ? _playingController.stream : _fallbackPlayer!.playingStream;
+
+  Stream<ProcessingState> get processingStateStream => _useJsEngine
+      ? _processingStateController.stream
+      : _fallbackPlayer!.processingStateStream;
+
+  Stream<Duration> get bufferedPositionStream => _useJsEngine
+      ? _positionController.stream
+      : _fallbackPlayer!.bufferedPositionStream;
+
+  Stream<Duration> get positionStream => _useJsEngine
+      ? _positionController.stream
+      : _fallbackPlayer!.positionStream;
+
+  Stream<Duration?> get durationStream => _useJsEngine
+      ? _durationController.stream
+      : _fallbackPlayer!.durationStream;
+
+  Stream<int?> get currentIndexStream => _useJsEngine
+      ? _indexController.stream
+      : _fallbackPlayer!.currentIndexStream;
+
+  Stream<SequenceState?> get sequenceStateStream => _useJsEngine
+      ? _sequenceStateController.stream
+      : _fallbackPlayer!.sequenceStateStream;
 
   // ─── Methods ──────────────────────────────────────────────────────────────
 
@@ -226,13 +290,21 @@ class GaplessPlayer {
     return _JsTrack(url: '', title: '', artist: '', album: '', id: '');
   }
 
-  /// Loads a playlist of audio sources into the JS engine.
+  /// Loads a playlist of audio sources into the engine.
   Future<Duration?> setAudioSources(
     List<AudioSource> children, {
     int initialIndex = 0,
     Duration initialPosition = Duration.zero,
     bool preload = true,
   }) async {
+    if (!_useJsEngine) {
+      return _fallbackPlayer!.setAudioSources(
+        children,
+        initialIndex: initialIndex,
+        initialPosition: initialPosition,
+        preload: preload,
+      );
+    }
     _sequence = children.whereType<IndexedAudioSource>().toList();
     _engine.setPlaylist(
       children.map(_sourceToJsTrack).toList().toJS,
@@ -245,23 +317,28 @@ class GaplessPlayer {
     return null; // Duration only known post-decode on web
   }
 
-  /// Appends additional audio sources to the JS playlist.
+  /// Appends additional audio sources to the playlist.
   Future<void> addAudioSources(List<AudioSource> sources) async {
+    if (!_useJsEngine) return _fallbackPlayer!.addAudioSources(sources);
     _sequence = [..._sequence, ...sources.whereType<IndexedAudioSource>()];
     _engine.appendTracks(sources.map(_sourceToJsTrack).toList().toJS);
   }
 
   /// Begins or resumes playback.
-  Future<void> play() async => _engine.play();
+  Future<void> play() async =>
+      _useJsEngine ? _engine.play() : _fallbackPlayer!.play();
 
   /// Pauses playback.
-  Future<void> pause() async => _engine.pause();
+  Future<void> pause() async =>
+      _useJsEngine ? _engine.pause() : _fallbackPlayer!.pause();
 
   /// Stops playback.
-  Future<void> stop() async => _engine.stop();
+  Future<void> stop() async =>
+      _useJsEngine ? _engine.stop() : _fallbackPlayer!.stop();
 
   /// Seeks to [position] within the current track, or to [index] if provided.
   Future<void> seek(Duration? position, {int? index}) async {
+    if (!_useJsEngine) return _fallbackPlayer!.seek(position, index: index);
     if (index != null) {
       _engine.seekToIndex(index);
     } else if (position != null) {
@@ -271,18 +348,28 @@ class GaplessPlayer {
 
   /// Seeks to the next track.
   Future<void> seekToNext() async {
+    if (!_useJsEngine) return _fallbackPlayer!.seekToNext();
     final next = (_currentIndex ?? 0) + 1;
     if (next < _sequence.length) _engine.seekToIndex(next);
   }
 
   /// Seeks to the previous track.
   Future<void> seekToPrevious() async {
+    if (!_useJsEngine) return _fallbackPlayer!.seekToPrevious();
     final prev = (_currentIndex ?? 1) - 1;
     if (prev >= 0) _engine.seekToIndex(prev);
   }
 
+  /// Updates the web prefetch window (seconds).
+  void setWebPrefetchSeconds(int seconds) {
+    if (_useJsEngine) _engine.setPrefetchSeconds(seconds);
+  }
+
   /// Releases all resources.
   Future<void> dispose() async {
+    if (!_useJsEngine) {
+      return _fallbackPlayer!.dispose();
+    }
     _engine.stop();
     await _playerStateController.close();
     await _playbackEventController.close();

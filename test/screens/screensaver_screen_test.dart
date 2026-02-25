@@ -75,6 +75,7 @@ void main() {
     when(mockSettingsProvider.oilLogoTrailSlices).thenReturn(6);
     when(mockSettingsProvider.oilLogoTrailLength).thenReturn(0.5);
     when(mockSettingsProvider.enableSwipeToBlock).thenReturn(false);
+    when(mockSettingsProvider.oilBannerFont).thenReturn('Roboto');
 
     // Mock AudioProvider's audioPlayer for ScreensaverScreen
     final mockAudioPlayer = MockAudioPlayerRelaxed();

@@ -29,6 +29,9 @@
   // Compressed ArrayBuffer cache. Kept around for seek-back.
   const _compressed = {};
 
+  // AbortControllers for active fetch requests.
+  const _abortControllers = {};
+
   // Active AudioBufferSourceNode for current track.
   let _currentSource = null;
   let _currentTrackStartContextTime = 0; // AudioContext.currentTime when track playback began
@@ -49,6 +52,9 @@
   // Watchdog — detects missed onended events (screen off / background tab).
   let _watchdogTimer = null;
   let _expectedEndContextTime = 0;
+
+  // Processing state communicated to Dart: 'idle', 'loading', 'buffering', 'ready'.
+  let _loadingState = 'idle';
 
   // Callbacks registered by Dart.
   let _onStateChange = null;
@@ -108,9 +114,18 @@
     _clearScheduled();
     Object.keys(_decoded).forEach(k => delete _decoded[k]);
     Object.keys(_compressed).forEach(k => delete _compressed[k]);
+    Object.keys(_abortControllers).forEach(k => {
+      try { _abortControllers[k].abort(); } catch (_) { }
+      delete _abortControllers[k];
+    });
 
     _playlist = tracks || [];
     _currentIndex = startIndex != null ? startIndex : 0;
+    _loadingState = 'idle';
+    // Do not inherently reset _playing to false if we literally just asked it to start;
+    // however, the standard convention is that loading a new list implies stopping 
+    // until explicitly told to play again. The Dart audio_provider now ensures
+    // `play()` is called *after* this.
     _playing = false;
     _emitState();
   }
@@ -133,14 +148,27 @@
     const track = _playlist[index];
     if (!track) return Promise.reject(new Error('No track at index ' + index));
 
-    return fetch(track.url)
+    if (_abortControllers[index]) {
+      try { _abortControllers[index].abort(); } catch (_) { }
+    }
+    const controller = new AbortController();
+    _abortControllers[index] = controller;
+
+    return fetch(track.url, { signal: controller.signal })
       .then(r => {
         if (!r.ok) throw new Error('HTTP ' + r.status + ' fetching ' + track.url);
         return r.arrayBuffer();
       })
       .then(buf => {
         _compressed[index] = buf;
+        delete _abortControllers[index];
         return buf;
+      })
+      .catch(err => {
+        delete _abortControllers[index];
+        // Don't throw if it was explicitly aborted to avoid console spam
+        if (err.name === 'AbortError') return Promise.reject(new Error('Aborted'));
+        throw err;
       });
   }
 
@@ -162,12 +190,23 @@
     });
   }
 
-  /** Evict decoded buffers for all indices except current and next. */
+  /** Evict decoded and compressed buffers for all indices except current and next. Cancels pending fetches. */
   function _evictOldBuffers() {
     const keep = new Set([_currentIndex, _currentIndex + 1]);
     Object.keys(_decoded).forEach(k => {
       if (!keep.has(parseInt(k, 10))) {
         delete _decoded[k];
+      }
+    });
+    Object.keys(_compressed).forEach(k => {
+      if (!keep.has(parseInt(k, 10))) {
+        delete _compressed[k];
+      }
+    });
+    Object.keys(_abortControllers).forEach(k => {
+      if (!keep.has(parseInt(k, 10))) {
+        try { _abortControllers[k].abort(); } catch (_) { }
+        delete _abortControllers[k];
       }
     });
   }
@@ -180,6 +219,7 @@
    */
   function _startTrack(audioBuf, offsetSeconds, startContextTime) {
     _stopCurrentSource();
+    _loadingState = 'ready';
 
     const src = _ctx.createBufferSource();
     src.buffer = audioBuf;
@@ -252,6 +292,12 @@
     // The next track was hopefully pre-scheduled; _scheduledSource is now
     // the active one.
     if (_scheduledSource && _scheduledIndex === _currentIndex) {
+      // Explicitly stop the old source to prevent audible overlap.
+      if (_currentSource) {
+        _currentSource.onended = null;
+        try { _currentSource.stop(); } catch (_) { }
+        _currentSource.disconnect();
+      }
       _currentSource = _scheduledSource;
       _scheduledSource = null;
       _scheduledIndex = -1;
@@ -269,6 +315,7 @@
         : 0;
       _playing = true;
       _startPositionTimer();
+      _startWatchdog();
       _schedulePrefetch();
       _evictOldBuffers();
       _emitTrackChange(wasIndex, _currentIndex);
@@ -277,9 +324,13 @@
     } else {
       // Scheduling missed (decode wasn't ready in time). Fall back to a
       // regular play with a brief gap.
+      _stopCurrentSource();
+      _loadingState = 'loading';
+      const targetIndex = _currentIndex;
       _emitTrackChange(wasIndex, _currentIndex);
+      _emitState();
       _decode(_currentIndex).then(buf => {
-        if (_currentIndex === _currentIndex) { // guard stale calls
+        if (_currentIndex === targetIndex) { // guard stale calls
           _startTrack(buf, 0, null);
           _emitTrackChange(wasIndex, _currentIndex);
         }
@@ -392,7 +443,11 @@
     if (_ctx.currentTime > _expectedEndContextTime + 0.25) {
       // Track has ended but onended was not dispatched. Advance manually.
       const missedSrc = _currentSource;
-      if (missedSrc) missedSrc.onended = null; // prevent double-fire
+      if (missedSrc) {
+        missedSrc.onended = null; // prevent double-fire
+        try { missedSrc.stop(); } catch (_) { } // stop audible overlap
+        missedSrc.disconnect();
+      }
       _currentSource = null;
       _stopWatchdog();
       _expectedEndContextTime = 0;
@@ -405,15 +460,15 @@
   function _emitState() {
     if (_onStateChange) {
       try {
+        var ps = _loadingState;
+        if (!_ctx) ps = 'idle';
+        else if (_currentIndex < 0) ps = 'idle';
         _onStateChange({
           playing: _playing,
           index: _currentIndex,
           position: _getCurrentPositionSeconds(),
           duration: _currentTrackDuration,
-          processingState: !_ctx ? 'idle'
-            : _playing ? 'ready'
-              : _currentIndex < 0 ? 'idle'
-                : 'ready',
+          processingState: ps,
         });
       } catch (_) { }
     }
@@ -487,6 +542,8 @@
 
       const index = Math.max(0, _currentIndex);
       _currentIndex = index;
+      _loadingState = 'loading';
+      _emitState();
       _decode(index).then(buf => {
         _startTrack(buf, _currentTrackStartOffset, null);
         _emitTrackChange(-1, index);
@@ -515,7 +572,12 @@
       _clearScheduled();
       _cancelPrefetch();
       _playing = false;
+      _loadingState = 'idle';
       _currentTrackStartOffset = 0;
+      Object.keys(_abortControllers).forEach(k => {
+        try { _abortControllers[k].abort(); } catch (_) { }
+        delete _abortControllers[k];
+      });
       _emitState();
     },
 
@@ -530,6 +592,8 @@
       _playing = false;
 
       if (wasPlaying) {
+        _loadingState = 'loading';
+        _emitState();
         _decode(_currentIndex).then(buf => {
           _startTrack(buf, seconds, null);
         }).catch(err => _emitError('Seek decode error: ' + err.message));
@@ -550,10 +614,14 @@
       _currentTrackStartOffset = 0;
       _playing = false;
 
+      _evictOldBuffers(); // Flush RAM and abort fetches for previous tracks
+
       // Keep the compressed buffer; we'll re-decode.
       delete _decoded[index]; // force fresh decode from compressed cache
 
       if (wasPlaying) {
+        _loadingState = 'loading';
+        _emitState();
         _decode(index).then(buf => {
           _startTrack(buf, 0, null);
           _emitTrackChange(oldIndex, index);
@@ -577,6 +645,7 @@
         position: _getCurrentPositionSeconds(),
         duration: _currentTrackDuration,
         playlistLength: _playlist.length,
+        processingState: _loadingState,
         decodedIndices: Object.keys(_decoded).map(Number),
         compressedIndices: Object.keys(_compressed).map(Number),
         contextState: _ctx ? _ctx.state : 'none',

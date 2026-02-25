@@ -516,6 +516,20 @@ class MockSettingsProvider extends _i1.Mock implements _i9.SettingsProvider {
       ) as bool);
 
   @override
+  bool get webGaplessEngine => (super.noSuchMethod(
+        Invocation.getter(#webGaplessEngine),
+        returnValue: false,
+        returnValueForMissingStub: false,
+      ) as bool);
+
+  @override
+  int get webPrefetchSeconds => (super.noSuchMethod(
+        Invocation.getter(#webPrefetchSeconds),
+        returnValue: 0,
+        returnValueForMissingStub: 0,
+      ) as int);
+
+  @override
   bool get useOilScreensaver => (super.noSuchMethod(
         Invocation.getter(#useOilScreensaver),
         returnValue: false,
@@ -621,6 +635,19 @@ class MockSettingsProvider extends _i1.Mock implements _i9.SettingsProvider {
         returnValueForMissingStub: _i10.dummyValue<String>(
           this,
           Invocation.getter(#oilBannerDisplayMode),
+        ),
+      ) as String);
+
+  @override
+  String get oilBannerFont => (super.noSuchMethod(
+        Invocation.getter(#oilBannerFont),
+        returnValue: _i10.dummyValue<String>(
+          this,
+          Invocation.getter(#oilBannerFont),
+        ),
+        returnValueForMissingStub: _i10.dummyValue<String>(
+          this,
+          Invocation.getter(#oilBannerFont),
         ),
       ) as String);
 
@@ -1112,6 +1139,25 @@ class MockSettingsProvider extends _i1.Mock implements _i9.SettingsProvider {
       );
 
   @override
+  void toggleWebGaplessEngine() => super.noSuchMethod(
+        Invocation.method(
+          #toggleWebGaplessEngine,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  _i7.Future<void> setWebPrefetchSeconds(int? seconds) => (super.noSuchMethod(
+        Invocation.method(
+          #setWebPrefetchSeconds,
+          [seconds],
+        ),
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
+
+  @override
   void setRgbAnimationSpeed(double? speed) => super.noSuchMethod(
         Invocation.method(
           #setRgbAnimationSpeed,
@@ -1275,6 +1321,16 @@ class MockSettingsProvider extends _i1.Mock implements _i9.SettingsProvider {
         Invocation.method(
           #setOilBannerDisplayMode,
           [mode],
+        ),
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
+
+  @override
+  _i7.Future<void> setOilBannerFont(String? font) => (super.noSuchMethod(
+        Invocation.method(
+          #setOilBannerFont,
+          [font],
         ),
         returnValue: _i7.Future<void>.value(),
         returnValueForMissingStub: _i7.Future<void>.value(),

@@ -43,6 +43,8 @@ class PlaybackSection extends StatelessWidget {
       icon: Icons.play_circle_outline_rounded,
       initiallyExpanded: initiallyExpanded,
       children: [
+        if (kIsWeb)
+          ..._buildWebGaplessSection(context, settingsProvider, scaleFactor),
         // Screensaver settings moved to Screensaver section for Google TV
 
         HighlightableSetting(
@@ -109,7 +111,7 @@ class PlaybackSection extends StatelessWidget {
             secondary: const Icon(Icons.message_rounded),
           ),
         ),
-        if (!context.read<DeviceService>().isTv)
+        if (!context.read<DeviceService>().isTv && !kIsWeb)
           HighlightableSetting(
             key: ValueKey(
                 'offline_buffering_${highlightTriggerCount}_${activeHighlightKey == 'offline_buffering'}'),
@@ -146,40 +148,41 @@ class PlaybackSection extends StatelessWidget {
               secondary: const Icon(Icons.download_for_offline_rounded),
             ),
           ),
-        HighlightableSetting(
-          key: ValueKey(
-              'enable_buffer_agent_${highlightTriggerCount}_${activeHighlightKey == 'enable_buffer_agent'}'),
-          startWithHighlight: activeHighlightKey == 'enable_buffer_agent',
-          settingKey: settingKeys['enable_buffer_agent'],
-          child: TvSwitchListTile(
-            dense: true,
-            visualDensity: VisualDensity.compact,
-            title: FittedBox(
-                fit: BoxFit.scaleDown,
-                alignment: Alignment.centerLeft,
-                child: Text('Buffer Agent',
+        if (!kIsWeb)
+          HighlightableSetting(
+            key: ValueKey(
+                'enable_buffer_agent_${highlightTriggerCount}_${activeHighlightKey == 'enable_buffer_agent'}'),
+            startWithHighlight: activeHighlightKey == 'enable_buffer_agent',
+            settingKey: settingKeys['enable_buffer_agent'],
+            child: TvSwitchListTile(
+              dense: true,
+              visualDensity: VisualDensity.compact,
+              title: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child: Text('Buffer Agent',
+                      style: Theme.of(context)
+                          .textTheme
+                          .titleMedium
+                          ?.copyWith(fontSize: 16 * scaleFactor))),
+              subtitle: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    'Auto-fix network and buffer issues',
                     style: Theme.of(context)
                         .textTheme
-                        .titleMedium
-                        ?.copyWith(fontSize: 16 * scaleFactor))),
-            subtitle: FittedBox(
-                fit: BoxFit.scaleDown,
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  'Auto-fix network and buffer issues',
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodySmall
-                      ?.copyWith(fontSize: 12 * scaleFactor),
-                )),
-            value: settingsProvider.enableBufferAgent,
-            onChanged: (value) {
-              HapticFeedback.lightImpact();
-              context.read<SettingsProvider>().toggleEnableBufferAgent();
-            },
-            secondary: const Icon(Icons.healing_rounded),
+                        .bodySmall
+                        ?.copyWith(fontSize: 12 * scaleFactor),
+                  )),
+              value: settingsProvider.enableBufferAgent,
+              onChanged: (value) {
+                HapticFeedback.lightImpact();
+                context.read<SettingsProvider>().toggleEnableBufferAgent();
+              },
+              secondary: const Icon(Icons.healing_rounded),
+            ),
           ),
-        ),
         TvSwitchListTile(
           dense: true,
           visualDensity: VisualDensity.compact,
@@ -368,9 +371,6 @@ class PlaybackSection extends StatelessWidget {
           secondary: const Icon(Icons.history_toggle_off_rounded),
         ),
         RandomProbabilityCard(scaleFactor: scaleFactor),
-        // ── Web Gapless Engine (web-only) ──────────────────────────────────
-        if (kIsWeb)
-          ..._buildWebGaplessSection(context, settingsProvider, scaleFactor),
       ],
     );
   }
@@ -385,7 +385,6 @@ class PlaybackSection extends StatelessWidget {
     double scaleFactor,
   ) {
     return [
-      const Divider(),
       TvSwitchListTile(
         dense: true,
         visualDensity: VisualDensity.compact,
@@ -404,7 +403,7 @@ class PlaybackSection extends StatelessWidget {
           fit: BoxFit.scaleDown,
           alignment: Alignment.centerLeft,
           child: Text(
-            'Use Web Audio API for 0ms track transitions',
+            'Use Web Audio API for 0ms track transitions (Requires app reload)',
             style: Theme.of(context)
                 .textTheme
                 .bodySmall
@@ -445,6 +444,7 @@ class PlaybackSection extends StatelessWidget {
             },
           ),
         ),
+      const Divider(),
     ];
   }
 }

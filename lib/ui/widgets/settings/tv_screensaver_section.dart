@@ -302,6 +302,48 @@ class TvScreensaverSection extends StatelessWidget {
               ),
             ),
 
+            const SizedBox(height: 16),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Banner Font',
+                    style: textTheme.bodySmall
+                        ?.copyWith(color: colorScheme.onSurfaceVariant),
+                  ),
+                  const SizedBox(height: 8),
+                  TvFocusWrapper(
+                    onKeyEvent: (node, event) {
+                      if (event is KeyDownEvent) {
+                        if (event.logicalKey == LogicalKeyboardKey.arrowLeft) {
+                          settings.setOilBannerFont('Rock Salt');
+                          return KeyEventResult.handled;
+                        } else if (event.logicalKey ==
+                            LogicalKeyboardKey.arrowRight) {
+                          settings.setOilBannerFont('Roboto');
+                          return KeyEventResult.handled;
+                        }
+                      }
+                      return KeyEventResult.ignored;
+                    },
+                    child: SegmentedButton<String>(
+                      segments: const [
+                        ButtonSegment(
+                            value: 'Rock Salt', label: Text('Rock Salt')),
+                        ButtonSegment(value: 'Roboto', label: Text('Roboto')),
+                      ],
+                      selected: {settings.oilBannerFont},
+                      onSelectionChanged: (Set<String> s) =>
+                          settings.setOilBannerFont(s.first),
+                      showSelectedIcon: false,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
             // Ring-only settings
             if (isRingMode) ...[
               const SizedBox(height: 16),

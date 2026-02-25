@@ -39,10 +39,17 @@
 
 ## Verification (Dart MCP)
 - [x] `analyze_files` — zero errors on new and modified files
-- [ ] `run_tests` — all existing tests pass (native wrapper = no-op)
-- [ ] Manual: `flutter run -d chrome` → play segue show → 0ms transitions
-- [ ] Manual: Chrome DevTools `window._gdarAudio.getState()`
-- [ ] Manual: Toggle Gapless Engine OFF → verify fallback
-- [ ] Manual: Background tab 10 min → no stall
-- [x] Investigate: Web UI playback does not play next track when screen is off
-  - **Fixed in `gapless_audio_engine.js`**: `visibilitychange` → `ctx.resume()` on screen restore; eager `_fetchCompressed()` bypasses frozen `setTimeout`; 500ms watchdog catches missed `onended` callbacks.
+- [x] `run_tests` — all existing tests pass (native wrapper = no-op)
+- [x] Manual: `flutter run -d chrome` → play segue show → 0ms transitions
+- [x] Manual: Chrome DevTools `window._gdarAudio.getState()`
+- [x] Bug: Track overlapping occasionally on background tab transitions
+- [x] Bug: Mini player track title not updating on track change (web only)
+- [x] Bug: Mini player play/pause button state not syncing with actual playback state (web only)
+- [x] Bug: Random playback on new playlist failing to unpause
+- [x] Feature: Show loading spinner in mini player while track is buffering/decoding (web only)
+
+## JS Audio Engine Optimization (Option 3)
+- [x] Implement `AbortController` in `_fetchCompressed` to cancel pending downloads
+- [x] Add `_cancelFetch(index)` method to abort pending fetch requests (handled via direct `_abortControllers` logic)
+- [x] Update `_evictOldBuffers` to delete `_compressed[index]` as well as `_decoded`
+- [x] Call `_cancelFetch` in `stop()`, `seekToIndex()`, and `setPlaylist()`

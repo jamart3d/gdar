@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -400,8 +401,12 @@ class _AppearanceSectionState extends State<AppearanceSection> {
                         backgroundColor:
                             WidgetStateProperty.resolveWith<Color?>(
                           (states) {
-                            // Always use transparent background for a cleaner look
-                            // Rely on text color to show selection
+                            // On web, or when selected, we want transparency to show the gradient border
+                            if (kIsWeb ||
+                                states.contains(WidgetState.selected)) {
+                              return Colors.transparent;
+                            }
+                            // Unselected non-web: subtle dark surface or transparent
                             return Colors.transparent;
                           },
                         ),

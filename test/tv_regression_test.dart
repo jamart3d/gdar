@@ -468,6 +468,11 @@ class FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
   Future<void> setOilLogoTrailLength(double value) async {}
 
   @override
+  String get oilBannerFont => 'Roboto';
+  @override
+  Future<void> setOilBannerFont(String font) async {}
+
+  @override
   bool get hasListeners => super.hasListeners;
 }
 

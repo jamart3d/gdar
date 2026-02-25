@@ -26,6 +26,7 @@ class StealConfig {
   final double middleToOuterGap;
   final double orbitDrift;
   final String bannerDisplayMode; // 'ring' or 'flat'
+  final String bannerFont; // e.g. 'Rock Salt' or 'Roboto'
   final double logoTrailIntensity; // 0.0 = off, 1.0 = full
   final int logoTrailSlices; // 2–16 ghost copies
   final double logoTrailLength; // 0.0–1.0 spacing between snapshots
@@ -102,6 +103,7 @@ class StealConfig {
     this.middleToOuterGap = 0.3,
     this.orbitDrift = 1.0,
     this.bannerDisplayMode = 'ring',
+    this.bannerFont = 'Rock Salt',
     this.logoTrailIntensity = 0.0,
     this.logoTrailSlices = 6,
     this.logoTrailLength = 0.5,
@@ -137,6 +139,7 @@ class StealConfig {
       middleToOuterGap: (map['middleToOuterGap'] as num?)?.toDouble() ?? 0.3,
       orbitDrift: (map['orbitDrift'] as num?)?.toDouble() ?? 1.0,
       bannerDisplayMode: map['bannerDisplayMode'] as String? ?? 'ring',
+      bannerFont: map['bannerFont'] as String? ?? 'Rock Salt',
       logoTrailIntensity:
           (map['logoTrailIntensity'] as num?)?.toDouble() ?? 0.0,
       logoTrailSlices: (map['logoTrailSlices'] as int?) ?? 6,
@@ -172,6 +175,7 @@ class StealConfig {
       'middleToOuterGap': middleToOuterGap,
       'orbitDrift': orbitDrift,
       'bannerDisplayMode': bannerDisplayMode,
+      'bannerFont': bannerFont,
       'logoTrailIntensity': logoTrailIntensity,
       'logoTrailSlices': logoTrailSlices,
       'logoTrailLength': logoTrailLength,
@@ -205,6 +209,7 @@ class StealConfig {
     double? middleToOuterGap,
     double? orbitDrift,
     String? bannerDisplayMode,
+    String? bannerFont,
     double? logoTrailIntensity,
     int? logoTrailSlices,
     double? logoTrailLength,
@@ -238,6 +243,7 @@ class StealConfig {
       middleToOuterGap: middleToOuterGap ?? this.middleToOuterGap,
       orbitDrift: orbitDrift ?? this.orbitDrift,
       bannerDisplayMode: bannerDisplayMode ?? this.bannerDisplayMode,
+      bannerFont: bannerFont ?? this.bannerFont,
       logoTrailIntensity: logoTrailIntensity ?? this.logoTrailIntensity,
       logoTrailSlices: logoTrailSlices ?? this.logoTrailSlices,
       logoTrailLength: logoTrailLength ?? this.logoTrailLength,
@@ -274,6 +280,7 @@ class StealConfig {
         middleToOuterGap == other.middleToOuterGap &&
         orbitDrift == other.orbitDrift &&
         bannerDisplayMode == other.bannerDisplayMode &&
+        bannerFont == other.bannerFont &&
         logoTrailIntensity == other.logoTrailIntensity &&
         logoTrailSlices == other.logoTrailSlices &&
         logoTrailLength == other.logoTrailLength &&
@@ -307,6 +314,7 @@ class StealConfig {
         middleToOuterGap,
         orbitDrift,
         bannerDisplayMode,
+        bannerFont,
         logoTrailIntensity,
         logoTrailSlices,
         logoTrailLength,

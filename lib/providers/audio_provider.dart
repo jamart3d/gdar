@@ -131,10 +131,12 @@ class AudioProvider with ChangeNotifier {
     CatalogService? catalogService,
     AudioCacheService? audioCacheService,
     WakelockService? wakelockService,
+    bool useWebGaplessEngine = true,
   })  : _catalogService = catalogService ?? CatalogService(),
         _audioCacheService = audioCacheService ?? AudioCacheService(),
         _wakelockService = wakelockService ?? WakelockService() {
-    _audioPlayer = audioPlayer ?? GaplessPlayer();
+    _audioPlayer =
+        audioPlayer ?? GaplessPlayer(useWebGaplessEngine: useWebGaplessEngine);
     _listenForPlaybackProgress();
     _listenForErrors();
     _listenForProcessingState();
@@ -198,6 +200,13 @@ class AudioProvider with ChangeNotifier {
     SettingsProvider settingsProvider,
   ) {
     _showListProvider = showListProvider;
+
+    // Check if web prefetch seconds changed and sync to player
+    if (_settingsProvider != null &&
+        settingsProvider.webPrefetchSeconds !=
+            _settingsProvider!.webPrefetchSeconds) {
+      _audioPlayer.setWebPrefetchSeconds(settingsProvider.webPrefetchSeconds);
+    }
     _settingsProvider = settingsProvider;
     _updateBufferAgent();
     // Update cache monitoring based on setting
@@ -678,14 +687,6 @@ class AudioProvider with ChangeNotifier {
         );
       }).toList();
 
-      // On web, call play() BEFORE setAudioSources() to keep within the browser's
-      // user-gesture window. The player enters "play-when-ready" and starts audio
-      // as soon as the source is loaded, satisfying the autoplay policy.
-      // On native, we call play() after loading as usual.
-      if (kIsWeb) {
-        unawaited(_audioPlayer.play());
-      }
-
       // Use setAudioSources directly instead of ConcatenatingAudioSource.
       // This is the recommended replacement for the deprecated ConcatenatingAudioSource.
       await _audioPlayer.setAudioSources(
@@ -695,9 +696,9 @@ class AudioProvider with ChangeNotifier {
         preload: _settingsProvider?.offlineBuffering ?? false,
       );
 
-      if (!kIsWeb) {
-        unawaited(_audioPlayer.play());
-      }
+      // We call play() after loading for both native and web.
+      // GaplessPlayer web engine handles AudioContext suspension internally.
+      unawaited(_audioPlayer.play());
     } catch (e, stackTrace) {
       // Only handle errors if this request corresponds to the current source.
       if (_currentSource?.id == source.id) {

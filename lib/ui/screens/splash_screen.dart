@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shakedown/providers/show_list_provider.dart';
@@ -112,7 +113,7 @@ class _SplashScreenState extends State<SplashScreen>
 
     if (_minTimeElapsed &&
         !_showListProvider.isLoading &&
-        _showListProvider.hasCheckedArchive &&
+        (kIsWeb || _showListProvider.hasCheckedArchive) &&
         countDone) {
       _navigateToHome();
     }
@@ -247,18 +248,19 @@ class _SplashScreenState extends State<SplashScreen>
                     const SizedBox(height: 12),
 
                     // 3. Archive Check
-                    _buildChecklistItem(
-                      label: showListProvider.hasCheckedArchive
-                          ? (showListProvider.isArchiveReachable
-                              ? 'Archive.org reachable'
-                              : 'Archive.org ?')
-                          : 'Checking archive.org...',
-                      isDone: showListProvider.hasCheckedArchive,
-                      isSuccess: showListProvider.hasCheckedArchive
-                          ? showListProvider.isArchiveReachable
-                          : true, // Default to true while loading
-                      scaleFactor: effectiveScale,
-                    ),
+                    if (!kIsWeb)
+                      _buildChecklistItem(
+                        label: showListProvider.hasCheckedArchive
+                            ? (showListProvider.isArchiveReachable
+                                ? 'Archive.org reachable'
+                                : 'Archive.org ?')
+                            : 'Checking archive.org...',
+                        isDone: showListProvider.hasCheckedArchive,
+                        isSuccess: showListProvider.hasCheckedArchive
+                            ? showListProvider.isArchiveReachable
+                            : true, // Default to true while loading
+                        scaleFactor: effectiveScale,
+                      ),
 
                     // 4. Random Play (Conditional)
                     if (settingsProvider.playRandomOnStartup) ...[

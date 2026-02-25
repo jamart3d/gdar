@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -47,6 +48,7 @@ class SettingsProvider with ChangeNotifier {
   // Web Gapless Engine (web-only)
   static const String _webGaplessEngineKey = 'web_gapless_engine';
   static const String _webPrefetchSecondsKey = 'web_prefetch_seconds';
+  static const String _webSourceFiltersInitKey = 'web_source_filters_init_v1';
   static const String _simpleRandomIconKey = 'simple_random_icon';
 
   // Screensaver (steal)
@@ -66,6 +68,7 @@ class SettingsProvider with ChangeNotifier {
   static const String _oilPaletteTransitionSpeedKey =
       'oil_palette_transition_speed';
   static const String _oilBannerDisplayModeKey = 'oil_banner_display_mode';
+  static const String _oilBannerFontKey = 'oil_banner_font';
   static const String _oilFlatTextProximityKey = 'oil_flat_text_proximity';
   static const String _oilFlatTextPlacementKey = 'oil_flat_text_placement';
 
@@ -166,6 +169,7 @@ class SettingsProvider with ChangeNotifier {
   late bool _oilPaletteCycle;
   late double _oilPaletteTransitionSpeed;
   late String _oilBannerDisplayMode;
+  late String _oilBannerFont;
   late double _oilFlatTextProximity;
   late String _oilFlatTextPlacement;
 
@@ -253,6 +257,7 @@ class SettingsProvider with ChangeNotifier {
   bool get oilPaletteCycle => _oilPaletteCycle;
   double get oilPaletteTransitionSpeed => _oilPaletteTransitionSpeed;
   String get oilBannerDisplayMode => _oilBannerDisplayMode;
+  String get oilBannerFont => _oilBannerFont;
   double get oilFlatTextProximity => _oilFlatTextProximity;
   String get oilFlatTextPlacement => _oilFlatTextPlacement;
 
@@ -495,6 +500,8 @@ class SettingsProvider with ChangeNotifier {
             DefaultSettings.oilPaletteTransitionSpeed;
     _oilBannerDisplayMode = _prefs.getString(_oilBannerDisplayModeKey) ??
         DefaultSettings.oilBannerDisplayMode;
+    _oilBannerFont =
+        _prefs.getString(_oilBannerFontKey) ?? DefaultSettings.oilBannerFont;
     _oilFlatTextProximity = _prefs.getDouble(_oilFlatTextProximityKey) ??
         DefaultSettings.oilFlatTextProximity;
     _oilFlatTextPlacement = _prefs.getString(_oilFlatTextPlacementKey) ??
@@ -574,6 +581,17 @@ class SettingsProvider with ChangeNotifier {
       }
     } else {
       _sourceCategoryFilters = Map.from(DefaultSettings.sourceCategoryFilters);
+    }
+
+    // Web-only override: all categories ON by default.
+    // We use a one-time migration check to ensure existing web users also get
+    // all categories enabled, while preserving their future custom choices.
+    if (kIsWeb && !(_prefs.getBool(_webSourceFiltersInitKey) ?? false)) {
+      _sourceCategoryFilters.forEach((key, _) {
+        _sourceCategoryFilters[key] = true;
+      });
+      _prefs.setBool(_webSourceFiltersInitKey, true);
+      _saveSourceCategoryFilters();
     }
   }
 
@@ -701,6 +719,8 @@ class SettingsProvider with ChangeNotifier {
       _oilPaletteTransitionSpeedKey, _oilPaletteTransitionSpeed = seconds);
   Future<void> setOilBannerDisplayMode(String mode) => _updateStringPreference(
       _oilBannerDisplayModeKey, _oilBannerDisplayMode = mode);
+  Future<void> setOilBannerFont(String font) =>
+      _updateStringPreference(_oilBannerFontKey, _oilBannerFont = font);
   Future<void> setOilFlatTextProximity(double value) => _updateDoublePreference(
       _oilFlatTextProximityKey, _oilFlatTextProximity = value.clamp(0.0, 1.0));
   Future<void> setOilFlatTextPlacement(String placement) =>

@@ -178,29 +178,15 @@ class _MiniPlayerState extends State<MiniPlayer>
                                       ),
                                     ),
                                     if (isBuffering)
-                                      TweenAnimationBuilder<double>(
-                                        tween: Tween(begin: 0.0, end: 1.0),
-                                        duration:
-                                            const Duration(milliseconds: 1500),
-                                        builder: (context, value, child) {
-                                          return Container(
-                                            decoration: BoxDecoration(
-                                              gradient: LinearGradient(
-                                                stops: [
-                                                  (value - 0.3).clamp(0.0, 1.0),
-                                                  value,
-                                                  (value + 0.3).clamp(0.0, 1.0),
-                                                ],
-                                                colors: [
-                                                  Colors.transparent,
-                                                  colorScheme.tertiary
-                                                      .withValues(alpha: 0.4),
-                                                  Colors.transparent,
-                                                ],
-                                              ),
-                                            ),
-                                          );
-                                        },
+                                      SizedBox(
+                                        height: 4,
+                                        child: LinearProgressIndicator(
+                                          backgroundColor: Colors.transparent,
+                                          valueColor:
+                                              AlwaysStoppedAnimation<Color>(
+                                            colorScheme.primary,
+                                          ),
+                                        ),
                                       ),
                                   ],
                                 ),

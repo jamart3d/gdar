@@ -18,3 +18,24 @@
 - [ ] Verify the fix
     - [ ] Run automated tests.
     - [ ] Manual verification on Google TV.
+
+## TV Screensaver Optimization (Neon Glow)
+- [ ] Refactor `StealBanner` neon glow for Google TV performance.
+    - **Problem**: The current 3-layer Gaussian blur (shadows) per character is recalculated and re-rendered every frame, causing high GPU load on TVs.
+    - **Solution**: Implement a Rasterized Glyph Cache (`Map<String, ui.Image>`).
+    - **Method**: 
+        1. On first use of a character, draw it with its full glow onto an off-screen `ui.PictureRecorder`.
+        2. Rasterize it immediately using `toImageSync()`.
+        3. In the `render()` loop, replace `TextPainter.paint` with `canvas.drawImage`.
+        4. Apply cycling colors and flickering opacity using a `Paint` object with `ColorFilter.mode(currentColor.withOpacity(opacity), BlendMode.srcIn)`.
+    - **Result**: Transforms complex vector generation + 3 blurs into a single, ultra-fast hardware texture blit per character.
+## TV Screensaver Optimization (Neon Glow)
+- [ ] Refactor `StealBanner` neon glow for Google TV performance.
+    - **Problem**: The current 3-layer Gaussian blur (shadows) per character is recalculated and re-rendered every frame, causing high GPU load on TVs.
+    - **Solution**: Implement a Rasterized Glyph Cache (`Map<String, ui.Image>`).
+    - **Method**: 
+        1. On first use of a character, draw it with its full glow onto an off-screen `ui.PictureRecorder`.
+        2. Rasterize it immediately using `toImageSync()`.
+        3. In the `render()` loop, replace `TextPainter.paint` with `canvas.drawImage`.
+        4. Apply cycling colors and flickering opacity using a `Paint` object with `ColorFilter.mode(currentColor.withOpacity(opacity), BlendMode.srcIn)`.
+    - **Result**: Transforms complex vector generation + 3 blurs into a single, ultra-fast hardware texture blit per character.

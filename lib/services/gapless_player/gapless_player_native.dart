@@ -12,9 +12,12 @@ class GaplessPlayer {
 
   /// Creates a [GaplessPlayer] wrapping an [AudioPlayer].
   ///
-  /// An existing [AudioPlayer] instance can be injected for testing.
-  GaplessPlayer({AudioPlayer? audioPlayer})
-      : _player = audioPlayer ?? AudioPlayer();
+  /// An existing [AudioPlayer] can be injected for testing.
+  /// [useWebGaplessEngine] is ignored natively but kept for API parity.
+  GaplessPlayer({
+    AudioPlayer? audioPlayer,
+    bool useWebGaplessEngine = true,
+  }) : _player = audioPlayer ?? AudioPlayer();
 
   // ─── Passthrough getters ─────────────────────────────────────────────────
 
@@ -116,4 +119,7 @@ class GaplessPlayer {
 
   /// Releases all resources held by this player.
   Future<void> dispose() => _player.dispose();
+
+  /// Updates the prefetch window. (Ignored natively; kept for API parity with web).
+  void setWebPrefetchSeconds(int seconds) {}
 }
