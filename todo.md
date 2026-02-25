@@ -37,3 +37,4 @@
     - [ ] Research `Silent Video` looping hacks or `Web Workers` for scheduler persistence.
     - [ ] Audit `gapless_audio_engine.js` for throttling-resilient scheduling.
 - [ ] **PWA Rebranding**: Change install name in `web/manifest.json` from `gdar` to `Shakedown`.
+- [ ] **Bug: Web Track Skipping**: Fix issue where the JS engine skips a track if it's still buffering when the previous track finishes.

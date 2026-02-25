@@ -62,4 +62,5 @@
     - [ ] Explore `Silent Video` looping or `Web Workers` for timer consistency.
     - [ ] Audit `gapless_audio_engine.js` for potential timer drift during high CPU throttling.
 - [ ] **PWA Rebranding**: Update `web/manifest.json` to change the install name from `gdar` to `Shakedown`.
+- [ ] **Bug: Track Skip on Buffer**: Investigate issue where the engine skips the next track if it isn't fully ready/buffered when the current track ends.
 
