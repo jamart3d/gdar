@@ -377,13 +377,26 @@ class PlaybackSection extends StatelessWidget {
 
   /// Builds the web-only gapless engine settings block.
   ///
-  /// Returns a list of widgets: the engine toggle and (when enabled) a
-  /// prefetch-ahead slider. These are only ever inserted when [kIsWeb] is true.
+  /// Uses a mobile heuristic (userAgent + touch) to mirror the JS hybrid_init.js
+  /// detection and show the appropriate label. Returns a list of widgets:
+  /// the engine toggle and (when enabled) a prefetch-ahead slider.
+  /// These are only ever inserted when [kIsWeb] is true.
   static List<Widget> _buildWebGaplessSection(
     BuildContext context,
     SettingsProvider sp,
     double scaleFactor,
   ) {
+    // Mirror the hybrid_init.js mobile detection heuristic.
+    // On web there is no dart:io Platform, so we rely on MediaQuery width.
+    // A narrow viewport (< 1024 logical pixels) is treated as mobile/tablet.
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isMobileWeb = screenWidth < 1024;
+
+    final engineTitle = isMobileWeb ? 'HTML5 Audio Engine' : 'Gapless Engine';
+    final engineSubtitle = isMobileWeb
+        ? 'HTML5 streaming — saves RAM & data on mobile (Requires reload to change)'
+        : 'Web Audio API — 0ms gapless transitions on desktop (Requires reload to change)';
+
     return [
       TvSwitchListTile(
         dense: true,
@@ -392,7 +405,7 @@ class PlaybackSection extends StatelessWidget {
           fit: BoxFit.scaleDown,
           alignment: Alignment.centerLeft,
           child: Text(
-            'Gapless Engine',
+            engineTitle,
             style: Theme.of(context)
                 .textTheme
                 .titleMedium
@@ -403,7 +416,7 @@ class PlaybackSection extends StatelessWidget {
           fit: BoxFit.scaleDown,
           alignment: Alignment.centerLeft,
           child: Text(
-            'Use Web Audio API for 0ms track transitions (Requires app reload)',
+            engineSubtitle,
             style: Theme.of(context)
                 .textTheme
                 .bodySmall
@@ -414,8 +427,16 @@ class PlaybackSection extends StatelessWidget {
         onChanged: (_) {
           HapticFeedback.lightImpact();
           context.read<SettingsProvider>().toggleWebGaplessEngine();
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              behavior: SnackBarBehavior.floating,
+              content: Text('Reload the page for this change to take effect.'),
+              duration: Duration(seconds: 4),
+            ),
+          );
         },
-        secondary: const Icon(Icons.graphic_eq_rounded),
+        secondary: Icon(
+            isMobileWeb ? Icons.smartphone_rounded : Icons.graphic_eq_rounded),
       ),
       if (sp.webGaplessEngine)
         ListTile(

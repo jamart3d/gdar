@@ -35,8 +35,12 @@
 </head>
 
 <body>
-  <!-- Gapless Web Audio engine — must load before Flutter so window._gdarAudio exists. -->
+  <!-- 1. Mobile HTML5 streaming engine (Relisten-style, dual HTMLAudioElement) -->
+  <script src="relisten_audio_engine.js"></script>
+  <!-- 2. Desktop GDAR Web Audio API engine (AudioBufferSourceNode, 0ms gapless) -->
   <script src="gapless_audio_engine.js"></script>
+  <!-- 3. Hybrid dispatcher: auto-selects strategy and assigns window._gdarAudio -->
+  <script src="hybrid_init.js"></script>
   <!-- Firebase Config (Gitignored) -->
   <script src="firebase-config.js"></script>
   <!-- Firebase SDKs -->

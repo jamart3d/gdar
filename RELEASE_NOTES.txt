@@ -1,3 +1,10 @@
+Release 1.1.20+120:
+- Web: Implemented Hybrid Audio Architecture — desktop uses GDAR Web Audio API (0ms gapless) and mobile auto-switches to Relisten-style HTML5 dual-<audio> streaming engine.
+- Web: New relisten_audio_engine.js delivers near-gapless playback on mobile via dual HTMLAudioElement swap, saving RAM/data and preventing browser tab kills.
+- Web: New hybrid_init.js auto-detects mobile vs desktop via userAgent + touch points and routes window._gdarAudio transparently — no Dart interop changes required.
+- Settings: "Gapless Engine" toggle now shows "HTML5 Audio Engine" on mobile viewports with context-aware subtitle; toggling shows a SnackBar requiring page reload.
+- Settings: Prefetch Ahead setting now controls load timing for both strategies.
+
 Release 1.1.19+119:
 - UI (Web & Mobile): Updated the playback messages (buffered time and next time indicator) to use the default Roboto font for better legibility.
 - UI (TV): Fixed an issue where the Steal Screensaver text font setting was not being correctly applied due to a font family name mismatch.

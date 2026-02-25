@@ -61,6 +61,22 @@
 - [ ] **Background Longevity**: Investigate ways to extend playback duration when the tab is backgrounded/tab-throttled.
     - [ ] Explore `Silent Video` looping or `Web Workers` for timer consistency.
     - [ ] Audit `gapless_audio_engine.js` for potential timer drift during high CPU throttling.
-- [ ] **PWA Rebranding**: Update `web/manifest.json` to change the install name from `gdar` to `Shakedown`.
+- [x] **PWA Rebranding**: Update `web/manifest.json` to change the install name from `gdar` to `Shakedown`. *(Done in prior session)*
 - [ ] **Bug: Track Skip on Buffer**: Investigate issue where the engine skips the next track if it isn't fully ready/buffered when the current track ends.
 
+## Hybrid Audio Architecture (Relisten + GDAR Engine) ✅
+- [Reference: Relisten's `gapless.cjs`](https://github.com/RelistenNet/relisten-web/blob/master/public/gapless.cjs)
+- [x] Refactor audio architecture to a Hybrid Strategy unifying HTML5 `<audio>` and Web Audio API (`AudioBufferSourceNode`).
+- [x] Implement `DeviceDetector` utility to check `navigator.userAgent` and touch capabilities — done in `hybrid_init.js`.
+- [x] Mobile Strategy (Relisten style): `web/relisten_audio_engine.js` — dual-HTML5-Audio-element approach on mobile devices. Supports streaming, saves RAM/Data, prevents browser tab kills. Handles iOS Safari 'Audio Resume' (user gesture) via silent play/pause prime.
+- [x] Desktop Strategy (GDAR Engine): Existing `web/gapless_audio_engine.js` — Web Audio API logic for 0ms gapless playback. Maintains Watchdog timer and MediaSession integration.
+- [x] Unified API: Both strategies expose `play()`, `pause()`, `seek()`, `setPlaylist()`, `seekToIndex()`, `setPrefetchSeconds()`, `getState()`, `onStateChange`, `onTrackChange`, `onError`. `hybrid_init.js` assigns the correct strategy to `window._gdarAudio` — Dart interop requires zero changes.
+- [x] Transition Logic: `hybrid_init.js` reads `userAgent` + `maxTouchPoints + innerWidth < 1024`; runs once at page load.
+- [x] Validate and map Web Gapless settings (Prefetch threshold, Gapless Toggle) across the two strategies:
+    - **GDAR Engine (Desktop)**: Continues to prefetch X seconds ahead (user-defined setting).
+    - **Relisten Strategy (Mobile)**: `setPrefetchSeconds(s)` triggers `_nextAudio.load()` N seconds before track end.
+    - **UI Settings**: `playback_section.dart` updated — shows context-aware labels ('HTML5 Audio Engine' on mobile, 'Gapless Engine' on desktop). Toggle now shows SnackBar requiring reload.
+- [x] **PWA Strategy & Control**: Auto-detect + Off. `hybrid_init.js` detects mobile/desktop; toggle 'off' falls back to `just_audio` via existing `GaplessPlayer` fallback path.
+    - *Media Session*: Both engines integrate Media Session API for lock-screen controls.
+    - *Error Fallback*: If the toggle is off, `GaplessPlayer` uses `just_audio` (existing behavior).
+- [ ] **Future Enhancement**: Add a user setting to allow choosing how many tracks to buffer/preload ahead of time on mobile (the system currently defaults to 1).
