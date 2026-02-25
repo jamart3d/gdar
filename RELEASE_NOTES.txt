@@ -1,3 +1,8 @@
+Release 1.1.15+115:
+- Screensaver: Implemented font selection (Roboto vs. Rock Salt) for the TV screensaver's track information display.
+- Security: Isolated Firebase credentials into gitignored firebase-config.js.
+- Verification: Unified health check passing (0 analysis errors, 162/162 tests, formatting verified).
+
 Release 1.1.14+114:
 - Web: Fixed background playback stall by implementing visibility-based context resume, eager prefetching, and an audio watchdog timer.
 - Web: Dice playback now triggers audio immediately on show selection (autofocus policy fix).
