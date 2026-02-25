@@ -58,3 +58,8 @@
 - [x] **Regression Testing**: Implement automated regression tests for the JS Gapless Audio Engine adapter (`web_gapless_adapter_test.dart`).
 - [x] **UI Sync**: Fix issue where Web UI does not update properly (stale track/state info). Implemented synthetic `PlaybackEvent` emission.
 - [x] **Wakelock**: Investigate "Keep Screen On" behavior for mobile web. Confirmed `wakelock_plus` support via Wake Lock API.
+- [ ] **Background Longevity**: Investigate ways to extend playback duration when the tab is backgrounded/tab-throttled.
+    - [ ] Explore `Silent Video` looping or `Web Workers` for timer consistency.
+    - [ ] Audit `gapless_audio_engine.js` for potential timer drift during high CPU throttling.
+- [ ] **PWA Rebranding**: Update `web/manifest.json` to change the install name from `gdar` to `Shakedown`.
+

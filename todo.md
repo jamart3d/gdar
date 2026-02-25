@@ -30,7 +30,10 @@
         4. Apply cycling colors and flickering opacity using a `Paint` object with `ColorFilter.mode(currentColor.withOpacity(opacity), BlendMode.srcIn)`.
     - **Result**: Transforms complex vector generation + 3 blurs into a single, ultra-fast hardware texture blit per character.
 
-- [x] Expose the "Prevent Sleep" setting to all platforms.
-    - [x] **Problem**: The screen stays on unexpectedly for web users due to mobile/TV settings being hidden but active.
-    - [x] **Solution**: Expose the setting in `TvScreensaverSection` and `PlaybackSection`.
     - [x] **Method**: Added a toggle to `TvScreensaverSection` that controls the `preventSleep` setting.
+
+## Web/PWA Optimization
+- [ ] **Background Playback Longevity**: Find a way to prevent the browser from throttling the Gapless Engine when the UI is in the background.
+    - [ ] Research `Silent Video` looping hacks or `Web Workers` for scheduler persistence.
+    - [ ] Audit `gapless_audio_engine.js` for throttling-resilient scheduling.
+- [ ] **PWA Rebranding**: Change install name in `web/manifest.json` from `gdar` to `Shakedown`.

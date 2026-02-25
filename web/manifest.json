@@ -1,11 +1,11 @@
 {
-    "name": "gdar",
-    "short_name": "gdar",
+    "name": "Shakedown",
+    "short_name": "Shakedown",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
     "theme_color": "#0175C2",
-    "description": "play garteful dead archive org mp3",
+    "description": "Premium gapless playback for Grateful Dead archives.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

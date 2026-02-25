@@ -9,6 +9,7 @@ Documentation: Every exported class and function must include Dart Doc Comments 
 Scope: Strictly forbidden from modifying files outside the workspace root, except for /session_logs/.
 Credential Safety: Never hardcode secrets. Use --dart-define or .env.
 Execution Policy: Manual confirmation (ASK_USER) for sudo, global pub overrides, or directory deletion.
+Web Deployment: Always run `flutter build web` and `firebase deploy` sequentially. NEVER run them in parallel to ensure the deployment artifact is stable.
 3. CODING STANDARDS (GDAR PROJECT)
 Language: Latest stable Dart version as defined in the project's pubspec.yaml, with sound null safety.
 Style: Adhere strictly to the official Dart style guide; use flutter format.
