@@ -1,3 +1,8 @@
+Release 1.1.17+117:
+- Screensaver: Optimized rendering for Google TV by removing redundant black drop shadows and simplifying neon glow (removed expensive atmospheric layer).
+- Maintenance: Added regression testing and Web UI sync roadmap to project backlog.
+- Quality: Unified health check passing (0 analysis errors, 162/162 tests, formatting verified).
+
 Release 1.1.16+116:
 - Web: Implemented true gapless playback for Web using a low-latency JavaScript GaplessAudioEngine (Web Audio API).
 - UI: Fixed playback controls scaling on small phones/high UI scales by making panel height responsive.

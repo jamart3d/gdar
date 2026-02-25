@@ -747,17 +747,7 @@ class StealBanner extends Component with HasGameReference<StealGame> {
           fontSize: _fontSize,
           fontWeight: FontWeight.w600,
           letterSpacing: 0,
-          shadows: glowShadows ??
-              (withDropShadow
-                  ? [
-                      Shadow(
-                        color: Colors.black
-                            .withValues(alpha: dropShadowOpacity * 0.7),
-                        blurRadius: 3,
-                        offset: const Offset(1, 1),
-                      ),
-                    ]
-                  : null),
+          shadows: glowShadows,
         ),
       ),
       textDirection: ui.TextDirection.ltr,
@@ -772,16 +762,10 @@ class StealBanner extends Component with HasGameReference<StealGame> {
   /// All layers baked into a single TextPainter — zero saveLayer cost.
   List<Shadow> _buildGlowShadows(Color baseColor, double opacity) {
     final hsl = HSLColor.fromColor(baseColor);
-    final atmospheric = hsl.withSaturation(0.9).withLightness(0.35).toColor();
     final bloom = hsl.withSaturation(1.0).withLightness(0.50).toColor();
     final halo = hsl.withSaturation(1.0).withLightness(0.75).toColor();
 
     return [
-      // Wide atmospheric fog
-      Shadow(
-          color: atmospheric.withValues(alpha: opacity * 0.25),
-          blurRadius: 14,
-          offset: Offset.zero),
       // Mid bloom
       Shadow(
           color: bloom.withValues(alpha: opacity * 0.50),
