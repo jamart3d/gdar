@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shakedown/utils/app_date_utils.dart';
-import 'package:just_audio/just_audio.dart';
 import 'package:provider/provider.dart';
 import 'package:shakedown/models/show.dart';
 import 'package:shakedown/models/source.dart';
@@ -12,6 +11,7 @@ import 'package:shakedown/services/device_service.dart';
 import 'package:shakedown/ui/styles/app_typography.dart';
 import 'package:shakedown/ui/widgets/conditional_marquee.dart';
 import 'package:shakedown/ui/widgets/playback/playback_controls.dart';
+import 'package:shakedown/ui/widgets/playback/playback_messages.dart';
 import 'package:shakedown/ui/widgets/playback/playback_progress_bar.dart';
 import 'package:shakedown/ui/widgets/rating_control.dart';
 import 'package:shakedown/ui/widgets/shnid_badge.dart';
@@ -111,7 +111,7 @@ class PlaybackPanel extends StatelessWidget {
                         padding: EdgeInsets.only(
                             left: 16.0,
                             right: 16.0,
-                            bottom: 24.0 + bottomPadding),
+                            bottom: (16.0 + bottomPadding) * scaleFactor),
                         child: Row(
                           mainAxisAlignment: settingsProvider.hideTrackDuration
                               ? MainAxisAlignment.center
@@ -153,8 +153,8 @@ class PlaybackPanel extends StatelessWidget {
               valueListenable: panelPositionNotifier,
               builder: (context, value, child) {
                 // Closed (0.0): +100 (Hidden down)
-                // Open (1.0): -40 (Up more to create gap from bottom)
-                final double yOffset = (100.0 - 124.0 * value) * scaleFactor;
+                // Open (1.0): -20 (Up slightly to create gap from bottom)
+                final double yOffset = (100.0 - 120.0 * value) * scaleFactor;
                 return Transform.translate(
                   offset: Offset(0, yOffset),
                   child: FittedBox(
@@ -350,9 +350,9 @@ class PlaybackPanel extends StatelessWidget {
                               ),
                             ],
                           ),
-                          const SizedBox(height: 8),
+                          const SizedBox(height: 4),
                           const PlaybackProgressBar(),
-                          const SizedBox(height: 8),
+                          const SizedBox(height: 4),
                           ValueListenableBuilder<double>(
                             valueListenable: panelPositionNotifier,
                             builder: (context, position, _) {
@@ -360,8 +360,8 @@ class PlaybackPanel extends StatelessWidget {
                             },
                           ),
                           if (settingsProvider.showPlaybackMessages) ...[
-                            SizedBox(height: 12 * scaleFactor),
-                            _buildStatusMessages(context, audioProvider),
+                            SizedBox(height: 8 * scaleFactor),
+                            const PlaybackMessages(),
                           ],
                         ],
                       ),
@@ -477,73 +477,6 @@ class PlaybackPanel extends StatelessWidget {
           const PlaybackControls(panelPosition: 1.0),
         ],
       ),
-    );
-  }
-
-  Widget _buildStatusMessages(
-      BuildContext context, AudioProvider audioProvider) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final settingsProvider = context.read<SettingsProvider>();
-    final double scaleFactor =
-        FontLayoutConfig.getEffectiveScale(context, settingsProvider);
-    final double labelsFontSize = 12.0 * scaleFactor;
-
-    return StreamBuilder<PlayerState>(
-      stream: audioProvider.playerStateStream,
-      initialData: audioProvider.audioPlayer.playerState,
-      builder: (context, snapshot) {
-        final playerState = snapshot.data;
-        final processingState = playerState?.processingState;
-        final playing = playerState?.playing ?? false;
-
-        String statusText = '';
-        if (processingState == ProcessingState.loading) {
-          statusText = 'Loading...';
-        } else if (processingState == ProcessingState.buffering) {
-          statusText = 'Buffering...';
-        } else if (processingState == ProcessingState.ready) {
-          statusText = playing ? 'Playing' : 'Paused';
-        } else if (processingState == ProcessingState.completed) {
-          statusText = 'Completed';
-        }
-
-        return Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              statusText,
-              style: TextStyle(
-                color: colorScheme.onSurfaceVariant,
-                fontWeight: FontWeight.bold,
-                fontSize: labelsFontSize,
-              ),
-            ),
-            const SizedBox(width: 8),
-            Text(
-              '•',
-              style: TextStyle(
-                color: colorScheme.onSurfaceVariant,
-                fontSize: labelsFontSize,
-              ),
-            ),
-            const SizedBox(width: 8),
-            StreamBuilder<Duration>(
-              stream: audioProvider.bufferedPositionStream,
-              initialData: audioProvider.audioPlayer.bufferedPosition,
-              builder: (context, bufferedSnapshot) {
-                final buffered = bufferedSnapshot.data ?? Duration.zero;
-                return Text(
-                  'Buffered: ${formatDuration(buffered)}',
-                  style: TextStyle(
-                    color: colorScheme.onSurfaceVariant,
-                    fontSize: labelsFontSize,
-                  ),
-                );
-              },
-            ),
-          ],
-        );
-      },
     );
   }
 

@@ -106,6 +106,10 @@ class AudioProvider with ChangeNotifier {
   Stream<Duration> get positionStream => _audioPlayer.positionStream;
   Stream<Duration> get bufferedPositionStream =>
       _audioPlayer.bufferedPositionStream;
+  Stream<Duration?> get nextTrackBufferedStream =>
+      _audioPlayer.nextTrackBufferedStream;
+  Stream<Duration?> get nextTrackTotalStream =>
+      _audioPlayer.nextTrackTotalStream;
   Stream<String> get playbackErrorStream => _errorController.stream;
   Stream<({Show show, Source source})> get randomShowRequestStream =>
       _randomShowRequestController.stream;

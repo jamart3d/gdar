@@ -41,13 +41,20 @@
   // Pending scheduled source (next track, already scheduled via .start(endTime)).
   let _scheduledSource = null;
   let _scheduledIndex = -1;
+  let _scheduledStartContextTime = 0;
 
-  // Prefetch state.
+  // Prefetch/Decode state.
   let _fetchingIndex = -1;
   let _prefetchTimer = null;
+  let _decodeTimer = null;
 
   // Position polling.
   let _positionTimer = null;
+
+  // Real-time progress of next track buffering (seconds).
+  let _nextTrackBufferedSeconds = 0;
+  let _isPrefetching = false;
+  let _isTransitioning = false;
 
   // Watchdog — detects missed onended events (screen off / background tab).
   let _watchdogTimer = null;
@@ -144,7 +151,15 @@
    * ArrayBuffer. Returns a Promise<ArrayBuffer>.
    */
   function _fetchCompressed(index) {
-    if (_compressed[index]) return Promise.resolve(_compressed[index]);
+    if (_compressed[index]) {
+      // If already in cache, ensure progress is reported as 100%
+      const track = _playlist[index];
+      if (track && _currentIndex + 1 === index) {
+        _nextTrackBufferedSeconds = track.duration || 0;
+        _emitState();
+      }
+      return Promise.resolve(_compressed[index]);
+    }
     const track = _playlist[index];
     if (!track) return Promise.reject(new Error('No track at index ' + index));
 
@@ -155,17 +170,48 @@
     _abortControllers[index] = controller;
 
     return fetch(track.url, { signal: controller.signal })
-      .then(r => {
+      .then(async r => {
         if (!r.ok) throw new Error('HTTP ' + r.status + ' fetching ' + track.url);
-        return r.arrayBuffer();
-      })
-      .then(buf => {
+
+        const contentLength = +r.headers.get('Content-Length');
+        const reader = r.body.getReader();
+        let receivedLength = 0;
+        let chunks = [];
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          chunks.push(value);
+          receivedLength += value.length;
+
+          // Update buffering progress for the next track
+          if (_currentIndex + 1 === index) {
+            if (contentLength) {
+              _nextTrackBufferedSeconds = (receivedLength / contentLength) * (track.duration || 0);
+            } else {
+              // Fallback: estimate progress if Content-Length is missing
+              // (assume average 10MB song if unknown)
+              _nextTrackBufferedSeconds = Math.min(track.duration || 0, (receivedLength / 10000000) * (track.duration || 0));
+            }
+            _emitState();
+          }
+        }
+
+        let all = new Uint8Array(receivedLength);
+        let position = 0;
+        for (let chunk of chunks) {
+          all.set(chunk, position);
+          position += chunk.length;
+        }
+
+        const buf = all.buffer;
         _compressed[index] = buf;
         delete _abortControllers[index];
         return buf;
       })
       .catch(err => {
         delete _abortControllers[index];
+        _nextTrackBufferedSeconds = 0;
         // Don't throw if it was explicitly aborted to avoid console spam
         if (err.name === 'AbortError') return Promise.reject(new Error('Aborted'));
         throw err;
@@ -231,6 +277,8 @@
       ? startContextTime
       : _ctx.currentTime;
 
+    console.log('[gdar engine] Starting track', _currentIndex, 'at', _currentTrackStartContextTime, 'duration', _currentTrackDuration);
+
     src.start(_currentTrackStartContextTime, _currentTrackStartOffset);
 
     // Record the expected end time so the watchdog can detect missed onended events.
@@ -276,43 +324,53 @@
 
   /** Called when the current track's AudioBufferSourceNode fires onended. */
   function _onTrackEnded() {
+    if (_isTransitioning) return;
+    _isTransitioning = true;
+
     const wasIndex = _currentIndex;
     _currentIndex++;
+
+    console.log('[gdar engine] Track ended. Advancing from', wasIndex, 'to', _currentIndex);
 
     if (_currentIndex >= _playlist.length) {
       // End of playlist.
       _playing = false;
       _currentSource = null;
+      _currentTrackDuration = 0;
       _stopPositionTimer();
-      _emitState();
       _emitTrackChange(_currentIndex - 1, -1);
+      _emitState();
+      _isTransitioning = false;
       return;
     }
 
     // The next track was hopefully pre-scheduled; _scheduledSource is now
     // the active one.
     if (_scheduledSource && _scheduledIndex === _currentIndex) {
-      // Explicitly stop the old source to prevent audible overlap.
+      console.log('[gdar engine] Promoting scheduled track', _currentIndex);
+      
+      // Disconnect the old source if it exists.
       if (_currentSource) {
         _currentSource.onended = null;
-        try { _currentSource.stop(); } catch (_) { }
         _currentSource.disconnect();
       }
+      
       _currentSource = _scheduledSource;
       _scheduledSource = null;
       _scheduledIndex = -1;
       _currentTrackStartOffset = 0;
-      _currentTrackStartContextTime = _currentTrackStartContextTime + (_decoded[wasIndex]
-        ? _decoded[wasIndex].duration - (wasIndex === _currentIndex - 1 ? 0 : 0)
-        : 0);
+      _nextTrackBufferedSeconds = 0;
+
+      // CRITICAL: Update the watchdog's expected end time for the NEW track.
+      // Without this, the watchdog fires immediately thinking the previous track just ended again.
+      _expectedEndContextTime = _currentTrackStartContextTime + _currentTrackDuration;
+      
       // Re-set onended for the now-active source.
       const activeSrc = _currentSource;
       activeSrc.onended = function () {
         if (_currentSource === activeSrc) _onTrackEnded();
       };
-      _currentTrackDuration = _decoded[_currentIndex]
-        ? _decoded[_currentIndex].duration
-        : 0;
+      
       _playing = true;
       _startPositionTimer();
       _startWatchdog();
@@ -321,20 +379,27 @@
       _emitTrackChange(wasIndex, _currentIndex);
       _emitState();
       _updateMediaSession();
+      _isTransitioning = false;
     } else {
       // Scheduling missed (decode wasn't ready in time). Fall back to a
       // regular play with a brief gap.
       _stopCurrentSource();
+      _currentTrackDuration = 0; // Reset duration while loading
+      _nextTrackBufferedSeconds = 0;
       _loadingState = 'loading';
       const targetIndex = _currentIndex;
       _emitTrackChange(wasIndex, _currentIndex);
       _emitState();
       _decode(_currentIndex).then(buf => {
+        _isTransitioning = false;
         if (_currentIndex === targetIndex) { // guard stale calls
           _startTrack(buf, 0, null);
           _emitTrackChange(wasIndex, _currentIndex);
         }
-      }).catch(err => _emitError('Decode error: ' + err.message));
+      }).catch(err => {
+        _isTransitioning = false;
+        _emitError('Decode error: ' + err.message);
+      });
     }
   }
 
@@ -350,22 +415,36 @@
     const nextIndex = _currentIndex + 1;
     if (nextIndex >= _playlist.length) return;
 
-    // Eagerly start the network fetch immediately so the compressed bytes are
-    // in RAM before the decode timer fires. Background tabs throttle setTimeout
-    // but fetch() continues executing in the background.
-    _fetchCompressed(nextIndex).catch(() => { });
-
     const remaining = _getRemainingSeconds();
-    const triggerIn = Math.max(0, (remaining - _prefetchSeconds) * 1000);
+    if (remaining <= 0) return; // Wait for track to actually have a duration
+
+    // 1. Fetch Window (Prefetch + 2s): The data starts downloading.
+    // User sees "Next: 00:01..." ticking up.
+    const fetchIn = Math.max(0, (remaining - (_prefetchSeconds + 2)) * 1000);
+    
+    // 2. Decode Window (Prefetch): The data is converted to PCM and scheduled.
+    const decodeIn = Math.max(0, (remaining - _prefetchSeconds) * 1000);
+
+    console.log('[gdar engine] Scheduling prefetch for index', nextIndex, 'in', fetchIn, 'ms /', decodeIn, 'ms');
 
     _prefetchTimer = setTimeout(() => {
+      console.log('[gdar engine] Starting fetch for index', nextIndex);
+      _isPrefetching = true;
+      _fetchCompressed(nextIndex).catch(() => { });
+      _emitState();
+    }, fetchIn);
+
+    _decodeTimer = setTimeout(() => {
+      console.log('[gdar engine] Starting decode/schedule for index', nextIndex);
       _fetchAndScheduleNext(nextIndex);
-    }, triggerIn);
+    }, decodeIn);
   }
 
   function _cancelPrefetch() {
     if (_prefetchTimer) { clearTimeout(_prefetchTimer); _prefetchTimer = null; }
+    if (_decodeTimer) { clearTimeout(_decodeTimer); _decodeTimer = null; }
     _fetchingIndex = -1;
+    _isPrefetching = false;
   }
 
   function _fetchAndScheduleNext(nextIndex) {
@@ -388,8 +467,9 @@
       _clearScheduled();
       _scheduledSource = src;
       _scheduledIndex = nextIndex;
-      // Store the endTime so _onTrackEnded can reference it.
-      _currentTrackStartContextTime = endTime - buf.duration; // retroactively for next
+      // Store the exact context time when this next track will start.
+      _scheduledStartContextTime = endTime;
+      _emitState();
     }).catch(err => {
       _emitError('Prefetch/decode error for track ' + nextIndex + ': ' + err.message);
     });
@@ -463,11 +543,33 @@
         var ps = _loadingState;
         if (!_ctx) ps = 'idle';
         else if (_currentIndex < 0) ps = 'idle';
+
+        let nextBuf = 0;
+        let nextTotal = 0;
+
+        // Gating: Only show "Next" progress when prefetching is active
+        // or during initial loading.
+        if (_isPrefetching || _loadingState === 'loading') {
+          nextBuf = _nextTrackBufferedSeconds;
+          const nextTrack = _playlist[_currentIndex + 1];
+          if (nextTrack) {
+            nextTotal = nextTrack.duration || 0;
+          }
+
+          // If already scheduled, use the actual buffer duration
+          if (_scheduledSource && _scheduledIndex === (_currentIndex + 1)) {
+            nextBuf = _scheduledSource.buffer.duration;
+            nextTotal = nextBuf;
+          }
+        }
+
         _onStateChange({
           playing: _playing,
           index: _currentIndex,
           position: _getCurrentPositionSeconds(),
           duration: _currentTrackDuration,
+          nextTrackBuffered: nextBuf,
+          nextTrackTotal: nextTotal,
           processingState: ps,
         });
       } catch (_) { }
@@ -569,13 +671,15 @@
     /** Stop playback and reset to idle. */
     stop: function () {
       _stopCurrentSource();
-      _clearScheduled();
-      _cancelPrefetch();
-      _playing = false;
-      _loadingState = 'idle';
-      _currentTrackStartOffset = 0;
-      Object.keys(_abortControllers).forEach(k => {
-        try { _abortControllers[k].abort(); } catch (_) { }
+          _clearScheduled();
+          _cancelPrefetch();
+              _playing = false;
+              _loadingState = 'idle';
+              _currentTrackStartOffset = 0;
+              _currentTrackDuration = 0;
+              _nextTrackBufferedSeconds = 0;
+              Object.keys(_abortControllers).forEach(k => {
+                  try { _abortControllers[k].abort(); } catch (_) { }
         delete _abortControllers[k];
       });
       _emitState();
@@ -644,6 +748,8 @@
         index: _currentIndex,
         position: _getCurrentPositionSeconds(),
         duration: _currentTrackDuration,
+        nextTrackBuffered: _nextTrackBufferedSeconds || (_scheduledSource ? _scheduledSource.buffer.duration : 0),
+        nextTrackTotal: (_playlist[_currentIndex + 1] ? _playlist[_currentIndex + 1].duration : 0) || (_scheduledSource ? _scheduledSource.buffer.duration : 0),
         playlistLength: _playlist.length,
         processingState: _loadingState,
         decodedIndices: Object.keys(_decoded).map(Number),

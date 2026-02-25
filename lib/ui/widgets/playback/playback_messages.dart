@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:provider/provider.dart';
@@ -154,6 +155,42 @@ class _PlaybackMessagesState extends State<PlaybackMessages> {
               );
             },
           ),
+          if (kIsWeb)
+            StreamBuilder<Duration?>(
+              stream: audioProvider.nextTrackBufferedStream,
+              initialData: audioProvider.audioPlayer.nextTrackBuffered,
+              builder: (context, nextBufferedSnapshot) {
+                final nextBuffered = nextBufferedSnapshot.data;
+                if (nextBuffered == null || nextBuffered == Duration.zero) {
+                  return const SizedBox.shrink();
+                }
+                return Padding(
+                  padding: const EdgeInsets.only(left: 8.0),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        '•',
+                        style: TextStyle(
+                          color: colorScheme.onSurfaceVariant,
+                          fontSize: labelsFontSize,
+                          fontFamily: fontFamily,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Next: ${formatDuration(nextBuffered)}',
+                        style: TextStyle(
+                          color: colorScheme.onSurfaceVariant,
+                          fontSize: labelsFontSize,
+                          fontFamily: fontFamily,
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
         ];
 
         return Row(

@@ -45,6 +45,14 @@ class GaplessPlayer {
   /// The current synchronous [PlayerState] snapshot.
   PlayerState get playerState => _player.playerState;
 
+  /// Returns the buffered duration of the next track.
+  /// Only applicable to web gapless engine; returns null natively.
+  Duration? get nextTrackBuffered => null;
+
+  /// Returns the total duration of the next track.
+  /// Only applicable to web gapless engine; returns null natively.
+  Duration? get nextTrackTotal => null;
+
   /// Android audio session ID, if available.
   int? get androidAudioSessionId => _player.androidAudioSessionId;
 
@@ -71,6 +79,14 @@ class GaplessPlayer {
 
   /// Stream of duration changes.
   Stream<Duration?> get durationStream => _player.durationStream;
+
+  /// Stream of next track buffered duration.
+  /// Only applicable to web gapless engine; empty stream natively.
+  Stream<Duration?> get nextTrackBufferedStream => const Stream.empty();
+
+  /// Stream of next track total duration.
+  /// Only applicable to web gapless engine; empty stream natively.
+  Stream<Duration?> get nextTrackTotalStream => const Stream.empty();
 
   /// Stream of current index changes.
   Stream<int?> get currentIndexStream => _player.currentIndexStream;

@@ -51,6 +51,10 @@ class MockAudioProvider extends ChangeNotifier implements ap.AudioProvider {
   @override
   Stream<Duration> get bufferedPositionStream => const Stream.empty();
   @override
+  Stream<Duration?> get nextTrackBufferedStream => const Stream.empty();
+  @override
+  Stream<Duration?> get nextTrackTotalStream => const Stream.empty();
+  @override
   Stream<String> get playbackErrorStream => const Stream.empty();
   @override
   Stream<({Show show, Source source})> get randomShowRequestStream =>
@@ -138,6 +142,10 @@ class MockGaplessPlayer extends Mock implements GaplessPlayer {
 class MockTvDeviceService extends ChangeNotifier implements DeviceService {
   @override
   bool get isTv => true;
+  @override
+  bool get isMobile => false;
+  @override
+  bool get isDesktop => true;
   @override
   String? get deviceName => 'Mock TV Device';
   @override

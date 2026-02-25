@@ -172,6 +172,10 @@ class MockDeviceService extends ChangeNotifier implements DeviceService {
   @override
   bool get isTv => false;
   @override
+  bool get isMobile => false;
+  @override
+  bool get isDesktop => true;
+  @override
   String? get deviceName => 'Mock Device';
   @override
   Future<void> refresh() async {}

@@ -37,6 +37,8 @@ extension type _GdarState(JSObject _) {
   external int get index;
   external double get position;
   external double get duration;
+  external double get nextTrackBuffered;
+  external double get nextTrackTotal;
   external int get playlistLength;
   external String get contextState;
   external String get processingState;
@@ -60,6 +62,7 @@ extension type _JsTrack._(JSObject _) implements JSObject {
     required String artist,
     required String album,
     required String id,
+    required double duration,
   });
 }
 
@@ -83,11 +86,15 @@ class GaplessPlayer {
   final _durationController = StreamController<Duration?>.broadcast();
   final _indexController = StreamController<int?>.broadcast();
   final _sequenceStateController = StreamController<SequenceState?>.broadcast();
+  final _nextTrackBufferedController = StreamController<Duration?>.broadcast();
+  final _nextTrackTotalController = StreamController<Duration?>.broadcast();
 
   bool _playing = false;
   int? _currentIndex;
   double _positionSec = 0;
   double _durationSec = 0;
+  double _nextTrackBufferedSec = 0;
+  double _nextTrackTotalSec = 0;
   ProcessingState _processingState = ProcessingState.idle;
   List<IndexedAudioSource> _sequence = [];
 
@@ -164,6 +171,8 @@ class GaplessPlayer {
     _playing = s.playing;
     _positionSec = s.position;
     _durationSec = s.duration;
+    _nextTrackBufferedSec = s.nextTrackBuffered;
+    _nextTrackTotalSec = s.nextTrackTotal;
     _currentIndex = s.index >= 0 ? s.index : null;
 
     _processingState = _mapProcessingState(s.processingState);
@@ -176,6 +185,12 @@ class GaplessPlayer {
           ? Duration(milliseconds: (_durationSec * 1000).round())
           : null);
     }
+    _nextTrackBufferedController.add(_nextTrackBufferedSec > 0
+        ? Duration(milliseconds: (_nextTrackBufferedSec * 1000).round())
+        : null);
+    _nextTrackTotalController.add(_nextTrackTotalSec > 0
+        ? Duration(milliseconds: (_nextTrackTotalSec * 1000).round())
+        : null);
     if (_playing != wasPlaying) {
       _playingController.add(_playing);
     }
@@ -219,6 +234,18 @@ class GaplessPlayer {
           ? Duration(milliseconds: (_durationSec * 1000).round())
           : null)
       : _fallbackPlayer!.duration;
+
+  Duration? get nextTrackBuffered => _useJsEngine
+      ? (_nextTrackBufferedSec > 0
+          ? Duration(milliseconds: (_nextTrackBufferedSec * 1000).round())
+          : null)
+      : null;
+
+  Duration? get nextTrackTotal => _useJsEngine
+      ? (_nextTrackTotalSec > 0
+          ? Duration(milliseconds: (_nextTrackTotalSec * 1000).round())
+          : null)
+      : null;
 
   int? get currentIndex =>
       _useJsEngine ? _currentIndex : _fallbackPlayer!.currentIndex;
@@ -268,6 +295,12 @@ class GaplessPlayer {
       ? _indexController.stream
       : _fallbackPlayer!.currentIndexStream;
 
+  Stream<Duration?> get nextTrackBufferedStream =>
+      _useJsEngine ? _nextTrackBufferedController.stream : const Stream.empty();
+
+  Stream<Duration?> get nextTrackTotalStream =>
+      _useJsEngine ? _nextTrackTotalController.stream : const Stream.empty();
+
   Stream<SequenceState?> get sequenceStateStream => _useJsEngine
       ? _sequenceStateController.stream
       : _fallbackPlayer!.sequenceStateStream;
@@ -285,9 +318,17 @@ class GaplessPlayer {
         artist: item?.artist ?? '',
         album: item?.album ?? '',
         id: item?.id ?? '',
+        duration: item?.duration?.inSeconds.toDouble() ?? 0,
       );
     }
-    return _JsTrack(url: '', title: '', artist: '', album: '', id: '');
+    return _JsTrack(
+      url: '',
+      title: '',
+      artist: '',
+      album: '',
+      id: '',
+      duration: 0,
+    );
   }
 
   /// Loads a playlist of audio sources into the engine.

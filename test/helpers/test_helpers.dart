@@ -13,6 +13,12 @@ class MockDeviceService extends ChangeNotifier implements DeviceService {
   }
 
   @override
+  bool get isMobile => false;
+
+  @override
+  bool get isDesktop => true;
+
+  @override
   String? get deviceName => 'Mock Device';
 
   @override

@@ -430,8 +430,17 @@ class PlaybackScreenState extends State<PlaybackScreen>
     final double baseHeight = settingsProvider.uiScale ? 75.0 : 96.0;
     final double minPanelHeight = (baseHeight * scaleFactor) + bottomPadding;
 
-    final double maxPanelHeight = MediaQuery.of(context).size.height *
-        (settingsProvider.uiScale ? 0.42 : 0.40);
+    final double screenHeight = MediaQuery.of(context).size.height;
+    // Ensure we have enough room for the expanded content column even on small phones.
+    // 210 is roughly the height of Location + Date + Progress + Controls at 1.0 scale.
+    final double minExpandedHeight = 210.0 * scaleFactor;
+    final double targetMaxHeight = minPanelHeight + minExpandedHeight;
+
+    // Clamp between default percentage and 85% of screen height.
+    final double maxPanelHeight = targetMaxHeight.clamp(
+      screenHeight * (settingsProvider.uiScale ? 0.42 : 0.40),
+      screenHeight * 0.85,
+    );
 
     final Widget playbackContent = ValueListenableBuilder<double>(
       valueListenable: _panelPositionNotifier,
