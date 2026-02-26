@@ -38,6 +38,7 @@
 - [ ] **Background Playback Longevity**: Find a way to prevent the browser from throttling the Gapless Engine when the UI is in the background.
     - [ ] Research `Silent Video` looping hacks or `Web Workers` for scheduler persistence.
     - [ ] Audit `gapless_audio_engine.js` for throttling-resilient scheduling.
+
 - [ ] **Feature: Hybrid Gapless Engine**: Develop a unified Web engine that provides instant HTTP streaming for Track 1, and perfect Web Audio gapless decoding for Track 2+.
     - **Strategy**: Start track 1 using HTML5 `<audio>`. Pre-fetch and `decodeAudioData` track 2 in the background. Connect the HTML5 `MediaElementAudioSourceNode` into the `AudioContext` and seamlessly cross-fade/stitch onto the Web Audio `AudioBufferSourceNode` when track 1 ends.
     - **Benefits**: Eliminates the 3-5s initial "time-to-first-play" decode delay present in the pure Web Audio engine, while preserving mathematically perfect gapless transitions for the rest of the playlist.

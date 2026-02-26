@@ -581,6 +581,9 @@ class MockShowListProvider extends ChangeNotifier implements ShowListProvider {
   @override
   bool isShowLoading(String key) => false;
   @override
+  Set<String> getCategoriesForSource(Source source) => {};
+
+  @override
   bool isSourceAllowed(Source source) => true;
   @override
   void markRandomButtonUsed() {}

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:shakedown/models/show.dart';
 import 'package:shakedown/providers/show_list_provider.dart';
 import 'package:shakedown/ui/widgets/section_card.dart';
@@ -28,6 +29,8 @@ class CollectionStatistics extends StatelessWidget {
         FontLayoutConfig.getEffectiveScale(context, settingsProvider);
     final colorScheme = Theme.of(context).colorScheme;
     final allShows = showListProvider.allShows;
+    final hasActiveFilters = settingsProvider.filterHighestShnid ||
+        settingsProvider.sourceCategoryFilters.values.any((v) => v);
 
     int totalShows = allShows.length;
     int totalSources = 0;
@@ -40,7 +43,6 @@ class CollectionStatistics extends StatelessWidget {
     int catDsbdSources = 0;
     int catFmSources = 0;
     int catSbdSources = 0;
-    int catUnkSources = 0;
 
     Set<Show> catBettyShows = {};
     Set<Show> catUltraShows = {};
@@ -48,7 +50,6 @@ class CollectionStatistics extends StatelessWidget {
     Set<Show> catDsbdShows = {};
     Set<Show> catFmShows = {};
     Set<Show> catSbdShows = {};
-    Set<Show> catUnkShows = {};
 
     for (var show in allShows) {
       totalSources += show.sources.length;
@@ -58,42 +59,7 @@ class CollectionStatistics extends StatelessWidget {
           totalDurationSeconds += track.duration;
         }
 
-        final srcType = source.src?.toLowerCase() ?? '';
-        final url = source.tracks.isNotEmpty
-            ? source.tracks.first.url.toLowerCase()
-            : '';
-
-        Set<String> cats = {};
-        if (srcType == 'ultra' ||
-            url.contains('ultra') ||
-            url.contains('healy')) {
-          cats.add('ultra');
-        }
-        if (url.contains('betty') || url.contains('bbd')) {
-          cats.add('betty');
-        }
-        if (srcType == 'mtx' ||
-            srcType == 'matrix' ||
-            url.contains('mtx') ||
-            url.contains('matrix')) {
-          cats.add('matrix');
-        }
-        if (url.contains('dsbd')) {
-          cats.add('dsbd');
-        }
-        if (url.contains('fm') ||
-            url.contains('prefm') ||
-            url.contains('pre-fm')) {
-          cats.add('fm');
-        }
-        if (srcType == 'sbd' || url.contains('sbd')) {
-          cats.add('sbd');
-        }
-        bool hasFeatTrack = source.tracks
-            .any((track) => track.title.toLowerCase().startsWith('gd'));
-        if (hasFeatTrack) {
-          cats.add('unk');
-        }
+        final cats = showListProvider.getCategoriesForSource(source);
 
         if (cats.contains('betty')) {
           catBettySources++;
@@ -119,16 +85,54 @@ class CollectionStatistics extends StatelessWidget {
           catSbdSources++;
           catSbdShows.add(show);
         }
-        if (cats.contains('unk')) {
-          catUnkSources++;
-          catUnkShows.add(show);
-        }
       }
     }
 
     final duration = Duration(seconds: totalDurationSeconds);
     final days = duration.inDays;
     final hours = duration.inHours % 24;
+
+    final numberFormat = NumberFormat('#,##0');
+    final formattedShows = numberFormat.format(totalShows);
+    final formattedSources = numberFormat.format(totalSources);
+    final formattedSongs = numberFormat.format(totalSongs);
+    final formattedDays = numberFormat.format(days);
+
+    String showsText = '$formattedShows Total Shows';
+    String sourcesText = '$formattedSources Sources';
+    String runtimeText = '$formattedDays Days $hours Hours Total Runtime';
+    String songsText = '$formattedSongs Songs';
+
+    if (hasActiveFilters) {
+      int filteredShowsCount = 0;
+      int filteredSourcesCount = 0;
+      int filteredSongsCount = 0;
+      int filteredDurationSeconds = 0;
+
+      final filteredShows = showListProvider.filteredShows;
+      filteredShowsCount = filteredShows.length;
+      for (var show in filteredShows) {
+        filteredSourcesCount += show.sources.length;
+        for (var source in show.sources) {
+          filteredSongsCount += source.tracks.length;
+          for (var track in source.tracks) {
+            filteredDurationSeconds += track.duration;
+          }
+        }
+      }
+      final filteredDuration = Duration(seconds: filteredDurationSeconds);
+      final filteredDays = numberFormat.format(filteredDuration.inDays);
+      final filteredHours = filteredDuration.inHours % 24;
+
+      showsText =
+          '$formattedShows Total Shows (${numberFormat.format(filteredShowsCount)})';
+      sourcesText =
+          '$formattedSources Sources (${numberFormat.format(filteredSourcesCount)})';
+      runtimeText =
+          '$formattedDays Days $hours Hours Total Runtime ($filteredDays Days $filteredHours Hours)';
+      songsText =
+          '$formattedSongs Songs (${numberFormat.format(filteredSongsCount)})';
+    }
 
     // Flat category rows used on TV (no ExpansionTile)
     Widget catRow(String label, int showCount, int sourceCount) {
@@ -169,8 +173,6 @@ class CollectionStatistics extends StatelessWidget {
         catRow('FM Broadcast', catFmShows.length, catFmSources),
       if (catSbdSources > 0)
         catRow('Soundboard', catSbdShows.length, catSbdSources),
-      if (catUnkSources > 0)
-        catRow('Unknown Shows', catUnkShows.length, catUnkSources),
     ];
 
     return SectionCard(
@@ -179,6 +181,17 @@ class CollectionStatistics extends StatelessWidget {
       initiallyExpanded: initiallyExpanded,
       icon: Icons.bar_chart,
       children: [
+        if (hasActiveFilters)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Text(
+              'Displaying total and (filtered) collection stats.',
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    fontStyle: FontStyle.italic,
+                    color: colorScheme.primary,
+                  ),
+            ),
+          ),
         ListTile(
           dense: true,
           visualDensity: VisualDensity.compact,
@@ -188,7 +201,7 @@ class CollectionStatistics extends StatelessWidget {
             fit: BoxFit.scaleDown,
             alignment: Alignment.centerLeft,
             child: Text(
-              '$totalShows Total Shows',
+              showsText,
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     fontSize: 16 * scaleFactor,
                     fontWeight: FontWeight.w500,
@@ -204,7 +217,7 @@ class CollectionStatistics extends StatelessWidget {
               fit: BoxFit.scaleDown,
               alignment: Alignment.centerLeft,
               child: Text(
-                '$totalSources Sources',
+                sourcesText,
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
                       fontSize: 12 * scaleFactor,
                     ),
@@ -221,7 +234,7 @@ class CollectionStatistics extends StatelessWidget {
             fit: BoxFit.scaleDown,
             alignment: Alignment.centerLeft,
             child: Text(
-              '${days}d ${hours}h Total Runtime',
+              runtimeText,
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     fontSize: 16 * scaleFactor,
                     fontWeight: FontWeight.w500,
@@ -237,7 +250,7 @@ class CollectionStatistics extends StatelessWidget {
               fit: BoxFit.scaleDown,
               alignment: Alignment.centerLeft,
               child: Text(
-                '$totalSongs Songs',
+                songsText,
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
                       fontSize: 12 * scaleFactor,
                     ),
@@ -410,31 +423,6 @@ class CollectionStatistics extends StatelessWidget {
                               .bodySmall
                               ?.copyWith(fontSize: 8.5 * scaleFactor)),
                     )),
-              if (catUnkSources > 0)
-                ListTile(
-                  dense: true,
-                  visualDensity:
-                      const VisualDensity(horizontal: 0, vertical: -4),
-                  title: FittedBox(
-                    fit: BoxFit.scaleDown,
-                    alignment: Alignment.centerLeft,
-                    child: Text('Unknown Shows',
-                        style: Theme.of(context)
-                            .textTheme
-                            .bodyMedium
-                            ?.copyWith(fontSize: 10 * scaleFactor)),
-                  ),
-                  trailing: FittedBox(
-                    fit: BoxFit.scaleDown,
-                    alignment: Alignment.centerRight,
-                    child: Text(
-                        '${catUnkShows.length} Shows / $catUnkSources Sources',
-                        style: Theme.of(context)
-                            .textTheme
-                            .bodySmall
-                            ?.copyWith(fontSize: 8.5 * scaleFactor)),
-                  ),
-                ),
             ],
           ),
       ],

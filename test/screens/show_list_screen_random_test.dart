@@ -168,6 +168,9 @@ class MockShowListProvider extends ChangeNotifier implements ShowListProvider {
   @override
   void dismissShow(Show show) {}
   @override
+  Set<String> getCategoriesForSource(Source source) => {};
+
+  @override
   bool isSourceAllowed(Source source) => true;
   bool _isSearchVisible = false;
 

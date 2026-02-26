@@ -171,7 +171,7 @@ class ShowListProvider with ChangeNotifier {
     _availableCategories = {};
     for (var show in _allShows) {
       for (var source in show.sources) {
-        _availableCategories.addAll(_getCategoriesForSource(source));
+        _availableCategories.addAll(getCategoriesForSource(source));
       }
     }
     notifyListeners();
@@ -179,7 +179,7 @@ class ShowListProvider with ChangeNotifier {
 
   // Source Category helper moved to static or helper class?
   // It uses internal strict mode setting.
-  Set<String> _getCategoriesForSource(Source source) {
+  Set<String> getCategoriesForSource(Source source) {
     // ... logic copied from original or refactored ...
     // For brevity, using simplified logic or assuming method exists
     final Set<String> categories = {};
@@ -212,12 +212,14 @@ class ShowListProvider with ChangeNotifier {
   }
 
   bool isSourceAllowed(Source source) {
-    if (_sourceCategoryFilters.isEmpty) {
+    // If no category filters are active, all sources are allowed
+    if (!_sourceCategoryFilters.values.any((v) => v)) {
       return true;
     }
-    final cats = _getCategoriesForSource(source);
+    final cats = getCategoriesForSource(source);
+    // If source has no recognized category (unknown), do not list when filtering is active
     if (cats.isEmpty) {
-      return true;
+      return false;
     }
     for (var cat in cats) {
       if (_sourceCategoryFilters[cat] == true) {
