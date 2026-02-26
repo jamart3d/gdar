@@ -761,7 +761,9 @@ class StealBanner extends Component with HasGameReference<StealGame> {
         color.withValues(alpha: opacity),
         ui.BlendMode.srcIn,
       )
-      ..isAntiAlias = true;
+      ..isAntiAlias = true
+      ..filterQuality =
+          config.performanceMode ? FilterQuality.medium : FilterQuality.high;
 
     canvas.save();
     // Scale down the high-res glyph to maintain original visual footprint

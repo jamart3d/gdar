@@ -264,7 +264,10 @@ class StealBackground extends PositionComponent
         ..colorFilter = ui.ColorFilter.mode(
           ghostTint.withValues(alpha: opacity),
           ui.BlendMode.modulate,
-        );
+        )
+        ..filterQuality = config.performanceMode
+            ? ui.FilterQuality.medium
+            : ui.FilterQuality.high;
 
       // Only blur the 2 newest slices
       final shouldBlur = i <= 2 && config.blurAmount > 0.0;
