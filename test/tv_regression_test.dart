@@ -318,6 +318,22 @@ class FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
   double get oilBannerResolution => 2.0;
   @override
   Future<void> setOilBannerResolution(double value) async {}
+  @override
+  double get oilBannerLetterSpacing => 1.02;
+  @override
+  Future<void> setOilBannerLetterSpacing(double value) async {}
+  @override
+  double get oilBannerWordSpacing => 0.4;
+  @override
+  Future<void> setOilBannerWordSpacing(double value) async {}
+  @override
+  double get oilFlatLineSpacing => 1.0;
+  @override
+  Future<void> setOilFlatLineSpacing(double value) async {}
+  @override
+  bool get oilShowAudioGraph => false;
+  @override
+  void toggleOilShowAudioGraph() {}
 
   @override
   double get oilLogoTrailIntensity => 0.0;

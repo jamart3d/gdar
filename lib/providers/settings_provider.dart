@@ -84,6 +84,7 @@ class SettingsProvider with ChangeNotifier {
   static const String _oilAudioBassBoostKey = 'oil_audio_bass_boost';
   static const String _oilAudioReactivityStrengthKey =
       'oil_audio_reactivity_strength';
+  static const String _oilShowAudioGraphKey = 'oil_show_audio_graph';
   static const String _oilShowInfoBannerKey = 'oil_show_info_banner';
   static const String _oilLogoScaleKey = 'oil_logo_scale';
   static const String _oilTranslationSmoothingKey = 'oil_translation_smoothing';
@@ -93,6 +94,9 @@ class SettingsProvider with ChangeNotifier {
   static const String _oilBannerFlickerKey = 'oil_banner_flicker';
   static const String _oilBannerGlowBlurKey = 'oil_banner_glow_blur';
   static const String _oilBannerResolutionKey = 'oil_banner_resolution';
+  static const String _oilBannerLetterSpacingKey = 'oil_banner_letter_spacing';
+  static const String _oilBannerWordSpacingKey = 'oil_banner_word_spacing';
+  static const String _oilFlatLineSpacingKey = 'oil_flat_line_spacing';
 
   // Ring controls (3-ring gap model)
   static const String _oilInnerRingScaleKey = 'oil_inner_ring_scale';
@@ -177,6 +181,9 @@ class SettingsProvider with ChangeNotifier {
   late double _oilFlatTextProximity;
   late String _oilFlatTextPlacement;
   late double _oilBannerResolution;
+  late double _oilBannerLetterSpacing;
+  late double _oilBannerWordSpacing;
+  late double _oilFlatLineSpacing;
 
   // Trail effect
   late double _oilLogoTrailIntensity;
@@ -187,6 +194,7 @@ class SettingsProvider with ChangeNotifier {
   late double _oilAudioPeakDecay;
   late double _oilAudioBassBoost;
   late double _oilAudioReactivityStrength;
+  late bool _oilShowAudioGraph;
   late bool _oilShowInfoBanner;
   late double _oilLogoScale;
   late double _oilTranslationSmoothing;
@@ -277,6 +285,9 @@ class SettingsProvider with ChangeNotifier {
   double get oilFlatTextProximity => _oilFlatTextProximity;
   String get oilFlatTextPlacement => _oilFlatTextPlacement;
   double get oilBannerResolution => _oilBannerResolution;
+  double get oilBannerLetterSpacing => _oilBannerLetterSpacing;
+  double get oilBannerWordSpacing => _oilBannerWordSpacing;
+  double get oilFlatLineSpacing => _oilFlatLineSpacing;
 
   // Trail effect getters
   double get oilLogoTrailIntensity => _oilLogoTrailIntensity;
@@ -287,6 +298,7 @@ class SettingsProvider with ChangeNotifier {
   double get oilAudioPeakDecay => _oilAudioPeakDecay;
   double get oilAudioBassBoost => _oilAudioBassBoost;
   double get oilAudioReactivityStrength => _oilAudioReactivityStrength;
+  bool get oilShowAudioGraph => _oilShowAudioGraph;
   bool get oilShowInfoBanner => _oilShowInfoBanner;
   double get oilLogoScale => _oilLogoScale;
   double get oilTranslationSmoothing => _oilTranslationSmoothing;
@@ -539,6 +551,12 @@ class SettingsProvider with ChangeNotifier {
         DefaultSettings.oilFlatTextPlacement;
     _oilBannerResolution = _prefs.getDouble(_oilBannerResolutionKey) ??
         DefaultSettings.oilBannerResolution;
+    _oilBannerLetterSpacing = _prefs.getDouble(_oilBannerLetterSpacingKey) ??
+        DefaultSettings.oilBannerLetterSpacing;
+    _oilBannerWordSpacing = _prefs.getDouble(_oilBannerWordSpacingKey) ??
+        DefaultSettings.oilBannerWordSpacing;
+    _oilFlatLineSpacing = _prefs.getDouble(_oilFlatLineSpacingKey) ??
+        DefaultSettings.oilFlatLineSpacing;
 
     // Trail effect
     _oilLogoTrailIntensity = _prefs.getDouble(_oilLogoTrailIntensityKey) ??
@@ -768,6 +786,16 @@ class SettingsProvider with ChangeNotifier {
       _updateStringPreference(
           _oilFlatTextPlacementKey, _oilFlatTextPlacement = placement);
 
+  Future<void> setOilBannerLetterSpacing(double value) =>
+      _updateDoublePreference(_oilBannerLetterSpacingKey,
+          _oilBannerLetterSpacing = value.clamp(0.5, 2.0));
+
+  Future<void> setOilBannerWordSpacing(double value) => _updateDoublePreference(
+      _oilBannerWordSpacingKey, _oilBannerWordSpacing = value.clamp(0.0, 5.0));
+
+  Future<void> setOilFlatLineSpacing(double value) => _updateDoublePreference(
+      _oilFlatLineSpacingKey, _oilFlatLineSpacing = value.clamp(0.1, 5.0));
+
   // Trail effect setters
   Future<void> setOilLogoTrailIntensity(double value) =>
       _updateDoublePreference(_oilLogoTrailIntensityKey,
@@ -785,6 +813,8 @@ class SettingsProvider with ChangeNotifier {
   Future<void> setOilAudioReactivityStrength(double value) =>
       _updateDoublePreference(_oilAudioReactivityStrengthKey,
           _oilAudioReactivityStrength = value.clamp(0.5, 2.0));
+  void toggleOilShowAudioGraph() => _updatePreference(
+      _oilShowAudioGraphKey, _oilShowAudioGraph = !_oilShowAudioGraph);
   void toggleOilShowInfoBanner() => _updatePreference(
       _oilShowInfoBannerKey, _oilShowInfoBanner = !_oilShowInfoBanner);
   Future<void> setOilLogoScale(double value) =>

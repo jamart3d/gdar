@@ -8,6 +8,7 @@
     - [x] Identify cause: `SplashScreen` hardcoded background & `ThemeProvider` defaulting to Light.
 
 ## Pending Tasks
+- [ ] **Google TV UI**: Set default screensaver settings (Visual Style, Speed, etc.) to ensure a premium out-of-the-box experience.
 - [x] Review implementation plan
 - [x] Fix Deprecated Color Getters in `lib/steal_screensaver/steal_background.dart`
 - [x] Implement Changes:

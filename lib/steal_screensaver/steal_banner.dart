@@ -64,10 +64,8 @@ class StealBanner extends Component with HasGameReference<StealGame> {
   // ── Minimum ring clearance at gap=0 ───────────────────────────────────────
   static const double _minRingClearance = 0.018;
 
-  // ── Font & letter spacing ──────────────────────────────────────────────────
-  static const double _fontSize = 11.0;
-  static const double _letterSpacingBoost = 1.08;
-  static const double _wordSpacingExtra = 0.8;
+  // ── Ring mode: default base spacing ───────────────────────────────────────
+  static const double _defaultFontSize = 11.0;
 
   // ── Flat mode layout ───────────────────────────────────────────────────────
   // Line height in pixels. Gap is computed dynamically in _renderFlat.
@@ -499,21 +497,23 @@ class StealBanner extends Component with HasGameReference<StealGame> {
       (_innerCurrent, _innerWords, _innerOpacity), // date
     ];
 
-    final isRight = config.flatTextPlacement == 'right';
+    final isAbove = config.flatTextPlacement == 'above';
 
-    // For 'right' placement, center the text block vertically on the logo
-    // and position the start x to the right of the logo.
+    // For 'above' and 'below' placement, center the text block vertically on the logo
+    // or stacked appropriately.
     final visibleCount =
         lines.where((l) => l.$1.isNotEmpty && l.$3 > 0.01).length;
-    final blockHeight = visibleCount * _flatLineHeight;
-
-    // X anchor used only for 'right' placement: right edge of logo + gap.
-    final rightAnchorX = center.dx + effectiveGap + logoRadius * 0.45;
-    // Starting Y for right placement: vertically centered around logo center.
-    final rightStartY = center.dy - blockHeight / 2 + _flatLineHeight * 0.5;
+    final lineHeight = _flatLineHeight * config.flatLineSpacing;
+    final blockHeight = visibleCount * lineHeight;
 
     // Starting Y for below placement: below the visual edge of the logo.
-    final belowStartY = center.dy + effectiveGap + _flatLineHeight * 0.5;
+    final belowStartY = center.dy + effectiveGap + lineHeight * 0.5;
+
+    // Starting Y for above placement: above the visual edge of the logo.
+    // We want the BOTTOM of the block to be 'effectiveGap' above the logo.
+    // blockHeight is the total vertical span.
+    final aboveStartY =
+        center.dy - effectiveGap - (blockHeight - lineHeight * 0.5);
 
     int visibleIndex = 0;
     for (int i = 0; i < lines.length; i++) {
@@ -526,25 +526,15 @@ class StealBanner extends Component with HasGameReference<StealGame> {
       final effectiveOpacity = _opacity * lineOpacity;
 
       final Offset lineCenter;
-      if (isRight) {
-        // Placed to the right: lines stack top→bottom centered on the logo;
-        // x is the start of the text, so offset by half of the canvas width
-        // minus rightAnchorX. We draw left-aligned from rightAnchorX, so we
-        // keep x=center.dx and let _drawFlatLine handle centering — instead,
-        // shift offset so the text is left-anchored from the right edge.
-        // The simplest approach: pass rightAnchorX as the left edge and shift
-        // the offset to the right by half the remaining space. Because
-        // _drawFlatLine centers text at center.dx, we mirror that by passing
-        // the conceptual center of the right half of the screen.
-        final rightHalfCenter = (rightAnchorX + minDim) / 2;
+      if (isAbove) {
         lineCenter = Offset(
-          rightHalfCenter,
-          rightStartY + visibleIndex * _flatLineHeight,
+          center.dx,
+          aboveStartY + visibleIndex * lineHeight,
         );
       } else {
         lineCenter = Offset(
           center.dx,
-          belowStartY + visibleIndex * _flatLineHeight,
+          belowStartY + visibleIndex * lineHeight,
         );
       }
 
@@ -580,14 +570,15 @@ class StealBanner extends Component with HasGameReference<StealGame> {
             .map(_NeonWord.new)
             .toList();
 
-    // Measure total width using cache — no TextPainter.layout per frame
+    // Measure total width including letter and word spacing
     double totalWidth = 0.0;
     for (int wi = 0; wi < wordList.length; wi++) {
-      for (final char in wordList[wi].text.characters) {
-        totalWidth += _measureChar(char);
+      final text = wordList[wi].text;
+      for (final char in text.characters) {
+        totalWidth += _measureChar(char) * config.bannerLetterSpacing;
       }
       if (wi < wordList.length - 1) {
-        totalWidth += _fontSize * 0.6;
+        totalWidth += _defaultFontSize * (config.bannerWordSpacing + 0.2);
       }
     }
 
@@ -598,7 +589,7 @@ class StealBanner extends Component with HasGameReference<StealGame> {
       final wordBrightness = glowEnabled ? word.brightness : 1.0;
 
       for (final char in word.text.characters) {
-        final charWidth = _measureChar(char);
+        final charWidth = _measureChar(char) * config.bannerLetterSpacing;
 
         canvas.save();
         canvas.translate(x + charWidth / 2, center.dy);
@@ -620,7 +611,7 @@ class StealBanner extends Component with HasGameReference<StealGame> {
       }
 
       if (wi < wordList.length - 1) {
-        x += _fontSize * 0.6;
+        x += _defaultFontSize * (config.bannerWordSpacing + 0.2);
       }
     }
   }
@@ -634,7 +625,7 @@ class StealBanner extends Component with HasGameReference<StealGame> {
           text: char,
           style: TextStyle(
             fontFamily: game.config.bannerFont,
-            fontSize: _fontSize,
+            fontSize: _defaultFontSize,
             fontWeight: FontWeight.w600,
           ),
         ),
@@ -684,8 +675,9 @@ class StealBanner extends Component with HasGameReference<StealGame> {
   ) {
     if (text.isEmpty) return;
 
-    final charAngle = (_fontSize * _letterSpacingBoost) / radius;
-    final wordSpaceAngle = charAngle * _wordSpacingExtra;
+    // Use user-defined spacing from config
+    double letterSpacing = config.bannerLetterSpacing;
+    double wordSpacing = config.bannerWordSpacing;
 
     final wordList = words.isNotEmpty
         ? words
@@ -695,13 +687,36 @@ class StealBanner extends Component with HasGameReference<StealGame> {
             .map(_NeonWord.new)
             .toList();
 
-    double totalSpan = 0.0;
-    for (int wi = 0; wi < wordList.length; wi++) {
-      totalSpan += charAngle * wordList[wi].text.characters.length;
-      if (wi < wordList.length - 1) totalSpan += wordSpaceAngle;
+    // 1. Calculate the raw span required with current settings
+    double calcRawSpan(double lSpace, double wSpace) {
+      double span = 0.0;
+      final charAngle = (_defaultFontSize * lSpace) / radius;
+      final wordSpaceAngle = charAngle * wSpace;
+      for (int wi = 0; wi < wordList.length; wi++) {
+        span += charAngle * wordList[wi].text.characters.length;
+        if (wi < wordList.length - 1) span += wordSpaceAngle;
+      }
+      return span;
     }
 
-    double angle = startAngle - pi / 2 - totalSpan / 2;
+    double currentSpan = calcRawSpan(letterSpacing, wordSpacing);
+
+    // 2. Dynamic Compression ("Squish-to-fit")
+    // If text exceeds ~320 degrees, we compress it to fit.
+    const double maxAllowedSpan = (320 / 180) * pi;
+    if (currentSpan > maxAllowedSpan) {
+      final compressionFactor = maxAllowedSpan / currentSpan;
+      // We don't want to squish letters too much (min 0.8x original),
+      // but words can squish more aggressively.
+      letterSpacing *= max(0.85, compressionFactor);
+      wordSpacing *= compressionFactor;
+      currentSpan = calcRawSpan(letterSpacing, wordSpacing);
+    }
+
+    final charAngle = (_defaultFontSize * letterSpacing) / radius;
+    final wordSpaceAngle = charAngle * wordSpacing;
+
+    double angle = startAngle - pi / 2 - currentSpan / 2;
 
     for (int wi = 0; wi < wordList.length; wi++) {
       final word = wordList[wi];
@@ -721,7 +736,7 @@ class StealBanner extends Component with HasGameReference<StealGame> {
         _paintChar(
           canvas,
           chars[ci],
-          _measureChar(chars[ci]),
+          _measureChar(chars[ci]) * letterSpacing,
           _currentColor,
           opacity,
           glowEnabled,
@@ -808,7 +823,7 @@ class StealBanner extends Component with HasGameReference<StealGame> {
         style: TextStyle(
           fontFamily: config.bannerFont,
           color: Colors.white,
-          fontSize: _fontSize * res,
+          fontSize: _defaultFontSize * res,
           fontWeight: FontWeight.w600,
           letterSpacing: 0,
           shadows: glowShadows,

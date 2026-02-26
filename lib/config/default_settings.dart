@@ -103,4 +103,8 @@ class DefaultSettings {
   static const double oilInnerToMiddleGap = 0.05;
   static const double oilMiddleToOuterGap = 0.05;
   static const double oilOrbitDrift = 1.0;
+  static const double oilBannerLetterSpacing = 1.02;
+  static const double oilBannerWordSpacing = 0.4;
+  static const double oilFlatLineSpacing = 1.0;
+  static const bool oilShowAudioGraph = false;
 }

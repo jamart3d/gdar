@@ -363,7 +363,7 @@ class TvScreensaverSection extends StatelessWidget {
               TvStepperRow(
                 label: 'Inner Ring Size',
                 value: settings.oilInnerRingScale,
-                min: 0.5,
+                min: 0.1,
                 max: 2.0,
                 step: 0.05,
                 leftLabel: 'Small',
@@ -408,6 +408,30 @@ class TvScreensaverSection extends StatelessWidget {
                     v == 0.0 ? 'Off' : '${(v * 100).round()}%',
                 onChanged: (v) => settings.setOilOrbitDrift(v),
               ),
+              const SizedBox(height: 16),
+              TvStepperRow(
+                label: 'Letter Spacing',
+                value: settings.oilBannerLetterSpacing,
+                min: 0.8,
+                max: 1.5,
+                step: 0.01,
+                leftLabel: 'Tight',
+                rightLabel: 'Spaced',
+                valueFormatter: (v) => v.toStringAsFixed(2),
+                onChanged: (v) => settings.setOilBannerLetterSpacing(v),
+              ),
+              const SizedBox(height: 16),
+              TvStepperRow(
+                label: 'Word Spacing',
+                value: settings.oilBannerWordSpacing,
+                min: 0.0,
+                max: 2.0,
+                step: 0.05,
+                leftLabel: 'Tight',
+                rightLabel: 'Spaced',
+                valueFormatter: (v) => v.toStringAsFixed(2),
+                onChanged: (v) => settings.setOilBannerWordSpacing(v),
+              ),
             ],
 
             // Flat-only settings
@@ -433,7 +457,7 @@ class TvScreensaverSection extends StatelessWidget {
                             return KeyEventResult.handled;
                           } else if (event.logicalKey ==
                               LogicalKeyboardKey.arrowRight) {
-                            settings.setOilFlatTextPlacement('right');
+                            settings.setOilFlatTextPlacement('above');
                             return KeyEventResult.handled;
                           }
                         }
@@ -442,7 +466,7 @@ class TvScreensaverSection extends StatelessWidget {
                       child: SegmentedButton<String>(
                         segments: const [
                           ButtonSegment(value: 'below', label: Text('Below')),
-                          ButtonSegment(value: 'right', label: Text('Right')),
+                          ButtonSegment(value: 'above', label: Text('Above')),
                         ],
                         selected: {settings.oilFlatTextPlacement},
                         onSelectionChanged: (Set<String> s) =>
@@ -465,6 +489,18 @@ class TvScreensaverSection extends StatelessWidget {
                 valueFormatter: (v) =>
                     v == 0.0 ? 'Default' : '${(v * 100).round()}%',
                 onChanged: (v) => settings.setOilFlatTextProximity(v),
+              ),
+              const SizedBox(height: 16),
+              TvStepperRow(
+                label: 'Line Spacing',
+                value: settings.oilFlatLineSpacing,
+                min: 0.5,
+                max: 2.5,
+                step: 0.1,
+                leftLabel: 'Tight',
+                rightLabel: 'Spaced',
+                valueFormatter: (v) => '${(v * 100).round()}%',
+                onChanged: (v) => settings.setOilFlatLineSpacing(v),
               ),
             ],
 
@@ -566,6 +602,18 @@ class TvScreensaverSection extends StatelessWidget {
                 style: textTheme.bodySmall
                     ?.copyWith(color: colorScheme.onSurfaceVariant),
               ),
+            ),
+          ],
+
+          if (settings.oilEnableAudioReactivity) ...[
+            const SizedBox(height: 16),
+            _ToggleRow(
+              label: 'Show Audio Graph',
+              subtitle: 'Display real-time EQ bars in the lower-left corner',
+              value: settings.oilShowAudioGraph,
+              onChanged: (_) => settings.toggleOilShowAudioGraph(),
+              colorScheme: colorScheme,
+              textTheme: textTheme,
             ),
           ],
 

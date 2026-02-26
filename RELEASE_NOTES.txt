@@ -1,3 +1,9 @@
+Release 1.1.27+127:
+- Screensaver: Implemented dynamic text ring compression to gracefully fit long track titles.
+- Screensaver: Added configurable "Letter Spacing" and "Word Spacing" for outer/inner rings.
+- Screensaver: Added "Above/Below" placement options and adjustable "Line Spacing" for Flat Mode text.
+- Screensaver: Introduced a real-time, 4-bar Audio Reactivity Graph (Bass, Mid, Treble, Overall) powered by Flame.
+
 Release 1.1.26+126:
 - UI: Refined splash screen checklist alignment (centered block, left-aligned content).
 - UI: Stabilized splash screen checkbox positioning during numeric animations by enforcing fixed-width anchors.

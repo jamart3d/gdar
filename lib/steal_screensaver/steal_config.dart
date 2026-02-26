@@ -39,9 +39,22 @@ class StealConfig {
   /// 1.0 = native, 2.0 = double resolution (sharper), etc.
   final double bannerResolution;
 
+  /// Spacing between letters in the banner.
+  final double bannerLetterSpacing;
+
+  /// Extra spacing between words in the banner.
+  final double bannerWordSpacing;
+
   /// Flat mode: where the text block is positioned relative to the logo.
-  /// 'below' = stacked below logo, 'right' = beside logo to the right.
+  /// 'below' = stacked below logo, 'above' = stacked above logo.
   final String flatTextPlacement;
+
+  /// Flat mode: multiplier for the vertical distance between lines.
+  /// 1.0 = standard, 0.5 = tight, 2.0 = double spaced.
+  final double flatLineSpacing;
+
+  /// Whether to display the 4-bar audio reactivity graph in the corner.
+  final bool showAudioGraph;
 
   static const Map<String, List<Color>> palettes = {
     'psychedelic': [
@@ -116,6 +129,10 @@ class StealConfig {
     this.flatTextProximity = 0.0,
     this.flatTextPlacement = 'below',
     this.bannerResolution = 2.0,
+    this.bannerLetterSpacing = 1.02,
+    this.bannerWordSpacing = 0.4,
+    this.flatLineSpacing = 1.0,
+    this.showAudioGraph = false,
   });
 
   factory StealConfig.fromMap(Map<String, dynamic> map) {
@@ -155,6 +172,11 @@ class StealConfig {
       flatTextProximity: (map['flatTextProximity'] as num?)?.toDouble() ?? 0.0,
       flatTextPlacement: map['flatTextPlacement'] as String? ?? 'below',
       bannerResolution: (map['bannerResolution'] as num?)?.toDouble() ?? 2.0,
+      bannerLetterSpacing:
+          (map['bannerLetterSpacing'] as num?)?.toDouble() ?? 1.02,
+      bannerWordSpacing: (map['bannerWordSpacing'] as num?)?.toDouble() ?? 0.4,
+      flatLineSpacing: (map['flatLineSpacing'] as num?)?.toDouble() ?? 1.0,
+      showAudioGraph: map['showAudioGraph'] as bool? ?? false,
     );
   }
 
@@ -192,6 +214,10 @@ class StealConfig {
       'flatTextProximity': flatTextProximity,
       'flatTextPlacement': flatTextPlacement,
       'bannerResolution': bannerResolution,
+      'bannerLetterSpacing': bannerLetterSpacing,
+      'bannerWordSpacing': bannerWordSpacing,
+      'flatLineSpacing': flatLineSpacing,
+      'showAudioGraph': showAudioGraph,
     };
   }
 
@@ -228,6 +254,10 @@ class StealConfig {
     double? flatTextProximity,
     String? flatTextPlacement,
     double? bannerResolution,
+    double? bannerLetterSpacing,
+    double? bannerWordSpacing,
+    double? flatLineSpacing,
+    bool? showAudioGraph,
   }) {
     return StealConfig(
       flowSpeed: flowSpeed ?? this.flowSpeed,
@@ -264,6 +294,10 @@ class StealConfig {
       flatTextProximity: flatTextProximity ?? this.flatTextProximity,
       flatTextPlacement: flatTextPlacement ?? this.flatTextPlacement,
       bannerResolution: bannerResolution ?? this.bannerResolution,
+      bannerLetterSpacing: bannerLetterSpacing ?? this.bannerLetterSpacing,
+      bannerWordSpacing: bannerWordSpacing ?? this.bannerWordSpacing,
+      flatLineSpacing: flatLineSpacing ?? this.flatLineSpacing,
+      showAudioGraph: showAudioGraph ?? this.showAudioGraph,
     );
   }
 
@@ -302,7 +336,11 @@ class StealConfig {
         logoTrailLength == other.logoTrailLength &&
         flatTextProximity == other.flatTextProximity &&
         flatTextPlacement == other.flatTextPlacement &&
-        bannerResolution == other.bannerResolution;
+        bannerResolution == other.bannerResolution &&
+        bannerLetterSpacing == other.bannerLetterSpacing &&
+        bannerWordSpacing == other.bannerWordSpacing &&
+        flatLineSpacing == other.flatLineSpacing &&
+        showAudioGraph == other.showAudioGraph;
   }
 
   @override
@@ -339,5 +377,9 @@ class StealConfig {
         flatTextProximity,
         flatTextPlacement,
         bannerResolution,
+        bannerLetterSpacing,
+        bannerWordSpacing,
+        flatLineSpacing,
+        showAudioGraph,
       ]);
 }

@@ -6,6 +6,7 @@ import 'package:flutter/material.dart' show Color, Colors;
 import 'package:shakedown/steal_screensaver/steal_banner.dart';
 import 'package:shakedown/steal_screensaver/steal_config.dart';
 import 'package:shakedown/steal_screensaver/steal_background.dart';
+import 'package:shakedown/steal_screensaver/steal_graph.dart';
 import 'package:shakedown/visualizer/audio_reactor.dart';
 import 'package:shakedown/services/device_service.dart';
 
@@ -17,6 +18,7 @@ class StealGame extends FlameGame {
   StreamSubscription<AudioEnergy>? _energySubscription;
   StealBackground? _background;
   StealBanner? _banner;
+  StealGraph? _graph;
   double _time = 0;
   AudioEnergy _currentEnergy = const AudioEnergy.zero();
 
@@ -74,10 +76,14 @@ class StealGame extends FlameGame {
     _background = StealBackground(config: config);
     add(_background!);
 
+    _graph = StealGraph();
+    add(_graph!);
+
     _banner = StealBanner();
     add(_banner!);
 
     _applyBannerConfig(config);
+    _applyGraphConfig(config);
 
     _lastPalette = config.palette;
     _resetHoldTimer();
@@ -112,6 +118,8 @@ class StealGame extends FlameGame {
     if (config.paletteCycle && !isWoodstockActive) {
       _tickCycle(dt);
     }
+
+    _graph?.energy = _currentEnergy;
 
     _tickWoodstock(dt);
     _tickTrailBuffer();
@@ -253,6 +261,11 @@ class StealGame extends FlameGame {
     config = newConfig;
     _background?.updateConfig(newConfig);
     _applyBannerConfig(newConfig);
+    _applyGraphConfig(newConfig);
+  }
+
+  void _applyGraphConfig(StealConfig cfg) {
+    _graph?.isVisible = cfg.showAudioGraph && cfg.enableAudioReactivity;
   }
 
   void _applyBannerConfig(StealConfig cfg) {
