@@ -1,3 +1,9 @@
+Release 1.1.22+122:
+- PWA: Fixed visibility of playback messages on narrow screens using isolated scaling (FittedBox).
+- PWA: Improved "Next" track indicator visibility logic to prevent UI jumping.
+- Web: Optimized HTML5 engine transitions to significantly reduce silent gaps between songs.
+- Web: Implemented buffer hand-off in HTML5 engine to prevent "Buffered: 0:00" display reset on track start.
+
 Release 1.1.21+121:
 - Web: Fixed a critical regression in Web Audio gapless playback where transitioned tracks were being skipped by the watchdog.
 - Web: Increased the gapless prefetch window to 90 seconds to improve reliability on slower connections.
