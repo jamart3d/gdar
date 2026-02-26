@@ -579,6 +579,8 @@ class SettingsProvider with ChangeNotifier {
     _oilAudioReactivityStrength =
         _prefs.getDouble(_oilAudioReactivityStrengthKey) ??
             DefaultSettings.oilAudioReactivityStrength;
+    _oilShowAudioGraph = _prefs.getBool(_oilShowAudioGraphKey) ??
+        DefaultSettings.oilShowAudioGraph;
 
     // Banner & visual
     _oilShowInfoBanner = _prefs.getBool(_oilShowInfoBannerKey) ??
