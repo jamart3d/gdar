@@ -91,6 +91,7 @@ class DefaultSettings {
   static const String oilBannerFont = 'RockSalt';
   static const double oilFlatTextProximity = 0.0;
   static const String oilFlatTextPlacement = 'below';
+  static const double oilBannerResolution = 2.0;
 
   // Trail effect
   static const double oilLogoTrailIntensity = 0.0;

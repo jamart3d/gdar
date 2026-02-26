@@ -315,6 +315,11 @@ class FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
   Future<void> setOilFlatTextPlacement(String placement) async {}
 
   @override
+  double get oilBannerResolution => 2.0;
+  @override
+  Future<void> setOilBannerResolution(double value) async {}
+
+  @override
   double get oilLogoTrailIntensity => 0.0;
   @override
   int get oilLogoTrailSlices => 6;

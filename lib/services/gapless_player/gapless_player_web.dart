@@ -91,6 +91,7 @@ class GaplessPlayer {
   final _processingStateController =
       StreamController<ProcessingState>.broadcast();
   final _positionController = StreamController<Duration>.broadcast();
+  final _bufferedPositionController = StreamController<Duration>.broadcast();
   final _durationController = StreamController<Duration?>.broadcast();
   final _indexController = StreamController<int?>.broadcast();
   final _sequenceStateController = StreamController<SequenceState?>.broadcast();
@@ -189,6 +190,8 @@ class GaplessPlayer {
 
     _positionController
         .add(Duration(milliseconds: (_positionSec * 1000).round()));
+    _bufferedPositionController
+        .add(Duration(milliseconds: (_currentTrackBufferedSec * 1000).round()));
 
     if (_durationSec != wasDuration) {
       _durationController.add(_durationSec > 0
@@ -327,7 +330,7 @@ class GaplessPlayer {
       : _fallbackPlayer!.processingStateStream;
 
   Stream<Duration> get bufferedPositionStream => _useJsEngine
-      ? _positionController.stream
+      ? _bufferedPositionController.stream
       : _fallbackPlayer!.bufferedPositionStream;
 
   Stream<Duration> get positionStream => _useJsEngine
@@ -464,6 +467,7 @@ class GaplessPlayer {
     await _playingController.close();
     await _processingStateController.close();
     await _positionController.close();
+    await _bufferedPositionController.close();
     await _durationController.close();
     await _indexController.close();
     await _sequenceStateController.close();

@@ -35,6 +35,10 @@ class StealConfig {
   /// 1.0 = text at logo center (fully overlapping).
   final double flatTextProximity;
 
+  /// Multiplier for text rasterization resolution (supersampling).
+  /// 1.0 = native, 2.0 = double resolution (sharper), etc.
+  final double bannerResolution;
+
   /// Flat mode: where the text block is positioned relative to the logo.
   /// 'below' = stacked below logo, 'right' = beside logo to the right.
   final String flatTextPlacement;
@@ -111,6 +115,7 @@ class StealConfig {
     this.logoTrailLength = 0.5,
     this.flatTextProximity = 0.0,
     this.flatTextPlacement = 'below',
+    this.bannerResolution = 2.0,
   });
 
   factory StealConfig.fromMap(Map<String, dynamic> map) {
@@ -149,6 +154,7 @@ class StealConfig {
       logoTrailLength: (map['logoTrailLength'] as num?)?.toDouble() ?? 0.5,
       flatTextProximity: (map['flatTextProximity'] as num?)?.toDouble() ?? 0.0,
       flatTextPlacement: map['flatTextPlacement'] as String? ?? 'below',
+      bannerResolution: (map['bannerResolution'] as num?)?.toDouble() ?? 2.0,
     );
   }
 
@@ -185,6 +191,7 @@ class StealConfig {
       'logoTrailLength': logoTrailLength,
       'flatTextProximity': flatTextProximity,
       'flatTextPlacement': flatTextPlacement,
+      'bannerResolution': bannerResolution,
     };
   }
 
@@ -220,6 +227,7 @@ class StealConfig {
     double? logoTrailLength,
     double? flatTextProximity,
     String? flatTextPlacement,
+    double? bannerResolution,
   }) {
     return StealConfig(
       flowSpeed: flowSpeed ?? this.flowSpeed,
@@ -255,6 +263,7 @@ class StealConfig {
       logoTrailLength: logoTrailLength ?? this.logoTrailLength,
       flatTextProximity: flatTextProximity ?? this.flatTextProximity,
       flatTextPlacement: flatTextPlacement ?? this.flatTextPlacement,
+      bannerResolution: bannerResolution ?? this.bannerResolution,
     );
   }
 
@@ -292,7 +301,8 @@ class StealConfig {
         logoTrailSlices == other.logoTrailSlices &&
         logoTrailLength == other.logoTrailLength &&
         flatTextProximity == other.flatTextProximity &&
-        flatTextPlacement == other.flatTextPlacement;
+        flatTextPlacement == other.flatTextPlacement &&
+        bannerResolution == other.bannerResolution;
   }
 
   @override
@@ -328,5 +338,6 @@ class StealConfig {
         logoTrailLength,
         flatTextProximity,
         flatTextPlacement,
+        bannerResolution,
       ]);
 }

@@ -92,6 +92,7 @@ class SettingsProvider with ChangeNotifier {
   static const String _oilBannerGlowKey = 'oil_banner_glow';
   static const String _oilBannerFlickerKey = 'oil_banner_flicker';
   static const String _oilBannerGlowBlurKey = 'oil_banner_glow_blur';
+  static const String _oilBannerResolutionKey = 'oil_banner_resolution';
 
   // Ring controls (3-ring gap model)
   static const String _oilInnerRingScaleKey = 'oil_inner_ring_scale';
@@ -175,6 +176,7 @@ class SettingsProvider with ChangeNotifier {
   late String _oilBannerFont;
   late double _oilFlatTextProximity;
   late String _oilFlatTextPlacement;
+  late double _oilBannerResolution;
 
   // Trail effect
   late double _oilLogoTrailIntensity;
@@ -274,6 +276,7 @@ class SettingsProvider with ChangeNotifier {
   String get oilBannerFont => _oilBannerFont;
   double get oilFlatTextProximity => _oilFlatTextProximity;
   String get oilFlatTextPlacement => _oilFlatTextPlacement;
+  double get oilBannerResolution => _oilBannerResolution;
 
   // Trail effect getters
   double get oilLogoTrailIntensity => _oilLogoTrailIntensity;
@@ -530,6 +533,8 @@ class SettingsProvider with ChangeNotifier {
         DefaultSettings.oilFlatTextProximity;
     _oilFlatTextPlacement = _prefs.getString(_oilFlatTextPlacementKey) ??
         DefaultSettings.oilFlatTextPlacement;
+    _oilBannerResolution = _prefs.getDouble(_oilBannerResolutionKey) ??
+        DefaultSettings.oilBannerResolution;
 
     // Trail effect
     _oilLogoTrailIntensity = _prefs.getDouble(_oilLogoTrailIntensityKey) ??
@@ -789,6 +794,9 @@ class SettingsProvider with ChangeNotifier {
       _updateDoublePreference(_oilBannerFlickerKey, _oilBannerFlicker = value);
   Future<void> setOilBannerGlowBlur(double value) => _updateDoublePreference(
       _oilBannerGlowBlurKey, _oilBannerGlowBlur = value);
+
+  Future<void> setOilBannerResolution(double value) => _updateDoublePreference(
+      _oilBannerResolutionKey, _oilBannerResolution = value.clamp(1.0, 4.0));
 
   // Ring control setters
   Future<void> setOilInnerRingScale(double value) => _updateDoublePreference(

@@ -1,3 +1,8 @@
+Release 1.1.23+123:
+- Screensaver: Implemented high-fidelity supersampling for text rendering to ensure ultra-sharp track information on 4K/1080p TV displays.
+- Screensaver: Added adjustable "Text Resolution" setting (1.0x to 4.0x) in TV Settings for custom clarity control.
+- Screensaver: Optimized glyph caching to automatically re-rasterize Sharpness, Font, or Glow changes.
+
 Release 1.1.22+122:
 - PWA: Fixed visibility of playback messages on narrow screens using isolated scaling (FittedBox).
 - PWA: Improved "Next" track indicator visibility logic to prevent UI jumping.

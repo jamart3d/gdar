@@ -85,6 +85,7 @@ class StealBanner extends Component with HasGameReference<StealGame> {
   static double _lastGlowBlur = -1.0;
   static bool _lastGlowEnabled = false;
   static String? _lastFontFamily;
+  static double _lastResolution = -1.0;
 
   // ── Per-ring state ─────────────────────────────────────────────────────────
   String _outerCurrent = '';
@@ -747,11 +748,12 @@ class StealBanner extends Component with HasGameReference<StealGame> {
     if (opacity <= 0.0) return;
 
     final glyph = _getRasterizedGlyph(char, glowEnabled, config);
+    final res = config.bannerResolution;
 
     // Offset centers the 'core' text and accommodates the shadow padding
     final offset = Offset(
-      -charWidth / 2 - glyph.padding,
-      -glyph.coreHeight / 2 - glyph.padding,
+      (-charWidth / 2 - glyph.padding) * res,
+      (-glyph.coreHeight / 2 - glyph.padding) * res,
     );
 
     final paint = Paint()
@@ -761,14 +763,19 @@ class StealBanner extends Component with HasGameReference<StealGame> {
       )
       ..isAntiAlias = true;
 
+    canvas.save();
+    // Scale down the high-res glyph to maintain original visual footprint
+    canvas.scale(1.0 / res);
     canvas.drawImage(glyph.image, offset, paint);
+    canvas.restore();
   }
 
   _RasterGlyph _getRasterizedGlyph(
       String char, bool glowEnabled, StealConfig config) {
     if (_lastGlowEnabled != glowEnabled ||
         _lastGlowBlur != config.bannerGlowBlur ||
-        _lastFontFamily != config.bannerFont) {
+        _lastFontFamily != config.bannerFont ||
+        _lastResolution != config.bannerResolution) {
       for (final g in _glyphCache.values) {
         g.image.dispose();
       }
@@ -776,19 +783,21 @@ class StealBanner extends Component with HasGameReference<StealGame> {
       _lastGlowEnabled = glowEnabled;
       _lastGlowBlur = config.bannerGlowBlur;
       _lastFontFamily = config.bannerFont;
+      _lastResolution = config.bannerResolution;
     }
 
     if (_glyphCache.containsKey(char)) {
       return _glyphCache[char]!;
     }
 
-    const double padding = 24.0; // accommodate max blur radius
+    final res = config.bannerResolution;
+    final double padding = 24.0 * res; // accommodate max blur radius
     final recorder = ui.PictureRecorder();
     final canvas = Canvas(recorder);
 
     // Draw solid white so color filtering maps cleanly
     final glowShadows = glowEnabled
-        ? _buildGlowShadows(Colors.white, 1.0, config.bannerGlowBlur)
+        ? _buildGlowShadows(Colors.white, 1.0, config.bannerGlowBlur * res)
         : null;
 
     final painter = TextPainter(
@@ -797,7 +806,7 @@ class StealBanner extends Component with HasGameReference<StealGame> {
         style: TextStyle(
           fontFamily: config.bannerFont,
           color: Colors.white,
-          fontSize: _fontSize,
+          fontSize: _fontSize * res,
           fontWeight: FontWeight.w600,
           letterSpacing: 0,
           shadows: glowShadows,
@@ -809,7 +818,7 @@ class StealBanner extends Component with HasGameReference<StealGame> {
     final width = painter.width + padding * 2;
     final height = painter.height + padding * 2;
 
-    painter.paint(canvas, const Offset(padding, padding));
+    painter.paint(canvas, Offset(padding, padding));
 
     final picture = recorder.endRecording();
     final image = picture.toImageSync(width.ceil(), height.ceil());

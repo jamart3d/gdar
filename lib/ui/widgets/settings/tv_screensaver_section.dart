@@ -343,6 +343,19 @@ class TvScreensaverSection extends StatelessWidget {
                 ],
               ),
             ),
+            const SizedBox(height: 16),
+            TvStepperRow(
+              label: 'Text Resolution',
+              value: settings.oilBannerResolution,
+              min: 1.0,
+              max: 4.0,
+              step: 0.5,
+              leftLabel: 'Native',
+              rightLabel: 'Ultra',
+              valueFormatter: (v) => '${v.toStringAsFixed(1)}x',
+              onChanged: (v) => settings.setOilBannerResolution(v),
+            ),
+            const SizedBox(height: 16),
 
             // Ring-only settings
             if (isRingMode) ...[
