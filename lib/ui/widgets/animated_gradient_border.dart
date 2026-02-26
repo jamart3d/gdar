@@ -166,7 +166,6 @@ class _GradientBorderPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final rect = Rect.fromLTWH(0, 0, size.width, size.height);
-    final rrect = RRect.fromRectAndRadius(rect, Radius.circular(borderRadius));
 
     // 1. Draw RGB Shadow
     if (showShadow) {
@@ -191,36 +190,21 @@ class _GradientBorderPainter extends CustomPainter {
       canvas.drawRRect(shadowRRect, shadowPaint);
     }
 
-    // 2. Draw Gradient Border
-    final innerRect = rect.deflate(borderWidth);
-    final innerRRect = RRect.fromRectAndRadius(
-        innerRect, Radius.circular(borderRadius - borderWidth));
+    // 2. Draw Gradient Border using stroke (much more robust on Web than Path.combine)
+    final borderPaint = Paint()
+      ..shader = SweepGradient(
+        colors: colors,
+        transform: GradientRotation(rotation),
+      ).createShader(rect)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = borderWidth;
 
-    // Use Path.combine for robust difference operation
-    final borderPath = Path.combine(
-      PathOperation.difference,
-      Path()..addRRect(rrect),
-      Path()..addRRect(innerRRect),
-    );
+    // Deflate the rect by half the border width so the stroke sits inside the bounds
+    final strokeRect = rect.deflate(borderWidth / 2);
+    final strokeRRect = RRect.fromRectAndRadius(
+        strokeRect, Radius.circular(borderRadius - borderWidth / 2));
 
-    canvas.save();
-    canvas.clipPath(borderPath);
-
-    final center = rect.center;
-    canvas.translate(center.dx, center.dy);
-    canvas.rotate(rotation);
-    canvas.translate(-center.dx, -center.dy);
-
-    final maxDim = (size.width > size.height ? size.width : size.height) * 2;
-    final bigRect =
-        Rect.fromCenter(center: center, width: maxDim, height: maxDim);
-
-    final gradientPaint = Paint()
-      ..shader = SweepGradient(colors: colors).createShader(bigRect);
-
-    canvas.drawRect(bigRect, gradientPaint);
-
-    canvas.restore();
+    canvas.drawRRect(strokeRRect, borderPaint);
   }
 
   @override

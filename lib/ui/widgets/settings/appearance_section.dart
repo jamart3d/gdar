@@ -357,11 +357,12 @@ class _AppearanceSectionState extends State<AppearanceSection> {
                   // Ignore global clock locally so the preview animates even if the
                   // global clock is paused by the ShowListScreen behind us.
                   ignoreGlobalClock: true,
-                  // Transparent background to blend with SectionCard
-                  backgroundColor: Colors.transparent,
+                  // Default background color (cardColor) masks the center of the RGB effect
+                  backgroundColor: null,
                   child: TvFocusWrapper(
                     showGlow: true,
-                    borderRadius: BorderRadius.circular(24),
+                    borderRadius:
+                        BorderRadius.circular(21), // MATCH INNER RADIUS (24-3)
                     child: SegmentedButton<double>(
                       segments: const [
                         ButtonSegment(
@@ -396,8 +397,10 @@ class _AppearanceSectionState extends State<AppearanceSection> {
                           RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(21)),
                         ),
-                        // Make border transparent to let gradient show
-                        side: WidgetStateProperty.all(BorderSide.none),
+                        // Make border transparent to let gradient show.
+                        // Using a 0-width transparent side is more robust on web than "none".
+                        side: WidgetStateProperty.all(const BorderSide(
+                            color: Colors.transparent, width: 0)),
                         backgroundColor:
                             WidgetStateProperty.resolveWith<Color?>(
                           (states) {

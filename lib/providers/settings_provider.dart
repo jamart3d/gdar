@@ -452,7 +452,7 @@ class SettingsProvider with ChangeNotifier {
     _rgbAnimationSpeed = _prefs.getDouble(_rgbAnimationSpeedKey) ??
         DefaultSettings.rgbAnimationSpeed;
     _showSplashScreen = _prefs.getBool(_showSplashScreenKey) ??
-        DefaultSettings.showSplashScreen;
+        (kIsWeb ? _isFirstRun : DefaultSettings.showSplashScreen);
     _showPlaybackMessages = _prefs.getBool(_showPlaybackMessagesKey) ??
         DefaultSettings.showPlaybackMessages;
     _sortOldestFirst =
@@ -617,9 +617,12 @@ class SettingsProvider with ChangeNotifier {
     // Web-only override: all categories ON by default.
     // We use a one-time migration check to ensure existing web users also get
     // all categories enabled, while preserving their future custom choices.
+    // Web-only override: Only 'matrix' ON by default for a curated first experience.
+    // We use a one-time migration check to ensure new web users start with matrix,
+    // while preserving their future custom choices.
     if (kIsWeb && !(_prefs.getBool(_webSourceFiltersInitKey) ?? false)) {
       _sourceCategoryFilters.forEach((key, _) {
-        _sourceCategoryFilters[key] = true;
+        _sourceCategoryFilters[key] = (key == 'matrix');
       });
       _prefs.setBool(_webSourceFiltersInitKey, true);
       _saveSourceCategoryFilters();
@@ -814,11 +817,11 @@ class SettingsProvider with ChangeNotifier {
   bool _filterHighestShnid = false;
   Map<String, bool> _sourceCategoryFilters = {
     'matrix': true,
-    'ultra': true,
-    'betty': true,
-    'sbd': true,
-    'fm': true,
-    'dsbd': true,
+    'ultra': false,
+    'betty': false,
+    'sbd': false,
+    'fm': false,
+    'dsbd': false,
     'unk': false,
   };
   bool get filterHighestShnid => _filterHighestShnid;

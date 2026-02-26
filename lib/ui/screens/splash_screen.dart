@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui' as ui;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -174,10 +175,12 @@ class _SplashScreenState extends State<SplashScreen>
             AnimatedOpacity(
               opacity: _isNavigating ? 0.0 : 1.0,
               duration: const Duration(milliseconds: 200),
-              child: IntrinsicWidth(
+              child: SizedBox(
+                width: 440.0 * effectiveScale, // Increased width for more room
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  crossAxisAlignment:
+                      CrossAxisAlignment.start, // Stabilize text alignment
                   children: [
                     if (settingsProvider.isFirstRun)
                       _buildChecklistItem(
@@ -187,7 +190,7 @@ class _SplashScreenState extends State<SplashScreen>
                       )
                     else
                       _buildChecklistItem(
-                        label: 'Reading settings...',
+                        label: 'settings: ready',
                         isDone: true,
                         scaleFactor: effectiveScale,
                       ),
@@ -204,11 +207,9 @@ class _SplashScreenState extends State<SplashScreen>
 
                           String label;
                           if (isLoading) {
-                            label = 'Loading data...';
-                          } else if (!isDone) {
-                            label = 'Found $count shnids...';
+                            label = 'shnids loaded: ...';
                           } else {
-                            label = '$count shnids loaded';
+                            label = 'shnids loaded: $count';
                           }
 
                           return _buildChecklistItem(
@@ -231,11 +232,9 @@ class _SplashScreenState extends State<SplashScreen>
 
                           String label;
                           if (isLoading) {
-                            label = 'Processing shows...';
-                          } else if (!isDone) {
-                            label = 'Found $count shows...';
+                            label = 'shows ready: ...';
                           } else {
-                            label = '$count shows ready';
+                            label = 'shows ready: $count';
                           }
 
                           return _buildChecklistItem(
@@ -250,11 +249,8 @@ class _SplashScreenState extends State<SplashScreen>
                     // 3. Archive Check
                     if (!kIsWeb)
                       _buildChecklistItem(
-                        label: showListProvider.hasCheckedArchive
-                            ? (showListProvider.isArchiveReachable
-                                ? 'Archive.org reachable'
-                                : 'Archive.org ?')
-                            : 'Checking archive.org...',
+                        label:
+                            'archive.org: ${showListProvider.hasCheckedArchive ? (showListProvider.isArchiveReachable ? 'reachable' : 'offline') : 'checking...'}',
                         isDone: showListProvider.hasCheckedArchive,
                         isSuccess: showListProvider.hasCheckedArchive
                             ? showListProvider.isArchiveReachable
@@ -320,14 +316,12 @@ class _SplashScreenState extends State<SplashScreen>
           ),
         ),
         SizedBox(width: 12 * scaleFactor),
-        Container(
-          // Allow width to grow slightly with scale, but cap it to prevent overflow
-          constraints: BoxConstraints(
-              maxWidth: 320.0 * (scaleFactor < 1.0 ? 1.0 : scaleFactor)),
+        Expanded(
           child: Text(
             label,
             style: theme.textTheme.titleMedium?.copyWith(
               fontSize: AppTypography.responsiveFontSize(context, baseSize),
+              fontFeatures: [const ui.FontFeature.tabularFigures()],
               color: isSuccess ? null : colorScheme.error, // Red Text for error
               fontWeight: isSuccess ? null : FontWeight.bold,
             ),

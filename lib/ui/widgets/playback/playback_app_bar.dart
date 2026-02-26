@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shakedown/models/show.dart';
@@ -44,6 +45,14 @@ class PlaybackAppBar extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 16),
         child: Row(
           children: [
+            if (kIsWeb) ...[
+              IconButton(
+                icon: const Icon(Icons.menu_rounded),
+                onPressed: () => Navigator.of(context).pop(),
+                tooltip: 'Back to Show List',
+              ),
+              const SizedBox(width: 8),
+            ],
             Expanded(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
