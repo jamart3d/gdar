@@ -84,7 +84,7 @@ class _PlaybackMessagesState extends State<PlaybackMessages> {
     final double labelsFontSize = 12.0 * scaleFactor;
 
     // Force default system/Roboto font regardless of app font setting
-    const String? fontFamily = 'Roboto';
+    const String fontFamily = 'Roboto';
 
     if (!settingsProvider.showPlaybackMessages) {
       return const SizedBox.shrink();
@@ -159,9 +159,15 @@ class _PlaybackMessagesState extends State<PlaybackMessages> {
               initialData: audioProvider.audioPlayer.nextTrackBuffered,
               builder: (context, nextBufferedSnapshot) {
                 final nextBuffered = nextBufferedSnapshot.data;
-                if (nextBuffered == null || nextBuffered == Duration.zero) {
+                if (nextBuffered == null) {
                   return const SizedBox.shrink();
                 }
+                // On Web, show 0:00 if we have next track data but haven't started buffering yet.
+                // This prevents the UI from jumping in and out.
+                if (nextBuffered == Duration.zero && !kIsWeb) {
+                  return const SizedBox.shrink();
+                }
+
                 return Padding(
                   padding: const EdgeInsets.only(left: 8.0),
                   child: Row(
@@ -191,14 +197,22 @@ class _PlaybackMessagesState extends State<PlaybackMessages> {
             ),
         ];
 
-        return Row(
-          mainAxisSize: MainAxisSize.min,
-          mainAxisAlignment: widget.textAlign == TextAlign.center
-              ? MainAxisAlignment.center
+        return FittedBox(
+          fit: BoxFit.scaleDown,
+          alignment: widget.textAlign == TextAlign.center
+              ? Alignment.center
               : widget.textAlign == TextAlign.right
-                  ? MainAxisAlignment.end
-                  : MainAxisAlignment.start,
-          children: children,
+                  ? Alignment.centerRight
+                  : Alignment.centerLeft,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: widget.textAlign == TextAlign.center
+                ? MainAxisAlignment.center
+                : widget.textAlign == TextAlign.right
+                    ? MainAxisAlignment.end
+                    : MainAxisAlignment.start,
+            children: children,
+          ),
         );
       },
     );

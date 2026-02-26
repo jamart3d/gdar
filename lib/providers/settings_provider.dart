@@ -6,6 +6,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shakedown/config/default_settings.dart';
 import 'package:shakedown/utils/logger.dart';
 
+import 'package:shakedown/services/gapless_player/gapless_player.dart';
+
 class SettingsProvider with ChangeNotifier {
   final SharedPreferences _prefs;
   final bool isTv;
@@ -46,7 +48,7 @@ class SettingsProvider with ChangeNotifier {
   static const String _preventSleepKey = 'prevent_sleep';
 
   // Web Gapless Engine (web-only)
-  static const String _webGaplessEngineKey = 'web_gapless_engine';
+  static const String _audioEngineModeKey = 'audio_engine_mode';
   static const String _webPrefetchSecondsKey = 'web_prefetch_seconds';
   static const String _webSourceFiltersInitKey = 'web_source_filters_init_v1';
   static const String _simpleRandomIconKey = 'simple_random_icon';
@@ -152,7 +154,7 @@ class SettingsProvider with ChangeNotifier {
   late bool _enableSwipeToBlock;
 
   // Web Gapless Engine
-  late bool _webGaplessEngine;
+  late AudioEngineMode _audioEngineMode;
   late int _webPrefetchSeconds;
 
   // Screensaver (steal)
@@ -240,7 +242,17 @@ class SettingsProvider with ChangeNotifier {
   bool get enableSwipeToBlock => _enableSwipeToBlock;
 
   /// Whether the custom gapless Web Audio engine is enabled (web-only).
-  bool get webGaplessEngine => _webGaplessEngine;
+  AudioEngineMode get audioEngineMode => _audioEngineMode;
+
+  /// Sets the explicit audio engine mode.
+  void setAudioEngineMode(AudioEngineMode mode) {
+    _audioEngineMode = mode;
+    _prefs.setString(_audioEngineModeKey, mode.name);
+    notifyListeners();
+  }
+
+  /// Compatibility getter for legacy callers.
+  bool get webGaplessEngine => _audioEngineMode != AudioEngineMode.standard;
 
   /// Seconds ahead of a track end to prefetch the next buffer (web-only).
   int get webPrefetchSeconds => _webPrefetchSeconds;
@@ -468,9 +480,18 @@ class SettingsProvider with ChangeNotifier {
     _showDebugLayout = _prefs.getBool(_showDebugLayoutKey) ?? false;
     _enableShakedownTween = _prefs.getBool(_enableShakedownTweenKey) ?? true;
 
-    // Web Gapless Engine
-    _webGaplessEngine = _prefs.getBool(_webGaplessEngineKey) ??
-        DefaultSettings.webGaplessEngine;
+    // Web Gapless Engine Migration
+    if (_prefs.containsKey('web_gapless_engine')) {
+      bool oldEnabled = _prefs.getBool('web_gapless_engine') ?? true;
+      _audioEngineMode =
+          oldEnabled ? AudioEngineMode.auto : AudioEngineMode.standard;
+      _prefs.remove('web_gapless_engine');
+      _prefs.setString(_audioEngineModeKey, _audioEngineMode.name);
+    } else {
+      _audioEngineMode = AudioEngineMode.fromString(
+          _prefs.getString(_audioEngineModeKey) ??
+              DefaultSettings.audioEngineMode);
+    }
     _webPrefetchSeconds = _prefs.getInt(_webPrefetchSecondsKey) ??
         DefaultSettings.webPrefetchSeconds;
 
@@ -662,8 +683,10 @@ class SettingsProvider with ChangeNotifier {
       _enableSwipeToBlockKey, _enableSwipeToBlock = !_enableSwipeToBlock);
 
   /// Toggles the custom gapless Web Audio engine on or off (web-only).
-  void toggleWebGaplessEngine() => _updatePreference(
-      _webGaplessEngineKey, _webGaplessEngine = !_webGaplessEngine);
+  void toggleWebGaplessEngine() {
+    setAudioEngineMode(
+        webGaplessEngine ? AudioEngineMode.standard : AudioEngineMode.auto);
+  }
 
   /// Sets the prefetch-ahead duration in seconds for the web engine (web-only).
   Future<void> setWebPrefetchSeconds(int seconds) => _updateIntPreference(

@@ -4,7 +4,7 @@
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'dart:async' as _i7;
-import 'dart:ui' as _i11;
+import 'dart:ui' as _i12;
 
 import 'package:flutter/foundation.dart' as _i2;
 import 'package:hive_flutter/hive_flutter.dart' as _i5;
@@ -14,6 +14,7 @@ import 'package:shakedown/models/rating.dart' as _i6;
 import 'package:shakedown/models/show.dart' as _i4;
 import 'package:shakedown/providers/settings_provider.dart' as _i9;
 import 'package:shakedown/services/catalog_service.dart' as _i3;
+import 'package:shakedown/services/gapless_player/gapless_player.dart' as _i11;
 import 'package:shared_preferences/shared_preferences.dart' as _i8;
 
 // ignore_for_file: type=lint
@@ -516,6 +517,13 @@ class MockSettingsProvider extends _i1.Mock implements _i9.SettingsProvider {
       ) as bool);
 
   @override
+  _i11.AudioEngineMode get audioEngineMode => (super.noSuchMethod(
+        Invocation.getter(#audioEngineMode),
+        returnValue: _i11.AudioEngineMode.auto,
+        returnValueForMissingStub: _i11.AudioEngineMode.auto,
+      ) as _i11.AudioEngineMode);
+
+  @override
   bool get webGaplessEngine => (super.noSuchMethod(
         Invocation.getter(#webGaplessEngine),
         returnValue: false,
@@ -763,6 +771,13 @@ class MockSettingsProvider extends _i1.Mock implements _i9.SettingsProvider {
       ) as double);
 
   @override
+  double get oilBannerGlowBlur => (super.noSuchMethod(
+        Invocation.getter(#oilBannerGlowBlur),
+        returnValue: 0.0,
+        returnValueForMissingStub: 0.0,
+      ) as double);
+
+  @override
   double get oilInnerRingScale => (super.noSuchMethod(
         Invocation.getter(#oilInnerRingScale),
         returnValue: 0.0,
@@ -891,6 +906,15 @@ class MockSettingsProvider extends _i1.Mock implements _i9.SettingsProvider {
         Invocation.method(
           #toggleShowSplashScreen,
           [],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void setAudioEngineMode(_i11.AudioEngineMode? mode) => super.noSuchMethod(
+        Invocation.method(
+          #setAudioEngineMode,
+          [mode],
         ),
         returnValueForMissingStub: null,
       );
@@ -1167,7 +1191,7 @@ class MockSettingsProvider extends _i1.Mock implements _i9.SettingsProvider {
       );
 
   @override
-  _i7.Future<void> setSeedColor(_i11.Color? color) => (super.noSuchMethod(
+  _i7.Future<void> setSeedColor(_i12.Color? color) => (super.noSuchMethod(
         Invocation.method(
           #setSeedColor,
           [color],
@@ -1489,6 +1513,16 @@ class MockSettingsProvider extends _i1.Mock implements _i9.SettingsProvider {
       ) as _i7.Future<void>);
 
   @override
+  _i7.Future<void> setOilBannerGlowBlur(double? value) => (super.noSuchMethod(
+        Invocation.method(
+          #setOilBannerGlowBlur,
+          [value],
+        ),
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
+
+  @override
   _i7.Future<void> setOilInnerRingScale(double? value) => (super.noSuchMethod(
         Invocation.method(
           #setOilInnerRingScale,
@@ -1586,7 +1620,7 @@ class MockSettingsProvider extends _i1.Mock implements _i9.SettingsProvider {
       ) as _i7.Future<void>);
 
   @override
-  void addListener(_i11.VoidCallback? listener) => super.noSuchMethod(
+  void addListener(_i12.VoidCallback? listener) => super.noSuchMethod(
         Invocation.method(
           #addListener,
           [listener],
@@ -1595,7 +1629,7 @@ class MockSettingsProvider extends _i1.Mock implements _i9.SettingsProvider {
       );
 
   @override
-  void removeListener(_i11.VoidCallback? listener) => super.noSuchMethod(
+  void removeListener(_i12.VoidCallback? listener) => super.noSuchMethod(
         Invocation.method(
           #removeListener,
           [listener],

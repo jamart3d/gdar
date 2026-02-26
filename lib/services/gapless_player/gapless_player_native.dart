@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:just_audio/just_audio.dart';
+import 'package:shakedown/services/gapless_player/gapless_player.dart';
 
 /// Native (Android / TV / desktop) implementation of [GaplessPlayer].
 ///
@@ -44,6 +45,18 @@ class GaplessPlayer {
 
   /// The current synchronous [PlayerState] snapshot.
   PlayerState get playerState => _player.playerState;
+
+  /// Returns the name of the active audio engine.
+  String get engineName => 'Standard Engine (just_audio)';
+
+  /// Returns the reason why the current engine was selected.
+  String get selectionReason => 'Native platform (not web)';
+
+  /// Returns the resolved [AudioEngineMode].
+  AudioEngineMode get activeMode => AudioEngineMode.standard;
+
+  /// No-op on native.
+  void reload() {}
 
   /// Returns the buffered duration of the next track.
   /// Only applicable to web gapless engine; returns null natively.
@@ -126,6 +139,9 @@ class GaplessPlayer {
   /// Seeks to [position] in the current track, or to [index] if provided.
   Future<void> seek(Duration? position, {int? index}) =>
       _player.seek(position, index: index);
+
+  /// Sets the prefetch window for JS engines. No-op on native.
+  void setPrefetchSeconds(int seconds) {}
 
   /// Seeks to the next item in the sequence.
   Future<void> seekToNext() => _player.seekToNext();

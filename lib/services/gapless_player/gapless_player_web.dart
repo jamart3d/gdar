@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:js_interop';
 
 import 'package:just_audio/just_audio.dart';
+import 'package:shakedown/services/gapless_player/gapless_player.dart';
 import 'package:just_audio_background/just_audio_background.dart';
 
 // ─── JS interop bindings ─────────────────────────────────────────────────────
@@ -9,6 +10,12 @@ import 'package:just_audio_background/just_audio_background.dart';
 /// Binds to the JavaScript object at [window._gdarAudio].
 @JS('_gdarAudio')
 external _GdarAudioEngine get _engine;
+
+@JS('_shakedownAudioStrategy')
+external String? get _strategy;
+
+@JS('_shakedownAudioReason')
+external String? get _reason;
 
 /// JavaScript engine API surface.
 @JS()
@@ -37,6 +44,7 @@ extension type _GdarState(JSObject _) {
   external int get index;
   external double get position;
   external double get duration;
+  external double get currentTrackBuffered;
   external double get nextTrackBuffered;
   external double get nextTrackTotal;
   external int get playlistLength;
@@ -93,6 +101,7 @@ class GaplessPlayer {
   int? _currentIndex;
   double _positionSec = 0;
   double _durationSec = 0;
+  double _currentTrackBufferedSec = 0;
   double _nextTrackBufferedSec = 0;
   double _nextTrackTotalSec = 0;
   ProcessingState _processingState = ProcessingState.idle;
@@ -171,6 +180,7 @@ class GaplessPlayer {
     _playing = s.playing;
     _positionSec = s.position;
     _durationSec = s.duration;
+    _currentTrackBufferedSec = s.currentTrackBuffered;
     _nextTrackBufferedSec = s.nextTrackBuffered;
     _nextTrackTotalSec = s.nextTrackTotal;
     _currentIndex = s.index >= 0 ? s.index : null;
@@ -238,8 +248,9 @@ class GaplessPlayer {
       ? Duration(milliseconds: (_positionSec * 1000).round())
       : _fallbackPlayer!.position;
 
-  Duration get bufferedPosition =>
-      _useJsEngine ? position : _fallbackPlayer!.bufferedPosition;
+  Duration get bufferedPosition => _useJsEngine
+      ? Duration(milliseconds: (_currentTrackBufferedSec * 1000).round())
+      : _fallbackPlayer!.bufferedPosition;
 
   Duration? get duration => _useJsEngine
       ? (_durationSec > 0
@@ -271,6 +282,30 @@ class GaplessPlayer {
   PlayerState get playerState => _useJsEngine
       ? PlayerState(_playing, _processingState)
       : _fallbackPlayer!.playerState;
+
+  /// Returns the name of the active audio engine.
+  String get engineName {
+    if (!_useJsEngine) return 'Standard Engine (just_audio)';
+    final strategy = _strategy;
+    if (strategy == 'html5') return 'Mobile Gapless Engine (HTML5)';
+    if (strategy == 'webaudio') return 'Desktop Gapless Engine (Web Audio API)';
+    return 'Unknown Web Engine';
+  }
+
+  /// Returns the reason why the current engine was selected.
+  String get selectionReason {
+    if (!_useJsEngine) return 'User disabled Web Gapless Engine in settings.';
+    return _reason ?? 'No reason provided by hybrid_init.js';
+  }
+
+  /// Returns the resolved [AudioEngineMode].
+  AudioEngineMode get activeMode {
+    if (!_useJsEngine) return AudioEngineMode.standard;
+    final strategy = _strategy;
+    if (strategy == 'html5') return AudioEngineMode.html5;
+    if (strategy == 'webaudio') return AudioEngineMode.webAudio;
+    return AudioEngineMode.standard;
+  }
 
   int? get androidAudioSessionId => null;
 
@@ -433,4 +468,12 @@ class GaplessPlayer {
     await _indexController.close();
     await _sequenceStateController.close();
   }
+
+  /// Reloads the web page.
+  void reload() {
+    _reloadPage();
+  }
 }
+
+@JS('window.location.reload')
+external void _reloadPage();

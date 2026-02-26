@@ -332,6 +332,13 @@ class MockSettingsProvider extends _i1.Mock implements _i4.SettingsProvider {
       ) as bool);
 
   @override
+  _i2.AudioEngineMode get audioEngineMode => (super.noSuchMethod(
+        Invocation.getter(#audioEngineMode),
+        returnValue: _i2.AudioEngineMode.auto,
+        returnValueForMissingStub: _i2.AudioEngineMode.auto,
+      ) as _i2.AudioEngineMode);
+
+  @override
   bool get webGaplessEngine => (super.noSuchMethod(
         Invocation.getter(#webGaplessEngine),
         returnValue: false,
@@ -579,6 +586,13 @@ class MockSettingsProvider extends _i1.Mock implements _i4.SettingsProvider {
       ) as double);
 
   @override
+  double get oilBannerGlowBlur => (super.noSuchMethod(
+        Invocation.getter(#oilBannerGlowBlur),
+        returnValue: 0.0,
+        returnValueForMissingStub: 0.0,
+      ) as double);
+
+  @override
   double get oilInnerRingScale => (super.noSuchMethod(
         Invocation.getter(#oilInnerRingScale),
         returnValue: 0.0,
@@ -707,6 +721,15 @@ class MockSettingsProvider extends _i1.Mock implements _i4.SettingsProvider {
         Invocation.method(
           #toggleShowSplashScreen,
           [],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void setAudioEngineMode(_i2.AudioEngineMode? mode) => super.noSuchMethod(
+        Invocation.method(
+          #setAudioEngineMode,
+          [mode],
         ),
         returnValueForMissingStub: null,
       );
@@ -1305,6 +1328,16 @@ class MockSettingsProvider extends _i1.Mock implements _i4.SettingsProvider {
       ) as _i6.Future<void>);
 
   @override
+  _i6.Future<void> setOilBannerGlowBlur(double? value) => (super.noSuchMethod(
+        Invocation.method(
+          #setOilBannerGlowBlur,
+          [value],
+        ),
+        returnValue: _i6.Future<void>.value(),
+        returnValueForMissingStub: _i6.Future<void>.value(),
+      ) as _i6.Future<void>);
+
+  @override
   _i6.Future<void> setOilInnerRingScale(double? value) => (super.noSuchMethod(
         Invocation.method(
           #setOilInnerRingScale,
@@ -1496,6 +1529,20 @@ class MockAudioProvider extends _i1.Mock implements _i8.AudioProvider {
         returnValue: _i6.Stream<Duration>.empty(),
         returnValueForMissingStub: _i6.Stream<Duration>.empty(),
       ) as _i6.Stream<Duration>);
+
+  @override
+  _i6.Stream<Duration?> get nextTrackBufferedStream => (super.noSuchMethod(
+        Invocation.getter(#nextTrackBufferedStream),
+        returnValue: _i6.Stream<Duration?>.empty(),
+        returnValueForMissingStub: _i6.Stream<Duration?>.empty(),
+      ) as _i6.Stream<Duration?>);
+
+  @override
+  _i6.Stream<Duration?> get nextTrackTotalStream => (super.noSuchMethod(
+        Invocation.getter(#nextTrackTotalStream),
+        returnValue: _i6.Stream<Duration?>.empty(),
+        returnValueForMissingStub: _i6.Stream<Duration?>.empty(),
+      ) as _i6.Stream<Duration?>);
 
   @override
   _i6.Stream<String> get playbackErrorStream => (super.noSuchMethod(
@@ -1902,6 +1949,39 @@ class MockAudioPlayerRelaxed extends _i1.Mock implements _i2.GaplessPlayer {
       ) as _i3.PlayerState);
 
   @override
+  String get engineName => (super.noSuchMethod(
+        Invocation.getter(#engineName),
+        returnValue: _i5.dummyValue<String>(
+          this,
+          Invocation.getter(#engineName),
+        ),
+        returnValueForMissingStub: _i5.dummyValue<String>(
+          this,
+          Invocation.getter(#engineName),
+        ),
+      ) as String);
+
+  @override
+  String get selectionReason => (super.noSuchMethod(
+        Invocation.getter(#selectionReason),
+        returnValue: _i5.dummyValue<String>(
+          this,
+          Invocation.getter(#selectionReason),
+        ),
+        returnValueForMissingStub: _i5.dummyValue<String>(
+          this,
+          Invocation.getter(#selectionReason),
+        ),
+      ) as String);
+
+  @override
+  _i2.AudioEngineMode get activeMode => (super.noSuchMethod(
+        Invocation.getter(#activeMode),
+        returnValue: _i2.AudioEngineMode.auto,
+        returnValueForMissingStub: _i2.AudioEngineMode.auto,
+      ) as _i2.AudioEngineMode);
+
+  @override
   _i6.Stream<_i3.PlayerState> get playerStateStream => (super.noSuchMethod(
         Invocation.getter(#playerStateStream),
         returnValue: _i6.Stream<_i3.PlayerState>.empty(),
@@ -1952,6 +2032,20 @@ class MockAudioPlayerRelaxed extends _i1.Mock implements _i2.GaplessPlayer {
       ) as _i6.Stream<Duration?>);
 
   @override
+  _i6.Stream<Duration?> get nextTrackBufferedStream => (super.noSuchMethod(
+        Invocation.getter(#nextTrackBufferedStream),
+        returnValue: _i6.Stream<Duration?>.empty(),
+        returnValueForMissingStub: _i6.Stream<Duration?>.empty(),
+      ) as _i6.Stream<Duration?>);
+
+  @override
+  _i6.Stream<Duration?> get nextTrackTotalStream => (super.noSuchMethod(
+        Invocation.getter(#nextTrackTotalStream),
+        returnValue: _i6.Stream<Duration?>.empty(),
+        returnValueForMissingStub: _i6.Stream<Duration?>.empty(),
+      ) as _i6.Stream<Duration?>);
+
+  @override
   _i6.Stream<int?> get currentIndexStream => (super.noSuchMethod(
         Invocation.getter(#currentIndexStream),
         returnValue: _i6.Stream<int?>.empty(),
@@ -1964,6 +2058,15 @@ class MockAudioPlayerRelaxed extends _i1.Mock implements _i2.GaplessPlayer {
         returnValue: _i6.Stream<_i3.SequenceState?>.empty(),
         returnValueForMissingStub: _i6.Stream<_i3.SequenceState?>.empty(),
       ) as _i6.Stream<_i3.SequenceState?>);
+
+  @override
+  void reload() => super.noSuchMethod(
+        Invocation.method(
+          #reload,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
 
   @override
   _i6.Future<Duration?> setAudioSources(

@@ -1,5 +1,5 @@
 /**
- * Relisten-Style HTML5 Audio Engine
+ * HTML5 Audio Engine
  * Mobile gapless (near-gapless) playback via dual HTMLAudioElement approach.
  * Inspired by RelistenNet/relisten-web's gapless.cjs.
  *
@@ -14,7 +14,7 @@
  *   - Media Session API is handled by the browser natively when using
  *     HTMLAudioElement; no manual MediaMetadata calls needed for Chrome/Safari.
  *
- * Exposed globally as window._relistenAudio for Dart interop via hybrid_init.js.
+ * Exposed globally as window._html5Audio for Dart interop via hybrid_init.js.
  */
 (function () {
     'use strict';
@@ -40,6 +40,8 @@
 
     /** Whether a swap-on-end transition is in progress. */
     let _isTransitioning = false;
+    let _lastEmittedNextBuf = 0;
+    let _lastEmittedNextIndex = -1;
 
     /** Whether _nextAudio is currently being preloaded. */
     let _isPrefetching = false;
@@ -141,11 +143,11 @@
                 // Pause it once we know it can play — we'll resume at full volume on swap.
                 _nextAudio.pause();
                 _nextAudio.currentTime = 0;
-                console.log('[relisten engine] Next track preloaded:', nextIndex, nextTrack.url);
+                console.log('[html5 engine] Next track preloaded:', nextIndex, nextTrack.url);
                 _emitState();
             }).catch(() => {
                 // Autoplay policy blocked silent prime — still set src so browser buffers it.
-                console.log('[relisten engine] Silent prime blocked by autoplay policy (expected on iOS)');
+                console.log('[html5 engine] Silent prime blocked by autoplay policy (expected on iOS)');
             });
         };
 
@@ -155,7 +157,7 @@
         const remaining = Math.max(0, duration - elapsed);
         const triggerIn = Math.max(0, (remaining - _prefetchSeconds) * 1000);
 
-        console.log('[relisten engine] Prefetch timer set for', nextIndex, 'in', Math.round(triggerIn / 1000), 's');
+        console.log('[html5 engine] Prefetch timer set for', nextIndex, 'in', Math.round(triggerIn / 1000), 's');
         _prefetchTimer = setTimeout(setupPreload, triggerIn);
     }
 
@@ -235,7 +237,7 @@
         _cancelPrefetch();
         _isPrefetching = false;
 
-        console.log('[relisten engine] Track ended. Advancing from', wasIndex, 'to', _currentIndex);
+        console.log('[html5 engine] Track ended. Advancing from', wasIndex, 'to', _currentIndex);
 
         if (_currentIndex >= _playlist.length) {
             // End of playlist.
@@ -251,17 +253,19 @@
 
         // Promote _nextAudio → _currentAudio
         const oldAudio = _currentAudio;
-        const promoted = _nextAudio && _nextAudio.src && !_nextAudio.src.endsWith('/') ? _nextAudio : null;
+        const promoted = (_nextAudio && _nextAudio.src && _nextAudio.src.length > 5) ? _nextAudio : null;
 
         if (promoted) {
-            console.log('[relisten engine] Promoting pre-loaded next track', _currentIndex);
-            _resetAudio(oldAudio);
+            console.log('[html5 engine] Promoting pre-loaded next track', _currentIndex);
+
+            // To reduce the gap, we start the promoted audio BEFORE fully resetting the old one.
             _currentAudio = promoted;
-            _nextAudio = _createAudio(true); // fresh element for the NEXT-next track
+            _nextAudio = _createAudio(true);
 
             _currentAudio.volume = 1;
             _currentAudio.muted = false;
-            // Re-attach listeners for track progress / next prefetch tracking.
+
+            // Re-attach listeners BEFORE playing so we catch the very first 'playing' event.
             _attachCurrentListeners(0, false);
 
             _currentAudio.play().then(() => {
@@ -273,13 +277,17 @@
                 _startPositionTimer();
                 _updateMediaSession();
                 _isTransitioning = false;
+
+                // Cleanup the old audio after the new one is confirmed playing to bridge the gap.
+                if (oldAudio) _resetAudio(oldAudio);
             }).catch(err => {
                 _isTransitioning = false;
+                if (oldAudio) _resetAudio(oldAudio);
                 _emitError('Promoted track play failed: ' + err.message);
             });
         } else {
             // Next track wasn't pre-loaded in time — fall back to a regular load.
-            console.log('[relisten engine] Next track not ready, loading fresh:', _currentIndex);
+            console.log('[html5 engine] Next track not ready, loading fresh:', _currentIndex);
             _resetAudio(oldAudio);
             if (!_nextAudio) _nextAudio = _createAudio(true);
             _currentAudio = _createAudio(false);
@@ -330,13 +338,33 @@
             let ps = _loadingState;
             if (_currentIndex < 0) ps = 'idle';
 
+            const nextTrackTotal = _playlist[_currentIndex + 1] ? (_playlist[_currentIndex + 1].duration || 0) : 0;
+            let nextBuffered = 0;
+            let currentBuffered = pos;
+
+            if (audio && audio.buffered.length > 0) {
+                currentBuffered = audio.buffered.end(audio.buffered.length - 1);
+            } else if (audio && _isTransitioning && _currentIndex === _lastEmittedNextIndex) {
+                // Carry over the buffered value during the brief transition window
+                // when the browser might report 0 for the newly focused element.
+                currentBuffered = Math.max(pos, _lastEmittedNextBuf);
+            }
+
+            if (_isPrefetching && _nextAudio && _nextAudio.buffered.length > 0) {
+                nextBuffered = _nextAudio.buffered.end(_nextAudio.buffered.length - 1);
+            }
+
+            _lastEmittedNextBuf = nextBuffered;
+            _lastEmittedNextIndex = _currentIndex + 1;
+
             _onStateChange({
                 playing: _playing,
                 index: _currentIndex,
                 position: pos,
                 duration: dur,
-                nextTrackBuffered: _isPrefetching && _nextAudio ? Math.min(_nextAudio.buffered.length > 0 ? _nextAudio.buffered.end(_nextAudio.buffered.length - 1) : 0, dur) : 0,
-                nextTrackTotal: _isPrefetching && _playlist[_currentIndex + 1] ? (_playlist[_currentIndex + 1].duration || 0) : 0,
+                currentTrackBuffered: Math.min(Math.max(currentBuffered, pos), dur || currentBuffered || pos),
+                nextTrackBuffered: Math.min(nextBuffered, nextTrackTotal),
+                nextTrackTotal: nextTrackTotal,
                 processingState: ps,
             });
         } catch (_) { }
@@ -349,7 +377,7 @@
     }
 
     function _emitError(msg) {
-        console.error('[relisten audio]', msg);
+        console.error('[html5 audio]', msg);
         if (_onError) {
             try { _onError({ message: msg }); } catch (_) { }
         }
@@ -364,7 +392,7 @@
             if (_currentAudio) return; // already initialised
             _currentAudio = _createAudio(false);
             _nextAudio = _createAudio(true);
-            console.log('[relisten engine] Initialised — dual HTMLAudioElement strategy');
+            console.log('[html5 engine] Initialised — dual HTMLAudioElement strategy');
         },
 
         /** Load a new playlist and begin playback from [startIndex]. */
@@ -520,6 +548,6 @@
         onError: function (cb) { _onError = cb; },
     };
 
-    window._relistenAudio = api;
+    window._html5Audio = api;
 
 })();

@@ -1,3 +1,11 @@
+Release 1.1.21+121:
+- Web: Fixed a critical regression in Web Audio gapless playback where transitioned tracks were being skipped by the watchdog.
+- Web: Increased the gapless prefetch window to 90 seconds to improve reliability on slower connections.
+- Web: Fixed UI bug where the main buffering bar would reset to 0% after a gapless transition.
+- Web: Renamed "Relisten Engine" to "HTML5 Audio Engine" for architectural clarity.
+- Core: Hardened BufferAgent to prevent infinite recovery loops in browser environments.
+- Backlog: Documented "Hybrid Audio Engine" concept for future instant-start gapless playback.
+
 Release 1.1.20+120:
 - Web: Implemented Hybrid Audio Architecture — desktop uses GDAR Web Audio API (0ms gapless) and mobile auto-switches to Relisten-style HTML5 dual-<audio> streaming engine.
 - Web: New relisten_audio_engine.js delivers near-gapless playback on mobile via dual HTMLAudioElement swap, saving RAM/data and preventing browser tab kills.

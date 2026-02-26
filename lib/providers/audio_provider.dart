@@ -139,8 +139,10 @@ class AudioProvider with ChangeNotifier {
   })  : _catalogService = catalogService ?? CatalogService(),
         _audioCacheService = audioCacheService ?? AudioCacheService(),
         _wakelockService = wakelockService ?? WakelockService() {
-    _audioPlayer =
-        audioPlayer ?? GaplessPlayer(useWebGaplessEngine: useWebGaplessEngine);
+    _audioPlayer = audioPlayer ?? GaplessPlayer();
+    logger
+        .i('AudioProvider initialized with Engine: ${_audioPlayer.engineName}');
+    logger.i('Engine Selection Reason: ${_audioPlayer.selectionReason}');
     _listenForPlaybackProgress();
     _listenForErrors();
     _listenForProcessingState();

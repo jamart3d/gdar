@@ -1,3 +1,4 @@
+// ignore: dangling_library_doc_comments
 /// Regression tests for the Web Gapless Player adapter contract.
 ///
 /// Since `gapless_player_web.dart` depends on `dart:js_interop` (browser-only),
@@ -111,6 +112,8 @@ void main() {
 
     // Stub AudioCacheService
     when(mockAudioCacheService.getAlbumArtUri()).thenAnswer((_) async => null);
+
+    when(mockPlayer.engineName).thenReturn('RelaxedMockEngine');
 
     // Create AudioProvider
     audioProvider = AudioProvider(

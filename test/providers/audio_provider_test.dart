@@ -114,6 +114,8 @@ void main() {
     when(mockShowListProvider.initializationComplete).thenAnswer((_) async {});
     when(mockShowListProvider.isSourceAllowed(any)).thenReturn(true);
 
+    when(mockAudioPlayer.engineName).thenReturn('RelaxedMockEngine');
+
     // Create AudioProvider AFTER stubbing
     audioProvider = AudioProvider(
       audioPlayer: mockAudioPlayer,

@@ -7,6 +7,7 @@ import 'package:shakedown/models/source.dart';
 import 'package:shakedown/models/track.dart';
 import 'package:shakedown/providers/audio_provider.dart' as ap;
 import 'package:shakedown/providers/settings_provider.dart';
+import 'package:shakedown/services/gapless_player/gapless_player.dart';
 import 'package:shakedown/providers/show_list_provider.dart';
 import 'package:shakedown/providers/update_provider.dart';
 import 'package:shakedown/providers/theme_provider.dart';
@@ -24,7 +25,6 @@ import 'package:mockito/mockito.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shakedown/services/catalog_service.dart';
 import 'package:just_audio/just_audio.dart';
-import 'package:shakedown/services/gapless_player/gapless_player.dart';
 
 // Manual mocks to avoid dependency on generated files in this regression test
 class MockAudioProvider extends ChangeNotifier implements ap.AudioProvider {
@@ -154,9 +154,13 @@ class MockTvDeviceService extends ChangeNotifier implements DeviceService {
 
 class FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
   @override
+  AudioEngineMode get audioEngineMode => AudioEngineMode.auto;
+  @override
+  void setAudioEngineMode(AudioEngineMode mode) {}
+  @override
   bool get useOilScreensaver => true;
   @override
-  bool get preventSleep => true;
+  bool get preventSleep => false;
   @override
   int get oilScreensaverInactivityMinutes => 5;
   @override

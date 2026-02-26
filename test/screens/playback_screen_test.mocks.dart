@@ -8,6 +8,7 @@ import 'dart:ui' as _i8;
 
 import 'package:just_audio/just_audio.dart' as _i3;
 import 'package:mockito/mockito.dart' as _i1;
+import 'package:mockito/src/dummies.dart' as _i11;
 import 'package:shakedown/models/show.dart' as _i6;
 import 'package:shakedown/models/source.dart' as _i7;
 import 'package:shakedown/providers/audio_provider.dart' as _i4;
@@ -110,6 +111,18 @@ class MockAudioProvider extends _i1.Mock implements _i4.AudioProvider {
         Invocation.getter(#bufferedPositionStream),
         returnValue: _i5.Stream<Duration>.empty(),
       ) as _i5.Stream<Duration>);
+
+  @override
+  _i5.Stream<Duration?> get nextTrackBufferedStream => (super.noSuchMethod(
+        Invocation.getter(#nextTrackBufferedStream),
+        returnValue: _i5.Stream<Duration?>.empty(),
+      ) as _i5.Stream<Duration?>);
+
+  @override
+  _i5.Stream<Duration?> get nextTrackTotalStream => (super.noSuchMethod(
+        Invocation.getter(#nextTrackTotalStream),
+        returnValue: _i5.Stream<Duration?>.empty(),
+      ) as _i5.Stream<Duration?>);
 
   @override
   _i5.Stream<String> get playbackErrorStream => (super.noSuchMethod(
@@ -450,6 +463,30 @@ class MockGaplessPlayer extends _i1.Mock implements _i2.GaplessPlayer {
       ) as _i3.PlayerState);
 
   @override
+  String get engineName => (super.noSuchMethod(
+        Invocation.getter(#engineName),
+        returnValue: _i11.dummyValue<String>(
+          this,
+          Invocation.getter(#engineName),
+        ),
+      ) as String);
+
+  @override
+  String get selectionReason => (super.noSuchMethod(
+        Invocation.getter(#selectionReason),
+        returnValue: _i11.dummyValue<String>(
+          this,
+          Invocation.getter(#selectionReason),
+        ),
+      ) as String);
+
+  @override
+  _i2.AudioEngineMode get activeMode => (super.noSuchMethod(
+        Invocation.getter(#activeMode),
+        returnValue: _i2.AudioEngineMode.auto,
+      ) as _i2.AudioEngineMode);
+
+  @override
   _i5.Stream<_i3.PlayerState> get playerStateStream => (super.noSuchMethod(
         Invocation.getter(#playerStateStream),
         returnValue: _i5.Stream<_i3.PlayerState>.empty(),
@@ -493,6 +530,18 @@ class MockGaplessPlayer extends _i1.Mock implements _i2.GaplessPlayer {
       ) as _i5.Stream<Duration?>);
 
   @override
+  _i5.Stream<Duration?> get nextTrackBufferedStream => (super.noSuchMethod(
+        Invocation.getter(#nextTrackBufferedStream),
+        returnValue: _i5.Stream<Duration?>.empty(),
+      ) as _i5.Stream<Duration?>);
+
+  @override
+  _i5.Stream<Duration?> get nextTrackTotalStream => (super.noSuchMethod(
+        Invocation.getter(#nextTrackTotalStream),
+        returnValue: _i5.Stream<Duration?>.empty(),
+      ) as _i5.Stream<Duration?>);
+
+  @override
   _i5.Stream<int?> get currentIndexStream => (super.noSuchMethod(
         Invocation.getter(#currentIndexStream),
         returnValue: _i5.Stream<int?>.empty(),
@@ -503,6 +552,15 @@ class MockGaplessPlayer extends _i1.Mock implements _i2.GaplessPlayer {
         Invocation.getter(#sequenceStateStream),
         returnValue: _i5.Stream<_i3.SequenceState?>.empty(),
       ) as _i5.Stream<_i3.SequenceState?>);
+
+  @override
+  void reload() => super.noSuchMethod(
+        Invocation.method(
+          #reload,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
 
   @override
   _i5.Future<Duration?> setAudioSources(

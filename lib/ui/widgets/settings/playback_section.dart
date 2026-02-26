@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:shakedown/providers/audio_provider.dart';
 import 'package:shakedown/providers/settings_provider.dart';
 import 'package:shakedown/services/device_service.dart';
+import 'package:shakedown/services/gapless_player/gapless_player.dart';
 import 'package:shakedown/ui/widgets/section_card.dart';
 import 'package:shakedown/ui/widgets/settings/highlightable_setting.dart';
 import 'package:shakedown/ui/widgets/settings/random_probability_card.dart';
@@ -386,59 +387,80 @@ class PlaybackSection extends StatelessWidget {
     SettingsProvider sp,
     double scaleFactor,
   ) {
-    // Mirror the hybrid_init.js mobile detection heuristic.
-    // On web there is no dart:io Platform, so we rely on MediaQuery width.
-    // A narrow viewport (< 1024 logical pixels) is treated as mobile/tablet.
-    final screenWidth = MediaQuery.of(context).size.width;
-    final isMobileWeb = screenWidth < 1024;
-
-    final engineTitle = isMobileWeb ? 'HTML5 Audio Engine' : 'Gapless Engine';
-    final engineSubtitle = isMobileWeb
-        ? 'HTML5 streaming — saves RAM & data on mobile (Requires reload to change)'
-        : 'Web Audio API — 0ms gapless transitions on desktop (Requires reload to change)';
-
     return [
-      TvSwitchListTile(
-        dense: true,
-        visualDensity: VisualDensity.compact,
-        title: FittedBox(
-          fit: BoxFit.scaleDown,
-          alignment: Alignment.centerLeft,
-          child: Text(
-            engineTitle,
-            style: Theme.of(context)
-                .textTheme
-                .titleMedium
-                ?.copyWith(fontSize: 16 * scaleFactor),
-          ),
-        ),
-        subtitle: FittedBox(
-          fit: BoxFit.scaleDown,
-          alignment: Alignment.centerLeft,
-          child: Text(
-            engineSubtitle,
-            style: Theme.of(context)
-                .textTheme
-                .bodySmall
-                ?.copyWith(fontSize: 12 * scaleFactor),
-          ),
-        ),
-        value: sp.webGaplessEngine,
-        onChanged: (_) {
-          HapticFeedback.lightImpact();
-          context.read<SettingsProvider>().toggleWebGaplessEngine();
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              behavior: SnackBarBehavior.floating,
-              content: Text('Reload the page for this change to take effect.'),
-              duration: Duration(seconds: 4),
+      Padding(
+        padding: EdgeInsets.symmetric(
+            horizontal: 16.0 * scaleFactor, vertical: 8.0 * scaleFactor),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Web Audio Engine',
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontSize: 16 * scaleFactor,
+                    fontWeight: FontWeight.bold,
+                  ),
             ),
-          );
-        },
-        secondary: Icon(
-            isMobileWeb ? Icons.smartphone_rounded : Icons.graphic_eq_rounded),
+            const SizedBox(height: 8),
+            Text(
+              'Select the low-level processing engine for gapless playback.',
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    fontSize: 12 * scaleFactor,
+                  ),
+            ),
+            const SizedBox(height: 16),
+            SegmentedButton<AudioEngineMode>(
+              showSelectedIcon: false,
+              segments: const [
+                ButtonSegment(
+                  value: AudioEngineMode.webAudio,
+                  label: Text('Web Audio'),
+                  tooltip: '0ms gapless (Best for Desktop)',
+                  icon: Icon(Icons.graphic_eq_rounded),
+                ),
+                ButtonSegment(
+                  value: AudioEngineMode.html5,
+                  label: Text('HTML5'),
+                  tooltip: 'Streaming (Best for Mobile)',
+                  icon: Icon(Icons.smartphone_rounded),
+                ),
+                ButtonSegment(
+                  value: AudioEngineMode.standard,
+                  label: Text('Standard'),
+                  tooltip: 'Native just_audio (Conservative)',
+                  icon: Icon(Icons.settings_input_component_rounded),
+                ),
+              ],
+              selected: {
+                sp.audioEngineMode == AudioEngineMode.auto
+                    ? context.read<AudioProvider>().audioPlayer.activeMode
+                    : sp.audioEngineMode
+              },
+              onSelectionChanged: (Set<AudioEngineMode> selection) {
+                HapticFeedback.lightImpact();
+                final mode = selection.first;
+                sp.setAudioEngineMode(mode);
+                ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    behavior: SnackBarBehavior.floating,
+                    content: const Text(
+                        'Relaunch required for engine change to take effect.'),
+                    action: SnackBarAction(
+                      label: 'RELOAD',
+                      onPressed: () {
+                        context.read<AudioProvider>().audioPlayer.reload();
+                      },
+                    ),
+                    duration: const Duration(seconds: 8),
+                  ),
+                );
+              },
+            ),
+          ],
+        ),
       ),
-      if (sp.webGaplessEngine)
+      if (sp.audioEngineMode != AudioEngineMode.standard)
         ListTile(
           dense: true,
           visualDensity: VisualDensity.compact,
@@ -466,6 +488,30 @@ class PlaybackSection extends StatelessWidget {
           ),
         ),
       const Divider(),
+      TvSwitchListTile(
+        dense: true,
+        visualDensity: VisualDensity.compact,
+        secondary: const Icon(Icons.sensor_window_rounded),
+        title: Text(
+          'Keep Screen On',
+          style: Theme.of(context)
+              .textTheme
+              .titleMedium
+              ?.copyWith(fontSize: 16 * scaleFactor),
+        ),
+        subtitle: Text(
+          'Prevents the device from sleeping during playback (Web/PWA).',
+          style: Theme.of(context)
+              .textTheme
+              .bodySmall
+              ?.copyWith(fontSize: 12 * scaleFactor),
+        ),
+        value: sp.preventSleep,
+        onChanged: (_) {
+          HapticFeedback.lightImpact();
+          sp.togglePreventSleep();
+        },
+      ),
     ];
   }
 }

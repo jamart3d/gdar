@@ -25,11 +25,12 @@ class DefaultSettings {
   static const bool playRandomOnStartup = false;
   static const bool playRandomOnCompletion = true;
   static const bool nonRandom = false;
-  static const bool preventSleep = true;
+  static const bool preventSleep = false;
   static const bool showPlaybackMessages = false;
 
   // Web Gapless Engine (web-only)
-  static const bool webGaplessEngine = true;
+  static const String audioEngineMode =
+      'auto'; // auto, webAudio, html5, standard
   static const int webPrefetchSeconds = 30;
 
   // Data & Filtering

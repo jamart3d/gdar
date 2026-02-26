@@ -8,9 +8,9 @@ import 'package:shakedown/models/source.dart';
 import 'package:shakedown/models/track.dart';
 import 'package:shakedown/providers/audio_provider.dart';
 import 'package:shakedown/providers/settings_provider.dart';
-import 'package:shakedown/ui/screens/playback_screen.dart';
-import 'package:just_audio/just_audio.dart';
 import 'package:shakedown/services/gapless_player/gapless_player.dart';
+import 'package:just_audio/just_audio.dart';
+import 'package:shakedown/ui/screens/playback_screen.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:provider/provider.dart';
@@ -289,6 +289,10 @@ class FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
   @override
   void toggleEnableSwipeToBlock() {}
 
+  @override
+  AudioEngineMode get audioEngineMode => AudioEngineMode.auto;
+  @override
+  void setAudioEngineMode(AudioEngineMode mode) {}
   @override
   bool get webGaplessEngine => true;
   @override

@@ -121,6 +121,8 @@ void main() {
     // Stub AudioCacheService
     when(mockAudioCacheService.getAlbumArtUri()).thenAnswer((_) async => null);
 
+    when(mockAudioPlayer.engineName).thenReturn('RelaxedMockEngine');
+
     // Create AudioProvider
     audioProvider = AudioProvider(
       audioPlayer: mockAudioPlayer,

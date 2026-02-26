@@ -348,29 +348,33 @@
     // the active one.
     if (_scheduledSource && _scheduledIndex === _currentIndex) {
       console.log('[gdar engine] Promoting scheduled track', _currentIndex);
-      
+
       // Disconnect the old source if it exists.
       if (_currentSource) {
         _currentSource.onended = null;
         _currentSource.disconnect();
       }
-      
+
       _currentSource = _scheduledSource;
       _scheduledSource = null;
       _scheduledIndex = -1;
       _currentTrackStartOffset = 0;
       _nextTrackBufferedSeconds = 0;
 
+      // UPDATE MISSING STATE:
+      _currentTrackStartContextTime = _scheduledStartContextTime;
+      _currentTrackDuration = _currentSource.buffer.duration;
+
       // CRITICAL: Update the watchdog's expected end time for the NEW track.
       // Without this, the watchdog fires immediately thinking the previous track just ended again.
       _expectedEndContextTime = _currentTrackStartContextTime + _currentTrackDuration;
-      
+
       // Re-set onended for the now-active source.
       const activeSrc = _currentSource;
       activeSrc.onended = function () {
         if (_currentSource === activeSrc) _onTrackEnded();
       };
-      
+
       _playing = true;
       _startPositionTimer();
       _startWatchdog();
@@ -421,7 +425,7 @@
     // 1. Fetch Window (Prefetch + 2s): The data starts downloading.
     // User sees "Next: 00:01..." ticking up.
     const fetchIn = Math.max(0, (remaining - (_prefetchSeconds + 2)) * 1000);
-    
+
     // 2. Decode Window (Prefetch): The data is converted to PCM and scheduled.
     const decodeIn = Math.max(0, (remaining - _prefetchSeconds) * 1000);
 
@@ -547,20 +551,18 @@
         let nextBuf = 0;
         let nextTotal = 0;
 
-        // Gating: Only show "Next" progress when prefetching is active
-        // or during initial loading.
-        if (_isPrefetching || _loadingState === 'loading') {
-          nextBuf = _nextTrackBufferedSeconds;
-          const nextTrack = _playlist[_currentIndex + 1];
-          if (nextTrack) {
-            nextTotal = nextTrack.duration || 0;
-          }
+        // The "Next" progress should tick up during the background fetch phase.
+        // It should also show the full duration once decoded (scheduled).
+        nextBuf = _nextTrackBufferedSeconds;
+        const nextTrack = _playlist[_currentIndex + 1];
+        if (nextTrack) {
+          nextTotal = nextTrack.duration || 0;
+        }
 
-          // If already scheduled, use the actual buffer duration
-          if (_scheduledSource && _scheduledIndex === (_currentIndex + 1)) {
-            nextBuf = _scheduledSource.buffer.duration;
-            nextTotal = nextBuf;
-          }
+        // If already scheduled, use the actual buffer duration
+        if (_scheduledSource && _scheduledIndex === (_currentIndex + 1)) {
+          nextBuf = _scheduledSource.buffer.duration;
+          nextTotal = nextBuf;
         }
 
         _onStateChange({
@@ -568,6 +570,7 @@
           index: _currentIndex,
           position: _getCurrentPositionSeconds(),
           duration: _currentTrackDuration,
+          currentTrackBuffered: _currentTrackDuration, // Web Audio buffers are fully decoded in memory
           nextTrackBuffered: nextBuf,
           nextTrackTotal: nextTotal,
           processingState: ps,
@@ -671,15 +674,15 @@
     /** Stop playback and reset to idle. */
     stop: function () {
       _stopCurrentSource();
-          _clearScheduled();
-          _cancelPrefetch();
-              _playing = false;
-              _loadingState = 'idle';
-              _currentTrackStartOffset = 0;
-              _currentTrackDuration = 0;
-              _nextTrackBufferedSeconds = 0;
-              Object.keys(_abortControllers).forEach(k => {
-                  try { _abortControllers[k].abort(); } catch (_) { }
+      _clearScheduled();
+      _cancelPrefetch();
+      _playing = false;
+      _loadingState = 'idle';
+      _currentTrackStartOffset = 0;
+      _currentTrackDuration = 0;
+      _nextTrackBufferedSeconds = 0;
+      Object.keys(_abortControllers).forEach(k => {
+        try { _abortControllers[k].abort(); } catch (_) { }
         delete _abortControllers[k];
       });
       _emitState();
@@ -738,7 +741,7 @@
 
     /** Update the prefetch window (seconds before track end to start loading next). */
     setPrefetchSeconds: function (s) {
-      _prefetchSeconds = Math.max(5, Math.min(60, s));
+      _prefetchSeconds = Math.max(5, Math.min(120, s));
     },
 
     /** Returns a snapshot of current engine state. */
@@ -748,6 +751,7 @@
         index: _currentIndex,
         position: _getCurrentPositionSeconds(),
         duration: _currentTrackDuration,
+        currentTrackBuffered: _currentTrackDuration,
         nextTrackBuffered: _nextTrackBufferedSeconds || (_scheduledSource ? _scheduledSource.buffer.duration : 0),
         nextTrackTotal: (_playlist[_currentIndex + 1] ? _playlist[_currentIndex + 1].duration : 0) || (_scheduledSource ? _scheduledSource.buffer.duration : 0),
         playlistLength: _playlist.length,
