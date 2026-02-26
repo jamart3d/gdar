@@ -389,105 +389,127 @@ class PlaybackSection extends StatelessWidget {
   ) {
     return [
       Padding(
-        padding: EdgeInsets.symmetric(
-            horizontal: 16.0 * scaleFactor, vertical: 8.0 * scaleFactor),
+        padding: EdgeInsets.only(
+          left: 16.0 * scaleFactor, // Align with leading icon of other tiles
+          right: 16.0 * scaleFactor,
+          top: 16.0 * scaleFactor,
+          bottom: 8.0 * scaleFactor,
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'Web Audio Engine',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontSize: 16 * scaleFactor,
-                    fontWeight: FontWeight.bold,
-                  ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Select the low-level processing engine for gapless playback.',
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    fontSize: 12 * scaleFactor,
-                  ),
-            ),
-            const SizedBox(height: 16),
-            SegmentedButton<AudioEngineMode>(
-              showSelectedIcon: false,
-              segments: const [
-                ButtonSegment(
-                  value: AudioEngineMode.webAudio,
-                  label: Text('Web Audio'),
-                  tooltip: '0ms gapless (Best for Desktop)',
-                  icon: Icon(Icons.graphic_eq_rounded),
+            Row(
+              children: [
+                Icon(
+                  Icons.settings_input_component_rounded,
+                  size: 24 * scaleFactor,
+                  color: Theme.of(context).colorScheme.primary,
                 ),
-                ButtonSegment(
-                  value: AudioEngineMode.html5,
-                  label: Text('HTML5'),
-                  tooltip: 'Streaming (Best for Mobile)',
-                  icon: Icon(Icons.smartphone_rounded),
-                ),
-                ButtonSegment(
-                  value: AudioEngineMode.standard,
-                  label: Text('Standard'),
-                  tooltip: 'Native just_audio (Conservative)',
-                  icon: Icon(Icons.settings_input_component_rounded),
+                SizedBox(width: 16 * scaleFactor),
+                Expanded(
+                  child: Text(
+                    'Web Audio Engine',
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          fontSize: 16 * scaleFactor,
+                          fontWeight: FontWeight.bold,
+                        ),
+                  ),
                 ),
               ],
-              selected: {
-                sp.audioEngineMode == AudioEngineMode.auto
-                    ? context.read<AudioProvider>().audioPlayer.activeMode
-                    : sp.audioEngineMode
-              },
-              onSelectionChanged: (Set<AudioEngineMode> selection) {
-                HapticFeedback.lightImpact();
-                final mode = selection.first;
-                sp.setAudioEngineMode(mode);
-                ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    behavior: SnackBarBehavior.floating,
-                    content: const Text(
-                        'Relaunch required for engine change to take effect.'),
-                    action: SnackBarAction(
-                      label: 'RELOAD',
-                      onPressed: () {
-                        context.read<AudioProvider>().audioPlayer.reload();
-                      },
+            ),
+            const SizedBox(height: 8),
+            Padding(
+              padding: EdgeInsets.only(
+                  left: 40.0 * scaleFactor), // Align with text below title
+              child: Text(
+                'Select the low-level processing engine for gapless playback.',
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      fontSize: 12 * scaleFactor,
                     ),
-                    duration: const Duration(seconds: 8),
-                  ),
-                );
-              },
+              ),
+            ),
+            const SizedBox(height: 16),
+            Padding(
+              padding: EdgeInsets.only(left: 40.0 * scaleFactor),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: SegmentedButton<AudioEngineMode>(
+                  showSelectedIcon: false,
+                  segments: [
+                    ButtonSegment(
+                      value: AudioEngineMode.webAudio,
+                      label: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          'Web Audio',
+                          maxLines: 1,
+                          overflow: TextOverflow.visible,
+                          style: TextStyle(fontSize: 14 * scaleFactor),
+                        ),
+                      ),
+                      tooltip: '0ms gapless (Best for Desktop)',
+                      icon: const Icon(Icons.graphic_eq_rounded),
+                    ),
+                    ButtonSegment(
+                      value: AudioEngineMode.html5,
+                      label: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          'HTML5',
+                          maxLines: 1,
+                          overflow: TextOverflow.visible,
+                          style: TextStyle(fontSize: 14 * scaleFactor),
+                        ),
+                      ),
+                      tooltip: 'Streaming (Best for Mobile)',
+                      icon: const Icon(Icons.smartphone_rounded),
+                    ),
+                    ButtonSegment(
+                      value: AudioEngineMode.standard,
+                      label: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          'Standard',
+                          maxLines: 1,
+                          overflow: TextOverflow.visible,
+                          style: TextStyle(fontSize: 14 * scaleFactor),
+                        ),
+                      ),
+                      tooltip: 'Native just_audio (Conservative)',
+                      icon: const Icon(Icons.settings_input_component_rounded),
+                    ),
+                  ],
+                  selected: {
+                    sp.audioEngineMode == AudioEngineMode.auto
+                        ? context.read<AudioProvider>().audioPlayer.activeMode
+                        : sp.audioEngineMode
+                  },
+                  onSelectionChanged: (Set<AudioEngineMode> selection) {
+                    HapticFeedback.lightImpact();
+                    final mode = selection.first;
+                    sp.setAudioEngineMode(mode);
+                    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        behavior: SnackBarBehavior.floating,
+                        content: const Text(
+                            'Relaunch required for engine change to take effect.'),
+                        action: SnackBarAction(
+                          label: 'RELOAD',
+                          onPressed: () {
+                            context.read<AudioProvider>().audioPlayer.reload();
+                          },
+                        ),
+                        duration: const Duration(seconds: 8),
+                      ),
+                    );
+                  },
+                ),
+              ),
             ),
           ],
         ),
       ),
-      if (sp.audioEngineMode != AudioEngineMode.standard)
-        ListTile(
-          dense: true,
-          visualDensity: VisualDensity.compact,
-          leading: const Icon(Icons.schedule_rounded),
-          title: FittedBox(
-            fit: BoxFit.scaleDown,
-            alignment: Alignment.centerLeft,
-            child: Text(
-              'Prefetch Ahead: ${sp.webPrefetchSeconds}s',
-              style: Theme.of(context)
-                  .textTheme
-                  .bodyMedium
-                  ?.copyWith(fontSize: 14 * scaleFactor),
-            ),
-          ),
-          subtitle: Slider(
-            value: sp.webPrefetchSeconds.toDouble(),
-            min: 5,
-            max: 60,
-            divisions: 11,
-            label: '${sp.webPrefetchSeconds}s',
-            onChanged: (v) {
-              context.read<SettingsProvider>().setWebPrefetchSeconds(v.round());
-            },
-          ),
-        ),
-      const Divider(),
       TvSwitchListTile(
         dense: true,
         visualDensity: VisualDensity.compact,

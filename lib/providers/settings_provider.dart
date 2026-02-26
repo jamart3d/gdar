@@ -495,8 +495,12 @@ class SettingsProvider with ChangeNotifier {
           _prefs.getString(_audioEngineModeKey) ??
               DefaultSettings.audioEngineMode);
     }
-    _webPrefetchSeconds = _prefs.getInt(_webPrefetchSecondsKey) ??
-        DefaultSettings.webPrefetchSeconds;
+    // Force prefetch to 30s as requested (hidden from UI)
+    _webPrefetchSeconds = DefaultSettings.webPrefetchSeconds;
+    // Still ensure the preference is stored correctly if it wasn't
+    if (_prefs.getInt(_webPrefetchSecondsKey) != _webPrefetchSeconds) {
+      _prefs.setInt(_webPrefetchSecondsKey, _webPrefetchSeconds);
+    }
 
     // Screensaver
     _useOilScreensaver = _prefs.getBool(_useOilScreensaverKey) ??
@@ -696,9 +700,10 @@ class SettingsProvider with ChangeNotifier {
         webGaplessEngine ? AudioEngineMode.standard : AudioEngineMode.auto);
   }
 
-  /// Sets the prefetch-ahead duration in seconds for the web engine (web-only).
-  Future<void> setWebPrefetchSeconds(int seconds) => _updateIntPreference(
-      _webPrefetchSecondsKey, _webPrefetchSeconds = seconds.clamp(5, 60));
+  /// Prefetch-ahead duration is now fixed at 30s (hidden from UI).
+  Future<void> setWebPrefetchSeconds(int seconds) async {
+    // This method is now a no-op as we use a fixed value.
+  }
 
   static const String _rgbAnimationSpeedKey = 'rgb_animation_speed';
   double _rgbAnimationSpeed = 1.0;

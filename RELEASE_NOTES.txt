@@ -1,3 +1,10 @@
+Release 1.1.26+126:
+- UI: Refined splash screen checklist alignment (centered block, left-aligned content).
+- UI: Stabilized splash screen checkbox positioning during numeric animations by enforcing fixed-width anchors.
+- Web/PWA Settings: Left-aligned "Web Audio Engine" segmented button and label to match setting tile aesthetics.
+- Web/PWA Settings: Implemented automatic scaling for audio engine labels to prevent overflow on mobile.
+- Maintenance: Integrated Dart MCP for advanced codebase analysis and health checks.
+
 Release 1.1.25+125:
 - Web/PWA: Added hamburger back-navigation to Playback Screen for improved desktop/browser flow.
 - PWA: Implemented "Smart Splash" logic — splash screen now auto-toggles off after the first run for faster subsequent startups.

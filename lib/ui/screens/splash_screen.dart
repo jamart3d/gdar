@@ -175,99 +175,106 @@ class _SplashScreenState extends State<SplashScreen>
             AnimatedOpacity(
               opacity: _isNavigating ? 0.0 : 1.0,
               duration: const Duration(milliseconds: 200),
-              child: SizedBox(
-                width: 440.0 * effectiveScale, // Increased width for more room
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment:
-                      CrossAxisAlignment.start, // Stabilize text alignment
-                  children: [
-                    if (settingsProvider.isFirstRun)
-                      _buildChecklistItem(
-                        label: 'Hey Now!',
-                        isDone: true,
-                        scaleFactor: effectiveScale,
-                      )
-                    else
-                      _buildChecklistItem(
-                        label: 'settings: ready',
-                        isDone: true,
-                        scaleFactor: effectiveScale,
-                      ),
-                    const SizedBox(height: 12),
-
-                    // 1. Shnids Count
-                    AnimatedBuilder(
-                        animation: _countController,
-                        builder: (context, child) {
-                          int count = _shnidCountAnimation.value;
-                          bool isDone = _countController.status ==
-                              AnimationStatus.completed;
-                          bool isLoading = showListProvider.isLoading;
-
-                          String label;
-                          if (isLoading) {
-                            label = 'shnids loaded: ...';
-                          } else {
-                            label = 'shnids loaded: $count';
-                          }
-
-                          return _buildChecklistItem(
-                            label: label,
-                            isDone: isDone,
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  maxWidth: MediaQuery.of(context).size.width * 0.8,
+                ),
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: SizedBox(
+                    width: 280,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        if (settingsProvider.isFirstRun)
+                          _buildChecklistItem(
+                            label: 'Hey Now!',
+                            isDone: true,
                             scaleFactor: effectiveScale,
-                          );
-                        }),
-
-                    const SizedBox(height: 12),
-
-                    // 2. Shows Count
-                    AnimatedBuilder(
-                        animation: _countController,
-                        builder: (context, child) {
-                          int count = _showCountAnimation.value;
-                          bool isDone = _countController.status ==
-                              AnimationStatus.completed;
-                          bool isLoading = showListProvider.isLoading;
-
-                          String label;
-                          if (isLoading) {
-                            label = 'shows ready: ...';
-                          } else {
-                            label = 'shows ready: $count';
-                          }
-
-                          return _buildChecklistItem(
-                            label: label,
-                            isDone: isDone,
+                          )
+                        else
+                          _buildChecklistItem(
+                            label: 'settings: ready',
+                            isDone: true,
                             scaleFactor: effectiveScale,
-                          );
-                        }),
+                          ),
+                        const SizedBox(height: 12),
 
-                    const SizedBox(height: 12),
+                        // 1. Shnids Count
+                        AnimatedBuilder(
+                            animation: _countController,
+                            builder: (context, child) {
+                              int count = _shnidCountAnimation.value;
+                              bool isDone = _countController.status ==
+                                  AnimationStatus.completed;
+                              bool isLoading = showListProvider.isLoading;
 
-                    // 3. Archive Check
-                    if (!kIsWeb)
-                      _buildChecklistItem(
-                        label:
-                            'archive.org: ${showListProvider.hasCheckedArchive ? (showListProvider.isArchiveReachable ? 'reachable' : 'offline') : 'checking...'}',
-                        isDone: showListProvider.hasCheckedArchive,
-                        isSuccess: showListProvider.hasCheckedArchive
-                            ? showListProvider.isArchiveReachable
-                            : true, // Default to true while loading
-                        scaleFactor: effectiveScale,
-                      ),
+                              String label;
+                              if (isLoading) {
+                                label = 'shnids loaded: ...';
+                              } else {
+                                label = 'shnids loaded: $count';
+                              }
 
-                    // 4. Random Play (Conditional)
-                    if (settingsProvider.playRandomOnStartup) ...[
-                      const SizedBox(height: 12),
-                      _buildChecklistItem(
-                        label: 'Play random show...',
-                        isDone: true,
-                        scaleFactor: effectiveScale,
-                      ),
-                    ]
-                  ],
+                              return _buildChecklistItem(
+                                label: label,
+                                isDone: isDone,
+                                scaleFactor: effectiveScale,
+                              );
+                            }),
+
+                        const SizedBox(height: 12),
+
+                        // 2. Shows Count
+                        AnimatedBuilder(
+                            animation: _countController,
+                            builder: (context, child) {
+                              int count = _showCountAnimation.value;
+                              bool isDone = _countController.status ==
+                                  AnimationStatus.completed;
+                              bool isLoading = showListProvider.isLoading;
+
+                              String label;
+                              if (isLoading) {
+                                label = 'shows ready: ...';
+                              } else {
+                                label = 'shows ready: $count';
+                              }
+
+                              return _buildChecklistItem(
+                                label: label,
+                                isDone: isDone,
+                                scaleFactor: effectiveScale,
+                              );
+                            }),
+
+                        const SizedBox(height: 12),
+
+                        // 3. Archive Check
+                        if (!kIsWeb)
+                          _buildChecklistItem(
+                            label:
+                                'archive.org: ${showListProvider.hasCheckedArchive ? (showListProvider.isArchiveReachable ? 'reachable' : 'offline') : 'checking...'}',
+                            isDone: showListProvider.hasCheckedArchive,
+                            isSuccess: showListProvider.hasCheckedArchive
+                                ? showListProvider.isArchiveReachable
+                                : true, // Default to true while loading
+                            scaleFactor: effectiveScale,
+                          ),
+
+                        // 4. Random Play (Conditional)
+                        if (settingsProvider.playRandomOnStartup) ...[
+                          const SizedBox(height: 12),
+                          _buildChecklistItem(
+                            label: 'Play random show...',
+                            isDone: true,
+                            scaleFactor: effectiveScale,
+                          ),
+                        ]
+                      ],
+                    ),
+                  ),
                 ),
               ),
             ),
@@ -291,6 +298,7 @@ class _SplashScreenState extends State<SplashScreen>
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min, // Keep items snug together
       children: [
         SizedBox(
           width: 24,
@@ -316,7 +324,7 @@ class _SplashScreenState extends State<SplashScreen>
           ),
         ),
         SizedBox(width: 12 * scaleFactor),
-        Expanded(
+        Flexible(
           child: Text(
             label,
             style: theme.textTheme.titleMedium?.copyWith(
