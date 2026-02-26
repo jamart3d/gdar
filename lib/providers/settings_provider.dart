@@ -106,6 +106,7 @@ class SettingsProvider with ChangeNotifier {
 
   static const String _marqueeEnabledKey = 'marquee_enabled';
   static const String _enableSwipeToBlockKey = 'enable_swipe_to_block';
+  static const String _omitHttpPathInCopyKey = 'omit_http_path_in_copy';
   static const String _showSplashScreenKey = 'show_splash_screen';
   late bool _showSplashScreen;
   bool get showSplashScreen => _showSplashScreen;
@@ -157,6 +158,7 @@ class SettingsProvider with ChangeNotifier {
   late bool _simpleRandomIcon;
   late bool _marqueeEnabled;
   late bool _enableSwipeToBlock;
+  late bool _omitHttpPathInCopy;
 
   // Web Gapless Engine
   late AudioEngineMode _audioEngineMode;
@@ -250,6 +252,7 @@ class SettingsProvider with ChangeNotifier {
   bool get simpleRandomIcon => _simpleRandomIcon;
   bool get marqueeEnabled => _marqueeEnabled;
   bool get enableSwipeToBlock => _enableSwipeToBlock;
+  bool get omitHttpPathInCopy => _omitHttpPathInCopy;
 
   /// Whether the custom gapless Web Audio engine is enabled (web-only).
   AudioEngineMode get audioEngineMode => _audioEngineMode;
@@ -492,6 +495,8 @@ class SettingsProvider with ChangeNotifier {
     _marqueeEnabled = _prefs.getBool(_marqueeEnabledKey) ?? true;
     _enableSwipeToBlock = _prefs.getBool(_enableSwipeToBlockKey) ??
         DefaultSettings.enableSwipeToBlock;
+    _omitHttpPathInCopy = _prefs.getBool(_omitHttpPathInCopyKey) ??
+        DefaultSettings.omitHttpPathInCopy;
     _showDebugLayout = _prefs.getBool(_showDebugLayoutKey) ?? false;
     _enableShakedownTween = _prefs.getBool(_enableShakedownTweenKey) ?? true;
 
@@ -711,6 +716,8 @@ class SettingsProvider with ChangeNotifier {
       _updatePreference(_preventSleepKey, _preventSleep = !_preventSleep);
   void toggleEnableSwipeToBlock() => _updatePreference(
       _enableSwipeToBlockKey, _enableSwipeToBlock = !_enableSwipeToBlock);
+  void toggleOmitHttpPathInCopy() => _updatePreference(
+      _omitHttpPathInCopyKey, _omitHttpPathInCopy = !_omitHttpPathInCopy);
 
   /// Toggles the custom gapless Web Audio engine on or off (web-only).
   void toggleWebGaplessEngine() {

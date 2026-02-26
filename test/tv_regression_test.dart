@@ -258,6 +258,8 @@ class FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
   @override
   bool get marqueeEnabled => true;
   @override
+  bool get omitHttpPathInCopy => true;
+  @override
   String get oilScreensaverMode => 'visualizer';
   @override
   double get oilFlowSpeed => 1.0;
@@ -407,6 +409,8 @@ class FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
   bool get enableSwipeToBlock => false;
   @override
   void toggleEnableSwipeToBlock() {}
+  @override
+  void toggleOmitHttpPathInCopy() {}
 
   @override
   bool get webGaplessEngine => true;

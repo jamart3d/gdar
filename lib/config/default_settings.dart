@@ -107,4 +107,5 @@ class DefaultSettings {
   static const double oilBannerWordSpacing = 0.4;
   static const double oilFlatLineSpacing = 1.0;
   static const bool oilShowAudioGraph = false;
+  static const bool omitHttpPathInCopy = true;
 }

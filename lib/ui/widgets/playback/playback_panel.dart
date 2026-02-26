@@ -238,8 +238,12 @@ class PlaybackPanel extends StatelessWidget {
                                                     null
                                                 ? ' - ${currentSource.location}'
                                                 : '';
+                                            final urlStr = settingsProvider
+                                                    .omitHttpPathInCopy
+                                                ? ''
+                                                : '\n${track.url.replaceAll('/download/', '/details/').split('/').sublist(0, 5).join('/')}';
                                             final info =
-                                                "${currentShow.venue}$locationStr - $formattedDate - ${currentSource.id}\n${track.title}\n${track.url.replaceAll('/download/', '/details/').split('/').sublist(0, 5).join('/')}";
+                                                '${currentShow.venue}$locationStr - $formattedDate - ${currentSource.id}\n${track.title}$urlStr';
                                             Clipboard.setData(
                                                 ClipboardData(text: info));
                                             HapticFeedback.selectionClick();

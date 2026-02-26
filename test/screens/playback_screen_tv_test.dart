@@ -309,6 +309,10 @@ class FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
   bool get enableSwipeToBlock => false;
   @override
   void toggleEnableSwipeToBlock() {}
+  @override
+  bool get omitHttpPathInCopy => true;
+  @override
+  void toggleOmitHttpPathInCopy() {}
 
   @override
   AudioEngineMode get audioEngineMode => AudioEngineMode.auto;

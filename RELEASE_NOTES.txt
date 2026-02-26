@@ -1,3 +1,8 @@
+Release 1.1.28+128:
+- Settings: Added a hidden setting `omitHttpPathInCopy` (enabled by default) to exclude the Archive.org URL from track detail copies.
+- UI: Modified the playback screen's clipboard copy function to respect the new omission setting.
+- Engineering: Updated test suites and mocks to maintain 100% pass rate after API changes.
+
 Release 1.1.27+127:
 - Screensaver: Implemented dynamic text ring compression to gracefully fit long track titles.
 - Screensaver: Added configurable "Letter Spacing" and "Word Spacing" for outer/inner rings.
