@@ -35,13 +35,12 @@
     - [x] **Method**: Added a toggle to `TvScreensaverSection` that controls the `preventSleep` setting.
 
 ## Web/PWA Optimization
-- [ ] **Background Playback Longevity**: Find a way to prevent the browser from throttling the Gapless Engine when the UI is in the background.
-    - [ ] Research `Silent Video` looping hacks or `Web Workers` for scheduler persistence.
-    - [ ] Audit `gapless_audio_engine.js` for throttling-resilient scheduling.
-
-- [ ] **Feature: Hybrid Gapless Engine**: Develop a unified Web engine that provides instant HTTP streaming for Track 1, and perfect Web Audio gapless decoding for Track 2+.
-    - **Strategy**: Start track 1 using HTML5 `<audio>`. Pre-fetch and `decodeAudioData` track 2 in the background. Connect the HTML5 `MediaElementAudioSourceNode` into the `AudioContext` and seamlessly cross-fade/stitch onto the Web Audio `AudioBufferSourceNode` when track 1 ends.
-    - **Benefits**: Eliminates the 3-5s initial "time-to-first-play" decode delay present in the pure Web Audio engine, while preserving mathematically perfect gapless transitions for the rest of the playlist.
+- [x] **Background Playback Longevity**: Implemented Hybrid Audio Engine
+- [x] **Feature: Hybrid Gapless Engine**: Develop a unified Web engine that wraps the Web Audio API and HTML5 Audio API for background longevity and gapless playback.
+    - **Strategy**: 
+        1. Passive Engine (HTML5 `<audio>` + MediaSession API) for extreme background-longevity without workers or silent-video hacks.
+        2. Hybrid Engine (Web Audio API) for gapless/crossfade in the foreground and hands off to the Passive engine when backgrounded.
+        3. Add a Track Transition setting (gap | gapless | crossfade) and a crossfade duration setting.
 - [x] **UI: Splash Screen Checks**: Center checklist items on Android and PWA. Scale to fit screen width.
     - [x] Update `lib/ui/screens/splash_screen.dart` checklist layout.
     - [x] Verify centering on Android and Web (PWA).

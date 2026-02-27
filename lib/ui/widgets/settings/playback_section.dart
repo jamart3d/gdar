@@ -478,6 +478,34 @@ class PlaybackSection extends StatelessWidget {
                       tooltip: 'Native just_audio (Conservative)',
                       icon: const Icon(Icons.settings_input_component_rounded),
                     ),
+                    ButtonSegment(
+                      value: AudioEngineMode.passive,
+                      label: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          'Passive',
+                          maxLines: 1,
+                          overflow: TextOverflow.visible,
+                          style: TextStyle(fontSize: 14 * scaleFactor),
+                        ),
+                      ),
+                      tooltip: 'Native HTML5 (Background-friendly)',
+                      icon: const Icon(Icons.battery_saver_rounded),
+                    ),
+                    ButtonSegment(
+                      value: AudioEngineMode.hybrid,
+                      label: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          'Hybrid',
+                          maxLines: 1,
+                          overflow: TextOverflow.visible,
+                          style: TextStyle(fontSize: 14 * scaleFactor),
+                        ),
+                      ),
+                      tooltip: 'Web Audio Foreground, Passive Background',
+                      icon: const Icon(Icons.handshake_rounded),
+                    ),
                   ],
                   selected: {
                     sp.audioEngineMode == AudioEngineMode.auto
@@ -507,6 +535,95 @@ class PlaybackSection extends StatelessWidget {
                 ),
               ),
             ),
+            if (sp.audioEngineMode == AudioEngineMode.hybrid ||
+                sp.audioEngineMode == AudioEngineMode.webAudio ||
+                sp.audioEngineMode == AudioEngineMode.auto ||
+                sp.audioEngineMode == AudioEngineMode.standard) ...[
+              const SizedBox(height: 16),
+              Padding(
+                padding: EdgeInsets.only(left: 40.0 * scaleFactor),
+                child: Text(
+                  'Track Transition Mode',
+                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                        fontSize: 14 * scaleFactor,
+                        fontWeight: FontWeight.bold,
+                      ),
+                ),
+              ),
+              const SizedBox(height: 8),
+              Padding(
+                padding: EdgeInsets.only(left: 40.0 * scaleFactor),
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: SegmentedButton<String>(
+                    showSelectedIcon: false,
+                    segments: [
+                      ButtonSegment(
+                        value: 'gap',
+                        label: Text('Gap',
+                            style: TextStyle(fontSize: 12 * scaleFactor)),
+                        icon: const Icon(Icons.pause_presentation_rounded,
+                            size: 16),
+                      ),
+                      ButtonSegment(
+                        value: 'gapless',
+                        label: Text('Gapless',
+                            style: TextStyle(fontSize: 12 * scaleFactor)),
+                        icon: const Icon(Icons.linear_scale_rounded, size: 16),
+                      ),
+                      ButtonSegment(
+                        value: 'crossfade',
+                        label: Text('Crossfade',
+                            style: TextStyle(fontSize: 12 * scaleFactor)),
+                        icon:
+                            const Icon(Icons.multiline_chart_rounded, size: 16),
+                      ),
+                    ],
+                    selected: {sp.trackTransitionMode},
+                    onSelectionChanged: (Set<String> selection) {
+                      HapticFeedback.lightImpact();
+                      sp.setTrackTransitionMode(selection.first);
+                    },
+                  ),
+                ),
+              ),
+              if (sp.trackTransitionMode == 'crossfade') ...[
+                const SizedBox(height: 16),
+                Padding(
+                  padding: EdgeInsets.only(
+                      left: 40.0 * scaleFactor, right: 16.0 * scaleFactor),
+                  child: Row(
+                    children: [
+                      Text(
+                        'Crossfade Duration',
+                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                              fontSize: 14 * scaleFactor,
+                            ),
+                      ),
+                      Expanded(
+                        child: Slider(
+                          value: sp.crossfadeDurationSeconds,
+                          min: 1.0,
+                          max: 12.0,
+                          divisions: 11,
+                          label: '${sp.crossfadeDurationSeconds.toInt()}s',
+                          onChanged: (value) {
+                            sp.setCrossfadeDurationSeconds(value);
+                          },
+                        ),
+                      ),
+                      Text(
+                        '${sp.crossfadeDurationSeconds.toInt()}s',
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                              fontSize: 14 * scaleFactor,
+                              fontWeight: FontWeight.bold,
+                            ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ],
           ],
         ),
       ),

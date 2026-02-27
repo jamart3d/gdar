@@ -25,28 +25,25 @@
     const isNarrow = window.innerWidth < 1024;
     const isChromebook = /CrOS/i.test(ua);
 
-    // Detection logic: mobile UA OR (touch + narrow viewport)
-    // EXCLUSION: Chromebooks (CrOS) often have touch + narrow viewports but are desktop-class.
+    // Detection logic: Hybrid is now the default everywhere
     // Check for user override from SettingsProvider (persisted in localStorage)
     const storedMode = localStorage.getItem('flutter.audio_engine_mode');
     const override = storedMode ? storedMode.replace(/"/g, '') : null; // Remove JSON quotes if present
 
-    let isMobile = (isMobiUA || (hasTouch && isNarrow)) && !isChromebook;
-    let strategy = isMobile ? 'html5' : 'webaudio';
-    let reason = "";
+    let strategy = 'hybrid';
+    let reason = "Defaulting to Hybrid engine for seamless background playback.";
 
     if (override && override !== 'auto' && override !== 'standard') {
         strategy = override;
         reason = `User override: ${override}`;
-        isMobile = (strategy === 'html5');
     } else if (isChromebook) {
-        reason = `Chromebook detected (CrOS) -> Desktop Engine forced. UA: ${ua.substring(0, 40)}...`;
+        reason = `Chromebook detected (CrOS) -> Defaulting to Hybrid. UA: ${ua.substring(0, 40)}...`;
     } else if (isMobiUA) {
-        reason = `User-Agent match: ${ua.match(/Mobi|Android|iPhone|iPad/i)[0]}`;
+        reason = `User-Agent match: ${ua.match(/Mobi|Android|iPhone|iPad/i)[0]} -> Defaulting to Hybrid`;
     } else if (hasTouch && isNarrow) {
-        reason = `Touch device (${navigator.maxTouchPoints} pts) with narrow viewport (${window.innerWidth}px)`;
+        reason = `Touch device (${navigator.maxTouchPoints} pts) with narrow viewport (${window.innerWidth}px) -> Defaulting to Hybrid`;
     } else {
-        reason = `Desktop environment (UA: ${ua.length > 50 ? ua.substring(0, 50) + '...' : ua}, Width: ${window.innerWidth}px, Touch: ${hasTouch})`;
+        reason = `Desktop environment (UA: ${ua.length > 50 ? ua.substring(0, 50) + '...' : ua}, Width: ${window.innerWidth}px, Touch: ${hasTouch}) -> Defaulting to Hybrid`;
     }
 
     if (override === 'standard') {
@@ -56,12 +53,20 @@
         return;
     }
 
-    if (isMobile && window._html5Audio) {
+    if (strategy === 'html5' && window._html5Audio) {
         window._gdarAudio = window._html5Audio;
-        console.log(`[Shakedown] ${override ? 'Override' : 'Mobile detected'} → HTML5 streaming engine. Reason: ${reason}`);
-    } else {
-        console.log(`[Shakedown] ${override ? 'Override' : 'Desktop detected'} → GDAR Web Audio API engine. Reason: ${reason}`);
+        console.log(`[Shakedown] Override → HTML5 streaming engine. Reason: ${reason}`);
+    } else if (strategy === 'passive' && window._passiveAudio) {
+        window._gdarAudio = window._passiveAudio;
+        console.log(`[Shakedown] Override → Passive audio engine. Reason: ${reason}`);
+    } else if (strategy === 'hybrid' && window._hybridAudio) {
+        window._gdarAudio = window._hybridAudio;
+        console.log(`[Shakedown] ${override ? 'Override' : 'Auto'} → Hybrid Audio engine. Reason: ${reason}`);
+    } else if (strategy === 'webaudio') {
         // window._gdarAudio is already set by gapless_audio_engine.js — no-op.
+        console.log(`[Shakedown] Override → GDAR Web Audio API engine. Reason: ${reason}`);
+    } else {
+        console.log(`[Shakedown] Fallback processing: strategy ${strategy}. Reason: ${reason}`);
     }
 
     // Expose detection result and reason for diagnostic purposes.

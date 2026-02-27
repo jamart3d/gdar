@@ -30,8 +30,13 @@ class DefaultSettings {
 
   // Web Gapless Engine (web-only)
   static const String audioEngineMode =
-      'auto'; // auto, webAudio, html5, standard
+      'hybrid'; // auto, webAudio, html5, standard, passive, hybrid
   static const int webPrefetchSeconds = 30;
+
+  // Track Transitions (hybrid/standard engines)
+  static const String trackTransitionMode =
+      'gapless'; // gap, gapless, crossfade
+  static const double crossfadeDurationSeconds = 3.0; // 1.0 - 12.0
 
   // Data & Filtering
   static const bool showSingleShnid = false;

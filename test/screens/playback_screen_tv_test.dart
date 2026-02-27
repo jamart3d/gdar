@@ -328,6 +328,16 @@ class FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
   Future<void> setWebPrefetchSeconds(int seconds) async {}
 
   @override
+  String get trackTransitionMode => 'gapless';
+  @override
+  void setTrackTransitionMode(String mode) {}
+
+  @override
+  double get crossfadeDurationSeconds => 3.0;
+  @override
+  void setCrossfadeDurationSeconds(double seconds) {}
+
+  @override
   Future<void> resetToDefaults() async {}
 
   @override

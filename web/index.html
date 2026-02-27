@@ -39,7 +39,11 @@
   <script src="html5_audio_engine.js"></script>
   <!-- 2. Desktop GDAR Web Audio API engine (AudioBufferSourceNode, 0ms gapless) -->
   <script src="gapless_audio_engine.js"></script>
-  <!-- 3. Hybrid dispatcher: auto-selects strategy and assigns window._gdarAudio -->
+  <!-- 3. Passive HTML5 Audio engine (background persistence) -->
+  <script src="passive_audio_engine.js"></script>
+  <!-- 4. Hybrid Web Audio engine (foreground gapless + background passive) -->
+  <script src="hybrid_audio_engine.js"></script>
+  <!-- 5. Hybrid dispatcher: auto-selects strategy and assigns window._gdarAudio -->
   <script src="hybrid_init.js"></script>
   <!-- Firebase Config (Gitignored) -->
   <script src="firebase-config.js"></script>

@@ -9,13 +9,17 @@ enum AudioEngineMode {
   auto,
   webAudio,
   html5,
-  standard;
+  standard,
+  passive,
+  hybrid;
 
   /// Parses a string into an [AudioEngineMode].
   static AudioEngineMode fromString(String? value) {
     if (value == 'webAudio') return AudioEngineMode.webAudio;
     if (value == 'html5') return AudioEngineMode.html5;
     if (value == 'standard') return AudioEngineMode.standard;
+    if (value == 'passive') return AudioEngineMode.passive;
+    if (value == 'hybrid') return AudioEngineMode.hybrid;
     return AudioEngineMode.auto;
   }
 }

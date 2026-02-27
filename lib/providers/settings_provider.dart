@@ -50,6 +50,9 @@ class SettingsProvider with ChangeNotifier {
   // Web Gapless Engine (web-only)
   static const String _audioEngineModeKey = 'audio_engine_mode';
   static const String _webPrefetchSecondsKey = 'web_prefetch_seconds';
+  static const String _trackTransitionModeKey = 'track_transition_mode';
+  static const String _crossfadeDurationSecondsKey =
+      'crossfade_duration_seconds';
   static const String _webSourceFiltersInitKey = 'web_source_filters_init_v1';
   static const String _simpleRandomIconKey = 'simple_random_icon';
 
@@ -163,6 +166,8 @@ class SettingsProvider with ChangeNotifier {
   // Web Gapless Engine
   late AudioEngineMode _audioEngineMode;
   late int _webPrefetchSeconds;
+  late String _trackTransitionMode;
+  late double _crossfadeDurationSeconds;
 
   // Screensaver (steal)
   late bool _useOilScreensaver;
@@ -269,6 +274,20 @@ class SettingsProvider with ChangeNotifier {
 
   /// Seconds ahead of a track end to prefetch the next buffer (web-only).
   int get webPrefetchSeconds => _webPrefetchSeconds;
+
+  String get trackTransitionMode => _trackTransitionMode;
+  void setTrackTransitionMode(String mode) {
+    _trackTransitionMode = mode;
+    _prefs.setString(_trackTransitionModeKey, mode);
+    notifyListeners();
+  }
+
+  double get crossfadeDurationSeconds => _crossfadeDurationSeconds;
+  void setCrossfadeDurationSeconds(double seconds) {
+    _crossfadeDurationSeconds = seconds;
+    _prefs.setDouble(_crossfadeDurationSecondsKey, seconds);
+    notifyListeners();
+  }
 
   // Screensaver getters
   bool get useOilScreensaver => _useOilScreensaver;
@@ -518,6 +537,12 @@ class SettingsProvider with ChangeNotifier {
     if (_prefs.getInt(_webPrefetchSecondsKey) != _webPrefetchSeconds) {
       _prefs.setInt(_webPrefetchSecondsKey, _webPrefetchSeconds);
     }
+
+    _trackTransitionMode = _prefs.getString(_trackTransitionModeKey) ??
+        DefaultSettings.trackTransitionMode;
+    _crossfadeDurationSeconds =
+        _prefs.getDouble(_crossfadeDurationSecondsKey) ??
+            DefaultSettings.crossfadeDurationSeconds;
 
     // Screensaver
     _useOilScreensaver = _prefs.getBool(_useOilScreensaverKey) ??
