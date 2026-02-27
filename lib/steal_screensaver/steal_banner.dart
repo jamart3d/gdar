@@ -578,7 +578,7 @@ class StealBanner extends Component with HasGameReference<StealGame> {
         totalWidth += _measureChar(char) * config.bannerLetterSpacing;
       }
       if (wi < wordList.length - 1) {
-        totalWidth += _defaultFontSize * (config.bannerWordSpacing + 0.2);
+        totalWidth += _defaultFontSize * config.bannerWordSpacing;
       }
     }
 
@@ -611,7 +611,7 @@ class StealBanner extends Component with HasGameReference<StealGame> {
       }
 
       if (wi < wordList.length - 1) {
-        x += _defaultFontSize * (config.bannerWordSpacing + 0.2);
+        x += _defaultFontSize * config.bannerWordSpacing;
       }
     }
   }
@@ -657,8 +657,19 @@ class StealBanner extends Component with HasGameReference<StealGame> {
           _middleAngle, _opacity * _middleOpacity, glowEnabled, config);
     }
     if (_innerCurrent.isNotEmpty && _innerOpacity > 0.01) {
-      _drawRing(canvas, _innerCurrent, _innerWords, center, innerR, _innerAngle,
-          _opacity * _innerOpacity, glowEnabled, config);
+      _drawRing(
+        canvas,
+        _innerCurrent,
+        _innerWords,
+        center,
+        innerR,
+        _innerAngle,
+        _opacity * _innerOpacity,
+        glowEnabled,
+        config,
+        fontScale: config.innerRingFontScale,
+        spacingMultiplier: config.innerRingSpacingMultiplier,
+      );
     }
   }
 
@@ -671,13 +682,15 @@ class StealBanner extends Component with HasGameReference<StealGame> {
     double startAngle,
     double effectiveOpacity,
     bool glowEnabled,
-    StealConfig config,
-  ) {
+    StealConfig config, {
+    double fontScale = 1.0,
+    double spacingMultiplier = 1.0,
+  }) {
     if (text.isEmpty) return;
 
-    // Use user-defined spacing from config
-    double letterSpacing = config.bannerLetterSpacing;
-    double wordSpacing = config.bannerWordSpacing;
+    // Use user-defined spacing from config, modulated by per-ring multiplier
+    double letterSpacing = config.bannerLetterSpacing * spacingMultiplier;
+    double wordSpacing = config.bannerWordSpacing * spacingMultiplier;
 
     final wordList = words.isNotEmpty
         ? words
@@ -692,10 +705,10 @@ class StealBanner extends Component with HasGameReference<StealGame> {
       double span = 0.0;
       for (int wi = 0; wi < wordList.length; wi++) {
         for (final char in wordList[wi].text.characters) {
-          span += (_measureChar(char) * lSpace) / radius;
+          span += (_measureChar(char) * fontScale * lSpace) / radius;
         }
         if (wi < wordList.length - 1) {
-          span += (_defaultFontSize * (wSpace + 0.2)) / radius;
+          span += (_defaultFontSize * fontScale * wSpace) / radius;
         }
       }
       return span;
@@ -723,7 +736,7 @@ class StealBanner extends Component with HasGameReference<StealGame> {
       final chars = word.text.characters.toList();
 
       for (int ci = 0; ci < chars.length; ci++) {
-        final charWidth = _measureChar(chars[ci]) * letterSpacing;
+        final charWidth = _measureChar(chars[ci]) * fontScale * letterSpacing;
         final charAngle = charWidth / radius;
 
         final centerAngle = angle + charAngle / 2;
@@ -735,12 +748,16 @@ class StealBanner extends Component with HasGameReference<StealGame> {
         canvas.translate(charX, charY);
         canvas.rotate(centerAngle + pi / 2);
 
+        // Apply font scaling via canvas transform so rasterized glyphs
+        // are drawn smaller without re-rasterizing.
+        if (fontScale != 1.0) canvas.scale(fontScale);
+
         final opacity = effectiveOpacity * wordBrightness;
 
         _paintChar(
           canvas,
           chars[ci],
-          charWidth,
+          _measureChar(chars[ci]) * letterSpacing,
           _currentColor,
           opacity,
           glowEnabled,
@@ -752,7 +769,7 @@ class StealBanner extends Component with HasGameReference<StealGame> {
       }
 
       if (wi < wordList.length - 1) {
-        angle += (_defaultFontSize * (wordSpacing + 0.2)) / radius;
+        angle += (_defaultFontSize * fontScale * wordSpacing) / radius;
       }
     }
   }

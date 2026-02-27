@@ -311,6 +311,19 @@
 
     // ─── Media Session API ────────────────────────────────────────────────────
 
+    let _mediaSessionRegistered = false;
+
+    /** Register action handlers once. Called from init(). */
+    function _registerMediaSessionHandlers() {
+        if (!('mediaSession' in navigator) || _mediaSessionRegistered) return;
+        navigator.mediaSession.setActionHandler('play', () => api.play());
+        navigator.mediaSession.setActionHandler('pause', () => api.pause());
+        navigator.mediaSession.setActionHandler('nexttrack', () => api.seekToIndex(_currentIndex + 1));
+        navigator.mediaSession.setActionHandler('previoustrack', () => api.seekToIndex(Math.max(0, _currentIndex - 1)));
+        _mediaSessionRegistered = true;
+    }
+
+    /** Update metadata only. Called on every track change. */
     function _updateMediaSession() {
         if (!('mediaSession' in navigator)) return;
         const track = _playlist[_currentIndex];
@@ -320,10 +333,6 @@
             artist: track.artist || '',
             album: track.album || '',
         });
-        navigator.mediaSession.setActionHandler('play', () => api.play());
-        navigator.mediaSession.setActionHandler('pause', () => api.pause());
-        navigator.mediaSession.setActionHandler('nexttrack', () => api.seekToIndex(_currentIndex + 1));
-        navigator.mediaSession.setActionHandler('previoustrack', () => api.seekToIndex(Math.max(0, _currentIndex - 1)));
     }
 
     // ─── Callbacks ────────────────────────────────────────────────────────────
@@ -392,6 +401,7 @@
             if (_currentAudio) return; // already initialised
             _currentAudio = _createAudio(false);
             _nextAudio = _createAudio(true);
+            _registerMediaSessionHandlers();
             console.log('[html5 engine] Initialised — dual HTMLAudioElement strategy');
         },
 
@@ -525,11 +535,18 @@
         /** Returns a snapshot of current engine state (mirrors GDAR engine shape). */
         getState: function () {
             const audio = _currentAudio;
+            const pos = audio ? (audio.currentTime || 0) : 0;
+            const dur = audio ? (isNaN(audio.duration) ? 0 : (audio.duration || 0)) : 0;
+            let currentBuffered = pos;
+            if (audio && audio.buffered.length > 0) {
+                currentBuffered = audio.buffered.end(audio.buffered.length - 1);
+            }
             return {
                 playing: _playing,
                 index: _currentIndex,
-                position: audio ? (audio.currentTime || 0) : 0,
-                duration: audio ? (isNaN(audio.duration) ? 0 : (audio.duration || 0)) : 0,
+                position: pos,
+                duration: dur,
+                currentTrackBuffered: Math.min(Math.max(currentBuffered, pos), dur || currentBuffered || pos),
                 nextTrackBuffered: 0,
                 nextTrackTotal: _playlist[_currentIndex + 1] ? (_playlist[_currentIndex + 1].duration || 0) : 0,
                 playlistLength: _playlist.length,

@@ -218,15 +218,23 @@
       });
   }
 
+  /** Maximum compressed file size (bytes) before falling back. 100MB. */
+  const _MAX_COMPRESSED_BYTES = 100 * 1024 * 1024;
+
   /**
    * Fetches + decodes the track at index into an AudioBuffer.
    * Caches the decoded result. Returns Promise<AudioBuffer>.
+   * Rejects tracks larger than _MAX_COMPRESSED_BYTES to prevent OOM.
    */
   function _decode(index) {
     if (_decoded[index]) return Promise.resolve(_decoded[index]);
     if (!_ctx) _ensureContext();
 
     return _fetchCompressed(index).then(compressed => {
+      if (compressed.byteLength > _MAX_COMPRESSED_BYTES) {
+        console.warn('[gdar engine] Track', index, 'is', (compressed.byteLength / (1024 * 1024)).toFixed(1), 'MB — exceeds decode limit. Skipping Web Audio decode.');
+        return Promise.reject(new Error('Track too large for Web Audio decode (' + (compressed.byteLength / (1024 * 1024)).toFixed(1) + ' MB)'));
+      }
       // decodeAudioData requires a copy (it detaches the ArrayBuffer).
       const copy = compressed.slice(0);
       return _ctx.decodeAudioData(copy);
@@ -509,7 +517,7 @@
    */
   function _startWatchdog() {
     _stopWatchdog();
-    _watchdogTimer = setInterval(_checkWatchdog, 500);
+    _watchdogTimer = setInterval(_checkWatchdog, 1000);
   }
 
   function _stopWatchdog() {
@@ -595,6 +603,19 @@
 
   // ─── Media Session API ────────────────────────────────────────────────────
 
+  let _mediaSessionRegistered = false;
+
+  /** Register action handlers once. Called from init(). */
+  function _registerMediaSessionHandlers() {
+    if (!('mediaSession' in navigator) || _mediaSessionRegistered) return;
+    navigator.mediaSession.setActionHandler('play', () => api.play());
+    navigator.mediaSession.setActionHandler('pause', () => api.pause());
+    navigator.mediaSession.setActionHandler('nexttrack', () => api.seekToIndex(_currentIndex + 1));
+    navigator.mediaSession.setActionHandler('previoustrack', () => api.seekToIndex(Math.max(0, _currentIndex - 1)));
+    _mediaSessionRegistered = true;
+  }
+
+  /** Update metadata only. Called on every track change. */
   function _updateMediaSession() {
     if (!('mediaSession' in navigator)) return;
     const track = _playlist[_currentIndex];
@@ -604,10 +625,6 @@
       artist: track.artist || '',
       album: track.album || '',
     });
-    navigator.mediaSession.setActionHandler('play', () => api.play());
-    navigator.mediaSession.setActionHandler('pause', () => api.pause());
-    navigator.mediaSession.setActionHandler('nexttrack', () => api.seekToIndex(_currentIndex + 1));
-    navigator.mediaSession.setActionHandler('previoustrack', () => api.seekToIndex(_currentIndex - 1));
   }
 
   // ─── Public API ──────────────────────────────────────────────────────────
@@ -617,6 +634,7 @@
     /** Must be called once at app startup. Safe to call multiple times. */
     init: function () {
       _ensureContext();
+      _registerMediaSessionHandlers();
     },
 
     /** Set the full playlist and optionally start at an index. */
@@ -671,7 +689,7 @@
         _stopCurrentSource();
         _clearScheduled();
         _cancelPrefetch();
-        delete _decoded[_currentIndex + 1]; // free next's decoded buffer
+        delete _decoded[_currentIndex + 1]; // free next's decoded PCM buffer (~100MB), keep compressed (~7MB)
         _emitState();
       });
     },

@@ -333,9 +333,13 @@ class FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
   @override
   Future<void> setOilFlatLineSpacing(double value) async {}
   @override
-  bool get oilShowAudioGraph => false;
+  String get oilAudioGraphMode => 'off';
   @override
-  void toggleOilShowAudioGraph() {}
+  void setOilAudioGraphMode(String mode) {}
+  @override
+  double get oilBeatSensitivity => 0.5;
+  @override
+  Future<void> setOilBeatSensitivity(double value) async {}
 
   @override
   double get oilLogoTrailIntensity => 0.0;
@@ -505,6 +509,14 @@ class FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
   Future<void> setOilMiddleToOuterGap(double value) async {}
   @override
   Future<void> setOilOrbitDrift(double value) async {}
+  @override
+  double get oilInnerRingFontScale => 0.75;
+  @override
+  Future<void> setOilInnerRingFontScale(double value) async {}
+  @override
+  double get oilInnerRingSpacingMultiplier => 0.7;
+  @override
+  Future<void> setOilInnerRingSpacingMultiplier(double value) async {}
 
   @override
   double get oilTranslationSmoothing => 1.0;

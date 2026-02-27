@@ -101,14 +101,12 @@
     function _executeBackgroundHandoff() {
         console.log('[hybrid engine] Executing boundary handoff → Passive (Background)');
 
-        // At the track boundary, _gdarAudio has already advanced its internal index
-        // Or is about to. We need to stop it and start the passive engine at the new index.
         const targetIndex = _currentIndex;
 
         _activeEngine.pause();
         _activeEngine = _bgEngine;
 
-        // Sync playlist and state
+        // Lazy init: push full playlist to passive engine on first handoff
         _activeEngine.setPlaylist(_playlist, targetIndex);
         _activeEngine.play();
     }
@@ -133,15 +131,20 @@
         _activeEngine.setPlaylist(_playlist, targetIndex);
         try {
             if (wasPlaying) {
-                // Web Audio seek handles the decode and resume natively
                 _activeEngine.seek(pos);
                 _activeEngine.play();
             } else {
                 _activeEngine.seek(pos);
             }
         } catch (err) {
-            console.error('[hybrid engine] Failed to restore foreground engine:', err);
-            // Don't forward this error if it's an abort or context issue to avoid bubbling to Dart
+            console.error('[hybrid engine] Foreground restore failed, staying on passive engine:', err);
+            // Fall back to passive engine instead of entering a dead state
+            _activeEngine = _bgEngine;
+            _activeEngine.setPlaylist(_playlist, targetIndex);
+            _activeEngine.seek(pos);
+            if (wasPlaying) {
+                _activeEngine.play();
+            }
         }
     }
 
@@ -165,15 +168,17 @@
             _activeEngine = document.visibilityState === 'hidden' ? _bgEngine : _fgEngine;
             _pendingHandoff = document.visibilityState === 'hidden';
 
-            _fgEngine.setPlaylist(tracks, startIndex);
-            _bgEngine.setPlaylist(tracks, startIndex);
+            // Only load the active engine; the other receives its playlist
+            // lazily on first handoff to avoid wasting resources.
+            _activeEngine.setPlaylist(tracks, startIndex);
         },
 
         appendTracks: function (tracks) {
             if (tracks && tracks.length > 0) {
                 _playlist = _playlist.concat(tracks);
-                _fgEngine.appendTracks(tracks);
-                _bgEngine.appendTracks(tracks);
+                // Only forward to the active engine; the inactive engine
+                // will receive the full playlist on next handoff.
+                _activeEngine.appendTracks(tracks);
             }
         },
 
@@ -214,9 +219,10 @@
         setTrackTransitionMode: function (mode) {
             if (['gap', 'gapless', 'crossfade'].includes(mode)) {
                 _transitionMode = mode;
+                if (mode === 'crossfade') {
+                    console.warn('[hybrid engine] Crossfade mode is not yet implemented. Falling back to gapless behaviour.');
+                }
                 console.log('[hybrid engine] Transition Mode set to:', mode);
-                // Implementation for Crossfade logic inside Web Audio engine would
-                // need to be injected or we apply the crossfade settings to _gdarAudio if supported.
             }
         },
 

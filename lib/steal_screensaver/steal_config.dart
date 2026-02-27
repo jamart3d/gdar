@@ -53,8 +53,20 @@ class StealConfig {
   /// 1.0 = standard, 0.5 = tight, 2.0 = double spaced.
   final double flatLineSpacing;
 
-  /// Whether to display the 4-bar audio reactivity graph in the corner.
-  final bool showAudioGraph;
+  /// Audio graph display mode: 'off', 'corner', or 'circular'.
+  final String audioGraphMode;
+
+  /// Beat detection sensitivity (0.0 = gentle, 1.0 = aggressive).
+  final double beatSensitivity;
+
+  /// Font size multiplier for the inner (date) ring.
+  /// 1.0 = same as other rings, <1.0 = smaller text to fit tighter arcs.
+  final double innerRingFontScale;
+
+  /// Spacing multiplier for the inner (date) ring.
+  /// Applied on top of bannerLetterSpacing/bannerWordSpacing.
+  /// 1.0 = same as other rings, <1.0 = tighter spacing.
+  final double innerRingSpacingMultiplier;
 
   static const Map<String, List<Color>> palettes = {
     'psychedelic': [
@@ -132,7 +144,10 @@ class StealConfig {
     this.bannerLetterSpacing = 1.02,
     this.bannerWordSpacing = 0.4,
     this.flatLineSpacing = 1.0,
-    this.showAudioGraph = false,
+    this.audioGraphMode = 'off',
+    this.beatSensitivity = 0.5,
+    this.innerRingFontScale = 1.0,
+    this.innerRingSpacingMultiplier = 1.0,
   });
 
   factory StealConfig.fromMap(Map<String, dynamic> map) {
@@ -176,7 +191,12 @@ class StealConfig {
           (map['bannerLetterSpacing'] as num?)?.toDouble() ?? 1.02,
       bannerWordSpacing: (map['bannerWordSpacing'] as num?)?.toDouble() ?? 0.4,
       flatLineSpacing: (map['flatLineSpacing'] as num?)?.toDouble() ?? 1.0,
-      showAudioGraph: map['showAudioGraph'] as bool? ?? false,
+      audioGraphMode: map['audioGraphMode'] as String? ?? 'off',
+      beatSensitivity: (map['beatSensitivity'] as num?)?.toDouble() ?? 0.5,
+      innerRingFontScale:
+          (map['innerRingFontScale'] as num?)?.toDouble() ?? 1.0,
+      innerRingSpacingMultiplier:
+          (map['innerRingSpacingMultiplier'] as num?)?.toDouble() ?? 1.0,
     );
   }
 
@@ -217,7 +237,10 @@ class StealConfig {
       'bannerLetterSpacing': bannerLetterSpacing,
       'bannerWordSpacing': bannerWordSpacing,
       'flatLineSpacing': flatLineSpacing,
-      'showAudioGraph': showAudioGraph,
+      'audioGraphMode': audioGraphMode,
+      'beatSensitivity': beatSensitivity,
+      'innerRingFontScale': innerRingFontScale,
+      'innerRingSpacingMultiplier': innerRingSpacingMultiplier,
     };
   }
 
@@ -257,7 +280,10 @@ class StealConfig {
     double? bannerLetterSpacing,
     double? bannerWordSpacing,
     double? flatLineSpacing,
-    bool? showAudioGraph,
+    String? audioGraphMode,
+    double? beatSensitivity,
+    double? innerRingFontScale,
+    double? innerRingSpacingMultiplier,
   }) {
     return StealConfig(
       flowSpeed: flowSpeed ?? this.flowSpeed,
@@ -297,7 +323,11 @@ class StealConfig {
       bannerLetterSpacing: bannerLetterSpacing ?? this.bannerLetterSpacing,
       bannerWordSpacing: bannerWordSpacing ?? this.bannerWordSpacing,
       flatLineSpacing: flatLineSpacing ?? this.flatLineSpacing,
-      showAudioGraph: showAudioGraph ?? this.showAudioGraph,
+      audioGraphMode: audioGraphMode ?? this.audioGraphMode,
+      beatSensitivity: beatSensitivity ?? this.beatSensitivity,
+      innerRingFontScale: innerRingFontScale ?? this.innerRingFontScale,
+      innerRingSpacingMultiplier:
+          innerRingSpacingMultiplier ?? this.innerRingSpacingMultiplier,
     );
   }
 
@@ -340,7 +370,10 @@ class StealConfig {
         bannerLetterSpacing == other.bannerLetterSpacing &&
         bannerWordSpacing == other.bannerWordSpacing &&
         flatLineSpacing == other.flatLineSpacing &&
-        showAudioGraph == other.showAudioGraph;
+        audioGraphMode == other.audioGraphMode &&
+        beatSensitivity == other.beatSensitivity &&
+        innerRingFontScale == other.innerRingFontScale &&
+        innerRingSpacingMultiplier == other.innerRingSpacingMultiplier;
   }
 
   @override
@@ -380,6 +413,9 @@ class StealConfig {
         bannerLetterSpacing,
         bannerWordSpacing,
         flatLineSpacing,
-        showAudioGraph,
+        audioGraphMode,
+        beatSensitivity,
+        innerRingFontScale,
+        innerRingSpacingMultiplier,
       ]);
 }

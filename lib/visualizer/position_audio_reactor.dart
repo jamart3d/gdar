@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 import 'package:shakedown/visualizer/audio_reactor.dart';
 
 /// Fallback audio reactor that uses playback position heuristics.
@@ -10,9 +11,13 @@ class PositionAudioReactor implements AudioReactor {
   final StreamController<AudioEnergy> _energyController =
       StreamController<AudioEnergy>.broadcast();
 
+  final Random _rng = Random();
   Timer? _updateTimer;
   bool _isRunning = false;
   int _tickCount = 0;
+
+  /// Track last bass value for simulated beat detection
+  double _lastBass = 0.0;
 
   @override
   Stream<AudioEnergy> get energyStream => _energyController.stream;
@@ -41,6 +46,7 @@ class PositionAudioReactor implements AudioReactor {
     double? peakDecay,
     double? bassBoost,
     double? reactivityStrength,
+    double? beatSensitivity,
   }) {
     // Positioning reactor doesn't support these tuning knobs
   }
@@ -57,31 +63,35 @@ class PositionAudioReactor implements AudioReactor {
     final time = _tickCount / 30.0; // Convert ticks to seconds
 
     // Use different frequencies for different bands to create variation
-    final bassPhase = time * 0.8;
-    final midPhase = time * 1.2;
-    final treblePhase = time * 1.8;
+    final bass =
+        ((sin(time * 0.8) * 0.5 + 0.5) * 0.7 + (_rng.nextDouble() * 0.3))
+            .clamp(0.0, 1.0);
+    final mid =
+        ((sin(time * 1.2) * 0.5 + 0.5) * 0.6 + (_rng.nextDouble() * 0.4))
+            .clamp(0.0, 1.0);
+    final treble =
+        ((sin(time * 1.8) * 0.5 + 0.5) * 0.5 + (_rng.nextDouble() * 0.5))
+            .clamp(0.0, 1.0);
+    final overall = ((bass + mid + treble) / 3.0).clamp(0.0, 1.0);
 
-    // Generate smooth oscillating values with some randomness
-    final bass = (_sine(bassPhase) * 0.5 + 0.5) * 0.7 + (_random() * 0.3);
-    final mid = (_sine(midPhase) * 0.5 + 0.5) * 0.6 + (_random() * 0.4);
-    final treble = (_sine(treblePhase) * 0.5 + 0.5) * 0.5 + (_random() * 0.5);
-    final overall = (bass + mid + treble) / 3.0;
+    // Simulated beat: detect when bass rises sharply
+    final isBeat = bass > 0.6 && (bass - _lastBass) > 0.15;
+    _lastBass = bass;
+
+    // Generate 8-band simulated data with different phase offsets
+    final bands = List<double>.generate(8, (i) {
+      final phase = time * (0.6 + i * 0.25);
+      return ((sin(phase) * 0.5 + 0.5) * 0.6 + (_rng.nextDouble() * 0.4))
+          .clamp(0.0, 1.0);
+    });
 
     return AudioEnergy(
-      bass: bass.clamp(0.0, 1.0),
-      mid: mid.clamp(0.0, 1.0),
-      treble: treble.clamp(0.0, 1.0),
-      overall: overall.clamp(0.0, 1.0),
+      bass: bass,
+      mid: mid,
+      treble: treble,
+      overall: overall,
+      isBeat: isBeat,
+      bands: bands,
     );
-  }
-
-  double _sine(double x) {
-    // Simple sine approximation
-    return (x % (2 * 3.14159265359)).toDouble();
-  }
-
-  double _random() {
-    // Simple pseudo-random based on tick count
-    return ((_tickCount * 1103515245 + 12345) % 100) / 100.0;
   }
 }

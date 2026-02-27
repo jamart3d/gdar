@@ -57,6 +57,7 @@
         _audio.onwaiting = null;
         _audio.onplaying = null;
         _audio.ontimeupdate = null;
+        _audio = null;
     }
 
     // ─── Position Polling ─────────────────────────────────────────────────────
@@ -164,6 +165,19 @@
 
     // ─── Media Session API ────────────────────────────────────────────────────
 
+    let _mediaSessionRegistered = false;
+
+    /** Register action handlers once. Called from init(). */
+    function _registerMediaSessionHandlers() {
+        if (!('mediaSession' in navigator) || _mediaSessionRegistered) return;
+        navigator.mediaSession.setActionHandler('play', () => api.play());
+        navigator.mediaSession.setActionHandler('pause', () => api.pause());
+        navigator.mediaSession.setActionHandler('nexttrack', () => api.seekToIndex(_currentIndex + 1));
+        navigator.mediaSession.setActionHandler('previoustrack', () => api.seekToIndex(Math.max(0, _currentIndex - 1)));
+        _mediaSessionRegistered = true;
+    }
+
+    /** Update metadata only. Called on every track change. */
     function _updateMediaSession() {
         if (!('mediaSession' in navigator)) return;
         const track = _playlist[_currentIndex];
@@ -173,10 +187,6 @@
             artist: track.artist || '',
             album: track.album || '',
         });
-        navigator.mediaSession.setActionHandler('play', () => api.play());
-        navigator.mediaSession.setActionHandler('pause', () => api.pause());
-        navigator.mediaSession.setActionHandler('nexttrack', () => api.seekToIndex(_currentIndex + 1));
-        navigator.mediaSession.setActionHandler('previoustrack', () => api.seekToIndex(Math.max(0, _currentIndex - 1)));
     }
 
     // ─── Callbacks ────────────────────────────────────────────────────────────
@@ -232,6 +242,7 @@
         init: function () {
             if (_audio) return;
             _audio = _createAudio();
+            _registerMediaSessionHandlers();
             console.log('[passive engine] Initialised');
         },
 

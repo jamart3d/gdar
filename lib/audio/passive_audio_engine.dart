@@ -384,6 +384,8 @@ class PassiveAudioEngine {
     await _durationController.close();
     await _indexController.close();
     await _sequenceStateController.close();
+    await _nextTrackBufferedController.close();
+    await _nextTrackTotalController.close();
   }
 
   /// Reloads the web page.

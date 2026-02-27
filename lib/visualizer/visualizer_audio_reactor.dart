@@ -5,8 +5,8 @@ import 'package:shakedown/visualizer/audio_reactor.dart';
 /// Android Visualizer API-based audio reactor.
 ///
 /// Uses the Android Visualizer API for real-time FFT analysis.
-/// Tuning knobs (peakDecay, bassBoost, reactivityStrength) can be
-/// updated live via [updateConfig] without restarting the visualizer.
+/// Tuning knobs (peakDecay, bassBoost, reactivityStrength, beatSensitivity)
+/// can be updated live via [updateConfig] without restarting the visualizer.
 class VisualizerAudioReactor implements AudioReactor {
   static const MethodChannel _methodChannel =
       MethodChannel('shakedown/visualizer');
@@ -55,12 +55,14 @@ class VisualizerAudioReactor implements AudioReactor {
     double? peakDecay,
     double? bassBoost,
     double? reactivityStrength,
+    double? beatSensitivity,
   }) {
     if (!_isRunning) return;
     unawaited(_methodChannel.invokeMethod('updateConfig', {
       if (peakDecay != null) 'peakDecay': peakDecay,
       if (bassBoost != null) 'bassBoost': bassBoost,
       if (reactivityStrength != null) 'reactivityStrength': reactivityStrength,
+      if (beatSensitivity != null) 'beatSensitivity': beatSensitivity,
     }));
   }
 
@@ -91,12 +93,36 @@ class VisualizerAudioReactor implements AudioReactor {
       final mid = (data['mid'] as num?)?.toDouble() ?? 0.0;
       final treble = (data['treble'] as num?)?.toDouble() ?? 0.0;
       final overall = (data['overall'] as num?)?.toDouble() ?? 0.0;
+      final isBeat = (data['isBeat'] as bool?) ?? false;
+
+      // Parse 8-band data if available, otherwise synthesise from 3-band
+      List<double> bands;
+      final rawBands = data['bands'];
+      if (rawBands is List && rawBands.length >= 8) {
+        bands = rawBands
+            .take(8)
+            .map((e) => (e as num).toDouble().clamp(0.0, 1.0))
+            .toList();
+      } else {
+        bands = [
+          bass,
+          bass,
+          mid * 0.8,
+          mid,
+          mid * 0.6,
+          treble * 0.8,
+          treble,
+          treble * 0.5,
+        ];
+      }
 
       _energyController.add(AudioEnergy(
         bass: bass.clamp(0.0, 1.0),
         mid: mid.clamp(0.0, 1.0),
         treble: treble.clamp(0.0, 1.0),
         overall: overall.clamp(0.0, 1.0),
+        isBeat: isBeat,
+        bands: bands,
       ));
     }
   }

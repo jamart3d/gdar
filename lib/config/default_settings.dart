@@ -111,6 +111,14 @@ class DefaultSettings {
   static const double oilBannerLetterSpacing = 1.02;
   static const double oilBannerWordSpacing = 0.4;
   static const double oilFlatLineSpacing = 1.0;
-  static const bool oilShowAudioGraph = false;
+  static const double oilInnerRingFontScale = 0.75;
+  static const double oilInnerRingSpacingMultiplier = 0.7;
+
+  /// Audio graph display mode: 'off', 'corner', or 'circular'.
+  static const String oilAudioGraphMode = 'off';
+
+  /// Beat detection sensitivity (0.0 = gentle, 1.0 = aggressive).
+  static const double oilBeatSensitivity = 0.5;
+
   static const bool omitHttpPathInCopy = true;
 }

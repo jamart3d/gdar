@@ -21,6 +21,7 @@
 
     const ua = navigator.userAgent;
     const isMobiUA = /Mobi|Android|iPhone|iPad/i.test(ua);
+    const isIPadOS = !isMobiUA && navigator.maxTouchPoints > 4 && /Mac/i.test(ua);
     const hasTouch = navigator.maxTouchPoints > 1;
     const isNarrow = window.innerWidth < 1024;
     const isChromebook = /CrOS/i.test(ua);
@@ -40,6 +41,8 @@
         reason = `Chromebook detected (CrOS) -> Defaulting to Hybrid. UA: ${ua.substring(0, 40)}...`;
     } else if (isMobiUA) {
         reason = `User-Agent match: ${ua.match(/Mobi|Android|iPhone|iPad/i)[0]} -> Defaulting to Hybrid`;
+    } else if (isIPadOS) {
+        reason = `iPadOS detected (maxTouchPoints: ${navigator.maxTouchPoints}, Mac UA) -> Defaulting to Hybrid`;
     } else if (hasTouch && isNarrow) {
         reason = `Touch device (${navigator.maxTouchPoints} pts) with narrow viewport (${window.innerWidth}px) -> Defaulting to Hybrid`;
     } else {

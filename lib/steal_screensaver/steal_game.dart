@@ -265,7 +265,9 @@ class StealGame extends FlameGame {
   }
 
   void _applyGraphConfig(StealConfig cfg) {
-    _graph?.isVisible = cfg.showAudioGraph && cfg.enableAudioReactivity;
+    _graph?.isVisible =
+        cfg.audioGraphMode != 'off' && cfg.enableAudioReactivity;
+    _graph?.graphMode = cfg.audioGraphMode;
   }
 
   void _applyBannerConfig(StealConfig cfg) {

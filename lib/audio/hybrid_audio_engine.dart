@@ -398,6 +398,8 @@ class HybridAudioEngine {
     await _durationController.close();
     await _indexController.close();
     await _sequenceStateController.close();
+    await _nextTrackBufferedController.close();
+    await _nextTrackTotalController.close();
     await _contextStateController.close();
   }
 

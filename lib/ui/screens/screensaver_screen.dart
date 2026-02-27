@@ -76,6 +76,7 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
         peakDecay: settings.oilAudioPeakDecay,
         bassBoost: settings.oilAudioBassBoost,
         reactivityStrength: settings.oilAudioReactivityStrength,
+        beatSensitivity: settings.oilBeatSensitivity,
       );
     }
   }
@@ -187,7 +188,10 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
       logoTrailLength: settings.oilLogoTrailLength,
       flatTextProximity: settings.oilFlatTextProximity,
       flatTextPlacement: settings.oilFlatTextPlacement,
-      showAudioGraph: settings.oilShowAudioGraph,
+      audioGraphMode: settings.oilAudioGraphMode,
+      beatSensitivity: settings.oilBeatSensitivity,
+      innerRingFontScale: settings.oilInnerRingFontScale,
+      innerRingSpacingMultiplier: settings.oilInnerRingSpacingMultiplier,
     );
 
     return PopScope(

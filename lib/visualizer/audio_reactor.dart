@@ -8,11 +8,20 @@ class AudioEnergy {
   final double treble; // High frequencies (4000-20000 Hz)
   final double overall; // Overall energy level
 
+  /// Whether a beat was detected in this frame (onset detection).
+  final bool isBeat;
+
+  /// 8-band frequency data for detailed EQ visualization.
+  /// Bands: sub-bass, bass, low-mid, mid, upper-mid, presence, brilliance, air.
+  final List<double> bands;
+
   const AudioEnergy({
     required this.bass,
     required this.mid,
     required this.treble,
     required this.overall,
+    this.isBeat = false,
+    this.bands = const [0, 0, 0, 0, 0, 0, 0, 0],
   });
 
   /// Create an AudioEnergy with all values set to zero (silence)
@@ -20,14 +29,17 @@ class AudioEnergy {
       : bass = 0.0,
         mid = 0.0,
         treble = 0.0,
-        overall = 0.0;
+        overall = 0.0,
+        isBeat = false,
+        bands = const [0, 0, 0, 0, 0, 0, 0, 0];
 
   @override
   String toString() {
     return 'AudioEnergy(bass: ${bass.toStringAsFixed(2)}, '
         'mid: ${mid.toStringAsFixed(2)}, '
         'treble: ${treble.toStringAsFixed(2)}, '
-        'overall: ${overall.toStringAsFixed(2)})';
+        'overall: ${overall.toStringAsFixed(2)}, '
+        'isBeat: $isBeat)';
   }
 }
 
@@ -52,23 +64,9 @@ abstract class AudioReactor {
     double? peakDecay,
     double? bassBoost,
     double? reactivityStrength,
+    double? beatSensitivity,
   });
 
   /// Dispose of resources.
   void dispose();
-
-  /// Factory constructor to create the appropriate reactor for the platform.
-  ///
-  /// On Android with audio output available, attempts to use VisualizerAudioReactor.
-  /// Otherwise, falls back to PositionAudioReactor.
-  ///
-  /// Note: This is a placeholder. Actual implementation will be in a separate
-  /// factory class to avoid circular dependencies.
-  factory AudioReactor.create({
-    required bool isAndroid,
-    int? audioSessionId,
-  }) {
-    // This will be implemented in audio_reactor_factory.dart
-    throw UnimplementedError('Use AudioReactorFactory.create() instead');
-  }
 }

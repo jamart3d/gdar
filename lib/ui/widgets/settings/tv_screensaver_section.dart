@@ -412,7 +412,7 @@ class TvScreensaverSection extends StatelessWidget {
               TvStepperRow(
                 label: 'Letter Spacing',
                 value: settings.oilBannerLetterSpacing,
-                min: 0.8,
+                min: 0.5,
                 max: 1.5,
                 step: 0.01,
                 leftLabel: 'Tight',
@@ -431,6 +431,30 @@ class TvScreensaverSection extends StatelessWidget {
                 rightLabel: 'Spaced',
                 valueFormatter: (v) => v.toStringAsFixed(2),
                 onChanged: (v) => settings.setOilBannerWordSpacing(v),
+              ),
+              const SizedBox(height: 16),
+              TvStepperRow(
+                label: 'Inner Ring Font Size',
+                value: settings.oilInnerRingFontScale,
+                min: 0.3,
+                max: 1.0,
+                step: 0.05,
+                leftLabel: 'Small',
+                rightLabel: 'Full',
+                valueFormatter: (v) => '${(v * 100).round()}%',
+                onChanged: (v) => settings.setOilInnerRingFontScale(v),
+              ),
+              const SizedBox(height: 16),
+              TvStepperRow(
+                label: 'Inner Ring Spacing',
+                value: settings.oilInnerRingSpacingMultiplier,
+                min: 0.3,
+                max: 1.0,
+                step: 0.05,
+                leftLabel: 'Tight',
+                rightLabel: 'Normal',
+                valueFormatter: (v) => '${(v * 100).round()}%',
+                onChanged: (v) => settings.setOilInnerRingSpacingMultiplier(v),
               ),
             ],
 
@@ -607,13 +631,62 @@ class TvScreensaverSection extends StatelessWidget {
 
           if (settings.oilEnableAudioReactivity) ...[
             const SizedBox(height: 16),
-            _ToggleRow(
-              label: 'Show Audio Graph',
-              subtitle: 'Display real-time EQ bars in the lower-left corner',
-              value: settings.oilShowAudioGraph,
-              onChanged: (_) => settings.toggleOilShowAudioGraph(),
-              colorScheme: colorScheme,
-              textTheme: textTheme,
+            TvStepperRow(
+              label: 'Beat Sensitivity',
+              value: settings.oilBeatSensitivity,
+              min: 0.0,
+              max: 1.0,
+              step: 0.05,
+              leftLabel: 'Gentle',
+              rightLabel: 'Aggressive',
+              valueFormatter: (v) => '${(v * 100).round()}%',
+              onChanged: (v) => settings.setOilBeatSensitivity(v),
+            ),
+            const SizedBox(height: 16),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Audio Graph',
+                    style: textTheme.bodySmall
+                        ?.copyWith(color: colorScheme.onSurfaceVariant),
+                  ),
+                  const SizedBox(height: 8),
+                  TvFocusWrapper(
+                    onKeyEvent: (node, event) {
+                      if (event is KeyDownEvent) {
+                        const modes = ['off', 'corner', 'circular'];
+                        final idx = modes.indexOf(settings.oilAudioGraphMode);
+                        if (event.logicalKey == LogicalKeyboardKey.arrowLeft &&
+                            idx > 0) {
+                          settings.setOilAudioGraphMode(modes[idx - 1]);
+                          return KeyEventResult.handled;
+                        } else if (event.logicalKey ==
+                                LogicalKeyboardKey.arrowRight &&
+                            idx < modes.length - 1) {
+                          settings.setOilAudioGraphMode(modes[idx + 1]);
+                          return KeyEventResult.handled;
+                        }
+                      }
+                      return KeyEventResult.ignored;
+                    },
+                    child: SegmentedButton<String>(
+                      segments: const [
+                        ButtonSegment(value: 'off', label: Text('Off')),
+                        ButtonSegment(value: 'corner', label: Text('Corner')),
+                        ButtonSegment(
+                            value: 'circular', label: Text('Circular')),
+                      ],
+                      selected: {settings.oilAudioGraphMode},
+                      onSelectionChanged: (Set<String> s) =>
+                          settings.setOilAudioGraphMode(s.first),
+                      showSelectedIcon: false,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ],
 

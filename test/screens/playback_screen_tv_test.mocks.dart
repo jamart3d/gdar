@@ -639,6 +639,15 @@ class MockGaplessPlayer extends _i1.Mock implements _i2.GaplessPlayer {
       ) as _i5.Future<void>);
 
   @override
+  void setPrefetchSeconds(int? seconds) => super.noSuchMethod(
+        Invocation.method(
+          #setPrefetchSeconds,
+          [seconds],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
   _i5.Future<void> seekToNext() => (super.noSuchMethod(
         Invocation.method(
           #seekToNext,

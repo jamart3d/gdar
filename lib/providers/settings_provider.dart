@@ -87,7 +87,8 @@ class SettingsProvider with ChangeNotifier {
   static const String _oilAudioBassBoostKey = 'oil_audio_bass_boost';
   static const String _oilAudioReactivityStrengthKey =
       'oil_audio_reactivity_strength';
-  static const String _oilShowAudioGraphKey = 'oil_show_audio_graph';
+  static const String _oilAudioGraphModeKey = 'oil_audio_graph_mode';
+  static const String _oilBeatSensitivityKey = 'oil_beat_sensitivity';
   static const String _oilShowInfoBannerKey = 'oil_show_info_banner';
   static const String _oilLogoScaleKey = 'oil_logo_scale';
   static const String _oilTranslationSmoothingKey = 'oil_translation_smoothing';
@@ -106,6 +107,9 @@ class SettingsProvider with ChangeNotifier {
   static const String _oilInnerToMiddleGapKey = 'oil_inner_to_middle_gap';
   static const String _oilMiddleToOuterGapKey = 'oil_middle_to_outer_gap';
   static const String _oilOrbitDriftKey = 'oil_orbit_drift';
+  static const String _oilInnerRingFontScaleKey = 'oil_inner_ring_font_scale';
+  static const String _oilInnerRingSpacingMultiplierKey =
+      'oil_inner_ring_spacing_multiplier';
 
   static const String _marqueeEnabledKey = 'marquee_enabled';
   static const String _enableSwipeToBlockKey = 'enable_swipe_to_block';
@@ -201,7 +205,8 @@ class SettingsProvider with ChangeNotifier {
   late double _oilAudioPeakDecay;
   late double _oilAudioBassBoost;
   late double _oilAudioReactivityStrength;
-  late bool _oilShowAudioGraph;
+  late String _oilAudioGraphMode;
+  late double _oilBeatSensitivity;
   late bool _oilShowInfoBanner;
   late double _oilLogoScale;
   late double _oilTranslationSmoothing;
@@ -216,6 +221,8 @@ class SettingsProvider with ChangeNotifier {
   late double _oilInnerToMiddleGap;
   late double _oilMiddleToOuterGap;
   late double _oilOrbitDrift;
+  late double _oilInnerRingFontScale;
+  late double _oilInnerRingSpacingMultiplier;
 
   Color? _seedColor;
 
@@ -320,7 +327,8 @@ class SettingsProvider with ChangeNotifier {
   double get oilAudioPeakDecay => _oilAudioPeakDecay;
   double get oilAudioBassBoost => _oilAudioBassBoost;
   double get oilAudioReactivityStrength => _oilAudioReactivityStrength;
-  bool get oilShowAudioGraph => _oilShowAudioGraph;
+  String get oilAudioGraphMode => _oilAudioGraphMode;
+  double get oilBeatSensitivity => _oilBeatSensitivity;
   bool get oilShowInfoBanner => _oilShowInfoBanner;
   double get oilLogoScale => _oilLogoScale;
   double get oilTranslationSmoothing => _oilTranslationSmoothing;
@@ -335,6 +343,8 @@ class SettingsProvider with ChangeNotifier {
   double get oilInnerToMiddleGap => _oilInnerToMiddleGap;
   double get oilMiddleToOuterGap => _oilMiddleToOuterGap;
   double get oilOrbitDrift => _oilOrbitDrift;
+  double get oilInnerRingFontScale => _oilInnerRingFontScale;
+  double get oilInnerRingSpacingMultiplier => _oilInnerRingSpacingMultiplier;
 
   Color? get seedColor => _seedColor;
   bool get randomOnlyUnplayed => _randomOnlyUnplayed;
@@ -604,8 +614,10 @@ class SettingsProvider with ChangeNotifier {
     _oilAudioReactivityStrength =
         _prefs.getDouble(_oilAudioReactivityStrengthKey) ??
             DefaultSettings.oilAudioReactivityStrength;
-    _oilShowAudioGraph = _prefs.getBool(_oilShowAudioGraphKey) ??
-        DefaultSettings.oilShowAudioGraph;
+    _oilAudioGraphMode = _prefs.getString(_oilAudioGraphModeKey) ??
+        DefaultSettings.oilAudioGraphMode;
+    _oilBeatSensitivity = _prefs.getDouble(_oilBeatSensitivityKey) ??
+        DefaultSettings.oilBeatSensitivity;
 
     // Banner & visual
     _oilShowInfoBanner = _prefs.getBool(_oilShowInfoBannerKey) ??
@@ -634,6 +646,11 @@ class SettingsProvider with ChangeNotifier {
         DefaultSettings.oilMiddleToOuterGap;
     _oilOrbitDrift =
         _prefs.getDouble(_oilOrbitDriftKey) ?? DefaultSettings.oilOrbitDrift;
+    _oilInnerRingFontScale = _prefs.getDouble(_oilInnerRingFontScaleKey) ??
+        DefaultSettings.oilInnerRingFontScale;
+    _oilInnerRingSpacingMultiplier =
+        _prefs.getDouble(_oilInnerRingSpacingMultiplierKey) ??
+            DefaultSettings.oilInnerRingSpacingMultiplier;
 
     if (isTv) _oilScreensaverMode = 'steal';
 
@@ -847,8 +864,10 @@ class SettingsProvider with ChangeNotifier {
   Future<void> setOilAudioReactivityStrength(double value) =>
       _updateDoublePreference(_oilAudioReactivityStrengthKey,
           _oilAudioReactivityStrength = value.clamp(0.5, 2.0));
-  void toggleOilShowAudioGraph() => _updatePreference(
-      _oilShowAudioGraphKey, _oilShowAudioGraph = !_oilShowAudioGraph);
+  void setOilAudioGraphMode(String mode) =>
+      _updateStringPreference(_oilAudioGraphModeKey, _oilAudioGraphMode = mode);
+  Future<void> setOilBeatSensitivity(double value) => _updateDoublePreference(
+      _oilBeatSensitivityKey, _oilBeatSensitivity = value.clamp(0.0, 1.0));
   void toggleOilShowInfoBanner() => _updatePreference(
       _oilShowInfoBannerKey, _oilShowInfoBanner = !_oilShowInfoBanner);
   Future<void> setOilLogoScale(double value) =>
@@ -879,6 +898,12 @@ class SettingsProvider with ChangeNotifier {
       _oilMiddleToOuterGapKey, _oilMiddleToOuterGap = value.clamp(0.0, 1.0));
   Future<void> setOilOrbitDrift(double value) => _updateDoublePreference(
       _oilOrbitDriftKey, _oilOrbitDrift = value.clamp(0.0, 2.0));
+  Future<void> setOilInnerRingFontScale(double value) =>
+      _updateDoublePreference(_oilInnerRingFontScaleKey,
+          _oilInnerRingFontScale = value.clamp(0.3, 1.0));
+  Future<void> setOilInnerRingSpacingMultiplier(double value) =>
+      _updateDoublePreference(_oilInnerRingSpacingMultiplierKey,
+          _oilInnerRingSpacingMultiplier = value.clamp(0.3, 1.0));
 
   // Source Filtering
   static const String _filterHighestShnidKey = 'filter_highest_shnid';
