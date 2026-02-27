@@ -1,3 +1,7 @@
+Release 1.1.32+132:
+- **Fixed**: Proportional text spacing for screensaver rings; fixed large gaps around narrow characters.
+- **Internal**: Comprehensive documentation of Hybrid Audio Engine background/restoration behavior.
+
 Release 1.1.31+131:
 - **Fixed**: Audio graph visibility issue in Google TV screensaver.
 - **Improved**: Inner Ring scale limit adjusted to 0.1 for more granular sizing.

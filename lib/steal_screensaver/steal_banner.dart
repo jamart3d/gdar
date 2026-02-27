@@ -690,11 +690,13 @@ class StealBanner extends Component with HasGameReference<StealGame> {
     // 1. Calculate the raw span required with current settings
     double calcRawSpan(double lSpace, double wSpace) {
       double span = 0.0;
-      final charAngle = (_defaultFontSize * lSpace) / radius;
-      final wordSpaceAngle = charAngle * wSpace;
       for (int wi = 0; wi < wordList.length; wi++) {
-        span += charAngle * wordList[wi].text.characters.length;
-        if (wi < wordList.length - 1) span += wordSpaceAngle;
+        for (final char in wordList[wi].text.characters) {
+          span += (_measureChar(char) * lSpace) / radius;
+        }
+        if (wi < wordList.length - 1) {
+          span += (_defaultFontSize * (wSpace + 0.2)) / radius;
+        }
       }
       return span;
     }
@@ -713,9 +715,6 @@ class StealBanner extends Component with HasGameReference<StealGame> {
       currentSpan = calcRawSpan(letterSpacing, wordSpacing);
     }
 
-    final charAngle = (_defaultFontSize * letterSpacing) / radius;
-    final wordSpaceAngle = charAngle * wordSpacing;
-
     double angle = startAngle - pi / 2 - currentSpan / 2;
 
     for (int wi = 0; wi < wordList.length; wi++) {
@@ -724,19 +723,24 @@ class StealBanner extends Component with HasGameReference<StealGame> {
       final chars = word.text.characters.toList();
 
       for (int ci = 0; ci < chars.length; ci++) {
-        final charX = center.dx + radius * cos(angle);
-        final charY = center.dy + radius * sin(angle);
+        final charWidth = _measureChar(chars[ci]) * letterSpacing;
+        final charAngle = charWidth / radius;
+
+        final centerAngle = angle + charAngle / 2;
+
+        final charX = center.dx + radius * cos(centerAngle);
+        final charY = center.dy + radius * sin(centerAngle);
 
         canvas.save();
         canvas.translate(charX, charY);
-        canvas.rotate(angle + pi / 2);
+        canvas.rotate(centerAngle + pi / 2);
 
         final opacity = effectiveOpacity * wordBrightness;
 
         _paintChar(
           canvas,
           chars[ci],
-          _measureChar(chars[ci]) * letterSpacing,
+          charWidth,
           _currentColor,
           opacity,
           glowEnabled,
@@ -747,7 +751,9 @@ class StealBanner extends Component with HasGameReference<StealGame> {
         angle += charAngle;
       }
 
-      if (wi < wordList.length - 1) angle += wordSpaceAngle;
+      if (wi < wordList.length - 1) {
+        angle += (_defaultFontSize * (wordSpacing + 0.2)) / radius;
+      }
     }
   }
 

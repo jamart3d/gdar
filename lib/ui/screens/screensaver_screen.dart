@@ -98,7 +98,10 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
     if (kIsWeb || !settings.oilEnableAudioReactivity) {
       final reactor =
           await AudioReactorFactory.create(isTv: deviceService.isTv);
-      if (mounted) setState(() => _audioReactor = reactor);
+      if (mounted) {
+        setState(() => _audioReactor = reactor);
+        reactor.start();
+      }
       return;
     }
 
@@ -120,6 +123,7 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
       if (reactor is VisualizerAudioReactor) {
         _pushAudioConfig();
       }
+      reactor.start();
     }
   }
 
