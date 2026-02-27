@@ -1,6 +1,5 @@
 import 'package:flutter/foundation.dart';
 import 'package:shakedown/visualizer/audio_reactor.dart';
-import 'package:shakedown/visualizer/position_audio_reactor.dart';
 import 'package:shakedown/visualizer/visualizer_audio_reactor.dart';
 
 /// Factory for creating the appropriate audio reactor based on platform capabilities.
@@ -10,18 +9,13 @@ class AudioReactorFactory {
   /// - On Web: Always returns PositionAudioReactor (fallback).
   /// - On Mobile (Phone): Always returns PositionAudioReactor (fallback).
   /// - On TV (Android): Returns VisualizerAudioReactor if available.
-  static Future<AudioReactor> create({
+  static Future<AudioReactor?> create({
     int? audioSessionId,
     bool isTv = false,
   }) async {
-    // Web always uses position reactor
-    if (kIsWeb) {
-      return PositionAudioReactor();
-    }
-
     // Strictly enforce TV-only for the real visualizer
-    if (!isTv) {
-      return PositionAudioReactor();
+    if (!isTv || kIsWeb) {
+      return null;
     }
 
     // Check if we're on Android (where Visualizer API exists)
@@ -39,7 +33,7 @@ class AudioReactorFactory {
       }
     }
 
-    // Fallback to position-based reactor
-    return PositionAudioReactor();
+    // If we're not on Android or it's not available, return null
+    return null;
   }
 }

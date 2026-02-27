@@ -43,6 +43,9 @@ class VisualizerPlugin : MethodCallHandler, EventChannel.StreamHandler {
 
         // Number of frames to average for onset detection
         private const val ONSET_HISTORY_SIZE = 8
+
+        // Noise gate: energy below this is treated as silence (0.01 = 1% volume)
+        private const val SILENCE_THRESHOLD = 0.01
     }
 
     private var visualizer: Visualizer? = null
@@ -227,14 +230,22 @@ class VisualizerPlugin : MethodCallHandler, EventChannel.StreamHandler {
         rawBass = (rawBass * bassBoost).coerceIn(0.0, 2.0)
 
         // Update rolling peaks using the user-controlled decay rate
-        peakBass = max(peakBass * peakDecay, max(rawBass, PEAK_FLOOR))
-        peakMid = max(peakMid * peakDecay, max(rawMid, PEAK_FLOOR))
-        peakTreble = max(peakTreble * peakDecay, max(rawTreble, PEAK_FLOOR))
+        // If the signal is pure silence, we eventually reset peaks to PEAK_FLOOR
+        // to prevent normalization artifacts when music starts again.
+        if (rawBass < SILENCE_THRESHOLD && rawMid < SILENCE_THRESHOLD && rawTreble < SILENCE_THRESHOLD) {
+            peakBass = max(peakBass * peakDecay, PEAK_FLOOR)
+            peakMid = max(peakMid * peakDecay, PEAK_FLOOR)
+            peakTreble = max(peakTreble * peakDecay, PEAK_FLOOR)
+        } else {
+            peakBass = max(peakBass * peakDecay, max(rawBass, PEAK_FLOOR))
+            peakMid = max(peakMid * peakDecay, max(rawMid, PEAK_FLOOR))
+            peakTreble = max(peakTreble * peakDecay, max(rawTreble, PEAK_FLOOR))
+        }
 
-        // Normalize against peak
-        val normalizedBass = (rawBass / peakBass).coerceIn(0.0, 1.0)
-        val normalizedMid = (rawMid / peakMid).coerceIn(0.0, 1.0)
-        val normalizedTreble = (rawTreble / peakTreble).coerceIn(0.0, 1.0)
+        // Normalize against peak, applying noise gate (hard floor)
+        val normalizedBass = if (rawBass < SILENCE_THRESHOLD) 0.0 else (rawBass / peakBass).coerceIn(0.0, 1.0)
+        val normalizedMid = if (rawMid < SILENCE_THRESHOLD) 0.0 else (rawMid / peakMid).coerceIn(0.0, 1.0)
+        val normalizedTreble = if (rawTreble < SILENCE_THRESHOLD) 0.0 else (rawTreble / peakTreble).coerceIn(0.0, 1.0)
 
         // Exponential smoothing to kill jitter
         smoothBass = smoothBass * SMOOTHING + normalizedBass * (1.0 - SMOOTHING)
@@ -252,7 +263,7 @@ class VisualizerPlugin : MethodCallHandler, EventChannel.StreamHandler {
         for (b in 0 until 8) {
             val rawBand = if (bandCounts[b] > 0) sqrt(bandSums[b] / bandCounts[b]) / 128.0 else 0.0
             peakBands[b] = max(peakBands[b] * peakDecay, max(rawBand, PEAK_FLOOR))
-            val normalized = (rawBand / peakBands[b]).coerceIn(0.0, 1.0)
+            val normalized = if (rawBand < SILENCE_THRESHOLD) 0.0 else (rawBand / peakBands[b]).coerceIn(0.0, 1.0)
             smoothBands[b] = smoothBands[b] * SMOOTHING + normalized * (1.0 - SMOOTHING)
             finalBands[b] = (smoothBands[b] * reactivityStrength).coerceIn(0.0, 1.0)
         }

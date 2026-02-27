@@ -86,6 +86,7 @@ void main() {
     when(mockSettingsProvider.oilInnerRingSpacingMultiplier).thenReturn(0.7);
 
     // Mock AudioProvider's audioPlayer for ScreensaverScreen
+    // Mock AudioProvider's audioPlayer for ScreensaverScreen
     final mockAudioPlayer = MockAudioPlayerRelaxed();
     when(mockAudioProvider.audioPlayer).thenReturn(mockAudioPlayer);
     when(mockAudioPlayer.androidAudioSessionId).thenReturn(0);

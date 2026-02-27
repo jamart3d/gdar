@@ -101,7 +101,7 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
           await AudioReactorFactory.create(isTv: deviceService.isTv);
       if (mounted) {
         setState(() => _audioReactor = reactor);
-        reactor.start();
+        reactor?.start();
       }
       return;
     }
@@ -124,7 +124,7 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
       if (reactor is VisualizerAudioReactor) {
         _pushAudioConfig();
       }
-      reactor.start();
+      reactor?.start();
     }
   }
 
