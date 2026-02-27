@@ -37,23 +37,23 @@ class PlaybackAppBar extends StatelessWidget {
     final String formattedDate =
         AppDateUtils.formatDate(currentShow.date, settings: settingsProvider);
 
-    return Opacity(
-      opacity: opacity,
-      child: Container(
-        height: kToolbarHeight,
-        color: backgroundColor,
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        child: Row(
-          children: [
-            if (kIsWeb) ...[
-              IconButton(
-                icon: const Icon(Icons.menu_rounded),
-                onPressed: () => Navigator.of(context).pop(),
-                tooltip: 'Back to Show List',
-              ),
-              const SizedBox(width: 8),
-            ],
-            Expanded(
+    return Container(
+      height: kToolbarHeight,
+      color: backgroundColor.withValues(alpha: opacity),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Row(
+        children: [
+          if (kIsWeb) ...[
+            IconButton(
+              icon: const Icon(Icons.menu_rounded),
+              onPressed: () => Navigator.of(context).pop(),
+              tooltip: 'Back to Show List',
+            ),
+            const SizedBox(width: 8),
+          ],
+          Expanded(
+            child: Opacity(
+              opacity: opacity,
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -71,106 +71,123 @@ class PlaybackAppBar extends StatelessWidget {
                 ],
               ),
             ),
-            const SizedBox(width: 8),
-            // Right side items
-            FittedBox(
-              fit: BoxFit.scaleDown,
-              child: Row(
-                children: [
-                  ValueListenableBuilder<Box<bool>>(
-                    valueListenable: CatalogService().historyListenable,
-                    builder: (context, historyBox, _) {
-                      return ValueListenableBuilder<Box<Rating>>(
-                        valueListenable: CatalogService().ratingsListenable,
-                        builder: (context, ratingsBox, _) {
-                          final String ratingKey = currentSource.id;
-                          final isPlayed = historyBox.get(ratingKey) ?? false;
-                          final ratingObj = ratingsBox.get(ratingKey);
-                          final int rating = ratingObj?.rating ?? 0;
+          ),
+          const SizedBox(width: 8),
+          // Right side items
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Row(
+              children: [
+                Opacity(
+                  opacity: opacity,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      ValueListenableBuilder<Box<bool>>(
+                        valueListenable: CatalogService().historyListenable,
+                        builder: (context, historyBox, _) {
+                          return ValueListenableBuilder<Box<Rating>>(
+                            valueListenable: CatalogService().ratingsListenable,
+                            builder: (context, ratingsBox, _) {
+                              final String ratingKey = currentSource.id;
+                              final isPlayed =
+                                  historyBox.get(ratingKey) ?? false;
+                              final ratingObj = ratingsBox.get(ratingKey);
+                              final int rating = ratingObj?.rating ?? 0;
 
-                          return RatingControl(
-                            key: ValueKey('${ratingKey}_${rating}_$isPlayed'),
-                            rating: rating,
-                            size: 16.0,
-                            isPlayed: isPlayed,
-                            onTap: () async {
-                              final currentRating =
-                                  ratingsBox.get(ratingKey)?.rating ?? 0;
-                              await showDialog(
-                                context: context,
-                                builder: (context) => RatingDialog(
-                                  initialRating: currentRating,
-                                  sourceId: currentSource.id,
-                                  sourceUrl: currentSource.tracks.isNotEmpty
-                                      ? currentSource.tracks.first.url
-                                      : null,
-                                  isPlayed: historyBox.get(ratingKey) ?? false,
-                                  onRatingChanged: (newRating) {
-                                    CatalogService()
-                                        .setRating(ratingKey, newRating);
-                                  },
-                                  onPlayedChanged: (bool newIsPlayed) {
-                                    if (newIsPlayed !=
-                                        (historyBox.get(ratingKey) ?? false)) {
-                                      CatalogService().togglePlayed(ratingKey);
-                                    }
-                                  },
-                                ),
+                              return RatingControl(
+                                key: ValueKey(
+                                    '${ratingKey}_${rating}_$isPlayed'),
+                                rating: rating,
+                                size: 16.0,
+                                isPlayed: isPlayed,
+                                onTap: opacity < 0.5
+                                    ? null
+                                    : () async {
+                                        final currentRating =
+                                            ratingsBox.get(ratingKey)?.rating ??
+                                                0;
+                                        await showDialog(
+                                          context: context,
+                                          builder: (context) => RatingDialog(
+                                            initialRating: currentRating,
+                                            sourceId: currentSource.id,
+                                            sourceUrl: currentSource
+                                                    .tracks.isNotEmpty
+                                                ? currentSource.tracks.first.url
+                                                : null,
+                                            isPlayed:
+                                                historyBox.get(ratingKey) ??
+                                                    false,
+                                            onRatingChanged: (newRating) {
+                                              CatalogService().setRating(
+                                                  ratingKey, newRating);
+                                            },
+                                            onPlayedChanged:
+                                                (bool newIsPlayed) {
+                                              if (newIsPlayed !=
+                                                  (historyBox.get(ratingKey) ??
+                                                      false)) {
+                                                CatalogService()
+                                                    .togglePlayed(ratingKey);
+                                              }
+                                            },
+                                          ),
+                                        );
+                                      },
                               );
                             },
                           );
                         },
-                      );
-                    },
-                  ),
-                  const SizedBox(width: 12),
-                  Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      if (currentSource.src != null)
-                        SrcBadge(
-                          src: currentSource.src!,
-                          matchShnidLook: true,
-                        ),
-                      const SizedBox(height: 2),
-                      ShnidBadge(text: currentSource.id),
+                      ),
+                      const SizedBox(width: 12),
+                      Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          if (currentSource.src != null)
+                            SrcBadge(
+                              src: currentSource.src!,
+                              matchShnidLook: true,
+                            ),
+                          const SizedBox(height: 2),
+                          ShnidBadge(text: currentSource.id),
+                        ],
+                      ),
                     ],
                   ),
-                  const SizedBox(width: 8),
-                  IconButton(
-                    icon: const Icon(Icons.settings_rounded),
-                    iconSize: AppTypography.responsiveFontSize(context, 24.0),
-                    onPressed: () async {
+                ),
+                const SizedBox(width: 8),
+                IconButton(
+                  icon: const Icon(Icons.settings_rounded),
+                  iconSize: AppTypography.responsiveFontSize(context, 24.0),
+                  onPressed: () async {
+                    try {
+                      context.read<AnimationController>().stop();
+                    } catch (_) {}
+
+                    unawaited(Navigator.of(context).push(
+                      PageRouteBuilder(
+                        pageBuilder: (context, animation, secondaryAnimation) =>
+                            const SettingsScreen(),
+                        transitionDuration: Duration.zero,
+                      ),
+                    ));
+
+                    if (context.mounted) {
                       try {
-                        context.read<AnimationController>().stop();
+                        final controller = context.read<AnimationController>();
+                        if (!controller.isAnimating) {
+                          unawaited(controller.repeat());
+                        }
                       } catch (_) {}
-
-                      unawaited(Navigator.of(context).push(
-                        PageRouteBuilder(
-                          pageBuilder:
-                              (context, animation, secondaryAnimation) =>
-                                  const SettingsScreen(),
-                          transitionDuration: Duration.zero,
-                        ),
-                      ));
-
-                      if (context.mounted) {
-                        try {
-                          final controller =
-                              context.read<AnimationController>();
-                          if (!controller.isAnimating) {
-                            unawaited(controller.repeat());
-                          }
-                        } catch (_) {}
-                      }
-                    },
-                  ),
-                ],
-              ),
+                    }
+                  },
+                ),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

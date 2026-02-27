@@ -1,3 +1,10 @@
+Release 1.1.30+130:
+- Settings: Implemented system-aware theme selection (System, Light, Dark) for Web, PWA, and Mobile devices.
+- TV Settings: Retained the original "Dark Mode" toggle for Google TV to ensure UI consistency.
+- Screensaver: Adjusted the inner ring scale range to 0.1 - 1.0 (defaulting to 0.2) in TV Settings.
+- UI: Fixed an issue where expanding/collapsing settings sections would retrigger highlight animations.
+- Quality: Verified codebase integrity with 100% test pass rate and zero analysis warnings.
+
 Release 1.1.29+129:
 - UI: Centered and scaled splash screen checklist items for improved visual balance on all devices.
 - Playback: Hardcoded gapless prefetch duration to 30 seconds for optimal stability and performance.

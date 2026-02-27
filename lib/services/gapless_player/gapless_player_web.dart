@@ -145,11 +145,11 @@ class GaplessPlayer {
       }).toJS,
     );
     _engine.onError(
-      ((JSObject raw) {
+      ((JSString raw) {
         _processingState = ProcessingState.idle;
         _processingStateController.add(_processingState);
         _playbackEventController.addError(
-          Exception('gdar audio engine error'),
+          Exception('WebAudio: ${raw.toDart}'),
           StackTrace.current,
         );
       }).toJS,

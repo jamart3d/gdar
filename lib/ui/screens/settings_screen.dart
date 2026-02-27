@@ -43,6 +43,9 @@ class _SettingsScreenState extends State<SettingsScreen>
     super.initState();
     if (widget.highlightSetting != null) {
       _settingKeys[widget.highlightSetting!] = GlobalKey();
+      _activeHighlightKey = widget.highlightSetting;
+      _highlightTriggerCount = 1;
+
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _scrollToHighlight();
       });

@@ -628,16 +628,6 @@ class PlaybackScreenState extends State<PlaybackScreen>
                 ),
               ),
             ),
-            Positioned(
-              top: MediaQuery.paddingOf(context).top + topGap,
-              left: 0,
-              right: 0,
-              child: PlaybackAppBar(
-                  currentShow: currentShow,
-                  currentSource: currentSource,
-                  backgroundColor: backgroundColor,
-                  panelPosition: panelPosition),
-            ),
           ],
         );
       },
@@ -657,45 +647,65 @@ class PlaybackScreenState extends State<PlaybackScreen>
 
     return Scaffold(
       backgroundColor: backgroundColor,
-      body: SlidingUpPanel(
-        controller: _panelController,
-        color: panelColor,
-        borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(24.0),
-          topRight: Radius.circular(24.0),
-        ),
-        boxShadow: isTrueBlackMode
-            ? []
-            : [
-                BoxShadow(
-                  blurRadius: 20.0,
-                  color: Colors.black.withValues(alpha: 0.2),
-                )
-              ],
-        minHeight: minPanelHeight,
-        maxHeight: maxPanelHeight,
-        margin: EdgeInsets.zero,
-        onPanelSlide: (position) {
-          _panelPositionNotifier.value = position;
-        },
-        onPanelOpened: () {
-          _scrollToCurrentTrack(true, maxVisibleY: 0.4);
-        },
-        panel: PlaybackPanel(
-            currentShow: currentShow,
-            currentSource: currentSource,
+      body: Stack(
+        children: [
+          SlidingUpPanel(
+            controller: _panelController,
+            color: panelColor,
+            borderRadius: const BorderRadius.only(
+              topLeft: Radius.circular(24.0),
+              topRight: Radius.circular(24.0),
+            ),
+            boxShadow: isTrueBlackMode
+                ? []
+                : [
+                    BoxShadow(
+                      blurRadius: 20.0,
+                      color: Colors.black.withValues(alpha: 0.2),
+                    )
+                  ],
             minHeight: minPanelHeight,
-            bottomPadding: bottomPadding,
-            panelPositionNotifier: _panelPositionNotifier,
-            onVenueTap: () {
-              _scrollToCurrentTrack(true, force: true);
-              if (_panelController.isAttached) {
-                if (_panelController.isPanelClosed) {
-                  _panelController.open();
-                }
-              }
-            }),
-        body: playbackContent,
+            maxHeight: maxPanelHeight,
+            margin: EdgeInsets.zero,
+            onPanelSlide: (position) {
+              _panelPositionNotifier.value = position;
+            },
+            onPanelOpened: () {
+              _scrollToCurrentTrack(true, maxVisibleY: 0.4);
+            },
+            panel: PlaybackPanel(
+                currentShow: currentShow,
+                currentSource: currentSource,
+                minHeight: minPanelHeight,
+                bottomPadding: bottomPadding,
+                panelPositionNotifier: _panelPositionNotifier,
+                onVenueTap: () {
+                  _scrollToCurrentTrack(true, force: true);
+                  if (_panelController.isAttached) {
+                    if (_panelController.isPanelClosed) {
+                      _panelController.open();
+                    }
+                  }
+                }),
+            body: playbackContent,
+          ),
+          ValueListenableBuilder<double>(
+            valueListenable: _panelPositionNotifier,
+            builder: (context, panelPosition, child) {
+              const double topGap = 0.0;
+              return Positioned(
+                top: MediaQuery.paddingOf(context).top + topGap,
+                left: 0,
+                right: 0,
+                child: PlaybackAppBar(
+                    currentShow: currentShow,
+                    currentSource: currentSource,
+                    backgroundColor: backgroundColor,
+                    panelPosition: panelPosition),
+              );
+            },
+          ),
+        ],
       ),
     );
   }

@@ -610,9 +610,7 @@ class _GdarAppState extends State<GdarApp> {
                   debugShowCheckedModeBanner: false,
                   theme: lightTheme,
                   darkTheme: darkTheme,
-                  themeMode: themeProvider.isDarkMode
-                      ? ThemeMode.dark
-                      : ThemeMode.light,
+                  themeMode: themeProvider.currentThemeMode,
                   themeAnimationDuration: Duration.zero,
                   themeAnimationCurve: Curves.linear,
                   home: (settingsProvider.showOnboarding &&

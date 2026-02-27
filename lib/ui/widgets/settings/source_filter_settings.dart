@@ -262,8 +262,6 @@ class _TactileBadgeState extends State<_TactileBadge>
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final settingsProvider = context.watch<SettingsProvider>();
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    final isTrueBlackMode = isDarkMode && settingsProvider.useTrueBlack;
     final scaleFactor =
         FontLayoutConfig.getEffectiveScale(context, settingsProvider);
 
@@ -283,38 +281,16 @@ class _TactileBadgeState extends State<_TactileBadge>
           duration: const Duration(milliseconds: 200),
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
           decoration: BoxDecoration(
-            gradient: widget.isActive
-                ? (isTrueBlackMode
-                    ? const LinearGradient(colors: [Colors.black, Colors.black])
-                    : LinearGradient(
-                        colors: [
-                          colorScheme.secondaryContainer.withValues(alpha: 0.9),
-                          colorScheme.secondaryContainer.withValues(alpha: 0.7),
-                        ],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ))
-                : null,
-            color: widget.isActive ? null : Colors.transparent,
+            color: widget.isActive
+                ? colorScheme.onSurface.withValues(alpha: 0.12)
+                : Colors.transparent,
             borderRadius: BorderRadius.circular(10),
             border: Border.all(
               color: widget.isActive
-                  ? (isTrueBlackMode
-                      ? colorScheme.outlineVariant
-                      : Colors.transparent)
+                  ? Colors.transparent
                   : colorScheme.outline.withValues(alpha: 0.3),
               width: 1,
             ),
-            boxShadow: widget.isActive && !isTrueBlackMode
-                ? [
-                    BoxShadow(
-                      color:
-                          colorScheme.secondaryContainer.withValues(alpha: 0.3),
-                      blurRadius: 4,
-                      offset: const Offset(0, 2),
-                    )
-                  ]
-                : null,
           ),
           child: FittedBox(
             fit: BoxFit.scaleDown,
@@ -322,8 +298,8 @@ class _TactileBadgeState extends State<_TactileBadge>
               widget.label.toUpperCase(),
               style: Theme.of(context).textTheme.labelSmall?.copyWith(
                     color: widget.isActive
-                        ? colorScheme.onSecondaryContainer
-                        : colorScheme.onSurface,
+                        ? colorScheme.onSurface
+                        : colorScheme.onSurface.withValues(alpha: 0.7),
                     fontWeight: FontWeight.w700,
                     fontSize: 9 * scaleFactor,
                     letterSpacing: 0.5,

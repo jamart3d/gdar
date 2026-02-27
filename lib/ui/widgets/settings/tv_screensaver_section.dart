@@ -364,7 +364,7 @@ class TvScreensaverSection extends StatelessWidget {
                 label: 'Inner Ring Size',
                 value: settings.oilInnerRingScale,
                 min: 0.1,
-                max: 2.0,
+                max: 1.0,
                 step: 0.05,
                 leftLabel: 'Small',
                 rightLabel: 'Large',

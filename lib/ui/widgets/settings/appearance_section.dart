@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -70,28 +69,84 @@ class _AppearanceSectionState extends State<AppearanceSection> {
       icon: Icons.palette_outlined,
       initiallyExpanded: widget.initiallyExpanded,
       children: [
-        TvSwitchListTile(
-          dense: true,
-          visualDensity: VisualDensity.compact,
-          title: FittedBox(
-              fit: BoxFit.scaleDown,
-              alignment: Alignment.centerLeft,
-              child: Text('Dark',
-                  style: Theme.of(context)
-                      .textTheme
-                      .titleMedium
-                      ?.copyWith(fontSize: 16 * widget.scaleFactor))),
-          value: themeProvider.isDarkMode,
-          onChanged: (value) {
-            HapticFeedback.lightImpact();
-            context.read<ThemeProvider>().toggleTheme();
-          },
-          secondary: Icon(
-            themeProvider.isDarkMode
-                ? Icons.dark_mode_rounded
-                : Icons.light_mode_rounded,
-          ),
-        ),
+        context.watch<DeviceService>().isTv
+            ? TvSwitchListTile(
+                dense: true,
+                visualDensity: VisualDensity.compact,
+                title: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerLeft,
+                    child: Text('Dark',
+                        style: Theme.of(context)
+                            .textTheme
+                            .titleMedium
+                            ?.copyWith(fontSize: 16 * widget.scaleFactor))),
+                value: themeProvider.isDarkMode,
+                onChanged: (value) {
+                  HapticFeedback.lightImpact();
+                  context
+                      .read<ThemeProvider>()
+                      .setThemeMode(value ? ThemeMode.dark : ThemeMode.light);
+                },
+                secondary: Icon(
+                  themeProvider.isDarkMode
+                      ? Icons.dark_mode_rounded
+                      : Icons.light_mode_rounded,
+                ),
+              )
+            : Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Theme',
+                      style: Theme.of(context)
+                          .textTheme
+                          .bodyMedium
+                          ?.copyWith(fontSize: 16.0 * widget.scaleFactor),
+                    ),
+                    const SizedBox(height: 8),
+                    TvFocusWrapper(
+                      borderRadius: BorderRadius.circular(24),
+                      child: SegmentedButton<ThemeMode>(
+                        segments: const [
+                          ButtonSegment(
+                            value: ThemeMode.system,
+                            label: Text('System'),
+                            icon: Icon(Icons.brightness_auto_rounded),
+                          ),
+                          ButtonSegment(
+                            value: ThemeMode.light,
+                            label: Text('Light'),
+                            icon: Icon(Icons.light_mode_rounded),
+                          ),
+                          ButtonSegment(
+                            value: ThemeMode.dark,
+                            label: Text('Dark'),
+                            icon: Icon(Icons.dark_mode_rounded),
+                          ),
+                        ],
+                        selected: {themeProvider.selectedThemeMode},
+                        onSelectionChanged: (Set<ThemeMode> newSelection) {
+                          HapticFeedback.lightImpact();
+                          context
+                              .read<ThemeProvider>()
+                              .setThemeMode(newSelection.first);
+                        },
+                        showSelectedIcon: false,
+                        style: ButtonStyle(
+                          shape: WidgetStateProperty.all(
+                            RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(24)),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
         TvSwitchListTile(
           dense: true,
           visualDensity: VisualDensity.compact,
@@ -401,28 +456,27 @@ class _AppearanceSectionState extends State<AppearanceSection> {
                         // Using a 0-width transparent side is more robust on web than "none".
                         side: WidgetStateProperty.all(const BorderSide(
                             color: Colors.transparent, width: 0)),
-                        backgroundColor:
-                            WidgetStateProperty.resolveWith<Color?>(
+                        backgroundColor: WidgetStateProperty.resolveWith<Color>(
                           (states) {
-                            // On web, or when selected, we want transparency to show the gradient border
-                            if (kIsWeb ||
-                                states.contains(WidgetState.selected)) {
-                              return Colors.transparent;
+                            if (states.contains(WidgetState.selected)) {
+                              return Theme.of(context)
+                                  .colorScheme
+                                  .onSurface
+                                  .withValues(alpha: 0.12);
                             }
-                            // Unselected non-web: subtle dark surface or transparent
                             return Colors.transparent;
                           },
                         ),
-                        foregroundColor:
-                            WidgetStateProperty.resolveWith<Color?>(
+                        foregroundColor: WidgetStateProperty.resolveWith<Color>(
                           (states) {
                             if (states.contains(WidgetState.selected)) {
-                              return Theme.of(context).colorScheme.primary;
+                              // Ensure high contrast for the selected state text
+                              return Theme.of(context).colorScheme.onSurface;
                             }
-                            // Unselected: Use white70 in dark mode for contrast, or default grey
-                            final isDark =
-                                Theme.of(context).brightness == Brightness.dark;
-                            return isDark ? Colors.white70 : null;
+                            return Theme.of(context)
+                                .colorScheme
+                                .onSurface
+                                .withValues(alpha: 0.7);
                           },
                         ),
                         textStyle: WidgetStateProperty.resolveWith<TextStyle?>(

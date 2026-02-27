@@ -872,7 +872,7 @@ class SettingsProvider with ChangeNotifier {
 
   // Ring control setters
   Future<void> setOilInnerRingScale(double value) => _updateDoublePreference(
-      _oilInnerRingScaleKey, _oilInnerRingScale = value.clamp(0.5, 2.0));
+      _oilInnerRingScaleKey, _oilInnerRingScale = value.clamp(0.1, 1.0));
   Future<void> setOilInnerToMiddleGap(double value) => _updateDoublePreference(
       _oilInnerToMiddleGapKey, _oilInnerToMiddleGap = value.clamp(0.0, 1.0));
   Future<void> setOilMiddleToOuterGap(double value) => _updateDoublePreference(

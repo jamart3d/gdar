@@ -27,8 +27,21 @@ class MockThemeProvider extends ChangeNotifier implements ThemeProvider {
       _isDarkMode ? ThemeMode.dark : ThemeMode.light;
 
   @override
+  ThemeMode get selectedThemeMode => currentThemeMode;
+
+  @override
   void toggleTheme() {
     _isDarkMode = !_isDarkMode;
+    notifyListeners();
+  }
+
+  @override
+  void setThemeMode(ThemeMode mode) {
+    if (mode == ThemeMode.dark) {
+      _isDarkMode = true;
+    } else if (mode == ThemeMode.light) {
+      _isDarkMode = false;
+    }
     notifyListeners();
   }
 }

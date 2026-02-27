@@ -639,7 +639,7 @@ class PlaybackSection extends StatelessWidget {
               ?.copyWith(fontSize: 16 * scaleFactor),
         ),
         subtitle: Text(
-          'Prevents the device from sleeping during playback (Web/PWA).',
+          'Prevents the device from sleeping during playback.',
           style: Theme.of(context)
               .textTheme
               .bodySmall

@@ -56,9 +56,14 @@ class SectionCard extends StatelessWidget {
       color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
       child: Theme(
-        data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+        data: Theme.of(context).copyWith(
+          dividerColor: Colors.transparent,
+          splashColor: colorScheme.primary.withValues(alpha: 0.1),
+          highlightColor: Colors.transparent,
+        ),
         child: ExpansionTile(
           initiallyExpanded: initiallyExpanded,
+          maintainState: true,
           dense: true,
           visualDensity: VisualDensity.compact,
           shape:

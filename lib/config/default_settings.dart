@@ -104,7 +104,7 @@ class DefaultSettings {
   static const double oilLogoTrailLength = 0.5;
 
   // Ring controls (3-ring gap model)
-  static const double oilInnerRingScale = 0.75;
+  static const double oilInnerRingScale = 0.2;
   static const double oilInnerToMiddleGap = 0.05;
   static const double oilMiddleToOuterGap = 0.05;
   static const double oilOrbitDrift = 1.0;
