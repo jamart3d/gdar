@@ -31,8 +31,8 @@
     const storedMode = localStorage.getItem('flutter.audio_engine_mode');
     const override = storedMode ? storedMode.replace(/"/g, '') : null; // Remove JSON quotes if present
 
-    let strategy = 'hybrid';
-    let reason = "Defaulting to Hybrid engine for seamless background playback.";
+    let strategy = 'html5';
+    let reason = "Defaulting to HTML5 engine for standard PWA background longevity.";
 
     if (override && override !== 'auto' && override !== 'standard') {
         strategy = override;

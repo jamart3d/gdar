@@ -121,6 +121,19 @@ Removed hardcoded `?v=1.1.18` cache-busting from `manifest.json` link. Flutter's
 
 ---
 
+## HTML5 Default Transition ✅
+
+As of 2026-02-27, the default web audio engine has been transitioned from `hybrid` to `html5`. 
+
+**Rationale:**
+- **PWA Background Longevity:** The HTML5 engine uses native `<audio>` elements which browsers treat with much higher priority for background playback longevity compared to Web Audio API (`AudioContext`).
+- **RAM Efficiency:** HTML5 engine uses native HTTP streaming, avoiding large heap allocations for PCM decoding.
+- **Improved Stability:** Mobile browsers are less likely to kill tabs using standard HTML5 audio during long background sessions.
+
+The `hybrid` engine remains available as an optional mode for users who prefer the foreground/background handoff strategy.
+
+---
+
 ## Files Modified
 
 | File | Changes |
@@ -129,10 +142,11 @@ Removed hardcoded `?v=1.1.18` cache-busting from `manifest.json` link. Flutter's
 | `web/hybrid_audio_engine.js` | Foreground restore fallback (#2), lazy loading (#5), crossfade warning (#12) |
 | `web/html5_audio_engine.js` | `currentTrackBuffered` in getState (#6), media session once (#13) |
 | `web/passive_audio_engine.js` | Null after dispose (#7), media session once (#13) |
-| `web/hybrid_init.js` | iPadOS detection (#9) |
+| `web/hybrid_init.js` | iPadOS detection (#9), **Transition to HTML5 default** |
 | `web/index.html` | Viewport meta (#10), typo fix, manifest version (#15) |
 | `lib/audio/hybrid_audio_engine.dart` | Close leaked StreamControllers (#4) |
 | `lib/audio/passive_audio_engine.dart` | Close leaked StreamControllers (#4) |
+| `lib/config/default_settings.dart` | **Set `audioEngineMode` to `html5`** |
 
 ---
-*Audit completed 2026-02-27. All 15 issues addressed across 8 files.*
+*Audit completed 2026-02-27. All 15 issues addressed across 9 files.*

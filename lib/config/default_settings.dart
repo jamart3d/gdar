@@ -30,7 +30,7 @@ class DefaultSettings {
 
   // Web Gapless Engine (web-only)
   static const String audioEngineMode =
-      'hybrid'; // auto, webAudio, html5, standard, passive, hybrid
+      'html5'; // auto, webAudio, html5, standard, passive, hybrid
   static const int webPrefetchSeconds = 30;
 
   // Track Transitions (hybrid/standard engines)
