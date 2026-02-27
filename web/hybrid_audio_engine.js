@@ -131,12 +131,17 @@
 
         // Sync playlist and state
         _activeEngine.setPlaylist(_playlist, targetIndex);
-        if (wasPlaying) {
-            // Web Audio seek handles the decode and resume natively
-            _activeEngine.seek(pos);
-            _activeEngine.play();
-        } else {
-            _activeEngine.seek(pos);
+        try {
+            if (wasPlaying) {
+                // Web Audio seek handles the decode and resume natively
+                _activeEngine.seek(pos);
+                _activeEngine.play();
+            } else {
+                _activeEngine.seek(pos);
+            }
+        } catch (err) {
+            console.error('[hybrid engine] Failed to restore foreground engine:', err);
+            // Don't forward this error if it's an abort or context issue to avoid bubbling to Dart
         }
     }
 

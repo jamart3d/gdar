@@ -398,10 +398,11 @@
         _isTransitioning = false;
         if (_currentIndex === targetIndex) { // guard stale calls
           _startTrack(buf, 0, null);
-          _emitTrackChange(wasIndex, _currentIndex);
+          // Only emit track change if we didn't already emit it above
         }
       }).catch(err => {
         _isTransitioning = false;
+        if (_currentIndex !== targetIndex || err.message === 'Aborted') return;
         _emitError('Decode error: ' + err.message);
       });
     }
@@ -650,9 +651,13 @@
       _loadingState = 'loading';
       _emitState();
       _decode(index).then(buf => {
+        if (_currentIndex !== index) return;
         _startTrack(buf, _currentTrackStartOffset, null);
         _emitTrackChange(-1, index);
-      }).catch(err => _emitError('Play decode error: ' + err.message));
+      }).catch(err => {
+        if (_currentIndex !== index || err.message === 'Aborted') return;
+        _emitError('Play decode error: ' + err.message);
+      });
     },
 
     /** Pause playback by suspending the AudioContext. */
@@ -700,10 +705,15 @@
 
       if (wasPlaying) {
         _loadingState = 'loading';
+        const targetIndex = _currentIndex;
         _emitState();
         _decode(_currentIndex).then(buf => {
+          if (_currentIndex !== targetIndex) return;
           _startTrack(buf, seconds, null);
-        }).catch(err => _emitError('Seek decode error: ' + err.message));
+        }).catch(err => {
+          if (_currentIndex !== targetIndex || err.message === 'Aborted') return;
+          _emitError('Seek decode error: ' + err.message);
+        });
       } else {
         _emitState();
       }
@@ -730,9 +740,13 @@
         _loadingState = 'loading';
         _emitState();
         _decode(index).then(buf => {
+          if (_currentIndex !== index) return;
           _startTrack(buf, 0, null);
           _emitTrackChange(oldIndex, index);
-        }).catch(err => _emitError('SeekToIndex decode error: ' + err.message));
+        }).catch(err => {
+          if (_currentIndex !== index || err.message === 'Aborted') return;
+          _emitError('SeekToIndex decode error: ' + err.message);
+        });
       } else {
         _emitTrackChange(oldIndex, index);
         _emitState();
