@@ -1,3 +1,9 @@
+Release 1.1.29+129:
+- UI: Centered and scaled splash screen checklist items for improved visual balance on all devices.
+- Playback: Hardcoded gapless prefetch duration to 30 seconds for optimal stability and performance.
+- Web: Implemented dynamic scaling for audio engine segmented button labels to prevent layout overflow.
+- Quality: Completed comprehensive codebase checkup; all 170 unit and widget tests passing.
+
 Release 1.1.28+128:
 - Settings: Added a hidden setting `omitHttpPathInCopy` (enabled by default) to exclude the Archive.org URL from track detail copies.
 - UI: Modified the playback screen's clipboard copy function to respect the new omission setting.
