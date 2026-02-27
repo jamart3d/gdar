@@ -537,6 +537,13 @@ class MockSettingsProvider extends _i1.Mock implements _i4.SettingsProvider {
       ) as double);
 
   @override
+  bool get oilShowAudioGraph => (super.noSuchMethod(
+        Invocation.getter(#oilShowAudioGraph),
+        returnValue: false,
+        returnValueForMissingStub: false,
+      ) as bool);
+
+  @override
   bool get oilShowInfoBanner => (super.noSuchMethod(
         Invocation.getter(#oilShowInfoBanner),
         returnValue: false,

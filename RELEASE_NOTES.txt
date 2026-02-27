@@ -533,6 +533,11 @@ Release 1.0.28:
 - **Fixed**: Resolved a critical crash where the missing CatalogService provider prevented swiping functionality.
 - **Unified**: SnackBar feedback now correctly shows "ROLL" or "NEXT" based on your playback settings.
 
+Release 1.1.31:
+- **Fixed**: Audio graph visibility issue in Google TV screensaver.
+- **Improved**: Inner Ring scale limit adjusted to 0.1 for more granular sizing.
+- **Internal**: Resolved test suite regressions and mock stubs for new settings.
+
 Release 1.0.27:
 - **Polished**: Update banner now immediately shows "Waiting to download..." upon confirmation, providing instant feedback.
 

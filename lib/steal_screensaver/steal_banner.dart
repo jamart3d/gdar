@@ -434,7 +434,7 @@ class StealBanner extends Component with HasGameReference<StealGame> {
   double _innerRadius(double minDim, StealConfig config) =>
       minDim *
       _baseInnerRadiusRatio *
-      config.innerRingScale.clamp(0.5, 2.0) *
+      config.innerRingScale.clamp(0.1, 2.0) *
       _logoScaleFactor(config);
 
   double _middleRadius(double minDim, StealConfig config, double innerR) {

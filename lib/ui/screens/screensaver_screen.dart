@@ -183,6 +183,7 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
       logoTrailLength: settings.oilLogoTrailLength,
       flatTextProximity: settings.oilFlatTextProximity,
       flatTextPlacement: settings.oilFlatTextPlacement,
+      showAudioGraph: settings.oilShowAudioGraph,
     );
 
     return PopScope(

@@ -82,6 +82,7 @@ void main() {
     when(mockSettingsProvider.oilLogoTrailSlices).thenReturn(6);
     when(mockSettingsProvider.oilLogoTrailLength).thenReturn(0.5);
     when(mockSettingsProvider.enableSwipeToBlock).thenReturn(false);
+    when(mockSettingsProvider.oilShowAudioGraph).thenReturn(false);
   });
 
   Widget createWidgetUnderTest() {
