@@ -6,11 +6,13 @@ import 'package:shakedown/utils/font_layout_config.dart';
 class ShnidBadge extends StatelessWidget {
   final String text;
   final bool showUnderline;
+  final double scaleFactor;
 
   const ShnidBadge({
     super.key,
     required this.text,
     this.showUnderline = false,
+    this.scaleFactor = 1.0,
   });
 
   @override
@@ -46,13 +48,14 @@ class ShnidBadge extends StatelessWidget {
       style: Theme.of(context).textTheme.labelSmall?.copyWith(
           color: textColor,
           fontWeight: FontWeight.w600,
-          fontSize: (settingsProvider.appFont == 'rock_salt')
-              ? 7.5 * effectiveScale
-              : 9.0 * effectiveScale,
+          fontSize: ((settingsProvider.appFont == 'rock_salt')
+                  ? 7.5 * effectiveScale
+                  : 9.0 * effectiveScale) *
+              scaleFactor,
           height: (settingsProvider.appFont == 'rock_salt') ? 2.0 : 1.5,
           letterSpacing: (settingsProvider.appFont == 'rock_salt' ||
                   settingsProvider.appFont == 'permanent_marker')
-              ? 1.5
+              ? 1.5 * scaleFactor
               : 0.0),
       overflow: TextOverflow.ellipsis,
       maxLines: 1,
@@ -77,7 +80,8 @@ class ShnidBadge extends StatelessWidget {
     }
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2.0),
+      padding: EdgeInsets.symmetric(
+          horizontal: 6 * scaleFactor, vertical: 2.0 * scaleFactor),
       constraints: const BoxConstraints(maxWidth: 100),
       decoration: BoxDecoration(
         gradient: LinearGradient(

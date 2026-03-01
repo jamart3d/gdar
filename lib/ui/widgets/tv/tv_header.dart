@@ -6,6 +6,8 @@ import 'package:shakedown/ui/widgets/shakedown_title.dart';
 import 'package:shakedown/ui/widgets/show_list/animated_dice_icon.dart';
 import 'package:shakedown/ui/widgets/tv/tv_focus_wrapper.dart';
 import 'package:shakedown/ui/screens/settings_screen.dart';
+import 'package:shakedown/providers/theme_provider.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 
 class TvHeader extends StatelessWidget {
   final VoidCallback onRandomPlay;
@@ -116,7 +118,9 @@ class TvHeader extends StatelessWidget {
                     colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
               ),
               child: Icon(
-                Icons.settings_rounded,
+                context.watch<ThemeProvider>().themeStyle == ThemeStyle.fruit
+                    ? LucideIcons.settings
+                    : Icons.settings_rounded,
                 size: 24, // Reduced from 28
                 color: colorScheme.onSurfaceVariant,
               ),

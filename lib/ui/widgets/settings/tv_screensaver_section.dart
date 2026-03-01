@@ -7,21 +7,38 @@ import 'package:shakedown/ui/widgets/tv/tv_focus_wrapper.dart';
 import 'package:shakedown/ui/widgets/tv/tv_stepper_row.dart';
 import 'package:shakedown/ui/widgets/tv/tv_list_tile.dart';
 import 'package:shakedown/ui/screens/screensaver_screen.dart';
+import 'package:shakedown/providers/theme_provider.dart';
+import 'package:lucide_icons/lucide_icons.dart';
+import 'package:shakedown/ui/widgets/section_card.dart';
 
 class TvScreensaverSection extends StatelessWidget {
-  const TvScreensaverSection({super.key});
+  final double scaleFactor;
+  final bool initiallyExpanded;
+
+  const TvScreensaverSection({
+    super.key,
+    required this.scaleFactor,
+    required this.initiallyExpanded,
+  });
 
   @override
   Widget build(BuildContext context) {
     final settings = context.watch<SettingsProvider>();
+    final themeProvider = context.watch<ThemeProvider>();
+    final isFruit = themeProvider.themeStyle == ThemeStyle.fruit;
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
     final isRingMode = settings.oilBannerDisplayMode == 'ring';
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    return SectionCard(
+      scaleFactor: scaleFactor,
+      title: 'TV Screen Saver',
+      icon: Icons.monitor,
+      lucideIcon: LucideIcons.monitor,
+      initiallyExpanded: initiallyExpanded,
       children: [
+        const SizedBox(height: 16),
         // ── System ─────────────────────────────────────────────────────
         _SectionHeader(title: 'System', colorScheme: colorScheme),
         const SizedBox(height: 8),
@@ -106,7 +123,9 @@ class TvScreensaverSection extends StatelessWidget {
           TvListTile(
             dense: true,
             visualDensity: VisualDensity.compact,
-            leading: const Icon(Icons.play_circle_outline_rounded),
+            leading: Icon(isFruit
+                ? LucideIcons.playCircle
+                : Icons.play_circle_outline_rounded),
             title: Text(
               'Start Screen Saver',
               style:
@@ -820,6 +839,9 @@ class _AnimatedPaletteSegmentState extends State<_AnimatedPaletteSegment>
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = context.watch<ThemeProvider>();
+    final isFruit = themeProvider.themeStyle == ThemeStyle.fruit;
+
     return AnimatedBuilder(
       animation: _controller,
       builder: (context, _) {
@@ -836,7 +858,7 @@ class _AnimatedPaletteSegmentState extends State<_AnimatedPaletteSegment>
             ),
           ),
           child: isSelected
-              ? Icon(Icons.check_rounded,
+              ? Icon(isFruit ? LucideIcons.check : Icons.check_rounded,
                   color: Colors.white.withValues(alpha: 0.9), size: 18)
               : const SizedBox.shrink(),
         );

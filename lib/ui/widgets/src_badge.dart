@@ -10,6 +10,7 @@ class SrcBadge extends StatelessWidget {
   final double fontSize;
   final bool matchShnidLook;
   final EdgeInsetsGeometry? padding;
+  final double scaleFactor;
 
   const SrcBadge({
     super.key,
@@ -18,6 +19,7 @@ class SrcBadge extends StatelessWidget {
     this.fontSize = 7.0,
     this.matchShnidLook = false,
     this.padding,
+    this.scaleFactor = 1.0,
   });
 
   @override
@@ -47,9 +49,9 @@ class SrcBadge extends StatelessWidget {
 
     return Container(
       padding: padding ??
-          const EdgeInsets.symmetric(
-            horizontal: 6,
-            vertical: 1.0,
+          EdgeInsets.symmetric(
+            horizontal: 6 * scaleFactor,
+            vertical: 1.0 * scaleFactor,
           ),
       alignment: Alignment.center,
       decoration: BoxDecoration(
@@ -76,13 +78,16 @@ class SrcBadge extends StatelessWidget {
               color: textColor,
               fontWeight: FontWeight.bold,
               height: matchShnidLook ? 1.5 : 1.0,
-              fontSize: matchShnidLook
-                  ? (settingsProvider.appFont == 'rock_salt'
-                      ? 7.5 * effectiveScale
-                      : 9.0 * effectiveScale)
-                  : fontSize *
-                      (settingsProvider.appFont == 'rock_salt' ? 0.7 : 1.0) *
-                      effectiveScale,
+              fontSize: (matchShnidLook
+                      ? (settingsProvider.appFont == 'rock_salt'
+                          ? 7.5 * effectiveScale
+                          : 9.0 * effectiveScale)
+                      : fontSize *
+                          (settingsProvider.appFont == 'rock_salt'
+                              ? 0.7
+                              : 1.0) *
+                          effectiveScale) *
+                  scaleFactor,
               letterSpacing:
                   settingsProvider.appFont == 'rock_salt' ? 0.0 : 0.5,
             ),

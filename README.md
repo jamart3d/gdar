@@ -41,6 +41,12 @@ A Flutter application for browsing and playing concert recordings of the Gratefu
     - **Visual Styles**: Choose between **Standard (Psychedelic)**, **Lava Lamp**, and **Silk** modes.
     - **Customization**: Adjust viscosity, flow speed, and palettes.
     - **Audio Reactivity**: The visualizer pulses and reacts to the music's frequency and intensity.
+  - **Fruit Theme (Premium)**:
+    - Dedicated Apple-inspired design for Web/PWA with **14px** architectural corner radii.
+    - **Apple Liquid Glass**: High-precision backdrop blurring paired with a subtle internal highlight (inset glow) that simulates glassy refraction.
+    - **Pervasive Neumorphism (Soft UI)**: A complete, non-Material 3 design language. UI elements adopt a soft, extruded look using light and shadow.
+    - **Tactile Bottom Sheet**: The playback panel features soft, deep Neumorphic shadows at its top edge and a sunken "handle basin" carved into the glass for a premium tactile drag experience.
+    - **Interactive Styles**: Choose between **Convex** (standard extrusion) and **Concave** (sunken look) via Appearance settings.
   - **Accessibility**: Semantic labels for screen readers.
   - **Hide Track Duration** option for a minimalist interface.
   - **Global UI Scale**: Consistent text scaling across all screens. Automatically synchronizes date abbreviations (Day/Month) for optimal space usage when toggled.

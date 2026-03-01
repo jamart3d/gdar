@@ -29,6 +29,26 @@ class MockThemeProvider extends ChangeNotifier implements ThemeProvider {
   @override
   ThemeMode get selectedThemeMode => currentThemeMode;
 
+  ThemeStyle _themeStyle = ThemeStyle.android;
+  @override
+  ThemeStyle get themeStyle => _themeStyle;
+
+  @override
+  void setThemeStyle(ThemeStyle style) {
+    _themeStyle = style;
+    notifyListeners();
+  }
+
+  FruitColorOption _fruitColorOption = FruitColorOption.sophisticate;
+  @override
+  FruitColorOption get fruitColorOption => _fruitColorOption;
+
+  @override
+  void setFruitColorOption(FruitColorOption option) {
+    _fruitColorOption = option;
+    notifyListeners();
+  }
+
   @override
   void toggleTheme() {
     _isDarkMode = !_isDarkMode;
@@ -50,9 +70,13 @@ class MockDeviceService extends ChangeNotifier implements DeviceService {
   @override
   bool get isTv => false;
   @override
-  bool get isMobile => false;
+  bool get isMobile => true;
   @override
-  bool get isDesktop => true;
+  bool get isDesktop => false;
+  @override
+  bool get isSafari => false;
+  @override
+  bool get isPwa => false;
   @override
   String? get deviceName => 'Mock Device';
   @override

@@ -12,6 +12,8 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:shakedown/services/device_service.dart';
+import 'package:shakedown/providers/theme_provider.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 
 // Mocks - Reuse mocks from show_list_screen_swipe_test.dart
 // Ideally, we'd centralize these, but for this task we'll duplicate relevant parts
@@ -84,9 +86,27 @@ class MockDeviceService extends ChangeNotifier implements DeviceService {
   @override
   bool get isDesktop => true;
   @override
+  bool get isSafari => false;
+  @override
+  bool get isPwa => false;
+  @override
   String? get deviceName => 'Mock Device';
   @override
   Future<void> refresh() async {}
+}
+
+class MockThemeProvider extends ChangeNotifier implements ThemeProvider {
+  @override
+  ThemeStyle themeStyle = ThemeStyle.android;
+  @override
+  FruitColorOption get fruitColorOption => FruitColorOption.sophisticate;
+  @override
+  ThemeMode get currentThemeMode => ThemeMode.dark;
+  @override
+  bool get isDarkMode => true;
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
 
 class MockCatalogService extends Mock implements CatalogService {}
@@ -208,6 +228,7 @@ void main() {
   late MockShowListProvider mockShowListProvider;
   late MockCatalogService mockCatalogService;
   late MockDeviceService mockDeviceService;
+  late MockThemeProvider mockThemeProvider;
 
   setUp(() async {
     SharedPreferences.setMockInitialValues({});
@@ -217,6 +238,7 @@ void main() {
     mockShowListProvider = MockShowListProvider();
     mockCatalogService = MockCatalogService();
     mockDeviceService = MockDeviceService();
+    mockThemeProvider = MockThemeProvider();
   });
 
   Widget createWidgetUnderTest() {
@@ -229,6 +251,7 @@ void main() {
             value: mockShowListProvider),
         ChangeNotifierProvider<DeviceService>.value(value: mockDeviceService),
         Provider<CatalogService>.value(value: mockCatalogService),
+        ChangeNotifierProvider<ThemeProvider>.value(value: mockThemeProvider),
       ],
       child: const MaterialApp(
         home: ShowListScreen(),
@@ -246,7 +269,10 @@ void main() {
 
       // Find the specific ScaleTransition for the random button
       // We can look for the question mark icon and then its ancestor ScaleTransition
-      final iconFinder = find.byIcon(Icons.question_mark_rounded);
+      final iconFinder = find.byIcon(
+          mockThemeProvider.themeStyle == ThemeStyle.fruit
+              ? LucideIcons.helpCircle
+              : Icons.question_mark_rounded);
       expect(iconFinder, findsOneWidget);
 
       final scaleTransitionFinder = find.ancestor(
@@ -271,7 +297,10 @@ void main() {
       await tester.pumpWidget(createWidgetUnderTest());
       await tester.pump();
 
-      final iconFinder = find.byIcon(Icons.question_mark_rounded);
+      final iconFinder = find.byIcon(
+          mockThemeProvider.themeStyle == ThemeStyle.fruit
+              ? LucideIcons.helpCircle
+              : Icons.question_mark_rounded);
       expect(iconFinder, findsOneWidget);
 
       final scaleTransitionFinder = find.ancestor(
@@ -313,7 +342,10 @@ void main() {
       expect(mockShowListProvider.hasUsedRandomButton, isFalse);
 
       // Tap the button
-      await tester.tap(find.byIcon(Icons.question_mark_rounded));
+      await tester.tap(find.byIcon(
+          mockThemeProvider.themeStyle == ThemeStyle.fruit
+              ? LucideIcons.helpCircle
+              : Icons.question_mark_rounded));
 
       // Pump to trigger the onPressed handler
       await tester.pump();
@@ -343,11 +375,18 @@ void main() {
       await tester.pump();
 
       // 1. Verify Icon is NOT question mark, but playlist_play
-      expect(find.byIcon(Icons.question_mark_rounded), findsNothing);
-      expect(find.byIcon(Icons.playlist_play_rounded), findsOneWidget);
+      final expectedHelpIcon = mockThemeProvider.themeStyle == ThemeStyle.fruit
+          ? LucideIcons.helpCircle
+          : Icons.question_mark_rounded;
+      final expectedPlayIcon = mockThemeProvider.themeStyle == ThemeStyle.fruit
+          ? LucideIcons.playCircle
+          : Icons.playlist_play_rounded;
+
+      expect(find.byIcon(expectedHelpIcon), findsNothing);
+      expect(find.byIcon(expectedPlayIcon), findsOneWidget);
 
       // 2. Verify NO ScaleTransition ancestor for this icon
-      final iconFinder = find.byIcon(Icons.playlist_play_rounded);
+      final iconFinder = find.byIcon(expectedPlayIcon);
       final scaleTransitionFinder = find.ancestor(
         of: iconFinder,
         matching: find.byType(ScaleTransition),

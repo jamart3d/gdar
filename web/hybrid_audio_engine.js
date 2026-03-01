@@ -251,6 +251,12 @@
                 const swapTime = performance.now() - swapStart;
                 _log.log(`[hybrid] HANDOFF COMPLETE (ID: ${id}). Settle cycles: ${pollCount}, Swap hitch: ${swapTime.toFixed(2)}ms`);
 
+                // SYNTHETIC BROADCAST to prevent UI desync during 'immediate' handoffs
+                // Forces the UI to re-bind to the fresh Web Audio metadata.
+                if (_onTrackChange && _currentIndex !== -1) {
+                    _onTrackChange({ from: _currentIndex, to: _currentIndex });
+                }
+
                 _forwardState(fgState, _fgEngine);
             } else {
                 if (pollCount % 10 === 0) {

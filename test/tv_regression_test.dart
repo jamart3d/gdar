@@ -6,11 +6,11 @@ import 'package:shakedown/models/show.dart';
 import 'package:shakedown/models/source.dart';
 import 'package:shakedown/models/track.dart';
 import 'package:shakedown/providers/audio_provider.dart' as ap;
+import 'package:shakedown/providers/theme_provider.dart';
 import 'package:shakedown/providers/settings_provider.dart';
 import 'package:shakedown/services/gapless_player/gapless_player.dart';
 import 'package:shakedown/providers/show_list_provider.dart';
 import 'package:shakedown/providers/update_provider.dart';
-import 'package:shakedown/providers/theme_provider.dart';
 import 'package:shakedown/services/device_service.dart';
 import 'package:shakedown/ui/widgets/tv/tv_dual_pane_layout.dart';
 import 'package:shakedown/ui/screens/show_list_screen.dart';
@@ -19,6 +19,7 @@ import 'package:shakedown/ui/widgets/show_list/animated_dice_icon.dart';
 import 'package:shakedown/ui/widgets/settings/tv_screensaver_section.dart';
 import 'package:shakedown/ui/widgets/settings/playback_section.dart';
 import 'package:shakedown/ui/widgets/tv/tv_stepper_row.dart';
+import 'package:shakedown/ui/widgets/settings/appearance_section.dart';
 
 import 'package:flutter/services.dart';
 import 'package:mockito/mockito.dart';
@@ -147,9 +148,13 @@ class MockTvDeviceService extends ChangeNotifier implements DeviceService {
   @override
   bool get isMobile => false;
   @override
-  bool get isDesktop => true;
+  bool get isDesktop => false;
   @override
-  String? get deviceName => 'Mock TV Device';
+  bool get isSafari => false;
+  @override
+  bool get isPwa => false;
+  @override
+  String? get deviceName => 'Android TV';
   @override
   Future<void> refresh() async {}
 }
@@ -212,13 +217,17 @@ class FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
   @override
   bool get filterHighestShnid => false;
   @override
-  bool get useTrueBlack => false;
+  bool get useTrueBlack => true;
+  @override
+  NeumorphicStyle get neumorphicStyle => NeumorphicStyle.convex;
+  @override
+  void setNeumorphicStyle(NeumorphicStyle value, {bool? notify}) {}
   @override
   bool get useDynamicColor => false;
   @override
   bool get showPlaybackMessages => false;
   @override
-  bool get highlightPlayingWithRgb => false;
+  bool get highlightPlayingWithRgb => true;
   @override
   bool get offlineBuffering => false;
   @override
@@ -416,7 +425,18 @@ class FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
   @override
   void toggleEnableSwipeToBlock() {}
   @override
+  bool get useNeumorphism => false;
+  @override
   void toggleOmitHttpPathInCopy() {}
+  @override
+  void toggleUseNeumorphism() {}
+  @override
+  void setUseNeumorphism(bool value) {}
+
+  @override
+  bool get performanceMode => false;
+  @override
+  void togglePerformanceMode() {}
 
   @override
   bool get webGaplessEngine => true;
@@ -728,7 +748,10 @@ void main() {
       child: SingleChildScrollView(
         child: Column(
           children: [
-            const TvScreensaverSection(),
+            const TvScreensaverSection(
+              scaleFactor: 1.0,
+              initiallyExpanded: true,
+            ),
             PlaybackSection(
               scaleFactor: 1.0,
               initiallyExpanded: true,
@@ -750,5 +773,21 @@ void main() {
 
     // Verify Show Track Info toggle is present
     expect(find.text('Show Track Info'), findsOneWidget);
+  });
+
+  testWidgets('Glow and RGB settings are visible on TV',
+      (WidgetTester tester) async {
+    await tester.pumpWidget(createTestableWidget(
+      child: const AppearanceSection(
+        scaleFactor: 1.0,
+        initiallyExpanded: true,
+        showFontSelection: false,
+      ),
+    ));
+
+    // Verify Glow is hidden on TV, but RGB is visible
+    expect(find.text('Glow Border'), findsNothing);
+    expect(find.text('Highlight Playing with RGB'), findsOneWidget);
+    expect(find.text('RGB Animation Speed'), findsOneWidget);
   });
 }

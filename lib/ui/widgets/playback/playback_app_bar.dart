@@ -2,9 +2,11 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 import 'package:shakedown/models/show.dart';
 import 'package:shakedown/models/source.dart';
 import 'package:shakedown/providers/settings_provider.dart';
+import 'package:shakedown/providers/theme_provider.dart';
 import 'package:shakedown/ui/screens/settings_screen.dart';
 import 'package:shakedown/ui/styles/app_typography.dart';
 import 'package:shakedown/utils/app_date_utils.dart';
@@ -33,6 +35,8 @@ class PlaybackAppBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final double opacity = (1.0 - (panelPosition * 5.0)).clamp(0.0, 1.0);
     final settingsProvider = context.watch<SettingsProvider>();
+    final themeProvider = context.watch<ThemeProvider>();
+    final isFruit = themeProvider.themeStyle == ThemeStyle.fruit;
 
     final String formattedDate =
         AppDateUtils.formatDate(currentShow.date, settings: settingsProvider);
@@ -40,12 +44,12 @@ class PlaybackAppBar extends StatelessWidget {
     return Container(
       height: kToolbarHeight,
       color: backgroundColor.withValues(alpha: opacity),
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 10),
       child: Row(
         children: [
           if (kIsWeb) ...[
             IconButton(
-              icon: const Icon(Icons.menu_rounded),
+              icon: Icon(isFruit ? LucideIcons.menu : Icons.menu_rounded),
               onPressed: () => Navigator.of(context).pop(),
               tooltip: 'Back to Show List',
             ),
@@ -159,8 +163,9 @@ class PlaybackAppBar extends StatelessWidget {
                 ),
                 const SizedBox(width: 8),
                 IconButton(
-                  icon: const Icon(Icons.settings_rounded),
-                  iconSize: AppTypography.responsiveFontSize(context, 24.0),
+                  icon: Icon(
+                      isFruit ? LucideIcons.settings : Icons.settings_rounded),
+                  iconSize: 24.0,
                   onPressed: () async {
                     try {
                       context.read<AnimationController>().stop();

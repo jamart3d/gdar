@@ -1,3 +1,5 @@
+import 'package:shakedown/providers/theme_provider.dart';
+
 /// Centralized default settings for the application.
 /// Edit these values to change the default behavior for new users
 /// or when resetting preferences.
@@ -11,6 +13,9 @@ class DefaultSettings {
   static const bool highlightPlayingWithRgb = true;
   static const int glowMode = 0;
   static const double rgbAnimationSpeed = 0.5;
+  static const bool useNeumorphism = false;
+  static const NeumorphicStyle neumorphicStyle = NeumorphicStyle.convex;
+  static const bool performanceMode = false;
 
   // Show Card & content
   static const bool showTrackNumbers = false;

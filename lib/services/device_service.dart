@@ -1,6 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:device_info_plus/device_info_plus.dart';
+import 'device_service_pwa_stub.dart'
+    if (dart.library.js_interop) 'device_service_pwa_web.dart';
 
 class DeviceService extends ChangeNotifier {
   static const _deviceChannel = MethodChannel('com.jamart3d.shakedown/device');
@@ -10,6 +12,12 @@ class DeviceService extends ChangeNotifier {
 
   String? _deviceName;
   String? get deviceName => _deviceName;
+
+  bool _isSafari = false;
+  bool get isSafari => _isSafari;
+
+  bool _isPwa = false;
+  bool get isPwa => _isPwa;
 
   /// Returns true if the app is running on a mobile platform (Android or iOS),
   /// including mobile browsers when running on the web.
@@ -37,6 +45,11 @@ class DeviceService extends ChangeNotifier {
       if (kIsWeb) {
         final webInfo = await deviceInfo.webBrowserInfo;
         _deviceName = 'Web (${webInfo.browserName.name})';
+        _isSafari = webInfo.browserName == BrowserName.safari;
+
+        // PWA detection: checks if the app is running in standalone mode.
+        _isPwa = checkIsPwa();
+
         // On web, we don't have a reliable "isTv" check without custom logic,
         // but we can at least detect the browser.
         notifyListeners();

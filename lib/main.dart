@@ -475,7 +475,8 @@ class _GdarAppState extends State<GdarApp> {
 
                 if (settingsProvider.useDynamicColor &&
                     lightDynamic != null &&
-                    darkDynamic != null) {
+                    darkDynamic != null &&
+                    themeProvider.themeStyle != ThemeStyle.fruit) {
                   final baseLight = ThemeData(
                     useMaterial3: settingsProvider.useMaterial3,
                     colorScheme: lightDynamic,
@@ -512,7 +513,9 @@ class _GdarAppState extends State<GdarApp> {
                     ),
                   );
 
-                  if (settingsProvider.useTrueBlack) {
+                  if (settingsProvider.useTrueBlack &&
+                      (themeProvider.themeStyle != ThemeStyle.fruit ||
+                          widget.isTv)) {
                     final trueBlackDynamic = darkDynamic.copyWith(
                       surface: Colors.black,
                       onSurface: Colors.white,
@@ -539,15 +542,20 @@ class _GdarAppState extends State<GdarApp> {
                     settingsProvider.appFont,
                     useMaterial3: settingsProvider.useMaterial3,
                     uiScale: settingsProvider.uiScale,
+                    style: themeProvider.themeStyle,
+                    fruitColorOption: themeProvider.fruitColorOption,
                   );
                   darkTheme = AppThemes.darkTheme(
                     settingsProvider.appFont,
                     useMaterial3: settingsProvider.useMaterial3,
                     uiScale: settingsProvider.uiScale,
+                    style: themeProvider.themeStyle,
+                    fruitColorOption: themeProvider.fruitColorOption,
                   );
 
                   final seedColor = settingsProvider.seedColor;
-                  if (seedColor != null) {
+                  if (seedColor != null &&
+                      themeProvider.themeStyle != ThemeStyle.fruit) {
                     lightTheme = lightTheme.copyWith(
                       colorScheme: ColorScheme.fromSeed(
                         seedColor: seedColor,
@@ -580,7 +588,9 @@ class _GdarAppState extends State<GdarApp> {
                     );
                   }
 
-                  if (settingsProvider.useTrueBlack) {
+                  if (settingsProvider.useTrueBlack &&
+                      (themeProvider.themeStyle != ThemeStyle.fruit ||
+                          widget.isTv)) {
                     final baseDarkScheme = darkTheme.colorScheme;
                     final trueBlackDarkScheme = baseDarkScheme.copyWith(
                       surface: Colors.black,

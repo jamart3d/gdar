@@ -7,6 +7,9 @@ import 'package:shakedown/ui/widgets/mini_player.dart';
 import 'package:shakedown/ui/widgets/show_list/show_list_app_bar.dart';
 import 'package:shakedown/ui/widgets/show_list/show_list_search_bar.dart';
 import 'package:shakedown/ui/widgets/show_list/clipboard_feedback_overlay.dart';
+import 'package:shakedown/ui/widgets/theme/liquid_glass_wrapper.dart';
+import 'package:shakedown/providers/theme_provider.dart';
+import 'package:flutter/foundation.dart';
 
 /// The layout shell for [ShowListScreen], including AppBar, SearchBar, and MiniPlayer.
 class ShowListShell extends StatelessWidget {
@@ -54,29 +57,35 @@ class ShowListShell extends StatelessWidget {
     final audioProvider = context.watch<AudioProvider>();
     final showListProvider = context.watch<ShowListProvider>();
 
+    final themeProvider = context.watch<ThemeProvider>();
+    final isFruit = themeProvider.themeStyle == ThemeStyle.fruit && kIsWeb;
+
     final bodyContent = Stack(
       children: [
-        Column(
-          children: [
-            if (isPane && !context.read<DeviceService>().isTv)
-              ShowListAppBar(
-                backgroundColor: backgroundColor,
-                randomPulseAnimation: randomPulseAnimation,
-                searchPulseAnimation: searchPulseAnimation,
-                isRandomShowLoading: isRandomShowLoading,
-                enableDiceHaptics: enableDiceHaptics,
-                onRandomPlay: onRandomPlay,
-                onToggleSearch: onToggleSearch,
-                onTitleTap: onTitleTap,
+        LiquidGlassWrapper(
+          enabled: isFruit,
+          child: Column(
+            children: [
+              if (isPane && !context.read<DeviceService>().isTv)
+                ShowListAppBar(
+                  backgroundColor: backgroundColor,
+                  randomPulseAnimation: randomPulseAnimation,
+                  searchPulseAnimation: searchPulseAnimation,
+                  isRandomShowLoading: isRandomShowLoading,
+                  enableDiceHaptics: enableDiceHaptics,
+                  onRandomPlay: onRandomPlay,
+                  onToggleSearch: onToggleSearch,
+                  onTitleTap: onTitleTap,
+                ),
+              ShowListSearchBar(
+                controller: searchController,
+                focusNode: searchFocusNode,
+                onSubmitted: onSearchSubmitted,
+                animationDuration: animationDuration,
               ),
-            ShowListSearchBar(
-              controller: searchController,
-              focusNode: searchFocusNode,
-              onSubmitted: onSearchSubmitted,
-              animationDuration: animationDuration,
-            ),
-            Expanded(child: body),
-          ],
+              Expanded(child: body),
+            ],
+          ),
         ),
         if (audioProvider.currentShow != null &&
             !(showListProvider.isSearchVisible && searchFocusNode.hasFocus) &&

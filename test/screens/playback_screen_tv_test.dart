@@ -10,6 +10,7 @@ import 'package:shakedown/providers/audio_provider.dart';
 import 'package:shakedown/providers/settings_provider.dart';
 import 'package:shakedown/services/gapless_player/gapless_player.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:shakedown/providers/theme_provider.dart';
 import 'package:shakedown/ui/screens/playback_screen.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
@@ -32,7 +33,11 @@ class MockTvDeviceService extends ChangeNotifier implements DeviceService {
   @override
   bool get isDesktop => true;
   @override
-  String? get deviceName => 'Mock TV Device';
+  bool get isSafari => false;
+  @override
+  bool get isPwa => false;
+  @override
+  String? get deviceName => 'Mock TV';
   @override
   Future<void> refresh() async {}
 }
@@ -57,6 +62,10 @@ class FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
 
   @override
   bool get useTrueBlack => false;
+  @override
+  NeumorphicStyle get neumorphicStyle => NeumorphicStyle.convex;
+  @override
+  void setNeumorphicStyle(NeumorphicStyle value, {bool? notify}) {}
   @override
   bool get highlightPlayingWithRgb => false;
   @override
@@ -274,6 +283,16 @@ class FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
   @override
   void toggleOilFlatColor() {}
   @override
+  void toggleUseNeumorphism() {}
+
+  @override
+  bool get performanceMode => false;
+  @override
+  void togglePerformanceMode() {}
+
+  @override
+  void setUseNeumorphism(bool value) {}
+  @override
   void toggleOilBannerGlow() {}
   @override
   Future<void> setOilBannerFlicker(double value) async {}
@@ -325,7 +344,8 @@ class FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
   bool get omitHttpPathInCopy => true;
   @override
   void toggleOmitHttpPathInCopy() {}
-
+  @override
+  bool get useNeumorphism => false;
   @override
   AudioEngineMode get audioEngineMode => AudioEngineMode.auto;
   @override

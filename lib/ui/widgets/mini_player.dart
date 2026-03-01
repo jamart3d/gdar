@@ -1,6 +1,6 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/foundation.dart';
 import 'package:shakedown/models/show.dart';
 import 'package:shakedown/models/source.dart';
 import 'package:shakedown/providers/audio_provider.dart';
@@ -8,10 +8,13 @@ import 'package:shakedown/providers/settings_provider.dart';
 import 'package:shakedown/ui/widgets/conditional_marquee.dart';
 
 import 'package:just_audio/just_audio.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 import 'package:provider/provider.dart';
 import 'package:shakedown/utils/font_layout_config.dart';
 import 'package:shakedown/ui/styles/app_typography.dart';
 import 'package:shakedown/utils/color_generator.dart';
+import 'package:shakedown/providers/theme_provider.dart';
+import 'package:shakedown/ui/widgets/theme/neumorphic_wrapper.dart';
 
 class MiniPlayer extends StatefulWidget {
   final VoidCallback onTap;
@@ -25,26 +28,9 @@ class MiniPlayer extends StatefulWidget {
   State<MiniPlayer> createState() => _MiniPlayerState();
 }
 
-class _MiniPlayerState extends State<MiniPlayer>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _pulseController;
-  late final Animation<double> _scaleAnimation;
-
-  @override
-  void initState() {
-    super.initState();
-    _pulseController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 800),
-    );
-    _scaleAnimation = Tween<double>(begin: 1.0, end: 1.1).animate(
-      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
-    );
-  }
-
+class _MiniPlayerState extends State<MiniPlayer> {
   @override
   void dispose() {
-    _pulseController.dispose();
     super.dispose();
   }
 
@@ -62,10 +48,13 @@ class _MiniPlayerState extends State<MiniPlayer>
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
+    final themeProvider = context.watch<ThemeProvider>();
+    final isFruitNeumorphic = themeProvider.themeStyle == ThemeStyle.fruit &&
+        settingsProvider.useNeumorphism &&
+        !settingsProvider.useTrueBlack;
+
     final double scaleFactor =
         FontLayoutConfig.getEffectiveScale(context, settingsProvider);
-    final double iconSize = 28 * scaleFactor;
-    final double buttonSize = 48 * scaleFactor;
 
     Color backgroundColor = colorScheme.surfaceContainerHigh;
 
@@ -92,7 +81,7 @@ class _MiniPlayerState extends State<MiniPlayer>
               color: backgroundColor,
               borderRadius: BorderRadius.zero,
               clipBehavior: Clip.antiAlias,
-              elevation: 4.0,
+              elevation: settingsProvider.performanceMode ? 0.0 : 4.0,
               shadowColor: colorScheme.shadow.withValues(alpha: 0.1),
               child: Container(), // Empty container for background
             ),
@@ -254,117 +243,146 @@ class _MiniPlayerState extends State<MiniPlayer>
                           },
                         ),
                       ),
-                      const SizedBox(width: 0),
-                      StreamBuilder<SequenceState?>(
-                        stream: audioProvider.audioPlayer.sequenceStateStream,
-                        builder: (context, snapshot) {
-                          final sequenceState = snapshot.data;
-                          final sequence = sequenceState?.sequence ?? [];
-                          final currentIndex = sequenceState?.currentIndex ?? 0;
-                          final hasPrevious = currentIndex > 0;
-                          final hasNext = currentIndex < sequence.length - 1;
+                      const SizedBox(width: 8),
+                      // Skip Previous, Play/Pause, Skip Next
+                      StreamBuilder<int?>(
+                        stream: audioProvider.currentIndexStream,
+                        initialData: audioProvider.audioPlayer.currentIndex,
+                        builder: (context, indexSnapshot) {
+                          final index = indexSnapshot.data ?? 0;
+                          final sequence = audioProvider.audioPlayer.sequence;
+                          final isFirstTrack = index == 0;
+                          final isLastTrack = index >= sequence.length - 1;
 
                           return Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              IconButton(
-                                icon: const Icon(Icons.skip_previous_rounded),
-                                iconSize: iconSize,
-                                padding: EdgeInsets.all(4.0 * scaleFactor),
-                                constraints: const BoxConstraints(),
-                                color: colorScheme.onSurfaceVariant,
-                                onPressed: hasPrevious
-                                    ? audioProvider.seekToPrevious
-                                    : null,
+                              NeumorphicWrapper(
+                                enabled: isFruitNeumorphic,
+                                borderRadius: 12,
+                                intensity: 1.2,
+                                child: IconButton(
+                                  icon: Icon((themeProvider.themeStyle ==
+                                              ThemeStyle.fruit &&
+                                          kIsWeb)
+                                      ? LucideIcons.skipBack
+                                      : Icons.skip_previous_rounded),
+                                  iconSize: 28.0 * scaleFactor,
+                                  color: colorScheme.onSurface,
+                                  onPressed: isFirstTrack
+                                      ? null
+                                      : () {
+                                          HapticFeedback.selectionClick();
+                                          audioProvider.seekToPrevious();
+                                        },
+                                ),
                               ),
+                              SizedBox(width: 8.0 * scaleFactor),
                               StreamBuilder<PlayerState>(
                                 stream: audioProvider.playerStateStream,
-                                initialData:
-                                    audioProvider.audioPlayer.playerState,
                                 builder: (context, snapshot) {
                                   final playerState = snapshot.data;
                                   final processingState =
                                       playerState?.processingState;
-                                  final playing = playerState?.playing ?? false;
+                                  final playing = playerState?.playing;
 
-                                  if (playing &&
-                                      !_pulseController.isAnimating) {
-                                    _pulseController.repeat(reverse: true);
-                                  } else if (!playing &&
-                                      _pulseController.isAnimating) {
-                                    _pulseController.stop();
-                                    unawaited(_pulseController.animateTo(0.0,
-                                        duration:
-                                            const Duration(milliseconds: 200),
-                                        curve: Curves.easeOut));
-                                  }
-
-                                  return ScaleTransition(
-                                    scale: _scaleAnimation,
-                                    child: GestureDetector(
-                                      onLongPress: () {
-                                        unawaited(HapticFeedback.heavyImpact());
-                                        unawaited(audioProvider.stopAndClear());
-                                      },
-                                      child: Hero(
-                                        tag: 'play_pause_button',
-                                        child: Container(
-                                          width: buttonSize,
-                                          height: buttonSize,
-                                          decoration: BoxDecoration(
-                                            color: colorScheme.primary,
-                                            shape: BoxShape.circle,
-                                          ),
-                                          child: processingState ==
-                                                      ProcessingState.loading ||
-                                                  processingState ==
-                                                      ProcessingState.buffering
-                                              ? Padding(
-                                                  padding: const EdgeInsets.all(
-                                                      12.0),
-                                                  child:
-                                                      CircularProgressIndicator(
-                                                    strokeWidth: 2.5,
-                                                    valueColor:
-                                                        AlwaysStoppedAnimation<
-                                                            Color>(
-                                                      colorScheme.onPrimary,
-                                                    ),
-                                                  ),
-                                                )
-                                              : IconButton(
-                                                  icon: Icon(
-                                                    playing
-                                                        ? Icons.pause_rounded
-                                                        : Icons
-                                                            .play_arrow_rounded,
-                                                  ),
-                                                  iconSize: iconSize,
-                                                  color: colorScheme.onPrimary,
-                                                  onPressed: () {
-                                                    unawaited(HapticFeedback
-                                                        .selectionClick());
-                                                    if (playing) {
-                                                      unawaited(audioProvider
-                                                          .pause());
-                                                    } else {
-                                                      unawaited(
-                                                          audioProvider.play());
-                                                    }
-                                                  },
-                                                ),
+                                  if (processingState ==
+                                          ProcessingState.loading ||
+                                      processingState ==
+                                          ProcessingState.buffering) {
+                                    return Container(
+                                      margin: EdgeInsets.all(8.0 * scaleFactor),
+                                      width: 32.0 * scaleFactor,
+                                      height: 32.0 * scaleFactor,
+                                      child: CircularProgressIndicator(
+                                        valueColor:
+                                            AlwaysStoppedAnimation<Color>(
+                                          colorScheme.onSurface,
                                         ),
                                       ),
-                                    ),
+                                    );
+                                  }
+
+                                  final bool isFruit =
+                                      themeProvider.themeStyle ==
+                                              ThemeStyle.fruit &&
+                                          kIsWeb;
+                                  final double playButtonSize =
+                                      38.0 * scaleFactor;
+
+                                  Widget playIcon;
+                                  VoidCallback? onPressed;
+
+                                  if (playing != true) {
+                                    playIcon = Icon(isFruit
+                                        ? LucideIcons.play
+                                        : Icons.play_arrow_rounded);
+                                    onPressed = audioProvider.audioPlayer.play;
+                                  } else if (processingState !=
+                                      ProcessingState.completed) {
+                                    playIcon = Icon(isFruit
+                                        ? LucideIcons.pause
+                                        : Icons.pause_rounded);
+                                    onPressed = audioProvider.audioPlayer.pause;
+                                  } else {
+                                    playIcon = Icon(isFruit
+                                        ? LucideIcons.rotateCcw
+                                        : Icons.replay_rounded);
+                                    onPressed = () => audioProvider.audioPlayer
+                                        .seek(Duration.zero);
+                                  }
+
+                                  Widget button = IconButton(
+                                    icon: playIcon,
+                                    iconSize: isFruit
+                                        ? 24.0 * scaleFactor
+                                        : 38.0 * scaleFactor,
+                                    onPressed: onPressed,
+                                    color: isFruit
+                                        ? colorScheme.primary
+                                        : colorScheme.onSurface,
+                                  );
+
+                                  if (isFruit) {
+                                    button = Container(
+                                      width: playButtonSize,
+                                      height: playButtonSize,
+                                      decoration: BoxDecoration(
+                                        color: colorScheme.surface,
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: button,
+                                    );
+                                  }
+
+                                  return NeumorphicWrapper(
+                                    enabled: isFruitNeumorphic,
+                                    isCircle: true,
+                                    intensity: 1.4,
+                                    child: button,
                                   );
                                 },
                               ),
-                              IconButton(
-                                icon: const Icon(Icons.skip_next_rounded),
-                                iconSize: iconSize,
-                                color: colorScheme.onSurfaceVariant,
-                                onPressed:
-                                    hasNext ? audioProvider.seekToNext : null,
+                              SizedBox(width: 8.0 * scaleFactor),
+                              NeumorphicWrapper(
+                                enabled: isFruitNeumorphic,
+                                borderRadius: 12,
+                                intensity: 1.2,
+                                child: IconButton(
+                                  icon: Icon((themeProvider.themeStyle ==
+                                              ThemeStyle.fruit &&
+                                          kIsWeb)
+                                      ? LucideIcons.skipForward
+                                      : Icons.skip_next_rounded),
+                                  iconSize: 28.0 * scaleFactor,
+                                  color: colorScheme.onSurface,
+                                  onPressed: isLastTrack
+                                      ? null
+                                      : () {
+                                          HapticFeedback.selectionClick();
+                                          audioProvider.seekToNext();
+                                        },
+                                ),
                               ),
                             ],
                           );

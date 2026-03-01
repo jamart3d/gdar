@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 import 'package:shakedown/models/show.dart';
 import 'package:shakedown/providers/show_list_provider.dart';
-import 'package:shakedown/ui/widgets/section_card.dart';
 import 'package:shakedown/providers/settings_provider.dart';
+import 'package:shakedown/providers/theme_provider.dart';
+import 'package:shakedown/ui/widgets/section_card.dart';
 import 'package:shakedown/utils/font_layout_config.dart';
-import 'package:provider/provider.dart';
 
 class CollectionStatistics extends StatelessWidget {
   final bool initiallyExpanded;
@@ -14,19 +16,26 @@ class CollectionStatistics extends StatelessWidget {
   /// no ExpansionTile, no expand/collapse chrome.
   /// When true (mobile) the existing collapsible ExpansionTile is shown.
   final bool showCategoryDetails;
+  final double scaleFactorOverride;
 
   const CollectionStatistics({
     super.key,
     this.initiallyExpanded = false,
     this.showCategoryDetails = true,
+    this.scaleFactorOverride = 1.0,
   });
 
   @override
   Widget build(BuildContext context) {
     final showListProvider = context.watch<ShowListProvider>();
     final settingsProvider = context.watch<SettingsProvider>();
-    final scaleFactor =
-        FontLayoutConfig.getEffectiveScale(context, settingsProvider);
+    final themeProvider = context.watch<ThemeProvider>();
+    final isFruit = themeProvider.themeStyle == ThemeStyle.fruit;
+
+    final scaleFactor = scaleFactorOverride != 1.0
+        ? scaleFactorOverride
+        : FontLayoutConfig.getEffectiveScale(context, settingsProvider);
+
     final colorScheme = Theme.of(context).colorScheme;
     final allShows = showListProvider.allShows;
     final hasActiveFilters = settingsProvider.filterHighestShnid ||
@@ -56,7 +65,7 @@ class CollectionStatistics extends StatelessWidget {
       for (var source in show.sources) {
         totalSongs += source.tracks.length;
         for (var track in source.tracks) {
-          totalDurationSeconds += track.duration;
+          totalDurationSeconds += track.duration.toInt();
         }
 
         final cats = showListProvider.getCategoriesForSource(source);
@@ -116,7 +125,7 @@ class CollectionStatistics extends StatelessWidget {
         for (var source in show.sources) {
           filteredSongsCount += source.tracks.length;
           for (var track in source.tracks) {
-            filteredDurationSeconds += track.duration;
+            filteredDurationSeconds += track.duration.toInt();
           }
         }
       }
@@ -180,6 +189,7 @@ class CollectionStatistics extends StatelessWidget {
       title: 'Collection Statistics',
       initiallyExpanded: initiallyExpanded,
       icon: Icons.bar_chart,
+      lucideIcon: LucideIcons.barChart2,
       children: [
         if (hasActiveFilters)
           Padding(
@@ -195,7 +205,7 @@ class CollectionStatistics extends StatelessWidget {
         ListTile(
           dense: true,
           visualDensity: VisualDensity.compact,
-          leading: Icon(Icons.library_music,
+          leading: Icon(isFruit ? LucideIcons.library : Icons.library_music,
               size: 24 * scaleFactor, color: colorScheme.primary),
           title: FittedBox(
             fit: BoxFit.scaleDown,
@@ -228,7 +238,7 @@ class CollectionStatistics extends StatelessWidget {
         ListTile(
           dense: true,
           visualDensity: VisualDensity.compact,
-          leading: Icon(Icons.timer,
+          leading: Icon(isFruit ? LucideIcons.clock : Icons.timer,
               size: 24 * scaleFactor, color: colorScheme.primary),
           title: FittedBox(
             fit: BoxFit.scaleDown,
@@ -276,7 +286,8 @@ class CollectionStatistics extends StatelessWidget {
                     fontWeight: FontWeight.w500,
                   ),
             ),
-            leading: Icon(Icons.list_alt, size: 20 * scaleFactor),
+            leading: Icon(isFruit ? LucideIcons.list : Icons.list_alt,
+                size: 20 * scaleFactor),
             shape: const Border(),
             children: [
               if (catBettySources > 0)

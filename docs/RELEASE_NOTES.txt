@@ -1,3 +1,20 @@
+Release 1.1.38+138:
+- **UI/UX (Web)**: Generalized `useMobileLayout` to support both Android and Fruit themes on narrow Web viewports.
+- **UI/UX (Web)**: Aligned Mini Player controls (play/pause) with the Fruit theme on Web, using glass-styling and pixel-perfect Lucide icons.
+- **UI/UX (Web)**: Adjusted relative scaling of playback controls between the Mini Player and full Player Drawer for better visual hierarchy.
+- **UI/UX (Web)**: Fixed venue/date text alignment in stacked Android theme cards on Web.
+- **Fixed**: Resolved `RenderFlex` overflow in `SourceListItem` during testing.
+- **Fixed**: Corrected `SimpleDialog` -> `Dialog` expectation in widget tests.
+- **Fixed**: Resolved `ProviderNotFoundException` for `ThemeProvider` in widget tests.
+
+Release 1.1.37+137:
+- **UI/UX**: Refined the "Fruit" theme aesthetic to provide a highly curated Apple-style Liquid Glass look and feel.
+- **UI/UX**: Introduced Apple Inter Typography styles with sophisticated alpha-transparency matching Dark/Light modes.
+- **Settings**: Disabled contradictory "Dynamic Color" (Material You) and custom seed colors automatically when the Fruit aesthetic is active to preserve brand integrity.
+- **Audio Player**: Overhauled the Audio Player Drawer, replacing the standard sliding drawer with a translucent frosted-glass pane `LiquidGlassWrapper` matching the Fruit aesthetic.
+- **Audio Player**: Changed the player typography to utilize precise sizes and scaling matching premium interfaces and added Apple-style spring physics scaling (bounce back on-tap) to the player's Play/Pause and Skip buttons.
+- **Maintenance**: Resolved several minor UI lint errors in the playback stack for a cleaner build.
+
 Release 1.1.36+136:
 - **Refactor**: Defined explicit Audio Engine design specs ensuring isolation between Gapless, HTML5, Standard, Passive, and Hybrid implementations.
 - **Refactor**: Replaced outdated `.agent/workflows/` directory with the new `SKILL.md` architecture for checkup and release processes.

@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:lucide_icons/lucide_icons.dart';
+import 'package:shakedown/providers/theme_provider.dart';
+import 'package:provider/provider.dart';
 import 'package:shakedown/ui/widgets/section_card.dart';
 import 'package:shakedown/ui/widgets/show_list/animated_dice_icon.dart';
 import 'package:shakedown/ui/widgets/tv/tv_focus_wrapper.dart';
@@ -15,6 +18,9 @@ class UsageInstructionsSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = context.watch<ThemeProvider>();
+    final isFruit = themeProvider.themeStyle == ThemeStyle.fruit;
+
     // Helper to wrap list tiles for focus (enabling scrolling on TV)
     Widget wrapForTv(Widget child) {
       return TvFocusWrapper(
@@ -28,6 +34,7 @@ class UsageInstructionsSection extends StatelessWidget {
       scaleFactor: scaleFactor,
       title: 'Usage Instructions',
       icon: Icons.help_outline,
+      lucideIcon: LucideIcons.helpCircle,
       initiallyExpanded: initiallyExpanded,
       children: [
         wrapForTv(ListTile(
@@ -59,16 +66,16 @@ class UsageInstructionsSection extends StatelessWidget {
                   .textTheme
                   .bodyMedium
                   ?.copyWith(fontSize: 12.0 * scaleFactor),
-              children: const [
-                TextSpan(
+              children: [
+                const TextSpan(
                     text: 'Tap', style: TextStyle(fontWeight: FontWeight.bold)),
-                TextSpan(
+                const TextSpan(
                     text:
                         ' the dice icon in the app bar to play a random show. Selection respects "Random\u00A0Playback"\u00A0settings.\n'),
-                TextSpan(
+                const TextSpan(
                     text: 'Long-press',
                     style: TextStyle(fontWeight: FontWeight.bold)),
-                TextSpan(
+                const TextSpan(
                     text:
                         ' a show card to play a random source from\u00A0that\u00A0show. If source filtering highest shnid only is off.'),
               ],
@@ -79,7 +86,8 @@ class UsageInstructionsSection extends StatelessWidget {
         wrapForTv(ListTile(
           dense: true,
           visualDensity: VisualDensity.compact,
-          leading: const Icon(Icons.playlist_play_rounded),
+          leading:
+              Icon(isFruit ? LucideIcons.list : Icons.playlist_play_rounded),
           title: FittedBox(
               fit: BoxFit.scaleDown,
               alignment: Alignment.centerLeft,
@@ -108,7 +116,9 @@ class UsageInstructionsSection extends StatelessWidget {
         wrapForTv(ListTile(
           dense: true,
           visualDensity: VisualDensity.compact,
-          leading: const Icon(Icons.play_circle_outline_rounded),
+          leading: Icon(isFruit
+              ? LucideIcons.playCircle
+              : Icons.play_circle_outline_rounded),
           title: FittedBox(
               fit: BoxFit.scaleDown,
               alignment: Alignment.centerLeft,
@@ -143,7 +153,7 @@ class UsageInstructionsSection extends StatelessWidget {
         wrapForTv(ListTile(
           dense: true,
           visualDensity: VisualDensity.compact,
-          leading: const Icon(Icons.search_rounded),
+          leading: Icon(isFruit ? LucideIcons.search : Icons.search_rounded),
           title: FittedBox(
               fit: BoxFit.scaleDown,
               alignment: Alignment.centerLeft,
@@ -171,7 +181,7 @@ class UsageInstructionsSection extends StatelessWidget {
         wrapForTv(ListTile(
           dense: true,
           visualDensity: VisualDensity.compact,
-          leading: const Icon(Icons.star_rate_rounded),
+          leading: Icon(isFruit ? LucideIcons.star : Icons.star_rate_rounded),
           title: FittedBox(
               fit: BoxFit.scaleDown,
               alignment: Alignment.centerLeft,
@@ -199,7 +209,7 @@ class UsageInstructionsSection extends StatelessWidget {
         wrapForTv(ListTile(
           dense: true,
           visualDensity: VisualDensity.compact,
-          leading: const Icon(Icons.block_rounded),
+          leading: Icon(isFruit ? LucideIcons.ban : Icons.block_rounded),
           title: FittedBox(
               fit: BoxFit.scaleDown,
               alignment: Alignment.centerLeft,
@@ -228,7 +238,8 @@ class UsageInstructionsSection extends StatelessWidget {
         wrapForTv(ListTile(
           dense: true,
           visualDensity: VisualDensity.compact,
-          leading: const Icon(Icons.touch_app_rounded),
+          leading: Icon(
+              isFruit ? LucideIcons.mousePointer : Icons.touch_app_rounded),
           title: FittedBox(
               fit: BoxFit.scaleDown,
               alignment: Alignment.centerLeft,
@@ -256,7 +267,7 @@ class UsageInstructionsSection extends StatelessWidget {
         wrapForTv(ListTile(
           dense: true,
           visualDensity: VisualDensity.compact,
-          leading: const Icon(Icons.link_rounded),
+          leading: Icon(isFruit ? LucideIcons.link : Icons.link_rounded),
           title: FittedBox(
               fit: BoxFit.scaleDown,
               alignment: Alignment.centerLeft,
@@ -284,7 +295,7 @@ class UsageInstructionsSection extends StatelessWidget {
         wrapForTv(ListTile(
           dense: true,
           visualDensity: VisualDensity.compact,
-          leading: const Icon(Icons.copy_rounded),
+          leading: Icon(isFruit ? LucideIcons.copy : Icons.copy_rounded),
           title: FittedBox(
               fit: BoxFit.scaleDown,
               alignment: Alignment.centerLeft,
@@ -312,7 +323,8 @@ class UsageInstructionsSection extends StatelessWidget {
         wrapForTv(ListTile(
           dense: true,
           visualDensity: VisualDensity.compact,
-          leading: const Icon(Icons.content_paste_rounded),
+          leading: Icon(
+              isFruit ? LucideIcons.clipboard : Icons.content_paste_rounded),
           title: FittedBox(
               fit: BoxFit.scaleDown,
               alignment: Alignment.centerLeft,
@@ -341,7 +353,8 @@ class UsageInstructionsSection extends StatelessWidget {
         wrapForTv(ListTile(
           dense: true,
           visualDensity: VisualDensity.compact,
-          leading: const Icon(Icons.healing_rounded),
+          leading:
+              Icon(isFruit ? LucideIcons.heartPulse : Icons.healing_rounded),
           title: FittedBox(
               fit: BoxFit.scaleDown,
               alignment: Alignment.centerLeft,
@@ -370,7 +383,9 @@ class UsageInstructionsSection extends StatelessWidget {
         wrapForTv(ListTile(
           dense: true,
           visualDensity: VisualDensity.compact,
-          leading: const Icon(Icons.download_for_offline_rounded),
+          leading: Icon(isFruit
+              ? LucideIcons.downloadCloud
+              : Icons.download_for_offline_rounded),
           title: FittedBox(
               fit: BoxFit.scaleDown,
               alignment: Alignment.centerLeft,

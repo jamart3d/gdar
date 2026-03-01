@@ -8,6 +8,7 @@ import 'package:shakedown/ui/widgets/show_list_item_details.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shakedown/providers/show_list_provider.dart';
+import 'package:shakedown/providers/theme_provider.dart';
 import 'package:shakedown/services/catalog_service.dart';
 import 'package:shakedown/models/rating.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -73,6 +74,7 @@ void main() {
             value: MockShowListProvider()),
         ChangeNotifierProvider<DeviceService>(
             create: (_) => MockDeviceService()),
+        ChangeNotifierProvider(create: (_) => ThemeProvider()),
       ],
       child: MaterialApp(
         home: Scaffold(
@@ -162,7 +164,7 @@ void main() {
     // Verify dialog title contains source ID
     expect(
         find.descendant(
-            of: find.byType(SimpleDialog), matching: find.text('source0')),
+            of: find.byType(Dialog), matching: find.text('source0')),
         findsOneWidget);
   });
 }

@@ -10,6 +10,8 @@ import 'package:shakedown/ui/widgets/section_card.dart';
 import 'package:shakedown/ui/widgets/settings/highlightable_setting.dart';
 import 'package:shakedown/ui/widgets/settings/random_probability_card.dart';
 import 'package:shakedown/ui/widgets/tv/tv_switch_list_tile.dart';
+import 'package:shakedown/providers/theme_provider.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 
 class PlaybackSection extends StatelessWidget {
   final double scaleFactor;
@@ -35,6 +37,8 @@ class PlaybackSection extends StatelessWidget {
   Widget build(BuildContext context) {
     final settingsProvider = context.watch<SettingsProvider>();
     final audioProvider = context.watch<AudioProvider>();
+    final themeProvider = context.watch<ThemeProvider>();
+    final isFruit = themeProvider.themeStyle == ThemeStyle.fruit;
 
     return SectionCard(
       key: ValueKey(
@@ -42,10 +46,12 @@ class PlaybackSection extends StatelessWidget {
       scaleFactor: scaleFactor,
       title: 'Playback',
       icon: Icons.play_circle_outline_rounded,
+      lucideIcon: LucideIcons.playCircle,
       initiallyExpanded: initiallyExpanded,
       children: [
         if (kIsWeb)
-          ..._buildWebGaplessSection(context, settingsProvider, scaleFactor),
+          ..._buildWebGaplessSection(
+              context, settingsProvider, scaleFactor, isFruit),
         // Screensaver settings moved to Screensaver section for Google TV
 
         HighlightableSetting(
@@ -77,7 +83,8 @@ class PlaybackSection extends StatelessWidget {
               HapticFeedback.lightImpact();
               context.read<SettingsProvider>().togglePlayOnTap();
             },
-            secondary: const Icon(Icons.touch_app_rounded),
+            secondary:
+                Icon(isFruit ? LucideIcons.pointer : Icons.touch_app_rounded),
           ),
         ),
         HighlightableSetting(
@@ -109,7 +116,8 @@ class PlaybackSection extends StatelessWidget {
             onChanged: (value) {
               context.read<SettingsProvider>().toggleShowPlaybackMessages();
             },
-            secondary: const Icon(Icons.message_rounded),
+            secondary: Icon(
+                isFruit ? LucideIcons.messageSquare : Icons.message_rounded),
           ),
         ),
         if (!context.read<DeviceService>().isTv && !kIsWeb)
@@ -146,7 +154,9 @@ class PlaybackSection extends StatelessWidget {
                 HapticFeedback.lightImpact();
                 context.read<SettingsProvider>().toggleOfflineBuffering();
               },
-              secondary: const Icon(Icons.download_for_offline_rounded),
+              secondary: Icon(isFruit
+                  ? LucideIcons.download
+                  : Icons.download_for_offline_rounded),
             ),
           ),
         if (!kIsWeb)
@@ -181,7 +191,8 @@ class PlaybackSection extends StatelessWidget {
                 HapticFeedback.lightImpact();
                 context.read<SettingsProvider>().toggleEnableBufferAgent();
               },
-              secondary: const Icon(Icons.healing_rounded),
+              secondary:
+                  Icon(isFruit ? LucideIcons.activity : Icons.healing_rounded),
             ),
           ),
         TvSwitchListTile(
@@ -205,7 +216,7 @@ class PlaybackSection extends StatelessWidget {
             context.read<SettingsProvider>().toggleNonRandom();
           },
           secondary: Icon(
-            Icons.shuffle_rounded,
+            isFruit ? LucideIcons.shuffle : Icons.shuffle_rounded,
             color: !settingsProvider.nonRandom
                 ? null
                 : Theme.of(context)
@@ -262,7 +273,7 @@ class PlaybackSection extends StatelessWidget {
               );
             }
           },
-          secondary: const Icon(Icons.repeat_rounded),
+          secondary: Icon(isFruit ? LucideIcons.repeat : Icons.repeat_rounded),
         ),
         TvSwitchListTile(
           dense: true,
@@ -293,7 +304,7 @@ class PlaybackSection extends StatelessWidget {
           onChanged: (value) {
             context.read<SettingsProvider>().togglePlayRandomOnStartup();
           },
-          secondary: const Icon(Icons.start_rounded),
+          secondary: Icon(isFruit ? LucideIcons.play : Icons.start_rounded),
         ),
         TvSwitchListTile(
           dense: true,
@@ -318,7 +329,8 @@ class PlaybackSection extends StatelessWidget {
           onChanged: (value) {
             context.read<SettingsProvider>().toggleRandomOnlyUnplayed();
           },
-          secondary: const Icon(Icons.new_releases_rounded),
+          secondary:
+              Icon(isFruit ? LucideIcons.star : Icons.new_releases_rounded),
         ),
         TvSwitchListTile(
           dense: true,
@@ -343,7 +355,7 @@ class PlaybackSection extends StatelessWidget {
           onChanged: (value) {
             context.read<SettingsProvider>().toggleRandomOnlyHighRated();
           },
-          secondary: const Icon(Icons.star_rate_rounded),
+          secondary: Icon(isFruit ? LucideIcons.star : Icons.star_rate_rounded),
         ),
         TvSwitchListTile(
           dense: true,
@@ -369,7 +381,8 @@ class PlaybackSection extends StatelessWidget {
           onChanged: (value) {
             context.read<SettingsProvider>().toggleRandomExcludePlayed();
           },
-          secondary: const Icon(Icons.history_toggle_off_rounded),
+          secondary: Icon(
+              isFruit ? LucideIcons.history : Icons.history_toggle_off_rounded),
         ),
         RandomProbabilityCard(scaleFactor: scaleFactor),
       ],
@@ -386,6 +399,7 @@ class PlaybackSection extends StatelessWidget {
     BuildContext context,
     SettingsProvider sp,
     double scaleFactor,
+    bool isFruit,
   ) {
     return [
       Padding(
@@ -401,7 +415,9 @@ class PlaybackSection extends StatelessWidget {
             Row(
               children: [
                 Icon(
-                  Icons.settings_input_component_rounded,
+                  isFruit
+                      ? LucideIcons.settings
+                      : Icons.settings_input_component_rounded,
                   size: 24 * scaleFactor,
                   color: Theme.of(context).colorScheme.primary,
                 ),
@@ -433,112 +449,73 @@ class PlaybackSection extends StatelessWidget {
               padding: EdgeInsets.only(left: 40.0 * scaleFactor),
               child: Align(
                 alignment: Alignment.centerLeft,
-                child: SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: SegmentedButton<AudioEngineMode>(
-                    showSelectedIcon: false,
-                    segments: [
-                      ButtonSegment(
-                        value: AudioEngineMode.webAudio,
-                        label: FittedBox(
-                          fit: BoxFit.scaleDown,
-                          child: Text(
-                            'Web Audio',
-                            maxLines: 1,
-                            overflow: TextOverflow.visible,
-                            style: TextStyle(fontSize: 14 * scaleFactor),
-                          ),
+                child: _SegmentedWrap<AudioEngineMode>(
+                  isFruit: isFruit,
+                  scaleFactor: scaleFactor,
+                  segments: [
+                    _Segment(
+                      value: AudioEngineMode.webAudio,
+                      label: 'Web Audio',
+                      tooltip: '0ms gapless (High Performance)',
+                      icon: isFruit
+                          ? LucideIcons.activity
+                          : Icons.graphic_eq_rounded,
+                    ),
+                    _Segment(
+                      value: AudioEngineMode.html5,
+                      label: 'Relisten',
+                      tooltip: 'Gapless HTML5 (Safe Background)',
+                      icon: isFruit
+                          ? LucideIcons.smartphone
+                          : Icons.smartphone_rounded,
+                    ),
+                    _Segment(
+                      value: AudioEngineMode.standard,
+                      label: 'Standard',
+                      tooltip: 'Native just_audio (Conservative)',
+                      icon: isFruit
+                          ? LucideIcons.settings
+                          : Icons.settings_input_component_rounded,
+                    ),
+                    _Segment(
+                      value: AudioEngineMode.passive,
+                      label: 'Passive',
+                      tooltip: 'Minimal HTML5 (Single element streaming)',
+                      icon: isFruit
+                          ? LucideIcons.battery
+                          : Icons.battery_saver_rounded,
+                    ),
+                    _Segment(
+                      value: AudioEngineMode.hybrid,
+                      label: 'Hybrid',
+                      tooltip: 'Web Audio Foreground, Relisten Background',
+                      icon: isFruit
+                          ? LucideIcons.layers
+                          : Icons.handshake_rounded,
+                    ),
+                  ],
+                  selectedValue: sp.audioEngineMode == AudioEngineMode.auto
+                      ? context.read<AudioProvider>().audioPlayer.activeMode
+                      : sp.audioEngineMode,
+                  onSelectionChanged: (AudioEngineMode mode) {
+                    HapticFeedback.lightImpact();
+                    sp.setAudioEngineMode(mode);
+                    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        behavior: SnackBarBehavior.floating,
+                        content: const Text(
+                            'Relaunch required for engine change to take effect.'),
+                        action: SnackBarAction(
+                          label: 'RELOAD',
+                          onPressed: () {
+                            context.read<AudioProvider>().audioPlayer.reload();
+                          },
                         ),
-                        tooltip: '0ms gapless (High Performance)',
-                        icon: const Icon(Icons.graphic_eq_rounded),
+                        duration: const Duration(seconds: 8),
                       ),
-                      ButtonSegment(
-                        value: AudioEngineMode.html5,
-                        label: FittedBox(
-                          fit: BoxFit.scaleDown,
-                          child: Text(
-                            'Relisten',
-                            maxLines: 1,
-                            overflow: TextOverflow.visible,
-                            style: TextStyle(fontSize: 14 * scaleFactor),
-                          ),
-                        ),
-                        tooltip: 'Gapless HTML5 (Safe Background)',
-                        icon: const Icon(Icons.smartphone_rounded),
-                      ),
-                      ButtonSegment(
-                        value: AudioEngineMode.standard,
-                        label: FittedBox(
-                          fit: BoxFit.scaleDown,
-                          child: Text(
-                            'Standard',
-                            maxLines: 1,
-                            overflow: TextOverflow.visible,
-                            style: TextStyle(fontSize: 14 * scaleFactor),
-                          ),
-                        ),
-                        tooltip: 'Native just_audio (Conservative)',
-                        icon:
-                            const Icon(Icons.settings_input_component_rounded),
-                      ),
-                      ButtonSegment(
-                        value: AudioEngineMode.passive,
-                        label: FittedBox(
-                          fit: BoxFit.scaleDown,
-                          child: Text(
-                            'Passive',
-                            maxLines: 1,
-                            overflow: TextOverflow.visible,
-                            style: TextStyle(fontSize: 14 * scaleFactor),
-                          ),
-                        ),
-                        tooltip: 'Minimal HTML5 (Single element streaming)',
-                        icon: const Icon(Icons.battery_saver_rounded),
-                      ),
-                      ButtonSegment(
-                        value: AudioEngineMode.hybrid,
-                        label: FittedBox(
-                          fit: BoxFit.scaleDown,
-                          child: Text(
-                            'Hybrid',
-                            maxLines: 1,
-                            overflow: TextOverflow.visible,
-                            style: TextStyle(fontSize: 14 * scaleFactor),
-                          ),
-                        ),
-                        tooltip: 'Web Audio Foreground, Relisten Background',
-                        icon: const Icon(Icons.handshake_rounded),
-                      ),
-                    ],
-                    selected: {
-                      sp.audioEngineMode == AudioEngineMode.auto
-                          ? context.read<AudioProvider>().audioPlayer.activeMode
-                          : sp.audioEngineMode
-                    },
-                    onSelectionChanged: (Set<AudioEngineMode> selection) {
-                      HapticFeedback.lightImpact();
-                      final mode = selection.first;
-                      sp.setAudioEngineMode(mode);
-                      ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          behavior: SnackBarBehavior.floating,
-                          content: const Text(
-                              'Relaunch required for engine change to take effect.'),
-                          action: SnackBarAction(
-                            label: 'RELOAD',
-                            onPressed: () {
-                              context
-                                  .read<AudioProvider>()
-                                  .audioPlayer
-                                  .reload();
-                            },
-                          ),
-                          duration: const Duration(seconds: 8),
-                        ),
-                      );
-                    },
-                  ),
+                    );
+                  },
                 ),
               ),
             ),
@@ -562,39 +539,37 @@ class PlaybackSection extends StatelessWidget {
                 padding: EdgeInsets.only(left: 40.0 * scaleFactor),
                 child: Align(
                   alignment: Alignment.centerLeft,
-                  child: SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: SegmentedButton<String>(
-                      showSelectedIcon: false,
-                      segments: [
-                        ButtonSegment(
-                          value: 'gap',
-                          label: Text('Gap',
-                              style: TextStyle(fontSize: 12 * scaleFactor)),
-                          icon: const Icon(Icons.pause_presentation_rounded,
-                              size: 16),
-                        ),
-                        ButtonSegment(
-                          value: 'gapless',
-                          label: Text('Gapless',
-                              style: TextStyle(fontSize: 12 * scaleFactor)),
-                          icon:
-                              const Icon(Icons.linear_scale_rounded, size: 16),
-                        ),
-                        ButtonSegment(
-                          value: 'crossfade',
-                          label: Text('Crossfade',
-                              style: TextStyle(fontSize: 12 * scaleFactor)),
-                          icon: const Icon(Icons.multiline_chart_rounded,
-                              size: 16),
-                        ),
-                      ],
-                      selected: {sp.trackTransitionMode},
-                      onSelectionChanged: (Set<String> selection) {
-                        HapticFeedback.lightImpact();
-                        sp.setTrackTransitionMode(selection.first);
-                      },
-                    ),
+                  child: _SegmentedWrap<String>(
+                    isFruit: isFruit,
+                    scaleFactor: scaleFactor,
+                    segments: [
+                      _Segment(
+                        value: 'gap',
+                        label: 'Gap',
+                        icon: isFruit
+                            ? LucideIcons.pause
+                            : Icons.pause_presentation_rounded,
+                      ),
+                      _Segment(
+                        value: 'gapless',
+                        label: 'Gapless',
+                        icon: isFruit
+                            ? LucideIcons.list
+                            : Icons.linear_scale_rounded,
+                      ),
+                      _Segment(
+                        value: 'crossfade',
+                        label: 'Crossfade',
+                        icon: isFruit
+                            ? LucideIcons.activity
+                            : Icons.multiline_chart_rounded,
+                      ),
+                    ],
+                    selectedValue: sp.trackTransitionMode,
+                    onSelectionChanged: (String mode) {
+                      HapticFeedback.lightImpact();
+                      sp.setTrackTransitionMode(mode);
+                    },
                   ),
                 ),
               ),
@@ -651,50 +626,39 @@ class PlaybackSection extends StatelessWidget {
                   padding: EdgeInsets.only(left: 40.0 * scaleFactor),
                   child: Align(
                     alignment: Alignment.centerLeft,
-                    child: SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: SegmentedButton<HybridHandoffMode>(
-                        showSelectedIcon: false,
-                        segments: [
-                          ButtonSegment(
-                            value: HybridHandoffMode.immediate,
-                            label: FittedBox(
-                              fit: BoxFit.scaleDown,
-                              child: Text('Immediate',
-                                  style: TextStyle(fontSize: 12 * scaleFactor)),
-                            ),
-                            tooltip: 'Swap as soon as loaded',
-                            icon: const Icon(Icons.flash_on_rounded, size: 16),
-                          ),
-                          ButtonSegment(
-                            value: HybridHandoffMode.buffered,
-                            label: FittedBox(
-                              fit: BoxFit.scaleDown,
-                              child: Text('End of Buffer',
-                                  style: TextStyle(fontSize: 12 * scaleFactor)),
-                            ),
-                            tooltip:
-                                'Wait until HTML5 buffer is exhausted before swap',
-                            icon: const Icon(Icons.download_done_rounded,
-                                size: 16),
-                          ),
-                          ButtonSegment(
-                            value: HybridHandoffMode.none,
-                            label: FittedBox(
-                              fit: BoxFit.scaleDown,
-                              child: Text('Disabled',
-                                  style: TextStyle(fontSize: 12 * scaleFactor)),
-                            ),
-                            tooltip: 'Stay on Web Audio (Gapless) always',
-                            icon: const Icon(Icons.block_rounded, size: 16),
-                          ),
-                        ],
-                        selected: {sp.hybridHandoffMode},
-                        onSelectionChanged: (Set<HybridHandoffMode> selection) {
-                          HapticFeedback.lightImpact();
-                          sp.setHybridHandoffMode(selection.first);
-                        },
-                      ),
+                    child: _SegmentedWrap<HybridHandoffMode>(
+                      isFruit: isFruit,
+                      scaleFactor: scaleFactor,
+                      segments: [
+                        _Segment(
+                          value: HybridHandoffMode.immediate,
+                          label: 'Immediate',
+                          tooltip: 'Swap as soon as loaded',
+                          icon: isFruit
+                              ? LucideIcons.zap
+                              : Icons.flash_on_rounded,
+                        ),
+                        _Segment(
+                          value: HybridHandoffMode.buffered,
+                          label: 'End of Buffer',
+                          tooltip:
+                              'Wait until HTML5 buffer is exhausted before swap',
+                          icon: isFruit
+                              ? LucideIcons.check
+                              : Icons.download_done_rounded,
+                        ),
+                        _Segment(
+                          value: HybridHandoffMode.none,
+                          label: 'Disabled',
+                          tooltip: 'Stay on Web Audio (Gapless) always',
+                          icon: isFruit ? LucideIcons.ban : Icons.block_rounded,
+                        ),
+                      ],
+                      selectedValue: sp.hybridHandoffMode,
+                      onSelectionChanged: (HybridHandoffMode mode) {
+                        HapticFeedback.lightImpact();
+                        sp.setHybridHandoffMode(mode);
+                      },
                     ),
                   ),
                 ),
@@ -714,59 +678,48 @@ class PlaybackSection extends StatelessWidget {
                   padding: EdgeInsets.only(left: 40.0 * scaleFactor),
                   child: Align(
                     alignment: Alignment.centerLeft,
-                    child: SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: SegmentedButton<HybridBackgroundMode>(
-                        showSelectedIcon: false,
-                        segments: [
-                          ButtonSegment(
-                            value: HybridBackgroundMode.relisten,
-                            label: FittedBox(
-                              fit: BoxFit.scaleDown,
-                              child: Text('Relisten',
-                                  style: TextStyle(fontSize: 12 * scaleFactor)),
-                            ),
-                            tooltip: 'Hand off to HTML5 for background',
-                            icon: const Icon(Icons.refresh_rounded, size: 16),
-                          ),
-                          ButtonSegment(
-                            value: HybridBackgroundMode.heartbeat,
-                            label: FittedBox(
-                              fit: BoxFit.scaleDown,
-                              child: Text('Heartbeat',
-                                  style: TextStyle(fontSize: 12 * scaleFactor)),
-                            ),
-                            tooltip: 'Silent Audio Clock (Web Audio)',
-                            icon: const Icon(Icons.favorite_rounded, size: 16),
-                          ),
-                          ButtonSegment(
-                            value: HybridBackgroundMode.video,
-                            label: FittedBox(
-                              fit: BoxFit.scaleDown,
-                              child: Text('Video Trick',
-                                  style: TextStyle(fontSize: 12 * scaleFactor)),
-                            ),
-                            tooltip: 'Silent Video Hack (Web Audio)',
-                            icon: const Icon(Icons.videocam_rounded, size: 16),
-                          ),
-                          ButtonSegment(
-                            value: HybridBackgroundMode.none,
-                            label: FittedBox(
-                              fit: BoxFit.scaleDown,
-                              child: Text('None',
-                                  style: TextStyle(fontSize: 12 * scaleFactor)),
-                            ),
-                            tooltip: 'No survival tricks (May throttle)',
-                            icon: const Icon(Icons.power_off_rounded, size: 16),
-                          ),
-                        ],
-                        selected: {sp.hybridBackgroundMode},
-                        onSelectionChanged:
-                            (Set<HybridBackgroundMode> selection) {
-                          HapticFeedback.lightImpact();
-                          sp.setHybridBackgroundMode(selection.first);
-                        },
-                      ),
+                    child: _SegmentedWrap<HybridBackgroundMode>(
+                      isFruit: isFruit,
+                      scaleFactor: scaleFactor,
+                      segments: [
+                        _Segment(
+                          value: HybridBackgroundMode.relisten,
+                          label: 'Relisten',
+                          tooltip: 'Hand off to HTML5 for background',
+                          icon: isFruit
+                              ? LucideIcons.refreshCw
+                              : Icons.refresh_rounded,
+                        ),
+                        _Segment(
+                          value: HybridBackgroundMode.heartbeat,
+                          label: 'Heartbeat',
+                          tooltip: 'Silent Audio Clock (Web Audio)',
+                          icon: isFruit
+                              ? LucideIcons.heart
+                              : Icons.favorite_rounded,
+                        ),
+                        _Segment(
+                          value: HybridBackgroundMode.video,
+                          label: 'Video Trick',
+                          tooltip: 'Silent Video Hack (Web Audio)',
+                          icon: isFruit
+                              ? LucideIcons.video
+                              : Icons.videocam_rounded,
+                        ),
+                        _Segment(
+                          value: HybridBackgroundMode.none,
+                          label: 'None',
+                          tooltip: 'No survival tricks (May throttle)',
+                          icon: isFruit
+                              ? LucideIcons.power
+                              : Icons.power_off_rounded,
+                        ),
+                      ],
+                      selectedValue: sp.hybridBackgroundMode,
+                      onSelectionChanged: (HybridBackgroundMode mode) {
+                        HapticFeedback.lightImpact();
+                        sp.setHybridBackgroundMode(mode);
+                      },
                     ),
                   ),
                 ),
@@ -778,7 +731,8 @@ class PlaybackSection extends StatelessWidget {
       TvSwitchListTile(
         dense: true,
         visualDensity: VisualDensity.compact,
-        secondary: const Icon(Icons.sensor_window_rounded),
+        secondary:
+            Icon(isFruit ? LucideIcons.monitor : Icons.sensor_window_rounded),
         title: Text(
           'Keep Screen On',
           style: Theme.of(context)
@@ -801,4 +755,102 @@ class PlaybackSection extends StatelessWidget {
       ),
     ];
   }
+}
+
+class _SegmentedWrap<T> extends StatelessWidget {
+  final List<_Segment<T>> segments;
+  final T selectedValue;
+  final ValueChanged<T> onSelectionChanged;
+  final double scaleFactor;
+  final bool isFruit;
+
+  const _SegmentedWrap({
+    required this.segments,
+    required this.selectedValue,
+    required this.onSelectionChanged,
+    required this.scaleFactor,
+    required this.isFruit,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Wrap(
+      spacing: 8.0 * scaleFactor,
+      runSpacing: 8.0 * scaleFactor,
+      children: segments.map((segment) {
+        final isSelected = segment.value == selectedValue;
+        final theme = Theme.of(context);
+
+        return Tooltip(
+          message: segment.tooltip ?? '',
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              borderRadius: BorderRadius.circular(20),
+              onTap: () => onSelectionChanged(segment.value),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                padding: EdgeInsets.symmetric(
+                  horizontal: 16 * scaleFactor,
+                  vertical: 8 * scaleFactor,
+                ),
+                decoration: BoxDecoration(
+                  color: isSelected
+                      ? theme.colorScheme.primaryContainer
+                      : theme.colorScheme.surfaceContainerHighest,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: isSelected
+                        ? theme.colorScheme.primary
+                        : Colors.transparent,
+                    width: isSelected ? 2 : 1,
+                  ),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (segment.icon != null) ...[
+                      Icon(
+                        segment.icon,
+                        size: 16 * scaleFactor,
+                        color: isSelected
+                            ? theme.colorScheme.onPrimaryContainer
+                            : theme.colorScheme.onSurfaceVariant,
+                      ),
+                      SizedBox(width: 8 * scaleFactor),
+                    ],
+                    Text(
+                      segment.label,
+                      style: theme.textTheme.labelLarge?.copyWith(
+                        fontSize: 13 * scaleFactor,
+                        color: isSelected
+                            ? theme.colorScheme.onPrimaryContainer
+                            : theme.colorScheme.onSurfaceVariant,
+                        fontWeight:
+                            isSelected ? FontWeight.bold : FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      }).toList(),
+    );
+  }
+}
+
+class _Segment<T> {
+  final T value;
+  final String label;
+  final IconData? icon;
+  final String? tooltip;
+
+  const _Segment({
+    required this.value,
+    required this.label,
+    this.icon,
+    this.tooltip,
+  });
 }

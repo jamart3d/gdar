@@ -4,6 +4,8 @@ import 'package:provider/provider.dart';
 import 'package:shakedown/providers/settings_provider.dart';
 import 'package:shakedown/ui/widgets/section_card.dart';
 import 'package:shakedown/ui/widgets/tv/tv_switch_list_tile.dart';
+import 'package:shakedown/providers/theme_provider.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 
 class InterfaceSection extends StatelessWidget {
   final double scaleFactor;
@@ -18,12 +20,15 @@ class InterfaceSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final settingsProvider = context.watch<SettingsProvider>();
+    final themeProvider = context.watch<ThemeProvider>();
+    final isFruit = themeProvider.themeStyle == ThemeStyle.fruit;
 
     return SectionCard(
       key: const ValueKey('interface_section'),
       scaleFactor: scaleFactor,
       title: 'Interface',
       icon: Icons.view_quilt_outlined,
+      lucideIcon: LucideIcons.layout,
       initiallyExpanded: initiallyExpanded,
       children: [
         // 1. General UI Group
@@ -51,7 +56,8 @@ class InterfaceSection extends StatelessWidget {
             HapticFeedback.lightImpact();
             context.read<SettingsProvider>().toggleUiScale();
           },
-          secondary: const Icon(Icons.text_fields_rounded),
+          secondary:
+              Icon(isFruit ? LucideIcons.type : Icons.text_fields_rounded),
         ),
         TvSwitchListTile(
           dense: true,
@@ -77,7 +83,8 @@ class InterfaceSection extends StatelessWidget {
             HapticFeedback.lightImpact();
             context.read<SettingsProvider>().toggleShowSplashScreen();
           },
-          secondary: const Icon(Icons.rocket_launch_rounded),
+          secondary:
+              Icon(isFruit ? LucideIcons.rocket : Icons.rocket_launch_rounded),
         ),
 
         const SizedBox(height: 8),
@@ -109,7 +116,8 @@ class InterfaceSection extends StatelessWidget {
             HapticFeedback.lightImpact();
             context.read<SettingsProvider>().toggleDateFirstInShowCard();
           },
-          secondary: const Icon(Icons.date_range_rounded),
+          secondary:
+              Icon(isFruit ? LucideIcons.calendar : Icons.date_range_rounded),
         ),
         TvSwitchListTile(
           dense: true,
@@ -135,7 +143,8 @@ class InterfaceSection extends StatelessWidget {
             HapticFeedback.lightImpact();
             context.read<SettingsProvider>().toggleShowDayOfWeek();
           },
-          secondary: const Icon(Icons.today_rounded),
+          secondary:
+              Icon(isFruit ? LucideIcons.calendarDays : Icons.today_rounded),
         ),
         if (settingsProvider.showDayOfWeek)
           TvSwitchListTile(
@@ -162,7 +171,8 @@ class InterfaceSection extends StatelessWidget {
               HapticFeedback.lightImpact();
               context.read<SettingsProvider>().toggleAbbreviateDayOfWeek();
             },
-            secondary: const Icon(Icons.short_text_rounded),
+            secondary:
+                Icon(isFruit ? LucideIcons.text : Icons.short_text_rounded),
           ),
         TvSwitchListTile(
           dense: true,
@@ -188,7 +198,9 @@ class InterfaceSection extends StatelessWidget {
             HapticFeedback.lightImpact();
             context.read<SettingsProvider>().toggleAbbreviateMonth();
           },
-          secondary: const Icon(Icons.calendar_view_month_rounded),
+          secondary: Icon(isFruit
+              ? LucideIcons.calendarRange
+              : Icons.calendar_view_month_rounded),
         ),
         const SizedBox(height: 8),
         const Divider(),
@@ -219,7 +231,7 @@ class InterfaceSection extends StatelessWidget {
             HapticFeedback.lightImpact();
             context.read<SettingsProvider>().toggleSortOldestFirst();
           },
-          secondary: const Icon(Icons.sort_rounded),
+          secondary: Icon(isFruit ? LucideIcons.list : Icons.sort_rounded),
         ),
         TvSwitchListTile(
           dense: true,
@@ -245,7 +257,7 @@ class InterfaceSection extends StatelessWidget {
             HapticFeedback.lightImpact();
             context.read<SettingsProvider>().toggleShowSingleShnid();
           },
-          secondary: const Icon(Icons.looks_one_rounded),
+          secondary: Icon(isFruit ? LucideIcons.hash : Icons.looks_one_rounded),
         ),
         const SizedBox(height: 8),
         const Divider(),
@@ -276,7 +288,8 @@ class InterfaceSection extends StatelessWidget {
             HapticFeedback.lightImpact();
             context.read<SettingsProvider>().toggleShowTrackNumbers();
           },
-          secondary: const Icon(Icons.pin_rounded),
+          secondary:
+              Icon(isFruit ? LucideIcons.listOrdered : Icons.pin_rounded),
         ),
         TvSwitchListTile(
           dense: true,
@@ -302,7 +315,8 @@ class InterfaceSection extends StatelessWidget {
             HapticFeedback.lightImpact();
             context.read<SettingsProvider>().toggleHideTrackDuration();
           },
-          secondary: const Icon(Icons.timer_off_rounded),
+          secondary:
+              Icon(isFruit ? LucideIcons.timerOff : Icons.timer_off_rounded),
         ),
         const SizedBox(height: 8),
         const Divider(),
@@ -327,7 +341,8 @@ class InterfaceSection extends StatelessWidget {
             HapticFeedback.lightImpact();
             context.read<SettingsProvider>().toggleEnableSwipeToBlock();
           },
-          secondary: const Icon(Icons.swipe_rounded),
+          secondary:
+              Icon(isFruit ? LucideIcons.moveHorizontal : Icons.swipe_rounded),
           contentPadding:
               const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
         ),

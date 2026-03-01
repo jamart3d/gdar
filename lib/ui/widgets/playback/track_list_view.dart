@@ -9,12 +9,17 @@ import 'package:shakedown/providers/settings_provider.dart';
 import 'package:shakedown/services/device_service.dart';
 import 'package:shakedown/ui/styles/app_typography.dart';
 import 'package:shakedown/ui/widgets/animated_gradient_border.dart';
+import 'package:shakedown/ui/widgets/theme/liquid_glass_wrapper.dart';
+import 'package:shakedown/ui/widgets/theme/neumorphic_wrapper.dart';
 import 'package:shakedown/ui/widgets/conditional_marquee.dart';
 import 'package:shakedown/ui/widgets/tv/tv_focus_wrapper.dart';
 import 'package:shakedown/utils/font_layout_config.dart';
 import 'package:shakedown/utils/utils.dart';
 import 'package:shakedown/ui/widgets/tv/tv_reload_dialog.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:shakedown/providers/theme_provider.dart';
+import 'package:lucide_icons/lucide_icons.dart';
+import 'package:flutter/foundation.dart';
 
 class TrackListView extends StatelessWidget {
   final Source source;
@@ -148,17 +153,24 @@ class TrackListView extends StatelessWidget {
         final double scaleFactor =
             FontLayoutConfig.getEffectiveScale(context, settingsProvider);
 
+        final themeProvider = context.watch<ThemeProvider>();
+        final bool isFruit =
+            themeProvider.themeStyle == ThemeStyle.fruit && kIsWeb;
+
         Widget trackItem = Container(
-          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 1),
+          margin: EdgeInsets.symmetric(
+            horizontal: isFruit ? 8 : 16,
+            vertical: isFruit ? 2 : 1,
+          ),
           decoration: BoxDecoration(
             color: (isPlaying && settingsProvider.highlightPlayingWithRgb)
                 ? Colors.transparent
-                : isPlaying
+                : (isPlaying && !isFruit)
                     ? (isTrueBlackMode
                         ? Colors.black
                         : colorScheme.primaryContainer)
                     : Colors.transparent,
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(isFruit ? 14 : 12),
           ),
           child: (isPlaying && settingsProvider.highlightPlayingWithRgb)
               ? Container(
@@ -194,11 +206,23 @@ class TrackListView extends StatelessWidget {
                     ),
                   ),
                 )
-              : Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: _buildTrackListTile(context, audioProvider, track,
-                      trackIndex, isPlaying, scaleFactor, false),
-                ),
+              : (isPlaying && isFruit)
+                  ? LiquidGlassWrapper(
+                      enabled: true,
+                      borderRadius: BorderRadius.circular(14),
+                      opacity: 0.08,
+                      blur: 10,
+                      child: Padding(
+                        padding: const EdgeInsets.all(6.0),
+                        child: _buildTrackListTile(context, audioProvider,
+                            track, trackIndex, isPlaying, scaleFactor, false),
+                      ),
+                    )
+                  : Padding(
+                      padding: EdgeInsets.all(isFruit ? 6.0 : 8.0),
+                      child: _buildTrackListTile(context, audioProvider, track,
+                          trackIndex, isPlaying, scaleFactor, false),
+                    ),
         );
 
         if (isTv) {
@@ -288,16 +312,23 @@ class TrackListView extends StatelessWidget {
     );
   }
 
-  // Duration text style — always uses default system font regardless of app font setting
   TextStyle _durationTextStyle(
-      TextTheme textTheme, ColorScheme colorScheme, double scaleFactor) {
+      TextTheme textTheme, ColorScheme colorScheme, double scaleFactor,
+      [bool isFruit = false, bool isDarkMode = true]) {
+    final Color textColor = isFruit
+        ? (isDarkMode
+            ? Colors.white.withValues(alpha: 0.6)
+            : Colors.black.withValues(alpha: 0.6))
+        : colorScheme.onSurfaceVariant;
+
     return (textTheme.bodyMedium ?? const TextStyle())
         .apply(fontSizeFactor: scaleFactor)
         .copyWith(
       fontFamily: null, // clear inherited app font
       package: null,
-      color: colorScheme.onSurfaceVariant,
-      fontWeight: FontWeight.w500,
+      color: textColor,
+      fontWeight: isFruit ? FontWeight.w500 : FontWeight.w500,
+      letterSpacing: isFruit ? 0.3 : null,
       fontFeatures: const [FontFeature.tabularFigures()],
     ).merge(const TextStyle(fontFamily: 'Roboto'));
   }
@@ -305,9 +336,12 @@ class TrackListView extends StatelessWidget {
   Widget _buildTrackListTile(BuildContext context, AudioProvider audioProvider,
       Track track, int trackIndex, bool isPlaying, double scaleFactor,
       [bool isTvFocus = false]) {
+    final settingsProvider = context.watch<SettingsProvider>();
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
-    final settingsProvider = context.watch<SettingsProvider>();
+    final themeProvider = context.watch<ThemeProvider>();
+    final bool isFruit = themeProvider.themeStyle == ThemeStyle.fruit && kIsWeb;
+    final bool isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
     final baseTitleStyle =
         textTheme.bodyLarge ?? const TextStyle(fontSize: 16.0);
@@ -315,17 +349,24 @@ class TrackListView extends StatelessWidget {
     final double titleFontSize = AppTypography.responsiveFontSize(
         context, context.read<DeviceService>().isTv ? 14.0 : 16.0);
 
+    final Color titleColor = isFruit
+        ? (isDarkMode
+            ? Colors.white.withValues(alpha: 0.9)
+            : Colors.black.withValues(alpha: 0.9))
+        : (isPlaying ? colorScheme.primary : colorScheme.onSurface);
+
     final titleStyle = baseTitleStyle.copyWith(
       fontSize: titleFontSize,
-      fontWeight: isPlaying ? FontWeight.w600 : FontWeight.normal,
-      color: isPlaying ? colorScheme.primary : colorScheme.onSurface,
+      fontWeight: isPlaying ? FontWeight.w700 : FontWeight.w400,
+      color: titleColor,
       height: 1.1,
+      letterSpacing: isFruit ? -0.2 : null,
     );
 
     Widget? leadingWidget;
     final isTv = context.read<DeviceService>().isTv;
 
-    if (isPlaying && isTv) {
+    if (isPlaying && (isTv || isFruit)) {
       leadingWidget = StreamBuilder<PlayerState>(
         stream: audioProvider.playerStateStream,
         builder: (context, snapshot) {
@@ -335,24 +376,68 @@ class TrackListView extends StatelessWidget {
           if (processingState == ProcessingState.loading ||
               processingState == ProcessingState.buffering) {
             return SizedBox(
-              width: 24,
-              height: 24,
+              width: 20,
+              height: 20,
               child: CircularProgressIndicator(
-                strokeWidth: 3,
-                color: colorScheme.primary,
+                strokeWidth: 2,
+                color: isFruit ? titleColor : colorScheme.primary,
               ),
             );
-          } else if (playing) {
-            return Icon(Icons.pause, color: colorScheme.primary);
           } else {
-            return Icon(Icons.play_arrow, color: colorScheme.primary);
+            Widget icon = Icon(
+              playing
+                  ? (isFruit ? LucideIcons.pause : Icons.pause)
+                  : (isFruit ? LucideIcons.play : Icons.play_arrow),
+              color: isFruit ? titleColor : colorScheme.primary,
+              size: isFruit ? 18 : 24,
+            );
+
+            if (isFruit) {
+              icon = NeumorphicWrapper(
+                enabled: settingsProvider.useNeumorphism,
+                borderRadius: 20,
+                isCircle: true,
+                intensity: 0.8,
+                child: LiquidGlassWrapper(
+                  enabled: !settingsProvider.useTrueBlack,
+                  borderRadius: BorderRadius.circular(20),
+                  child: Container(
+                    width: 32,
+                    height: 32,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: settingsProvider.useTrueBlack
+                          ? Colors.black
+                          : Colors.white.withValues(alpha: 0.1),
+                    ),
+                    child: icon,
+                  ),
+                ),
+              );
+            }
+
+            return MouseRegion(
+              cursor: SystemMouseCursors.click,
+              child: GestureDetector(
+                onTap: () {
+                  HapticFeedback.lightImpact();
+                  if (playing) {
+                    audioProvider.pause();
+                  } else {
+                    audioProvider.audioPlayer.play();
+                  }
+                },
+                child: icon,
+              ),
+            );
           }
         },
       );
     }
 
-    final durationStyle =
-        _durationTextStyle(textTheme, colorScheme, scaleFactor);
+    final durationStyle = _durationTextStyle(
+        textTheme, colorScheme, scaleFactor, isFruit, isDarkMode);
 
     final Widget listTile = ListTile(
       leading: leadingWidget,

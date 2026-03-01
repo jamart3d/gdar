@@ -178,16 +178,27 @@ void main() {
     await tester.pumpWidget(createTestableWidget(settingsProvider));
     await tester.pump(const Duration(seconds: 1));
 
-    // Scroll to bottom to ensure widgets are built
-    await tester.drag(find.byType(Scrollable), const Offset(0, -1000));
-    await tester.pump(const Duration(seconds: 1));
+    // Scroll until CollectionStatistics is visible
+    final statsFinder = find.byType(CollectionStatistics);
+    await tester.scrollUntilVisible(statsFinder, 500,
+        scrollable: find.byType(Scrollable));
+    await tester.pumpAndSettle();
 
     // Verify Collection Statistics is present
     expect(find.byType(CollectionStatistics), findsOneWidget);
     expect(find.text('Collection Statistics'), findsOneWidget);
 
     // Verify DataSection (Manage Rated Shows) is present
-    expect(find.byType(DataSection), findsOneWidget);
+    final dataFinder = find.byType(DataSection);
+    await tester.scrollUntilVisible(dataFinder, 500,
+        scrollable: find.byType(Scrollable));
+    await tester.pumpAndSettle();
+    expect(dataFinder, findsOneWidget);
+
+    // Tap to expand since it's initially collapsed
+    await tester.tap(dataFinder);
+    await tester.pumpAndSettle();
+
     expect(find.text('Manage Rated Shows'), findsOneWidget);
 
     // Verify "Library" title from LibrarySection is NOT present (unless it matches something else, but LibrarySection is gone)

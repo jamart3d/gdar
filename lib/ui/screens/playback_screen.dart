@@ -20,6 +20,8 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'dart:async';
 import 'package:shakedown/services/device_service.dart';
 import 'package:shakedown/ui/widgets/tv/tv_scrollbar.dart';
+import 'package:shakedown/providers/theme_provider.dart';
+import 'package:shakedown/ui/widgets/theme/neumorphic_wrapper.dart';
 
 // ── Small private widgets ─────────────────────────────────────────────────────
 
@@ -419,10 +421,6 @@ class PlaybackScreenState extends State<PlaybackScreen>
           brightness: Theme.of(context).brightness);
     }
 
-    final panelColor = isTrueBlackMode
-        ? Colors.black
-        : Theme.of(context).colorScheme.surfaceContainer;
-
     final double scaleFactor =
         FontLayoutConfig.getEffectiveScale(context, settingsProvider);
 
@@ -433,7 +431,7 @@ class PlaybackScreenState extends State<PlaybackScreen>
     final double screenHeight = MediaQuery.of(context).size.height;
     // Ensure we have enough room for the expanded content column even on small phones.
     // 210 is roughly the height of Location + Date + Progress + Controls at 1.0 scale.
-    final double minExpandedHeight = 210.0 * scaleFactor;
+    final double minExpandedHeight = 180.0 * scaleFactor;
     final double targetMaxHeight = minPanelHeight + minExpandedHeight;
 
     // Clamp between default percentage and 85% of screen height.
@@ -651,19 +649,25 @@ class PlaybackScreenState extends State<PlaybackScreen>
         children: [
           SlidingUpPanel(
             controller: _panelController,
-            color: panelColor,
-            borderRadius: const BorderRadius.only(
-              topLeft: Radius.circular(24.0),
-              topRight: Radius.circular(24.0),
-            ),
+            color: Colors.transparent,
+            borderRadius: null,
             boxShadow: isTrueBlackMode
                 ? []
-                : [
-                    BoxShadow(
-                      blurRadius: 20.0,
-                      color: Colors.black.withValues(alpha: 0.2),
-                    )
-                  ],
+                : (context.watch<ThemeProvider>().themeStyle ==
+                            ThemeStyle.fruit &&
+                        settingsProvider.useNeumorphism)
+                    ? NeumorphicWrapper.getShadows(
+                        context: context,
+                        offset: const Offset(0, -8),
+                        blur: 24,
+                        intensity: 1.1,
+                      )
+                    : [
+                        BoxShadow(
+                          blurRadius: 20.0,
+                          color: Colors.black.withValues(alpha: 0.2),
+                        )
+                      ],
             minHeight: minPanelHeight,
             maxHeight: maxPanelHeight,
             margin: EdgeInsets.zero,

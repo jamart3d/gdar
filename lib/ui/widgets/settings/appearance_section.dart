@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -12,6 +13,7 @@ import 'package:shakedown/ui/widgets/tv/tv_switch_list_tile.dart';
 import 'package:shakedown/ui/widgets/tv/tv_list_tile.dart';
 import 'package:shakedown/ui/widgets/tv/tv_focus_wrapper.dart';
 import 'package:shakedown/ui/widgets/settings/rainbow_color_picker.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 
 class AppearanceSection extends StatefulWidget {
   final double scaleFactor;
@@ -67,6 +69,7 @@ class _AppearanceSectionState extends State<AppearanceSection> {
       scaleFactor: widget.scaleFactor,
       title: 'Appearance',
       icon: Icons.palette_outlined,
+      lucideIcon: LucideIcons.palette,
       initiallyExpanded: widget.initiallyExpanded,
       children: [
         context.watch<DeviceService>().isTv
@@ -89,9 +92,13 @@ class _AppearanceSectionState extends State<AppearanceSection> {
                       .setThemeMode(value ? ThemeMode.dark : ThemeMode.light);
                 },
                 secondary: Icon(
-                  themeProvider.isDarkMode
-                      ? Icons.dark_mode_rounded
-                      : Icons.light_mode_rounded,
+                  themeProvider.themeStyle == ThemeStyle.fruit
+                      ? (themeProvider.isDarkMode
+                          ? LucideIcons.moon
+                          : LucideIcons.sun)
+                      : (themeProvider.isDarkMode
+                          ? Icons.dark_mode_rounded
+                          : Icons.light_mode_rounded),
                 ),
               )
             : Padding(
@@ -113,21 +120,30 @@ class _AppearanceSectionState extends State<AppearanceSection> {
                       child: SingleChildScrollView(
                         scrollDirection: Axis.horizontal,
                         child: SegmentedButton<ThemeMode>(
-                          segments: const [
+                          segments: [
                             ButtonSegment(
                               value: ThemeMode.system,
-                              label: Text('System'),
-                              icon: Icon(Icons.brightness_auto_rounded),
+                              label: const Text('System'),
+                              icon: Icon(
+                                  themeProvider.themeStyle == ThemeStyle.fruit
+                                      ? LucideIcons.monitor
+                                      : Icons.brightness_auto_rounded),
                             ),
                             ButtonSegment(
                               value: ThemeMode.light,
-                              label: Text('Light'),
-                              icon: Icon(Icons.light_mode_rounded),
+                              label: const Text('Light'),
+                              icon: Icon(
+                                  themeProvider.themeStyle == ThemeStyle.fruit
+                                      ? LucideIcons.sun
+                                      : Icons.light_mode_rounded),
                             ),
                             ButtonSegment(
                               value: ThemeMode.dark,
-                              label: Text('Dark'),
-                              icon: Icon(Icons.dark_mode_rounded),
+                              label: const Text('Dark'),
+                              icon: Icon(
+                                  themeProvider.themeStyle == ThemeStyle.fruit
+                                      ? LucideIcons.moon
+                                      : Icons.dark_mode_rounded),
                             ),
                           ],
                           selected: {themeProvider.selectedThemeMode},
@@ -150,34 +166,193 @@ class _AppearanceSectionState extends State<AppearanceSection> {
                   ],
                 ),
               ),
-        TvSwitchListTile(
-          dense: true,
-          visualDensity: VisualDensity.compact,
-          title: FittedBox(
-              fit: BoxFit.scaleDown,
-              alignment: Alignment.centerLeft,
-              child: Text('Dynamic Color',
+        if (kIsWeb && !context.watch<DeviceService>().isTv) ...[
+          Padding(
+            padding:
+                const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Style',
                   style: Theme.of(context)
                       .textTheme
-                      .titleMedium
-                      ?.copyWith(fontSize: 16 * widget.scaleFactor))),
-          subtitle: FittedBox(
-              fit: BoxFit.scaleDown,
-              alignment: Alignment.centerLeft,
-              child: Text('Theme from wallpaper',
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodySmall
-                      ?.copyWith(fontSize: 12 * widget.scaleFactor))),
-          value: settingsProvider.useDynamicColor,
-          onChanged: (value) {
-            HapticFeedback.lightImpact();
-            context.read<SettingsProvider>().toggleUseDynamicColor();
-          },
-          secondary: const Icon(Icons.color_lens_rounded),
-        ),
+                      .bodyMedium
+                      ?.copyWith(fontSize: 16.0 * widget.scaleFactor),
+                ),
+                const SizedBox(height: 8),
+                TvFocusWrapper(
+                  borderRadius: BorderRadius.circular(24),
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: SegmentedButton<ThemeStyle>(
+                      segments: [
+                        ButtonSegment(
+                          value: ThemeStyle.android,
+                          label: const Text('Android'),
+                          icon: Icon(
+                              themeProvider.themeStyle == ThemeStyle.fruit
+                                  ? LucideIcons.smartphone
+                                  : Icons.android_rounded),
+                        ),
+                        ButtonSegment(
+                          value: ThemeStyle.fruit,
+                          label: const Text('Fruit'),
+                          icon: Icon(
+                              themeProvider.themeStyle == ThemeStyle.fruit
+                                  ? LucideIcons.apple
+                                  : Icons.apple_rounded),
+                        ),
+                      ],
+                      selected: {themeProvider.themeStyle},
+                      onSelectionChanged: (Set<ThemeStyle> newSelection) {
+                        final style = newSelection.first;
+                        HapticFeedback.lightImpact();
+                        context.read<ThemeProvider>().setThemeStyle(style);
+
+                        // Theme-specific constraints
+                        final sp = context.read<SettingsProvider>();
+                        if (style == ThemeStyle.fruit) {
+                          // Fruit requires non-black for Glass/Neumorphic effects
+                          sp.setUseNeumorphism(true);
+                          if (sp.useTrueBlack) sp.toggleUseTrueBlack();
+                          if (sp.useDynamicColor) sp.toggleUseDynamicColor();
+                        } else {
+                          // Default back to True Black when Fruit is off
+                          if (!sp.useTrueBlack) sp.toggleUseTrueBlack();
+                        }
+                      },
+                      showSelectedIcon: false,
+                      style: ButtonStyle(
+                        shape: WidgetStateProperty.all(
+                          RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(24)),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          if (themeProvider.themeStyle == ThemeStyle.fruit) ...[
+            Padding(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Fruit Color',
+                    style: Theme.of(context)
+                        .textTheme
+                        .bodyMedium
+                        ?.copyWith(fontSize: 16.0 * widget.scaleFactor),
+                  ),
+                  const SizedBox(height: 8),
+                  TvFocusWrapper(
+                    borderRadius: BorderRadius.circular(24),
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: SegmentedButton<FruitColorOption>(
+                        segments: [
+                          const ButtonSegment(
+                            value: FruitColorOption.sophisticate,
+                            label: Text('Sophisticate'),
+                            icon: Icon(LucideIcons.moon),
+                          ),
+                          const ButtonSegment(
+                            value: FruitColorOption.minimalist,
+                            label: Text('Minimalist'),
+                            icon: Icon(LucideIcons.sun),
+                          ),
+                          const ButtonSegment(
+                            value: FruitColorOption.creative,
+                            label: Text('Creative'),
+                            icon: Icon(LucideIcons.palette),
+                          ),
+                        ],
+                        selected: {themeProvider.fruitColorOption},
+                        onSelectionChanged:
+                            (Set<FruitColorOption> newSelection) {
+                          HapticFeedback.lightImpact();
+                          themeProvider.setFruitColorOption(newSelection.first);
+                        },
+                        showSelectedIcon: false,
+                        style: ButtonStyle(
+                          shape: WidgetStateProperty.all(
+                            RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(24)),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            // Glass, Hover, and Neumorphism are mandatory features of the Fruit theme
+            // and are managed automatically, so they are hidden from settings to reduce clutter.
+            TvSwitchListTile(
+              dense: true,
+              visualDensity: VisualDensity.compact,
+              title: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child: Text('Performance Mode (Simple Theme)',
+                      style: Theme.of(context)
+                          .textTheme
+                          .titleMedium
+                          ?.copyWith(fontSize: 16 * widget.scaleFactor))),
+              subtitle: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                      'Optimizes Fruit theme for older phones (removes blurs)',
+                      style: Theme.of(context)
+                          .textTheme
+                          .bodySmall
+                          ?.copyWith(fontSize: 12 * widget.scaleFactor))),
+              value: settingsProvider.performanceMode,
+              onChanged: (value) {
+                HapticFeedback.lightImpact();
+                context.read<SettingsProvider>().togglePerformanceMode();
+              },
+              secondary: const Icon(LucideIcons.zap),
+            ),
+          ],
+        ],
+        if (themeProvider.themeStyle != ThemeStyle.fruit)
+          TvSwitchListTile(
+            dense: true,
+            visualDensity: VisualDensity.compact,
+            title: FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: Text('Dynamic Color',
+                    style: Theme.of(context)
+                        .textTheme
+                        .titleMedium
+                        ?.copyWith(fontSize: 16 * widget.scaleFactor))),
+            subtitle: FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: Text('Theme from wallpaper',
+                    style: Theme.of(context)
+                        .textTheme
+                        .bodySmall
+                        ?.copyWith(fontSize: 12 * widget.scaleFactor))),
+            value: settingsProvider.useDynamicColor,
+            onChanged: (value) {
+              HapticFeedback.lightImpact();
+              context.read<SettingsProvider>().toggleUseDynamicColor();
+            },
+            secondary: Icon(themeProvider.themeStyle == ThemeStyle.fruit
+                ? LucideIcons.palette
+                : Icons.color_lens_rounded),
+          ),
         // True Black Mode (only in Dark Mode)
-        if (isDarkMode)
+        if (isDarkMode && themeProvider.themeStyle != ThemeStyle.fruit)
           TvSwitchListTile(
             dense: true,
             visualDensity: VisualDensity.compact,
@@ -202,15 +377,20 @@ class _AppearanceSectionState extends State<AppearanceSection> {
               HapticFeedback.lightImpact();
               context.read<SettingsProvider>().toggleUseTrueBlack();
             },
-            secondary: const Icon(Icons.brightness_1_rounded),
+            secondary: Icon(themeProvider.themeStyle == ThemeStyle.fruit
+                ? LucideIcons.circle
+                : Icons.brightness_1_rounded),
           ),
-        if (!settingsProvider.useDynamicColor)
+        if (themeProvider.themeStyle != ThemeStyle.fruit &&
+            !settingsProvider.useDynamicColor)
           context.watch<DeviceService>().isTv
               ? RainbowColorPicker(scaleFactor: widget.scaleFactor)
               : TvListTile(
                   dense: true,
                   visualDensity: VisualDensity.compact,
-                  leading: const Icon(Icons.palette_rounded),
+                  leading: Icon(themeProvider.themeStyle == ThemeStyle.fruit
+                      ? LucideIcons.palette
+                      : Icons.palette_rounded),
                   title: FittedBox(
                       fit: BoxFit.scaleDown,
                       alignment: Alignment.centerLeft,
@@ -241,7 +421,7 @@ class _AppearanceSectionState extends State<AppearanceSection> {
                     ),
                   ),
                 ),
-        if (!context.read<DeviceService>().isTv)
+        if (kIsWeb && !context.read<DeviceService>().isTv)
           TvSwitchListTile(
             dense: true,
             visualDensity: VisualDensity.compact,
@@ -259,9 +439,13 @@ class _AppearanceSectionState extends State<AppearanceSection> {
                   .read<SettingsProvider>()
                   .setGlowMode(value ? 65 : 0); // 65% or Off
             },
-            secondary: const Icon(Icons.blur_on_rounded),
+            secondary: Icon(themeProvider.themeStyle == ThemeStyle.fruit
+                ? LucideIcons.sparkles
+                : Icons.blur_on_rounded),
           ),
-        if (settingsProvider.glowMode > 0)
+        if (kIsWeb &&
+            !context.read<DeviceService>().isTv &&
+            settingsProvider.glowMode > 0)
           Padding(
             padding:
                 const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
@@ -347,7 +531,7 @@ class _AppearanceSectionState extends State<AppearanceSection> {
               ],
             ),
           ),
-        if (!context.read<DeviceService>().isTv)
+        if (kIsWeb || context.read<DeviceService>().isTv)
           TvSwitchListTile(
             dense: true,
             visualDensity: VisualDensity.compact,
@@ -376,7 +560,9 @@ class _AppearanceSectionState extends State<AppearanceSection> {
                 provider.setGlowMode(0);
               }
             },
-            secondary: const Icon(Icons.animation_rounded),
+            secondary: Icon(themeProvider.themeStyle == ThemeStyle.fruit
+                ? LucideIcons.zap
+                : Icons.animation_rounded),
           ),
         if (settingsProvider.highlightPlayingWithRgb)
           Padding(
@@ -424,21 +610,24 @@ class _AppearanceSectionState extends State<AppearanceSection> {
                     child: SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
                       child: SegmentedButton<double>(
-                        segments: const [
+                        segments: [
                           ButtonSegment(
                             value: 1.0,
-                            label: Text('1x'),
-                            icon: Icon(Icons.speed),
+                            label: const Text('1x'),
+                            icon: Icon(
+                                themeProvider.themeStyle == ThemeStyle.fruit
+                                    ? LucideIcons.gauge
+                                    : Icons.speed),
                           ),
-                          ButtonSegment(
+                          const ButtonSegment(
                             value: 0.5,
                             label: Text('0.5x'),
                           ),
-                          ButtonSegment(
+                          const ButtonSegment(
                             value: 0.25,
                             label: Text('0.25x'),
                           ),
-                          ButtonSegment(
+                          const ButtonSegment(
                             value: 0.1,
                             label: Text('0.1x'),
                           ),
@@ -502,31 +691,42 @@ class _AppearanceSectionState extends State<AppearanceSection> {
               ],
             ),
           ),
-        if (!Provider.of<DeviceService>(context, listen: false).isTv)
-          TvListTile(
-            dense: true,
-            visualDensity: VisualDensity.compact,
-            leading: const Icon(Icons.text_format_rounded),
-            title: FittedBox(
-                fit: BoxFit.scaleDown,
-                alignment: Alignment.centerLeft,
-                child: Text('App Font',
-                    style: Theme.of(context)
-                        .textTheme
-                        .titleMedium
-                        ?.copyWith(fontSize: 16 * widget.scaleFactor))),
-            subtitle: FittedBox(
-                fit: BoxFit.scaleDown,
-                alignment: Alignment.centerLeft,
-                child: Text(_getFontDisplayName(settingsProvider.appFont),
-                    style: Theme.of(context)
-                        .textTheme
-                        .bodySmall
-                        ?.copyWith(fontSize: 12 * widget.scaleFactor))),
-            onTap: () {
-              HapticFeedback.lightImpact();
-              FontSelectionDialog.show(context);
-            },
+        if (!context.read<DeviceService>().isTv)
+          Opacity(
+            opacity: themeProvider.themeStyle == ThemeStyle.fruit ? 0.5 : 1.0,
+            child: AbsorbPointer(
+              absorbing: themeProvider.themeStyle == ThemeStyle.fruit,
+              child: TvListTile(
+                dense: true,
+                visualDensity: VisualDensity.compact,
+                leading: Icon(themeProvider.themeStyle == ThemeStyle.fruit
+                    ? LucideIcons.type
+                    : Icons.text_format_rounded),
+                title: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerLeft,
+                    child: Text('App Font',
+                        style: Theme.of(context)
+                            .textTheme
+                            .titleMedium
+                            ?.copyWith(fontSize: 16 * widget.scaleFactor))),
+                subtitle: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                        themeProvider.themeStyle == ThemeStyle.fruit
+                            ? 'Inter (Forced by Fruit Theme)'
+                            : _getFontDisplayName(settingsProvider.appFont),
+                        style: Theme.of(context)
+                            .textTheme
+                            .bodySmall
+                            ?.copyWith(fontSize: 12 * widget.scaleFactor))),
+                onTap: () {
+                  HapticFeedback.lightImpact();
+                  FontSelectionDialog.show(context);
+                },
+              ),
+            ),
           ),
       ],
     );

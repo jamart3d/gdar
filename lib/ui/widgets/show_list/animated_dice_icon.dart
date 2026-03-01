@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:shakedown/providers/settings_provider.dart';
 import 'package:shakedown/utils/font_layout_config.dart';
 import 'package:shakedown/utils/logger.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 
 class AnimatedDiceIcon extends StatefulWidget {
   final VoidCallback onPressed;
@@ -19,7 +20,10 @@ class AnimatedDiceIcon extends StatefulWidget {
     this.tooltip,
     this.changeFaces = true,
     this.enableHaptics = false,
+    this.useLucide = false,
   });
+
+  final bool useLucide;
 
   final bool enableHaptics;
 
@@ -197,23 +201,27 @@ class _AnimatedDiceIconState extends State<AnimatedDiceIcon>
                 // --- Squash & Stretch (Landing Bump) ---
                 // We want 3 quick pulses, and then a BIGGER bump at the end.
                 // Final bump peaks at t=0.9 and settles.
-                double scale;
-                if (t < 0.8) {
-                  // Fast cycling pulses
-                  final double pulse = math.sin(t * 10 * math.pi);
-                  scale = 1.0 + (0.08 * pulse * pulse);
+                if (settingsProvider.useNeumorphism) {
+                  // Architectural solidity: No squash/stretch
+                  scaleX = scaleY = 1.0;
                 } else {
-                  // Final landing "Thud" (Impact & Settle)
-                  // Range t: 0.8 -> 1.0. normalized t2: 0 -> 1.
-                  final double t2 = (t - 0.8) / 0.2;
+                  double scale;
+                  if (t < 0.8) {
+                    // Fast cycling pulses
+                    final double pulse = math.sin(t * 10 * math.pi);
+                    scale = 1.0 + (0.08 * pulse * pulse);
+                  } else {
+                    // Final landing "Thud" (Impact & Settle)
+                    // Range t: 0.8 -> 1.0. normalized t2: 0 -> 1.
+                    final double t2 = (t - 0.8) / 0.2;
 
-                  // Asymmetric Bounce: Sharper rise (impact), slower settle.
-                  // Uses sqrt(t2) to front-load the sine wave for "impact" feel.
-                  final double bump = math.sin(math.pow(t2, 0.5) * math.pi);
-                  scale = 1.0 + (0.12 * bump); // Reduced intensity (1.12x)
+                    // Asymmetric Bounce: Sharper rise (impact), slower settle.
+                    final double bump = math.sin(math.pow(t2, 0.5) * math.pi);
+                    scale = 1.0 + (0.12 * bump); // Reduced intensity (1.12x)
+                  }
+                  scaleX = scale;
+                  scaleY = scale;
                 }
-                scaleX = scale;
-                scaleY = scale;
 
                 // --- Face Selection ---
                 if (widget.changeFaces && _rollSequence.isNotEmpty) {
@@ -249,14 +257,20 @@ class _AnimatedDiceIconState extends State<AnimatedDiceIcon>
                 child: Transform(
                   transform: Matrix4.diagonal3Values(scaleX, scaleY, 1.0),
                   alignment: Alignment.center,
-                  child: CustomPaint(
-                    size: Size(scaledIconSize, scaledIconSize),
-                    painter: DicePainter(
-                      face: currentFace,
-                      color: colorScheme.primaryContainer,
-                      dotColor: colorScheme.onPrimaryContainer,
-                    ),
-                  ),
+                  child: widget.useLucide
+                      ? Icon(
+                          LucideIcons.dice5,
+                          size: scaledIconSize,
+                          color: colorScheme.primary,
+                        )
+                      : CustomPaint(
+                          size: Size(scaledIconSize, scaledIconSize),
+                          painter: DicePainter(
+                            face: currentFace,
+                            color: colorScheme.primaryContainer,
+                            dotColor: colorScheme.onPrimaryContainer,
+                          ),
+                        ),
                 ),
               );
             },

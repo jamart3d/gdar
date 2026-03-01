@@ -8,6 +8,8 @@ import 'package:shakedown/providers/audio_provider.dart';
 import 'package:shakedown/providers/settings_provider.dart';
 import 'package:shakedown/services/catalog_service.dart';
 import 'package:shakedown/services/device_service.dart';
+import 'package:shakedown/providers/theme_provider.dart';
+import 'package:shakedown/ui/widgets/theme/liquid_glass_wrapper.dart';
 import 'package:shakedown/ui/styles/app_typography.dart';
 import 'package:shakedown/ui/widgets/conditional_marquee.dart';
 import 'package:shakedown/ui/widgets/playback/playback_controls.dart';
@@ -63,228 +65,254 @@ class PlaybackPanel extends StatelessWidget {
       );
     }
 
-    return Container(
-      decoration: BoxDecoration(
-        borderRadius: isTrueBlackMode
-            ? const BorderRadius.only(
-                topLeft: Radius.circular(24.0),
-                topRight: Radius.circular(24.0),
-              )
-            : null,
-        border: isTrueBlackMode
-            ? Border.all(
-                color: colorScheme.onSurface.withValues(alpha: 0.2),
-                width: 1.0,
-              )
-            : null,
-      ),
-      child: Column(
-        children: [
-          SizedBox(
-            height: minHeight,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Column(
-                  mainAxisSize: MainAxisSize.min,
+    final isFruit =
+        context.watch<ThemeProvider>().themeStyle == ThemeStyle.fruit;
+    final panelColor = isTrueBlackMode
+        ? Colors.black
+        : Theme.of(context).colorScheme.surfaceContainer;
+
+    return LiquidGlassWrapper(
+        enabled: isFruit && !isTrueBlackMode,
+        blur: 32.0,
+        opacity: 0.90, // nice opaque frosted glass
+        color: panelColor,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24.0)),
+        child: Container(
+          decoration: BoxDecoration(
+            color:
+                (isFruit && !isTrueBlackMode) ? Colors.transparent : panelColor,
+            borderRadius:
+                const BorderRadius.vertical(top: Radius.circular(24.0)),
+            border: isTrueBlackMode
+                ? Border.all(
+                    color: colorScheme.onSurface.withValues(alpha: 0.2),
+                    width: 1.0,
+                  )
+                : null,
+          ),
+          child: Column(
+            children: [
+              SizedBox(
+                height: minHeight,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const SizedBox(height: 8),
-                    Container(
-                      width: 32,
-                      height: 4,
-                      decoration: BoxDecoration(
-                        color:
-                            colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
-                        borderRadius: BorderRadius.circular(2),
+                    Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const SizedBox(height: 8),
+                        Container(
+                          width: 32,
+                          height: 4,
+                          decoration: BoxDecoration(
+                            color: colorScheme.onSurfaceVariant
+                                .withValues(alpha: 0.4),
+                            borderRadius: BorderRadius.circular(2),
+                          ),
+                        ),
+                      ],
+                    ),
+                    Flexible(
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.bottomCenter,
+                        child: GestureDetector(
+                          behavior: HitTestBehavior.opaque,
+                          onTap: onVenueTap,
+                          child: Padding(
+                            padding: EdgeInsets.only(
+                                left: 16.0,
+                                right: 16.0,
+                                bottom: 24.0 + bottomPadding),
+                            child: Row(
+                              mainAxisAlignment:
+                                  settingsProvider.hideTrackDuration
+                                      ? MainAxisAlignment.center
+                                      : MainAxisAlignment.start,
+                              children: [
+                                SizedBox(
+                                  height: AppTypography.responsiveFontSize(
+                                          context, 18.0) *
+                                      2.0,
+                                  width: MediaQuery.of(context).size.width -
+                                      32, // explicit width for marquee in fitted box
+                                  child: ConditionalMarquee(
+                                    text: currentShow.venue,
+                                    style: textTheme.headlineSmall?.copyWith(
+                                      fontSize:
+                                          AppTypography.responsiveFontSize(
+                                              context, 18.0),
+                                      color: colorScheme.onSurface,
+                                    ),
+                                    blankSpace: 60.0,
+                                    pauseAfterRound: const Duration(seconds: 3),
+                                    textAlign:
+                                        settingsProvider.hideTrackDuration
+                                            ? TextAlign.center
+                                            : TextAlign.start,
+                                  ),
+                                ),
+                                if (!settingsProvider.hideTrackDuration)
+                                  const SizedBox(width: 8),
+                              ],
+                            ),
+                          ),
+                        ),
                       ),
                     ),
                   ],
                 ),
-                Flexible(
-                  child: FittedBox(
-                    fit: BoxFit.scaleDown,
-                    alignment: Alignment.bottomCenter,
-                    child: GestureDetector(
-                      behavior: HitTestBehavior.opaque,
-                      onTap: onVenueTap,
-                      child: Padding(
-                        padding: EdgeInsets.only(
-                            left: 16.0,
-                            right: 16.0,
-                            bottom: (16.0 + bottomPadding) * scaleFactor),
-                        child: Row(
-                          mainAxisAlignment: settingsProvider.hideTrackDuration
-                              ? MainAxisAlignment.center
-                              : MainAxisAlignment.start,
-                          children: [
-                            SizedBox(
-                              height: AppTypography.responsiveFontSize(
-                                      context, 18.0) *
-                                  2.0,
-                              width: MediaQuery.of(context).size.width -
-                                  32, // explicit width for marquee in fitted box
-                              child: ConditionalMarquee(
-                                text: currentShow.venue,
-                                style: textTheme.headlineSmall?.copyWith(
-                                  fontSize: AppTypography.responsiveFontSize(
-                                      context, 18.0),
-                                  color: colorScheme.onSurface,
-                                ),
-                                blankSpace: 60.0,
-                                pauseAfterRound: const Duration(seconds: 3),
-                                textAlign: settingsProvider.hideTrackDuration
-                                    ? TextAlign.center
-                                    : TextAlign.start,
-                              ),
-                            ),
-                            if (!settingsProvider.hideTrackDuration)
-                              const SizedBox(width: 8),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Expanded(
-            child: ValueListenableBuilder<double>(
-              valueListenable: panelPositionNotifier,
-              builder: (context, value, child) {
-                // Closed (0.0): +100 (Hidden down)
-                // Open (1.0): -20 (Up slightly to create gap from bottom)
-                final double yOffset = (100.0 - 120.0 * value) * scaleFactor;
-                return Transform.translate(
-                  offset: Offset(0, yOffset),
-                  child: FittedBox(
-                    fit: BoxFit.scaleDown,
-                    alignment: Alignment.topCenter,
-                    child: Container(
-                      width: MediaQuery.of(context).size.width,
-                      padding: EdgeInsets.fromLTRB(16, 0, 16, 16 * scaleFactor),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.end,
+              ),
+              Expanded(
+                child: ValueListenableBuilder<double>(
+                  valueListenable: panelPositionNotifier,
+                  builder: (context, value, child) {
+                    // Closed (0.0): +100 (Hidden down)
+                    // Open (1.0): -20 (Up slightly to create gap from bottom)
+                    final double yOffset =
+                        (100.0 - 120.0 * value) * scaleFactor;
+                    return Transform.translate(
+                      offset: Offset(0, yOffset),
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.topCenter,
+                        child: Container(
+                          width: MediaQuery.of(context).size.width,
+                          padding:
+                              EdgeInsets.fromLTRB(16, 0, 16, 16 * scaleFactor),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
                             children: [
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Align(
-                                      alignment: Alignment.centerLeft,
-                                      child: Text(
-                                        currentSource.location ??
-                                            'Location N/A',
-                                        style: textTheme.titleSmall?.copyWith(
-                                          fontSize:
-                                              AppTypography.responsiveFontSize(
-                                                  context, 16.0),
-                                          color: colorScheme.secondary,
-                                          fontWeight: FontWeight.w500,
-                                        ),
-                                      ),
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Row(
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: [
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      mainAxisSize: MainAxisSize.min,
                                       children: [
-                                        const SizedBox(width: 4),
-                                        Flexible(
-                                          child: Transform.translate(
-                                            offset: const Offset(0, 2),
-                                            child: SizedBox(
-                                              height: AppTypography
-                                                      .responsiveFontSize(
-                                                          context, 14.0) *
-                                                  2.2,
-                                              child: Padding(
-                                                padding:
-                                                    const EdgeInsets.symmetric(
+                                        Align(
+                                          alignment: Alignment.centerLeft,
+                                          child: Text(
+                                            currentSource.location ??
+                                                'Location N/A',
+                                            style:
+                                                textTheme.titleSmall?.copyWith(
+                                              fontSize: AppTypography
+                                                  .responsiveFontSize(
+                                                      context, 16.0),
+                                              color: colorScheme.secondary,
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Row(
+                                          children: [
+                                            const SizedBox(width: 4),
+                                            Flexible(
+                                              child: Transform.translate(
+                                                offset: const Offset(0, 2),
+                                                child: SizedBox(
+                                                  height: AppTypography
+                                                          .responsiveFontSize(
+                                                              context, 14.0) *
+                                                      2.2,
+                                                  child: Padding(
+                                                    padding: const EdgeInsets
+                                                        .symmetric(
                                                         horizontal: 4.0),
-                                                child: ConditionalMarquee(
-                                                  text: formattedDate,
-                                                  style: textTheme.titleMedium
-                                                      ?.copyWith(
-                                                    fontSize: AppTypography
-                                                        .responsiveFontSize(
-                                                            context, 14.0),
-                                                    color: colorScheme
-                                                        .onSurfaceVariant,
-                                                    height: 1.2,
+                                                    child: ConditionalMarquee(
+                                                      text: formattedDate,
+                                                      style: textTheme
+                                                          .titleMedium
+                                                          ?.copyWith(
+                                                        fontSize: AppTypography
+                                                            .responsiveFontSize(
+                                                                context, 14.0),
+                                                        color: colorScheme
+                                                            .onSurfaceVariant,
+                                                        height: 1.2,
+                                                      ),
+                                                    ),
                                                   ),
                                                 ),
                                               ),
                                             ),
-                                          ),
-                                        ),
-                                        IconButton(
-                                          constraints: const BoxConstraints(),
-                                          padding:
-                                              const EdgeInsets.only(left: 8),
-                                          icon: Icon(Icons.copy_rounded,
-                                              size: 20 * scaleFactor,
-                                              color:
-                                                  colorScheme.onSurfaceVariant),
-                                          onPressed: () {
-                                            final track = currentSource.tracks[
-                                                audioProvider.audioPlayer
+                                            IconButton(
+                                              constraints:
+                                                  const BoxConstraints(),
+                                              padding: const EdgeInsets.only(
+                                                  left: 8),
+                                              icon: Transform.scale(
+                                                scale: 2.0,
+                                                child: Icon(Icons.copy_rounded,
+                                                    size: 20 * scaleFactor,
+                                                    color: colorScheme
+                                                        .onSurfaceVariant),
+                                              ),
+                                              onPressed: () {
+                                                final track = currentSource
+                                                    .tracks[audioProvider
+                                                        .audioPlayer
                                                         .currentIndex ??
                                                     0];
-                                            final locationStr = currentSource
-                                                        .location !=
-                                                    null
-                                                ? ' - ${currentSource.location}'
-                                                : '';
-                                            final urlStr = settingsProvider
-                                                    .omitHttpPathInCopy
-                                                ? ''
-                                                : '\n${track.url.replaceAll('/download/', '/details/').split('/').sublist(0, 5).join('/')}';
-                                            final info =
-                                                '${currentShow.venue}$locationStr - $formattedDate - ${currentSource.id}\n${track.title}$urlStr';
-                                            Clipboard.setData(
-                                                ClipboardData(text: info));
-                                            HapticFeedback.selectionClick();
-                                            ScaffoldMessenger.of(context)
-                                                .showSnackBar(
-                                              SnackBar(
-                                                content: Row(
-                                                  children: [
-                                                    Icon(
-                                                      Icons
-                                                          .check_circle_outline_rounded,
-                                                      color: colorScheme
-                                                          .onPrimaryContainer,
-                                                      size: 20 * scaleFactor,
-                                                    ),
-                                                    const SizedBox(width: 12),
-                                                    Expanded(
-                                                      child: Text(
-                                                        'Details copied to clipboard',
-                                                        style: textTheme
-                                                            .labelLarge
-                                                            ?.copyWith(
+                                                final locationStr = currentSource
+                                                            .location !=
+                                                        null
+                                                    ? ' - ${currentSource.location}'
+                                                    : '';
+                                                final urlStr = settingsProvider
+                                                        .omitHttpPathInCopy
+                                                    ? ''
+                                                    : '\n${track.url.replaceAll('/download/', '/details/').split('/').sublist(0, 5).join('/')}';
+                                                final info =
+                                                    '${currentShow.venue}$locationStr - $formattedDate - ${currentSource.id}\n${track.title}$urlStr';
+                                                Clipboard.setData(
+                                                    ClipboardData(text: info));
+                                                HapticFeedback.selectionClick();
+                                                ScaffoldMessenger.of(context)
+                                                    .showSnackBar(
+                                                  SnackBar(
+                                                    content: Row(
+                                                      children: [
+                                                        Icon(
+                                                          Icons
+                                                              .check_circle_outline_rounded,
                                                           color: colorScheme
                                                               .onPrimaryContainer,
-                                                          fontWeight:
-                                                              FontWeight.bold,
+                                                          size:
+                                                              20 * scaleFactor,
                                                         ),
-                                                      ),
+                                                        const SizedBox(
+                                                            width: 12),
+                                                        Expanded(
+                                                          child: Text(
+                                                            'Details copied to clipboard',
+                                                            style: textTheme
+                                                                .labelLarge
+                                                                ?.copyWith(
+                                                              color: colorScheme
+                                                                  .onPrimaryContainer,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold,
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      ],
                                                     ),
-                                                  ],
-                                                ),
-                                                behavior:
-                                                    SnackBarBehavior.floating,
-                                                backgroundColor: colorScheme
-                                                    .primaryContainer,
-                                                elevation: 4,
-                                                duration: const Duration(
-                                                    milliseconds: 1500),
-                                                margin: EdgeInsets.only(
-                                                  bottom:
-                                                      (MediaQuery.of(context)
+                                                    behavior: SnackBarBehavior
+                                                        .floating,
+                                                    backgroundColor: colorScheme
+                                                        .primaryContainer,
+                                                    elevation: 4,
+                                                    duration: const Duration(
+                                                        milliseconds: 1500),
+                                                    margin: EdgeInsets.only(
+                                                      bottom: (MediaQuery.of(
+                                                                      context)
                                                                   .size
                                                                   .height *
                                                               (settingsProvider
@@ -293,91 +321,100 @@ class PlaybackPanel extends StatelessWidget {
                                                                   : 0.40)) -
                                                           minHeight +
                                                           (75 * scaleFactor),
-                                                  left: 48,
-                                                  right: 48,
-                                                ),
-                                                shape: RoundedRectangleBorder(
-                                                  borderRadius:
-                                                      BorderRadius.circular(
-                                                          100),
-                                                  side: BorderSide(
-                                                    color: colorScheme
-                                                        .onPrimaryContainer
-                                                        .withValues(alpha: 0.1),
-                                                    width: 1,
+                                                      left: 48,
+                                                      right: 48,
+                                                    ),
+                                                    shape:
+                                                        RoundedRectangleBorder(
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              100),
+                                                      side: BorderSide(
+                                                        color: colorScheme
+                                                            .onPrimaryContainer
+                                                            .withValues(
+                                                                alpha: 0.1),
+                                                        width: 1,
+                                                      ),
+                                                    ),
                                                   ),
-                                                ),
-                                              ),
-                                            );
-                                          },
+                                                );
+                                              },
+                                            ),
+                                          ],
                                         ),
                                       ],
                                     ),
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.end,
-                                children: [
-                                  // Rating Stars
-                                  ConstrainedBox(
-                                    constraints: const BoxConstraints(
-                                        minWidth: 48, minHeight: 48),
-                                    child: Center(
-                                      child: _buildRatingButton(
-                                          context, currentShow, currentSource),
-                                    ),
                                   ),
-                                  const SizedBox(height: 4),
-                                  if (currentSource.src != null)
-                                    SrcBadge(
-                                      src: currentSource.src!,
-                                      matchShnidLook: true,
-                                    ),
-                                  const SizedBox(height: 4),
-                                  InkWell(
-                                    onTap: () {
-                                      if (currentSource.tracks.isNotEmpty) {
-                                        launchArchivePage(
-                                            currentSource.tracks.first.url,
-                                            context);
-                                      }
-                                    },
-                                    borderRadius: BorderRadius.circular(8),
-                                    child: ShnidBadge(
-                                      text: currentSource.id,
-                                      showUnderline: true,
-                                    ),
+                                  const SizedBox(width: 8),
+                                  Column(
+                                    crossAxisAlignment: CrossAxisAlignment.end,
+                                    children: [
+                                      // Rating Stars
+                                      ConstrainedBox(
+                                        constraints: const BoxConstraints(
+                                            minWidth: 48, minHeight: 48),
+                                        child: Center(
+                                          child: _buildRatingButton(
+                                            context,
+                                            currentShow,
+                                            currentSource,
+                                            isFruit: isFruit,
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      if (currentSource.src != null)
+                                        SrcBadge(
+                                          src: currentSource.src!,
+                                          matchShnidLook: true,
+                                          scaleFactor: isFruit ? 1.4 : 1.0,
+                                        ),
+                                      const SizedBox(height: 4),
+                                      InkWell(
+                                        onTap: () {
+                                          if (currentSource.tracks.isNotEmpty) {
+                                            launchArchivePage(
+                                                currentSource.tracks.first.url,
+                                                context);
+                                          }
+                                        },
+                                        borderRadius: BorderRadius.circular(8),
+                                        child: ShnidBadge(
+                                          text: currentSource.id,
+                                          showUnderline: true,
+                                          scaleFactor: isFruit ? 1.4 : 1.0,
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ],
                               ),
+                              const SizedBox(height: 4),
+                              const PlaybackProgressBar(),
+                              const SizedBox(height: 4),
+                              ValueListenableBuilder<double>(
+                                valueListenable: panelPositionNotifier,
+                                builder: (context, position, _) {
+                                  return PlaybackControls(
+                                      panelPosition: position);
+                                },
+                              ),
+                              if (settingsProvider.showPlaybackMessages) ...[
+                                SizedBox(height: 8 * scaleFactor),
+                                const PlaybackMessages(),
+                              ],
                             ],
                           ),
-                          const SizedBox(height: 4),
-                          const PlaybackProgressBar(),
-                          const SizedBox(height: 4),
-                          ValueListenableBuilder<double>(
-                            valueListenable: panelPositionNotifier,
-                            builder: (context, position, _) {
-                              return PlaybackControls(panelPosition: position);
-                            },
-                          ),
-                          if (settingsProvider.showPlaybackMessages) ...[
-                            SizedBox(height: 8 * scaleFactor),
-                            const PlaybackMessages(),
-                          ],
-                        ],
+                        ),
                       ),
-                    ),
-                  ),
-                );
-              },
-            ),
+                    );
+                  },
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
-    );
+        ));
   }
 
   Widget _buildTvLayout(
@@ -484,7 +521,8 @@ class PlaybackPanel extends StatelessWidget {
     );
   }
 
-  Widget _buildRatingButton(BuildContext context, Show show, Source source) {
+  Widget _buildRatingButton(BuildContext context, Show show, Source source,
+      {bool isFruit = false}) {
     final String ratingKey = source.id;
 
     return ValueListenableBuilder(
@@ -497,7 +535,7 @@ class PlaybackPanel extends StatelessWidget {
         return RatingControl(
           rating: rating,
           isPlayed: isPlayed,
-          size: 24.0,
+          size: isFruit ? 32.0 : 24.0,
           onTap: () async {
             await showDialog(
               context: context,

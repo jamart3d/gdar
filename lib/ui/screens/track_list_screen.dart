@@ -18,6 +18,8 @@ import 'package:shakedown/utils/utils.dart';
 import 'package:provider/provider.dart';
 import 'package:shakedown/ui/styles/app_typography.dart';
 import 'package:shakedown/utils/font_layout_config.dart';
+import 'package:lucide_icons/lucide_icons.dart';
+import 'package:shakedown/providers/theme_provider.dart';
 
 class TrackListScreen extends StatefulWidget {
   final Show show;
@@ -282,31 +284,37 @@ class _TrackListScreenState extends State<TrackListScreen> {
               ),
             ),
           ),
-          IconButton(
-            icon: const Icon(Icons.settings_rounded),
-            iconSize: 24 * (settingsProvider.uiScale ? 1.25 : 1.0),
-            onPressed: () async {
-              // Pause global clock
-              try {
-                context.read<AnimationController>().stop();
-              } catch (_) {}
-
-              unawaited(Navigator.of(context).push(
-                PageRouteBuilder(
-                  pageBuilder: (context, animation, secondaryAnimation) =>
-                      const SettingsScreen(),
-                  transitionDuration: Duration.zero,
-                ),
-              ));
-
-              // Resume clock
-              if (context.mounted) {
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 10.0),
+            child: IconButton(
+              icon: Icon(
+                  context.watch<ThemeProvider>().themeStyle == ThemeStyle.fruit
+                      ? LucideIcons.settings
+                      : Icons.settings_rounded),
+              iconSize: 24.0,
+              onPressed: () async {
+                // Pause global clock
                 try {
-                  final controller = context.read<AnimationController>();
-                  unawaited(controller.repeat());
+                  context.read<AnimationController>().stop();
                 } catch (_) {}
-              }
-            },
+
+                unawaited(Navigator.of(context).push(
+                  PageRouteBuilder(
+                    pageBuilder: (context, animation, secondaryAnimation) =>
+                        const SettingsScreen(),
+                    transitionDuration: Duration.zero,
+                  ),
+                ));
+
+                // Resume clock
+                if (context.mounted) {
+                  try {
+                    final controller = context.read<AnimationController>();
+                    if (!controller.isAnimating) unawaited(controller.repeat());
+                  } catch (_) {}
+                }
+              },
+            ),
           ),
         ],
       ),

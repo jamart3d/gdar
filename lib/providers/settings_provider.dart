@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shakedown/config/default_settings.dart';
 import 'package:shakedown/utils/logger.dart';
 
+import 'package:shakedown/providers/theme_provider.dart';
 import 'package:shakedown/services/gapless_player/gapless_player.dart';
 
 class SettingsProvider with ChangeNotifier {
@@ -27,6 +28,9 @@ class SettingsProvider with ChangeNotifier {
   static const String _showDayOfWeekKey = 'show_day_of_week';
   static const String _abbreviateDayOfWeekKey = 'abbreviate_day_of_week';
   static const String _abbreviateMonthKey = 'abbreviate_month';
+  static const String _useNeumorphismKey = 'use_neumorphism';
+  static const String _neumorphicStyleKey = 'neumorphic_style';
+  static const String _performanceModeKey = 'performance_mode';
   String _appFont = 'default';
   String get appFont => _appFont;
   void setAppFont(String font) =>
@@ -168,6 +172,9 @@ class SettingsProvider with ChangeNotifier {
   late bool _marqueeEnabled;
   late bool _enableSwipeToBlock;
   late bool _omitHttpPathInCopy;
+  late bool _useNeumorphism;
+  late NeumorphicStyle _neumorphicStyle;
+  late bool _performanceMode;
 
   // Web Gapless Engine
   late AudioEngineMode _audioEngineMode;
@@ -269,6 +276,9 @@ class SettingsProvider with ChangeNotifier {
   bool get marqueeEnabled => _marqueeEnabled;
   bool get enableSwipeToBlock => _enableSwipeToBlock;
   bool get omitHttpPathInCopy => _omitHttpPathInCopy;
+  bool get useNeumorphism => _useNeumorphism;
+  NeumorphicStyle get neumorphicStyle => _neumorphicStyle;
+  bool get performanceMode => _performanceMode;
 
   /// Whether the custom gapless Web Audio engine is enabled (web-only).
   AudioEngineMode get audioEngineMode => _audioEngineMode;
@@ -513,8 +523,8 @@ class SettingsProvider with ChangeNotifier {
       _useTrueBlack = true;
       _prefs.setBool(_useTrueBlackKey, true);
     } else {
-      _useTrueBlack =
-          _prefs.getBool(_useTrueBlackKey) ?? DefaultSettings.useTrueBlack;
+      _useTrueBlack = _prefs.getBool(_useTrueBlackKey) ??
+          ((kIsWeb && !isTv) ? false : DefaultSettings.useTrueBlack);
     }
 
     _highlightPlayingWithRgb = _prefs.getBool(_highlightPlayingWithRgbKey) ??
@@ -522,7 +532,7 @@ class SettingsProvider with ChangeNotifier {
     _rgbAnimationSpeed = _prefs.getDouble(_rgbAnimationSpeedKey) ??
         DefaultSettings.rgbAnimationSpeed;
     _showSplashScreen = _prefs.getBool(_showSplashScreenKey) ??
-        (kIsWeb ? _isFirstRun : DefaultSettings.showSplashScreen);
+        ((kIsWeb && !isTv) ? _isFirstRun : DefaultSettings.showSplashScreen);
     _showPlaybackMessages = _prefs.getBool(_showPlaybackMessagesKey) ??
         DefaultSettings.showPlaybackMessages;
     _sortOldestFirst =
@@ -554,6 +564,13 @@ class SettingsProvider with ChangeNotifier {
         DefaultSettings.omitHttpPathInCopy;
     _showDebugLayout = _prefs.getBool(_showDebugLayoutKey) ?? false;
     _enableShakedownTween = _prefs.getBool(_enableShakedownTweenKey) ?? true;
+    _useNeumorphism = _prefs.getBool(_useNeumorphismKey) ??
+        ((kIsWeb && !isTv) ? true : DefaultSettings.useNeumorphism);
+    _neumorphicStyle = NeumorphicStyle.values[
+        _prefs.getInt(_neumorphicStyleKey) ??
+            DefaultSettings.neumorphicStyle.index];
+    _performanceMode =
+        _prefs.getBool(_performanceModeKey) ?? DefaultSettings.performanceMode;
 
     // Web Gapless Engine Migration
     if (_prefs.containsKey('web_gapless_engine')) {
@@ -795,6 +812,20 @@ class SettingsProvider with ChangeNotifier {
       _enableSwipeToBlockKey, _enableSwipeToBlock = !_enableSwipeToBlock);
   void toggleOmitHttpPathInCopy() => _updatePreference(
       _omitHttpPathInCopyKey, _omitHttpPathInCopy = !_omitHttpPathInCopy);
+  void toggleUseNeumorphism() =>
+      _updatePreference(_useNeumorphismKey, _useNeumorphism = !_useNeumorphism);
+  void setUseNeumorphism(bool value) =>
+      _updatePreference(_useNeumorphismKey, _useNeumorphism = value);
+  void togglePerformanceMode() => _updatePreference(
+      _performanceModeKey, _performanceMode = !_performanceMode);
+
+  void setNeumorphicStyle(NeumorphicStyle value, {bool? notify}) {
+    if (_neumorphicStyle != value) {
+      _neumorphicStyle = value;
+      _updateIntPreference(_neumorphicStyleKey, value.index);
+      if (notify ?? true) notifyListeners();
+    }
+  }
 
   /// Toggles the custom gapless Web Audio engine on or off (web-only).
   void toggleWebGaplessEngine() {

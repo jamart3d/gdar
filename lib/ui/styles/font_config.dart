@@ -54,6 +54,14 @@ class FontConfig {
       letterSpacing: 0.0,
       displayName: 'Permanent Marker',
     ),
+    'inter': FontConfig(
+      fontFamily: 'Inter',
+      scaleFactor: 1.0,
+      lineHeight: 1.2,
+      weightAdjustment: 0,
+      letterSpacing: -0.02,
+      displayName: 'Inter',
+    ),
   };
 
   /// Retrieves configuration for a given font key.

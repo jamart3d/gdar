@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 import 'package:provider/provider.dart';
 import 'package:shakedown/providers/settings_provider.dart';
 import 'package:shakedown/services/catalog_service.dart';
@@ -9,6 +10,9 @@ import 'package:shakedown/ui/widgets/tv/tv_focus_wrapper.dart';
 import 'package:shakedown/ui/widgets/tv/tv_list_tile.dart';
 import 'package:shakedown/ui/widgets/tv/tv_switch_list_tile.dart';
 import 'package:shakedown/utils/utils.dart';
+import 'package:shakedown/ui/widgets/theme/neumorphic_wrapper.dart';
+import 'package:shakedown/ui/widgets/theme/liquid_glass_wrapper.dart';
+import 'package:shakedown/providers/theme_provider.dart';
 
 class RatingControl extends StatelessWidget {
   final int rating;
@@ -28,59 +32,121 @@ class RatingControl extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = context.watch<ThemeProvider>();
+    final settingsProvider = context.watch<SettingsProvider>();
     final scaledSize = AppTypography.responsiveFontSize(context, size);
+
+    final isFruit = themeProvider.themeStyle == ThemeStyle.fruit;
+    final isFruitNeumorphic = isFruit &&
+        settingsProvider.useNeumorphism &&
+        !settingsProvider.useTrueBlack;
 
     Widget content;
 
-    if (rating == -1) {
-      content = Semantics(
-        label: 'Blocked show',
-        child: Icon(
-          Icons.star,
-          size: scaledSize,
-          color: Colors.red,
-        ),
-      );
-    } else if (rating == 0 && isPlayed) {
-      content = Semantics(
-        key: ValueKey('rating_0_played_$isPlayed'),
-        label: 'Played, unrated',
-        child: RatingBar(
-          initialRating: 1,
-          minRating: 1,
-          direction: Axis.horizontal,
-          allowHalfRating: false,
-          itemCount: 3,
-          itemSize: scaledSize,
-          ignoreGestures: true,
-          ratingWidget: RatingWidget(
-            full: const Icon(Icons.star, color: Colors.grey),
-            half: const Icon(Icons.star_half, color: Colors.grey),
-            empty: const Icon(Icons.star_border, color: Colors.grey),
+    if (isFruitNeumorphic) {
+      content = LiquidGlassWrapper(
+        enabled: true,
+        borderRadius: BorderRadius.circular(10),
+        opacity: 0.15,
+        blur: 5,
+        child: NeumorphicWrapper(
+          enabled: true,
+          isPressed: true, // Sunken basin
+          borderRadius: 10,
+          intensity: 0.9,
+          color: Colors.transparent,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            child: rating == -1
+                ? Semantics(
+                    label: 'Blocked show',
+                    child: Icon(
+                      LucideIcons.star,
+                      size: scaledSize * 0.9,
+                      color: Colors.redAccent.withValues(alpha: 0.9),
+                    ),
+                  )
+                : RatingBar(
+                    initialRating:
+                        (rating == 0 && isPlayed) ? 1.0 : rating.toDouble(),
+                    minRating: 1,
+                    direction: Axis.horizontal,
+                    allowHalfRating: false,
+                    itemCount: 3,
+                    itemSize: scaledSize * 0.95,
+                    ignoreGestures: true,
+                    ratingWidget: RatingWidget(
+                      full: Icon(LucideIcons.star,
+                          color: (rating == 0 && isPlayed)
+                              ? Colors.blueGrey.withValues(alpha: 0.4)
+                              : Colors.orangeAccent),
+                      half: const Icon(LucideIcons.star,
+                          color: Colors.orangeAccent),
+                      empty: Icon(LucideIcons.star,
+                          color: Colors.blueGrey.withValues(alpha: 0.2)),
+                    ),
+                    onRatingUpdate: (_) {},
+                  ),
           ),
-          onRatingUpdate: (_) {},
         ),
       );
     } else {
-      content = Semantics(
-        key: ValueKey('rating_$rating'),
-        label: 'Rated $rating stars',
-        child: RatingBar(
-          initialRating: rating.toDouble(),
-          minRating: 1,
-          direction: Axis.horizontal,
-          allowHalfRating: false,
-          itemCount: 3,
-          itemSize: scaledSize,
-          ignoreGestures: true,
-          ratingWidget: RatingWidget(
-            full: const Icon(Icons.star, color: Colors.amber),
-            half: const Icon(Icons.star_half, color: Colors.amber),
-            empty: const Icon(Icons.star_border, color: Colors.grey),
+      if (rating == -1) {
+        content = Semantics(
+          label: 'Blocked show',
+          child: Icon(
+            isFruit ? LucideIcons.star : Icons.star,
+            size: scaledSize,
+            color: Colors.red,
           ),
-          onRatingUpdate: (_) {},
-        ),
-      );
+        );
+      } else if (rating == 0 && isPlayed) {
+        content = Semantics(
+          key: ValueKey('rating_0_played_$isPlayed'),
+          label: 'Played, unrated',
+          child: RatingBar(
+            initialRating: 1,
+            minRating: 1,
+            direction: Axis.horizontal,
+            allowHalfRating: false,
+            itemCount: 3,
+            itemSize: scaledSize,
+            ignoreGestures: true,
+            ratingWidget: RatingWidget(
+              full: Icon(isFruit ? LucideIcons.star : Icons.star,
+                  color: Colors.grey),
+              half: Icon(isFruit ? LucideIcons.star : Icons.star_half,
+                  color: Colors.grey),
+              empty: Icon(isFruit ? LucideIcons.star : Icons.star_border,
+                  color: Colors.grey),
+            ),
+            onRatingUpdate: (_) {},
+          ),
+        );
+      } else {
+        content = Semantics(
+          key: ValueKey('rating_$rating'),
+          label: 'Rated $rating stars',
+          child: RatingBar(
+            initialRating: rating.toDouble(),
+            minRating: 1,
+            direction: Axis.horizontal,
+            allowHalfRating: false,
+            itemCount: 3,
+            itemSize: scaledSize,
+            ignoreGestures: true,
+            ratingWidget: RatingWidget(
+              full: Icon(isFruit ? LucideIcons.star : Icons.star,
+                  color: Colors.amber),
+              half: Icon(isFruit ? LucideIcons.star : Icons.star_half,
+                  color: Colors.amber),
+              empty: Icon(isFruit ? LucideIcons.star : Icons.star_border,
+                  color: Colors.grey),
+            ),
+            onRatingUpdate: (_) {},
+          ),
+        );
+      }
     }
 
     if (onTap == null) {
@@ -140,56 +206,67 @@ class _RatingDialogState extends State<RatingDialog> {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
+    final themeProvider = context.watch<ThemeProvider>();
+    final settingsProvider = context.watch<SettingsProvider>();
+    final isFruit = themeProvider.themeStyle == ThemeStyle.fruit;
+    final isFruitNeumorphic = isFruit &&
+        settingsProvider.useNeumorphism &&
+        !settingsProvider.useTrueBlack;
 
-    return SimpleDialog(
-      titlePadding: const EdgeInsets.fromLTRB(24.0, 24.0, 24.0, 0.0),
-      title: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Text('Rate Show'),
-          if (widget.sourceId != null && widget.sourceId!.isNotEmpty) ...[
-            const SizedBox(width: 16),
-            InkWell(
-              onTap: () {
-                if (widget.sourceUrl != null && widget.sourceUrl!.isNotEmpty) {
-                  launchArchivePage(widget.sourceUrl!, context);
-                } else {
-                  launchArchiveDetails(widget.sourceId!, context);
-                }
-              },
-              borderRadius: BorderRadius.circular(8),
-              child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  color: colorScheme.tertiaryContainer.withValues(alpha: 0.7),
+    Widget content = Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(24.0, 24.0, 24.0, 12.0),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('Rate Show', style: textTheme.titleLarge),
+              if (widget.sourceId != null && widget.sourceId!.isNotEmpty) ...[
+                const SizedBox(width: 16),
+                InkWell(
+                  onTap: () {
+                    if (widget.sourceUrl != null &&
+                        widget.sourceUrl!.isNotEmpty) {
+                      launchArchivePage(widget.sourceUrl!, context);
+                    } else {
+                      launchArchiveDetails(widget.sourceId!, context);
+                    }
+                  },
                   borderRadius: BorderRadius.circular(8),
-                ),
-                child: Container(
-                  decoration: BoxDecoration(
-                    border: Border(
-                      bottom: BorderSide(
-                        color: colorScheme.onTertiaryContainer,
-                        width: 1.5,
+                  child: Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color:
+                          colorScheme.tertiaryContainer.withValues(alpha: 0.7),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        border: Border(
+                          bottom: BorderSide(
+                            color: colorScheme.onTertiaryContainer,
+                            width: 1.5,
+                          ),
+                        ),
+                      ),
+                      padding: const EdgeInsets.only(bottom: 2.0),
+                      child: Text(
+                        widget.sourceId!,
+                        style: textTheme.titleMedium?.copyWith(
+                          color: colorScheme.onTertiaryContainer,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                   ),
-                  padding: const EdgeInsets.only(bottom: 2.0),
-                  child: Text(
-                    widget.sourceId!,
-                    style: textTheme.titleMedium?.copyWith(
-                      color: colorScheme.onTertiaryContainer,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
                 ),
-              ),
-            ),
-          ],
-        ],
-      ),
-      contentPadding: const EdgeInsets.fromLTRB(0.0, 12.0, 0.0, 16.0),
-      children: [
+              ],
+            ],
+          ),
+        ),
         Padding(
           padding: const EdgeInsets.symmetric(vertical: 8.0),
           child: Center(
@@ -234,42 +311,78 @@ class _RatingDialogState extends State<RatingDialog> {
                             }
                             return KeyEventResult.ignored;
                           },
-                          child: RatingBar(
-                            initialRating: (_currentRating == 0 && _isPlayed)
-                                ? 1.0
-                                : (_currentRating > 0
-                                    ? _currentRating.toDouble()
-                                    : 0.0),
-                            minRating: 1,
-                            direction: Axis.horizontal,
-                            allowHalfRating: false,
-                            itemCount: 3,
-                            itemSize:
-                                AppTypography.responsiveFontSize(context, 40.0),
-                            itemPadding:
-                                const EdgeInsets.symmetric(horizontal: 4.0),
-                            ratingWidget: RatingWidget(
-                              full: Icon(
-                                Icons.star,
-                                color: (_currentRating == 0 && _isPlayed)
-                                    ? Colors.grey
-                                    : Colors.amber,
-                              ),
-                              half: Icon(
-                                Icons.star_half,
-                                color: (_currentRating == 0 && _isPlayed)
-                                    ? Colors.grey
-                                    : Colors.amber,
-                              ),
-                              empty: const Icon(Icons.star_border,
-                                  color: Colors.grey),
-                            ),
-                            onRatingUpdate: (rating) {
-                              HapticFeedback.selectionClick();
-                              setState(() {
-                                _currentRating = rating.toInt();
-                              });
-                              widget.onRatingChanged(rating.toInt());
+                          child: Builder(
+                            builder: (context) {
+                              final settingsProvider =
+                                  context.watch<SettingsProvider>();
+                              final themeProvider =
+                                  context.watch<ThemeProvider>();
+                              final isFruitNeumorphic =
+                                  themeProvider.themeStyle ==
+                                          ThemeStyle.fruit &&
+                                      settingsProvider.useNeumorphism &&
+                                      !settingsProvider.useTrueBlack;
+
+                              Widget ratingBar = RatingBar(
+                                initialRating:
+                                    (_currentRating == 0 && _isPlayed)
+                                        ? 1.0
+                                        : (_currentRating > 0
+                                            ? _currentRating.toDouble()
+                                            : 0.0),
+                                minRating: 1,
+                                direction: Axis.horizontal,
+                                allowHalfRating: false,
+                                itemCount: 3,
+                                itemSize: AppTypography.responsiveFontSize(
+                                    context, 40.0),
+                                itemPadding:
+                                    const EdgeInsets.symmetric(horizontal: 4.0),
+                                ratingWidget: RatingWidget(
+                                  full: Icon(
+                                    isFruit
+                                        ? LucideIcons.star
+                                        : Icons.star_rounded,
+                                    color: (_currentRating == 0 && _isPlayed)
+                                        ? Colors.blueGrey.withValues(alpha: 0.4)
+                                        : Colors.orangeAccent,
+                                  ),
+                                  half: Icon(
+                                    isFruit
+                                        ? LucideIcons.star
+                                        : Icons.star_half_rounded,
+                                    color: Colors.orangeAccent,
+                                  ),
+                                  empty: Icon(
+                                    isFruit
+                                        ? LucideIcons.star
+                                        : Icons.star_rounded,
+                                    color:
+                                        Colors.blueGrey.withValues(alpha: 0.3),
+                                  ),
+                                ),
+                                onRatingUpdate: (rating) {
+                                  HapticFeedback.selectionClick();
+                                  setState(() {
+                                    _currentRating = rating.toInt();
+                                  });
+                                  widget.onRatingChanged(rating.toInt());
+                                },
+                              );
+
+                              if (isFruitNeumorphic) {
+                                return NeumorphicWrapper(
+                                  enabled: true,
+                                  isPressed: true,
+                                  borderRadius: 12,
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 12, vertical: 8),
+                                    child: ratingBar,
+                                  ),
+                                );
+                              }
+                              return ratingBar;
                             },
                           ),
                         ),
@@ -304,11 +417,15 @@ class _RatingDialogState extends State<RatingDialog> {
           ),
         ),
         if (widget.onPlayedChanged != null) ...[
-          const Divider(),
+          const Divider(height: 1),
           TvSwitchListTile(
             title: const Text('Mark as Played'),
             secondary: Icon(
-              _isPlayed ? Icons.check_circle_rounded : Icons.circle_outlined,
+              _isPlayed
+                  ? (isFruit
+                      ? LucideIcons.checkCircle
+                      : Icons.check_circle_rounded)
+                  : (isFruit ? LucideIcons.circle : Icons.circle_outlined),
               color: _isPlayed ? colorScheme.primary : colorScheme.outline,
             ),
             value: _isPlayed,
@@ -331,28 +448,63 @@ class _RatingDialogState extends State<RatingDialog> {
             },
           ),
         ],
-        const Divider(),
+        const Divider(height: 1),
         _buildActionOption(
           context,
           'Block (Red Star)',
-          Icons.star,
-          Colors.red,
+          isFruit ? LucideIcons.star : Icons.star_rounded,
+          Colors.redAccent,
           -1,
         ),
-        const Divider(),
+        const Divider(height: 1),
         _buildActionOption(
           context,
           'Clear Rating',
-          Icons.star_border,
+          isFruit ? LucideIcons.star : Icons.star_rounded,
           Colors.grey,
           0,
         ),
+        const SizedBox(height: 8),
       ],
+    );
+
+    if (isFruitNeumorphic) {
+      content = LiquidGlassWrapper(
+        enabled: true,
+        borderRadius: BorderRadius.circular(16),
+        opacity: 0.4, // Higher opacity for dialog legibility
+        blur: 25,
+        child: NeumorphicWrapper(
+          enabled: true,
+          borderRadius: 16,
+          intensity: 1.1,
+          child: Material(
+            color: Colors.transparent,
+            child: content,
+          ),
+        ),
+      );
+    }
+
+    return Dialog(
+      elevation: isFruitNeumorphic ? 0 : null,
+      backgroundColor: isFruitNeumorphic ? Colors.transparent : null,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: isFruitNeumorphic
+          ? content
+          : ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 400),
+              child: content,
+            ),
     );
   }
 
   Widget _buildActionOption(BuildContext context, String text, IconData icon,
       Color color, int rating) {
+    final isFruit =
+        context.read<ThemeProvider>().themeStyle == ThemeStyle.fruit;
     return TvListTile(
       onTap: () async {
         // Confirmation Logic
@@ -382,8 +534,9 @@ class _RatingDialogState extends State<RatingDialog> {
       },
       leading: Icon(icon, color: color),
       title: Text(text),
-      trailing:
-          _currentRating == rating ? const Icon(Icons.check, size: 16) : null,
+      trailing: _currentRating == rating
+          ? Icon(isFruit ? LucideIcons.check : Icons.check, size: 16)
+          : null,
     );
   }
 

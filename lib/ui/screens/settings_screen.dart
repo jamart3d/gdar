@@ -10,6 +10,7 @@ import 'package:shakedown/ui/widgets/settings/interface_section.dart';
 import 'package:shakedown/ui/widgets/settings/playback_section.dart';
 import 'package:shakedown/ui/widgets/settings/source_filter_settings.dart';
 import 'package:shakedown/ui/widgets/settings/usage_instructions_section.dart';
+import 'package:shakedown/providers/theme_provider.dart';
 import 'package:shakedown/utils/color_generator.dart';
 import 'package:shakedown/utils/font_layout_config.dart';
 import 'package:shakedown/providers/update_provider.dart';
@@ -131,7 +132,8 @@ class _SettingsScreenState extends State<SettingsScreen>
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     final isTrueBlackMode = isDarkMode && settingsProvider.useTrueBlack;
 
-    if (!isTrueBlackMode &&
+    if (context.read<ThemeProvider>().themeStyle != ThemeStyle.fruit &&
+        !isTrueBlackMode &&
         settingsProvider.highlightCurrentShowCard &&
         audioProvider.currentShow != null) {
       String seed = audioProvider.currentShow!.name;

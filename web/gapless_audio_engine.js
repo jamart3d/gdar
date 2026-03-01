@@ -466,8 +466,14 @@
     _fetchingIndex = -1;
     _isPrefetching = false;
 
-    // Abort all ongoing fetch requests to save bandwidth and CPU
-    Object.keys(_abortControllers).forEach(index => {
+    // Abort ongoing fetch requests EXCEPT for the next track prefetch if it's already valid.
+    // This prevents race conditions during hybrid handoffs where starting track N 
+    // inadvertently kills the prefetch of N+1 that was already underway.
+    const nextIndex = _currentIndex + 1;
+    Object.keys(_abortControllers).forEach(indexStr => {
+      const index = parseInt(indexStr, 10);
+      if (index === nextIndex) return;
+
       try {
         _log.log('[gdar engine] Aborting orphaned fetch for index', index);
         _abortControllers[index].abort();

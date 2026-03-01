@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:shakedown/ui/widgets/onboarding/onboarding_components.dart';
 import 'package:shakedown/ui/widgets/show_list/animated_dice_icon.dart';
+import 'package:lucide_icons/lucide_icons.dart';
+import 'package:provider/provider.dart';
+import 'package:shakedown/providers/theme_provider.dart';
 
 class TipsPage extends StatelessWidget {
   final double scaleFactor;
@@ -55,7 +58,11 @@ class TipsPage extends StatelessWidget {
               OnboardingComponents.buildTipRow(
                   context,
                   OnboardingComponents.buildIconBubble(
-                      context, Icons.settings_rounded),
+                      context,
+                      context.watch<ThemeProvider>().themeStyle ==
+                              ThemeStyle.fruit
+                          ? LucideIcons.settings
+                          : Icons.settings_rounded),
                   'Check out the settings for more options and usage instructions',
                   scaleFactor),
               const SizedBox(height: 16),

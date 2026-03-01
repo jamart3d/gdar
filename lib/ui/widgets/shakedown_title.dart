@@ -65,12 +65,15 @@ class _ShakedownTitleState extends State<ShakedownTitle>
     ]).animate(_shakeController);
 
     if (widget.animateOnStart) {
-      // Delay to ensure Hero flight is complete if needed
-      _startTimer = Timer(widget.shakeDelay, () {
-        if (mounted) {
-          _shakeController.forward();
-        }
-      });
+      final settingsProvider = context.read<SettingsProvider>();
+      // Neumorphism = architectural solidity, disable "expressive" shake
+      if (!settingsProvider.useNeumorphism) {
+        _startTimer = Timer(widget.shakeDelay, () {
+          if (mounted) {
+            _shakeController.forward();
+          }
+        });
+      }
     }
   }
 

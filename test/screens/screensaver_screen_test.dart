@@ -24,11 +24,15 @@ import 'screensaver_screen_test.mocks.dart';
 // Manual mock to avoid build_runner for this quick fix
 class MockDeviceService extends ChangeNotifier implements DeviceService {
   @override
-  bool get isTv => false;
+  bool get isTv => true;
   @override
   bool get isMobile => false;
   @override
-  bool get isDesktop => true;
+  bool get isDesktop => false;
+  @override
+  bool get isSafari => false;
+  @override
+  bool get isPwa => false;
   @override
   String? get deviceName => 'Mock Device';
   @override

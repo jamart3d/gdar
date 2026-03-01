@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/foundation.dart';
 import 'package:shakedown/providers/audio_provider.dart';
 import 'package:shakedown/providers/settings_provider.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 import 'package:provider/provider.dart';
 import 'package:shakedown/utils/font_layout_config.dart';
+import 'package:shakedown/ui/widgets/theme/neumorphic_wrapper.dart';
+import 'package:shakedown/providers/theme_provider.dart';
 
 class PlaybackControls extends StatefulWidget {
   final double panelPosition;
@@ -18,35 +22,22 @@ class PlaybackControls extends StatefulWidget {
   State<PlaybackControls> createState() => _PlaybackControlsState();
 }
 
-class _PlaybackControlsState extends State<PlaybackControls>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _pulseController;
-  late final Animation<double> _scaleAnimation;
-
-  @override
-  void initState() {
-    super.initState();
-    _pulseController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 800),
-    );
-    _scaleAnimation = Tween<double>(begin: 1.0, end: 1.1).animate(
-      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
-    );
-  }
-
-  @override
-  void dispose() {
-    _pulseController.dispose();
-    super.dispose();
-  }
+class _PlaybackControlsState extends State<PlaybackControls> {
+  bool _isPlayPressed = false;
+  bool _isPrevPressed = false;
+  bool _isNextPressed = false;
 
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final settingsProvider = context.watch<SettingsProvider>();
     final audioProvider = context.watch<AudioProvider>();
+    final themeProvider = context.watch<ThemeProvider>();
     final currentSource = audioProvider.currentSource;
+    final isFruitNeumorphic = themeProvider.themeStyle == ThemeStyle.fruit &&
+        kIsWeb &&
+        settingsProvider.useNeumorphism &&
+        !settingsProvider.useTrueBlack;
 
     if (currentSource == null) {
       return const SizedBox.shrink();
@@ -56,7 +47,6 @@ class _PlaybackControlsState extends State<PlaybackControls>
         FontLayoutConfig.getEffectiveScale(context, settingsProvider);
 
     // Dynamic sizing based on panel position (0.0 = closed, 1.0 = open)
-    // Reduce size by ~15% generally, but ~25% for Roboto/Caveat which feel larger
     double reductionFactor = 0.15;
     if (settingsProvider.appFont == 'default' ||
         settingsProvider.appFont == 'caveat') {
@@ -65,9 +55,14 @@ class _PlaybackControlsState extends State<PlaybackControls>
 
     final double sizeMultiplier =
         1.0 - (reductionFactor * widget.panelPosition);
-    final double iconSize = 32.0 * scaleFactor * sizeMultiplier;
-    final double playButtonSize = 70.0 * scaleFactor * sizeMultiplier;
-    final double playIconSize = 42.0 * scaleFactor * sizeMultiplier;
+    final bool isFruitWeb =
+        themeProvider.themeStyle == ThemeStyle.fruit && kIsWeb;
+    final double iconSize =
+        (isFruitWeb ? 34.0 : 32.0) * scaleFactor * sizeMultiplier;
+    final double playButtonSize =
+        (isFruitWeb ? 74.0 : 70.0) * scaleFactor * sizeMultiplier;
+    final double playIconSize =
+        (isFruitWeb ? 44.0 : 42.0) * scaleFactor * sizeMultiplier;
 
     return StreamBuilder<int?>(
       stream: audioProvider.currentIndexStream,
@@ -87,43 +82,60 @@ class _PlaybackControlsState extends State<PlaybackControls>
             final processingState = playerState?.processingState;
             final playing = playerState?.playing ?? false;
 
-            if (playing && !_pulseController.isAnimating) {
-              _pulseController.repeat(reverse: true);
-            } else if (!playing && _pulseController.isAnimating) {
-              _pulseController.stop();
-              _pulseController.animateTo(0.0,
-                  duration: const Duration(milliseconds: 200),
-                  curve: Curves.easeOut);
-            }
-
             return Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                IconButton(
-                  icon: const Icon(Icons.skip_previous_rounded),
-                  iconSize: iconSize,
-                  color: colorScheme.onSurface,
-                  onPressed: isFirstTrack
-                      ? null
-                      : () {
-                          HapticFeedback.selectionClick();
-                          audioProvider.seekToPrevious();
-                        },
+                AnimatedScale(
+                  scale: _isPrevPressed ? 0.92 : 1.0,
+                  duration: const Duration(milliseconds: 100),
+                  curve: Curves.easeOutCubic,
+                  child: GestureDetector(
+                    onTapDown: (_) => setState(() => _isPrevPressed = true),
+                    onTapUp: (_) => setState(() => _isPrevPressed = false),
+                    onTapCancel: () => setState(() => _isPrevPressed = false),
+                    child: NeumorphicWrapper(
+                      enabled: isFruitNeumorphic,
+                      borderRadius: 12,
+                      intensity: 1.2,
+                      isPressed: _isPrevPressed,
+                      child: IconButton(
+                        icon: const Icon(LucideIcons.skipBack),
+                        iconSize: iconSize,
+                        color: colorScheme.onSurface,
+                        onPressed: isFirstTrack
+                            ? null
+                            : () {
+                                HapticFeedback.selectionClick();
+                                audioProvider.seekToPrevious();
+                              },
+                      ),
+                    ),
+                  ),
                 ),
-                ScaleTransition(
-                  scale: _scaleAnimation,
+                AnimatedScale(
+                  scale: _isPlayPressed ? 0.92 : 1.0,
+                  duration: const Duration(milliseconds: 100),
+                  curve: Curves.easeOutCubic,
                   child: GestureDetector(
                     onLongPress: () {
                       HapticFeedback.heavyImpact();
                       audioProvider.stopAndClear();
                     },
-                    child: Hero(
-                      tag: 'play_pause_button',
+                    onTapDown: (_) => setState(() => _isPlayPressed = true),
+                    onTapUp: (_) => setState(() => _isPlayPressed = false),
+                    onTapCancel: () => setState(() => _isPlayPressed = false),
+                    child: NeumorphicWrapper(
+                      enabled: isFruitNeumorphic,
+                      isCircle: true,
+                      isPressed: _isPlayPressed,
+                      intensity: 1.4,
                       child: Container(
                         width: playButtonSize,
                         height: playButtonSize,
                         decoration: BoxDecoration(
-                          color: colorScheme.primary,
+                          color: isFruitNeumorphic
+                              ? colorScheme.surface
+                              : colorScheme.primary,
                           shape: BoxShape.circle,
                         ),
                         child: (processingState == ProcessingState.loading ||
@@ -133,7 +145,9 @@ class _PlaybackControlsState extends State<PlaybackControls>
                                 child: CircularProgressIndicator(
                                   strokeWidth: 3.5,
                                   valueColor: AlwaysStoppedAnimation<Color>(
-                                    colorScheme.onPrimary,
+                                    isFruitNeumorphic
+                                        ? colorScheme.primary
+                                        : colorScheme.onPrimary,
                                   ),
                                 ),
                               )
@@ -150,25 +164,43 @@ class _PlaybackControlsState extends State<PlaybackControls>
                                 },
                                 icon: Icon(
                                   playing
-                                      ? Icons.pause_rounded
-                                      : Icons.play_arrow_rounded,
-                                  color: colorScheme.onPrimary,
+                                      ? LucideIcons.pause
+                                      : LucideIcons.play,
+                                  color: isFruitNeumorphic
+                                      ? colorScheme.primary
+                                      : colorScheme.onPrimary,
                                 ),
                               ),
                       ),
                     ),
                   ),
                 ),
-                IconButton(
-                  icon: const Icon(Icons.skip_next_rounded),
-                  iconSize: iconSize,
-                  color: colorScheme.onSurface,
-                  onPressed: isLastTrack
-                      ? null
-                      : () {
-                          HapticFeedback.selectionClick();
-                          audioProvider.seekToNext();
-                        },
+                AnimatedScale(
+                  scale: _isNextPressed ? 0.92 : 1.0,
+                  duration: const Duration(milliseconds: 100),
+                  curve: Curves.easeOutCubic,
+                  child: GestureDetector(
+                    onTapDown: (_) => setState(() => _isNextPressed = true),
+                    onTapUp: (_) => setState(() => _isNextPressed = false),
+                    onTapCancel: () => setState(() => _isNextPressed = false),
+                    child: NeumorphicWrapper(
+                      enabled: isFruitNeumorphic,
+                      borderRadius: 12,
+                      intensity: 1.2,
+                      isPressed: _isNextPressed,
+                      child: IconButton(
+                        icon: const Icon(LucideIcons.skipForward),
+                        iconSize: iconSize,
+                        color: colorScheme.onSurface,
+                        onPressed: isLastTrack
+                            ? null
+                            : () {
+                                HapticFeedback.selectionClick();
+                                audioProvider.seekToNext();
+                              },
+                      ),
+                    ),
+                  ),
                 ),
               ],
             );

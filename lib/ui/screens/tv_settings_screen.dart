@@ -86,12 +86,16 @@ class _TvSettingsScreenState extends State<TvSettingsScreen> {
         );
         break;
       case 3:
-        activeSection = const TvScreensaverSection();
+        activeSection = const TvScreensaverSection(
+          scaleFactor: scaleFactor,
+          initiallyExpanded: initiallyExpanded,
+        );
         break;
       case 4:
         activeSection = const CollectionStatistics(
           initiallyExpanded: initiallyExpanded,
           showCategoryDetails: false,
+          scaleFactorOverride: scaleFactor,
         );
         break;
       case 5:

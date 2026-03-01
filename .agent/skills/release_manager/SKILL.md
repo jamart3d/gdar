@@ -6,11 +6,11 @@ Manage the building and deployment of the GDAR application for Android and Web.
 
 ## Android Release
 1. Update the `version` in `pubspec.yaml` (e.g., `1.0.3+3`).
-2. Run `flutter build clean` to ensure a fresh build.
+2. Run `flutter clean` to ensure a fresh build.
 3. Run `flutter build appbundle --release` to build the signed Android App Bundle.
 4. The output file will be at `build/app/outputs/bundle/release/app-release.aab`.
 5. Upload to [Google Play Console](https://play.google.com/console) internal testing.
-6. Update `RELEASE_NOTES.txt` and copy to Play Console.
+6. Update `docs/RELEASE_NOTES.txt` and copy to Play Console.
 
 ## Web Release
 1. Run `flutter build web --release` to build the web assets.
@@ -19,7 +19,7 @@ Manage the building and deployment of the GDAR application for Android and Web.
 
 ## Shipit (Combined Workflow)
 1. Increment `pubspec.yaml` version and build number.
-2. Update `RELEASE_NOTES.txt`.
+2. Update `docs/RELEASE_NOTES.txt`.
 3. Run `flutter build appbundle --release`.
 4. Stage changes: `git add .`.
 5. Commit with version number in message.

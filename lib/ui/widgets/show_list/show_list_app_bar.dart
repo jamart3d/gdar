@@ -8,6 +8,10 @@ import 'package:shakedown/ui/screens/settings_screen.dart';
 import 'package:shakedown/ui/widgets/show_list/animated_dice_icon.dart';
 import 'package:shakedown/services/device_service.dart';
 import 'package:shakedown/ui/widgets/tv/tv_focus_wrapper.dart';
+import 'package:shakedown/ui/widgets/theme/neumorphic_wrapper.dart';
+import 'package:shakedown/providers/theme_provider.dart';
+import 'package:shakedown/ui/widgets/theme/liquid_glass_wrapper.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 
 class ShowListAppBar extends StatelessWidget implements PreferredSizeWidget {
   final Animation<double> randomPulseAnimation;
@@ -56,16 +60,48 @@ class ShowListAppBar extends StatelessWidget implements PreferredSizeWidget {
     final showListProvider = context.watch<ShowListProvider>();
 
     final isTv = context.watch<DeviceService>().isTv;
+    final themeStyle = context.watch<ThemeProvider>().themeStyle;
+    final isFruit = themeStyle == ThemeStyle.fruit;
+    final useNeumorphic = settingsProvider.useNeumorphism &&
+        isFruit &&
+        !settingsProvider.useTrueBlack;
 
-    Widget wrap(Widget child, {VoidCallback? onTap, BorderRadius? radius}) {
-      if (isTv) {
-        return TvFocusWrapper(
-          onTap: onTap,
-          borderRadius: radius ?? BorderRadius.circular(28),
-          child: child,
+    Widget wrap(Widget child,
+        {VoidCallback? onTap,
+        BorderRadius? radius,
+        bool isCircle = true,
+        double intensity = 1.2}) {
+      Widget interactive = child;
+      if (useNeumorphic) {
+        interactive = NeumorphicWrapper(
+          isCircle: isCircle,
+          borderRadius: radius?.topLeft.x ?? 12,
+          intensity: intensity,
+          // Background color for the glass effect
+          color: Colors.transparent,
+          child: LiquidGlassWrapper(
+            enabled: true,
+            borderRadius: radius ?? BorderRadius.circular(isCircle ? 28 : 12),
+            opacity: 0.08, // Slightly more subtle glass
+            blur: 5, // Sharper subtle blur
+            child: child,
+          ),
         );
       }
-      return child;
+
+      final Widget wrapped = Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 10.0),
+        child: isTv
+            ? TvFocusWrapper(
+                onTap: onTap,
+                borderRadius:
+                    radius ?? BorderRadius.circular(isCircle ? 28 : 12),
+                child: interactive,
+              )
+            : interactive,
+      );
+
+      return wrapped;
     }
 
     return [
@@ -81,7 +117,9 @@ class ShowListAppBar extends StatelessWidget implements PreferredSizeWidget {
         else
           wrap(
             IconButton(
-              icon: const Icon(Icons.playlist_play_rounded),
+              icon: Icon(isFruit
+                  ? LucideIcons.playCircle
+                  : Icons.playlist_play_rounded),
               onPressed: onRandomPlay,
               tooltip: 'Play Next Show',
             ),
@@ -98,14 +136,24 @@ class ShowListAppBar extends StatelessWidget implements PreferredSizeWidget {
           )
         else
           wrap(
-            ScaleTransition(
-              scale: randomPulseAnimation,
-              child: IconButton(
-                icon: const Icon(Icons.question_mark_rounded),
-                onPressed: onRandomPlay,
-                tooltip: 'Play Random Show',
-              ),
-            ),
+            settingsProvider.useNeumorphism
+                ? IconButton(
+                    icon: Icon(isFruit
+                        ? LucideIcons.helpCircle
+                        : Icons.question_mark_rounded),
+                    onPressed: onRandomPlay,
+                    tooltip: 'Play Random Show',
+                  )
+                : ScaleTransition(
+                    scale: randomPulseAnimation,
+                    child: IconButton(
+                      icon: Icon(isFruit
+                          ? LucideIcons.helpCircle
+                          : Icons.question_mark_rounded),
+                      onPressed: onRandomPlay,
+                      tooltip: 'Play Random Show',
+                    ),
+                  ),
             onTap: onRandomPlay,
           )
       else
@@ -117,33 +165,50 @@ class ShowListAppBar extends StatelessWidget implements PreferredSizeWidget {
             isLoading: isRandomShowLoading,
             enableHaptics: enableDiceHaptics,
             tooltip: 'Play Random Show',
+            useLucide: isFruit,
           ),
           onTap: onRandomPlay,
           radius: BorderRadius.circular(12),
         ),
       // Gap removed to match spacing between Search and Settings (standard AppBar spacing)
       wrap(
-        ScaleTransition(
-          scale: searchPulseAnimation,
-          child: IconButton(
-            icon: const Icon(Icons.search_rounded),
-            isSelected: showListProvider.isSearchVisible,
-            style: showListProvider.isSearchVisible
-                ? IconButton.styleFrom(
-                    backgroundColor: colorScheme.surfaceContainer,
-                    shape: CircleBorder(
-                      side: BorderSide(color: colorScheme.outline),
-                    ),
-                  )
-                : null,
-            onPressed: onToggleSearch,
-          ),
-        ),
+        settingsProvider.useNeumorphism
+            ? IconButton(
+                icon: Icon(isFruit ? LucideIcons.search : Icons.search_rounded),
+                isSelected: showListProvider.isSearchVisible,
+                style: showListProvider.isSearchVisible
+                    ? IconButton.styleFrom(
+                        backgroundColor: colorScheme.surfaceContainer,
+                        shape: CircleBorder(
+                          side: BorderSide(color: colorScheme.outline),
+                        ),
+                      )
+                    : null,
+                onPressed: onToggleSearch,
+              )
+            : ScaleTransition(
+                scale: searchPulseAnimation,
+                child: IconButton(
+                  icon:
+                      Icon(isFruit ? LucideIcons.search : Icons.search_rounded),
+                  isSelected: showListProvider.isSearchVisible,
+                  style: showListProvider.isSearchVisible
+                      ? IconButton.styleFrom(
+                          backgroundColor: colorScheme.surfaceContainer,
+                          shape: CircleBorder(
+                            side: BorderSide(color: colorScheme.outline),
+                          ),
+                        )
+                      : null,
+                  onPressed: onToggleSearch,
+                ),
+              ),
         onTap: onToggleSearch,
       ),
       wrap(
         IconButton(
-          icon: const Icon(Icons.settings_rounded),
+          icon: Icon(isFruit ? LucideIcons.settings : Icons.settings_rounded),
+          iconSize: 24.0,
           onPressed: () async {
             // Pause global clock before navigating to generic pages (Settings)
             // to prevent "visual jumps" when returning.

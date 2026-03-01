@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:shakedown/ui/screens/about_screen.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:shakedown/ui/widgets/tv/tv_list_tile.dart';
 import 'package:shakedown/ui/widgets/tv/tv_focus_wrapper.dart';
+import 'package:shakedown/providers/theme_provider.dart';
+import 'package:lucide_icons/lucide_icons.dart';
+import 'package:shakedown/ui/widgets/section_card.dart';
+import 'package:provider/provider.dart';
 
 class AboutSection extends StatelessWidget {
   final double scaleFactor;
@@ -15,79 +17,47 @@ class AboutSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      elevation: 0,
-      color: Theme.of(context)
-          .colorScheme
-          .surfaceContainerHighest
-          .withValues(alpha: 0.3),
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-      child: Column(
-        children: [
-          TvListTile(
-            onTap: () {
-              HapticFeedback.lightImpact();
-              Navigator.of(context).push(
-                PageRouteBuilder(
-                  pageBuilder: (context, animation, secondaryAnimation) =>
-                      const AboutScreen(),
-                  transitionsBuilder:
-                      (context, animation, secondaryAnimation, child) {
-                    const begin = 0.92;
-                    const end = 1.0;
-                    const curve = Curves.easeOutCubic;
+    final themeProvider = context.watch<ThemeProvider>();
+    final isFruit = themeProvider.themeStyle == ThemeStyle.fruit;
 
-                    var scaleTween = Tween(begin: begin, end: end)
-                        .chain(CurveTween(curve: curve));
-                    var fadeTween = Tween(begin: 0.0, end: 1.0)
-                        .chain(CurveTween(curve: curve));
-
-                    return FadeTransition(
-                      opacity: animation.drive(fadeTween),
-                      child: ScaleTransition(
-                        scale: animation.drive(scaleTween),
-                        child: child,
-                      ),
-                    );
-                  },
-                  transitionDuration: const Duration(milliseconds: 400),
-                  reverseTransitionDuration: const Duration(milliseconds: 350),
-                ),
-              );
-            },
-            dense: true,
-            visualDensity: VisualDensity.compact,
-            leading: Icon(Icons.info_outline,
-                color: Theme.of(context).colorScheme.primary),
-            title: FittedBox(
-              fit: BoxFit.scaleDown,
-              alignment: Alignment.centerLeft,
-              child: Text(
-                'About App',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    color: Theme.of(context).colorScheme.primary,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16 * scaleFactor),
-              ),
+    return Column(
+      children: [
+        SectionCard(
+          scaleFactor: scaleFactor,
+          title: 'About App',
+          icon: Icons.info_outline,
+          lucideIcon: LucideIcons.info,
+          initiallyExpanded: false,
+          children: const [
+            AboutBody(),
+          ],
+        ),
+        SectionCard(
+          scaleFactor: scaleFactor,
+          title: 'Support & Donate',
+          icon: Icons.favorite_border_rounded,
+          lucideIcon: LucideIcons.heart,
+          initiallyExpanded: false,
+          children: [
+            _buildClickableLink(
+              context,
+              'Consider donating to The Internet Archive',
+              'https://archive.org/donate/',
+              scaleFactor,
+              customIcon:
+                  _PulsingHeartIcon(scaleFactor: scaleFactor, isFruit: isFruit),
             ),
-            trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 12),
-          ),
-          _buildClickableLink(
-            context,
-            'Consider donating to The Internet Archive',
-            'https://archive.org/donate/',
-            scaleFactor,
-            customIcon: _PulsingHeartIcon(scaleFactor: scaleFactor),
-          ),
-        ],
-      ),
+          ],
+        ),
+      ],
     );
   }
 
   Widget _buildClickableLink(
       BuildContext context, String text, String url, double scaleFactor,
       {IconData? icon, Widget? customIcon}) {
+    final isFruit =
+        context.read<ThemeProvider>().themeStyle == ThemeStyle.fruit;
     // For now, implementing locally as it was private in SettingsScreen
     return TvFocusWrapper(
       onTap: () => _launchUrl(context, url),
@@ -113,7 +83,7 @@ class AboutSection extends StatelessWidget {
                     ),
               ),
             ),
-            Icon(Icons.open_in_new,
+            Icon(isFruit ? LucideIcons.externalLink : Icons.open_in_new,
                 size: 16 * scaleFactor,
                 color: Theme.of(context).colorScheme.primary),
           ],
@@ -143,8 +113,9 @@ class AboutSection extends StatelessWidget {
 
 class _PulsingHeartIcon extends StatefulWidget {
   final double scaleFactor;
+  final bool isFruit;
 
-  const _PulsingHeartIcon({required this.scaleFactor});
+  const _PulsingHeartIcon({required this.scaleFactor, required this.isFruit});
 
   @override
   State<_PulsingHeartIcon> createState() => _PulsingHeartIconState();
@@ -187,7 +158,7 @@ class _PulsingHeartIconState extends State<_PulsingHeartIcon>
         );
       },
       child: Icon(
-        Icons.favorite,
+        widget.isFruit ? LucideIcons.heart : Icons.favorite,
         size: 20 * widget.scaleFactor,
         color: Colors.pinkAccent,
       ),
