@@ -1,3 +1,9 @@
+Release 1.1.36+136:
+- **Refactor**: Defined explicit Audio Engine design specs ensuring isolation between Gapless, HTML5, Standard, Passive, and Hybrid implementations.
+- **Refactor**: Replaced outdated `.agent/workflows/` directory with the new `SKILL.md` architecture for checkup and release processes.
+- **Fixed**: Corrected Hybrid Audio Engine initialization loop issues between foreground and background modes.
+- **Testing**: Added rigorous regression tests to enforce audio engine strict specifications and Web Audio stability.
+
 Release 1.1.35+135:
 - **Visualizer**: Implemented a noise gate in the Android visualizer to eliminate low-level jitter during silent passages.
 - **Visualizer**: Optimized peak tracking to reset after silence, preventing normalization artifacts.
