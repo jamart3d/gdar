@@ -36,15 +36,36 @@
 </head>
 
 <body>
-  <!-- 1. Mobile HTML5 streaming engine (dual HTMLAudioElement) -->
+  <!-- 0. Master Logging Registry (Control debug output) -->
+  <script src="audio_logger.js"></script>
+  <script>
+    // Global Engine Tracker (Diagnostic)
+    (function() {
+      let _currentEngine = null;
+      Object.defineProperty(window, '_gdarAudio', {
+        get: function() { return _currentEngine; },
+        set: function(val) {
+          console.log('%c[Engine Tracker] window._gdarAudio being set to:', 'color: #ff00ff; font-weight: bold;', val?.engineType || 'Unknown');
+          if (val && !val.engineType) console.trace(); // Find out who is setting it
+          _currentEngine = val;
+        },
+        configurable: true
+      });
+    })();
+  </script>
+  <!-- 1. Mobile HTML5 streaming engine (pure) -->
   <script src="html5_audio_engine.js"></script>
+  <!-- 1.1 Orchestrated HTML5 engine (Hybrid background) -->
+  <script src="hybrid_html5_engine.js"></script>
   <!-- 2. Desktop GDAR Web Audio API engine (AudioBufferSourceNode, 0ms gapless) -->
   <script src="gapless_audio_engine.js"></script>
   <!-- 3. Passive HTML5 Audio engine (background persistence) -->
   <script src="passive_audio_engine.js"></script>
   <!-- 4. Hybrid Web Audio engine (foreground gapless + background passive) -->
   <script src="hybrid_audio_engine.js"></script>
-  <!-- 5. Hybrid dispatcher: auto-selects strategy and assigns window._gdarAudio -->
+  <!-- 5. Audio Heartbeat (Lock Web Audio into background memory on iOS/Android) -->
+  <script src="audio_heartbeat.js"></script>
+  <!-- 6. Hybrid dispatcher: auto-selects strategy and assigns window._gdarAudio -->
   <script src="hybrid_init.js"></script>
   <!-- Firebase Config (Gitignored) -->
   <script src="firebase-config.js"></script>

@@ -24,8 +24,10 @@ class PlaybackMessages extends StatefulWidget {
 
 class _PlaybackMessagesState extends State<PlaybackMessages> {
   String? _agentMessage;
+  String? _engineStateString;
   StreamSubscription? _agentSubscription;
   StreamSubscription? _playerStateSubscription;
+  StreamSubscription? _engineStateSubscription;
 
   @override
   void initState() {
@@ -65,12 +67,23 @@ class _PlaybackMessagesState extends State<PlaybackMessages> {
         }
       }
     });
+
+    _engineStateSubscription?.cancel();
+    _engineStateSubscription =
+        audioProvider.audioPlayer.engineStateStringStream.listen((stateStr) {
+      if (mounted) {
+        setState(() {
+          _engineStateString = stateStr;
+        });
+      }
+    });
   }
 
   @override
   void dispose() {
     _agentSubscription?.cancel();
     _playerStateSubscription?.cancel();
+    _engineStateSubscription?.cancel();
     super.dispose();
   }
 
@@ -104,6 +117,21 @@ class _PlaybackMessagesState extends State<PlaybackMessages> {
         if (_agentMessage != null) {
           statusText = _agentMessage!;
           statusColor = colorScheme.error;
+        } else if (_engineStateString == 'handoff_countdown') {
+          // Calculate remaining buffer time manually since we update once a second
+          final pos = audioProvider.audioPlayer.position;
+          final buf = audioProvider.audioPlayer.bufferedPosition;
+          final diff = (buf - pos).inSeconds;
+          final countdown =
+              diff - 5; // Handoff happens 5 seconds before buffer ends
+
+          if (countdown > 0) {
+            statusText = 'Handoff in ${countdown}s...';
+            statusColor = colorScheme.primary;
+          } else {
+            statusText = 'Handing off to WebAudio...';
+            statusColor = colorScheme.primary;
+          }
         } else if (processingState == ProcessingState.loading) {
           statusText = 'Loading...';
         } else if (processingState == ProcessingState.buffering) {

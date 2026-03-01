@@ -69,6 +69,12 @@ extension type _JsTrack._(JSObject _) implements JSObject {
   });
 }
 
+@JS()
+extension type _JSObject(JSObject _) {
+  @JS('message')
+  external JSString? get message;
+}
+
 // ─── Web Hybrid Audio Engine ─────────────────────────────────────────────────
 
 /// Brings the window._hybridAudio API into Dart.
@@ -122,11 +128,25 @@ class HybridAudioEngine {
       }).toJS,
     );
     _engine.onError(
-      ((JSObject raw) {
+      ((JSAny raw) {
         _processingState = ProcessingState.idle;
         _processingStateController.add(_processingState);
+
+        String message = 'Unknown hybrid engine error';
+        if (raw.isA<JSString>()) {
+          message = (raw as JSString).toDart;
+        } else if (raw.isA<JSObject>()) {
+          final obj = _JSObject(raw as JSObject);
+          final m = obj.message;
+          if (m != null) {
+            message = m.toDart;
+          } else {
+            message = raw.toString();
+          }
+        }
+
         _playbackEventController.addError(
-          Exception('hybrid engine error'),
+          Exception('HybridEngine: $message'),
           StackTrace.current,
         );
       }).toJS,
@@ -168,24 +188,26 @@ class HybridAudioEngine {
     _processingState = _mapProcessingState(s.processingState);
 
     _positionController
-        .add(Duration(milliseconds: (_positionSec * 1000).round()));
+        .add(Duration(milliseconds: (s.position * 1000).round()));
     _bufferedPositionController
         .add(Duration(milliseconds: (_currentTrackBufferedSec * 1000).round()));
 
     if (_contextState != wasContext) {
       _contextStateController.add(_contextState);
     }
-    if (_durationSec != wasDuration) {
+    if ((_durationSec - wasDuration).abs() > 0.1) {
       _durationController.add(_durationSec > 0
           ? Duration(milliseconds: (_durationSec * 1000).round())
           : null);
     }
+
     _nextTrackBufferedController.add(_nextTrackBufferedSec > 0
         ? Duration(milliseconds: (_nextTrackBufferedSec * 1000).round())
         : null);
     _nextTrackTotalController.add(_nextTrackTotalSec > 0
         ? Duration(milliseconds: (_nextTrackTotalSec * 1000).round())
         : null);
+
     if (_playing != wasPlaying) {
       _playingController.add(_playing);
     }
@@ -193,12 +215,13 @@ class HybridAudioEngine {
       _indexController.add(_currentIndex);
       _emitSequenceState();
     }
+
     _processingStateController.add(_processingState);
     _emitPlayerState();
 
     _playbackEventController.add(PlaybackEvent(
       processingState: _processingState,
-      updatePosition: Duration(milliseconds: (_positionSec * 1000).round()),
+      updatePosition: Duration(milliseconds: (s.position * 1000).round()),
       duration: _durationSec > 0
           ? Duration(milliseconds: (_durationSec * 1000).round())
           : null,

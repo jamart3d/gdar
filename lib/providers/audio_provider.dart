@@ -127,8 +127,9 @@ class AudioProvider with ChangeNotifier {
 
   // Dependency Injection for easier testing
   final CatalogService _catalogService;
-  final AudioCacheService _audioCacheService;
+  AudioCacheService _audioCacheService;
   final WakelockService _wakelockService;
+  StreamSubscription<Duration>? _bufferedPositionSubscription;
 
   AudioProvider({
     GaplessPlayer? audioPlayer,
@@ -149,6 +150,22 @@ class AudioProvider with ChangeNotifier {
 
     // Listen to cache updates
     _audioCacheService.addListener(notifyListeners);
+
+    // Listen to buffer updates for real-time reporting
+    _bufferedPositionSubscription =
+        _audioPlayer.bufferedPositionStream.listen((_) {
+      notifyListeners();
+    });
+
+    // Listen to raw engine states (for suspension notifications)
+    _audioPlayer.engineStateStringStream.listen((state) {
+      if (state == 'suspended_by_os') {
+        _bufferAgentNotificationController.add((
+          message: 'Playback suspended by system. Tap play to resume.',
+          retryAction: () => play(),
+        ));
+      }
+    });
   }
 
   void _listenForProcessingState() {
@@ -159,6 +176,8 @@ class AudioProvider with ChangeNotifier {
 
       if (state == ProcessingState.completed) {
         final shouldPlay = _settingsProvider?.playRandomOnCompletion ?? false;
+        logger.i(
+            'AudioProvider: ProcessingState.completed received. AutoPlay: $shouldPlay');
         if (shouldPlay) {
           logger.i('Playback completed. Triggering fallback random show...');
           // Use playRandomShow (Stop & Load) as fallback
@@ -204,14 +223,24 @@ class AudioProvider with ChangeNotifier {
   void update(
     ShowListProvider showListProvider,
     SettingsProvider settingsProvider,
+    AudioCacheService audioCacheService,
   ) {
     _showListProvider = showListProvider;
+    _audioCacheService = audioCacheService;
 
     // Check if web prefetch seconds changed and sync to player
     if (_settingsProvider != null &&
         settingsProvider.webPrefetchSeconds !=
             _settingsProvider!.webPrefetchSeconds) {
       _audioPlayer.setWebPrefetchSeconds(settingsProvider.webPrefetchSeconds);
+    }
+
+    // Sync handoff mode
+    if (_settingsProvider != null &&
+        settingsProvider.hybridHandoffMode !=
+            _settingsProvider!.hybridHandoffMode) {
+      _audioPlayer
+          .setHybridHandoffMode(settingsProvider.hybridHandoffMode.name);
     }
     _settingsProvider = settingsProvider;
     _updateBufferAgent();
@@ -252,13 +281,14 @@ class AudioProvider with ChangeNotifier {
       if (index == sequence.length - 1) {
         final shouldPlay = _settingsProvider?.playRandomOnCompletion ?? false;
         if (!_isTransitioning && shouldPlay) {
-          _isTransitioning = true; // Block duplicates
+          // Safety check: ensure we really are on the last track by verifying sequence length
           logger.i(
-              'Started last track (Index $index). Pre-queueing next random show...');
+              'Started last track (Index $index, Length ${sequence.length}). Pre-queueing next random show...');
+          _isTransitioning = true; // Block duplicates
           await queueRandomShow();
         } else {
           logger.d(
-              'Last track reached (Index $index), but skipping queue. Transitioning: $_isTransitioning, AutoPlay: $shouldPlay');
+              'Last track reached (Index $index, Length ${sequence.length}), but skipping queue. Transitioning: $_isTransitioning, AutoPlay: $shouldPlay');
         }
       }
 
@@ -303,6 +333,7 @@ class AudioProvider with ChangeNotifier {
     _positionSubscription?.cancel();
     _playbackEventSubscription?.cancel();
     _indexSubscription?.cancel();
+    _bufferedPositionSubscription?.cancel();
     _errorController.close();
     _randomShowRequestController.close();
     _bufferAgentNotificationController.close();
@@ -650,6 +681,7 @@ class AudioProvider with ChangeNotifier {
       {int initialIndex = 0, Duration? initialPosition}) async {
     logger.i(
         'Loading show: ${_currentShow!.name}, source: ${source.id}, starting at index: $initialIndex');
+    logger.i('AudioProvider: Playing with engine: ${_audioPlayer.engineName}');
     Uri? artUri;
     try {
       artUri = await _audioCacheService.getAlbumArtUri();

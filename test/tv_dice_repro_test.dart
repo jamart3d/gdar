@@ -14,6 +14,7 @@ import 'package:shakedown/ui/widgets/show_list/animated_dice_icon.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:shakedown/services/gapless_player/gapless_player.dart';
 import 'package:shakedown/services/catalog_service.dart';
+import 'package:shakedown/services/audio_cache_service.dart';
 import 'package:shakedown/models/rating.dart';
 import 'package:hive/hive.dart';
 import 'package:flutter/foundation.dart';
@@ -110,7 +111,8 @@ class MockAudioProvider extends ChangeNotifier implements AudioProvider {
       GaplessPlayer(); // Satisfies AudioProvider interface
 
   @override
-  void update(ShowListProvider slp, SettingsProvider sp) {}
+  void update(
+      ShowListProvider slp, SettingsProvider sp, AudioCacheService acs) {}
 
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);

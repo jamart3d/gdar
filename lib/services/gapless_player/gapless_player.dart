@@ -23,3 +23,32 @@ enum AudioEngineMode {
     return AudioEngineMode.auto;
   }
 }
+
+/// Strategies for background playback longevity in Hybrid mode.
+enum HybridBackgroundMode {
+  relisten,
+  heartbeat,
+  video,
+  none;
+
+  static HybridBackgroundMode fromString(String? value) {
+    return HybridBackgroundMode.values.firstWhere(
+      (e) => e.name == value,
+      orElse: () => HybridBackgroundMode.relisten,
+    );
+  }
+}
+
+/// Strategies for engine handoff timing in Hybrid mode.
+enum HybridHandoffMode {
+  buffered,
+  immediate,
+  none;
+
+  static HybridHandoffMode fromString(String? value) {
+    return HybridHandoffMode.values.firstWhere(
+      (e) => e.name == value,
+      orElse: () => HybridHandoffMode.buffered,
+    );
+  }
+}

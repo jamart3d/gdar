@@ -53,6 +53,8 @@ class SettingsProvider with ChangeNotifier {
   static const String _trackTransitionModeKey = 'track_transition_mode';
   static const String _crossfadeDurationSecondsKey =
       'crossfade_duration_seconds';
+  static const String _hybridHandoffModeKey = 'hybrid_handoff_mode';
+  static const String _hybridBackgroundModeKey = 'hybrid_background_mode';
   static const String _webSourceFiltersInitKey = 'web_source_filters_init_v1';
   static const String _simpleRandomIconKey = 'simple_random_icon';
 
@@ -172,6 +174,8 @@ class SettingsProvider with ChangeNotifier {
   late int _webPrefetchSeconds;
   late String _trackTransitionMode;
   late double _crossfadeDurationSeconds;
+  late HybridHandoffMode _hybridHandoffMode;
+  late HybridBackgroundMode _hybridBackgroundMode;
 
   // Screensaver (steal)
   late bool _useOilScreensaver;
@@ -293,6 +297,28 @@ class SettingsProvider with ChangeNotifier {
   void setCrossfadeDurationSeconds(double seconds) {
     _crossfadeDurationSeconds = seconds;
     _prefs.setDouble(_crossfadeDurationSecondsKey, seconds);
+    notifyListeners();
+  }
+
+  HybridHandoffMode get hybridHandoffMode => _hybridHandoffMode;
+  void setHybridHandoffMode(HybridHandoffMode mode) {
+    _hybridHandoffMode = mode;
+    _prefs.setString(_hybridHandoffModeKey, mode.name);
+    // Notify player if on web
+    if (kIsWeb) {
+      GaplessPlayer().setHybridHandoffMode(mode.name);
+    }
+    notifyListeners();
+  }
+
+  HybridBackgroundMode get hybridBackgroundMode => _hybridBackgroundMode;
+  void setHybridBackgroundMode(HybridBackgroundMode mode) {
+    _hybridBackgroundMode = mode;
+    _prefs.setString(_hybridBackgroundModeKey, mode.name);
+    // Notify player if on web
+    if (kIsWeb) {
+      GaplessPlayer().setHybridBackgroundMode(mode.name);
+    }
     notifyListeners();
   }
 
@@ -541,8 +567,11 @@ class SettingsProvider with ChangeNotifier {
           _prefs.getString(_audioEngineModeKey) ??
               DefaultSettings.audioEngineMode);
     }
-    // Force prefetch to 30s as requested (hidden from UI)
-    _webPrefetchSeconds = DefaultSettings.webPrefetchSeconds;
+    // Greedy prefetch (-1) if in Web Audio mode, otherwise use fixed 30s
+    _webPrefetchSeconds = (_audioEngineMode == AudioEngineMode.webAudio)
+        ? -1
+        : DefaultSettings.webPrefetchSeconds;
+
     // Still ensure the preference is stored correctly if it wasn't
     if (_prefs.getInt(_webPrefetchSecondsKey) != _webPrefetchSeconds) {
       _prefs.setInt(_webPrefetchSecondsKey, _webPrefetchSeconds);
@@ -553,6 +582,10 @@ class SettingsProvider with ChangeNotifier {
     _crossfadeDurationSeconds =
         _prefs.getDouble(_crossfadeDurationSecondsKey) ??
             DefaultSettings.crossfadeDurationSeconds;
+    _hybridHandoffMode = HybridHandoffMode.fromString(
+        _prefs.getString(_hybridHandoffModeKey) ?? 'buffered');
+    _hybridBackgroundMode = HybridBackgroundMode.fromString(
+        _prefs.getString(_hybridBackgroundModeKey) ?? 'relisten');
 
     // Screensaver
     _useOilScreensaver = _prefs.getBool(_useOilScreensaverKey) ??

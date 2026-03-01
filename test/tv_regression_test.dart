@@ -24,6 +24,7 @@ import 'package:flutter/services.dart';
 import 'package:mockito/mockito.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shakedown/services/catalog_service.dart';
+import 'package:shakedown/services/audio_cache_service.dart';
 import 'package:just_audio/just_audio.dart';
 
 // Manual mocks to avoid dependency on generated files in this regression test
@@ -70,7 +71,8 @@ class MockAudioProvider extends ChangeNotifier implements ap.AudioProvider {
   @override
   void clearPendingRandomShowRequest() {}
   @override
-  void update(ShowListProvider slp, SettingsProvider sp) {}
+  void update(
+      ShowListProvider slp, SettingsProvider sp, AudioCacheService acs) {}
 
   @override
   ({Show show, Source source})? pickRandomShow({bool filterBySearch = true}) =>
@@ -428,7 +430,18 @@ class FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
   @override
   String get trackTransitionMode => 'gapless';
   @override
-  void setTrackTransitionMode(String mode) {}
+  void setTrackTransitionMode(String value) {}
+
+  @override
+  HybridHandoffMode get hybridHandoffMode => HybridHandoffMode.buffered;
+  @override
+  void setHybridHandoffMode(HybridHandoffMode value) {}
+
+  @override
+  HybridBackgroundMode get hybridBackgroundMode =>
+      HybridBackgroundMode.relisten;
+  @override
+  void setHybridBackgroundMode(HybridBackgroundMode value) {}
 
   @override
   double get crossfadeDurationSeconds => 3.0;

@@ -565,6 +565,20 @@ class MockSettingsProvider extends _i1.Mock implements _i9.SettingsProvider {
       ) as double);
 
   @override
+  _i11.HybridHandoffMode get hybridHandoffMode => (super.noSuchMethod(
+        Invocation.getter(#hybridHandoffMode),
+        returnValue: _i11.HybridHandoffMode.buffered,
+        returnValueForMissingStub: _i11.HybridHandoffMode.buffered,
+      ) as _i11.HybridHandoffMode);
+
+  @override
+  _i11.HybridBackgroundMode get hybridBackgroundMode => (super.noSuchMethod(
+        Invocation.getter(#hybridBackgroundMode),
+        returnValue: _i11.HybridBackgroundMode.relisten,
+        returnValueForMissingStub: _i11.HybridBackgroundMode.relisten,
+      ) as _i11.HybridBackgroundMode);
+
+  @override
   bool get useOilScreensaver => (super.noSuchMethod(
         Invocation.getter(#useOilScreensaver),
         returnValue: false,
@@ -1022,6 +1036,25 @@ class MockSettingsProvider extends _i1.Mock implements _i9.SettingsProvider {
         Invocation.method(
           #setCrossfadeDurationSeconds,
           [seconds],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void setHybridHandoffMode(_i11.HybridHandoffMode? mode) => super.noSuchMethod(
+        Invocation.method(
+          #setHybridHandoffMode,
+          [mode],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void setHybridBackgroundMode(_i11.HybridBackgroundMode? mode) =>
+      super.noSuchMethod(
+        Invocation.method(
+          #setHybridBackgroundMode,
+          [mode],
         ),
         returnValueForMissingStub: null,
       );

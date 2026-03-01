@@ -1,5 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter/services.dart';
 import 'package:shakedown/providers/update_provider.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -8,6 +10,27 @@ void main() {
     late UpdateProvider updateProvider;
 
     setUp(() async {
+      PackageInfo.setMockInitialValues(
+        appName: 'Shakedown',
+        packageName: 'com.gdar.shakedown',
+        version: '1.0.0',
+        buildNumber: '1',
+        buildSignature: '',
+      );
+
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(
+        const MethodChannel('plugins.flutter.io/url_launcher'),
+        (MethodCall methodCall) async {
+          if (methodCall.method == 'canLaunch') {
+            return true;
+          } else if (methodCall.method == 'launch') {
+            return true;
+          }
+          return null;
+        },
+      );
+
       updateProvider = UpdateProvider();
     });
 

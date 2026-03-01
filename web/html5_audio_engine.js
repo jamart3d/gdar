@@ -1,568 +1,657 @@
 /**
- * HTML5 Audio Engine
- * Mobile gapless (near-gapless) playback via dual HTMLAudioElement approach.
- * Inspired by RelistenNet/relisten-web's gapless.cjs.
- *
- * Architecture:
- *   - Two <audio> elements: _currentAudio and _nextAudio
- *   - When _currentAudio is N seconds from end, _nextAudio.src is set and
- *     load() / play() is called so it is buffered and ready.
- *   - On _currentAudio 'ended', the two elements are swapped and the next
- *     track (already playing silently / buffered) takes over.
- *   - Relies entirely on the browser's native HTTP streaming — no fetch(),
- *     no ArrayBuffer decoding, minimal RAM usage.
- *   - Media Session API is handled by the browser natively when using
- *     HTMLAudioElement; no manual MediaMetadata calls needed for Chrome/Safari.
- *
- * Exposed globally as window._html5Audio for Dart interop via hybrid_init.js.
+ * HTML5 Audio Engine (Exact Relisten Gapless Port)
+ * 
+ * This engine maps our project's audio API to the exact logic from 
+ * RelistenNet/relisten-web's gapless.cjs.
  */
 (function () {
     'use strict';
 
-    // ─── State ────────────────────────────────────────────────────────────────
+    const _log = (window._gdarLogger || console);
+    const isBrowser = typeof window !== 'undefined';
+    const PRELOAD_NUM_TRACKS = 5;
 
-    let _playlist = [];
-    let _currentIndex = -1;
-    let _playing = false;
-    let _prefetchSeconds = 30;
+    // ─── Relisten Core (gapless.cjs) ──────────────────────────────────────────
+    // Ported from: https://github.com/RelistenNet/relisten-web/blob/master/public/gapless.cjs
 
-    /**
-     * Primary HTMLAudioElement — the currently playing track.
-     * @type {HTMLAudioElement|null}
-     */
-    let _currentAudio = null;
+    let _audioContext = null;
 
-    /**
-     * Secondary HTMLAudioElement — the next track, pre-loaded and ready.
-     * @type {HTMLAudioElement|null}
-     */
-    let _nextAudio = null;
+    function _ensureAudioContext(webAudioIsDisabled) {
+        if (webAudioIsDisabled) return null;
+        if (!_audioContext && isBrowser && (window.AudioContext || window.webkitAudioContext)) {
+            _audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            _log.log('[html5] AudioContext created');
+        }
+        return _audioContext;
+    }
 
-    /** Whether a swap-on-end transition is in progress. */
-    let _isTransitioning = false;
-    let _lastEmittedNextBuf = 0;
-    let _lastEmittedNextIndex = -1;
+    const GaplessPlaybackType = {
+        HTML5: 'HTML5',
+        WEBAUDIO: 'WEBAUDIO',
+    };
 
-    /** Whether _nextAudio is currently being preloaded. */
-    let _isPrefetching = false;
+    const GaplessPlaybackLoadingState = {
+        NONE: 'NONE',
+        LOADING: 'LOADING',
+        LOADED: 'LOADED',
+    };
 
-    /** The interval ID for the position-polling timer. */
-    let _positionTimer = null;
+    class Track {
+        constructor({ trackUrl, skipHEAD, queue, idx, metadata }) {
+            this.playbackType = GaplessPlaybackType.HTML5;
+            this.webAudioLoadingState = GaplessPlaybackLoadingState.NONE;
+            this.loadedHEAD = false;
+            this.idx = idx;
+            this.queue = queue;
+            this.trackUrl = trackUrl;
+            this.skipHEAD = skipHEAD;
+            this.metadata = metadata || {};
 
-    /** Countdown timer that triggers prefetch N seconds before track end. */
-    let _prefetchTimer = null;
+            this.onEnded = this.onEnded.bind(this);
+            this.onProgress = this.onProgress.bind(this);
 
-    /** Processing state mirroring the GDAR engine's vocabulary. */
-    let _loadingState = 'idle';
+            this.audio = new Audio();
+            this.audio.onerror = this.audioOnError;
+            this.audio.onended = () => this.onEnded('HTML5');
+            this.audio.controls = false;
+            this.audio.volume = queue.state.volume;
+            this.audio.preload = 'none';
+            this.audio.src = trackUrl;
+            this.audio.crossOrigin = 'anonymous';
 
-    // Callbacks registered by Dart (via hybrid_init.js → _gdarAudio).
+            if (queue.state.webAudioIsDisabled) return;
+
+            this.audioContext = _ensureAudioContext(false);
+            if (!this.audioContext) return;
+
+            this.gainNode = this.audioContext.createGain();
+            if (this.gainNode) this.gainNode.gain.value = queue.state.volume;
+            this.webAudioStartedPlayingAt = 0;
+            this.webAudioPausedDuration = 0;
+            this.webAudioPausedAt = 0;
+            this.audioBuffer = null;
+
+            this.bufferSourceNode = this.audioContext.createBufferSource();
+            if (this.bufferSourceNode) this.bufferSourceNode.onended = this.onEnded;
+        }
+
+        loadHEAD(cb) {
+            if (this.loadedHEAD) return cb();
+            fetch(this.trackUrl, { method: 'HEAD' }).then((res) => {
+                if (res.redirected) this.trackUrl = res.url;
+                this.loadedHEAD = true;
+                cb();
+            }).catch(() => cb());
+        }
+
+        loadBuffer(cb) {
+            if (this.webAudioLoadingState !== GaplessPlaybackLoadingState.NONE) return;
+            this.webAudioLoadingState = GaplessPlaybackLoadingState.LOADING;
+            fetch(this.trackUrl)
+                .then((res) => res.arrayBuffer())
+                .then((res) =>
+                    this.audioContext.decodeAudioData(
+                        res,
+                        (buffer) => {
+                            this.webAudioLoadingState = GaplessPlaybackLoadingState.LOADED;
+                            this.bufferSourceNode.buffer = this.audioBuffer = buffer;
+                            this.bufferSourceNode.connect(this.gainNode);
+                            this.queue.loadTrack(this.idx + 1);
+                            if (this.isActiveTrack) this.switchToWebAudio();
+                            else this.playbackType = GaplessPlaybackType.WEBAUDIO;
+                            cb && cb(buffer);
+                        },
+                        (err) => console.error('error decoding audio data', err)
+                    )
+                )
+                .catch((e) => console.debug('caught fetch error', e));
+        }
+
+        switchToWebAudio(forcePause) {
+            if (!this.isActiveTrack && !forcePause) return;
+            if (this.currentTime !== 0 && isNaN(this.audio.duration)) return;
+
+            if (forcePause) {
+                this.bufferSourceNode.playbackRate.value = 0;
+                this.pause();
+            } else {
+                this.bufferSourceNode.playbackRate.value = this.currentTime !== 0 && this.isPaused ? 0 : 1;
+            }
+
+            this.connectGainNode();
+            this.webAudioStartedPlayingAt = this.audioContext.currentTime - this.currentTime;
+            this.bufferSourceNode.start(0, this.currentTime);
+
+            if (this.isPaused) {
+                this.webAudioPausedAt = this.audioContext.currentTime;
+                this.bufferSourceNode.playbackRate.value = 0;
+                this.gainNode.disconnect(this.audioContext.destination);
+                this.bufferSourceNode.onended = null;
+            }
+
+            this.audio.pause();
+            this.playbackType = GaplessPlaybackType.WEBAUDIO;
+        }
+
+        pause() {
+            if (this.isUsingWebAudio) {
+                if (this.bufferSourceNode.playbackRate.value === 0) return;
+                this.webAudioPausedAt = this.audioContext.currentTime;
+                this.bufferSourceNode.playbackRate.value = 0;
+                try { this.gainNode.disconnect(this.audioContext.destination); } catch (err) { console.error(err); }
+                this.bufferSourceNode.onended = null;
+            } else {
+                this.audio.pause();
+            }
+        }
+
+        play() {
+            if (this.audioBuffer) {
+                if (this.isUsingWebAudio) {
+                    if (this.bufferSourceNode.playbackRate.value === 1) return;
+                    if (this.webAudioPausedAt) {
+                        this.webAudioPausedDuration += this.audioContext.currentTime - this.webAudioPausedAt;
+                    }
+                    if (this.currentTime !== 0) this.seek(this.currentTime);
+                    this.connectGainNode();
+                    this.bufferSourceNode.playbackRate.value = 1;
+                    if (!this.bufferSourceNode.onended) {
+                        this.bufferSourceNode.onended = () => this.onEnded('webaudio3');
+                    }
+                    this.webAudioPausedAt = 0;
+                } else {
+                    this.switchToWebAudio();
+                }
+                this.queue.loadTrack(this.idx + 1);
+            } else {
+                this.audio.preload = 'auto';
+                const playPromise = this.audio.play();
+                if (playPromise && typeof playPromise.catch === 'function') {
+                    playPromise.catch((err) => {
+                        if (err.name === 'NotAllowedError') this.queue.onPlayBlocked();
+                    });
+                }
+                if (!this.queue.state.webAudioIsDisabled) {
+                    if (this.skipHEAD) this.loadBuffer();
+                    else this.loadHEAD(() => this.loadBuffer());
+                }
+            }
+            this.onProgress();
+        }
+
+        togglePlayPause() {
+            this.isPaused ? this.play() : this.pause();
+        }
+
+        preload(HTML5) {
+            if (HTML5 && this.audio.preload !== 'auto') {
+                this.audio.preload = 'auto';
+            } else if (!this.audioBuffer && !this.queue.state.webAudioIsDisabled) {
+                if (this.skipHEAD) this.loadBuffer();
+                else this.loadHEAD(() => this.loadBuffer());
+            }
+        }
+
+        seek(to = 0) {
+            if (this.isUsingWebAudio) this.seekBufferSourceNode(to);
+            else this.audio.currentTime = to;
+            this.onProgress();
+        }
+
+        seekBufferSourceNode(to) {
+            const wasPaused = this.isPaused;
+            this.bufferSourceNode.onended = null;
+            try { this.bufferSourceNode.stop(); } catch (e) { }
+
+            this.bufferSourceNode = this.audioContext.createBufferSource();
+            this.bufferSourceNode.buffer = this.audioBuffer;
+            this.bufferSourceNode.connect(this.gainNode);
+            this.bufferSourceNode.onended = () => this.onEnded('webaudio2');
+            this.webAudioStartedPlayingAt = this.audioContext.currentTime - to;
+            this.webAudioPausedDuration = 0;
+            this.bufferSourceNode.start(0, to);
+            if (wasPaused) {
+                this.connectGainNode();
+                this.pause();
+            }
+        }
+
+        connectGainNode() {
+            if (this.gainNode && this.audioContext) {
+                this.gainNode.connect(this.audioContext.destination);
+            }
+        }
+
+        audioOnError = (e) => {
+            this.queue.onError();
+        };
+
+        onEnded(from) {
+            _log.log(`[html5] Track ended (source: ${from || 'unknown'})`);
+
+            // Simple Relisten Guard:
+            if (!this.isActiveTrack) {
+                _log.warn(`[html5] Ignoring onEnded for zombie track (idx: ${this.idx}).`);
+                return;
+            }
+
+            if (this.bufferSourceNode && this.bufferSourceNode.onended) {
+                this.bufferSourceNode.onended = null;
+            }
+            this.queue.playNext();
+            this.queue.onEnded();
+        }
+
+        onProgress() {
+            if (!this.isActiveTrack) return;
+            const remaining = this.duration - this.currentTime;
+            const nextTrack = this.queue.nextTrack;
+            if (remaining <= 25 && nextTrack && !nextTrack.isLoaded) {
+                this.queue.loadTrack(this.idx + 1, true);
+            }
+            this.queue.onProgress(this);
+            if (this.isPaused) return;
+            window.requestAnimationFrame(this.onProgress);
+        }
+
+        setVolume(nextVolume) {
+            this.audio.volume = nextVolume;
+            if (this.gainNode) this.gainNode.gain.value = nextVolume;
+        }
+
+        get isUsingWebAudio() { return this.playbackType === GaplessPlaybackType.WEBAUDIO; }
+        get isPaused() {
+            if (this.isUsingWebAudio) return this.bufferSourceNode.playbackRate.value === 0;
+            return this.audio.paused;
+        }
+        get currentTime() {
+            if (this.isUsingWebAudio) {
+                return this.audioContext.currentTime - this.webAudioStartedPlayingAt - this.webAudioPausedDuration;
+            }
+            return this.audio.currentTime;
+        }
+        get duration() {
+            if (this.isUsingWebAudio) return this.audioBuffer.duration;
+            return this.audio.duration;
+        }
+        get isActiveTrack() { return this.queue.currentTrack === this; }
+        get isLoaded() { return this.webAudioLoadingState === GaplessPlaybackLoadingState.LOADED; }
+
+        get bufferedAmount() {
+            if (this.isUsingWebAudio) return this.audioBuffer ? this.audioBuffer.duration : 0;
+            if (this.audio && this.audio.buffered.length > 0) {
+                try {
+                    return this.audio.buffered.end(this.audio.buffered.length - 1);
+                } catch (e) { }
+            }
+            return 0;
+        }
+
+        get completeState() {
+            return {
+                playing: !this.isPaused,
+                index: this.idx,
+                position: this.currentTime,
+                duration: this.duration,
+                playbackType: this.playbackType,
+            };
+        }
+    }
+
+    class Queue {
+        constructor(props = {}) {
+            const {
+                tracks = [],
+                onProgress,
+                onEnded,
+                onPlayNextTrack,
+                onPlayPreviousTrack,
+                onStartNewTrack,
+                webAudioIsDisabled = false,
+                onError,
+                onPlayBlocked,
+            } = props;
+
+            this.props = {
+                onProgress,
+                onEnded,
+                onPlayNextTrack,
+                onPlayPreviousTrack,
+                onStartNewTrack,
+                onError,
+                onPlayBlocked,
+            };
+
+            this.state = {
+                volume: 1,
+                currentTrackIdx: 0,
+                webAudioIsDisabled,
+            };
+
+            this.Track = Track;
+
+            this.tracks = tracks.map(
+                (trackUrl, idx) =>
+                    new Track({
+                        trackUrl,
+                        idx,
+                        queue: this,
+                    })
+            );
+
+            if (!_ensureAudioContext(webAudioIsDisabled)) {
+                this.disableWebAudio();
+            }
+        }
+
+        addTrack({ trackUrl, skipHEAD, metadata = {} }) {
+            this.tracks.push(
+                new Track({
+                    trackUrl,
+                    skipHEAD,
+                    metadata,
+                    idx: this.tracks.length,
+                    queue: this,
+                })
+            );
+        }
+
+        removeTrack(track) {
+            const index = this.tracks.indexOf(track);
+            return this.tracks.splice(index, 1);
+        }
+
+        togglePlayPause() {
+            if (this.currentTrack) this.currentTrack.togglePlayPause();
+        }
+
+        play() {
+            if (this.currentTrack) this.currentTrack.play();
+        }
+
+        pause() {
+            if (this.currentTrack) this.currentTrack.pause();
+        }
+
+        playPrevious() {
+            this.resetCurrentTrack();
+            if (this.currentTrack?.currentTime > 8) {
+                this.currentTrack.seek(0);
+                return;
+            }
+            if (this.state.currentTrackIdx > 0) {
+                this.state.currentTrackIdx--;
+            }
+            this.resetCurrentTrack();
+            this.play();
+            if (this.props.onStartNewTrack) this.props.onStartNewTrack(this.currentTrack);
+            if (this.props.onPlayPreviousTrack) this.props.onPlayPreviousTrack(this.currentTrack);
+        }
+
+        playNext() {
+            if (this.state.currentTrackIdx >= this.tracks.length - 1) {
+                _log.log('[html5] Already at last track, skipping playNext');
+                return;
+            }
+            this.resetCurrentTrack();
+            this.state.currentTrackIdx++;
+            this.resetCurrentTrack();
+            this.play();
+            if (this.props.onStartNewTrack) this.props.onStartNewTrack(this.currentTrack);
+            if (this.props.onPlayNextTrack) this.props.onPlayNextTrack(this.currentTrack);
+        }
+
+        resetCurrentTrack() {
+            if (this.currentTrack) {
+                this.currentTrack.seek(0);
+                this.currentTrack.pause();
+            }
+        }
+
+        pauseAll() {
+            Object.values(this.tracks).map((track) => {
+                track.pause();
+            });
+        }
+
+        stop() {
+            this.pauseAll();
+            this.cleanUp();
+        }
+
+        cleanUp() {
+            Object.values(this.tracks).map((track) => {
+                // Kill Web Audio
+                if (track.bufferSourceNode) {
+                    try { track.bufferSourceNode.stop(); } catch (e) { }
+                    track.bufferSourceNode.onended = null;
+                    track.bufferSourceNode.buffer = null;
+                }
+                track.audioBuffer = null;
+
+                // Kill HTML5
+                if (track.audio) {
+                    track.audio.pause();
+                    track.audio.src = '';
+                    track.audio.load(); // Force release
+                    track.audio.onended = null;
+                    track.audio.onerror = null;
+                }
+            });
+            this.tracks = [];
+        }
+
+        gotoTrack(idx, playImmediately = false) {
+            this.pauseAll();
+            this.state.currentTrackIdx = idx;
+            this.resetCurrentTrack();
+            if (playImmediately) {
+                this.play();
+                if (this.props.onStartNewTrack) this.props.onStartNewTrack(this.currentTrack);
+            }
+        }
+
+        loadTrack(idx, loadHTML5) {
+            if (this.state.currentTrackIdx + PRELOAD_NUM_TRACKS <= idx) return;
+            const track = this.tracks[idx];
+            if (track) track.preload(loadHTML5);
+        }
+
+        setProps(obj = {}) {
+            this.props = Object.assign(this.props, obj);
+        }
+
+        onEnded() {
+            if (this.props.onEnded) this.props.onEnded();
+        }
+
+        onProgress(track) {
+            if (this.props.onProgress) this.props.onProgress(track);
+        }
+
+        get currentTrack() {
+            return this.tracks[this.state.currentTrackIdx];
+        }
+
+        get nextTrack() {
+            return this.tracks[this.state.currentTrackIdx + 1];
+        }
+
+        disableWebAudio() {
+            this.state.webAudioIsDisabled = true;
+        }
+
+        setVolume(nextVolume) {
+            if (nextVolume < 0) nextVolume = 0;
+            else if (nextVolume > 1) nextVolume = 1;
+            this.state.volume = nextVolume;
+            this.tracks.map((track) => track.setVolume(nextVolume));
+        }
+
+        onError() {
+            if (this.props.onError) this.props.onError();
+        }
+
+        onPlayBlocked() {
+            if (this.props.onPlayBlocked) this.props.onPlayBlocked();
+        }
+
+        resumeAudioContext() {
+            const ctx = _ensureAudioContext(this.state.webAudioIsDisabled);
+            if (ctx && ctx.state === 'suspended') {
+                return ctx.resume();
+            }
+            return Promise.resolve();
+        }
+    }
+
+    // ─── GDAR API Bridge ──────────────────────────────────────────────────────
+
+    let _queue = null;
     let _onStateChange = null;
     let _onTrackChange = null;
     let _onError = null;
+    let _lastIndex = -1;
 
-    // ─── Audio Element Factory ─────────────────────────────────────────────────
-
-    /**
-     * Creates a new HTMLAudioElement configured for streaming playback.
-     * Volume is 0 (muted) until the element becomes the active player.
-     * @param {boolean} muted
-     * @returns {HTMLAudioElement}
-     */
-    function _createAudio(muted) {
-        const audio = new Audio();
-        audio.preload = 'auto';
-        audio.volume = muted ? 0 : 1;
-        audio.crossOrigin = 'anonymous';
-        return audio;
-    }
-
-    /** Pause and reset an audio element without releasing it. */
-    function _resetAudio(audio) {
-        if (!audio) return;
-        audio.pause();
-        audio.src = '';
-        audio.volume = 0;
-        audio.onended = null;
-        audio.onerror = null;
-        audio.oncanplaythrough = null;
-        audio.onwaiting = null;
-        audio.onplaying = null;
-        audio.ontimeupdate = null;
-    }
-
-    // ─── Position Polling ─────────────────────────────────────────────────────
-
-    function _startPositionTimer() {
-        _stopPositionTimer();
-        _positionTimer = setInterval(() => _emitState(), 250);
-    }
-
-    function _stopPositionTimer() {
-        if (_positionTimer) { clearInterval(_positionTimer); _positionTimer = null; }
-    }
-
-    // ─── Prefetch ─────────────────────────────────────────────────────────────
-
-    function _cancelPrefetch() {
-        if (_prefetchTimer) { clearTimeout(_prefetchTimer); _prefetchTimer = null; }
-        _isPrefetching = false;
-    }
-
-    /**
-     * Schedule preloading the next track so it is buffered by the time
-     * the current track ends.  Called every time a track starts.
-     */
-    function _schedulePrefetch() {
-        _cancelPrefetch();
-        const nextIndex = _currentIndex + 1;
-        if (nextIndex >= _playlist.length) return;
-
-        // We try to have the next track loaded _prefetchSeconds before it's needed.
-        // HTMLAudioElement has its own internal buffer so we simply set src early.
-        const setupPreload = () => {
-            if (!_playing || _currentIndex + 1 !== nextIndex) return;
-            _isPrefetching = true;
-
-            if (!_nextAudio) _nextAudio = _createAudio(true);
-            _resetAudio(_nextAudio);
-
-            const nextTrack = _playlist[nextIndex];
-            if (!nextTrack) return;
-
-            _nextAudio.volume = 0;
-            _nextAudio.src = nextTrack.url;
-            _nextAudio.load();
-
-            // iOS Safari: prime the audio element with a silent play/pause on first gesture.
-            // We rely on the fact that the user has already interacted to play _currentAudio.
-            _nextAudio.play().then(() => {
-                if (!_playing || _currentIndex + 1 !== nextIndex) {
-                    _nextAudio.pause();
-                    return;
-                }
-                // Pause it once we know it can play — we'll resume at full volume on swap.
-                _nextAudio.pause();
-                _nextAudio.currentTime = 0;
-                console.log('[html5 engine] Next track preloaded:', nextIndex, nextTrack.url);
-                _emitState();
-            }).catch(() => {
-                // Autoplay policy blocked silent prime — still set src so browser buffers it.
-                console.log('[html5 engine] Silent prime blocked by autoplay policy (expected on iOS)');
-            });
+    function _translateState(track) {
+        if (!track) return {
+            playing: false,
+            index: -1,
+            position: 0,
+            duration: 0,
+            currentTrackBuffered: 0,
+            nextTrackBuffered: 0,
+            nextTrackTotal: 0,
+            playlistLength: (_queue && _queue.tracks) ? _queue.tracks.length : 0,
+            processingState: 'idle',
+            contextState: 'html5'
         };
 
-        if (!_currentAudio) return;
-        const elapsed = _currentAudio.currentTime || 0;
-        const duration = _currentAudio.duration || 0;
-        const remaining = Math.max(0, duration - elapsed);
-        const triggerIn = Math.max(0, (remaining - _prefetchSeconds) * 1000);
+        const currentTime = track.currentTime || 0;
+        const duration = track.duration || 0;
+        const timeRemaining = duration - currentTime;
 
-        console.log('[html5 engine] Prefetch timer set for', nextIndex, 'in', Math.round(triggerIn / 1000), 's');
-        _prefetchTimer = setTimeout(setupPreload, triggerIn);
-    }
+        let nextTrackBuffered = 0;
+        const nextTrack = _queue.nextTrack;
 
-    // ─── Track Lifecycle ──────────────────────────────────────────────────────
+        // Requirement: Only report "Next" buffered value when current track has 30s or less to play.
+        if (timeRemaining <= 30 && nextTrack) {
+            nextTrackBuffered = nextTrack.bufferedAmount || 0;
+        }
 
-    /**
-     * Attaches all event listeners to _currentAudio and begins playback.
-     * @param {number} offsetSeconds  Where to start within the track.
-     * @param {boolean} shouldPlay    Whether to immediately call .play().
-     */
-    function _attachCurrentListeners(offsetSeconds, shouldPlay) {
-        if (!_currentAudio) return;
-
-        _currentAudio.onwaiting = () => {
-            _loadingState = 'buffering';
-            _emitState();
+        // Message Audit: Forwarding real-time buffer progress.
+        // For HTML5, gapless is achieved as long as nextTrackBuffered > 0.
+        return {
+            playing: !track.isPaused,
+            index: track.idx,
+            position: currentTime,
+            duration: duration,
+            currentTrackBuffered: track.bufferedAmount || currentTime,
+            nextTrackBuffered: nextTrackBuffered,
+            nextTrackTotal: nextTrack?.duration || 0,
+            playlistLength: (_queue && _queue.tracks) ? _queue.tracks.length : 0,
+            processingState: 'ready',
+            contextState: 'html5'
         };
-
-        _currentAudio.onplaying = () => {
-            _loadingState = 'ready';
-            _playing = true;
-            _emitState();
-        };
-
-        _currentAudio.ontimeupdate = () => {
-            if (!_currentAudio) return;
-            const elapsed = _currentAudio.currentTime || 0;
-            const duration = _currentAudio.duration || 0;
-            const remaining = Math.max(0, duration - elapsed);
-
-            // Emit state on every timeupdate so position bar stays smooth
-            _emitState();
-
-            // Trigger prefetch if not already running
-            if (!_isPrefetching && remaining <= (_prefetchSeconds + 5) && _currentIndex + 1 < _playlist.length) {
-                _schedulePrefetch();
-            }
-        };
-
-        _currentAudio.onended = () => {
-            if (_isTransitioning) return;
-            _onTrackEndedHtml5();
-        };
-
-        _currentAudio.onerror = (e) => {
-            const msg = _currentAudio?.error?.message || 'HTMLAudioElement error';
-            _emitError('Track ' + _currentIndex + ': ' + msg);
-        };
-
-        if (offsetSeconds > 0) {
-            _currentAudio.currentTime = offsetSeconds;
-        }
-
-        if (shouldPlay) {
-            _loadingState = 'loading';
-            _currentAudio.play().then(() => {
-                _playing = true;
-                _loadingState = 'ready';
-                _emitState();
-                _schedulePrefetch();
-                _startPositionTimer();
-                _updateMediaSession();
-            }).catch(err => {
-                _emitError('Play failed: ' + err.message);
-            });
-        }
     }
-
-    /**
-     * Called when HTMLAudioElement fires 'ended'.
-     * Swaps _nextAudio into position and continues playback.
-     */
-    function _onTrackEndedHtml5() {
-        _isTransitioning = true;
-        const wasIndex = _currentIndex;
-        _currentIndex++;
-        _cancelPrefetch();
-        _isPrefetching = false;
-
-        console.log('[html5 engine] Track ended. Advancing from', wasIndex, 'to', _currentIndex);
-
-        if (_currentIndex >= _playlist.length) {
-            // End of playlist.
-            _playing = false;
-            _loadingState = 'idle';
-            _stopPositionTimer();
-            _resetAudio(_currentAudio);
-            _emitTrackChange(wasIndex, -1);
-            _emitState();
-            _isTransitioning = false;
-            return;
-        }
-
-        // Promote _nextAudio → _currentAudio
-        const oldAudio = _currentAudio;
-        const promoted = (_nextAudio && _nextAudio.src && _nextAudio.src.length > 5) ? _nextAudio : null;
-
-        if (promoted) {
-            console.log('[html5 engine] Promoting pre-loaded next track', _currentIndex);
-
-            // To reduce the gap, we start the promoted audio BEFORE fully resetting the old one.
-            _currentAudio = promoted;
-            _nextAudio = _createAudio(true);
-
-            _currentAudio.volume = 1;
-            _currentAudio.muted = false;
-
-            // Re-attach listeners BEFORE playing so we catch the very first 'playing' event.
-            _attachCurrentListeners(0, false);
-
-            _currentAudio.play().then(() => {
-                _playing = true;
-                _loadingState = 'ready';
-                _emitTrackChange(wasIndex, _currentIndex);
-                _emitState();
-                _schedulePrefetch();
-                _startPositionTimer();
-                _updateMediaSession();
-                _isTransitioning = false;
-
-                // Cleanup the old audio after the new one is confirmed playing to bridge the gap.
-                if (oldAudio) _resetAudio(oldAudio);
-            }).catch(err => {
-                _isTransitioning = false;
-                if (oldAudio) _resetAudio(oldAudio);
-                _emitError('Promoted track play failed: ' + err.message);
-            });
-        } else {
-            // Next track wasn't pre-loaded in time — fall back to a regular load.
-            console.log('[html5 engine] Next track not ready, loading fresh:', _currentIndex);
-            _resetAudio(oldAudio);
-            if (!_nextAudio) _nextAudio = _createAudio(true);
-            _currentAudio = _createAudio(false);
-
-            const track = _playlist[_currentIndex];
-            if (!track) {
-                _isTransitioning = false;
-                _emitError('No track at index ' + _currentIndex);
-                return;
-            }
-
-            _currentAudio.src = track.url;
-            _loadingState = 'loading';
-            _emitTrackChange(wasIndex, _currentIndex);
-            _emitState();
-
-            _attachCurrentListeners(0, true);
-            _isTransitioning = false;
-        }
-    }
-
-    // ─── Media Session API ────────────────────────────────────────────────────
-
-    let _mediaSessionRegistered = false;
-
-    /** Register action handlers once. Called from init(). */
-    function _registerMediaSessionHandlers() {
-        if (!('mediaSession' in navigator) || _mediaSessionRegistered) return;
-        navigator.mediaSession.setActionHandler('play', () => api.play());
-        navigator.mediaSession.setActionHandler('pause', () => api.pause());
-        navigator.mediaSession.setActionHandler('nexttrack', () => api.seekToIndex(_currentIndex + 1));
-        navigator.mediaSession.setActionHandler('previoustrack', () => api.seekToIndex(Math.max(0, _currentIndex - 1)));
-        _mediaSessionRegistered = true;
-    }
-
-    /** Update metadata only. Called on every track change. */
-    function _updateMediaSession() {
-        if (!('mediaSession' in navigator)) return;
-        const track = _playlist[_currentIndex];
-        if (!track) return;
-        navigator.mediaSession.metadata = new MediaMetadata({
-            title: track.title || '',
-            artist: track.artist || '',
-            album: track.album || '',
-        });
-    }
-
-    // ─── Callbacks ────────────────────────────────────────────────────────────
-
-    function _emitState() {
-        if (!_onStateChange) return;
-        try {
-            const audio = _currentAudio;
-            const pos = audio ? (audio.currentTime || 0) : 0;
-            const dur = audio ? (isNaN(audio.duration) ? 0 : (audio.duration || 0)) : 0;
-
-            let ps = _loadingState;
-            if (_currentIndex < 0) ps = 'idle';
-
-            const nextTrackTotal = _playlist[_currentIndex + 1] ? (_playlist[_currentIndex + 1].duration || 0) : 0;
-            let nextBuffered = 0;
-            let currentBuffered = pos;
-
-            if (audio && audio.buffered.length > 0) {
-                currentBuffered = audio.buffered.end(audio.buffered.length - 1);
-            } else if (audio && _isTransitioning && _currentIndex === _lastEmittedNextIndex) {
-                // Carry over the buffered value during the brief transition window
-                // when the browser might report 0 for the newly focused element.
-                currentBuffered = Math.max(pos, _lastEmittedNextBuf);
-            }
-
-            if (_isPrefetching && _nextAudio && _nextAudio.buffered.length > 0) {
-                nextBuffered = _nextAudio.buffered.end(_nextAudio.buffered.length - 1);
-            }
-
-            _lastEmittedNextBuf = nextBuffered;
-            _lastEmittedNextIndex = _currentIndex + 1;
-
-            _onStateChange({
-                playing: _playing,
-                index: _currentIndex,
-                position: pos,
-                duration: dur,
-                currentTrackBuffered: Math.min(Math.max(currentBuffered, pos), dur || currentBuffered || pos),
-                nextTrackBuffered: Math.min(nextBuffered, nextTrackTotal),
-                nextTrackTotal: nextTrackTotal,
-                processingState: ps,
-            });
-        } catch (_) { }
-    }
-
-    function _emitTrackChange(from, to) {
-        if (_onTrackChange) {
-            try { _onTrackChange({ from: from, to: to }); } catch (_) { }
-        }
-    }
-
-    function _emitError(msg) {
-        console.error('[html5 audio]', msg);
-        if (_onError) {
-            try { _onError({ message: msg }); } catch (_) { }
-        }
-    }
-
-    // ─── Public API ───────────────────────────────────────────────────────────
 
     const api = {
-
-        /** Called once at startup. Creates the two audio elements. */
+        engineType: 'relisten_html5_gapless',
         init: function () {
-            if (_currentAudio) return; // already initialised
-            _currentAudio = _createAudio(false);
-            _nextAudio = _createAudio(true);
-            _registerMediaSessionHandlers();
-            console.log('[html5 engine] Initialised — dual HTMLAudioElement strategy');
+            if (_queue) return;
+            _queue = new Queue({
+                onProgress: (track) => {
+                    if (_onStateChange) _onStateChange(_translateState(track));
+                },
+                onEnded: () => {
+                    _log.log('[html5] Queue.onEnded triggered');
+                },
+                onStartNewTrack: (track) => {
+                    if (_onTrackChange) _onTrackChange({ from: _lastIndex, to: track.idx });
+                    _lastIndex = track.idx;
+                },
+                onError: () => {
+                    if (_onError) _onError({ message: 'Relisten engine error' });
+                }
+            });
+            _log.log('[html5] Initialized Exact Relisten Engine');
         },
 
-        /** Load a new playlist and begin playback from [startIndex]. */
         setPlaylist: function (tracks, startIndex) {
-            _cancelPrefetch();
-            _stopPositionTimer();
-            _isTransitioning = false;
-            _isPrefetching = false;
+            this.init();
+            // 1. Explicitly stop and cleanup previous tracks to kill ghost audio
+            _queue.stop();
 
-            if (_currentAudio) _resetAudio(_currentAudio);
-            if (_nextAudio) _resetAudio(_nextAudio);
-
-            // Re-create fresh elements to avoid stale event listeners.
-            _currentAudio = _createAudio(false);
-            _nextAudio = _createAudio(true);
-
-            _playlist = tracks || [];
-            _currentIndex = startIndex != null ? startIndex : 0;
-            _playing = false;
-            _loadingState = 'idle';
-            _emitState();
+            // 2. Re-initialize tracks
+            _queue.tracks = tracks.map((t, idx) => new Track({
+                trackUrl: t.url,
+                idx: idx,
+                queue: _queue,
+                metadata: t
+            }));
+            _queue.state.currentTrackIdx = startIndex || 0;
+            _lastIndex = _queue.state.currentTrackIdx;
+            _log.log('[html5] Playlist set, startIndex:', _queue.state.currentTrackIdx);
         },
 
-        /** Append additional tracks to the playlist. */
         appendTracks: function (tracks) {
-            if (tracks && tracks.length > 0) {
-                _playlist = _playlist.concat(tracks);
-                _emitState();
-            }
+            if (!_queue) return;
+            tracks.forEach(t => _queue.addTrack({ trackUrl: t.url, metadata: t }));
         },
 
-        /** Begin or resume playback. */
         play: function () {
-            if (!_currentAudio) api.init();
-            if (_currentIndex < 0 || _currentIndex >= _playlist.length) return;
-
-            if (_currentAudio.src && !_currentAudio.paused) return; // already playing
-
-            if (_currentAudio.src) {
-                // Resuming after pause.
-                _currentAudio.play().then(() => {
-                    _playing = true;
-                    _loadingState = 'ready';
-                    _emitState();
-                    _startPositionTimer();
-                }).catch(err => _emitError('Resume failed: ' + err.message));
-                return;
+            if (_queue) {
+                _queue.resumeAudioContext();
+                _queue.play();
             }
-
-            // Fresh track load.
-            const track = _playlist[_currentIndex];
-            if (!track) return;
-
-            _loadingState = 'loading';
-            _emitState();
-            _currentAudio.src = track.url;
-            _attachCurrentListeners(0, true);
-            _emitTrackChange(-1, _currentIndex);
         },
 
-        /** Pause playback. */
         pause: function () {
-            if (!_currentAudio || !_playing) return;
-            _currentAudio.pause();
-            _playing = false;
-            _cancelPrefetch();
-            _stopPositionTimer();
-            _emitState();
+            if (_queue) _queue.pause();
         },
 
-        /** Stop playback and reset to idle state. */
         stop: function () {
-            _cancelPrefetch();
-            _stopPositionTimer();
-            if (_currentAudio) _resetAudio(_currentAudio);
-            if (_nextAudio) _resetAudio(_nextAudio);
-            _playing = false;
-            _loadingState = 'idle';
-            _isTransitioning = false;
-            _isPrefetching = false;
-            _emitState();
+            if (_queue) {
+                _queue.stop();
+            }
         },
 
-        /** Seek to [seconds] within the current track. */
         seek: function (seconds) {
-            if (!_currentAudio || _currentIndex < 0) return;
-            _currentAudio.currentTime = seconds;
-            _emitState();
+            if (_queue?.currentTrack) _queue.currentTrack.seek(seconds);
         },
 
-        /** Jump to playlist index [index] and play. */
         seekToIndex: function (index) {
-            if (index < 0 || index >= _playlist.length) return;
-            _cancelPrefetch();
-            _stopPositionTimer();
-            _isTransitioning = false;
-
-            const wasPlaying = _playing;
-            const oldIndex = _currentIndex;
-
-            _resetAudio(_currentAudio);
-            _resetAudio(_nextAudio);
-            _currentAudio = _createAudio(false);
-            _nextAudio = _createAudio(true);
-
-            _currentIndex = index;
-            _playing = false;
-
-            const track = _playlist[index];
-            if (!track) { _emitError('No track at index ' + index); return; }
-
-            _currentAudio.src = track.url;
-            _loadingState = 'loading';
-            _emitTrackChange(oldIndex, index);
-            _emitState();
-
-            if (wasPlaying) {
-                _attachCurrentListeners(0, true);
-            }
+            _log.log(`[html5] seekToIndex: ${index}`);
+            if (_queue) _queue.gotoTrack(index, true);
         },
 
-        /**
-         * Update the prefetch window (seconds before track end to
-         * begin loading the next track).
-         */
-        setPrefetchSeconds: function (s) {
-            _prefetchSeconds = Math.max(5, Math.min(120, s));
-        },
+        setPrefetchSeconds: function (s) { /* No-op */ },
 
-        /** Returns a snapshot of current engine state (mirrors GDAR engine shape). */
         getState: function () {
-            const audio = _currentAudio;
-            const pos = audio ? (audio.currentTime || 0) : 0;
-            const dur = audio ? (isNaN(audio.duration) ? 0 : (audio.duration || 0)) : 0;
-            let currentBuffered = pos;
-            if (audio && audio.buffered.length > 0) {
-                currentBuffered = audio.buffered.end(audio.buffered.length - 1);
-            }
-            return {
-                playing: _playing,
-                index: _currentIndex,
-                position: pos,
-                duration: dur,
-                currentTrackBuffered: Math.min(Math.max(currentBuffered, pos), dur || currentBuffered || pos),
-                nextTrackBuffered: 0,
-                nextTrackTotal: _playlist[_currentIndex + 1] ? (_playlist[_currentIndex + 1].duration || 0) : 0,
-                playlistLength: _playlist.length,
-                processingState: _loadingState,
-                contextState: 'html5',
-            };
+            return _translateState(_queue?.currentTrack);
         },
 
-        /** Register a callback invoked with engine state updates. */
+        prepareToPlay: function (index) {
+            if (_queue) _queue.loadTrack(index);
+            return Promise.resolve();
+        },
+
+        syncState: function (index, position, shouldPlay) {
+            this.init();
+            _queue.state.currentTrackIdx = index;
+            if (shouldPlay) {
+                _queue.play();
+                _queue.currentTrack.seek(position);
+            } else {
+                _queue.currentTrack.seek(position);
+                _queue.pause();
+            }
+        },
+
         onStateChange: function (cb) { _onStateChange = cb; },
-
-        /** Register a callback invoked on track index changes. */
         onTrackChange: function (cb) { _onTrackChange = cb; },
-
-        /** Register a callback invoked on errors. */
         onError: function (cb) { _onError = cb; },
+        engineType: 'html5'
     };
 
     window._html5Audio = api;

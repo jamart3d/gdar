@@ -342,7 +342,18 @@ class FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
   @override
   String get trackTransitionMode => 'gapless';
   @override
-  void setTrackTransitionMode(String mode) {}
+  void setTrackTransitionMode(String value) {}
+
+  @override
+  HybridHandoffMode get hybridHandoffMode => HybridHandoffMode.buffered;
+  @override
+  void setHybridHandoffMode(HybridHandoffMode value) {}
+
+  @override
+  HybridBackgroundMode get hybridBackgroundMode =>
+      HybridBackgroundMode.relisten;
+  @override
+  void setHybridBackgroundMode(HybridBackgroundMode value) {}
 
   @override
   double get crossfadeDurationSeconds => 3.0;

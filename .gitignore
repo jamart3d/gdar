@@ -59,3 +59,12 @@ test_ui_output*.txt
 # Credentials
 gen-lang-client-*.json
 web/firebase-config.js
+
+# Secrets and API Keys
+secrets/
+play_counts.hive
+play_counts.lock
+ratings.hive
+ratings.lock
+user_history.hive
+user_history.lock

@@ -61,7 +61,7 @@
 - [ ] **Background Longevity**: Investigate ways to extend playback duration when the tab is backgrounded/tab-throttled.
     - [ ] Explore `Silent Video` looping or `Web Workers` for timer consistency.
     - [ ] Audit `gapless_audio_engine.js` for potential timer drift during high CPU throttling.
-- [x] **PWA Rebranding**: Update `web/manifest.json` to change the install name from `gdar` to `Shakedown`. *(Done in prior session)*
+
 - [ ] **Bug: Track Skip on Buffer**: Investigate issue where the engine skips the next track if it isn't fully ready/buffered when the current track ends.
 
 ## Hybrid Audio Architecture (Relisten + GDAR Engine) ✅

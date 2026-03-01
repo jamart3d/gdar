@@ -14,7 +14,8 @@ import 'package:shakedown/models/source.dart' as _i9;
 import 'package:shakedown/providers/audio_provider.dart' as _i11;
 import 'package:shakedown/providers/settings_provider.dart' as _i8;
 import 'package:shakedown/providers/show_list_provider.dart' as _i3;
-import 'package:shakedown/providers/update_provider.dart' as _i13;
+import 'package:shakedown/providers/update_provider.dart' as _i14;
+import 'package:shakedown/services/audio_cache_service.dart' as _i13;
 import 'package:shakedown/services/gapless_player/gapless_player.dart' as _i2;
 import 'package:shared_preferences/shared_preferences.dart' as _i7;
 
@@ -741,6 +742,20 @@ class MockSettingsProvider extends _i1.Mock implements _i8.SettingsProvider {
       ) as double);
 
   @override
+  _i2.HybridHandoffMode get hybridHandoffMode => (super.noSuchMethod(
+        Invocation.getter(#hybridHandoffMode),
+        returnValue: _i2.HybridHandoffMode.buffered,
+        returnValueForMissingStub: _i2.HybridHandoffMode.buffered,
+      ) as _i2.HybridHandoffMode);
+
+  @override
+  _i2.HybridBackgroundMode get hybridBackgroundMode => (super.noSuchMethod(
+        Invocation.getter(#hybridBackgroundMode),
+        returnValue: _i2.HybridBackgroundMode.relisten,
+        returnValueForMissingStub: _i2.HybridBackgroundMode.relisten,
+      ) as _i2.HybridBackgroundMode);
+
+  @override
   bool get useOilScreensaver => (super.noSuchMethod(
         Invocation.getter(#useOilScreensaver),
         returnValue: false,
@@ -1198,6 +1213,25 @@ class MockSettingsProvider extends _i1.Mock implements _i8.SettingsProvider {
         Invocation.method(
           #setCrossfadeDurationSeconds,
           [seconds],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void setHybridHandoffMode(_i2.HybridHandoffMode? mode) => super.noSuchMethod(
+        Invocation.method(
+          #setHybridHandoffMode,
+          [mode],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void setHybridBackgroundMode(_i2.HybridBackgroundMode? mode) =>
+      super.noSuchMethod(
+        Invocation.method(
+          #setHybridBackgroundMode,
+          [mode],
         ),
         returnValueForMissingStub: null,
       );
@@ -2158,6 +2192,7 @@ class MockAudioProvider extends _i1.Mock implements _i11.AudioProvider {
   void update(
     _i3.ShowListProvider? showListProvider,
     _i8.SettingsProvider? settingsProvider,
+    _i13.AudioCacheService? audioCacheService,
   ) =>
       super.noSuchMethod(
         Invocation.method(
@@ -2165,6 +2200,7 @@ class MockAudioProvider extends _i1.Mock implements _i11.AudioProvider {
           [
             showListProvider,
             settingsProvider,
+            audioCacheService,
           ],
         ),
         returnValueForMissingStub: null,
@@ -2404,7 +2440,7 @@ class MockAudioProvider extends _i1.Mock implements _i11.AudioProvider {
 /// A class which mocks [UpdateProvider].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockUpdateProvider extends _i1.Mock implements _i13.UpdateProvider {
+class MockUpdateProvider extends _i1.Mock implements _i14.UpdateProvider {
   @override
   bool get isSimulated => (super.noSuchMethod(
         Invocation.getter(#isSimulated),

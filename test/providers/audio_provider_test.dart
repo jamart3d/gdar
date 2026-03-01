@@ -90,6 +90,7 @@ void main() {
             initialIndex: anyNamed('initialIndex'),
             preload: anyNamed('preload')))
         .thenAnswer((_) async => const Duration(seconds: 100));
+    when(mockAudioPlayer.addAudioSources(any)).thenAnswer((_) async {});
 
     // Stub AudioCacheService
     when(mockAudioCacheService.getAlbumArtUri()).thenAnswer((_) async => null);
@@ -123,7 +124,8 @@ void main() {
       audioCacheService: mockAudioCacheService,
       wakelockService: mockWakelockService,
     );
-    audioProvider.update(mockShowListProvider, mockSettingsProvider);
+    audioProvider.update(
+        mockShowListProvider, mockSettingsProvider, mockAudioCacheService);
   });
 
   tearDown(() {

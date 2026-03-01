@@ -25,6 +25,7 @@ mixin ShowListLogicMixin<T extends StatefulWidget>
   FocusNode get searchFocusNode;
 
   bool isRandomShowLoading = false;
+  bool isResettingRandomShow = false;
   bool userInitiatedRoll = false;
   bool isAnimationTest = false;
   bool showPasteFeedback = false;
@@ -362,6 +363,7 @@ mixin ShowListLogicMixin<T extends StatefulWidget>
       setState(() {
         lastRollStartTime = DateTime.now();
         isRandomShowLoading = true;
+        isResettingRandomShow = false;
         isAnimationTest = false;
       });
     }
@@ -387,6 +389,7 @@ mixin ShowListLogicMixin<T extends StatefulWidget>
     setState(() {
       lastRollStartTime = DateTime.now();
       isRandomShowLoading = true;
+      isResettingRandomShow = false;
       userInitiatedRoll = true;
     });
 

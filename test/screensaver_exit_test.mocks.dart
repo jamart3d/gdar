@@ -14,6 +14,7 @@ import 'package:shakedown/models/source.dart' as _i10;
 import 'package:shakedown/providers/audio_provider.dart' as _i7;
 import 'package:shakedown/providers/settings_provider.dart' as _i3;
 import 'package:shakedown/providers/show_list_provider.dart' as _i11;
+import 'package:shakedown/services/audio_cache_service.dart' as _i12;
 import 'package:shakedown/services/gapless_player/gapless_player.dart' as _i2;
 
 // ignore_for_file: type=lint
@@ -357,6 +358,20 @@ class MockSettingsProvider extends _i1.Mock implements _i3.SettingsProvider {
         returnValue: 0.0,
         returnValueForMissingStub: 0.0,
       ) as double);
+
+  @override
+  _i2.HybridHandoffMode get hybridHandoffMode => (super.noSuchMethod(
+        Invocation.getter(#hybridHandoffMode),
+        returnValue: _i2.HybridHandoffMode.buffered,
+        returnValueForMissingStub: _i2.HybridHandoffMode.buffered,
+      ) as _i2.HybridHandoffMode);
+
+  @override
+  _i2.HybridBackgroundMode get hybridBackgroundMode => (super.noSuchMethod(
+        Invocation.getter(#hybridBackgroundMode),
+        returnValue: _i2.HybridBackgroundMode.relisten,
+        returnValueForMissingStub: _i2.HybridBackgroundMode.relisten,
+      ) as _i2.HybridBackgroundMode);
 
   @override
   bool get useOilScreensaver => (super.noSuchMethod(
@@ -816,6 +831,25 @@ class MockSettingsProvider extends _i1.Mock implements _i3.SettingsProvider {
         Invocation.method(
           #setCrossfadeDurationSeconds,
           [seconds],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void setHybridHandoffMode(_i2.HybridHandoffMode? mode) => super.noSuchMethod(
+        Invocation.method(
+          #setHybridHandoffMode,
+          [mode],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void setHybridBackgroundMode(_i2.HybridBackgroundMode? mode) =>
+      super.noSuchMethod(
+        Invocation.method(
+          #setHybridBackgroundMode,
+          [mode],
         ),
         returnValueForMissingStub: null,
       );
@@ -1776,6 +1810,7 @@ class MockAudioProvider extends _i1.Mock implements _i7.AudioProvider {
   void update(
     _i11.ShowListProvider? showListProvider,
     _i3.SettingsProvider? settingsProvider,
+    _i12.AudioCacheService? audioCacheService,
   ) =>
       super.noSuchMethod(
         Invocation.method(
@@ -1783,6 +1818,7 @@ class MockAudioProvider extends _i1.Mock implements _i7.AudioProvider {
           [
             showListProvider,
             settingsProvider,
+            audioCacheService,
           ],
         ),
         returnValueForMissingStub: null,

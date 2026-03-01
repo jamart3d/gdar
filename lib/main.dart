@@ -429,19 +429,20 @@ class _GdarAppState extends State<GdarApp> {
           update: (_, settingsProvider, showListProvider) =>
               showListProvider!..update(settingsProvider),
         ),
-        ChangeNotifierProxyProvider2<ShowListProvider, SettingsProvider,
-            AudioProvider>(
+        ChangeNotifierProxyProvider3<ShowListProvider, SettingsProvider,
+            AudioCacheService, AudioProvider>(
           create: (context) => AudioProvider(
-            audioCacheService:
-                Provider.of<AudioCacheService>(context, listen: false),
-            useWebGaplessEngine:
-                context.read<SettingsProvider>().webGaplessEngine,
-          ),
-          update: (_, showListProvider, settingsProvider, audioProvider) =>
+              // We pass nulls here and inject them in `update:` so we
+              // don't try to read them synchronously during tree creation.
+              // This fixes: Bad state: Tried to read a provider that threw during the creation of its value
+              ),
+          update: (_, showListProvider, settingsProvider, audioCacheService,
+                  audioProvider) =>
               audioProvider!
                 ..update(
                   showListProvider,
                   settingsProvider,
+                  audioCacheService,
                 ),
         ),
         ChangeNotifierProvider(create: (_) => UpdateProvider()),

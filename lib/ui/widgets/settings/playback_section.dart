@@ -433,105 +433,112 @@ class PlaybackSection extends StatelessWidget {
               padding: EdgeInsets.only(left: 40.0 * scaleFactor),
               child: Align(
                 alignment: Alignment.centerLeft,
-                child: SegmentedButton<AudioEngineMode>(
-                  showSelectedIcon: false,
-                  segments: [
-                    ButtonSegment(
-                      value: AudioEngineMode.webAudio,
-                      label: FittedBox(
-                        fit: BoxFit.scaleDown,
-                        child: Text(
-                          'Web Audio',
-                          maxLines: 1,
-                          overflow: TextOverflow.visible,
-                          style: TextStyle(fontSize: 14 * scaleFactor),
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: SegmentedButton<AudioEngineMode>(
+                    showSelectedIcon: false,
+                    segments: [
+                      ButtonSegment(
+                        value: AudioEngineMode.webAudio,
+                        label: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text(
+                            'Web Audio',
+                            maxLines: 1,
+                            overflow: TextOverflow.visible,
+                            style: TextStyle(fontSize: 14 * scaleFactor),
+                          ),
                         ),
+                        tooltip: '0ms gapless (High Performance)',
+                        icon: const Icon(Icons.graphic_eq_rounded),
                       ),
-                      tooltip: '0ms gapless (Best for Desktop)',
-                      icon: const Icon(Icons.graphic_eq_rounded),
-                    ),
-                    ButtonSegment(
-                      value: AudioEngineMode.html5,
-                      label: FittedBox(
-                        fit: BoxFit.scaleDown,
-                        child: Text(
-                          'HTML5',
-                          maxLines: 1,
-                          overflow: TextOverflow.visible,
-                          style: TextStyle(fontSize: 14 * scaleFactor),
+                      ButtonSegment(
+                        value: AudioEngineMode.html5,
+                        label: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text(
+                            'Relisten',
+                            maxLines: 1,
+                            overflow: TextOverflow.visible,
+                            style: TextStyle(fontSize: 14 * scaleFactor),
+                          ),
                         ),
+                        tooltip: 'Gapless HTML5 (Safe Background)',
+                        icon: const Icon(Icons.smartphone_rounded),
                       ),
-                      tooltip: 'Streaming (Best for Mobile)',
-                      icon: const Icon(Icons.smartphone_rounded),
-                    ),
-                    ButtonSegment(
-                      value: AudioEngineMode.standard,
-                      label: FittedBox(
-                        fit: BoxFit.scaleDown,
-                        child: Text(
-                          'Standard',
-                          maxLines: 1,
-                          overflow: TextOverflow.visible,
-                          style: TextStyle(fontSize: 14 * scaleFactor),
+                      ButtonSegment(
+                        value: AudioEngineMode.standard,
+                        label: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text(
+                            'Standard',
+                            maxLines: 1,
+                            overflow: TextOverflow.visible,
+                            style: TextStyle(fontSize: 14 * scaleFactor),
+                          ),
                         ),
+                        tooltip: 'Native just_audio (Conservative)',
+                        icon:
+                            const Icon(Icons.settings_input_component_rounded),
                       ),
-                      tooltip: 'Native just_audio (Conservative)',
-                      icon: const Icon(Icons.settings_input_component_rounded),
-                    ),
-                    ButtonSegment(
-                      value: AudioEngineMode.passive,
-                      label: FittedBox(
-                        fit: BoxFit.scaleDown,
-                        child: Text(
-                          'Passive',
-                          maxLines: 1,
-                          overflow: TextOverflow.visible,
-                          style: TextStyle(fontSize: 14 * scaleFactor),
+                      ButtonSegment(
+                        value: AudioEngineMode.passive,
+                        label: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text(
+                            'Passive',
+                            maxLines: 1,
+                            overflow: TextOverflow.visible,
+                            style: TextStyle(fontSize: 14 * scaleFactor),
+                          ),
                         ),
+                        tooltip: 'Minimal HTML5 (Single element streaming)',
+                        icon: const Icon(Icons.battery_saver_rounded),
                       ),
-                      tooltip: 'Native HTML5 (Background-friendly)',
-                      icon: const Icon(Icons.battery_saver_rounded),
-                    ),
-                    ButtonSegment(
-                      value: AudioEngineMode.hybrid,
-                      label: FittedBox(
-                        fit: BoxFit.scaleDown,
-                        child: Text(
-                          'Hybrid',
-                          maxLines: 1,
-                          overflow: TextOverflow.visible,
-                          style: TextStyle(fontSize: 14 * scaleFactor),
+                      ButtonSegment(
+                        value: AudioEngineMode.hybrid,
+                        label: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text(
+                            'Hybrid',
+                            maxLines: 1,
+                            overflow: TextOverflow.visible,
+                            style: TextStyle(fontSize: 14 * scaleFactor),
+                          ),
                         ),
+                        tooltip: 'Web Audio Foreground, Relisten Background',
+                        icon: const Icon(Icons.handshake_rounded),
                       ),
-                      tooltip: 'Web Audio Foreground, Passive Background',
-                      icon: const Icon(Icons.handshake_rounded),
-                    ),
-                  ],
-                  selected: {
-                    sp.audioEngineMode == AudioEngineMode.auto
-                        ? context.read<AudioProvider>().audioPlayer.activeMode
-                        : sp.audioEngineMode
-                  },
-                  onSelectionChanged: (Set<AudioEngineMode> selection) {
-                    HapticFeedback.lightImpact();
-                    final mode = selection.first;
-                    sp.setAudioEngineMode(mode);
-                    ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        behavior: SnackBarBehavior.floating,
-                        content: const Text(
-                            'Relaunch required for engine change to take effect.'),
-                        action: SnackBarAction(
-                          label: 'RELOAD',
-                          onPressed: () {
-                            context.read<AudioProvider>().audioPlayer.reload();
-                          },
+                    ],
+                    selected: {
+                      sp.audioEngineMode == AudioEngineMode.auto
+                          ? context.read<AudioProvider>().audioPlayer.activeMode
+                          : sp.audioEngineMode
+                    },
+                    onSelectionChanged: (Set<AudioEngineMode> selection) {
+                      HapticFeedback.lightImpact();
+                      final mode = selection.first;
+                      sp.setAudioEngineMode(mode);
+                      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          behavior: SnackBarBehavior.floating,
+                          content: const Text(
+                              'Relaunch required for engine change to take effect.'),
+                          action: SnackBarAction(
+                            label: 'RELOAD',
+                            onPressed: () {
+                              context
+                                  .read<AudioProvider>()
+                                  .audioPlayer
+                                  .reload();
+                            },
+                          ),
+                          duration: const Duration(seconds: 8),
                         ),
-                        duration: const Duration(seconds: 8),
-                      ),
-                    );
-                  },
+                      );
+                    },
+                  ),
                 ),
               ),
             ),
@@ -555,35 +562,39 @@ class PlaybackSection extends StatelessWidget {
                 padding: EdgeInsets.only(left: 40.0 * scaleFactor),
                 child: Align(
                   alignment: Alignment.centerLeft,
-                  child: SegmentedButton<String>(
-                    showSelectedIcon: false,
-                    segments: [
-                      ButtonSegment(
-                        value: 'gap',
-                        label: Text('Gap',
-                            style: TextStyle(fontSize: 12 * scaleFactor)),
-                        icon: const Icon(Icons.pause_presentation_rounded,
-                            size: 16),
-                      ),
-                      ButtonSegment(
-                        value: 'gapless',
-                        label: Text('Gapless',
-                            style: TextStyle(fontSize: 12 * scaleFactor)),
-                        icon: const Icon(Icons.linear_scale_rounded, size: 16),
-                      ),
-                      ButtonSegment(
-                        value: 'crossfade',
-                        label: Text('Crossfade',
-                            style: TextStyle(fontSize: 12 * scaleFactor)),
-                        icon:
-                            const Icon(Icons.multiline_chart_rounded, size: 16),
-                      ),
-                    ],
-                    selected: {sp.trackTransitionMode},
-                    onSelectionChanged: (Set<String> selection) {
-                      HapticFeedback.lightImpact();
-                      sp.setTrackTransitionMode(selection.first);
-                    },
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: SegmentedButton<String>(
+                      showSelectedIcon: false,
+                      segments: [
+                        ButtonSegment(
+                          value: 'gap',
+                          label: Text('Gap',
+                              style: TextStyle(fontSize: 12 * scaleFactor)),
+                          icon: const Icon(Icons.pause_presentation_rounded,
+                              size: 16),
+                        ),
+                        ButtonSegment(
+                          value: 'gapless',
+                          label: Text('Gapless',
+                              style: TextStyle(fontSize: 12 * scaleFactor)),
+                          icon:
+                              const Icon(Icons.linear_scale_rounded, size: 16),
+                        ),
+                        ButtonSegment(
+                          value: 'crossfade',
+                          label: Text('Crossfade',
+                              style: TextStyle(fontSize: 12 * scaleFactor)),
+                          icon: const Icon(Icons.multiline_chart_rounded,
+                              size: 16),
+                        ),
+                      ],
+                      selected: {sp.trackTransitionMode},
+                      onSelectionChanged: (Set<String> selection) {
+                        HapticFeedback.lightImpact();
+                        sp.setTrackTransitionMode(selection.first);
+                      },
+                    ),
                   ),
                 ),
               ),
@@ -620,6 +631,143 @@ class PlaybackSection extends StatelessWidget {
                             ),
                       ),
                     ],
+                  ),
+                ),
+              ],
+              if (sp.audioEngineMode == AudioEngineMode.hybrid) ...[
+                const SizedBox(height: 16),
+                Padding(
+                  padding: EdgeInsets.only(left: 40.0 * scaleFactor),
+                  child: Text(
+                    'Hybrid Handoff Mode',
+                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                          fontSize: 14 * scaleFactor,
+                          fontWeight: FontWeight.bold,
+                        ),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Padding(
+                  padding: EdgeInsets.only(left: 40.0 * scaleFactor),
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: SegmentedButton<HybridHandoffMode>(
+                        showSelectedIcon: false,
+                        segments: [
+                          ButtonSegment(
+                            value: HybridHandoffMode.immediate,
+                            label: FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: Text('Immediate',
+                                  style: TextStyle(fontSize: 12 * scaleFactor)),
+                            ),
+                            tooltip: 'Swap as soon as loaded',
+                            icon: const Icon(Icons.flash_on_rounded, size: 16),
+                          ),
+                          ButtonSegment(
+                            value: HybridHandoffMode.buffered,
+                            label: FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: Text('End of Buffer',
+                                  style: TextStyle(fontSize: 12 * scaleFactor)),
+                            ),
+                            tooltip:
+                                'Wait until HTML5 buffer is exhausted before swap',
+                            icon: const Icon(Icons.download_done_rounded,
+                                size: 16),
+                          ),
+                          ButtonSegment(
+                            value: HybridHandoffMode.none,
+                            label: FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: Text('Disabled',
+                                  style: TextStyle(fontSize: 12 * scaleFactor)),
+                            ),
+                            tooltip: 'Stay on Web Audio (Gapless) always',
+                            icon: const Icon(Icons.block_rounded, size: 16),
+                          ),
+                        ],
+                        selected: {sp.hybridHandoffMode},
+                        onSelectionChanged: (Set<HybridHandoffMode> selection) {
+                          HapticFeedback.lightImpact();
+                          sp.setHybridHandoffMode(selection.first);
+                        },
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Padding(
+                  padding: EdgeInsets.only(left: 40.0 * scaleFactor),
+                  child: Text(
+                    'Background Survival Strategy',
+                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                          fontSize: 14 * scaleFactor,
+                          fontWeight: FontWeight.bold,
+                        ),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Padding(
+                  padding: EdgeInsets.only(left: 40.0 * scaleFactor),
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: SegmentedButton<HybridBackgroundMode>(
+                        showSelectedIcon: false,
+                        segments: [
+                          ButtonSegment(
+                            value: HybridBackgroundMode.relisten,
+                            label: FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: Text('Relisten',
+                                  style: TextStyle(fontSize: 12 * scaleFactor)),
+                            ),
+                            tooltip: 'Hand off to HTML5 for background',
+                            icon: const Icon(Icons.refresh_rounded, size: 16),
+                          ),
+                          ButtonSegment(
+                            value: HybridBackgroundMode.heartbeat,
+                            label: FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: Text('Heartbeat',
+                                  style: TextStyle(fontSize: 12 * scaleFactor)),
+                            ),
+                            tooltip: 'Silent Audio Clock (Web Audio)',
+                            icon: const Icon(Icons.favorite_rounded, size: 16),
+                          ),
+                          ButtonSegment(
+                            value: HybridBackgroundMode.video,
+                            label: FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: Text('Video Trick',
+                                  style: TextStyle(fontSize: 12 * scaleFactor)),
+                            ),
+                            tooltip: 'Silent Video Hack (Web Audio)',
+                            icon: const Icon(Icons.videocam_rounded, size: 16),
+                          ),
+                          ButtonSegment(
+                            value: HybridBackgroundMode.none,
+                            label: FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: Text('None',
+                                  style: TextStyle(fontSize: 12 * scaleFactor)),
+                            ),
+                            tooltip: 'No survival tricks (May throttle)',
+                            icon: const Icon(Icons.power_off_rounded, size: 16),
+                          ),
+                        ],
+                        selected: {sp.hybridBackgroundMode},
+                        onSelectionChanged:
+                            (Set<HybridBackgroundMode> selection) {
+                          HapticFeedback.lightImpact();
+                          sp.setHybridBackgroundMode(selection.first);
+                        },
+                      ),
+                    ),
                   ),
                 ),
               ],

@@ -17,7 +17,7 @@ class GaplessPlayer {
   /// [useWebGaplessEngine] is ignored natively but kept for API parity.
   GaplessPlayer({
     AudioPlayer? audioPlayer,
-    bool useWebGaplessEngine = true,
+    bool? useWebGaplessEngine,
   }) : _player = audioPlayer ?? AudioPlayer();
 
   // ─── Passthrough getters ─────────────────────────────────────────────────
@@ -101,6 +101,9 @@ class GaplessPlayer {
   /// Only applicable to web gapless engine; empty stream natively.
   Stream<Duration?> get nextTrackTotalStream => const Stream.empty();
 
+  /// Stream of the raw string state from the JS engine (e.g. 'handoff_countdown')
+  Stream<String> get engineStateStringStream => const Stream.empty();
+
   /// Stream of current index changes.
   Stream<int?> get currentIndexStream => _player.currentIndexStream;
 
@@ -132,6 +135,16 @@ class GaplessPlayer {
 
   /// Pauses playback.
   Future<void> pause() => _player.pause();
+
+  /// Sets the hybrid handoff mode. No-op on native.
+  void setHybridHandoffMode(String mode) {
+    // Not applicable natively
+  }
+
+  /// Sets the hybrid background mode. No-op on native.
+  void setHybridBackgroundMode(String mode) {
+    // Not applicable natively
+  }
 
   /// Stops playback and releases resources.
   Future<void> stop() => _player.stop();

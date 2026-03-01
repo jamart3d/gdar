@@ -8,12 +8,13 @@ import 'dart:ui' as _i8;
 
 import 'package:just_audio/just_audio.dart' as _i3;
 import 'package:mockito/mockito.dart' as _i1;
-import 'package:mockito/src/dummies.dart' as _i11;
+import 'package:mockito/src/dummies.dart' as _i12;
 import 'package:shakedown/models/show.dart' as _i6;
 import 'package:shakedown/models/source.dart' as _i7;
 import 'package:shakedown/providers/audio_provider.dart' as _i4;
 import 'package:shakedown/providers/settings_provider.dart' as _i10;
 import 'package:shakedown/providers/show_list_provider.dart' as _i9;
+import 'package:shakedown/services/audio_cache_service.dart' as _i11;
 import 'package:shakedown/services/gapless_player/gapless_player.dart' as _i2;
 
 // ignore_for_file: type=lint
@@ -171,6 +172,7 @@ class MockAudioProvider extends _i1.Mock implements _i4.AudioProvider {
   void update(
     _i9.ShowListProvider? showListProvider,
     _i10.SettingsProvider? settingsProvider,
+    _i11.AudioCacheService? audioCacheService,
   ) =>
       super.noSuchMethod(
         Invocation.method(
@@ -178,6 +180,7 @@ class MockAudioProvider extends _i1.Mock implements _i4.AudioProvider {
           [
             showListProvider,
             settingsProvider,
+            audioCacheService,
           ],
         ),
         returnValueForMissingStub: null,
@@ -465,7 +468,7 @@ class MockGaplessPlayer extends _i1.Mock implements _i2.GaplessPlayer {
   @override
   String get engineName => (super.noSuchMethod(
         Invocation.getter(#engineName),
-        returnValue: _i11.dummyValue<String>(
+        returnValue: _i12.dummyValue<String>(
           this,
           Invocation.getter(#engineName),
         ),
@@ -474,7 +477,7 @@ class MockGaplessPlayer extends _i1.Mock implements _i2.GaplessPlayer {
   @override
   String get selectionReason => (super.noSuchMethod(
         Invocation.getter(#selectionReason),
-        returnValue: _i11.dummyValue<String>(
+        returnValue: _i12.dummyValue<String>(
           this,
           Invocation.getter(#selectionReason),
         ),
@@ -540,6 +543,12 @@ class MockGaplessPlayer extends _i1.Mock implements _i2.GaplessPlayer {
         Invocation.getter(#nextTrackTotalStream),
         returnValue: _i5.Stream<Duration?>.empty(),
       ) as _i5.Stream<Duration?>);
+
+  @override
+  _i5.Stream<String> get engineStateStringStream => (super.noSuchMethod(
+        Invocation.getter(#engineStateStringStream),
+        returnValue: _i5.Stream<String>.empty(),
+      ) as _i5.Stream<String>);
 
   @override
   _i5.Stream<int?> get currentIndexStream => (super.noSuchMethod(
@@ -612,6 +621,24 @@ class MockGaplessPlayer extends _i1.Mock implements _i2.GaplessPlayer {
         returnValue: _i5.Future<void>.value(),
         returnValueForMissingStub: _i5.Future<void>.value(),
       ) as _i5.Future<void>);
+
+  @override
+  void setHybridHandoffMode(String? mode) => super.noSuchMethod(
+        Invocation.method(
+          #setHybridHandoffMode,
+          [mode],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void setHybridBackgroundMode(String? mode) => super.noSuchMethod(
+        Invocation.method(
+          #setHybridBackgroundMode,
+          [mode],
+        ),
+        returnValueForMissingStub: null,
+      );
 
   @override
   _i5.Future<void> stop() => (super.noSuchMethod(

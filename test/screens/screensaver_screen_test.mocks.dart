@@ -14,8 +14,9 @@ import 'package:shakedown/models/source.dart' as _i10;
 import 'package:shakedown/providers/audio_provider.dart' as _i8;
 import 'package:shakedown/providers/settings_provider.dart' as _i4;
 import 'package:shakedown/providers/show_list_provider.dart' as _i11;
+import 'package:shakedown/services/audio_cache_service.dart' as _i12;
 import 'package:shakedown/services/gapless_player/gapless_player.dart' as _i2;
-import 'package:shakedown/services/wakelock_service.dart' as _i12;
+import 'package:shakedown/services/wakelock_service.dart' as _i13;
 
 // ignore_for_file: type=lint
 // ignore_for_file: avoid_redundant_argument_values
@@ -378,6 +379,20 @@ class MockSettingsProvider extends _i1.Mock implements _i4.SettingsProvider {
         returnValue: 0.0,
         returnValueForMissingStub: 0.0,
       ) as double);
+
+  @override
+  _i2.HybridHandoffMode get hybridHandoffMode => (super.noSuchMethod(
+        Invocation.getter(#hybridHandoffMode),
+        returnValue: _i2.HybridHandoffMode.buffered,
+        returnValueForMissingStub: _i2.HybridHandoffMode.buffered,
+      ) as _i2.HybridHandoffMode);
+
+  @override
+  _i2.HybridBackgroundMode get hybridBackgroundMode => (super.noSuchMethod(
+        Invocation.getter(#hybridBackgroundMode),
+        returnValue: _i2.HybridBackgroundMode.relisten,
+        returnValueForMissingStub: _i2.HybridBackgroundMode.relisten,
+      ) as _i2.HybridBackgroundMode);
 
   @override
   bool get useOilScreensaver => (super.noSuchMethod(
@@ -837,6 +852,25 @@ class MockSettingsProvider extends _i1.Mock implements _i4.SettingsProvider {
         Invocation.method(
           #setCrossfadeDurationSeconds,
           [seconds],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void setHybridHandoffMode(_i2.HybridHandoffMode? mode) => super.noSuchMethod(
+        Invocation.method(
+          #setHybridHandoffMode,
+          [mode],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void setHybridBackgroundMode(_i2.HybridBackgroundMode? mode) =>
+      super.noSuchMethod(
+        Invocation.method(
+          #setHybridBackgroundMode,
+          [mode],
         ),
         returnValueForMissingStub: null,
       );
@@ -1797,6 +1831,7 @@ class MockAudioProvider extends _i1.Mock implements _i8.AudioProvider {
   void update(
     _i11.ShowListProvider? showListProvider,
     _i4.SettingsProvider? settingsProvider,
+    _i12.AudioCacheService? audioCacheService,
   ) =>
       super.noSuchMethod(
         Invocation.method(
@@ -1804,6 +1839,7 @@ class MockAudioProvider extends _i1.Mock implements _i8.AudioProvider {
           [
             showListProvider,
             settingsProvider,
+            audioCacheService,
           ],
         ),
         returnValueForMissingStub: null,
@@ -2043,7 +2079,7 @@ class MockAudioProvider extends _i1.Mock implements _i8.AudioProvider {
 /// A class which mocks [WakelockService].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockWakelockService extends _i1.Mock implements _i12.WakelockService {
+class MockWakelockService extends _i1.Mock implements _i13.WakelockService {
   @override
   _i6.Future<bool> get enabled => (super.noSuchMethod(
         Invocation.getter(#enabled),
@@ -2245,6 +2281,13 @@ class MockAudioPlayerRelaxed extends _i1.Mock implements _i2.GaplessPlayer {
       ) as _i6.Stream<Duration?>);
 
   @override
+  _i6.Stream<String> get engineStateStringStream => (super.noSuchMethod(
+        Invocation.getter(#engineStateStringStream),
+        returnValue: _i6.Stream<String>.empty(),
+        returnValueForMissingStub: _i6.Stream<String>.empty(),
+      ) as _i6.Stream<String>);
+
+  @override
   _i6.Stream<int?> get currentIndexStream => (super.noSuchMethod(
         Invocation.getter(#currentIndexStream),
         returnValue: _i6.Stream<int?>.empty(),
@@ -2318,6 +2361,24 @@ class MockAudioPlayerRelaxed extends _i1.Mock implements _i2.GaplessPlayer {
         returnValue: _i6.Future<void>.value(),
         returnValueForMissingStub: _i6.Future<void>.value(),
       ) as _i6.Future<void>);
+
+  @override
+  void setHybridHandoffMode(String? mode) => super.noSuchMethod(
+        Invocation.method(
+          #setHybridHandoffMode,
+          [mode],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void setHybridBackgroundMode(String? mode) => super.noSuchMethod(
+        Invocation.method(
+          #setHybridBackgroundMode,
+          [mode],
+        ),
+        returnValueForMissingStub: null,
+      );
 
   @override
   _i6.Future<void> stop() => (super.noSuchMethod(

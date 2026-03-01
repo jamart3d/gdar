@@ -76,6 +76,14 @@ void main() {
     when(mockSettingsProvider.showPlaybackMessages).thenReturn(true);
     when(mockSettingsProvider.appFont).thenReturn('Roboto');
     when(mockSettingsProvider.uiScale).thenReturn(false);
+
+    // Add missing stream and property stubs required by PlaybackMessages
+    when(mockAudioPlayer.engineStateStringStream)
+        .thenAnswer((_) => const Stream<String>.empty());
+    when(mockAudioProvider.nextTrackBufferedStream)
+        .thenAnswer((_) => const Stream<Duration?>.empty());
+    when(mockAudioPlayer.nextTrackBuffered).thenReturn(null);
+    when(mockAudioPlayer.position).thenReturn(Duration.zero);
   });
 
   tearDown(() {

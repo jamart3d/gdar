@@ -15,6 +15,7 @@ import 'package:shakedown/services/catalog_service.dart';
 import 'package:shakedown/services/audio_cache_service.dart';
 import 'package:shakedown/services/gapless_player/gapless_player.dart';
 import 'package:shakedown/services/wakelock_service.dart';
+import 'package:just_audio_background/just_audio_background.dart';
 
 import 'audio_provider_test.mocks.dart';
 
@@ -107,6 +108,7 @@ void main() {
             initialIndex: anyNamed('initialIndex'),
             preload: anyNamed('preload')))
         .thenAnswer((_) async => const Duration(seconds: 100));
+    when(mockAudioPlayer.addAudioSources(any)).thenAnswer((_) async {});
 
     when(mockShowListProvider.isLoading).thenReturn(false);
     when(mockShowListProvider.allShows).thenReturn([]);
@@ -130,7 +132,8 @@ void main() {
       audioCacheService: mockAudioCacheService,
       wakelockService: mockWakelockService,
     );
-    audioProvider.update(mockShowListProvider, mockSettingsProvider);
+    audioProvider.update(
+        mockShowListProvider, mockSettingsProvider, mockAudioCacheService);
   });
 
   tearDown(() {
@@ -206,6 +209,81 @@ void main() {
       verifyNever(mockAudioPlayer.setAudioSources(any,
           initialIndex: anyNamed('initialIndex'),
           preload: anyNamed('preload')));
+    });
+  });
+
+  group('Relisten Mode (HTML5) Stability', () {
+    testWidgets(
+        'State Preservation: Does not trigger premature Random Show on mid-track completed emission',
+        (WidgetTester tester) async {
+      await tester.runAsync(() async {
+        // Setup: Relisten mode identified by name
+        when(mockAudioPlayer.engineName)
+            .thenReturn('Mobile Gapless Engine (HTML5)');
+        when(mockSettingsProvider.playRandomOnCompletion).thenReturn(true);
+
+        // Current state: track 0 of 2
+        final sequence = [
+          AudioSource.uri(Uri.parse('http://dummy/1')),
+          AudioSource.uri(Uri.parse('http://dummy/2'))
+        ];
+        when(mockAudioPlayer.sequence).thenReturn(sequence);
+        when(mockAudioPlayer.currentIndex).thenReturn(0);
+
+        // Simulate a premature 'completed' state (which our JS fix prevents, but Dart should be robust)
+        // If Dart receives 'completed' at index 0 when total is 2, it might trigger a random show
+        // unless it checks if it's actually the last track.
+        processingStateController.add(ProcessingState.completed);
+        await Future.delayed(const Duration(milliseconds: 50));
+
+        // NOTE: Currently AudioProvider only checks ProcessingState.completed
+        // without checking if it's the last track, relying on the engine to be correct.
+        // If we want Dart to be robust, we'd add the check there too.
+        // For regression, we'll verify the CURRENT behavior and then decide if we need more guards.
+
+        // Verification: If it triggers, it calls setAudioSources.
+        // In our isolated state, we want to ensure it DOES NOT trigger
+        // if it's not the last track of a sequence.
+        verifyNever(mockAudioPlayer.setAudioSources(any,
+            initialIndex: anyNamed('initialIndex'),
+            preload: anyNamed('preload')));
+      });
+    });
+
+    testWidgets(
+        'Metadata Sync: AudioProvider updates currentTrack on index change',
+        (WidgetTester tester) async {
+      await tester.runAsync(() async {
+        final show = createDummyShow(1);
+        final source = show.sources.first;
+
+        // Load the show
+        await audioProvider.playSource(show, source);
+
+        // Setup sequence with MediaItems as they would be created by _createAudioSource
+        final sequence = source.tracks.asMap().entries.map((entry) {
+          return AudioSource.uri(
+            Uri.parse(entry.value.url),
+            tag: MediaItem(
+              id: 'show_source_${entry.key}',
+              album: show.venue,
+              title: entry.value.title,
+              extras: {'source_id': source.id, 'track_index': entry.key},
+            ),
+          );
+        }).toList();
+
+        when(mockAudioPlayer.sequence).thenReturn(sequence);
+        when(mockAudioPlayer.currentIndex).thenReturn(1);
+
+        // Simulate index change to track 1
+        currentIndexController.add(1);
+        await Future.delayed(const Duration(milliseconds: 50));
+
+        expect(audioProvider.currentTrack?.title, 'Track 2',
+            reason:
+                'AudioProvider should resolve the correct Track object when index changes');
+      });
     });
   });
 }

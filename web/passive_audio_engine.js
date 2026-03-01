@@ -12,6 +12,10 @@
 (function () {
     'use strict';
 
+    // Safe Logger Utility
+    const _log = (window._gdarLogger || console);
+    const isBrowser = typeof window !== 'undefined';
+
     // ─── State ────────────────────────────────────────────────────────────────
 
     let _playlist = [];
@@ -37,6 +41,11 @@
     let _onStateChange = null;
     let _onTrackChange = null;
     let _onError = null;
+
+    let _lastTimeUpdate = 0;
+
+    /** Tracker for the currently active play() promise to avoid interruptions. */
+    let _playPromise = null;
 
     // ─── Audio Element Management ──────────────────────────────────────────────
 
@@ -88,7 +97,11 @@
         };
 
         _audio.ontimeupdate = () => {
-            _emitState();
+            const now = performance.now();
+            if (now - _lastTimeUpdate > 250) {
+                _emitState();
+                _lastTimeUpdate = now;
+            }
         };
 
         _audio.onended = () => {
@@ -107,14 +120,23 @@
 
         if (shouldPlay) {
             _loadingState = 'loading';
-            _audio.play().then(() => {
+            _playPromise = _audio.play();
+            _playPromise.then(() => {
+                _playPromise = null;
                 _playing = true;
                 _loadingState = 'ready';
                 _emitState();
                 _startPositionTimer();
                 _updateMediaSession();
             }).catch(err => {
-                _emitError('Play failed: ' + err.message);
+                _playPromise = null;
+                // Only emit significant errors. 
+                // AbortError is expected when pause() interrupts play().
+                if (err.name !== 'AbortError' && err.name !== 'NotAllowedError') {
+                    _emitError('Play failed: ' + err.message);
+                } else {
+                    _log.log(`[passive engine] Play promise ${err.name} (handled)`);
+                }
             });
         }
     }
@@ -124,7 +146,8 @@
         const wasIndex = _currentIndex;
         _currentIndex++;
 
-        console.log('[passive engine] Track ended. Advancing from', wasIndex, 'to', _currentIndex);
+        _log.log(`[passive engine] Track ${wasIndex} ended. Advancing to ${_currentIndex}...`);
+        const transitionGapStart = performance.now();
 
         if (_currentIndex >= _playlist.length) {
             // End of playlist.
@@ -145,12 +168,28 @@
             return;
         }
 
+        _log.log(`[passive engine] Swapping src to: ${track.url}`);
         _audio.src = track.url;
         _loadingState = 'loading';
+
+        // Let the hybrid layer know we advanced the track index.
         _emitTrackChange(wasIndex, _currentIndex);
+
+        // Very important: if _forwardTrack in the HybridEngine caused us to .stop()
+        // we should abort attempting to play.
+        if (!_playing && _loadingState === 'idle') {
+            _isTransitioning = false;
+            return;
+        }
+
         _emitState();
 
-        _audio.play().then(() => {
+        _playPromise = _audio.play();
+        _playPromise.then(() => {
+            _playPromise = null;
+            const gapMs = performance.now() - transitionGapStart;
+            _log.log(`[passive engine] Transition executed successfully. Exact gap: ${gapMs.toFixed(2)}ms`);
+
             _playing = true;
             _loadingState = 'ready';
             _emitState();
@@ -158,8 +197,13 @@
             _updateMediaSession();
             _isTransitioning = false;
         }).catch(err => {
+            _playPromise = null;
+            const gapMs = performance.now() - transitionGapStart;
             _isTransitioning = false;
-            _emitError('Next track play failed: ' + err.message);
+            if (err.name !== 'AbortError' && err.name !== 'NotAllowedError') {
+                _log.error(`[passive engine] Next track play failed after ${gapMs.toFixed(2)}ms:`, err.message);
+                _emitError('Next track play failed: ' + err.message);
+            }
         });
     }
 
@@ -229,7 +273,7 @@
     }
 
     function _emitError(msg) {
-        console.error('[passive audio]', msg);
+        _log.error('[passive audio]', msg);
         if (_onError) {
             try { _onError({ message: msg }); } catch (_) { }
         }
@@ -238,12 +282,12 @@
     // ─── Public API ───────────────────────────────────────────────────────────
 
     const api = {
-
+        engineType: 'passive_html5',
         init: function () {
             if (_audio) return;
             _audio = _createAudio();
             _registerMediaSessionHandlers();
-            console.log('[passive engine] Initialised');
+            _log.log('[passive engine] Initialised');
         },
 
         setPlaylist: function (tracks, startIndex) {
@@ -275,12 +319,19 @@
 
             if (_audio.src) {
                 // Resuming after pause.
-                _audio.play().then(() => {
+                _playPromise = _audio.play();
+                _playPromise.then(() => {
+                    _playPromise = null;
                     _playing = true;
                     _loadingState = 'ready';
                     _emitState();
                     _startPositionTimer();
-                }).catch(err => _emitError('Resume failed: ' + err.message));
+                }).catch(err => {
+                    _playPromise = null;
+                    if (err.name !== 'AbortError' && err.name !== 'NotAllowedError') {
+                        _emitError('Resume failed: ' + err.message);
+                    }
+                });
                 return;
             }
 
@@ -305,7 +356,12 @@
 
         stop: function () {
             _stopPositionTimer();
+
+            // If we are currently in the middle of a play() request, 
+            // the subsequent pause() in _disposeAudio will trigger an AbortError.
+            // We've wired up the catch blocks above to ignore it.
             _disposeAudio();
+
             _playing = false;
             _loadingState = 'idle';
             _isTransitioning = false;
@@ -350,17 +406,53 @@
         },
 
         getState: function () {
+            const pos = _audio ? (_audio.currentTime || 0) : 0;
+            const dur = _audio ? (isNaN(_audio.duration) ? 0 : (_audio.duration || 0)) : 0;
+            let currentBuffered = pos;
+
+            if (_audio && _audio.buffered.length > 0) {
+                currentBuffered = _audio.buffered.end(_audio.buffered.length - 1);
+            }
+
             return {
                 playing: _playing,
                 index: _currentIndex,
-                position: _audio ? (_audio.currentTime || 0) : 0,
-                duration: _audio ? (isNaN(_audio.duration) ? 0 : (_audio.duration || 0)) : 0,
+                position: pos,
+                duration: dur,
+                currentTrackBuffered: Math.min(Math.max(currentBuffered, pos), dur || currentBuffered || pos),
                 nextTrackBuffered: 0,
                 nextTrackTotal: _playlist[_currentIndex + 1] ? (_playlist[_currentIndex + 1].duration || 0) : 0,
                 playlistLength: _playlist.length,
                 processingState: _loadingState,
                 contextState: 'passive',
             };
+        },
+
+        prepareToPlay: function (index) {
+            // Passive engine doesn't prefetch or decode ahead-of-time.
+            // We just set the playlist/index so it's ready.
+            return Promise.resolve();
+        },
+
+        syncState: function (index, position, shouldPlay) {
+            _stopPositionTimer();
+            _isTransitioning = false;
+            _disposeAudio();
+            _audio = _createAudio();
+            _currentIndex = index;
+            _playing = false;
+
+            const track = _playlist[index];
+            if (!track) return;
+            _audio.src = track.url;
+
+            if (shouldPlay) {
+                _attachListeners(position || 0, true);
+            } else {
+                _audio.currentTime = position || 0;
+                _loadingState = 'idle';
+                _emitState();
+            }
         },
 
         onStateChange: function (cb) { _onStateChange = cb; },

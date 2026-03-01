@@ -239,6 +239,13 @@ class MockAudioPlayerRelaxed extends _i1.Mock implements _i4.GaplessPlayer {
       ) as _i6.Stream<Duration?>);
 
   @override
+  _i6.Stream<String> get engineStateStringStream => (super.noSuchMethod(
+        Invocation.getter(#engineStateStringStream),
+        returnValue: _i6.Stream<String>.empty(),
+        returnValueForMissingStub: _i6.Stream<String>.empty(),
+      ) as _i6.Stream<String>);
+
+  @override
   _i6.Stream<int?> get currentIndexStream => (super.noSuchMethod(
         Invocation.getter(#currentIndexStream),
         returnValue: _i6.Stream<int?>.empty(),
@@ -312,6 +319,24 @@ class MockAudioPlayerRelaxed extends _i1.Mock implements _i4.GaplessPlayer {
         returnValue: _i6.Future<void>.value(),
         returnValueForMissingStub: _i6.Future<void>.value(),
       ) as _i6.Future<void>);
+
+  @override
+  void setHybridHandoffMode(String? mode) => super.noSuchMethod(
+        Invocation.method(
+          #setHybridHandoffMode,
+          [mode],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void setHybridBackgroundMode(String? mode) => super.noSuchMethod(
+        Invocation.method(
+          #setHybridBackgroundMode,
+          [mode],
+        ),
+        returnValueForMissingStub: null,
+      );
 
   @override
   _i6.Future<void> stop() => (super.noSuchMethod(
@@ -1088,6 +1113,20 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
       ) as double);
 
   @override
+  _i4.HybridHandoffMode get hybridHandoffMode => (super.noSuchMethod(
+        Invocation.getter(#hybridHandoffMode),
+        returnValue: _i4.HybridHandoffMode.buffered,
+        returnValueForMissingStub: _i4.HybridHandoffMode.buffered,
+      ) as _i4.HybridHandoffMode);
+
+  @override
+  _i4.HybridBackgroundMode get hybridBackgroundMode => (super.noSuchMethod(
+        Invocation.getter(#hybridBackgroundMode),
+        returnValue: _i4.HybridBackgroundMode.relisten,
+        returnValueForMissingStub: _i4.HybridBackgroundMode.relisten,
+      ) as _i4.HybridBackgroundMode);
+
+  @override
   bool get useOilScreensaver => (super.noSuchMethod(
         Invocation.getter(#useOilScreensaver),
         returnValue: false,
@@ -1545,6 +1584,25 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
         Invocation.method(
           #setCrossfadeDurationSeconds,
           [seconds],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void setHybridHandoffMode(_i4.HybridHandoffMode? mode) => super.noSuchMethod(
+        Invocation.method(
+          #setHybridHandoffMode,
+          [mode],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void setHybridBackgroundMode(_i4.HybridBackgroundMode? mode) =>
+      super.noSuchMethod(
+        Invocation.method(
+          #setHybridBackgroundMode,
+          [mode],
         ),
         returnValueForMissingStub: null,
       );

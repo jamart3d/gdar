@@ -241,12 +241,13 @@ class ShowListScreenState extends State<ShowListScreen>
     if (!mounted) return;
     final processingState = state.processingState;
 
-    if (isRandomShowLoading) {
+    if (isRandomShowLoading && !isResettingRandomShow) {
       // If running a visual test, ignore player state (which might be idle)
       if (isAnimationTest) return;
 
       if (processingState == ProcessingState.ready ||
           processingState == ProcessingState.completed) {
+        isResettingRandomShow = true;
         // Minimum 2s roll duration for visual consistency
         final now = DateTime.now();
         final startTime = lastRollStartTime ?? now;
@@ -263,6 +264,7 @@ class ShowListScreenState extends State<ShowListScreen>
               showListProvider.setIsChoosingRandomShow(false);
               setState(() {
                 isRandomShowLoading = false;
+                isResettingRandomShow = false;
                 userInitiatedRoll = false;
               });
             }
@@ -271,6 +273,7 @@ class ShowListScreenState extends State<ShowListScreen>
           showListProvider.setIsChoosingRandomShow(false);
           setState(() {
             isRandomShowLoading = false;
+            isResettingRandomShow = false;
             userInitiatedRoll = false;
           });
         }

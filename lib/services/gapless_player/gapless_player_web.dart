@@ -1,21 +1,25 @@
 import 'dart:async';
 import 'dart:js_interop';
-
+// ignore: avoid_web_libraries_in_flutter
 import 'package:just_audio/just_audio.dart';
 import 'package:shakedown/services/gapless_player/gapless_player.dart';
 import 'package:just_audio_background/just_audio_background.dart';
+import 'package:shakedown/utils/logger.dart';
 
 // ─── JS interop bindings ─────────────────────────────────────────────────────
 
 /// Binds to the JavaScript object at [window._gdarAudio].
 @JS('_gdarAudio')
-external _GdarAudioEngine get _engine;
+external JSObject? get _engine;
 
 @JS('_shakedownAudioStrategy')
-external String? get _strategy;
+external JSString? get _strategyVal;
 
 @JS('_shakedownAudioReason')
-external String? get _reason;
+external JSString? get _reasonVal;
+
+String? get _strategy => _strategyVal?.toDart;
+String? get _reason => _reasonVal?.toDart;
 
 /// JavaScript engine API surface.
 @JS()
@@ -28,28 +32,42 @@ extension type _GdarAudioEngine(JSObject _) {
   external void pause();
   external void stop();
   external void seek(double seconds);
+  external void prepareToPlay(JSString url);
+  external void setCrossfadeDurationSeconds(JSNumber seconds);
   external void seekToIndex(int index);
   external void setPrefetchSeconds(int s);
   external _GdarState getState();
   external void onStateChange(JSFunction cb);
   external void onTrackChange(JSFunction cb);
   external void onError(JSFunction cb);
+  external void setHybridBackgroundMode(JSString mode);
+  external void setHybridHandoffMode(JSString mode);
 }
 
 /// Snapshot of engine state returned by [_GdarAudioEngine.getState].
 @JS()
 @anonymous
-extension type _GdarState(JSObject _) {
-  external bool get playing;
-  external int get index;
-  external double get position;
-  external double get duration;
-  external double get currentTrackBuffered;
-  external double get nextTrackBuffered;
-  external double get nextTrackTotal;
-  external int get playlistLength;
-  external String get contextState;
-  external String get processingState;
+extension type _GdarState(JSObject _) implements JSObject {
+  @JS('playing')
+  external bool? get playing;
+  @JS('index')
+  external int? get index;
+  @JS('position')
+  external double? get position;
+  @JS('duration')
+  external double? get duration;
+  @JS('currentTrackBuffered')
+  external double? get currentTrackBuffered;
+  @JS('nextTrackBuffered')
+  external double? get nextTrackBuffered;
+  @JS('nextTrackTotal')
+  external double? get nextTrackTotal;
+  @JS('playlistLength')
+  external int? get playlistLength;
+  @JS('contextState')
+  external String? get contextState;
+  @JS('processingState')
+  external String? get processingState;
 }
 
 /// Track change event sent from the JS engine.
@@ -74,6 +92,15 @@ extension type _JsTrack._(JSObject _) implements JSObject {
   });
 }
 
+@JS()
+extension type _JSObject(JSObject _) implements JSObject {
+  @JS('message')
+  external JSString? get message;
+
+  @JS('hasOwnProperty')
+  external bool hasOwnProperty(JSString property);
+}
+
 // ─── Web GaplessPlayer ───────────────────────────────────────────────────────
 
 /// Web implementation of [GaplessPlayer].
@@ -90,6 +117,7 @@ class GaplessPlayer {
   final _playingController = StreamController<bool>.broadcast();
   final _processingStateController =
       StreamController<ProcessingState>.broadcast();
+  final _engineStateStringController = StreamController<String>.broadcast();
   final _positionController = StreamController<Duration>.broadcast();
   final _bufferedPositionController = StreamController<Duration>.broadcast();
   final _durationController = StreamController<Duration?>.broadcast();
@@ -107,6 +135,7 @@ class GaplessPlayer {
   double _nextTrackTotalSec = 0;
   ProcessingState _processingState = ProcessingState.idle;
   List<IndexedAudioSource> _sequence = [];
+  String? _lastContextState;
 
   final bool _useJsEngine;
   final AudioPlayer? _fallbackPlayer;
@@ -118,23 +147,45 @@ class GaplessPlayer {
   /// to a standard `just_audio` [AudioPlayer].
   GaplessPlayer({
     AudioPlayer? audioPlayer,
-    bool useWebGaplessEngine = true,
-  })  : _useJsEngine = useWebGaplessEngine,
-        _fallbackPlayer =
-            useWebGaplessEngine ? null : (audioPlayer ?? AudioPlayer()) {
+    bool? useWebGaplessEngine,
+    String? trackTransitionMode,
+    double? crossfadeDurationSeconds,
+    AudioEngineMode? audioEngineMode,
+    String? hybridHandoffMode,
+  })  : _useJsEngine = useWebGaplessEngine ?? (_strategy != 'standard'),
+        _fallbackPlayer = (useWebGaplessEngine ?? (_strategy != 'standard'))
+            ? null
+            : (audioPlayer ?? AudioPlayer()) {
+    logger.i('GaplessPlayer: Detected Engine: $engineName');
+    logger.i('GaplessPlayer: Selection Reason: $selectionReason');
+
     if (_useJsEngine) {
       _initJsEngine();
+      if (hybridHandoffMode != null) {
+        setHybridHandoffMode(hybridHandoffMode);
+      }
+      // Note: background mode is typically set later via settings provider
     }
   }
 
   void _initJsEngine() {
-    _engine.init();
-    _engine.onStateChange(
-      ((JSObject raw) {
-        _onJsStateChange(raw as _GdarState);
+    final engine = _engine;
+    if (engine == null) {
+      logger.e(
+          'FATAL: Gapless Audio Engine (window._gdarAudio) not found. Web Audio initialization aborted.');
+      return;
+    }
+
+    final gdar = _GdarAudioEngine(engine);
+    gdar.init();
+    gdar.onStateChange(
+      ((JSAny? raw) {
+        if (raw != null && raw.isA<JSObject>()) {
+          _onJsStateChange(raw as _GdarState);
+        }
       }).toJS,
     );
-    _engine.onTrackChange(
+    gdar.onTrackChange(
       ((JSObject raw) {
         final e = raw as _JsTrackChangeEvent;
         final to = e.to;
@@ -144,33 +195,73 @@ class GaplessPlayer {
         _emitPlayerState();
       }).toJS,
     );
-    _engine.onError(
-      ((JSString raw) {
+    gdar.onError(
+      ((JSAny raw) {
         _processingState = ProcessingState.idle;
         _processingStateController.add(_processingState);
-        _playbackEventController.addError(
-          Exception('WebAudio: ${raw.toDart}'),
-          StackTrace.current,
-        );
+
+        String message = 'Unknown error';
+        if (raw.isA<JSString>()) {
+          message = (raw as JSString).toDart;
+        } else if (raw.isA<JSObject>()) {
+          final obj = _JSObject(raw as JSObject);
+          final m = obj.message;
+          if (m != null) {
+            message = m.toDart;
+          } else {
+            message = raw.toString();
+          }
+        }
+
+        _onJsError(message);
       }).toJS,
     );
   }
 
+  void _onJsError(String message) {
+    _playbackEventController.addError(
+      Exception('WebAudio: $message'),
+      StackTrace.current,
+    );
+  }
+
+  void _callEngine(void Function(_GdarAudioEngine) action) {
+    if (!_useJsEngine) return;
+    final engine = _engine;
+    if (engine != null) {
+      action(_GdarAudioEngine(engine));
+    }
+  }
+
   /// Maps a JS processingState string to the [ProcessingState] enum.
   ProcessingState _mapProcessingState(String jsState) {
+    ProcessingState state;
     switch (jsState) {
       case 'loading':
-        return ProcessingState.loading;
+        state = ProcessingState.loading;
+        break;
       case 'buffering':
-        return ProcessingState.buffering;
+        state = ProcessingState.buffering;
+        break;
       case 'ready':
-        return ProcessingState.ready;
-      case 'completed':
-        return ProcessingState.completed;
+        state = ProcessingState.ready;
+        break;
+      case 'ended':
+      case 'completed': // Original 'completed' case
+        state = ProcessingState.completed;
+        break;
+      case 'handoff_countdown':
+        // Map to ready so the UI doesn't hide controls with a spinner during the background-to-foreground transition
+        state = ProcessingState.ready;
+        break;
+      case 'suspended_by_os':
+        state = ProcessingState.idle;
+        break;
       case 'idle':
       default:
-        return ProcessingState.idle;
+        state = ProcessingState.idle;
     }
+    return state;
   }
 
   void _onJsStateChange(_GdarState s) {
@@ -178,15 +269,35 @@ class GaplessPlayer {
     final wasDuration = _durationSec;
     final wasIndex = _currentIndex;
 
-    _playing = s.playing;
-    _positionSec = s.position;
-    _durationSec = s.duration;
-    _currentTrackBufferedSec = s.currentTrackBuffered;
-    _nextTrackBufferedSec = s.nextTrackBuffered;
-    _nextTrackTotalSec = s.nextTrackTotal;
-    _currentIndex = s.index >= 0 ? s.index : null;
+    // Use tentative check for properties to avoid crashes if engine is partially initialized
+    try {
+      _playing = s.playing ?? false;
+      _positionSec = s.position ?? 0;
+      _durationSec = s.duration ?? 0;
+      _currentTrackBufferedSec = s.currentTrackBuffered ?? 0;
+      _nextTrackBufferedSec = s.nextTrackBuffered ?? 0;
+      _nextTrackTotalSec = s.nextTrackTotal ?? 0;
+      final idx = s.index;
+      _currentIndex = (idx != null && idx >= 0) ? idx : null;
+      final ps = s.processingState;
+      _processingState = _mapProcessingState(ps ?? 'idle');
+      _processingStateController.add(_processingState);
+      _engineStateStringController.add(ps ?? 'idle');
 
-    _processingState = _mapProcessingState(s.processingState);
+      // Explicitly notify on duration or index changes to keep sliding panel in sync
+      if (wasIndex != _currentIndex || wasDuration != _durationSec) {
+        _indexController.add(_currentIndex);
+        _durationController
+            .add(Duration(milliseconds: (_durationSec * 1000).round()));
+      }
+
+      if (wasPlaying != _playing) {
+        _playingController.add(_playing);
+      }
+    } catch (e) {
+      // ignore partially initialized state
+      return;
+    }
 
     _positionController
         .add(Duration(milliseconds: (_positionSec * 1000).round()));
@@ -207,7 +318,12 @@ class GaplessPlayer {
     if (_playing != wasPlaying) {
       _playingController.add(_playing);
     }
-    if (_currentIndex != wasIndex) {
+
+    final currentContext = s.contextState;
+    final contextChanged = _lastContextState != currentContext;
+    _lastContextState = currentContext;
+
+    if (_currentIndex != wasIndex || contextChanged) {
       _indexController.add(_currentIndex);
       _emitSequenceState();
     }
@@ -291,8 +407,15 @@ class GaplessPlayer {
     if (!_useJsEngine) return 'Standard Engine (just_audio)';
     final strategy = _strategy;
     if (strategy == 'html5') return 'Mobile Gapless Engine (HTML5)';
-    if (strategy == 'webaudio') return 'Desktop Gapless Engine (Web Audio API)';
-    return 'Unknown Web Engine';
+    if (strategy == 'passive') return 'Passive engine (Mobile Fallback)';
+    if (strategy == 'hybrid') {
+      return 'Hybrid Audio Engine (Gapless + Background)';
+    }
+    if (strategy == 'webaudio' || strategy == 'webAudio') {
+      return 'Desktop Gapless Engine (Web Audio API)';
+    }
+
+    return _engine == null ? 'MISSING JS ENGINE' : 'Web Audio (Gapless)';
   }
 
   /// Returns the reason why the current engine was selected.
@@ -306,7 +429,11 @@ class GaplessPlayer {
     if (!_useJsEngine) return AudioEngineMode.standard;
     final strategy = _strategy;
     if (strategy == 'html5') return AudioEngineMode.html5;
-    if (strategy == 'webaudio') return AudioEngineMode.webAudio;
+    if (strategy == 'webaudio' || strategy == 'webAudio') {
+      return AudioEngineMode.webAudio;
+    }
+    if (strategy == 'hybrid') return AudioEngineMode.hybrid;
+    if (strategy == 'passive') return AudioEngineMode.passive;
     return AudioEngineMode.standard;
   }
 
@@ -350,6 +477,10 @@ class GaplessPlayer {
 
   Stream<Duration?> get nextTrackTotalStream =>
       _useJsEngine ? _nextTrackTotalController.stream : const Stream.empty();
+
+  /// Emits the raw string processing state from the JS engine (e.g. 'handoff_countdown')
+  Stream<String> get engineStateStringStream =>
+      _useJsEngine ? _engineStateStringController.stream : const Stream.empty();
 
   Stream<SequenceState?> get sequenceStateStream => _useJsEngine
       ? _sequenceStateController.stream
@@ -397,13 +528,17 @@ class GaplessPlayer {
       );
     }
     _sequence = children.whereType<IndexedAudioSource>().toList();
-    _engine.setPlaylist(
-      children.map(_sourceToJsTrack).toList().toJS,
-      initialIndex,
-    );
-    if (initialPosition != Duration.zero) {
-      _engine.seek(initialPosition.inMilliseconds / 1000.0);
-    }
+
+    _callEngine((e) {
+      e.setPlaylist(
+        children.map(_sourceToJsTrack).toList().toJS,
+        initialIndex,
+      );
+      if (initialPosition != Duration.zero) {
+        e.seek(initialPosition.inMilliseconds / 1000.0);
+      }
+    });
+
     _emitSequenceState();
     return null; // Duration only known post-decode on web
   }
@@ -412,48 +547,103 @@ class GaplessPlayer {
   Future<void> addAudioSources(List<AudioSource> sources) async {
     if (!_useJsEngine) return _fallbackPlayer!.addAudioSources(sources);
     _sequence = [..._sequence, ...sources.whereType<IndexedAudioSource>()];
-    _engine.appendTracks(sources.map(_sourceToJsTrack).toList().toJS);
+    _callEngine((e) {
+      e.appendTracks(sources.map(_sourceToJsTrack).toList().toJS);
+    });
   }
 
   /// Begins or resumes playback.
-  Future<void> play() async =>
-      _useJsEngine ? _engine.play() : _fallbackPlayer!.play();
+  Future<void> play() async {
+    if (!_useJsEngine) {
+      await _fallbackPlayer!.play();
+    } else {
+      _callEngine((e) => e.play());
+    }
+  }
 
   /// Pauses playback.
-  Future<void> pause() async =>
-      _useJsEngine ? _engine.pause() : _fallbackPlayer!.pause();
+  Future<void> pause() async {
+    if (!_useJsEngine) {
+      await _fallbackPlayer!.pause();
+    } else {
+      _callEngine((e) => e.pause());
+    }
+  }
 
   /// Stops playback.
-  Future<void> stop() async =>
-      _useJsEngine ? _engine.stop() : _fallbackPlayer!.stop();
+  Future<void> stop() async {
+    if (!_useJsEngine) {
+      await _fallbackPlayer!.stop();
+    } else {
+      _callEngine((e) => e.stop());
+    }
+  }
 
   /// Seeks to [position] within the current track, or to [index] if provided.
   Future<void> seek(Duration? position, {int? index}) async {
     if (!_useJsEngine) return _fallbackPlayer!.seek(position, index: index);
-    if (index != null) {
-      _engine.seekToIndex(index);
-    } else if (position != null) {
-      _engine.seek(position.inMilliseconds / 1000.0);
-    }
+    _callEngine((e) {
+      if (index != null) {
+        e.seekToIndex(index);
+      } else if (position != null) {
+        e.seek(position.inMilliseconds / 1000.0);
+      }
+    });
   }
 
   /// Seeks to the next track.
   Future<void> seekToNext() async {
     if (!_useJsEngine) return _fallbackPlayer!.seekToNext();
     final next = (_currentIndex ?? 0) + 1;
-    if (next < _sequence.length) _engine.seekToIndex(next);
+    if (next < _sequence.length) {
+      _callEngine((e) => e.seekToIndex(next));
+    }
   }
 
   /// Seeks to the previous track.
   Future<void> seekToPrevious() async {
     if (!_useJsEngine) return _fallbackPlayer!.seekToPrevious();
     final prev = (_currentIndex ?? 1) - 1;
-    if (prev >= 0) _engine.seekToIndex(prev);
+    if (prev >= 0) {
+      _callEngine((e) => e.seekToIndex(prev));
+    }
+  }
+
+  /// Updates the web prefetch window (seconds).
+  void setCrossfadeDurationSeconds(double seconds) {
+    if (_useJsEngine && _engine != null) {
+      final gdar = _GdarAudioEngine(_engine!);
+      gdar.setCrossfadeDurationSeconds(seconds.toJS);
+    }
   }
 
   /// Updates the web prefetch window (seconds).
   void setWebPrefetchSeconds(int seconds) {
-    if (_useJsEngine) _engine.setPrefetchSeconds(seconds);
+    if (_useJsEngine) {
+      _callEngine((e) => e.setPrefetchSeconds(seconds));
+    }
+  }
+
+  void setHybridBackgroundMode(String mode) {
+    if (_useJsEngine) {
+      _callEngine((e) {
+        final obj = _JSObject(e as JSObject);
+        if (obj.hasOwnProperty('setHybridBackgroundMode'.toJS)) {
+          e.setHybridBackgroundMode(mode.toJS);
+        }
+      });
+    }
+  }
+
+  void setHybridHandoffMode(String mode) {
+    if (_useJsEngine) {
+      _callEngine((e) {
+        final obj = _JSObject(e as JSObject);
+        if (obj.hasOwnProperty('setHybridHandoffMode'.toJS)) {
+          e.setHybridHandoffMode(mode.toJS);
+        }
+      });
+    }
   }
 
   /// Releases all resources.
@@ -461,7 +651,7 @@ class GaplessPlayer {
     if (!_useJsEngine) {
       return _fallbackPlayer!.dispose();
     }
-    _engine.stop();
+    _callEngine((e) => e.stop());
     await _playerStateController.close();
     await _playbackEventController.close();
     await _playingController.close();

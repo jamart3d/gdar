@@ -26,7 +26,7 @@ class DefaultSettings {
   static const bool playRandomOnCompletion = true;
   static const bool nonRandom = false;
   static const bool preventSleep = false;
-  static const bool showPlaybackMessages = false;
+  static const bool showPlaybackMessages = true;
 
   // Web Gapless Engine (web-only)
   static const String audioEngineMode =

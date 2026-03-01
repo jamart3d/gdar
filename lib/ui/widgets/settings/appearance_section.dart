@@ -110,36 +110,39 @@ class _AppearanceSectionState extends State<AppearanceSection> {
                     const SizedBox(height: 8),
                     TvFocusWrapper(
                       borderRadius: BorderRadius.circular(24),
-                      child: SegmentedButton<ThemeMode>(
-                        segments: const [
-                          ButtonSegment(
-                            value: ThemeMode.system,
-                            label: Text('System'),
-                            icon: Icon(Icons.brightness_auto_rounded),
-                          ),
-                          ButtonSegment(
-                            value: ThemeMode.light,
-                            label: Text('Light'),
-                            icon: Icon(Icons.light_mode_rounded),
-                          ),
-                          ButtonSegment(
-                            value: ThemeMode.dark,
-                            label: Text('Dark'),
-                            icon: Icon(Icons.dark_mode_rounded),
-                          ),
-                        ],
-                        selected: {themeProvider.selectedThemeMode},
-                        onSelectionChanged: (Set<ThemeMode> newSelection) {
-                          HapticFeedback.lightImpact();
-                          context
-                              .read<ThemeProvider>()
-                              .setThemeMode(newSelection.first);
-                        },
-                        showSelectedIcon: false,
-                        style: ButtonStyle(
-                          shape: WidgetStateProperty.all(
-                            RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(24)),
+                      child: SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: SegmentedButton<ThemeMode>(
+                          segments: const [
+                            ButtonSegment(
+                              value: ThemeMode.system,
+                              label: Text('System'),
+                              icon: Icon(Icons.brightness_auto_rounded),
+                            ),
+                            ButtonSegment(
+                              value: ThemeMode.light,
+                              label: Text('Light'),
+                              icon: Icon(Icons.light_mode_rounded),
+                            ),
+                            ButtonSegment(
+                              value: ThemeMode.dark,
+                              label: Text('Dark'),
+                              icon: Icon(Icons.dark_mode_rounded),
+                            ),
+                          ],
+                          selected: {themeProvider.selectedThemeMode},
+                          onSelectionChanged: (Set<ThemeMode> newSelection) {
+                            HapticFeedback.lightImpact();
+                            context
+                                .read<ThemeProvider>()
+                                .setThemeMode(newSelection.first);
+                          },
+                          showSelectedIcon: false,
+                          style: ButtonStyle(
+                            shape: WidgetStateProperty.all(
+                              RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(24)),
+                            ),
                           ),
                         ),
                       ),
@@ -418,73 +421,79 @@ class _AppearanceSectionState extends State<AppearanceSection> {
                     showGlow: true,
                     borderRadius:
                         BorderRadius.circular(21), // MATCH INNER RADIUS (24-3)
-                    child: SegmentedButton<double>(
-                      segments: const [
-                        ButtonSegment(
-                          value: 1.0,
-                          label: Text('1x'),
-                          icon: Icon(Icons.speed),
-                        ),
-                        ButtonSegment(
-                          value: 0.5,
-                          label: Text('0.5x'),
-                        ),
-                        ButtonSegment(
-                          value: 0.25,
-                          label: Text('0.25x'),
-                        ),
-                        ButtonSegment(
-                          value: 0.1,
-                          label: Text('0.1x'),
-                        ),
-                      ],
-                      selected: {settingsProvider.rgbAnimationSpeed},
-                      onSelectionChanged: (Set<double> newSelection) {
-                        HapticFeedback.lightImpact();
-                        context
-                            .read<SettingsProvider>()
-                            .setRgbAnimationSpeed(newSelection.first);
-                      },
-                      showSelectedIcon: false,
-                      style: ButtonStyle(
-                        // Match proper inner radius (24 - 3 = 21)
-                        shape: WidgetStateProperty.all(
-                          RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(21)),
-                        ),
-                        // Make border transparent to let gradient show.
-                        // Using a 0-width transparent side is more robust on web than "none".
-                        side: WidgetStateProperty.all(const BorderSide(
-                            color: Colors.transparent, width: 0)),
-                        backgroundColor: WidgetStateProperty.resolveWith<Color>(
-                          (states) {
-                            if (states.contains(WidgetState.selected)) {
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: SegmentedButton<double>(
+                        segments: const [
+                          ButtonSegment(
+                            value: 1.0,
+                            label: Text('1x'),
+                            icon: Icon(Icons.speed),
+                          ),
+                          ButtonSegment(
+                            value: 0.5,
+                            label: Text('0.5x'),
+                          ),
+                          ButtonSegment(
+                            value: 0.25,
+                            label: Text('0.25x'),
+                          ),
+                          ButtonSegment(
+                            value: 0.1,
+                            label: Text('0.1x'),
+                          ),
+                        ],
+                        selected: {settingsProvider.rgbAnimationSpeed},
+                        onSelectionChanged: (Set<double> newSelection) {
+                          HapticFeedback.lightImpact();
+                          context
+                              .read<SettingsProvider>()
+                              .setRgbAnimationSpeed(newSelection.first);
+                        },
+                        showSelectedIcon: false,
+                        style: ButtonStyle(
+                          // Match proper inner radius (24 - 3 = 21)
+                          shape: WidgetStateProperty.all(
+                            RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(21)),
+                          ),
+                          // Make border transparent to let gradient show.
+                          // Using a 0-width transparent side is more robust on web than "none".
+                          side: WidgetStateProperty.all(const BorderSide(
+                              color: Colors.transparent, width: 0)),
+                          backgroundColor:
+                              WidgetStateProperty.resolveWith<Color>(
+                            (states) {
+                              if (states.contains(WidgetState.selected)) {
+                                return Theme.of(context)
+                                    .colorScheme
+                                    .onSurface
+                                    .withValues(alpha: 0.12);
+                              }
+                              return Colors.transparent;
+                            },
+                          ),
+                          foregroundColor:
+                              WidgetStateProperty.resolveWith<Color>(
+                            (states) {
+                              if (states.contains(WidgetState.selected)) {
+                                // Ensure high contrast for the selected state text
+                                return Theme.of(context).colorScheme.onSurface;
+                              }
                               return Theme.of(context)
                                   .colorScheme
                                   .onSurface
-                                  .withValues(alpha: 0.12);
-                            }
-                            return Colors.transparent;
-                          },
-                        ),
-                        foregroundColor: WidgetStateProperty.resolveWith<Color>(
-                          (states) {
-                            if (states.contains(WidgetState.selected)) {
-                              // Ensure high contrast for the selected state text
-                              return Theme.of(context).colorScheme.onSurface;
-                            }
-                            return Theme.of(context)
-                                .colorScheme
-                                .onSurface
-                                .withValues(alpha: 0.7);
-                          },
-                        ),
-                        textStyle: WidgetStateProperty.resolveWith<TextStyle?>(
-                          (states) {
-                            // Rock Salt doesn't support bold well, and we rely on color for highlight.
-                            // Returning null allows it to inherit the Theme's labelLarge (which has the correct font).
-                            return null;
-                          },
+                                  .withValues(alpha: 0.7);
+                            },
+                          ),
+                          textStyle:
+                              WidgetStateProperty.resolveWith<TextStyle?>(
+                            (states) {
+                              // Rock Salt doesn't support bold well, and we rely on color for highlight.
+                              // Returning null allows it to inherit the Theme's labelLarge (which has the correct font).
+                              return null;
+                            },
+                          ),
                         ),
                       ),
                     ),

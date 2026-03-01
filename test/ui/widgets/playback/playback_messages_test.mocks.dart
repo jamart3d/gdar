@@ -8,12 +8,13 @@ import 'dart:ui' as _i8;
 
 import 'package:just_audio/just_audio.dart' as _i3;
 import 'package:mockito/mockito.dart' as _i1;
-import 'package:mockito/src/dummies.dart' as _i11;
+import 'package:mockito/src/dummies.dart' as _i12;
 import 'package:shakedown/models/show.dart' as _i6;
 import 'package:shakedown/models/source.dart' as _i7;
 import 'package:shakedown/providers/audio_provider.dart' as _i4;
 import 'package:shakedown/providers/settings_provider.dart' as _i10;
 import 'package:shakedown/providers/show_list_provider.dart' as _i9;
+import 'package:shakedown/services/audio_cache_service.dart' as _i11;
 import 'package:shakedown/services/gapless_player/gapless_player.dart' as _i2;
 
 // ignore_for_file: type=lint
@@ -186,6 +187,7 @@ class MockAudioProvider extends _i1.Mock implements _i4.AudioProvider {
   void update(
     _i9.ShowListProvider? showListProvider,
     _i10.SettingsProvider? settingsProvider,
+    _i11.AudioCacheService? audioCacheService,
   ) =>
       super.noSuchMethod(
         Invocation.method(
@@ -193,6 +195,7 @@ class MockAudioProvider extends _i1.Mock implements _i4.AudioProvider {
           [
             showListProvider,
             settingsProvider,
+            audioCacheService,
           ],
         ),
         returnValueForMissingStub: null,
@@ -459,11 +462,11 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
   @override
   String get appFont => (super.noSuchMethod(
         Invocation.getter(#appFont),
-        returnValue: _i11.dummyValue<String>(
+        returnValue: _i12.dummyValue<String>(
           this,
           Invocation.getter(#appFont),
         ),
-        returnValueForMissingStub: _i11.dummyValue<String>(
+        returnValueForMissingStub: _i12.dummyValue<String>(
           this,
           Invocation.getter(#appFont),
         ),
@@ -731,11 +734,11 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
   @override
   String get trackTransitionMode => (super.noSuchMethod(
         Invocation.getter(#trackTransitionMode),
-        returnValue: _i11.dummyValue<String>(
+        returnValue: _i12.dummyValue<String>(
           this,
           Invocation.getter(#trackTransitionMode),
         ),
-        returnValueForMissingStub: _i11.dummyValue<String>(
+        returnValueForMissingStub: _i12.dummyValue<String>(
           this,
           Invocation.getter(#trackTransitionMode),
         ),
@@ -749,6 +752,20 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
       ) as double);
 
   @override
+  _i2.HybridHandoffMode get hybridHandoffMode => (super.noSuchMethod(
+        Invocation.getter(#hybridHandoffMode),
+        returnValue: _i2.HybridHandoffMode.buffered,
+        returnValueForMissingStub: _i2.HybridHandoffMode.buffered,
+      ) as _i2.HybridHandoffMode);
+
+  @override
+  _i2.HybridBackgroundMode get hybridBackgroundMode => (super.noSuchMethod(
+        Invocation.getter(#hybridBackgroundMode),
+        returnValue: _i2.HybridBackgroundMode.relisten,
+        returnValueForMissingStub: _i2.HybridBackgroundMode.relisten,
+      ) as _i2.HybridBackgroundMode);
+
+  @override
   bool get useOilScreensaver => (super.noSuchMethod(
         Invocation.getter(#useOilScreensaver),
         returnValue: false,
@@ -758,11 +775,11 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
   @override
   String get oilScreensaverMode => (super.noSuchMethod(
         Invocation.getter(#oilScreensaverMode),
-        returnValue: _i11.dummyValue<String>(
+        returnValue: _i12.dummyValue<String>(
           this,
           Invocation.getter(#oilScreensaverMode),
         ),
-        returnValueForMissingStub: _i11.dummyValue<String>(
+        returnValueForMissingStub: _i12.dummyValue<String>(
           this,
           Invocation.getter(#oilScreensaverMode),
         ),
@@ -792,11 +809,11 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
   @override
   String get oilPalette => (super.noSuchMethod(
         Invocation.getter(#oilPalette),
-        returnValue: _i11.dummyValue<String>(
+        returnValue: _i12.dummyValue<String>(
           this,
           Invocation.getter(#oilPalette),
         ),
-        returnValueForMissingStub: _i11.dummyValue<String>(
+        returnValueForMissingStub: _i12.dummyValue<String>(
           this,
           Invocation.getter(#oilPalette),
         ),
@@ -847,11 +864,11 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
   @override
   String get oilBannerDisplayMode => (super.noSuchMethod(
         Invocation.getter(#oilBannerDisplayMode),
-        returnValue: _i11.dummyValue<String>(
+        returnValue: _i12.dummyValue<String>(
           this,
           Invocation.getter(#oilBannerDisplayMode),
         ),
-        returnValueForMissingStub: _i11.dummyValue<String>(
+        returnValueForMissingStub: _i12.dummyValue<String>(
           this,
           Invocation.getter(#oilBannerDisplayMode),
         ),
@@ -860,11 +877,11 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
   @override
   String get oilBannerFont => (super.noSuchMethod(
         Invocation.getter(#oilBannerFont),
-        returnValue: _i11.dummyValue<String>(
+        returnValue: _i12.dummyValue<String>(
           this,
           Invocation.getter(#oilBannerFont),
         ),
-        returnValueForMissingStub: _i11.dummyValue<String>(
+        returnValueForMissingStub: _i12.dummyValue<String>(
           this,
           Invocation.getter(#oilBannerFont),
         ),
@@ -880,11 +897,11 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
   @override
   String get oilFlatTextPlacement => (super.noSuchMethod(
         Invocation.getter(#oilFlatTextPlacement),
-        returnValue: _i11.dummyValue<String>(
+        returnValue: _i12.dummyValue<String>(
           this,
           Invocation.getter(#oilFlatTextPlacement),
         ),
-        returnValueForMissingStub: _i11.dummyValue<String>(
+        returnValueForMissingStub: _i12.dummyValue<String>(
           this,
           Invocation.getter(#oilFlatTextPlacement),
         ),
@@ -963,11 +980,11 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
   @override
   String get oilAudioGraphMode => (super.noSuchMethod(
         Invocation.getter(#oilAudioGraphMode),
-        returnValue: _i11.dummyValue<String>(
+        returnValue: _i12.dummyValue<String>(
           this,
           Invocation.getter(#oilAudioGraphMode),
         ),
-        returnValueForMissingStub: _i11.dummyValue<String>(
+        returnValueForMissingStub: _i12.dummyValue<String>(
           this,
           Invocation.getter(#oilAudioGraphMode),
         ),
@@ -1206,6 +1223,25 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
         Invocation.method(
           #setCrossfadeDurationSeconds,
           [seconds],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void setHybridHandoffMode(_i2.HybridHandoffMode? mode) => super.noSuchMethod(
+        Invocation.method(
+          #setHybridHandoffMode,
+          [mode],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void setHybridBackgroundMode(_i2.HybridBackgroundMode? mode) =>
+      super.noSuchMethod(
+        Invocation.method(
+          #setHybridBackgroundMode,
+          [mode],
         ),
         returnValueForMissingStub: null,
       );
@@ -2106,11 +2142,11 @@ class MockGaplessPlayer extends _i1.Mock implements _i2.GaplessPlayer {
   @override
   String get engineName => (super.noSuchMethod(
         Invocation.getter(#engineName),
-        returnValue: _i11.dummyValue<String>(
+        returnValue: _i12.dummyValue<String>(
           this,
           Invocation.getter(#engineName),
         ),
-        returnValueForMissingStub: _i11.dummyValue<String>(
+        returnValueForMissingStub: _i12.dummyValue<String>(
           this,
           Invocation.getter(#engineName),
         ),
@@ -2119,11 +2155,11 @@ class MockGaplessPlayer extends _i1.Mock implements _i2.GaplessPlayer {
   @override
   String get selectionReason => (super.noSuchMethod(
         Invocation.getter(#selectionReason),
-        returnValue: _i11.dummyValue<String>(
+        returnValue: _i12.dummyValue<String>(
           this,
           Invocation.getter(#selectionReason),
         ),
-        returnValueForMissingStub: _i11.dummyValue<String>(
+        returnValueForMissingStub: _i12.dummyValue<String>(
           this,
           Invocation.getter(#selectionReason),
         ),
@@ -2201,6 +2237,13 @@ class MockGaplessPlayer extends _i1.Mock implements _i2.GaplessPlayer {
       ) as _i5.Stream<Duration?>);
 
   @override
+  _i5.Stream<String> get engineStateStringStream => (super.noSuchMethod(
+        Invocation.getter(#engineStateStringStream),
+        returnValue: _i5.Stream<String>.empty(),
+        returnValueForMissingStub: _i5.Stream<String>.empty(),
+      ) as _i5.Stream<String>);
+
+  @override
   _i5.Stream<int?> get currentIndexStream => (super.noSuchMethod(
         Invocation.getter(#currentIndexStream),
         returnValue: _i5.Stream<int?>.empty(),
@@ -2274,6 +2317,24 @@ class MockGaplessPlayer extends _i1.Mock implements _i2.GaplessPlayer {
         returnValue: _i5.Future<void>.value(),
         returnValueForMissingStub: _i5.Future<void>.value(),
       ) as _i5.Future<void>);
+
+  @override
+  void setHybridHandoffMode(String? mode) => super.noSuchMethod(
+        Invocation.method(
+          #setHybridHandoffMode,
+          [mode],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void setHybridBackgroundMode(String? mode) => super.noSuchMethod(
+        Invocation.method(
+          #setHybridBackgroundMode,
+          [mode],
+        ),
+        returnValueForMissingStub: null,
+      );
 
   @override
   _i5.Future<void> stop() => (super.noSuchMethod(

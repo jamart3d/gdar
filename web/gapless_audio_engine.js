@@ -1,16 +1,13 @@
 /**
- * GDAR Gapless Audio Engine
+ * GDAR Gapless Audio Engine (Restored Stable Version)
  * True 0ms gapless playback via Web Audio API AudioBufferSourceNode scheduling.
  * Exposed globally as window._gdarAudio for Dart interop.
- *
- * Architecture:
- *   - Compressed ArrayBuffers cached in RAM (~7MB each, streaming not decoded until needed)
- *   - Only current + next track are decoded to PCM AudioBuffer (~100MB each)
- *   - AudioBufferSourceNode.start(exactEndTime) schedules next track on audio thread
- *   - Sample-accurate: the audio rendering thread handles the stitch, not JS event loop
  */
 (function () {
   'use strict';
+
+  const _log = (window._gdarLogger || console);
+  const isBrowser = typeof window !== 'undefined';
 
   // ─── State ────────────────────────────────────────────────────────────────
 
@@ -23,8 +20,7 @@
   let _prefetchSeconds = 30;
 
   // Decoded AudioBuffer cache. Keys = playlist index.
-  // We keep at most 2 (current + next). Evict everything else.
-  const _decoded = {};
+  let _decoded = {};
 
   // Compressed ArrayBuffer cache. Kept around for seek-back.
   const _compressed = {};
@@ -34,11 +30,11 @@
 
   // Active AudioBufferSourceNode for current track.
   let _currentSource = null;
-  let _currentTrackStartContextTime = 0; // AudioContext.currentTime when track playback began
-  let _currentTrackStartOffset = 0;       // seek offset within the track (seconds)
-  let _currentTrackDuration = 0;          // duration of current track (seconds)
+  let _currentTrackStartContextTime = 0;
+  let _currentTrackStartOffset = 0;
+  let _currentTrackDuration = 0;
 
-  // Pending scheduled source (next track, already scheduled via .start(endTime)).
+  // Pending scheduled source (next track).
   let _scheduledSource = null;
   let _scheduledIndex = -1;
   let _scheduledStartContextTime = 0;
@@ -51,16 +47,17 @@
   // Position polling.
   let _positionTimer = null;
 
-  // Real-time progress of next track buffering (seconds).
+  // Real-time progress of track buffering (seconds).
+  let _currentTrackBufferedSeconds = 0;
   let _nextTrackBufferedSeconds = 0;
   let _isPrefetching = false;
   let _isTransitioning = false;
 
-  // Watchdog — detects missed onended events (screen off / background tab).
+  // Watchdog.
   let _watchdogTimer = null;
   let _expectedEndContextTime = 0;
 
-  // Processing state communicated to Dart: 'idle', 'loading', 'buffering', 'ready'.
+  // Processing state communicated to Dart.
   let _loadingState = 'idle';
 
   // Callbacks registered by Dart.
@@ -68,13 +65,10 @@
   let _onTrackChange = null;
   let _onError = null;
 
+  // Safe Logger Utility
+
   // ─── AudioContext Init ────────────────────────────────────────────────────
 
-  /**
-   * Creates the AudioContext and master GainNode.
-   * Must be called after a user gesture (Safari requirement).
-   * Also registers a one-time capture-phase click handler to handle lazy init.
-   */
   function _ensureContext() {
     if (_ctx) return;
     const Ctx = window.AudioContext || window.webkitAudioContext;
@@ -86,36 +80,43 @@
     _gainNode = _ctx.createGain();
     _gainNode.gain.value = 1.0;
     _gainNode.connect(_ctx.destination);
+    _log.log('[gdar engine] AudioContext created');
   }
 
-  // Safari: resume AudioContext on first user interaction.
-  document.addEventListener('click', function _resumeCtx() {
-    if (_ctx && _ctx.state === 'suspended') {
-      _ctx.resume().catch(() => { });
-    }
-    if (!_ctx && _playing) {
-      _ensureContext();
-    }
-  }, { capture: true, once: false });
+  function _registerListeners() {
+    if (window._gdarListenersRegistered) return;
 
-  document.addEventListener('touchstart', function () {
-    if (_ctx && _ctx.state === 'suspended') {
-      _ctx.resume().catch(() => { });
-    }
-  }, { capture: true, passive: true });
+    document.addEventListener('click', function _resumeCtx() {
+      if (_ctx && _ctx.state === 'suspended') {
+        _ctx.resume().catch(() => { });
+      }
+      if (!_ctx && _playing) {
+        _ensureContext();
+      }
+    }, { capture: true, once: false });
 
-  // Screen restore: resume AudioContext and immediately check for missed track endings.
-  document.addEventListener('visibilitychange', function () {
-    if (document.visibilityState !== 'visible') return;
-    if (_ctx && _ctx.state === 'suspended' && _playing) {
-      _ctx.resume().catch(() => { });
-    }
-    _checkWatchdog();
-  });
+    document.addEventListener('touchstart', function () {
+      if (_ctx && _ctx.state === 'suspended') {
+        _ctx.resume().catch(() => { });
+      }
+    }, { capture: true, passive: true });
+
+    document.addEventListener('visibilitychange', function () {
+      if (document.visibilityState !== 'visible') return;
+      if (_ctx && _ctx.state === 'suspended' && _playing) {
+        _ctx.resume().catch(() => { });
+      }
+      _checkWatchdog();
+    });
+
+    window._gdarListenersRegistered = true;
+    _log.log('[gdar engine] Global listeners registered');
+  }
 
   // ─── Playlist Management ──────────────────────────────────────────────────
 
   function _setPlaylist(tracks, startIndex) {
+    _log.log('[gdar engine] setPlaylist', tracks?.length, startIndex);
     _stopCurrentSource();
     _cancelPrefetch();
     _clearScheduled();
@@ -129,10 +130,6 @@
     _playlist = tracks || [];
     _currentIndex = startIndex != null ? startIndex : 0;
     _loadingState = 'idle';
-    // Do not inherently reset _playing to false if we literally just asked it to start;
-    // however, the standard convention is that loading a new list implies stopping 
-    // until explicitly told to play again. The Dart audio_provider now ensures
-    // `play()` is called *after* this.
     _playing = false;
     _emitState();
   }
@@ -146,13 +143,8 @@
 
   // ─── Fetch + Decode Pipeline ──────────────────────────────────────────────
 
-  /**
-   * Fetches the MP3 at the given playlist index and stores the compressed
-   * ArrayBuffer. Returns a Promise<ArrayBuffer>.
-   */
   function _fetchCompressed(index) {
     if (_compressed[index]) {
-      // If already in cache, ensure progress is reported as 100%
       const track = _playlist[index];
       if (track && _currentIndex + 1 === index) {
         _nextTrackBufferedSeconds = track.duration || 0;
@@ -169,93 +161,122 @@
     const controller = new AbortController();
     _abortControllers[index] = controller;
 
+    _log.log('[gdar engine] Fetching', index, track.url);
+
     return fetch(track.url, { signal: controller.signal })
       .then(async r => {
-        if (!r.ok) throw new Error('HTTP ' + r.status + ' fetching ' + track.url);
+        if (!r.ok) {
+          _log.error('[gdar engine] Failed to fetch track:', track.url);
+          throw new Error('HTTP ' + r.status + ' fetching ' + track.url);
+        }
 
         const contentLength = +r.headers.get('Content-Length');
         const reader = r.body.getReader();
         let receivedLength = 0;
         let chunks = [];
 
+        let lastEmit = 0;
+        let chunkCount = 0;
+
         while (true) {
           const { done, value } = await reader.read();
           if (done) break;
           chunks.push(value);
           receivedLength += value.length;
+          chunkCount++;
 
-          // Update buffering progress for the next track
-          if (_currentIndex + 1 === index) {
-            if (contentLength) {
-              _nextTrackBufferedSeconds = (receivedLength / contentLength) * (track.duration || 0);
-            } else {
-              // Fallback: estimate progress if Content-Length is missing
-              // (assume average 10MB song if unknown)
-              _nextTrackBufferedSeconds = Math.min(track.duration || 0, (receivedLength / 10000000) * (track.duration || 0));
+          // Yield to event loop every 100 chunks to prevent main-thread starvation
+          if (chunkCount % 100 === 0) {
+            await new Promise(r => setTimeout(r, 0));
+          }
+
+          if (_currentIndex === index || _currentIndex + 1 === index) {
+            const now = performance.now();
+            if (now - lastEmit > 500) { // Throttled to 2Hz for less UI overhead
+              const progress = contentLength
+                ? (receivedLength / contentLength) * (track.duration || 0)
+                : Math.min(track.duration || 0, (receivedLength / 10000000) * (track.duration || 0));
+
+              if (index === _currentIndex) _currentTrackBufferedSeconds = progress;
+              else if (index === _currentIndex + 1) _nextTrackBufferedSeconds = progress;
+
+              _emitState();
+              lastEmit = now;
             }
-            _emitState();
           }
         }
 
+        const finalizeStart = performance.now();
         let all = new Uint8Array(receivedLength);
-        let position = 0;
+        let pos = 0;
         for (let chunk of chunks) {
-          all.set(chunk, position);
-          position += chunk.length;
+          all.set(chunk, pos);
+          pos += chunk.length;
         }
 
         const buf = all.buffer;
         _compressed[index] = buf;
+
+        // Ensure state marks 100% buffer on completion
+        if (index === _currentIndex) _currentTrackBufferedSeconds = track.duration || 0;
+        if (index === _currentIndex + 1) _nextTrackBufferedSeconds = track.duration || 0;
+        _emitState();
+
         delete _abortControllers[index];
+        _log.log(`[gdar engine] Fetch complete for index ${index}. Finalization (buffer concat) took ${(performance.now() - finalizeStart).toFixed(2)}ms`);
         return buf;
       })
       .catch(err => {
         delete _abortControllers[index];
-        _nextTrackBufferedSeconds = 0;
-        // Don't throw if it was explicitly aborted to avoid console spam
+        if (index === _currentIndex) _currentTrackBufferedSeconds = 0;
+        if (index === _currentIndex + 1) _nextTrackBufferedSeconds = 0;
         if (err.name === 'AbortError') return Promise.reject(new Error('Aborted'));
         throw err;
       });
   }
 
-  /** Maximum compressed file size (bytes) before falling back. 100MB. */
-  const _MAX_COMPRESSED_BYTES = 100 * 1024 * 1024;
+  const _decodingPromises = {};
 
-  /**
-   * Fetches + decodes the track at index into an AudioBuffer.
-   * Caches the decoded result. Returns Promise<AudioBuffer>.
-   * Rejects tracks larger than _MAX_COMPRESSED_BYTES to prevent OOM.
-   */
   function _decode(index) {
     if (_decoded[index]) return Promise.resolve(_decoded[index]);
-    if (!_ctx) _ensureContext();
+    if (_decodingPromises[index]) {
+      _log.log('[gdar engine] Using existing decoding promise for index', index);
+      return _decodingPromises[index];
+    }
+    _ensureContext();
 
-    return _fetchCompressed(index).then(compressed => {
-      if (compressed.byteLength > _MAX_COMPRESSED_BYTES) {
-        console.warn('[gdar engine] Track', index, 'is', (compressed.byteLength / (1024 * 1024)).toFixed(1), 'MB — exceeds decode limit. Skipping Web Audio decode.');
-        return Promise.reject(new Error('Track too large for Web Audio decode (' + (compressed.byteLength / (1024 * 1024)).toFixed(1) + ' MB)'));
-      }
-      // decodeAudioData requires a copy (it detaches the ArrayBuffer).
-      const copy = compressed.slice(0);
-      return _ctx.decodeAudioData(copy);
+    const p = _fetchCompressed(index).then(compressed => {
+      // decodeAudioData detaches the input buffer. 
+      // We allow it to happen to save a multi-megabyte memory clone.
+      return _ctx.decodeAudioData(compressed);
     }).then(audioBuf => {
       _decoded[index] = audioBuf;
+      delete _decodingPromises[index];
+      // Clean up compressed data after successful decode to save memory
+      delete _compressed[index];
       return audioBuf;
+    }).catch(err => {
+      delete _decodingPromises[index];
+      _log.error('[gdar engine] Decode failed for index', index, err);
+      throw err;
     });
+
+    _decodingPromises[index] = p;
+    return p;
   }
 
-  /** Evict decoded and compressed buffers for all indices except current and next. Cancels pending fetches. */
   function _evictOldBuffers() {
+    const start = performance.now();
     const keep = new Set([_currentIndex, _currentIndex + 1]);
+    let count = 0;
     Object.keys(_decoded).forEach(k => {
       if (!keep.has(parseInt(k, 10))) {
         delete _decoded[k];
+        count++;
       }
     });
     Object.keys(_compressed).forEach(k => {
-      if (!keep.has(parseInt(k, 10))) {
-        delete _compressed[k];
-      }
+      if (!keep.has(parseInt(k, 10))) delete _compressed[k];
     });
     Object.keys(_abortControllers).forEach(k => {
       if (!keep.has(parseInt(k, 10))) {
@@ -263,17 +284,44 @@
         delete _abortControllers[k];
       }
     });
+    if (count > 0) {
+      _log.log(`[gdar engine] Evicted ${count} old buffers in ${(performance.now() - start).toFixed(2)}ms`);
+    }
   }
 
   // ─── Playback ─────────────────────────────────────────────────────────────
 
-  /**
-   * Starts playing the track at _currentIndex from offsetSeconds.
-   * Requires the AudioBuffer to already be decoded (_decoded[_currentIndex]).
-   */
+  let _startedIndex = -1;
+  let _loadingIndex = -1;
+  let _lastStartTrackTime = 0;
+
   function _startTrack(audioBuf, offsetSeconds, startContextTime) {
+    const targetIdx = _currentIndex;
+    const targetTime = startContextTime != null ? startContextTime : _ctx.currentTime;
+
+    // Guard against starting the same track multiple times if already active
+    if (_currentSource && _startedIndex === targetIdx && !startContextTime) {
+      _log.log('[gdar engine] Blocked redundant start for active index', targetIdx);
+      return;
+    }
+
+    // Defensive: if we are already transitioning or loading this exact buffer/offset combo
+    // Increase tolerance to 50ms to handle context time drift between rapid calls
+    if (_startedIndex === targetIdx && Math.abs(_currentTrackStartContextTime - targetTime) < 0.05) {
+      _log.log('[gdar engine] Blocked redundant context-time match for index', targetIdx);
+      return;
+    }
+
+    // Guard against rapid re-starts (within 100ms) for the same index
+    if (_startedIndex === targetIdx && (performance.now() - _lastStartTrackTime) < 100) {
+      _log.log('[gdar engine] Blocked rapid re-start for index', targetIdx);
+      return;
+    }
+
     _stopCurrentSource();
     _loadingState = 'ready';
+    _startedIndex = targetIdx;
+    _lastStartTrackTime = performance.now();
 
     const src = _ctx.createBufferSource();
     src.buffer = audioBuf;
@@ -281,24 +329,15 @@
 
     _currentTrackDuration = audioBuf.duration;
     _currentTrackStartOffset = offsetSeconds || 0;
-    _currentTrackStartContextTime = startContextTime != null
-      ? startContextTime
-      : _ctx.currentTime;
+    _currentTrackStartContextTime = targetTime;
 
-    console.log('[gdar engine] Starting track', _currentIndex, 'at', _currentTrackStartContextTime, 'duration', _currentTrackDuration);
+    _log.log('[gdar engine] Starting track', _currentIndex, 'at', _currentTrackStartContextTime);
 
     src.start(_currentTrackStartContextTime, _currentTrackStartOffset);
-
-    // Record the expected end time so the watchdog can detect missed onended events.
-    _expectedEndContextTime = _currentTrackStartContextTime
-      + (_currentTrackDuration - _currentTrackStartOffset);
+    _expectedEndContextTime = _currentTrackStartContextTime + (_currentTrackDuration - _currentTrackStartOffset);
 
     src.onended = function () {
-      // Only advance if this source is still the active one
-      // (not already replaced by a seek or stop).
-      if (_currentSource === src) {
-        _onTrackEnded();
-      }
+      if (_currentSource === src) _onTrackEnded();
     };
 
     _currentSource = src;
@@ -319,6 +358,8 @@
     _stopPositionTimer();
     _stopWatchdog();
     _expectedEndContextTime = 0;
+    // DO NOT clear _decoded here anymore, it breaks instantaneous seeking.
+    // Cache is managed via _evictOldBuffers and _setPlaylist.
   }
 
   function _clearScheduled() {
@@ -330,7 +371,6 @@
     _scheduledIndex = -1;
   }
 
-  /** Called when the current track's AudioBufferSourceNode fires onended. */
   function _onTrackEnded() {
     if (_isTransitioning) return;
     _isTransitioning = true;
@@ -338,46 +378,29 @@
     const wasIndex = _currentIndex;
     _currentIndex++;
 
-    console.log('[gdar engine] Track ended. Advancing from', wasIndex, 'to', _currentIndex);
-
     if (_currentIndex >= _playlist.length) {
-      // End of playlist.
       _playing = false;
       _currentSource = null;
       _currentTrackDuration = 0;
       _stopPositionTimer();
-      _emitTrackChange(_currentIndex - 1, -1);
+      _emitTrackChange(wasIndex, -1);
       _emitState();
       _isTransitioning = false;
       return;
     }
 
-    // The next track was hopefully pre-scheduled; _scheduledSource is now
-    // the active one.
     if (_scheduledSource && _scheduledIndex === _currentIndex) {
-      console.log('[gdar engine] Promoting scheduled track', _currentIndex);
-
-      // Disconnect the old source if it exists.
-      if (_currentSource) {
-        _currentSource.onended = null;
-        _currentSource.disconnect();
-      }
-
       _currentSource = _scheduledSource;
       _scheduledSource = null;
       _scheduledIndex = -1;
       _currentTrackStartOffset = 0;
       _nextTrackBufferedSeconds = 0;
 
-      // UPDATE MISSING STATE:
-      _currentTrackStartContextTime = _scheduledStartContextTime;
+      // CRITICAL FIX: Update duration and start context time from the promoted scheduled source
       _currentTrackDuration = _currentSource.buffer.duration;
-
-      // CRITICAL: Update the watchdog's expected end time for the NEW track.
-      // Without this, the watchdog fires immediately thinking the previous track just ended again.
+      _currentTrackStartContextTime = _scheduledStartContextTime;
       _expectedEndContextTime = _currentTrackStartContextTime + _currentTrackDuration;
 
-      // Re-set onended for the now-active source.
       const activeSrc = _currentSource;
       activeSrc.onended = function () {
         if (_currentSource === activeSrc) _onTrackEnded();
@@ -393,10 +416,8 @@
       _updateMediaSession();
       _isTransitioning = false;
     } else {
-      // Scheduling missed (decode wasn't ready in time). Fall back to a
-      // regular play with a brief gap.
       _stopCurrentSource();
-      _currentTrackDuration = 0; // Reset duration while loading
+      _currentTrackDuration = 0;
       _nextTrackBufferedSeconds = 0;
       _loadingState = 'loading';
       const targetIndex = _currentIndex;
@@ -404,53 +425,39 @@
       _emitState();
       _decode(_currentIndex).then(buf => {
         _isTransitioning = false;
-        if (_currentIndex === targetIndex) { // guard stale calls
+        if (_currentIndex === targetIndex) {
           _startTrack(buf, 0, null);
-          // Only emit track change if we didn't already emit it above
         }
       }).catch(err => {
         _isTransitioning = false;
-        if (_currentIndex !== targetIndex || err.message === 'Aborted') return;
         _emitError('Decode error: ' + err.message);
       });
     }
   }
 
-  // ─── Schedule Next Track ──────────────────────────────────────────────────
-
-  /**
-   * Computes how many seconds remain in the current track and either
-   * schedules a prefetch timer or (if already decoded) immediately schedules
-   * the next AudioBufferSourceNode.
-   */
   function _schedulePrefetch() {
     _cancelPrefetch();
     const nextIndex = _currentIndex + 1;
     if (nextIndex >= _playlist.length) return;
 
     const remaining = _getRemainingSeconds();
-    if (remaining <= 0) return; // Wait for track to actually have a duration
+    if (remaining <= 0) return;
 
-    // 1. Fetch Window (Prefetch + 2s): The data starts downloading.
-    // User sees "Next: 00:01..." ticking up.
     const fetchIn = Math.max(0, (remaining - (_prefetchSeconds + 2)) * 1000);
-
-    // 2. Decode Window (Prefetch): The data is converted to PCM and scheduled.
     const decodeIn = Math.max(0, (remaining - _prefetchSeconds) * 1000);
 
-    console.log('[gdar engine] Scheduling prefetch for index', nextIndex, 'in', fetchIn, 'ms /', decodeIn, 'ms');
+    const timeSinceStart = performance.now() - _lastStartTrackTime;
+    const settleDelay = Math.max(0, 2000 - timeSinceStart);
 
     _prefetchTimer = setTimeout(() => {
-      console.log('[gdar engine] Starting fetch for index', nextIndex);
       _isPrefetching = true;
       _fetchCompressed(nextIndex).catch(() => { });
       _emitState();
-    }, fetchIn);
+    }, fetchIn + settleDelay);
 
     _decodeTimer = setTimeout(() => {
-      console.log('[gdar engine] Starting decode/schedule for index', nextIndex);
       _fetchAndScheduleNext(nextIndex);
-    }, decodeIn);
+    }, decodeIn + settleDelay);
   }
 
   function _cancelPrefetch() {
@@ -458,6 +465,15 @@
     if (_decodeTimer) { clearTimeout(_decodeTimer); _decodeTimer = null; }
     _fetchingIndex = -1;
     _isPrefetching = false;
+
+    // Abort all ongoing fetch requests to save bandwidth and CPU
+    Object.keys(_abortControllers).forEach(index => {
+      try {
+        _log.log('[gdar engine] Aborting orphaned fetch for index', index);
+        _abortControllers[index].abort();
+      } catch (_) { }
+      delete _abortControllers[index];
+    });
   }
 
   function _fetchAndScheduleNext(nextIndex) {
@@ -466,29 +482,21 @@
 
     _decode(nextIndex).then(buf => {
       if (!_playing || _currentIndex + 1 !== nextIndex) return;
-
-      // Calculate the exact AudioContext time when current track will end.
       const remaining = _getRemainingSeconds();
       const endTime = _ctx.currentTime + remaining;
-
       const src = _ctx.createBufferSource();
       src.buffer = buf;
       src.connect(_gainNode);
       src.start(endTime, 0);
-      // onended will be attached in _onTrackEnded when this becomes active.
-
       _clearScheduled();
       _scheduledSource = src;
       _scheduledIndex = nextIndex;
-      // Store the exact context time when this next track will start.
       _scheduledStartContextTime = endTime;
       _emitState();
     }).catch(err => {
-      _emitError('Prefetch/decode error for track ' + nextIndex + ': ' + err.message);
+      _log.error('Prefetch error:', err);
     });
   }
-
-  // ─── Position Tracking ────────────────────────────────────────────────────
 
   function _getCurrentPositionSeconds() {
     if (!_ctx || !_playing) return _currentTrackStartOffset;
@@ -509,36 +517,24 @@
     if (_positionTimer) { clearInterval(_positionTimer); _positionTimer = null; }
   }
 
-  // ─── Watchdog ─────────────────────────────────────────────────────────────
-
-  /**
-   * Starts a 500ms interval that detects track endings missed while the
-   * screen was off or the JS thread was suspended by the browser.
-   */
   function _startWatchdog() {
     _stopWatchdog();
-    _watchdogTimer = setInterval(_checkWatchdog, 1000);
+    _watchdogTimer = setInterval(_checkWatchdog, 500);
   }
 
   function _stopWatchdog() {
     if (_watchdogTimer) { clearInterval(_watchdogTimer); _watchdogTimer = null; }
   }
 
-  /**
-   * Called every 500ms and immediately on visibilitychange. Compares
-   * AudioContext.currentTime against the expected track end time. If the
-   * JS thread was suspended (screen off), onended may not have fired —
-   * this catches that and manually advances the playlist.
-   */
   function _checkWatchdog() {
     if (!_playing || !_ctx || _currentIndex < 0) return;
     if (_expectedEndContextTime <= 0) return;
-    if (_ctx.currentTime > _expectedEndContextTime + 0.25) {
-      // Track has ended but onended was not dispatched. Advance manually.
+    if (_ctx.currentTime > _expectedEndContextTime + 0.5) {
+      _log.warn('[gdar engine] Watchdog detected missed ending');
       const missedSrc = _currentSource;
       if (missedSrc) {
-        missedSrc.onended = null; // prevent double-fire
-        try { missedSrc.stop(); } catch (_) { } // stop audible overlap
+        missedSrc.onended = null;
+        try { missedSrc.stop(); } catch (_) { }
         missedSrc.disconnect();
       }
       _currentSource = null;
@@ -548,27 +544,32 @@
     }
   }
 
-  // ─── Callbacks ───────────────────────────────────────────────────────────
-
   function _emitState() {
     if (_onStateChange) {
       try {
-        var ps = _loadingState;
+        let ps = _loadingState;
         if (!_ctx) ps = 'idle';
         else if (_currentIndex < 0) ps = 'idle';
 
         let nextBuf = 0;
         let nextTotal = 0;
 
-        // The "Next" progress should tick up during the background fetch phase.
-        // It should also show the full duration once decoded (scheduled).
-        nextBuf = _nextTrackBufferedSeconds;
-        const nextTrack = _playlist[_currentIndex + 1];
-        if (nextTrack) {
-          nextTotal = nextTrack.duration || 0;
+        const currentPos = _getCurrentPositionSeconds();
+        const timeRemaining = _currentTrackDuration - currentPos;
+
+        let currentBuf = _currentTrackBufferedSeconds || 0;
+        if (_decoded[_currentIndex]) currentBuf = _currentTrackDuration;
+        // Safety: Buffer cannot be less than position
+        currentBuf = Math.max(currentBuf, currentPos);
+
+        // Message Audit: Emits real-time fetch progress as nextTrackBuffered.
+        // We now report prefetch progress as soon as it starts, regardless of time remaining.
+        if (_isPrefetching || _fetchingIndex === (_currentIndex + 1)) {
+          nextBuf = _nextTrackBufferedSeconds;
+          const nextTrack = _playlist[_currentIndex + 1];
+          if (nextTrack) nextTotal = nextTrack.duration || 0;
         }
 
-        // If already scheduled, use the actual buffer duration
         if (_scheduledSource && _scheduledIndex === (_currentIndex + 1)) {
           nextBuf = _scheduledSource.buffer.duration;
           nextTotal = nextBuf;
@@ -577,12 +578,14 @@
         _onStateChange({
           playing: _playing,
           index: _currentIndex,
-          position: _getCurrentPositionSeconds(),
+          position: currentPos,
           duration: _currentTrackDuration,
-          currentTrackBuffered: _currentTrackDuration, // Web Audio buffers are fully decoded in memory
+          currentTrackBuffered: currentBuf,
           nextTrackBuffered: nextBuf,
           nextTrackTotal: nextTotal,
+          playlistLength: _playlist.length,
           processingState: ps,
+          contextState: _ctx ? _ctx.state : 'none',
         });
       } catch (_) { }
     }
@@ -595,27 +598,12 @@
   }
 
   function _emitError(msg) {
-    console.error('[gdar audio]', msg);
+    _log.error('[gdar engine]', msg);
     if (_onError) {
       try { _onError({ message: msg }); } catch (_) { }
     }
   }
 
-  // ─── Media Session API ────────────────────────────────────────────────────
-
-  let _mediaSessionRegistered = false;
-
-  /** Register action handlers once. Called from init(). */
-  function _registerMediaSessionHandlers() {
-    if (!('mediaSession' in navigator) || _mediaSessionRegistered) return;
-    navigator.mediaSession.setActionHandler('play', () => api.play());
-    navigator.mediaSession.setActionHandler('pause', () => api.pause());
-    navigator.mediaSession.setActionHandler('nexttrack', () => api.seekToIndex(_currentIndex + 1));
-    navigator.mediaSession.setActionHandler('previoustrack', () => api.seekToIndex(Math.max(0, _currentIndex - 1)));
-    _mediaSessionRegistered = true;
-  }
-
-  /** Update metadata only. Called on every track change. */
   function _updateMediaSession() {
     if (!('mediaSession' in navigator)) return;
     const track = _playlist[_currentIndex];
@@ -625,84 +613,123 @@
       artist: track.artist || '',
       album: track.album || '',
     });
+    navigator.mediaSession.setActionHandler('play', () => api.play());
+    navigator.mediaSession.setActionHandler('pause', () => api.pause());
+    navigator.mediaSession.setActionHandler('nexttrack', () => api.seekToIndex(_currentIndex + 1));
+    navigator.mediaSession.setActionHandler('previoustrack', () => api.seekToIndex(_currentIndex - 1));
   }
 
-  // ─── Public API ──────────────────────────────────────────────────────────
-
   const api = {
+    engineType: 'Web Audio (Gapless)',
 
-    /** Must be called once at app startup. Safe to call multiple times. */
     init: function () {
+      _registerListeners();
       _ensureContext();
-      _registerMediaSessionHandlers();
     },
 
-    /** Set the full playlist and optionally start at an index. */
+    syncState: function (index, position, shouldPlay) {
+      _log.log('[gdar engine] syncState', index, position, shouldPlay);
+      _currentIndex = index;
+      _currentTrackStartOffset = position;
+      _playing = shouldPlay;
+      if (shouldPlay) this.play();
+      else _emitState();
+    },
+
+    prepareToPlay: function (index) {
+      _log.log('[gdar engine] prepareToPlay', index);
+      return _decode(index);
+    },
+
     setPlaylist: function (tracks, startIndex) {
-      _setPlaylist(tracks, startIndex || 0);
+      _setPlaylist(tracks, startIndex);
     },
 
-    /** Append additional tracks to the end of the playlist. */
     appendTracks: function (tracks) {
       _appendTracks(tracks);
     },
 
-    /** Begin or resume playback of the current track. */
     play: function () {
       _ensureContext();
       if (_ctx.state === 'suspended') {
-        _ctx.resume().then(() => api.play());
-        return;
-      }
-      if (_playing) return;
-
-      if (_currentSource) {
-        // Was paused via context suspend; already resumed above.
-        _playing = true;
-        _startPositionTimer();
-        _emitState();
+        if (!_ctx._isResuming) {
+          _ctx._isResuming = true;
+          _ctx.resume().then(() => {
+            _ctx._isResuming = false;
+            if (_playing) api.play();
+          }).catch(err => {
+            _ctx._isResuming = false;
+            _log.error('[gdar engine] AudioContext resume failed:', err);
+          });
+        }
         return;
       }
 
       const index = Math.max(0, _currentIndex);
+      if (_playing && _currentSource && _currentIndex === index) return;
+      if (_loadingIndex === index && _loadingState === 'loading') {
+        _log.log('[gdar engine] Play ignored: already loading index', index);
+        return;
+      }
+
       _currentIndex = index;
+      _loadingIndex = index;
       _loadingState = 'loading';
       _emitState();
+
       _decode(index).then(buf => {
         if (_currentIndex !== index) return;
+        _loadingIndex = -1;
         _startTrack(buf, _currentTrackStartOffset, null);
         _emitTrackChange(-1, index);
       }).catch(err => {
-        if (_currentIndex !== index || err.message === 'Aborted') return;
+        _loadingIndex = -1;
         _emitError('Play decode error: ' + err.message);
       });
     },
 
-    /** Pause playback by suspending the AudioContext. */
+    _decode: function (index) {
+      if (_decoded[index]) return Promise.resolve(_decoded[index]);
+      if (_isPureWebAudio && _isPureWebAudio()) {
+        // Optimization: If we are in pure mode, we can pre-evict more aggressively
+        _evictOldBuffers();
+      }
+
+      return _fetchCompressed(index).then(compressed => {
+        const decodeStart = performance.now();
+        return _ctx.decodeAudioData(compressed).then(decoded => {
+          _log.log(`[gdar engine] Decode complete for index ${index} in ${(performance.now() - decodeStart).toFixed(2)}ms`);
+          _decoded[index] = decoded;
+          return decoded;
+        });
+      })
+        .catch(err => {
+          _log.error(`[gdar engine] Decode FAILED for index ${index}:`, err.message);
+          throw err;
+        });
+    },
+
     pause: function () {
       if (!_ctx || !_playing) return;
       _playing = false;
-      // Capture position before suspend.
       _currentTrackStartOffset = _getCurrentPositionSeconds();
       _ctx.suspend().then(() => {
         _stopPositionTimer();
         _stopCurrentSource();
         _clearScheduled();
         _cancelPrefetch();
-        delete _decoded[_currentIndex + 1]; // free next's decoded PCM buffer (~100MB), keep compressed (~7MB)
         _emitState();
       });
     },
 
-    /** Stop playback and reset to idle. */
     stop: function () {
       _stopCurrentSource();
       _clearScheduled();
       _cancelPrefetch();
       _playing = false;
       _loadingState = 'idle';
-      _currentTrackStartOffset = 0;
       _currentTrackDuration = 0;
+      _currentTrackBufferedSeconds = 0;
       _nextTrackBufferedSeconds = 0;
       Object.keys(_abortControllers).forEach(k => {
         try { _abortControllers[k].abort(); } catch (_) { }
@@ -711,7 +738,6 @@
       _emitState();
     },
 
-    /** Seek to a position (seconds) within the current track. */
     seek: function (seconds) {
       if (_currentIndex < 0 || _currentIndex >= _playlist.length) return;
       const wasPlaying = _playing;
@@ -719,65 +745,47 @@
       _clearScheduled();
       _cancelPrefetch();
       _currentTrackStartOffset = seconds;
-      _playing = false;
-
       if (wasPlaying) {
         _loadingState = 'loading';
-        const targetIndex = _currentIndex;
         _emitState();
         _decode(_currentIndex).then(buf => {
-          if (_currentIndex !== targetIndex) return;
           _startTrack(buf, seconds, null);
-        }).catch(err => {
-          if (_currentIndex !== targetIndex || err.message === 'Aborted') return;
-          _emitError('Seek decode error: ' + err.message);
-        });
+        }).catch(err => _emitError('Seek error: ' + err.message));
       } else {
         _emitState();
       }
     },
 
-    /** Jump to a specific playlist index and begin playing. */
     seekToIndex: function (index) {
       if (index < 0 || index >= _playlist.length) return;
+      const wasPlaying = _playing;
+      const oldIndex = _currentIndex;
       _stopCurrentSource();
       _clearScheduled();
       _cancelPrefetch();
-      const wasPlaying = _playing;
-      const oldIndex = _currentIndex;
       _currentIndex = index;
       _currentTrackStartOffset = 0;
-      _playing = false;
-
-      _evictOldBuffers(); // Flush RAM and abort fetches for previous tracks
-
-      // Keep the compressed buffer; we'll re-decode.
-      delete _decoded[index]; // force fresh decode from compressed cache
-
-      if (wasPlaying) {
+      _evictOldBuffers();
+      if (wasPlaying || _loadingState === 'loading') {
         _loadingState = 'loading';
         _emitState();
         _decode(index).then(buf => {
           if (_currentIndex !== index) return;
           _startTrack(buf, 0, null);
           _emitTrackChange(oldIndex, index);
-        }).catch(err => {
-          if (_currentIndex !== index || err.message === 'Aborted') return;
-          _emitError('SeekToIndex decode error: ' + err.message);
-        });
+        }).catch(err => _emitError('SeekToIndex error: ' + err.message));
       } else {
         _emitTrackChange(oldIndex, index);
         _emitState();
       }
     },
 
-    /** Update the prefetch window (seconds before track end to start loading next). */
     setPrefetchSeconds: function (s) {
       _prefetchSeconds = Math.max(5, Math.min(120, s));
     },
 
-    /** Returns a snapshot of current engine state. */
     getState: function () {
+      const ps = _loadingState;
       return {
         playing: _playing,
         index: _currentIndex,
@@ -787,23 +795,15 @@
         nextTrackBuffered: _nextTrackBufferedSeconds || (_scheduledSource ? _scheduledSource.buffer.duration : 0),
         nextTrackTotal: (_playlist[_currentIndex + 1] ? _playlist[_currentIndex + 1].duration : 0) || (_scheduledSource ? _scheduledSource.buffer.duration : 0),
         playlistLength: _playlist.length,
-        processingState: _loadingState,
-        decodedIndices: Object.keys(_decoded).map(Number),
-        compressedIndices: Object.keys(_compressed).map(Number),
+        processingState: ps,
         contextState: _ctx ? _ctx.state : 'none',
       };
     },
 
-    /** Register a callback invoked ~4×/sec with current engine state. */
     onStateChange: function (cb) { _onStateChange = cb; },
-
-    /** Register a callback invoked on track index changes. */
     onTrackChange: function (cb) { _onTrackChange = cb; },
-
-    /** Register a callback invoked on errors. */
     onError: function (cb) { _onError = cb; },
   };
 
   window._gdarAudio = api;
-
 })();

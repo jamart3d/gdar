@@ -15,7 +15,8 @@ A Flutter application for browsing and playing concert recordings of the Gratefu
 
 - **Multi-Platform Optimization**:
   - **Google TV & Android TV**: Optimized dual-pane layout for large screens with full D-pad navigation support.
-  - **PWA (Progressive Web App)**: Installable on Mobile/Desktop browsers for a native-like experience with offline capabilities.
+  - **Premium Web UI**: Desktop-class interface with resizable panels, keyboard shortcuts, and intelligent state restoration.
+  - **PWA (Progressive Web App)**: Installable on Mobile/Desktop browsers for a native-like experience with offline caching, background media session integration, and standalone window modes.
   - **Glassmorphism UI**: High-end translucent design language that adapts across mobile, web, and TV.
 
 - **Clipboard Playback**:
@@ -78,7 +79,8 @@ Access settings via the gear icon in the top app bar.
 
 - **Appearance**: Toggle **Dark Mode**, **True Black Mode** (for OLED), **Dynamic Color** (Material You), and **Handwriting Font**.
 - **Playback**:
-  - **Gapless Playback**: Seamless audio transitions.
+  - **Audio Engine (Web)**: Choose between Hybrid (Recommended), Web Audio (Pure Gapless), Relisten (HTML5), or Passive Streaming.
+  - **Engine Subsettings**: Fine-tune crossfade durations (0-10s), transition modes (Gapless/Crossfade/Gap), and background survival strategies (Video/Heartbeat/Relisten).
   - **Offline Buffering**: Pre-cache shows for uninterrupted playback.
   - **Buffer Agent**: Automatic recovery from network issues.
   - **Random Playback**: Configure behavior for the random shuffle button.
@@ -177,13 +179,17 @@ The application is **correctly configured** for standard background audio playba
 - **Gapless Playback**: Excellent (Handled natively on Mobile, high-performance JS scheduler on Web).
 - **Deep Sleep Stability**: **Fixed**. Implemented "Native Pre-Queueing" where the next show is queued into the native player buffer at the start of the last track. This ensures continuous playback even if the Flutter UI isolate is suspended by Android's Doze mode.
 
-## Web & PWA Optimization (Feb 2024)
+## Web & PWA Optimization (Feb 2026)
 
-The web version is now a full Progressive Web App (PWA) with a custom audio engine.
+The web version is now a full Progressive Web App (PWA) with a custom, high-performance audio engine suite.
 
-- **Gapless Engine**: Bypasses browser audio latencies using `AudioBufferSourceNode` scheduling.
+- **Audio Engine Suite**: A selectable array of engines tailored for the web wrapper:
+  - **Hybrid (Default)**: Orchestrates an isolated HTML5 fallback (`hybrid_html5_engine.js`) for 0ms initial latency (Instant Start) and seamlessly hands off to the Web Audio engine `immediate`ly upon decoding for strict gapless transitions.
+  - **Web Audio**: Pure `AudioBufferSourceNode` scheduling bypassing browser decode latencies entirely.
+  - **Relisten**: A robust, battery-friendly HTML5 port.
+- **Background Survival**: Aggressive anti-suspension trickery (`video` looping, `heartbeat` workers) to ensure Web Audio contexts survive screen locks and backgrounding on iOS/Android browsers.
 - **Media Session API**: Full integration with browser/OS media controls (Play/Pause/Skip) and "Now Playing" metadata.
-- **Installable**: Full manifest support for "Add to Home Screen" on iOS and Android.
+- **Installable**: Full manifest support for "Add to Home Screen" on iOS, Android, and desktop Chrome/Edge/Safari.
 
 ## TV Experience (Feb 2024)
 

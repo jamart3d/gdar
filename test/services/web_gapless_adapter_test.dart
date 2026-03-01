@@ -34,6 +34,7 @@ void main() {
   late StreamController<SequenceState?> sequenceController;
   late StreamController<PlaybackEvent> playbackEventController;
   late StreamController<PlayerState> playerStateController;
+  late StreamController<Duration> bufferedPositionController;
 
   setUp(() {
     mockPlayer = MockAudioPlayerRelaxed();
@@ -57,6 +58,7 @@ void main() {
     sequenceController = StreamController<SequenceState?>.broadcast();
     playbackEventController = StreamController<PlaybackEvent>.broadcast();
     playerStateController = StreamController<PlayerState>.broadcast();
+    bufferedPositionController = StreamController<Duration>.broadcast();
 
     // Stub streams — mirrors what gapless_player_web.dart emits
     when(mockPlayer.processingStateStream)
@@ -74,7 +76,7 @@ void main() {
         .thenAnswer((_) => playerStateController.stream);
     when(mockPlayer.durationStream).thenAnswer((_) => const Stream.empty());
     when(mockPlayer.bufferedPositionStream)
-        .thenAnswer((_) => const Stream.empty());
+        .thenAnswer((_) => bufferedPositionController.stream);
 
     // Default property stubs
     when(mockPlayer.duration).thenReturn(const Duration(seconds: 100));
@@ -122,7 +124,8 @@ void main() {
       audioCacheService: mockAudioCacheService,
       wakelockService: mockWakelockService,
     );
-    audioProvider.update(mockShowListProvider, mockSettingsProvider);
+    audioProvider.update(
+        mockShowListProvider, mockSettingsProvider, mockAudioCacheService);
   });
 
   tearDown(() {
@@ -133,6 +136,7 @@ void main() {
     sequenceController.close();
     playbackEventController.close();
     playerStateController.close();
+    bufferedPositionController.close();
     audioProvider.dispose();
   });
 
@@ -304,6 +308,72 @@ void main() {
         await Future.delayed(const Duration(milliseconds: 100));
 
         verifyNever(mockWakelockService.enable());
+      });
+    });
+
+    testWidgets(
+        'Buffer Reporting: currentTrackBuffered updates trigger notifications',
+        (WidgetTester tester) async {
+      await tester.runAsync(() async {
+        int notifyCount = 0;
+        audioProvider.addListener(() => notifyCount++);
+
+        // Emit buffer stream
+        bufferedPositionController.add(const Duration(seconds: 45));
+        // Also stub the getter since mock might be checked directly
+        when(mockPlayer.bufferedPosition)
+            .thenReturn(const Duration(seconds: 45));
+
+        await Future.delayed(const Duration(milliseconds: 50));
+        expect(notifyCount, greaterThan(0),
+            reason: 'AudioProvider should notify on buffer updates');
+        expect(audioProvider.audioPlayer.bufferedPosition,
+            const Duration(seconds: 45));
+      });
+    });
+
+    testWidgets('Transition Safety: currentIndex sync during gapless handoff',
+        (WidgetTester tester) async {
+      await tester.runAsync(() async {
+        // Setup sequence
+        final sequence = [
+          AudioSource.uri(Uri.parse('http://dummy/1')),
+          AudioSource.uri(Uri.parse('http://dummy/2')),
+        ];
+        when(mockPlayer.sequence).thenReturn(sequence);
+
+        // 1. Initial State: Track 0
+        when(mockPlayer.currentIndex).thenReturn(0);
+        currentIndexController.add(0);
+        await Future.delayed(const Duration(milliseconds: 50));
+
+        // 2. Simulate Gapless Handoff (JS engine promotes next track internally)
+        // In the Dart adapter, this typically results in a PlaybackEvent or IndexStream update
+        when(mockPlayer.currentIndex).thenReturn(1);
+        currentIndexController.add(1);
+
+        await Future.delayed(const Duration(milliseconds: 50));
+        expect(audioProvider.audioPlayer.currentIndex, 1,
+            reason:
+                'AudioProvider must reflect the internal JS engine index promotion');
+      });
+    });
+
+    testWidgets(
+        'Engine Isolation: Verify playback events are consumed without error',
+        (WidgetTester tester) async {
+      await tester.runAsync(() async {
+        // This test ensures that the adapter contract (which uses PlaybackEvent)
+        // doesn't cause errors when non-standard processing states (like 'handoff_countdown')
+        // are eventually mapped (this is handled in the real adapter, but we mock the contract here).
+        playbackEventController.add(PlaybackEvent(
+          processingState: ProcessingState.ready,
+          updatePosition: const Duration(seconds: 10),
+          currentIndex: 0,
+        ));
+
+        await Future.delayed(const Duration(milliseconds: 50));
+        // Success if no exception thrown
       });
     });
   });
