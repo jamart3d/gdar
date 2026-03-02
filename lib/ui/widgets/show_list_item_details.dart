@@ -8,6 +8,7 @@ import 'package:shakedown/providers/settings_provider.dart';
 import 'package:shakedown/providers/show_list_provider.dart'; // Add import
 import 'package:shakedown/services/catalog_service.dart';
 import 'package:shakedown/services/device_service.dart';
+import 'package:shakedown/utils/utils.dart';
 
 import 'package:shakedown/ui/widgets/source_list_item.dart';
 import 'package:shakedown/ui/widgets/swipe_action_background.dart';
@@ -78,105 +79,8 @@ class _ShowListItemDetailsState extends State<ShowListItemDetails> {
           // Mark as Blocked (Red Star / -1)
           unawaited(context.read<CatalogService>().setRating(source.id, -1));
 
-          // Calculate position for SnackBar
-          double bottomMargin = 80; // Default fallback
-          try {
-            final RenderBox? box = context.findRenderObject() as RenderBox?;
-            if (box != null && box.hasSize) {
-              final position = box.localToGlobal(Offset.zero);
-              final size = box.size;
-              final screenHeight = MediaQuery.of(context).size.height;
-              // Position just below the item
-              final spaceBelow = screenHeight - (position.dy + size.height);
-              // Ensure margin is within screen bounds and reasonable
-              bottomMargin = (spaceBelow - 60).clamp(10.0, screenHeight - 100);
-            }
-          } catch (e) {
-            // Fallback
-          }
+          showMessage(context, 'Blocked Source "${source.id}"');
 
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Row(
-                children: [
-                  Icon(
-                    Icons.block,
-                    color: Theme.of(context).colorScheme.onPrimaryContainer,
-                    size: 20,
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      'Blocked Source "${source.id}"',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                          color:
-                              Theme.of(context).colorScheme.onPrimaryContainer,
-                          fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                  // Block & Roll Button
-                  TextButton(
-                    onPressed: () {
-                      unawaited(context.read<AudioProvider>().playRandomShow());
-                      ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                    },
-                    style: TextButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(horizontal: 8),
-                      minimumSize: const Size(0, 0),
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    ),
-                    child: Row(
-                      children: [
-                        Icon(
-                            settingsProvider.nonRandom
-                                ? Icons.playlist_play_rounded
-                                : Icons.casino_rounded,
-                            size: 16,
-                            color: Theme.of(context)
-                                .colorScheme
-                                .onPrimaryContainer),
-                        const SizedBox(width: 4),
-                        Text(
-                          settingsProvider.nonRandom ? 'NEXT' : 'ROLL',
-                          style: TextStyle(
-                            color: Theme.of(context)
-                                .colorScheme
-                                .onPrimaryContainer,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 12,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-              backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-              behavior: SnackBarBehavior.floating,
-              duration: const Duration(seconds: 4),
-              margin:
-                  EdgeInsets.only(bottom: bottomMargin, left: 32, right: 32),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(100),
-                side: BorderSide(
-                  color: Theme.of(context)
-                      .colorScheme
-                      .onPrimaryContainer
-                      .withValues(alpha: 0.1),
-                  width: 1,
-                ),
-              ),
-              action: SnackBarAction(
-                label: 'UNDO',
-                textColor: Theme.of(context).colorScheme.primary,
-                onPressed: () {
-                  context.read<CatalogService>().setRating(source.id, 0);
-                },
-              ),
-            ),
-          );
           // Return true to allow "slide off" animation
           return true;
         }

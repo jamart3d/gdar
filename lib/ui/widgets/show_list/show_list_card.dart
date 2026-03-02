@@ -12,6 +12,7 @@ import 'package:shakedown/ui/widgets/rating_control.dart';
 import 'package:shakedown/ui/widgets/src_badge.dart';
 import 'package:shakedown/services/catalog_service.dart';
 import 'package:shakedown/services/device_service.dart';
+import 'package:shakedown/ui/widgets/conditional_marquee.dart';
 import 'package:shakedown/ui/widgets/show_list/card_style_utils.dart';
 import 'package:shakedown/ui/widgets/theme/liquid_glass_wrapper.dart';
 import 'package:shakedown/ui/widgets/theme/neumorphic_wrapper.dart';
@@ -138,7 +139,7 @@ class _ShowListCardState extends State<ShowListCard> {
                 color: style.backgroundColor,
                 child: _buildCardContent(
                   context: context,
-                  borderRadius: isFruit ? 14 : 28,
+                  borderRadius: isTv ? 12 : (isFruit ? 14 : 28),
                   backgroundColor: isFruit && !settingsProvider.useTrueBlack
                       ? Colors.transparent
                       : style.backgroundColor,
@@ -182,7 +183,7 @@ class _ShowListCardState extends State<ShowListCard> {
               color: style.backgroundColor,
               child: _buildCardContent(
                 context: context,
-                borderRadius: isFruit ? 14 : 28,
+                borderRadius: isTv ? 12 : (isFruit ? 14 : 28),
                 backgroundColor: isFruit && !settingsProvider.useTrueBlack
                     ? Colors.transparent
                     : style.backgroundColor,
@@ -232,19 +233,26 @@ class _ShowListCardState extends State<ShowListCard> {
   }) {
     const bool isWeb = kIsWeb;
     final bool isFruit =
-        context.read<ThemeProvider>().themeStyle == ThemeStyle.fruit;
+        context.read<ThemeProvider>().themeStyle == ThemeStyle.fruit && kIsWeb;
     final double screenWidth = MediaQuery.of(context).size.width;
-    final bool useMobileLayout = isWeb && screenWidth < 768;
+    final bool isMobile = defaultTargetPlatform == TargetPlatform.android ||
+        defaultTargetPlatform == TargetPlatform.iOS;
+    final bool useMobileLayout =
+        isWeb && screenWidth < 768 && !isTv && !isMobile;
+    final bool usePremium = settingsProvider.useNeumorphism && isFruit;
 
     // Use tighter mobile-style heights for both themes on narrow screens
     final double baseHeight = isTv
         ? 48.0
         : (useMobileLayout
             ? 54.0
-            : (isFruit ? 34.0 : 40.0)); // Shorter Android row height (40)
+            : (isFruit ? 48.0 : 58.0)); // v135 standard height for phone: 58.0
     final double cardHeight = baseHeight * style.effectiveScale;
-    final double controlZoneWidth = (isFruit || !useMobileLayout)
-        ? (useMobileLayout ? 84.0 : 140.0) * style.effectiveScale
+    final double controlZoneWidth = (kIsWeb)
+        ? ((isFruit || !useMobileLayout)
+                ? (useMobileLayout ? 84.0 : (isFruit ? 180.0 : 140.0))
+                : style.config.baseControlZoneWidth) *
+            style.effectiveScale
         : (style.config.baseControlZoneWidth * style.effectiveScale);
 
     return Container(
@@ -281,57 +289,108 @@ class _ShowListCardState extends State<ShowListCard> {
                   ),
                   child: Container(
                     alignment: Alignment.centerLeft,
-                    padding: EdgeInsets.only(
-                      left:
-                          (useMobileLayout ? 16.0 : 8.0) * style.effectiveScale,
-                    ),
-                    child: (!useMobileLayout)
-                        ? Row(
-                            children: [
-                              Text(
-                                style.formattedDate,
-                                style: style.topStyle.copyWith(
-                                    fontSize: 14 * style.effectiveScale,
-                                    fontWeight: FontWeight.w800),
-                              ),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: Text(
-                                  widget.show.venue,
-                                  style: style.bottomStyle.copyWith(
-                                    fontSize: 13 * style.effectiveScale,
-                                    color: style.bottomStyle.color
-                                        ?.withValues(alpha: 0.6),
+                    padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                    child: Builder(builder: (context) {
+                      final Widget textArea = (!kIsWeb || useMobileLayout)
+                          ? Column(
+                              children: [
+                                Expanded(
+                                  flex: 57,
+                                  child: Container(
+                                    alignment: Alignment.centerLeft,
+                                    width: double.infinity,
+                                    child: FittedBox(
+                                      fit: BoxFit.scaleDown,
+                                      alignment: Alignment.centerLeft,
+                                      child: ConditionalMarquee(
+                                        text:
+                                            settingsProvider.dateFirstInShowCard
+                                                ? style.formattedDate
+                                                : widget.show.venue,
+                                        style: style.topStyle
+                                            .copyWith(height: 1.3),
+                                        enableAnimation:
+                                            settingsProvider.marqueeEnabled,
+                                      ),
+                                    ),
                                   ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
                                 ),
-                              ),
-                            ],
-                          )
-                        : Column(
-                            mainAxisSize: MainAxisSize.min,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                style.formattedDate,
-                                style: style.topStyle.copyWith(
-                                    fontSize: 14 * style.effectiveScale,
-                                    fontWeight: FontWeight.w800),
-                              ),
-                              const SizedBox(height: 1),
-                              Text(
-                                widget.show.venue,
-                                style: style.bottomStyle.copyWith(
-                                  fontSize: 13 * style.effectiveScale,
-                                  color: style.bottomStyle.color
-                                      ?.withValues(alpha: 0.6),
+                                Expanded(
+                                  flex: 43,
+                                  child: Container(
+                                    alignment: Alignment.centerLeft,
+                                    margin: const EdgeInsets.only(
+                                        left: 4.0), // v134 offset
+                                    width: double.infinity,
+                                    child: FittedBox(
+                                      fit: BoxFit.scaleDown,
+                                      alignment: Alignment.centerLeft,
+                                      child: Text(
+                                        settingsProvider.dateFirstInShowCard
+                                            ? widget.show.venue
+                                            : style.formattedDate,
+                                        style: style.bottomStyle
+                                            .copyWith(height: 1.3),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                  ),
                                 ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
+                              ],
+                            )
+                          : Row(
+                              children: [
+                                if (settingsProvider.dateFirstInShowCard) ...[
+                                  Text(
+                                    style.formattedDate,
+                                    style: style.bottomStyle,
+                                  ),
+                                  const SizedBox(width: 8),
+                                ],
+                                Expanded(
+                                  child: Text(
+                                    widget.show.venue,
+                                    style: style.topStyle,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                                if (!settingsProvider.dateFirstInShowCard) ...[
+                                  const SizedBox(width: 12),
+                                  Text(
+                                    style.formattedDate,
+                                    style: style.bottomStyle,
+                                  ),
+                                ],
+                              ],
+                            );
+
+                      if (usePremium) {
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 4.0),
+                          child: NeumorphicWrapper(
+                            borderRadius: 12.0,
+                            intensity: 0.4,
+                            isPressed: true,
+                            color: Colors.transparent,
+                            child: LiquidGlassWrapper(
+                              enabled: true,
+                              borderRadius: BorderRadius.circular(12.0),
+                              opacity: 0.03,
+                              blur: 4.0,
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 10.0, vertical: 4.0),
+                                child: textArea,
                               ),
-                            ],
+                            ),
                           ),
+                        );
+                      }
+
+                      return textArea;
+                    }),
                   ),
                 ),
               ),
@@ -379,15 +438,16 @@ class _ShowListCardState extends State<ShowListCard> {
                   ),
                 ),
               Positioned(
-                top: 6.0 * style.effectiveScale,
-                bottom: 4.0 * style.effectiveScale,
+                top: (isTv ? 4.0 : 6.0) * style.effectiveScale,
+                bottom: (isTv ? 6.0 : 4.0) * style.effectiveScale,
                 right: 12.0 * style.effectiveScale,
                 child: _buildBalancedControls(
                     context,
                     widget.show,
                     settingsProvider,
                     style.effectiveScale,
-                    style.shouldShowBadge),
+                    style.shouldShowBadge,
+                    isTv),
               ),
             ],
           ),
@@ -396,7 +456,8 @@ class _ShowListCardState extends State<ShowListCard> {
     );
   }
 
-  Widget _buildBadge(BuildContext context, Show show, double effectiveScale) {
+  Widget _buildBadge(
+      BuildContext context, Show show, double effectiveScale, bool isTv) {
     final colorScheme = Theme.of(context).colorScheme;
     final settingsProvider = context.read<SettingsProvider>();
     final bool isFruit =
@@ -423,11 +484,32 @@ class _ShowListCardState extends State<ShowListCard> {
             colorScheme.secondaryContainer.withValues(alpha: 0.5),
           ];
 
+    final TextStyle style = Theme.of(context).textTheme.labelSmall!.copyWith(
+          color: colorScheme.onSecondaryContainer,
+          fontWeight: FontWeight.w600,
+          fontSize: (settingsProvider.appFont == 'rock_salt')
+              ? (isFruit ? 7.5 : (isTv ? 3.5 : 4.5)) * effectiveScale
+              : (isFruit ? 9.5 : (isTv ? 5.5 : 7.0)) * effectiveScale,
+          height: isTv
+              ? 1.0
+              : (settingsProvider.appFont == 'rock_salt' ? 2.0 : 1.5),
+          letterSpacing: (settingsProvider.appFont == 'rock_salt' ||
+                  settingsProvider.appFont == 'permanent_marker')
+              ? 1.5
+              : 0.0,
+        );
+
     return Container(
-      padding: isFruit
-          ? const EdgeInsets.symmetric(horizontal: 6, vertical: 1.0)
-          : const EdgeInsets.symmetric(horizontal: 6, vertical: 2.0),
-      constraints: const BoxConstraints(maxWidth: 100),
+      padding: isTv
+          ? const EdgeInsets.symmetric(
+              horizontal: 4, vertical: 0.0) // Minimal padding for TV
+          : ((isTv || isFruit)
+              ? const EdgeInsets.symmetric(horizontal: 6, vertical: 1.0)
+              : const EdgeInsets.symmetric(horizontal: 6, vertical: 2.0)),
+      constraints: BoxConstraints(
+        minWidth: 16.0 * effectiveScale,
+        maxHeight: isTv ? (9.0 * effectiveScale) : double.infinity,
+      ),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: gradientColors,
@@ -442,28 +524,34 @@ class _ShowListCardState extends State<ShowListCard> {
               offset: const Offset(0, 1))
         ],
       ),
-      child: Text(
-        badgeText,
-        style: Theme.of(context).textTheme.labelSmall?.copyWith(
-            color: colorScheme.onSecondaryContainer,
-            fontWeight: FontWeight.w600,
-            fontSize: (settingsProvider.appFont == 'rock_salt')
-                ? (isFruit ? 7.5 : 4.5) * effectiveScale
-                : (isFruit ? 9.5 : 7.0) * effectiveScale,
-            height: (settingsProvider.appFont == 'rock_salt') ? 2.0 : 1.5,
-            letterSpacing: (settingsProvider.appFont == 'rock_salt' ||
-                    settingsProvider.appFont == 'permanent_marker')
-                ? 1.5
-                : 0.0),
-        overflow: TextOverflow.ellipsis,
-        maxLines: 1,
-        textAlign: TextAlign.center,
-      ),
+      child: isTv
+          ? FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                badgeText,
+                style: style,
+                overflow: TextOverflow.ellipsis,
+                maxLines: 1,
+                textAlign: TextAlign.center,
+              ),
+            )
+          : Text(
+              badgeText,
+              style: style,
+              overflow: TextOverflow.ellipsis,
+              maxLines: 1,
+              textAlign: TextAlign.center,
+            ),
     );
   }
 
-  Widget _buildBalancedControls(BuildContext context, Show show,
-      SettingsProvider settings, double effectiveScale, bool shouldShowBadge) {
+  Widget _buildBalancedControls(
+      BuildContext context,
+      Show show,
+      SettingsProvider settings,
+      double effectiveScale,
+      bool shouldShowBadge,
+      bool isTv) {
     Source? targetSource;
 
     if (widget.isPlaying && widget.playingSource != null) {
@@ -481,13 +569,18 @@ class _ShowListCardState extends State<ShowListCard> {
         return ValueListenableBuilder(
           valueListenable: CatalogService().historyListenable,
           builder: (context, __, ___) {
-            final isFruit =
-                context.read<ThemeProvider>().themeStyle == ThemeStyle.fruit &&
-                    kIsWeb;
+            final themeProvider = context.read<ThemeProvider>();
+            final bool isFruit =
+                themeProvider.themeStyle == ThemeStyle.fruit && kIsWeb;
             final double screenWidth = MediaQuery.of(context).size.width;
-            final bool useMobileLayout = kIsWeb && screenWidth < 768;
+            final bool isMobile =
+                defaultTargetPlatform == TargetPlatform.android ||
+                    defaultTargetPlatform == TargetPlatform.iOS;
+            final bool useMobileLayout =
+                kIsWeb && screenWidth < 768 && !isTv && !isMobile;
 
             final catalog = CatalogService();
+            final bool usePremium = settings.useNeumorphism && isFruit;
             int rating = 0;
             bool isPlayed = false;
 
@@ -506,38 +599,57 @@ class _ShowListCardState extends State<ShowListCard> {
               Widget srcBadge = SrcBadge(
                 src: badgeSrc,
                 fontSize: shouldShowBadge
-                    ? (isFruit ? 8.5 : 9.0)
-                    : (isFruit ? 10.5 : 11.0),
-                padding: shouldShowBadge
+                    ? (isFruit ? 8.5 : (isTv ? 3.5 : (kIsWeb ? 9.0 : 4.5)))
+                    : (isFruit ? 10.5 : (isTv ? 5.0 : (kIsWeb ? 11.0 : 7.0))),
+                padding: (shouldShowBadge || isTv)
                     ? EdgeInsets.symmetric(
-                        horizontal: 6.0 * effectiveScale,
-                        vertical: isFruit ? 2.0 : 3.0,
+                        horizontal: (isTv ? 2.0 : 3.0) * effectiveScale,
+                        vertical: 0.0,
                       )
                     : null,
               );
 
-              if (!shouldShowBadge) {
+              if (isTv) {
+                srcBadge = ConstrainedBox(
+                  constraints: BoxConstraints(
+                    maxHeight: 9.0 * effectiveScale,
+                  ),
+                  child: srcBadge,
+                );
+              }
+
+              if (!shouldShowBadge && !isTv) {
                 srcBadge = Padding(
                   padding: const EdgeInsets.only(bottom: 6.0),
                   child: srcBadge,
                 );
               }
-              badgeRowChildren.add(srcBadge);
+              if (kIsWeb) {
+                badgeRowChildren.add(srcBadge);
+              } else {
+                columnChildren.add(srcBadge);
+              }
             }
 
             if (shouldShowBadge) {
-              if (badgeRowChildren.isNotEmpty) {
-                badgeRowChildren.add(const SizedBox(width: 4.0));
+              Widget badge = _buildBadge(context, show, effectiveScale, isTv);
+              if (kIsWeb) {
+                if (badgeRowChildren.isNotEmpty) {
+                  badgeRowChildren.add(SizedBox(width: isFruit ? 8.0 : 4.0));
+                }
+                badgeRowChildren.add(badge);
+              } else {
+                columnChildren.add(badge);
               }
-              badgeRowChildren.add(_buildBadge(context, show, effectiveScale));
             }
 
-            if (showRating && ratingKey != null) {
-              columnChildren.add(
+            if (showRating && ratingKey != null && !kIsWeb) {
+              columnChildren.insert(
+                0, // Stars at the top for native
                 RatingControl(
                   rating: rating,
                   isPlayed: isPlayed,
-                  size: 20,
+                  size: isTv ? 16.0 : 20.0, // Aggressively reduced for TV
                   compact: true,
                   onTap: (widget.isPlaying ||
                           widget.alwaysShowRatingInteraction ||
@@ -576,101 +688,184 @@ class _ShowListCardState extends State<ShowListCard> {
             }
 
             return Padding(
-              padding: const EdgeInsets.only(right: 8.0),
-              child: useMobileLayout
-                  ? FittedBox(
-                      fit: BoxFit.scaleDown,
-                      alignment: Alignment.centerRight,
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          if (showRating && ratingKey != null)
-                            RatingControl(
-                              rating: rating,
-                              isPlayed: isPlayed,
-                              size: isFruit ? 19 : 20,
-                              compact: true,
-                              onTap: (widget.isPlaying ||
-                                      widget.alwaysShowRatingInteraction ||
-                                      show.sources.length == 1)
-                                  ? () async {
-                                      await showDialog(
-                                        context: context,
-                                        builder: (context) => RatingDialog(
-                                          initialRating: rating,
-                                          sourceId: ratingKey,
-                                          isPlayed: isPlayed,
-                                          onRatingChanged: (newRating) {
-                                            catalog.setRating(
-                                                ratingKey, newRating);
-                                          },
-                                          onPlayedChanged: (bool newIsPlayed) {
-                                            if (newIsPlayed !=
-                                                catalog.isPlayed(ratingKey)) {
-                                              catalog.togglePlayed(ratingKey);
-                                            }
-                                          },
-                                        ),
-                                      );
-                                    }
-                                  : null,
+              padding: const EdgeInsets.only(
+                right: 8.0, // v134 standard gutter
+                top: 4.0,
+                bottom: 4.0,
+              ),
+              child: (!kIsWeb)
+                  ? Column(
+                      mainAxisSize: MainAxisSize.max,
+                      mainAxisAlignment: isTv
+                          ? MainAxisAlignment.center
+                          : MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: columnChildren.map((w) {
+                        return Container(
+                          decoration: BoxDecoration(
+                            border: Border.all(
+                              color: settings.showDebugLayout
+                                  ? Colors.purple.withValues(alpha: 0.5)
+                                  : Colors.transparent,
+                              width: 1,
                             ),
-                          const SizedBox(height: 2),
-                          if (badgeRowChildren.isNotEmpty)
-                            Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: badgeRowChildren,
-                            ),
-                        ],
-                      ),
+                          ),
+                          alignment: Alignment.centerRight,
+                          child: w,
+                        );
+                      }).toList(),
                     )
-                  : Row(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        if (showRating && ratingKey != null)
-                          RatingControl(
-                            rating: rating,
-                            isPlayed: isPlayed,
-                            size: 19,
-                            compact: true,
-                            onTap: (widget.isPlaying ||
-                                    widget.alwaysShowRatingInteraction ||
-                                    show.sources.length == 1)
-                                ? () async {
-                                    await showDialog(
-                                      context: context,
-                                      builder: (context) => RatingDialog(
-                                        initialRating: rating,
-                                        sourceId: ratingKey,
-                                        isPlayed: isPlayed,
-                                        onRatingChanged: (newRating) {
-                                          catalog.setRating(
-                                              ratingKey, newRating);
-                                        },
-                                        onPlayedChanged: (bool newIsPlayed) {
-                                          if (newIsPlayed !=
-                                              catalog.isPlayed(ratingKey)) {
-                                            catalog.togglePlayed(ratingKey);
+                  : (useMobileLayout
+                      ? FittedBox(
+                          fit: BoxFit.scaleDown,
+                          alignment: Alignment.centerRight,
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              if (showRating && ratingKey != null)
+                                Builder(builder: (context) {
+                                  final Widget stars = RatingControl(
+                                    rating: rating,
+                                    isPlayed: isPlayed,
+                                    size: isFruit ? 24 : 19,
+                                    compact: true,
+                                    onTap: (widget.isPlaying ||
+                                            widget
+                                                .alwaysShowRatingInteraction ||
+                                            show.sources.length == 1)
+                                        ? () async {
+                                            await showDialog(
+                                              context: context,
+                                              builder: (context) =>
+                                                  RatingDialog(
+                                                initialRating: rating,
+                                                sourceId: ratingKey,
+                                                isPlayed: isPlayed,
+                                                onRatingChanged: (newRating) {
+                                                  catalog.setRating(
+                                                      ratingKey, newRating);
+                                                },
+                                                onPlayedChanged:
+                                                    (bool newIsPlayed) {
+                                                  if (newIsPlayed !=
+                                                      catalog.isPlayed(
+                                                          ratingKey)) {
+                                                    catalog.togglePlayed(
+                                                        ratingKey);
+                                                  }
+                                                },
+                                              ),
+                                            );
                                           }
-                                        },
+                                        : null,
+                                  );
+
+                                  if (usePremium) {
+                                    return Padding(
+                                      padding: const EdgeInsets.only(
+                                          bottom: 4, right: 2),
+                                      child: NeumorphicWrapper(
+                                        borderRadius: 8.0,
+                                        intensity: 0.8,
+                                        color: Colors.transparent,
+                                        child: LiquidGlassWrapper(
+                                          enabled: true,
+                                          borderRadius:
+                                              BorderRadius.circular(8.0),
+                                          opacity: 0.05,
+                                          blur: 4.0,
+                                          child: Padding(
+                                            padding: const EdgeInsets.all(4.0),
+                                            child: stars,
+                                          ),
+                                        ),
                                       ),
                                     );
                                   }
-                                : null,
+                                  return stars;
+                                }),
+                              SizedBox(height: isFruit ? 10 : 2),
+                              if (badgeRowChildren.isNotEmpty ||
+                                  columnChildren.isNotEmpty)
+                                Builder(builder: (context) {
+                                  final Widget badges = Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: badgeRowChildren,
+                                  );
+
+                                  if (usePremium) {
+                                    return NeumorphicWrapper(
+                                      borderRadius: 8.0,
+                                      intensity: 0.7,
+                                      isPressed: true,
+                                      color: Colors.transparent,
+                                      child: LiquidGlassWrapper(
+                                        enabled: true,
+                                        borderRadius:
+                                            BorderRadius.circular(8.0),
+                                        opacity: 0.05,
+                                        blur: 8.0,
+                                        child: Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 6, vertical: 2),
+                                          child: badges,
+                                        ),
+                                      ),
+                                    );
+                                  }
+                                  return badges;
+                                }),
+                            ],
                           ),
-                        if (showRating &&
-                            ratingKey != null &&
-                            badgeRowChildren.isNotEmpty)
-                          const SizedBox(width: 8),
-                        if (badgeRowChildren.isNotEmpty)
-                          Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: badgeRowChildren,
-                          ),
-                      ],
-                    ),
+                        )
+                      : Row(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            if (showRating && ratingKey != null)
+                              RatingControl(
+                                rating: rating,
+                                isPlayed: isPlayed,
+                                size: isFruit ? 24 : 19,
+                                compact: true,
+                                onTap: (widget.isPlaying ||
+                                        widget.alwaysShowRatingInteraction ||
+                                        show.sources.length == 1)
+                                    ? () async {
+                                        await showDialog(
+                                          context: context,
+                                          builder: (context) => RatingDialog(
+                                            initialRating: rating,
+                                            sourceId: ratingKey,
+                                            isPlayed: isPlayed,
+                                            onRatingChanged: (newRating) {
+                                              catalog.setRating(
+                                                  ratingKey, newRating);
+                                            },
+                                            onPlayedChanged:
+                                                (bool newIsPlayed) {
+                                              if (newIsPlayed !=
+                                                  catalog.isPlayed(ratingKey)) {
+                                                catalog.togglePlayed(ratingKey);
+                                              }
+                                            },
+                                          ),
+                                        );
+                                      }
+                                    : null,
+                              ),
+                            if (showRating &&
+                                ratingKey != null &&
+                                badgeRowChildren.isNotEmpty)
+                              SizedBox(width: isFruit ? 24 : 8),
+                            if (badgeRowChildren.isNotEmpty)
+                              Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: badgeRowChildren,
+                              ),
+                          ],
+                        )),
             );
           },
         );

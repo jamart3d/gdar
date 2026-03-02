@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:provider/provider.dart';
@@ -13,6 +14,7 @@ import 'package:shakedown/utils/utils.dart';
 import 'package:shakedown/ui/widgets/theme/neumorphic_wrapper.dart';
 import 'package:shakedown/ui/widgets/theme/liquid_glass_wrapper.dart';
 import 'package:shakedown/providers/theme_provider.dart';
+import 'package:shakedown/services/device_service.dart';
 
 class RatingControl extends StatelessWidget {
   final int rating;
@@ -213,9 +215,11 @@ class _RatingDialogState extends State<RatingDialog> {
     final themeProvider = context.watch<ThemeProvider>();
     final settingsProvider = context.watch<SettingsProvider>();
     final isFruit = themeProvider.themeStyle == ThemeStyle.fruit;
+    final isTv = context.read<DeviceService>().isTv;
     final isFruitNeumorphic = isFruit &&
         settingsProvider.useNeumorphism &&
-        !settingsProvider.useTrueBlack;
+        !settingsProvider.useTrueBlack &&
+        !isTv; // Spec: STICKLY AVOID LiquidGlassWrapper on TV
 
     Widget content = Column(
       mainAxisSize: MainAxisSize.min,
@@ -324,6 +328,7 @@ class _RatingDialogState extends State<RatingDialog> {
                               final isFruitNeumorphic =
                                   themeProvider.themeStyle ==
                                           ThemeStyle.fruit &&
+                                      kIsWeb &&
                                       settingsProvider.useNeumorphism &&
                                       !settingsProvider.useTrueBlack;
 
@@ -472,7 +477,22 @@ class _RatingDialogState extends State<RatingDialog> {
       ],
     );
 
-    if (isFruitNeumorphic) {
+    if (isTv) {
+      content = Container(
+        decoration: BoxDecoration(
+          color: colorScheme.surface.withValues(alpha: 0.4),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: colorScheme.outline.withValues(alpha: 0.1),
+            width: 1,
+          ),
+        ),
+        child: Material(
+          color: Colors.transparent,
+          child: content,
+        ),
+      );
+    } else if (isFruitNeumorphic) {
       content = LiquidGlassWrapper(
         enabled: true,
         borderRadius: BorderRadius.circular(16),
@@ -491,12 +511,12 @@ class _RatingDialogState extends State<RatingDialog> {
     }
 
     return Dialog(
-      elevation: isFruitNeumorphic ? 0 : null,
-      backgroundColor: isFruitNeumorphic ? Colors.transparent : null,
+      elevation: (isFruitNeumorphic || isTv) ? 0 : null,
+      backgroundColor: (isFruitNeumorphic || isTv) ? Colors.transparent : null,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
       ),
-      child: isFruitNeumorphic
+      child: (isFruitNeumorphic || isTv)
           ? content
           : ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 400),
@@ -508,7 +528,7 @@ class _RatingDialogState extends State<RatingDialog> {
   Widget _buildActionOption(BuildContext context, String text, IconData icon,
       Color color, int rating) {
     final isFruit =
-        context.read<ThemeProvider>().themeStyle == ThemeStyle.fruit;
+        context.read<ThemeProvider>().themeStyle == ThemeStyle.fruit && kIsWeb;
     return TvListTile(
       onTap: () async {
         // Confirmation Logic

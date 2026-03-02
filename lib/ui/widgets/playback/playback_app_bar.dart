@@ -46,6 +46,8 @@ class PlaybackAppBar extends StatelessWidget {
     final String formattedDate =
         AppDateUtils.formatDate(currentShow.date, settings: settingsProvider);
 
+    final double actionPadding = kIsWeb ? (isFruit ? 16.0 : 8.0) : 8.0;
+
     return AppBar(
       backgroundColor: backgroundColor.withValues(alpha: opacity),
       elevation: 0,
@@ -102,118 +104,115 @@ class PlaybackAppBar extends StatelessWidget {
         ),
       ),
       actions: [
-        // Right side items
-        Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Opacity(
-              opacity: opacity,
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  ValueListenableBuilder<Box<bool>>(
-                    valueListenable: CatalogService().historyListenable,
-                    builder: (context, historyBox, _) {
-                      return ValueListenableBuilder<Box<Rating>>(
-                        valueListenable: CatalogService().ratingsListenable,
-                        builder: (context, ratingsBox, _) {
-                          final String ratingKey = currentSource.id;
-                          final isPlayed = historyBox.get(ratingKey) ?? false;
-                          final ratingObj = ratingsBox.get(ratingKey);
-                          final int rating = ratingObj?.rating ?? 0;
+        Opacity(
+          opacity: opacity,
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: actionPadding),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ValueListenableBuilder<Box<bool>>(
+                  valueListenable: CatalogService().historyListenable,
+                  builder: (context, historyBox, _) {
+                    return ValueListenableBuilder<Box<Rating>>(
+                      valueListenable: CatalogService().ratingsListenable,
+                      builder: (context, ratingsBox, _) {
+                        final String ratingKey = currentSource.id;
+                        final isPlayed = historyBox.get(ratingKey) ?? false;
+                        final ratingObj = ratingsBox.get(ratingKey);
+                        final int rating = ratingObj?.rating ?? 0;
 
-                          return RatingControl(
-                            key: ValueKey('${ratingKey}_${rating}_$isPlayed'),
-                            rating: rating,
-                            size: 16.0,
-                            isPlayed: isPlayed,
-                            onTap: opacity < 0.5
-                                ? null
-                                : () async {
-                                    final currentRating =
-                                        ratingsBox.get(ratingKey)?.rating ?? 0;
-                                    await showDialog(
-                                      context: context,
-                                      builder: (context) => RatingDialog(
-                                        initialRating: currentRating,
-                                        sourceId: currentSource.id,
-                                        sourceUrl:
-                                            currentSource.tracks.isNotEmpty
-                                                ? currentSource.tracks.first.url
-                                                : null,
-                                        isPlayed:
-                                            historyBox.get(ratingKey) ?? false,
-                                        onRatingChanged: (newRating) {
+                        return RatingControl(
+                          key: ValueKey('${ratingKey}_${rating}_$isPlayed'),
+                          rating: rating,
+                          size: 16.0,
+                          isPlayed: isPlayed,
+                          onTap: opacity < 0.5
+                              ? null
+                              : () async {
+                                  final currentRating =
+                                      ratingsBox.get(ratingKey)?.rating ?? 0;
+                                  await showDialog(
+                                    context: context,
+                                    builder: (context) => RatingDialog(
+                                      initialRating: currentRating,
+                                      sourceId: currentSource.id,
+                                      sourceUrl: currentSource.tracks.isNotEmpty
+                                          ? currentSource.tracks.first.url
+                                          : null,
+                                      isPlayed:
+                                          historyBox.get(ratingKey) ?? false,
+                                      onRatingChanged: (newRating) {
+                                        CatalogService()
+                                            .setRating(ratingKey, newRating);
+                                      },
+                                      onPlayedChanged: (bool newIsPlayed) {
+                                        if (newIsPlayed !=
+                                            (historyBox.get(ratingKey) ??
+                                                false)) {
                                           CatalogService()
-                                              .setRating(ratingKey, newRating);
-                                        },
-                                        onPlayedChanged: (bool newIsPlayed) {
-                                          if (newIsPlayed !=
-                                              (historyBox.get(ratingKey) ??
-                                                  false)) {
-                                            CatalogService()
-                                                .togglePlayed(ratingKey);
-                                          }
-                                        },
-                                      ),
-                                    );
-                                  },
-                          );
-                        },
-                      );
-                    },
-                  ),
-                  const SizedBox(width: 12),
-                  Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      if (currentSource.src != null)
-                        SrcBadge(
-                          src: currentSource.src!,
-                          matchShnidLook: true,
-                        ),
-                      const SizedBox(height: 2),
-                      ShnidBadge(text: currentSource.id),
-                    ],
-                  ),
-                ],
-              ),
+                                              .togglePlayed(ratingKey);
+                                        }
+                                      },
+                                    ),
+                                  );
+                                },
+                        );
+                      },
+                    );
+                  },
+                ),
+                const SizedBox(width: 12),
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    if (currentSource.src != null)
+                      SrcBadge(
+                        src: currentSource.src!,
+                        matchShnidLook: true,
+                      ),
+                    const SizedBox(height: 2),
+                    ShnidBadge(text: currentSource.id),
+                  ],
+                ),
+              ],
             ),
-            Builder(builder: (context) {
-              final Widget btn = IconButton(
-                icon: Icon(
-                    isFruit ? LucideIcons.settings : Icons.settings_rounded),
-                iconSize: 24.0,
-                onPressed: () async {
-                  try {
-                    context.read<AnimationController>().stop();
-                  } catch (_) {}
+          ),
+        ),
+        Builder(builder: (context) {
+          final Widget btn = IconButton(
+            icon: Icon(isFruit ? LucideIcons.settings : Icons.settings_rounded),
+            iconSize: 24.0,
+            onPressed: () async {
+              try {
+                context.read<AnimationController>().stop();
+              } catch (_) {}
 
-                  unawaited(Navigator.of(context).push(
-                    PageRouteBuilder(
-                      pageBuilder: (context, animation, secondaryAnimation) =>
-                          const SettingsScreen(),
-                      transitionDuration: Duration.zero,
-                    ),
-                  ));
+              unawaited(Navigator.of(context).push(
+                PageRouteBuilder(
+                  pageBuilder: (context, animation, secondaryAnimation) =>
+                      const SettingsScreen(),
+                  transitionDuration: Duration.zero,
+                ),
+              ));
 
-                  if (context.mounted) {
-                    try {
-                      final controller = context.read<AnimationController>();
-                      if (!controller.isAnimating) {
-                        unawaited(controller.repeat());
-                      }
-                    } catch (_) {}
+              if (context.mounted) {
+                try {
+                  final controller = context.read<AnimationController>();
+                  if (!controller.isAnimating) {
+                    unawaited(controller.repeat());
                   }
-                },
-              );
+                } catch (_) {}
+              }
+            },
+          );
 
-              if (useNeumorphic) {
-                return Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 10.0),
-                  child: NeumorphicWrapper(
-                    isCircle: false, // Map to rounded square
+          return Padding(
+            padding: EdgeInsets.symmetric(horizontal: actionPadding),
+            child: useNeumorphic
+                ? NeumorphicWrapper(
+                    isCircle: false,
                     borderRadius: 12.0,
                     intensity: 1.2,
                     color: Colors.transparent,
@@ -224,17 +223,10 @@ class PlaybackAppBar extends StatelessWidget {
                       blur: 5.0,
                       child: btn,
                     ),
-                  ),
-                );
-              }
-
-              return Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 10.0),
-                child: btn,
-              );
-            }),
-          ],
-        ),
+                  )
+                : btn,
+          );
+        }),
       ],
     );
   }

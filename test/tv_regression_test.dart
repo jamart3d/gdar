@@ -60,6 +60,8 @@ class MockAudioProvider extends ChangeNotifier implements ap.AudioProvider {
   @override
   Stream<String> get playbackErrorStream => const Stream.empty();
   @override
+  Stream<String> get notificationStream => const Stream.empty();
+  @override
   Stream<({Show show, Source source})> get randomShowRequestStream =>
       const Stream.empty();
   @override
@@ -96,6 +98,8 @@ class MockAudioProvider extends ChangeNotifier implements ap.AudioProvider {
   Future<void> queueRandomShow() async {}
   @override
   void clearError() {}
+  @override
+  void showNotification(String message) {}
   @override
   Future<void> stopAndClear() async {}
   @override
@@ -568,6 +572,13 @@ class FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
   String get oilBannerFont => 'Roboto';
   @override
   Future<void> setOilBannerFont(String font) async {}
+
+  @override
+  bool get forceTv => false;
+  @override
+  void toggleForceTv() {}
+  @override
+  void setForceTv(bool value) {}
 
   @override
   bool get hasListeners => super.hasListeners;

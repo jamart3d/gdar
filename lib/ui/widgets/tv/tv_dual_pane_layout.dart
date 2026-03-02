@@ -12,6 +12,19 @@ import 'package:shakedown/providers/audio_provider.dart';
 import 'package:shakedown/providers/settings_provider.dart';
 import 'package:shakedown/ui/widgets/playback/playback_messages.dart';
 
+// TV Remote Control Intents
+class TvPlayPauseIntent extends Intent {
+  const TvPlayPauseIntent();
+}
+
+class TvNextTrackIntent extends Intent {
+  const TvNextTrackIntent();
+}
+
+class TvPreviousTrackIntent extends Intent {
+  const TvPreviousTrackIntent();
+}
+
 class TvDualPaneLayout extends StatefulWidget {
   const TvDualPaneLayout({super.key});
 
@@ -70,14 +83,7 @@ class _TvDualPaneLayoutState extends State<TvDualPaneLayout> {
           Future.delayed(const Duration(milliseconds: 2000), () {
             debugPrint('TvDualPaneLayout: Stage 2 complete (2000ms)');
             if (mounted) {
-              setState(() => _focusedPane = 1); // Focus Track List pane (Right)
-
-              // Focus the track list directly via key
-              if (_playbackScreenKey.currentState != null) {
-                _playbackScreenKey.currentState!.focusCurrentTrack();
-              } else {
-                _rightScrollbarFocusNode.requestFocus();
-              }
+              _focusRightPane();
 
               // Stage 4: Wait 2000ms after track list gets focus before starting playback
               Future.delayed(const Duration(milliseconds: 2000), () {
@@ -123,6 +129,22 @@ class _TvDualPaneLayoutState extends State<TvDualPaneLayout> {
     }
   }
 
+  void _focusRightPane() {
+    if (!mounted) return;
+    setState(() => _focusedPane = 1);
+
+    // Give it a frame to ensure AudioProvider state has propagated to PlaybackScreen
+    // and that its internal track list logic has updated its indices.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      if (_playbackScreenKey.currentState != null) {
+        _playbackScreenKey.currentState!.focusCurrentTrack();
+      } else {
+        _rightScrollbarFocusNode.requestFocus();
+      }
+    });
+  }
+
   @override
   void dispose() {
     _diceFocusNode.dispose();
@@ -145,142 +167,175 @@ class _TvDualPaneLayoutState extends State<TvDualPaneLayout> {
         if (didPop) return;
         _showExitDialog(context);
       },
-      child: Scaffold(
-        body: Stack(
-          children: [
-            // Main Dual-Pane Content
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 48.0),
-              child: Row(
-                children: [
-                  // Left Pane: Header + Show List
-                  Expanded(
-                    flex: 1,
-                    child: Focus(
-                      onFocusChange: (hasFocus) {
-                        if (hasFocus) setState(() => _focusedPane = 0);
-                      },
-                      child: AnimatedOpacity(
-                        duration: const Duration(milliseconds: 400),
-                        curve: Curves.easeInOut,
-                        opacity: _focusedPane == 0
-                            ? 1.0
-                            : 0.2, // Increased dimming from 0.4
-                        child: Column(
-                          children: [
-                            TvHeader(
-                              autofocusDice: true,
-                              diceFocusNode: _diceFocusNode,
-                              gearsFocusNode: _gearsFocusNode,
-                              onRandomPlay: () {
-                                context
-                                    .read<AudioProvider>()
-                                    .playRandomShow(delayPlayback: true);
-                              },
-                              onLeft: () {
-                                // Wrap around from Dice (far left) to Right Pane
-                                if (audioProvider.currentShow != null) {
-                                  if (_playbackScreenKey.currentState != null) {
-                                    _playbackScreenKey.currentState!
-                                        .focusCurrentTrack();
-                                  } else {
-                                    _rightScrollbarFocusNode.requestFocus();
-                                  }
-                                }
-                              },
-                              onRight: () {
-                                // From Settings (far right of header), go DOWN to Track List
-                                if (_playbackScreenKey.currentState != null) {
-                                  _playbackScreenKey.currentState!
-                                      .focusCurrentTrack();
-                                } else {
-                                  _rightScrollbarFocusNode.requestFocus();
-                                }
-                              },
-                            ),
-                            Expanded(
-                              child: ShowListScreen(
-                                key: _showListScreenKey,
-                                isPane: true,
-                                scrollbarFocusNode: _showListScrollbarFocusNode,
-                                onFocusLeft: () {
-                                  _diceFocusNode.requestFocus();
-                                },
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                  // Vertical Glass Divider
-                  Container(
-                    width: 1.0,
-                    height: double.infinity,
-                    margin: const EdgeInsets.symmetric(
-                        vertical: 96.0, horizontal: 16.0),
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [
-                          Colors.white.withValues(alpha: 0.0),
-                          Colors.white
-                              .withValues(alpha: 0.15), // Increased from 0.08
-                          Colors.white
-                              .withValues(alpha: 0.15), // Increased from 0.08
-                          Colors.white.withValues(alpha: 0.0),
-                        ],
-                      ),
-                    ),
-                  ),
-                  // Right Pane: Playback / Track List
-                  Expanded(
-                    flex: 1,
-                    child: Focus(
-                      onFocusChange: (hasFocus) {
-                        if (hasFocus) setState(() => _focusedPane = 1);
-                      },
-                      child: AnimatedOpacity(
-                        duration: const Duration(milliseconds: 400),
-                        curve: Curves.easeInOut,
-                        opacity: _focusedPane == 1
-                            ? 1.0
-                            : 0.2, // Increased dimming from 0.4
-                        child: PlaybackScreen(
-                          key: _playbackScreenKey,
-                          isPane: true,
-                          scrollbarFocusNode: _rightScrollbarFocusNode,
-                          onScrollbarRight: () {
-                            // Wrap around from Right Scrollbar (far right) to Dice (far left)
-                            _diceFocusNode.requestFocus();
-                          },
-                          onTrackListLeft: () {
-                            // From Track List, go LEFT to the Show List scrollbar
-                            _showListScrollbarFocusNode.requestFocus();
-                          },
-                          onTrackListRight: () {
-                            // From Track List, go RIGHT to the Track List scrollbar
-                            _rightScrollbarFocusNode.requestFocus();
-                          },
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+      child: Shortcuts(
+        shortcuts: <LogicalKeySet, Intent>{
+          LogicalKeySet(LogicalKeyboardKey.mediaPlayPause):
+              const TvPlayPauseIntent(),
+          LogicalKeySet(LogicalKeyboardKey.mediaPlay):
+              const TvPlayPauseIntent(),
+          LogicalKeySet(LogicalKeyboardKey.mediaPause):
+              const TvPlayPauseIntent(),
+          LogicalKeySet(LogicalKeyboardKey.mediaTrackNext):
+              const TvNextTrackIntent(),
+          LogicalKeySet(LogicalKeyboardKey.mediaTrackPrevious):
+              const TvPreviousTrackIntent(),
+        },
+        child: Actions(
+          actions: <Type, Action<Intent>>{
+            TvPlayPauseIntent: CallbackAction<TvPlayPauseIntent>(
+              onInvoke: (intent) {
+                final ap = context.read<AudioProvider>();
+                if (ap.isPlaying) {
+                  ap.pause();
+                } else {
+                  ap.resume();
+                }
+                return null;
+              },
             ),
-            // Playback Messages (Top Right - No Gap)
-            if (settingsProvider.showPlaybackMessages)
-              const Positioned(
-                top: 0,
-                right: 3,
-                child: PlaybackMessages(
-                  textAlign: TextAlign.right,
-                  showDivider: true,
+            TvNextTrackIntent: CallbackAction<TvNextTrackIntent>(
+              onInvoke: (intent) {
+                context.read<AudioProvider>().seekToNext();
+                return null;
+              },
+            ),
+            TvPreviousTrackIntent: CallbackAction<TvPreviousTrackIntent>(
+              onInvoke: (intent) {
+                context.read<AudioProvider>().seekToPrevious();
+                return null;
+              },
+            ),
+          },
+          child: Scaffold(
+            body: Stack(
+              children: [
+                // Main Dual-Pane Content
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 48.0),
+                  child: Row(
+                    children: [
+                      // Left Pane: Header + Show List
+                      Expanded(
+                        flex: 1,
+                        child: Focus(
+                          onFocusChange: (hasFocus) {
+                            if (hasFocus) setState(() => _focusedPane = 0);
+                          },
+                          child: AnimatedOpacity(
+                            duration: const Duration(milliseconds: 400),
+                            curve: Curves.easeInOut,
+                            opacity: _focusedPane == 0
+                                ? 1.0
+                                : 0.2, // Increased dimming from 0.4
+                            child: Column(
+                              children: [
+                                TvHeader(
+                                  autofocusDice: true,
+                                  diceFocusNode: _diceFocusNode,
+                                  gearsFocusNode: _gearsFocusNode,
+                                  onRandomPlay: () {
+                                    context
+                                        .read<AudioProvider>()
+                                        .playRandomShow(delayPlayback: true);
+                                  },
+                                  onLeft: () {
+                                    // Wrap around from Dice (far left) to Right Pane
+                                    if (audioProvider.currentShow != null) {
+                                      _focusRightPane();
+                                    }
+                                  },
+                                  onRight: () {
+                                    // From Settings (far right of header), go DOWN to Track List
+                                    _focusRightPane();
+                                  },
+                                ),
+                                Expanded(
+                                  child: ShowListScreen(
+                                    key: _showListScreenKey,
+                                    isPane: true,
+                                    scrollbarFocusNode:
+                                        _showListScrollbarFocusNode,
+                                    onFocusLeft: () {
+                                      _diceFocusNode.requestFocus();
+                                    },
+                                    onFocusPlayback: _focusRightPane,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                      // Vertical Glass Divider
+                      Container(
+                        width: 1.0,
+                        height: double.infinity,
+                        margin: const EdgeInsets.symmetric(
+                            vertical: 96.0, horizontal: 16.0),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              Colors.white.withValues(alpha: 0.0),
+                              Colors.white.withValues(
+                                  alpha: 0.15), // Increased from 0.08
+                              Colors.white.withValues(
+                                  alpha: 0.15), // Increased from 0.08
+                              Colors.white.withValues(alpha: 0.0),
+                            ],
+                          ),
+                        ),
+                      ),
+                      // Right Pane: Playback / Track List
+                      Expanded(
+                        flex: 1,
+                        child: Focus(
+                          onFocusChange: (hasFocus) {
+                            if (hasFocus) setState(() => _focusedPane = 1);
+                          },
+                          child: AnimatedOpacity(
+                            duration: const Duration(milliseconds: 400),
+                            curve: Curves.easeInOut,
+                            opacity: _focusedPane == 1
+                                ? 1.0
+                                : 0.2, // Increased dimming from 0.4
+                            child: PlaybackScreen(
+                              key: _playbackScreenKey,
+                              isPane: true,
+                              scrollbarFocusNode: _rightScrollbarFocusNode,
+                              onScrollbarRight: () {
+                                // Wrap around from Right Scrollbar (far right) to Dice (far left)
+                                _diceFocusNode.requestFocus();
+                              },
+                              onTrackListLeft: () {
+                                // From Track List, go LEFT to the Show List scrollbar
+                                _showListScrollbarFocusNode.requestFocus();
+                              },
+                              onTrackListRight: () {
+                                // From Track List, go RIGHT to the Track List scrollbar
+                                _rightScrollbarFocusNode.requestFocus();
+                              },
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-          ],
+                // Playback Messages (Top Right - No Gap)
+                if (settingsProvider.showPlaybackMessages)
+                  const Positioned(
+                    top: 0,
+                    right: 3,
+                    child: PlaybackMessages(
+                      textAlign: TextAlign.right,
+                      showDivider: true,
+                    ),
+                  ),
+              ],
+            ),
+          ),
         ),
       ),
     );

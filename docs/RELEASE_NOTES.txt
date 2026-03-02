@@ -1,3 +1,9 @@
+Release 1.1.40+140:
+- **UI/UX (Web/Fruit)**: Upgraded Mini Player track title with premium "Liquid Glass" and Neumorphism (inset glass etching effect).
+- **UI/UX (Web/Fruit)**: Applied "Liquid Glass" recessed glass aesthetic to Date and Venue rows in Show List cards.
+- **UI/UX (AppBar)**: Standardized settings icon alignment and refined horizontal padding across all screen AppBars in the Fruit theme.
+- **UI/UX (Show List)**: Applied premium Liquid Glass and Neumorphism treatment to rating stars and badges in stacked layout for Web.
+
 Release 1.1.39+139:
 - **Workflows**: Converted manual skills into actionable slash-command workflows (`/shipit`, `/inject_debug_tools`, `/test_fixer`, `/glass_audit`, `/tv_flow_audit`).
 - **UI/UX (Audit)**: Enhanced `/glass_audit` to be context-aware, specifically detecting Material 3 "leakage" in the Liquid Glass (Fruit) aesthetic.

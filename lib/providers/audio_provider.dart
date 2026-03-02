@@ -29,6 +29,7 @@ class AudioProvider with ChangeNotifier {
       StreamController<({Show show, Source source})>.broadcast();
   final _bufferAgentNotificationController = StreamController<
       ({String message, VoidCallback? retryAction})>.broadcast();
+  final _notificationController = StreamController<String>.broadcast();
 
   ShowListProvider? _showListProvider;
   SettingsProvider? _settingsProvider;
@@ -116,6 +117,7 @@ class AudioProvider with ChangeNotifier {
   Stream<({String message, VoidCallback? retryAction})>
       get bufferAgentNotificationStream =>
           _bufferAgentNotificationController.stream;
+  Stream<String> get notificationStream => _notificationController.stream;
 
   /// Proxy for cached track count from [AudioCacheService]
   int get cachedTrackCount => _audioCacheService.cachedTrackCount;
@@ -619,6 +621,10 @@ class AudioProvider with ChangeNotifier {
           'Failed to pre-queue next show (addAudioSources failed). Will load normally on track end. Error: $e');
       _isTransitioning = false;
     }
+  }
+
+  void showNotification(String message) {
+    _notificationController.add(message);
   }
 
   void _updateCurrentShowFromSourceId(String sourceId) {

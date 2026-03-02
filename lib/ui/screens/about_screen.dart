@@ -8,6 +8,7 @@ import 'package:shakedown/providers/settings_provider.dart';
 import 'package:shakedown/providers/audio_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:shakedown/utils/color_generator.dart';
+import 'package:shakedown/utils/utils.dart';
 
 class AboutScreen extends StatelessWidget {
   const AboutScreen({super.key});
@@ -158,12 +159,7 @@ class AboutBody extends StatelessWidget {
       }
     } catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Could not open browser: $e'),
-            duration: const Duration(seconds: 3),
-          ),
-        );
+        showMessage(context, 'Could not open browser: $e');
       }
     }
   }

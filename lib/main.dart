@@ -32,6 +32,10 @@ import 'package:shakedown/ui/screens/screensaver_screen.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  initLogger();
+
+  final prefs = await SharedPreferences.getInstance();
+
   bool isTv = false;
   try {
     if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
@@ -41,6 +45,11 @@ Future<void> main() async {
     }
   } catch (e) {
     debugPrint('Error detecting TV in main: $e');
+  }
+
+  // Check for manual override
+  if (prefs.getBool('force_tv') == true) {
+    isTv = true;
   }
 
   if (!kIsWeb) {
@@ -57,8 +66,6 @@ Future<void> main() async {
     }
   }
 
-  initLogger();
-
   await AudioProvider.clearAudioCache();
 
   if (!kIsWeb) {
@@ -69,8 +76,6 @@ Future<void> main() async {
       androidNotificationIcon: 'mipmap/ic_launcher',
     );
   }
-
-  final prefs = await SharedPreferences.getInstance();
 
   runApp(GdarApp(prefs: prefs, isTv: isTv));
 }
@@ -357,6 +362,23 @@ class _GdarAppState extends State<GdarApp> {
               MaterialPageRoute(builder: (_) => const OnboardingScreen()),
               (route) => false,
             ));
+          } else if (action == 'force_tv') {
+            final enabled =
+                uri.queryParameters['enabled']?.toLowerCase() == 'true';
+            final settingsProvider =
+                Provider.of<SettingsProvider>(context, listen: false);
+            logger
+                .i('Main: [Session #$_sessionId] Force TV UI set to: $enabled');
+            settingsProvider.setForceTv(enabled);
+
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(enabled
+                    ? 'TV UI Forced. RESTART APP to apply.'
+                    : 'TV UI Force Disabled. RESTART APP to apply.'),
+                duration: const Duration(seconds: 5),
+              ),
+            );
           }
         } else if (uri.host == 'settings') {
           if (kReleaseMode) return;

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/foundation.dart';
 import 'package:shakedown/utils/app_date_utils.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:provider/provider.dart';
@@ -48,7 +49,7 @@ class PlaybackPanel extends StatelessWidget {
     final audioProvider = context.watch<AudioProvider>();
     final settingsProvider = context.watch<SettingsProvider>();
     final themeProvider = context.watch<ThemeProvider>();
-    final isFruit = themeProvider.themeStyle == ThemeStyle.fruit;
+    final isFruit = themeProvider.themeStyle == ThemeStyle.fruit && kIsWeb;
     final useNeumorphic = settingsProvider.useNeumorphism &&
         isFruit &&
         !settingsProvider.useTrueBlack;
@@ -335,49 +336,8 @@ class PlaybackPanel extends StatelessWidget {
                                                                 text: info));
                                                         HapticFeedback
                                                             .selectionClick();
-                                                        ScaffoldMessenger.of(
-                                                                context)
-                                                            .showSnackBar(
-                                                          SnackBar(
-                                                            content: Row(
-                                                              children: [
-                                                                Icon(
-                                                                  Icons
-                                                                      .check_circle_outline_rounded,
-                                                                  color: colorScheme
-                                                                      .onPrimaryContainer,
-                                                                  size: 20 *
-                                                                      scaleFactor,
-                                                                ),
-                                                                const SizedBox(
-                                                                    width: 12),
-                                                                Expanded(
-                                                                  child: Text(
-                                                                    'Details copied to clipboard',
-                                                                    style: textTheme
-                                                                        .labelLarge
-                                                                        ?.copyWith(
-                                                                      color: colorScheme
-                                                                          .onPrimaryContainer,
-                                                                      fontWeight:
-                                                                          FontWeight
-                                                                              .bold,
-                                                                    ),
-                                                                  ),
-                                                                ),
-                                                              ],
-                                                            ),
-                                                            backgroundColor:
-                                                                colorScheme
-                                                                    .primaryContainer,
-                                                            behavior:
-                                                                SnackBarBehavior
-                                                                    .fixed,
-                                                            duration:
-                                                                const Duration(
-                                                                    seconds: 2),
-                                                          ),
-                                                        );
+                                                        showMessage(context,
+                                                            'Details copied to clipboard');
                                                       },
                                                     );
 

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:shakedown/services/device_service.dart';
@@ -62,7 +63,7 @@ class SectionCard extends StatelessWidget {
     final settingsProvider = context.watch<SettingsProvider>();
     final themeProvider = context.watch<ThemeProvider>();
     final useNeumorphism = settingsProvider.useNeumorphism;
-    final isFruit = themeProvider.themeStyle == ThemeStyle.fruit;
+    final isFruit = themeProvider.themeStyle == ThemeStyle.fruit && kIsWeb;
 
     final activeIcon = (isFruit && lucideIcon != null) ? lucideIcon! : icon;
 

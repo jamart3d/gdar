@@ -11,8 +11,6 @@ import 'package:shakedown/ui/screens/track_list_screen.dart';
 import 'package:shakedown/utils/logger.dart';
 import 'package:shakedown/services/catalog_service.dart';
 import 'package:shakedown/services/device_service.dart';
-import 'package:shakedown/ui/widgets/rating_control.dart';
-import 'package:shakedown/ui/widgets/tv/tv_interaction_modal.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
 /// Mixin providing business logic and event handlers for [ShowListScreen].
@@ -101,13 +99,32 @@ mixin ShowListLogicMixin<T extends StatefulWidget>
     final audioProvider = context.read<AudioProvider>();
     final isPlayingThisShow = audioProvider.currentShow == show;
     if (isPlayingThisShow) {
-      if (show.sources.length > 1) {
+      if (context.read<DeviceService>().isTv) {
+        unawaited(HapticFeedback.selectionClick());
+        // For active shows, ensure it's expanded if multi-source (for context) and flow.
+        if (show.sources.length > 1) {
+          final showListProvider = context.read<ShowListProvider>();
+          final key = showListProvider.getShowKey(show);
+          if (showListProvider.expandedShowKey != key) {
+            showListProvider.expandShow(key);
+            animationController.forward(from: 0.0);
+          }
+        }
+        try {
+          (widget as dynamic).onFocusPlayback?.call();
+        } catch (_) {}
+      } else if (show.sources.length > 1) {
         await handleShowExpansion(show);
       } else {
         await openPlaybackScreen();
       }
     } else {
-      if (show.sources.length > 1) {
+      if (context.read<DeviceService>().isTv) {
+        // v135 style: Single click a non-playing show flows to the full-screen TrackListScreen.
+        await navigateTo(
+          TrackListScreen(show: show, source: show.sources.first),
+        );
+      } else if (show.sources.length > 1) {
         await handleShowExpansion(show);
       } else {
         final shouldOpenPlayer = await navigateTo(
@@ -154,7 +171,15 @@ mixin ShowListLogicMixin<T extends StatefulWidget>
     final isPlayingThisSource = audioProvider.currentSource?.id == source.id;
 
     if (isPlayingThisSource) {
-      await openPlaybackScreen();
+      // Guard: No full-screen player on TV. Shift focus to the track list.
+      if (context.read<DeviceService>().isTv) {
+        unawaited(HapticFeedback.selectionClick());
+        try {
+          (widget as dynamic).onFocusPlayback?.call();
+        } catch (_) {}
+      } else {
+        await openPlaybackScreen();
+      }
     } else {
       final singleSourceShow = Show(
         name: show.name,
@@ -164,12 +189,23 @@ mixin ShowListLogicMixin<T extends StatefulWidget>
         sources: [source],
         hasFeaturedTrack: show.hasFeaturedTrack,
       );
-      final shouldOpenPlayer = await navigateTo(
-        TrackListScreen(
-            show: singleSourceShow, source: singleSourceShow.sources.first),
-      );
-      if (shouldOpenPlayer == true && mounted) {
-        await openPlaybackScreen();
+      if (context.read<DeviceService>().isTv) {
+        // v135 style: Single click a non-playing source flows to the full-screen TrackListScreen.
+        await navigateTo(
+          TrackListScreen(
+              show: singleSourceShow, source: singleSourceShow.sources.first),
+        );
+      } else {
+        final shouldOpenPlayer = await navigateTo(
+          TrackListScreen(
+              show: singleSourceShow, source: singleSourceShow.sources.first),
+        );
+        if (shouldOpenPlayer == true && mounted) {
+          // Guard: No full-screen player on TV.
+          if (!context.read<DeviceService>().isTv) {
+            await openPlaybackScreen();
+          }
+        }
       }
     }
   }
@@ -192,13 +228,8 @@ mixin ShowListLogicMixin<T extends StatefulWidget>
     }
 
     if (context.read<DeviceService>().isTv) {
-      unawaited(TvInteractionModal.show(
-        context,
-        title: show.name,
-        subtitle: show.formattedDateYearFirst,
-        onPlay: () => _playSource(show, sourceToPlay),
-        onRate: () => _showRatingDialog(show, sourceToPlay),
-      ));
+      // v135 style: Direct play on long-press (Google TV).
+      _playSource(show, sourceToPlay);
       return;
     }
 
@@ -208,40 +239,11 @@ mixin ShowListLogicMixin<T extends StatefulWidget>
 
   void onSourceLongPressed(Show show, Source source) {
     if (context.read<DeviceService>().isTv) {
-      unawaited(TvInteractionModal.show(
-        context,
-        title: source.id,
-        subtitle: show.name,
-        onPlay: () => _playSource(show, source),
-        onRate: () => _showRatingDialog(show, source),
-      ));
+      // v135 style: Direct play on long-press (Google TV).
+      _playSource(show, source);
       return;
     }
     _playSource(show, source);
-  }
-
-  Future<void> _showRatingDialog(Show show, Source source) async {
-    final catalog = context.read<CatalogService>();
-    final rating = catalog.getRating(source.id);
-    final isPlayed = catalog.isPlayed(source.id);
-
-    await showDialog(
-      context: context,
-      builder: (context) => RatingDialog(
-        initialRating: rating,
-        sourceId: source.id,
-        sourceUrl: source.tracks.isNotEmpty ? source.tracks.first.url : null,
-        isPlayed: isPlayed,
-        onRatingChanged: (newRating) {
-          catalog.setRating(source.id, newRating);
-        },
-        onPlayedChanged: (bool newIsPlayed) {
-          if (newIsPlayed != catalog.isPlayed(source.id)) {
-            catalog.togglePlayed(source.id);
-          }
-        },
-      ),
-    );
   }
 
   void _playSource(Show show, Source source) {
@@ -264,12 +266,14 @@ mixin ShowListLogicMixin<T extends StatefulWidget>
       context.read<AnimationController>().stop();
     } catch (_) {}
 
+    final isTv = context.read<DeviceService>().isTv;
     final result = await Navigator.of(context).push(
       PageRouteBuilder(
         pageBuilder: (context, animation, secondaryAnimation) => screen,
-        transitionDuration:
-            instant ? Duration.zero : const Duration(milliseconds: 300),
-        transitionsBuilder: instant
+        transitionDuration: (instant || isTv)
+            ? Duration.zero
+            : const Duration(milliseconds: 300),
+        transitionsBuilder: (instant || isTv)
             ? (context, animation, secondaryAnimation, child) => child
             : (context, animation, secondaryAnimation, child) {
                 const begin = Offset(0.0, 1.0);
@@ -295,6 +299,10 @@ mixin ShowListLogicMixin<T extends StatefulWidget>
   }
 
   Future<void> openPlaybackScreen() async {
+    if (context.read<DeviceService>().isTv) {
+      // No full-screen player on TV.
+      return;
+    }
     await navigateTo(const PlaybackScreen(), instant: false);
 
     if (!mounted) return;
@@ -442,7 +450,9 @@ mixin ShowListLogicMixin<T extends StatefulWidget>
         final topSource = topShow.sources.first;
         audioProvider.playSource(topShow, topSource);
         handleRandomShowSelection((show: topShow, source: topSource));
-        openPlaybackScreen();
+        if (mounted && !context.read<DeviceService>().isTv) {
+          openPlaybackScreen();
+        }
         searchController.clear();
         searchFocusNode.unfocus();
       }

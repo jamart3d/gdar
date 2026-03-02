@@ -5,6 +5,7 @@ import 'package:shakedown/ui/widgets/tv/tv_focus_wrapper.dart';
 import 'package:shakedown/providers/theme_provider.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:shakedown/ui/widgets/section_card.dart';
+import 'package:shakedown/utils/utils.dart';
 import 'package:provider/provider.dart';
 
 class SupportSection extends StatelessWidget {
@@ -86,12 +87,7 @@ class SupportSection extends StatelessWidget {
       }
     } catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Could not open browser: $e'),
-            duration: const Duration(seconds: 3),
-          ),
-        );
+        showMessage(context, 'Could not open browser: $e');
       }
     }
   }

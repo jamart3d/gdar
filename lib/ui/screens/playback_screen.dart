@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 
 import 'package:provider/provider.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
@@ -18,6 +19,7 @@ import 'package:shakedown/services/catalog_service.dart';
 import 'package:shakedown/ui/widgets/src_badge.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'dart:async';
+import 'package:shakedown/utils/utils.dart';
 import 'package:shakedown/services/device_service.dart';
 import 'package:shakedown/ui/widgets/tv/tv_scrollbar.dart';
 import 'package:shakedown/providers/theme_provider.dart';
@@ -108,20 +110,7 @@ class PlaybackScreenState extends State<PlaybackScreen>
       final audioProvider = context.read<AudioProvider>();
       _errorSubscription = audioProvider.playbackErrorStream.listen((error) {
         if (mounted && error.isNotEmpty) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                'Playback Error: $error',
-                style: TextStyle(
-                    color: Theme.of(context).colorScheme.onErrorContainer),
-              ),
-              backgroundColor: Theme.of(context).colorScheme.errorContainer,
-              behavior: SnackBarBehavior.floating,
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12)),
-              margin: const EdgeInsets.all(12),
-            ),
-          );
+          showMessage(context, 'Playback Error: $error');
         }
       });
       _scrollToCurrentTrack(false);
@@ -634,12 +623,7 @@ class PlaybackScreenState extends State<PlaybackScreen>
     if (widget.isPane) {
       return Container(
         color: backgroundColor.withValues(alpha: 0.7),
-        child: ClipRect(
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 15.0, sigmaY: 15.0),
-            child: playbackContent,
-          ),
-        ),
+        child: playbackContent,
       );
     }
 
@@ -656,6 +640,7 @@ class PlaybackScreenState extends State<PlaybackScreen>
                 ? []
                 : (context.watch<ThemeProvider>().themeStyle ==
                             ThemeStyle.fruit &&
+                        kIsWeb &&
                         settingsProvider.useNeumorphism)
                     ? NeumorphicWrapper.getShadows(
                         context: context,

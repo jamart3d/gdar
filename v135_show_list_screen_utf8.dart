@@ -1,4 +1,4 @@
-import 'dart:async';
+﻿import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
@@ -11,7 +11,6 @@ import 'package:shakedown/ui/screens/settings_screen.dart';
 
 import 'package:shakedown/utils/color_generator.dart';
 import 'package:shakedown/utils/logger.dart';
-import 'package:shakedown/utils/utils.dart';
 
 import 'package:just_audio/just_audio.dart';
 import 'package:provider/provider.dart';
@@ -24,14 +23,12 @@ class ShowListScreen extends StatefulWidget {
   final bool isPane;
   final FocusNode? scrollbarFocusNode;
   final VoidCallback? onFocusLeft;
-  final VoidCallback? onFocusPlayback;
 
   const ShowListScreen({
     super.key,
     this.isPane = false,
     this.scrollbarFocusNode,
     this.onFocusLeft,
-    this.onFocusPlayback,
   });
 
   @override
@@ -244,13 +241,12 @@ class ShowListScreenState extends State<ShowListScreen>
     if (!mounted) return;
     final processingState = state.processingState;
 
-    if (isRandomShowLoading && !isResettingRandomShow) {
+    if (isRandomShowLoading) {
       // If running a visual test, ignore player state (which might be idle)
       if (isAnimationTest) return;
 
       if (processingState == ProcessingState.ready ||
           processingState == ProcessingState.completed) {
-        isResettingRandomShow = true;
         // Minimum 2s roll duration for visual consistency
         final now = DateTime.now();
         final startTime = lastRollStartTime ?? now;
@@ -267,7 +263,6 @@ class ShowListScreenState extends State<ShowListScreen>
               showListProvider.setIsChoosingRandomShow(false);
               setState(() {
                 isRandomShowLoading = false;
-                isResettingRandomShow = false;
                 userInitiatedRoll = false;
               });
             }
@@ -276,7 +271,6 @@ class ShowListScreenState extends State<ShowListScreen>
           showListProvider.setIsChoosingRandomShow(false);
           setState(() {
             isRandomShowLoading = false;
-            isResettingRandomShow = false;
             userInitiatedRoll = false;
           });
         }
@@ -299,7 +293,19 @@ class ShowListScreenState extends State<ShowListScreen>
   }
 
   void _showErrorSnackBar(String msg) {
-    showMessage(context, msg);
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text(msg,
+          style:
+              TextStyle(color: Theme.of(context).colorScheme.onErrorContainer)),
+      backgroundColor: Theme.of(context).colorScheme.errorContainer,
+      behavior: SnackBarBehavior.floating,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      margin: const EdgeInsets.all(12),
+      action: SnackBarAction(
+          label: 'Dismiss',
+          textColor: Theme.of(context).colorScheme.onErrorContainer,
+          onPressed: () => ScaffoldMessenger.of(context).hideCurrentSnackBar()),
+    ));
   }
 
   @override

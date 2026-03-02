@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
 import 'package:shakedown/providers/settings_provider.dart';
 import 'package:shakedown/providers/theme_provider.dart';
@@ -83,7 +84,7 @@ class ShnidBadge extends StatelessWidget {
     }
 
     final themeProvider = context.watch<ThemeProvider>();
-    final isFruit = themeProvider.themeStyle == ThemeStyle.fruit;
+    final isFruit = themeProvider.themeStyle == ThemeStyle.fruit && kIsWeb;
     final useNeumorphic = isFruit &&
         settingsProvider.useNeumorphism &&
         !settingsProvider.useTrueBlack;

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:shakedown/utils/app_date_utils.dart';
 import 'package:shakedown/models/show.dart';
 import 'package:shakedown/models/source.dart';
@@ -7,8 +7,6 @@ import 'package:shakedown/utils/color_generator.dart';
 import 'package:shakedown/utils/font_layout_config.dart';
 import 'package:provider/provider.dart';
 import 'package:shakedown/services/device_service.dart';
-import 'package:shakedown/providers/theme_provider.dart';
-import 'package:flutter/foundation.dart';
 
 /// Holds computed style values for [ShowListCard].
 class CardStyle {
@@ -25,8 +23,6 @@ class CardStyle {
   final String formattedDate;
   final FontLayoutConfig config;
   final bool suppressOuterGlow;
-  final double cardBorderWidth;
-  final bool isHovered;
 
   const CardStyle({
     required this.cardBorderColor,
@@ -42,8 +38,6 @@ class CardStyle {
     required this.formattedDate,
     required this.config,
     required this.suppressOuterGlow,
-    required this.cardBorderWidth,
-    this.isHovered = false,
   });
 
   /// Computes the card style based on current state and settings.
@@ -54,13 +48,9 @@ class CardStyle {
     required bool isPlaying,
     required Source? playingSource,
     required SettingsProvider settings,
-    bool isHovered = false,
   }) {
+    final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
-    final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
-
-    final colorScheme =
-        Theme.of(context).colorScheme; // Define colorScheme here
 
     final cardBorderColor = isPlaying
         ? colorScheme.primary
@@ -85,16 +75,9 @@ class CardStyle {
     // Venue Style
     final baseVenueStyle = textTheme.bodyLarge?.copyWith(fontSize: 15.0) ??
         const TextStyle(fontSize: 15.0);
-    final bool isFruit = themeProvider.themeStyle == ThemeStyle.fruit && kIsWeb;
-    final bool isDark = Theme.of(context).brightness == Brightness.dark;
-
     final venueStyle =
         baseVenueStyle.apply(fontSizeFactor: effectiveScale).copyWith(
-              color: isFruit
-                  ? (isDark
-                      ? Colors.white.withValues(alpha: 0.9)
-                      : Colors.black.withValues(alpha: 0.9))
-                  : colorScheme.onSurface,
+              color: colorScheme.onSurface,
             );
 
     final String formattedDate =
@@ -105,11 +88,7 @@ class CardStyle {
         const TextStyle(fontSize: 9.5);
     final dateStyle =
         baseDateStyle.apply(fontSizeFactor: effectiveScale).copyWith(
-              color: isFruit
-                  ? (isDark
-                      ? Colors.white.withValues(alpha: 0.6)
-                      : Colors.black.withValues(alpha: 0.6))
-                  : colorScheme.onSurfaceVariant,
+              color: colorScheme.onSurfaceVariant,
               letterSpacing: 0.15,
             );
 
@@ -118,12 +97,8 @@ class CardStyle {
     final bool isCaveat = settings.appFont == 'caveat';
     final bool dateFirst = settings.dateFirstInShowCard;
 
-    double topSize = (themeProvider.themeStyle == ThemeStyle.fruit && kIsWeb)
-        ? 28.0
-        : 15.0; // v134 standard Venue size
-    double bottomSize = (themeProvider.themeStyle == ThemeStyle.fruit && kIsWeb)
-        ? 11.0
-        : 9.5; // v134 standard Date size
+    double topSize = 15.0;
+    double bottomSize = 9.5;
 
     if (isRockSalt) {
       if (dateFirst) {
@@ -155,54 +130,17 @@ class CardStyle {
       }
     }
 
-    final bool useLetterpress =
-        themeProvider.themeStyle == ThemeStyle.fruit && kIsWeb;
-
-    final finalTopStyle = venueStyle.copyWith(
-      fontSize: topSize * effectiveScale,
-      fontFeatures: useLetterpress ? [const FontFeature('opsz', 1)] : null,
-      shadows: useLetterpress
-          ? [
-              Shadow(
-                color: Colors.black.withValues(alpha: 0.15),
-                offset: const Offset(0.5, 0.5),
-                blurRadius: 0.5,
-              ),
-              Shadow(
-                color: Colors.white.withValues(alpha: 0.5),
-                offset: const Offset(-0.5, -0.5),
-                blurRadius: 0.5,
-              ),
-            ]
-          : null,
-    );
-
-    final finalBottomStyle = dateStyle.copyWith(
-      fontSize: bottomSize * effectiveScale,
-      fontFeatures: useLetterpress ? [const FontFeature('opsz', 1)] : null,
-      shadows: useLetterpress
-          ? [
-              Shadow(
-                color: Colors.black.withValues(alpha: 0.12),
-                offset: const Offset(0.4, 0.4),
-                blurRadius: 0.4,
-              ),
-              Shadow(
-                color: Colors.white.withValues(alpha: 0.4),
-                offset: const Offset(-0.4, -0.4),
-                blurRadius: 0.4,
-              ),
-            ]
-          : null,
-    );
+    final finalTopStyle =
+        venueStyle.copyWith(fontSize: topSize * effectiveScale);
+    final finalBottomStyle =
+        dateStyle.copyWith(fontSize: bottomSize * effectiveScale);
 
     // Background Color
     Color backgroundColor = colorScheme.surface;
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     final isTrueBlackMode = isDarkMode && settings.useTrueBlack;
 
-    if (themeProvider.themeStyle != ThemeStyle.fruit &&
-        (!isTrueBlackMode || settings.glowMode >= 25) &&
+    if ((!isTrueBlackMode || settings.glowMode == 50) &&
         isPlaying &&
         settings.highlightCurrentShowCard) {
       String seed = show.name;
@@ -216,26 +154,12 @@ class CardStyle {
     // Glow and Shadow Logic
     bool suppressOuterGlow = isExpanded && show.sources.length > 1;
     bool showGlow = settings.glowMode > 0;
-
-    final isFruitWeb = themeProvider.themeStyle == ThemeStyle.fruit &&
-        kIsWeb &&
-        isPlaying &&
-        settings.highlightCurrentShowCard;
-
-    bool useRgb = (settings.highlightPlayingWithRgb && isPlaying) || isFruitWeb;
+    bool useRgb = settings.highlightPlayingWithRgb && isPlaying;
     bool showShadow =
-        settings.glowMode > 0 && (!isTrueBlackMode || settings.glowMode >= 40);
+        settings.glowMode > 0 && (!isTrueBlackMode || settings.glowMode == 2);
 
     double baseOpacity = settings.glowMode / 100.0;
     double glowOpacity = isPlaying ? baseOpacity : baseOpacity * 0.25;
-
-    // Fruit hairline border logic
-    double cardBorderWidth = 3.0; // Default
-    if (themeProvider.themeStyle == ThemeStyle.fruit && kIsWeb) {
-      if (!isExpanded && !isPlaying) {
-        cardBorderWidth = 0.5;
-      }
-    }
 
     return CardStyle(
       cardBorderColor: cardBorderColor,
@@ -251,8 +175,6 @@ class CardStyle {
       formattedDate: formattedDate,
       config: config,
       suppressOuterGlow: suppressOuterGlow,
-      cardBorderWidth: cardBorderWidth,
-      isHovered: isHovered,
     );
   }
 }

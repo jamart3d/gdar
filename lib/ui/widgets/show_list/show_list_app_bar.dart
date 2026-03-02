@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
 import 'package:shakedown/providers/settings_provider.dart';
 import 'package:shakedown/providers/show_list_provider.dart';
@@ -61,7 +62,7 @@ class ShowListAppBar extends StatelessWidget implements PreferredSizeWidget {
 
     final isTv = context.watch<DeviceService>().isTv;
     final themeStyle = context.watch<ThemeProvider>().themeStyle;
-    final isFruit = themeStyle == ThemeStyle.fruit;
+    final isFruit = themeStyle == ThemeStyle.fruit && kIsWeb;
     final useNeumorphic = settingsProvider.useNeumorphism &&
         isFruit &&
         !settingsProvider.useTrueBlack;
@@ -90,7 +91,8 @@ class ShowListAppBar extends StatelessWidget implements PreferredSizeWidget {
       }
 
       final Widget wrapped = Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 10.0),
+        padding: EdgeInsets.symmetric(
+            horizontal: kIsWeb ? (isFruit ? 16.0 : 8.0) : 8.0),
         child: isTv
             ? TvFocusWrapper(
                 onTap: onTap,

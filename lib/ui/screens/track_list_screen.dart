@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:shakedown/utils/app_date_utils.dart';
 import 'package:shakedown/models/show.dart';
@@ -22,6 +23,7 @@ import 'package:shakedown/ui/styles/app_typography.dart';
 import 'package:shakedown/utils/font_layout_config.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:shakedown/providers/theme_provider.dart';
+import 'package:shakedown/services/device_service.dart';
 
 class TrackListScreen extends StatefulWidget {
   final Show show;
@@ -198,6 +200,7 @@ class _TrackListScreenState extends State<TrackListScreen> {
   }
 
   Future<void> _openPlaybackScreen() async {
+    if (context.read<DeviceService>().isTv) return;
     final localContext = context;
     // Pause global clock
     try {
@@ -350,7 +353,8 @@ class _TrackListScreenState extends State<TrackListScreen> {
 
             if (useNeumorphic) {
               return Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                padding: EdgeInsets.symmetric(
+                    horizontal: kIsWeb ? (isFruit ? 16.0 : 8.0) : 8.0),
                 child: NeumorphicWrapper(
                   isCircle: false, // Map to rounded square
                   borderRadius: 12.0,
@@ -368,7 +372,8 @@ class _TrackListScreenState extends State<TrackListScreen> {
             }
 
             return Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 10.0),
+              padding: EdgeInsets.symmetric(
+                  horizontal: kIsWeb ? (isFruit ? 16.0 : 8.0) : 8.0),
               child: btn,
             );
           }),
@@ -386,7 +391,10 @@ class _TrackListScreenState extends State<TrackListScreen> {
             child: AnimatedOpacity(
               duration: const Duration(milliseconds: 400),
               opacity: isDifferentShowPlaying ? 1.0 : 0.0,
-              child: MiniPlayer(onTap: _openPlaybackScreen),
+              child: MiniPlayer(
+                onTap: _openPlaybackScreen,
+                hideControls: context.read<DeviceService>().isTv,
+              ),
             ),
           ),
         ],

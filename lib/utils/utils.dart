@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:shakedown/utils/logger.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:provider/provider.dart';
+import 'package:shakedown/providers/audio_provider.dart';
+import 'package:shakedown/services/device_service.dart';
 
 String formatDuration(Duration d) {
   String twoDigits(int n) => n.toString().padLeft(2, '0');
@@ -63,13 +66,25 @@ Future<void> launchArchivePage(String firstTrackUrl,
   } catch (e) {
     logger.e('Error parsing URL or launching archive page: $e');
     if (context != null && context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Could not open browser: $e'),
-          duration: const Duration(seconds: 3),
-        ),
-      );
+      showMessage(context, 'Could not open browser: $e');
     }
+  }
+}
+
+void showMessage(BuildContext context, String message) {
+  if (!context.mounted) return;
+
+  final isTv = context.read<DeviceService>().isTv;
+  if (isTv) {
+    context.read<AudioProvider>().showNotification(message);
+  } else {
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        duration: const Duration(seconds: 3),
+      ),
+    );
   }
 }
 
@@ -85,12 +100,7 @@ Future<void> launchArchiveDetails(String identifier,
   } catch (e) {
     logger.e('Error launching archive details page: $e');
     if (context != null && context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Could not open browser: $e'),
-          duration: const Duration(seconds: 3),
-        ),
-      );
+      showMessage(context, 'Could not open browser: $e');
     }
   }
 }

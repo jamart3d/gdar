@@ -12,6 +12,7 @@ import 'package:shakedown/ui/widgets/settings/random_probability_card.dart';
 import 'package:shakedown/ui/widgets/tv/tv_switch_list_tile.dart';
 import 'package:shakedown/providers/theme_provider.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:shakedown/utils/utils.dart';
 
 class PlaybackSection extends StatelessWidget {
   final double scaleFactor;
@@ -255,22 +256,7 @@ class PlaybackSection extends StatelessWidget {
           onChanged: (value) {
             context.read<SettingsProvider>().togglePlayRandomOnCompletion();
             if (value && !settingsProvider.offlineBuffering) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  behavior: SnackBarBehavior.floating,
-                  margin: EdgeInsets.only(
-                    bottom: MediaQuery.of(context).size.height * 0.45,
-                    left: 16,
-                    right: 16,
-                  ),
-                  content: const Text('Consider enabling Advanced Cache.'),
-                  action: SnackBarAction(
-                    label: 'GO',
-                    onPressed: () => onScrollToSetting('offline_buffering'),
-                  ),
-                  duration: const Duration(seconds: 4),
-                ),
-              );
+              showMessage(context, 'Consider enabling Advanced Cache.');
             }
           },
           secondary: Icon(isFruit ? LucideIcons.repeat : Icons.repeat_rounded),
@@ -500,21 +486,8 @@ class PlaybackSection extends StatelessWidget {
                   onSelectionChanged: (AudioEngineMode mode) {
                     HapticFeedback.lightImpact();
                     sp.setAudioEngineMode(mode);
-                    ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        behavior: SnackBarBehavior.floating,
-                        content: const Text(
-                            'Relaunch required for engine change to take effect.'),
-                        action: SnackBarAction(
-                          label: 'RELOAD',
-                          onPressed: () {
-                            context.read<AudioProvider>().audioPlayer.reload();
-                          },
-                        ),
-                        duration: const Duration(seconds: 8),
-                      ),
-                    );
+                    showMessage(context,
+                        'Relaunch required for engine change to take effect.');
                   },
                 ),
               ),

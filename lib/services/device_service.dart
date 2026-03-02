@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:device_info_plus/device_info_plus.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'device_service_pwa_stub.dart'
     if (dart.library.js_interop) 'device_service_pwa_web.dart';
 
@@ -60,6 +61,16 @@ class DeviceService extends ChangeNotifier {
         // Source of truth for Android TV
         final bool? result = await _deviceChannel.invokeMethod<bool>('isTv');
         _isTv = result ?? false;
+
+        // Check for manual override
+        try {
+          final prefs = await SharedPreferences.getInstance();
+          if (prefs.getBool('force_tv') == true) {
+            _isTv = true;
+          }
+        } catch (e) {
+          // Ignore pref errors here
+        }
 
         final androidInfo = await deviceInfo.androidInfo;
         _deviceName = '${androidInfo.brand} ${androidInfo.model}';

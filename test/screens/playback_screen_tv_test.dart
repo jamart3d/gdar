@@ -489,6 +489,13 @@ class FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
   Future<void> setOilBannerFont(String font) async {}
 
   @override
+  bool get forceTv => false;
+  @override
+  void toggleForceTv() {}
+  @override
+  void setForceTv(bool value) {}
+
+  @override
   bool get hasListeners => super.hasListeners;
 }
 

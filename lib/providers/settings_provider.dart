@@ -121,6 +121,7 @@ class SettingsProvider with ChangeNotifier {
   static const String _enableSwipeToBlockKey = 'enable_swipe_to_block';
   static const String _omitHttpPathInCopyKey = 'omit_http_path_in_copy';
   static const String _showSplashScreenKey = 'show_splash_screen';
+  static const String _forceTvKey = 'force_tv';
   late bool _showSplashScreen;
   bool get showSplashScreen => _showSplashScreen;
   bool get isFirstRun => _isFirstRun;
@@ -175,6 +176,7 @@ class SettingsProvider with ChangeNotifier {
   late bool _useNeumorphism;
   late NeumorphicStyle _neumorphicStyle;
   late bool _performanceMode;
+  late bool _forceTv;
 
   // Web Gapless Engine
   late AudioEngineMode _audioEngineMode;
@@ -279,6 +281,7 @@ class SettingsProvider with ChangeNotifier {
   bool get useNeumorphism => _useNeumorphism;
   NeumorphicStyle get neumorphicStyle => _neumorphicStyle;
   bool get performanceMode => _performanceMode;
+  bool get forceTv => _forceTv;
 
   /// Whether the custom gapless Web Audio engine is enabled (web-only).
   AudioEngineMode get audioEngineMode => _audioEngineMode;
@@ -605,6 +608,8 @@ class SettingsProvider with ChangeNotifier {
       _prefs.setInt(_webPrefetchSecondsKey, _webPrefetchSeconds);
     }
 
+    _forceTv = _prefs.getBool(_forceTvKey) ?? false;
+
     _trackTransitionMode = _prefs.getString(_trackTransitionModeKey) ??
         DefaultSettings.trackTransitionMode;
     _crossfadeDurationSeconds =
@@ -829,6 +834,11 @@ class SettingsProvider with ChangeNotifier {
       _updatePreference(_useNeumorphismKey, _useNeumorphism = value);
   void togglePerformanceMode() => _updatePreference(
       _performanceModeKey, _performanceMode = !_performanceMode);
+
+  void toggleForceTv() => _updatePreference(_forceTvKey, _forceTv = !_forceTv);
+
+  void setForceTv(bool value) =>
+      _updatePreference(_forceTvKey, _forceTv = value);
 
   void setNeumorphicStyle(NeumorphicStyle value, {bool? notify}) {
     if (_neumorphicStyle != value) {
