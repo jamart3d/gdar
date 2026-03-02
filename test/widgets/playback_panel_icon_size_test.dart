@@ -16,6 +16,7 @@ import 'package:shakedown/models/rating.dart';
 import 'package:flutter/foundation.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:shakedown/services/gapless_player/gapless_player.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 
 class MockGaplessPlayer extends Mock implements GaplessPlayer {
   @override
@@ -97,6 +98,8 @@ class MockSettingsProvider extends Mock implements SettingsProvider {
   bool get marqueeEnabled => true;
   @override
   bool get useNeumorphism => false;
+  @override
+  bool get performanceMode => false;
 
   @override
   dynamic noSuchMethod(Invocation invocation,
@@ -220,7 +223,7 @@ void main() {
       ),
     );
 
-    final iconFinder = find.byIcon(Icons.copy_rounded);
+    final iconFinder = find.byIcon(LucideIcons.copy);
     expect(iconFinder, findsOneWidget);
 
     final Icon icon = tester.widget(iconFinder);

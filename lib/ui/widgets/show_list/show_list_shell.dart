@@ -60,6 +60,12 @@ class ShowListShell extends StatelessWidget {
     final themeProvider = context.watch<ThemeProvider>();
     final isFruit = themeProvider.themeStyle == ThemeStyle.fruit && kIsWeb;
 
+    final bool isRollActive = showListProvider.isChoosingRandomShow;
+    final bool shouldShowMiniPlayer = audioProvider.currentShow != null &&
+        !isRollActive &&
+        !isPane &&
+        !(showListProvider.isSearchVisible && searchFocusNode.hasFocus);
+
     final bodyContent = Stack(
       children: [
         LiquidGlassWrapper(
@@ -87,17 +93,20 @@ class ShowListShell extends StatelessWidget {
             ],
           ),
         ),
-        if (audioProvider.currentShow != null &&
-            !(showListProvider.isSearchVisible && searchFocusNode.hasFocus) &&
-            !isPane)
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: 0,
+        AnimatedPositioned(
+          duration: const Duration(milliseconds: 600),
+          curve: Curves.easeOutCubic,
+          left: 0,
+          right: 0,
+          bottom: shouldShowMiniPlayer ? 0 : -100,
+          child: AnimatedOpacity(
+            duration: const Duration(milliseconds: 400),
+            opacity: shouldShowMiniPlayer ? 1.0 : 0.0,
             child: MiniPlayer(
               onTap: onOpenPlaybackScreen,
             ),
           ),
+        ),
         ClipboardFeedbackOverlay(isVisible: showPasteFeedback),
       ],
     );

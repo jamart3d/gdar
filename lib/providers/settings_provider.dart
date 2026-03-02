@@ -483,6 +483,17 @@ class SettingsProvider with ChangeNotifier {
         _prefs.getBool(_abbreviateMonthKey) ?? DefaultSettings.abbreviateMonth;
     _simpleRandomIcon = _prefs.getBool(_simpleRandomIconKey) ?? false;
 
+    // Screensaver Migration
+    if (_prefs.containsKey('use_screensaver')) {
+      bool oldEnabled = _prefs.getBool('use_screensaver') ?? true;
+      _useOilScreensaver = (kIsWeb && !isTv) ? false : oldEnabled;
+      if (oldEnabled) _prefs.setBool(_useOilScreensaverKey, _useOilScreensaver);
+      _prefs.remove('use_screensaver');
+    } else {
+      _useOilScreensaver = _prefs.getBool(_useOilScreensaverKey) ??
+          ((kIsWeb && !isTv) ? false : DefaultSettings.useOilScreensaver);
+    }
+
     // Font Migration
     if (_prefs.containsKey('use_handwriting_font')) {
       bool oldHandwriting = _prefs.getBool('use_handwriting_font') ?? false;

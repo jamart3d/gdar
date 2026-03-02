@@ -204,10 +204,6 @@ class _MiniPlayerState extends State<MiniPlayer> {
                           stream: audioProvider.audioPlayer.sequenceStateStream,
                           builder: (context, snapshot) {
                             final currentTrack = audioProvider.currentTrack;
-                            if (currentTrack == null) {
-                              return const SizedBox.shrink();
-                            }
-
                             final baseTitleStyle = textTheme.titleMedium
                                     ?.copyWith(fontSize: 19.0) ??
                                 const TextStyle(fontSize: 19.0);
@@ -219,21 +215,36 @@ class _MiniPlayerState extends State<MiniPlayer> {
                               color: colorScheme.onSurface,
                             );
 
+                            // Calculate the fixed height needed for titles (2.2x font size)
+                            final double fixedTitleHeight =
+                                titleStyle.fontSize! * 2.2;
+
                             return Column(
                               crossAxisAlignment: CrossAxisAlignment.stretch,
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 SizedBox(
-                                  height: titleStyle.fontSize! * 2.2,
+                                  height: fixedTitleHeight,
                                   child: Padding(
                                     padding: const EdgeInsets.symmetric(
                                         horizontal: 2.0),
                                     child: Material(
                                       type: MaterialType.transparency,
-                                      child: ConditionalMarquee(
-                                        text: currentTrack.title,
-                                        style: titleStyle.copyWith(height: 1.2),
-                                        textAlign: TextAlign.center,
+                                      child: AnimatedSwitcher(
+                                        duration:
+                                            const Duration(milliseconds: 300),
+                                        child: currentTrack == null
+                                            ? SizedBox(
+                                                key: const ValueKey(
+                                                    'loading_placeholder'),
+                                                height: fixedTitleHeight)
+                                            : ConditionalMarquee(
+                                                key: ValueKey(currentTrack.url),
+                                                text: currentTrack.title,
+                                                style: titleStyle.copyWith(
+                                                    height: 1.2),
+                                                textAlign: TextAlign.center,
+                                              ),
                                       ),
                                     ),
                                   ),
@@ -259,25 +270,37 @@ class _MiniPlayerState extends State<MiniPlayer> {
                             children: [
                               NeumorphicWrapper(
                                 enabled: isFruitNeumorphic,
-                                borderRadius: 12,
+                                borderRadius: 10,
+                                isCircle: false,
                                 intensity: 1.2,
-                                child: IconButton(
-                                  icon: Icon((themeProvider.themeStyle ==
-                                              ThemeStyle.fruit &&
-                                          kIsWeb)
-                                      ? LucideIcons.skipBack
-                                      : Icons.skip_previous_rounded),
-                                  iconSize: 28.0 * scaleFactor,
-                                  color: colorScheme.onSurface,
-                                  onPressed: isFirstTrack
-                                      ? null
-                                      : () {
-                                          HapticFeedback.selectionClick();
-                                          audioProvider.seekToPrevious();
-                                        },
+                                child: SizedBox(
+                                  width: (isFruitNeumorphic ? 32.0 : 40.0) *
+                                      scaleFactor,
+                                  height: (isFruitNeumorphic ? 32.0 : 40.0) *
+                                      scaleFactor,
+                                  child: IconButton(
+                                    padding: EdgeInsets.zero,
+                                    icon: Icon((themeProvider.themeStyle ==
+                                                ThemeStyle.fruit &&
+                                            kIsWeb)
+                                        ? LucideIcons.skipBack
+                                        : Icons.skip_previous_rounded),
+                                    iconSize: (themeProvider.themeStyle ==
+                                                ThemeStyle.fruit &&
+                                            kIsWeb)
+                                        ? 16.0 * scaleFactor
+                                        : 28.0 * scaleFactor,
+                                    color: colorScheme.onSurface,
+                                    onPressed: isFirstTrack
+                                        ? null
+                                        : () {
+                                            HapticFeedback.selectionClick();
+                                            audioProvider.seekToPrevious();
+                                          },
+                                  ),
                                 ),
                               ),
-                              SizedBox(width: 8.0 * scaleFactor),
+                              SizedBox(width: 10.0 * scaleFactor),
                               StreamBuilder<PlayerState>(
                                 stream: audioProvider.playerStateStream,
                                 builder: (context, snapshot) {
@@ -292,8 +315,8 @@ class _MiniPlayerState extends State<MiniPlayer> {
                                           ProcessingState.buffering) {
                                     return Container(
                                       margin: EdgeInsets.all(8.0 * scaleFactor),
-                                      width: 32.0 * scaleFactor,
-                                      height: 32.0 * scaleFactor,
+                                      width: 38.0 * scaleFactor,
+                                      height: 38.0 * scaleFactor,
                                       child: CircularProgressIndicator(
                                         valueColor:
                                             AlwaysStoppedAnimation<Color>(
@@ -308,7 +331,7 @@ class _MiniPlayerState extends State<MiniPlayer> {
                                               ThemeStyle.fruit &&
                                           kIsWeb;
                                   final double playButtonSize =
-                                      38.0 * scaleFactor;
+                                      (isFruit ? 38.0 : 38.0) * scaleFactor;
 
                                   Widget playIcon;
                                   VoidCallback? onPressed;
@@ -335,7 +358,7 @@ class _MiniPlayerState extends State<MiniPlayer> {
                                   Widget button = IconButton(
                                     icon: playIcon,
                                     iconSize: isFruit
-                                        ? 24.0 * scaleFactor
+                                        ? 22.0 * scaleFactor
                                         : 38.0 * scaleFactor,
                                     onPressed: onPressed,
                                     color: isFruit
@@ -363,25 +386,37 @@ class _MiniPlayerState extends State<MiniPlayer> {
                                   );
                                 },
                               ),
-                              SizedBox(width: 8.0 * scaleFactor),
+                              SizedBox(width: 10.0 * scaleFactor),
                               NeumorphicWrapper(
                                 enabled: isFruitNeumorphic,
-                                borderRadius: 12,
+                                borderRadius: 10,
+                                isCircle: false,
                                 intensity: 1.2,
-                                child: IconButton(
-                                  icon: Icon((themeProvider.themeStyle ==
-                                              ThemeStyle.fruit &&
-                                          kIsWeb)
-                                      ? LucideIcons.skipForward
-                                      : Icons.skip_next_rounded),
-                                  iconSize: 28.0 * scaleFactor,
-                                  color: colorScheme.onSurface,
-                                  onPressed: isLastTrack
-                                      ? null
-                                      : () {
-                                          HapticFeedback.selectionClick();
-                                          audioProvider.seekToNext();
-                                        },
+                                child: SizedBox(
+                                  width: (isFruitNeumorphic ? 32.0 : 40.0) *
+                                      scaleFactor,
+                                  height: (isFruitNeumorphic ? 32.0 : 40.0) *
+                                      scaleFactor,
+                                  child: IconButton(
+                                    padding: EdgeInsets.zero,
+                                    icon: Icon((themeProvider.themeStyle ==
+                                                ThemeStyle.fruit &&
+                                            kIsWeb)
+                                        ? LucideIcons.skipForward
+                                        : Icons.skip_next_rounded),
+                                    iconSize: (themeProvider.themeStyle ==
+                                                ThemeStyle.fruit &&
+                                            kIsWeb)
+                                        ? 16.0 * scaleFactor
+                                        : 28.0 * scaleFactor,
+                                    color: colorScheme.onSurface,
+                                    onPressed: isLastTrack
+                                        ? null
+                                        : () {
+                                            HapticFeedback.selectionClick();
+                                            audioProvider.seekToNext();
+                                          },
+                                  ),
                                 ),
                               ),
                             ],

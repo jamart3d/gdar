@@ -7,20 +7,21 @@ import 'dart:async' as _i6;
 import 'dart:ui' as _i12;
 
 import 'package:flutter/foundation.dart' as _i3;
-import 'package:hive_flutter/hive_flutter.dart' as _i14;
+import 'package:hive_flutter/hive_flutter.dart' as _i15;
 import 'package:just_audio/just_audio.dart' as _i2;
-import 'package:just_audio_background/just_audio_background.dart' as _i17;
+import 'package:just_audio_background/just_audio_background.dart' as _i18;
 import 'package:mockito/mockito.dart' as _i1;
 import 'package:mockito/src/dummies.dart' as _i5;
-import 'package:shakedown/models/rating.dart' as _i15;
+import 'package:shakedown/models/rating.dart' as _i16;
 import 'package:shakedown/models/show.dart' as _i8;
 import 'package:shakedown/models/source.dart' as _i11;
 import 'package:shakedown/providers/settings_provider.dart' as _i10;
 import 'package:shakedown/providers/show_list_provider.dart' as _i7;
-import 'package:shakedown/services/audio_cache_service_io.dart' as _i16;
-import 'package:shakedown/services/catalog_service.dart' as _i13;
+import 'package:shakedown/providers/theme_provider.dart' as _i13;
+import 'package:shakedown/services/audio_cache_service_io.dart' as _i17;
+import 'package:shakedown/services/catalog_service.dart' as _i14;
 import 'package:shakedown/services/gapless_player/gapless_player.dart' as _i4;
-import 'package:shakedown/services/wakelock_service.dart' as _i18;
+import 'package:shakedown/services/wakelock_service.dart' as _i19;
 import 'package:shared_preferences/shared_preferences.dart' as _i9;
 
 // ignore_for_file: type=lint
@@ -1072,6 +1073,27 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
       ) as bool);
 
   @override
+  bool get useNeumorphism => (super.noSuchMethod(
+        Invocation.getter(#useNeumorphism),
+        returnValue: false,
+        returnValueForMissingStub: false,
+      ) as bool);
+
+  @override
+  _i13.NeumorphicStyle get neumorphicStyle => (super.noSuchMethod(
+        Invocation.getter(#neumorphicStyle),
+        returnValue: _i13.NeumorphicStyle.convex,
+        returnValueForMissingStub: _i13.NeumorphicStyle.convex,
+      ) as _i13.NeumorphicStyle);
+
+  @override
+  bool get performanceMode => (super.noSuchMethod(
+        Invocation.getter(#performanceMode),
+        returnValue: false,
+        returnValueForMissingStub: false,
+      ) as bool);
+
+  @override
   _i4.AudioEngineMode get audioEngineMode => (super.noSuchMethod(
         Invocation.getter(#audioEngineMode),
         returnValue: _i4.AudioEngineMode.auto,
@@ -1860,6 +1882,47 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
       );
 
   @override
+  void toggleUseNeumorphism() => super.noSuchMethod(
+        Invocation.method(
+          #toggleUseNeumorphism,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void setUseNeumorphism(bool? value) => super.noSuchMethod(
+        Invocation.method(
+          #setUseNeumorphism,
+          [value],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void togglePerformanceMode() => super.noSuchMethod(
+        Invocation.method(
+          #togglePerformanceMode,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void setNeumorphicStyle(
+    _i13.NeumorphicStyle? value, {
+    bool? notify,
+  }) =>
+      super.noSuchMethod(
+        Invocation.method(
+          #setNeumorphicStyle,
+          [value],
+          {#notify: notify},
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
   void toggleWebGaplessEngine() => super.noSuchMethod(
         Invocation.method(
           #toggleWebGaplessEngine,
@@ -2439,7 +2502,7 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
 /// A class which mocks [CatalogService].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockCatalogService extends _i1.Mock implements _i13.CatalogService {
+class MockCatalogService extends _i1.Mock implements _i14.CatalogService {
   @override
   bool get isInitialized => (super.noSuchMethod(
         Invocation.getter(#isInitialized),
@@ -2455,53 +2518,53 @@ class MockCatalogService extends _i1.Mock implements _i13.CatalogService {
       ) as List<_i8.Show>);
 
   @override
-  _i3.ValueListenable<_i14.Box<int>> get playCountsListenable =>
+  _i3.ValueListenable<_i15.Box<int>> get playCountsListenable =>
       (super.noSuchMethod(
         Invocation.getter(#playCountsListenable),
-        returnValue: _FakeValueListenable_2<_i14.Box<int>>(
+        returnValue: _FakeValueListenable_2<_i15.Box<int>>(
           this,
           Invocation.getter(#playCountsListenable),
         ),
-        returnValueForMissingStub: _FakeValueListenable_2<_i14.Box<int>>(
+        returnValueForMissingStub: _FakeValueListenable_2<_i15.Box<int>>(
           this,
           Invocation.getter(#playCountsListenable),
         ),
-      ) as _i3.ValueListenable<_i14.Box<int>>);
+      ) as _i3.ValueListenable<_i15.Box<int>>);
 
   @override
-  _i3.ValueListenable<_i14.Box<bool>> get historyListenable =>
+  _i3.ValueListenable<_i15.Box<bool>> get historyListenable =>
       (super.noSuchMethod(
         Invocation.getter(#historyListenable),
-        returnValue: _FakeValueListenable_2<_i14.Box<bool>>(
+        returnValue: _FakeValueListenable_2<_i15.Box<bool>>(
           this,
           Invocation.getter(#historyListenable),
         ),
-        returnValueForMissingStub: _FakeValueListenable_2<_i14.Box<bool>>(
+        returnValueForMissingStub: _FakeValueListenable_2<_i15.Box<bool>>(
           this,
           Invocation.getter(#historyListenable),
         ),
-      ) as _i3.ValueListenable<_i14.Box<bool>>);
+      ) as _i3.ValueListenable<_i15.Box<bool>>);
 
   @override
-  _i3.ValueListenable<_i14.Box<_i15.Rating>> get ratingsListenable =>
+  _i3.ValueListenable<_i15.Box<_i16.Rating>> get ratingsListenable =>
       (super.noSuchMethod(
         Invocation.getter(#ratingsListenable),
-        returnValue: _FakeValueListenable_2<_i14.Box<_i15.Rating>>(
+        returnValue: _FakeValueListenable_2<_i15.Box<_i16.Rating>>(
           this,
           Invocation.getter(#ratingsListenable),
         ),
         returnValueForMissingStub:
-            _FakeValueListenable_2<_i14.Box<_i15.Rating>>(
+            _FakeValueListenable_2<_i15.Box<_i16.Rating>>(
           this,
           Invocation.getter(#ratingsListenable),
         ),
-      ) as _i3.ValueListenable<_i14.Box<_i15.Rating>>);
+      ) as _i3.ValueListenable<_i15.Box<_i16.Rating>>);
 
   @override
   _i6.Future<void> initialize({
     required _i9.SharedPreferences? prefs,
-    _i13.CatalogLoadingStrategy? strategy =
-        _i13.CatalogLoadingStrategy.inMemory,
+    _i14.CatalogLoadingStrategy? strategy =
+        _i14.CatalogLoadingStrategy.inMemory,
   }) =>
       (super.noSuchMethod(
         Invocation.method(
@@ -2517,7 +2580,7 @@ class MockCatalogService extends _i1.Mock implements _i13.CatalogService {
       ) as _i6.Future<void>);
 
   @override
-  _i6.Future<void> switchStrategy(_i13.CatalogLoadingStrategy? newStrategy) =>
+  _i6.Future<void> switchStrategy(_i14.CatalogLoadingStrategy? newStrategy) =>
       (super.noSuchMethod(
         Invocation.method(
           #switchStrategy,
@@ -2645,7 +2708,7 @@ class MockCatalogService extends _i1.Mock implements _i13.CatalogService {
 /// A class which mocks [AudioCacheService].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockAudioCacheService extends _i1.Mock implements _i16.AudioCacheService {
+class MockAudioCacheService extends _i1.Mock implements _i17.AudioCacheService {
   @override
   int get cachedTrackCount => (super.noSuchMethod(
         Invocation.getter(#cachedTrackCount),
@@ -2682,7 +2745,7 @@ class MockAudioCacheService extends _i1.Mock implements _i16.AudioCacheService {
   @override
   _i2.AudioSource createAudioSource({
     required Uri? uri,
-    required _i17.MediaItem? tag,
+    required _i18.MediaItem? tag,
     required bool? useCache,
   }) =>
       (super.noSuchMethod(
@@ -2818,7 +2881,7 @@ class MockAudioCacheService extends _i1.Mock implements _i16.AudioCacheService {
 /// A class which mocks [WakelockService].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockWakelockService extends _i1.Mock implements _i18.WakelockService {
+class MockWakelockService extends _i1.Mock implements _i19.WakelockService {
   @override
   _i6.Future<bool> get enabled => (super.noSuchMethod(
         Invocation.getter(#enabled),

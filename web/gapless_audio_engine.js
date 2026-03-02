@@ -657,6 +657,8 @@
 
     play: function () {
       _ensureContext();
+      _playing = true; // Set playback intent early so resume callback triggers api.play() again
+
       if (_ctx.state === 'suspended') {
         if (!_ctx._isResuming) {
           _ctx._isResuming = true;
@@ -665,7 +667,7 @@
             if (_playing) api.play();
           }).catch(err => {
             _ctx._isResuming = false;
-            _log.error('[gdar engine] AudioContext resume failed:', err);
+            _log.error('[gdar engine] AudioContext resume failed (potential autoplay block):', err);
           });
         }
         return;

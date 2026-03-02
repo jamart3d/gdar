@@ -10,15 +10,21 @@ import 'package:shakedown/ui/widgets/show_list_item_details.dart';
 import 'package:mockito/mockito.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:flutter/services.dart';
+import '../helpers/test_helpers.dart';
+import '../mocks/fake_catalog_service.dart';
 import 'package:shakedown/services/catalog_service.dart';
 import 'package:shakedown/services/device_service.dart';
-import '../helpers/test_helpers.dart';
+import 'package:shakedown/providers/theme_provider.dart';
 
 // Mock AudioProvider since it's used in onDismissed
-class MockAudioProvider extends Mock implements AudioProvider {
+class MockAudioProvider extends Mock
+    with ChangeNotifier
+    implements AudioProvider {
   @override
-  Source? get currentSource => null; // Default to null
+  bool get isPlaying => false;
+
+  @override
+  Source? get currentSource => null;
 
   @override
   Future<void> stopAndClear() async {}
@@ -36,6 +42,9 @@ class MockSettingsProvider extends SettingsProvider {
 
   @override
   bool get enableSwipeToBlock => true;
+
+  @override
+  bool get performanceMode => false;
 }
 
 // Mock ShowListProvider for dismissal logic
@@ -71,20 +80,19 @@ void main() {
   late MockShowListProvider mockShowListProvider;
 
   setUp(() async {
-    const channel = MethodChannel('plugins.flutter.io/path_provider');
-    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-        .setMockMethodCallHandler(channel, (MethodCall methodCall) async {
-      return '.';
-    });
-
     SharedPreferences.setMockInitialValues({});
     prefs = await SharedPreferences.getInstance();
+
+    // Use FakeCatalogService to skip JSON loading and Hive in tests
+    CatalogService.setMock(FakeCatalogService());
     await CatalogService().initialize(prefs: prefs);
 
     mockAudioProvider = MockAudioProvider();
     mockSettingsProvider = MockSettingsProvider(prefs);
     mockShowListProvider = MockShowListProvider();
   });
+
+  tearDown(() async {});
 
   Show createDummyShow(String name, {int sourceCount = 2}) {
     return Show(
@@ -115,6 +123,7 @@ void main() {
         Provider<CatalogService>.value(value: CatalogService()),
         ChangeNotifierProvider<DeviceService>(
             create: (_) => MockDeviceService()),
+        ChangeNotifierProvider<ThemeProvider>(create: (_) => ThemeProvider()),
       ],
       child: MaterialApp(
         home: Scaffold(
@@ -159,11 +168,11 @@ void main() {
     expect(dismissibleFinder, findsOneWidget);
 
     // Swipe left (DismissDirection.endToStart)
-    await tester.drag(dismissibleFinder, const Offset(-500.0, 0.0));
+    await tester.fling(dismissibleFinder, const Offset(-500.0, 0.0), 1000);
     // Pump to start animation
     await tester.pump();
     // Pump to complete animation and trigger dismissal
-    await tester.pump(const Duration(seconds: 1));
+    await tester.pump(const Duration(seconds: 2));
 
     // Verification:
     // 1. Check if setRating(-1) was called

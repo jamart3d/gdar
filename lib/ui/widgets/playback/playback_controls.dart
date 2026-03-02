@@ -96,7 +96,9 @@ class _PlaybackControlsState extends State<PlaybackControls> {
                     child: NeumorphicWrapper(
                       enabled: isFruitNeumorphic,
                       borderRadius: 12,
-                      intensity: 1.2,
+                      intensity: 1.1, // Softer skip buttons
+                      offset: const Offset(4, 4),
+                      blur: 18,
                       isPressed: _isPrevPressed,
                       child: IconButton(
                         icon: const Icon(LucideIcons.skipBack),
@@ -128,13 +130,15 @@ class _PlaybackControlsState extends State<PlaybackControls> {
                       enabled: isFruitNeumorphic,
                       isCircle: true,
                       isPressed: _isPlayPressed,
-                      intensity: 1.4,
+                      intensity: 1.5, // Stronger pop for main play
+                      blur: 24,
                       child: Container(
                         width: playButtonSize,
                         height: playButtonSize,
                         decoration: BoxDecoration(
+                          // Let NeumorphicWrapper handle the color/gradient
                           color: isFruitNeumorphic
-                              ? colorScheme.surface
+                              ? Colors.transparent
                               : colorScheme.primary,
                           shape: BoxShape.circle,
                         ),
@@ -186,7 +190,9 @@ class _PlaybackControlsState extends State<PlaybackControls> {
                     child: NeumorphicWrapper(
                       enabled: isFruitNeumorphic,
                       borderRadius: 12,
-                      intensity: 1.2,
+                      intensity: 1.1, // Softer skip buttons
+                      offset: const Offset(4, 4),
+                      blur: 18,
                       isPressed: _isNextPressed,
                       child: IconButton(
                         icon: const Icon(LucideIcons.skipForward),

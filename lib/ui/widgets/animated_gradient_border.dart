@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter/foundation.dart';
+import 'package:shakedown/providers/audio_provider.dart';
+import 'package:shakedown/providers/settings_provider.dart';
 
 class AnimatedGradientBorder extends StatefulWidget {
   final Widget child;
@@ -34,12 +37,49 @@ class AnimatedGradientBorder extends StatefulWidget {
 class _AnimatedGradientBorderState extends State<AnimatedGradientBorder>
     with SingleTickerProviderStateMixin {
   AnimationController? _localController;
+  Animation<double>? _animationSource;
+  bool _usingGlobalClock = false;
 
   @override
   void initState() {
     super.initState();
-    // We defer initialization logic to build() or didChangeDependencies()
-    // because we need access to context/Provider.
+    // No-op, initialization happens in didChangeDependencies/ensureLocalController
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _updateAnimationSource();
+  }
+
+  void _updateAnimationSource() {
+    if (widget.ignoreGlobalClock) {
+      _setLocalSource();
+      return;
+    }
+
+    try {
+      final global = Provider.of<Animation<double>>(context, listen: false);
+      if (_animationSource != global) {
+        setState(() {
+          _animationSource = global;
+          _usingGlobalClock = true;
+          // Don't dispose local immediately, wait for build to finish or do it safely
+        });
+      }
+    } catch (_) {
+      _setLocalSource();
+    }
+  }
+
+  void _setLocalSource() {
+    final controller = _ensureLocalController();
+    if (_animationSource != controller.view) {
+      setState(() {
+        _animationSource = controller.view;
+        _usingGlobalClock = false;
+      });
+    }
   }
 
   /// Helper to get or create the local controller if global isn't found.
@@ -73,6 +113,11 @@ class _AnimatedGradientBorderState extends State<AnimatedGradientBorder>
 
   @override
   Widget build(BuildContext context) {
+    final sp = context.watch<SettingsProvider>();
+    final performanceMode = sp.performanceMode;
+    final isPlaying = context.watch<AudioProvider>().isPlaying;
+    final isWebPlayback = kIsWeb && isPlaying;
+
     if (!widget.showGlow) {
       return Container(
         decoration: BoxDecoration(
@@ -83,31 +128,22 @@ class _AnimatedGradientBorderState extends State<AnimatedGradientBorder>
       );
     }
 
-    // Try to get the global master clock
-    Animation<double>? globalAnimation;
-    if (!widget.ignoreGlobalClock) {
-      try {
-        // Use Provider.of with listen: false to check for the global animation
-        // without triggering a rebuild on every tick (AnimatedBuilder handles that).
-        // We use try-catch because explicitly checking for existence isn't directly supported.
-        globalAnimation =
-            Provider.of<Animation<double>>(context, listen: false);
-      } catch (_) {
-        // Provider not found, fall back to local controller
-        globalAnimation = null;
-      }
+    // 1. Ensure we have an animation source if one wasn't set in didChangeDependencies
+    if (_animationSource == null) {
+      _updateAnimationSource();
     }
 
-    final Animation<double> animation;
-    if (globalAnimation != null) {
-      animation = globalAnimation;
-      // If we had a local one (e.g. context changed), dispose it
-      _localController?.dispose();
+    // 2. Safe cleanup of local controller if we've switched to global
+    // We do this via a post-frame callback or similar to avoid mid-build side-effects.
+    if (_usingGlobalClock && _localController != null) {
+      final controllerToDispose = _localController;
       _localController = null;
-    } else {
-      // Fallback to local clock
-      animation = _ensureLocalController().view;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        controllerToDispose?.dispose();
+      });
     }
+
+    final animation = _animationSource ?? _ensureLocalController().view;
 
     final colors = widget.colors ??
         [
@@ -126,8 +162,12 @@ class _AnimatedGradientBorderState extends State<AnimatedGradientBorder>
             borderRadius: widget.borderRadius,
             borderWidth: widget.borderWidth,
             rotation: animation.value * 2 * 3.14159,
-            showShadow: widget.showShadow,
-            glowOpacity: widget.glowOpacity,
+            // Web Performance Optimization: Reduce blur/glow during playback
+            // Performance Mode: Keep animation but disable expensive shadows/glow
+            showShadow: performanceMode
+                ? false
+                : (isWebPlayback ? false : widget.showShadow),
+            glowOpacity: isWebPlayback ? 0.2 : widget.glowOpacity,
           ),
           child: Padding(
             padding: EdgeInsets.all(widget.borderWidth),

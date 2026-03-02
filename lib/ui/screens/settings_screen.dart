@@ -187,6 +187,7 @@ class _SettingsScreenState extends State<SettingsScreen>
                       scaleFactor: scaleFactor,
                     ),
                   ),
+                  SupportSection(scaleFactor: scaleFactor),
                   UsageInstructionsSection(
                     scaleFactor: scaleFactor,
                     initiallyExpanded:

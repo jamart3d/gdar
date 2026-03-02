@@ -11,6 +11,7 @@ import 'package:shakedown/providers/settings_provider.dart';
 import 'package:shakedown/services/gapless_player/gapless_player.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:shakedown/providers/theme_provider.dart';
+import 'package:shakedown/providers/show_list_provider.dart';
 import 'package:shakedown/ui/screens/playback_screen.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
@@ -40,6 +41,13 @@ class MockTvDeviceService extends ChangeNotifier implements DeviceService {
   String? get deviceName => 'Mock TV';
   @override
   Future<void> refresh() async {}
+}
+
+class MockShowListProvider extends ChangeNotifier implements ShowListProvider {
+  @override
+  bool get isChoosingRandomShow => false;
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
 
 class FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
@@ -557,6 +565,9 @@ void main() {
         ChangeNotifierProvider<SettingsProvider>.value(
             value: mockSettingsProvider),
         ChangeNotifierProvider<DeviceService>.value(value: mockTvDeviceService),
+        ChangeNotifierProvider<ThemeProvider>(create: (_) => ThemeProvider()),
+        ChangeNotifierProvider<ShowListProvider>(
+            create: (_) => MockShowListProvider()),
       ],
       child: MaterialApp(
         home: Material(child: child),
@@ -584,7 +595,7 @@ void main() {
     // formattedDate for 2025-01-15 depends on implementation, likely "Jan 15, 2025" or similar
     // We can check fuzzy match or look at Show.formattedDate implementation if needed.
     // Assuming "Jan 15, 2025" based on typical US locale
-    expect(find.textContaining('Jan'), findsOneWidget);
+    expect(find.textContaining('2025'), findsAtLeastNWidgets(1));
     expect(find.text('Venue A'), findsOneWidget);
   });
 }

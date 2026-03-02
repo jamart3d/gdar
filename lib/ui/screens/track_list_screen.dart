@@ -9,6 +9,8 @@ import 'package:shakedown/providers/audio_provider.dart';
 import 'package:shakedown/providers/settings_provider.dart';
 import 'package:shakedown/ui/screens/playback_screen.dart';
 import 'package:shakedown/ui/screens/settings_screen.dart';
+import 'package:shakedown/ui/widgets/theme/neumorphic_wrapper.dart';
+import 'package:shakedown/ui/widgets/theme/liquid_glass_wrapper.dart';
 import 'package:shakedown/ui/widgets/mini_player.dart';
 import 'package:shakedown/ui/widgets/shnid_badge.dart';
 import 'package:shakedown/ui/widgets/src_badge.dart';
@@ -78,83 +80,109 @@ class _TrackListScreenState extends State<TrackListScreen> {
         child: Material(
           color: Colors.transparent,
           child: Center(
-            child: Container(
-              height: 48, // Standard expressive pill height
-              decoration: BoxDecoration(
-                color: colorScheme.primaryContainer,
-                borderRadius: BorderRadius.circular(100),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.2),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-                border: Border.all(
-                  color: colorScheme.onPrimaryContainer.withValues(alpha: 0.1),
-                  width: 1,
-                ),
-              ),
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.touch_app_outlined,
-                    color: colorScheme.onPrimaryContainer,
-                    size: 20,
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      'Play on Tap disabled',
-                      style: textTheme.labelLarge?.copyWith(
-                        color: colorScheme.onPrimaryContainer,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                  TextButton(
-                    onPressed: () async {
-                      _overlayEntry?.remove();
-                      _overlayEntry = null;
+            child: Builder(builder: (context) {
+              final tp = context.watch<ThemeProvider>();
+              final sp = context.watch<SettingsProvider>();
+              final isFruit = tp.themeStyle == ThemeStyle.fruit;
+              final usePremium =
+                  sp.useNeumorphism && isFruit && !sp.useTrueBlack;
 
-                      // Pause global clock
-                      try {
-                        context.read<AnimationController>().stop();
-                      } catch (_) {}
-
-                      unawaited(Navigator.of(context).push(
-                        PageRouteBuilder(
-                          pageBuilder:
-                              (context, animation, secondaryAnimation) =>
-                                  const SettingsScreen(
-                            highlightSetting: 'play_on_tap',
+              final Widget pill = Container(
+                height: 48,
+                decoration: BoxDecoration(
+                  color: colorScheme.primaryContainer,
+                  borderRadius: BorderRadius.circular(100),
+                  boxShadow: usePremium
+                      ? null
+                      : [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.2),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
                           ),
-                          transitionDuration: Duration.zero,
+                        ],
+                  border: Border.all(
+                    color:
+                        colorScheme.onPrimaryContainer.withValues(alpha: 0.1),
+                    width: 1,
+                  ),
+                ),
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.touch_app_outlined,
+                      color: colorScheme.onPrimaryContainer,
+                      size: 20,
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        'Play on Tap disabled',
+                        style: textTheme.labelLarge?.copyWith(
+                          color: colorScheme.onPrimaryContainer,
+                          fontWeight: FontWeight.bold,
                         ),
-                      ));
-
-                      // Resume clock
-                      if (context.mounted) {
-                        try {
-                          final controller =
-                              context.read<AnimationController>();
-                          unawaited(controller.repeat());
-                        } catch (_) {}
-                      }
-                    },
-                    child: Text(
-                      'SETTINGS',
-                      style: textTheme.labelLarge?.copyWith(
-                        color: colorScheme.primary,
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: 1.2,
                       ),
                     ),
+                    TextButton(
+                      onPressed: () async {
+                        _overlayEntry?.remove();
+                        _overlayEntry = null;
+
+                        try {
+                          context.read<AnimationController>().stop();
+                        } catch (_) {}
+
+                        unawaited(Navigator.of(context).push(
+                          PageRouteBuilder(
+                            pageBuilder:
+                                (context, animation, secondaryAnimation) =>
+                                    const SettingsScreen(
+                              highlightSetting: 'play_on_tap',
+                            ),
+                            transitionDuration: Duration.zero,
+                          ),
+                        ));
+
+                        if (context.mounted) {
+                          try {
+                            final controller =
+                                context.read<AnimationController>();
+                            unawaited(controller.repeat());
+                          } catch (_) {}
+                        }
+                      },
+                      child: Text(
+                        'SETTINGS',
+                        style: textTheme.labelLarge?.copyWith(
+                          color: colorScheme.primary,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 1.2,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+
+              if (usePremium) {
+                return NeumorphicWrapper(
+                  borderRadius: 100,
+                  intensity: 1.1,
+                  color: Colors.transparent,
+                  child: LiquidGlassWrapper(
+                    enabled: true,
+                    borderRadius: BorderRadius.circular(100),
+                    opacity: 0.85,
+                    blur: 15.0,
+                    child: pill,
                   ),
-                ],
-              ),
-            ),
+                );
+              }
+
+              return pill;
+            }),
           ),
         ),
       ),
@@ -284,13 +312,17 @@ class _TrackListScreenState extends State<TrackListScreen> {
               ),
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 10.0),
-            child: IconButton(
-              icon: Icon(
-                  context.watch<ThemeProvider>().themeStyle == ThemeStyle.fruit
-                      ? LucideIcons.settings
-                      : Icons.settings_rounded),
+          Builder(builder: (context) {
+            final themeProvider = context.watch<ThemeProvider>();
+            final settingsProvider = context.watch<SettingsProvider>();
+            final isFruit = themeProvider.themeStyle == ThemeStyle.fruit;
+            final useNeumorphic = settingsProvider.useNeumorphism &&
+                isFruit &&
+                !settingsProvider.useTrueBlack;
+
+            final Widget btn = IconButton(
+              icon:
+                  Icon(isFruit ? LucideIcons.settings : Icons.settings_rounded),
               iconSize: 24.0,
               onPressed: () async {
                 // Pause global clock
@@ -314,20 +346,49 @@ class _TrackListScreenState extends State<TrackListScreen> {
                   } catch (_) {}
                 }
               },
-            ),
-          ),
+            );
+
+            if (useNeumorphic) {
+              return Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                child: NeumorphicWrapper(
+                  isCircle: false, // Map to rounded square
+                  borderRadius: 12.0,
+                  intensity: 1.2,
+                  color: Colors.transparent,
+                  child: LiquidGlassWrapper(
+                    enabled: true,
+                    borderRadius: BorderRadius.circular(12.0),
+                    opacity: 0.08,
+                    blur: 5.0,
+                    child: btn,
+                  ),
+                ),
+              );
+            }
+
+            return Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 10.0),
+              child: btn,
+            );
+          }),
         ],
       ),
       body: Stack(
         children: [
           _buildBody(),
-          if (isDifferentShowPlaying)
-            Positioned(
-              left: 0,
-              right: 0,
-              bottom: 0,
+          AnimatedPositioned(
+            duration: const Duration(milliseconds: 600),
+            curve: Curves.easeOutCubic,
+            left: 0,
+            right: 0,
+            bottom: isDifferentShowPlaying ? 0 : -100,
+            child: AnimatedOpacity(
+              duration: const Duration(milliseconds: 400),
+              opacity: isDifferentShowPlaying ? 1.0 : 0.0,
               child: MiniPlayer(onTap: _openPlaybackScreen),
             ),
+          ),
         ],
       ),
     );
@@ -475,54 +536,80 @@ class _TrackListScreenState extends State<TrackListScreen> {
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 16.0, top: 8.0),
-      child: Card(
-        elevation: 0,
-        color: colorScheme.surfaceContainerHigh,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-        clipBehavior: Clip.antiAlias,
-        child: isPlaying
-            ? headerContent
-            : InkWell(
-                onLongPress: () async {
-                  unawaited(HapticFeedback.mediumImpact());
-                  unawaited(context
-                      .read<AudioProvider>()
-                      .playSource(widget.show, widget.source));
+      child: Builder(builder: (context) {
+        final tp = context.watch<ThemeProvider>();
+        final isFruit = tp.themeStyle == ThemeStyle.fruit;
+        final usePremium = settingsProvider.useNeumorphism &&
+            isFruit &&
+            !settingsProvider.useTrueBlack;
 
-                  // Pause global clock
-                  try {
-                    context.read<AnimationController>().stop();
-                  } catch (_) {}
+        final Widget card = Card(
+          elevation: 0,
+          color: usePremium
+              ? Colors.transparent
+              : colorScheme.surfaceContainerHigh,
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+          clipBehavior: Clip.antiAlias,
+          child: isPlaying
+              ? headerContent
+              : InkWell(
+                  onLongPress: () async {
+                    unawaited(HapticFeedback.mediumImpact());
+                    unawaited(context
+                        .read<AudioProvider>()
+                        .playSource(widget.show, widget.source));
 
-                  unawaited(Navigator.of(context).push(
-                    PageRouteBuilder(
-                      pageBuilder: (context, animation, secondaryAnimation) =>
-                          const PlaybackScreen(),
-                      transitionDuration: const Duration(milliseconds: 300),
-                      transitionsBuilder:
-                          (context, animation, secondaryAnimation, child) {
-                        const begin = Offset(0.0, 1.0);
-                        const end = Offset.zero;
-                        const curve = Curves.easeInOut;
-                        var tween = Tween(begin: begin, end: end)
-                            .chain(CurveTween(curve: curve));
-                        return SlideTransition(
-                            position: animation.drive(tween), child: child);
-                      },
-                    ),
-                  ));
-
-                  // Resume clock
-                  if (context.mounted) {
                     try {
-                      final controller = context.read<AnimationController>();
-                      unawaited(controller.repeat());
+                      context.read<AnimationController>().stop();
                     } catch (_) {}
-                  }
-                },
-                child: headerContent,
-              ),
-      ),
+
+                    unawaited(Navigator.of(context).push(
+                      PageRouteBuilder(
+                        pageBuilder: (context, animation, secondaryAnimation) =>
+                            const PlaybackScreen(),
+                        transitionDuration: const Duration(milliseconds: 300),
+                        transitionsBuilder:
+                            (context, animation, secondaryAnimation, child) {
+                          const begin = Offset(0.0, 1.0);
+                          const end = Offset.zero;
+                          const curve = Curves.easeInOut;
+                          var tween = Tween(begin: begin, end: end)
+                              .chain(CurveTween(curve: curve));
+                          return SlideTransition(
+                              position: animation.drive(tween), child: child);
+                        },
+                      ),
+                    ));
+
+                    if (context.mounted) {
+                      try {
+                        final controller = context.read<AnimationController>();
+                        unawaited(controller.repeat());
+                      } catch (_) {}
+                    }
+                  },
+                  child: headerContent,
+                ),
+        );
+
+        if (usePremium) {
+          return NeumorphicWrapper(
+            borderRadius: 24,
+            intensity: 1.0,
+            color: Colors.transparent,
+            child: LiquidGlassWrapper(
+              enabled: true,
+              borderRadius: BorderRadius.circular(24),
+              opacity: 0.08,
+              blur: 15.0,
+              child: card,
+            ),
+          );
+        }
+
+        return card;
+      }),
     );
   }
 
@@ -537,26 +624,54 @@ class _TrackListScreenState extends State<TrackListScreen> {
       padding: const EdgeInsets.fromLTRB(8, 24, 8, 8),
       child: Align(
         alignment: Alignment.centerLeft,
-        child: Container(
-          padding: EdgeInsets.symmetric(
-              horizontal: 16 * scaleFactor, vertical: 6 * scaleFactor),
-          decoration: BoxDecoration(
-            color: colorScheme.secondaryContainer,
-            borderRadius: BorderRadius.circular(50),
-          ),
-          child: Text(
-            setName.toUpperCase(),
-            style: Theme.of(context)
-                .textTheme
-                .labelLarge
-                ?.copyWith(
-                  color: colorScheme.onSecondaryContainer,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 1.0,
-                )
-                .apply(fontSizeFactor: scaleFactor),
-          ),
-        ),
+        child: Builder(builder: (context) {
+          final tp = context.watch<ThemeProvider>();
+          final isFruit = tp.themeStyle == ThemeStyle.fruit;
+          final usePremium = settingsProvider.useNeumorphism &&
+              isFruit &&
+              !settingsProvider.useTrueBlack;
+
+          final Widget pill = Container(
+            padding: EdgeInsets.symmetric(
+                horizontal: 16 * scaleFactor, vertical: 6 * scaleFactor),
+            decoration: BoxDecoration(
+              color: usePremium
+                  ? colorScheme.secondaryContainer.withValues(alpha: 0.3)
+                  : colorScheme.secondaryContainer,
+              borderRadius: BorderRadius.circular(50),
+            ),
+            child: Text(
+              setName.toUpperCase(),
+              style: Theme.of(context)
+                  .textTheme
+                  .labelLarge
+                  ?.copyWith(
+                    color: colorScheme.onSecondaryContainer,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 1.0,
+                  )
+                  .apply(fontSizeFactor: scaleFactor),
+            ),
+          );
+
+          if (usePremium) {
+            return NeumorphicWrapper(
+              borderRadius: 50,
+              intensity: 0.8,
+              isPressed: true,
+              color: Colors.transparent,
+              child: LiquidGlassWrapper(
+                enabled: true,
+                borderRadius: BorderRadius.circular(50),
+                opacity: 0.05,
+                blur: 5.0,
+                child: pill,
+              ),
+            );
+          }
+
+          return pill;
+        }),
       ),
     );
   }
@@ -588,40 +703,74 @@ class _TrackListScreenState extends State<TrackListScreen> {
         FontLayoutConfig.getEffectiveScale(context, settingsProvider);
 
     return Builder(builder: (context) {
-      return Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-        child: InkWell(
-          borderRadius: BorderRadius.circular(16),
-          onTap: () => _onTrackTapped(context, source, index),
-          child: Padding(
-            padding: EdgeInsets.symmetric(
-                horizontal: 20, vertical: 12 * scaleFactor),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.baseline,
-              textBaseline: TextBaseline.alphabetic,
-              children: [
-                Expanded(
-                  child: Text(
-                    titleText,
-                    style: titleStyle,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    textAlign: settingsProvider.hideTrackDuration
-                        ? TextAlign.center
-                        : TextAlign.left,
+      final audioProvider = context.watch<AudioProvider>();
+      final themeProvider = context.watch<ThemeProvider>();
+      final isFruit = themeProvider.themeStyle == ThemeStyle.fruit;
+      final usePremium = settingsProvider.useNeumorphism &&
+          isFruit &&
+          !settingsProvider.useTrueBlack;
+
+      final isCurrentTrack = audioProvider.currentTrack != null &&
+          audioProvider.currentTrack!.title == track.title &&
+          audioProvider.currentSource?.id == source.id;
+
+      final Widget item = InkWell(
+        borderRadius: BorderRadius.circular(16),
+        onTap: () => _onTrackTapped(context, source, index),
+        child: Padding(
+          padding:
+              EdgeInsets.symmetric(horizontal: 20, vertical: 12 * scaleFactor),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.baseline,
+            textBaseline: TextBaseline.alphabetic,
+            children: [
+              Expanded(
+                child: Text(
+                  titleText,
+                  style: titleStyle.copyWith(
+                    fontWeight: isCurrentTrack ? FontWeight.w900 : null,
+                    color: isCurrentTrack ? colorScheme.primary : null,
                   ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: settingsProvider.hideTrackDuration
+                      ? TextAlign.center
+                      : TextAlign.left,
                 ),
-                if (!settingsProvider.hideTrackDuration) ...[
-                  const SizedBox(width: 16),
-                  Text(
-                    formatDuration(Duration(seconds: track.duration)),
-                    style: durationStyle,
-                  ),
-                ],
+              ),
+              if (!settingsProvider.hideTrackDuration) ...[
+                const SizedBox(width: 16),
+                Text(
+                  formatDuration(Duration(seconds: track.duration)),
+                  style: durationStyle,
+                ),
               ],
-            ),
+            ],
           ),
         ),
+      );
+
+      if (usePremium && isCurrentTrack) {
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+          child: NeumorphicWrapper(
+            borderRadius: 16,
+            intensity: 1.0,
+            color: Colors.transparent,
+            child: LiquidGlassWrapper(
+              enabled: true,
+              borderRadius: BorderRadius.circular(16),
+              opacity: 0.08,
+              blur: 10.0,
+              child: item,
+            ),
+          ),
+        );
+      }
+
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+        child: item,
       );
     });
   }

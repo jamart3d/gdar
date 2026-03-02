@@ -9,6 +9,7 @@ import 'package:mockito/mockito.dart';
 import 'package:provider/provider.dart';
 
 import 'package:shakedown/providers/update_provider.dart';
+import 'package:shakedown/providers/theme_provider.dart';
 import 'package:shakedown/services/device_service.dart';
 
 import 'splash_screen_test.mocks.dart';
@@ -87,6 +88,7 @@ void main() {
             value: mockSettingsProvider),
         ChangeNotifierProvider<AudioProvider>.value(value: mockAudioProvider),
         ChangeNotifierProvider<DeviceService>.value(value: mockDeviceService),
+        ChangeNotifierProvider<ThemeProvider>(create: (_) => ThemeProvider()),
       ],
       child: const MaterialApp(
         home: SplashScreen(),

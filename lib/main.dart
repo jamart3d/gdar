@@ -146,7 +146,8 @@ class _GdarAppState extends State<GdarApp> {
           ScreensaverScreen.show(context).then((_) {
             _setScreensaverActive(false);
             // Restart monitoring after screensaver exits
-            if (_settingsProvider.useOilScreensaver) {
+            if (_settingsProvider.useOilScreensaver &&
+                (!kIsWeb || widget.isTv)) {
               _inactivityService.start();
             }
           });
@@ -657,6 +658,10 @@ class _GdarAppState extends State<GdarApp> {
                       ),
                       child: child!,
                     );
+
+                    if (kIsWeb && !widget.isTv) {
+                      return child;
+                    }
 
                     return InactivityDetector(
                       inactivityService: _inactivityService,

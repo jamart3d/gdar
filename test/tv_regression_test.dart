@@ -27,6 +27,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shakedown/services/catalog_service.dart';
 import 'package:shakedown/services/audio_cache_service.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:hive/hive.dart';
 
 // Manual mocks to avoid dependency on generated files in this regression test
 class MockAudioProvider extends ChangeNotifier implements ap.AudioProvider {
@@ -694,6 +695,10 @@ void main() {
     mockShowListProvider = MockShowListProvider();
   });
 
+  tearDown(() async {
+    await Hive.close();
+  });
+
   Widget createTestableWidget({required Widget child}) {
     return MultiProvider(
       providers: [
@@ -778,10 +783,12 @@ void main() {
   testWidgets('Glow and RGB settings are visible on TV',
       (WidgetTester tester) async {
     await tester.pumpWidget(createTestableWidget(
-      child: const AppearanceSection(
-        scaleFactor: 1.0,
-        initiallyExpanded: true,
-        showFontSelection: false,
+      child: const Material(
+        child: AppearanceSection(
+          scaleFactor: 1.0,
+          initiallyExpanded: true,
+          showFontSelection: false,
+        ),
       ),
     ));
 

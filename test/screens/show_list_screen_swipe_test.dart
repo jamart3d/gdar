@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shakedown/models/show.dart';
 import 'package:shakedown/models/source.dart';
+import 'package:shakedown/models/track.dart';
 import 'package:shakedown/models/rating.dart';
 import 'package:flutter/foundation.dart';
 import 'package:shakedown/providers/audio_provider.dart';
 import 'package:shakedown/providers/settings_provider.dart';
 import 'package:shakedown/providers/show_list_provider.dart';
+import 'package:shakedown/providers/theme_provider.dart';
 import 'package:shakedown/services/catalog_service.dart';
 import 'package:shakedown/ui/screens/show_list_screen.dart';
 import 'package:mockito/mockito.dart';
@@ -25,7 +27,23 @@ class MockAudioProvider extends Mock
   @override
   Source? get currentSource => null;
   @override
+  Track? get currentTrack => null;
+  @override
+  bool get isPlaying => false;
+  @override
   Stream<PlayerState> get playerStateStream => const Stream.empty();
+  @override
+  Stream<Duration?> get durationStream => const Stream.empty();
+  @override
+  Stream<Duration> get positionStream => const Stream.empty();
+  @override
+  Stream<Duration> get bufferedPositionStream => const Stream.empty();
+  @override
+  Stream<Duration?> get nextTrackBufferedStream => const Stream.empty();
+  @override
+  Stream<Duration?> get nextTrackTotalStream => const Stream.empty();
+  @override
+  Stream<String> get playbackErrorStream => const Stream.empty();
   @override
   Stream<({Show show, Source source})> get randomShowRequestStream =>
       const Stream.empty();
@@ -68,6 +86,10 @@ class MockSettingsProvider extends SettingsProvider {
   bool get marqueeEnabled => false;
   @override
   bool get enableSwipeToBlock => true;
+  @override
+  bool get useNeumorphism => false;
+  @override
+  bool get performanceMode => false;
 
   // Note: setRating/getRating removed as they are no longer in SettingsProvider
 }
@@ -287,6 +309,7 @@ void main() {
         ChangeNotifierProvider<ShowListProvider>.value(
             value: mockShowListProvider),
         ChangeNotifierProvider<DeviceService>.value(value: mockDeviceService),
+        ChangeNotifierProvider<ThemeProvider>(create: (_) => ThemeProvider()),
         Provider<CatalogService>.value(value: mockCatalogService),
       ],
       child: const MaterialApp(

@@ -17,6 +17,8 @@ class MockSettingsProvider extends Mock implements SettingsProvider {
   bool get isTv => false;
   @override
   String get oilPalette => 'Psychedelic';
+  @override
+  bool get useNeumorphism => false;
 }
 
 class MockDeviceService extends Mock implements DeviceService {

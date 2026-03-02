@@ -1,3 +1,10 @@
+Release 1.1.39+139:
+- **Workflows**: Converted manual skills into actionable slash-command workflows (`/shipit`, `/inject_debug_tools`, `/test_fixer`, `/glass_audit`, `/tv_flow_audit`).
+- **UI/UX (Audit)**: Enhanced `/glass_audit` to be context-aware, specifically detecting Material 3 "leakage" in the Liquid Glass (Fruit) aesthetic.
+- **UI/UX (TV)**: Introduced a specialized `/tv_flow_audit` for deep D-Pad focus validation, scale verification, and remote button mapping.
+- **Testing**: Added the `test_mocking_templates` skill to the `/test_fixer` workflow for automated resolution of `MissingStubError` and `ProviderNotFoundException`.
+- **Optimization**: Refactored the `/checkup` workflow to use token-efficient Dart MCP tools for faster and cleaner code hygiene.
+
 Release 1.1.38+138:
 - **UI/UX (Web)**: Generalized `useMobileLayout` to support both Android and Fruit themes on narrow Web viewports.
 - **UI/UX (Web)**: Aligned Mini Player controls (play/pause) with the Fruit theme on Web, using glass-styling and pixel-perfect Lucide icons.

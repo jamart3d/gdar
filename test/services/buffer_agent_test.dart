@@ -22,10 +22,8 @@ void main() {
 
     setUp(() {
       mockAudioPlayer = MockGaplessPlayer();
-      playerStateController =
-          StreamController<PlayerState>.broadcast(sync: true);
-      playbackEventController =
-          StreamController<PlaybackEvent>.broadcast(sync: true);
+      playerStateController = StreamController<PlayerState>.broadcast();
+      playbackEventController = StreamController<PlaybackEvent>.broadcast();
       notifications = [];
 
       // Mock connectivity_plus channel

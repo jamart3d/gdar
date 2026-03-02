@@ -3,20 +3,21 @@
 // Do not manually edit this file.
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'dart:async' as _i6;
-import 'dart:ui' as _i7;
+import 'dart:async' as _i7;
+import 'dart:ui' as _i8;
 
 import 'package:just_audio/just_audio.dart' as _i3;
 import 'package:mockito/mockito.dart' as _i1;
 import 'package:mockito/src/dummies.dart' as _i5;
-import 'package:shakedown/models/show.dart' as _i9;
-import 'package:shakedown/models/source.dart' as _i10;
-import 'package:shakedown/providers/audio_provider.dart' as _i8;
+import 'package:shakedown/models/show.dart' as _i10;
+import 'package:shakedown/models/source.dart' as _i11;
+import 'package:shakedown/providers/audio_provider.dart' as _i9;
 import 'package:shakedown/providers/settings_provider.dart' as _i4;
-import 'package:shakedown/providers/show_list_provider.dart' as _i11;
-import 'package:shakedown/services/audio_cache_service.dart' as _i12;
+import 'package:shakedown/providers/show_list_provider.dart' as _i12;
+import 'package:shakedown/providers/theme_provider.dart' as _i6;
+import 'package:shakedown/services/audio_cache_service.dart' as _i13;
 import 'package:shakedown/services/gapless_player/gapless_player.dart' as _i2;
-import 'package:shakedown/services/wakelock_service.dart' as _i13;
+import 'package:shakedown/services/wakelock_service.dart' as _i14;
 
 // ignore_for_file: type=lint
 // ignore_for_file: avoid_redundant_argument_values
@@ -335,6 +336,27 @@ class MockSettingsProvider extends _i1.Mock implements _i4.SettingsProvider {
   @override
   bool get omitHttpPathInCopy => (super.noSuchMethod(
         Invocation.getter(#omitHttpPathInCopy),
+        returnValue: false,
+        returnValueForMissingStub: false,
+      ) as bool);
+
+  @override
+  bool get useNeumorphism => (super.noSuchMethod(
+        Invocation.getter(#useNeumorphism),
+        returnValue: false,
+        returnValueForMissingStub: false,
+      ) as bool);
+
+  @override
+  _i6.NeumorphicStyle get neumorphicStyle => (super.noSuchMethod(
+        Invocation.getter(#neumorphicStyle),
+        returnValue: _i6.NeumorphicStyle.convex,
+        returnValueForMissingStub: _i6.NeumorphicStyle.convex,
+      ) as _i6.NeumorphicStyle);
+
+  @override
+  bool get performanceMode => (super.noSuchMethod(
+        Invocation.getter(#performanceMode),
         returnValue: false,
         returnValueForMissingStub: false,
       ) as bool);
@@ -811,14 +833,14 @@ class MockSettingsProvider extends _i1.Mock implements _i4.SettingsProvider {
       );
 
   @override
-  _i6.Future<void> completeOnboarding() => (super.noSuchMethod(
+  _i7.Future<void> completeOnboarding() => (super.noSuchMethod(
         Invocation.method(
           #completeOnboarding,
           [],
         ),
-        returnValue: _i6.Future<void>.value(),
-        returnValueForMissingStub: _i6.Future<void>.value(),
-      ) as _i6.Future<void>);
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
 
   @override
   void toggleShowSplashScreen() => super.noSuchMethod(
@@ -1128,6 +1150,47 @@ class MockSettingsProvider extends _i1.Mock implements _i4.SettingsProvider {
       );
 
   @override
+  void toggleUseNeumorphism() => super.noSuchMethod(
+        Invocation.method(
+          #toggleUseNeumorphism,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void setUseNeumorphism(bool? value) => super.noSuchMethod(
+        Invocation.method(
+          #setUseNeumorphism,
+          [value],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void togglePerformanceMode() => super.noSuchMethod(
+        Invocation.method(
+          #togglePerformanceMode,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void setNeumorphicStyle(
+    _i6.NeumorphicStyle? value, {
+    bool? notify,
+  }) =>
+      super.noSuchMethod(
+        Invocation.method(
+          #setNeumorphicStyle,
+          [value],
+          {#notify: notify},
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
   void toggleWebGaplessEngine() => super.noSuchMethod(
         Invocation.method(
           #toggleWebGaplessEngine,
@@ -1137,14 +1200,14 @@ class MockSettingsProvider extends _i1.Mock implements _i4.SettingsProvider {
       );
 
   @override
-  _i6.Future<void> setWebPrefetchSeconds(int? seconds) => (super.noSuchMethod(
+  _i7.Future<void> setWebPrefetchSeconds(int? seconds) => (super.noSuchMethod(
         Invocation.method(
           #setWebPrefetchSeconds,
           [seconds],
         ),
-        returnValue: _i6.Future<void>.value(),
-        returnValueForMissingStub: _i6.Future<void>.value(),
-      ) as _i6.Future<void>);
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
 
   @override
   void setRgbAnimationSpeed(double? speed) => super.noSuchMethod(
@@ -1156,14 +1219,14 @@ class MockSettingsProvider extends _i1.Mock implements _i4.SettingsProvider {
       );
 
   @override
-  _i6.Future<void> setSeedColor(_i7.Color? color) => (super.noSuchMethod(
+  _i7.Future<void> setSeedColor(_i8.Color? color) => (super.noSuchMethod(
         Invocation.method(
           #setSeedColor,
           [color],
         ),
-        returnValue: _i6.Future<void>.value(),
-        returnValueForMissingStub: _i6.Future<void>.value(),
-      ) as _i6.Future<void>);
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
 
   @override
   void toggleRandomOnlyUnplayed() => super.noSuchMethod(
@@ -1220,54 +1283,54 @@ class MockSettingsProvider extends _i1.Mock implements _i4.SettingsProvider {
       );
 
   @override
-  _i6.Future<void> setOilFlowSpeed(double? value) => (super.noSuchMethod(
+  _i7.Future<void> setOilFlowSpeed(double? value) => (super.noSuchMethod(
         Invocation.method(
           #setOilFlowSpeed,
           [value],
         ),
-        returnValue: _i6.Future<void>.value(),
-        returnValueForMissingStub: _i6.Future<void>.value(),
-      ) as _i6.Future<void>);
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
 
   @override
-  _i6.Future<void> setOilPulseIntensity(double? value) => (super.noSuchMethod(
+  _i7.Future<void> setOilPulseIntensity(double? value) => (super.noSuchMethod(
         Invocation.method(
           #setOilPulseIntensity,
           [value],
         ),
-        returnValue: _i6.Future<void>.value(),
-        returnValueForMissingStub: _i6.Future<void>.value(),
-      ) as _i6.Future<void>);
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
 
   @override
-  _i6.Future<void> setOilPalette(String? palette) => (super.noSuchMethod(
+  _i7.Future<void> setOilPalette(String? palette) => (super.noSuchMethod(
         Invocation.method(
           #setOilPalette,
           [palette],
         ),
-        returnValue: _i6.Future<void>.value(),
-        returnValueForMissingStub: _i6.Future<void>.value(),
-      ) as _i6.Future<void>);
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
 
   @override
-  _i6.Future<void> setOilFilmGrain(double? value) => (super.noSuchMethod(
+  _i7.Future<void> setOilFilmGrain(double? value) => (super.noSuchMethod(
         Invocation.method(
           #setOilFilmGrain,
           [value],
         ),
-        returnValue: _i6.Future<void>.value(),
-        returnValueForMissingStub: _i6.Future<void>.value(),
-      ) as _i6.Future<void>);
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
 
   @override
-  _i6.Future<void> setOilHeatDrift(double? value) => (super.noSuchMethod(
+  _i7.Future<void> setOilHeatDrift(double? value) => (super.noSuchMethod(
         Invocation.method(
           #setOilHeatDrift,
           [value],
         ),
-        returnValue: _i6.Future<void>.value(),
-        returnValueForMissingStub: _i6.Future<void>.value(),
-      ) as _i6.Future<void>);
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
 
   @override
   void toggleOilEnableAudioReactivity() => super.noSuchMethod(
@@ -1306,140 +1369,140 @@ class MockSettingsProvider extends _i1.Mock implements _i4.SettingsProvider {
       );
 
   @override
-  _i6.Future<void> setOilBannerDisplayMode(String? mode) => (super.noSuchMethod(
+  _i7.Future<void> setOilBannerDisplayMode(String? mode) => (super.noSuchMethod(
         Invocation.method(
           #setOilBannerDisplayMode,
           [mode],
         ),
-        returnValue: _i6.Future<void>.value(),
-        returnValueForMissingStub: _i6.Future<void>.value(),
-      ) as _i6.Future<void>);
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
 
   @override
-  _i6.Future<void> setOilBannerFont(String? font) => (super.noSuchMethod(
+  _i7.Future<void> setOilBannerFont(String? font) => (super.noSuchMethod(
         Invocation.method(
           #setOilBannerFont,
           [font],
         ),
-        returnValue: _i6.Future<void>.value(),
-        returnValueForMissingStub: _i6.Future<void>.value(),
-      ) as _i6.Future<void>);
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
 
   @override
-  _i6.Future<void> setOilFlatTextProximity(double? value) =>
+  _i7.Future<void> setOilFlatTextProximity(double? value) =>
       (super.noSuchMethod(
         Invocation.method(
           #setOilFlatTextProximity,
           [value],
         ),
-        returnValue: _i6.Future<void>.value(),
-        returnValueForMissingStub: _i6.Future<void>.value(),
-      ) as _i6.Future<void>);
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
 
   @override
-  _i6.Future<void> setOilFlatTextPlacement(String? placement) =>
+  _i7.Future<void> setOilFlatTextPlacement(String? placement) =>
       (super.noSuchMethod(
         Invocation.method(
           #setOilFlatTextPlacement,
           [placement],
         ),
-        returnValue: _i6.Future<void>.value(),
-        returnValueForMissingStub: _i6.Future<void>.value(),
-      ) as _i6.Future<void>);
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
 
   @override
-  _i6.Future<void> setOilBannerLetterSpacing(double? value) =>
+  _i7.Future<void> setOilBannerLetterSpacing(double? value) =>
       (super.noSuchMethod(
         Invocation.method(
           #setOilBannerLetterSpacing,
           [value],
         ),
-        returnValue: _i6.Future<void>.value(),
-        returnValueForMissingStub: _i6.Future<void>.value(),
-      ) as _i6.Future<void>);
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
 
   @override
-  _i6.Future<void> setOilBannerWordSpacing(double? value) =>
+  _i7.Future<void> setOilBannerWordSpacing(double? value) =>
       (super.noSuchMethod(
         Invocation.method(
           #setOilBannerWordSpacing,
           [value],
         ),
-        returnValue: _i6.Future<void>.value(),
-        returnValueForMissingStub: _i6.Future<void>.value(),
-      ) as _i6.Future<void>);
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
 
   @override
-  _i6.Future<void> setOilFlatLineSpacing(double? value) => (super.noSuchMethod(
+  _i7.Future<void> setOilFlatLineSpacing(double? value) => (super.noSuchMethod(
         Invocation.method(
           #setOilFlatLineSpacing,
           [value],
         ),
-        returnValue: _i6.Future<void>.value(),
-        returnValueForMissingStub: _i6.Future<void>.value(),
-      ) as _i6.Future<void>);
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
 
   @override
-  _i6.Future<void> setOilLogoTrailIntensity(double? value) =>
+  _i7.Future<void> setOilLogoTrailIntensity(double? value) =>
       (super.noSuchMethod(
         Invocation.method(
           #setOilLogoTrailIntensity,
           [value],
         ),
-        returnValue: _i6.Future<void>.value(),
-        returnValueForMissingStub: _i6.Future<void>.value(),
-      ) as _i6.Future<void>);
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
 
   @override
-  _i6.Future<void> setOilLogoTrailSlices(int? value) => (super.noSuchMethod(
+  _i7.Future<void> setOilLogoTrailSlices(int? value) => (super.noSuchMethod(
         Invocation.method(
           #setOilLogoTrailSlices,
           [value],
         ),
-        returnValue: _i6.Future<void>.value(),
-        returnValueForMissingStub: _i6.Future<void>.value(),
-      ) as _i6.Future<void>);
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
 
   @override
-  _i6.Future<void> setOilLogoTrailLength(double? value) => (super.noSuchMethod(
+  _i7.Future<void> setOilLogoTrailLength(double? value) => (super.noSuchMethod(
         Invocation.method(
           #setOilLogoTrailLength,
           [value],
         ),
-        returnValue: _i6.Future<void>.value(),
-        returnValueForMissingStub: _i6.Future<void>.value(),
-      ) as _i6.Future<void>);
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
 
   @override
-  _i6.Future<void> setOilAudioPeakDecay(double? value) => (super.noSuchMethod(
+  _i7.Future<void> setOilAudioPeakDecay(double? value) => (super.noSuchMethod(
         Invocation.method(
           #setOilAudioPeakDecay,
           [value],
         ),
-        returnValue: _i6.Future<void>.value(),
-        returnValueForMissingStub: _i6.Future<void>.value(),
-      ) as _i6.Future<void>);
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
 
   @override
-  _i6.Future<void> setOilAudioBassBoost(double? value) => (super.noSuchMethod(
+  _i7.Future<void> setOilAudioBassBoost(double? value) => (super.noSuchMethod(
         Invocation.method(
           #setOilAudioBassBoost,
           [value],
         ),
-        returnValue: _i6.Future<void>.value(),
-        returnValueForMissingStub: _i6.Future<void>.value(),
-      ) as _i6.Future<void>);
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
 
   @override
-  _i6.Future<void> setOilAudioReactivityStrength(double? value) =>
+  _i7.Future<void> setOilAudioReactivityStrength(double? value) =>
       (super.noSuchMethod(
         Invocation.method(
           #setOilAudioReactivityStrength,
           [value],
         ),
-        returnValue: _i6.Future<void>.value(),
-        returnValueForMissingStub: _i6.Future<void>.value(),
-      ) as _i6.Future<void>);
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
 
   @override
   void setOilAudioGraphMode(String? mode) => super.noSuchMethod(
@@ -1451,14 +1514,14 @@ class MockSettingsProvider extends _i1.Mock implements _i4.SettingsProvider {
       );
 
   @override
-  _i6.Future<void> setOilBeatSensitivity(double? value) => (super.noSuchMethod(
+  _i7.Future<void> setOilBeatSensitivity(double? value) => (super.noSuchMethod(
         Invocation.method(
           #setOilBeatSensitivity,
           [value],
         ),
-        returnValue: _i6.Future<void>.value(),
-        returnValueForMissingStub: _i6.Future<void>.value(),
-      ) as _i6.Future<void>);
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
 
   @override
   void toggleOilShowInfoBanner() => super.noSuchMethod(
@@ -1470,35 +1533,35 @@ class MockSettingsProvider extends _i1.Mock implements _i4.SettingsProvider {
       );
 
   @override
-  _i6.Future<void> setOilLogoScale(double? value) => (super.noSuchMethod(
+  _i7.Future<void> setOilLogoScale(double? value) => (super.noSuchMethod(
         Invocation.method(
           #setOilLogoScale,
           [value],
         ),
-        returnValue: _i6.Future<void>.value(),
-        returnValueForMissingStub: _i6.Future<void>.value(),
-      ) as _i6.Future<void>);
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
 
   @override
-  _i6.Future<void> setOilTranslationSmoothing(double? value) =>
+  _i7.Future<void> setOilTranslationSmoothing(double? value) =>
       (super.noSuchMethod(
         Invocation.method(
           #setOilTranslationSmoothing,
           [value],
         ),
-        returnValue: _i6.Future<void>.value(),
-        returnValueForMissingStub: _i6.Future<void>.value(),
-      ) as _i6.Future<void>);
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
 
   @override
-  _i6.Future<void> setOilBlurAmount(double? value) => (super.noSuchMethod(
+  _i7.Future<void> setOilBlurAmount(double? value) => (super.noSuchMethod(
         Invocation.method(
           #setOilBlurAmount,
           [value],
         ),
-        returnValue: _i6.Future<void>.value(),
-        returnValueForMissingStub: _i6.Future<void>.value(),
-      ) as _i6.Future<void>);
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
 
   @override
   void toggleOilFlatColor() => super.noSuchMethod(
@@ -1519,96 +1582,96 @@ class MockSettingsProvider extends _i1.Mock implements _i4.SettingsProvider {
       );
 
   @override
-  _i6.Future<void> setOilBannerFlicker(double? value) => (super.noSuchMethod(
+  _i7.Future<void> setOilBannerFlicker(double? value) => (super.noSuchMethod(
         Invocation.method(
           #setOilBannerFlicker,
           [value],
         ),
-        returnValue: _i6.Future<void>.value(),
-        returnValueForMissingStub: _i6.Future<void>.value(),
-      ) as _i6.Future<void>);
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
 
   @override
-  _i6.Future<void> setOilBannerGlowBlur(double? value) => (super.noSuchMethod(
+  _i7.Future<void> setOilBannerGlowBlur(double? value) => (super.noSuchMethod(
         Invocation.method(
           #setOilBannerGlowBlur,
           [value],
         ),
-        returnValue: _i6.Future<void>.value(),
-        returnValueForMissingStub: _i6.Future<void>.value(),
-      ) as _i6.Future<void>);
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
 
   @override
-  _i6.Future<void> setOilBannerResolution(double? value) => (super.noSuchMethod(
+  _i7.Future<void> setOilBannerResolution(double? value) => (super.noSuchMethod(
         Invocation.method(
           #setOilBannerResolution,
           [value],
         ),
-        returnValue: _i6.Future<void>.value(),
-        returnValueForMissingStub: _i6.Future<void>.value(),
-      ) as _i6.Future<void>);
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
 
   @override
-  _i6.Future<void> setOilInnerRingScale(double? value) => (super.noSuchMethod(
+  _i7.Future<void> setOilInnerRingScale(double? value) => (super.noSuchMethod(
         Invocation.method(
           #setOilInnerRingScale,
           [value],
         ),
-        returnValue: _i6.Future<void>.value(),
-        returnValueForMissingStub: _i6.Future<void>.value(),
-      ) as _i6.Future<void>);
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
 
   @override
-  _i6.Future<void> setOilInnerToMiddleGap(double? value) => (super.noSuchMethod(
+  _i7.Future<void> setOilInnerToMiddleGap(double? value) => (super.noSuchMethod(
         Invocation.method(
           #setOilInnerToMiddleGap,
           [value],
         ),
-        returnValue: _i6.Future<void>.value(),
-        returnValueForMissingStub: _i6.Future<void>.value(),
-      ) as _i6.Future<void>);
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
 
   @override
-  _i6.Future<void> setOilMiddleToOuterGap(double? value) => (super.noSuchMethod(
+  _i7.Future<void> setOilMiddleToOuterGap(double? value) => (super.noSuchMethod(
         Invocation.method(
           #setOilMiddleToOuterGap,
           [value],
         ),
-        returnValue: _i6.Future<void>.value(),
-        returnValueForMissingStub: _i6.Future<void>.value(),
-      ) as _i6.Future<void>);
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
 
   @override
-  _i6.Future<void> setOilOrbitDrift(double? value) => (super.noSuchMethod(
+  _i7.Future<void> setOilOrbitDrift(double? value) => (super.noSuchMethod(
         Invocation.method(
           #setOilOrbitDrift,
           [value],
         ),
-        returnValue: _i6.Future<void>.value(),
-        returnValueForMissingStub: _i6.Future<void>.value(),
-      ) as _i6.Future<void>);
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
 
   @override
-  _i6.Future<void> setOilInnerRingFontScale(double? value) =>
+  _i7.Future<void> setOilInnerRingFontScale(double? value) =>
       (super.noSuchMethod(
         Invocation.method(
           #setOilInnerRingFontScale,
           [value],
         ),
-        returnValue: _i6.Future<void>.value(),
-        returnValueForMissingStub: _i6.Future<void>.value(),
-      ) as _i6.Future<void>);
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
 
   @override
-  _i6.Future<void> setOilInnerRingSpacingMultiplier(double? value) =>
+  _i7.Future<void> setOilInnerRingSpacingMultiplier(double? value) =>
       (super.noSuchMethod(
         Invocation.method(
           #setOilInnerRingSpacingMultiplier,
           [value],
         ),
-        returnValue: _i6.Future<void>.value(),
-        returnValueForMissingStub: _i6.Future<void>.value(),
-      ) as _i6.Future<void>);
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
 
   @override
   void toggleFilterHighestShnid() => super.noSuchMethod(
@@ -1620,7 +1683,7 @@ class MockSettingsProvider extends _i1.Mock implements _i4.SettingsProvider {
       );
 
   @override
-  _i6.Future<void> setSourceCategoryFilter(
+  _i7.Future<void> setSourceCategoryFilter(
     String? category,
     bool? isActive,
   ) =>
@@ -1632,43 +1695,43 @@ class MockSettingsProvider extends _i1.Mock implements _i4.SettingsProvider {
             isActive,
           ],
         ),
-        returnValue: _i6.Future<void>.value(),
-        returnValueForMissingStub: _i6.Future<void>.value(),
-      ) as _i6.Future<void>);
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
 
   @override
-  _i6.Future<void> setSoloSourceCategoryFilter(String? category) =>
+  _i7.Future<void> setSoloSourceCategoryFilter(String? category) =>
       (super.noSuchMethod(
         Invocation.method(
           #setSoloSourceCategoryFilter,
           [category],
         ),
-        returnValue: _i6.Future<void>.value(),
-        returnValueForMissingStub: _i6.Future<void>.value(),
-      ) as _i6.Future<void>);
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
 
   @override
-  _i6.Future<void> enableAllSourceCategories() => (super.noSuchMethod(
+  _i7.Future<void> enableAllSourceCategories() => (super.noSuchMethod(
         Invocation.method(
           #enableAllSourceCategories,
           [],
         ),
-        returnValue: _i6.Future<void>.value(),
-        returnValueForMissingStub: _i6.Future<void>.value(),
-      ) as _i6.Future<void>);
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
 
   @override
-  _i6.Future<void> resetToDefaults() => (super.noSuchMethod(
+  _i7.Future<void> resetToDefaults() => (super.noSuchMethod(
         Invocation.method(
           #resetToDefaults,
           [],
         ),
-        returnValue: _i6.Future<void>.value(),
-        returnValueForMissingStub: _i6.Future<void>.value(),
-      ) as _i6.Future<void>);
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
 
   @override
-  void addListener(_i7.VoidCallback? listener) => super.noSuchMethod(
+  void addListener(_i8.VoidCallback? listener) => super.noSuchMethod(
         Invocation.method(
           #addListener,
           [listener],
@@ -1677,7 +1740,7 @@ class MockSettingsProvider extends _i1.Mock implements _i4.SettingsProvider {
       );
 
   @override
-  void removeListener(_i7.VoidCallback? listener) => super.noSuchMethod(
+  void removeListener(_i8.VoidCallback? listener) => super.noSuchMethod(
         Invocation.method(
           #removeListener,
           [listener],
@@ -1707,7 +1770,7 @@ class MockSettingsProvider extends _i1.Mock implements _i4.SettingsProvider {
 /// A class which mocks [AudioProvider].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockAudioProvider extends _i1.Mock implements _i8.AudioProvider {
+class MockAudioProvider extends _i1.Mock implements _i9.AudioProvider {
   @override
   _i2.GaplessPlayer get audioPlayer => (super.noSuchMethod(
         Invocation.getter(#audioPlayer),
@@ -1729,80 +1792,80 @@ class MockAudioProvider extends _i1.Mock implements _i8.AudioProvider {
       ) as bool);
 
   @override
-  _i6.Stream<_i3.PlayerState> get playerStateStream => (super.noSuchMethod(
+  _i7.Stream<_i3.PlayerState> get playerStateStream => (super.noSuchMethod(
         Invocation.getter(#playerStateStream),
-        returnValue: _i6.Stream<_i3.PlayerState>.empty(),
-        returnValueForMissingStub: _i6.Stream<_i3.PlayerState>.empty(),
-      ) as _i6.Stream<_i3.PlayerState>);
+        returnValue: _i7.Stream<_i3.PlayerState>.empty(),
+        returnValueForMissingStub: _i7.Stream<_i3.PlayerState>.empty(),
+      ) as _i7.Stream<_i3.PlayerState>);
 
   @override
-  _i6.Stream<int?> get currentIndexStream => (super.noSuchMethod(
+  _i7.Stream<int?> get currentIndexStream => (super.noSuchMethod(
         Invocation.getter(#currentIndexStream),
-        returnValue: _i6.Stream<int?>.empty(),
-        returnValueForMissingStub: _i6.Stream<int?>.empty(),
-      ) as _i6.Stream<int?>);
+        returnValue: _i7.Stream<int?>.empty(),
+        returnValueForMissingStub: _i7.Stream<int?>.empty(),
+      ) as _i7.Stream<int?>);
 
   @override
-  _i6.Stream<Duration?> get durationStream => (super.noSuchMethod(
+  _i7.Stream<Duration?> get durationStream => (super.noSuchMethod(
         Invocation.getter(#durationStream),
-        returnValue: _i6.Stream<Duration?>.empty(),
-        returnValueForMissingStub: _i6.Stream<Duration?>.empty(),
-      ) as _i6.Stream<Duration?>);
+        returnValue: _i7.Stream<Duration?>.empty(),
+        returnValueForMissingStub: _i7.Stream<Duration?>.empty(),
+      ) as _i7.Stream<Duration?>);
 
   @override
-  _i6.Stream<Duration> get positionStream => (super.noSuchMethod(
+  _i7.Stream<Duration> get positionStream => (super.noSuchMethod(
         Invocation.getter(#positionStream),
-        returnValue: _i6.Stream<Duration>.empty(),
-        returnValueForMissingStub: _i6.Stream<Duration>.empty(),
-      ) as _i6.Stream<Duration>);
+        returnValue: _i7.Stream<Duration>.empty(),
+        returnValueForMissingStub: _i7.Stream<Duration>.empty(),
+      ) as _i7.Stream<Duration>);
 
   @override
-  _i6.Stream<Duration> get bufferedPositionStream => (super.noSuchMethod(
+  _i7.Stream<Duration> get bufferedPositionStream => (super.noSuchMethod(
         Invocation.getter(#bufferedPositionStream),
-        returnValue: _i6.Stream<Duration>.empty(),
-        returnValueForMissingStub: _i6.Stream<Duration>.empty(),
-      ) as _i6.Stream<Duration>);
+        returnValue: _i7.Stream<Duration>.empty(),
+        returnValueForMissingStub: _i7.Stream<Duration>.empty(),
+      ) as _i7.Stream<Duration>);
 
   @override
-  _i6.Stream<Duration?> get nextTrackBufferedStream => (super.noSuchMethod(
+  _i7.Stream<Duration?> get nextTrackBufferedStream => (super.noSuchMethod(
         Invocation.getter(#nextTrackBufferedStream),
-        returnValue: _i6.Stream<Duration?>.empty(),
-        returnValueForMissingStub: _i6.Stream<Duration?>.empty(),
-      ) as _i6.Stream<Duration?>);
+        returnValue: _i7.Stream<Duration?>.empty(),
+        returnValueForMissingStub: _i7.Stream<Duration?>.empty(),
+      ) as _i7.Stream<Duration?>);
 
   @override
-  _i6.Stream<Duration?> get nextTrackTotalStream => (super.noSuchMethod(
+  _i7.Stream<Duration?> get nextTrackTotalStream => (super.noSuchMethod(
         Invocation.getter(#nextTrackTotalStream),
-        returnValue: _i6.Stream<Duration?>.empty(),
-        returnValueForMissingStub: _i6.Stream<Duration?>.empty(),
-      ) as _i6.Stream<Duration?>);
+        returnValue: _i7.Stream<Duration?>.empty(),
+        returnValueForMissingStub: _i7.Stream<Duration?>.empty(),
+      ) as _i7.Stream<Duration?>);
 
   @override
-  _i6.Stream<String> get playbackErrorStream => (super.noSuchMethod(
+  _i7.Stream<String> get playbackErrorStream => (super.noSuchMethod(
         Invocation.getter(#playbackErrorStream),
-        returnValue: _i6.Stream<String>.empty(),
-        returnValueForMissingStub: _i6.Stream<String>.empty(),
-      ) as _i6.Stream<String>);
+        returnValue: _i7.Stream<String>.empty(),
+        returnValueForMissingStub: _i7.Stream<String>.empty(),
+      ) as _i7.Stream<String>);
 
   @override
-  _i6.Stream<({_i9.Show show, _i10.Source source})>
+  _i7.Stream<({_i10.Show show, _i11.Source source})>
       get randomShowRequestStream => (super.noSuchMethod(
             Invocation.getter(#randomShowRequestStream),
             returnValue:
-                _i6.Stream<({_i9.Show show, _i10.Source source})>.empty(),
+                _i7.Stream<({_i10.Show show, _i11.Source source})>.empty(),
             returnValueForMissingStub:
-                _i6.Stream<({_i9.Show show, _i10.Source source})>.empty(),
-          ) as _i6.Stream<({_i9.Show show, _i10.Source source})>);
+                _i7.Stream<({_i10.Show show, _i11.Source source})>.empty(),
+          ) as _i7.Stream<({_i10.Show show, _i11.Source source})>);
 
   @override
-  _i6.Stream<({String message, _i7.VoidCallback? retryAction})>
+  _i7.Stream<({String message, _i8.VoidCallback? retryAction})>
       get bufferAgentNotificationStream => (super.noSuchMethod(
             Invocation.getter(#bufferAgentNotificationStream),
-            returnValue: _i6.Stream<
-                ({String message, _i7.VoidCallback? retryAction})>.empty(),
-            returnValueForMissingStub: _i6.Stream<
-                ({String message, _i7.VoidCallback? retryAction})>.empty(),
-          ) as _i6.Stream<({String message, _i7.VoidCallback? retryAction})>);
+            returnValue: _i7.Stream<
+                ({String message, _i8.VoidCallback? retryAction})>.empty(),
+            returnValueForMissingStub: _i7.Stream<
+                ({String message, _i8.VoidCallback? retryAction})>.empty(),
+          ) as _i7.Stream<({String message, _i8.VoidCallback? retryAction})>);
 
   @override
   int get cachedTrackCount => (super.noSuchMethod(
@@ -1829,9 +1892,9 @@ class MockAudioProvider extends _i1.Mock implements _i8.AudioProvider {
 
   @override
   void update(
-    _i11.ShowListProvider? showListProvider,
+    _i12.ShowListProvider? showListProvider,
     _i4.SettingsProvider? settingsProvider,
-    _i12.AudioCacheService? audioCacheService,
+    _i13.AudioCacheService? audioCacheService,
   ) =>
       super.noSuchMethod(
         Invocation.method(
@@ -1855,7 +1918,7 @@ class MockAudioProvider extends _i1.Mock implements _i8.AudioProvider {
       );
 
   @override
-  ({_i9.Show show, _i10.Source source})? pickRandomShow(
+  ({_i10.Show show, _i11.Source source})? pickRandomShow(
           {bool? filterBySearch = true}) =>
       (super.noSuchMethod(
         Invocation.method(
@@ -1864,10 +1927,10 @@ class MockAudioProvider extends _i1.Mock implements _i8.AudioProvider {
           {#filterBySearch: filterBySearch},
         ),
         returnValueForMissingStub: null,
-      ) as ({_i9.Show show, _i10.Source source})?);
+      ) as ({_i10.Show show, _i11.Source source})?);
 
   @override
-  _i6.Future<_i9.Show?> playRandomShow({
+  _i7.Future<_i10.Show?> playRandomShow({
     bool? filterBySearch = true,
     bool? animationOnly = false,
     bool? delayPlayback = false,
@@ -1882,24 +1945,24 @@ class MockAudioProvider extends _i1.Mock implements _i8.AudioProvider {
             #delayPlayback: delayPlayback,
           },
         ),
-        returnValue: _i6.Future<_i9.Show?>.value(),
-        returnValueForMissingStub: _i6.Future<_i9.Show?>.value(),
-      ) as _i6.Future<_i9.Show?>);
+        returnValue: _i7.Future<_i10.Show?>.value(),
+        returnValueForMissingStub: _i7.Future<_i10.Show?>.value(),
+      ) as _i7.Future<_i10.Show?>);
 
   @override
-  _i6.Future<void> playPendingSelection() => (super.noSuchMethod(
+  _i7.Future<void> playPendingSelection() => (super.noSuchMethod(
         Invocation.method(
           #playPendingSelection,
           [],
         ),
-        returnValue: _i6.Future<void>.value(),
-        returnValueForMissingStub: _i6.Future<void>.value(),
-      ) as _i6.Future<void>);
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
 
   @override
-  _i6.Future<void> playSource(
-    _i9.Show? show,
-    _i10.Source? source, {
+  _i7.Future<void> playSource(
+    _i10.Show? show,
+    _i11.Source? source, {
     int? initialIndex = 0,
     Duration? initialPosition,
   }) =>
@@ -1915,30 +1978,30 @@ class MockAudioProvider extends _i1.Mock implements _i8.AudioProvider {
             #initialPosition: initialPosition,
           },
         ),
-        returnValue: _i6.Future<void>.value(),
-        returnValueForMissingStub: _i6.Future<void>.value(),
-      ) as _i6.Future<void>);
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
 
   @override
-  _i6.Future<bool> playFromShareString(String? shareString) =>
+  _i7.Future<bool> playFromShareString(String? shareString) =>
       (super.noSuchMethod(
         Invocation.method(
           #playFromShareString,
           [shareString],
         ),
-        returnValue: _i6.Future<bool>.value(false),
-        returnValueForMissingStub: _i6.Future<bool>.value(false),
-      ) as _i6.Future<bool>);
+        returnValue: _i7.Future<bool>.value(false),
+        returnValueForMissingStub: _i7.Future<bool>.value(false),
+      ) as _i7.Future<bool>);
 
   @override
-  _i6.Future<void> queueRandomShow() => (super.noSuchMethod(
+  _i7.Future<void> queueRandomShow() => (super.noSuchMethod(
         Invocation.method(
           #queueRandomShow,
           [],
         ),
-        returnValue: _i6.Future<void>.value(),
-        returnValueForMissingStub: _i6.Future<void>.value(),
-      ) as _i6.Future<void>);
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
 
   @override
   void clearError() => super.noSuchMethod(
@@ -1950,94 +2013,94 @@ class MockAudioProvider extends _i1.Mock implements _i8.AudioProvider {
       );
 
   @override
-  _i6.Future<void> stopAndClear() => (super.noSuchMethod(
+  _i7.Future<void> stopAndClear() => (super.noSuchMethod(
         Invocation.method(
           #stopAndClear,
           [],
         ),
-        returnValue: _i6.Future<void>.value(),
-        returnValueForMissingStub: _i6.Future<void>.value(),
-      ) as _i6.Future<void>);
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
 
   @override
-  _i6.Future<void> play() => (super.noSuchMethod(
+  _i7.Future<void> play() => (super.noSuchMethod(
         Invocation.method(
           #play,
           [],
         ),
-        returnValue: _i6.Future<void>.value(),
-        returnValueForMissingStub: _i6.Future<void>.value(),
-      ) as _i6.Future<void>);
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
 
   @override
-  _i6.Future<void> resume() => (super.noSuchMethod(
+  _i7.Future<void> resume() => (super.noSuchMethod(
         Invocation.method(
           #resume,
           [],
         ),
-        returnValue: _i6.Future<void>.value(),
-        returnValueForMissingStub: _i6.Future<void>.value(),
-      ) as _i6.Future<void>);
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
 
   @override
-  _i6.Future<void> pause() => (super.noSuchMethod(
+  _i7.Future<void> pause() => (super.noSuchMethod(
         Invocation.method(
           #pause,
           [],
         ),
-        returnValue: _i6.Future<void>.value(),
-        returnValueForMissingStub: _i6.Future<void>.value(),
-      ) as _i6.Future<void>);
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
 
   @override
-  _i6.Future<void> stop() => (super.noSuchMethod(
+  _i7.Future<void> stop() => (super.noSuchMethod(
         Invocation.method(
           #stop,
           [],
         ),
-        returnValue: _i6.Future<void>.value(),
-        returnValueForMissingStub: _i6.Future<void>.value(),
-      ) as _i6.Future<void>);
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
 
   @override
-  _i6.Future<void> seekToNext() => (super.noSuchMethod(
+  _i7.Future<void> seekToNext() => (super.noSuchMethod(
         Invocation.method(
           #seekToNext,
           [],
         ),
-        returnValue: _i6.Future<void>.value(),
-        returnValueForMissingStub: _i6.Future<void>.value(),
-      ) as _i6.Future<void>);
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
 
   @override
-  _i6.Future<void> seekToPrevious() => (super.noSuchMethod(
+  _i7.Future<void> seekToPrevious() => (super.noSuchMethod(
         Invocation.method(
           #seekToPrevious,
           [],
         ),
-        returnValue: _i6.Future<void>.value(),
-        returnValueForMissingStub: _i6.Future<void>.value(),
-      ) as _i6.Future<void>);
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
 
   @override
-  _i6.Future<void> seek(Duration? position) => (super.noSuchMethod(
+  _i7.Future<void> seek(Duration? position) => (super.noSuchMethod(
         Invocation.method(
           #seek,
           [position],
         ),
-        returnValue: _i6.Future<void>.value(),
-        returnValueForMissingStub: _i6.Future<void>.value(),
-      ) as _i6.Future<void>);
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
 
   @override
-  _i6.Future<void> retryCurrentSource() => (super.noSuchMethod(
+  _i7.Future<void> retryCurrentSource() => (super.noSuchMethod(
         Invocation.method(
           #retryCurrentSource,
           [],
         ),
-        returnValue: _i6.Future<void>.value(),
-        returnValueForMissingStub: _i6.Future<void>.value(),
-      ) as _i6.Future<void>);
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
 
   @override
   void seekToTrack(int? localIndex) => super.noSuchMethod(
@@ -2049,7 +2112,7 @@ class MockAudioProvider extends _i1.Mock implements _i8.AudioProvider {
       );
 
   @override
-  void addListener(_i7.VoidCallback? listener) => super.noSuchMethod(
+  void addListener(_i8.VoidCallback? listener) => super.noSuchMethod(
         Invocation.method(
           #addListener,
           [listener],
@@ -2058,7 +2121,7 @@ class MockAudioProvider extends _i1.Mock implements _i8.AudioProvider {
       );
 
   @override
-  void removeListener(_i7.VoidCallback? listener) => super.noSuchMethod(
+  void removeListener(_i8.VoidCallback? listener) => super.noSuchMethod(
         Invocation.method(
           #removeListener,
           [listener],
@@ -2079,44 +2142,44 @@ class MockAudioProvider extends _i1.Mock implements _i8.AudioProvider {
 /// A class which mocks [WakelockService].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockWakelockService extends _i1.Mock implements _i13.WakelockService {
+class MockWakelockService extends _i1.Mock implements _i14.WakelockService {
   @override
-  _i6.Future<bool> get enabled => (super.noSuchMethod(
+  _i7.Future<bool> get enabled => (super.noSuchMethod(
         Invocation.getter(#enabled),
-        returnValue: _i6.Future<bool>.value(false),
-        returnValueForMissingStub: _i6.Future<bool>.value(false),
-      ) as _i6.Future<bool>);
+        returnValue: _i7.Future<bool>.value(false),
+        returnValueForMissingStub: _i7.Future<bool>.value(false),
+      ) as _i7.Future<bool>);
 
   @override
-  _i6.Future<void> enable() => (super.noSuchMethod(
+  _i7.Future<void> enable() => (super.noSuchMethod(
         Invocation.method(
           #enable,
           [],
         ),
-        returnValue: _i6.Future<void>.value(),
-        returnValueForMissingStub: _i6.Future<void>.value(),
-      ) as _i6.Future<void>);
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
 
   @override
-  _i6.Future<void> disable() => (super.noSuchMethod(
+  _i7.Future<void> disable() => (super.noSuchMethod(
         Invocation.method(
           #disable,
           [],
         ),
-        returnValue: _i6.Future<void>.value(),
-        returnValueForMissingStub: _i6.Future<void>.value(),
-      ) as _i6.Future<void>);
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
 
   @override
-  _i6.Future<void> toggle({required bool? enable}) => (super.noSuchMethod(
+  _i7.Future<void> toggle({required bool? enable}) => (super.noSuchMethod(
         Invocation.method(
           #toggle,
           [],
           {#enable: enable},
         ),
-        returnValue: _i6.Future<void>.value(),
-        returnValueForMissingStub: _i6.Future<void>.value(),
-      ) as _i6.Future<void>);
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
 }
 
 /// A class which mocks [GaplessPlayer].
@@ -2217,89 +2280,89 @@ class MockAudioPlayerRelaxed extends _i1.Mock implements _i2.GaplessPlayer {
       ) as _i2.AudioEngineMode);
 
   @override
-  _i6.Stream<_i3.PlayerState> get playerStateStream => (super.noSuchMethod(
+  _i7.Stream<_i3.PlayerState> get playerStateStream => (super.noSuchMethod(
         Invocation.getter(#playerStateStream),
-        returnValue: _i6.Stream<_i3.PlayerState>.empty(),
-        returnValueForMissingStub: _i6.Stream<_i3.PlayerState>.empty(),
-      ) as _i6.Stream<_i3.PlayerState>);
+        returnValue: _i7.Stream<_i3.PlayerState>.empty(),
+        returnValueForMissingStub: _i7.Stream<_i3.PlayerState>.empty(),
+      ) as _i7.Stream<_i3.PlayerState>);
 
   @override
-  _i6.Stream<_i3.PlaybackEvent> get playbackEventStream => (super.noSuchMethod(
+  _i7.Stream<_i3.PlaybackEvent> get playbackEventStream => (super.noSuchMethod(
         Invocation.getter(#playbackEventStream),
-        returnValue: _i6.Stream<_i3.PlaybackEvent>.empty(),
-        returnValueForMissingStub: _i6.Stream<_i3.PlaybackEvent>.empty(),
-      ) as _i6.Stream<_i3.PlaybackEvent>);
+        returnValue: _i7.Stream<_i3.PlaybackEvent>.empty(),
+        returnValueForMissingStub: _i7.Stream<_i3.PlaybackEvent>.empty(),
+      ) as _i7.Stream<_i3.PlaybackEvent>);
 
   @override
-  _i6.Stream<bool> get playingStream => (super.noSuchMethod(
+  _i7.Stream<bool> get playingStream => (super.noSuchMethod(
         Invocation.getter(#playingStream),
-        returnValue: _i6.Stream<bool>.empty(),
-        returnValueForMissingStub: _i6.Stream<bool>.empty(),
-      ) as _i6.Stream<bool>);
+        returnValue: _i7.Stream<bool>.empty(),
+        returnValueForMissingStub: _i7.Stream<bool>.empty(),
+      ) as _i7.Stream<bool>);
 
   @override
-  _i6.Stream<_i3.ProcessingState> get processingStateStream =>
+  _i7.Stream<_i3.ProcessingState> get processingStateStream =>
       (super.noSuchMethod(
         Invocation.getter(#processingStateStream),
-        returnValue: _i6.Stream<_i3.ProcessingState>.empty(),
-        returnValueForMissingStub: _i6.Stream<_i3.ProcessingState>.empty(),
-      ) as _i6.Stream<_i3.ProcessingState>);
+        returnValue: _i7.Stream<_i3.ProcessingState>.empty(),
+        returnValueForMissingStub: _i7.Stream<_i3.ProcessingState>.empty(),
+      ) as _i7.Stream<_i3.ProcessingState>);
 
   @override
-  _i6.Stream<Duration> get bufferedPositionStream => (super.noSuchMethod(
+  _i7.Stream<Duration> get bufferedPositionStream => (super.noSuchMethod(
         Invocation.getter(#bufferedPositionStream),
-        returnValue: _i6.Stream<Duration>.empty(),
-        returnValueForMissingStub: _i6.Stream<Duration>.empty(),
-      ) as _i6.Stream<Duration>);
+        returnValue: _i7.Stream<Duration>.empty(),
+        returnValueForMissingStub: _i7.Stream<Duration>.empty(),
+      ) as _i7.Stream<Duration>);
 
   @override
-  _i6.Stream<Duration> get positionStream => (super.noSuchMethod(
+  _i7.Stream<Duration> get positionStream => (super.noSuchMethod(
         Invocation.getter(#positionStream),
-        returnValue: _i6.Stream<Duration>.empty(),
-        returnValueForMissingStub: _i6.Stream<Duration>.empty(),
-      ) as _i6.Stream<Duration>);
+        returnValue: _i7.Stream<Duration>.empty(),
+        returnValueForMissingStub: _i7.Stream<Duration>.empty(),
+      ) as _i7.Stream<Duration>);
 
   @override
-  _i6.Stream<Duration?> get durationStream => (super.noSuchMethod(
+  _i7.Stream<Duration?> get durationStream => (super.noSuchMethod(
         Invocation.getter(#durationStream),
-        returnValue: _i6.Stream<Duration?>.empty(),
-        returnValueForMissingStub: _i6.Stream<Duration?>.empty(),
-      ) as _i6.Stream<Duration?>);
+        returnValue: _i7.Stream<Duration?>.empty(),
+        returnValueForMissingStub: _i7.Stream<Duration?>.empty(),
+      ) as _i7.Stream<Duration?>);
 
   @override
-  _i6.Stream<Duration?> get nextTrackBufferedStream => (super.noSuchMethod(
+  _i7.Stream<Duration?> get nextTrackBufferedStream => (super.noSuchMethod(
         Invocation.getter(#nextTrackBufferedStream),
-        returnValue: _i6.Stream<Duration?>.empty(),
-        returnValueForMissingStub: _i6.Stream<Duration?>.empty(),
-      ) as _i6.Stream<Duration?>);
+        returnValue: _i7.Stream<Duration?>.empty(),
+        returnValueForMissingStub: _i7.Stream<Duration?>.empty(),
+      ) as _i7.Stream<Duration?>);
 
   @override
-  _i6.Stream<Duration?> get nextTrackTotalStream => (super.noSuchMethod(
+  _i7.Stream<Duration?> get nextTrackTotalStream => (super.noSuchMethod(
         Invocation.getter(#nextTrackTotalStream),
-        returnValue: _i6.Stream<Duration?>.empty(),
-        returnValueForMissingStub: _i6.Stream<Duration?>.empty(),
-      ) as _i6.Stream<Duration?>);
+        returnValue: _i7.Stream<Duration?>.empty(),
+        returnValueForMissingStub: _i7.Stream<Duration?>.empty(),
+      ) as _i7.Stream<Duration?>);
 
   @override
-  _i6.Stream<String> get engineStateStringStream => (super.noSuchMethod(
+  _i7.Stream<String> get engineStateStringStream => (super.noSuchMethod(
         Invocation.getter(#engineStateStringStream),
-        returnValue: _i6.Stream<String>.empty(),
-        returnValueForMissingStub: _i6.Stream<String>.empty(),
-      ) as _i6.Stream<String>);
+        returnValue: _i7.Stream<String>.empty(),
+        returnValueForMissingStub: _i7.Stream<String>.empty(),
+      ) as _i7.Stream<String>);
 
   @override
-  _i6.Stream<int?> get currentIndexStream => (super.noSuchMethod(
+  _i7.Stream<int?> get currentIndexStream => (super.noSuchMethod(
         Invocation.getter(#currentIndexStream),
-        returnValue: _i6.Stream<int?>.empty(),
-        returnValueForMissingStub: _i6.Stream<int?>.empty(),
-      ) as _i6.Stream<int?>);
+        returnValue: _i7.Stream<int?>.empty(),
+        returnValueForMissingStub: _i7.Stream<int?>.empty(),
+      ) as _i7.Stream<int?>);
 
   @override
-  _i6.Stream<_i3.SequenceState?> get sequenceStateStream => (super.noSuchMethod(
+  _i7.Stream<_i3.SequenceState?> get sequenceStateStream => (super.noSuchMethod(
         Invocation.getter(#sequenceStateStream),
-        returnValue: _i6.Stream<_i3.SequenceState?>.empty(),
-        returnValueForMissingStub: _i6.Stream<_i3.SequenceState?>.empty(),
-      ) as _i6.Stream<_i3.SequenceState?>);
+        returnValue: _i7.Stream<_i3.SequenceState?>.empty(),
+        returnValueForMissingStub: _i7.Stream<_i3.SequenceState?>.empty(),
+      ) as _i7.Stream<_i3.SequenceState?>);
 
   @override
   void reload() => super.noSuchMethod(
@@ -2311,7 +2374,7 @@ class MockAudioPlayerRelaxed extends _i1.Mock implements _i2.GaplessPlayer {
       );
 
   @override
-  _i6.Future<Duration?> setAudioSources(
+  _i7.Future<Duration?> setAudioSources(
     List<_i3.AudioSource>? children, {
     int? initialIndex = 0,
     Duration? initialPosition = Duration.zero,
@@ -2327,40 +2390,40 @@ class MockAudioPlayerRelaxed extends _i1.Mock implements _i2.GaplessPlayer {
             #preload: preload,
           },
         ),
-        returnValue: _i6.Future<Duration?>.value(),
-        returnValueForMissingStub: _i6.Future<Duration?>.value(),
-      ) as _i6.Future<Duration?>);
+        returnValue: _i7.Future<Duration?>.value(),
+        returnValueForMissingStub: _i7.Future<Duration?>.value(),
+      ) as _i7.Future<Duration?>);
 
   @override
-  _i6.Future<void> addAudioSources(List<_i3.AudioSource>? sources) =>
+  _i7.Future<void> addAudioSources(List<_i3.AudioSource>? sources) =>
       (super.noSuchMethod(
         Invocation.method(
           #addAudioSources,
           [sources],
         ),
-        returnValue: _i6.Future<void>.value(),
-        returnValueForMissingStub: _i6.Future<void>.value(),
-      ) as _i6.Future<void>);
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
 
   @override
-  _i6.Future<void> play() => (super.noSuchMethod(
+  _i7.Future<void> play() => (super.noSuchMethod(
         Invocation.method(
           #play,
           [],
         ),
-        returnValue: _i6.Future<void>.value(),
-        returnValueForMissingStub: _i6.Future<void>.value(),
-      ) as _i6.Future<void>);
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
 
   @override
-  _i6.Future<void> pause() => (super.noSuchMethod(
+  _i7.Future<void> pause() => (super.noSuchMethod(
         Invocation.method(
           #pause,
           [],
         ),
-        returnValue: _i6.Future<void>.value(),
-        returnValueForMissingStub: _i6.Future<void>.value(),
-      ) as _i6.Future<void>);
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
 
   @override
   void setHybridHandoffMode(String? mode) => super.noSuchMethod(
@@ -2381,17 +2444,17 @@ class MockAudioPlayerRelaxed extends _i1.Mock implements _i2.GaplessPlayer {
       );
 
   @override
-  _i6.Future<void> stop() => (super.noSuchMethod(
+  _i7.Future<void> stop() => (super.noSuchMethod(
         Invocation.method(
           #stop,
           [],
         ),
-        returnValue: _i6.Future<void>.value(),
-        returnValueForMissingStub: _i6.Future<void>.value(),
-      ) as _i6.Future<void>);
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
 
   @override
-  _i6.Future<void> seek(
+  _i7.Future<void> seek(
     Duration? position, {
     int? index,
   }) =>
@@ -2401,9 +2464,9 @@ class MockAudioPlayerRelaxed extends _i1.Mock implements _i2.GaplessPlayer {
           [position],
           {#index: index},
         ),
-        returnValue: _i6.Future<void>.value(),
-        returnValueForMissingStub: _i6.Future<void>.value(),
-      ) as _i6.Future<void>);
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
 
   @override
   void setPrefetchSeconds(int? seconds) => super.noSuchMethod(
@@ -2415,34 +2478,34 @@ class MockAudioPlayerRelaxed extends _i1.Mock implements _i2.GaplessPlayer {
       );
 
   @override
-  _i6.Future<void> seekToNext() => (super.noSuchMethod(
+  _i7.Future<void> seekToNext() => (super.noSuchMethod(
         Invocation.method(
           #seekToNext,
           [],
         ),
-        returnValue: _i6.Future<void>.value(),
-        returnValueForMissingStub: _i6.Future<void>.value(),
-      ) as _i6.Future<void>);
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
 
   @override
-  _i6.Future<void> seekToPrevious() => (super.noSuchMethod(
+  _i7.Future<void> seekToPrevious() => (super.noSuchMethod(
         Invocation.method(
           #seekToPrevious,
           [],
         ),
-        returnValue: _i6.Future<void>.value(),
-        returnValueForMissingStub: _i6.Future<void>.value(),
-      ) as _i6.Future<void>);
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
 
   @override
-  _i6.Future<void> dispose() => (super.noSuchMethod(
+  _i7.Future<void> dispose() => (super.noSuchMethod(
         Invocation.method(
           #dispose,
           [],
         ),
-        returnValue: _i6.Future<void>.value(),
-        returnValueForMissingStub: _i6.Future<void>.value(),
-      ) as _i6.Future<void>);
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
 
   @override
   void setWebPrefetchSeconds(int? seconds) => super.noSuchMethod(

@@ -13,6 +13,7 @@ import 'package:shakedown/models/source.dart';
 import 'package:shakedown/providers/audio_provider.dart';
 import 'package:shakedown/providers/settings_provider.dart';
 import 'package:shakedown/providers/show_list_provider.dart';
+import 'package:shakedown/providers/theme_provider.dart';
 import 'package:shakedown/services/catalog_service.dart';
 import 'package:shakedown/ui/screens/show_list_screen.dart';
 import 'package:just_audio/just_audio.dart';
@@ -105,6 +106,10 @@ class MockSettingsProvider extends Mock implements SettingsProvider {
   double get oilLogoTrailLength => 0.5;
   @override
   bool get enableSwipeToBlock => false;
+  @override
+  bool get useNeumorphism => false;
+  @override
+  bool get performanceMode => false;
 }
 
 class MockShowListProvider extends Mock implements ShowListProvider {
@@ -151,6 +156,8 @@ class MockShowListProvider extends Mock implements ShowListProvider {
   Future<void> init(SharedPreferences prefs) async {}
   @override
   Future<void> get initializationComplete => Future.value();
+  @override
+  bool get isChoosingRandomShow => false;
 }
 
 class MockCatalogService extends Mock implements CatalogService {
@@ -211,6 +218,7 @@ void main() {
         ChangeNotifierProvider<ShowListProvider>.value(
             value: mockShowListProvider),
         ChangeNotifierProvider<DeviceService>.value(value: mockDeviceService),
+        ChangeNotifierProvider<ThemeProvider>(create: (_) => ThemeProvider()),
       ],
       child: const MaterialApp(
         home: ShowListScreen(),

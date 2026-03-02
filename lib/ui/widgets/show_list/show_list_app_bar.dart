@@ -69,7 +69,7 @@ class ShowListAppBar extends StatelessWidget implements PreferredSizeWidget {
     Widget wrap(Widget child,
         {VoidCallback? onTap,
         BorderRadius? radius,
-        bool isCircle = true,
+        bool isCircle = false, // Standardize to rounded square for Fruit
         double intensity = 1.2}) {
       Widget interactive = child;
       if (useNeumorphic) {
@@ -179,7 +179,8 @@ class ShowListAppBar extends StatelessWidget implements PreferredSizeWidget {
                 style: showListProvider.isSearchVisible
                     ? IconButton.styleFrom(
                         backgroundColor: colorScheme.surfaceContainer,
-                        shape: CircleBorder(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12.0),
                           side: BorderSide(color: colorScheme.outline),
                         ),
                       )
@@ -195,7 +196,8 @@ class ShowListAppBar extends StatelessWidget implements PreferredSizeWidget {
                   style: showListProvider.isSearchVisible
                       ? IconButton.styleFrom(
                           backgroundColor: colorScheme.surfaceContainer,
-                          shape: CircleBorder(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12.0),
                             side: BorderSide(color: colorScheme.outline),
                           ),
                         )

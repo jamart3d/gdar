@@ -112,6 +112,8 @@ class MockAudioProvider extends ChangeNotifier implements AudioProvider {
   @override
   Stream<int?> get currentIndexStream => const Stream.empty();
   @override
+  Stream<Duration?> get durationStream => const Stream.empty();
+  @override
   late final GaplessPlayer audioPlayer = GaplessPlayer();
 
   @override
@@ -173,6 +175,8 @@ class MockSettingsProvider extends ChangeNotifier implements SettingsProvider {
   bool get showSplashScreen => false;
   @override
   bool get showOnboarding => false;
+  @override
+  bool get performanceMode => false;
 
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);

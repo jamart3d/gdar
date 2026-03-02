@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shakedown/utils/app_date_utils.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 import 'package:provider/provider.dart';
 import 'package:shakedown/models/show.dart';
 import 'package:shakedown/models/source.dart';
 import 'package:shakedown/providers/audio_provider.dart';
 import 'package:shakedown/providers/settings_provider.dart';
+import 'package:shakedown/providers/theme_provider.dart';
 import 'package:shakedown/services/catalog_service.dart';
 import 'package:shakedown/services/device_service.dart';
-import 'package:shakedown/providers/theme_provider.dart';
-import 'package:shakedown/ui/widgets/theme/liquid_glass_wrapper.dart';
 import 'package:shakedown/ui/styles/app_typography.dart';
 import 'package:shakedown/ui/widgets/conditional_marquee.dart';
 import 'package:shakedown/ui/widgets/playback/playback_controls.dart';
@@ -18,6 +18,8 @@ import 'package:shakedown/ui/widgets/playback/playback_progress_bar.dart';
 import 'package:shakedown/ui/widgets/rating_control.dart';
 import 'package:shakedown/ui/widgets/shnid_badge.dart';
 import 'package:shakedown/ui/widgets/src_badge.dart';
+import 'package:shakedown/ui/widgets/theme/liquid_glass_wrapper.dart';
+import 'package:shakedown/ui/widgets/theme/neumorphic_wrapper.dart';
 import 'package:shakedown/utils/font_layout_config.dart';
 import 'package:shakedown/utils/utils.dart';
 
@@ -45,6 +47,12 @@ class PlaybackPanel extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
     final audioProvider = context.watch<AudioProvider>();
     final settingsProvider = context.watch<SettingsProvider>();
+    final themeProvider = context.watch<ThemeProvider>();
+    final isFruit = themeProvider.themeStyle == ThemeStyle.fruit;
+    final useNeumorphic = settingsProvider.useNeumorphism &&
+        isFruit &&
+        !settingsProvider.useTrueBlack;
+
     final scaleFactor =
         FontLayoutConfig.getEffectiveScale(context, settingsProvider);
 
@@ -58,15 +66,16 @@ class PlaybackPanel extends StatelessWidget {
     if (deviceService.isTv) {
       return _buildTvLayout(
         context,
+        currentShow,
+        currentSource,
         audioProvider,
         settingsProvider,
         scaleFactor,
         formattedDate,
+        onVenueTap,
       );
     }
 
-    final isFruit =
-        context.watch<ThemeProvider>().themeStyle == ThemeStyle.fruit;
     final panelColor = isTrueBlackMode
         ? Colors.black
         : Theme.of(context).colorScheme.surfaceContainer;
@@ -130,26 +139,48 @@ class PlaybackPanel extends StatelessWidget {
                                       ? MainAxisAlignment.center
                                       : MainAxisAlignment.start,
                               children: [
-                                SizedBox(
-                                  height: AppTypography.responsiveFontSize(
-                                          context, 18.0) *
-                                      2.0,
-                                  width: MediaQuery.of(context).size.width -
-                                      32, // explicit width for marquee in fitted box
-                                  child: ConditionalMarquee(
-                                    text: currentShow.venue,
-                                    style: textTheme.headlineSmall?.copyWith(
-                                      fontSize:
-                                          AppTypography.responsiveFontSize(
-                                              context, 18.0),
-                                      color: colorScheme.onSurface,
+                                NeumorphicWrapper(
+                                  enabled: isFruit &&
+                                      settingsProvider.useNeumorphism &&
+                                      !settingsProvider.useTrueBlack,
+                                  borderRadius: 12,
+                                  intensity: 0.8,
+                                  color: Colors.transparent,
+                                  child: LiquidGlassWrapper(
+                                    enabled: isFruit,
+                                    borderRadius: BorderRadius.circular(12),
+                                    opacity: 0.05,
+                                    blur: 5,
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 12, vertical: 6),
+                                      child: SizedBox(
+                                        height:
+                                            AppTypography.responsiveFontSize(
+                                                    context, 18.0) *
+                                                2.0,
+                                        width:
+                                            MediaQuery.of(context).size.width -
+                                                64, // adjusted for padding
+                                        child: ConditionalMarquee(
+                                          text: currentShow.venue,
+                                          style:
+                                              textTheme.headlineSmall?.copyWith(
+                                            fontSize: AppTypography
+                                                .responsiveFontSize(
+                                                    context, 18.0),
+                                            color: colorScheme.onSurface,
+                                          ),
+                                          blankSpace: 60.0,
+                                          pauseAfterRound:
+                                              const Duration(seconds: 3),
+                                          textAlign:
+                                              settingsProvider.hideTrackDuration
+                                                  ? TextAlign.center
+                                                  : TextAlign.start,
+                                        ),
+                                      ),
                                     ),
-                                    blankSpace: 60.0,
-                                    pauseAfterRound: const Duration(seconds: 3),
-                                    textAlign:
-                                        settingsProvider.hideTrackDuration
-                                            ? TextAlign.center
-                                            : TextAlign.start,
                                   ),
                                 ),
                                 if (!settingsProvider.hideTrackDuration)
@@ -187,163 +218,211 @@ class PlaybackPanel extends StatelessWidget {
                                 crossAxisAlignment: CrossAxisAlignment.end,
                                 children: [
                                   Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Align(
-                                          alignment: Alignment.centerLeft,
-                                          child: Text(
-                                            currentSource.location ??
-                                                'Location N/A',
-                                            style:
-                                                textTheme.titleSmall?.copyWith(
-                                              fontSize: AppTypography
-                                                  .responsiveFontSize(
-                                                      context, 16.0),
-                                              color: colorScheme.secondary,
-                                              fontWeight: FontWeight.w500,
-                                            ),
-                                          ),
-                                        ),
-                                        const SizedBox(height: 4),
-                                        Row(
-                                          children: [
-                                            const SizedBox(width: 4),
-                                            Flexible(
-                                              child: Transform.translate(
-                                                offset: const Offset(0, 2),
-                                                child: SizedBox(
-                                                  height: AppTypography
-                                                          .responsiveFontSize(
-                                                              context, 14.0) *
-                                                      2.2,
-                                                  child: Padding(
-                                                    padding: const EdgeInsets
-                                                        .symmetric(
-                                                        horizontal: 4.0),
-                                                    child: ConditionalMarquee(
-                                                      text: formattedDate,
-                                                      style: textTheme
-                                                          .titleMedium
-                                                          ?.copyWith(
-                                                        fontSize: AppTypography
-                                                            .responsiveFontSize(
-                                                                context, 14.0),
-                                                        color: colorScheme
-                                                            .onSurfaceVariant,
-                                                        height: 1.2,
-                                                      ),
-                                                    ),
+                                    child: NeumorphicWrapper(
+                                      enabled: isFruit &&
+                                          settingsProvider.useNeumorphism &&
+                                          !settingsProvider.useTrueBlack,
+                                      borderRadius: 12,
+                                      intensity: 0.8,
+                                      color: Colors.transparent,
+                                      child: LiquidGlassWrapper(
+                                        enabled: isFruit,
+                                        borderRadius: BorderRadius.circular(12),
+                                        opacity: 0.05,
+                                        blur: 5,
+                                        child: Container(
+                                          padding: const EdgeInsets.all(8.0),
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Padding(
+                                                padding: const EdgeInsets.only(
+                                                    left: 8.0),
+                                                child: Text(
+                                                  currentSource.location ??
+                                                      'Location N/A',
+                                                  style: textTheme.titleSmall
+                                                      ?.copyWith(
+                                                    fontSize: AppTypography
+                                                        .responsiveFontSize(
+                                                            context, 16.0),
+                                                    color:
+                                                        colorScheme.secondary,
+                                                    fontWeight: FontWeight.w500,
                                                   ),
                                                 ),
                                               ),
-                                            ),
-                                            IconButton(
-                                              constraints:
-                                                  const BoxConstraints(),
-                                              padding: const EdgeInsets.only(
-                                                  left: 8),
-                                              icon: Transform.scale(
-                                                scale: 2.0,
-                                                child: Icon(Icons.copy_rounded,
-                                                    size: 20 * scaleFactor,
-                                                    color: colorScheme
-                                                        .onSurfaceVariant),
-                                              ),
-                                              onPressed: () {
-                                                final track = currentSource
-                                                    .tracks[audioProvider
-                                                        .audioPlayer
-                                                        .currentIndex ??
-                                                    0];
-                                                final locationStr = currentSource
-                                                            .location !=
-                                                        null
-                                                    ? ' - ${currentSource.location}'
-                                                    : '';
-                                                final urlStr = settingsProvider
-                                                        .omitHttpPathInCopy
-                                                    ? ''
-                                                    : '\n${track.url.replaceAll('/download/', '/details/').split('/').sublist(0, 5).join('/')}';
-                                                final info =
-                                                    '${currentShow.venue}$locationStr - $formattedDate - ${currentSource.id}\n${track.title}$urlStr';
-                                                Clipboard.setData(
-                                                    ClipboardData(text: info));
-                                                HapticFeedback.selectionClick();
-                                                ScaffoldMessenger.of(context)
-                                                    .showSnackBar(
-                                                  SnackBar(
-                                                    content: Row(
-                                                      children: [
-                                                        Icon(
-                                                          Icons
-                                                              .check_circle_outline_rounded,
-                                                          color: colorScheme
-                                                              .onPrimaryContainer,
-                                                          size:
-                                                              20 * scaleFactor,
-                                                        ),
-                                                        const SizedBox(
-                                                            width: 12),
-                                                        Expanded(
-                                                          child: Text(
-                                                            'Details copied to clipboard',
+                                              const SizedBox(height: 4),
+                                              Row(
+                                                children: [
+                                                  Flexible(
+                                                    child: Transform.translate(
+                                                      offset:
+                                                          const Offset(0, 2),
+                                                      child: SizedBox(
+                                                        height: AppTypography
+                                                                .responsiveFontSize(
+                                                                    context,
+                                                                    14.0) *
+                                                            2.2,
+                                                        child: Padding(
+                                                          padding:
+                                                              const EdgeInsets
+                                                                  .only(
+                                                                  left: 8.0,
+                                                                  right: 4.0),
+                                                          child:
+                                                              ConditionalMarquee(
+                                                            text: formattedDate,
                                                             style: textTheme
-                                                                .labelLarge
+                                                                .titleMedium
                                                                 ?.copyWith(
+                                                              fontSize: AppTypography
+                                                                  .responsiveFontSize(
+                                                                      context,
+                                                                      14.0),
                                                               color: colorScheme
-                                                                  .onPrimaryContainer,
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .bold,
+                                                                  .onSurfaceVariant,
+                                                              height: 1.2,
                                                             ),
                                                           ),
                                                         ),
-                                                      ],
-                                                    ),
-                                                    behavior: SnackBarBehavior
-                                                        .floating,
-                                                    backgroundColor: colorScheme
-                                                        .primaryContainer,
-                                                    elevation: 4,
-                                                    duration: const Duration(
-                                                        milliseconds: 1500),
-                                                    margin: EdgeInsets.only(
-                                                      bottom: (MediaQuery.of(
-                                                                      context)
-                                                                  .size
-                                                                  .height *
-                                                              (settingsProvider
-                                                                      .uiScale
-                                                                  ? 0.45
-                                                                  : 0.40)) -
-                                                          minHeight +
-                                                          (75 * scaleFactor),
-                                                      left: 48,
-                                                      right: 48,
-                                                    ),
-                                                    shape:
-                                                        RoundedRectangleBorder(
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              100),
-                                                      side: BorderSide(
-                                                        color: colorScheme
-                                                            .onPrimaryContainer
-                                                            .withValues(
-                                                                alpha: 0.1),
-                                                        width: 1,
                                                       ),
                                                     ),
                                                   ),
-                                                );
-                                              },
-                                            ),
-                                          ],
+                                                  Builder(builder: (context) {
+                                                    final Widget iconBtn =
+                                                        IconButton(
+                                                      constraints:
+                                                          const BoxConstraints(),
+                                                      padding:
+                                                          const EdgeInsets.all(
+                                                              8),
+                                                      icon: Icon(
+                                                          isFruit
+                                                              ? LucideIcons.copy
+                                                              : Icons
+                                                                  .copy_rounded,
+                                                          size: (isFruit
+                                                                  ? 28
+                                                                  : 20) *
+                                                              scaleFactor,
+                                                          color: colorScheme
+                                                              .onSurfaceVariant),
+                                                      onPressed: () {
+                                                        final track =
+                                                            audioProvider
+                                                                .currentTrack;
+                                                        if (track == null) {
+                                                          return;
+                                                        }
+                                                        final locationStr =
+                                                            currentSource
+                                                                        .location !=
+                                                                    null
+                                                                ? ' - ${currentSource.location}'
+                                                                : '';
+                                                        final urlStr = settingsProvider
+                                                                .omitHttpPathInCopy
+                                                            ? ''
+                                                            : '\n${track.url.replaceAll('/download/', '/details/').split('/').sublist(0, 5).join('/')}';
+                                                        final info =
+                                                            '${currentShow.venue}$locationStr - $formattedDate - ${currentSource.id}\n${track.title}$urlStr';
+                                                        Clipboard.setData(
+                                                            ClipboardData(
+                                                                text: info));
+                                                        HapticFeedback
+                                                            .selectionClick();
+                                                        ScaffoldMessenger.of(
+                                                                context)
+                                                            .showSnackBar(
+                                                          SnackBar(
+                                                            content: Row(
+                                                              children: [
+                                                                Icon(
+                                                                  Icons
+                                                                      .check_circle_outline_rounded,
+                                                                  color: colorScheme
+                                                                      .onPrimaryContainer,
+                                                                  size: 20 *
+                                                                      scaleFactor,
+                                                                ),
+                                                                const SizedBox(
+                                                                    width: 12),
+                                                                Expanded(
+                                                                  child: Text(
+                                                                    'Details copied to clipboard',
+                                                                    style: textTheme
+                                                                        .labelLarge
+                                                                        ?.copyWith(
+                                                                      color: colorScheme
+                                                                          .onPrimaryContainer,
+                                                                      fontWeight:
+                                                                          FontWeight
+                                                                              .bold,
+                                                                    ),
+                                                                  ),
+                                                                ),
+                                                              ],
+                                                            ),
+                                                            backgroundColor:
+                                                                colorScheme
+                                                                    .primaryContainer,
+                                                            behavior:
+                                                                SnackBarBehavior
+                                                                    .fixed,
+                                                            duration:
+                                                                const Duration(
+                                                                    seconds: 2),
+                                                          ),
+                                                        );
+                                                      },
+                                                    );
+
+                                                    if (useNeumorphic) {
+                                                      return Padding(
+                                                        padding:
+                                                            const EdgeInsets
+                                                                .only(
+                                                                left: 6.0),
+                                                        child:
+                                                            NeumorphicWrapper(
+                                                          isCircle: false,
+                                                          borderRadius: 12.0,
+                                                          intensity: 1.2,
+                                                          color: Colors
+                                                              .transparent,
+                                                          child:
+                                                              LiquidGlassWrapper(
+                                                            enabled: true,
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .circular(
+                                                                        12.0),
+                                                            opacity: 0.08,
+                                                            blur: 5.0,
+                                                            child: iconBtn,
+                                                          ),
+                                                        ),
+                                                      );
+                                                    }
+
+                                                    return Padding(
+                                                      padding:
+                                                          const EdgeInsets.only(
+                                                              left: 8.0,
+                                                              bottom: 4.0),
+                                                      child: iconBtn,
+                                                    );
+                                                  }),
+                                                ],
+                                              ),
+                                            ],
+                                          ),
                                         ),
-                                      ],
+                                      ),
                                     ),
                                   ),
                                   const SizedBox(width: 8),
@@ -419,10 +498,13 @@ class PlaybackPanel extends StatelessWidget {
 
   Widget _buildTvLayout(
     BuildContext context,
+    Show currentShow,
+    Source currentSource,
     AudioProvider audioProvider,
     SettingsProvider settingsProvider,
     double scaleFactor,
     String formattedDate,
+    VoidCallback onVenueTap,
   ) {
     final track = audioProvider.currentTrack;
     if (track == null) return const SizedBox.shrink();

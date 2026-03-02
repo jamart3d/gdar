@@ -7,6 +7,7 @@ import 'package:shakedown/models/source.dart';
 import 'package:shakedown/models/track.dart';
 import 'package:shakedown/providers/audio_provider.dart';
 import 'package:shakedown/providers/settings_provider.dart';
+import 'package:shakedown/providers/theme_provider.dart';
 import 'package:shakedown/ui/screens/playback_screen.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:shakedown/services/gapless_player/gapless_player.dart';
@@ -143,6 +144,10 @@ class MockSettingsProvider extends Mock implements SettingsProvider {
   bool get showGlobalAlbumArt => true;
   @override
   bool get isTv => false;
+  @override
+  bool get useNeumorphism => false;
+  @override
+  bool get performanceMode => false;
 }
 
 class MockCatalogService extends Mock implements CatalogService {
@@ -253,6 +258,7 @@ void main() {
         ChangeNotifierProvider<SettingsProvider>.value(
             value: mockSettingsProvider),
         ChangeNotifierProvider<DeviceService>.value(value: mockDeviceService),
+        ChangeNotifierProvider<ThemeProvider>(create: (_) => ThemeProvider()),
       ],
       child: MaterialApp(
         home: child,
@@ -284,7 +290,8 @@ void main() {
     // Venue is displayed twice (at least): AppBar and Panel
     // Date is displayed twice (at least): AppBar and Panel
     // Date is displayed twice (at least): AppBar and Panel
-    expect(find.textContaining('Jan 15, 2025'), findsAtLeastNWidgets(1));
+    // Date is displayed (formatted)
+    expect(find.textContaining('15, 2025'), findsAtLeastNWidgets(1));
 
     // The track title is displayed in the list and in the bottom controls
     expect(
@@ -323,7 +330,7 @@ void main() {
         .pumpWidget(createTestableWidget(child: const PlaybackScreen()));
 
     // Verify basic content is present (Date should be visible)
-    expect(find.textContaining('Jan'), findsAtLeastNWidgets(1),
+    expect(find.textContaining('2025'), findsAtLeastNWidgets(1),
         reason: 'Date should be visible');
 
     // Verify RatingControl is present

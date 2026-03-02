@@ -34,6 +34,7 @@ class RatingControl extends StatelessWidget {
   Widget build(BuildContext context) {
     final themeProvider = context.watch<ThemeProvider>();
     final settingsProvider = context.watch<SettingsProvider>();
+    final colorScheme = Theme.of(context).colorScheme;
     final scaledSize = AppTypography.responsiveFontSize(context, size);
 
     final isFruit = themeProvider.themeStyle == ThemeStyle.fruit;
@@ -44,19 +45,23 @@ class RatingControl extends StatelessWidget {
     Widget content;
 
     if (isFruitNeumorphic) {
-      content = LiquidGlassWrapper(
+      final Color starColor = colorScheme.primary;
+      final Color emptyColor =
+          colorScheme.onSurfaceVariant.withValues(alpha: 0.2);
+
+      content = NeumorphicWrapper(
         enabled: true,
-        borderRadius: BorderRadius.circular(10),
-        opacity: 0.15,
-        blur: 5,
-        child: NeumorphicWrapper(
+        isCircle: false,
+        borderRadius: 12,
+        intensity: 1.0,
+        color: Colors.transparent,
+        child: LiquidGlassWrapper(
           enabled: true,
-          isPressed: true, // Sunken basin
-          borderRadius: 10,
-          intensity: 0.9,
-          color: Colors.transparent,
+          borderRadius: BorderRadius.circular(12),
+          opacity: 0.08,
+          blur: 5,
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
             child: rating == -1
                 ? Semantics(
                     label: 'Blocked show',
@@ -73,17 +78,16 @@ class RatingControl extends StatelessWidget {
                     direction: Axis.horizontal,
                     allowHalfRating: false,
                     itemCount: 3,
-                    itemSize: scaledSize * 0.95,
+                    itemSize: scaledSize * 0.9,
                     ignoreGestures: true,
                     ratingWidget: RatingWidget(
                       full: Icon(LucideIcons.star,
                           color: (rating == 0 && isPlayed)
-                              ? Colors.blueGrey.withValues(alpha: 0.4)
-                              : Colors.orangeAccent),
-                      half: const Icon(LucideIcons.star,
-                          color: Colors.orangeAccent),
-                      empty: Icon(LucideIcons.star,
-                          color: Colors.blueGrey.withValues(alpha: 0.2)),
+                              ? colorScheme.onSurfaceVariant
+                                  .withValues(alpha: 0.4)
+                              : starColor),
+                      half: Icon(LucideIcons.star, color: starColor),
+                      empty: Icon(LucideIcons.star, color: emptyColor),
                     ),
                     onRatingUpdate: (_) {},
                   ),

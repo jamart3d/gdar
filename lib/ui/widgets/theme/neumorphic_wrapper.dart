@@ -18,6 +18,7 @@ class NeumorphicWrapper extends StatelessWidget {
   final bool isCircle;
   final double intensity;
   final NeumorphicStyle? style;
+  final bool disableInSnappyUi;
 
   const NeumorphicWrapper({
     super.key,
@@ -32,6 +33,7 @@ class NeumorphicWrapper extends StatelessWidget {
     this.isCircle = false,
     this.intensity = 1.0,
     this.style,
+    this.disableInSnappyUi = true,
   });
 
   static List<BoxShadow> getShadows({
@@ -45,48 +47,58 @@ class NeumorphicWrapper extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     final Color lightShadowColor = isDark
-        ? Colors.white.withValues(alpha: 0.08 * intensity)
+        ? Colors.white.withValues(alpha: 0.12 * intensity) // Slightly more bite
         : Colors.white.withValues(alpha: 0.95 * intensity);
 
     final Color darkShadowColor = isDark
-        ? Colors.black.withValues(alpha: 0.45 * intensity)
-        : Colors.black.withValues(alpha: 0.12 * intensity);
+        ? Colors.black
+            .withValues(alpha: 0.6 * intensity) // Stronger dark shadow
+        : Colors.black.withValues(alpha: 0.15 * intensity);
 
     if (isPressed) {
       return [
         BoxShadow(
-          color: lightShadowColor.withValues(alpha: lightShadowColor.a * 0.4),
-          offset: offset * 0.5,
-          blurRadius: blur * 0.5,
+          color: darkShadowColor.withValues(alpha: darkShadowColor.a * 0.45),
+          offset: offset * 0.4,
+          blurRadius: blur * 0.4,
           spreadRadius: -spread,
         ),
         BoxShadow(
-          color: darkShadowColor.withValues(alpha: darkShadowColor.a * 0.4),
-          offset: -offset * 0.5,
-          blurRadius: blur * 0.5,
+          color: lightShadowColor.withValues(alpha: lightShadowColor.a * 0.3),
+          offset: -offset * 0.4,
+          blurRadius: blur * 0.4,
           spreadRadius: -spread,
         ),
       ];
     } else {
       return [
+        // Deep Soft Shadow
         BoxShadow(
-          color: darkShadowColor,
+          color: darkShadowColor.withValues(alpha: darkShadowColor.a * 0.8),
           offset: offset,
           blurRadius: blur,
           spreadRadius: spread,
         ),
+        // Sharp Ambient Occlusion (Web Fix)
+        BoxShadow(
+          color: darkShadowColor.withValues(alpha: darkShadowColor.a * 0.25),
+          offset: offset * 0.5,
+          blurRadius: blur * 0.5,
+          spreadRadius: -1,
+        ),
+        // Bright Glare
         BoxShadow(
           color: lightShadowColor,
           offset: -offset,
           blurRadius: blur,
           spreadRadius: spread,
         ),
-        // Glass highlight
+        // Secondary Specular Highlight
         BoxShadow(
-          color: Colors.white.withValues(alpha: isDark ? 0.03 : 0.4),
-          offset: -offset * 0.3,
-          blurRadius: 2,
-          spreadRadius: -1,
+          color: Colors.white.withValues(alpha: isDark ? 0.08 : 0.5),
+          offset: -offset * 0.2,
+          blurRadius: 1,
+          spreadRadius: -0.5,
         ),
       ];
     }
@@ -96,9 +108,21 @@ class NeumorphicWrapper extends StatelessWidget {
   Widget build(BuildContext context) {
     if (!enabled) return child;
 
+    final settingsProvider = context.watch<SettingsProvider>();
+    final themeProvider = context.watch<ThemeProvider>();
+
+    if (!settingsProvider.useNeumorphism ||
+        themeProvider.themeStyle != ThemeStyle.fruit) {
+      return child;
+    }
+
+    if (disableInSnappyUi && settingsProvider.performanceMode) {
+      return child;
+    }
+
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final baseColor = color ?? Theme.of(context).scaffoldBackgroundColor;
-    final activeStyle =
-        style ?? context.read<SettingsProvider>().neumorphicStyle;
+    final activeStyle = style ?? settingsProvider.neumorphicStyle;
     final isConcave = activeStyle == NeumorphicStyle.concave;
     final currentOffset = isConcave ? -offset : offset;
 
@@ -111,10 +135,29 @@ class NeumorphicWrapper extends StatelessWidget {
       isPressed: isPressed,
     );
 
+    // Subtle edge rim for "Liquid Glass" look
+    final rimColor = isDark
+        ? Colors.white.withValues(alpha: 0.08)
+        : Colors.white.withValues(alpha: 0.6);
+
     final decoration = BoxDecoration(
       color: baseColor,
       shape: isCircle ? BoxShape.circle : BoxShape.rectangle,
       borderRadius: isCircle ? null : BorderRadius.circular(borderRadius),
+      border: Border.all(
+        color: rimColor,
+        width: 0.6,
+      ),
+      gradient: isPressed
+          ? null
+          : LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                baseColor.withValues(alpha: isDark ? 1.0 : 0.98),
+                baseColor.withValues(alpha: isDark ? 0.95 : 0.92),
+              ],
+            ),
       boxShadow: shadows,
     );
 

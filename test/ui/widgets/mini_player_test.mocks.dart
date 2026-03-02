@@ -14,6 +14,7 @@ import 'package:shakedown/models/source.dart' as _i7;
 import 'package:shakedown/providers/audio_provider.dart' as _i4;
 import 'package:shakedown/providers/settings_provider.dart' as _i10;
 import 'package:shakedown/providers/show_list_provider.dart' as _i9;
+import 'package:shakedown/providers/theme_provider.dart' as _i13;
 import 'package:shakedown/services/audio_cache_service.dart' as _i11;
 import 'package:shakedown/services/gapless_player/gapless_player.dart' as _i2;
 
@@ -651,6 +652,24 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
   @override
   bool get omitHttpPathInCopy => (super.noSuchMethod(
         Invocation.getter(#omitHttpPathInCopy),
+        returnValue: false,
+      ) as bool);
+
+  @override
+  bool get useNeumorphism => (super.noSuchMethod(
+        Invocation.getter(#useNeumorphism),
+        returnValue: false,
+      ) as bool);
+
+  @override
+  _i13.NeumorphicStyle get neumorphicStyle => (super.noSuchMethod(
+        Invocation.getter(#neumorphicStyle),
+        returnValue: _i13.NeumorphicStyle.convex,
+      ) as _i13.NeumorphicStyle);
+
+  @override
+  bool get performanceMode => (super.noSuchMethod(
+        Invocation.getter(#performanceMode),
         returnValue: false,
       ) as bool);
 
@@ -1357,6 +1376,47 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
         Invocation.method(
           #toggleOmitHttpPathInCopy,
           [],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void toggleUseNeumorphism() => super.noSuchMethod(
+        Invocation.method(
+          #toggleUseNeumorphism,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void setUseNeumorphism(bool? value) => super.noSuchMethod(
+        Invocation.method(
+          #setUseNeumorphism,
+          [value],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void togglePerformanceMode() => super.noSuchMethod(
+        Invocation.method(
+          #togglePerformanceMode,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void setNeumorphicStyle(
+    _i13.NeumorphicStyle? value, {
+    bool? notify,
+  }) =>
+      super.noSuchMethod(
+        Invocation.method(
+          #setNeumorphicStyle,
+          [value],
+          {#notify: notify},
         ),
         returnValueForMissingStub: null,
       );

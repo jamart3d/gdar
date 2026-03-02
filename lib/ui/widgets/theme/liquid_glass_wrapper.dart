@@ -1,6 +1,8 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter/foundation.dart';
+import 'package:shakedown/providers/audio_provider.dart';
 import 'package:shakedown/providers/settings_provider.dart';
 
 /// A wrapper widget that applies a "liquid glass" effect.
@@ -27,7 +29,13 @@ class LiquidGlassWrapper extends StatelessWidget {
   Widget build(BuildContext context) {
     if (!enabled) return child;
 
-    final settingsMode = context.watch<SettingsProvider>().performanceMode;
+    final sp = context.watch<SettingsProvider>();
+    final settingsMode = sp.performanceMode;
+    final isPlaying = context.watch<AudioProvider>().isPlaying;
+
+    // Web optimization: Lower blur sigma during playback
+    final double effectiveBlur =
+        (kIsWeb && isPlaying) ? (blur / 2.5).clamp(8.0, 15.0) : blur;
 
     final baseColor = color ??
         (Theme.of(context).brightness == Brightness.dark
@@ -57,7 +65,7 @@ class LiquidGlassWrapper extends StatelessWidget {
     return ClipRRect(
       borderRadius: borderRadius ?? BorderRadius.zero,
       child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: blur, sigmaY: blur),
+        filter: ImageFilter.blur(sigmaX: effectiveBlur, sigmaY: effectiveBlur),
         child: Container(
           decoration: BoxDecoration(
             color: baseColor.withValues(alpha: opacity),

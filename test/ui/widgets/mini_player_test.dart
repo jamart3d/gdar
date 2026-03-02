@@ -13,6 +13,7 @@ import 'package:shakedown/ui/widgets/mini_player.dart';
 import 'package:shakedown/ui/widgets/conditional_marquee.dart';
 import '../../helpers/test_helpers.dart';
 import 'package:shakedown/services/device_service.dart';
+import 'package:shakedown/providers/theme_provider.dart';
 import 'package:shakedown/services/gapless_player/gapless_player.dart';
 
 // Generate mocks
@@ -35,6 +36,8 @@ void main() {
         .thenAnswer((_) => Stream.value(Duration.zero));
     when(mockAudioProvider.durationStream)
         .thenAnswer((_) => Stream.value(const Duration(minutes: 5)));
+    when(mockAudioProvider.currentIndexStream)
+        .thenAnswer((_) => Stream.value(0));
     when(mockAudioProvider.bufferedPositionStream)
         .thenAnswer((_) => Stream.value(Duration.zero));
     when(mockAudioProvider.playerStateStream).thenAnswer(
@@ -46,12 +49,21 @@ void main() {
         .thenReturn(PlayerState(false, ProcessingState.ready));
     when(mockAudioPlayer.sequenceStateStream)
         .thenAnswer((_) => const Stream.empty());
+    when(mockAudioPlayer.currentIndex).thenReturn(0);
+    when(mockAudioPlayer.sequence).thenReturn([]);
 
     when(mockSettingsProvider.useTrueBlack).thenReturn(false);
     when(mockSettingsProvider.highlightCurrentShowCard).thenReturn(true);
+    when(mockSettingsProvider.performanceMode).thenReturn(false);
     // Mock getEffectiveScale logic dependencies
     when(mockSettingsProvider.appFont).thenReturn('default');
     when(mockSettingsProvider.uiScale).thenReturn(false);
+    when(mockSettingsProvider.useNeumorphism).thenReturn(false);
+    when(mockSettingsProvider.glowMode).thenReturn(0);
+    when(mockSettingsProvider.highlightPlayingWithRgb).thenReturn(true);
+    when(mockSettingsProvider.rgbAnimationSpeed).thenReturn(0.5);
+    when(mockSettingsProvider.marqueeEnabled).thenReturn(true);
+    when(mockSettingsProvider.performanceMode).thenReturn(false);
   });
 
   testWidgets('MiniPlayer renders correctly with track info',
@@ -94,6 +106,7 @@ void main() {
               value: mockSettingsProvider),
           ChangeNotifierProvider<DeviceService>(
               create: (_) => MockDeviceService()),
+          ChangeNotifierProvider<ThemeProvider>(create: (_) => ThemeProvider()),
         ],
         child: MaterialApp(
           home: Scaffold(

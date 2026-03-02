@@ -198,7 +198,7 @@ class CardStyle {
     final isTrueBlackMode = isDarkMode && settings.useTrueBlack;
 
     if (themeProvider.themeStyle != ThemeStyle.fruit &&
-        (!isTrueBlackMode || settings.glowMode == 50) &&
+        (!isTrueBlackMode || settings.glowMode >= 25) &&
         isPlaying &&
         settings.highlightCurrentShowCard) {
       String seed = show.name;
@@ -220,7 +220,7 @@ class CardStyle {
 
     bool useRgb = (settings.highlightPlayingWithRgb && isPlaying) || isFruitWeb;
     bool showShadow =
-        settings.glowMode > 0 && (!isTrueBlackMode || settings.glowMode == 2);
+        settings.glowMode > 0 && (!isTrueBlackMode || settings.glowMode >= 40);
 
     double baseOpacity = settings.glowMode / 100.0;
     double glowOpacity = isPlaying ? baseOpacity : baseOpacity * 0.25;

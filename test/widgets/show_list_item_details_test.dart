@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shakedown/models/show.dart';
 import 'package:shakedown/models/source.dart';
+import 'package:shakedown/providers/audio_provider.dart';
 import 'package:shakedown/providers/settings_provider.dart';
 import 'package:shakedown/ui/widgets/rating_control.dart';
 import 'package:shakedown/ui/widgets/show_list_item_details.dart';
@@ -30,9 +31,9 @@ class MockCatalogService extends Mock implements CatalogService {
       ValueNotifier(MockBox<int>());
 
   @override
-  int getRating(String? sourceId) => 0;
+  int getRating(String sourceId) => 0;
   @override
-  bool isPlayed(String? sourceId) => false;
+  bool isPlayed(String sourceId) => false;
 }
 
 class MockBox<T> extends Mock implements Box<T> {
@@ -41,12 +42,19 @@ class MockBox<T> extends Mock implements Box<T> {
 }
 
 void main() {
+  late MockAudioProvider mockAudioProvider;
   late SharedPreferences prefs;
 
   setUp(() async {
     SharedPreferences.setMockInitialValues({});
     prefs = await SharedPreferences.getInstance();
+    mockAudioProvider = MockAudioProvider();
     CatalogService.setMock(MockCatalogService());
+
+    // Basic setup for MockAudioProvider
+    when(mockAudioProvider.isPlaying).thenReturn(false);
+    when(mockAudioProvider.currentShow).thenReturn(null);
+    when(mockAudioProvider.currentSource).thenReturn(null);
   });
 
   Show createDummyShow(String name, {int sourceCount = 2}) {
@@ -68,6 +76,7 @@ void main() {
   }) {
     return MultiProvider(
       providers: [
+        ChangeNotifierProvider<AudioProvider>.value(value: mockAudioProvider),
         ChangeNotifierProvider(
             create: (_) => settingsProvider ?? SettingsProvider(prefs)),
         ChangeNotifierProvider<ShowListProvider>.value(
@@ -120,7 +129,6 @@ void main() {
     final ratingControl = find.byType(RatingControl).first;
     expect(ratingControl, findsOneWidget);
 
-    // Tap it
     await tester.tap(ratingControl);
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 500));

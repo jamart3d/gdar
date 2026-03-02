@@ -7,10 +7,10 @@ import 'package:lucide_icons/lucide_icons.dart';
 import 'package:shakedown/ui/widgets/section_card.dart';
 import 'package:provider/provider.dart';
 
-class AboutSection extends StatelessWidget {
+class SupportSection extends StatelessWidget {
   final double scaleFactor;
 
-  const AboutSection({
+  const SupportSection({
     super.key,
     required this.scaleFactor,
   });
@@ -20,34 +20,21 @@ class AboutSection extends StatelessWidget {
     final themeProvider = context.watch<ThemeProvider>();
     final isFruit = themeProvider.themeStyle == ThemeStyle.fruit;
 
-    return Column(
+    return SectionCard(
+      scaleFactor: scaleFactor,
+      title: 'Support & Donate',
+      icon: Icons.favorite_border_rounded,
+      lucideIcon: LucideIcons.heart,
+      initiallyExpanded: true,
+      collapsible: false,
       children: [
-        SectionCard(
-          scaleFactor: scaleFactor,
-          title: 'About App',
-          icon: Icons.info_outline,
-          lucideIcon: LucideIcons.info,
-          initiallyExpanded: false,
-          children: const [
-            AboutBody(),
-          ],
-        ),
-        SectionCard(
-          scaleFactor: scaleFactor,
-          title: 'Support & Donate',
-          icon: Icons.favorite_border_rounded,
-          lucideIcon: LucideIcons.heart,
-          initiallyExpanded: false,
-          children: [
-            _buildClickableLink(
-              context,
-              'Consider donating to The Internet Archive',
-              'https://archive.org/donate/',
-              scaleFactor,
-              customIcon:
-                  _PulsingHeartIcon(scaleFactor: scaleFactor, isFruit: isFruit),
-            ),
-          ],
+        _buildClickableLink(
+          context,
+          'Consider donating to The Internet Archive',
+          'https://archive.org/donate/',
+          scaleFactor,
+          customIcon:
+              _PulsingHeartIcon(scaleFactor: scaleFactor, isFruit: isFruit),
         ),
       ],
     );
@@ -58,7 +45,6 @@ class AboutSection extends StatelessWidget {
       {IconData? icon, Widget? customIcon}) {
     final isFruit =
         context.read<ThemeProvider>().themeStyle == ThemeStyle.fruit;
-    // For now, implementing locally as it was private in SettingsScreen
     return TvFocusWrapper(
       onTap: () => _launchUrl(context, url),
       borderRadius: BorderRadius.circular(12),
@@ -108,6 +94,32 @@ class AboutSection extends StatelessWidget {
         );
       }
     }
+  }
+}
+
+class AboutSection extends StatelessWidget {
+  final double scaleFactor;
+
+  const AboutSection({
+    super.key,
+    required this.scaleFactor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SectionCard(
+      scaleFactor: scaleFactor,
+      title: 'About App',
+      icon: Icons.info_outline,
+      lucideIcon: LucideIcons.info,
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const AboutScreen()),
+        );
+      },
+      children: const [],
+    );
   }
 }
 

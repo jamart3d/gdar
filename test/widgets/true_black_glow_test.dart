@@ -14,7 +14,9 @@ import 'package:shakedown/models/rating.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:flutter/foundation.dart';
 import 'package:shakedown/services/device_service.dart';
+import 'package:shakedown/providers/audio_provider.dart';
 import '../helpers/test_helpers.dart';
+import '../screens/splash_screen_test.mocks.dart';
 
 class MockCatalogService extends Mock implements CatalogService {
   @override
@@ -68,6 +70,8 @@ void main() {
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
         ChangeNotifierProvider<DeviceService>(
             create: (_) => MockDeviceService()),
+        ChangeNotifierProvider<AudioProvider>(
+            create: (_) => MockAudioProvider()),
       ],
       child: MaterialApp(
         // Force Dark Mode to test True Black logic
@@ -145,6 +149,8 @@ void main() {
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
         ChangeNotifierProvider<DeviceService>(
             create: (_) => MockDeviceService()),
+        ChangeNotifierProvider<AudioProvider>(
+            create: (_) => MockAudioProvider()),
       ],
       child: MaterialApp(
         theme: ThemeData.dark(),

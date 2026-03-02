@@ -282,7 +282,7 @@ class CollectionStatistics extends StatelessWidget {
             title: Text(
               'Source Categories Details',
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontSize: 14 * scaleFactor,
+                    fontSize: (isFruit ? 16 : 14) * scaleFactor,
                     fontWeight: FontWeight.w500,
                   ),
             ),
@@ -302,7 +302,8 @@ class CollectionStatistics extends StatelessWidget {
                           style: Theme.of(context)
                               .textTheme
                               .bodyMedium
-                              ?.copyWith(fontSize: 10 * scaleFactor)),
+                              ?.copyWith(
+                                  fontSize: (isFruit ? 12 : 10) * scaleFactor)),
                     ),
                     trailing: FittedBox(
                       fit: BoxFit.scaleDown,
@@ -312,7 +313,9 @@ class CollectionStatistics extends StatelessWidget {
                           style: Theme.of(context)
                               .textTheme
                               .bodySmall
-                              ?.copyWith(fontSize: 8.5 * scaleFactor)),
+                              ?.copyWith(
+                                  fontSize:
+                                      (isFruit ? 10.5 : 8.5) * scaleFactor)),
                     )),
               if (catUltraSources > 0)
                 ListTile(
@@ -326,7 +329,8 @@ class CollectionStatistics extends StatelessWidget {
                           style: Theme.of(context)
                               .textTheme
                               .bodyMedium
-                              ?.copyWith(fontSize: 10 * scaleFactor)),
+                              ?.copyWith(
+                                  fontSize: (isFruit ? 12 : 10) * scaleFactor)),
                     ),
                     trailing: FittedBox(
                       fit: BoxFit.scaleDown,
@@ -336,7 +340,9 @@ class CollectionStatistics extends StatelessWidget {
                           style: Theme.of(context)
                               .textTheme
                               .bodySmall
-                              ?.copyWith(fontSize: 8.5 * scaleFactor)),
+                              ?.copyWith(
+                                  fontSize:
+                                      (isFruit ? 10.5 : 8.5) * scaleFactor)),
                     )),
               if (catMatrixSources > 0)
                 ListTile(
@@ -350,7 +356,8 @@ class CollectionStatistics extends StatelessWidget {
                           style: Theme.of(context)
                               .textTheme
                               .bodyMedium
-                              ?.copyWith(fontSize: 10 * scaleFactor)),
+                              ?.copyWith(
+                                  fontSize: (isFruit ? 12 : 10) * scaleFactor)),
                     ),
                     trailing: FittedBox(
                       fit: BoxFit.scaleDown,
@@ -360,7 +367,9 @@ class CollectionStatistics extends StatelessWidget {
                           style: Theme.of(context)
                               .textTheme
                               .bodySmall
-                              ?.copyWith(fontSize: 8.5 * scaleFactor)),
+                              ?.copyWith(
+                                  fontSize:
+                                      (isFruit ? 10.5 : 8.5) * scaleFactor)),
                     )),
               if (catDsbdSources > 0)
                 ListTile(
@@ -374,7 +383,8 @@ class CollectionStatistics extends StatelessWidget {
                           style: Theme.of(context)
                               .textTheme
                               .bodyMedium
-                              ?.copyWith(fontSize: 10 * scaleFactor)),
+                              ?.copyWith(
+                                  fontSize: (isFruit ? 12 : 10) * scaleFactor)),
                     ),
                     trailing: FittedBox(
                       fit: BoxFit.scaleDown,
@@ -384,7 +394,9 @@ class CollectionStatistics extends StatelessWidget {
                           style: Theme.of(context)
                               .textTheme
                               .bodySmall
-                              ?.copyWith(fontSize: 8.5 * scaleFactor)),
+                              ?.copyWith(
+                                  fontSize:
+                                      (isFruit ? 10.5 : 8.5) * scaleFactor)),
                     )),
               if (catFmSources > 0)
                 ListTile(
@@ -398,7 +410,8 @@ class CollectionStatistics extends StatelessWidget {
                           style: Theme.of(context)
                               .textTheme
                               .bodyMedium
-                              ?.copyWith(fontSize: 10 * scaleFactor)),
+                              ?.copyWith(
+                                  fontSize: (isFruit ? 12 : 10) * scaleFactor)),
                     ),
                     trailing: FittedBox(
                       fit: BoxFit.scaleDown,
@@ -408,7 +421,9 @@ class CollectionStatistics extends StatelessWidget {
                           style: Theme.of(context)
                               .textTheme
                               .bodySmall
-                              ?.copyWith(fontSize: 8.5 * scaleFactor)),
+                              ?.copyWith(
+                                  fontSize:
+                                      (isFruit ? 10.5 : 8.5) * scaleFactor)),
                     )),
               if (catSbdSources > 0)
                 ListTile(
@@ -422,7 +437,8 @@ class CollectionStatistics extends StatelessWidget {
                           style: Theme.of(context)
                               .textTheme
                               .bodyMedium
-                              ?.copyWith(fontSize: 10 * scaleFactor)),
+                              ?.copyWith(
+                                  fontSize: (isFruit ? 12 : 10) * scaleFactor)),
                     ),
                     trailing: FittedBox(
                       fit: BoxFit.scaleDown,
@@ -432,7 +448,9 @@ class CollectionStatistics extends StatelessWidget {
                           style: Theme.of(context)
                               .textTheme
                               .bodySmall
-                              ?.copyWith(fontSize: 8.5 * scaleFactor)),
+                              ?.copyWith(
+                                  fontSize:
+                                      (isFruit ? 10.5 : 8.5) * scaleFactor)),
                     )),
             ],
           ),

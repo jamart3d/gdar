@@ -1,6 +1,7 @@
-# Git Sync Skill
-
-Standardize version control operations for saving and updating the codebase.
+---
+description: Standardize version control operations for saving and updating the codebase.
+---
+# Git Sync Workflow
 
 **TRIGGERS:** save, push, pull, sync, commit, update
 

@@ -463,7 +463,7 @@ class PlaybackSection extends StatelessWidget {
                     ),
                     _Segment(
                       value: AudioEngineMode.html5,
-                      label: 'Relisten',
+                      label: 'HTML5',
                       tooltip: 'Gapless HTML5 (Safe Background)',
                       icon: isFruit
                           ? LucideIcons.smartphone
@@ -488,7 +488,7 @@ class PlaybackSection extends StatelessWidget {
                     _Segment(
                       value: AudioEngineMode.hybrid,
                       label: 'Hybrid',
-                      tooltip: 'Web Audio Foreground, Relisten Background',
+                      tooltip: 'Web Audio Foreground, HTML5 Background',
                       icon: isFruit
                           ? LucideIcons.layers
                           : Icons.handshake_rounded,
@@ -684,7 +684,7 @@ class PlaybackSection extends StatelessWidget {
                       segments: [
                         _Segment(
                           value: HybridBackgroundMode.relisten,
-                          label: 'Relisten',
+                          label: 'HTML5',
                           tooltip: 'Hand off to HTML5 for background',
                           icon: isFruit
                               ? LucideIcons.refreshCw

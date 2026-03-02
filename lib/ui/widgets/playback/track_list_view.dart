@@ -210,7 +210,7 @@ class TrackListView extends StatelessWidget {
                   ? LiquidGlassWrapper(
                       enabled: true,
                       borderRadius: BorderRadius.circular(14),
-                      opacity: 0.08,
+                      opacity: isTrueBlackMode ? 0.15 : 0.22,
                       blur: 10,
                       child: Padding(
                         padding: const EdgeInsets.all(6.0),
@@ -351,8 +351,8 @@ class TrackListView extends StatelessWidget {
 
     final Color titleColor = isFruit
         ? (isDarkMode
-            ? Colors.white.withValues(alpha: 0.9)
-            : Colors.black.withValues(alpha: 0.9))
+            ? Colors.white.withValues(alpha: isPlaying ? 1.0 : 0.9)
+            : Colors.black.withValues(alpha: isPlaying ? 1.0 : 0.9))
         : (isPlaying ? colorScheme.primary : colorScheme.onSurface);
 
     final titleStyle = baseTitleStyle.copyWith(
@@ -366,74 +366,89 @@ class TrackListView extends StatelessWidget {
     Widget? leadingWidget;
     final isTv = context.read<DeviceService>().isTv;
 
-    if (isPlaying && (isTv || isFruit)) {
-      leadingWidget = StreamBuilder<PlayerState>(
-        stream: audioProvider.playerStateStream,
-        builder: (context, snapshot) {
-          final processingState = snapshot.data?.processingState;
-          final playing = snapshot.data?.playing ?? false;
+    if (isTv || isFruit) {
+      if (isPlaying) {
+        leadingWidget = StreamBuilder<PlayerState>(
+          stream: audioProvider.playerStateStream,
+          builder: (context, snapshot) {
+            final processingState = snapshot.data?.processingState;
+            final playing = snapshot.data?.playing ?? false;
 
-          if (processingState == ProcessingState.loading ||
-              processingState == ProcessingState.buffering) {
-            return SizedBox(
-              width: 20,
-              height: 20,
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                color: isFruit ? titleColor : colorScheme.primary,
-              ),
-            );
-          } else {
-            Widget icon = Icon(
-              playing
-                  ? (isFruit ? LucideIcons.pause : Icons.pause)
-                  : (isFruit ? LucideIcons.play : Icons.play_arrow),
-              color: isFruit ? titleColor : colorScheme.primary,
-              size: isFruit ? 18 : 24,
-            );
-
-            if (isFruit) {
-              icon = NeumorphicWrapper(
-                enabled: settingsProvider.useNeumorphism,
-                borderRadius: 20,
-                isCircle: true,
-                intensity: 0.8,
-                child: LiquidGlassWrapper(
-                  enabled: !settingsProvider.useTrueBlack,
-                  borderRadius: BorderRadius.circular(20),
-                  child: Container(
-                    width: 32,
-                    height: 32,
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: settingsProvider.useTrueBlack
-                          ? Colors.black
-                          : Colors.white.withValues(alpha: 0.1),
+            if (processingState == ProcessingState.loading ||
+                processingState == ProcessingState.buffering) {
+              return SizedBox(
+                width: isFruit ? 32 : 24,
+                height: isFruit ? 32 : 24,
+                child: Center(
+                  child: SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: isFruit ? titleColor : colorScheme.primary,
                     ),
-                    child: icon,
                   ),
                 ),
               );
-            }
+            } else {
+              Widget icon = Icon(
+                playing
+                    ? (isFruit ? LucideIcons.pause : Icons.pause)
+                    : (isFruit ? LucideIcons.play : Icons.play_arrow),
+                color: isFruit ? titleColor : colorScheme.primary,
+                size: isFruit ? 18 : 24,
+              );
 
-            return MouseRegion(
-              cursor: SystemMouseCursors.click,
-              child: GestureDetector(
-                onTap: () {
-                  HapticFeedback.lightImpact();
-                  if (playing) {
-                    audioProvider.pause();
-                  } else {
-                    audioProvider.audioPlayer.play();
-                  }
-                },
-                child: icon,
-              ),
-            );
-          }
-        },
-      );
+              if (isFruit) {
+                icon = NeumorphicWrapper(
+                  enabled: settingsProvider.useNeumorphism,
+                  borderRadius: 20,
+                  isCircle: true,
+                  intensity: 0.8,
+                  child: LiquidGlassWrapper(
+                    enabled: !settingsProvider.useTrueBlack,
+                    borderRadius: BorderRadius.circular(20),
+                    child: Container(
+                      width: 32,
+                      height: 32,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: settingsProvider.useTrueBlack
+                            ? Colors.black
+                            : Colors.white.withValues(alpha: 0.1),
+                      ),
+                      child: icon,
+                    ),
+                  ),
+                );
+              }
+
+              return MouseRegion(
+                cursor: SystemMouseCursors.click,
+                child: GestureDetector(
+                  onTap: () {
+                    HapticFeedback.lightImpact();
+                    if (playing) {
+                      audioProvider.pause();
+                    } else {
+                      audioProvider.audioPlayer.play();
+                    }
+                  },
+                  child: icon,
+                ),
+              );
+            }
+          },
+        );
+      } else {
+        // Alignment Fix: Always provide a leading space in Fruit or TV themes.
+        // This prevents the track title from jumping/indenting only when playing.
+        leadingWidget = SizedBox(
+          width: isFruit ? 32 : 24,
+          height: isFruit ? 32 : 24,
+        );
+      }
     }
 
     final durationStyle = _durationTextStyle(

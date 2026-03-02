@@ -17,13 +17,13 @@ class DataSection extends StatelessWidget {
       title: 'Manage Rated Shows Library',
       icon: Icons.star_rounded,
       lucideIcon: Icons.star,
-      initiallyExpanded: false,
-      children: [
-        const SizedBox(
-          height: 600,
-          child: RatedShowsBody(),
-        ),
-      ],
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const RatedShowsScreen()),
+        );
+      },
+      children: const [],
     );
   }
 }

@@ -7,6 +7,7 @@ import 'package:shakedown/providers/theme_provider.dart';
 import 'package:shakedown/providers/audio_provider.dart';
 import 'package:shakedown/providers/show_list_provider.dart';
 import 'package:shakedown/ui/screens/settings_screen.dart';
+import 'package:shakedown/ui/screens/rated_shows_screen.dart';
 import 'package:shakedown/services/catalog_service.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:shakedown/models/rating.dart';
@@ -182,31 +183,25 @@ void main() {
     final statsFinder = find.byType(CollectionStatistics);
     await tester.scrollUntilVisible(statsFinder, 500,
         scrollable: find.byType(Scrollable));
-    await tester.pumpAndSettle();
+    await tester.pump(const Duration(milliseconds: 500));
 
     // Verify Collection Statistics is present
     expect(find.byType(CollectionStatistics), findsOneWidget);
     expect(find.text('Collection Statistics'), findsOneWidget);
 
-    // Verify DataSection (Manage Rated Shows) is present
+    // Verify DataSection (Manage Rated Shows Library) is present
     final dataFinder = find.byType(DataSection);
     await tester.scrollUntilVisible(dataFinder, 500,
         scrollable: find.byType(Scrollable));
-    await tester.pumpAndSettle();
+    await tester.pump(const Duration(milliseconds: 500));
     expect(dataFinder, findsOneWidget);
 
-    // Tap to expand since it's initially collapsed
+    // Tap to navigate
     await tester.tap(dataFinder);
-    await tester.pumpAndSettle();
+    await tester.pumpAndSettle(); // Navigate to new screen
 
-    expect(find.text('Manage Rated Shows'), findsOneWidget);
-
-    // Verify "Library" title from LibrarySection is NOT present (unless it matches something else, but LibrarySection is gone)
-    // Note: LibrarySection title was "Library"
-    // However, if "Library" word is used elsewhere, this might be flaky.
-    // But in SettingsScreen context, "Library" was the section title.
-    // Let's verify we don't see the specific LibrarySection widget (which we can't import if deleted).
-    // So checking text "Library" is a reasonable proxy IF we are sure it doesn't appear elsewhere.
-    // Actually, checking for 'Collection Statistics' and 'Manage Rated Shows' is sufficient positive verification.
+    // Verify we are on the RatedShowsScreen by checking for its body
+    expect(find.byType(RatedShowsBody), findsOneWidget);
+    expect(find.text('Rated Shows Library'), findsOneWidget);
   });
 }

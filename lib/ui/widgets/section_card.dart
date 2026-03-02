@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 import 'package:shakedown/services/device_service.dart';
 import 'package:shakedown/providers/settings_provider.dart';
 import 'package:shakedown/providers/theme_provider.dart';
@@ -11,7 +12,9 @@ class SectionCard extends StatelessWidget {
   final IconData? lucideIcon;
   final List<Widget> children;
   final bool initiallyExpanded;
+  final bool collapsible;
   final double scaleFactor;
+  final VoidCallback? onTap;
 
   const SectionCard({
     super.key,
@@ -19,8 +22,10 @@ class SectionCard extends StatelessWidget {
     required this.icon,
     required this.children,
     this.initiallyExpanded = false,
+    this.collapsible = true,
     this.scaleFactor = 1.0,
     this.lucideIcon,
+    this.onTap,
   });
 
   @override
@@ -69,32 +74,105 @@ class SectionCard extends StatelessWidget {
         splashColor: colorScheme.primary.withValues(alpha: 0.1),
         highlightColor: Colors.transparent,
       ),
-      child: ExpansionTile(
-        initiallyExpanded: initiallyExpanded,
-        maintainState: true,
-        dense: true,
-        visualDensity: VisualDensity.compact,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
-        collapsedShape:
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
-        leading: Icon(activeIcon,
-            color: colorScheme.primary, size: 24 * scaleFactor),
-        title: FittedBox(
-          fit: BoxFit.scaleDown,
-          alignment: Alignment.centerLeft,
-          child: Text(
-            title,
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  color: colorScheme.primary,
-                  fontWeight: FontWeight.bold,
-                  fontSize: (Theme.of(context).textTheme.titleLarge?.fontSize ??
-                          22.0) *
-                      scaleFactor,
+      child: onTap != null
+          ? ListTile(
+              onTap: onTap,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(28)),
+              leading: Icon(activeIcon,
+                  color: colorScheme.primary, size: 24 * scaleFactor),
+              title: FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  title,
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        color: colorScheme.primary,
+                        fontWeight: FontWeight.bold,
+                        fontSize:
+                            (Theme.of(context).textTheme.titleLarge?.fontSize ??
+                                    22.0) *
+                                scaleFactor,
+                      ),
                 ),
-          ),
-        ),
-        children: children,
-      ),
+              ),
+              trailing: Icon(
+                  isFruit ? LucideIcons.chevronRight : Icons.chevron_right,
+                  color: colorScheme.primary,
+                  size: 24 * scaleFactor),
+            )
+          : collapsible
+              ? ExpansionTile(
+                  initiallyExpanded: initiallyExpanded,
+                  maintainState: true,
+                  dense: true,
+                  visualDensity: VisualDensity.compact,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(28)),
+                  collapsedShape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(28)),
+                  leading: Icon(activeIcon,
+                      color: colorScheme.primary, size: 24 * scaleFactor),
+                  title: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      title,
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                            color: colorScheme.primary,
+                            fontWeight: FontWeight.bold,
+                            fontSize: (Theme.of(context)
+                                        .textTheme
+                                        .titleLarge
+                                        ?.fontSize ??
+                                    22.0) *
+                                scaleFactor,
+                          ),
+                    ),
+                  ),
+                  children: children,
+                )
+              : Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16.0, vertical: 12.0),
+                      child: Row(
+                        children: [
+                          Icon(activeIcon,
+                              color: colorScheme.primary,
+                              size: 24 * scaleFactor),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: FittedBox(
+                              fit: BoxFit.scaleDown,
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                title,
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .titleLarge
+                                    ?.copyWith(
+                                      color: colorScheme.primary,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: (Theme.of(context)
+                                                  .textTheme
+                                                  .titleLarge
+                                                  ?.fontSize ??
+                                              22.0) *
+                                          scaleFactor,
+                                    ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    ...children,
+                    const SizedBox(height: 8.0),
+                  ],
+                ),
     );
 
     if (useNeumorphism) {
@@ -107,11 +185,22 @@ class SectionCard extends StatelessWidget {
       );
     }
 
+    final useTrueBlack = settingsProvider.useTrueBlack;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
       elevation: 0,
-      color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
+      color: (useTrueBlack && isDark)
+          ? Colors.transparent
+          : colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(28),
+        side: (useTrueBlack && isDark)
+            ? BorderSide(
+                color: colorScheme.outline.withValues(alpha: 0.2), width: 0.5)
+            : BorderSide.none,
+      ),
       child: content,
     );
   }

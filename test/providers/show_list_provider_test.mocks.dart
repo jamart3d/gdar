@@ -4,7 +4,7 @@
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'dart:async' as _i7;
-import 'dart:ui' as _i12;
+import 'dart:ui' as _i13;
 
 import 'package:flutter/foundation.dart' as _i2;
 import 'package:hive_flutter/hive_flutter.dart' as _i5;
@@ -13,8 +13,9 @@ import 'package:mockito/src/dummies.dart' as _i10;
 import 'package:shakedown/models/rating.dart' as _i6;
 import 'package:shakedown/models/show.dart' as _i4;
 import 'package:shakedown/providers/settings_provider.dart' as _i9;
+import 'package:shakedown/providers/theme_provider.dart' as _i11;
 import 'package:shakedown/services/catalog_service.dart' as _i3;
-import 'package:shakedown/services/gapless_player/gapless_player.dart' as _i11;
+import 'package:shakedown/services/gapless_player/gapless_player.dart' as _i12;
 import 'package:shared_preferences/shared_preferences.dart' as _i8;
 
 // ignore_for_file: type=lint
@@ -524,11 +525,32 @@ class MockSettingsProvider extends _i1.Mock implements _i9.SettingsProvider {
       ) as bool);
 
   @override
-  _i11.AudioEngineMode get audioEngineMode => (super.noSuchMethod(
+  bool get useNeumorphism => (super.noSuchMethod(
+        Invocation.getter(#useNeumorphism),
+        returnValue: false,
+        returnValueForMissingStub: false,
+      ) as bool);
+
+  @override
+  _i11.NeumorphicStyle get neumorphicStyle => (super.noSuchMethod(
+        Invocation.getter(#neumorphicStyle),
+        returnValue: _i11.NeumorphicStyle.convex,
+        returnValueForMissingStub: _i11.NeumorphicStyle.convex,
+      ) as _i11.NeumorphicStyle);
+
+  @override
+  bool get performanceMode => (super.noSuchMethod(
+        Invocation.getter(#performanceMode),
+        returnValue: false,
+        returnValueForMissingStub: false,
+      ) as bool);
+
+  @override
+  _i12.AudioEngineMode get audioEngineMode => (super.noSuchMethod(
         Invocation.getter(#audioEngineMode),
-        returnValue: _i11.AudioEngineMode.auto,
-        returnValueForMissingStub: _i11.AudioEngineMode.auto,
-      ) as _i11.AudioEngineMode);
+        returnValue: _i12.AudioEngineMode.auto,
+        returnValueForMissingStub: _i12.AudioEngineMode.auto,
+      ) as _i12.AudioEngineMode);
 
   @override
   bool get webGaplessEngine => (super.noSuchMethod(
@@ -565,18 +587,18 @@ class MockSettingsProvider extends _i1.Mock implements _i9.SettingsProvider {
       ) as double);
 
   @override
-  _i11.HybridHandoffMode get hybridHandoffMode => (super.noSuchMethod(
+  _i12.HybridHandoffMode get hybridHandoffMode => (super.noSuchMethod(
         Invocation.getter(#hybridHandoffMode),
-        returnValue: _i11.HybridHandoffMode.buffered,
-        returnValueForMissingStub: _i11.HybridHandoffMode.buffered,
-      ) as _i11.HybridHandoffMode);
+        returnValue: _i12.HybridHandoffMode.buffered,
+        returnValueForMissingStub: _i12.HybridHandoffMode.buffered,
+      ) as _i12.HybridHandoffMode);
 
   @override
-  _i11.HybridBackgroundMode get hybridBackgroundMode => (super.noSuchMethod(
+  _i12.HybridBackgroundMode get hybridBackgroundMode => (super.noSuchMethod(
         Invocation.getter(#hybridBackgroundMode),
-        returnValue: _i11.HybridBackgroundMode.relisten,
-        returnValueForMissingStub: _i11.HybridBackgroundMode.relisten,
-      ) as _i11.HybridBackgroundMode);
+        returnValue: _i12.HybridBackgroundMode.relisten,
+        returnValueForMissingStub: _i12.HybridBackgroundMode.relisten,
+      ) as _i12.HybridBackgroundMode);
 
   @override
   bool get useOilScreensaver => (super.noSuchMethod(
@@ -1014,7 +1036,7 @@ class MockSettingsProvider extends _i1.Mock implements _i9.SettingsProvider {
       );
 
   @override
-  void setAudioEngineMode(_i11.AudioEngineMode? mode) => super.noSuchMethod(
+  void setAudioEngineMode(_i12.AudioEngineMode? mode) => super.noSuchMethod(
         Invocation.method(
           #setAudioEngineMode,
           [mode],
@@ -1041,7 +1063,7 @@ class MockSettingsProvider extends _i1.Mock implements _i9.SettingsProvider {
       );
 
   @override
-  void setHybridHandoffMode(_i11.HybridHandoffMode? mode) => super.noSuchMethod(
+  void setHybridHandoffMode(_i12.HybridHandoffMode? mode) => super.noSuchMethod(
         Invocation.method(
           #setHybridHandoffMode,
           [mode],
@@ -1050,7 +1072,7 @@ class MockSettingsProvider extends _i1.Mock implements _i9.SettingsProvider {
       );
 
   @override
-  void setHybridBackgroundMode(_i11.HybridBackgroundMode? mode) =>
+  void setHybridBackgroundMode(_i12.HybridBackgroundMode? mode) =>
       super.noSuchMethod(
         Invocation.method(
           #setHybridBackgroundMode,
@@ -1312,6 +1334,47 @@ class MockSettingsProvider extends _i1.Mock implements _i9.SettingsProvider {
       );
 
   @override
+  void toggleUseNeumorphism() => super.noSuchMethod(
+        Invocation.method(
+          #toggleUseNeumorphism,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void setUseNeumorphism(bool? value) => super.noSuchMethod(
+        Invocation.method(
+          #setUseNeumorphism,
+          [value],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void togglePerformanceMode() => super.noSuchMethod(
+        Invocation.method(
+          #togglePerformanceMode,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void setNeumorphicStyle(
+    _i11.NeumorphicStyle? value, {
+    bool? notify,
+  }) =>
+      super.noSuchMethod(
+        Invocation.method(
+          #setNeumorphicStyle,
+          [value],
+          {#notify: notify},
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
   void toggleWebGaplessEngine() => super.noSuchMethod(
         Invocation.method(
           #toggleWebGaplessEngine,
@@ -1340,7 +1403,7 @@ class MockSettingsProvider extends _i1.Mock implements _i9.SettingsProvider {
       );
 
   @override
-  _i7.Future<void> setSeedColor(_i12.Color? color) => (super.noSuchMethod(
+  _i7.Future<void> setSeedColor(_i13.Color? color) => (super.noSuchMethod(
         Invocation.method(
           #setSeedColor,
           [color],
@@ -1852,7 +1915,7 @@ class MockSettingsProvider extends _i1.Mock implements _i9.SettingsProvider {
       ) as _i7.Future<void>);
 
   @override
-  void addListener(_i12.VoidCallback? listener) => super.noSuchMethod(
+  void addListener(_i13.VoidCallback? listener) => super.noSuchMethod(
         Invocation.method(
           #addListener,
           [listener],
@@ -1861,7 +1924,7 @@ class MockSettingsProvider extends _i1.Mock implements _i9.SettingsProvider {
       );
 
   @override
-  void removeListener(_i12.VoidCallback? listener) => super.noSuchMethod(
+  void removeListener(_i13.VoidCallback? listener) => super.noSuchMethod(
         Invocation.method(
           #removeListener,
           [listener],

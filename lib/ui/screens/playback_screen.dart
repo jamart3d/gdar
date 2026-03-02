@@ -650,7 +650,8 @@ class PlaybackScreenState extends State<PlaybackScreen>
           SlidingUpPanel(
             controller: _panelController,
             color: Colors.transparent,
-            borderRadius: null,
+            borderRadius:
+                const BorderRadius.vertical(top: Radius.circular(24.0)),
             boxShadow: isTrueBlackMode
                 ? []
                 : (context.watch<ThemeProvider>().themeStyle ==

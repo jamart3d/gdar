@@ -6,16 +6,17 @@
 import 'dart:async' as _i4;
 import 'dart:ui' as _i10;
 
-import 'package:just_audio/just_audio.dart' as _i12;
+import 'package:just_audio/just_audio.dart' as _i13;
 import 'package:mockito/mockito.dart' as _i1;
 import 'package:mockito/src/dummies.dart' as _i5;
 import 'package:shakedown/models/show.dart' as _i6;
 import 'package:shakedown/models/source.dart' as _i9;
-import 'package:shakedown/providers/audio_provider.dart' as _i11;
+import 'package:shakedown/providers/audio_provider.dart' as _i12;
 import 'package:shakedown/providers/settings_provider.dart' as _i8;
 import 'package:shakedown/providers/show_list_provider.dart' as _i3;
-import 'package:shakedown/providers/update_provider.dart' as _i14;
-import 'package:shakedown/services/audio_cache_service.dart' as _i13;
+import 'package:shakedown/providers/theme_provider.dart' as _i11;
+import 'package:shakedown/providers/update_provider.dart' as _i15;
+import 'package:shakedown/services/audio_cache_service.dart' as _i14;
 import 'package:shakedown/services/gapless_player/gapless_player.dart' as _i2;
 import 'package:shared_preferences/shared_preferences.dart' as _i7;
 
@@ -696,6 +697,27 @@ class MockSettingsProvider extends _i1.Mock implements _i8.SettingsProvider {
   @override
   bool get omitHttpPathInCopy => (super.noSuchMethod(
         Invocation.getter(#omitHttpPathInCopy),
+        returnValue: false,
+        returnValueForMissingStub: false,
+      ) as bool);
+
+  @override
+  bool get useNeumorphism => (super.noSuchMethod(
+        Invocation.getter(#useNeumorphism),
+        returnValue: false,
+        returnValueForMissingStub: false,
+      ) as bool);
+
+  @override
+  _i11.NeumorphicStyle get neumorphicStyle => (super.noSuchMethod(
+        Invocation.getter(#neumorphicStyle),
+        returnValue: _i11.NeumorphicStyle.convex,
+        returnValueForMissingStub: _i11.NeumorphicStyle.convex,
+      ) as _i11.NeumorphicStyle);
+
+  @override
+  bool get performanceMode => (super.noSuchMethod(
+        Invocation.getter(#performanceMode),
         returnValue: false,
         returnValueForMissingStub: false,
       ) as bool);
@@ -1489,6 +1511,47 @@ class MockSettingsProvider extends _i1.Mock implements _i8.SettingsProvider {
       );
 
   @override
+  void toggleUseNeumorphism() => super.noSuchMethod(
+        Invocation.method(
+          #toggleUseNeumorphism,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void setUseNeumorphism(bool? value) => super.noSuchMethod(
+        Invocation.method(
+          #setUseNeumorphism,
+          [value],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void togglePerformanceMode() => super.noSuchMethod(
+        Invocation.method(
+          #togglePerformanceMode,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void setNeumorphicStyle(
+    _i11.NeumorphicStyle? value, {
+    bool? notify,
+  }) =>
+      super.noSuchMethod(
+        Invocation.method(
+          #setNeumorphicStyle,
+          [value],
+          {#notify: notify},
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
   void toggleWebGaplessEngine() => super.noSuchMethod(
         Invocation.method(
           #toggleWebGaplessEngine,
@@ -2068,7 +2131,7 @@ class MockSettingsProvider extends _i1.Mock implements _i8.SettingsProvider {
 /// A class which mocks [AudioProvider].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockAudioProvider extends _i1.Mock implements _i11.AudioProvider {
+class MockAudioProvider extends _i1.Mock implements _i12.AudioProvider {
   @override
   _i2.GaplessPlayer get audioPlayer => (super.noSuchMethod(
         Invocation.getter(#audioPlayer),
@@ -2090,11 +2153,11 @@ class MockAudioProvider extends _i1.Mock implements _i11.AudioProvider {
       ) as bool);
 
   @override
-  _i4.Stream<_i12.PlayerState> get playerStateStream => (super.noSuchMethod(
+  _i4.Stream<_i13.PlayerState> get playerStateStream => (super.noSuchMethod(
         Invocation.getter(#playerStateStream),
-        returnValue: _i4.Stream<_i12.PlayerState>.empty(),
-        returnValueForMissingStub: _i4.Stream<_i12.PlayerState>.empty(),
-      ) as _i4.Stream<_i12.PlayerState>);
+        returnValue: _i4.Stream<_i13.PlayerState>.empty(),
+        returnValueForMissingStub: _i4.Stream<_i13.PlayerState>.empty(),
+      ) as _i4.Stream<_i13.PlayerState>);
 
   @override
   _i4.Stream<int?> get currentIndexStream => (super.noSuchMethod(
@@ -2192,7 +2255,7 @@ class MockAudioProvider extends _i1.Mock implements _i11.AudioProvider {
   void update(
     _i3.ShowListProvider? showListProvider,
     _i8.SettingsProvider? settingsProvider,
-    _i13.AudioCacheService? audioCacheService,
+    _i14.AudioCacheService? audioCacheService,
   ) =>
       super.noSuchMethod(
         Invocation.method(
@@ -2440,7 +2503,7 @@ class MockAudioProvider extends _i1.Mock implements _i11.AudioProvider {
 /// A class which mocks [UpdateProvider].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockUpdateProvider extends _i1.Mock implements _i14.UpdateProvider {
+class MockUpdateProvider extends _i1.Mock implements _i15.UpdateProvider {
   @override
   bool get isSimulated => (super.noSuchMethod(
         Invocation.getter(#isSimulated),

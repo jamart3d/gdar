@@ -5,7 +5,7 @@ trigger: always_on
 # Project Rules: GDAR Audio Player
 
 ### 1. CODING STANDARDS & ARCHITECTURE
-* **Stack:** Flutter 3.35.6 / Dart SDK with sound null safety.
+* **Stack:** Latest Stable Flutter / Dart SDK. Strictly follow modern syntax (e.g., favoring `.withValues()` over `withOpacity()`) and proactively resolve deprecation warnings.
 * **Architecture:** Clean Architecture. Strictly separate UI (Widgets), Business Logic (Provider/State), and Data (Repository).
 * **State Management:** Provider is primary. Use `ChangeNotifier` or `ProxyProvider`.
 * **Style & Performance:** Adhere strictly to the official Dart style guide, use `flutter format`, and use `const` constructors everywhere possible to prevent unnecessary rebuilds.

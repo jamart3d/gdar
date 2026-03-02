@@ -14,6 +14,7 @@ import 'package:hive/hive.dart';
 import 'package:shakedown/models/rating.dart';
 import 'package:shakedown/services/catalog_service.dart';
 import 'package:shakedown/services/device_service.dart';
+import 'package:shakedown/providers/theme_provider.dart';
 import '../../helpers/test_helpers.dart';
 
 import 'mini_player_test.mocks.dart'; // Reuse mocks
@@ -94,6 +95,7 @@ void main() {
     // Settings Provider setup
     when(mockSettingsProvider.useTrueBlack).thenReturn(false);
     when(mockSettingsProvider.highlightCurrentShowCard).thenReturn(true);
+    when(mockSettingsProvider.performanceMode).thenReturn(false);
     when(mockSettingsProvider.appFont).thenReturn('roboto');
     when(mockSettingsProvider.uiScale).thenReturn(false);
     when(mockSettingsProvider.showDayOfWeek).thenReturn(true);
@@ -147,6 +149,7 @@ void main() {
               value: mockSettingsProvider),
           ChangeNotifierProvider<DeviceService>(
               create: (_) => MockDeviceService()),
+          ChangeNotifierProvider<ThemeProvider>(create: (_) => ThemeProvider()),
         ],
         child: const MaterialApp(
           home: PlaybackScreen(),

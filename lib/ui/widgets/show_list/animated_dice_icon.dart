@@ -166,7 +166,7 @@ class _AnimatedDiceIconState extends State<AnimatedDiceIcon>
 
     return SizedBox(
       width: 56.0 * effectiveScale,
-      height: kToolbarHeight, // Keep AppBar height consistency
+      height: 48.0 * effectiveScale, // Buffer room for Neumorphic shadows
       child: FittedBox(
         fit: BoxFit.scaleDown,
         child: IconButton(

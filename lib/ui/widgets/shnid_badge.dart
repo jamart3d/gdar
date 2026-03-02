@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shakedown/providers/settings_provider.dart';
+import 'package:shakedown/providers/theme_provider.dart';
+import 'package:shakedown/ui/widgets/theme/neumorphic_wrapper.dart';
+import 'package:shakedown/ui/widgets/theme/liquid_glass_wrapper.dart';
 import 'package:shakedown/utils/font_layout_config.dart';
 
 class ShnidBadge extends StatelessWidget {
@@ -79,9 +82,16 @@ class ShnidBadge extends StatelessWidget {
       );
     }
 
-    return Container(
+    final themeProvider = context.watch<ThemeProvider>();
+    final isFruit = themeProvider.themeStyle == ThemeStyle.fruit;
+    final useNeumorphic = isFruit &&
+        settingsProvider.useNeumorphism &&
+        !settingsProvider.useTrueBlack;
+
+    Widget badge = Container(
       padding: EdgeInsets.symmetric(
-          horizontal: 6 * scaleFactor, vertical: 2.0 * scaleFactor),
+          horizontal: (isFruit ? 8 : 6) * scaleFactor,
+          vertical: (isFruit ? 4 : 2.0) * scaleFactor),
       constraints: const BoxConstraints(maxWidth: 100),
       decoration: BoxDecoration(
         gradient: LinearGradient(
@@ -89,15 +99,35 @@ class ShnidBadge extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(8),
-        boxShadow: [
-          BoxShadow(
-              color: colorScheme.shadow.withValues(alpha: 0.05),
-              blurRadius: 2,
-              offset: const Offset(0, 1))
-        ],
+        borderRadius: BorderRadius.circular(isFruit ? 10 : 8),
+        boxShadow: useNeumorphic
+            ? [] // Neumorphic wrapper handles shadows
+            : [
+                BoxShadow(
+                    color: colorScheme.shadow.withValues(alpha: 0.05),
+                    blurRadius: 2,
+                    offset: const Offset(0, 1))
+              ],
       ),
       child: content,
     );
+
+    if (useNeumorphic) {
+      return NeumorphicWrapper(
+        isCircle: false,
+        borderRadius: 10.0,
+        intensity: 0.9,
+        color: Colors.transparent,
+        child: LiquidGlassWrapper(
+          enabled: true,
+          borderRadius: BorderRadius.circular(10.0),
+          opacity: 0.08,
+          blur: 5.0,
+          child: badge,
+        ),
+      );
+    }
+
+    return badge;
   }
 }

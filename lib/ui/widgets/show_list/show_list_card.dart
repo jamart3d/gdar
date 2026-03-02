@@ -485,7 +485,7 @@ class _ShowListCardState extends State<ShowListCard> {
                 context.read<ThemeProvider>().themeStyle == ThemeStyle.fruit &&
                     kIsWeb;
             final double screenWidth = MediaQuery.of(context).size.width;
-            final bool useMobileLayout = isFruit && screenWidth < 768;
+            final bool useMobileLayout = kIsWeb && screenWidth < 768;
 
             final catalog = CatalogService();
             int rating = 0;
@@ -589,7 +589,7 @@ class _ShowListCardState extends State<ShowListCard> {
                             RatingControl(
                               rating: rating,
                               isPlayed: isPlayed,
-                              size: 19,
+                              size: isFruit ? 19 : 20,
                               compact: true,
                               onTap: (widget.isPlaying ||
                                       widget.alwaysShowRatingInteraction ||

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shakedown/models/show.dart';
 import 'package:shakedown/models/source.dart';
+import 'package:shakedown/models/track.dart';
 import 'package:shakedown/providers/audio_provider.dart';
 import 'package:shakedown/providers/settings_provider.dart';
 import 'package:shakedown/providers/show_list_provider.dart';
@@ -25,7 +26,23 @@ class MockAudioProvider extends Mock implements AudioProvider {
   @override
   Source? get currentSource => null;
   @override
+  Track? get currentTrack => null;
+  @override
+  bool get isPlaying => false;
+  @override
   Stream<PlayerState> get playerStateStream => const Stream.empty();
+  @override
+  Stream<Duration?> get durationStream => const Stream.empty();
+  @override
+  Stream<Duration> get positionStream => const Stream.empty();
+  @override
+  Stream<Duration> get bufferedPositionStream => const Stream.empty();
+  @override
+  Stream<Duration?> get nextTrackBufferedStream => const Stream.empty();
+  @override
+  Stream<Duration?> get nextTrackTotalStream => const Stream.empty();
+  @override
+  Stream<String> get playbackErrorStream => const Stream.empty();
   @override
   Stream<({Show show, Source source})> get randomShowRequestStream =>
       const Stream.empty();
@@ -76,6 +93,10 @@ class MockSettingsProvider extends SettingsProvider {
   double get oilLogoTrailLength => 0.5;
   @override
   bool get enableSwipeToBlock => false;
+  @override
+  bool get useNeumorphism => false;
+  @override
+  bool get performanceMode => false;
 }
 
 class MockDeviceService extends ChangeNotifier implements DeviceService {
