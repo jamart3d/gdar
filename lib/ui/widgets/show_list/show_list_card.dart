@@ -235,10 +235,9 @@ class _ShowListCardState extends State<ShowListCard> {
     final bool isFruit =
         context.read<ThemeProvider>().themeStyle == ThemeStyle.fruit && kIsWeb;
     final double screenWidth = MediaQuery.of(context).size.width;
-    final bool isMobile = defaultTargetPlatform == TargetPlatform.android ||
-        defaultTargetPlatform == TargetPlatform.iOS;
+    final deviceService = context.watch<DeviceService>();
     final bool useMobileLayout =
-        isWeb && screenWidth < 768 && !isTv && !isMobile;
+        isWeb && (screenWidth < 768 || deviceService.isPwa) && !isTv;
     final bool usePremium = settingsProvider.useNeumorphism && isFruit;
 
     // Use tighter mobile-style heights for both themes on narrow screens
@@ -573,11 +572,9 @@ class _ShowListCardState extends State<ShowListCard> {
             final bool isFruit =
                 themeProvider.themeStyle == ThemeStyle.fruit && kIsWeb;
             final double screenWidth = MediaQuery.of(context).size.width;
-            final bool isMobile =
-                defaultTargetPlatform == TargetPlatform.android ||
-                    defaultTargetPlatform == TargetPlatform.iOS;
+            final deviceService = context.watch<DeviceService>();
             final bool useMobileLayout =
-                kIsWeb && screenWidth < 768 && !isTv && !isMobile;
+                kIsWeb && (screenWidth < 768 || deviceService.isPwa) && !isTv;
 
             final catalog = CatalogService();
             final bool usePremium = settings.useNeumorphism && isFruit;

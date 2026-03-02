@@ -1,3 +1,10 @@
+Release 1.1.41+141:
+- **UI/UX (TV)**: Implemented Global Media Key shortcuts for remote buttons (Play/Pause, Next, Previous) to enhance lean-back control.
+- **UI/UX (TV)**: Rerouted system snackbars to the high-visibility `PlaybackMessages` overlay in the top-right to prevent overscan issues.
+- **UI/UX (Web/PWA)**: Codified **Stacked Layout** as the mandatory default for PWAs and narrow mobile browsers to ensure optimal touch targets.
+- **UI/UX (TV)**: Refined `MiniPlayer` behavior to hide playback controls on full-screen track lists, reducing visual redundancy.
+- **Documentation**: Generated a comprehensive TV UI Flow comparison report (`v135` vs `v140`).
+
 Release 1.1.40+140:
 - **UI/UX (Web/Fruit)**: Upgraded Mini Player track title with premium "Liquid Glass" and Neumorphism (inset glass etching effect).
 - **UI/UX (Web/Fruit)**: Applied "Liquid Glass" recessed glass aesthetic to Date and Venue rows in Show List cards.

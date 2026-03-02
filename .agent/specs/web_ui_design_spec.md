@@ -33,10 +33,15 @@ The Fruit theme transitions the UI from an elevation-based model to a translucen
 
 ## 3. Web-Specific Layout Rules
 
-### 3.1 Responsive Breakpoints
-*   **Mobile Web (< 600px):** Single column navigation; bottom mini-player.
-*   **Tablet/Desktop (> 600px):** Expanded sidebars or dual-pane layouts if screen width allows.
-*   **Safe Areas:** Browser toolbars (Chrome/Safari) are handled via `SafeArea` to prevent overlap on mobile browsers.
+### 3.1 Responsive Breakpoints & PWAs
+*   **Mobile Web / PWA:** 
+    *   **Stacked Layout (Default):** Metadata (Venue/Date) and interactive controls (Stars/Badges) are vertically aligned in a column for optimal touch targets.
+    *   Triggered automatically for detected PWAs or viewports `< 768px`.
+    *   Single column navigation; persistent bottom mini-player.
+*   **Tablet/Desktop (> 768px):** 
+    *   **Horizontal Layout:** Data moves to a single row to maximize vertical scanability of the catalog.
+    *   Expanded sidebars or dual-pane layouts if width allows.
+*   **Safe Areas:** Browser toolbars are managed via `SafeArea`.
 
 ### 3.2 Desktop Interactivity
 *   **Hover States:** All interactive cards in the show list scale to **1.01x** on hover.
