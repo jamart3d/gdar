@@ -12,6 +12,8 @@ class TvListTile extends StatelessWidget {
   final bool dense;
   final VisualDensity? visualDensity;
   final EdgeInsetsGeometry? contentPadding;
+  final bool autofocus;
+  final bool useRgbBorder;
 
   const TvListTile({
     super.key,
@@ -23,6 +25,8 @@ class TvListTile extends StatelessWidget {
     this.dense = false,
     this.visualDensity,
     this.contentPadding,
+    this.autofocus = false,
+    this.useRgbBorder = false,
   });
 
   @override
@@ -33,6 +37,8 @@ class TvListTile extends StatelessWidget {
       return TvFocusWrapper(
         onTap: onTap,
         borderRadius: BorderRadius.circular(12),
+        autofocus: autofocus,
+        useRgbBorder: useRgbBorder,
         child: IgnorePointer(
           ignoring: true,
           child: ListTile(

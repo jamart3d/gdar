@@ -73,7 +73,7 @@ class DefaultSettings {
   // Screensaver (steal)
   static const bool useOilScreensaver = true;
   static const String oilScreensaverMode = 'standard';
-  static const int oilScreensaverInactivityMinutes = 5;
+  static const int oilScreensaverInactivityMinutes = 1;
 
   // Steal Visualizer Parameters
   static const double oilFlowSpeed = 0.1;
@@ -88,7 +88,7 @@ class DefaultSettings {
   static const double oilBannerFlicker = 0.0;
   static const double oilBannerGlowBlur = 0.5;
   static const bool oilEnableAudioReactivity = false;
-  static const bool oilPerformanceMode = false;
+  static const int oilPerformanceLevel = 0;
   static const bool oilPaletteCycle = true;
   static const double oilPaletteTransitionSpeed = 5.0;
   static const double oilAudioReactivityStrength = 1.0;
@@ -107,17 +107,23 @@ class DefaultSettings {
   static const double oilLogoTrailIntensity = 0.0;
   static const int oilLogoTrailSlices = 6;
   static const double oilLogoTrailLength = 0.5;
+  static const double oilLogoTrailScale = 0.1; // 10% reduction per slice
 
   // Ring controls (3-ring gap model)
   static const double oilInnerRingScale = 0.2;
-  static const double oilInnerToMiddleGap = 0.05;
+  static const double oilInnerToMiddleGap = 0.2;
   static const double oilMiddleToOuterGap = 0.05;
   static const double oilOrbitDrift = 1.0;
-  static const double oilBannerLetterSpacing = 1.02;
-  static const double oilBannerWordSpacing = 0.4;
+  static const double oilBannerLetterSpacing = 0.5;
+  static const double oilBannerWordSpacing = 0.05;
+  static const double oilTrackLetterSpacing = 0.5;
+  static const double oilTrackWordSpacing = 0.05;
   static const double oilFlatLineSpacing = 1.0;
   static const double oilInnerRingFontScale = 0.75;
-  static const double oilInnerRingSpacingMultiplier = 0.7;
+  static const double oilInnerRingSpacingMultiplier = 0.4;
+
+  /// Logo anti-aliasing: fwidth smoothstep on alpha edge (TV-only setting).
+  static const bool oilLogoAntiAlias = false;
 
   /// Audio graph display mode: 'off', 'corner', or 'circular'.
   static const String oilAudioGraphMode = 'off';
@@ -126,4 +132,55 @@ class DefaultSettings {
   static const double oilBeatSensitivity = 0.5;
 
   static const bool omitHttpPathInCopy = true;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Per-Platform Default Overrides
+//
+// Only list settings that DIFFER from the base DefaultSettings above.
+// SettingsProvider picks the right class at init time via _d.
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// Defaults for the Web UI (browser tab, desktop).
+class WebDefaults extends DefaultSettings {
+  // Appearance
+  static const bool useTrueBlack = false; // OLED burn-in not a concern on web
+  static const bool useNeumorphism = true; // Fruit / Liquid Glass theme
+  static const String appFont = 'rock_salt';
+
+  // Screensaver: disabled by default on web (no idle-lock risk)
+  static const bool useOilScreensaver = false;
+
+  // Splash only shown on first run (handled dynamically in provider)
+  static const bool showSplashScreen = false;
+
+  // Audio: hybrid engine gives instant-start gapless on browser
+  static const String audioEngineMode = 'hybrid';
+}
+
+/// Defaults for the Google TV UI.
+class TvDefaults extends DefaultSettings {
+  // Screensaver: steal mode looks great on TV
+  static const String oilScreensaverMode = 'steal';
+
+  // Audio: TV is a native app — uses the same standard player as Phone
+
+  // Screensaver performance mode ON by default (TV shader budget is limited)
+  // User can toggle this off in TV Settings → Screensaver → Performance Mode
+  static const int oilPerformanceLevel = 1;
+
+  // Prevent screen sleep by default — TV is a lean-back device
+  static const bool preventSleep = true;
+}
+
+/// Defaults for the Phone / Android UI.
+class PhoneDefaults extends DefaultSettings {
+  // Appearance
+  static const bool useNeumorphism = false;
+
+  // Screen should turn off normally — music plays in background without keeping screen on
+  static const bool preventSleep = false;
+
+  // Audio: standard native player on Android
+  static const String audioEngineMode = 'standard';
 }

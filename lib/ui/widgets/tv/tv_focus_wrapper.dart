@@ -4,9 +4,11 @@ import 'package:flutter/services.dart';
 import 'package:shakedown/utils/app_haptics.dart';
 import 'package:shakedown/services/device_service.dart';
 import 'package:provider/provider.dart';
+import 'package:shakedown/providers/settings_provider.dart';
+import 'package:shakedown/ui/widgets/animated_gradient_border.dart';
 
 /// A wrapper widget that handles TV focus states with premium animations.
-/// It provides a spring-based scale effect and a Material 3 focus border.
+/// It provides a spring-based scale effect and optional RGB animated border.
 class TvFocusWrapper extends StatefulWidget {
   final Widget child;
   final VoidCallback? onTap;
@@ -18,6 +20,7 @@ class TvFocusWrapper extends StatefulWidget {
   final Color? focusBackgroundColor;
   final Color? focusColor;
   final bool showGlow;
+  final bool useRgbBorder;
   final FocusOnKeyEventCallback? onKeyEvent;
   final ValueChanged<bool>? onFocusChange;
 
@@ -32,6 +35,7 @@ class TvFocusWrapper extends StatefulWidget {
     this.borderRadius,
     this.focusColor,
     this.showGlow = false,
+    this.useRgbBorder = false,
     this.onKeyEvent,
     this.focusBackgroundColor,
     this.onFocusChange,
@@ -80,20 +84,66 @@ class _TvFocusWrapperState extends State<TvFocusWrapper> {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final sp = context.watch<SettingsProvider>();
     final radius = widget.borderRadius ?? BorderRadius.circular(28);
+
+    Widget content = AnimatedContainer(
+      duration: const Duration(milliseconds: 200),
+      decoration: BoxDecoration(
+        color: _isFocused ? widget.focusBackgroundColor : null,
+        borderRadius: radius,
+        border: (widget.useRgbBorder && _isFocused)
+            ? null // Do not double-pad the border if RGB is handling it
+            : Border.all(
+                color: _isFocused
+                    ? (widget.focusColor ?? colorScheme.primary)
+                        .withValues(alpha: 0.6)
+                    : Colors.transparent,
+                width: 3.0,
+              ),
+        boxShadow: (widget.showGlow && _isFocused)
+            ? [
+                BoxShadow(
+                  color: (widget.focusColor ?? colorScheme.primary)
+                      .withValues(alpha: 0.2),
+                  blurRadius: 15,
+                  spreadRadius: 3,
+                ),
+              ]
+            : [],
+      ),
+      child: ClipRRect(
+        borderRadius: radius,
+        child: widget.child,
+      ),
+    );
+
+    if (widget.useRgbBorder && _isFocused) {
+      content = AnimatedGradientBorder(
+        borderRadius: radius.topLeft.x,
+        borderWidth: 4.0, // Thicker stroke for pure RGB line
+        ignoreGlobalClock: true,
+        animationSpeed: sp.rgbAnimationSpeed,
+        showGlow: true,
+        showShadow:
+            false, // Explicitly false inside so we use the standard BoxShadow underneath instead
+        backgroundColor: Colors.transparent,
+        usePadding: false, // Tight border to match track highlight items
+        child: content,
+      );
+    }
 
     return Focus(
       focusNode: widget.focusNode,
       autofocus: widget.autofocus,
       onFocusChange: _handleFocusChange,
       onKeyEvent: (node, event) {
-        // 1. Give external listener a chance first
+        // ... external listener logic ...
         if (widget.onKeyEvent != null) {
           final result = widget.onKeyEvent!(node, event);
           if (result != KeyEventResult.ignored) return result;
         }
 
-        // 2. Internal action key logic (Select/Enter)
         if (!_isActionKey(event.logicalKey)) return KeyEventResult.ignored;
 
         if (event is KeyDownEvent) {
@@ -109,7 +159,6 @@ class _TvFocusWrapperState extends State<TvFocusWrapper> {
           }
           return KeyEventResult.handled;
         } else if (event is KeyRepeatEvent) {
-          // Keep the timer running, just prevent bubbling
           return KeyEventResult.handled;
         } else if (event is KeyUpEvent) {
           final wasLongPress = _longPressHandled;
@@ -122,7 +171,6 @@ class _TvFocusWrapperState extends State<TvFocusWrapper> {
           }
           return KeyEventResult.handled;
         }
-
         return KeyEventResult.ignored;
       },
       child: GestureDetector(
@@ -131,32 +179,8 @@ class _TvFocusWrapperState extends State<TvFocusWrapper> {
         child: AnimatedScale(
           scale: _isFocused ? widget.scaleOnFocus : 1.0,
           duration: const Duration(milliseconds: 200),
-          curve: Curves.easeOutBack, // Spring-like effect
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 200),
-            decoration: BoxDecoration(
-              color: _isFocused ? widget.focusBackgroundColor : null,
-              borderRadius: radius,
-              border: Border.all(
-                color: _isFocused
-                    ? (widget.focusColor ?? colorScheme.primary)
-                        .withValues(alpha: 0.6)
-                    : Colors.transparent,
-                width: 2.5,
-              ),
-              boxShadow: (widget.showGlow && _isFocused)
-                  ? [
-                      BoxShadow(
-                        color: (widget.focusColor ?? colorScheme.primary)
-                            .withValues(alpha: 0.2),
-                        blurRadius: 15,
-                        spreadRadius: 3,
-                      ),
-                    ]
-                  : [],
-            ),
-            child: widget.child,
-          ),
+          curve: Curves.easeOutBack,
+          child: content,
         ),
       ),
     );

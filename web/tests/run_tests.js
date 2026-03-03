@@ -78,3 +78,69 @@ _fgEngine.play();
 _fgEngine.play(); // Second call should be ignored by guards
 
 console.log('DONE: Gapless Engine basic guard verification passed.');
+
+// ─── Regression Test: Pause/Resume Math for All Engines ─────────────────────
+
+console.log('\n--- Running Pause/Resume Math Tests ---\n');
+
+loadEngine('html5_audio_engine.js');
+const _html5Engine = global._html5Audio;
+
+_html5Engine.init();
+
+function testPauseResumeMath(engineName, engineObj, callback) {
+    if (global.__mockAudioContextInstances) {
+        global.__mockAudioContextInstances.forEach(ctx => ctx.currentTime += 1);
+    }
+
+    engineObj.stop();
+    engineObj.setPlaylist([{ url: 'http://test.mp3' }], 0);
+    engineObj.play();
+
+    setTimeout(() => {
+        if (global.__mockAudioContextInstances) {
+            // fast forward to simulate play
+            global.__mockAudioContextInstances.forEach(ctx => ctx.currentTime += 10);
+
+            let state2 = engineObj.getState();
+            console.log(`${engineName} state2: `, state2);
+            assert(state2.position >= 10, `${engineName} Position should increment during playback.`);
+
+            // Pause
+            engineObj.pause();
+
+            setTimeout(() => {
+                // advance time while paused
+                if (global.__mockAudioContextInstances) {
+                    global.__mockAudioContextInstances.forEach(ctx => ctx.currentTime += 5);
+                }
+                let state3 = engineObj.getState();
+                console.log(`${engineName} state3: `, state3);
+                assert(Math.abs(state3.position - state2.position) < 0.1, `${engineName} Position should FREEZE when paused.`);
+
+                // Play
+                engineObj.play();
+                setTimeout(() => {
+                    let state4 = engineObj.getState();
+                    assert(Math.abs(state4.position - state2.position) < 0.1, `${engineName} Position should RESUME from exactly where it was paused.`);
+
+                    console.log(`DONE: ${engineName} pause/resume math verification passed.`);
+                    callback();
+                }, 50);
+            }, 50);
+
+        } else {
+            console.log(`Test warning: __mockAudioContextInstances not found. Skipping ${engineName}.`);
+            callback();
+        }
+    }, 250);
+}
+
+// Run them sequentially so mock context time additions don't hit multiple engines simultaneously
+testPauseResumeMath('HTML5 Engine', _html5Engine, () => {
+    testPauseResumeMath('Gapless Engine', _fgEngine, () => {
+        testPauseResumeMath('Hybrid Engine', _hybridEngine, () => {
+            console.log('\nAll tests passing!');
+        });
+    });
+});

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:shakedown/ui/widgets/tv/tv_list_tile.dart';
+import 'package:shakedown/ui/widgets/tv/tv_focus_wrapper.dart';
 
 class TvInteractionModal extends StatelessWidget {
   final String title;
@@ -43,60 +43,94 @@ class TvInteractionModal extends StatelessWidget {
       backgroundColor: colorScheme.surface,
       surfaceTintColor: colorScheme.surfaceTint,
       title: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Text(
-            title,
-            style: textTheme.headlineSmall?.copyWith(
-              fontWeight: FontWeight.bold,
-              color: colorScheme.onSurface,
+          SizedBox(
+            width: double.infinity,
+            child: Text(
+              title,
+              textAlign: TextAlign.center,
+              style: textTheme.headlineSmall?.copyWith(
+                fontWeight: FontWeight.bold,
+                color: colorScheme.onSurface,
+              ),
             ),
           ),
           if (subtitle != null) ...[
             const SizedBox(height: 4),
-            Text(
-              subtitle!,
-              style: textTheme.bodyMedium?.copyWith(
-                color: colorScheme.onSurfaceVariant,
+            SizedBox(
+              width: double.infinity,
+              child: Text(
+                subtitle!,
+                textAlign: TextAlign.center,
+                style: textTheme.bodyMedium?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                ),
               ),
             ),
           ],
         ],
       ),
-      contentPadding: const EdgeInsets.fromLTRB(8, 16, 8, 16),
+      contentPadding: const EdgeInsets.fromLTRB(8, 24, 8, 24),
       content: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 400),
         child: Column(
           mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            TvListTile(
-              leading: Icon(Icons.play_circle_filled_rounded,
-                  color: colorScheme.primary, size: 28),
-              title: Text(
-                'Play Now',
-                style: textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
+            TvFocusWrapper(
+              autofocus: true,
+              useRgbBorder: true,
+              borderRadius: BorderRadius.circular(12),
               onTap: () {
                 Navigator.pop(context);
                 onPlay();
               },
-            ),
-            const SizedBox(height: 4),
-            TvListTile(
-              leading: Icon(Icons.star_rounded,
-                  color: colorScheme.secondary, size: 28),
-              title: Text(
-                'Rate / Details',
-                style: textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w600,
+              child: Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.play_circle_filled_rounded,
+                        color: colorScheme.primary, size: 28),
+                    const SizedBox(width: 16),
+                    Text(
+                      'Play Now',
+                      style: textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
                 ),
               ),
+            ),
+            const SizedBox(height: 12),
+            TvFocusWrapper(
+              useRgbBorder: true,
+              borderRadius: BorderRadius.circular(12),
               onTap: () {
                 Navigator.pop(context);
                 onRate();
               },
+              child: Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.star_rounded,
+                        color: colorScheme.secondary, size: 28),
+                    const SizedBox(width: 16),
+                    Text(
+                      'Rate / Details',
+                      style: textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
           ],
         ),

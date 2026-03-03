@@ -47,21 +47,24 @@ class RatingControl extends StatelessWidget {
     Widget content;
 
     if (isFruitNeumorphic) {
-      final Color starColor = colorScheme.primary;
-      final Color emptyColor =
-          colorScheme.onSurfaceVariant.withValues(alpha: 0.2);
+      const Color starColor = Colors.orangeAccent;
+      final Brightness brightness = Theme.of(context).brightness;
+      // In light mode, the alpha needs to be slightly higher to be visible against frosted glass
+      final Color emptyColor = brightness == Brightness.light
+          ? colorScheme.outline.withValues(alpha: 0.35)
+          : colorScheme.onSurfaceVariant.withValues(alpha: 0.2);
 
       content = NeumorphicWrapper(
         enabled: true,
         isCircle: false,
         borderRadius: 12,
-        intensity: 1.0,
+        intensity: 0.8,
         color: Colors.transparent,
         child: LiquidGlassWrapper(
           enabled: true,
           borderRadius: BorderRadius.circular(12),
-          opacity: 0.08,
-          blur: 5,
+          opacity: brightness == Brightness.light ? 0.15 : 0.08,
+          blur: 6,
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
             child: rating == -1
@@ -69,7 +72,7 @@ class RatingControl extends StatelessWidget {
                     label: 'Blocked show',
                     child: Icon(
                       LucideIcons.star,
-                      size: scaledSize * 0.9,
+                      size: scaledSize * 1.0, // Increased size
                       color: Colors.redAccent.withValues(alpha: 0.9),
                     ),
                   )
@@ -80,15 +83,15 @@ class RatingControl extends StatelessWidget {
                     direction: Axis.horizontal,
                     allowHalfRating: false,
                     itemCount: 3,
-                    itemSize: scaledSize * 0.9,
+                    itemSize:
+                        scaledSize * 1.0, // Increased size from 0.9 to 1.0
                     ignoreGestures: true,
                     ratingWidget: RatingWidget(
                       full: Icon(LucideIcons.star,
                           color: (rating == 0 && isPlayed)
-                              ? colorScheme.onSurfaceVariant
-                                  .withValues(alpha: 0.4)
+                              ? colorScheme.outline.withValues(alpha: 0.5)
                               : starColor),
-                      half: Icon(LucideIcons.star, color: starColor),
+                      half: const Icon(LucideIcons.star, color: starColor),
                       empty: Icon(LucideIcons.star, color: emptyColor),
                     ),
                     onRatingUpdate: (_) {},
@@ -233,44 +236,81 @@ class _RatingDialogState extends State<RatingDialog> {
               Text('Rate Show', style: textTheme.titleLarge),
               if (widget.sourceId != null && widget.sourceId!.isNotEmpty) ...[
                 const SizedBox(width: 16),
-                InkWell(
-                  onTap: () {
-                    if (widget.sourceUrl != null &&
-                        widget.sourceUrl!.isNotEmpty) {
-                      launchArchivePage(widget.sourceUrl!, context);
-                    } else {
-                      launchArchiveDetails(widget.sourceId!, context);
-                    }
-                  },
-                  borderRadius: BorderRadius.circular(8),
-                  child: Container(
+                Builder(builder: (context) {
+                  final pill = Container(
                     padding:
                         const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     decoration: BoxDecoration(
-                      color:
-                          colorScheme.tertiaryContainer.withValues(alpha: 0.7),
+                      color: isFruitNeumorphic
+                          ? colorScheme.tertiaryContainer
+                              .withValues(alpha: 0.25)
+                          : colorScheme.tertiaryContainer
+                              .withValues(alpha: 0.7),
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        border: Border(
-                          bottom: BorderSide(
-                            color: colorScheme.onTertiaryContainer,
-                            width: 1.5,
-                          ),
-                        ),
-                      ),
-                      padding: const EdgeInsets.only(bottom: 2.0),
-                      child: Text(
-                        widget.sourceId!,
-                        style: textTheme.titleMedium?.copyWith(
-                          color: colorScheme.onTertiaryContainer,
-                          fontWeight: FontWeight.bold,
-                        ),
+                    child: Text(
+                      widget.sourceId!,
+                      style: textTheme.titleMedium?.copyWith(
+                        color: colorScheme.onTertiaryContainer,
+                        fontWeight: FontWeight.bold,
+                        decoration: TextDecoration.underline,
+                        decorationColor: colorScheme.onTertiaryContainer
+                            .withValues(alpha: 0.6),
                       ),
                     ),
-                  ),
-                ),
+                  );
+
+                  if (isTv) {
+                    return TvFocusWrapper(
+                      onTap: () {
+                        if (widget.sourceUrl != null &&
+                            widget.sourceUrl!.isNotEmpty) {
+                          launchArchivePage(widget.sourceUrl!, context);
+                        } else {
+                          launchArchiveDetails(widget.sourceId!, context);
+                        }
+                      },
+                      borderRadius: BorderRadius.circular(8),
+                      child: pill,
+                    );
+                  }
+
+                  if (isFruitNeumorphic) {
+                    return NeumorphicWrapper(
+                      borderRadius: 8,
+                      intensity: 0.9,
+                      color: Colors.transparent,
+                      child: LiquidGlassWrapper(
+                        enabled: true,
+                        borderRadius: BorderRadius.circular(8),
+                        opacity: 0.12,
+                        blur: 10.0,
+                        child: GestureDetector(
+                          onTap: () {
+                            if (widget.sourceUrl != null &&
+                                widget.sourceUrl!.isNotEmpty) {
+                              launchArchivePage(widget.sourceUrl!, context);
+                            } else {
+                              launchArchiveDetails(widget.sourceId!, context);
+                            }
+                          },
+                          child: pill,
+                        ),
+                      ),
+                    );
+                  }
+                  return GestureDetector(
+                    onTap: () {
+                      if (widget.sourceUrl != null &&
+                          widget.sourceUrl!.isNotEmpty) {
+                        launchArchivePage(widget.sourceUrl!, context);
+                      } else {
+                        launchArchiveDetails(widget.sourceId!, context);
+                      }
+                    },
+                    child: pill,
+                  );
+                }),
               ],
             ],
           ),
@@ -385,11 +425,19 @@ class _RatingDialogState extends State<RatingDialog> {
                                 return NeumorphicWrapper(
                                   enabled: true,
                                   isPressed: true,
-                                  borderRadius: 12,
-                                  child: Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 12, vertical: 8),
-                                    child: ratingBar,
+                                  borderRadius: 16,
+                                  intensity: 1.0,
+                                  color: Colors.transparent,
+                                  child: LiquidGlassWrapper(
+                                    enabled: true,
+                                    borderRadius: BorderRadius.circular(16),
+                                    opacity: 0.08,
+                                    blur: 18.0,
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 16, vertical: 12),
+                                      child: ratingBar,
+                                    ),
                                   ),
                                 );
                               }
@@ -408,16 +456,46 @@ class _RatingDialogState extends State<RatingDialog> {
                     builder: (context, box, _) {
                       final count = box.get(widget.sourceId!) ?? 0;
                       if (count > 0) {
-                        return Text(
-                          'Played ${count}x',
-                          style:
-                              Theme.of(context).textTheme.labelMedium?.copyWith(
-                                    color: Theme.of(context)
-                                        .colorScheme
-                                        .onSurfaceVariant,
-                                    fontWeight: FontWeight.w500,
-                                  ),
+                        final chip = Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 10, vertical: 3),
+                          decoration: BoxDecoration(
+                            color: isFruitNeumorphic
+                                ? colorScheme.secondaryContainer
+                                    .withValues(alpha: 0.2)
+                                : colorScheme.secondaryContainer
+                                    .withValues(alpha: 0.5),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Text(
+                            'Played ${count}x',
+                            style: Theme.of(context)
+                                .textTheme
+                                .labelMedium
+                                ?.copyWith(
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .onSecondaryContainer,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                          ),
                         );
+                        if (isFruitNeumorphic) {
+                          return NeumorphicWrapper(
+                            borderRadius: 20,
+                            intensity: 0.7,
+                            isPressed: true,
+                            color: Colors.transparent,
+                            child: LiquidGlassWrapper(
+                              enabled: true,
+                              borderRadius: BorderRadius.circular(20),
+                              opacity: 0.06,
+                              blur: 8.0,
+                              child: chip,
+                            ),
+                          );
+                        }
+                        return chip;
                       }
                       return const SizedBox.shrink();
                     },
@@ -428,7 +506,11 @@ class _RatingDialogState extends State<RatingDialog> {
           ),
         ),
         if (widget.onPlayedChanged != null) ...[
-          const Divider(height: 1),
+          Divider(
+              height: 1,
+              color: isFruitNeumorphic
+                  ? colorScheme.outline.withValues(alpha: 0.12)
+                  : null),
           TvSwitchListTile(
             title: const Text('Mark as Played'),
             secondary: Icon(
@@ -459,20 +541,32 @@ class _RatingDialogState extends State<RatingDialog> {
             },
           ),
         ],
-        const Divider(height: 1),
+        Divider(
+            height: 1,
+            color: isFruitNeumorphic
+                ? colorScheme.outline.withValues(alpha: 0.12)
+                : null),
         _buildActionOption(
           context,
           'Block (Red Star)',
           isFruit ? LucideIcons.star : Icons.star_rounded,
-          Colors.redAccent,
+          isFruitNeumorphic
+              ? Colors.redAccent.withValues(alpha: 0.85)
+              : Colors.redAccent,
           -1,
         ),
-        const Divider(height: 1),
+        Divider(
+            height: 1,
+            color: isFruitNeumorphic
+                ? colorScheme.outline.withValues(alpha: 0.12)
+                : null),
         _buildActionOption(
           context,
           'Clear Rating',
           isFruit ? LucideIcons.star : Icons.star_rounded,
-          Colors.grey,
+          isFruitNeumorphic
+              ? colorScheme.onSurfaceVariant.withValues(alpha: 0.6)
+              : Colors.grey,
           0,
         ),
         const SizedBox(height: 8),
@@ -482,7 +576,7 @@ class _RatingDialogState extends State<RatingDialog> {
     if (isTv) {
       content = Container(
         decoration: BoxDecoration(
-          color: colorScheme.surface.withValues(alpha: 0.4),
+          color: colorScheme.surface,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: colorScheme.outline.withValues(alpha: 0.1),
@@ -491,7 +585,10 @@ class _RatingDialogState extends State<RatingDialog> {
         ),
         child: Material(
           color: Colors.transparent,
-          child: content,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 400),
+            child: content,
+          ),
         ),
       );
     } else if (isFruitNeumorphic) {

@@ -5,6 +5,8 @@ import 'package:shakedown/models/show.dart';
 import 'package:shakedown/models/source.dart';
 import 'package:shakedown/providers/audio_provider.dart';
 import 'package:shakedown/providers/show_list_provider.dart';
+import 'package:shakedown/providers/settings_provider.dart';
+import 'package:shakedown/utils/app_date_utils.dart';
 import 'package:shakedown/ui/screens/playback_screen.dart';
 import 'package:shakedown/ui/screens/track_list_screen.dart';
 import 'package:shakedown/utils/logger.dart';
@@ -234,7 +236,8 @@ mixin ShowListLogicMixin<T extends StatefulWidget>
       unawaited(TvInteractionModal.show(
         context,
         title: show.venue,
-        subtitle: show.date,
+        subtitle: AppDateUtils.formatDate(show.date,
+            settings: context.read<SettingsProvider>()),
         onPlay: () => _playSource(show, sourceToPlay),
         onRate: () {
           showDialog(
@@ -268,10 +271,11 @@ mixin ShowListLogicMixin<T extends StatefulWidget>
       unawaited(TvInteractionModal.show(
         context,
         title: show.venue,
-        subtitle: source.id,
+        subtitle: AppDateUtils.formatDate(show.date,
+            settings: context.read<SettingsProvider>()),
         onPlay: () => _playSource(show, source),
-        onRate: () {
-          showDialog(
+        onRate: () async {
+          await showDialog(
             context: context,
             builder: (context) => RatingDialog(
               initialRating: catalog.getRating(source.id),
@@ -287,6 +291,9 @@ mixin ShowListLogicMixin<T extends StatefulWidget>
               },
             ),
           );
+          if (context.mounted) {
+            onSourceLongPressed(show, source);
+          }
         },
       ));
       return;
@@ -306,6 +313,9 @@ mixin ShowListLogicMixin<T extends StatefulWidget>
       animationController.forward(from: 0.0);
     }
     audioProvider.playSource(show, source);
+    if (context.read<DeviceService>().isTv) {
+      audioProvider.requestPlaybackFocus();
+    }
   }
 
   Future<dynamic> navigateTo(Widget screen, {bool instant = true}) async {

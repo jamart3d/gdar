@@ -151,6 +151,7 @@
                     if (this.bufferSourceNode.playbackRate.value === 1) return;
                     if (this.webAudioPausedAt) {
                         this.webAudioPausedDuration += this.audioContext.currentTime - this.webAudioPausedAt;
+                        this.webAudioPausedAt = 0;
                     }
                     if (this.currentTime !== 0) this.seek(this.currentTime);
                     this.connectGainNode();
@@ -158,7 +159,6 @@
                     if (!this.bufferSourceNode.onended) {
                         this.bufferSourceNode.onended = () => this.onEnded('webaudio3');
                     }
-                    this.webAudioPausedAt = 0;
                 } else {
                     this.switchToWebAudio();
                 }
@@ -266,7 +266,11 @@
         }
         get currentTime() {
             if (this.isUsingWebAudio) {
-                return this.audioContext.currentTime - this.webAudioStartedPlayingAt - this.webAudioPausedDuration;
+                let time = this.audioContext.currentTime - this.webAudioStartedPlayingAt - this.webAudioPausedDuration;
+                if (this.webAudioPausedAt) {
+                    time -= (this.audioContext.currentTime - this.webAudioPausedAt);
+                }
+                return Math.max(0, time);
             }
             return this.audio.currentTime;
         }

@@ -12,11 +12,15 @@
             this.currentTime = 0;
             this.destination = {};
             this._isResuming = false;
+            g.__mockAudioContextInstance = this;
+            if (!g.__mockAudioContextInstances) g.__mockAudioContextInstances = [];
+            g.__mockAudioContextInstances.push(this);
         }
         createGain() {
             return {
                 gain: { value: 1.0 },
-                connect: () => { }
+                connect: () => { },
+                disconnect: () => { }
             };
         }
         createBufferSource() {
@@ -28,15 +32,27 @@
                 },
                 stop: () => { src.onended && src.onended(); },
                 connect: () => { },
-                onended: null
+                onended: null,
+                playbackRate: { value: 1 }
             };
             return src;
         }
-        decodeAudioData(buffer) {
-            return Promise.resolve({ duration: 300 });
+        decodeAudioData(buffer, successCallback, errorCallback) {
+            const decoded = { duration: 300 };
+            if (successCallback) successCallback(decoded);
+            return Promise.resolve(decoded).then(r => {
+                console.log('[MOCK_LOG] decodeAudioData promise resolved internally!');
+                return r;
+            });
         }
-        resume() { return Promise.resolve(); }
-        suspend() { return Promise.resolve(); }
+        resume() {
+            this.state = 'running';
+            return Promise.resolve();
+        }
+        suspend() {
+            this.state = 'suspended';
+            return Promise.resolve();
+        }
     }
 
     // Mock Audio Element
@@ -56,10 +72,39 @@
         play() { this.paused = false; return Promise.resolve(); }
         pause() { this.paused = true; }
         setAttribute() { }
+        removeAttribute() { }
+        load() { }
     }
 
     // Safe Global Mocks for Node/Browser
     const g = typeof window !== 'undefined' ? window : global;
+
+    g.fetch = function (url, options) {
+        console.log('[MOCK_LOG] fetch called: ', url);
+        return Promise.resolve({
+            ok: true,
+            headers: { get: (h) => '8' },
+            body: {
+                getReader: () => {
+                    let done = false;
+                    return {
+                        read: () => {
+                            if (done) return Promise.resolve({ done: true });
+                            done = true;
+                            console.log('[MOCK_LOG] mock stream chunk sent');
+                            return Promise.resolve({ done: false, value: new Uint8Array(8) });
+                        }
+                    };
+                }
+            },
+            arrayBuffer: () => {
+                console.log('[MOCK_LOG] arrayBuffer() resolved');
+                return Promise.resolve(new ArrayBuffer(8));
+            },
+            url: url,
+            redirected: false,
+        });
+    };
 
     g.AudioContext = MockAudioContext;
     g.Audio = MockAudio;
@@ -84,14 +129,19 @@
         });
     }
 
+    g.AbortController = class {
+        constructor() { this.signal = {}; }
+        abort() { }
+    };
+
     // Mock MediaMetadata
     if (!g.MediaMetadata) g.MediaMetadata = class { constructor(args) { Object.assign(this, args); } };
 
     // Logger Mock
     g._gdarLogger = {
-        log: () => { },
-        error: () => { },
-        warn: () => { }
+        log: (...args) => { console.log('[MOCK_LOG]', ...args); },
+        error: (...args) => { console.error('[MOCK_LOG]', ...args); },
+        warn: (...args) => { console.warn('[MOCK_LOG]', ...args); }
     };
 
     // Mock document

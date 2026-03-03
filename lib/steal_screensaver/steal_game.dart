@@ -73,11 +73,12 @@ class StealGame extends FlameGame {
     await super.onLoad();
     _subscribeToReactor(_audioReactor);
 
-    _background = StealBackground(config: config);
-    add(_background!);
-
+    // Graph is added BEFORE background so it renders underneath the logo shader
     _graph = StealGraph();
     add(_graph!);
+
+    _background = StealBackground(config: config);
+    add(_background!);
 
     _banner = StealBanner();
     add(_banner!);

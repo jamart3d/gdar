@@ -41,6 +41,7 @@ class _TvDualPaneLayoutState extends State<TvDualPaneLayout> {
   final GlobalKey<PlaybackScreenState> _playbackScreenKey = GlobalKey();
   final GlobalKey<ShowListScreenState> _showListScreenKey = GlobalKey();
   StreamSubscription? _randomSubscription;
+  StreamSubscription? _focusSubscription;
 
   bool _isProcessingRandomRequest = false;
 
@@ -127,6 +128,16 @@ class _TvDualPaneLayoutState extends State<TvDualPaneLayout> {
         });
       });
     }
+
+    if (_focusSubscription == null) {
+      final audioProvider = context.read<AudioProvider>();
+      _focusSubscription = audioProvider.playbackFocusRequestStream.listen((_) {
+        debugPrint('TvDualPaneLayout: Playback focus requested!');
+        if (mounted) {
+          _focusRightPane();
+        }
+      });
+    }
   }
 
   void _focusRightPane() {
@@ -152,6 +163,7 @@ class _TvDualPaneLayoutState extends State<TvDualPaneLayout> {
     _rightScrollbarFocusNode.dispose();
     _showListScrollbarFocusNode.dispose();
     _randomSubscription?.cancel();
+    _focusSubscription?.cancel();
     super.dispose();
   }
 

@@ -30,6 +30,7 @@ class AudioProvider with ChangeNotifier {
   final _bufferAgentNotificationController = StreamController<
       ({String message, VoidCallback? retryAction})>.broadcast();
   final _notificationController = StreamController<String>.broadcast();
+  final _playbackFocusRequestController = StreamController<void>.broadcast();
 
   ShowListProvider? _showListProvider;
   SettingsProvider? _settingsProvider;
@@ -118,6 +119,8 @@ class AudioProvider with ChangeNotifier {
       get bufferAgentNotificationStream =>
           _bufferAgentNotificationController.stream;
   Stream<String> get notificationStream => _notificationController.stream;
+  Stream<void> get playbackFocusRequestStream =>
+      _playbackFocusRequestController.stream;
 
   /// Proxy for cached track count from [AudioCacheService]
   int get cachedTrackCount => _audioCacheService.cachedTrackCount;
@@ -339,6 +342,7 @@ class AudioProvider with ChangeNotifier {
     _errorController.close();
     _randomShowRequestController.close();
     _bufferAgentNotificationController.close();
+    _playbackFocusRequestController.close();
     _bufferAgent?.dispose();
     _audioPlayer.dispose();
     _wakelockService.disable(); // Ensure we don't leave it on
@@ -625,6 +629,10 @@ class AudioProvider with ChangeNotifier {
 
   void showNotification(String message) {
     _notificationController.add(message);
+  }
+
+  void requestPlaybackFocus() {
+    _playbackFocusRequestController.add(null);
   }
 
   void _updateCurrentShowFromSourceId(String sourceId) {

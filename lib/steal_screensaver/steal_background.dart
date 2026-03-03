@@ -257,8 +257,8 @@ class StealBackground extends PositionComponent
       final opacity = intensity * (1.0 - t) * (1.0 - t) * 0.75;
       if (opacity < 0.01) continue;
 
-      // Slight scale reduction toward older slices
-      final scale = 1.0 - t * 0.10;
+      // Dynamic scale reduction toward older slices
+      final scale = 1.0 - t * config.logoTrailScale.clamp(0.0, 0.9);
       final renderSize = logoRenderSize * scale;
 
       final pos = positions[i];
@@ -278,9 +278,10 @@ class StealBackground extends PositionComponent
           ghostTint.withValues(alpha: opacity),
           ui.BlendMode.modulate,
         )
-        ..filterQuality = config.performanceMode
-            ? ui.FilterQuality.medium
-            : ui.FilterQuality.high;
+        ..filterQuality =
+            (config.performanceLevel >= 2 && !config.logoAntiAlias)
+                ? ui.FilterQuality.medium
+                : ui.FilterQuality.high;
 
       // Only blur the 2 newest slices
       final shouldBlur = i <= 2 && config.blurAmount > 0.0;
@@ -316,10 +317,10 @@ class StealBackground extends PositionComponent
 
     // Uniform index order must match steal.frag declarations exactly:
     // flowSpeed(3) filmGrain(4) pulseIntensity(5) heatDrift(6)
-    // logoScale(7) blurAmount(8) flatColor(9)
-    // logoPosX(10) logoPosY(11)
-    // bass(12) mid(13) treble(14) overall(15)
-    // color1(16-18) color2(19-21) color3(22-24) color4(25-27)
+    // logoScale(7) blurAmount(8) flatColor(9) antiAlias(10) performanceLevel(11)
+    // logoPosX(12) logoPosY(13)
+    // bass(14) mid(15) treble(16) overall(17)
+    // color1(18-20) color2(21-23) color3(24-26) color4(27-29)
     _shader!.setFloat(idx++, config.flowSpeed.clamp(0.0, 5.0));
     _shader!.setFloat(idx++, 0.0); // filmGrain hardcoded off
     _shader!.setFloat(idx++, config.pulseIntensity.clamp(0.0, 5.0));
@@ -329,6 +330,9 @@ class StealBackground extends PositionComponent
     _shader!.setFloat(idx++, (config.logoScale + beatBoost).clamp(0.05, 1.1));
     _shader!.setFloat(idx++, config.blurAmount.clamp(0.0, 1.0));
     _shader!.setFloat(idx++, config.flatColor ? 1.0 : 0.0);
+    _shader!.setFloat(idx++, config.logoAntiAlias ? 1.0 : 0.0); // uAntiAlias
+    _shader!.setFloat(
+        idx++, config.performanceLevel.toDouble()); // uPerformanceLevel
     _shader!.setFloat(idx++, _smoothedPos.dx); // uLogoPosX
     _shader!.setFloat(idx++, _smoothedPos.dy); // uLogoPosY
 

@@ -68,6 +68,8 @@ class MockAudioProvider extends ChangeNotifier implements ap.AudioProvider {
   Stream<({String message, VoidCallback? retryAction})>
       get bufferAgentNotificationStream => const Stream.empty();
   @override
+  Stream<void> get playbackFocusRequestStream => const Stream.empty();
+  @override
   int get cachedTrackCount => 0;
   @override
   String? get error => null;
@@ -100,6 +102,8 @@ class MockAudioProvider extends ChangeNotifier implements ap.AudioProvider {
   void clearError() {}
   @override
   void showNotification(String message) {}
+  @override
+  void requestPlaybackFocus() {}
   @override
   Future<void> stopAndClear() async {}
   @override
@@ -288,7 +292,7 @@ class FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
   @override
   bool get oilEnableAudioReactivity => true;
   @override
-  bool get oilPerformanceMode => false;
+  int get oilPerformanceLevel => 0;
   @override
   bool get oilPaletteCycle => false;
   @override
@@ -344,6 +348,14 @@ class FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
   double get oilBannerWordSpacing => 0.4;
   @override
   Future<void> setOilBannerWordSpacing(double value) async {}
+  @override
+  double get oilTrackLetterSpacing => 1.02;
+  @override
+  void setOilTrackLetterSpacing(double value) {}
+  @override
+  double get oilTrackWordSpacing => 0.4;
+  @override
+  void setOilTrackWordSpacing(double value) {}
   @override
   double get oilFlatLineSpacing => 1.0;
   @override
@@ -510,7 +522,11 @@ class FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
   @override
   void toggleOilEnableAudioReactivity() {}
   @override
-  void toggleOilPerformanceMode() {}
+  void setOilPerformanceLevel(int level) {}
+  @override
+  bool get oilLogoAntiAlias => false;
+  @override
+  void toggleOilLogoAntiAlias() {}
   @override
   void toggleOilPaletteCycle() {}
 

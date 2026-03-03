@@ -181,6 +181,7 @@ class TrackListView extends StatelessWidget {
                   child: AnimatedGradientBorder(
                     borderRadius: 12,
                     borderWidth: 4,
+                    ignoreGlobalClock: true,
                     colors: const [
                       Colors.red,
                       Colors.yellow,
@@ -232,6 +233,7 @@ class TrackListView extends StatelessWidget {
             content = AnimatedGradientBorder(
               borderRadius: 12,
               borderWidth: 4,
+              ignoreGlobalClock: true,
               colors: const [
                 Colors.red,
                 Colors.yellow,

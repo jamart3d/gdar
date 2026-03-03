@@ -144,6 +144,7 @@ class _PlaybackControlsState extends State<PlaybackControls> {
                             settingsProvider.highlightPlayingWithRgb && isFruit,
                         borderRadius: playButtonSize / 2,
                         borderWidth: 3.5,
+                        ignoreGlobalClock: true,
                         showGlow: true,
                         glowOpacity: 0.5 * (settingsProvider.glowMode / 100.0),
                         animationSpeed: settingsProvider.rgbAnimationSpeed,

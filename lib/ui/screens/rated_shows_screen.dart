@@ -371,7 +371,14 @@ class _RatedShowListState extends State<_RatedShowList> {
         clipBehavior: Clip.antiAlias,
         child: InkWell(
           onTap: () async {
+            final isTv = context.read<DeviceService>().isTv;
             if (isPlaying) {
+              if (isTv) {
+                unawaited(
+                    AppHaptics.selectionClick(context.read<DeviceService>()));
+                context.read<AudioProvider>().requestPlaybackFocus();
+                return;
+              }
               // Pause global clock
               try {
                 context.read<AnimationController>().stop();
@@ -416,7 +423,7 @@ class _RatedShowListState extends State<_RatedShowList> {
                       TrackListScreen(
                           show: singleSourceShow,
                           source: singleSourceShow.sources.first),
-                  transitionDuration: Duration.zero,
+                  transitionDuration: isTv ? Duration.zero : Duration.zero,
                 ),
               ));
 

@@ -24,6 +24,7 @@ import 'package:shakedown/utils/font_layout_config.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:shakedown/providers/theme_provider.dart';
 import 'package:shakedown/services/device_service.dart';
+import 'package:shakedown/ui/widgets/tv/tv_focus_wrapper.dart';
 
 class TrackListScreen extends StatefulWidget {
   final Show show;
@@ -61,6 +62,11 @@ class _TrackListScreenState extends State<TrackListScreen> {
     unawaited(AppHaptics.selectionClick(
         context.read<DeviceService>())); // Success feedback
     audioProvider.playSource(widget.show, source, initialIndex: trackIndex);
+
+    if (context.read<DeviceService>().isTv) {
+      Navigator.of(context).pop();
+      audioProvider.requestPlaybackFocus();
+    }
   }
 
   void _showContextualOverlay(BuildContext itemContext) {
@@ -464,9 +470,6 @@ class _TrackListScreenState extends State<TrackListScreen> {
     // USE CENTRALIZED METRICS
     final metrics = AppTypography.getHeaderMetrics(settingsProvider.appFont);
 
-    final audioProvider = context.watch<AudioProvider>();
-    final bool isPlaying = audioProvider.isPlaying;
-
     final Widget headerContent = Padding(
       padding: const EdgeInsets.all(24.0),
       child: Column(
@@ -558,6 +561,13 @@ class _TrackListScreenState extends State<TrackListScreen> {
               .read<AudioProvider>()
               .playSource(widget.show, widget.source));
 
+          // No full-screen player transitions on TV. Instead, return to main and focus player.
+          if (context.read<DeviceService>().isTv) {
+            Navigator.of(context).pop();
+            context.read<AudioProvider>().requestPlaybackFocus();
+            return;
+          }
+
           try {
             context.read<AnimationController>().stop();
           } catch (_) {}
@@ -589,13 +599,15 @@ class _TrackListScreenState extends State<TrackListScreen> {
         }
 
         Widget cardChild;
-        final ap = context.read<AudioProvider>();
-        final bool isDifferentShowPlaying =
-            ap.currentShow != null && ap.currentShow!.name != widget.show.name;
+        final ap = context.watch<AudioProvider>();
+        final bool isThisShowPlaying = ap.currentShow != null &&
+            ap.currentShow!.name == widget.show.name &&
+            ap.isPlaying;
 
         Widget content = headerContent;
-        if (isDifferentShowPlaying) {
+        if (!isThisShowPlaying) {
           content = Stack(
+            clipBehavior: Clip.none,
             children: [
               headerContent,
               Positioned(
@@ -611,7 +623,8 @@ class _TrackListScreenState extends State<TrackListScreen> {
                   onPressed: () async {
                     unawaited(AppHaptics.selectionClick(
                         context.read<DeviceService>()));
-                    if (ap.currentShow != null) {
+                    if (ap.currentShow != null &&
+                        ap.currentShow!.name != widget.show.name) {
                       await ap.stopAndClear();
                     }
                     await executePlayAndNavigate();
@@ -625,9 +638,13 @@ class _TrackListScreenState extends State<TrackListScreen> {
         if (kIsWeb) {
           cardChild = InkWell(
             onTap: () async {
-              if (ap.currentShow == null) {
+              if (!isThisShowPlaying) {
                 unawaited(
                     AppHaptics.selectionClick(context.read<DeviceService>()));
+                if (ap.currentShow != null &&
+                    ap.currentShow!.name != widget.show.name) {
+                  await ap.stopAndClear();
+                }
                 await executePlayAndNavigate();
               }
             },
@@ -641,9 +658,20 @@ class _TrackListScreenState extends State<TrackListScreen> {
             child: content,
           );
         } else {
-          cardChild = isPlaying
+          cardChild = isThisShowPlaying
               ? content
               : InkWell(
+                  onTap: () async {
+                    if (!isThisShowPlaying) {
+                      unawaited(AppHaptics.selectionClick(
+                          context.read<DeviceService>()));
+                      if (ap.currentShow != null &&
+                          ap.currentShow!.name != widget.show.name) {
+                        await ap.stopAndClear();
+                      }
+                      await executePlayAndNavigate();
+                    }
+                  },
                   onLongPress: () async {
                     unawaited(
                         AppHaptics.mediumImpact(context.read<DeviceService>()));
@@ -656,7 +684,7 @@ class _TrackListScreenState extends State<TrackListScreen> {
                 );
         }
 
-        final Widget card = Card(
+        Widget card = Card(
           elevation: 0,
           color: usePremium
               ? Colors.transparent
@@ -668,7 +696,7 @@ class _TrackListScreenState extends State<TrackListScreen> {
         );
 
         if (usePremium) {
-          return NeumorphicWrapper(
+          card = NeumorphicWrapper(
             borderRadius: 24,
             intensity: 1.0,
             color: Colors.transparent,
@@ -679,6 +707,21 @@ class _TrackListScreenState extends State<TrackListScreen> {
               blur: 15.0,
               child: card,
             ),
+          );
+        }
+
+        if (context.read<DeviceService>().isTv) {
+          return TvFocusWrapper(
+            autofocus: true,
+            onTap: () async {
+              if (ap.currentShow != null &&
+                  ap.currentShow!.name != widget.show.name) {
+                await ap.stopAndClear();
+              }
+              await executePlayAndNavigate();
+            },
+            borderRadius: BorderRadius.circular(24),
+            child: card,
           );
         }
 
@@ -788,40 +831,53 @@ class _TrackListScreenState extends State<TrackListScreen> {
           audioProvider.currentTrack!.title == track.title &&
           audioProvider.currentSource?.id == source.id;
 
+      Widget itemContent = Padding(
+        padding:
+            EdgeInsets.symmetric(horizontal: 20, vertical: 12 * scaleFactor),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.baseline,
+          textBaseline: TextBaseline.alphabetic,
+          children: [
+            Expanded(
+              child: Text(
+                titleText,
+                style: titleStyle.copyWith(
+                  fontWeight: isCurrentTrack ? FontWeight.w900 : null,
+                  color: isCurrentTrack ? colorScheme.primary : null,
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                textAlign: settingsProvider.hideTrackDuration
+                    ? TextAlign.center
+                    : TextAlign.left,
+              ),
+            ),
+            if (!settingsProvider.hideTrackDuration) ...[
+              const SizedBox(width: 16),
+              Text(
+                formatDuration(Duration(seconds: track.duration)),
+                style: durationStyle,
+              ),
+            ],
+          ],
+        ),
+      );
+
+      if (context.read<DeviceService>().isTv) {
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+          child: TvFocusWrapper(
+            onTap: () => _onTrackTapped(context, source, index),
+            borderRadius: BorderRadius.circular(16),
+            child: itemContent,
+          ),
+        );
+      }
+
       final Widget item = InkWell(
         borderRadius: BorderRadius.circular(16),
         onTap: () => _onTrackTapped(context, source, index),
-        child: Padding(
-          padding:
-              EdgeInsets.symmetric(horizontal: 20, vertical: 12 * scaleFactor),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.baseline,
-            textBaseline: TextBaseline.alphabetic,
-            children: [
-              Expanded(
-                child: Text(
-                  titleText,
-                  style: titleStyle.copyWith(
-                    fontWeight: isCurrentTrack ? FontWeight.w900 : null,
-                    color: isCurrentTrack ? colorScheme.primary : null,
-                  ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  textAlign: settingsProvider.hideTrackDuration
-                      ? TextAlign.center
-                      : TextAlign.left,
-                ),
-              ),
-              if (!settingsProvider.hideTrackDuration) ...[
-                const SizedBox(width: 16),
-                Text(
-                  formatDuration(Duration(seconds: track.duration)),
-                  style: durationStyle,
-                ),
-              ],
-            ],
-          ),
-        ),
+        child: itemContent,
       );
 
       if (usePremium && isCurrentTrack) {

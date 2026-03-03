@@ -15,7 +15,9 @@ class StealConfig {
   final double bannerFlicker;
   final double bannerGlowBlur;
   final bool enableAudioReactivity;
-  final bool performanceMode;
+
+  /// Overall quality/performance level: 0=High, 1=Balanced, 2=Fast.
+  final int performanceLevel;
   final bool showInfoBanner;
   final String bannerText;
   final String venue;
@@ -31,6 +33,7 @@ class StealConfig {
   final double logoTrailIntensity; // 0.0 = off, 1.0 = full
   final int logoTrailSlices; // 2–16 ghost copies
   final double logoTrailLength; // 0.0–1.0 spacing between snapshots
+  final double logoTrailScale; // 0.0–1.0 shrinkage per snapshot
   /// Flat mode: 0.0 = default gap (text just below visual edge),
   /// 1.0 = text at logo center (fully overlapping).
   final double flatTextProximity;
@@ -44,6 +47,12 @@ class StealConfig {
 
   /// Extra spacing between words in the banner.
   final double bannerWordSpacing;
+
+  /// Spacing between letters in the track title ring.
+  final double trackLetterSpacing;
+
+  /// Extra spacing between words in the track title ring.
+  final double trackWordSpacing;
 
   /// Flat mode: where the text block is positioned relative to the logo.
   /// 'below' = stacked below logo, 'above' = stacked above logo.
@@ -67,6 +76,9 @@ class StealConfig {
   /// Applied on top of bannerLetterSpacing/bannerWordSpacing.
   /// 1.0 = same as other rings, <1.0 = tighter spacing.
   final double innerRingSpacingMultiplier;
+
+  /// Whether to apply fwidth-based anti-aliasing on the logo alpha edge.
+  final bool logoAntiAlias;
 
   static const Map<String, List<Color>> palettes = {
     'psychedelic': [
@@ -122,7 +134,7 @@ class StealConfig {
     this.bannerFlicker = 0.0,
     this.bannerGlowBlur = 0.5,
     this.enableAudioReactivity = true,
-    this.performanceMode = false,
+    this.performanceLevel = 0,
     this.showInfoBanner = true,
     this.bannerText = '',
     this.venue = '',
@@ -138,16 +150,20 @@ class StealConfig {
     this.logoTrailIntensity = 0.0,
     this.logoTrailSlices = 6,
     this.logoTrailLength = 0.5,
+    this.logoTrailScale = 0.1,
     this.flatTextProximity = 0.0,
     this.flatTextPlacement = 'below',
     this.bannerResolution = 2.0,
     this.bannerLetterSpacing = 1.02,
     this.bannerWordSpacing = 0.4,
+    this.trackLetterSpacing = 1.02,
+    this.trackWordSpacing = 0.4,
     this.flatLineSpacing = 1.0,
     this.audioGraphMode = 'off',
     this.beatSensitivity = 0.5,
     this.innerRingFontScale = 1.0,
     this.innerRingSpacingMultiplier = 1.0,
+    this.logoAntiAlias = false,
   });
 
   factory StealConfig.fromMap(Map<String, dynamic> map) {
@@ -166,7 +182,8 @@ class StealConfig {
       bannerFlicker: (map['bannerFlicker'] as num?)?.toDouble() ?? 0.0,
       bannerGlowBlur: (map['bannerGlowBlur'] as num?)?.toDouble() ?? 0.5,
       enableAudioReactivity: map['enableAudioReactivity'] as bool? ?? true,
-      performanceMode: map['performanceMode'] as bool? ?? false,
+      performanceLevel: (map['performanceLevel'] as int?) ??
+          ((map['performanceMode'] as bool? ?? false) ? 2 : 0),
       showInfoBanner: map['showInfoBanner'] as bool? ?? true,
       bannerText: map['bannerText'] as String? ?? '',
       venue: map['venue'] as String? ?? '',
@@ -184,12 +201,16 @@ class StealConfig {
           (map['logoTrailIntensity'] as num?)?.toDouble() ?? 0.0,
       logoTrailSlices: (map['logoTrailSlices'] as int?) ?? 6,
       logoTrailLength: (map['logoTrailLength'] as num?)?.toDouble() ?? 0.5,
+      logoTrailScale: (map['logoTrailScale'] as num?)?.toDouble() ?? 0.1,
       flatTextProximity: (map['flatTextProximity'] as num?)?.toDouble() ?? 0.0,
       flatTextPlacement: map['flatTextPlacement'] as String? ?? 'below',
       bannerResolution: (map['bannerResolution'] as num?)?.toDouble() ?? 2.0,
       bannerLetterSpacing:
           (map['bannerLetterSpacing'] as num?)?.toDouble() ?? 1.02,
       bannerWordSpacing: (map['bannerWordSpacing'] as num?)?.toDouble() ?? 0.4,
+      trackLetterSpacing:
+          (map['trackLetterSpacing'] as num?)?.toDouble() ?? 1.02,
+      trackWordSpacing: (map['trackWordSpacing'] as num?)?.toDouble() ?? 0.4,
       flatLineSpacing: (map['flatLineSpacing'] as num?)?.toDouble() ?? 1.0,
       audioGraphMode: map['audioGraphMode'] as String? ?? 'off',
       beatSensitivity: (map['beatSensitivity'] as num?)?.toDouble() ?? 0.5,
@@ -197,6 +218,7 @@ class StealConfig {
           (map['innerRingFontScale'] as num?)?.toDouble() ?? 1.0,
       innerRingSpacingMultiplier:
           (map['innerRingSpacingMultiplier'] as num?)?.toDouble() ?? 1.0,
+      logoAntiAlias: map['logoAntiAlias'] as bool? ?? false,
     );
   }
 
@@ -215,7 +237,7 @@ class StealConfig {
       'bannerFlicker': bannerFlicker,
       'bannerGlowBlur': bannerGlowBlur,
       'enableAudioReactivity': enableAudioReactivity,
-      'performanceMode': performanceMode,
+      'performanceLevel': performanceLevel,
       'showInfoBanner': showInfoBanner,
       'bannerText': bannerText,
       'venue': venue,
@@ -231,16 +253,20 @@ class StealConfig {
       'logoTrailIntensity': logoTrailIntensity,
       'logoTrailSlices': logoTrailSlices,
       'logoTrailLength': logoTrailLength,
+      'logoTrailScale': logoTrailScale,
       'flatTextProximity': flatTextProximity,
       'flatTextPlacement': flatTextPlacement,
       'bannerResolution': bannerResolution,
       'bannerLetterSpacing': bannerLetterSpacing,
       'bannerWordSpacing': bannerWordSpacing,
+      'trackLetterSpacing': trackLetterSpacing,
+      'trackWordSpacing': trackWordSpacing,
       'flatLineSpacing': flatLineSpacing,
       'audioGraphMode': audioGraphMode,
       'beatSensitivity': beatSensitivity,
       'innerRingFontScale': innerRingFontScale,
       'innerRingSpacingMultiplier': innerRingSpacingMultiplier,
+      'logoAntiAlias': logoAntiAlias,
     };
   }
 
@@ -258,7 +284,7 @@ class StealConfig {
     double? bannerFlicker,
     double? bannerGlowBlur,
     bool? enableAudioReactivity,
-    bool? performanceMode,
+    int? performanceLevel,
     bool? showInfoBanner,
     String? bannerText,
     String? venue,
@@ -274,16 +300,20 @@ class StealConfig {
     double? logoTrailIntensity,
     int? logoTrailSlices,
     double? logoTrailLength,
+    double? logoTrailScale,
     double? flatTextProximity,
     String? flatTextPlacement,
     double? bannerResolution,
     double? bannerLetterSpacing,
     double? bannerWordSpacing,
+    double? trackLetterSpacing,
+    double? trackWordSpacing,
     double? flatLineSpacing,
     String? audioGraphMode,
     double? beatSensitivity,
     double? innerRingFontScale,
     double? innerRingSpacingMultiplier,
+    bool? logoAntiAlias,
   }) {
     return StealConfig(
       flowSpeed: flowSpeed ?? this.flowSpeed,
@@ -300,7 +330,7 @@ class StealConfig {
       bannerGlowBlur: bannerGlowBlur ?? this.bannerGlowBlur,
       enableAudioReactivity:
           enableAudioReactivity ?? this.enableAudioReactivity,
-      performanceMode: performanceMode ?? this.performanceMode,
+      performanceLevel: performanceLevel ?? this.performanceLevel,
       showInfoBanner: showInfoBanner ?? this.showInfoBanner,
       bannerText: bannerText ?? this.bannerText,
       venue: venue ?? this.venue,
@@ -317,17 +347,21 @@ class StealConfig {
       logoTrailIntensity: logoTrailIntensity ?? this.logoTrailIntensity,
       logoTrailSlices: logoTrailSlices ?? this.logoTrailSlices,
       logoTrailLength: logoTrailLength ?? this.logoTrailLength,
+      logoTrailScale: logoTrailScale ?? this.logoTrailScale,
       flatTextProximity: flatTextProximity ?? this.flatTextProximity,
       flatTextPlacement: flatTextPlacement ?? this.flatTextPlacement,
       bannerResolution: bannerResolution ?? this.bannerResolution,
       bannerLetterSpacing: bannerLetterSpacing ?? this.bannerLetterSpacing,
       bannerWordSpacing: bannerWordSpacing ?? this.bannerWordSpacing,
+      trackLetterSpacing: trackLetterSpacing ?? this.trackLetterSpacing,
+      trackWordSpacing: trackWordSpacing ?? this.trackWordSpacing,
       flatLineSpacing: flatLineSpacing ?? this.flatLineSpacing,
       audioGraphMode: audioGraphMode ?? this.audioGraphMode,
       beatSensitivity: beatSensitivity ?? this.beatSensitivity,
       innerRingFontScale: innerRingFontScale ?? this.innerRingFontScale,
       innerRingSpacingMultiplier:
           innerRingSpacingMultiplier ?? this.innerRingSpacingMultiplier,
+      logoAntiAlias: logoAntiAlias ?? this.logoAntiAlias,
     );
   }
 
@@ -348,7 +382,7 @@ class StealConfig {
         bannerFlicker == other.bannerFlicker &&
         bannerGlowBlur == other.bannerGlowBlur &&
         enableAudioReactivity == other.enableAudioReactivity &&
-        performanceMode == other.performanceMode &&
+        performanceLevel == other.performanceLevel &&
         showInfoBanner == other.showInfoBanner &&
         bannerText == other.bannerText &&
         venue == other.venue &&
@@ -369,11 +403,14 @@ class StealConfig {
         bannerResolution == other.bannerResolution &&
         bannerLetterSpacing == other.bannerLetterSpacing &&
         bannerWordSpacing == other.bannerWordSpacing &&
+        trackLetterSpacing == other.trackLetterSpacing &&
+        trackWordSpacing == other.trackWordSpacing &&
         flatLineSpacing == other.flatLineSpacing &&
         audioGraphMode == other.audioGraphMode &&
         beatSensitivity == other.beatSensitivity &&
         innerRingFontScale == other.innerRingFontScale &&
-        innerRingSpacingMultiplier == other.innerRingSpacingMultiplier;
+        innerRingSpacingMultiplier == other.innerRingSpacingMultiplier &&
+        logoAntiAlias == other.logoAntiAlias;
   }
 
   @override
@@ -391,7 +428,7 @@ class StealConfig {
         bannerFlicker,
         bannerGlowBlur,
         enableAudioReactivity,
-        performanceMode,
+        performanceLevel,
         showInfoBanner,
         bannerText,
         venue,
@@ -412,10 +449,13 @@ class StealConfig {
         bannerResolution,
         bannerLetterSpacing,
         bannerWordSpacing,
+        trackLetterSpacing,
+        trackWordSpacing,
         flatLineSpacing,
         audioGraphMode,
         beatSensitivity,
         innerRingFontScale,
         innerRingSpacingMultiplier,
+        logoAntiAlias,
       ]);
 }

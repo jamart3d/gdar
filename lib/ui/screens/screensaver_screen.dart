@@ -95,24 +95,17 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
     final settings = Provider.of<SettingsProvider>(context, listen: false);
     final deviceService = Provider.of<DeviceService>(context, listen: false);
 
-    // Skip if audio reactivity is disabled or on Web
-    if (kIsWeb || !settings.oilEnableAudioReactivity) {
-      final reactor =
-          await AudioReactorFactory.create(isTv: deviceService.isTv);
-      if (mounted) {
-        setState(() => _audioReactor = reactor);
-        reactor?.start();
-      }
-      return;
-    }
+    // Web never has the real visualizer, and if reactivity is off skip entirely.
+    if (kIsWeb || !settings.oilEnableAudioReactivity) return;
 
+    // Get the app's audio session ID on Android so we tap the right output.
     int? sessionId;
     if (defaultTargetPlatform == TargetPlatform.android) {
       final audioProvider = Provider.of<AudioProvider>(context, listen: false);
       sessionId = audioProvider.audioPlayer.androidAudioSessionId;
     }
 
-    // Factory handles logic: only returns real visualizer if isTv is true AND on Android
+    // Factory only returns a real reactor when isTv == true AND on Android.
     final reactor = await AudioReactorFactory.create(
       audioSessionId: sessionId,
       isTv: deviceService.isTv,
@@ -120,7 +113,6 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
 
     if (mounted) {
       setState(() => _audioReactor = reactor);
-      // If we successfully got a real visualizer, push initial config
       if (reactor is VisualizerAudioReactor) {
         _pushAudioConfig();
       }
@@ -163,8 +155,7 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
       pulseIntensity: settings.oilPulseIntensity,
       heatDrift: settings.oilHeatDrift,
       enableAudioReactivity: settings.oilEnableAudioReactivity,
-      performanceMode: settings.oilPerformanceMode ||
-          Provider.of<DeviceService>(context, listen: false).isTv,
+      performanceLevel: settings.oilPerformanceLevel,
       logoScale: settings.oilLogoScale,
       translationSmoothing: settings.oilTranslationSmoothing,
       blurAmount: settings.oilBlurAmount,
@@ -192,6 +183,10 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
       beatSensitivity: settings.oilBeatSensitivity,
       innerRingFontScale: settings.oilInnerRingFontScale,
       innerRingSpacingMultiplier: settings.oilInnerRingSpacingMultiplier,
+      trackLetterSpacing: settings.oilTrackLetterSpacing,
+      trackWordSpacing: settings.oilTrackWordSpacing,
+      logoAntiAlias: settings.oilLogoAntiAlias,
+      logoTrailScale: settings.oilLogoTrailScale,
     );
 
     return PopScope(

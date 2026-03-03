@@ -248,6 +248,14 @@ class FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
   @override
   Future<void> setOilBannerWordSpacing(double value) async {}
   @override
+  double get oilTrackLetterSpacing => 1.02;
+  @override
+  void setOilTrackLetterSpacing(double value) {}
+  @override
+  double get oilTrackWordSpacing => 0.4;
+  @override
+  void setOilTrackWordSpacing(double value) {}
+  @override
   double get oilFlatLineSpacing => 1.0;
   @override
   Future<void> setOilFlatLineSpacing(double value) async {}
@@ -266,6 +274,8 @@ class FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
   int get oilLogoTrailSlices => 6;
   @override
   double get oilLogoTrailLength => 0.5;
+  @override
+  double get oilLogoTrailScale => 0.1;
 
   @override
   Future<void> setOilLogoTrailIntensity(double value) async {}
@@ -273,6 +283,8 @@ class FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
   Future<void> setOilLogoTrailSlices(int value) async {}
   @override
   Future<void> setOilLogoTrailLength(double value) async {}
+  @override
+  Future<void> setOilLogoTrailScale(double value) async {}
 
   @override
   void toggleOilPaletteCycle() {}
@@ -474,9 +486,14 @@ class FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
   void toggleOilEnableAudioReactivity() {}
 
   @override
-  bool get oilPerformanceMode => false;
+  int get oilPerformanceLevel => 0;
   @override
-  void toggleOilPerformanceMode() {}
+  void setOilPerformanceLevel(int level) {}
+
+  @override
+  bool get oilLogoAntiAlias => false;
+  @override
+  void toggleOilLogoAntiAlias() {}
 
   @override
   bool get oilShowInfoBanner => true;

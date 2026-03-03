@@ -156,9 +156,22 @@ class _AppearanceSectionState extends State<AppearanceSection> {
                                   (Set<ThemeMode> newSelection) {
                                 AppHaptics.lightImpact(
                                     context.read<DeviceService>());
+                                final newMode = newSelection.first;
                                 context
                                     .read<ThemeProvider>()
-                                    .setThemeMode(newSelection.first);
+                                    .setThemeMode(newMode);
+                                // Auto-disable True Black in light mode
+                                // so Glow Border toggle becomes available.
+                                final sp = context.read<SettingsProvider>();
+                                final isLightMode =
+                                    newMode == ThemeMode.light ||
+                                        (newMode == ThemeMode.system &&
+                                            MediaQuery.platformBrightnessOf(
+                                                    context) ==
+                                                Brightness.light);
+                                if (isLightMode && sp.useTrueBlack) {
+                                  sp.toggleUseTrueBlack();
+                                }
                               },
                               showSelectedIcon: false,
                               style: ButtonStyle(
@@ -465,11 +478,8 @@ class _AppearanceSectionState extends State<AppearanceSection> {
                 ),
         if (!context.read<DeviceService>().isTv) ...[
           (() {
-            final isGated = settingsProvider.useTrueBlack ||
-                settingsProvider.performanceMode;
-            final reason = settingsProvider.performanceMode
-                ? 'Disabled in Simple Theme'
-                : 'Disabled in True Black';
+            final isGated = settingsProvider.performanceMode;
+            const reason = 'Disabled in Simple Theme';
 
             return TvSwitchListTile(
               dense: true,
@@ -508,7 +518,6 @@ class _AppearanceSectionState extends State<AppearanceSection> {
             );
           })(),
           if (settingsProvider.glowMode > 0 &&
-              !settingsProvider.useTrueBlack &&
               !settingsProvider.performanceMode)
             Padding(
               padding:

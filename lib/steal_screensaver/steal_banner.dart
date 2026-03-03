@@ -546,6 +546,10 @@ class StealBanner extends Component with HasGameReference<StealGame> {
         effectiveOpacity,
         glowEnabled,
         config,
+        letterSpacing:
+            (i == 0) ? config.trackLetterSpacing : config.bannerLetterSpacing,
+        wordSpacing:
+            (i == 0) ? config.trackWordSpacing : config.bannerWordSpacing,
       );
       visibleIndex++;
     }
@@ -558,8 +562,10 @@ class StealBanner extends Component with HasGameReference<StealGame> {
     Offset center,
     double effectiveOpacity,
     bool glowEnabled,
-    StealConfig config,
-  ) {
+    StealConfig config, {
+    double? letterSpacing,
+    double? wordSpacing,
+  }) {
     if (text.isEmpty) return;
 
     final wordList = words.isNotEmpty
@@ -570,15 +576,18 @@ class StealBanner extends Component with HasGameReference<StealGame> {
             .map(_NeonWord.new)
             .toList();
 
+    final lSpace = letterSpacing ?? config.bannerLetterSpacing;
+    final wSpace = wordSpacing ?? config.bannerWordSpacing;
+
     // Measure total width including letter and word spacing
     double totalWidth = 0.0;
     for (int wi = 0; wi < wordList.length; wi++) {
       final text = wordList[wi].text;
       for (final char in text.characters) {
-        totalWidth += _measureChar(char) * config.bannerLetterSpacing;
+        totalWidth += _measureChar(char) * lSpace;
       }
       if (wi < wordList.length - 1) {
-        totalWidth += _defaultFontSize * config.bannerWordSpacing;
+        totalWidth += _defaultFontSize * wSpace;
       }
     }
 
@@ -589,7 +598,7 @@ class StealBanner extends Component with HasGameReference<StealGame> {
       final wordBrightness = glowEnabled ? word.brightness : 1.0;
 
       for (final char in word.text.characters) {
-        final charWidth = _measureChar(char) * config.bannerLetterSpacing;
+        final charWidth = _measureChar(char) * lSpace;
 
         canvas.save();
         canvas.translate(x + charWidth / 2, center.dy);
@@ -611,7 +620,7 @@ class StealBanner extends Component with HasGameReference<StealGame> {
       }
 
       if (wi < wordList.length - 1) {
-        x += _defaultFontSize * config.bannerWordSpacing;
+        x += _defaultFontSize * wSpace;
       }
     }
   }
@@ -653,8 +662,19 @@ class StealBanner extends Component with HasGameReference<StealGame> {
           _opacity * _outerOpacity, glowEnabled, config);
     }
     if (_middleCurrent.isNotEmpty && _middleOpacity > 0.01) {
-      _drawRing(canvas, _middleCurrent, _middleWords, center, middleR,
-          _middleAngle, _opacity * _middleOpacity, glowEnabled, config);
+      _drawRing(
+        canvas,
+        _middleCurrent,
+        _middleWords,
+        center,
+        middleR,
+        _middleAngle,
+        _opacity * _middleOpacity,
+        glowEnabled,
+        config,
+        letterSpacing: config.trackLetterSpacing,
+        wordSpacing: config.trackWordSpacing,
+      );
     }
     if (_innerCurrent.isNotEmpty && _innerOpacity > 0.01) {
       _drawRing(
@@ -685,12 +705,16 @@ class StealBanner extends Component with HasGameReference<StealGame> {
     StealConfig config, {
     double fontScale = 1.0,
     double spacingMultiplier = 1.0,
+    double? letterSpacing,
+    double? wordSpacing,
   }) {
     if (text.isEmpty) return;
 
-    // Use user-defined spacing from config, modulated by per-ring multiplier
-    double letterSpacing = config.bannerLetterSpacing * spacingMultiplier;
-    double wordSpacing = config.bannerWordSpacing * spacingMultiplier;
+    // Use user-defined spacing from config (or track override),modulated by per-ring multiplier
+    double lSpace =
+        (letterSpacing ?? config.bannerLetterSpacing) * spacingMultiplier;
+    double wSpace =
+        (wordSpacing ?? config.bannerWordSpacing) * spacingMultiplier;
 
     final wordList = words.isNotEmpty
         ? words
@@ -714,7 +738,7 @@ class StealBanner extends Component with HasGameReference<StealGame> {
       return span;
     }
 
-    double currentSpan = calcRawSpan(letterSpacing, wordSpacing);
+    double currentSpan = calcRawSpan(lSpace, wSpace);
 
     // 2. Dynamic Compression ("Squish-to-fit")
     // If text exceeds ~320 degrees, we compress it to fit.
@@ -723,9 +747,9 @@ class StealBanner extends Component with HasGameReference<StealGame> {
       final compressionFactor = maxAllowedSpan / currentSpan;
       // We don't want to squish letters too much (min 0.8x original),
       // but words can squish more aggressively.
-      letterSpacing *= max(0.85, compressionFactor);
-      wordSpacing *= compressionFactor;
-      currentSpan = calcRawSpan(letterSpacing, wordSpacing);
+      lSpace *= max(0.85, compressionFactor);
+      wSpace *= compressionFactor;
+      currentSpan = calcRawSpan(lSpace, wSpace);
     }
 
     double angle = startAngle - pi / 2 - currentSpan / 2;
@@ -736,7 +760,7 @@ class StealBanner extends Component with HasGameReference<StealGame> {
       final chars = word.text.characters.toList();
 
       for (int ci = 0; ci < chars.length; ci++) {
-        final charWidth = _measureChar(chars[ci]) * fontScale * letterSpacing;
+        final charWidth = _measureChar(chars[ci]) * fontScale * lSpace;
         final charAngle = charWidth / radius;
 
         final centerAngle = angle + charAngle / 2;
@@ -757,7 +781,7 @@ class StealBanner extends Component with HasGameReference<StealGame> {
         _paintChar(
           canvas,
           chars[ci],
-          _measureChar(chars[ci]) * letterSpacing,
+          _measureChar(chars[ci]) * lSpace,
           _currentColor,
           opacity,
           glowEnabled,
@@ -769,7 +793,7 @@ class StealBanner extends Component with HasGameReference<StealGame> {
       }
 
       if (wi < wordList.length - 1) {
-        angle += (_defaultFontSize * fontScale * wordSpacing) / radius;
+        angle += (_defaultFontSize * fontScale * wSpace) / radius;
       }
     }
   }
@@ -800,8 +824,9 @@ class StealBanner extends Component with HasGameReference<StealGame> {
         ui.BlendMode.srcIn,
       )
       ..isAntiAlias = true
-      ..filterQuality =
-          config.performanceMode ? FilterQuality.medium : FilterQuality.high;
+      ..filterQuality = config.performanceLevel >= 2
+          ? FilterQuality.medium
+          : FilterQuality.high;
 
     canvas.save();
     // Scale down the high-res glyph to maintain original visual footprint

@@ -296,6 +296,7 @@
   let _lastStartTrackTime = 0;
 
   function _startTrack(audioBuf, offsetSeconds, startContextTime) {
+    console.log('[Gapless] _startTrack called!');
     const targetIdx = _currentIndex;
     const targetTime = startContextTime != null ? startContextTime : _ctx.currentTime;
 
@@ -355,6 +356,7 @@
       try { _currentSource.stop(); } catch (_) { }
       _currentSource = null;
     }
+    _startedIndex = -1;
     _stopPositionTimer();
     _stopWatchdog();
     _expectedEndContextTime = 0;
@@ -656,6 +658,7 @@
     },
 
     play: function () {
+      console.log(`[Gapless] api.play() called! _playing=${_playing}, state=${_ctx ? _ctx.state : 'null'}`);
       _ensureContext();
       _playing = true; // Set playback intent early so resume callback triggers api.play() again
 
@@ -691,6 +694,7 @@
         _startTrack(buf, _currentTrackStartOffset, null);
         _emitTrackChange(-1, index);
       }).catch(err => {
+        console.error('[Gapless] Play decode error:', err);
         _loadingIndex = -1;
         _emitError('Play decode error: ' + err.message);
       });
@@ -719,8 +723,8 @@
 
     pause: function () {
       if (!_ctx || !_playing) return;
-      _playing = false;
       _currentTrackStartOffset = _getCurrentPositionSeconds();
+      _playing = false;
       _ctx.suspend().then(() => {
         _stopPositionTimer();
         _stopCurrentSource();

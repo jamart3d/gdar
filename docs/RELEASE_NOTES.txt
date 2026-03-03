@@ -1,3 +1,9 @@
+Release 1.1.42+142:
+- **UI/UX (TV)**: Implemented "Tight Border" RGB styling for TvInteractionModal buttons to eliminate visual gaps.
+- **UI/UX (TV)**: Standardized modal button radii (12.0) to match main track list highlight aesthetics.
+- **UI/UX (TV)**: Added `usePadding` flag to `AnimatedGradientBorder` for high-precision border alignment.
+- **Settings**: Adjusted default screensaver inactivity timeout to 1 minute for faster testing and better protection.
+
 Release 1.1.41+141:
 - **UI/UX (TV)**: Implemented Global Media Key shortcuts for remote buttons (Play/Pause, Next, Previous) to enhance lean-back control.
 - **UI/UX (TV)**: Rerouted system snackbars to the high-visibility `PlaybackMessages` overlay in the top-right to prevent overscan issues.

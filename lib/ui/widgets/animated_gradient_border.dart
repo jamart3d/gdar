@@ -16,6 +16,7 @@ class AnimatedGradientBorder extends StatefulWidget {
   final double animationSpeed;
   final bool ignoreGlobalClock;
   final bool enabled;
+  final bool usePadding;
 
   const AnimatedGradientBorder({
     super.key,
@@ -30,6 +31,7 @@ class AnimatedGradientBorder extends StatefulWidget {
     this.animationSpeed = 1.0,
     this.ignoreGlobalClock = false,
     this.enabled = true,
+    this.usePadding = true,
   });
 
   @override
@@ -123,6 +125,7 @@ class _AnimatedGradientBorderState extends State<AnimatedGradientBorder>
     final isWebPlayback = kIsWeb && isPlaying;
 
     if (!widget.showGlow) {
+      if (!widget.usePadding) return widget.child;
       return Container(
         decoration: BoxDecoration(
           color: widget.backgroundColor ?? Theme.of(context).cardColor,
@@ -173,17 +176,20 @@ class _AnimatedGradientBorderState extends State<AnimatedGradientBorder>
                 : (isWebPlayback ? false : widget.showShadow),
             glowOpacity: isWebPlayback ? 0.2 : widget.glowOpacity,
           ),
-          child: Padding(
-            padding: EdgeInsets.all(widget.borderWidth),
-            child: Container(
-              decoration: BoxDecoration(
-                color: widget.backgroundColor ?? Theme.of(context).cardColor,
-                borderRadius: BorderRadius.circular(
-                    widget.borderRadius - widget.borderWidth),
-              ),
-              child: widget.child,
-            ),
-          ),
+          child: widget.usePadding
+              ? Padding(
+                  padding: EdgeInsets.all(widget.borderWidth),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color:
+                          widget.backgroundColor ?? Theme.of(context).cardColor,
+                      borderRadius: BorderRadius.circular(
+                          widget.borderRadius - widget.borderWidth),
+                    ),
+                    child: widget.child,
+                  ),
+                )
+              : widget.child,
         );
       },
     );

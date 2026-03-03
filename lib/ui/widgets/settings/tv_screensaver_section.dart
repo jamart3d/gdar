@@ -195,9 +195,59 @@ class TvScreensaverSection extends StatelessWidget {
 
           const SizedBox(height: 16),
 
-          // Trail effect controls hidden until effect is tuned
-          // TvStepperRow(Trail Intensity), TvStepperRow(Trail Slices),
-          // TvStepperRow(Trail Length) — restore when ready
+          TvStepperRow(
+            label: 'Trail Intensity',
+            value: settings.oilLogoTrailIntensity,
+            min: 0.0,
+            max: 1.0,
+            step: 0.05,
+            leftLabel: 'Off',
+            rightLabel: 'Strong',
+            valueFormatter: (v) => '${(v * 100).round()}%',
+            onChanged: (v) => settings.setOilLogoTrailIntensity(v),
+          ),
+
+          const SizedBox(height: 16),
+
+          TvStepperRow(
+            label: 'Trail Slices',
+            value: settings.oilLogoTrailSlices.toDouble(),
+            min: 2,
+            max: 16,
+            step: 1,
+            leftLabel: 'Slight',
+            rightLabel: 'Liquid',
+            valueFormatter: (v) => v.round().toString(),
+            onChanged: (v) => settings.setOilLogoTrailSlices(v.round()),
+          ),
+
+          const SizedBox(height: 16),
+
+          TvStepperRow(
+            label: 'Trail Spread',
+            value: settings.oilLogoTrailLength,
+            min: 0.0,
+            max: 1.0,
+            step: 0.05,
+            leftLabel: 'Tight',
+            rightLabel: 'Long',
+            valueFormatter: (v) => '${(v * 100).round()}%',
+            onChanged: (v) => settings.setOilLogoTrailLength(v),
+          ),
+
+          const SizedBox(height: 16),
+
+          TvStepperRow(
+            label: 'Trail Scale',
+            value: settings.oilLogoTrailScale,
+            min: 0.0,
+            max: 0.5,
+            step: 0.05,
+            leftLabel: '1:1',
+            rightLabel: 'Taper',
+            valueFormatter: (v) => v == 0.0 ? 'None' : '-${(v * 100).round()}%',
+            onChanged: (v) => settings.setOilLogoTrailScale(v),
+          ),
 
           TvStepperRow(
             label: 'Logo Blur',
@@ -429,7 +479,7 @@ class TvScreensaverSection extends StatelessWidget {
               ),
               const SizedBox(height: 16),
               TvStepperRow(
-                label: 'Letter Spacing',
+                label: 'Letter Spacing (General)',
                 value: settings.oilBannerLetterSpacing,
                 min: 0.5,
                 max: 1.5,
@@ -441,7 +491,7 @@ class TvScreensaverSection extends StatelessWidget {
               ),
               const SizedBox(height: 16),
               TvStepperRow(
-                label: 'Word Spacing',
+                label: 'Word Spacing (General)',
                 value: settings.oilBannerWordSpacing,
                 min: 0.0,
                 max: 2.0,
@@ -450,6 +500,30 @@ class TvScreensaverSection extends StatelessWidget {
                 rightLabel: 'Spaced',
                 valueFormatter: (v) => v.toStringAsFixed(2),
                 onChanged: (v) => settings.setOilBannerWordSpacing(v),
+              ),
+              const SizedBox(height: 16),
+              TvStepperRow(
+                label: 'Track Letter Spacing',
+                value: settings.oilTrackLetterSpacing,
+                min: 0.5,
+                max: 1.5,
+                step: 0.01,
+                leftLabel: 'Tight',
+                rightLabel: 'Spaced',
+                valueFormatter: (v) => v.toStringAsFixed(2),
+                onChanged: (v) => settings.setOilTrackLetterSpacing(v),
+              ),
+              const SizedBox(height: 16),
+              TvStepperRow(
+                label: 'Track Word Spacing',
+                value: settings.oilTrackWordSpacing,
+                min: 0.0,
+                max: 2.0,
+                step: 0.05,
+                leftLabel: 'Tight',
+                rightLabel: 'Spaced',
+                valueFormatter: (v) => v.toStringAsFixed(2),
+                onChanged: (v) => settings.setOilTrackWordSpacing(v),
               ),
               const SizedBox(height: 16),
               TvStepperRow(
@@ -715,11 +789,46 @@ class TvScreensaverSection extends StatelessWidget {
           _SectionHeader(title: 'Performance', colorScheme: colorScheme),
           const SizedBox(height: 8),
 
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Rendering Quality',
+                  style: textTheme.bodySmall
+                      ?.copyWith(color: colorScheme.onSurfaceVariant),
+                ),
+                const SizedBox(height: 8),
+                _QualitySegmentedButton(
+                  selectedLevel: settings.oilPerformanceLevel,
+                  onSelect: (level) => settings.setOilPerformanceLevel(level),
+                  colorScheme: colorScheme,
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  settings.oilPerformanceLevel == 0
+                      ? 'High (Spectral chromatic aberration + ghost blur)'
+                      : settings.oilPerformanceLevel == 1
+                          ? 'Balanced (Standard box blur, smooth movement)'
+                          : 'Fast (Sharp edges, 1-sample minimal GPU load)',
+                  style: textTheme.bodySmall?.copyWith(
+                    color: colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
+                    fontSize: 10,
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 8),
+
           _ToggleRow(
-            label: 'Performance Mode',
-            subtitle: 'Reduce shader complexity for smoother playback on TV',
-            value: settings.oilPerformanceMode,
-            onChanged: (_) => settings.toggleOilPerformanceMode(),
+            label: 'Logo Anti-Aliasing',
+            subtitle:
+                'Smooth the logo edge using sub-pixel precision. May impact performance.',
+            value: settings.oilLogoAntiAlias,
+            onChanged: (_) => settings.toggleOilLogoAntiAlias(),
             colorScheme: colorScheme,
             textTheme: textTheme,
           ),
@@ -868,6 +977,71 @@ class _AnimatedPaletteSegmentState extends State<_AnimatedPaletteSegment>
 }
 
 // ── Shared helpers ─────────────────────────────────────────────────────────
+
+class _QualitySegmentedButton extends StatelessWidget {
+  final int selectedLevel; // 0=High, 1=Balanced, 2=Fast
+  final ValueChanged<int> onSelect;
+  final ColorScheme colorScheme;
+
+  const _QualitySegmentedButton({
+    required this.selectedLevel,
+    required this.onSelect,
+    required this.colorScheme,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        _buildSegment('HIGH', 0, isFirst: true),
+        _buildSegment('BALANCED', 1),
+        _buildSegment('FAST', 2, isLast: true),
+      ],
+    );
+  }
+
+  Widget _buildSegment(String label, int level,
+      {bool isFirst = false, bool isLast = false}) {
+    final isSelected = selectedLevel == level;
+    return Expanded(
+      child: TvFocusWrapper(
+        onTap: () => onSelect(level),
+        borderRadius: BorderRadius.horizontal(
+          left: isFirst ? const Radius.circular(8) : Radius.zero,
+          right: isLast ? const Radius.circular(8) : Radius.zero,
+        ),
+        child: Container(
+          height: 36,
+          decoration: BoxDecoration(
+            color: isSelected
+                ? colorScheme.primary
+                : colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+            borderRadius: BorderRadius.horizontal(
+              left: isFirst ? const Radius.circular(8) : Radius.zero,
+              right: isLast ? const Radius.circular(8) : Radius.zero,
+            ),
+            border: Border.all(
+              color: isSelected
+                  ? colorScheme.primary
+                  : colorScheme.outline.withValues(alpha: 0.1),
+              width: 1,
+            ),
+          ),
+          alignment: Alignment.center,
+          child: Text(
+            label,
+            style: TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.bold,
+              color: isSelected ? colorScheme.onPrimary : colorScheme.onSurface,
+              letterSpacing: 1.1,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
 
 class _SectionHeader extends StatelessWidget {
   final String title;

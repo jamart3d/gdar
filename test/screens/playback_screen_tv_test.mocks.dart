@@ -148,6 +148,12 @@ class MockAudioProvider extends _i1.Mock implements _i4.AudioProvider {
           ) as _i5.Stream<({String message, _i8.VoidCallback? retryAction})>);
 
   @override
+  _i5.Stream<String> get notificationStream => (super.noSuchMethod(
+        Invocation.getter(#notificationStream),
+        returnValue: _i5.Stream<String>.empty(),
+      ) as _i5.Stream<String>);
+
+  @override
   int get cachedTrackCount => (super.noSuchMethod(
         Invocation.getter(#cachedTrackCount),
         returnValue: 0,
@@ -275,6 +281,15 @@ class MockAudioProvider extends _i1.Mock implements _i4.AudioProvider {
         returnValue: _i5.Future<void>.value(),
         returnValueForMissingStub: _i5.Future<void>.value(),
       ) as _i5.Future<void>);
+
+  @override
+  void showNotification(String? message) => super.noSuchMethod(
+        Invocation.method(
+          #showNotification,
+          [message],
+        ),
+        returnValueForMissingStub: null,
+      );
 
   @override
   void clearError() => super.noSuchMethod(

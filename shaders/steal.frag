@@ -17,6 +17,8 @@ uniform float uHeatDrift;
 uniform float uLogoScale;
 uniform float uBlurAmount;   // 0.0 = sharp, 1.0 = soft box blur
 uniform float uFlatColor;    // 0.0 = animated cycling, 1.0 = static palette color
+uniform float uAntiAlias;    // 0.0 = off, 1.0 = fwidth smoothstep AA on logo edge
+uniform float uPerformanceLevel; // 0=High (36 spm), 1=Balanced (9 spm), 2=Fast (1 spm)
 
 // Smoothed logo position (0–1 UV space) — computed & lerped in Dart, passed in.
 // This replaces the old internal sin/cos computation so the shader and banner
@@ -122,12 +124,33 @@ void main() {
     float shift = 0.02 * (0.5 + eover * 2.0) * pulse;
     float blurRadius = clamp(uBlurAmount, 0.0, 1.0) * 0.018;
 
-    float r = sampleBlurred(uTexture, texUV + vec2(shift, 0.0), blurRadius).r;
-    float g = sampleBlurred(uTexture, texUV,                    blurRadius).g;
-    float b = sampleBlurred(uTexture, texUV - vec2(shift, 0.0), blurRadius).b;
-    float a = sampleBlurred(uTexture, texUV,                    blurRadius).a;
+    vec4 texColor;
 
-    vec4 texColor = vec4(r, g, b, a);
+    if (uPerformanceLevel > 1.5) {
+        // Fast: 1 sample
+        texColor = texture(uTexture, texUV);
+    } else if (uPerformanceLevel > 0.5) {
+        // Balanced: 9 samples
+        texColor = sampleBlurred(uTexture, texUV, blurRadius);
+    } else {
+        // High: 36 samples (Chromatic Aberration + Blur)
+        float r = sampleBlurred(uTexture, texUV + vec2(shift, 0.0), blurRadius).r;
+        float g = sampleBlurred(uTexture, texUV,                    blurRadius).g;
+        float b = sampleBlurred(uTexture, texUV - vec2(shift, 0.0), blurRadius).b;
+        float a = sampleBlurred(uTexture, texUV,                    blurRadius).a;
+        texColor = vec4(r, g, b, a);
+    }
+
+    // Anti-alias: smooth the logo edge using fwidth for sub-pixel crisp edges.
+    // Only active when uAntiAlias > 0.5. Uses the raw center alpha (not blurred)
+    // so the edge is always crisp regardless of the blur setting.
+    if (uAntiAlias > 0.5) {
+        float rawA = texture(uTexture, texUV).a;
+        float fw = fwidth(rawA);
+        float smoothA = smoothstep(0.5 - fw, 0.5 + fw, rawA);
+        texColor.a = smoothA;
+    }
+
     texColor.rgb += vec3(etreble) * 0.3 * pulse;
 
     vec3 cycleColor;

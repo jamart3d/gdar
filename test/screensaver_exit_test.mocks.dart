@@ -341,6 +341,13 @@ class MockSettingsProvider extends _i1.Mock implements _i3.SettingsProvider {
       ) as bool);
 
   @override
+  bool get forceTv => (super.noSuchMethod(
+        Invocation.getter(#forceTv),
+        returnValue: false,
+        returnValueForMissingStub: false,
+      ) as bool);
+
+  @override
   _i2.AudioEngineMode get audioEngineMode => (super.noSuchMethod(
         Invocation.getter(#audioEngineMode),
         returnValue: _i2.AudioEngineMode.auto,
@@ -471,11 +478,11 @@ class MockSettingsProvider extends _i1.Mock implements _i3.SettingsProvider {
       ) as bool);
 
   @override
-  bool get oilPerformanceMode => (super.noSuchMethod(
-        Invocation.getter(#oilPerformanceMode),
-        returnValue: false,
-        returnValueForMissingStub: false,
-      ) as bool);
+  int get oilPerformanceLevel => (super.noSuchMethod(
+        Invocation.getter(#oilPerformanceLevel),
+        returnValue: 0,
+        returnValueForMissingStub: 0,
+      ) as int);
 
   @override
   bool get oilPaletteCycle => (super.noSuchMethod(
@@ -682,6 +689,13 @@ class MockSettingsProvider extends _i1.Mock implements _i3.SettingsProvider {
         returnValue: 0.0,
         returnValueForMissingStub: 0.0,
       ) as double);
+
+  @override
+  bool get oilLogoAntiAlias => (super.noSuchMethod(
+        Invocation.getter(#oilLogoAntiAlias),
+        returnValue: false,
+        returnValueForMissingStub: false,
+      ) as bool);
 
   @override
   double get oilInnerRingScale => (super.noSuchMethod(
@@ -1156,6 +1170,24 @@ class MockSettingsProvider extends _i1.Mock implements _i3.SettingsProvider {
       );
 
   @override
+  void toggleForceTv() => super.noSuchMethod(
+        Invocation.method(
+          #toggleForceTv,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void setForceTv(bool? value) => super.noSuchMethod(
+        Invocation.method(
+          #setForceTv,
+          [value],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
   void setNeumorphicStyle(
     _i5.NeumorphicStyle? value, {
     bool? notify,
@@ -1321,9 +1353,18 @@ class MockSettingsProvider extends _i1.Mock implements _i3.SettingsProvider {
       );
 
   @override
-  void toggleOilPerformanceMode() => super.noSuchMethod(
+  void setOilPerformanceLevel(int? level) => super.noSuchMethod(
         Invocation.method(
-          #toggleOilPerformanceMode,
+          #setOilPerformanceLevel,
+          [level],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void toggleOilLogoAntiAlias() => super.noSuchMethod(
+        Invocation.method(
+          #toggleOilLogoAntiAlias,
           [],
         ),
         returnValueForMissingStub: null,
@@ -1847,6 +1888,13 @@ class MockAudioProvider extends _i1.Mock implements _i8.AudioProvider {
           ) as _i6.Stream<({String message, _i7.VoidCallback? retryAction})>);
 
   @override
+  _i6.Stream<String> get notificationStream => (super.noSuchMethod(
+        Invocation.getter(#notificationStream),
+        returnValue: _i6.Stream<String>.empty(),
+        returnValueForMissingStub: _i6.Stream<String>.empty(),
+      ) as _i6.Stream<String>);
+
+  @override
   int get cachedTrackCount => (super.noSuchMethod(
         Invocation.getter(#cachedTrackCount),
         returnValue: 0,
@@ -1981,6 +2029,15 @@ class MockAudioProvider extends _i1.Mock implements _i8.AudioProvider {
         returnValue: _i6.Future<void>.value(),
         returnValueForMissingStub: _i6.Future<void>.value(),
       ) as _i6.Future<void>);
+
+  @override
+  void showNotification(String? message) => super.noSuchMethod(
+        Invocation.method(
+          #showNotification,
+          [message],
+        ),
+        returnValueForMissingStub: null,
+      );
 
   @override
   void clearError() => super.noSuchMethod(
