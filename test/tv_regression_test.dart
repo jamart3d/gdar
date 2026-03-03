@@ -376,6 +376,8 @@ class FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
   @override
   double get oilLogoTrailLength => 0.5;
   @override
+  double get oilLogoTrailScale => 1.0;
+  @override
   Map<String, bool> get sourceCategoryFilters => {};
 
   @override
@@ -583,6 +585,8 @@ class FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
   Future<void> setOilLogoTrailSlices(int value) async {}
   @override
   Future<void> setOilLogoTrailLength(double value) async {}
+  @override
+  Future<void> setOilLogoTrailScale(double value) async {}
 
   @override
   String get oilBannerFont => 'Roboto';
@@ -737,7 +741,8 @@ void main() {
         ChangeNotifierProvider<ShowListProvider>.value(
             value: mockShowListProvider),
         ChangeNotifierProvider<UpdateProvider>(create: (_) => UpdateProvider()),
-        ChangeNotifierProvider<ThemeProvider>(create: (_) => ThemeProvider()),
+        ChangeNotifierProvider<ThemeProvider>(
+            create: (_) => ThemeProvider(isTv: true)),
       ],
       child: MaterialApp(
         home: child,

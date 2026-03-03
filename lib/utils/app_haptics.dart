@@ -1,37 +1,77 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
-import 'package:shakedown/services/device_service.dart';
+import '../services/device_service.dart';
+import 'web_haptics_stub.dart' if (dart.library.js_interop) 'web_haptics.dart';
 
 /// Centralized utility for haptic feedback.
 /// Strictly respects the TV Platform Specification by gating all haptics
 /// behind a TV check to ensure zero vibrations on TV devices.
 class AppHaptics {
+  /// Internal helper to skip haptics on genuine TV platforms.
+  /// Allows haptics on PWAs even if [force_tv] is active, as they remain touch devices.
+  static bool _shouldSkip(DeviceService deviceService) {
+    // If it's a PWA, we allow haptics even if isTv is true (forced for layout testing).
+    if (kIsWeb && deviceService.isPwa) return false;
+    return deviceService.isTv;
+  }
+
   /// Triggers a selection click haptic.
   static Future<void> selectionClick(DeviceService deviceService) async {
-    if (deviceService.isTv) return;
-    await HapticFeedback.selectionClick();
+    if (_shouldSkip(deviceService)) return;
+
+    if (kIsWeb) {
+      _vibrateWeb(10); // Subtle tick
+    } else {
+      await HapticFeedback.selectionClick();
+    }
   }
 
   /// Triggers a light impact haptic.
   static Future<void> lightImpact(DeviceService deviceService) async {
-    if (deviceService.isTv) return;
-    await HapticFeedback.lightImpact();
+    if (_shouldSkip(deviceService)) return;
+
+    if (kIsWeb) {
+      _vibrateWeb(15);
+    } else {
+      await HapticFeedback.lightImpact();
+    }
   }
 
   /// Triggers a medium impact haptic.
   static Future<void> mediumImpact(DeviceService deviceService) async {
-    if (deviceService.isTv) return;
-    await HapticFeedback.mediumImpact();
+    if (_shouldSkip(deviceService)) return;
+
+    if (kIsWeb) {
+      _vibrateWeb(30);
+    } else {
+      await HapticFeedback.mediumImpact();
+    }
   }
 
   /// Triggers a heavy impact haptic.
   static Future<void> heavyImpact(DeviceService deviceService) async {
-    if (deviceService.isTv) return;
-    await HapticFeedback.heavyImpact();
+    if (_shouldSkip(deviceService)) return;
+
+    if (kIsWeb) {
+      _vibrateWeb(50);
+    } else {
+      await HapticFeedback.heavyImpact();
+    }
   }
 
   /// Triggers a vibrate haptic.
   static Future<void> vibrate(DeviceService deviceService) async {
-    if (deviceService.isTv) return;
-    await HapticFeedback.vibrate();
+    if (_shouldSkip(deviceService)) return;
+
+    if (kIsWeb) {
+      _vibrateWeb(100);
+    } else {
+      await HapticFeedback.vibrate();
+    }
+  }
+
+  /// Directly calls the Web Vibration API for more robust feedback on Mobile Web.
+  static void _vibrateWeb(int durationMs) {
+    vibrateWeb(durationMs);
   }
 }

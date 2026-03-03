@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:math';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -23,6 +24,13 @@ class ThemeProvider with ChangeNotifier {
   int _fruitColorOptionIndex;
   final bool isTv;
 
+  /// Whether the Fruit theme is allowed on this platform/configuration.
+  /// Strictly follows the "Walled Architecture" policy:
+  /// - Web/PWA: Allowed (Exclusive Domain).
+  /// - Native (Any): Forbidden.
+  /// - TV: Forbidden.
+  bool get isFruitAllowed => kIsWeb && !isTv;
+
   ThemeMode get currentThemeMode {
     switch (_themeModeIndex) {
       case 1:
@@ -35,8 +43,10 @@ class ThemeProvider with ChangeNotifier {
     }
   }
 
-  ThemeStyle get themeStyle =>
-      _themeStyleIndex == 1 ? ThemeStyle.fruit : ThemeStyle.android;
+  ThemeStyle get themeStyle {
+    if (!isFruitAllowed) return ThemeStyle.android;
+    return _themeStyleIndex == 1 ? ThemeStyle.fruit : ThemeStyle.android;
+  }
 
   FruitColorOption get fruitColorOption =>
       FruitColorOption.values[_fruitColorOptionIndex];
@@ -44,16 +54,7 @@ class ThemeProvider with ChangeNotifier {
   // Convenience getter for the SegmentedButton
   ThemeMode get selectedThemeMode => currentThemeMode;
 
-  // We still need a way to know if we are CURRENTLY resolving as dark mode
-  // for the rest of the app (like SystemUiOverlayStyle).
-  // We'll expose a getter that checks the brightness if it's system.
-  // HOWEVER, we don't have BuildContext here. So we should only use
-  // this for places that *must* know without context, or we refactor them.
-  // For now, let's keep a simplified `isDarkMode` that assumes Dark if System & TV,
-  // but true dynamic resolution requires BuildContext.
-
   // A helper that returns the *intended* dark mode status if strictly light/dark.
-  // We'll rename this or adapt where it's used.
   bool get isDarkMode {
     if (_themeModeIndex == 2) return true;
     if (_themeModeIndex == 1) return false;
@@ -62,7 +63,7 @@ class ThemeProvider with ChangeNotifier {
 
   ThemeProvider({this.isTv = false})
       : _themeModeIndex = isTv ? 2 : 0,
-        _themeStyleIndex = isTv ? 0 : 1, // TV = Android style, Others = Fruit
+        _themeStyleIndex = (kIsWeb && !isTv) ? 1 : 0, // Default to Fruit on Web
         _fruitColorOptionIndex = 0 {
     unawaited(_loadThemePreference());
   }
@@ -81,8 +82,8 @@ class ThemeProvider with ChangeNotifier {
   }
 
   void setThemeStyle(ThemeStyle style) {
-    // Audit check: Don't allow Fruit theme on TV even if requested.
-    if (isTv && style == ThemeStyle.fruit) return;
+    // Audit check: Don't allow Fruit theme where forbidden by spec.
+    if (!isFruitAllowed && style == ThemeStyle.fruit) return;
 
     bool wasFruit = themeStyle == ThemeStyle.fruit;
     _themeStyleIndex = style == ThemeStyle.fruit ? 1 : 0;
@@ -102,7 +103,7 @@ class ThemeProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  // Backwards compatibility for the old toggle switch just in case it's used elsewhere
+  // Backwards compatibility for the old toggle switch
   void toggleTheme() {
     setThemeMode(isDarkMode ? ThemeMode.light : ThemeMode.dark);
   }
@@ -121,15 +122,15 @@ class ThemeProvider with ChangeNotifier {
     _themeModeIndex = prefs.getInt(_themeModeKey) ?? (isTv ? 2 : 0);
 
     if (!prefs.containsKey(_webFruitThemeInitKey)) {
-      _themeStyleIndex =
-          isTv ? 0 : 1; // Fruit by default for all first-time non-TV users
+      _themeStyleIndex = isFruitAllowed ? 1 : 0;
       await prefs.setBool(_webFruitThemeInitKey, true);
       await prefs.setInt(_themeStyleKey, _themeStyleIndex);
     } else {
-      _themeStyleIndex = prefs.getInt(_themeStyleKey) ?? (isTv ? 0 : 1);
+      _themeStyleIndex =
+          prefs.getInt(_themeStyleKey) ?? (isFruitAllowed ? 1 : 0);
 
-      // Safety check for existing preferences: Force TV back to Android if it drifted
-      if (isTv && _themeStyleIndex == 1) {
+      // Safety check for existing preferences: Force back to Android if it drifted
+      if (!isFruitAllowed && _themeStyleIndex == 1) {
         _themeStyleIndex = 0;
       }
     }

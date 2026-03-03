@@ -1,3 +1,10 @@
+Release 1.1.43+143:
+- **UI/UX (Web/PWA)**: Implemented direct support for the Web Vibration API (`navigator.vibrate`), delivering more reliable haptic feedback across all mobile browsers and PWA installations.
+- **UI/UX (Architecture)**: Enforced "Walled Architecture" for the Fruit theme—strictly restricted to Web/PWA platforms. Native Mobile (Phone/Tablet) and TV now force the Android/Material 3 theme for platform consistency.
+- **UI/UX (Settings)**: Intelligently hid the theme "Style" selection on native platforms to prevent out-of-spec configuration.
+- **UI/UX (TV)**: Refined TV platform gate to allow haptic testing in PWA "Force TV UI" mode while strictly adhering to TV hardware specifications.
+- **Fixed**: Resolved compilation and runtime failures in `tv_regression_test.dart` and `onboarding_screen_test.dart` following theme architecture updates.
+
 Release 1.1.42+142:
 - **UI/UX (TV)**: Implemented "Tight Border" RGB styling for TvInteractionModal buttons to eliminate visual gaps.
 - **UI/UX (TV)**: Standardized modal button radii (12.0) to match main track list highlight aesthetics.

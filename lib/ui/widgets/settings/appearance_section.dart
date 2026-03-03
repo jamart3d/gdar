@@ -188,7 +188,7 @@ class _AppearanceSectionState extends State<AppearanceSection> {
                   ],
                 ),
               ),
-        if (!context.watch<DeviceService>().isTv) ...[
+        if (themeProvider.isFruitAllowed) ...[
           Padding(
             padding:
                 const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),

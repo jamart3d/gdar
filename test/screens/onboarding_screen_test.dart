@@ -23,6 +23,9 @@ class MockThemeProvider extends ChangeNotifier implements ThemeProvider {
   bool get isTv => false;
 
   @override
+  bool get isFruitAllowed => true;
+
+  @override
   ThemeMode get currentThemeMode =>
       _isDarkMode ? ThemeMode.dark : ThemeMode.light;
 

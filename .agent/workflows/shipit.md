@@ -1,6 +1,7 @@
 ---
 description: Combined workflow for versioning, building, and deploying the GDAR application.
 ---
+
 # Shipit Workflow
 
 **TRIGGERS:** shipit, release, prod, deploy
@@ -10,7 +11,6 @@ This workflow automates the entire release process from version bumping to git s
 ## 1. Preparation
 1. Increment the `version` number and build number in `pubspec.yaml`.
 2. Update `docs/RELEASE_NOTES.txt` with the latest changes and bug fixes.
-3. (Optional) Run `flutter clean` to ensure a fresh build if major changes were made.
 
 ## 2. Build Production Bundle
 // turbo
