@@ -43,7 +43,12 @@ Web-specific interactivity ensures a native feel on desktop browsers:
 *   **Mini-Player:** Persistent at the bottom of the screen.
 *   **Expansion:** On desktop, the mini-player may expand into a full-width dashboard or a side-attached control pane.
 
-### 4.2 Rating & Curation
+### 4.2 Show Header mechanics & Overrides
+On the Web UI, the Track List Screen's show header provides rapid playback interaction:
+*   **Single Click (Empty Player):** If no audio is loaded globally, simply clicking the show header immediately begins playback.
+*   **Long Press / Play Icon (Override):** If another show is currently playing, a theme-appropriate Play icon appears in the bottom left of the header. Both a Long Press on the header or a Single Click on the Play icon override the queue, stopping the current stream and playing the new show.
+
+### 4.3 Rating & Curation
 *   **Visual Logic:** Shared with TV but uses `LucideIcons` for Fruit.
 *   **Constraints:** The block (Red Star) is always visible in the show list to allow rapid curation during browsing.
 

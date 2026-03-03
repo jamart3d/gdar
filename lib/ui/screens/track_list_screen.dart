@@ -553,6 +553,109 @@ class _TrackListScreenState extends State<TrackListScreen> {
             isFruit &&
             !settingsProvider.useTrueBlack;
 
+        Future<void> executePlayAndNavigate() async {
+          unawaited(context
+              .read<AudioProvider>()
+              .playSource(widget.show, widget.source));
+
+          try {
+            context.read<AnimationController>().stop();
+          } catch (_) {}
+
+          unawaited(Navigator.of(context).push(
+            PageRouteBuilder(
+              pageBuilder: (context, animation, secondaryAnimation) =>
+                  const PlaybackScreen(),
+              transitionDuration: const Duration(milliseconds: 300),
+              transitionsBuilder:
+                  (context, animation, secondaryAnimation, child) {
+                const begin = Offset(0.0, 1.0);
+                const end = Offset.zero;
+                const curve = Curves.easeInOut;
+                var tween = Tween(begin: begin, end: end)
+                    .chain(CurveTween(curve: curve));
+                return SlideTransition(
+                    position: animation.drive(tween), child: child);
+              },
+            ),
+          ));
+
+          if (context.mounted) {
+            try {
+              final controller = context.read<AnimationController>();
+              unawaited(controller.repeat());
+            } catch (_) {}
+          }
+        }
+
+        Widget cardChild;
+        final ap = context.read<AudioProvider>();
+        final bool isDifferentShowPlaying =
+            ap.currentShow != null && ap.currentShow!.name != widget.show.name;
+
+        Widget content = headerContent;
+        if (isDifferentShowPlaying) {
+          content = Stack(
+            children: [
+              headerContent,
+              Positioned(
+                bottom: 8,
+                left: 8,
+                child: IconButton(
+                  icon: Icon(
+                    isFruit ? LucideIcons.playCircle : Icons.play_circle_fill,
+                    size: 28 * scaleFactor,
+                    color: colorScheme.primary,
+                  ),
+                  tooltip: 'Play Show',
+                  onPressed: () async {
+                    unawaited(AppHaptics.selectionClick(
+                        context.read<DeviceService>()));
+                    if (ap.currentShow != null) {
+                      await ap.stopAndClear();
+                    }
+                    await executePlayAndNavigate();
+                  },
+                ),
+              ),
+            ],
+          );
+        }
+
+        if (kIsWeb) {
+          cardChild = InkWell(
+            onTap: () async {
+              if (ap.currentShow == null) {
+                unawaited(
+                    AppHaptics.selectionClick(context.read<DeviceService>()));
+                await executePlayAndNavigate();
+              }
+            },
+            onLongPress: () async {
+              unawaited(AppHaptics.mediumImpact(context.read<DeviceService>()));
+              if (ap.currentShow != null) {
+                await ap.stopAndClear();
+              }
+              await executePlayAndNavigate();
+            },
+            child: content,
+          );
+        } else {
+          cardChild = isPlaying
+              ? content
+              : InkWell(
+                  onLongPress: () async {
+                    unawaited(
+                        AppHaptics.mediumImpact(context.read<DeviceService>()));
+                    if (ap.currentShow != null) {
+                      await ap.stopAndClear();
+                    }
+                    await executePlayAndNavigate();
+                  },
+                  child: content,
+                );
+        }
+
         final Widget card = Card(
           elevation: 0,
           color: usePremium
@@ -561,47 +664,7 @@ class _TrackListScreenState extends State<TrackListScreen> {
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
           clipBehavior: Clip.antiAlias,
-          child: isPlaying
-              ? headerContent
-              : InkWell(
-                  onLongPress: () async {
-                    unawaited(
-                        AppHaptics.mediumImpact(context.read<DeviceService>()));
-                    unawaited(context
-                        .read<AudioProvider>()
-                        .playSource(widget.show, widget.source));
-
-                    try {
-                      context.read<AnimationController>().stop();
-                    } catch (_) {}
-
-                    unawaited(Navigator.of(context).push(
-                      PageRouteBuilder(
-                        pageBuilder: (context, animation, secondaryAnimation) =>
-                            const PlaybackScreen(),
-                        transitionDuration: const Duration(milliseconds: 300),
-                        transitionsBuilder:
-                            (context, animation, secondaryAnimation, child) {
-                          const begin = Offset(0.0, 1.0);
-                          const end = Offset.zero;
-                          const curve = Curves.easeInOut;
-                          var tween = Tween(begin: begin, end: end)
-                              .chain(CurveTween(curve: curve));
-                          return SlideTransition(
-                              position: animation.drive(tween), child: child);
-                        },
-                      ),
-                    ));
-
-                    if (context.mounted) {
-                      try {
-                        final controller = context.read<AnimationController>();
-                        unawaited(controller.repeat());
-                      } catch (_) {}
-                    }
-                  },
-                  child: headerContent,
-                ),
+          child: cardChild,
         );
 
         if (usePremium) {

@@ -106,16 +106,16 @@ Access settings via the gear icon in the top app bar.
 
 ## Project Structure
 
-The project's Dart code is located in the `lib` directory and is organized as follows:
+The project's code and documentation are organized as follows:
 
-- **`models/`**: Defines the data structures for shows, sources, tracks, and ratings.
-- **`providers/`**: Manages the application's state (e.g., audio playback, show lists, settings).
-- **`services/`**: Core data services, including the **Hybrid Catalog Service** (JSON parsing + Hive storage).
-- **`ui/`**: Contains the user interface code, separated into:
-  - **`screens/`**: The main screens of the application (e.g., show list, playback).
-  - **`widgets/`**: Reusable UI components used across different screens.
-- **`utils/`**: Includes utility functions, theme definitions, and other shared resources.
-- **`main.dart`**: The entry point of the application.
+- **`lib/`**: Contains the core Dart application code.
+  - **`models/`**: Defines the data structures for shows, sources, tracks, and ratings.
+  - **`providers/`**: Manages the application's state (e.g., audio playback, show lists, settings).
+  - **`services/`**: Core data services, including the **Hybrid Catalog Service** (JSON parsing + Hive storage).
+  - **`ui/`**: Contains the user interface code, separated into `screens/` and `widgets/`.
+  - **`utils/`**: Includes utility functions, theme definitions, and other shared resources.
+- **`.agent/specs/`**: Contains detailed architectural and design specifications. **Note:** UI specifications are organized by feature (e.g., Player, Browse Flow) rather than platform to maintain consistency across Web, Phone, and TV. The "Fruit" theme overrides (`fruit_theme_spec.md`) serve as the single source of truth for Liquid Glass styling.
+- **`todo.md`**: Centralized task tracking for upcoming refactors and spec consolidations.
 
 ## Technical Architecture
 

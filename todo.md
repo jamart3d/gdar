@@ -46,3 +46,10 @@
     - [x] Verify centering on Android and Web (PWA).
 - [x] **Settings: Prefetch**: Hardcode `prefetchSeconds` to 30s and hide from UI.
 - [x] **UI: Segmented Buttons**: Ensure Web Audio Engine labels scale without wrapping.
+
+## Spec & Documentation Consolidation
+- [ ] **Merge Platform Specs into Feature Specs**: Consolidate `web_ui_design_spec.md` and `phone_ui_design_spec.md` into unified, cross-platform feature specifications.
+    - [ ] Create `spec_browse_flow.md` (Handles routing, layout, and logic for Years, Shows, and Tracks lists).
+    - [ ] Create `spec_music_player.md` (Handles sliding panel, playback controls, animations, and audio service integration).
+    - [ ] Create `spec_settings.md` (Handles configuration options and theme toggles).
+- [ ] **Centralize Theme Logic**: Update documentation to explicitly state that `kIsWeb` applies the "Fruit" theme (Liquid Glass, BackdropFilters), referencing `fruit_theme_spec.md` as the styling source of truth.
