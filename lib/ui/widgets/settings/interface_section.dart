@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:shakedown/providers/settings_provider.dart';
+import 'package:shakedown/services/device_service.dart';
+import 'package:shakedown/utils/app_haptics.dart';
 import 'package:shakedown/ui/widgets/section_card.dart';
 import 'package:shakedown/ui/widgets/tv/tv_switch_list_tile.dart';
 import 'package:shakedown/providers/theme_provider.dart';
@@ -53,7 +54,7 @@ class InterfaceSection extends StatelessWidget {
                       ?.copyWith(fontSize: 12 * scaleFactor))),
           value: settingsProvider.uiScale,
           onChanged: (value) {
-            HapticFeedback.lightImpact();
+            AppHaptics.lightImpact(context.read<DeviceService>());
             context.read<SettingsProvider>().toggleUiScale();
           },
           secondary:
@@ -80,7 +81,7 @@ class InterfaceSection extends StatelessWidget {
                       ?.copyWith(fontSize: 12 * scaleFactor))),
           value: settingsProvider.showSplashScreen,
           onChanged: (value) {
-            HapticFeedback.lightImpact();
+            AppHaptics.lightImpact(context.read<DeviceService>());
             context.read<SettingsProvider>().toggleShowSplashScreen();
           },
           secondary:
@@ -113,7 +114,7 @@ class InterfaceSection extends StatelessWidget {
                       ?.copyWith(fontSize: 12 * scaleFactor))),
           value: settingsProvider.dateFirstInShowCard,
           onChanged: (value) {
-            HapticFeedback.lightImpact();
+            AppHaptics.lightImpact(context.read<DeviceService>());
             context.read<SettingsProvider>().toggleDateFirstInShowCard();
           },
           secondary:
@@ -140,7 +141,7 @@ class InterfaceSection extends StatelessWidget {
                       ?.copyWith(fontSize: 12 * scaleFactor))),
           value: settingsProvider.showDayOfWeek,
           onChanged: (value) {
-            HapticFeedback.lightImpact();
+            AppHaptics.lightImpact(context.read<DeviceService>());
             context.read<SettingsProvider>().toggleShowDayOfWeek();
           },
           secondary:
@@ -168,7 +169,7 @@ class InterfaceSection extends StatelessWidget {
                         ?.copyWith(fontSize: 12 * scaleFactor))),
             value: settingsProvider.abbreviateDayOfWeek,
             onChanged: (value) {
-              HapticFeedback.lightImpact();
+              AppHaptics.lightImpact(context.read<DeviceService>());
               context.read<SettingsProvider>().toggleAbbreviateDayOfWeek();
             },
             secondary:
@@ -195,7 +196,7 @@ class InterfaceSection extends StatelessWidget {
                       ?.copyWith(fontSize: 12 * scaleFactor))),
           value: settingsProvider.abbreviateMonth,
           onChanged: (value) {
-            HapticFeedback.lightImpact();
+            AppHaptics.lightImpact(context.read<DeviceService>());
             context.read<SettingsProvider>().toggleAbbreviateMonth();
           },
           secondary: Icon(isFruit
@@ -228,7 +229,7 @@ class InterfaceSection extends StatelessWidget {
                       ?.copyWith(fontSize: 12 * scaleFactor))),
           value: settingsProvider.sortOldestFirst,
           onChanged: (value) {
-            HapticFeedback.lightImpact();
+            AppHaptics.lightImpact(context.read<DeviceService>());
             context.read<SettingsProvider>().toggleSortOldestFirst();
           },
           secondary: Icon(isFruit ? LucideIcons.list : Icons.sort_rounded),
@@ -254,7 +255,7 @@ class InterfaceSection extends StatelessWidget {
                       ?.copyWith(fontSize: 12 * scaleFactor))),
           value: settingsProvider.showSingleShnid,
           onChanged: (value) {
-            HapticFeedback.lightImpact();
+            AppHaptics.lightImpact(context.read<DeviceService>());
             context.read<SettingsProvider>().toggleShowSingleShnid();
           },
           secondary: Icon(isFruit ? LucideIcons.hash : Icons.looks_one_rounded),
@@ -285,7 +286,7 @@ class InterfaceSection extends StatelessWidget {
                       ?.copyWith(fontSize: 12 * scaleFactor))),
           value: settingsProvider.showTrackNumbers,
           onChanged: (value) {
-            HapticFeedback.lightImpact();
+            AppHaptics.lightImpact(context.read<DeviceService>());
             context.read<SettingsProvider>().toggleShowTrackNumbers();
           },
           secondary:
@@ -312,7 +313,7 @@ class InterfaceSection extends StatelessWidget {
                       ?.copyWith(fontSize: 12 * scaleFactor))),
           value: settingsProvider.hideTrackDuration,
           onChanged: (value) {
-            HapticFeedback.lightImpact();
+            AppHaptics.lightImpact(context.read<DeviceService>());
             context.read<SettingsProvider>().toggleHideTrackDuration();
           },
           secondary:
@@ -338,7 +339,7 @@ class InterfaceSection extends StatelessWidget {
                   ?.copyWith(fontSize: 12 * scaleFactor)),
           value: settingsProvider.enableSwipeToBlock,
           onChanged: (value) {
-            HapticFeedback.lightImpact();
+            AppHaptics.lightImpact(context.read<DeviceService>());
             context.read<SettingsProvider>().toggleEnableSwipeToBlock();
           },
           secondary:

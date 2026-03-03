@@ -1,9 +1,10 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:shakedown/providers/settings_provider.dart';
 import 'package:shakedown/utils/font_layout_config.dart';
+import 'package:shakedown/utils/app_haptics.dart';
+import 'package:shakedown/services/device_service.dart';
 import 'package:shakedown/utils/logger.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
@@ -72,7 +73,7 @@ class _AnimatedDiceIconState extends State<AnimatedDiceIcon>
           _hapticsEnabledForCurrentRoll) {
         // Landing "Thud" haptic
         logger.t('AnimatedDiceIcon: Landing Haptic (status=completed)');
-        HapticFeedback.mediumImpact();
+        AppHaptics.mediumImpact(context.read<DeviceService>());
       }
     });
 
@@ -143,7 +144,7 @@ class _AnimatedDiceIconState extends State<AnimatedDiceIcon>
       if (_hapticsEnabledForCurrentRoll) {
         logger.t(
             'AnimatedDiceIcon: Face Change Haptic -> $face (t: ${t.toStringAsFixed(2)})');
-        HapticFeedback.lightImpact();
+        AppHaptics.lightImpact(context.read<DeviceService>());
       }
       _lastHapticFace = face;
     }

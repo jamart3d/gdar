@@ -578,8 +578,7 @@ class SettingsProvider with ChangeNotifier {
         DefaultSettings.omitHttpPathInCopy;
     _showDebugLayout = _prefs.getBool(_showDebugLayoutKey) ?? false;
     _enableShakedownTween = _prefs.getBool(_enableShakedownTweenKey) ?? true;
-    _useNeumorphism = _prefs.getBool(_useNeumorphismKey) ??
-        ((kIsWeb && !isTv) ? true : DefaultSettings.useNeumorphism);
+    _useNeumorphism = _prefs.getBool(_useNeumorphismKey) ?? true;
     _neumorphicStyle = NeumorphicStyle.values[
         _prefs.getInt(_neumorphicStyleKey) ??
             DefaultSettings.neumorphicStyle.index];

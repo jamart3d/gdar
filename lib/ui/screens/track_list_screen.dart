@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/services.dart';
 import 'package:shakedown/utils/app_date_utils.dart';
+import 'package:shakedown/utils/app_haptics.dart';
 import 'package:shakedown/models/show.dart';
 import 'package:shakedown/models/source.dart';
 import 'package:shakedown/models/track.dart';
@@ -52,12 +52,14 @@ class _TrackListScreenState extends State<TrackListScreen> {
 
     // If Play on Tap is disabled, prevent switching sources by tap
     if (!isCurrentSource && !settingsProvider.playOnTap) {
-      unawaited(HapticFeedback.mediumImpact()); // Distinct "blocked" feedback
+      unawaited(AppHaptics.mediumImpact(
+          context.read<DeviceService>())); // Distinct "blocked" feedback
       _showContextualOverlay(itemContext);
       return;
     }
 
-    unawaited(HapticFeedback.selectionClick()); // Success feedback
+    unawaited(AppHaptics.selectionClick(
+        context.read<DeviceService>())); // Success feedback
     audioProvider.playSource(widget.show, source, initialIndex: trackIndex);
   }
 
@@ -563,7 +565,8 @@ class _TrackListScreenState extends State<TrackListScreen> {
               ? headerContent
               : InkWell(
                   onLongPress: () async {
-                    unawaited(HapticFeedback.mediumImpact());
+                    unawaited(
+                        AppHaptics.mediumImpact(context.read<DeviceService>()));
                     unawaited(context
                         .read<AudioProvider>()
                         .playSource(widget.show, widget.source));

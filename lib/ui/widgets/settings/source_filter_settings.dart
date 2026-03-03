@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:shakedown/providers/settings_provider.dart';
 import 'package:shakedown/providers/show_list_provider.dart';
 import 'package:shakedown/services/device_service.dart';
+import 'package:shakedown/utils/app_haptics.dart';
 import 'package:shakedown/ui/widgets/section_card.dart';
 import 'package:shakedown/ui/widgets/tv/tv_focus_wrapper.dart';
 import 'package:shakedown/ui/widgets/tv/tv_switch_list_tile.dart';
@@ -42,6 +42,7 @@ class SourceFilterSettings extends StatelessWidget {
           ),
           value: settingsProvider.filterHighestShnid,
           onChanged: (value) {
+            AppHaptics.lightImpact(context.read<DeviceService>());
             context.read<SettingsProvider>().toggleFilterHighestShnid();
           },
           secondary: const Icon(Icons.filter_list_rounded),
@@ -271,7 +272,7 @@ class _TactileBadgeState extends State<_TactileBadge>
       onTapCancel: _handleTapCancel,
       onLongPress: widget.onLongPress != null
           ? () {
-              HapticFeedback.mediumImpact();
+              AppHaptics.mediumImpact(context.read<DeviceService>());
               widget.onLongPress!();
             }
           : null,

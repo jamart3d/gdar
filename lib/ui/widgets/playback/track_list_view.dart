@@ -14,12 +14,12 @@ import 'package:shakedown/ui/widgets/theme/neumorphic_wrapper.dart';
 import 'package:shakedown/ui/widgets/conditional_marquee.dart';
 import 'package:shakedown/ui/widgets/tv/tv_focus_wrapper.dart';
 import 'package:shakedown/utils/font_layout_config.dart';
+import 'package:shakedown/utils/app_haptics.dart';
 import 'package:shakedown/utils/utils.dart';
 import 'package:shakedown/ui/widgets/tv/tv_reload_dialog.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:shakedown/providers/theme_provider.dart';
 import 'package:lucide_icons/lucide_icons.dart';
-import 'package:flutter/foundation.dart';
 
 class TrackListView extends StatelessWidget {
   final Source source;
@@ -154,8 +154,7 @@ class TrackListView extends StatelessWidget {
             FontLayoutConfig.getEffectiveScale(context, settingsProvider);
 
         final themeProvider = context.watch<ThemeProvider>();
-        final bool isFruit =
-            themeProvider.themeStyle == ThemeStyle.fruit && kIsWeb;
+        final bool isFruit = themeProvider.themeStyle == ThemeStyle.fruit;
 
         Widget trackItem = Container(
           margin: EdgeInsets.symmetric(
@@ -299,7 +298,7 @@ class TrackListView extends StatelessWidget {
                   audioProvider.resume();
                 }
               } else {
-                HapticFeedback.lightImpact();
+                AppHaptics.lightImpact(context.read<DeviceService>());
                 audioProvider.seekToTrack(trackIndex);
               }
             },
@@ -340,7 +339,7 @@ class TrackListView extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
     final themeProvider = context.watch<ThemeProvider>();
-    final bool isFruit = themeProvider.themeStyle == ThemeStyle.fruit && kIsWeb;
+    final bool isFruit = themeProvider.themeStyle == ThemeStyle.fruit;
     final bool isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
     final baseTitleStyle =
@@ -428,7 +427,8 @@ class TrackListView extends StatelessWidget {
                 cursor: SystemMouseCursors.click,
                 child: GestureDetector(
                   onTap: () {
-                    HapticFeedback.lightImpact();
+                    final deviceService = context.read<DeviceService>();
+                    AppHaptics.lightImpact(deviceService);
                     if (playing) {
                       audioProvider.pause();
                     } else {
@@ -499,7 +499,8 @@ class TrackListView extends StatelessWidget {
           ? null
           : () {
               if (!isPlaying) {
-                HapticFeedback.lightImpact();
+                final deviceService = context.read<DeviceService>();
+                AppHaptics.lightImpact(deviceService);
                 audioProvider.seekToTrack(trackIndex);
               }
             },
@@ -582,19 +583,22 @@ class TrackListView extends StatelessWidget {
     final isStuck = playerState == ProcessingState.loading ||
         playerState == ProcessingState.buffering;
 
+    final isTv = context.read<DeviceService>().isTv;
+
     final currentTrack = audioProvider.currentTrack;
     final isThisTrack = currentTrack != null &&
         currentTrack.title == track.title &&
         currentTrack.trackNumber == track.trackNumber;
 
-    if (!isStuck || !isThisTrack) return;
-
-    final isTv = context.read<DeviceService>().isTv;
+    // For TV, long-press is always a "Safety Reset" hatch.
+    // For other platforms, only show for specifically stuck active tracks.
+    if (!isTv && (!isStuck || !isThisTrack)) return;
 
     if (isTv) {
       TvReloadDialog.show(
         context,
         onReload: () => audioProvider.retryCurrentSource(),
+        onHardReset: () => audioProvider.stopAndClear(),
       );
     } else {
       showModalBottomSheet(
@@ -602,41 +606,56 @@ class TrackListView extends StatelessWidget {
         shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
         ),
-        builder: (context) => SafeArea(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const SizedBox(height: 16),
-              Text(
-                'Track Loading',
-                style: Theme.of(context).textTheme.titleLarge,
-              ),
-              const SizedBox(height: 8),
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 24.0),
-                child: Text(
-                  'This track is taking a while to load. Would you like to try reloading the show?',
-                  textAlign: TextAlign.center,
+        builder: (context) {
+          final colorScheme = Theme.of(context).colorScheme;
+          return SafeArea(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const SizedBox(height: 16),
+                Text(
+                  'Safety Hatch',
+                  style: Theme.of(context).textTheme.titleLarge,
                 ),
-              ),
-              const SizedBox(height: 16),
-              ListTile(
-                leading: const Icon(Icons.refresh),
-                title: const Text('Reload Show'),
-                onTap: () {
-                  Navigator.pop(context);
-                  audioProvider.retryCurrentSource();
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.close),
-                title: const Text('Cancel'),
-                onTap: () => Navigator.pop(context),
-              ),
-              const SizedBox(height: 16),
-            ],
-          ),
-        ),
+                const SizedBox(height: 4),
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 24.0),
+                  child: Text(
+                    'Is the playback stuck? Try these options to reset the engine.',
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                ListTile(
+                  leading: const Icon(Icons.refresh_rounded),
+                  title: const Text('Reload Current Show'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    audioProvider.retryCurrentSource();
+                  },
+                ),
+                ListTile(
+                  leading:
+                      Icon(Icons.stop_circle_rounded, color: colorScheme.error),
+                  title: Text('Emergency Reset',
+                      style: TextStyle(color: colorScheme.error)),
+                  subtitle: const Text('Clears playlist and stops all audio'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    audioProvider.stopAndClear();
+                  },
+                ),
+                const Divider(),
+                ListTile(
+                  leading: const Icon(Icons.close_rounded),
+                  title: const Text('Cancel'),
+                  onTap: () => Navigator.pop(context),
+                ),
+                const SizedBox(height: 16),
+              ],
+            ),
+          );
+        },
       );
     }
   }

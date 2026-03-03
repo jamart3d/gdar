@@ -1,10 +1,10 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:shakedown/providers/settings_provider.dart';
 import 'package:shakedown/providers/theme_provider.dart';
 import 'package:shakedown/services/device_service.dart';
+import 'package:shakedown/utils/app_haptics.dart';
 import 'package:shakedown/ui/widgets/animated_gradient_border.dart';
 import 'package:shakedown/ui/widgets/section_card.dart';
 import 'package:shakedown/ui/widgets/settings/color_picker_dialog.dart';
@@ -86,7 +86,7 @@ class _AppearanceSectionState extends State<AppearanceSection> {
                             ?.copyWith(fontSize: 16 * widget.scaleFactor))),
                 value: themeProvider.isDarkMode,
                 onChanged: (value) {
-                  HapticFeedback.lightImpact();
+                  AppHaptics.lightImpact(context.read<DeviceService>());
                   context
                       .read<ThemeProvider>()
                       .setThemeMode(value ? ThemeMode.dark : ThemeMode.light);
@@ -154,7 +154,8 @@ class _AppearanceSectionState extends State<AppearanceSection> {
                               selected: {themeProvider.selectedThemeMode},
                               onSelectionChanged:
                                   (Set<ThemeMode> newSelection) {
-                                HapticFeedback.lightImpact();
+                                AppHaptics.lightImpact(
+                                    context.read<DeviceService>());
                                 context
                                     .read<ThemeProvider>()
                                     .setThemeMode(newSelection.first);
@@ -174,7 +175,7 @@ class _AppearanceSectionState extends State<AppearanceSection> {
                   ],
                 ),
               ),
-        if (kIsWeb && !context.watch<DeviceService>().isTv) ...[
+        if (!context.watch<DeviceService>().isTv) ...[
           Padding(
             padding:
                 const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
@@ -219,7 +220,8 @@ class _AppearanceSectionState extends State<AppearanceSection> {
                           selected: {themeProvider.themeStyle},
                           onSelectionChanged: (Set<ThemeStyle> newSelection) {
                             final style = newSelection.first;
-                            HapticFeedback.lightImpact();
+                            AppHaptics.lightImpact(
+                                context.read<DeviceService>());
                             context.read<ThemeProvider>().setThemeStyle(style);
 
                             // Theme-specific constraints
@@ -311,7 +313,8 @@ class _AppearanceSectionState extends State<AppearanceSection> {
                             selected: {themeProvider.fruitColorOption},
                             onSelectionChanged:
                                 (Set<FruitColorOption> newSelection) {
-                              HapticFeedback.lightImpact();
+                              AppHaptics.lightImpact(
+                                  context.read<DeviceService>());
                               themeProvider
                                   .setFruitColorOption(newSelection.first);
                             },
@@ -355,7 +358,7 @@ class _AppearanceSectionState extends State<AppearanceSection> {
                         ?.copyWith(fontSize: 12 * widget.scaleFactor))),
             value: settingsProvider.performanceMode,
             onChanged: (value) {
-              HapticFeedback.lightImpact();
+              AppHaptics.lightImpact(context.read<DeviceService>());
               context.read<SettingsProvider>().togglePerformanceMode();
             },
             secondary: const Icon(LucideIcons.zap),
@@ -383,7 +386,7 @@ class _AppearanceSectionState extends State<AppearanceSection> {
                         ?.copyWith(fontSize: 12 * widget.scaleFactor))),
             value: settingsProvider.useDynamicColor,
             onChanged: (value) {
-              HapticFeedback.lightImpact();
+              AppHaptics.lightImpact(context.read<DeviceService>());
               context.read<SettingsProvider>().toggleUseDynamicColor();
             },
             secondary: Icon(themeProvider.themeStyle == ThemeStyle.fruit
@@ -413,7 +416,7 @@ class _AppearanceSectionState extends State<AppearanceSection> {
                         ?.copyWith(fontSize: 12 * widget.scaleFactor))),
             value: settingsProvider.useTrueBlack,
             onChanged: (value) {
-              HapticFeedback.lightImpact();
+              AppHaptics.lightImpact(context.read<DeviceService>());
               context.read<SettingsProvider>().toggleUseTrueBlack();
             },
             secondary: Icon(themeProvider.themeStyle == ThemeStyle.fruit
@@ -460,7 +463,7 @@ class _AppearanceSectionState extends State<AppearanceSection> {
                     ),
                   ),
                 ),
-        if (kIsWeb && !context.read<DeviceService>().isTv) ...[
+        if (!context.read<DeviceService>().isTv) ...[
           (() {
             final isGated = settingsProvider.useTrueBlack ||
                 settingsProvider.performanceMode;
@@ -532,7 +535,8 @@ class _AppearanceSectionState extends State<AppearanceSection> {
                                   final newVal = (settingsProvider.glowMode - 5)
                                       .clamp(10, 100);
                                   if (newVal != settingsProvider.glowMode) {
-                                    HapticFeedback.selectionClick();
+                                    AppHaptics.selectionClick(
+                                        context.read<DeviceService>());
                                     context
                                         .read<SettingsProvider>()
                                         .setGlowMode(newVal);
@@ -543,7 +547,8 @@ class _AppearanceSectionState extends State<AppearanceSection> {
                                   final newVal = (settingsProvider.glowMode + 5)
                                       .clamp(10, 100);
                                   if (newVal != settingsProvider.glowMode) {
-                                    HapticFeedback.selectionClick();
+                                    AppHaptics.selectionClick(
+                                        context.read<DeviceService>());
                                     context
                                         .read<SettingsProvider>()
                                         .setGlowMode(newVal);
@@ -554,8 +559,8 @@ class _AppearanceSectionState extends State<AppearanceSection> {
                               return KeyEventResult.ignored;
                             },
                             child: Slider(
-                              onChangeStart: (_) =>
-                                  HapticFeedback.lightImpact(),
+                              onChangeStart: (_) => AppHaptics.lightImpact(
+                                  context.read<DeviceService>()),
                               value: settingsProvider.glowMode.toDouble(),
                               min: 10,
                               max: 100,
@@ -564,7 +569,8 @@ class _AppearanceSectionState extends State<AppearanceSection> {
                               onChanged: (value) {
                                 if (value.round() !=
                                     settingsProvider.glowMode) {
-                                  HapticFeedback.selectionClick();
+                                  AppHaptics.selectionClick(
+                                      context.read<DeviceService>());
                                 }
                                 context
                                     .read<SettingsProvider>()
@@ -596,7 +602,7 @@ class _AppearanceSectionState extends State<AppearanceSection> {
               ),
             ),
         ],
-        if (kIsWeb || context.read<DeviceService>().isTv)
+        if (true) // Enable RGB for all platforms
           TvSwitchListTile(
             dense: true,
             visualDensity: VisualDensity.compact,
@@ -699,7 +705,7 @@ class _AppearanceSectionState extends State<AppearanceSection> {
                         ],
                         selected: {settingsProvider.rgbAnimationSpeed},
                         onSelectionChanged: (Set<double> newSelection) {
-                          HapticFeedback.lightImpact();
+                          AppHaptics.lightImpact(context.read<DeviceService>());
                           context
                               .read<SettingsProvider>()
                               .setRgbAnimationSpeed(newSelection.first);
@@ -787,7 +793,7 @@ class _AppearanceSectionState extends State<AppearanceSection> {
                             .bodySmall
                             ?.copyWith(fontSize: 12 * widget.scaleFactor))),
                 onTap: () {
-                  HapticFeedback.lightImpact();
+                  AppHaptics.lightImpact(context.read<DeviceService>());
                   FontSelectionDialog.show(context);
                 },
               ),

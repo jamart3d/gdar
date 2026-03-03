@@ -8,7 +8,6 @@ import 'package:shakedown/utils/font_layout_config.dart';
 import 'package:provider/provider.dart';
 import 'package:shakedown/services/device_service.dart';
 import 'package:shakedown/providers/theme_provider.dart';
-import 'package:flutter/foundation.dart';
 
 /// Holds computed style values for [ShowListCard].
 class CardStyle {
@@ -85,7 +84,7 @@ class CardStyle {
     // Venue Style
     final baseVenueStyle = textTheme.bodyLarge?.copyWith(fontSize: 15.0) ??
         const TextStyle(fontSize: 15.0);
-    final bool isFruit = themeProvider.themeStyle == ThemeStyle.fruit && kIsWeb;
+    final bool isFruit = themeProvider.themeStyle == ThemeStyle.fruit;
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
 
     final venueStyle =
@@ -118,10 +117,10 @@ class CardStyle {
     final bool isCaveat = settings.appFont == 'caveat';
     final bool dateFirst = settings.dateFirstInShowCard;
 
-    double topSize = (themeProvider.themeStyle == ThemeStyle.fruit && kIsWeb)
+    double topSize = (themeProvider.themeStyle == ThemeStyle.fruit)
         ? 28.0
         : 15.0; // v134 standard Venue size
-    double bottomSize = (themeProvider.themeStyle == ThemeStyle.fruit && kIsWeb)
+    double bottomSize = (themeProvider.themeStyle == ThemeStyle.fruit)
         ? 11.0
         : 9.5; // v134 standard Date size
 
@@ -155,8 +154,7 @@ class CardStyle {
       }
     }
 
-    final bool useLetterpress =
-        themeProvider.themeStyle == ThemeStyle.fruit && kIsWeb;
+    final bool useLetterpress = themeProvider.themeStyle == ThemeStyle.fruit;
 
     final finalTopStyle = venueStyle.copyWith(
       fontSize: topSize * effectiveScale,
@@ -218,7 +216,6 @@ class CardStyle {
     bool showGlow = settings.glowMode > 0;
 
     final isFruitWeb = themeProvider.themeStyle == ThemeStyle.fruit &&
-        kIsWeb &&
         isPlaying &&
         settings.highlightCurrentShowCard;
 
@@ -231,7 +228,7 @@ class CardStyle {
 
     // Fruit hairline border logic
     double cardBorderWidth = 3.0; // Default
-    if (themeProvider.themeStyle == ThemeStyle.fruit && kIsWeb) {
+    if (themeProvider.themeStyle == ThemeStyle.fruit) {
       if (!isExpanded && !isPlaying) {
         cardBorderWidth = 0.5;
       }

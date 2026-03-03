@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:provider/provider.dart';
@@ -15,6 +14,7 @@ import 'package:shakedown/ui/widgets/theme/neumorphic_wrapper.dart';
 import 'package:shakedown/ui/widgets/theme/liquid_glass_wrapper.dart';
 import 'package:shakedown/providers/theme_provider.dart';
 import 'package:shakedown/services/device_service.dart';
+import 'package:shakedown/utils/app_haptics.dart';
 
 class RatingControl extends StatelessWidget {
   final int rating;
@@ -162,7 +162,7 @@ class RatingControl extends StatelessWidget {
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: () {
-        HapticFeedback.selectionClick();
+        AppHaptics.selectionClick(context.read<DeviceService>());
         onTap!();
       },
       child: compact
@@ -296,7 +296,8 @@ class _RatingDialogState extends State<RatingDialog> {
                                 final newRating =
                                     (_currentRating - 1).clamp(1, 3);
                                 if (newRating != _currentRating) {
-                                  HapticFeedback.selectionClick();
+                                  AppHaptics.selectionClick(
+                                      context.read<DeviceService>());
                                   setState(() {
                                     _currentRating = newRating;
                                   });
@@ -308,7 +309,8 @@ class _RatingDialogState extends State<RatingDialog> {
                                 final newRating =
                                     (_currentRating + 1).clamp(1, 3);
                                 if (newRating != _currentRating) {
-                                  HapticFeedback.selectionClick();
+                                  AppHaptics.selectionClick(
+                                      context.read<DeviceService>());
                                   setState(() {
                                     _currentRating = newRating;
                                   });
@@ -328,7 +330,6 @@ class _RatingDialogState extends State<RatingDialog> {
                               final isFruitNeumorphic =
                                   themeProvider.themeStyle ==
                                           ThemeStyle.fruit &&
-                                      kIsWeb &&
                                       settingsProvider.useNeumorphism &&
                                       !settingsProvider.useTrueBlack;
 
@@ -371,7 +372,8 @@ class _RatingDialogState extends State<RatingDialog> {
                                   ),
                                 ),
                                 onRatingUpdate: (rating) {
-                                  HapticFeedback.selectionClick();
+                                  AppHaptics.selectionClick(
+                                      context.read<DeviceService>());
                                   setState(() {
                                     _currentRating = rating.toInt();
                                   });
@@ -528,7 +530,7 @@ class _RatingDialogState extends State<RatingDialog> {
   Widget _buildActionOption(BuildContext context, String text, IconData icon,
       Color color, int rating) {
     final isFruit =
-        context.read<ThemeProvider>().themeStyle == ThemeStyle.fruit && kIsWeb;
+        context.read<ThemeProvider>().themeStyle == ThemeStyle.fruit;
     return TvListTile(
       onTap: () async {
         // Confirmation Logic

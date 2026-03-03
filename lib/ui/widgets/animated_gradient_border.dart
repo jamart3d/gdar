@@ -15,6 +15,7 @@ class AnimatedGradientBorder extends StatefulWidget {
   final double glowOpacity;
   final double animationSpeed;
   final bool ignoreGlobalClock;
+  final bool enabled;
 
   const AnimatedGradientBorder({
     super.key,
@@ -28,6 +29,7 @@ class AnimatedGradientBorder extends StatefulWidget {
     this.glowOpacity = 0.5,
     this.animationSpeed = 1.0,
     this.ignoreGlobalClock = false,
+    this.enabled = true,
   });
 
   @override
@@ -113,6 +115,8 @@ class _AnimatedGradientBorderState extends State<AnimatedGradientBorder>
 
   @override
   Widget build(BuildContext context) {
+    if (!widget.enabled) return widget.child;
+
     final sp = context.watch<SettingsProvider>();
     final performanceMode = sp.performanceMode;
     final isPlaying = context.watch<AudioProvider>().isPlaying;

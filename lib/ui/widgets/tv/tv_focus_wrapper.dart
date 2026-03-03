@@ -1,6 +1,9 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:shakedown/utils/app_haptics.dart';
+import 'package:shakedown/services/device_service.dart';
+import 'package:provider/provider.dart';
 
 /// A wrapper widget that handles TV focus states with premium animations.
 /// It provides a spring-based scale effect and a Material 3 focus border.
@@ -100,7 +103,7 @@ class _TvFocusWrapperState extends State<TvFocusWrapper> {
               if (mounted) {
                 _longPressHandled = true;
                 widget.onLongPress?.call();
-                HapticFeedback.mediumImpact();
+                AppHaptics.mediumImpact(context.read<DeviceService>());
               }
             });
           }

@@ -1,35 +1,24 @@
 # Web UI Design Specification: GDAR Audio Player
 
-This document defines the visual standards, responsive behavior, and dual-theme system for the **Web UI / PWA** implementation of GDAR.
+This document defines the **platform-specific** visual standards, responsive behavior, and unique interactivity for the **Web UI / PWA** implementation of GDAR.
 
-## 1. The Dual-Theme Strategy
-GDAR for Web provides two distinct user experiences optimized for different aesthetic preferences and browser capabilities.
+## 1. Web Platform Integration
+The Web implementation serves as a hybrid platform between desktop browsing and mobile PWAs. It adapts its look and functionality based on device detection while supporting the two core GDAR themes.
 
-| Feature | Standard (Material 3) | Fruit (Liquid Glass) |
-| :--- | :--- | :--- |
-| **Philosophy** | Familiarity, Accessibility, Speed | Premium, Tactile, Immersive |
-| **Icon Set** | Material Icons (Rounded) | `LucideIcons` (Exclusive) |
-| **Depth** | Elevation & Box Shadows | `BackdropFilter` (Blur) & Neumorphism |
-| **Corners** | Material Baseline (Standard) | Architectural (14-16px) |
-| **Typography** | User Default / Roboto | **Inter** (Hard-enforced) |
+### 1.1 Dual-Theme Support
+Web is the only platform that allows users to toggle between two distinct design languages:
+*   **Android Theme (Standard):** Implements the **Material 3 Expressive** baseline. See [android_theme_spec.md](file:///home/jam/StudioProjects/gdar/.agent/specs/android_theme_spec.md).
+*   **Fruit Theme (Liquid Glass):** Implements the premium **Walled-Off** aesthetic. See [fruit_theme_spec.md](file:///home/jam/StudioProjects/gdar/.agent/specs/fruit_theme_spec.md).
 
-## 2. Theme Implementation Details
-
-### 2.1 Standard: Material 3
-*   **Behavior:** Follows standard Flutter Material 3 implementation.
-*   **Color Logic:** Uses `DynamicColor` when available; otherwise defaults to curated Material palettes.
-*   **Accessibility:** Primary target for screen readers and high-contrast requirements.
-
-### 2.2 Fruit: Liquid Glass & Neumorphism
-The Fruit theme transitions the UI from an elevation-based model to a translucency-based model.
-*   **Translucency (Liquid Glass):** 
-    *   Uses `LiquidGlassWrapper` with `sigma: 15.0`.
-    *   Opacity: `0.7` for surfaces, allowing underlying colors to bleed through.
-*   **Tactility (Neumorphism):** 
-    *   Interactive elements (Buttons, Search Bars) use dual-shadow light/dark offsets.
-    *   **Convex:** Standard buttons.
-    *   **Concave:** Search field and "active" control areas.
-*   **RGB Active Track:** The currently playing track card features a rotating `SweepGradient` border.
+### 1.2 Layout & Context
+Web-specific layout rules ensure that both themes translate effectively across varying screen sizes:
+*   **Desktop:** Prioritizes horizontal scanning and side-attached navigation.
+*   **PWA / Mobile Web:** Switches to a thumb-optimized stacked layout with bottom mini-player.
+Web-specific interactivity ensures a native feel on desktop browsers:
+*   **Hover Scaling:** All interactive cards (Show/Source) scale to **1.01x** on hover.
+*   **Click Cursors:** Explicitly use `SystemMouseCursors.click` for all interactive elements.
+*   **Scrollbars:** Integrated custom-styled thin scrollbars (Webkit/Firefox) to minimize UI clutter.
+*   **Safe Areas:** Deep integration with browser toolbars and PWA status-bar padding.
 
 ## 3. Web-Specific Layout Rules
 

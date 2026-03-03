@@ -52,7 +52,6 @@ class PlaybackAppBar extends StatelessWidget {
       backgroundColor: backgroundColor.withValues(alpha: opacity),
       elevation: 0,
       scrolledUnderElevation: 0,
-      automaticallyImplyLeading: false,
       leading: kIsWeb
           ? Builder(builder: (context) {
               final Widget menuBtn = IconButton(
@@ -82,8 +81,8 @@ class PlaybackAppBar extends StatelessWidget {
 
               return menuBtn;
             })
-          : null,
-      titleSpacing: kIsWeb ? 0 : 16,
+          : null, // Let Flutter provide the back button on mobile.
+      titleSpacing: kIsWeb ? 0 : 4,
       title: Opacity(
         opacity: opacity,
         child: Column(
@@ -93,11 +92,11 @@ class PlaybackAppBar extends StatelessWidget {
             Text(
               formattedDate,
               style: TextStyle(
-                fontSize: AppTypography.responsiveFontSize(context, 11),
-                fontWeight: FontWeight.w900,
+                fontSize: AppTypography.responsiveFontSize(context, 14),
+                fontWeight: FontWeight.w700,
                 color: Theme.of(context).colorScheme.primary,
                 height: 1.1,
-                letterSpacing: -0.5,
+                letterSpacing: -0.2,
               ),
             ),
           ],

@@ -9,6 +9,7 @@ import 'package:shakedown/providers/settings_provider.dart';
 import 'package:shakedown/providers/show_list_provider.dart';
 import 'package:shakedown/services/catalog_service.dart';
 import 'package:shakedown/services/device_service.dart';
+import 'package:shakedown/utils/app_haptics.dart';
 import 'package:shakedown/utils/utils.dart';
 import 'package:shakedown/ui/widgets/show_list/show_list_card.dart';
 import 'package:shakedown/ui/widgets/show_list_item_details.dart';
@@ -156,7 +157,7 @@ class ShowListItem extends StatelessWidget {
   Future<bool> _showBlockConfirmation(BuildContext context, Show show,
       AudioProvider audioProvider, SettingsProvider settingsProvider) async {
     // Haptic Feedback
-    unawaited(HapticFeedback.selectionClick());
+    unawaited(AppHaptics.selectionClick(context.read<DeviceService>()));
 
     final isCurrentlyPlaying = audioProvider.currentShow == show;
 

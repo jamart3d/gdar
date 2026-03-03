@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:math';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -63,7 +62,7 @@ class ThemeProvider with ChangeNotifier {
 
   ThemeProvider({this.isTv = false})
       : _themeModeIndex = isTv ? 2 : 0,
-        _themeStyleIndex = (kIsWeb && !isTv) ? 1 : 0,
+        _themeStyleIndex = isTv ? 0 : 1, // TV = Android style, Others = Fruit
         _fruitColorOptionIndex = 0 {
     unawaited(_loadThemePreference());
   }
@@ -82,7 +81,8 @@ class ThemeProvider with ChangeNotifier {
   }
 
   void setThemeStyle(ThemeStyle style) {
-    if (style == ThemeStyle.fruit && (!kIsWeb || isTv)) return;
+    // Audit check: Don't allow Fruit theme on TV even if requested.
+    if (isTv && style == ThemeStyle.fruit) return;
 
     bool wasFruit = themeStyle == ThemeStyle.fruit;
     _themeStyleIndex = style == ThemeStyle.fruit ? 1 : 0;
@@ -97,7 +97,6 @@ class ThemeProvider with ChangeNotifier {
   }
 
   void setFruitColorOption(FruitColorOption option) {
-    if (!kIsWeb || isTv) return;
     _fruitColorOptionIndex = option.index;
     unawaited(_saveThemePreference());
     notifyListeners();
@@ -121,15 +120,18 @@ class ThemeProvider with ChangeNotifier {
     // Default to TV mode setting (2=Dark) or System (0)
     _themeModeIndex = prefs.getInt(_themeModeKey) ?? (isTv ? 2 : 0);
 
-    // Force Android style on non-Web/TV even if a Fruit preference exists
-    if (!kIsWeb || isTv) {
-      _themeStyleIndex = 0; // Strictly Android for non-web and TV
-    } else if (!prefs.containsKey(_webFruitThemeInitKey)) {
-      _themeStyleIndex = 1; // Fruit by default for first-time web users
+    if (!prefs.containsKey(_webFruitThemeInitKey)) {
+      _themeStyleIndex =
+          isTv ? 0 : 1; // Fruit by default for all first-time non-TV users
       await prefs.setBool(_webFruitThemeInitKey, true);
       await prefs.setInt(_themeStyleKey, _themeStyleIndex);
     } else {
-      _themeStyleIndex = prefs.getInt(_themeStyleKey) ?? 1;
+      _themeStyleIndex = prefs.getInt(_themeStyleKey) ?? (isTv ? 0 : 1);
+
+      // Safety check for existing preferences: Force TV back to Android if it drifted
+      if (isTv && _themeStyleIndex == 1) {
+        _themeStyleIndex = 0;
+      }
     }
 
     _fruitColorOptionIndex = prefs.getInt(_fruitColorOptionKey) ?? 0;

@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:shakedown/models/show.dart';
 import 'package:shakedown/models/source.dart';
 import 'package:shakedown/providers/audio_provider.dart';
@@ -8,6 +7,7 @@ import 'package:shakedown/providers/settings_provider.dart';
 import 'package:shakedown/providers/show_list_provider.dart'; // Add import
 import 'package:shakedown/services/catalog_service.dart';
 import 'package:shakedown/services/device_service.dart';
+import 'package:shakedown/utils/app_haptics.dart';
 import 'package:shakedown/utils/utils.dart';
 
 import 'package:shakedown/ui/widgets/source_list_item.dart';
@@ -67,7 +67,7 @@ class _ShowListItemDetailsState extends State<ShowListItemDetails> {
         // Common Dismissible Logic
         Future<bool> handleConfirmDismiss() async {
           // Haptic Feedback for the block action
-          unawaited(HapticFeedback.selectionClick());
+          unawaited(AppHaptics.selectionClick(context.read<DeviceService>()));
 
           // Stop playback if this specific source is playing
           if (isPlaying ||

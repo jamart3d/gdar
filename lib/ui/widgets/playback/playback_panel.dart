@@ -12,6 +12,7 @@ import 'package:shakedown/providers/theme_provider.dart';
 import 'package:shakedown/services/catalog_service.dart';
 import 'package:shakedown/services/device_service.dart';
 import 'package:shakedown/ui/styles/app_typography.dart';
+import 'package:shakedown/utils/app_haptics.dart';
 import 'package:shakedown/ui/widgets/conditional_marquee.dart';
 import 'package:shakedown/ui/widgets/playback/playback_controls.dart';
 import 'package:shakedown/ui/widgets/playback/playback_messages.dart';
@@ -49,7 +50,7 @@ class PlaybackPanel extends StatelessWidget {
     final audioProvider = context.watch<AudioProvider>();
     final settingsProvider = context.watch<SettingsProvider>();
     final themeProvider = context.watch<ThemeProvider>();
-    final isFruit = themeProvider.themeStyle == ThemeStyle.fruit && kIsWeb;
+    final isFruit = themeProvider.themeStyle == ThemeStyle.fruit;
     final useNeumorphic = settingsProvider.useNeumorphism &&
         isFruit &&
         !settingsProvider.useTrueBlack;
@@ -90,7 +91,9 @@ class PlaybackPanel extends StatelessWidget {
         child: Container(
           decoration: BoxDecoration(
             color:
-                (isFruit && !isTrueBlackMode) ? Colors.transparent : panelColor,
+                (isFruit && !isTrueBlackMode && kIsWeb && !deviceService.isTv)
+                    ? Colors.transparent
+                    : panelColor,
             borderRadius:
                 const BorderRadius.vertical(top: Radius.circular(24.0)),
             border: isTrueBlackMode
@@ -334,8 +337,9 @@ class PlaybackPanel extends StatelessWidget {
                                                         Clipboard.setData(
                                                             ClipboardData(
                                                                 text: info));
-                                                        HapticFeedback
-                                                            .selectionClick();
+                                                        AppHaptics.selectionClick(
+                                                            context.read<
+                                                                DeviceService>());
                                                         showMessage(context,
                                                             'Details copied to clipboard');
                                                       },

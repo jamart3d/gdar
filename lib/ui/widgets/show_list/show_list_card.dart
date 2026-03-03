@@ -1,9 +1,9 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:shakedown/ui/widgets/animated_gradient_border.dart';
 import 'package:shakedown/models/show.dart';
 import 'package:shakedown/models/source.dart';
+import 'package:shakedown/utils/app_haptics.dart';
 import 'package:shakedown/providers/settings_provider.dart';
 import 'package:shakedown/providers/theme_provider.dart';
 import 'package:provider/provider.dart';
@@ -61,7 +61,7 @@ class _ShowListCardState extends State<ShowListCard> {
     final deviceService = context.watch<DeviceService>();
     final isTv = deviceService.isTv;
     final themeProvider = context.watch<ThemeProvider>();
-    final isFruit = themeProvider.themeStyle == ThemeStyle.fruit && kIsWeb;
+    final isFruit = themeProvider.themeStyle == ThemeStyle.fruit;
 
     final style = CardStyle.compute(
       context: context,
@@ -233,11 +233,12 @@ class _ShowListCardState extends State<ShowListCard> {
   }) {
     const bool isWeb = kIsWeb;
     final bool isFruit =
-        context.read<ThemeProvider>().themeStyle == ThemeStyle.fruit && kIsWeb;
+        context.read<ThemeProvider>().themeStyle == ThemeStyle.fruit;
     final double screenWidth = MediaQuery.of(context).size.width;
     final deviceService = context.watch<DeviceService>();
-    final bool useMobileLayout =
-        isWeb && (screenWidth < 768 || deviceService.isPwa) && !isTv;
+    final bool useMobileLayout = isWeb &&
+        (screenWidth < 850 || deviceService.isPwa || deviceService.isMobile) &&
+        !isTv;
     final bool usePremium = settingsProvider.useNeumorphism && isFruit;
 
     // Use tighter mobile-style heights for both themes on narrow screens
@@ -269,7 +270,7 @@ class _ShowListCardState extends State<ShowListCard> {
           canRequestFocus: !isTv,
           borderRadius: BorderRadius.circular(borderRadius),
           onTap: () {
-            HapticFeedback.selectionClick();
+            AppHaptics.selectionClick(context.read<DeviceService>());
             widget.onTap();
           },
           onLongPress: widget.onLongPress,
@@ -460,7 +461,7 @@ class _ShowListCardState extends State<ShowListCard> {
     final colorScheme = Theme.of(context).colorScheme;
     final settingsProvider = context.read<SettingsProvider>();
     final bool isFruit =
-        context.read<ThemeProvider>().themeStyle == ThemeStyle.fruit && kIsWeb;
+        context.read<ThemeProvider>().themeStyle == ThemeStyle.fruit;
 
     final String badgeText;
     if (widget.isPlaying &&
@@ -569,12 +570,13 @@ class _ShowListCardState extends State<ShowListCard> {
           valueListenable: CatalogService().historyListenable,
           builder: (context, __, ___) {
             final themeProvider = context.read<ThemeProvider>();
-            final bool isFruit =
-                themeProvider.themeStyle == ThemeStyle.fruit && kIsWeb;
+            final bool isFruit = themeProvider.themeStyle == ThemeStyle.fruit;
             final double screenWidth = MediaQuery.of(context).size.width;
             final deviceService = context.watch<DeviceService>();
-            final bool useMobileLayout =
-                kIsWeb && (screenWidth < 768 || deviceService.isPwa) && !isTv;
+            final bool useMobileLayout = (screenWidth < 850 ||
+                    deviceService.isPwa ||
+                    deviceService.isMobile) &&
+                !isTv;
 
             final catalog = CatalogService();
             final bool usePremium = settings.useNeumorphism && isFruit;

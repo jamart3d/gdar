@@ -1,8 +1,10 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:shakedown/services/device_service.dart';
+import 'package:shakedown/utils/app_haptics.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:shakedown/models/show.dart';
+import 'package:provider/provider.dart';
 
 /// A Material 3 expressive fast scrollbar with:
 /// - Auto-hide: only visible while scrolling or dragging
@@ -199,7 +201,7 @@ class _FastScrollbarState extends State<FastScrollbar>
 
     final year = index < _yearByIndex.length ? _yearByIndex[index] : 0;
     if (year > 0 && year != _lastYear) {
-      HapticFeedback.lightImpact();
+      AppHaptics.lightImpact(context.read<DeviceService>());
       _lastYear = year;
     }
   }

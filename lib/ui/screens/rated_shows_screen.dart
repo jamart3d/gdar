@@ -1,5 +1,6 @@
 import 'dart:async';
-import 'package:flutter/services.dart';
+import 'package:shakedown/utils/app_haptics.dart';
+import 'package:shakedown/services/device_service.dart';
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -429,7 +430,7 @@ class _RatedShowListState extends State<_RatedShowList> {
             }
           },
           onLongPress: () {
-            unawaited(HapticFeedback.mediumImpact());
+            unawaited(AppHaptics.mediumImpact(context.read<DeviceService>()));
             unawaited(audioProvider.playSource(show, source));
           },
           child: Padding(

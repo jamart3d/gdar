@@ -1,53 +1,41 @@
-# Phone UI Design Specification: GDAR Audio Player
+# Phone Platform Specification: GDAR Audio Player
 
-This document defines the visual standards, interaction patterns, and layout rules for the **Mobile (Android/iOS)** implementation of GDAR.
+This document defines the **Hardware Interactivity** and **Native OS Integration** standards for the Phone (Android/iOS) implementation of GDAR. It focuses on how the app feels and reacts to physical device constraints.
 
-## 1. Core Principles
-The Phone UI is designed for one-handed use, portability, and high-energy interaction.
-*   **Bottom-Heavy Interaction:** Primary controls (Mini-Player, Show List filters) are positioned within the "thumb zone" at the bottom of the screen.
-*   **Dynamic Response:** The UI color palette shifts dynamically based on the currently selected or playing show.
-*   **Haptic Feedback:** Physical sensations are integrated into critical actions (Dice roll, track selection, button taps) to provide a tactile experience.
+## 1. Physical Layout & Constraint Management
 
-## 2. Layout & Components
+### 1.1 The "Thumb Zone" Constraint
+*   **Active Area:** Primary interactive elements (Filters, Search, Playback Controls) MUST be positioned within the bottom 40% of the screen.
+*   **One-Handed Use:** Avoid top-corner buttons for frequently used actions. Use bottom sheets or persistent footers where possible.
 
-### 2.1 Mini-Player (Persistent)
-The Mini-Player is the primary anchor for playback state across the app.
-*   **Positioning:** Fixed at the bottom of the screen above the navigation bar or system safe area.
-*   **Progress Indicator:** A 4dp thin progress bar tracks current playback at the very top edge of the player.
-*   **Content:**
-    *   **Track Title:** Uses `ConditionalMarquee` to scroll long titles.
-    *   **Controls:** Optimized for touch with a minimum **40x40dp** target.
-*   **Elevation:** Uses standard Material elevation (4.0) unless "Performance Mode" is enabled.
+### 1.2 Display & Safe Areas
+*   **Sensor Housing:** Deep integration with `SafeArea`. Content must never be obscured by notches, dynamic islands, or punch-hole cameras.
+*   **OLED Optimization:** On devices with OLED displays, the app should default to **True Black** backgrounds to conserve battery and increase contrast.
+*   **Edge-to-Edge:** Navigational elements must seamlessly blend with the system gestural bar.
 
-### 2.2 Playback Screen (Slide-Up)
-Implemented via `SlidingUpPanel`, the full player provides an immersive deep-dive into the current show.
-*   **Background:** Solid color generated from the show metadata (`ColorGenerator`).
-*   **Structure:**
-    *   **Upper Pane (Header):** Venue, Date, Location, and Rating summary.
-    *   **Middle Pane (Track List):** Scrollable list of tracks, grouped by set.
-    *   **Lower Pane (Playback Controls):** Large-scale controls for seeking, skipping, and volume.
-*   **Interaction:** Vertical swipe to expand/collapse.
+## 2. Hardware Feedback (Haptics)
+Haptics are a first-class citizen on the phone platform to compensate for the lack of physical buttons.
 
-### 2.3 Show List (Browsing)
-*   **Card Design:** High-contrast cards with clear hierarchy (Date > Venue > Source).
-*   **Lazy Loading:** Uses `scrollable_positioned_list` for smooth scrolling of massive show catalogs.
-*   **Curation:** Rating stars and "Block" (Red Star) actions are immediately accessible to allow rapid show management.
+*   **Selection:** Subtle click (Light) on every track or show selection.
+*   **Action Success:** Medium vibration for successfully adding to queue or favoring.
+*   **Dice Roll (Random):** Multi-stage "rumble" sequence during the selection animation.
+*   **Warning:** Heavy vibration for "Block" actions or playback errors.
 
-## 3. Theming & Scaling
+## 3. Native Integration
 
-### 3.1 Material 3 Baseline
-*   **Standard:** Phone UI defaults to **Material 3** guidelines to ensure a native and fast experience.
-*   **Fruit Exclusion:** **STRICTLY AVOID** `LiquidGlassWrapper` and `NeumorphicWrapper` on phone builds. These are reserved for high-power Web/Desktop environments.
-*   **Typography:** The `Inter` font family should be used as the primary display font.
+### 3.1 Background & Energy
+*   **Background Audio:** The app must maintain a stable foreground service during playback to prevent OS-level process killing.
+*   **Wakelock:** Enable `wakelock_service` during active playback ONLY. Disable immediately upon pause or stop.
+*   **Battery:** Strictly avoid high-frequency UI updates (e.g., 60fps animations) when the app is in the background or the screen is off.
 
-### 3.2 Responsive Scaling
-*   **Font Scaling:** Uses `FontLayoutConfig.getEffectiveScale` to respect system accessibility settings while maintaining UI integrity.
-*   **Safe Areas:** Deep integration with `MediaQuery.padding` to handle notches, punch-holes, and system gestural navigation bars.
+### 3.2 Lock Screen & Media Controls
+*   **Service Integration:** Sync current track metadata (Title, Artist, Date) and album art to the system media controller.
+*   **Playback Notifications:** Persistent notification with high-contrast Skip/Play/Pause controls.
 
-## 4. Animation & Physics
-*   **Springs:** Use Apple-style spring physics for panel transitions.
-*   **Pulse Effects:** Functional elements (e.g., the Search button when active, or the "Random Show" dice) use subtle scale-pulsing to guide the user's eye.
+## 4. Input & Sensors
+*   **Gestures:** Vertical swipe-to-dismiss for the playback panel. Left/Right swipe on the mini-player for track skipping.
+*   **Connectivity:** Monitor `ConnectivityService`. Automatically pause or notify if entering a cellular-only data state (based on user settings).
 
 ---
-*Version: 1.0*  
+*Version: 1.0 (Hardware & Integration)*  
 *Last Updated: 2026-03-02*

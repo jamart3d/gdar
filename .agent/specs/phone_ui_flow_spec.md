@@ -1,8 +1,9 @@
 # Phone UI Flow Specification: GDAR Audio Player
 
-This document defines the interaction model, navigation stack, and core user flows for the **Mobile (Android/iOS)** implementation of GDAR.
+This document defines the interaction model, navigation stack, and core user flows for the **Mobile (Android/iOS)** implementation of GDAR. It relies on the [Android Theme Spec](file:///home/jam/StudioProjects/gdar/.agent/specs/android_theme_spec.md) (Look) and the [Phone Platform Spec](file:///home/jam/StudioProjects/gdar/.agent/specs/phone_ui_design_spec.md) (Feel/Hardware).
 
-## 1. Navigation Architecture
+## 1. Interaction Architecture
+The Phone UI is strictly **Walled Off** from the Fruit (Liquid Glass) theme. It utilizes the **Material 3 Expressive** baseline to ensure high-performance native navigation.
 The Phone UI follows a standard linear navigation stack using Flutter's `Navigator`.
 
 *   **Primary Screen:** `ShowListScreen` (The catalog/browsing hub).

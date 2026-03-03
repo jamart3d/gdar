@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:shakedown/utils/app_haptics.dart';
+import 'package:shakedown/services/device_service.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:provider/provider.dart';
 import 'package:shakedown/providers/settings_provider.dart';
@@ -53,7 +54,7 @@ class _ColorPickerDialogState extends State<ColorPickerDialog> {
           ),
           child: const Text('Default'),
           onPressed: () {
-            HapticFeedback.lightImpact();
+            AppHaptics.lightImpact(context.read<DeviceService>());
             settingsProvider.setSeedColor(null);
             Navigator.of(context).pop();
           },
@@ -67,7 +68,7 @@ class _ColorPickerDialogState extends State<ColorPickerDialog> {
         TextButton(
           child: const Text('Save'),
           onPressed: () {
-            HapticFeedback.lightImpact();
+            AppHaptics.lightImpact(context.read<DeviceService>());
             settingsProvider.setSeedColor(pickerColor);
             Navigator.of(context).pop();
           },

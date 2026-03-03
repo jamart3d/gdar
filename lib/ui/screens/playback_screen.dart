@@ -1,6 +1,4 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
 
 import 'package:provider/provider.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
@@ -22,7 +20,6 @@ import 'dart:async';
 import 'package:shakedown/utils/utils.dart';
 import 'package:shakedown/services/device_service.dart';
 import 'package:shakedown/ui/widgets/tv/tv_scrollbar.dart';
-import 'package:shakedown/providers/theme_provider.dart';
 import 'package:shakedown/ui/widgets/theme/neumorphic_wrapper.dart';
 
 // ── Small private widgets ─────────────────────────────────────────────────────
@@ -638,10 +635,7 @@ class PlaybackScreenState extends State<PlaybackScreen>
                 const BorderRadius.vertical(top: Radius.circular(24.0)),
             boxShadow: isTrueBlackMode
                 ? []
-                : (context.watch<ThemeProvider>().themeStyle ==
-                            ThemeStyle.fruit &&
-                        kIsWeb &&
-                        settingsProvider.useNeumorphism)
+                : (settingsProvider.useNeumorphism)
                     ? NeumorphicWrapper.getShadows(
                         context: context,
                         offset: const Offset(0, -8),

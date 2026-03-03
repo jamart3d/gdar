@@ -30,7 +30,7 @@ The TV UI utilizes a persistent dual-pane layout within `TvDualPaneLayout`.
 When a show that is already playing is selected in the Show List:
 1.  **If Multi-Source:** The show expands in the left pane to reveal SHNIDs. Focus remains in the list.
 2.  **If Single-Source / Selected SHNID:** Shifts focus to the **Right Pane** (Track List). **NO** full-screen navigation occurs.
-3.  **Haptics:** Selection click (on supported controllers).
+3.  **Focus:** Visual focus is communicated via a static high-contrast border. **NO** haptic feedback.
 
 ### 3.2 Clicking an "Inactive" Show
 1.  **Selection:** Starts playback of the show.
@@ -44,15 +44,18 @@ When a show that is already playing is selected in the Show List:
 ### 3.3 The "Random Roll" Sequence (Dice)
 Triggered by the Dice icon or "play-random" deep link. This is a multi-stage orchestrated sequence:
 
-1.  **Stage 1 (1.2s):** Dice pulse animation and Haptics. Logic generates a selection.
+1.  **Stage 1 (1.2s):** Dice pulse animation only. Logic generates a selection.
 2.  **Stage 2 (2.0s):** Show List scrolls to the selected show. Focus is force-shifted to the Show Card.
 3.  **Stage 3 (2.0s):** Focus shifts to the Right Pane (Track List). `PlaybackScreen` syncs to the current track.
 4.  **Playback Start:** Audio begins after focus has stabilized in the track list.
 
-## 4. Modal Interactions (Long-Press)
-Long-pressing any Item (Show or Source) triggers the `TvInteractionModal`.
-*   **Primary Action (Play):** Starts playback and shifts focus to the track list.
-*   **Secondary Action (Rate):** Opens the `RatingDialog` overlay.
+### 4. Modal Interactions (Long-Press)
+*   **Show/Source (Non-Playing):** Triggers `TvInteractionModal` (legacy v135 behavior).
+    *   **Primary:** Starts playback.
+    *   **Secondary:** Opens `RatingDialog`.
+*   **Active Track (Right Pane):** Triggers `TvReloadDialog`.
+    *   **Reload:** Force-retries the current source stream.
+    *   **Safe Button (Hard Reset):** Emergency Stop & Clear Playlist (for unrecoverable buffer stalls).
 *   **TV Context:** `RatingDialog` buttons are specifically scaled for TV visibility ($1.2\times$ multiplier).
 
 ### Navigation Actions (TV)
@@ -74,7 +77,7 @@ The TV UI uses a hybrid navigation model:
 ## 5. Performance & Physics
 - **Transitions**: All TV transitions are instantaneous (`Duration.zero`) to match the Translucent Material aesthetic.
 - **Physics**: No organic ripples or "breathing" animations; focus is communicated via static high-contrast borders.
-- **Haptics**: Standard `selectionClick` or `mediumImpact` feedback on all remote interactions.
+- **Interaction Feedback**: All haptic feedback is **STRICTLY PROHIBITED** on TV builds. Focus is purely visual.
 *   **Focus Scale:** Focused items scale by $1.05\times$ (managed by `TvFocusWrapper`).
 *   **Wakelock:** The `WakelockService` is active during any playback state on TV to prevent the screen from dimming.
 

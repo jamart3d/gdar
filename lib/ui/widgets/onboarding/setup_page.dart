@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:shakedown/utils/app_haptics.dart';
+import 'package:shakedown/services/device_service.dart';
 import 'package:shakedown/providers/settings_provider.dart';
 import 'package:shakedown/providers/theme_provider.dart';
-import 'package:shakedown/services/device_service.dart';
 import 'package:shakedown/ui/styles/app_typography.dart';
 import 'package:shakedown/ui/styles/font_config.dart';
 import 'package:shakedown/ui/widgets/animated_gradient_border.dart';
@@ -106,7 +106,8 @@ class _SetupPageState extends State<SetupPage> {
                                               context, 12.0))),
                               selected: settings.uiScale,
                               onSelected: (bool selected) {
-                                HapticFeedback.selectionClick();
+                                AppHaptics.selectionClick(
+                                    context.read<DeviceService>());
                                 settings.toggleUiScale();
                               },
                               showCheckmark: false,
@@ -124,7 +125,8 @@ class _SetupPageState extends State<SetupPage> {
                             if (isTv) {
                               chip = TvFocusWrapper(
                                 onTap: () {
-                                  HapticFeedback.selectionClick();
+                                  AppHaptics.selectionClick(
+                                      context.read<DeviceService>());
                                   settings.toggleUiScale();
                                 },
                                 borderRadius: BorderRadius.circular(8),
@@ -243,7 +245,7 @@ class _SetupPageState extends State<SetupPage> {
               selected: isSelected,
               onSelected: (bool selected) {
                 if (selected) {
-                  HapticFeedback.selectionClick();
+                  AppHaptics.selectionClick(context.read<DeviceService>());
                   settings.setAppFont(fontKey);
                 }
               },
@@ -263,7 +265,7 @@ class _SetupPageState extends State<SetupPage> {
             if (isTv) {
               chip = TvFocusWrapper(
                 onTap: () {
-                  HapticFeedback.selectionClick();
+                  AppHaptics.selectionClick(context.read<DeviceService>());
                   settings.setAppFont(fontKey);
                 },
                 borderRadius: BorderRadius.circular(8),
@@ -322,7 +324,7 @@ class _SetupPageState extends State<SetupPage> {
 
   void _handleDarkModeToggle(
       bool selected, ThemeProvider themeProvider, SettingsProvider settings) {
-    HapticFeedback.selectionClick();
+    AppHaptics.selectionClick(context.read<DeviceService>());
     themeProvider.toggleTheme();
 
     // Sync True Black with Dark Mode

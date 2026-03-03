@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:shakedown/models/show.dart';
 import 'package:shakedown/models/source.dart';
@@ -11,7 +10,10 @@ import 'package:shakedown/ui/screens/track_list_screen.dart';
 import 'package:shakedown/utils/logger.dart';
 import 'package:shakedown/services/catalog_service.dart';
 import 'package:shakedown/services/device_service.dart';
+import 'package:shakedown/utils/app_haptics.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
+import 'package:shakedown/ui/widgets/rating_control.dart';
+import 'package:shakedown/ui/widgets/tv/tv_interaction_modal.dart';
 
 /// Mixin providing business logic and event handlers for [ShowListScreen].
 mixin ShowListLogicMixin<T extends StatefulWidget>
@@ -54,7 +56,8 @@ mixin ShowListLogicMixin<T extends StatefulWidget>
   }
 
   void toggleSearch() {
-    HapticFeedback.lightImpact();
+    final deviceService = context.read<DeviceService>();
+    AppHaptics.lightImpact(deviceService);
     context.read<ShowListProvider>().toggleSearchVisible();
   }
 
@@ -100,14 +103,14 @@ mixin ShowListLogicMixin<T extends StatefulWidget>
     final isPlayingThisShow = audioProvider.currentShow == show;
     if (isPlayingThisShow) {
       if (context.read<DeviceService>().isTv) {
-        unawaited(HapticFeedback.selectionClick());
+        unawaited(AppHaptics.selectionClick(context.read<DeviceService>()));
         // For active shows, ensure it's expanded if multi-source (for context) and flow.
         if (show.sources.length > 1) {
           final showListProvider = context.read<ShowListProvider>();
           final key = showListProvider.getShowKey(show);
           if (showListProvider.expandedShowKey != key) {
             showListProvider.expandShow(key);
-            animationController.forward(from: 0.0);
+            unawaited(animationController.forward(from: 0.0));
           }
         }
         try {
@@ -144,13 +147,13 @@ mixin ShowListLogicMixin<T extends StatefulWidget>
     final isCollapsingCurrent = previouslyExpanded == key;
 
     if (isCollapsingCurrent) {
-      unawaited(HapticFeedback.selectionClick());
+      unawaited(AppHaptics.selectionClick(context.read<DeviceService>()));
       showListProvider.collapseCurrentShow();
       unawaited(animationController.reverse());
       return;
     }
 
-    unawaited(HapticFeedback.selectionClick());
+    unawaited(AppHaptics.selectionClick(context.read<DeviceService>()));
     final wasSomethingExpanded = previouslyExpanded != null;
     showListProvider.toggleShowExpansion(key);
 
@@ -173,7 +176,7 @@ mixin ShowListLogicMixin<T extends StatefulWidget>
     if (isPlayingThisSource) {
       // Guard: No full-screen player on TV. Shift focus to the track list.
       if (context.read<DeviceService>().isTv) {
-        unawaited(HapticFeedback.selectionClick());
+        unawaited(AppHaptics.selectionClick(context.read<DeviceService>()));
         try {
           (widget as dynamic).onFocusPlayback?.call();
         } catch (_) {}
@@ -228,8 +231,30 @@ mixin ShowListLogicMixin<T extends StatefulWidget>
     }
 
     if (context.read<DeviceService>().isTv) {
-      // v135 style: Direct play on long-press (Google TV).
-      _playSource(show, sourceToPlay);
+      unawaited(TvInteractionModal.show(
+        context,
+        title: show.venue,
+        subtitle: show.date,
+        onPlay: () => _playSource(show, sourceToPlay),
+        onRate: () {
+          showDialog(
+            context: context,
+            builder: (context) => RatingDialog(
+              initialRating: catalog.getRating(sourceToPlay.id),
+              sourceId: sourceToPlay.id,
+              isPlayed: catalog.isPlayed(sourceToPlay.id),
+              onRatingChanged: (newRating) {
+                catalog.setRating(sourceToPlay.id, newRating);
+              },
+              onPlayedChanged: (bool newIsPlayed) {
+                if (newIsPlayed != catalog.isPlayed(sourceToPlay.id)) {
+                  catalog.togglePlayed(sourceToPlay.id);
+                }
+              },
+            ),
+          );
+        },
+      ));
       return;
     }
 
@@ -239,15 +264,38 @@ mixin ShowListLogicMixin<T extends StatefulWidget>
 
   void onSourceLongPressed(Show show, Source source) {
     if (context.read<DeviceService>().isTv) {
-      // v135 style: Direct play on long-press (Google TV).
-      _playSource(show, source);
+      final catalog = context.read<CatalogService>();
+      unawaited(TvInteractionModal.show(
+        context,
+        title: show.venue,
+        subtitle: source.id,
+        onPlay: () => _playSource(show, source),
+        onRate: () {
+          showDialog(
+            context: context,
+            builder: (context) => RatingDialog(
+              initialRating: catalog.getRating(source.id),
+              sourceId: source.id,
+              isPlayed: catalog.isPlayed(source.id),
+              onRatingChanged: (newRating) {
+                catalog.setRating(source.id, newRating);
+              },
+              onPlayedChanged: (bool newIsPlayed) {
+                if (newIsPlayed != catalog.isPlayed(source.id)) {
+                  catalog.togglePlayed(source.id);
+                }
+              },
+            ),
+          );
+        },
+      ));
       return;
     }
     _playSource(show, source);
   }
 
   void _playSource(Show show, Source source) {
-    unawaited(HapticFeedback.mediumImpact());
+    unawaited(AppHaptics.mediumImpact(context.read<DeviceService>()));
     final showListProvider = context.read<ShowListProvider>();
     final audioProvider = context.read<AudioProvider>();
     final key = showListProvider.getShowKey(show);
@@ -378,7 +426,7 @@ mixin ShowListLogicMixin<T extends StatefulWidget>
   }
 
   Future<void> handlePlayRandomShow() async {
-    unawaited(HapticFeedback.mediumImpact());
+    unawaited(AppHaptics.mediumImpact(context.read<DeviceService>()));
     final showListProvider = context.read<ShowListProvider>();
     final audioProvider = context.read<AudioProvider>();
 
@@ -414,7 +462,7 @@ mixin ShowListLogicMixin<T extends StatefulWidget>
 
     if (mounted) {
       if (success) {
-        unawaited(HapticFeedback.mediumImpact());
+        unawaited(AppHaptics.mediumImpact(context.read<DeviceService>()));
         searchController.clear();
         searchFocusNode.unfocus();
         context.read<ShowListProvider>().setSearchVisible(false);
@@ -444,7 +492,7 @@ mixin ShowListLogicMixin<T extends StatefulWidget>
     final audioProvider = context.read<AudioProvider>();
 
     if (showListProvider.filteredShows.isNotEmpty) {
-      HapticFeedback.selectionClick();
+      AppHaptics.selectionClick(context.read<DeviceService>());
       final topShow = showListProvider.filteredShows.first;
       if (topShow.sources.isNotEmpty) {
         final topSource = topShow.sources.first;

@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:flutter/foundation.dart';
 import 'package:shakedown/models/show.dart';
 import 'package:shakedown/models/source.dart';
 import 'package:shakedown/providers/audio_provider.dart';
@@ -12,6 +10,8 @@ import 'package:lucide_icons/lucide_icons.dart';
 import 'package:provider/provider.dart';
 import 'package:shakedown/utils/font_layout_config.dart';
 import 'package:shakedown/ui/styles/app_typography.dart';
+import 'package:shakedown/utils/app_haptics.dart';
+import 'package:shakedown/services/device_service.dart';
 import 'package:shakedown/utils/color_generator.dart';
 import 'package:shakedown/providers/theme_provider.dart';
 import 'package:shakedown/ui/widgets/theme/neumorphic_wrapper.dart';
@@ -53,7 +53,6 @@ class _MiniPlayerState extends State<MiniPlayer> {
 
     final themeProvider = context.watch<ThemeProvider>();
     final isFruitNeumorphic = themeProvider.themeStyle == ThemeStyle.fruit &&
-        kIsWeb &&
         settingsProvider.useNeumorphism &&
         !settingsProvider.useTrueBlack;
 
@@ -313,20 +312,19 @@ class _MiniPlayerState extends State<MiniPlayer> {
                                     child: IconButton(
                                       padding: EdgeInsets.zero,
                                       icon: Icon((themeProvider.themeStyle ==
-                                                  ThemeStyle.fruit &&
-                                              kIsWeb)
+                                              ThemeStyle.fruit)
                                           ? LucideIcons.skipBack
                                           : Icons.skip_previous_rounded),
                                       iconSize: (themeProvider.themeStyle ==
-                                                  ThemeStyle.fruit &&
-                                              kIsWeb)
+                                              ThemeStyle.fruit)
                                           ? 16.0 * scaleFactor
                                           : 28.0 * scaleFactor,
                                       color: colorScheme.onSurface,
                                       onPressed: isFirstTrack
                                           ? null
                                           : () {
-                                              HapticFeedback.selectionClick();
+                                              AppHaptics.selectionClick(context
+                                                  .read<DeviceService>());
                                               audioProvider.seekToPrevious();
                                             },
                                     ),
@@ -361,8 +359,7 @@ class _MiniPlayerState extends State<MiniPlayer> {
 
                                     final bool isFruit =
                                         themeProvider.themeStyle ==
-                                                ThemeStyle.fruit &&
-                                            kIsWeb;
+                                            ThemeStyle.fruit;
                                     final double playButtonSize =
                                         (isFruit ? 38.0 : 38.0) * scaleFactor;
 
@@ -436,20 +433,19 @@ class _MiniPlayerState extends State<MiniPlayer> {
                                     child: IconButton(
                                       padding: EdgeInsets.zero,
                                       icon: Icon((themeProvider.themeStyle ==
-                                                  ThemeStyle.fruit &&
-                                              kIsWeb)
+                                              ThemeStyle.fruit)
                                           ? LucideIcons.skipForward
                                           : Icons.skip_next_rounded),
                                       iconSize: (themeProvider.themeStyle ==
-                                                  ThemeStyle.fruit &&
-                                              kIsWeb)
+                                              ThemeStyle.fruit)
                                           ? 16.0 * scaleFactor
                                           : 28.0 * scaleFactor,
                                       color: colorScheme.onSurface,
                                       onPressed: isLastTrack
                                           ? null
                                           : () {
-                                              HapticFeedback.selectionClick();
+                                              AppHaptics.selectionClick(context
+                                                  .read<DeviceService>());
                                               audioProvider.seekToNext();
                                             },
                                     ),

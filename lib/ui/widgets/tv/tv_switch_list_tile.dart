@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:shakedown/services/device_service.dart';
 import 'package:shakedown/providers/settings_provider.dart';
 import 'package:shakedown/providers/theme_provider.dart';
+import 'package:shakedown/utils/app_haptics.dart';
 import 'package:shakedown/ui/widgets/tv/tv_focus_wrapper.dart';
 import 'package:shakedown/ui/widgets/theme/neumorphic_wrapper.dart';
 
@@ -33,7 +33,7 @@ class TvSwitchListTile extends StatelessWidget {
       return TvFocusWrapper(
         onTap: () {
           onChanged?.call(!value);
-          HapticFeedback.lightImpact();
+          AppHaptics.lightImpact(context.read<DeviceService>());
         },
         borderRadius: BorderRadius.circular(12),
         child: IgnorePointer(

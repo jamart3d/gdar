@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:flutter/foundation.dart';
 import 'package:shakedown/providers/audio_provider.dart';
 import 'package:shakedown/providers/settings_provider.dart';
 import 'package:just_audio/just_audio.dart';
@@ -8,6 +6,10 @@ import 'package:lucide_icons/lucide_icons.dart';
 import 'package:provider/provider.dart';
 import 'package:shakedown/utils/font_layout_config.dart';
 import 'package:shakedown/ui/widgets/theme/neumorphic_wrapper.dart';
+import 'package:shakedown/ui/widgets/theme/liquid_glass_wrapper.dart';
+import 'package:shakedown/ui/widgets/animated_gradient_border.dart';
+import 'package:shakedown/utils/app_haptics.dart';
+import 'package:shakedown/services/device_service.dart';
 import 'package:shakedown/providers/theme_provider.dart';
 
 class PlaybackControls extends StatefulWidget {
@@ -35,7 +37,6 @@ class _PlaybackControlsState extends State<PlaybackControls> {
     final themeProvider = context.watch<ThemeProvider>();
     final currentSource = audioProvider.currentSource;
     final isFruitNeumorphic = themeProvider.themeStyle == ThemeStyle.fruit &&
-        kIsWeb &&
         settingsProvider.useNeumorphism &&
         !settingsProvider.useTrueBlack;
 
@@ -55,14 +56,13 @@ class _PlaybackControlsState extends State<PlaybackControls> {
 
     final double sizeMultiplier =
         1.0 - (reductionFactor * widget.panelPosition);
-    final bool isFruitWeb =
-        themeProvider.themeStyle == ThemeStyle.fruit && kIsWeb;
+    final bool isFruit = themeProvider.themeStyle == ThemeStyle.fruit;
     final double iconSize =
-        (isFruitWeb ? 34.0 : 32.0) * scaleFactor * sizeMultiplier;
+        (isFruit ? 34.0 : 32.0) * scaleFactor * sizeMultiplier;
     final double playButtonSize =
-        (isFruitWeb ? 74.0 : 70.0) * scaleFactor * sizeMultiplier;
+        (isFruit ? 74.0 : 70.0) * scaleFactor * sizeMultiplier;
     final double playIconSize =
-        (isFruitWeb ? 44.0 : 42.0) * scaleFactor * sizeMultiplier;
+        (isFruit ? 44.0 : 42.0) * scaleFactor * sizeMultiplier;
 
     return StreamBuilder<int?>(
       stream: audioProvider.currentIndexStream,
@@ -100,16 +100,23 @@ class _PlaybackControlsState extends State<PlaybackControls> {
                       offset: const Offset(4, 4),
                       blur: 18,
                       isPressed: _isPrevPressed,
-                      child: IconButton(
-                        icon: const Icon(LucideIcons.skipBack),
-                        iconSize: iconSize,
-                        color: colorScheme.onSurface,
-                        onPressed: isFirstTrack
-                            ? null
-                            : () {
-                                HapticFeedback.selectionClick();
-                                audioProvider.seekToPrevious();
-                              },
+                      child: LiquidGlassWrapper(
+                        enabled: isFruit,
+                        borderRadius: BorderRadius.circular(12),
+                        opacity: 0.05,
+                        blur: 5.0,
+                        child: IconButton(
+                          icon: const Icon(LucideIcons.skipBack),
+                          iconSize: iconSize,
+                          color: colorScheme.onSurface,
+                          onPressed: isFirstTrack
+                              ? null
+                              : () {
+                                  AppHaptics.selectionClick(
+                                      context.read<DeviceService>());
+                                  audioProvider.seekToPrevious();
+                                },
+                        ),
                       ),
                     ),
                   ),
@@ -120,7 +127,7 @@ class _PlaybackControlsState extends State<PlaybackControls> {
                   curve: Curves.easeOutCubic,
                   child: GestureDetector(
                     onLongPress: () {
-                      HapticFeedback.heavyImpact();
+                      AppHaptics.heavyImpact(context.read<DeviceService>());
                       audioProvider.stopAndClear();
                     },
                     onTapDown: (_) => setState(() => _isPlayPressed = true),
@@ -132,49 +139,77 @@ class _PlaybackControlsState extends State<PlaybackControls> {
                       isPressed: _isPlayPressed,
                       intensity: 1.5, // Stronger pop for main play
                       blur: 24,
-                      child: Container(
-                        width: playButtonSize,
-                        height: playButtonSize,
-                        decoration: BoxDecoration(
-                          // Let NeumorphicWrapper handle the color/gradient
-                          color: isFruitNeumorphic
-                              ? Colors.transparent
-                              : colorScheme.primary,
-                          shape: BoxShape.circle,
-                        ),
-                        child: (processingState == ProcessingState.loading ||
-                                processingState == ProcessingState.buffering)
-                            ? Padding(
-                                padding: const EdgeInsets.all(18.0),
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 3.5,
-                                  valueColor: AlwaysStoppedAnimation<Color>(
-                                    isFruitNeumorphic
-                                        ? colorScheme.primary
-                                        : colorScheme.onPrimary,
+                      child: AnimatedGradientBorder(
+                        enabled:
+                            settingsProvider.highlightPlayingWithRgb && isFruit,
+                        borderRadius: playButtonSize / 2,
+                        borderWidth: 3.5,
+                        showGlow: true,
+                        glowOpacity: 0.5 * (settingsProvider.glowMode / 100.0),
+                        animationSpeed: settingsProvider.rgbAnimationSpeed,
+                        colors: const [
+                          Colors.red,
+                          Colors.yellow,
+                          Colors.green,
+                          Colors.cyan,
+                          Colors.blue,
+                          Colors.purple,
+                          Colors.red,
+                        ],
+                        child: LiquidGlassWrapper(
+                          enabled: isFruit,
+                          borderRadius:
+                              BorderRadius.circular(playButtonSize / 2),
+                          opacity: 0.08,
+                          blur: 8.0,
+                          child: Container(
+                            width: playButtonSize,
+                            height: playButtonSize,
+                            decoration: BoxDecoration(
+                              // Let NeumorphicWrapper handle the color/gradient
+                              color: isFruitNeumorphic
+                                  ? Colors.transparent
+                                  : colorScheme.primary,
+                              shape: BoxShape.circle,
+                            ),
+                            child: (processingState ==
+                                        ProcessingState.loading ||
+                                    processingState ==
+                                        ProcessingState.buffering)
+                                ? Padding(
+                                    padding: const EdgeInsets.all(18.0),
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 3.5,
+                                      valueColor: AlwaysStoppedAnimation<Color>(
+                                        isFruitNeumorphic
+                                            ? colorScheme.primary
+                                            : colorScheme.onPrimary,
+                                      ),
+                                    ),
+                                  )
+                                : IconButton(
+                                    key: const ValueKey('play_pause_button'),
+                                    iconSize: playIconSize,
+                                    onPressed: () {
+                                      AppHaptics.selectionClick(
+                                          context.read<DeviceService>());
+                                      if (playing) {
+                                        audioProvider.pause();
+                                      } else {
+                                        audioProvider.play();
+                                      }
+                                    },
+                                    icon: Icon(
+                                      playing
+                                          ? LucideIcons.pause
+                                          : LucideIcons.play,
+                                      color: isFruitNeumorphic
+                                          ? colorScheme.primary
+                                          : colorScheme.onPrimary,
+                                    ),
                                   ),
-                                ),
-                              )
-                            : IconButton(
-                                key: const ValueKey('play_pause_button'),
-                                iconSize: playIconSize,
-                                onPressed: () {
-                                  HapticFeedback.selectionClick();
-                                  if (playing) {
-                                    audioProvider.pause();
-                                  } else {
-                                    audioProvider.play();
-                                  }
-                                },
-                                icon: Icon(
-                                  playing
-                                      ? LucideIcons.pause
-                                      : LucideIcons.play,
-                                  color: isFruitNeumorphic
-                                      ? colorScheme.primary
-                                      : colorScheme.onPrimary,
-                                ),
-                              ),
+                          ),
+                        ),
                       ),
                     ),
                   ),
@@ -194,16 +229,23 @@ class _PlaybackControlsState extends State<PlaybackControls> {
                       offset: const Offset(4, 4),
                       blur: 18,
                       isPressed: _isNextPressed,
-                      child: IconButton(
-                        icon: const Icon(LucideIcons.skipForward),
-                        iconSize: iconSize,
-                        color: colorScheme.onSurface,
-                        onPressed: isLastTrack
-                            ? null
-                            : () {
-                                HapticFeedback.selectionClick();
-                                audioProvider.seekToNext();
-                              },
+                      child: LiquidGlassWrapper(
+                        enabled: isFruit,
+                        borderRadius: BorderRadius.circular(12),
+                        opacity: 0.05,
+                        blur: 5.0,
+                        child: IconButton(
+                          icon: const Icon(LucideIcons.skipForward),
+                          iconSize: iconSize,
+                          color: colorScheme.onSurface,
+                          onPressed: isLastTrack
+                              ? null
+                              : () {
+                                  AppHaptics.selectionClick(
+                                      context.read<DeviceService>());
+                                  audioProvider.seekToNext();
+                                },
+                        ),
                       ),
                     ),
                   ),

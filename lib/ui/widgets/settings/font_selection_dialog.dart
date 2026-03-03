@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:shakedown/utils/app_haptics.dart';
+import 'package:shakedown/services/device_service.dart';
 import 'package:provider/provider.dart';
 import 'package:shakedown/providers/settings_provider.dart';
 import 'package:shakedown/utils/font_layout_config.dart';
@@ -36,7 +37,7 @@ class FontSelectionDialog extends StatelessWidget {
           groupValue: settingsProvider.appFont,
           onChanged: (String? value) {
             if (value != null) {
-              HapticFeedback.selectionClick();
+              AppHaptics.selectionClick(context.read<DeviceService>());
               settingsProvider.setAppFont(value);
               Navigator.of(context).pop();
             }

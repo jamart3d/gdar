@@ -1,10 +1,10 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:shakedown/providers/audio_provider.dart';
 import 'package:shakedown/providers/settings_provider.dart';
 import 'package:shakedown/services/device_service.dart';
+import 'package:shakedown/utils/app_haptics.dart';
 import 'package:shakedown/services/gapless_player/gapless_player.dart';
 import 'package:shakedown/ui/widgets/section_card.dart';
 import 'package:shakedown/ui/widgets/settings/highlightable_setting.dart';
@@ -81,7 +81,7 @@ class PlaybackSection extends StatelessWidget {
                         ?.copyWith(fontSize: 12 * scaleFactor))),
             value: settingsProvider.playOnTap,
             onChanged: (value) {
-              HapticFeedback.lightImpact();
+              AppHaptics.lightImpact(context.read<DeviceService>());
               context.read<SettingsProvider>().togglePlayOnTap();
             },
             secondary:
@@ -152,7 +152,7 @@ class PlaybackSection extends StatelessWidget {
                   )),
               value: settingsProvider.offlineBuffering,
               onChanged: (value) {
-                HapticFeedback.lightImpact();
+                AppHaptics.lightImpact(context.read<DeviceService>());
                 context.read<SettingsProvider>().toggleOfflineBuffering();
               },
               secondary: Icon(isFruit
@@ -189,7 +189,7 @@ class PlaybackSection extends StatelessWidget {
                   )),
               value: settingsProvider.enableBufferAgent,
               onChanged: (value) {
-                HapticFeedback.lightImpact();
+                AppHaptics.lightImpact(context.read<DeviceService>());
                 context.read<SettingsProvider>().toggleEnableBufferAgent();
               },
               secondary:
@@ -484,7 +484,7 @@ class PlaybackSection extends StatelessWidget {
                       ? context.read<AudioProvider>().audioPlayer.activeMode
                       : sp.audioEngineMode,
                   onSelectionChanged: (AudioEngineMode mode) {
-                    HapticFeedback.lightImpact();
+                    AppHaptics.lightImpact(context.read<DeviceService>());
                     sp.setAudioEngineMode(mode);
                     showMessage(context,
                         'Relaunch required for engine change to take effect.');
@@ -540,7 +540,7 @@ class PlaybackSection extends StatelessWidget {
                     ],
                     selectedValue: sp.trackTransitionMode,
                     onSelectionChanged: (String mode) {
-                      HapticFeedback.lightImpact();
+                      AppHaptics.lightImpact(context.read<DeviceService>());
                       sp.setTrackTransitionMode(mode);
                     },
                   ),
@@ -629,7 +629,7 @@ class PlaybackSection extends StatelessWidget {
                       ],
                       selectedValue: sp.hybridHandoffMode,
                       onSelectionChanged: (HybridHandoffMode mode) {
-                        HapticFeedback.lightImpact();
+                        AppHaptics.lightImpact(context.read<DeviceService>());
                         sp.setHybridHandoffMode(mode);
                       },
                     ),
@@ -690,7 +690,7 @@ class PlaybackSection extends StatelessWidget {
                       ],
                       selectedValue: sp.hybridBackgroundMode,
                       onSelectionChanged: (HybridBackgroundMode mode) {
-                        HapticFeedback.lightImpact();
+                        AppHaptics.lightImpact(context.read<DeviceService>());
                         sp.setHybridBackgroundMode(mode);
                       },
                     ),
@@ -722,7 +722,7 @@ class PlaybackSection extends StatelessWidget {
         ),
         value: sp.preventSleep,
         onChanged: (_) {
-          HapticFeedback.lightImpact();
+          AppHaptics.lightImpact(context.read<DeviceService>());
           sp.togglePreventSleep();
         },
       ),

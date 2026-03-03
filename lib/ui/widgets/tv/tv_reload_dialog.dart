@@ -3,10 +3,12 @@ import 'package:shakedown/ui/widgets/tv/tv_focus_wrapper.dart';
 
 class TvReloadDialog extends StatelessWidget {
   final VoidCallback onReload;
+  final VoidCallback? onHardReset;
 
   const TvReloadDialog({
     super.key,
     required this.onReload,
+    this.onHardReset,
   });
 
   @override
@@ -77,6 +79,16 @@ class TvReloadDialog extends StatelessWidget {
                   description: 'Continue waiting',
                   onTap: () => Navigator.of(context).pop(),
                 ),
+                const SizedBox(height: 12),
+                _DialogButton(
+                  label: 'Hard Reset',
+                  icon: Icons.dangerous_rounded,
+                  description: 'Emergency stop & clear playlist',
+                  onTap: () {
+                    Navigator.of(context).pop();
+                    onHardReset?.call();
+                  },
+                ),
               ],
             ),
           ],
@@ -88,12 +100,14 @@ class TvReloadDialog extends StatelessWidget {
   static Future<void> show(
     BuildContext context, {
     required VoidCallback onReload,
+    VoidCallback? onHardReset,
   }) {
     return showDialog(
       context: context,
       barrierColor: Colors.black.withValues(alpha: 0.8),
       builder: (context) => TvReloadDialog(
         onReload: onReload,
+        onHardReset: onHardReset,
       ),
     );
   }
