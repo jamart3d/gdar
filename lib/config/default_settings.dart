@@ -77,7 +77,7 @@ class DefaultSettings {
 
   // Steal Visualizer Parameters
   static const double oilFlowSpeed = 0.1;
-  static const double oilPulseIntensity = 0.0;
+  static const double oilPulseIntensity = 1.0;
   static const String oilPalette = 'acid_green';
   static const double oilFilmGrain = 0.15;
   static const double oilHeatDrift = 0.0;
@@ -114,10 +114,10 @@ class DefaultSettings {
   static const double oilInnerToMiddleGap = 0.2;
   static const double oilMiddleToOuterGap = 0.05;
   static const double oilOrbitDrift = 1.0;
-  static const double oilBannerLetterSpacing = 0.5;
-  static const double oilBannerWordSpacing = 0.05;
-  static const double oilTrackLetterSpacing = 0.5;
-  static const double oilTrackWordSpacing = 0.05;
+  static const double oilBannerLetterSpacing = 1.0;
+  static const double oilBannerWordSpacing = 0.2;
+  static const double oilTrackLetterSpacing = 1.0;
+  static const double oilTrackWordSpacing = 0.2;
   static const double oilFlatLineSpacing = 1.0;
   static const double oilInnerRingFontScale = 0.75;
   static const double oilInnerRingSpacingMultiplier = 0.4;

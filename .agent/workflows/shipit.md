@@ -8,6 +8,7 @@ description: Combined workflow for versioning, building, and deploying the GDAR 
 
 This workflow automates the entire release process from version bumping to git synchronization.
 
+// turbo-all
 ## 1. Preparation
 1. Increment the `version` number and build number in `pubspec.yaml`.
 2. Update `docs/RELEASE_NOTES.txt` with the latest changes and bug fixes.

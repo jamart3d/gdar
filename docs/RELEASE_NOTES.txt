@@ -1,3 +1,10 @@
+Release 1.1.44+144:
+- **Audio Reactivity (TV)**: Fixed default `oilPulseIntensity` (0.0 -> 1.0) so audio-driven movement is visible by default when enabled.
+- **Settings (TV)**: Implemented "auto-nudge" logic in `SettingsProvider`—enabling audio reactivity now automatically boosts pulse intensity if it was previously off.
+- **UI/UX (TV)**: Exposed Letter and Word spacing controls for the "Flat" banner style, allowing for granular text layout adjustments.
+- **UI/UX (TV)**: Relaxed default letter spacing (0.5 -> 1.0) and word spacing (0.05 -> 0.2) in `DefaultSettings` to prevent the "squeezed" look in Flat mode.
+- **Documentation**: Conducted a deep architectural audit of the Android Visualizer API and permission requirements for screensaver reactivity.
+
 Release 1.1.43+143:
 - **UI/UX (Web/PWA)**: Implemented direct support for the Web Vibration API (`navigator.vibrate`), delivering more reliable haptic feedback across all mobile browsers and PWA installations.
 - **UI/UX (Architecture)**: Enforced "Walled Architecture" for the Fruit theme—strictly restricted to Web/PWA platforms. Native Mobile (Phone/Tablet) and TV now force the Android/Material 3 theme for platform consistency.

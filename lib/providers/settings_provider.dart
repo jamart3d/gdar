@@ -955,9 +955,18 @@ class SettingsProvider with ChangeNotifier {
       _updateDoublePreference(_oilFilmGrainKey, _oilFilmGrain = value);
   Future<void> setOilHeatDrift(double value) =>
       _updateDoublePreference(_oilHeatDriftKey, _oilHeatDrift = value);
-  void toggleOilEnableAudioReactivity() => _updatePreference(
-      _oilEnableAudioReactivityKey,
-      _oilEnableAudioReactivity = !_oilEnableAudioReactivity);
+  void toggleOilEnableAudioReactivity() {
+    _oilEnableAudioReactivity = !_oilEnableAudioReactivity;
+
+    // Explicitly nudge pulse intensity to 1.0 if it's currently 0.0,
+    // otherwise enabling reactivity does nothing visually in the shader.
+    if (_oilEnableAudioReactivity && _oilPulseIntensity == 0.0) {
+      setOilPulseIntensity(1.0);
+    }
+
+    _updatePreference(_oilEnableAudioReactivityKey, _oilEnableAudioReactivity);
+  }
+
   void setOilPerformanceLevel(int level) => _updateIntPreference(
       _oilPerformanceLevelKey, _oilPerformanceLevel = level);
   void toggleOilLogoAntiAlias() => _updatePreference(
