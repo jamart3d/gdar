@@ -61,6 +61,7 @@ class SettingsProvider with ChangeNotifier {
   static const String _hybridBackgroundModeKey = 'hybrid_background_mode';
   static const String _webSourceFiltersInitKey = 'web_source_filters_init_v1';
   static const String _simpleRandomIconKey = 'simple_random_icon';
+  static const String _fruitDenseListKey = 'fruit_dense_list';
 
   // Screensaver (steal)
   static const String _useOilScreensaverKey = 'use_oil_screensaver';
@@ -176,6 +177,7 @@ class SettingsProvider with ChangeNotifier {
   late bool _abbreviateDayOfWeek;
   late bool _abbreviateMonth;
   late bool _simpleRandomIcon;
+  late bool _fruitDenseList;
   late bool _marqueeEnabled;
   late bool _enableSwipeToBlock;
   late bool _omitHttpPathInCopy;
@@ -286,6 +288,7 @@ class SettingsProvider with ChangeNotifier {
   bool get abbreviateDayOfWeek => _abbreviateDayOfWeek;
   bool get abbreviateMonth => _abbreviateMonth;
   bool get simpleRandomIcon => _simpleRandomIcon;
+  bool get fruitDenseList => _fruitDenseList;
   bool get marqueeEnabled => _marqueeEnabled;
   bool get enableSwipeToBlock => _enableSwipeToBlock;
   bool get omitHttpPathInCopy => _omitHttpPathInCopy;
@@ -519,6 +522,7 @@ class SettingsProvider with ChangeNotifier {
     _abbreviateMonth =
         _prefs.getBool(_abbreviateMonthKey) ?? DefaultSettings.abbreviateMonth;
     _simpleRandomIcon = _prefs.getBool(_simpleRandomIconKey) ?? false;
+    _fruitDenseList = _prefs.getBool(_fruitDenseListKey) ?? false;
 
     // Screensaver Migration
     final defaultScreensaver = _dBool(WebDefaults.useOilScreensaver,
@@ -897,6 +901,9 @@ class SettingsProvider with ChangeNotifier {
 
   void setForceTv(bool value) =>
       _updatePreference(_forceTvKey, _forceTv = value);
+
+  void toggleFruitDenseList() =>
+      _updatePreference(_fruitDenseListKey, _fruitDenseList = !_fruitDenseList);
 
   void setNeumorphicStyle(NeumorphicStyle value, {bool? notify}) {
     if (_neumorphicStyle != value) {

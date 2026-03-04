@@ -11,6 +11,16 @@ This skill runs the full release cycle autonomously. The agent proceeds
 through all steps without asking for confirmation (per the Autonomous
 Exception in `gemini.md` rules).
 
+// turbo-all
+
+
+## PowerShell Rules (Windows 10)
+- **Command separator**: Always use `;` between chained commands. Never use `&&` (bash-only).
+- **Read-only commands are always safe**: `Get-Content`, `Get-Item`, `Test-Path`, and any
+  other read-only PowerShell command must **always** be run with `SafeToAutoRun: true`.
+  These change nothing and the user must never be prompted for them.
+
+
 ## Prerequisites
 - All changes committed and tests passing.
 - `CHANGELOG.md` has an `[Unreleased]` section with pending entries.
@@ -26,29 +36,44 @@ Exception in `gemini.md` rules).
 
 ### 2. Finalize Changelog
 1. Read `.agent/notes/pending_release.md`.
-2. Move entries from `[Unreleased]` to a new version heading in `CHANGELOG.md`.
-3. Clear `pending_release.md` back to its template.
+2. Move entries from `[Unreleased]` to a new versioned heading in `CHANGELOG.md`.
+3. **IMPORTANT — insertion order**: The new version block must be inserted
+   **above** the previous release (i.e., immediately after the file header),
+   so the file stays newest-first. Never insert below an existing release block.
+4. Leave a fresh empty `[Unreleased]` section at the top (above the new block).
+5. Clear `pending_release.md` back to its template.
 
-### 3. Build
-1. Run `flutter build appbundle --release` (Android).
-2. Run `flutter build web --release` (Web).
-
-### 4. Deploy Web
-1. Run `firebase deploy --only hosting`.
-
-### 5. Generate Play Store Release Note
+### 3. Generate Play Store Release Note  ← DO THIS BEFORE BUILDS
 1. Extract the bullet points from the new version block just added to `CHANGELOG.md`.
 2. Strip all markdown formatting (bold, backticks, links).
 3. Convert `- ` list items to `•` bullets.
 4. Prepend with `What's new in vX.X.X`.
 5. Trim to ≤500 characters (Google Play Console limit).
-6. **Overwrite** root-level `PLAY_STORE_RELEASE.txt` with the result.
-7. Display the contents so the user can review it before uploading.
+6. **Prepend** (do NOT overwrite) to `PLAY_STORE_RELEASE.txt` with a
+   `---` separator so history is preserved. Format:
+   ```
+   What's new in vX.X.X
+   • ...
+
+   ---
+
+   [previous content]
+   ```
+7. **Display the contents now** so the user can review while builds run.
+
+### 4. Build
+1. Run `flutter build appbundle --release` (Android).
+2. Run `flutter build web --release` (Web).
+
+### 5. Deploy Web
+1. Run `firebase deploy --only hosting`.
 
 ### 6. Git Sync
 1. `git add .`
 2. `git commit -m "Release vX.X.X+N"`
 3. `git push`
+4. **PowerShell note**: Run as separate commands or use `;` as separator.
+   Never use `&&` — that is bash-only and will fail on Windows PowerShell.
 
 ### 7. Notify
 1. Inform user the build is ready.

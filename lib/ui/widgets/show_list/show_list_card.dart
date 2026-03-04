@@ -241,6 +241,19 @@ class _ShowListCardState extends State<ShowListCard> {
         !isTv;
     final bool usePremium = settingsProvider.useNeumorphism && isFruit;
 
+    // --- Fruit Mobile: vertical card layout (Stitch design) ---
+    if (isFruit && useMobileLayout && !isTv) {
+      return _buildFruitMobileCardContent(
+        context: context,
+        borderRadius: borderRadius,
+        backgroundColor: backgroundColor,
+        style: style,
+        settingsProvider: settingsProvider,
+        colorScheme: colorScheme,
+        usePremium: usePremium,
+      );
+    }
+
     // Use tighter mobile-style heights for both themes on narrow screens
     final double baseHeight = isTv
         ? 48.0
@@ -893,6 +906,209 @@ class _ShowListCardState extends State<ShowListCard> {
                         )),
             );
           },
+        );
+      },
+    );
+  }
+
+  /// Builds the Stitch-design vertical card for Fruit theme on web/PWA.
+  /// Dense mode = same structure, less padding (controlled by fruitDenseList).
+  Widget _buildFruitMobileCardContent({
+    required BuildContext context,
+    required double borderRadius,
+    required Color backgroundColor,
+    required CardStyle style,
+    required SettingsProvider settingsProvider,
+    required ColorScheme colorScheme,
+    required bool usePremium,
+  }) {
+    final bool isDense = settingsProvider.fruitDenseList;
+    final double vPad = isDense ? 12.0 : 18.0;
+    final double hPad = 16.0;
+
+    // Duration: sum all tracks from the primary source
+    final Source? primarySource =
+        widget.isPlaying && widget.playingSource != null
+            ? widget.playingSource
+            : widget.show.sources.isNotEmpty
+                ? widget.show.sources.first
+                : null;
+
+    String durationStr = '';
+    if (primarySource != null && primarySource.tracks.isNotEmpty) {
+      final totalSecs = primarySource.tracks.fold<int>(
+        0,
+        (sum, t) => sum + t.duration,
+      );
+      if (totalSecs > 0) {
+        final h = totalSecs ~/ 3600;
+        final m = (totalSecs % 3600) ~/ 60;
+        durationStr = h > 0 ? '${h}H ${m}M' : '${m}M';
+      }
+    }
+
+    final String srcLabel = (primarySource?.src ?? '').toUpperCase();
+    final bool hasDuration = durationStr.isNotEmpty;
+    final bool hasSrcLabel = srcLabel.isNotEmpty;
+    final bool hasFooterData = hasDuration || hasSrcLabel;
+    // Star rating
+    Source? targetSource = widget.isPlaying && widget.playingSource != null
+        ? widget.playingSource
+        : widget.show.sources.length == 1
+            ? widget.show.sources.first
+            : null;
+    final String? ratingKey = targetSource?.id;
+
+    return ValueListenableBuilder(
+      valueListenable: CatalogService().ratingsListenable,
+      builder: (context, _, __) {
+        final int rating =
+            ratingKey != null ? CatalogService().getRating(ratingKey) : 0;
+        final bool isPlayed =
+            ratingKey != null ? CatalogService().isPlayed(ratingKey) : false;
+
+        return Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(borderRadius),
+            color: backgroundColor,
+          ),
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              canRequestFocus: true,
+              borderRadius: BorderRadius.circular(borderRadius),
+              onTap: () {
+                AppHaptics.selectionClick(context.read<DeviceService>());
+                widget.onTap();
+              },
+              onLongPress: widget.onLongPress,
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: hPad, vertical: vPad),
+                child: Stack(
+                  children: [
+                    // Stars: top-right, absolutely positioned
+                    if (ratingKey != null)
+                      Positioned(
+                        top: 0,
+                        right: 0,
+                        child: RatingControl(
+                          rating: rating,
+                          isPlayed: isPlayed,
+                          size: isDense ? 22 : 24,
+                          compact: true,
+                          onTap: (widget.isPlaying ||
+                                  widget.alwaysShowRatingInteraction ||
+                                  widget.show.sources.length == 1)
+                              ? () async {
+                                  await showDialog(
+                                    context: context,
+                                    builder: (ctx) => RatingDialog(
+                                      initialRating: rating,
+                                      sourceId: ratingKey,
+                                      isPlayed: isPlayed,
+                                      onRatingChanged: (r) => CatalogService()
+                                          .setRating(ratingKey, r),
+                                      onPlayedChanged: (v) {
+                                        if (v !=
+                                            CatalogService()
+                                                .isPlayed(ratingKey)) {
+                                          CatalogService()
+                                              .togglePlayed(ratingKey);
+                                        }
+                                      },
+                                    ),
+                                  );
+                                }
+                              : null,
+                        ),
+                      ),
+
+                    // Main content column (left side, with right padding for stars)
+                    Padding(
+                      padding: const EdgeInsets.only(right: 72.0),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Date (bold, top)
+                          Text(
+                            style.formattedDate,
+                            style: const TextStyle(
+                              fontFamily: 'Inter',
+                              fontSize: 15.0,
+                              fontWeight: FontWeight.w700,
+                              height: 1.2,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 3),
+                          // Venue (secondary)
+                          Text(
+                            widget.show.venue,
+                            style: TextStyle(
+                              fontFamily: 'Inter',
+                              fontSize: 13.0,
+                              fontWeight: FontWeight.w400,
+                              color:
+                                  colorScheme.onSurface.withValues(alpha: 0.55),
+                              height: 1.2,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+
+                          SizedBox(height: isDense ? 8.0 : 10.0),
+                          // Divider
+                          Divider(
+                            height: 1,
+                            thickness: 0.5,
+                            color:
+                                colorScheme.onSurface.withValues(alpha: 0.12),
+                          ),
+                          SizedBox(height: isDense ? 6.0 : 8.0),
+                          // Footer: ● 3H 24M • SOUNDBOARD
+                          if (hasFooterData)
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                // Colored dot
+                                Container(
+                                  width: 5,
+                                  height: 5,
+                                  decoration: BoxDecoration(
+                                    color: colorScheme.primary,
+                                    shape: BoxShape.circle,
+                                  ),
+                                ),
+                                const SizedBox(width: 6),
+                                Text(
+                                  [
+                                    if (hasDuration) durationStr,
+                                    if (hasSrcLabel) srcLabel,
+                                  ].join(' • '),
+                                  style: TextStyle(
+                                    fontFamily: 'Inter',
+                                    fontSize: 9.5,
+                                    fontWeight: FontWeight.w700,
+                                    letterSpacing: 0.8,
+                                    color: colorScheme.onSurface
+                                        .withValues(alpha: 0.45),
+                                    height: 1.0,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ],
+                            ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
         );
       },
     );

@@ -4,18 +4,21 @@ All notable changes to the GDAR project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.1.45+145] - 2026-03-04
+## [Unreleased]
+
+## [1.1.47+147] - 2026-03-04
 
 ### Added
-- **Infrastructure**: Introduced `env_doctor.py` v4.1.0 for one-shot environment bootstrapping, migrations, and health checking.
-- **Agent Workflows**: Added new slash-commands for AI automation: `/screenshot_audit`, `/mock_regen`, `/image_to_code`, and `/session_debrief`.
-- **Agent Skills**: Injected specialized skills: `audio_engine_diagnostics`, `dev_tools` (ADB screenshot/logs), and `shipit` (autonomous release pipeline).
-- **Static Configs**: Standardized `.editorconfig`, `.gitattributes`, and `.vscode/settings.json` across platforms (Windows/ChromeOS).
+- **UI/UX (Phone/Tablet)**: Implemented new "Fruit UI" layout for the `PlaybackScreen` for non-TV platforms, providing a cleaner, more focused mobile experience.
+- **Settings**: Added a "Dense Show List" toggle in Appearance settings exclusively for the Fruit theme to fit more shows on screen.
 
 ### Changed
-- **Documentation**: Migrated `docs/RELEASE_NOTES.txt` to root `CHANGELOG.md` (Keep a Changelog format).
-- **Agent Rules**: Standardized large monolithic rules into granular, trigger-based modules (e.g., `tv_ui_flow.md`, `fruit_theme.md`, `native_audio.md`).
-- **Release Management**: Retired `docs/RELEASE_NOTES.txt`. All history now lives in `CHANGELOG.md`.
+- **UI/UX (Web)**: Refined the Fruit theme "Show List" screen on Web/PWA to match the premium "Stitch" vertical card design.
+- **UI/UX (Web)**: Updated the Fruit Web app bar to a centered layout featuring the "ShakeDown" title in the Rock Salt font.
+
+### Fixed
+- **UI/UX (Phone)**: Resolved a double-padding issue on the `PlaybackScreen` AppBar where it was being redundant offset by the system status bar height.
+- **Tests**: Updated several test mocks to support the new `fruitDenseList` property in `SettingsProvider`.
 
 ## [1.1.46+146] - 2026-03-04
 
@@ -28,7 +31,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Tests**: Fixed `settings_provider_test.dart` — added missing `await` for `toggleOilEnableAudioReactivity()` to match its `Future<void>` signature.
 - **Screensaver**: Fixed `screensaver_screen.dart` — added `mounted` guard before `BuildContext` access after async `Permission.microphone.request()` call to satisfy lint (`use_build_context_synchronously`).
 
-## [Unreleased]
+## [1.1.45+145] - 2026-03-04
+
+### Added
+- **Infrastructure**: Introduced `env_doctor.py` v4.1.0 for one-shot environment bootstrapping, migrations, and health checking.
+- **Agent Workflows**: Added new slash-commands for AI automation: `/screenshot_audit`, `/mock_regen`, `/image_to_code`, and `/session_debrief`.
+- **Agent Skills**: Injected specialized skills: `audio_engine_diagnostics`, `dev_tools` (ADB screenshot/logs), and `shipit` (autonomous release pipeline).
+- **Static Configs**: Standardized `.editorconfig`, `.gitattributes`, and `.vscode/settings.json` across platforms (Windows/ChromeOS).
+
+### Changed
+- **Documentation**: Migrated `docs/RELEASE_NOTES.txt` to root `CHANGELOG.md` (Keep a Changelog format).
+- **Agent Rules**: Standardized large monolithic rules into granular, trigger-based modules (e.g., `tv_ui_flow.md`, `fruit_theme.md`, `native_audio.md`).
+- **Release Management**: Retired `docs/RELEASE_NOTES.txt`. All history now lives in `CHANGELOG.md`.
 
 
 

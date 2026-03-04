@@ -5,6 +5,10 @@ import 'package:sliding_up_panel/sliding_up_panel.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:shakedown/providers/audio_provider.dart';
 import 'package:shakedown/providers/settings_provider.dart';
+import 'package:shakedown/providers/theme_provider.dart';
+import 'package:shakedown/ui/widgets/fruit_tab_bar.dart';
+import 'package:shakedown/ui/widgets/playback/fruit_now_playing_card.dart';
+import 'package:shakedown/ui/widgets/playback/fruit_track_list.dart';
 import 'package:shakedown/ui/widgets/playback/playback_panel.dart';
 import 'package:shakedown/ui/widgets/playback/track_list_view.dart';
 import 'package:shakedown/ui/widgets/playback/playback_app_bar.dart';
@@ -617,6 +621,9 @@ class PlaybackScreenState extends State<PlaybackScreen>
       },
     );
 
+    final themeProvider = context.watch<ThemeProvider>();
+    final isFruit = themeProvider.themeStyle == ThemeStyle.fruit;
+
     if (widget.isPane) {
       return Container(
         color: backgroundColor.withValues(alpha: 0.7),
@@ -624,6 +631,119 @@ class PlaybackScreenState extends State<PlaybackScreen>
       );
     }
 
+    if (isFruit && !widget.isPane) {
+      // ── FRUIT WEB / MOBILE LAYOUT (UNIFIED TRACKLIST) ──
+      return Scaffold(
+        backgroundColor: backgroundColor,
+        appBar: PreferredSize(
+          preferredSize: const Size.fromHeight(100),
+          child: Padding(
+            padding: EdgeInsets.only(
+              top: MediaQuery.paddingOf(context).top +
+                  (14.0 * scaleFactor), // pt-14
+              bottom: 24.0 * scaleFactor, // pb-6
+              left: 24.0 * scaleFactor, // px-6
+              right: 24.0 * scaleFactor,
+            ),
+            child: Column(
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    InkWell(
+                      onTap: () => Navigator.of(context).pop(),
+                      child: NeumorphicWrapper(
+                        intensity: 0.6,
+                        borderRadius:
+                            12 * scaleFactor, // rounded-xl neu-icon-btn
+                        child: SizedBox(
+                          width: 40 * scaleFactor, // w-10
+                          height: 40 * scaleFactor, // h-10
+                          child: Icon(Icons.chevron_left_rounded,
+                              size: 20 * scaleFactor,
+                              color: colorScheme.onSurfaceVariant),
+                        ),
+                      ),
+                    ),
+                    Text(
+                      '★★★',
+                      style: TextStyle(
+                        fontFamily: 'Inter',
+                        fontSize: 12 * scaleFactor, // text-xs
+                        fontWeight: FontWeight.w900, // font-black
+                        letterSpacing: 4.0, // tracking-[0.4em]
+                        color: colorScheme.primary, // text-primary
+                      ),
+                    ),
+                    NeumorphicWrapper(
+                      intensity: 0.6,
+                      borderRadius: 12 * scaleFactor,
+                      child: SizedBox(
+                        width: 40 * scaleFactor,
+                        height: 40 * scaleFactor,
+                        child: Icon(Icons.more_horiz_rounded,
+                            size: 20 * scaleFactor,
+                            color: colorScheme.onSurfaceVariant),
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 16 * scaleFactor),
+                Text(
+                  currentShow.formattedDate,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontFamily: 'Inter',
+                    fontSize: 20 * scaleFactor, // text-xl
+                    fontWeight: FontWeight.bold, // font-bold
+                    letterSpacing: -0.5, // tracking-tight
+                    color: colorScheme.onSurface, // text-slate-800
+                  ),
+                ),
+                SizedBox(height: 4 * scaleFactor),
+                Text(
+                  currentShow.venue,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontFamily: 'Inter',
+                    fontSize: 14 * scaleFactor, // text-sm
+                    fontWeight: FontWeight.w500, // font-medium
+                    letterSpacing: 0.5, // tracking-wide
+                    color: colorScheme.onSurfaceVariant, // text-slate-500
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        body: ListView(
+          padding: EdgeInsets.fromLTRB(
+              24.0 * scaleFactor, // px-6
+              0, // Top handled by appbar
+              24.0 * scaleFactor,
+              160.0 * scaleFactor // pb-40
+              ),
+          children: [
+            if (audioProvider.currentTrack != null)
+              FruitNowPlayingCard(
+                trackShow: currentShow,
+                track: audioProvider.currentTrack!,
+                index: (audioProvider.audioPlayer.currentIndex ?? 0) + 1,
+                scaleFactor: scaleFactor,
+              ),
+            SizedBox(height: 16 * scaleFactor), // space-y-4
+            FruitTrackList(
+              trackShow: currentShow,
+              scaleFactor: scaleFactor,
+            ),
+          ],
+        ),
+        bottomNavigationBar: FruitTabBar(
+            onOpenPlaybackScreen: () {}), // TabBar handles its own state
+      );
+    }
+
+    // ── DEFAULT LAYOUT (SLIDING UP PANEL) ──
     return Scaffold(
       backgroundColor: backgroundColor,
       body: Stack(
@@ -678,7 +798,7 @@ class PlaybackScreenState extends State<PlaybackScreen>
             builder: (context, panelPosition, child) {
               const double topGap = 0.0;
               return Positioned(
-                top: MediaQuery.paddingOf(context).top + topGap,
+                top: topGap,
                 left: 0,
                 right: 0,
                 child: PlaybackAppBar(

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shakedown/providers/settings_provider.dart';
@@ -40,6 +41,19 @@ class ShowListAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
+    const bool isWeb = kIsWeb;
+    final themeStyle = context.watch<ThemeProvider>().themeStyle;
+    final isFruit = themeStyle == ThemeStyle.fruit;
+    final deviceService = context.watch<DeviceService>();
+    final double screenWidth = MediaQuery.of(context).size.width;
+    final bool useMobileLayout = isWeb &&
+        (screenWidth < 850 || deviceService.isPwa || deviceService.isMobile) &&
+        !deviceService.isTv;
+
+    if (isFruit && useMobileLayout) {
+      return _buildFruitWebAppBar(context);
+    }
+
     return AppBar(
       backgroundColor: backgroundColor,
       title: GestureDetector(
@@ -51,6 +65,112 @@ class ShowListAppBar extends StatelessWidget implements PreferredSizeWidget {
         ),
       ),
       actions: _buildActions(context),
+    );
+  }
+
+  /// Stitch-design app bar for Fruit theme on web/PWA:
+  /// [dice]   ARCHIVE   [search]
+  Widget _buildFruitWebAppBar(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final settingsProvider = context.watch<SettingsProvider>();
+    final showListProvider = context.watch<ShowListProvider>();
+    final useNeumorphic =
+        settingsProvider.useNeumorphism && !settingsProvider.useTrueBlack;
+
+    Widget iconBtn({
+      required Widget icon,
+      required VoidCallback onTap,
+    }) {
+      if (useNeumorphic) {
+        return NeumorphicWrapper(
+          isCircle: false,
+          borderRadius: 12,
+          intensity: 1.2,
+          color: Colors.transparent,
+          child: LiquidGlassWrapper(
+            enabled: true,
+            borderRadius: BorderRadius.circular(12),
+            opacity: 0.08,
+            blur: 5,
+            child: IconTheme(
+              data: IconThemeData(
+                color: colorScheme.onSurface.withValues(alpha: 0.55),
+                size: 20,
+              ),
+              child: icon,
+            ),
+          ),
+        );
+      }
+      return IconTheme(
+        data: IconThemeData(
+          color: colorScheme.onSurface.withValues(alpha: 0.55),
+          size: 20,
+        ),
+        child: icon,
+      );
+    }
+
+    return AppBar(
+      backgroundColor: backgroundColor,
+      automaticallyImplyLeading: false,
+      title: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          // Left: Dice / random button
+          GestureDetector(
+            onTap: onRandomPlay,
+            child: iconBtn(
+              icon: AnimatedDiceIcon(
+                onPressed: onRandomPlay,
+                isLoading: isRandomShowLoading,
+                enableHaptics: enableDiceHaptics,
+                tooltip: 'Play Random Show',
+                useLucide: true,
+              ),
+              onTap: onRandomPlay,
+            ),
+          ),
+
+          // Center: ShakeDown title (Rock Salt font)
+          Expanded(
+            child: GestureDetector(
+              onTap: onTitleTap,
+              child: const Center(
+                child: ShakedownTitle(
+                  fontSize: 16,
+                  animateOnStart: true,
+                  shakeDelay: Duration(milliseconds: 1700),
+                ),
+              ),
+            ),
+          ),
+
+          // Right: Search button
+          GestureDetector(
+            onTap: onToggleSearch,
+            child: iconBtn(
+              icon: IconButton(
+                icon: Icon(
+                  showListProvider.isSearchVisible
+                      ? LucideIcons.x
+                      : LucideIcons.search,
+                ),
+                onPressed: onToggleSearch,
+                style: showListProvider.isSearchVisible
+                    ? IconButton.styleFrom(
+                        backgroundColor: colorScheme.surfaceContainer,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12.0),
+                        ),
+                      )
+                    : null,
+              ),
+              onTap: onToggleSearch,
+            ),
+          ),
+        ],
+      ),
     );
   }
 

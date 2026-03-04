@@ -606,6 +606,11 @@ class FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
   void setForceTv(bool value) {}
 
   @override
+  bool get fruitDenseList => false;
+  @override
+  void toggleFruitDenseList() {}
+
+  @override
   bool get hasListeners => super.hasListeners;
 }
 

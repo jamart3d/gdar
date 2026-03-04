@@ -1,0 +1,153 @@
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:lucide_icons/lucide_icons.dart';
+import 'package:shakedown/providers/audio_provider.dart';
+import 'package:shakedown/ui/screens/settings_screen.dart';
+import 'package:shakedown/utils/utils.dart';
+import 'package:shakedown/utils/font_layout_config.dart';
+import 'package:shakedown/providers/settings_provider.dart';
+import 'package:shakedown/ui/widgets/theme/liquid_glass_wrapper.dart';
+
+class FruitTabBar extends StatelessWidget {
+  final VoidCallback onOpenPlaybackScreen;
+
+  const FruitTabBar({
+    super.key,
+    required this.onOpenPlaybackScreen,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final settingsProvider = context.watch<SettingsProvider>();
+    final audioProvider = context.watch<AudioProvider>();
+    final double scaleFactor =
+        FontLayoutConfig.getEffectiveScale(context, settingsProvider);
+
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final isTrueBlackMode = isDarkMode && settingsProvider.useTrueBlack;
+
+    final backgroundColor = isTrueBlackMode
+        ? Colors.black.withValues(alpha: 0.8)
+        : Colors.white.withValues(alpha: 0.4); // Matches liquid glass
+
+    final content = Container(
+      padding: EdgeInsets.fromLTRB(
+        32.0 * scaleFactor, // px-8
+        16.0 * scaleFactor, // pt-4
+        32.0 * scaleFactor, // px-8
+        16.0 * scaleFactor + MediaQuery.paddingOf(context).bottom, // pb-8
+      ),
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        border: Border(
+          top: BorderSide(
+            color: isTrueBlackMode
+                ? colorScheme.onSurface.withValues(alpha: 0.1)
+                : Colors.white.withValues(alpha: 0.6), // border-white/60
+            width: 1.0,
+          ),
+        ),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          _buildTabItem(
+            context: context,
+            icon: LucideIcons.barChart2,
+            label: 'NOW',
+            isActive: false,
+            scaleFactor: scaleFactor,
+            onTap: () {
+              if (audioProvider.currentTrack != null) {
+                onOpenPlaybackScreen();
+              } else {
+                showMessage(context, 'No track playing');
+              }
+            },
+          ),
+          _buildTabItem(
+            context: context,
+            icon: LucideIcons.library,
+            label: 'LIBRARY',
+            isActive: true,
+            scaleFactor: scaleFactor,
+            onTap: () {},
+          ),
+          _buildTabItem(
+            context: context,
+            icon: LucideIcons.cassetteTape,
+            label: 'SOURCE',
+            isActive: false,
+            scaleFactor: scaleFactor,
+            onTap: () {},
+          ),
+          _buildTabItem(
+            context: context,
+            icon: LucideIcons.settings,
+            label: 'SETTINGS',
+            isActive: false,
+            scaleFactor: scaleFactor,
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const SettingsScreen()),
+              );
+            },
+          ),
+        ],
+      ),
+    );
+
+    if (isTrueBlackMode) {
+      return content;
+    }
+
+    return LiquidGlassWrapper(
+      enabled: settingsProvider.useNeumorphism, // Always blur when appropriate
+      blur: 16.0,
+      opacity: 0.4,
+      borderRadius: BorderRadius.zero,
+      child: content,
+    );
+  }
+
+  Widget _buildTabItem({
+    required BuildContext context,
+    required IconData icon,
+    required String label,
+    required bool isActive,
+    required double scaleFactor,
+    required VoidCallback onTap,
+  }) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final color = isActive
+        ? colorScheme.primary
+        : colorScheme.onSurfaceVariant.withValues(alpha: 0.6); // text-slate-400
+
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            icon,
+            color: color,
+            size: 24 * scaleFactor, // w-6 h-6
+          ),
+          SizedBox(height: 6 * scaleFactor), // gap-1.5
+          Text(
+            label.toUpperCase(),
+            style: TextStyle(
+              fontFamily: 'Inter',
+              fontSize: 9 * scaleFactor, // text-[9px]
+              fontWeight: FontWeight.w700, // font-bold
+              letterSpacing: 2.0, // tracking-widest
+              color: color,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}

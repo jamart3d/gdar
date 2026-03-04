@@ -9,6 +9,7 @@ import 'package:shakedown/ui/widgets/show_list/show_list_search_bar.dart';
 import 'package:shakedown/ui/widgets/show_list/clipboard_feedback_overlay.dart';
 import 'package:shakedown/ui/widgets/theme/liquid_glass_wrapper.dart';
 import 'package:shakedown/providers/theme_provider.dart';
+import 'package:shakedown/ui/widgets/fruit_tab_bar.dart';
 
 /// The layout shell for [ShowListScreen], including AppBar, SearchBar, and MiniPlayer.
 class ShowListShell extends StatelessWidget {
@@ -125,6 +126,9 @@ class ShowListShell extends StatelessWidget {
               onTitleTap: onTitleTap,
             ),
       body: bodyContent,
+      bottomNavigationBar: isFruit && !isPane
+          ? FruitTabBar(onOpenPlaybackScreen: onOpenPlaybackScreen)
+          : null,
     );
   }
 }

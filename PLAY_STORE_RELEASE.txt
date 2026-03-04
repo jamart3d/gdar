@@ -1,3 +1,11 @@
+What's new in v1.1.47
+
+• Mobile: New "Fruit UI" layout for the playing screen — a cleaner, more focused experience on phone and tablet.
+• Settings: Added a "Dense Show List" toggle in Appearance settings for the Fruit theme to fit more shows on screen.
+• Fixed: Resolved extra top padding on the mobile playing screen app bar.
+• Tests: Improved reliability of mock providers in the test suite.
+
+---
 What's new in v1.1.46
 
 • Screensaver: New Trail Initial Scale setting — control the starting size of the logo trail effect relative to the logo scale (default 92%, range 50–200%).

@@ -348,6 +348,32 @@ class _AppearanceSectionState extends State<AppearanceSection> {
             ),
             // Glass, Hover, and Neumorphism are mandatory features of the Fruit theme
             // and are managed automatically, so they are hidden from settings to reduce clutter.
+            TvSwitchListTile(
+              dense: true,
+              visualDensity: VisualDensity.compact,
+              title: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child: Text('Dense Show List',
+                      style: Theme.of(context)
+                          .textTheme
+                          .titleMedium
+                          ?.copyWith(fontSize: 16 * widget.scaleFactor))),
+              subtitle: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child: Text('Shows more items on screen with tighter spacing',
+                      style: Theme.of(context)
+                          .textTheme
+                          .bodySmall
+                          ?.copyWith(fontSize: 12 * widget.scaleFactor))),
+              value: settingsProvider.fruitDenseList,
+              onChanged: (value) {
+                AppHaptics.lightImpact(context.read<DeviceService>());
+                context.read<SettingsProvider>().toggleFruitDenseList();
+              },
+              secondary: const Icon(LucideIcons.listFilter),
+            ),
           ],
           TvSwitchListTile(
             dense: true,

@@ -26,3 +26,9 @@ Do not rewrite or output entire files just to change a few lines.
 
 ### 5. Fast Mode Default
 Unless the user explicitly asks for "deep reasoning" or "architectural planning," assume a fast, reactive mode. Provide direct, immediate answers without long-winded exploratory thinking.
+
+### 6. Terminal Auto-Approve Policy
+A curated allow-list of safe commands lives in `.agent/rules/auto_approve.md`.
+* **Read-only commands** (file reads, `git status/log/diff`, `flutter analyze`, directory listings, path lookups) MUST always be run with `SafeToAutoRun: true`. Never prompt the user for these.
+* **Platform syntax**: Windows 10 uses PowerShell — chain commands with `;` not `&&`. ChromeOS uses bash — `&&` is fine.
+* Autonomous skills (`shipit`, etc.) are exempt from Rule 1 (Stop and Ask) for the commands explicitly listed in `auto_approve.md`.
