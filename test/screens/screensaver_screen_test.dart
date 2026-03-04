@@ -82,12 +82,17 @@ void main() {
     when(mockSettingsProvider.oilLogoTrailIntensity).thenReturn(0.0);
     when(mockSettingsProvider.oilLogoTrailSlices).thenReturn(6);
     when(mockSettingsProvider.oilLogoTrailLength).thenReturn(0.5);
+    when(mockSettingsProvider.oilLogoTrailScale).thenReturn(0.1);
     when(mockSettingsProvider.enableSwipeToBlock).thenReturn(false);
     when(mockSettingsProvider.oilBannerFont).thenReturn('Roboto');
     when(mockSettingsProvider.oilAudioGraphMode).thenReturn('off');
     when(mockSettingsProvider.oilBeatSensitivity).thenReturn(0.5);
     when(mockSettingsProvider.oilInnerRingFontScale).thenReturn(0.75);
     when(mockSettingsProvider.oilInnerRingSpacingMultiplier).thenReturn(0.7);
+    when(mockSettingsProvider.oilTrackLetterSpacing).thenReturn(1.0);
+    when(mockSettingsProvider.oilTrackWordSpacing).thenReturn(0.2);
+    when(mockSettingsProvider.oilLogoAntiAlias).thenReturn(false);
+    when(mockSettingsProvider.oilBannerResolution).thenReturn(2.0);
 
     // Mock AudioProvider's audioPlayer for ScreensaverScreen
     // Mock AudioProvider's audioPlayer for ScreensaverScreen

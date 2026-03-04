@@ -948,6 +948,20 @@ class MockSettingsProvider extends _i1.Mock implements _i8.SettingsProvider {
       ) as double);
 
   @override
+  double get oilTrackLetterSpacing => (super.noSuchMethod(
+        Invocation.getter(#oilTrackLetterSpacing),
+        returnValue: 0.0,
+        returnValueForMissingStub: 0.0,
+      ) as double);
+
+  @override
+  double get oilTrackWordSpacing => (super.noSuchMethod(
+        Invocation.getter(#oilTrackWordSpacing),
+        returnValue: 0.0,
+        returnValueForMissingStub: 0.0,
+      ) as double);
+
+  @override
   double get oilFlatLineSpacing => (super.noSuchMethod(
         Invocation.getter(#oilFlatLineSpacing),
         returnValue: 0.0,
@@ -971,6 +985,13 @@ class MockSettingsProvider extends _i1.Mock implements _i8.SettingsProvider {
   @override
   double get oilLogoTrailLength => (super.noSuchMethod(
         Invocation.getter(#oilLogoTrailLength),
+        returnValue: 0.0,
+        returnValueForMissingStub: 0.0,
+      ) as double);
+
+  @override
+  double get oilLogoTrailScale => (super.noSuchMethod(
+        Invocation.getter(#oilLogoTrailScale),
         returnValue: 0.0,
         returnValueForMissingStub: 0.0,
       ) as double);
@@ -1876,6 +1897,16 @@ class MockSettingsProvider extends _i1.Mock implements _i8.SettingsProvider {
       ) as _i4.Future<void>);
 
   @override
+  _i4.Future<void> setOilLogoTrailScale(double? value) => (super.noSuchMethod(
+        Invocation.method(
+          #setOilLogoTrailScale,
+          [value],
+        ),
+        returnValue: _i4.Future<void>.value(),
+        returnValueForMissingStub: _i4.Future<void>.value(),
+      ) as _i4.Future<void>);
+
+  @override
   _i4.Future<void> setOilAudioPeakDecay(double? value) => (super.noSuchMethod(
         Invocation.method(
           #setOilAudioPeakDecay,
@@ -2123,6 +2154,24 @@ class MockSettingsProvider extends _i1.Mock implements _i8.SettingsProvider {
       ) as _i4.Future<void>);
 
   @override
+  void setOilTrackLetterSpacing(double? val) => super.noSuchMethod(
+        Invocation.method(
+          #setOilTrackLetterSpacing,
+          [val],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void setOilTrackWordSpacing(double? val) => super.noSuchMethod(
+        Invocation.method(
+          #setOilTrackWordSpacing,
+          [val],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
   _i4.Future<void> resetToDefaults() => (super.noSuchMethod(
         Invocation.method(
           #resetToDefaults,
@@ -2277,6 +2326,13 @@ class MockAudioProvider extends _i1.Mock implements _i12.AudioProvider {
       ) as _i4.Stream<String>);
 
   @override
+  _i4.Stream<void> get playbackFocusRequestStream => (super.noSuchMethod(
+        Invocation.getter(#playbackFocusRequestStream),
+        returnValue: _i4.Stream<void>.empty(),
+        returnValueForMissingStub: _i4.Stream<void>.empty(),
+      ) as _i4.Stream<void>);
+
+  @override
   int get cachedTrackCount => (super.noSuchMethod(
         Invocation.getter(#cachedTrackCount),
         returnValue: 0,
@@ -2417,6 +2473,15 @@ class MockAudioProvider extends _i1.Mock implements _i12.AudioProvider {
         Invocation.method(
           #showNotification,
           [message],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void requestPlaybackFocus() => super.noSuchMethod(
+        Invocation.method(
+          #requestPlaybackFocus,
+          [],
         ),
         returnValueForMissingStub: null,
       );

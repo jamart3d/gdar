@@ -13,6 +13,7 @@ import 'package:shakedown/services/device_service.dart';
 import 'package:shakedown/services/wakelock_service.dart';
 
 /// Screensaver screen displaying the Steal Your Face visualizer.
+/// Note: This screensaver and its audio reactivity are explicitly for the TV UI.
 class ScreensaverScreen extends StatefulWidget {
   const ScreensaverScreen({super.key});
 
