@@ -13,7 +13,8 @@ class AudioReactorFactory {
     int? audioSessionId,
     bool isTv = false,
   }) async {
-    // Strictly enforce TV-only for the real visualizer
+    // Strictly enforce TV-only for the real visualizer.
+    // The screensaver and its audio reactivity are exclusively for the TV UI.
     if (!isTv || kIsWeb) {
       return null;
     }

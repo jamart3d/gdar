@@ -154,6 +154,12 @@ class MockAudioProvider extends _i1.Mock implements _i4.AudioProvider {
       ) as _i5.Stream<String>);
 
   @override
+  _i5.Stream<void> get playbackFocusRequestStream => (super.noSuchMethod(
+        Invocation.getter(#playbackFocusRequestStream),
+        returnValue: _i5.Stream<void>.empty(),
+      ) as _i5.Stream<void>);
+
+  @override
   int get cachedTrackCount => (super.noSuchMethod(
         Invocation.getter(#cachedTrackCount),
         returnValue: 0,
@@ -287,6 +293,15 @@ class MockAudioProvider extends _i1.Mock implements _i4.AudioProvider {
         Invocation.method(
           #showNotification,
           [message],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void requestPlaybackFocus() => super.noSuchMethod(
+        Invocation.method(
+          #requestPlaybackFocus,
+          [],
         ),
         returnValueForMissingStub: null,
       );

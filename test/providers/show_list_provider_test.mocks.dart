@@ -771,6 +771,20 @@ class MockSettingsProvider extends _i1.Mock implements _i9.SettingsProvider {
       ) as double);
 
   @override
+  double get oilTrackLetterSpacing => (super.noSuchMethod(
+        Invocation.getter(#oilTrackLetterSpacing),
+        returnValue: 0.0,
+        returnValueForMissingStub: 0.0,
+      ) as double);
+
+  @override
+  double get oilTrackWordSpacing => (super.noSuchMethod(
+        Invocation.getter(#oilTrackWordSpacing),
+        returnValue: 0.0,
+        returnValueForMissingStub: 0.0,
+      ) as double);
+
+  @override
   double get oilFlatLineSpacing => (super.noSuchMethod(
         Invocation.getter(#oilFlatLineSpacing),
         returnValue: 0.0,
@@ -794,6 +808,13 @@ class MockSettingsProvider extends _i1.Mock implements _i9.SettingsProvider {
   @override
   double get oilLogoTrailLength => (super.noSuchMethod(
         Invocation.getter(#oilLogoTrailLength),
+        returnValue: 0.0,
+        returnValueForMissingStub: 0.0,
+      ) as double);
+
+  @override
+  double get oilLogoTrailScale => (super.noSuchMethod(
+        Invocation.getter(#oilLogoTrailScale),
         returnValue: 0.0,
         returnValueForMissingStub: 0.0,
       ) as double);
@@ -1699,6 +1720,16 @@ class MockSettingsProvider extends _i1.Mock implements _i9.SettingsProvider {
       ) as _i7.Future<void>);
 
   @override
+  _i7.Future<void> setOilLogoTrailScale(double? value) => (super.noSuchMethod(
+        Invocation.method(
+          #setOilLogoTrailScale,
+          [value],
+        ),
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
+
+  @override
   _i7.Future<void> setOilAudioPeakDecay(double? value) => (super.noSuchMethod(
         Invocation.method(
           #setOilAudioPeakDecay,
@@ -1944,6 +1975,24 @@ class MockSettingsProvider extends _i1.Mock implements _i9.SettingsProvider {
         returnValue: _i7.Future<void>.value(),
         returnValueForMissingStub: _i7.Future<void>.value(),
       ) as _i7.Future<void>);
+
+  @override
+  void setOilTrackLetterSpacing(double? val) => super.noSuchMethod(
+        Invocation.method(
+          #setOilTrackLetterSpacing,
+          [val],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void setOilTrackWordSpacing(double? val) => super.noSuchMethod(
+        Invocation.method(
+          #setOilTrackWordSpacing,
+          [val],
+        ),
+        returnValueForMissingStub: null,
+      );
 
   @override
   _i7.Future<void> resetToDefaults() => (super.noSuchMethod(
