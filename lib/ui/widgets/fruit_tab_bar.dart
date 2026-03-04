@@ -10,10 +10,12 @@ import 'package:shakedown/ui/widgets/theme/liquid_glass_wrapper.dart';
 
 class FruitTabBar extends StatelessWidget {
   final VoidCallback onOpenPlaybackScreen;
+  final int selectedIndex;
 
   const FruitTabBar({
     super.key,
     required this.onOpenPlaybackScreen,
+    this.selectedIndex = 1, // Default to LIBRARY
   });
 
   @override
@@ -56,7 +58,7 @@ class FruitTabBar extends StatelessWidget {
             context: context,
             icon: LucideIcons.barChart2,
             label: 'NOW',
-            isActive: false,
+            isActive: selectedIndex == 0,
             scaleFactor: scaleFactor,
             onTap: () {
               if (audioProvider.currentTrack != null) {
@@ -70,15 +72,19 @@ class FruitTabBar extends StatelessWidget {
             context: context,
             icon: LucideIcons.library,
             label: 'LIBRARY',
-            isActive: true,
+            isActive: selectedIndex == 1,
             scaleFactor: scaleFactor,
-            onTap: () {},
+            onTap: () {
+              if (selectedIndex != 1) {
+                Navigator.of(context).popUntil((route) => route.isFirst);
+              }
+            },
           ),
           _buildTabItem(
             context: context,
             icon: LucideIcons.cassetteTape,
             label: 'SOURCE',
-            isActive: false,
+            isActive: selectedIndex == 2,
             scaleFactor: scaleFactor,
             onTap: () {},
           ),
@@ -86,7 +92,7 @@ class FruitTabBar extends StatelessWidget {
             context: context,
             icon: LucideIcons.settings,
             label: 'SETTINGS',
-            isActive: false,
+            isActive: selectedIndex == 3,
             scaleFactor: scaleFactor,
             onTap: () {
               Navigator.of(context).push(

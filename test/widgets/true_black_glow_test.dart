@@ -63,6 +63,7 @@ void main() {
   Widget createTestableWidget({
     required Show show,
     required SettingsProvider settingsProvider,
+    AudioProvider? audioProvider,
   }) {
     return MultiProvider(
       providers: [
@@ -71,7 +72,7 @@ void main() {
         ChangeNotifierProvider<DeviceService>(
             create: (_) => MockDeviceService()),
         ChangeNotifierProvider<AudioProvider>(
-            create: (_) => MockAudioProvider()),
+            create: (_) => audioProvider ?? MockAudioProvider()),
       ],
       child: MaterialApp(
         // Force Dark Mode to test True Black logic
@@ -93,6 +94,11 @@ void main() {
   testWidgets('True Black & Half Glow forces shadow ON and reduces opacity',
       (WidgetTester tester) async {
     final settingsProvider = SettingsProvider(prefs);
+    final mockAudio = MockAudioProvider();
+
+    // Stub properties used by AnimatedGradientBorder build method
+    when(mockAudio.isPlaying).thenReturn(false);
+    // SettingsProvider is a real instance here, so we only need to mock the AudioProvider.
 
     // Simulate "True Black and Half Glow" configuration:
     // 1. Dark Mode (set in createTestableWidget via Theme)
@@ -109,6 +115,7 @@ void main() {
     await tester.pumpWidget(createTestableWidget(
       show: createDummyShow('Test Venue', '2025-01-01'),
       settingsProvider: settingsProvider,
+      audioProvider: mockAudio,
     ));
 
     // Find the AnimatedGradientBorder widget

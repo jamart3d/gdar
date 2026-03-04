@@ -6,6 +6,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.48+148] - 2026-03-04
+
+### Changed
+- **UI/UX (Web)**: Refined the Fruit theme "Show List" screen on Web/PWA to match the premium "Stitch" vertical card design.
+- **UI/UX (Web)**: Updated the Fruit Web app bar to a centered layout featuring the "ShakeDown" title in the Rock Salt font.
+- **Settings**: Added a "Dense Show List" toggle in Appearance settings exclusively for the Fruit theme to fit more shows on screen.
+
+### Fixed
+- **UI/UX (AMOLED)**: Fixed shadow visibility in True Black mode when glow mode is active.
+- **UI/UX (Phone)**: Resolved a double-padding issue on the PlaybackScreen AppBar in phone UI.
+- **Tests**: Stabilized multiple regression test suites by resolving dependency ripples in mock providers.
+
 ## [1.1.47+147] - 2026-03-04
 
 ### Added

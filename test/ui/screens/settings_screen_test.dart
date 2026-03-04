@@ -29,6 +29,8 @@ class MockAudioProvider extends ChangeNotifier implements AudioProvider {
   Source? get currentSource => null;
   @override
   Show? get currentShow => null;
+  @override
+  bool get isPlaying => false;
 
   // Implement other necessary overrides or leave blank if not used by SettingsScreen
   // Using dynamic to bypass strict typing for methods we don't implement fully mock

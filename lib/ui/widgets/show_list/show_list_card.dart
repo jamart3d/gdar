@@ -924,7 +924,7 @@ class _ShowListCardState extends State<ShowListCard> {
   }) {
     final bool isDense = settingsProvider.fruitDenseList;
     final double vPad = isDense ? 12.0 : 18.0;
-    final double hPad = 16.0;
+    const double hPad = 16.0;
 
     // Duration: sum all tracks from the primary source
     final Source? primarySource =

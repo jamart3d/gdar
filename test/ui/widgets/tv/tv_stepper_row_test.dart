@@ -1,22 +1,53 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mockito/mockito.dart';
+import 'package:provider/provider.dart';
+import 'package:shakedown/providers/settings_provider.dart';
+import 'package:shakedown/providers/audio_provider.dart';
+import 'package:shakedown/services/device_service.dart';
 import 'package:shakedown/ui/widgets/tv/tv_stepper_row.dart';
+import '../../../helpers/test_helpers.dart';
+import '../../../screens/splash_screen_test.mocks.dart';
 
 void main() {
+  late MockSettingsProvider mockSettings;
+  late MockAudioProvider mockAudio;
+  late MockDeviceService mockDevice;
+
+  setUp(() {
+    mockSettings = MockSettingsProvider();
+    mockAudio = MockAudioProvider();
+    mockDevice = MockDeviceService();
+
+    when(mockSettings.rgbAnimationSpeed).thenReturn(1.0);
+    when(mockSettings.performanceMode).thenReturn(false);
+    when(mockSettings.useNeumorphism).thenReturn(false);
+    when(mockAudio.isPlaying).thenReturn(false);
+  });
+
+  Widget createTestableWidget(Widget child) {
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider<SettingsProvider>.value(value: mockSettings),
+        ChangeNotifierProvider<AudioProvider>.value(value: mockAudio),
+        ChangeNotifierProvider<DeviceService>.value(value: mockDevice),
+      ],
+      child: MaterialApp(home: Scaffold(body: child)),
+    );
+  }
+
   group('TvStepperRow', () {
     testWidgets('renders label and formatted value', (tester) async {
       await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: TvStepperRow(
-              label: 'Test Speed',
-              value: 1.5,
-              min: 0.0,
-              max: 3.0,
-              step: 0.1,
-              onChanged: (_) {},
-            ),
+        createTestableWidget(
+          TvStepperRow(
+            label: 'Test Speed',
+            value: 1.5,
+            min: 0.0,
+            max: 3.0,
+            step: 0.1,
+            onChanged: (_) {},
           ),
         ),
       );
@@ -29,16 +60,14 @@ void main() {
       double? updatedValue;
 
       await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: TvStepperRow(
-              label: 'Test Speed',
-              value: 1.5,
-              min: 0.0,
-              max: 3.0,
-              step: 0.1,
-              onChanged: (v) => updatedValue = v,
-            ),
+        createTestableWidget(
+          TvStepperRow(
+            label: 'Test Speed',
+            value: 1.5,
+            min: 0.0,
+            max: 3.0,
+            step: 0.1,
+            onChanged: (v) => updatedValue = v,
           ),
         ),
       );
@@ -58,16 +87,14 @@ void main() {
       double? updatedValue;
 
       await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: TvStepperRow(
-              label: 'Test Speed',
-              value: 1.5,
-              min: 0.0,
-              max: 3.0,
-              step: 0.1,
-              onChanged: (v) => updatedValue = v,
-            ),
+        createTestableWidget(
+          TvStepperRow(
+            label: 'Test Speed',
+            value: 1.5,
+            min: 0.0,
+            max: 3.0,
+            step: 0.1,
+            onChanged: (v) => updatedValue = v,
           ),
         ),
       );
@@ -87,16 +114,14 @@ void main() {
       double? updatedValue;
 
       await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: TvStepperRow(
-              label: 'Test Speed',
-              value: 3.0, // Already at max
-              min: 0.0,
-              max: 3.0,
-              step: 0.1,
-              onChanged: (v) => updatedValue = v,
-            ),
+        createTestableWidget(
+          TvStepperRow(
+            label: 'Test Speed',
+            value: 3.0, // Already at max
+            min: 0.0,
+            max: 3.0,
+            step: 0.1,
+            onChanged: (v) => updatedValue = v,
           ),
         ),
       );
@@ -115,17 +140,15 @@ void main() {
 
     testWidgets('uses custom valueFormatter if provided', (tester) async {
       await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: TvStepperRow(
-              label: 'Test Speed',
-              value: 0.995,
-              min: 0.0,
-              max: 1.0,
-              step: 0.001,
-              valueFormatter: (v) => 'VAL: ${v.toStringAsFixed(3)}',
-              onChanged: (_) {},
-            ),
+        createTestableWidget(
+          TvStepperRow(
+            label: 'Test Speed',
+            value: 0.995,
+            min: 0.0,
+            max: 1.0,
+            step: 0.001,
+            valueFormatter: (v) => 'VAL: ${v.toStringAsFixed(3)}',
+            onChanged: (_) {},
           ),
         ),
       );

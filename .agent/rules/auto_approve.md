@@ -80,11 +80,18 @@ Same as Windows table above — identical commands on ChromeOS.
 | `env` | Print environment |
 | `printenv ...` | Specific env var |
 
+## 🟢 Skill-Specific Exceptions
+These commands are auto-approved ONLY when executed within the specific skill workflow:
+
+### `shipit`
+- `git add .` (or individual files)
+- `git commit -m "..."`
+- `git commit --amend`
+
 ---
 
 ## ❌ NEVER Auto-Approve
-
-These mutate state and ALWAYS require user confirmation:
+These mutate state and ALWAYS require user confirmation unless covered by the exceptions above:
 
 - `git add`, `git commit`, `git push`, `git reset`, `git checkout` (branch switch)
 - `rm`, `Remove-Item`, `del` — file deletion

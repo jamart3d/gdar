@@ -6,29 +6,51 @@ import 'package:shakedown/providers/settings_provider.dart';
 import 'package:flutter/services.dart';
 import 'package:mockito/mockito.dart';
 
-class MockSettingsProvider extends Mock implements SettingsProvider {}
+import 'package:shakedown/providers/audio_provider.dart';
+import 'package:shakedown/services/device_service.dart';
+import 'helpers/test_helpers.dart';
+import 'screens/splash_screen_test.mocks.dart';
 
 void main() {
+  late MockSettingsProvider mockSettings;
+  late MockAudioProvider mockAudio;
+  late MockDeviceService mockDevice;
+
+  setUp(() {
+    mockSettings = MockSettingsProvider();
+    mockAudio = MockAudioProvider();
+    mockDevice = MockDeviceService();
+
+    when(mockSettings.rgbAnimationSpeed).thenReturn(1.0);
+    when(mockSettings.performanceMode).thenReturn(false);
+    when(mockSettings.useNeumorphism).thenReturn(false);
+    when(mockAudio.isPlaying).thenReturn(false);
+  });
+
+  Widget createTestableWidget(Widget child) {
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider<SettingsProvider>.value(value: mockSettings),
+        ChangeNotifierProvider<AudioProvider>.value(value: mockAudio),
+        ChangeNotifierProvider<DeviceService>.value(value: mockDevice),
+      ],
+      child: MaterialApp(home: Scaffold(body: child)),
+    );
+  }
+
   testWidgets('TvFocusWrapper does NOT trigger onTap on focus gain',
       (WidgetTester tester) async {
     bool tapped = false;
     final focusNode = FocusNode();
 
     await tester.pumpWidget(
-      MultiProvider(
-        providers: [
-          Provider<SettingsProvider>.value(value: MockSettingsProvider()),
-        ],
-        child: MaterialApp(
-          home: Scaffold(
-            body: TvFocusWrapper(
-              focusNode: focusNode,
-              onTap: () {
-                tapped = true;
-              },
-              child: const SizedBox(width: 100, height: 100),
-            ),
-          ),
+      createTestableWidget(
+        TvFocusWrapper(
+          focusNode: focusNode,
+          onTap: () {
+            tapped = true;
+          },
+          child: const SizedBox(width: 100, height: 100),
         ),
       ),
     );
@@ -50,20 +72,13 @@ void main() {
     final focusNode = FocusNode();
 
     await tester.pumpWidget(
-      MultiProvider(
-        providers: [
-          Provider<SettingsProvider>.value(value: MockSettingsProvider()),
-        ],
-        child: MaterialApp(
-          home: Scaffold(
-            body: TvFocusWrapper(
-              focusNode: focusNode,
-              onTap: () {
-                tapped = true;
-              },
-              child: const SizedBox(width: 100, height: 100),
-            ),
-          ),
+      createTestableWidget(
+        TvFocusWrapper(
+          focusNode: focusNode,
+          onTap: () {
+            tapped = true;
+          },
+          child: const SizedBox(width: 100, height: 100),
         ),
       ),
     );

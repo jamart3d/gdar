@@ -109,6 +109,8 @@ void main() {
     when(mockSettingsProvider.rgbAnimationSpeed).thenReturn(1.0);
     when(mockSettingsProvider.showSingleShnid).thenReturn(false);
     when(mockSettingsProvider.showPlaybackMessages).thenReturn(false);
+    when(mockSettingsProvider.useNeumorphism).thenReturn(false);
+    when(mockAudioProvider.isPlaying).thenReturn(false);
   });
 
   testWidgets(

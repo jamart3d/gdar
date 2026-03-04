@@ -1,3 +1,13 @@
+What's new in v1.1.48
+
+• Web: Refined the Fruit theme "Show List" screen with premium "Stitch" vertical cards.
+• Web: Updated the Fruit app bar with a centered layout and premium branding.
+• Settings: Added a "Dense Show List" toggle for the Fruit theme to fit more shows on screen.
+• Fixed: Shadow visibility in True Black mode when glow mode is active.
+• Fixed: Double-padding issue on the PlaybackScreen AppBar for mobile.
+• Improved: Core platform stability and regression test coverage.
+
+---
 What's new in v1.1.47
 
 • Mobile: New "Fruit UI" layout for the playing screen — a cleaner, more focused experience on phone and tablet.

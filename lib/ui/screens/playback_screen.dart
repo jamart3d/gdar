@@ -7,7 +7,6 @@ import 'package:shakedown/providers/audio_provider.dart';
 import 'package:shakedown/providers/settings_provider.dart';
 import 'package:shakedown/providers/theme_provider.dart';
 import 'package:shakedown/ui/widgets/fruit_tab_bar.dart';
-import 'package:shakedown/ui/widgets/playback/fruit_now_playing_card.dart';
 import 'package:shakedown/ui/widgets/playback/fruit_track_list.dart';
 import 'package:shakedown/ui/widgets/playback/playback_panel.dart';
 import 'package:shakedown/ui/widgets/playback/track_list_view.dart';
@@ -636,115 +635,89 @@ class PlaybackScreenState extends State<PlaybackScreen>
       return Scaffold(
         backgroundColor: backgroundColor,
         appBar: PreferredSize(
-          preferredSize: const Size.fromHeight(100),
+          preferredSize: const Size.fromHeight(120),
           child: Padding(
             padding: EdgeInsets.only(
               top: MediaQuery.paddingOf(context).top +
                   (14.0 * scaleFactor), // pt-14
-              bottom: 24.0 * scaleFactor, // pb-6
+              bottom: 16.0 * scaleFactor, // pb-4
               left: 24.0 * scaleFactor, // px-6
               right: 24.0 * scaleFactor,
             ),
-            child: Column(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    InkWell(
-                      onTap: () => Navigator.of(context).pop(),
-                      child: NeumorphicWrapper(
-                        intensity: 0.6,
-                        borderRadius:
-                            12 * scaleFactor, // rounded-xl neu-icon-btn
-                        child: SizedBox(
-                          width: 40 * scaleFactor, // w-10
-                          height: 40 * scaleFactor, // h-10
-                          child: Icon(Icons.chevron_left_rounded,
-                              size: 20 * scaleFactor,
-                              color: colorScheme.onSurfaceVariant),
-                        ),
-                      ),
+                InkWell(
+                  onTap: () => Navigator.of(context).pop(),
+                  child: NeumorphicWrapper(
+                    intensity: 0.6,
+                    borderRadius: 12 * scaleFactor, // rounded-xl neu-icon-btn
+                    child: SizedBox(
+                      width: 44 * scaleFactor, // w-11
+                      height: 44 * scaleFactor, // h-11
+                      child: Icon(Icons.chevron_left_rounded,
+                          size: 24 * scaleFactor,
+                          color: colorScheme.onSurfaceVariant),
                     ),
-                    Text(
-                      '★★★',
-                      style: TextStyle(
-                        fontFamily: 'Inter',
-                        fontSize: 12 * scaleFactor, // text-xs
-                        fontWeight: FontWeight.w900, // font-black
-                        letterSpacing: 4.0, // tracking-[0.4em]
-                        color: colorScheme.primary, // text-primary
-                      ),
-                    ),
-                    NeumorphicWrapper(
-                      intensity: 0.6,
-                      borderRadius: 12 * scaleFactor,
-                      child: SizedBox(
-                        width: 40 * scaleFactor,
-                        height: 40 * scaleFactor,
-                        child: Icon(Icons.more_horiz_rounded,
-                            size: 20 * scaleFactor,
-                            color: colorScheme.onSurfaceVariant),
-                      ),
-                    ),
-                  ],
-                ),
-                SizedBox(height: 16 * scaleFactor),
-                Text(
-                  currentShow.formattedDate,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontFamily: 'Inter',
-                    fontSize: 20 * scaleFactor, // text-xl
-                    fontWeight: FontWeight.bold, // font-bold
-                    letterSpacing: -0.5, // tracking-tight
-                    color: colorScheme.onSurface, // text-slate-800
                   ),
                 ),
-                SizedBox(height: 4 * scaleFactor),
-                Text(
-                  currentShow.venue,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontFamily: 'Inter',
-                    fontSize: 14 * scaleFactor, // text-sm
-                    fontWeight: FontWeight.w500, // font-medium
-                    letterSpacing: 0.5, // tracking-wide
-                    color: colorScheme.onSurfaceVariant, // text-slate-500
+                Expanded(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        currentShow.formattedDate,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontFamily: 'Inter',
+                          fontSize: 18 * scaleFactor, // text-lg
+                          fontWeight: FontWeight.bold, // font-bold
+                          letterSpacing: -0.5,
+                          color: colorScheme.onSurface,
+                        ),
+                      ),
+                      SizedBox(height: 2 * scaleFactor),
+                      Text(
+                        currentShow.venue.toUpperCase(),
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontFamily: 'Inter',
+                          fontSize: 11 * scaleFactor, // text-[11px]
+                          fontWeight: FontWeight.bold, // font-bold
+                          letterSpacing: 1.5, // tracking-wider
+                          color: colorScheme.onSurfaceVariant
+                              .withValues(alpha: 0.6),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                NeumorphicWrapper(
+                  intensity: 0.6,
+                  borderRadius: 12 * scaleFactor,
+                  child: SizedBox(
+                    width: 44 * scaleFactor,
+                    height: 44 * scaleFactor,
+                    child: Icon(Icons.more_horiz_rounded,
+                        size: 24 * scaleFactor,
+                        color: colorScheme.onSurfaceVariant),
                   ),
                 ),
               ],
             ),
           ),
         ),
-        body: ListView(
-          padding: EdgeInsets.fromLTRB(
-              24.0 * scaleFactor, // px-6
-              0, // Top handled by appbar
-              24.0 * scaleFactor,
-              160.0 * scaleFactor // pb-40
-              ),
-          children: [
-            if (audioProvider.currentTrack != null)
-              FruitNowPlayingCard(
-                trackShow: currentShow,
-                track: audioProvider.currentTrack!,
-                index: (audioProvider.audioPlayer.currentIndex ?? 0) + 1,
-                scaleFactor: scaleFactor,
-              ),
-            SizedBox(height: 16 * scaleFactor), // space-y-4
-            FruitTrackList(
-              trackShow: currentShow,
-              scaleFactor: scaleFactor,
-            ),
-          ],
-        ),
+        body: FruitTrackList(trackShow: currentShow, scaleFactor: scaleFactor),
         bottomNavigationBar: FruitTabBar(
-            onOpenPlaybackScreen: () {}), // TabBar handles its own state
+          selectedIndex: 0, // NOW
+          onOpenPlaybackScreen: () {},
+        ),
       );
     }
 
     // ── DEFAULT LAYOUT (SLIDING UP PANEL) ──
     return Scaffold(
+      primary: false,
       backgroundColor: backgroundColor,
       body: Stack(
         children: [

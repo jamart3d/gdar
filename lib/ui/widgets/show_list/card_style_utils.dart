@@ -221,7 +221,7 @@ class CardStyle {
 
     bool useRgb = (settings.highlightPlayingWithRgb && isPlaying) || isFruitWeb;
     bool showShadow =
-        settings.glowMode > 0 && (!isTrueBlackMode || settings.glowMode >= 40);
+        settings.glowMode > 0 && (!isTrueBlackMode || settings.glowMode >= 2);
 
     double baseOpacity = settings.glowMode / 100.0;
     double glowOpacity = isPlaying ? baseOpacity : baseOpacity * 0.25;
