@@ -11,7 +11,7 @@ description: Manage the building and deployment of the GDAR application for Andr
 3. Run `flutter build appbundle --release` to build the signed Android App Bundle.
 4. The output file will be at `build/app/outputs/bundle/release/app-release.aab`.
 5. Upload to [Google Play Console](https://play.google.com/console) internal testing.
-6. Update `docs/RELEASE_NOTES.txt` and copy to Play Console.
+6. Update `CHANGELOG.md` and copy summary to Play Console.
 
 ## Web Release
 1. Run `flutter build web --release` to build the web assets.

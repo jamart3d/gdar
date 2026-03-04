@@ -1,0 +1,16 @@
+---
+description: Standardized Mockito test stub regeneration
+---
+# Mock Regeneration Workflow
+
+**When to use:** When tests fail with `ProviderNotFoundException` or `MissingStubError` after modifying core providers or services.
+
+1.  **Analyze Failure:** Read the `flutter test` output to identify the exact failing test file and the missing stub or provider.
+2.  **Locate Test Setup:** Open the corresponding `_test.dart` file and locate the mock initialization block (usually `setUp()`).
+3.  **Update Mocks:** 
+    *   If using `build_runner`, ensure the `@GenerateMocks` annotation includes the modified class.
+    *   Run `flutter pub run build_runner build --delete-conflicting-outputs`.
+4.  **Inject Stubs:** Inject the required `when().thenReturn()` or `when().thenAnswer()` logic based on the new service signature.
+    *   *Reference:* Consult `.agent/skills/test_mocking_templates/SKILL.md` (if it exists) for standardized MultiProvider setups.
+5.  **Verify:** Run the specific failing test file `flutter test test/path/to/file_test.dart`.
+6.  **Report:** Confirm pass rate.

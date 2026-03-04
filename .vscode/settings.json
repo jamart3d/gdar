@@ -1,0 +1,46 @@
+{
+  // ── Dart / Flutter ────────────────────────────────────────────────────
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "Dart-Code.dart-code",
+  "editor.rulers": [80],
+  "dart.lineLength": 80,
+  "dart.flutterSdkPath": null,
+  "[dart]": {
+    "editor.tabSize": 2,
+    "editor.insertSpaces": true
+  },
+
+  // ── Line endings & whitespace ─────────────────────────────────────────
+  "files.eol": "\n",
+  "files.trimTrailingWhitespace": true,
+  "files.insertFinalNewline": true,
+  "[markdown]": {
+    "files.trimTrailingWhitespace": false
+  },
+
+  // ── YAML ──────────────────────────────────────────────────────────────
+  "[yaml]": {
+    "editor.tabSize": 2,
+    "editor.insertSpaces": true
+  },
+
+  // ── Git ───────────────────────────────────────────────────────────────
+  "git.autofetch": false,
+
+  // ── Terminal ──────────────────────────────────────────────────────────
+  "terminal.integrated.defaultProfile.linux": "bash",
+  "terminal.integrated.defaultProfile.windows": "PowerShell",
+
+  // ── Performance — exclude heavy Flutter build dirs ────────────────────
+  "search.exclude": {
+    "**/.dart_tool": true,
+    "**/build": true,
+    "**/.gradle": true,
+    "**/android/.gradle": true
+  },
+  "files.watcherExclude": {
+    "**/.dart_tool/**": true,
+    "**/build/**": true,
+    "**/.gradle/**": true
+  }
+}
