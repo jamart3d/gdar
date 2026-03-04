@@ -25,3 +25,11 @@ When dealing with external data fetching (such as pulling tide data or remote co
 ### 4. Routing Discipline
 * **Action:** Adhere to the existing routing implementation (e.g., whether the project uses standard Navigator 2.0, GoRouter, etc.).
 * **Constraint:** Do not suggest migrating to a different routing package to solve a simple navigation bug. Fix the issue within the current architectural paradigm.
+
+### 5. AMOLED & True Black Design
+* **Action:** When implementing "Glow" effects (e.g., in `AnimatedGradientBorder`), ensure shadows are NOT fully disabled in True Black mode if the glow intensity is > 0.
+* **Constraint:** True Black mode removes background colors but should preserve depth through subtle shadows to maintain UI hierarchy.
+
+### 6. UI Padding & Scaffold
+* **Action:** When using a custom `Positioned` AppBar inside a `Stack` (e.g., in `PlaybackScreen`), set `primary: false` on the parent `Scaffold`.
+* **Constraint:** This prevents the `Scaffold` from adding its own automatic top padding (status bar height), which results in "double-padding" when the AppBar is already handling its own offset.
