@@ -1,0 +1,5 @@
+What's new in v1.1.46
+
+• Screensaver: New Trail Initial Scale setting — control the starting size of the logo trail effect relative to the logo scale (default 92%, range 50–200%).
+• Fixed: Screensaver audio reactivity permission handling on Android — resolved async context gap crash.
+• Internal: Improved test coverage and reliability across TV screen and screensaver test suites.

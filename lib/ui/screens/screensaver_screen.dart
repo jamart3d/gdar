@@ -11,6 +11,7 @@ import 'package:shakedown/providers/settings_provider.dart';
 import 'package:shakedown/providers/audio_provider.dart';
 import 'package:shakedown/services/device_service.dart';
 import 'package:shakedown/services/wakelock_service.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 /// Screensaver screen displaying the Steal Your Face visualizer.
 /// Note: This screensaver and its audio reactivity are explicitly for the TV UI.
@@ -99,7 +100,21 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
     // Web never has the real visualizer, and if reactivity is off skip entirely.
     if (kIsWeb || !settings.oilEnableAudioReactivity) return;
 
+    // MANDATORY für Android: Record Audio permission is required for the Visualizer API.
+    if (defaultTargetPlatform == TargetPlatform.android) {
+      final status = await Permission.microphone.status;
+      if (!status.isGranted) {
+        final result = await Permission.microphone.request();
+        if (!result.isGranted) {
+          debugPrint(
+              'Screensaver: Audio permission denied. Reactivity disabled.');
+          return;
+        }
+      }
+    }
+
     // Get the app's audio session ID on Android so we tap the right output.
+    if (!mounted) return;
     int? sessionId;
     if (defaultTargetPlatform == TargetPlatform.android) {
       final audioProvider = Provider.of<AudioProvider>(context, listen: false);

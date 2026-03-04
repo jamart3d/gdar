@@ -820,6 +820,13 @@ class MockSettingsProvider extends _i1.Mock implements _i9.SettingsProvider {
       ) as double);
 
   @override
+  double get oilLogoTrailInitialScale => (super.noSuchMethod(
+        Invocation.getter(#oilLogoTrailInitialScale),
+        returnValue: 0.0,
+        returnValueForMissingStub: 0.0,
+      ) as double);
+
+  @override
   double get oilAudioPeakDecay => (super.noSuchMethod(
         Invocation.getter(#oilAudioPeakDecay),
         returnValue: 0.0,
@@ -1570,40 +1577,44 @@ class MockSettingsProvider extends _i1.Mock implements _i9.SettingsProvider {
       ) as _i7.Future<void>);
 
   @override
-  void toggleOilEnableAudioReactivity() => super.noSuchMethod(
+  _i7.Future<void> toggleOilEnableAudioReactivity() => (super.noSuchMethod(
         Invocation.method(
           #toggleOilEnableAudioReactivity,
           [],
         ),
-        returnValueForMissingStub: null,
-      );
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
 
   @override
-  void setOilPerformanceLevel(int? level) => super.noSuchMethod(
+  _i7.Future<void> setOilPerformanceLevel(int? level) => (super.noSuchMethod(
         Invocation.method(
           #setOilPerformanceLevel,
           [level],
         ),
-        returnValueForMissingStub: null,
-      );
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
 
   @override
-  void toggleOilLogoAntiAlias() => super.noSuchMethod(
+  _i7.Future<void> toggleOilLogoAntiAlias() => (super.noSuchMethod(
         Invocation.method(
           #toggleOilLogoAntiAlias,
           [],
         ),
-        returnValueForMissingStub: null,
-      );
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
 
   @override
-  void toggleOilPaletteCycle() => super.noSuchMethod(
+  _i7.Future<void> toggleOilPaletteCycle() => (super.noSuchMethod(
         Invocation.method(
           #toggleOilPaletteCycle,
           [],
         ),
-        returnValueForMissingStub: null,
-      );
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
 
   @override
   void setOilPaletteTransitionSpeed(double? seconds) => super.noSuchMethod(
@@ -1723,6 +1734,17 @@ class MockSettingsProvider extends _i1.Mock implements _i9.SettingsProvider {
   _i7.Future<void> setOilLogoTrailScale(double? value) => (super.noSuchMethod(
         Invocation.method(
           #setOilLogoTrailScale,
+          [value],
+        ),
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
+
+  @override
+  _i7.Future<void> setOilLogoTrailInitialScale(double? value) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #setOilLogoTrailInitialScale,
           [value],
         ),
         returnValue: _i7.Future<void>.value(),
@@ -1977,22 +1999,24 @@ class MockSettingsProvider extends _i1.Mock implements _i9.SettingsProvider {
       ) as _i7.Future<void>);
 
   @override
-  void setOilTrackLetterSpacing(double? val) => super.noSuchMethod(
+  _i7.Future<void> setOilTrackLetterSpacing(double? val) => (super.noSuchMethod(
         Invocation.method(
           #setOilTrackLetterSpacing,
           [val],
         ),
-        returnValueForMissingStub: null,
-      );
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
 
   @override
-  void setOilTrackWordSpacing(double? val) => super.noSuchMethod(
+  _i7.Future<void> setOilTrackWordSpacing(double? val) => (super.noSuchMethod(
         Invocation.method(
           #setOilTrackWordSpacing,
           [val],
         ),
-        returnValueForMissingStub: null,
-      );
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
 
   @override
   _i7.Future<void> resetToDefaults() => (super.noSuchMethod(

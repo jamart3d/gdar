@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:provider/provider.dart';
 import 'package:shakedown/ui/widgets/tv/tv_focus_wrapper.dart';
+import 'package:shakedown/providers/settings_provider.dart';
 import 'package:flutter/services.dart';
+import 'package:mockito/mockito.dart';
+
+class MockSettingsProvider extends Mock implements SettingsProvider {}
 
 void main() {
   testWidgets('TvFocusWrapper does NOT trigger onTap on focus gain',
@@ -10,14 +15,19 @@ void main() {
     final focusNode = FocusNode();
 
     await tester.pumpWidget(
-      MaterialApp(
-        home: Scaffold(
-          body: TvFocusWrapper(
-            focusNode: focusNode,
-            onTap: () {
-              tapped = true;
-            },
-            child: const SizedBox(width: 100, height: 100),
+      MultiProvider(
+        providers: [
+          Provider<SettingsProvider>.value(value: MockSettingsProvider()),
+        ],
+        child: MaterialApp(
+          home: Scaffold(
+            body: TvFocusWrapper(
+              focusNode: focusNode,
+              onTap: () {
+                tapped = true;
+              },
+              child: const SizedBox(width: 100, height: 100),
+            ),
           ),
         ),
       ),
@@ -40,14 +50,19 @@ void main() {
     final focusNode = FocusNode();
 
     await tester.pumpWidget(
-      MaterialApp(
-        home: Scaffold(
-          body: TvFocusWrapper(
-            focusNode: focusNode,
-            onTap: () {
-              tapped = true;
-            },
-            child: const SizedBox(width: 100, height: 100),
+      MultiProvider(
+        providers: [
+          Provider<SettingsProvider>.value(value: MockSettingsProvider()),
+        ],
+        child: MaterialApp(
+          home: Scaffold(
+            body: TvFocusWrapper(
+              focusNode: focusNode,
+              onTap: () {
+                tapped = true;
+              },
+              child: const SizedBox(width: 100, height: 100),
+            ),
           ),
         ),
       ),

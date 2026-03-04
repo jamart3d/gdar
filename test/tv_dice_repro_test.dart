@@ -114,6 +114,10 @@ class MockAudioProvider extends ChangeNotifier implements AudioProvider {
   @override
   Stream<Duration?> get durationStream => const Stream.empty();
   @override
+  Stream<void> get playbackFocusRequestStream => const Stream.empty();
+  @override
+  Stream<String> get notificationStream => const Stream.empty();
+  @override
   late final GaplessPlayer audioPlayer = GaplessPlayer();
 
   @override
@@ -158,7 +162,20 @@ class MockSettingsProvider extends ChangeNotifier implements SettingsProvider {
   @override
   double get oilLogoTrailLength => 0.5;
   @override
-  bool get enableSwipeToBlock => false;
+  double get oilLogoTrailScale => 0.1;
+  @override
+  double get oilLogoTrailInitialScale => 0.92;
+
+  @override
+  Future<void> setOilLogoTrailIntensity(double value) async {}
+  @override
+  Future<void> setOilLogoTrailSlices(int value) async {}
+  @override
+  Future<void> setOilLogoTrailLength(double value) async {}
+  @override
+  Future<void> setOilLogoTrailScale(double value) async {}
+  @override
+  Future<void> setOilLogoTrailInitialScale(double value) async {}
   @override
   bool get useNeumorphism => true;
   @override

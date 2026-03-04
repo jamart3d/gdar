@@ -17,9 +17,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Agent Rules**: Standardized large monolithic rules into granular, trigger-based modules (e.g., `tv_ui_flow.md`, `fruit_theme.md`, `native_audio.md`).
 - **Release Management**: Retired `docs/RELEASE_NOTES.txt`. All history now lives in `CHANGELOG.md`.
 
+## [1.1.46+146] - 2026-03-04
+
+### Added
+- **Screensaver (TV)**: Added `Trail Initial Scale` setting — controls the starting size of the logo trail effect relative to the logo scale (default 92%, range 50–200%), enabling smoother trail-to-logo size relationships.
+
+### Fixed
+- **Tests**: Fixed `tv_focus_wrapper_repro_test.dart` — replaced hand-written `ChangeNotifier` stub with proper Mockito `Mock`, added `MockDeviceService`, and disabled `Provider.debugCheckInvalidValueType` to prevent false-positive provider type errors.
+- **Tests**: Fixed `tv_regression_test.dart` — restored missing `@override` on `oilScreensaverMode` and `toggleUseNeumorphism`; removed non-existent method stubs (`hapticFeedback`, `customSeedColor`, etc.) that were producing "doesn't override" lint errors.
+- **Tests**: Fixed `settings_provider_test.dart` — added missing `await` for `toggleOilEnableAudioReactivity()` to match its `Future<void>` signature.
+- **Screensaver**: Fixed `screensaver_screen.dart` — added `mounted` guard before `BuildContext` access after async `Permission.microphone.request()` call to satisfy lint (`use_build_context_synchronously`).
+
 ## [Unreleased]
 
----
+
 
 ### Legacy History (migrated 2026-03-04 from docs/RELEASE_NOTES.txt)
 

@@ -34,6 +34,7 @@ class StealConfig {
   final int logoTrailSlices; // 2–16 ghost copies
   final double logoTrailLength; // 0.0–1.0 spacing between snapshots
   final double logoTrailScale; // 0.0–1.0 shrinkage per snapshot
+  final double logoTrailInitialScale; // 0.5–2.0 base scaling from logo
   /// Flat mode: 0.0 = default gap (text just below visual edge),
   /// 1.0 = text at logo center (fully overlapping).
   final double flatTextProximity;
@@ -151,6 +152,7 @@ class StealConfig {
     this.logoTrailSlices = 6,
     this.logoTrailLength = 0.5,
     this.logoTrailScale = 0.1,
+    this.logoTrailInitialScale = 0.92,
     this.flatTextProximity = 0.0,
     this.flatTextPlacement = 'below',
     this.bannerResolution = 2.0,
@@ -202,6 +204,8 @@ class StealConfig {
       logoTrailSlices: (map['logoTrailSlices'] as int?) ?? 6,
       logoTrailLength: (map['logoTrailLength'] as num?)?.toDouble() ?? 0.5,
       logoTrailScale: (map['logoTrailScale'] as num?)?.toDouble() ?? 0.1,
+      logoTrailInitialScale:
+          (map['logoTrailInitialScale'] as num?)?.toDouble() ?? 0.92,
       flatTextProximity: (map['flatTextProximity'] as num?)?.toDouble() ?? 0.0,
       flatTextPlacement: map['flatTextPlacement'] as String? ?? 'below',
       bannerResolution: (map['bannerResolution'] as num?)?.toDouble() ?? 2.0,
@@ -254,6 +258,7 @@ class StealConfig {
       'logoTrailSlices': logoTrailSlices,
       'logoTrailLength': logoTrailLength,
       'logoTrailScale': logoTrailScale,
+      'logoTrailInitialScale': logoTrailInitialScale,
       'flatTextProximity': flatTextProximity,
       'flatTextPlacement': flatTextPlacement,
       'bannerResolution': bannerResolution,
@@ -301,6 +306,7 @@ class StealConfig {
     int? logoTrailSlices,
     double? logoTrailLength,
     double? logoTrailScale,
+    double? logoTrailInitialScale,
     double? flatTextProximity,
     String? flatTextPlacement,
     double? bannerResolution,
@@ -348,6 +354,8 @@ class StealConfig {
       logoTrailSlices: logoTrailSlices ?? this.logoTrailSlices,
       logoTrailLength: logoTrailLength ?? this.logoTrailLength,
       logoTrailScale: logoTrailScale ?? this.logoTrailScale,
+      logoTrailInitialScale:
+          logoTrailInitialScale ?? this.logoTrailInitialScale,
       flatTextProximity: flatTextProximity ?? this.flatTextProximity,
       flatTextPlacement: flatTextPlacement ?? this.flatTextPlacement,
       bannerResolution: bannerResolution ?? this.bannerResolution,
@@ -398,6 +406,8 @@ class StealConfig {
         logoTrailIntensity == other.logoTrailIntensity &&
         logoTrailSlices == other.logoTrailSlices &&
         logoTrailLength == other.logoTrailLength &&
+        logoTrailScale == other.logoTrailScale &&
+        logoTrailInitialScale == other.logoTrailInitialScale &&
         flatTextProximity == other.flatTextProximity &&
         flatTextPlacement == other.flatTextPlacement &&
         bannerResolution == other.bannerResolution &&
@@ -444,6 +454,8 @@ class StealConfig {
         logoTrailIntensity,
         logoTrailSlices,
         logoTrailLength,
+        logoTrailScale,
+        logoTrailInitialScale,
         flatTextProximity,
         flatTextPlacement,
         bannerResolution,

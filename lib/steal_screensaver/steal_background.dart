@@ -258,8 +258,9 @@ class StealBackground extends PositionComponent
       if (opacity < 0.01) continue;
 
       // Dynamic scale reduction toward older slices
+      // We apply the initialScale as the starting size (1.0 = native logo size)
       final scale = 1.0 - t * config.logoTrailScale.clamp(0.0, 0.9);
-      final renderSize = logoRenderSize * scale;
+      final renderSize = logoRenderSize * config.logoTrailInitialScale * scale;
 
       final pos = positions[i];
       final cx = pos.dx * w;

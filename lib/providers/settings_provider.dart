@@ -88,6 +88,8 @@ class SettingsProvider with ChangeNotifier {
   static const String _oilLogoTrailSlicesKey = 'oil_logo_trail_slices';
   static const String _oilLogoTrailLengthKey = 'oil_logo_trail_length';
   static const String _oilLogoTrailScaleKey = 'oil_logo_trail_scale';
+  static const String _oilLogoTrailInitialScaleKey =
+      'oil_logo_trail_initial_scale';
 
   // Audio Reactivity Tuning
   static const String _oilAudioPeakDecayKey = 'oil_audio_peak_decay';
@@ -220,6 +222,7 @@ class SettingsProvider with ChangeNotifier {
   late int _oilLogoTrailSlices;
   late double _oilLogoTrailLength;
   late double _oilLogoTrailScale;
+  late double _oilLogoTrailInitialScale;
 
   // Audio Reactivity Tuning
   late double _oilAudioPeakDecay;
@@ -372,6 +375,7 @@ class SettingsProvider with ChangeNotifier {
   int get oilLogoTrailSlices => _oilLogoTrailSlices;
   double get oilLogoTrailLength => _oilLogoTrailLength;
   double get oilLogoTrailScale => _oilLogoTrailScale;
+  double get oilLogoTrailInitialScale => _oilLogoTrailInitialScale;
 
   // Audio Reactivity getters
   double get oilAudioPeakDecay => _oilAudioPeakDecay;
@@ -711,7 +715,6 @@ class SettingsProvider with ChangeNotifier {
     _oilFlatLineSpacing = _prefs.getDouble(_oilFlatLineSpacingKey) ??
         DefaultSettings.oilFlatLineSpacing;
 
-    // Trail effect
     _oilLogoTrailIntensity = _prefs.getDouble(_oilLogoTrailIntensityKey) ??
         DefaultSettings.oilLogoTrailIntensity;
     _oilLogoTrailSlices = _prefs.getInt(_oilLogoTrailSlicesKey) ??
@@ -720,6 +723,9 @@ class SettingsProvider with ChangeNotifier {
         DefaultSettings.oilLogoTrailLength;
     _oilLogoTrailScale = _prefs.getDouble(_oilLogoTrailScaleKey) ??
         DefaultSettings.oilLogoTrailScale;
+    _oilLogoTrailInitialScale =
+        _prefs.getDouble(_oilLogoTrailInitialScaleKey) ??
+            DefaultSettings.oilLogoTrailInitialScale;
 
     // Audio Reactivity
     _oilAudioPeakDecay = _prefs.getDouble(_oilAudioPeakDecayKey) ??
@@ -955,23 +961,24 @@ class SettingsProvider with ChangeNotifier {
       _updateDoublePreference(_oilFilmGrainKey, _oilFilmGrain = value);
   Future<void> setOilHeatDrift(double value) =>
       _updateDoublePreference(_oilHeatDriftKey, _oilHeatDrift = value);
-  void toggleOilEnableAudioReactivity() {
+  Future<void> toggleOilEnableAudioReactivity() async {
     _oilEnableAudioReactivity = !_oilEnableAudioReactivity;
 
     // Explicitly nudge pulse intensity to 1.0 if it's currently 0.0,
     // otherwise enabling reactivity does nothing visually in the shader.
     if (_oilEnableAudioReactivity && _oilPulseIntensity == 0.0) {
-      setOilPulseIntensity(1.0);
+      await setOilPulseIntensity(1.0);
     }
 
-    _updatePreference(_oilEnableAudioReactivityKey, _oilEnableAudioReactivity);
+    await _updatePreference(
+        _oilEnableAudioReactivityKey, _oilEnableAudioReactivity);
   }
 
-  void setOilPerformanceLevel(int level) => _updateIntPreference(
+  Future<void> setOilPerformanceLevel(int level) => _updateIntPreference(
       _oilPerformanceLevelKey, _oilPerformanceLevel = level);
-  void toggleOilLogoAntiAlias() => _updatePreference(
+  Future<void> toggleOilLogoAntiAlias() => _updatePreference(
       _oilLogoAntiAliasKey, _oilLogoAntiAlias = !_oilLogoAntiAlias);
-  void toggleOilPaletteCycle() => _updatePreference(
+  Future<void> toggleOilPaletteCycle() => _updatePreference(
       _oilPaletteCycleKey, _oilPaletteCycle = !_oilPaletteCycle);
   void setOilPaletteTransitionSpeed(double seconds) => _updateDoublePreference(
       _oilPaletteTransitionSpeedKey, _oilPaletteTransitionSpeed = seconds);
@@ -1004,6 +1011,9 @@ class SettingsProvider with ChangeNotifier {
       _oilLogoTrailLengthKey, _oilLogoTrailLength = value.clamp(0.0, 1.0));
   Future<void> setOilLogoTrailScale(double value) => _updateDoublePreference(
       _oilLogoTrailScaleKey, _oilLogoTrailScale = value.clamp(0.0, 1.0));
+  Future<void> setOilLogoTrailInitialScale(double value) =>
+      _updateDoublePreference(_oilLogoTrailInitialScaleKey,
+          _oilLogoTrailInitialScale = value.clamp(0.5, 2.0));
 
   // Audio Reactivity setters
   Future<void> setOilAudioPeakDecay(double value) => _updateDoublePreference(
@@ -1123,9 +1133,9 @@ class SettingsProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  void setOilTrackLetterSpacing(double val) => _updateDoublePreference(
+  Future<void> setOilTrackLetterSpacing(double val) => _updateDoublePreference(
       _oilTrackLetterSpacingKey, _oilTrackLetterSpacing = val);
-  void setOilTrackWordSpacing(double val) => _updateDoublePreference(
+  Future<void> setOilTrackWordSpacing(double val) => _updateDoublePreference(
       _oilTrackWordSpacingKey, _oilTrackWordSpacing = val);
 
   Future<void> resetToDefaults() async {

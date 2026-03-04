@@ -1,9 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:provider/provider.dart';
 import 'package:shakedown/ui/widgets/tv/tv_focus_wrapper.dart';
+import 'package:shakedown/providers/settings_provider.dart';
+import 'package:shakedown/services/device_service.dart';
+import 'package:mockito/mockito.dart';
+
+class MockSettingsProvider extends Mock implements SettingsProvider {
+  @override
+  double get rgbAnimationSpeed => 1.0;
+}
+
+class MockDeviceService extends Mock implements DeviceService {
+  @override
+  bool get isTv => true;
+  @override
+  bool get isPwa => false;
+}
 
 void main() {
+  Provider.debugCheckInvalidValueType = null;
   testWidgets(
       'TvFocusWrapper should NOT trigger onTap on KeyUp if KeyDown was not received',
       (WidgetTester tester) async {
@@ -13,20 +30,26 @@ void main() {
     addTearDown(tvFocusNode.dispose);
 
     await tester.pumpWidget(
-      MaterialApp(
-        home: Scaffold(
-          body: Column(
-            children: [
-              const Focus(
-                autofocus: true,
-                child: Text('Other Widget'),
-              ),
-              TvFocusWrapper(
-                focusNode: tvFocusNode,
-                onTap: () => tapCount++,
-                child: const Text('Focus Me'),
-              ),
-            ],
+      MultiProvider(
+        providers: [
+          Provider<SettingsProvider>.value(value: MockSettingsProvider()),
+          Provider<DeviceService>.value(value: MockDeviceService()),
+        ],
+        child: MaterialApp(
+          home: Scaffold(
+            body: Column(
+              children: [
+                const Focus(
+                  autofocus: true,
+                  child: Text('Other Widget'),
+                ),
+                TvFocusWrapper(
+                  focusNode: tvFocusNode,
+                  onTap: () => tapCount++,
+                  child: const Text('Focus Me'),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -55,11 +78,17 @@ void main() {
     int tapCount = 0;
 
     await tester.pumpWidget(
-      MaterialApp(
-        home: Scaffold(
-          body: TvFocusWrapper(
-            onTap: () => tapCount++,
-            child: const Text('Focus Me'),
+      MultiProvider(
+        providers: [
+          Provider<SettingsProvider>.value(value: MockSettingsProvider()),
+          Provider<DeviceService>.value(value: MockDeviceService()),
+        ],
+        child: MaterialApp(
+          home: Scaffold(
+            body: TvFocusWrapper(
+              onTap: () => tapCount++,
+              child: const Text('Focus Me'),
+            ),
           ),
         ),
       ),

@@ -235,7 +235,7 @@ void main() {
 
     test('toggles oil audio reactivity', () async {
       final initial = settingsProvider.oilEnableAudioReactivity;
-      settingsProvider.toggleOilEnableAudioReactivity();
+      await settingsProvider.toggleOilEnableAudioReactivity();
       expect(settingsProvider.oilEnableAudioReactivity, !initial);
 
       final prefs = await SharedPreferences.getInstance();

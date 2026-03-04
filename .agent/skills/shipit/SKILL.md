@@ -36,19 +36,28 @@ Exception in `gemini.md` rules).
 ### 4. Deploy Web
 1. Run `firebase deploy --only hosting`.
 
-### 5. Git Sync
+### 5. Generate Play Store Release Note
+1. Extract the bullet points from the new version block just added to `CHANGELOG.md`.
+2. Strip all markdown formatting (bold, backticks, links).
+3. Convert `- ` list items to `•` bullets.
+4. Prepend with `What's new in vX.X.X`.
+5. Trim to ≤500 characters (Google Play Console limit).
+6. **Overwrite** root-level `PLAY_STORE_RELEASE.txt` with the result.
+7. Display the contents so the user can review it before uploading.
+
+### 6. Git Sync
 1. `git add .`
 2. `git commit -m "Release vX.X.X+N"`
 3. `git push`
 
-### 6. Notify
+### 7. Notify
 1. Inform user the build is ready.
 2. Remind to upload AAB to [Google Play Console](https://play.google.com/console).
-3. Provide release summary from CHANGELOG.
+3. Tell user `PLAY_STORE_RELEASE.txt` is ready to copy/paste into Play Console release notes.
 
-### 7. Post-Launch Debrief
+### 8. Post-Launch Debrief
 1. Run the `/session_debrief` workflow to evaluate the work that went into this release.
-2. Suggest to the user any new `.agent/rules/`, `.agent/skills/`, or `.agent/workflows/` that we should create based on lessons learned during this sprint.
+2. Suggest any new `.agent/rules/`, `.agent/skills/`, or `.agent/workflows/` based on lessons learned.
 
 > **IMPORTANT:** Never write to `docs/RELEASE_NOTES.txt`. That file is
 > legacy and retired. All release history goes to root `CHANGELOG.md`.

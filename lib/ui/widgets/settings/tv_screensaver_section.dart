@@ -238,7 +238,22 @@ class TvScreensaverSection extends StatelessWidget {
           const SizedBox(height: 16),
 
           TvStepperRow(
-            label: 'Trail Scale',
+            label: 'Trail Initial Scale',
+            value: settings.oilLogoTrailInitialScale,
+            min: 0.5,
+            max: 2.0,
+            step: 0.05,
+            leftLabel: '50%',
+            rightLabel: '200%',
+            valueFormatter: (v) =>
+                v == 1.0 ? '100% (Native)' : '${(v * 100).round()}%',
+            onChanged: (v) => settings.setOilLogoTrailInitialScale(v),
+          ),
+
+          const SizedBox(height: 16),
+
+          TvStepperRow(
+            label: 'Trail Decay Scale',
             value: settings.oilLogoTrailScale,
             min: 0.0,
             max: 0.5,
@@ -667,7 +682,8 @@ class TvScreensaverSection extends StatelessWidget {
 
           _ToggleRow(
             label: 'Enable Audio Reactivity',
-            subtitle: 'Sync visuals to the music being played',
+            subtitle:
+                'Sync visuals to the music being played (requires audio permission)',
             value: settings.oilEnableAudioReactivity,
             onChanged: (_) => settings.toggleOilEnableAudioReactivity(),
             colorScheme: colorScheme,

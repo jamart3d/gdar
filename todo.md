@@ -8,11 +8,11 @@
     - [x] Identify cause: `SplashScreen` hardcoded background & `ThemeProvider` defaulting to Light.
 
 ## Pending Tasks
-- [ ] **Google TV UI Screensaver Audio Reactivity**:
-    - [ ] Add `permission_handler` to `pubspec.yaml`.
-    - [ ] Request `RECORD_AUDIO` permission in `ScreensaverScreen` when initializing the visualizer.
-    - [ ] Update `SettingsProvider.toggleOilEnableAudioReactivity()` to automatically set `oilPulseIntensity` to `1.0` if it is currently `0.0` when audio reactivity is enabled.
-    - [ ] Set `DefaultSettings.oilPulseIntensity` to `1.0` in `lib/config/default_settings.dart` so reactivity works out of the box when enabled.
+- [x] **Google TV UI Screensaver Audio Reactivity**:
+    - [x] Add `permission_handler` to `pubspec.yaml`.
+    - [x] Request `RECORD_AUDIO` permission in `ScreensaverScreen` when initializing the visualizer.
+    - [x] Update `SettingsProvider.toggleOilEnableAudioReactivity()` to automatically set `oilPulseIntensity` to `1.0` if it is currently `0.0` when audio reactivity is enabled.
+    - [x] Set `DefaultSettings.oilPulseIntensity` to `1.0` in `lib/config/default_settings.dart` so reactivity works out of the box when enabled.
 - [ ] **Google TV UI**: Set default screensaver settings (Visual Style, Speed, etc.) to ensure a premium out-of-the-box experience.
 - [x] Review implementation plan
 - [x] Fix Deprecated Color Getters in `lib/steal_screensaver/steal_background.dart`

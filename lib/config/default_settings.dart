@@ -107,6 +107,7 @@ class DefaultSettings {
   static const double oilLogoTrailIntensity = 0.0;
   static const int oilLogoTrailSlices = 6;
   static const double oilLogoTrailLength = 0.5;
+  static const double oilLogoTrailInitialScale = 0.92;
   static const double oilLogoTrailScale = 0.1; // 10% reduction per slice
 
   // Ring controls (3-ring gap model)
