@@ -7,6 +7,8 @@ import 'package:shakedown/ui/widgets/show_list/animated_dice_icon.dart';
 import 'package:shakedown/ui/widgets/tv/tv_focus_wrapper.dart';
 import 'package:shakedown/ui/screens/settings_screen.dart';
 import 'package:shakedown/providers/theme_provider.dart';
+import 'package:shakedown/providers/settings_provider.dart';
+import 'package:shakedown/utils/font_layout_config.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 class TvHeader extends StatelessWidget {
@@ -35,10 +37,15 @@ class TvHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final showListProvider = context.watch<ShowListProvider>();
+    final settingsProvider = context.watch<SettingsProvider>();
     final isChoosingRandomShow = showListProvider.isChoosingRandomShow;
 
+    final double scaleFactor =
+        FontLayoutConfig.getEffectiveScale(context, settingsProvider);
+
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+      padding: EdgeInsets.fromLTRB(16 * scaleFactor, 12 * scaleFactor,
+          16 * scaleFactor, 8 * scaleFactor),
       child: Row(
         children: [
           // 1. Dice Icon (Large)
@@ -58,10 +65,10 @@ class TvHeader extends StatelessWidget {
               }
               return KeyEventResult.ignored;
             },
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(12 * scaleFactor),
             child: SizedBox(
-              width: 56, // Reduced from 72
-              height: 56, // Reduced from 72
+              width: 56 * scaleFactor,
+              height: 56 * scaleFactor,
               child: AnimatedDiceIcon(
                 onPressed: onRandomPlay,
                 isLoading: isChoosingRandomShow,
@@ -70,17 +77,17 @@ class TvHeader extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(width: 16),
+          SizedBox(width: 16 * scaleFactor),
           // 2. Title Text
-          const Expanded(
+          Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
                 ShakedownTitle(
-                  fontSize: 22,
+                  fontSize: 22 * scaleFactor,
                   animateOnStart: true,
-                  shakeDelay: Duration(milliseconds: 1700),
+                  shakeDelay: const Duration(milliseconds: 1700),
                 ),
               ],
             ),
@@ -109,9 +116,9 @@ class TvHeader extends StatelessWidget {
               }
               return KeyEventResult.ignored;
             },
-            borderRadius: BorderRadius.circular(50),
+            borderRadius: BorderRadius.circular(50 * scaleFactor),
             child: Container(
-              padding: const EdgeInsets.all(10), // Reduced from 12
+              padding: EdgeInsets.all(10 * scaleFactor),
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color:
@@ -121,7 +128,7 @@ class TvHeader extends StatelessWidget {
                 context.watch<ThemeProvider>().themeStyle == ThemeStyle.fruit
                     ? LucideIcons.settings
                     : Icons.settings_rounded,
-                size: 24, // Reduced from 28
+                size: 24 * scaleFactor,
                 color: colorScheme.onSurfaceVariant,
               ),
             ),

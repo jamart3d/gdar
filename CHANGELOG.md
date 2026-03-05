@@ -6,6 +6,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.51+151] - 2026-03-05
+
+### Added
+- **Agent**: Added `windows_shell.md` and `linux_shell.md` rules for platform-safe command execution.
+- **Agent**: Added `/audit` workflow for comprehensive codebase baselining.
+
+### Changed
+- **UI/UX (TV)**: `TvHeader` now scales icons, padding, and title via `FontLayoutConfig` to respect the 1.35x TV UI boost.
+- **Settings (TV)**: `uiScale` is now automatically enabled on first run for TV devices, ensuring 10-foot UI standards out of the box.
+
+### Fixed
+- **UI/UX (Fruit)**: `SectionCard` now maintains `LiquidGlassWrapper` aesthetic in Fruit mode even when Neumorphism is disabled, preventing raw Material Card fallback.
+
 ## [1.1.50+150] - 2026-03-05
 
 ### Fixed

@@ -5,7 +5,7 @@ description: Analyze the day's work and suggest new agent tools/docs.
 
 **When to use:** At the end of a coding session to extract reusable knowledge and improve the agent's environment.
 
-1.  **Analyze Activity:** Review the recent git commits, completed tasks in `todo.md`, and the conversation history of the current session.
+1.  **Analyze Activity:** Review the recent git commits, completed tasks in `TODO.md`, and the conversation history of the current session.
 2.  **Identify Patterns:** Look for:
     *   Repeated commands or debugging steps.
     *   Newly discovered architectural constraints or UI gotchas.

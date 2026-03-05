@@ -1,60 +1,49 @@
-# TODO: Fix Google TV White Background Issues
+# GDAR — Open TODO Items
 
-## Completed Investigation
-- [x] Trace why screensaver is white in Google TV UI
-    - [x] Investigate screensaver implementation files
-    - [x] Check shader files for background color logic
-    - [x] Check TV-specific logic in `DeviceService` or elsewhere
-    - [x] Identify cause: `SplashScreen` hardcoded background & `ThemeProvider` defaulting to Light.
+> Consolidated from `todo.md`, `TODO_TV_UI.md`, `WEB_GAPLESS_TODO.md`, and `TODO_position_jump_debug.md`.
+> Originals archived to `reports/archive/`.
 
-## Pending Tasks
-- [x] **Google TV UI Screensaver Audio Reactivity**:
-    - [x] Add `permission_handler` to `pubspec.yaml`.
-    - [x] Request `RECORD_AUDIO` permission in `ScreensaverScreen` when initializing the visualizer.
-    - [x] Update `SettingsProvider.toggleOilEnableAudioReactivity()` to automatically set `oilPulseIntensity` to `1.0` if it is currently `0.0` when audio reactivity is enabled.
-    - [x] Set `DefaultSettings.oilPulseIntensity` to `1.0` in `lib/config/default_settings.dart` so reactivity works out of the box when enabled.
-- [ ] **Google TV UI**: Set default screensaver settings (Visual Style, Speed, etc.) to ensure a premium out-of-the-box experience.
-- [x] Review implementation plan
-- [x] Fix Deprecated Color Getters in `lib/steal_screensaver/steal_background.dart`
-- [x] Implement Changes:
-    - [x] Update `lib/ui/screens/splash_screen.dart` to use theme background color (Verified: uses `Scaffold` which respects `ThemeProvider`'s default dark mode on TV).
-    - [x] Update `lib/ui/widgets/tv/tv_dual_pane_layout.dart` to use `Scaffold` with themed background (respects TV Dark Mode).
-    - [x] Update `lib/providers/theme_provider.dart` to default to Dark mode on TV.
-    - [x] Update `lib/main.dart` to pass `isTv` to `ThemeProvider`.
-- [x] Verify the fix
-    - [x] Run automated tests.
-    - [x] Manual verification on Google TV.
+---
 
-## TV Screensaver Optimization (Neon Glow) [CRITICAL - HIGH PRIORITY]
-- [x] **Major Performance Optimization**: Refactor `StealBanner` neon glow for Google TV.
-    - **Status**: Previous blur simplifications (1.1.17) still result in excessive GPU load on low-spec Google TV hardware.
-    - **Problem**: Real-time Gaussian blurs on character glyphs are too expensive for TV SOCs.
-    - **Solution**: Implement a Rasterized Glyph Cache (`Map<String, ui.Image>`).
-    - **Method**: 
-        1. On first use of a character, draw it with its full glow onto an off-screen `ui.PictureRecorder`.
-        2. Rasterize it immediately using `toImageSync()`.
-        3. In the `render()` loop, replace `TextPainter.paint` with `canvas.drawImage`.
-        4. Apply cycling colors and flickering opacity using a `Paint` object with `ColorFilter.mode(currentColor.withOpacity(opacity), BlendMode.srcIn)`.
-    - **Result**: Transforms complex vector generation + 3 blurs into a single, ultra-fast hardware texture blit per character.
+## 🖥️ Google TV
 
-    - [x] **Method**: Added a toggle to `TvScreensaverSection` that controls the `preventSleep` setting.
+### High Priority
+- [ ] **Default Screensaver Settings**: Set default visual style, speed, etc. for a premium out-of-the-box experience.
+- [ ] **Search UX**: Optimize search overlay for large screens; ensure on-screen keyboard doesn't obscure results.
+- [ ] **Pane Navigation Polish**: "Switch Pane" shortcut and visual indicator for inactive pane focus state.
+- [ ] **Settings Two-Pane Layout**: Redesign Settings screen for 16:9 using a Master-Detail pattern.
 
-## Web/PWA Optimization
-- [x] **Background Playback Longevity**: Implemented Hybrid Audio Engine
-- [x] **Feature: Hybrid Gapless Engine**: Develop a unified Web engine that wraps the Web Audio API and HTML5 Audio API for background longevity and gapless playback.
-    - **Strategy**: 
-        1. Passive Engine (HTML5 `<audio>` + MediaSession API) for extreme background-longevity without workers or silent-video hacks.
-        2. Hybrid Engine (Web Audio API) for gapless/crossfade in the foreground and hands off to the Passive engine when backgrounded.
-        3. Add a Track Transition setting (gap | gapless | crossfade) and a crossfade duration setting.
-- [x] **UI: Splash Screen Checks**: Center checklist items on Android and PWA. Scale to fit screen width.
-    - [x] Update `lib/ui/screens/splash_screen.dart` checklist layout.
-    - [x] Verify centering on Android and Web (PWA).
-- [x] **Settings: Prefetch**: Hardcode `prefetchSeconds` to 30s and hide from UI.
-- [x] **UI: Segmented Buttons**: Ensure Web Audio Engine labels scale without wrapping.
+### Visual & Motion
+- [ ] **Display Typography**: Audit and upgrade headers to `DisplayMedium` / `DisplayLarge` on the playback pane.
 
-## Spec & Documentation Consolidation
-- [ ] **Merge Platform Specs into Feature Specs**: Consolidate `web_ui_design_spec.md` and `phone_ui_design_spec.md` into unified, cross-platform feature specifications.
-    - [ ] Create `spec_browse_flow.md` (Handles routing, layout, and logic for Years, Shows, and Tracks lists).
-    - [ ] Create `spec_music_player.md` (Handles sliding panel, playback controls, animations, and audio service integration).
-    - [ ] Create `spec_settings.md` (Handles configuration options and theme toggles).
-- [ ] **Centralize Theme Logic**: Update documentation to explicitly state that `kIsWeb` applies the "Fruit" theme (Liquid Glass, BackdropFilters), referencing `fruit_theme_spec.md` as the styling source of truth.
+### Performance
+- [ ] **Neon Glow Optimization** *(CRITICAL)*: Implement Rasterized Glyph Cache for `StealBanner`. Real-time Gaussian blurs are too expensive for TV SOCs.
+- [ ] **App Size Audit**: Run optimization audit looking for TV-only assets that could be trimmed.
+- [ ] **TV Safe Area**: Global setting to adjust margins for older panels that crop edges.
+
+### Debug
+- [ ] **Logo Position Jump**: Diagnose visual jolt/reset every few minutes with audio reactivity off. See `reports/archive/TODO_position_jump_debug.md` for full investigation notes.
+
+### Future Ideas
+- [ ] **Voice Search**: "Play shows from Winterland 1973" via Google Assistant.
+- [ ] **Flutter GPU Investigation**: Explore `flutter_gpu` for higher-fidelity fluid simulation in the lava lamp screensaver.
+
+---
+
+## 🌐 Web / PWA
+
+- [ ] **Background Longevity**: Extend playback when tab is backgrounded/throttled.
+  - [ ] Explore Silent Video looping or Web Workers for timer consistency.
+  - [ ] Audit `gapless_audio_engine.js` for timer drift during CPU throttling.
+- [ ] **Bug — Track Skip on Buffer**: Engine skips next track if it isn't fully buffered when current track ends.
+- [ ] **Mobile Preload Setting**: User setting to choose how many tracks to buffer/preload ahead (currently defaults to 1).
+
+---
+
+## 📄 Spec & Documentation
+
+- [ ] **Merge Platform Specs into Feature Specs**: Consolidate `web_ui_design_spec.md` and `phone_ui_design_spec.md` into unified cross-platform specs.
+  - [ ] Create `spec_browse_flow.md` (routing, layout, logic for Years/Shows/Tracks).
+  - [ ] Create `spec_music_player.md` (sliding panel, playback controls, animations, audio service).
+  - [ ] Create `spec_settings.md` (configuration options and theme toggles).
+- [ ] **Centralize Theme Logic**: Document that `kIsWeb` applies the "Fruit" theme, referencing `fruit_theme_spec.md` as the styling source of truth.

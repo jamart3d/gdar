@@ -193,6 +193,30 @@ class SectionCard extends StatelessWidget {
     final useTrueBlack = settingsProvider.useTrueBlack;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
+    if (isFruit) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+        child: LiquidGlassWrapper(
+          enabled: settingsProvider.fruitEnableLiquidGlass,
+          borderRadius: BorderRadius.circular(28),
+          child: Container(
+            decoration: BoxDecoration(
+              color: (useTrueBlack && isDark)
+                  ? Colors.transparent
+                  : colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+              borderRadius: BorderRadius.circular(28),
+              border: (useTrueBlack && isDark)
+                  ? Border.fromBorderSide(BorderSide(
+                      color: colorScheme.outline.withValues(alpha: 0.2),
+                      width: 0.5))
+                  : null,
+            ),
+            child: content,
+          ),
+        ),
+      );
+    }
+
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
       elevation: 0,

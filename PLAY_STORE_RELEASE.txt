@@ -1,3 +1,11 @@
+What's new in v1.1.51
+
+• TV: Header icons and title now scale properly for 10-foot UI readability.
+• TV: UI Scale is now auto-enabled on first run for TV devices.
+• Fruit Theme: SectionCard maintains glass aesthetic even with Neumorphism off.
+• Agent: Added platform-safe shell execution rules and audit workflow.
+
+---
 What's new in v1.1.50
 
 • UI/UX (TV): Fixed logical highlight and border visibility issues in the Show List.
