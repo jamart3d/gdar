@@ -19,6 +19,7 @@ import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:shakedown/ui/screens/show_list/show_list_logic_mixin.dart';
 import 'package:shakedown/ui/widgets/show_list/show_list_shell.dart';
 import 'package:shakedown/ui/widgets/show_list/show_list_body.dart';
+import 'package:shakedown/services/device_service.dart';
 
 class ShowListScreen extends StatefulWidget {
   final bool isPane;
@@ -233,10 +234,57 @@ class ShowListScreenState extends State<ShowListScreen>
   }
 
   void _onAudioProviderUpdate() {
-    final audioProvider = context.read<AudioProvider>(); // safe?
+    final audioProvider = context.read<AudioProvider>();
     if (audioProvider.error != null) {
       if (mounted) _showErrorSnackBar(audioProvider.error!);
       audioProvider.clearError();
+    }
+
+    // Handle Dice Reset for TV (Delayed Playback)
+    // On TV, AudioProvider.playRandomShow sets delayPlayback: true.
+    // This means ProcessingState.ready is NEVER reached because we haven't
+    // called playSource yet. We must reset the dice when the provider
+    // signals that the selection is complete (even if delayed).
+    if (isRandomShowLoading && !isResettingRandomShow) {
+      final isTv = context.read<DeviceService>().isTv;
+      if (isTv && audioProvider.pendingRandomShowRequest == null) {
+        logger.i(
+            'ShowListScreen: Resetting dice for TV (Delayed Selection Complete)');
+        _resetDiceAnimation();
+      }
+    }
+  }
+
+  void _resetDiceAnimation() {
+    if (!mounted) return;
+    isResettingRandomShow = true;
+
+    // Minimum 2s roll duration for visual consistency
+    final now = DateTime.now();
+    final startTime = lastRollStartTime ?? now;
+    final elapsed = now.difference(startTime).inMilliseconds;
+    final remaining = math.max(0, 2000 - elapsed);
+
+    final showListProvider = context.read<ShowListProvider>();
+
+    if (remaining > 0) {
+      Future.delayed(Duration(milliseconds: remaining), () {
+        if (mounted) {
+          showListProvider.setIsChoosingRandomShow(false);
+          setState(() {
+            isRandomShowLoading = false;
+            isResettingRandomShow = false;
+            userInitiatedRoll = false;
+          });
+        }
+      });
+    } else {
+      showListProvider.setIsChoosingRandomShow(false);
+      setState(() {
+        isRandomShowLoading = false;
+        isResettingRandomShow = false;
+        userInitiatedRoll = false;
+      });
     }
   }
 
@@ -250,36 +298,7 @@ class ShowListScreenState extends State<ShowListScreen>
 
       if (processingState == ProcessingState.ready ||
           processingState == ProcessingState.completed) {
-        isResettingRandomShow = true;
-        // Minimum 2s roll duration for visual consistency
-        final now = DateTime.now();
-        final startTime = lastRollStartTime ?? now;
-        final elapsed = now.difference(startTime).inMilliseconds;
-        final remaining = math.max(0, 2000 - elapsed);
-
-        final showListProvider = context.read<ShowListProvider>();
-
-        if (remaining > 0) {
-          logger.d(
-              'ShowListScreen: Player READY fast. Delaying reset by ${remaining}ms.');
-          Future.delayed(Duration(milliseconds: remaining), () {
-            if (mounted) {
-              showListProvider.setIsChoosingRandomShow(false);
-              setState(() {
-                isRandomShowLoading = false;
-                isResettingRandomShow = false;
-                userInitiatedRoll = false;
-              });
-            }
-          });
-        } else {
-          showListProvider.setIsChoosingRandomShow(false);
-          setState(() {
-            isRandomShowLoading = false;
-            isResettingRandomShow = false;
-            userInitiatedRoll = false;
-          });
-        }
+        _resetDiceAnimation();
       }
     }
 
@@ -395,6 +414,7 @@ class ShowListScreenState extends State<ShowListScreen>
         onShowTapped: onShowTapped,
         scrollbarFocusNode: widget.scrollbarFocusNode,
         onFocusLeft: widget.onFocusLeft,
+        onFocusRight: widget.onFocusPlayback,
         onCardLongPressed: onCardLongPressed,
         onSourceTapped: onSourceTapped,
         onSourceLongPressed: onSourceLongPressed,

@@ -6,6 +6,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.50+150] - 2026-03-05
+
+### Fixed
+- **UI/UX (TV)**: Resolved "Premium Highlight" persistence issue by refining highlight prioritization and `glowMode` logic in `TvFocusWrapper`.
+- **UI/UX (TV)**: Fixed layout shifting (jumping UI) in `AnimatedGradientBorder` by ensuring consistent padding when `usePadding` is true.
+- **UI/UX (TV)**: Restored visibility of the non-glow RGB border for the active track by fixing the `showGlow` master render switch in `TvFocusWrapper`.
+- **UI/UX (TV)**: Fixed structural bug where the left panel Show List RGB border was padded incorrectly and invisible. Restored tight internal bounding for playing shows.
+- **UI/UX (TV)**: Bridged explicit focus navigation gap between the Show List and the Playback pane track list.
+- **UI/UX (TV)**: Fixed issue where the Show List playing highlight appeared swapped (Neon vs Rainbow) by prioritizing `showPlayingRgb` over `showPremium` in `TvFocusWrapper`.
+- **Audio (TV)**: Fixed random show playback regression where clicking the dice while playing would sometimes fail to trigger the new tracks.
+- **Audio**: Hardened `currentTrack` validation to ensure the player correctly reports the active track during rapid source transitions.
+
+
 ## [1.1.49+149] - 2026-03-05
 
 ### Added

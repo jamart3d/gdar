@@ -62,39 +62,40 @@ class AudioProvider with ChangeNotifier {
     if (_currentSource == null) return null;
     final index = _audioPlayer.currentIndex;
     final sequence = _audioPlayer.sequence;
-    if (index == null || index < 0 || index >= sequence.length) {
+    if (index == null || index < 0 || index >= sequence.length) return null;
+
+    final sourceItem = sequence[index];
+    if (sourceItem.tag is! MediaItem) return null;
+    final item = sourceItem.tag as MediaItem;
+
+    // Check if the physical track being played belongs to the logical current show.
+    // During transitions (like TV dice roll), the UI looks ahead by updating
+    // _currentSource before the player starts the new show.
+    final itemSourceId = item.extras?['source_id'] as String?;
+    if (itemSourceId != null && itemSourceId != _currentSource!.id) {
       return null;
     }
 
-    // Fix: Use the MediaItem tag to find the LOCAL index within the source,
-    // instead of using the GLOBAL playlist index.
-    final sourceItem = sequence[index];
-    if (sourceItem.tag is MediaItem) {
-      final item = sourceItem.tag as MediaItem;
-      // 1. Try extras (future proofing)
-      if (item.extras != null && item.extras!.containsKey('track_index')) {
-        final localIndex = item.extras!['track_index'] as int;
-        if (localIndex >= 0 && localIndex < _currentSource!.tracks.length) {
-          return _currentSource!.tracks[localIndex];
-        }
-      }
-
+    // 1. Try resolving local index from extras (most reliable)
+    int? localIndex;
+    if (item.extras?.containsKey('track_index') ?? false) {
+      localIndex = item.extras!['track_index'] as int?;
+    }
+    // 2. Fallback to parsing from ID
+    if (localIndex == null) {
       try {
         final parts = item.id.split('_');
-        if (parts.isNotEmpty) {
-          final localIndex = int.tryParse(parts.last);
-          if (localIndex != null &&
-              localIndex >= 0 &&
-              localIndex < _currentSource!.tracks.length) {
-            return _currentSource!.tracks[localIndex];
-          }
-        }
-      } catch (e) {
-        // ignore
-      }
+        localIndex = int.tryParse(parts.last);
+      } catch (_) {}
     }
 
-    // Fallback to global index if all else fails (only valid for single show)
+    if (localIndex != null &&
+        localIndex >= 0 &&
+        localIndex < _currentSource!.tracks.length) {
+      return _currentSource!.tracks[localIndex];
+    }
+
+    // 3. Last resort: global index (only valid if single source loaded)
     if (index < _currentSource!.tracks.length) {
       return _currentSource!.tracks[index];
     }
@@ -305,11 +306,12 @@ class AudioProvider with ChangeNotifier {
         // If the source ID has changed, we need to update our internal "Current Show"
         // This handles the transition from Show A -> Show B automatically.
         if (sourceId != null && _currentSource?.id != sourceId) {
-          // If we are currently MANUALLY switching sources, ignore any mismatch
-          // (which is likely due to the player stream reporting the old source during teardown).
-          if (_isSwitchingSource) {
+          // If we are currently MANUALLY switching sources or have a random roll pending,
+          // ignore any mismatch (which is likely due to the player stream reporting
+          // the old source during teardown or before the new one starts).
+          if (_isSwitchingSource || _pendingRandomShowRequest != null) {
             logger.d(
-                'Ignoring source mismatch during manual switch (Player: $sourceId, App: ${_currentSource?.id})');
+                'Ignoring source mismatch during manual switch/random roll (Player: $sourceId, App: ${_currentSource?.id})');
           } else {
             _updateCurrentShowFromSourceId(sourceId);
           }

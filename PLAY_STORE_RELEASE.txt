@@ -1,3 +1,12 @@
+What's new in v1.1.50
+
+• UI/UX (TV): Fixed logical highlight and border visibility issues in the Show List.
+• UI/UX (TV): Stabilized layout shifting in animated borders and fixed structural padding bugs.
+• UI/UX (TV): Bridged focus navigation gaps for a smoother D-pad experience.
+• Audio (TV): Resolved race condition in random show (dice) playback.
+• Audio: Hardened track validation for more reliable playback metadata.
+
+---
 What's new in v1.1.49
 
 • UI/UX (Fruit): Redesigned Playback Screen with "Living List" layout and neumorphic controls.

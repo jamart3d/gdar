@@ -83,7 +83,9 @@ class _ShowListCardState extends State<ShowListCard> {
 
     Widget content;
 
-    if ((style.showGlow || style.useRgb) && !style.suppressOuterGlow) {
+    if ((!isTv || style.useRgb) &&
+        (style.showGlow || style.useRgb) &&
+        !style.suppressOuterGlow) {
       content = Padding(
         padding: outerPadding,
         child: Container(

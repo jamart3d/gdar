@@ -435,6 +435,13 @@ class MockSettingsProvider extends _i1.Mock implements _i8.SettingsProvider {
       ) as bool);
 
   @override
+  bool get oilTvPremiumHighlight => (super.noSuchMethod(
+        Invocation.getter(#oilTvPremiumHighlight),
+        returnValue: false,
+        returnValueForMissingStub: false,
+      ) as bool);
+
+  @override
   bool get showExpandIcon => (super.noSuchMethod(
         Invocation.getter(#showExpandIcon),
         returnValue: false,

@@ -168,6 +168,9 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
     // This allows tuning knobs (bass boost, peak decay) to apply in real-time.
     if (_audioReactor != null) {
       _pushAudioConfig();
+    } else if (settings.oilEnableAudioReactivity && !kIsWeb) {
+      // If reactor was null but is now enabled, try to init it.
+      _initAudioReactor();
     }
 
     final config = StealConfig(

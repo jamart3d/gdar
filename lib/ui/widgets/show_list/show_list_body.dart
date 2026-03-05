@@ -28,6 +28,7 @@ class ShowListBody extends StatelessWidget {
   final ValueChanged<int>? onShowFocused;
   final Map<int, FocusNode>? showFocusNodes;
   final void Function(int, {bool shouldScroll})? onFocusShow;
+  final VoidCallback? onFocusRight;
 
   const ShowListBody({
     super.key,
@@ -46,6 +47,7 @@ class ShowListBody extends StatelessWidget {
     this.onShowFocused,
     this.showFocusNodes,
     this.onFocusShow,
+    this.onFocusRight,
   });
 
   @override
@@ -145,9 +147,11 @@ class ShowListBody extends StatelessWidget {
                 onFocusShow?.call(targetIndex, shouldScroll: false);
               }
             },
-            onRight: () {
-              FocusScope.of(context).focusInDirection(TraversalDirection.right);
-            },
+            onRight: onFocusRight ??
+                () {
+                  FocusScope.of(context)
+                      .focusInDirection(TraversalDirection.right);
+                },
           ),
         ],
       );

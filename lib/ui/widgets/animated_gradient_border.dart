@@ -126,12 +126,15 @@ class _AnimatedGradientBorderState extends State<AnimatedGradientBorder>
 
     if (!widget.showGlow) {
       if (!widget.usePadding) return widget.child;
-      return Container(
-        decoration: BoxDecoration(
-          color: widget.backgroundColor ?? Theme.of(context).cardColor,
-          borderRadius: BorderRadius.circular(widget.borderRadius),
+      return Padding(
+        padding: EdgeInsets.all(widget.borderWidth),
+        child: Container(
+          decoration: BoxDecoration(
+            color: widget.backgroundColor ?? Theme.of(context).cardColor,
+            borderRadius: BorderRadius.circular(widget.borderRadius),
+          ),
+          child: widget.child,
         ),
-        child: widget.child,
       );
     }
 
@@ -162,34 +165,37 @@ class _AnimatedGradientBorderState extends State<AnimatedGradientBorder>
 
     return AnimatedBuilder(
       animation: animation,
+      child: widget.child,
       builder: (context, child) {
-        return CustomPaint(
-          painter: _GradientBorderPainter(
-            colors: colors,
-            borderRadius: widget.borderRadius,
-            borderWidth: widget.borderWidth,
-            rotation: animation.value * 2 * 3.14159,
-            // Web Performance Optimization: Reduce blur/glow during playback
-            // Performance Mode: Keep animation but disable expensive shadows/glow
-            showShadow: performanceMode
-                ? false
-                : (isWebPlayback ? false : widget.showShadow),
-            glowOpacity: isWebPlayback ? 0.2 : widget.glowOpacity,
-          ),
-          child: widget.usePadding
-              ? Padding(
-                  padding: EdgeInsets.all(widget.borderWidth),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color:
-                          widget.backgroundColor ?? Theme.of(context).cardColor,
-                      borderRadius: BorderRadius.circular(
-                          widget.borderRadius - widget.borderWidth),
+        return RepaintBoundary(
+          child: CustomPaint(
+            painter: _GradientBorderPainter(
+              colors: colors,
+              borderRadius: widget.borderRadius,
+              borderWidth: widget.borderWidth,
+              rotation: animation.value * 2 * 3.14159,
+              // Web Performance Optimization: Reduce blur/glow during playback
+              // Performance Mode: Keep animation but disable expensive shadows/glow
+              showShadow: performanceMode
+                  ? false
+                  : (isWebPlayback ? false : widget.showShadow),
+              glowOpacity: isWebPlayback ? 0.2 : widget.glowOpacity,
+            ),
+            child: widget.usePadding
+                ? Padding(
+                    padding: EdgeInsets.all(widget.borderWidth),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: widget.backgroundColor ??
+                            Theme.of(context).cardColor,
+                        borderRadius:
+                            BorderRadius.circular(widget.borderRadius),
+                      ),
+                      child: child,
                     ),
-                    child: widget.child,
-                  ),
-                )
-              : widget.child,
+                  )
+                : child,
+          ),
         );
       },
     );

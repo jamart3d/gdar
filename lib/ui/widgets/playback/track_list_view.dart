@@ -106,6 +106,7 @@ class TrackListView extends StatelessWidget {
             isTrueBlackMode,
             firstTrackListIndex,
             lastTrackListIndex,
+            ValueKey('track_${item.trackNumber}_${item.title}_$index'),
           );
         }
         return const SizedBox.shrink();
@@ -136,26 +137,32 @@ class TrackListView extends StatelessWidget {
     bool isTrueBlackMode,
     int firstTrackListIndex,
     int lastTrackListIndex,
+    Key key,
   ) {
     final colorScheme = Theme.of(context).colorScheme;
     final settingsProvider = context.watch<SettingsProvider>();
+    final deviceService = context.watch<DeviceService>();
+    final isTv = deviceService.isTv;
 
     return StreamBuilder<int?>(
+      key: key,
       stream: audioProvider.currentIndexStream,
       initialData: audioProvider.audioPlayer.currentIndex,
       builder: (context, snapshot) {
-        final currentTrack = audioProvider.currentTrack;
-        final isPlaying = currentTrack != null &&
-            currentTrack.title == track.title &&
-            currentTrack.trackNumber == track.trackNumber;
-
-        final deviceService = context.watch<DeviceService>();
-        final isTv = deviceService.isTv;
+        final currentIdx = snapshot.data;
+        // Use direct index comparison for maximum stability and reactivity
+        final isPlaying = currentIdx == trackIndex;
         final double scaleFactor =
             FontLayoutConfig.getEffectiveScale(context, settingsProvider);
 
         final themeProvider = context.watch<ThemeProvider>();
         final bool isFruit = themeProvider.themeStyle == ThemeStyle.fruit;
+
+        // Consolidated highlight logic:
+        // On TV, we suppress this mobile-style AnimatedGradientBorder and let
+        // TvFocusWrapper handle it via showGlow or Premium Highlight.
+        final bool showMobilePlayingBorder =
+            !isTv && isPlaying && settingsProvider.highlightPlayingWithRgb;
 
         Widget trackItem = Container(
           margin: EdgeInsets.symmetric(
@@ -163,7 +170,7 @@ class TrackListView extends StatelessWidget {
             vertical: isFruit ? 2 : 1,
           ),
           decoration: BoxDecoration(
-            color: (isPlaying && settingsProvider.highlightPlayingWithRgb)
+            color: showMobilePlayingBorder
                 ? Colors.transparent
                 : (isPlaying && !isFruit)
                     ? (isTrueBlackMode
@@ -172,7 +179,7 @@ class TrackListView extends StatelessWidget {
                     : Colors.transparent,
             borderRadius: BorderRadius.circular(isFruit ? 14 : 12),
           ),
-          child: (isPlaying && settingsProvider.highlightPlayingWithRgb)
+          child: showMobilePlayingBorder
               ? Container(
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(12),
@@ -230,41 +237,21 @@ class TrackListView extends StatelessWidget {
           Widget content = _buildTrackListTile(context, audioProvider, track,
               trackIndex, isPlaying, scaleFactor, true);
 
-          if (isPlaying && settingsProvider.highlightPlayingWithRgb) {
-            content = AnimatedGradientBorder(
-              borderRadius: 12,
-              borderWidth: 4,
-              ignoreGlobalClock: true,
-              colors: const [
-                Colors.red,
-                Colors.yellow,
-                Colors.green,
-                Colors.cyan,
-                Colors.blue,
-                Colors.purple,
-                Colors.red,
-              ],
-              showGlow: true,
-              showShadow: false,
-              glowOpacity: 0.5 * (settingsProvider.glowMode / 100.0),
-              animationSpeed: settingsProvider.rgbAnimationSpeed,
-              child: Material(
-                color: isTrueBlackMode
-                    ? Colors.black
-                    : colorScheme.primaryContainer,
-                borderRadius: BorderRadius.circular(8),
-                clipBehavior: Clip.antiAlias,
-                child: content,
-              ),
-            );
-          }
-
           trackItem = TvFocusWrapper(
             focusNode: trackFocusNodes?[listIndex],
             scaleOnFocus: 1.0,
-            focusBackgroundColor: Colors.transparent,
+            isPlaying: isPlaying,
+            focusBackgroundColor: isPlaying
+                ? (isTrueBlackMode
+                    ? Colors.white10
+                    : colorScheme.primary.withValues(alpha: 0.1))
+                : Colors.transparent,
             focusColor: colorScheme.primary,
             borderRadius: BorderRadius.circular(8),
+            // Distinguish the playing track on TV with a subtle glow,
+            // but ONLY if the user has the playing-RGB setting on.
+            // This prevents it from being mixed up with the Premium focus glow.
+            showGlow: isPlaying && settingsProvider.highlightPlayingWithRgb,
             onFocusChange: (focused) {
               if (focused) onTrackFocused?.call(listIndex);
             },

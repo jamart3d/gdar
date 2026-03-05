@@ -117,6 +117,7 @@ class _AnimatedDiceIconState extends State<AnimatedDiceIcon>
       if (_enableIdleRotation) _idleController.stop();
     } else if (!widget.isLoading && oldWidget.isLoading) {
       logger.d('AnimatedDiceIcon: Roll ENDED (isLoading=false)');
+      _controller.stop();
       if (_enableIdleRotation) {
         _idleController.value = 0;
         _idleController.repeat();

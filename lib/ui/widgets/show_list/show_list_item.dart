@@ -79,6 +79,7 @@ class ShowListItem extends StatelessWidget {
         scaleOnFocus: 1.0, // Disable scaling
         focusBackgroundColor: Colors.transparent, // Transparent background
         focusColor: Theme.of(context).colorScheme.primary, // Primary border
+        isPlaying: isPlaying,
         borderRadius: BorderRadius.circular(12),
         onFocusChange: (focused) {
           if (focused) onFocusChange?.call(index);

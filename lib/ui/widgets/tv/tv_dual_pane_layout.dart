@@ -100,6 +100,8 @@ class _TvDualPaneLayoutState extends State<TvDualPaneLayout> {
 
                   bool alreadyPlayingRequest = isPlaying &&
                       pending != null &&
+                      audioProvider.currentTrack !=
+                          null && // Ensures we are actually playing THIS show, not the prev one during transitions.
                       currentShow?.name == pending.show.name &&
                       currentSource?.id == pending.source.id;
 

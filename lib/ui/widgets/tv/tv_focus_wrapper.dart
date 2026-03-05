@@ -21,6 +21,7 @@ class TvFocusWrapper extends StatefulWidget {
   final Color? focusColor;
   final bool showGlow;
   final bool useRgbBorder;
+  final bool isPlaying;
   final FocusOnKeyEventCallback? onKeyEvent;
   final ValueChanged<bool>? onFocusChange;
 
@@ -36,6 +37,7 @@ class TvFocusWrapper extends StatefulWidget {
     this.focusColor,
     this.showGlow = false,
     this.useRgbBorder = false,
+    this.isPlaying = false,
     this.onKeyEvent,
     this.focusBackgroundColor,
     this.onFocusChange,
@@ -109,6 +111,7 @@ class _TvFocusWrapperState extends State<TvFocusWrapper> {
     final radius = widget.borderRadius ?? BorderRadius.circular(28);
     final isPremium = sp.oilTvPremiumHighlight;
     final showPremium = isPremium && _isFocused;
+    final showPlayingRgb = widget.isPlaying && sp.highlightPlayingWithRgb;
 
     Widget content = AnimatedContainer(
       duration: const Duration(milliseconds: 200),
@@ -116,7 +119,9 @@ class _TvFocusWrapperState extends State<TvFocusWrapper> {
         color: _isFocused ? widget.focusBackgroundColor : null,
         borderRadius: radius,
         border: Border.all(
-          color: (showPremium || (widget.useRgbBorder && _isFocused))
+          color: (showPremium ||
+                  (widget.useRgbBorder && _isFocused) ||
+                  showPlayingRgb)
               ? Colors.transparent
               : _isFocused
                   ? (widget.focusColor ?? colorScheme.primary)
@@ -141,7 +146,30 @@ class _TvFocusWrapperState extends State<TvFocusWrapper> {
       ),
     );
 
-    if (showPremium) {
+    if (showPlayingRgb) {
+      content = AnimatedGradientBorder(
+        borderRadius: radius.topLeft.x,
+        borderWidth: _isFocused ? 4.0 : 2.5, // Thicker stroke if focused
+        ignoreGlobalClock: true,
+        animationSpeed: sp.rgbAnimationSpeed,
+        colors: const [
+          Colors.red,
+          Colors.yellow,
+          Colors.green,
+          Colors.cyan,
+          Colors.blue,
+          Colors.purple,
+          Colors.red,
+        ],
+        showGlow: true,
+        showShadow:
+            sp.oilTvPremiumHighlight && _isFocused, // Glow if premium focused
+        glowOpacity: (sp.oilTvPremiumHighlight && _isFocused) ? 0.8 : 0.0,
+        backgroundColor: Colors.transparent,
+        usePadding: true,
+        child: content,
+      );
+    } else if (showPremium) {
       content = AnimatedGradientBorder(
         borderRadius: radius.topLeft.x,
         borderWidth: 6.0, // Premium thick border
@@ -156,19 +184,28 @@ class _TvFocusWrapperState extends State<TvFocusWrapper> {
         animationSpeed: sp.rgbAnimationSpeed * 1.5,
         ignoreGlobalClock: true,
         backgroundColor: Colors.transparent,
-        usePadding: false,
+        usePadding: true,
         child: content,
       );
     } else if (widget.useRgbBorder && _isFocused) {
       content = AnimatedGradientBorder(
         borderRadius: radius.topLeft.x,
-        borderWidth: 4.0, // Thicker stroke for pure RGB line
+        borderWidth: _isFocused ? 4.0 : 2.5, // Thicker stroke if focused
         ignoreGlobalClock: true,
         animationSpeed: sp.rgbAnimationSpeed,
-        showGlow: true,
-        showShadow: false,
+        colors: const [
+          Colors.red,
+          Colors.yellow,
+          Colors.green,
+          Colors.cyan,
+          Colors.blue,
+          Colors.purple,
+          Colors.red,
+        ],
+        showGlow: true, // Master switch
+        showShadow: false, // Crisp line
         backgroundColor: Colors.transparent,
-        usePadding: false,
+        usePadding: true,
         child: content,
       );
     }

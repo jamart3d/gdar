@@ -24,6 +24,8 @@ void main() {
     when(mockSettings.rgbAnimationSpeed).thenReturn(1.0);
     when(mockSettings.performanceMode).thenReturn(false);
     when(mockSettings.useNeumorphism).thenReturn(false);
+    when(mockSettings.oilTvPremiumHighlight).thenReturn(false);
+    when(mockSettings.isTv).thenReturn(true);
     when(mockAudio.isPlaying).thenReturn(false);
   });
 

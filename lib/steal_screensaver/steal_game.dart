@@ -73,14 +73,14 @@ class StealGame extends FlameGame {
     await super.onLoad();
     _subscribeToReactor(_audioReactor);
 
-    _background = StealBackground(config: config);
+    _background = StealBackground(config: config)..priority = -10;
     await add(_background!);
 
     // Graph is added AFTER background so it renders on top of the shader
-    _graph = StealGraph();
+    _graph = StealGraph()..priority = 0;
     await add(_graph!);
 
-    _banner = StealBanner();
+    _banner = StealBanner()..priority = 10;
     await add(_banner!);
 
     _applyBannerConfig(config);
