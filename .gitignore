@@ -68,3 +68,6 @@ ratings.hive
 ratings.lock
 user_history.hive
 user_history.lock
+
+# Local Data Storage
+/data/

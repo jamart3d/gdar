@@ -46,7 +46,8 @@ class CatalogService {
     if (_isInitialized) return;
 
     // 1. Init Hive
-    await Hive.initFlutter();
+    // Relocate storage to 'data/' to keep root clean in development/desktop
+    await Hive.initFlutter('data');
     // Register Adapters if not already registered (check ID 0 for Rating)
     if (!Hive.isAdapterRegistered(0)) Hive.registerAdapter(RatingAdapter());
 

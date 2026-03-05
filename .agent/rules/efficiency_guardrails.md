@@ -1,7 +1,6 @@
 ---
 trigger: always_on
 ---
-
 # Antigravity Agent Efficiency & Quota Guardrails
 
 You are assisting with a Flutter development environment. To conserve context window and compute quota, you MUST adhere strictly to the following execution rules:
@@ -15,6 +14,7 @@ You are strictly forbidden from executing file modifications, writing code, or r
 Do not perform broad searches, index the entire `lib/` directory, or read files that are not strictly necessary.
 * **Action:** Only read or modify the specific files the user explicitly mentions. 
 * If you need to check a dependency or a state management file to complete a task, you must ask the user for the exact filename first rather than searching the workspace for it.
+* **Optimization:** Always call `view_file_outline` before reading a file. Use specific line ranges (`StartLine`/`EndLine`) in `view_file` to minimize context usage.
 
 ### 3. No Unauthorized Execution 
 Do not assume you need to run the application to test your changes. 

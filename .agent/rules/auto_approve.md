@@ -40,6 +40,8 @@ They are read-only or strictly non-destructive and the user must never be prompt
 | `dart pub deps` | Dependency tree |
 | `flutter --version` | Version info |
 | `dart --version` | Version info |
+| `dart format .` | Standard code formatting |
+| `flutter format .` | Standard code formatting |
 
 ### General Inspection
 | Command | Notes |

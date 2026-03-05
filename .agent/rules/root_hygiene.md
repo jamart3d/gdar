@@ -1,3 +1,6 @@
+---
+trigger: always_on
+---
 # Root Hygiene Rule
 
 ### Temporary & Backup Files

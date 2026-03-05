@@ -49,7 +49,7 @@ Exception in `gemini.md` rules).
 3. Convert `- ` list items to `•` bullets.
 4. Prepend with `What's new in vX.X.X`.
 5. Trim to ≤500 characters (Google Play Console limit).
-6. **Prepend** (do NOT overwrite) to `PLAY_STORE_RELEASE.txt` with a
+6. **Prepend** (do NOT overwrite) to `docs/PLAY_STORE_RELEASE.txt` with a
    `---` separator so history is preserved. Format:
    ```
    What's new in vX.X.X
@@ -78,7 +78,7 @@ Exception in `gemini.md` rules).
 ### 7. Notify
 1. Inform user the build is ready.
 2. Remind to upload AAB to [Google Play Console](https://play.google.com/console).
-3. Tell user `PLAY_STORE_RELEASE.txt` is ready to copy/paste into Play Console release notes.
+3. Tell user `docs/PLAY_STORE_RELEASE.txt` is ready to copy/paste into Play Console release notes.
 
 ### 8. Post-Launch Debrief
 1. Run the `/session_debrief` workflow to evaluate the work that went into this release.
