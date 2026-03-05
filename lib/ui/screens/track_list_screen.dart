@@ -25,6 +25,7 @@ import 'package:lucide_icons/lucide_icons.dart';
 import 'package:shakedown/providers/theme_provider.dart';
 import 'package:shakedown/services/device_service.dart';
 import 'package:shakedown/ui/widgets/tv/tv_focus_wrapper.dart';
+import 'package:shakedown/ui/widgets/theme/fruit_icon_button.dart';
 
 class TrackListScreen extends StatefulWidget {
   final Show show;
@@ -247,149 +248,167 @@ class _TrackListScreenState extends State<TrackListScreen> {
     final isDifferentShowPlaying = audioProvider.currentShow != null &&
         audioProvider.currentShow!.name != widget.show.name;
     final settingsProvider = context.watch<SettingsProvider>();
+    final themeProvider = context.watch<ThemeProvider>();
 
     return Scaffold(
-      appBar: AppBar(
-        // Title is empty as requested
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 16.0),
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxHeight: 56),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.end,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Flexible(
-                    child: ValueListenableBuilder(
-                      valueListenable: CatalogService().ratingsListenable,
-                      builder: (context, _, __) {
-                        final String ratingKey = widget.source.id;
-                        final catalog = CatalogService();
-                        final isPlayed = catalog.isPlayed(ratingKey);
-                        final rating = catalog.getRating(ratingKey);
-
-                        return RatingControl(
-                          key: ValueKey('${ratingKey}_${rating}_$isPlayed'),
-                          rating: rating,
-                          size: 12 * (settingsProvider.uiScale ? 1.25 : 1.0),
-                          isPlayed: isPlayed,
-                          compact: true,
-                          onTap: () async {
-                            unawaited(showDialog(
-                              context: context,
-                              builder: (context) => RatingDialog(
-                                initialRating: catalog.getRating(ratingKey),
-                                sourceId: widget.source.id,
-                                sourceUrl: widget.source.tracks.isNotEmpty
-                                    ? widget.source.tracks.first.url
-                                    : null,
-                                isPlayed: catalog.isPlayed(ratingKey),
-                                onRatingChanged: (newRating) {
-                                  catalog.setRating(ratingKey, newRating);
-                                },
-                                onPlayedChanged: (bool newIsPlayed) {
-                                  // Direct toggle since we don't have explicit setPlayed(bool) yet
-                                  // or just use togglePlayed if it matches logic
-                                  if (newIsPlayed !=
-                                      catalog.isPlayed(ratingKey)) {
-                                    catalog.togglePlayed(ratingKey);
-                                  }
-                                },
-                              ),
-                            ));
-                          },
-                        );
-                      },
-                    ),
-                  ),
-                  Flexible(
-                    child: Row(
+      appBar: themeProvider.themeStyle == ThemeStyle.fruit
+          ? null
+          : AppBar(
+              // Title is empty as requested
+              actions: [
+                Padding(
+                  padding: const EdgeInsets.only(right: 16.0),
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxHeight: 56),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.end,
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        if (widget.source.src != null) ...[
-                          SrcBadge(
-                            src: widget.source.src!,
-                            matchShnidLook: true,
+                        Flexible(
+                          child: ValueListenableBuilder(
+                            valueListenable: CatalogService().ratingsListenable,
+                            builder: (context, _, __) {
+                              final String ratingKey = widget.source.id;
+                              final catalog = CatalogService();
+                              final isPlayed = catalog.isPlayed(ratingKey);
+                              final rating = catalog.getRating(ratingKey);
+
+                              return RatingControl(
+                                key: ValueKey(
+                                    '${ratingKey}_${rating}_$isPlayed'),
+                                rating: rating,
+                                size: 12 *
+                                    (settingsProvider.uiScale ? 1.25 : 1.0),
+                                isPlayed: isPlayed,
+                                compact: true,
+                                onTap: () async {
+                                  unawaited(showDialog(
+                                    context: context,
+                                    builder: (context) => RatingDialog(
+                                      initialRating:
+                                          catalog.getRating(ratingKey),
+                                      sourceId: widget.source.id,
+                                      sourceUrl: widget.source.tracks.isNotEmpty
+                                          ? widget.source.tracks.first.url
+                                          : null,
+                                      isPlayed: catalog.isPlayed(ratingKey),
+                                      onRatingChanged: (newRating) {
+                                        catalog.setRating(ratingKey, newRating);
+                                      },
+                                      onPlayedChanged: (bool newIsPlayed) {
+                                        // Direct toggle since we don't have explicit setPlayed(bool) yet
+                                        // or just use togglePlayed if it matches logic
+                                        if (newIsPlayed !=
+                                            catalog.isPlayed(ratingKey)) {
+                                          catalog.togglePlayed(ratingKey);
+                                        }
+                                      },
+                                    ),
+                                  ));
+                                },
+                              );
+                            },
                           ),
-                          const SizedBox(width: 4),
-                        ],
-                        ShnidBadge(text: widget.source.id),
+                        ),
+                        Flexible(
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              if (widget.source.src != null) ...[
+                                SrcBadge(
+                                  src: widget.source.src!,
+                                  matchShnidLook: true,
+                                ),
+                                const SizedBox(width: 4),
+                              ],
+                              ShnidBadge(text: widget.source.id),
+                            ],
+                          ),
+                        ),
                       ],
                     ),
                   ),
-                ],
-              ),
-            ),
-          ),
-          Builder(builder: (context) {
-            final themeProvider = context.watch<ThemeProvider>();
-            final settingsProvider = context.watch<SettingsProvider>();
-            final isFruit = themeProvider.themeStyle == ThemeStyle.fruit;
-            final useNeumorphic = settingsProvider.useNeumorphism &&
-                isFruit &&
-                !settingsProvider.useTrueBlack;
-
-            final Widget btn = IconButton(
-              icon:
-                  Icon(isFruit ? LucideIcons.settings : Icons.settings_rounded),
-              iconSize: 24.0,
-              onPressed: () async {
-                // Pause global clock
-                try {
-                  context.read<AnimationController>().stop();
-                } catch (_) {}
-
-                unawaited(Navigator.of(context).push(
-                  PageRouteBuilder(
-                    pageBuilder: (context, animation, secondaryAnimation) =>
-                        const SettingsScreen(),
-                    transitionDuration: Duration.zero,
-                  ),
-                ));
-
-                // Resume clock
-                if (context.mounted) {
-                  try {
-                    final controller = context.read<AnimationController>();
-                    if (!controller.isAnimating) unawaited(controller.repeat());
-                  } catch (_) {}
-                }
-              },
-            );
-
-            if (useNeumorphic) {
-              return Padding(
-                padding: EdgeInsets.symmetric(
-                    horizontal: kIsWeb ? (isFruit ? 16.0 : 8.0) : 8.0),
-                child: NeumorphicWrapper(
-                  isCircle: false, // Map to rounded square
-                  borderRadius: 12.0,
-                  intensity: 1.2,
-                  color: Colors.transparent,
-                  child: LiquidGlassWrapper(
-                    enabled: true,
-                    borderRadius: BorderRadius.circular(12.0),
-                    opacity: 0.08,
-                    blur: 5.0,
-                    child: btn,
-                  ),
                 ),
-              );
-            }
+                Builder(builder: (context) {
+                  final themeProvider = context.watch<ThemeProvider>();
+                  final settingsProvider = context.watch<SettingsProvider>();
+                  final isFruit = themeProvider.themeStyle == ThemeStyle.fruit;
+                  final useNeumorphic = settingsProvider.useNeumorphism &&
+                      isFruit &&
+                      !settingsProvider.useTrueBlack;
 
-            return Padding(
-              padding: EdgeInsets.symmetric(
-                  horizontal: kIsWeb ? (isFruit ? 16.0 : 8.0) : 8.0),
-              child: btn,
-            );
-          }),
-        ],
-      ),
+                  final Widget btn = IconButton(
+                    icon: Icon(isFruit
+                        ? LucideIcons.settings
+                        : Icons.settings_rounded),
+                    iconSize: 24.0,
+                    onPressed: () async {
+                      // Pause global clock
+                      try {
+                        context.read<AnimationController>().stop();
+                      } catch (_) {}
+
+                      unawaited(Navigator.of(context).push(
+                        PageRouteBuilder(
+                          pageBuilder:
+                              (context, animation, secondaryAnimation) =>
+                                  const SettingsScreen(),
+                          transitionDuration: Duration.zero,
+                        ),
+                      ));
+
+                      // Resume clock
+                      if (context.mounted) {
+                        try {
+                          final controller =
+                              context.read<AnimationController>();
+                          if (!controller.isAnimating) {
+                            unawaited(controller.repeat());
+                          }
+                        } catch (_) {}
+                      }
+                    },
+                  );
+
+                  if (useNeumorphic) {
+                    return Padding(
+                      padding: EdgeInsets.symmetric(
+                          horizontal: kIsWeb ? (isFruit ? 16.0 : 8.0) : 8.0),
+                      child: NeumorphicWrapper(
+                        isCircle: false, // Map to rounded square
+                        borderRadius: 12.0,
+                        intensity: 1.2,
+                        color: Colors.transparent,
+                        child: LiquidGlassWrapper(
+                          enabled: true,
+                          borderRadius: BorderRadius.circular(12.0),
+                          opacity: 0.08,
+                          blur: 5.0,
+                          child: btn,
+                        ),
+                      ),
+                    );
+                  }
+
+                  return Padding(
+                    padding: EdgeInsets.symmetric(
+                        horizontal: kIsWeb ? (isFruit ? 16.0 : 8.0) : 8.0),
+                    child: btn,
+                  );
+                }),
+              ],
+            ),
       body: Stack(
         children: [
           _buildBody(),
+          if (themeProvider.themeStyle == ThemeStyle.fruit)
+            Positioned(
+              top: MediaQuery.paddingOf(context).top + 8,
+              left: 0,
+              right: 0,
+              child: _buildFruitHeader(context),
+            ),
           AnimatedPositioned(
             duration: const Duration(milliseconds: 600),
             curve: Curves.easeOutCubic,
@@ -438,6 +457,11 @@ class _TrackListScreenState extends State<TrackListScreen> {
       listItems.addAll(tracks);
     });
 
+    final themeProvider = context.watch<ThemeProvider>();
+    if (themeProvider.themeStyle == ThemeStyle.fruit) {
+      return _buildFruitBody(context, listItems, bottomPadding);
+    }
+
     return ListView.builder(
       padding: EdgeInsets.fromLTRB(12, 8, 12, bottomPadding),
       itemCount: listItems.length,
@@ -457,6 +481,64 @@ class _TrackListScreenState extends State<TrackListScreen> {
     );
   }
 
+  Widget _buildFruitBody(
+      BuildContext context, List<dynamic> listItems, double bottomPadding) {
+    final settingsProvider = context.watch<SettingsProvider>();
+    final usePremium =
+        settingsProvider.useNeumorphism && !settingsProvider.useTrueBlack;
+
+    return ListView(
+      padding: EdgeInsets.fromLTRB(16, 80, 16, bottomPadding),
+      children: [
+        _buildShowHeader(context),
+        const SizedBox(height: 24),
+        Builder(builder: (context) {
+          final List<Widget> tracksAndSets = [];
+          for (int i = 0; i < listItems.length; i++) {
+            final item = listItems[i];
+            if (item == 'SHOW_HEADER') continue;
+            if (item is String) {
+              tracksAndSets.add(_buildSetHeader(context, item));
+            } else if (item is Track) {
+              final trackIndex = widget.source.tracks.indexOf(item);
+              tracksAndSets.add(
+                  _buildTrackItem(context, item, widget.source, trackIndex));
+            }
+          }
+
+          Widget card = Container(
+            decoration: BoxDecoration(
+              color: usePremium
+                  ? Colors.transparent
+                  : Theme.of(context).colorScheme.surfaceContainerHigh,
+              borderRadius: BorderRadius.circular(28),
+            ),
+            child: Column(
+              children: tracksAndSets,
+            ),
+          );
+
+          if (usePremium) {
+            card = NeumorphicWrapper(
+              borderRadius: 28,
+              intensity: 1.0,
+              color: Colors.transparent,
+              child: LiquidGlassWrapper(
+                enabled: true,
+                borderRadius: BorderRadius.circular(28),
+                opacity: 0.08,
+                blur: 15.0,
+                child: card,
+              ),
+            );
+          }
+
+          return card;
+        }),
+      ],
+    );
+  }
+
   Widget _buildShowHeader(BuildContext context) {
     final settingsProvider = context.watch<SettingsProvider>();
     // USE CENTRALIZED SCALING
@@ -469,9 +551,11 @@ class _TrackListScreenState extends State<TrackListScreen> {
 
     // USE CENTRALIZED METRICS
     final metrics = AppTypography.getHeaderMetrics(settingsProvider.appFont);
+    final themeProvider = context.watch<ThemeProvider>();
+    final isFruit = themeProvider.themeStyle == ThemeStyle.fruit;
 
     final Widget headerContent = Padding(
-      padding: const EdgeInsets.all(24.0),
+      padding: EdgeInsets.all(isFruit ? 0.0 : 24.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
@@ -485,63 +569,75 @@ class _TrackListScreenState extends State<TrackListScreen> {
                   fontWeight: FontWeight.w800,
                   height: metrics.height,
                   letterSpacing: metrics.letterSpacing,
+                  color: isFruit ? colorScheme.onSurface : null,
                 )
                 .apply(fontSizeFactor: scaleFactor),
           ),
-          const SizedBox(height: 12),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Icon(Icons.stadium_rounded,
-                  size: 20 * scaleFactor, color: colorScheme.primary),
-              const SizedBox(width: 8),
-              Flexible(
-                child: Text(
-                  widget.show.venue,
-                  textAlign: TextAlign.center,
-                  style: Theme.of(context)
-                      .textTheme
-                      .titleMedium
-                      ?.copyWith(
-                        color: colorScheme.primary,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: settingsProvider.appFont == 'rock_salt'
-                            ? 1.0
-                            : (settingsProvider.appFont == 'permanent_marker'
-                                ? 0.5
-                                : 0.0),
-                      )
-                      .apply(fontSizeFactor: scaleFactor),
-                ),
-              ),
-            ],
-          ),
-          if (widget.show.location.isNotEmpty) ...[
-            const SizedBox(height: 8),
+          const SizedBox(height: 8),
+          if (isFruit)
+            Text(
+              '${widget.show.venue}, ${widget.show.location}',
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    color: colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
+                    fontWeight: FontWeight.w600,
+                  ),
+            )
+          else ...[
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Icon(Icons.place_outlined,
-                    size: 20 * scaleFactor,
-                    color: colorScheme.onSurfaceVariant),
+                Icon(Icons.stadium_rounded,
+                    size: 20 * scaleFactor, color: colorScheme.primary),
                 const SizedBox(width: 8),
                 Flexible(
                   child: Text(
-                    widget.show.location,
+                    widget.show.venue,
                     textAlign: TextAlign.center,
                     style: Theme.of(context)
                         .textTheme
-                        .bodyLarge
+                        .titleMedium
                         ?.copyWith(
-                          color: colorScheme.onSurfaceVariant,
+                          color: colorScheme.primary,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: settingsProvider.appFont == 'rock_salt'
+                              ? 1.0
+                              : (settingsProvider.appFont == 'permanent_marker'
+                                  ? 0.5
+                                  : 0.0),
                         )
                         .apply(fontSizeFactor: scaleFactor),
                   ),
                 ),
               ],
             ),
+            if (widget.show.location.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Icon(Icons.place_outlined,
+                      size: 20 * scaleFactor,
+                      color: colorScheme.onSurfaceVariant),
+                  const SizedBox(width: 8),
+                  Flexible(
+                    child: Text(
+                      widget.show.location,
+                      textAlign: TextAlign.center,
+                      style: Theme.of(context)
+                          .textTheme
+                          .bodyLarge
+                          ?.copyWith(
+                            color: colorScheme.onSurfaceVariant,
+                          )
+                          .apply(fontSizeFactor: scaleFactor),
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ],
         ],
       ),
@@ -604,8 +700,63 @@ class _TrackListScreenState extends State<TrackListScreen> {
             ap.currentShow!.name == widget.show.name &&
             ap.isPlaying;
 
-        Widget content = headerContent;
-        if (!isThisShowPlaying) {
+        final Widget metadataRow = Padding(
+          padding: const EdgeInsets.only(top: 16.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              SrcBadge(
+                src: widget.source.src ?? '',
+                scaleFactor: scaleFactor,
+              ),
+              const SizedBox(width: 16),
+              // Integrated Play Button
+              if (!isThisShowPlaying)
+                NeumorphicWrapper(
+                  isCircle: true,
+                  borderRadius: 100,
+                  intensity: 0.8,
+                  color: Colors.transparent,
+                  child: LiquidGlassWrapper(
+                    enabled: true,
+                    borderRadius: BorderRadius.circular(100),
+                    opacity: 0.12,
+                    blur: 8,
+                    child: IconButton(
+                      icon: Icon(
+                        LucideIcons.play,
+                        size: 24 * scaleFactor,
+                        color: colorScheme.primary,
+                      ),
+                      onPressed: () async {
+                        unawaited(AppHaptics.selectionClick(
+                            context.read<DeviceService>()));
+                        if (ap.currentShow != null &&
+                            ap.currentShow!.name != widget.show.name) {
+                          await ap.stopAndClear();
+                        }
+                        await executePlayAndNavigate();
+                      },
+                    ),
+                  ),
+                ),
+              if (!isThisShowPlaying) const SizedBox(width: 16),
+              ShnidBadge(
+                text: widget.source.id,
+                scaleFactor: scaleFactor,
+              ),
+            ],
+          ),
+        );
+
+        Widget content = Column(
+          children: [
+            headerContent,
+            if (isFruit) metadataRow,
+          ],
+        );
+
+        if (!isFruit && !isThisShowPlaying) {
           content = Stack(
             clipBehavior: Clip.none,
             children: [
@@ -615,7 +766,7 @@ class _TrackListScreenState extends State<TrackListScreen> {
                 left: 8,
                 child: IconButton(
                   icon: Icon(
-                    isFruit ? LucideIcons.playCircle : Icons.play_circle_fill,
+                    Icons.play_circle_fill,
                     size: 28 * scaleFactor,
                     color: colorScheme.primary,
                   ),
@@ -733,6 +884,26 @@ class _TrackListScreenState extends State<TrackListScreen> {
   Widget _buildSetHeader(BuildContext context, String setName) {
     final settingsProvider = context.watch<SettingsProvider>();
     final colorScheme = Theme.of(context).colorScheme;
+    final themeProvider = context.watch<ThemeProvider>();
+    final isFruit = themeProvider.themeStyle == ThemeStyle.fruit;
+
+    if (isFruit) {
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.fromLTRB(16, 20, 16, 12),
+        color:
+            colorScheme.onSurfaceVariant.withValues(alpha: 0.04), // Subtle tint
+        child: Text(
+          setName.toUpperCase(),
+          style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                color: colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
+                fontWeight: FontWeight.w800,
+                letterSpacing: 1.5,
+              ),
+        ),
+      );
+    }
+
     // USE CENTRALIZED SCALING
     final scaleFactor =
         FontLayoutConfig.getEffectiveScale(context, settingsProvider);
@@ -797,6 +968,57 @@ class _TrackListScreenState extends State<TrackListScreen> {
       BuildContext context, Track track, Source source, int index) {
     final settingsProvider = context.watch<SettingsProvider>();
     final colorScheme = Theme.of(context).colorScheme;
+    final tp = context.watch<ThemeProvider>();
+    final isFruit = tp.themeStyle == ThemeStyle.fruit;
+
+    if (isFruit) {
+      return InkWell(
+        onTap: () => _onTrackTapped(context, source, index),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 14.0),
+          child: Row(
+            children: [
+              SizedBox(
+                width: 32,
+                child: Text(
+                  '${index + 1}',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color:
+                            colorScheme.onSurfaceVariant.withValues(alpha: 0.3),
+                        fontWeight: FontWeight.w800,
+                        fontFamily: 'Inter',
+                      ),
+                ),
+              ),
+              Expanded(
+                child: Text(
+                  track.title,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        fontWeight: FontWeight.w700,
+                        fontFamily: 'Inter',
+                        color: colorScheme.onSurface.withValues(alpha: 0.9),
+                      ),
+                ),
+              ),
+              Text(
+                Duration(seconds: track.duration)
+                    .toString()
+                    .split('.')
+                    .first
+                    .padLeft(8, '0')
+                    .substring(3),
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color:
+                          colorScheme.onSurfaceVariant.withValues(alpha: 0.3),
+                      fontWeight: FontWeight.w700,
+                      fontFamily: 'Inter',
+                    ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
 
     // USE CENTRALIZED STYLES
     final titleStyle = AppTypography.body(context).copyWith(
@@ -903,5 +1125,66 @@ class _TrackListScreenState extends State<TrackListScreen> {
         child: item,
       );
     });
+  }
+
+  Widget _buildFruitHeader(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          _buildFruitNavButton(
+            context,
+            icon: LucideIcons.chevronLeft,
+            onPressed: () => Navigator.of(context).pop(),
+          ),
+          // Stars center
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: List.generate(
+                3,
+                (index) => Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 2.0),
+                      child: Icon(
+                        Icons.star,
+                        size: 14,
+                        color:
+                            isDark ? Colors.blueAccent : Colors.blue.shade400,
+                      ),
+                    )),
+          ),
+          _buildFruitNavButton(
+            context,
+            icon: LucideIcons.moreHorizontal,
+            onPressed: () {
+              // Placeholder for more options
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFruitNavButton(BuildContext context,
+      {required IconData icon, required VoidCallback onPressed}) {
+    return NeumorphicWrapper(
+      isCircle: true,
+      borderRadius: 100,
+      intensity: 0.8,
+      color: Colors.transparent,
+      child: LiquidGlassWrapper(
+        enabled: true,
+        borderRadius: BorderRadius.circular(100),
+        opacity: 0.05,
+        blur: 5.0,
+        child: FruitIconButton(
+          icon: Icon(icon),
+          size: 20,
+          onPressed: onPressed,
+        ),
+      ),
+    );
   }
 }

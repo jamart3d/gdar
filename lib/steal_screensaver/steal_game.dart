@@ -73,21 +73,27 @@ class StealGame extends FlameGame {
     await super.onLoad();
     _subscribeToReactor(_audioReactor);
 
-    // Graph is added BEFORE background so it renders underneath the logo shader
-    _graph = StealGraph();
-    add(_graph!);
-
     _background = StealBackground(config: config);
-    add(_background!);
+    await add(_background!);
+
+    // Graph is added AFTER background so it renders on top of the shader
+    _graph = StealGraph();
+    await add(_graph!);
 
     _banner = StealBanner();
-    add(_banner!);
+    await add(_banner!);
 
     _applyBannerConfig(config);
     _applyGraphConfig(config);
 
     _lastPalette = config.palette;
     _resetHoldTimer();
+
+    // Fill buffer with current smoothed position so trails don't start at (0.5, 0.5)
+    final startPos = smoothedLogoPos;
+    for (int i = 0; i < _trailBufferCapacity; i++) {
+      _trailBuffer[i] = startPos;
+    }
   }
 
   void _subscribeToReactor(AudioReactor? reactor) {
@@ -129,7 +135,7 @@ class StealGame extends FlameGame {
   // ── Trail buffer ───────────────────────────────────────────────────────────
 
   void _tickTrailBuffer() {
-    if (config.logoTrailIntensity <= 0.0) return;
+    // Keep buffer polling even if intensity is 0 so it's ready when toggled on
 
     // Sample interval: higher logoTrailLength = more frames between snapshots
     // = positions spread further apart = longer visible trail.

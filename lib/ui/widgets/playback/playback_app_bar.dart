@@ -8,6 +8,7 @@ import 'package:shakedown/models/source.dart';
 import 'package:shakedown/providers/settings_provider.dart';
 import 'package:shakedown/providers/theme_provider.dart';
 import 'package:shakedown/ui/screens/settings_screen.dart';
+import 'package:shakedown/ui/widgets/theme/fruit_icon_button.dart';
 import 'package:shakedown/ui/styles/app_typography.dart';
 import 'package:shakedown/utils/app_date_utils.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -54,10 +55,11 @@ class PlaybackAppBar extends StatelessWidget {
       scrolledUnderElevation: 0,
       leading: kIsWeb
           ? Builder(builder: (context) {
-              final Widget menuBtn = IconButton(
+              final Widget menuBtn = FruitIconButton(
                 icon: Icon(isFruit ? LucideIcons.menu : Icons.menu_rounded),
                 onPressed: () => Navigator.of(context).pop(),
                 tooltip: 'Back to Show List',
+                padding: 0,
               );
 
               if (useNeumorphic) {
@@ -180,9 +182,10 @@ class PlaybackAppBar extends StatelessWidget {
           ),
         ),
         Builder(builder: (context) {
-          final Widget btn = IconButton(
+          final Widget btn = FruitIconButton(
             icon: Icon(isFruit ? LucideIcons.settings : Icons.settings_rounded),
-            iconSize: 24.0,
+            size: 24.0,
+            padding: 0,
             onPressed: () async {
               try {
                 context.read<AnimationController>().stop();
@@ -205,6 +208,7 @@ class PlaybackAppBar extends StatelessWidget {
                 } catch (_) {}
               }
             },
+            tooltip: 'Settings',
           );
 
           return Padding(

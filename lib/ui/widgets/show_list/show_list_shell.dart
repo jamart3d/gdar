@@ -8,6 +8,7 @@ import 'package:shakedown/ui/widgets/show_list/show_list_app_bar.dart';
 import 'package:shakedown/ui/widgets/show_list/show_list_search_bar.dart';
 import 'package:shakedown/ui/widgets/show_list/clipboard_feedback_overlay.dart';
 import 'package:shakedown/ui/widgets/theme/liquid_glass_wrapper.dart';
+import 'package:shakedown/providers/settings_provider.dart';
 import 'package:shakedown/providers/theme_provider.dart';
 import 'package:shakedown/ui/widgets/fruit_tab_bar.dart';
 
@@ -58,6 +59,8 @@ class ShowListShell extends StatelessWidget {
     final showListProvider = context.watch<ShowListProvider>();
 
     final themeProvider = context.watch<ThemeProvider>();
+    final settingsProvider =
+        context.watch<SettingsProvider>(); // Defined settingsProvider
     final isFruit = themeProvider.themeStyle == ThemeStyle.fruit;
 
     final bool isRollActive = showListProvider.isChoosingRandomShow;
@@ -68,13 +71,66 @@ class ShowListShell extends StatelessWidget {
 
     final bodyContent = Stack(
       children: [
-        LiquidGlassWrapper(
-          enabled: isFruit,
-          child: Column(
-            children: [
-              if (isPane && !context.read<DeviceService>().isTv)
-                ShowListAppBar(
-                  backgroundColor: backgroundColor,
+        Column(
+          children: [
+            if (isFruit)
+              SizedBox(
+                height: MediaQuery.paddingOf(context).top +
+                    (settingsProvider.fruitDenseList ? 8 : 12) +
+                    (settingsProvider.fruitDenseList
+                        ? 40
+                        : 48), // Adjusted for app bar height
+              ),
+            if (isPane && !context.read<DeviceService>().isTv && !isFruit)
+              ShowListAppBar(
+                backgroundColor: backgroundColor,
+                randomPulseAnimation: randomPulseAnimation,
+                searchPulseAnimation: searchPulseAnimation,
+                isRandomShowLoading: isRandomShowLoading,
+                enableDiceHaptics: enableDiceHaptics,
+                onRandomPlay: onRandomPlay,
+                onToggleSearch: onToggleSearch,
+                onTitleTap: onTitleTap,
+              ),
+            ShowListSearchBar(
+              controller: searchController,
+              focusNode: searchFocusNode,
+              onSubmitted: onSearchSubmitted,
+              animationDuration: animationDuration,
+            ),
+            Expanded(child: body),
+          ],
+        ),
+        if (isFruit)
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: LiquidGlassWrapper(
+              enabled: isFruit && settingsProvider.fruitEnableLiquidGlass,
+              blur: 20,
+              opacity: 0.8,
+              borderRadius: BorderRadius.zero,
+              child: Container(
+                padding: EdgeInsets.only(
+                  top: MediaQuery.paddingOf(context).top + 16,
+                  bottom: settingsProvider.fruitDenseList
+                      ? 8
+                      : 16, // Adjusted bottom padding
+                ),
+                decoration: BoxDecoration(
+                  border: Border(
+                    bottom: BorderSide(
+                      color: Theme.of(context)
+                          .colorScheme
+                          .onSurface
+                          .withValues(alpha: 0.05),
+                      width: 1.0,
+                    ),
+                  ),
+                ),
+                child: ShowListAppBar(
+                  backgroundColor: Colors.transparent,
                   randomPulseAnimation: randomPulseAnimation,
                   searchPulseAnimation: searchPulseAnimation,
                   isRandomShowLoading: isRandomShowLoading,
@@ -83,16 +139,9 @@ class ShowListShell extends StatelessWidget {
                   onToggleSearch: onToggleSearch,
                   onTitleTap: onTitleTap,
                 ),
-              ShowListSearchBar(
-                controller: searchController,
-                focusNode: searchFocusNode,
-                onSubmitted: onSearchSubmitted,
-                animationDuration: animationDuration,
               ),
-              Expanded(child: body),
-            ],
+            ),
           ),
-        ),
         AnimatedPositioned(
           duration: const Duration(milliseconds: 600),
           curve: Curves.easeOutCubic,
@@ -113,7 +162,7 @@ class ShowListShell extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: backgroundColor,
-      appBar: isPane
+      appBar: (isPane || isFruit)
           ? null
           : ShowListAppBar(
               backgroundColor: backgroundColor,

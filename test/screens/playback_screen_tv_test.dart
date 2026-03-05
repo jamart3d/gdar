@@ -64,6 +64,11 @@ class FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
   bool get isTv => false;
 
   @override
+  bool get fruitEnableLiquidGlass => false;
+  @override
+  void toggleFruitEnableLiquidGlass() {}
+
+  @override
   bool get showTrackNumbers => true;
   @override
   int get glowMode => 0;
@@ -308,6 +313,13 @@ class FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
   void toggleOilFlatColor() {}
   @override
   void toggleUseNeumorphism() {}
+
+  @override
+  bool get oilScreensaver4kSupport => false;
+  @override
+  bool get oilTvPremiumHighlight => false;
+  @override
+  void toggleOilTvPremiumHighlight() {}
 
   @override
   bool get performanceMode => false;

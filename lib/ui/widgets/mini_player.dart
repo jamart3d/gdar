@@ -18,6 +18,8 @@ import 'package:shakedown/utils/app_date_utils.dart';
 import 'package:shakedown/providers/theme_provider.dart';
 import 'package:shakedown/ui/widgets/theme/neumorphic_wrapper.dart';
 import 'package:shakedown/ui/widgets/theme/liquid_glass_wrapper.dart';
+import 'package:shakedown/ui/widgets/theme/fruit_icon_button.dart';
+import 'package:shakedown/ui/widgets/theme/fruit_activity_indicator.dart';
 
 class MiniPlayer extends StatefulWidget {
   final VoidCallback onTap;
@@ -599,13 +601,12 @@ class _MiniPlayerState extends State<MiniPlayer> {
                                 builder: (context, indexSnapshot) {
                                   final index = indexSnapshot.data ?? 0;
                                   final isFirstTrack = index == 0;
-                                  return IconButton(
+                                  return FruitIconButton(
                                     icon: const Icon(LucideIcons.skipBack),
-                                    iconSize: 22.0 * scaleFactor,
+                                    size: 22.0 * scaleFactor,
                                     color: colorScheme.primary.withValues(
                                         alpha: isFirstTrack ? 0.3 : 0.7),
-                                    padding: EdgeInsets.zero,
-                                    constraints: const BoxConstraints(),
+                                    padding: 0,
                                     onPressed: isFirstTrack
                                         ? null
                                         : () {
@@ -613,6 +614,7 @@ class _MiniPlayerState extends State<MiniPlayer> {
                                                 context.read<DeviceService>());
                                             audioProvider.seekToPrevious();
                                           },
+                                    tooltip: 'Skip Previous',
                                   );
                                 },
                               ),
@@ -647,11 +649,9 @@ class _MiniPlayerState extends State<MiniPlayer> {
                                           )
                                         ],
                                       ),
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2.0,
-                                        valueColor:
-                                            AlwaysStoppedAnimation<Color>(
-                                                colorScheme.onPrimary),
+                                      child: FruitActivityIndicator(
+                                        radius: 11.0 * scaleFactor,
+                                        color: colorScheme.onPrimary,
                                       ),
                                     );
                                   }
@@ -687,12 +687,14 @@ class _MiniPlayerState extends State<MiniPlayer> {
                                         )
                                       ],
                                     ),
-                                    child: IconButton(
+                                    child: FruitIconButton(
                                       icon: Icon(iconData),
-                                      iconSize: 20.0 * scaleFactor,
+                                      size: 20.0 * scaleFactor,
                                       color: colorScheme.onPrimary,
-                                      padding: EdgeInsets.zero,
+                                      padding: 0,
                                       onPressed: onPressed,
+                                      tooltip:
+                                          playing == true ? 'Pause' : 'Play',
                                     ),
                                   );
                                 },
@@ -709,13 +711,12 @@ class _MiniPlayerState extends State<MiniPlayer> {
                                       audioProvider.audioPlayer.sequence;
                                   final isLastTrack =
                                       index >= sequence.length - 1;
-                                  return IconButton(
+                                  return FruitIconButton(
                                     icon: const Icon(LucideIcons.skipForward),
-                                    iconSize: 22.0 * scaleFactor,
+                                    size: 22.0 * scaleFactor,
                                     color: colorScheme.primary.withValues(
                                         alpha: isLastTrack ? 0.3 : 0.7),
-                                    padding: EdgeInsets.zero,
-                                    constraints: const BoxConstraints(),
+                                    padding: 0,
                                     onPressed: isLastTrack
                                         ? null
                                         : () {
@@ -723,6 +724,7 @@ class _MiniPlayerState extends State<MiniPlayer> {
                                                 context.read<DeviceService>());
                                             audioProvider.seekToNext();
                                           },
+                                    tooltip: 'Skip Next',
                                   );
                                 },
                               ),

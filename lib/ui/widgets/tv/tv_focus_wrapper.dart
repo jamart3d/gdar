@@ -51,7 +51,28 @@ class _TvFocusWrapperState extends State<TvFocusWrapper> {
   bool _longPressHandled = false;
   bool _isActionKeyPressed = false;
 
+  @override
+  void initState() {
+    super.initState();
+    // Initialize focus state from the node or autofocus property.
+    _isFocused = widget.focusNode?.hasFocus ?? widget.autofocus;
+  }
+
+  @override
+  void didUpdateWidget(TvFocusWrapper oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Sync focus state if the focus node or autofocus changed,
+    // which is critical during widget recycling in lists.
+    if (widget.focusNode != oldWidget.focusNode ||
+        widget.autofocus != oldWidget.autofocus) {
+      setState(() {
+        _isFocused = widget.focusNode?.hasFocus ?? widget.autofocus;
+      });
+    }
+  }
+
   void _handleFocusChange(bool focused) {
+    if (!mounted) return;
     setState(() {
       _isFocused = focused;
       if (!focused) {
@@ -86,21 +107,23 @@ class _TvFocusWrapperState extends State<TvFocusWrapper> {
     final colorScheme = Theme.of(context).colorScheme;
     final sp = context.watch<SettingsProvider>();
     final radius = widget.borderRadius ?? BorderRadius.circular(28);
+    final isPremium = sp.oilTvPremiumHighlight;
+    final showPremium = isPremium && _isFocused;
 
     Widget content = AnimatedContainer(
       duration: const Duration(milliseconds: 200),
       decoration: BoxDecoration(
         color: _isFocused ? widget.focusBackgroundColor : null,
         borderRadius: radius,
-        border: (widget.useRgbBorder && _isFocused)
-            ? null // Do not double-pad the border if RGB is handling it
-            : Border.all(
-                color: _isFocused
-                    ? (widget.focusColor ?? colorScheme.primary)
-                        .withValues(alpha: 0.6)
-                    : Colors.transparent,
-                width: 3.0,
-              ),
+        border: Border.all(
+          color: (showPremium || (widget.useRgbBorder && _isFocused))
+              ? Colors.transparent
+              : _isFocused
+                  ? (widget.focusColor ?? colorScheme.primary)
+                      .withValues(alpha: 0.6)
+                  : Colors.transparent,
+          width: sp.isTv ? 4.0 : 3.0,
+        ),
         boxShadow: (widget.showGlow && _isFocused)
             ? [
                 BoxShadow(
@@ -118,17 +141,34 @@ class _TvFocusWrapperState extends State<TvFocusWrapper> {
       ),
     );
 
-    if (widget.useRgbBorder && _isFocused) {
+    if (showPremium) {
+      content = AnimatedGradientBorder(
+        borderRadius: radius.topLeft.x,
+        borderWidth: 6.0, // Premium thick border
+        colors: const [
+          Color(0xFFFF00FF), // Neon Pink
+          Color(0xFF00FFFF), // Cyan
+          Color(0xFF0000FF), // Blue
+          Color(0xFFFF00FF), // Neon Pink
+        ],
+        showGlow: true,
+        glowOpacity: 0.8, // Strong neon glow
+        animationSpeed: sp.rgbAnimationSpeed * 1.5,
+        ignoreGlobalClock: true,
+        backgroundColor: Colors.transparent,
+        usePadding: false,
+        child: content,
+      );
+    } else if (widget.useRgbBorder && _isFocused) {
       content = AnimatedGradientBorder(
         borderRadius: radius.topLeft.x,
         borderWidth: 4.0, // Thicker stroke for pure RGB line
         ignoreGlobalClock: true,
         animationSpeed: sp.rgbAnimationSpeed,
         showGlow: true,
-        showShadow:
-            false, // Explicitly false inside so we use the standard BoxShadow underneath instead
+        showShadow: false,
         backgroundColor: Colors.transparent,
-        usePadding: false, // Tight border to match track highlight items
+        usePadding: false,
         child: content,
       );
     }

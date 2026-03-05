@@ -67,6 +67,17 @@ class StealBackground extends PositionComponent
       final initial = _expandColors(_getPaletteColors(config.palette));
       _currentColors = List.of(initial);
       _targetColors = List.of(initial);
+
+      // Initialize logo to its correct starting position on the path
+      final t = _phaseOffset * config.flowSpeed.clamp(0.0, 2.0) * 0.5;
+      final drift = config.orbitDrift.clamp(0.0, 2.0);
+      final startX = 0.5 +
+          0.25 * drift * sin(t * _freqNudgeX1) +
+          0.1 * drift * sin(t * _freqNudgeX2);
+      final startY = 0.5 +
+          0.25 * drift * cos(t * _freqNudgeY1) +
+          0.1 * drift * cos(t * _freqNudgeY2);
+      _smoothedPos = Offset(startX, startY);
     } catch (_) {}
   }
 
@@ -231,10 +242,13 @@ class StealBackground extends PositionComponent
     final texH = logoTex.height.toDouble();
     final w = size.x;
     final h = size.y;
-    final minDim = min(w, h);
 
-    // Logo render size matches shader: logoScale * minDim
-    final logoRenderSize = config.logoScale.clamp(0.05, 1.0) * minDim;
+    // Logo render size MUST match shader logic in steal.frag:
+    // shader base height is 110px.
+    final basePulse = _beatPulse * 0.08;
+    final pulseScale =
+        (1.0 + game.currentEnergy.bass * 0.2 * config.pulseIntensity);
+    final logoRenderSize = (config.logoScale + basePulse) * 110.0 * pulseScale;
 
     // Use palette color desaturated — but keep it bright enough to see
     final baseColor =

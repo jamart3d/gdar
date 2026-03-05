@@ -47,58 +47,70 @@ class RatingControl extends StatelessWidget {
     Widget content;
 
     if (isFruitNeumorphic) {
-      const Color starColor = Colors.orangeAccent;
+      final Color starColor =
+          isFruit ? colorScheme.primary : Colors.orangeAccent;
       final Brightness brightness = Theme.of(context).brightness;
       // In light mode, the alpha needs to be slightly higher to be visible against frosted glass
       final Color emptyColor = brightness == Brightness.light
           ? colorScheme.outline.withValues(alpha: 0.35)
           : colorScheme.onSurfaceVariant.withValues(alpha: 0.2);
 
-      content = NeumorphicWrapper(
-        enabled: true,
-        isCircle: false,
-        borderRadius: 12,
-        intensity: 0.8,
-        color: Colors.transparent,
-        child: LiquidGlassWrapper(
+      Widget innerStars = rating == -1
+          ? Semantics(
+              label: 'Blocked show',
+              child: Icon(
+                isFruit ? Icons.star : LucideIcons.star,
+                size: scaledSize * 1.0, // Increased size
+                color: Colors.redAccent.withValues(alpha: 0.9),
+              ),
+            )
+          : RatingBar(
+              initialRating:
+                  (rating == 0 && isPlayed) ? 1.0 : rating.toDouble(),
+              minRating: 1,
+              direction: Axis.horizontal,
+              allowHalfRating: false,
+              itemCount: 3,
+              itemPadding: EdgeInsets.symmetric(
+                  horizontal:
+                      isFruit ? 1.0 : 0.0), // 2px gap to match HTML space-x-0.5
+              itemSize: scaledSize * 1.0, // Increased size from 0.9 to 1.0
+              ignoreGestures: true,
+              ratingWidget: RatingWidget(
+                full: Icon(isFruit ? Icons.star_rate_rounded : LucideIcons.star,
+                    color: (rating == 0 && isPlayed)
+                        ? colorScheme.outline.withValues(alpha: 0.5)
+                        : starColor),
+                half: Icon(isFruit ? Icons.star_rate_rounded : LucideIcons.star,
+                    color: starColor),
+                empty: Icon(
+                    isFruit ? Icons.star_rate_rounded : LucideIcons.star,
+                    color: emptyColor),
+              ),
+              onRatingUpdate: (_) {},
+            );
+
+      if (compact) {
+        content = innerStars;
+      } else {
+        content = NeumorphicWrapper(
           enabled: true,
-          borderRadius: BorderRadius.circular(12),
-          opacity: brightness == Brightness.light ? 0.15 : 0.08,
-          blur: 6,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-            child: rating == -1
-                ? Semantics(
-                    label: 'Blocked show',
-                    child: Icon(
-                      LucideIcons.star,
-                      size: scaledSize * 1.0, // Increased size
-                      color: Colors.redAccent.withValues(alpha: 0.9),
-                    ),
-                  )
-                : RatingBar(
-                    initialRating:
-                        (rating == 0 && isPlayed) ? 1.0 : rating.toDouble(),
-                    minRating: 1,
-                    direction: Axis.horizontal,
-                    allowHalfRating: false,
-                    itemCount: 3,
-                    itemSize:
-                        scaledSize * 1.0, // Increased size from 0.9 to 1.0
-                    ignoreGestures: true,
-                    ratingWidget: RatingWidget(
-                      full: Icon(LucideIcons.star,
-                          color: (rating == 0 && isPlayed)
-                              ? colorScheme.outline.withValues(alpha: 0.5)
-                              : starColor),
-                      half: const Icon(LucideIcons.star, color: starColor),
-                      empty: Icon(LucideIcons.star, color: emptyColor),
-                    ),
-                    onRatingUpdate: (_) {},
-                  ),
+          isCircle: false,
+          borderRadius: 12,
+          intensity: 0.8,
+          color: Colors.transparent,
+          child: LiquidGlassWrapper(
+            enabled: true,
+            borderRadius: BorderRadius.circular(12),
+            opacity: brightness == Brightness.light ? 0.15 : 0.08,
+            blur: 6,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              child: innerStars,
+            ),
           ),
-        ),
-      );
+        );
+      }
     } else {
       if (rating == -1) {
         content = Semantics(
@@ -145,11 +157,11 @@ class RatingControl extends StatelessWidget {
             itemSize: scaledSize,
             ignoreGestures: true,
             ratingWidget: RatingWidget(
-              full: Icon(isFruit ? LucideIcons.star : Icons.star,
-                  color: Colors.amber),
-              half: Icon(isFruit ? LucideIcons.star : Icons.star_half,
-                  color: Colors.amber),
-              empty: Icon(isFruit ? LucideIcons.star : Icons.star_border,
+              full: Icon(isFruit ? Icons.star : Icons.star,
+                  color: isFruit ? colorScheme.primary : Colors.amber),
+              half: Icon(isFruit ? Icons.star_half : Icons.star_half,
+                  color: isFruit ? colorScheme.primary : Colors.amber),
+              empty: Icon(isFruit ? Icons.star_border : Icons.star_border,
                   color: Colors.grey),
             ),
             onRatingUpdate: (_) {},
@@ -395,13 +407,17 @@ class _RatingDialogState extends State<RatingDialog> {
                                         : Icons.star_rounded,
                                     color: (_currentRating == 0 && _isPlayed)
                                         ? Colors.blueGrey.withValues(alpha: 0.4)
-                                        : Colors.orangeAccent,
+                                        : (isFruit
+                                            ? colorScheme.primary
+                                            : Colors.orangeAccent),
                                   ),
                                   half: Icon(
                                     isFruit
                                         ? LucideIcons.star
                                         : Icons.star_half_rounded,
-                                    color: Colors.orangeAccent,
+                                    color: isFruit
+                                        ? colorScheme.primary
+                                        : Colors.orangeAccent,
                                   ),
                                   empty: Icon(
                                     isFruit
@@ -549,7 +565,7 @@ class _RatingDialogState extends State<RatingDialog> {
         _buildActionOption(
           context,
           'Block (Red Star)',
-          isFruit ? LucideIcons.star : Icons.star_rounded,
+          Icons.star,
           isFruitNeumorphic
               ? Colors.redAccent.withValues(alpha: 0.85)
               : Colors.redAccent,
@@ -563,7 +579,7 @@ class _RatingDialogState extends State<RatingDialog> {
         _buildActionOption(
           context,
           'Clear Rating',
-          isFruit ? LucideIcons.star : Icons.star_rounded,
+          Icons.star,
           isFruitNeumorphic
               ? colorScheme.onSurfaceVariant.withValues(alpha: 0.6)
               : Colors.grey,

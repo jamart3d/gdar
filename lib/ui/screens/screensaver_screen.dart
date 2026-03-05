@@ -164,6 +164,12 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
     final settings = context.watch<SettingsProvider>();
     final audioProvider = context.watch<AudioProvider>();
 
+    // Push live audio configuration whenever settings change.
+    // This allows tuning knobs (bass boost, peak decay) to apply in real-time.
+    if (_audioReactor != null) {
+      _pushAudioConfig();
+    }
+
     final config = StealConfig(
       flowSpeed: settings.oilFlowSpeed,
       palette: settings.oilPalette,
@@ -205,16 +211,33 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
       logoTrailScale: settings.oilLogoTrailScale,
     );
 
+    final screenSize = MediaQuery.sizeOf(context);
+    final bool limit4k =
+        !settings.oilScreensaver4kSupport && screenSize.height > 1080;
+
+    Widget visualizer = StealVisualizer(
+      config: config,
+      audioReactor: _audioReactor,
+      onExit: () => Navigator.of(context).pop(),
+    );
+
+    if (limit4k) {
+      visualizer = FittedBox(
+        fit: BoxFit.fill,
+        child: SizedBox(
+          width: 1920,
+          height: 1080,
+          child: visualizer,
+        ),
+      );
+    }
+
     return PopScope(
       canPop: true,
       onPopInvokedWithResult: (didPop, result) {},
       child: Scaffold(
         backgroundColor: Colors.black,
-        body: StealVisualizer(
-          config: config,
-          audioReactor: _audioReactor,
-          onExit: () => Navigator.of(context).pop(),
-        ),
+        body: visualizer,
       ),
     );
   }

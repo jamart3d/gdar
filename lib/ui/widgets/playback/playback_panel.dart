@@ -24,6 +24,7 @@ import 'package:shakedown/ui/widgets/theme/liquid_glass_wrapper.dart';
 import 'package:shakedown/ui/widgets/theme/neumorphic_wrapper.dart';
 import 'package:shakedown/utils/font_layout_config.dart';
 import 'package:shakedown/utils/utils.dart';
+import 'package:shakedown/ui/widgets/theme/fruit_icon_button.dart';
 
 class PlaybackPanel extends StatelessWidget {
   final Show currentShow;
@@ -298,12 +299,7 @@ class PlaybackPanel extends StatelessWidget {
                                                   ),
                                                   Builder(builder: (context) {
                                                     final Widget iconBtn =
-                                                        IconButton(
-                                                      constraints:
-                                                          const BoxConstraints(),
-                                                      padding:
-                                                          const EdgeInsets.all(
-                                                              8),
+                                                        FruitIconButton(
                                                       icon: Icon(
                                                           isFruit
                                                               ? LucideIcons.copy
@@ -315,6 +311,7 @@ class PlaybackPanel extends StatelessWidget {
                                                               scaleFactor,
                                                           color: colorScheme
                                                               .onSurfaceVariant),
+                                                      padding: 0,
                                                       onPressed: () {
                                                         final track =
                                                             audioProvider
@@ -343,6 +340,7 @@ class PlaybackPanel extends StatelessWidget {
                                                         showMessage(context,
                                                             'Details copied to clipboard');
                                                       },
+                                                      tooltip: 'Copy Details',
                                                     );
 
                                                     if (useNeumorphic) {
@@ -414,20 +412,21 @@ class PlaybackPanel extends StatelessWidget {
                                           scaleFactor: isFruit ? 1.4 : 1.0,
                                         ),
                                       const SizedBox(height: 4),
-                                      InkWell(
-                                        onTap: () {
+                                      FruitIconButton(
+                                        padding: 0,
+                                        onPressed: () {
                                           if (currentSource.tracks.isNotEmpty) {
                                             launchArchivePage(
                                                 currentSource.tracks.first.url,
                                                 context);
                                           }
                                         },
-                                        borderRadius: BorderRadius.circular(8),
-                                        child: ShnidBadge(
+                                        icon: ShnidBadge(
                                           text: currentSource.id,
                                           showUnderline: true,
                                           scaleFactor: isFruit ? 1.4 : 1.0,
                                         ),
+                                        tooltip: 'Open in Archive.org',
                                       ),
                                     ],
                                   ),

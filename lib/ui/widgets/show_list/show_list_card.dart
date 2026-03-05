@@ -88,7 +88,7 @@ class _ShowListCardState extends State<ShowListCard> {
         padding: outerPadding,
         child: Container(
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(isFruit ? 14 : 28),
+            borderRadius: BorderRadius.circular(isFruit ? 24 : 28),
             boxShadow: (style.showShadow &&
                     !style.useRgb &&
                     !settingsProvider.performanceMode)
@@ -105,7 +105,7 @@ class _ShowListCardState extends State<ShowListCard> {
                 : [],
           ),
           child: AnimatedGradientBorder(
-            borderRadius: isTv ? 12 : (isFruit ? 14 : 28),
+            borderRadius: isTv ? 12 : (isFruit ? 24 : 28),
             borderWidth: 3,
             colors: style.useRgb
                 ? const [
@@ -129,17 +129,17 @@ class _ShowListCardState extends State<ShowListCard> {
             animationSpeed: settingsProvider.rgbAnimationSpeed,
             child: NeumorphicWrapper(
               enabled: isFruit && settingsProvider.useNeumorphism,
-              borderRadius: isFruit ? 14 : 28,
+              borderRadius: isFruit ? 24 : 28,
               intensity: 1.2, // Increased for stronger effect
               child: LiquidGlassWrapper(
-                enabled: isFruit && !settingsProvider.useTrueBlack,
-                borderRadius: BorderRadius.circular(isFruit ? 14 : 28),
+                enabled: isFruit && settingsProvider.fruitEnableLiquidGlass,
+                borderRadius: BorderRadius.circular(isFruit ? 24 : 28),
                 blur: 15,
                 opacity: _isHovered ? 0.6 : 0.7,
                 color: style.backgroundColor,
                 child: _buildCardContent(
                   context: context,
-                  borderRadius: isTv ? 12 : (isFruit ? 14 : 28),
+                  borderRadius: isTv ? 12 : (isFruit ? 24 : 28),
                   backgroundColor: isFruit && !settingsProvider.useTrueBlack
                       ? Colors.transparent
                       : style.backgroundColor,
@@ -162,7 +162,7 @@ class _ShowListCardState extends State<ShowListCard> {
           shadowColor: colorScheme.shadow.withValues(alpha: 0.1),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(
-                isTv ? 12 : (isFruit ? 14 : 28)), // Refined Fruit radius
+                isTv ? 12 : (isFruit ? 24 : 28)), // Refined Fruit radius
             side: BorderSide(
               color: style.cardBorderColor,
               width: style.cardBorderWidth,
@@ -172,12 +172,12 @@ class _ShowListCardState extends State<ShowListCard> {
             enabled: isFruit &&
                 settingsProvider.useNeumorphism &&
                 !settingsProvider.performanceMode,
-            borderRadius: isTv ? 12 : (isFruit ? 14 : 28),
+            borderRadius: isTv ? 12 : (isFruit ? 24 : 28),
             intensity: 1.2, // Increased for stronger effect
             child: LiquidGlassWrapper(
-              enabled: isFruit && !settingsProvider.useTrueBlack,
+              enabled: isFruit && settingsProvider.fruitEnableLiquidGlass,
               borderRadius:
-                  BorderRadius.circular(isTv ? 12 : (isFruit ? 14 : 28)),
+                  BorderRadius.circular(isTv ? 12 : (isFruit ? 24 : 28)),
               blur: 15,
               opacity: _isHovered ? 0.6 : 0.7,
               color: style.backgroundColor,
@@ -934,23 +934,8 @@ class _ShowListCardState extends State<ShowListCard> {
                 ? widget.show.sources.first
                 : null;
 
-    String durationStr = '';
-    if (primarySource != null && primarySource.tracks.isNotEmpty) {
-      final totalSecs = primarySource.tracks.fold<int>(
-        0,
-        (sum, t) => sum + t.duration,
-      );
-      if (totalSecs > 0) {
-        final h = totalSecs ~/ 3600;
-        final m = (totalSecs % 3600) ~/ 60;
-        durationStr = h > 0 ? '${h}H ${m}M' : '${m}M';
-      }
-    }
-
     final String srcLabel = (primarySource?.src ?? '').toUpperCase();
-    final bool hasDuration = durationStr.isNotEmpty;
     final bool hasSrcLabel = srcLabel.isNotEmpty;
-    final bool hasFooterData = hasDuration || hasSrcLabel;
     // Star rating
     Source? targetSource = widget.isPlaying && widget.playingSource != null
         ? widget.playingSource
@@ -994,7 +979,9 @@ class _ShowListCardState extends State<ShowListCard> {
                         child: RatingControl(
                           rating: rating,
                           isPlayed: isPlayed,
-                          size: isDense ? 22 : 24,
+                          size: isDense
+                              ? 14
+                              : 15, // Reduced to match text cap height
                           compact: true,
                           onTap: (widget.isPlaying ||
                                   widget.alwaysShowRatingInteraction ||
@@ -1067,38 +1054,45 @@ class _ShowListCardState extends State<ShowListCard> {
                                 colorScheme.onSurface.withValues(alpha: 0.12),
                           ),
                           SizedBox(height: isDense ? 6.0 : 8.0),
-                          // Footer: ● 3H 24M • SOUNDBOARD
-                          if (hasFooterData)
+                          // Footer: ● SOUNDBOARD  [Badge]
+                          if (hasSrcLabel || style.shouldShowBadge)
                             Row(
                               mainAxisSize: MainAxisSize.min,
+                              crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
-                                // Colored dot
-                                Container(
-                                  width: 5,
-                                  height: 5,
-                                  decoration: BoxDecoration(
-                                    color: colorScheme.primary,
-                                    shape: BoxShape.circle,
+                                if (hasSrcLabel) ...[
+                                  // Colored dot
+                                  Container(
+                                    width: 5,
+                                    height: 5,
+                                    decoration: BoxDecoration(
+                                      color: colorScheme.primary,
+                                      shape: BoxShape.circle,
+                                    ),
                                   ),
-                                ),
-                                const SizedBox(width: 6),
-                                Text(
-                                  [
-                                    if (hasDuration) durationStr,
-                                    if (hasSrcLabel) srcLabel,
-                                  ].join(' • '),
-                                  style: TextStyle(
-                                    fontFamily: 'Inter',
-                                    fontSize: 9.5,
-                                    fontWeight: FontWeight.w700,
-                                    letterSpacing: 0.8,
-                                    color: colorScheme.onSurface
-                                        .withValues(alpha: 0.45),
-                                    height: 1.0,
+                                  const SizedBox(width: 6),
+                                  Flexible(
+                                    child: Text(
+                                      srcLabel,
+                                      style: TextStyle(
+                                        fontFamily: 'Inter',
+                                        fontSize: 9.5,
+                                        fontWeight: FontWeight.w700,
+                                        letterSpacing: 0.8,
+                                        color: colorScheme.onSurface
+                                            .withValues(alpha: 0.45),
+                                        height: 1.0,
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
                                   ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
+                                ],
+                                if (hasSrcLabel && style.shouldShowBadge)
+                                  const SizedBox(width: 8),
+                                if (style.shouldShowBadge)
+                                  _buildBadge(context, widget.show,
+                                      style.effectiveScale, false),
                               ],
                             ),
                         ],

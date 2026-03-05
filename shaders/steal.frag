@@ -145,10 +145,9 @@ void main() {
     // Only active when uAntiAlias > 0.5. Uses the raw center alpha (not blurred)
     // so the edge is always crisp regardless of the blur setting.
     if (uAntiAlias > 0.5) {
-        float rawA = texture(uTexture, texUV).a;
-        float fw = fwidth(rawA);
-        float smoothA = smoothstep(0.5 - fw, 0.5 + fw, rawA);
-        texColor.a = smoothA;
+        float rawA = texColor.a; // Use the blurred alpha so AA doesn't fight blur
+        float fw = fwidth(rawA) * 1.5 + 0.001;
+        texColor.a = smoothstep(0.5 - fw, 0.5 + fw, rawA);
     }
 
     texColor.rgb += vec3(etreble) * 0.3 * pulse;

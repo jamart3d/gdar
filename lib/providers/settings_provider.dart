@@ -29,6 +29,7 @@ class SettingsProvider with ChangeNotifier {
   static const String _abbreviateDayOfWeekKey = 'abbreviate_day_of_week';
   static const String _abbreviateMonthKey = 'abbreviate_month';
   static const String _useNeumorphismKey = 'use_neumorphism';
+  static const String _fruitEnableLiquidGlassKey = 'fruit_enable_liquid_glass';
   static const String _neumorphicStyleKey = 'neumorphic_style';
   static const String _performanceModeKey = 'performance_mode';
   String _appFont = 'default';
@@ -123,6 +124,9 @@ class SettingsProvider with ChangeNotifier {
   static const String _oilInnerRingFontScaleKey = 'oil_inner_ring_font_scale';
   static const String _oilInnerRingSpacingMultiplierKey =
       'oil_inner_ring_spacing_multiplier';
+  static const String _oilScreensaver4kSupportKey =
+      'oil_screensaver_4k_support';
+  static const String _oilTvPremiumHighlightKey = 'oil_tv_premium_highlight';
 
   static const String _marqueeEnabledKey = 'marquee_enabled';
   static const String _enableSwipeToBlockKey = 'enable_swipe_to_block';
@@ -182,6 +186,7 @@ class SettingsProvider with ChangeNotifier {
   late bool _enableSwipeToBlock;
   late bool _omitHttpPathInCopy;
   late bool _useNeumorphism;
+  late bool _fruitEnableLiquidGlass;
   late NeumorphicStyle _neumorphicStyle;
   late bool _performanceMode;
   late bool _forceTv;
@@ -249,6 +254,8 @@ class SettingsProvider with ChangeNotifier {
   late double _oilOrbitDrift;
   late double _oilInnerRingFontScale;
   late double _oilInnerRingSpacingMultiplier;
+  late bool _oilScreensaver4kSupport;
+  late bool _oilTvPremiumHighlight;
 
   Color? _seedColor;
 
@@ -293,6 +300,18 @@ class SettingsProvider with ChangeNotifier {
   bool get enableSwipeToBlock => _enableSwipeToBlock;
   bool get omitHttpPathInCopy => _omitHttpPathInCopy;
   bool get useNeumorphism => _useNeumorphism;
+  bool get fruitEnableLiquidGlass => _fruitEnableLiquidGlass;
+
+  void toggleUseNeumorphism() {
+    _useNeumorphism = !_useNeumorphism;
+    _updatePreference(_useNeumorphismKey, _useNeumorphism);
+  }
+
+  void toggleFruitEnableLiquidGlass() {
+    _fruitEnableLiquidGlass = !_fruitEnableLiquidGlass;
+    _updatePreference(_fruitEnableLiquidGlassKey, _fruitEnableLiquidGlass);
+  }
+
   NeumorphicStyle get neumorphicStyle => _neumorphicStyle;
   bool get performanceMode => _performanceMode;
   bool get forceTv => _forceTv;
@@ -403,6 +422,8 @@ class SettingsProvider with ChangeNotifier {
   double get oilOrbitDrift => _oilOrbitDrift;
   double get oilInnerRingFontScale => _oilInnerRingFontScale;
   double get oilInnerRingSpacingMultiplier => _oilInnerRingSpacingMultiplier;
+  bool get oilScreensaver4kSupport => _oilScreensaver4kSupport;
+  bool get oilTvPremiumHighlight => _oilTvPremiumHighlight;
 
   Color? get seedColor => _seedColor;
   bool get randomOnlyUnplayed => _randomOnlyUnplayed;
@@ -624,6 +645,8 @@ class SettingsProvider with ChangeNotifier {
     _useNeumorphism = _prefs.getBool(_useNeumorphismKey) ??
         _dBool(WebDefaults.useNeumorphism, DefaultSettings.useNeumorphism,
             PhoneDefaults.useNeumorphism);
+    _fruitEnableLiquidGlass =
+        _prefs.getBool(_fruitEnableLiquidGlassKey) ?? false;
     _neumorphicStyle = NeumorphicStyle.values[
         _prefs.getInt(_neumorphicStyleKey) ??
             DefaultSettings.neumorphicStyle.index];
@@ -779,6 +802,11 @@ class SettingsProvider with ChangeNotifier {
         _prefs.getDouble(_oilInnerRingSpacingMultiplierKey) ??
             DefaultSettings.oilInnerRingSpacingMultiplier;
 
+    _oilScreensaver4kSupport =
+        _prefs.getBool(_oilScreensaver4kSupportKey) ?? false;
+    _oilTvPremiumHighlight = _prefs.getBool(_oilTvPremiumHighlightKey) ??
+        DefaultSettings.oilTvPremiumHighlight;
+
     // TV screensaver mode override — use TvDefaults as the canonical source.
     if (isTv) _oilScreensaverMode = TvDefaults.oilScreensaverMode;
 
@@ -890,8 +918,7 @@ class SettingsProvider with ChangeNotifier {
       _enableSwipeToBlockKey, _enableSwipeToBlock = !_enableSwipeToBlock);
   void toggleOmitHttpPathInCopy() => _updatePreference(
       _omitHttpPathInCopyKey, _omitHttpPathInCopy = !_omitHttpPathInCopy);
-  void toggleUseNeumorphism() =>
-      _updatePreference(_useNeumorphismKey, _useNeumorphism = !_useNeumorphism);
+//
   void setUseNeumorphism(bool value) =>
       _updatePreference(_useNeumorphismKey, _useNeumorphism = value);
   void togglePerformanceMode() => _updatePreference(
@@ -904,6 +931,10 @@ class SettingsProvider with ChangeNotifier {
 
   void toggleFruitDenseList() =>
       _updatePreference(_fruitDenseListKey, _fruitDenseList = !_fruitDenseList);
+
+  void toggleOilTvPremiumHighlight() => _updatePreference(
+      _oilTvPremiumHighlightKey,
+      _oilTvPremiumHighlight = !_oilTvPremiumHighlight);
 
   void setNeumorphicStyle(NeumorphicStyle value, {bool? notify}) {
     if (_neumorphicStyle != value) {

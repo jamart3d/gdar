@@ -20,6 +20,7 @@ import 'package:shakedown/ui/widgets/tv/tv_reload_dialog.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:shakedown/providers/theme_provider.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:shakedown/ui/widgets/theme/fruit_activity_indicator.dart';
 
 class TrackListView extends StatelessWidget {
   final Source source;
@@ -331,7 +332,7 @@ class TrackListView extends StatelessWidget {
       fontWeight: isFruit ? FontWeight.w500 : FontWeight.w500,
       letterSpacing: isFruit ? 0.3 : null,
       fontFeatures: const [FontFeature.tabularFigures()],
-    ).merge(const TextStyle(fontFamily: 'Roboto'));
+    ).merge(TextStyle(fontFamily: isFruit ? null : 'Roboto'));
   }
 
   Widget _buildTrackListTile(BuildContext context, AudioProvider audioProvider,
@@ -381,13 +382,9 @@ class TrackListView extends StatelessWidget {
                 width: isFruit ? 32 : 24,
                 height: isFruit ? 32 : 24,
                 child: Center(
-                  child: SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: isFruit ? titleColor : colorScheme.primary,
-                    ),
+                  child: FruitActivityIndicator(
+                    radius: 10,
+                    color: isFruit ? titleColor : colorScheme.primary,
                   ),
                 ),
               );
@@ -456,58 +453,96 @@ class TrackListView extends StatelessWidget {
     final durationStyle = _durationTextStyle(
         textTheme, colorScheme, scaleFactor, isFruit, isDarkMode);
 
-    final Widget listTile = ListTile(
-      leading: leadingWidget,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
-      visualDensity: context.read<DeviceService>().isTv
-          ? VisualDensity.compact
-          : VisualDensity.standard,
-      contentPadding: context.read<DeviceService>().isTv
-          ? const EdgeInsets.symmetric(horizontal: 12, vertical: 0)
-          : const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
-      title: SizedBox(
-        height: titleStyle.fontSize! *
-            (settingsProvider.appFont == 'rock_salt' ? 2.0 : 1.6),
-        child: ConditionalMarquee(
-          text: settingsProvider.showTrackNumbers
-              ? '${track.trackNumber}. ${track.title}'
-              : track.title,
-          style: titleStyle,
-          textAlign: settingsProvider.hideTrackDuration
-              ? TextAlign.center
-              : TextAlign.start,
-        ),
-      ),
-      trailing: settingsProvider.hideTrackDuration
-          ? null
-          : (isPlaying && isTv
-              ? StreamBuilder<Duration>(
-                  stream: audioProvider.positionStream,
-                  builder: (context, snapshot) {
-                    final position = snapshot.data ?? Duration.zero;
-                    return Text(
-                      '${formatDuration(position)} / ${formatDuration(Duration(seconds: track.duration))}',
-                      style: durationStyle,
-                    );
+    final Widget listTile = isFruit
+        ? _FruitTrackTile(
+            leading: leadingWidget,
+            title: settingsProvider.showTrackNumbers
+                ? '${track.trackNumber}. ${track.title}'
+                : track.title,
+            titleStyle: titleStyle,
+            trailing: settingsProvider.hideTrackDuration
+                ? null
+                : (isPlaying && isTv
+                    ? StreamBuilder<Duration>(
+                        stream: audioProvider.positionStream,
+                        builder: (context, snapshot) {
+                          final position = snapshot.data ?? Duration.zero;
+                          return Text(
+                            '${formatDuration(position)} / ${formatDuration(Duration(seconds: track.duration))}',
+                            style: durationStyle,
+                          );
+                        },
+                      )
+                    : Text(
+                        formatDuration(Duration(seconds: track.duration)),
+                        style: durationStyle,
+                      )),
+            isPlaying: isPlaying,
+            onTap: isTv
+                ? null
+                : () {
+                    if (!isPlaying) {
+                      final deviceService = context.read<DeviceService>();
+                      AppHaptics.lightImpact(deviceService);
+                      audioProvider.seekToTrack(trackIndex);
+                    }
                   },
-                )
-              : Text(
-                  formatDuration(Duration(seconds: track.duration)),
-                  style: durationStyle,
-                )),
-      onTap: isTv
-          ? null
-          : () {
-              if (!isPlaying) {
-                final deviceService = context.read<DeviceService>();
-                AppHaptics.lightImpact(deviceService);
-                audioProvider.seekToTrack(trackIndex);
-              }
-            },
-      onLongPress: () => _handleLongPress(context, audioProvider, track),
-    );
+            onLongPress: () => _handleLongPress(context, audioProvider, track),
+            isTv: isTv,
+            settingsProvider: settingsProvider,
+          )
+        : ListTile(
+            leading: leadingWidget,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            visualDensity: context.read<DeviceService>().isTv
+                ? VisualDensity.compact
+                : VisualDensity.standard,
+            contentPadding: context.read<DeviceService>().isTv
+                ? const EdgeInsets.symmetric(horizontal: 12, vertical: 0)
+                : const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
+            title: SizedBox(
+              height: titleStyle.fontSize! *
+                  (settingsProvider.appFont == 'rock_salt' ? 2.0 : 1.6),
+              child: ConditionalMarquee(
+                text: settingsProvider.showTrackNumbers
+                    ? '${track.trackNumber}. ${track.title}'
+                    : track.title,
+                style: titleStyle,
+                textAlign: settingsProvider.hideTrackDuration
+                    ? TextAlign.center
+                    : TextAlign.start,
+              ),
+            ),
+            trailing: settingsProvider.hideTrackDuration
+                ? null
+                : (isPlaying && isTv
+                    ? StreamBuilder<Duration>(
+                        stream: audioProvider.positionStream,
+                        builder: (context, snapshot) {
+                          final position = snapshot.data ?? Duration.zero;
+                          return Text(
+                            '${formatDuration(position)} / ${formatDuration(Duration(seconds: track.duration))}',
+                            style: durationStyle,
+                          );
+                        },
+                      )
+                    : Text(
+                        formatDuration(Duration(seconds: track.duration)),
+                        style: durationStyle,
+                      )),
+            onTap: isTv
+                ? null
+                : () {
+                    if (!isPlaying) {
+                      final deviceService = context.read<DeviceService>();
+                      AppHaptics.lightImpact(deviceService);
+                      audioProvider.seekToTrack(trackIndex);
+                    }
+                  },
+            onLongPress: () => _handleLongPress(context, audioProvider, track),
+          );
 
     if (isPlaying && isTv) {
       return Column(
@@ -586,6 +621,8 @@ class TrackListView extends StatelessWidget {
         playerState == ProcessingState.buffering;
 
     final isTv = context.read<DeviceService>().isTv;
+    final isFruit =
+        context.read<ThemeProvider>().themeStyle == ThemeStyle.fruit;
 
     final currentTrack = audioProvider.currentTrack;
     final isThisTrack = currentTrack != null &&
@@ -629,7 +666,8 @@ class TrackListView extends StatelessWidget {
                 ),
                 const SizedBox(height: 16),
                 ListTile(
-                  leading: const Icon(Icons.refresh_rounded),
+                  leading: Icon(
+                      isFruit ? LucideIcons.refreshCw : Icons.refresh_rounded),
                   title: const Text('Reload Current Show'),
                   onTap: () {
                     Navigator.pop(context);
@@ -637,8 +675,12 @@ class TrackListView extends StatelessWidget {
                   },
                 ),
                 ListTile(
-                  leading:
-                      Icon(Icons.stop_circle_rounded, color: colorScheme.error),
+                  leading: Icon(
+                    isFruit
+                        ? LucideIcons.stopCircle
+                        : Icons.stop_circle_rounded,
+                    color: colorScheme.error,
+                  ),
                   title: Text('Emergency Reset',
                       style: TextStyle(color: colorScheme.error)),
                   subtitle: const Text('Clears playlist and stops all audio'),
@@ -649,7 +691,7 @@ class TrackListView extends StatelessWidget {
                 ),
                 const Divider(),
                 ListTile(
-                  leading: const Icon(Icons.close_rounded),
+                  leading: Icon(isFruit ? LucideIcons.x : Icons.close_rounded),
                   title: const Text('Cancel'),
                   onTap: () => Navigator.pop(context),
                 ),
@@ -660,5 +702,88 @@ class TrackListView extends StatelessWidget {
         },
       );
     }
+  }
+}
+
+class _FruitTrackTile extends StatefulWidget {
+  final Widget? leading;
+  final String title;
+  final TextStyle titleStyle;
+  final Widget? trailing;
+  final bool isPlaying;
+  final VoidCallback? onTap;
+  final VoidCallback? onLongPress;
+  final bool isTv;
+  final SettingsProvider settingsProvider;
+
+  const _FruitTrackTile({
+    this.leading,
+    required this.title,
+    required this.titleStyle,
+    this.trailing,
+    required this.isPlaying,
+    this.onTap,
+    this.onLongPress,
+    required this.isTv,
+    required this.settingsProvider,
+  });
+
+  @override
+  State<_FruitTrackTile> createState() => _FruitTrackTileState();
+}
+
+class _FruitTrackTileState extends State<_FruitTrackTile> {
+  bool _isPressed = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTapDown: widget.isTv ? null : (_) => setState(() => _isPressed = true),
+      onTapUp: widget.isTv ? null : (_) => setState(() => _isPressed = false),
+      onTapCancel:
+          widget.isTv ? null : () => setState(() => _isPressed = false),
+      onTap: widget.onTap,
+      onLongPress: widget.onLongPress,
+      child: AnimatedOpacity(
+        duration: const Duration(milliseconds: 100),
+        opacity: _isPressed ? 0.6 : 1.0,
+        child: Container(
+          padding: widget.isTv
+              ? const EdgeInsets.symmetric(horizontal: 12, vertical: 8)
+              : const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          decoration: BoxDecoration(
+            color: Colors.transparent,
+            borderRadius: BorderRadius.circular(14),
+          ),
+          child: Row(
+            children: [
+              if (widget.leading != null) ...[
+                widget.leading!,
+                const SizedBox(width: 12),
+              ],
+              Expanded(
+                child: SizedBox(
+                  height: widget.titleStyle.fontSize! *
+                      (widget.settingsProvider.appFont == 'rock_salt'
+                          ? 2.0
+                          : 1.6),
+                  child: ConditionalMarquee(
+                    text: widget.title,
+                    style: widget.titleStyle,
+                    textAlign: widget.settingsProvider.hideTrackDuration
+                        ? TextAlign.center
+                        : TextAlign.start,
+                  ),
+                ),
+              ),
+              if (widget.trailing != null) ...[
+                const SizedBox(width: 8),
+                widget.trailing!,
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }

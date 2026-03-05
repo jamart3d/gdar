@@ -6,6 +6,7 @@ import 'package:shakedown/services/device_service.dart';
 import 'package:shakedown/utils/utils.dart'; // for formatDuration
 import 'package:just_audio/just_audio.dart';
 import 'package:provider/provider.dart';
+import 'package:shakedown/providers/theme_provider.dart';
 
 class PlaybackProgressBar extends StatefulWidget {
   const PlaybackProgressBar({super.key});
@@ -66,6 +67,10 @@ class _PlaybackProgressBarState extends State<PlaybackProgressBar>
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     final isTrueBlackMode = isDarkMode && settingsProvider.useTrueBlack;
 
+    final isFruit =
+        context.watch<ThemeProvider>().themeStyle == ThemeStyle.fruit;
+    final String? fontFamily = isFruit ? null : 'Roboto';
+
     final audioProvider = context.watch<AudioProvider>();
 
     return StreamBuilder<Duration>(
@@ -92,7 +97,7 @@ class _PlaybackProgressBarState extends State<PlaybackProgressBar>
                         .copyWith(
                       color: colorScheme.onSurfaceVariant,
                       fontWeight: FontWeight.w600,
-                      fontFamily: 'Roboto',
+                      fontFamily: fontFamily,
                       fontFeatures: [const FontFeature.tabularFigures()],
                     ),
                   ),
@@ -296,7 +301,7 @@ class _PlaybackProgressBarState extends State<PlaybackProgressBar>
                         .copyWith(
                       color: colorScheme.onSurfaceVariant,
                       fontWeight: FontWeight.w600,
-                      fontFamily: 'Roboto',
+                      fontFamily: fontFamily,
                       fontFeatures: [const FontFeature.tabularFigures()],
                     ),
                   ),

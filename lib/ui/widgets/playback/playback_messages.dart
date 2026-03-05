@@ -7,6 +7,7 @@ import 'package:shakedown/providers/audio_provider.dart';
 import 'package:shakedown/providers/settings_provider.dart';
 import 'package:shakedown/utils/font_layout_config.dart';
 import 'package:shakedown/utils/utils.dart';
+import 'package:shakedown/providers/theme_provider.dart';
 
 class PlaybackMessages extends StatefulWidget {
   final TextAlign textAlign;
@@ -114,12 +115,14 @@ class _PlaybackMessagesState extends State<PlaybackMessages> {
     final colorScheme = Theme.of(context).colorScheme;
     final audioProvider = context.watch<AudioProvider>();
     final settingsProvider = context.watch<SettingsProvider>();
+    final isFruit =
+        context.watch<ThemeProvider>().themeStyle == ThemeStyle.fruit;
     final double scaleFactor =
         FontLayoutConfig.getEffectiveScale(context, settingsProvider);
     final double labelsFontSize = 12.0 * scaleFactor;
 
     // Force default system/Roboto font regardless of app font setting
-    const String fontFamily = 'Roboto';
+    final String? fontFamily = isFruit ? null : 'Roboto';
 
     if (!settingsProvider.showPlaybackMessages &&
         _notificationMessage == null) {

@@ -1,3 +1,13 @@
+What's new in v1.1.49
+
+• UI/UX (Fruit): Redesigned Playback Screen with "Living List" layout and neumorphic controls.
+• UI/UX (Fruit): Refined header spacing and backgrounds to match premium design mocks.
+• UI/UX (AMOLED): Hardened True Black depth—preserved shadows in glow mode.
+• Settings: Enforced strict "Default Off" policy for Premium Highlight and Liquid Glass.
+• Infrastructure: Finalized env_doctor.py v4.2.0 for environment health checks.
+• UI/UX (Fruit): Restored aesthetics and fixed scrolling.
+
+---
 What's new in v1.1.48
 
 • Web: Refined the Fruit theme "Show List" screen with premium "Stitch" vertical cards.

@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shakedown/providers/settings_provider.dart';
@@ -11,6 +10,7 @@ import 'package:shakedown/services/device_service.dart';
 import 'package:shakedown/ui/widgets/tv/tv_focus_wrapper.dart';
 import 'package:shakedown/ui/widgets/theme/neumorphic_wrapper.dart';
 import 'package:shakedown/providers/theme_provider.dart';
+import 'package:shakedown/ui/widgets/theme/fruit_icon_button.dart';
 import 'package:shakedown/ui/widgets/theme/liquid_glass_wrapper.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
@@ -41,21 +41,30 @@ class ShowListAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
-    const bool isWeb = kIsWeb;
     final themeStyle = context.watch<ThemeProvider>().themeStyle;
     final isFruit = themeStyle == ThemeStyle.fruit;
-    final deviceService = context.watch<DeviceService>();
-    final double screenWidth = MediaQuery.of(context).size.width;
-    final bool useMobileLayout = isWeb &&
-        (screenWidth < 850 || deviceService.isPwa || deviceService.isMobile) &&
-        !deviceService.isTv;
+    final settingsProvider = context.watch<SettingsProvider>();
+    final isLiquidGlassOff =
+        isFruit && !settingsProvider.fruitEnableLiquidGlass;
+    final isDarkMode = themeStyle == ThemeStyle.fruit &&
+        Theme.of(context).brightness == Brightness.dark;
 
-    if (isFruit && useMobileLayout) {
-      return _buildFruitWebAppBar(context);
+    final Color? appBarBg = isLiquidGlassOff
+        ? (isDarkMode
+            ? Theme.of(context).colorScheme.surface
+            : Theme.of(context).scaffoldBackgroundColor)
+        : backgroundColor;
+
+    if (isFruit) {
+      return _buildFruitFloatingHeader(context);
     }
 
     return AppBar(
-      backgroundColor: backgroundColor,
+      backgroundColor: appBarBg,
+      elevation: 0,
+      scrolledUnderElevation: 0,
+      surfaceTintColor: Colors.transparent,
+      shape: isFruit ? const Border(bottom: BorderSide.none) : null,
       title: GestureDetector(
         onTap: onTitleTap,
         child: const ShakedownTitle(
@@ -65,112 +74,6 @@ class ShowListAppBar extends StatelessWidget implements PreferredSizeWidget {
         ),
       ),
       actions: _buildActions(context),
-    );
-  }
-
-  /// Stitch-design app bar for Fruit theme on web/PWA:
-  /// [dice]   ARCHIVE   [search]
-  Widget _buildFruitWebAppBar(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final settingsProvider = context.watch<SettingsProvider>();
-    final showListProvider = context.watch<ShowListProvider>();
-    final useNeumorphic =
-        settingsProvider.useNeumorphism && !settingsProvider.useTrueBlack;
-
-    Widget iconBtn({
-      required Widget icon,
-      required VoidCallback onTap,
-    }) {
-      if (useNeumorphic) {
-        return NeumorphicWrapper(
-          isCircle: false,
-          borderRadius: 12,
-          intensity: 1.2,
-          color: Colors.transparent,
-          child: LiquidGlassWrapper(
-            enabled: true,
-            borderRadius: BorderRadius.circular(12),
-            opacity: 0.08,
-            blur: 5,
-            child: IconTheme(
-              data: IconThemeData(
-                color: colorScheme.onSurface.withValues(alpha: 0.55),
-                size: 20,
-              ),
-              child: icon,
-            ),
-          ),
-        );
-      }
-      return IconTheme(
-        data: IconThemeData(
-          color: colorScheme.onSurface.withValues(alpha: 0.55),
-          size: 20,
-        ),
-        child: icon,
-      );
-    }
-
-    return AppBar(
-      backgroundColor: backgroundColor,
-      automaticallyImplyLeading: false,
-      title: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          // Left: Dice / random button
-          GestureDetector(
-            onTap: onRandomPlay,
-            child: iconBtn(
-              icon: AnimatedDiceIcon(
-                onPressed: onRandomPlay,
-                isLoading: isRandomShowLoading,
-                enableHaptics: enableDiceHaptics,
-                tooltip: 'Play Random Show',
-                useLucide: true,
-              ),
-              onTap: onRandomPlay,
-            ),
-          ),
-
-          // Center: ShakeDown title (Rock Salt font)
-          Expanded(
-            child: GestureDetector(
-              onTap: onTitleTap,
-              child: const Center(
-                child: ShakedownTitle(
-                  fontSize: 16,
-                  animateOnStart: true,
-                  shakeDelay: Duration(milliseconds: 1700),
-                ),
-              ),
-            ),
-          ),
-
-          // Right: Search button
-          GestureDetector(
-            onTap: onToggleSearch,
-            child: iconBtn(
-              icon: IconButton(
-                icon: Icon(
-                  showListProvider.isSearchVisible
-                      ? LucideIcons.x
-                      : LucideIcons.search,
-                ),
-                onPressed: onToggleSearch,
-                style: showListProvider.isSearchVisible
-                    ? IconButton.styleFrom(
-                        backgroundColor: colorScheme.surfaceContainer,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12.0),
-                        ),
-                      )
-                    : null,
-              ),
-              onTap: onToggleSearch,
-            ),
-          ),
-        ],
-      ),
     );
   }
 
@@ -225,138 +128,184 @@ class ShowListAppBar extends StatelessWidget implements PreferredSizeWidget {
     }
 
     return [
-      if (settingsProvider.nonRandom)
-        if (isRandomShowLoading)
-          const Padding(
-            padding: EdgeInsets.all(12.0),
-            child: SizedBox(
+      if (!isFruit) ...[
+        if (settingsProvider.nonRandom)
+          if (isRandomShowLoading)
+            const Padding(
+              padding: EdgeInsets.all(12.0),
+              child: SizedBox(
                 width: 24,
                 height: 24,
-                child: CircularProgressIndicator(strokeWidth: 2.5)),
-          )
-        else
-          wrap(
-            IconButton(
-              icon: Icon(isFruit
-                  ? LucideIcons.playCircle
-                  : Icons.playlist_play_rounded),
-              onPressed: onRandomPlay,
-              tooltip: 'Play Next Show',
-            ),
-            onTap: onRandomPlay,
-          )
-      else if (settingsProvider.simpleRandomIcon)
-        if (isRandomShowLoading)
-          const Padding(
-            padding: EdgeInsets.all(12.0),
-            child: SizedBox(
+                child: CircularProgressIndicator(strokeWidth: 2.5),
+              ),
+            )
+          else
+            wrap(
+              IconButton(
+                icon: const Icon(Icons.playlist_play_rounded),
+                onPressed: onRandomPlay,
+                tooltip: 'Play Next Show',
+              ),
+              onTap: onRandomPlay,
+            )
+        else if (settingsProvider.simpleRandomIcon)
+          if (isRandomShowLoading)
+            const Padding(
+              padding: EdgeInsets.all(12.0),
+              child: SizedBox(
                 width: 24,
                 height: 24,
-                child: CircularProgressIndicator(strokeWidth: 2.5)),
-          )
-        else
-          wrap(
-            settingsProvider.useNeumorphism
-                ? IconButton(
-                    icon: Icon(isFruit
-                        ? LucideIcons.helpCircle
-                        : Icons.question_mark_rounded),
-                    onPressed: onRandomPlay,
-                    tooltip: 'Play Random Show',
-                  )
-                : ScaleTransition(
-                    scale: randomPulseAnimation,
-                    child: IconButton(
-                      icon: Icon(isFruit
-                          ? LucideIcons.helpCircle
-                          : Icons.question_mark_rounded),
+                child: CircularProgressIndicator(strokeWidth: 2.5),
+              ),
+            )
+          else
+            wrap(
+              settingsProvider.useNeumorphism
+                  ? IconButton(
+                      icon: const Icon(Icons.question_mark_rounded),
                       onPressed: onRandomPlay,
                       tooltip: 'Play Random Show',
+                    )
+                  : ScaleTransition(
+                      scale: randomPulseAnimation,
+                      child: IconButton(
+                        icon: const Icon(Icons.question_mark_rounded),
+                        onPressed: onRandomPlay,
+                        tooltip: 'Play Random Show',
+                      ),
                     ),
-                  ),
+              onTap: onRandomPlay,
+            )
+        else
+          // Expressive Animated Dice (M3)
+          // Handles its own loading state (spinning)
+          wrap(
+            AnimatedDiceIcon(
+              onPressed: onRandomPlay,
+              isLoading: isRandomShowLoading,
+              enableHaptics: enableDiceHaptics,
+              tooltip: 'Play Random Show',
+              useLucide: isFruit,
+            ),
             onTap: onRandomPlay,
-          )
-      else
-        // Expressive Animated Dice (M3)
-        // Handles its own loading state (spinning)
-        wrap(
-          AnimatedDiceIcon(
-            onPressed: onRandomPlay,
-            isLoading: isRandomShowLoading,
-            enableHaptics: enableDiceHaptics,
-            tooltip: 'Play Random Show',
-            useLucide: isFruit,
+            radius: BorderRadius.circular(12),
           ),
-          onTap: onRandomPlay,
-          radius: BorderRadius.circular(12),
-        ),
+      ],
       // Gap removed to match spacing between Search and Settings (standard AppBar spacing)
       wrap(
         settingsProvider.useNeumorphism
-            ? IconButton(
-                icon: Icon(isFruit ? LucideIcons.search : Icons.search_rounded),
-                isSelected: showListProvider.isSearchVisible,
-                style: showListProvider.isSearchVisible
-                    ? IconButton.styleFrom(
-                        backgroundColor: colorScheme.surfaceContainer,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12.0),
-                          side: BorderSide(color: colorScheme.outline),
-                        ),
-                      )
-                    : null,
-                onPressed: onToggleSearch,
-              )
+            ? (isFruit
+                ? FruitIconButton(
+                    icon: Icon(showListProvider.isSearchVisible
+                        ? LucideIcons.x
+                        : LucideIcons.search),
+                    onPressed: onToggleSearch,
+                    tooltip: 'Search',
+                  )
+                : IconButton(
+                    icon: const Icon(Icons.search_rounded),
+                    isSelected: showListProvider.isSearchVisible,
+                    style: showListProvider.isSearchVisible
+                        ? IconButton.styleFrom(
+                            backgroundColor: colorScheme.surfaceContainer,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12.0),
+                              side: BorderSide(color: colorScheme.outline),
+                            ),
+                          )
+                        : null,
+                    onPressed: onToggleSearch,
+                  ))
             : ScaleTransition(
                 scale: searchPulseAnimation,
-                child: IconButton(
-                  icon:
-                      Icon(isFruit ? LucideIcons.search : Icons.search_rounded),
-                  isSelected: showListProvider.isSearchVisible,
-                  style: showListProvider.isSearchVisible
-                      ? IconButton.styleFrom(
-                          backgroundColor: colorScheme.surfaceContainer,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12.0),
-                            side: BorderSide(color: colorScheme.outline),
-                          ),
-                        )
-                      : null,
-                  onPressed: onToggleSearch,
-                ),
+                child: isFruit
+                    ? FruitIconButton(
+                        icon: Icon(showListProvider.isSearchVisible
+                            ? LucideIcons.x
+                            : LucideIcons.search),
+                        onPressed: onToggleSearch,
+                        tooltip: 'Search',
+                      )
+                    : IconButton(
+                        icon: const Icon(Icons.search_rounded),
+                        isSelected: showListProvider.isSearchVisible,
+                        style: showListProvider.isSearchVisible
+                            ? IconButton.styleFrom(
+                                backgroundColor: colorScheme.surfaceContainer,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12.0),
+                                  side: BorderSide(color: colorScheme.outline),
+                                ),
+                              )
+                            : null,
+                        onPressed: onToggleSearch,
+                      ),
               ),
         onTap: onToggleSearch,
       ),
       wrap(
-        IconButton(
-          icon: Icon(isFruit ? LucideIcons.settings : Icons.settings_rounded),
-          iconSize: 24.0,
-          onPressed: () async {
-            // Pause global clock before navigating to generic pages (Settings)
-            // to prevent "visual jumps" when returning.
-            try {
-              context.read<AnimationController>().stop();
-            } catch (_) {}
+        isFruit
+            ? FruitIconButton(
+                icon: const Icon(LucideIcons.settings),
+                onPressed: () async {
+                  // Pause global clock before navigating to generic pages (Settings)
+                  // to prevent "visual jumps" when returning.
+                  try {
+                    context.read<AnimationController>().stop();
+                  } catch (_) {}
 
-            unawaited(Navigator.of(context).push(
-              PageRouteBuilder(
-                pageBuilder: (context, animation, secondaryAnimation) =>
-                    const SettingsScreen(),
-                transitionDuration: Duration.zero,
+                  unawaited(Navigator.of(context).push(
+                    PageRouteBuilder(
+                      pageBuilder: (context, animation, secondaryAnimation) =>
+                          const SettingsScreen(),
+                      transitionDuration: Duration.zero,
+                    ),
+                  ));
+
+                  // Resume clock on return
+                  if (context.mounted) {
+                    try {
+                      final controller = context.read<AnimationController>();
+                      if (!controller.isAnimating) {
+                        unawaited(controller.repeat());
+                      }
+                    } catch (_) {}
+                  }
+                },
+                tooltip: 'Settings',
+              )
+            : IconButton(
+                icon: const Icon(Icons.settings_rounded),
+                iconSize: 24.0,
+                onPressed: () async {
+                  // Pause global clock before navigating to generic pages (Settings)
+                  // to prevent "visual jumps" when returning.
+                  try {
+                    context.read<AnimationController>().stop();
+                  } catch (_) {}
+
+                  unawaited(Navigator.of(context).push(
+                    PageRouteBuilder(
+                      pageBuilder: (context, animation, secondaryAnimation) =>
+                          const SettingsScreen(),
+                      transitionDuration: Duration.zero,
+                    ),
+                  ));
+
+                  // Resume clock on return
+                  if (context.mounted) {
+                    try {
+                      final controller = context.read<AnimationController>();
+                      if (!controller.isAnimating) {
+                        unawaited(controller.repeat());
+                      }
+                    } catch (_) {}
+                  }
+                },
+                tooltip: 'Settings',
               ),
-            ));
-
-            // Resume clock on return
-            if (context.mounted) {
-              try {
-                final controller = context.read<AnimationController>();
-                if (!controller.isAnimating) unawaited(controller.repeat());
-              } catch (_) {}
-            }
-          },
-        ),
         onTap: () async {
-          // Trigger the same logic as IconButton's onPressed
+          // Trigger the same logic as icon button handler
           try {
             context.read<AnimationController>().stop();
           } catch (_) {}
@@ -378,5 +327,57 @@ class ShowListAppBar extends StatelessWidget implements PreferredSizeWidget {
         },
       ),
     ];
+  }
+
+  Widget _buildFruitFloatingHeader(BuildContext context) {
+    final showListProvider = context.watch<ShowListProvider>();
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          // Right: Search (matches "More" button position)
+          _buildFruitHeaderButton(
+            context,
+            icon: showListProvider.isSearchVisible
+                ? LucideIcons.x
+                : LucideIcons.search,
+            onPressed: onToggleSearch,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFruitHeaderButton(BuildContext context,
+      {required IconData icon, required VoidCallback onPressed}) {
+    final settingsProvider = context.watch<SettingsProvider>();
+    final useNeumorphic =
+        settingsProvider.useNeumorphism && !settingsProvider.useTrueBlack;
+
+    if (useNeumorphic) {
+      return NeumorphicWrapper(
+        isCircle: true,
+        borderRadius: 100,
+        intensity: 0.8,
+        color: Colors.transparent,
+        child: LiquidGlassWrapper(
+          enabled: true,
+          borderRadius: BorderRadius.circular(100),
+          opacity: 0.12,
+          blur: 8,
+          child: FruitIconButton(
+            icon: Icon(icon),
+            onPressed: onPressed,
+          ),
+        ),
+      );
+    }
+
+    return FruitIconButton(
+      icon: Icon(icon),
+      onPressed: onPressed,
+    );
   }
 }

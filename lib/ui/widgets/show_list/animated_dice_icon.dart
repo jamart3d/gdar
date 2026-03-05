@@ -14,6 +14,11 @@ class AnimatedDiceIcon extends StatefulWidget {
   final String? tooltip;
   final bool changeFaces;
 
+  final bool useLucide;
+  final bool enableHaptics;
+  final bool naked;
+  final bool disableSquash;
+
   const AnimatedDiceIcon({
     super.key,
     required this.onPressed,
@@ -22,11 +27,9 @@ class AnimatedDiceIcon extends StatefulWidget {
     this.changeFaces = true,
     this.enableHaptics = false,
     this.useLucide = false,
+    this.naked = false,
+    this.disableSquash = false,
   });
-
-  final bool useLucide;
-
-  final bool enableHaptics;
 
   @override
   State<AnimatedDiceIcon> createState() => _AnimatedDiceIconState();
@@ -165,6 +168,102 @@ class _AnimatedDiceIconState extends State<AnimatedDiceIcon>
         FontLayoutConfig.getEffectiveScale(context, settingsProvider);
     final scaledIconSize = 32.0 * effectiveScale;
 
+    final Widget iconContent = AnimatedBuilder(
+      animation: Listenable.merge([_controller, _idleController]),
+      builder: (context, child) {
+        double angle;
+        double scaleX = 1.0;
+        double scaleY = 1.0;
+
+        int currentFace = _staticFace;
+
+        if (_controller.isAnimating) {
+          final t = _controller.value;
+
+          // --- Rotation (Spin) ---
+          // Exactly 1 full rotation over 2s.
+          final directionMultiplier = _rollLeft ? -1.0 : 1.0;
+          // Force perfectly flat landing (0 or 2pi)
+          angle = t * 2 * math.pi * directionMultiplier;
+
+          // --- Squash & Stretch (Landing Bump) ---
+          // We want 3 quick pulses, and then a BIGGER bump at the end.
+          // Final bump peaks at t=0.9 and settles.
+          if (settingsProvider.useNeumorphism || widget.disableSquash) {
+            // Architectural solidity: No squash/stretch
+            scaleX = scaleY = 1.0;
+          } else {
+            double scale;
+            if (t < 0.8) {
+              // Fast cycling pulses
+              final double pulse = math.sin(t * 10 * math.pi);
+              scale = 1.0 + (0.08 * pulse * pulse);
+            } else {
+              // Final landing "Thud" (Impact & Settle)
+              // Range t: 0.8 -> 1.0. normalized t2: 0 -> 1.
+              final double t2 = (t - 0.8) / 0.2;
+
+              // Asymmetric Bounce: Sharper rise (impact), slower settle.
+              final double bump = math.sin(math.pow(t2, 0.5) * math.pi);
+              scale = 1.0 + (0.12 * bump); // Reduced intensity (1.12x)
+            }
+            scaleX = scale;
+            scaleY = scale;
+          }
+
+          // --- Face Selection ---
+          if (widget.changeFaces && _rollSequence.isNotEmpty) {
+            final int phaseCount = _rollSequence.length;
+            final int index = (t * phaseCount).floor().clamp(0, phaseCount - 1);
+            currentFace = _rollSequence[index];
+          }
+        } else if (widget.isLoading) {
+          // Decoupled: Finished roll but still loading.
+          // Landed flat.
+          angle = 0.0;
+          scaleX = scaleY = 1.0;
+          if (_rollSequence.isNotEmpty) {
+            currentFace = _rollSequence.last;
+          }
+        } else {
+          // Idle
+          if (_enableIdleRotation) {
+            final directionMultiplier = _rollLeft ? -1.0 : 1.0;
+            angle = _staticAngle +
+                (_idleController.value * 2 * math.pi * directionMultiplier);
+          } else {
+            angle = _staticAngle;
+          }
+        }
+
+        return Transform.rotate(
+          angle: angle,
+          child: Transform(
+            transform: Matrix4.diagonal3Values(scaleX, scaleY, 1.0),
+            alignment: Alignment.center,
+            child: widget.useLucide
+                ? Icon(
+                    LucideIcons.dice5,
+                    size: scaledIconSize,
+                    color: colorScheme.primary,
+                  )
+                : CustomPaint(
+                    size: Size(scaledIconSize, scaledIconSize),
+                    painter: DicePainter(
+                      face: currentFace,
+                      color: colorScheme.primaryContainer,
+                      dotColor: colorScheme.onPrimaryContainer,
+                    ),
+                  ),
+          ),
+        );
+      },
+    );
+
+    if (widget.naked) {
+      return iconContent;
+    }
+
     return SizedBox(
       width: 56.0 * effectiveScale,
       height: 48.0 * effectiveScale, // Buffer room for Neumorphic shadows
@@ -181,101 +280,7 @@ class _AnimatedDiceIconState extends State<AnimatedDiceIcon>
               borderRadius: BorderRadius.circular(12.0),
             ),
           ),
-          icon: AnimatedBuilder(
-            animation: Listenable.merge([_controller, _idleController]),
-            builder: (context, child) {
-              double angle;
-              double scaleX = 1.0;
-              double scaleY = 1.0;
-
-              int currentFace = _staticFace;
-
-              if (_controller.isAnimating) {
-                final t = _controller.value;
-
-                // --- Rotation (Spin) ---
-                // Exactly 1 full rotation over 2s.
-                final directionMultiplier = _rollLeft ? -1.0 : 1.0;
-                // Force perfectly flat landing (0 or 2pi)
-                angle = t * 2 * math.pi * directionMultiplier;
-
-                // --- Squash & Stretch (Landing Bump) ---
-                // We want 3 quick pulses, and then a BIGGER bump at the end.
-                // Final bump peaks at t=0.9 and settles.
-                if (settingsProvider.useNeumorphism) {
-                  // Architectural solidity: No squash/stretch
-                  scaleX = scaleY = 1.0;
-                } else {
-                  double scale;
-                  if (t < 0.8) {
-                    // Fast cycling pulses
-                    final double pulse = math.sin(t * 10 * math.pi);
-                    scale = 1.0 + (0.08 * pulse * pulse);
-                  } else {
-                    // Final landing "Thud" (Impact & Settle)
-                    // Range t: 0.8 -> 1.0. normalized t2: 0 -> 1.
-                    final double t2 = (t - 0.8) / 0.2;
-
-                    // Asymmetric Bounce: Sharper rise (impact), slower settle.
-                    final double bump = math.sin(math.pow(t2, 0.5) * math.pi);
-                    scale = 1.0 + (0.12 * bump); // Reduced intensity (1.12x)
-                  }
-                  scaleX = scale;
-                  scaleY = scale;
-                }
-
-                // --- Face Selection ---
-                if (widget.changeFaces && _rollSequence.isNotEmpty) {
-                  final int phaseCount = _rollSequence.length;
-                  final int index =
-                      (t * phaseCount).floor().clamp(0, phaseCount - 1);
-                  currentFace = _rollSequence[index];
-                }
-              } else if (widget.isLoading) {
-                // Decoupled: Finished roll but still loading.
-                // Landed flat.
-                angle = 0.0;
-                scaleX = scaleY = 1.0;
-                if (_rollSequence.isNotEmpty) {
-                  currentFace = _rollSequence.last;
-                }
-              } else {
-                // Idle
-                if (_enableIdleRotation) {
-                  final directionMultiplier = _rollLeft ? -1.0 : 1.0;
-                  angle = _staticAngle +
-                      (_idleController.value *
-                          2 *
-                          math.pi *
-                          directionMultiplier);
-                } else {
-                  angle = _staticAngle;
-                }
-              }
-
-              return Transform.rotate(
-                angle: angle,
-                child: Transform(
-                  transform: Matrix4.diagonal3Values(scaleX, scaleY, 1.0),
-                  alignment: Alignment.center,
-                  child: widget.useLucide
-                      ? Icon(
-                          LucideIcons.dice5,
-                          size: scaledIconSize,
-                          color: colorScheme.primary,
-                        )
-                      : CustomPaint(
-                          size: Size(scaledIconSize, scaledIconSize),
-                          painter: DicePainter(
-                            face: currentFace,
-                            color: colorScheme.primaryContainer,
-                            dotColor: colorScheme.onPrimaryContainer,
-                          ),
-                        ),
-                ),
-              );
-            },
-          ),
+          icon: iconContent,
         ),
       ),
     );

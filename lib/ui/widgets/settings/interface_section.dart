@@ -33,6 +33,34 @@ class InterfaceSection extends StatelessWidget {
       initiallyExpanded: initiallyExpanded,
       children: [
         // 1. General UI Group
+        if (context.read<DeviceService>().isTv)
+          TvSwitchListTile(
+            dense: true,
+            visualDensity: VisualDensity.compact,
+            title: FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: Text('Premium TV Highlight',
+                    style: Theme.of(context)
+                        .textTheme
+                        .titleMedium
+                        ?.copyWith(fontSize: 16 * scaleFactor))),
+            subtitle: FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: Text('Animated gradient and glow on focused items',
+                    style: Theme.of(context)
+                        .textTheme
+                        .bodySmall
+                        ?.copyWith(fontSize: 12 * scaleFactor))),
+            value: settingsProvider.oilTvPremiumHighlight,
+            onChanged: (value) {
+              AppHaptics.lightImpact(context.read<DeviceService>());
+              context.read<SettingsProvider>().toggleOilTvPremiumHighlight();
+            },
+            secondary: Icon(
+                isFruit ? LucideIcons.sparkles : Icons.auto_awesome_rounded),
+          ),
         TvSwitchListTile(
           dense: true,
           visualDensity: VisualDensity.compact,

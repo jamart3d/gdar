@@ -5,6 +5,7 @@ import 'package:shakedown/services/device_service.dart';
 import 'package:shakedown/providers/settings_provider.dart';
 import 'package:shakedown/providers/theme_provider.dart';
 import 'package:shakedown/ui/widgets/theme/neumorphic_wrapper.dart';
+import 'package:shakedown/ui/widgets/theme/liquid_glass_wrapper.dart';
 
 class SectionCard extends StatelessWidget {
   final String title;
@@ -180,7 +181,11 @@ class SectionCard extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
         child: NeumorphicWrapper(
           borderRadius: 28,
-          child: content,
+          child: LiquidGlassWrapper(
+            enabled: isFruit && settingsProvider.fruitEnableLiquidGlass,
+            borderRadius: BorderRadius.circular(28),
+            child: content,
+          ),
         ),
       );
     }

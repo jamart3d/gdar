@@ -47,13 +47,16 @@ class NeumorphicWrapper extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     final Color lightShadowColor = isDark
-        ? Colors.white.withValues(alpha: 0.12 * intensity) // Slightly more bite
+        ? Colors.white
+            .withValues(alpha: 0.05 * intensity) // Subtle edge highlight
         : Colors.white.withValues(alpha: 0.95 * intensity);
 
     final Color darkShadowColor = isDark
         ? Colors.black
-            .withValues(alpha: 0.6 * intensity) // Stronger dark shadow
-        : Colors.black.withValues(alpha: 0.15 * intensity);
+            .withValues(alpha: 0.5 * intensity) // Pure black shadow cast
+        : const Color(0xFFA3B1C6).withValues(
+            alpha:
+                1.0 * intensity); // Light mode custom drop shadow matching mock
 
     if (isPressed) {
       return [
@@ -121,6 +124,11 @@ class NeumorphicWrapper extends StatelessWidget {
     }
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final tp = context.read<ThemeProvider>();
+    final isFruit = tp.themeStyle == ThemeStyle.fruit;
+    final isLiquidGlassOff =
+        isFruit && !settingsProvider.fruitEnableLiquidGlass;
+
     final baseColor = color ?? Theme.of(context).scaffoldBackgroundColor;
     final activeStyle = style ?? settingsProvider.neumorphicStyle;
     final isConcave = activeStyle == NeumorphicStyle.concave;
@@ -128,7 +136,7 @@ class NeumorphicWrapper extends StatelessWidget {
 
     final shadows = getShadows(
       context: context,
-      intensity: intensity,
+      intensity: isLiquidGlassOff ? intensity * 0.7 : intensity,
       blur: blur,
       spread: spread,
       offset: currentOffset,
@@ -136,18 +144,23 @@ class NeumorphicWrapper extends StatelessWidget {
     );
 
     // Subtle edge rim for "Liquid Glass" look
-    final rimColor = isDark
-        ? Colors.white.withValues(alpha: 0.08)
-        : Colors.white.withValues(alpha: 0.6);
+    // Disable or reduce significantly when glass is off
+    final rimColor = isLiquidGlassOff
+        ? Colors.transparent
+        : (isDark
+            ? Colors.white.withValues(alpha: 0.08)
+            : Colors.white.withValues(alpha: 0.6));
 
     final decoration = BoxDecoration(
       color: baseColor,
       shape: isCircle ? BoxShape.circle : BoxShape.rectangle,
       borderRadius: isCircle ? null : BorderRadius.circular(borderRadius),
-      border: Border.all(
-        color: rimColor,
-        width: 0.6,
-      ),
+      border: isLiquidGlassOff
+          ? null
+          : Border.all(
+              color: rimColor,
+              width: 0.6,
+            ),
       gradient: isPressed
           ? null
           : LinearGradient(

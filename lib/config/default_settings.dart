@@ -132,6 +132,7 @@ class DefaultSettings {
   /// Beat detection sensitivity (0.0 = gentle, 1.0 = aggressive).
   static const double oilBeatSensitivity = 0.5;
 
+  static const bool oilTvPremiumHighlight = false;
   static const bool omitHttpPathInCopy = true;
 }
 

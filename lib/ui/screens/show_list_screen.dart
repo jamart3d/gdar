@@ -369,7 +369,8 @@ class ShowListScreenState extends State<ShowListScreen>
 
     return ShowListShell(
       isPane: widget.isPane,
-      backgroundColor: backgroundColor ?? Theme.of(context).colorScheme.surface,
+      backgroundColor:
+          backgroundColor ?? Theme.of(context).scaffoldBackgroundColor,
       randomPulseAnimation: _randomPulseAnimation,
       searchPulseAnimation: _searchPulseAnimation,
       isRandomShowLoading: isRandomShowLoading,

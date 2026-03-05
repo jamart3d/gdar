@@ -4,8 +4,11 @@ import 'package:shakedown/models/track.dart';
 import 'package:shakedown/models/show.dart';
 import 'package:shakedown/providers/audio_provider.dart';
 import 'package:shakedown/ui/widgets/playback/fruit_now_playing_card.dart';
+import 'package:shakedown/services/device_service.dart';
+import 'package:shakedown/utils/app_haptics.dart';
+import 'package:shakedown/providers/settings_provider.dart';
 
-class FruitTrackList extends StatelessWidget {
+class FruitTrackList extends StatefulWidget {
   final Show trackShow;
   final double scaleFactor;
 
@@ -16,40 +19,139 @@ class FruitTrackList extends StatelessWidget {
   });
 
   @override
+  State<FruitTrackList> createState() => _FruitTrackListState();
+}
+
+class _FruitTrackListState extends State<FruitTrackList> {
+  final ScrollController _scrollController = ScrollController();
+  final GlobalKey _nowPlayingKey = GlobalKey();
+  bool _isOffScreenTop = false;
+  bool _isOffScreenBottom = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_handleScroll);
+    // Initial check after first frame
+    WidgetsBinding.instance.addPostFrameCallback((_) => _handleScroll());
+  }
+
+  @override
+  void dispose() {
+    _scrollController.removeListener(_handleScroll);
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _handleScroll() {
+    if (!mounted) return;
+    final RenderBox? box =
+        _nowPlayingKey.currentContext?.findRenderObject() as RenderBox?;
+    final RenderBox? containerBox = context.findRenderObject() as RenderBox?;
+
+    if (box == null || containerBox == null) return;
+
+    final position = box.localToGlobal(Offset.zero, ancestor: containerBox);
+    final viewportHeight = containerBox.size.height;
+    final cardHeight = box.size.height;
+
+    final bool offTop = position.dy < 0;
+    final bool offBottom = (position.dy + cardHeight) > viewportHeight;
+
+    if (offTop != _isOffScreenTop || offBottom != _isOffScreenBottom) {
+      setState(() {
+        _isOffScreenTop = offTop;
+        _isOffScreenBottom = offBottom;
+      });
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     final audioProvider = context.watch<AudioProvider>();
     final currentTrackIndex = audioProvider.audioPlayer.currentIndex ?? 0;
     final tracks = audioProvider.currentSource?.tracks ?? [];
 
-    return ListView.builder(
-      padding: EdgeInsets.fromLTRB(
-        24.0 * scaleFactor, // px-6
-        0,
-        24.0 * scaleFactor,
-        140.0 * scaleFactor, // pb-tabbar
-      ),
-      itemCount: tracks.length,
-      itemBuilder: (context, i) {
-        if (i == currentTrackIndex && audioProvider.currentTrack != null) {
-          return Padding(
-            padding: EdgeInsets.symmetric(vertical: 20 * scaleFactor),
-            child: FruitNowPlayingCard(
-              trackShow: trackShow,
-              track: audioProvider.currentTrack!,
-              index: i + 1,
-              scaleFactor: scaleFactor,
-            ),
-          );
-        }
+    // Use a simplified version for the sticky overlay
+    Widget buildStickyCard(int index) {
+      if (audioProvider.currentTrack == null) return const SizedBox.shrink();
+      return FruitNowPlayingCard(
+        trackShow: widget.trackShow,
+        track: audioProvider.currentTrack!,
+        index: index + 1,
+        scaleFactor: widget.scaleFactor,
+      );
+    }
 
-        return _buildTrackItem(
-          context: context,
-          track: tracks[i],
-          index: i,
-          isActive: false, // Card handles active state
-          audioProvider: audioProvider,
-        );
-      },
+    return Stack(
+      children: [
+        NotificationListener<ScrollNotification>(
+          onNotification: (notification) {
+            _handleScroll();
+            return false;
+          },
+          child: ListView.builder(
+            controller: _scrollController,
+            padding: EdgeInsets.fromLTRB(
+              24.0 * widget.scaleFactor, // px-6
+              70.0 * widget.scaleFactor, // Avoid overlap with floating header
+              24.0 * widget.scaleFactor,
+              140.0 * widget.scaleFactor, // pb-tabbar
+            ),
+            itemCount: tracks.length,
+            itemBuilder: (context, i) {
+              final isPlayed = i <= currentTrackIndex;
+              final opacity = isPlayed ? 1.0 : 0.6;
+
+              if (i == currentTrackIndex &&
+                  audioProvider.currentTrack != null) {
+                return Opacity(
+                  // Hide original when sticky is active at top or bottom
+                  opacity: (_isOffScreenTop || _isOffScreenBottom) ? 0.0 : 1.0,
+                  child: Padding(
+                    key: _nowPlayingKey,
+                    padding:
+                        EdgeInsets.symmetric(vertical: 20 * widget.scaleFactor),
+                    child: FruitNowPlayingCard(
+                      trackShow: widget.trackShow,
+                      track: audioProvider.currentTrack!,
+                      index: i + 1,
+                      scaleFactor: widget.scaleFactor,
+                    ),
+                  ),
+                );
+              }
+
+              return Opacity(
+                opacity: opacity,
+                child: _buildTrackItem(
+                  context: context,
+                  track: tracks[i],
+                  index: i,
+                  isActive: false, // Card handles active state
+                  audioProvider: audioProvider,
+                ),
+              );
+            },
+          ),
+        ),
+        // Sticky Top
+        if (_isOffScreenTop)
+          Positioned(
+            top: 0,
+            left: 24 * widget.scaleFactor,
+            right: 24 * widget.scaleFactor,
+            child: buildStickyCard(currentTrackIndex),
+          ),
+        // Sticky Bottom
+        if (_isOffScreenBottom)
+          Positioned(
+            bottom: 110 * widget.scaleFactor, // Above tab bar
+            left: 24 * widget.scaleFactor,
+            right: 24 * widget.scaleFactor,
+            child: buildStickyCard(currentTrackIndex),
+          ),
+      ],
     );
   }
 
@@ -60,60 +162,110 @@ class FruitTrackList extends StatelessWidget {
     required bool isActive,
     required AudioProvider audioProvider,
   }) {
-    // Standard track row for inactive items
-    final colorScheme = Theme.of(context).colorScheme;
+    return _FruitTrackRow(
+      track: track,
+      index: index,
+      audioProvider: audioProvider,
+      scaleFactor: widget.scaleFactor,
+    );
+  }
+}
 
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: () {
-          audioProvider.audioPlayer.seek(Duration.zero, index: index);
-        },
-        borderRadius: BorderRadius.circular(16 * scaleFactor),
-        child: Padding(
+class _FruitTrackRow extends StatefulWidget {
+  final Track track;
+  final int index;
+  final AudioProvider audioProvider;
+  final double scaleFactor;
+
+  const _FruitTrackRow({
+    required this.track,
+    required this.index,
+    required this.audioProvider,
+    required this.scaleFactor,
+  });
+
+  @override
+  State<_FruitTrackRow> createState() => _FruitTrackRowState();
+}
+
+class _FruitTrackRowState extends State<_FruitTrackRow> {
+  bool _isPressed = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final settingsProvider = context.watch<SettingsProvider>();
+    final showTrackNumbers = settingsProvider.showTrackNumbers;
+    final hideDuration = settingsProvider.hideTrackDuration;
+
+    return GestureDetector(
+      onTapDown: (_) => setState(() => _isPressed = true),
+      onTapUp: (_) => setState(() => _isPressed = false),
+      onTapCancel: () => setState(() => _isPressed = false),
+      onTap: () {
+        AppHaptics.lightImpact(context.read<DeviceService>());
+        widget.audioProvider.audioPlayer
+            .seek(Duration.zero, index: widget.index);
+      },
+      child: AnimatedOpacity(
+        duration: const Duration(milliseconds: 100),
+        opacity: _isPressed ? 0.6 : 1.0,
+        child: Container(
           padding: EdgeInsets.symmetric(
-            horizontal: 16.0 * scaleFactor, // px-4
-            vertical: 18.0 * scaleFactor, // py-4.5
+            horizontal: 8.0 * widget.scaleFactor, // px-2
+            vertical: (settingsProvider.fruitDenseList ? 8.0 : 16.0) *
+                widget.scaleFactor, // RESPECT DENSE TOGGLE
+          ),
+          decoration: BoxDecoration(
+            color: Colors.transparent,
+            border: Border(
+              bottom: BorderSide(
+                color: colorScheme.onSurface.withValues(alpha: 0.08),
+                width: 1.0,
+              ),
+            ),
           ),
           child: Row(
             children: [
-              SizedBox(
-                width: 24 * scaleFactor, // w-6
-                child: Text(
-                  (index + 1).toString().padLeft(2, '0'),
-                  style: TextStyle(
-                    fontFamily: 'Inter',
-                    fontSize: 12 * scaleFactor, // text-xs
-                    fontWeight: FontWeight.w800, // font-extrabold
-                    color: colorScheme.onSurfaceVariant
-                        .withValues(alpha: 0.4), // Light blue-grey
+              if (showTrackNumbers) ...[
+                SizedBox(
+                  width: 20 * widget.scaleFactor, // w-5
+                  child: Text(
+                    (widget.index + 1).toString().padLeft(2, '0'),
+                    style: TextStyle(
+                      fontFamily: 'Inter',
+                      fontSize: 10 * widget.scaleFactor, // text-[10px]
+                      fontWeight: FontWeight.w800, // font-bold
+                      color:
+                          colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
+                    ),
                   ),
                 ),
-              ),
-              SizedBox(width: 12 * scaleFactor), // gap-3
+                SizedBox(width: 16 * widget.scaleFactor), // gap-4
+              ],
               Expanded(
                 child: Text(
-                  track.title,
+                  widget.track.title,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     fontFamily: 'Inter',
-                    fontSize: 15 * scaleFactor, // text-base-ish
+                    fontSize: 15 * widget.scaleFactor, // text-base-ish
                     fontWeight: FontWeight.w600, // font-semibold
-                    color: colorScheme.onSurface
-                        .withValues(alpha: 0.8), // Slightly soft black
+                    color: colorScheme.onSurface.withValues(alpha: 0.8),
                   ),
                 ),
               ),
-              Text(
-                _formatDuration(track.duration),
-                style: TextStyle(
-                  fontFamily: 'Inter',
-                  fontSize: 11 * scaleFactor, // text-xs
-                  fontWeight: FontWeight.w800, // font-extrabold
-                  color: colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
+              if (!hideDuration)
+                Text(
+                  _formatDuration(widget.track.duration),
+                  style: TextStyle(
+                    fontFamily: 'Inter',
+                    fontSize: 10 * widget.scaleFactor, // text-[10px]
+                    fontWeight: FontWeight.w500, // font-medium
+                    color: colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
+                  ),
                 ),
-              ),
             ],
           ),
         ),

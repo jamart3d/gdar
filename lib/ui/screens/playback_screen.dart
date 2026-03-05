@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 import 'package:provider/provider.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
@@ -7,6 +8,7 @@ import 'package:shakedown/providers/audio_provider.dart';
 import 'package:shakedown/providers/settings_provider.dart';
 import 'package:shakedown/providers/theme_provider.dart';
 import 'package:shakedown/ui/widgets/fruit_tab_bar.dart';
+import 'package:shakedown/ui/widgets/theme/liquid_glass_wrapper.dart';
 import 'package:shakedown/ui/widgets/playback/fruit_track_list.dart';
 import 'package:shakedown/ui/widgets/playback/playback_panel.dart';
 import 'package:shakedown/ui/widgets/playback/track_list_view.dart';
@@ -24,6 +26,7 @@ import 'package:shakedown/utils/utils.dart';
 import 'package:shakedown/services/device_service.dart';
 import 'package:shakedown/ui/widgets/tv/tv_scrollbar.dart';
 import 'package:shakedown/ui/widgets/theme/neumorphic_wrapper.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 
 // ── Small private widgets ─────────────────────────────────────────────────────
 
@@ -41,7 +44,7 @@ class _RatingStars extends StatelessWidget {
       spacing: 2,
       children: List.generate(total, (i) {
         return Icon(
-          i < rating ? Icons.star_rounded : Icons.star_outline_rounded,
+          i < rating ? LucideIcons.star : LucideIcons.star,
           size: 16,
           color: color,
         );
@@ -370,6 +373,78 @@ class PlaybackScreenState extends State<PlaybackScreen>
     _focusTrack(1, shouldScroll: false);
   }
 
+  Widget _buildFruitTopBar(BuildContext context, double scaleFactor) {
+    final audioProvider = context.watch<AudioProvider>();
+    final currentShow = audioProvider.currentShow;
+    if (currentShow == null) return const SizedBox.shrink();
+
+    // Tuesday, July 4, 1989
+    String dateText = '';
+    try {
+      final dateTime = DateTime.parse(currentShow.date);
+      dateText = DateFormat('EEEE, MMMM d, y').format(dateTime);
+    } catch (_) {
+      dateText = currentShow.formattedDate;
+    }
+
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 24.0 * scaleFactor),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          _FruitHeaderButton(
+            onTap: () => Navigator.of(context).pop(),
+            icon: LucideIcons.chevronLeft,
+            scaleFactor: scaleFactor,
+          ),
+          // Center: Metadata
+          Expanded(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  dateText,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontFamily: 'Inter',
+                    fontSize: 15 * scaleFactor, // text-base equivalent
+                    fontWeight: FontWeight.bold, // font-bold
+                    letterSpacing: -0.5, // tracking-tight
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
+                ),
+                SizedBox(height: 2 * scaleFactor),
+                Text(
+                  '${currentShow.venue}, ${currentShow.location}'.toUpperCase(),
+                  textAlign: TextAlign.center,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontFamily: 'Inter',
+                    fontSize: 10 * scaleFactor, // text-[10px]
+                    fontWeight: FontWeight.bold, // font-bold
+                    letterSpacing: 1.5, // tracking-widest
+                    color: Theme.of(context)
+                        .colorScheme
+                        .onSurfaceVariant
+                        .withValues(alpha: 0.6),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          _FruitHeaderButton(
+            onTap: () {
+              // More options
+            },
+            icon: LucideIcons.moreHorizontal,
+            scaleFactor: scaleFactor,
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final audioProvider = context.watch<AudioProvider>();
@@ -501,7 +576,7 @@ class PlaybackScreenState extends State<PlaybackScreen>
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Icon(
-                              Icons.stadium_rounded,
+                              LucideIcons.landmark,
                               size: 17,
                               color: colorScheme.primary,
                             ),
@@ -522,7 +597,7 @@ class PlaybackScreenState extends State<PlaybackScreen>
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Icon(
-                                Icons.place_outlined,
+                                LucideIcons.mapPin,
                                 size: 17,
                                 color: colorScheme.onSurfaceVariant,
                               ),
@@ -634,80 +709,41 @@ class PlaybackScreenState extends State<PlaybackScreen>
       // ── FRUIT WEB / MOBILE LAYOUT (UNIFIED TRACKLIST) ──
       return Scaffold(
         backgroundColor: backgroundColor,
-        appBar: PreferredSize(
-          preferredSize: const Size.fromHeight(120),
-          child: Padding(
-            padding: EdgeInsets.only(
-              top: MediaQuery.paddingOf(context).top +
-                  (14.0 * scaleFactor), // pt-14
-              bottom: 16.0 * scaleFactor, // pb-4
-              left: 24.0 * scaleFactor, // px-6
-              right: 24.0 * scaleFactor,
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                InkWell(
-                  onTap: () => Navigator.of(context).pop(),
-                  child: NeumorphicWrapper(
-                    intensity: 0.6,
-                    borderRadius: 12 * scaleFactor, // rounded-xl neu-icon-btn
-                    child: SizedBox(
-                      width: 44 * scaleFactor, // w-11
-                      height: 44 * scaleFactor, // h-11
-                      child: Icon(Icons.chevron_left_rounded,
-                          size: 24 * scaleFactor,
-                          color: colorScheme.onSurfaceVariant),
+        body: Stack(
+          children: [
+            FruitTrackList(trackShow: currentShow, scaleFactor: scaleFactor),
+            // ── FRUIT STICKY HEADER ──
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              child: LiquidGlassWrapper(
+                enabled: isFruit && settingsProvider.fruitEnableLiquidGlass,
+                blur: 20,
+                opacity: 0.8,
+                borderRadius: BorderRadius.zero,
+                child: Container(
+                  padding: EdgeInsets.only(
+                    top: MediaQuery.paddingOf(context).top + 24 * scaleFactor,
+                    bottom: 24 * scaleFactor,
+                  ),
+                  decoration: BoxDecoration(
+                    border: Border(
+                      bottom: BorderSide(
+                        color: Theme.of(context)
+                            .colorScheme
+                            .onSurface
+                            .withValues(alpha: 0.05),
+                        width: 1.0,
+                      ),
                     ),
                   ),
+                  child: _buildFruitTopBar(context, scaleFactor),
                 ),
-                Expanded(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        currentShow.formattedDate,
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontFamily: 'Inter',
-                          fontSize: 18 * scaleFactor, // text-lg
-                          fontWeight: FontWeight.bold, // font-bold
-                          letterSpacing: -0.5,
-                          color: colorScheme.onSurface,
-                        ),
-                      ),
-                      SizedBox(height: 2 * scaleFactor),
-                      Text(
-                        currentShow.venue.toUpperCase(),
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontFamily: 'Inter',
-                          fontSize: 11 * scaleFactor, // text-[11px]
-                          fontWeight: FontWeight.bold, // font-bold
-                          letterSpacing: 1.5, // tracking-wider
-                          color: colorScheme.onSurfaceVariant
-                              .withValues(alpha: 0.6),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                NeumorphicWrapper(
-                  intensity: 0.6,
-                  borderRadius: 12 * scaleFactor,
-                  child: SizedBox(
-                    width: 44 * scaleFactor,
-                    height: 44 * scaleFactor,
-                    child: Icon(Icons.more_horiz_rounded,
-                        size: 24 * scaleFactor,
-                        color: colorScheme.onSurfaceVariant),
-                  ),
-                ),
-              ],
+              ),
             ),
-          ),
+          ],
         ),
-        body: FruitTrackList(trackShow: currentShow, scaleFactor: scaleFactor),
         bottomNavigationBar: FruitTabBar(
           selectedIndex: 0, // NOW
           onOpenPlaybackScreen: () {},
@@ -783,6 +819,53 @@ class PlaybackScreenState extends State<PlaybackScreen>
             },
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _FruitHeaderButton extends StatefulWidget {
+  final VoidCallback onTap;
+  final IconData icon;
+  final double scaleFactor;
+
+  const _FruitHeaderButton({
+    required this.onTap,
+    required this.icon,
+    required this.scaleFactor,
+  });
+
+  @override
+  State<_FruitHeaderButton> createState() => _FruitHeaderButtonState();
+}
+
+class _FruitHeaderButtonState extends State<_FruitHeaderButton> {
+  bool _isPressed = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return GestureDetector(
+      onTapDown: (_) => setState(() => _isPressed = true),
+      onTapUp: (_) => setState(() => _isPressed = false),
+      onTapCancel: () => setState(() => _isPressed = false),
+      onTap: widget.onTap,
+      child: AnimatedOpacity(
+        duration: const Duration(milliseconds: 100),
+        opacity: _isPressed ? 0.6 : 1.0,
+        child: NeumorphicWrapper(
+          intensity: 0.6,
+          borderRadius: 12 * widget.scaleFactor,
+          child: SizedBox(
+            width: 44 * widget.scaleFactor,
+            height: 44 * widget.scaleFactor,
+            child: Icon(
+              widget.icon,
+              size: 24 * widget.scaleFactor,
+              color: colorScheme.onSurfaceVariant,
+            ),
+          ),
+        ),
       ),
     );
   }

@@ -11,6 +11,8 @@ import 'package:shakedown/ui/widgets/animated_gradient_border.dart';
 import 'package:shakedown/utils/app_haptics.dart';
 import 'package:shakedown/services/device_service.dart';
 import 'package:shakedown/providers/theme_provider.dart';
+import 'package:shakedown/ui/widgets/theme/fruit_icon_button.dart';
+import 'package:shakedown/ui/widgets/theme/fruit_activity_indicator.dart';
 
 class PlaybackControls extends StatefulWidget {
   final double panelPosition;
@@ -105,10 +107,11 @@ class _PlaybackControlsState extends State<PlaybackControls> {
                         borderRadius: BorderRadius.circular(12),
                         opacity: 0.05,
                         blur: 5.0,
-                        child: IconButton(
+                        child: FruitIconButton(
                           icon: const Icon(LucideIcons.skipBack),
-                          iconSize: iconSize,
+                          size: iconSize,
                           color: colorScheme.onSurface,
+                          padding: 0,
                           onPressed: isFirstTrack
                               ? null
                               : () {
@@ -116,6 +119,7 @@ class _PlaybackControlsState extends State<PlaybackControls> {
                                       context.read<DeviceService>());
                                   audioProvider.seekToPrevious();
                                 },
+                          tooltip: 'Skip Previous',
                         ),
                       ),
                     ),
@@ -179,18 +183,16 @@ class _PlaybackControlsState extends State<PlaybackControls> {
                                         ProcessingState.buffering)
                                 ? Padding(
                                     padding: const EdgeInsets.all(18.0),
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 3.5,
-                                      valueColor: AlwaysStoppedAnimation<Color>(
-                                        isFruitNeumorphic
-                                            ? colorScheme.primary
-                                            : colorScheme.onPrimary,
-                                      ),
+                                    child: FruitActivityIndicator(
+                                      radius: 17.0, // Radius for 34px diameter
+                                      color: isFruitNeumorphic
+                                          ? colorScheme.primary
+                                          : colorScheme.onPrimary,
                                     ),
                                   )
-                                : IconButton(
+                                : FruitIconButton(
                                     key: const ValueKey('play_pause_button'),
-                                    iconSize: playIconSize,
+                                    size: playIconSize,
                                     onPressed: () {
                                       AppHaptics.selectionClick(
                                           context.read<DeviceService>());
@@ -208,6 +210,8 @@ class _PlaybackControlsState extends State<PlaybackControls> {
                                           ? colorScheme.primary
                                           : colorScheme.onPrimary,
                                     ),
+                                    padding: 0,
+                                    tooltip: playing ? 'Pause' : 'Play',
                                   ),
                           ),
                         ),
@@ -235,10 +239,11 @@ class _PlaybackControlsState extends State<PlaybackControls> {
                         borderRadius: BorderRadius.circular(12),
                         opacity: 0.05,
                         blur: 5.0,
-                        child: IconButton(
+                        child: FruitIconButton(
                           icon: const Icon(LucideIcons.skipForward),
-                          iconSize: iconSize,
+                          size: iconSize,
                           color: colorScheme.onSurface,
+                          padding: 0,
                           onPressed: isLastTrack
                               ? null
                               : () {
@@ -246,6 +251,7 @@ class _PlaybackControlsState extends State<PlaybackControls> {
                                       context.read<DeviceService>());
                                   audioProvider.seekToNext();
                                 },
+                          tooltip: 'Skip Next',
                         ),
                       ),
                     ),

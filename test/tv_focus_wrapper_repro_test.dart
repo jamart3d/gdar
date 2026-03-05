@@ -10,6 +10,12 @@ import 'package:mockito/mockito.dart';
 class MockSettingsProvider extends Mock implements SettingsProvider {
   @override
   double get rgbAnimationSpeed => 1.0;
+  @override
+  bool get oilTvPremiumHighlight => false;
+  @override
+  int get glowMode => 0;
+  @override
+  bool get isTv => true;
 }
 
 class MockDeviceService extends Mock implements DeviceService {

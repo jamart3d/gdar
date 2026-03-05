@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:shakedown/providers/audio_provider.dart';
 import 'package:shakedown/providers/settings_provider.dart';
 import 'package:shakedown/services/device_service.dart';
+import 'package:shakedown/providers/theme_provider.dart';
 
 /// A wrapper widget that applies a "liquid glass" effect.
 /// Uses BackdropFilter for blur and semi-transparent colors.
@@ -37,6 +38,10 @@ class LiquidGlassWrapper extends StatelessWidget {
     final settingsMode = sp.performanceMode;
     final isPlaying = context.watch<AudioProvider>().isPlaying;
 
+    final tp = context.watch<ThemeProvider>();
+    final bool isFruitTheme = tp.themeStyle == ThemeStyle.fruit;
+    final bool isFruitGlassEnabled = sp.fruitEnableLiquidGlass;
+
     // Web optimization: Lower blur sigma during playback
     final double effectiveBlur =
         (kIsWeb && isPlaying) ? (blur / 2.5).clamp(8.0, 15.0) : blur;
@@ -47,21 +52,36 @@ class LiquidGlassWrapper extends StatelessWidget {
             : Colors.white);
 
     // Bypasses the expensive graphical blur pass if in simple performance mode
-    // OR if we are on a platform that shouldn't have high-end liquid glass effects.
-    if (settingsMode || !isAllowedPlatform) {
+    // OR if we are on a platform that shouldn't have high-end liquid glass effects
+    // OR if the Fruit theme is active and the user explicitly disabled the Liquid Glass setting.
+    final bool shouldBypassBlur = settingsMode ||
+        !isAllowedPlatform ||
+        (isFruitTheme && !isFruitGlassEnabled);
+
+    if (shouldBypassBlur) {
+      // For large areas (shell/cards), we want solid background to prevent bleed-through.
+      // for small elements (icons/badges), we keep the subtle translucency but without blur.
+      final double effectiveOpacity =
+          (isFruitTheme && !isFruitGlassEnabled && opacity > 0.5)
+              ? 1.0
+              : opacity;
+
       return ClipRRect(
         borderRadius: borderRadius ?? BorderRadius.zero,
         child: Container(
           decoration: BoxDecoration(
             color: baseColor.withValues(
-                alpha: !isAllowedPlatform
-                    ? (opacity > 0.5 ? 1.0 : opacity * 2.0).clamp(0.0, 1.0)
-                    : opacity),
+                alpha: !isAllowedPlatform && !shouldBypassBlur
+                    ? (effectiveOpacity > 0.5 ? 1.0 : effectiveOpacity * 2.0)
+                        .clamp(0.0, 1.0)
+                    : effectiveOpacity),
             borderRadius: borderRadius,
-            border: Border.all(
-              color: baseColor.withValues(alpha: 0.1),
-              width: 0.5,
-            ),
+            border: (isFruitTheme && !isFruitGlassEnabled)
+                ? null
+                : Border.all(
+                    color: baseColor.withValues(alpha: 0.1),
+                    width: 0.5,
+                  ),
           ),
           child: child,
         ),

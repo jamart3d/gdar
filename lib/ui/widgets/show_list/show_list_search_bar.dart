@@ -8,6 +8,9 @@ import 'package:shakedown/ui/widgets/theme/neumorphic_wrapper.dart';
 import 'package:shakedown/ui/widgets/theme/liquid_glass_wrapper.dart';
 import 'package:shakedown/providers/theme_provider.dart';
 
+import 'package:lucide_icons/lucide_icons.dart';
+import 'package:shakedown/ui/widgets/theme/fruit_icon_button.dart';
+
 class ShowListSearchBar extends StatelessWidget {
   final TextEditingController controller;
   final FocusNode focusNode;
@@ -24,59 +27,78 @@ class ShowListSearchBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tp = context.watch<ThemeProvider>();
+    final isFruitStyle = tp.themeStyle == ThemeStyle.fruit;
     final settingsProvider = context.watch<SettingsProvider>();
     final isSearchVisible = context.watch<ShowListProvider>().isSearchVisible;
 
-    Widget searchBar = SearchBar(
-      controller: controller,
-      focusNode: focusNode,
-      hintText: 'Search venue, date, location — or paste to play',
-      leading: const Icon(Icons.search_rounded),
-      trailing: controller.text.isNotEmpty
-          ? [
-              IconButton(
-                  icon: const Icon(Icons.clear_rounded),
-                  onPressed: () => controller.clear())
-            ]
-          : [
-              Padding(
-                padding: const EdgeInsets.only(right: 8),
-                child: Icon(
-                  Icons.content_paste_rounded,
+    Widget searchBar;
+
+    if (isFruitStyle &&
+        settingsProvider.useNeumorphism &&
+        !settingsProvider.useTrueBlack) {
+      // Custom Fruit Search Basin (Non-Material 3)
+      searchBar = LiquidGlassWrapper(
+        enabled: true,
+        borderRadius: BorderRadius.circular(28),
+        opacity: 0.1,
+        blur: 8,
+        child: NeumorphicWrapper(
+          borderRadius: 28,
+          style: NeumorphicStyle.concave,
+          intensity: 0.85,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Row(
+              children: [
+                Icon(
+                  LucideIcons.search,
                   size: 20,
                   color: Theme.of(context)
                       .colorScheme
-                      .onSurfaceVariant
+                      .onSurface
                       .withValues(alpha: 0.5),
                 ),
-              ),
-            ],
-      onSubmitted: onSubmitted,
-      elevation: const WidgetStatePropertyAll(0),
-      shape: WidgetStatePropertyAll(RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(28),
-        side: BorderSide(color: Theme.of(context).colorScheme.outline),
-      )),
-    );
-
-    if (context.watch<DeviceService>().isTv) {
-      searchBar = TvFocusWrapper(
-        borderRadius: BorderRadius.circular(28),
-        onTap: () {
-          focusNode.requestFocus();
-        },
-        child: searchBar,
+                const SizedBox(width: 12),
+                Expanded(
+                  child: TextField(
+                    controller: controller,
+                    focusNode: focusNode,
+                    onSubmitted: onSubmitted,
+                    style: Theme.of(context).textTheme.bodyLarge,
+                    decoration: InputDecoration(
+                      hintText: 'Search venue, date, location...',
+                      hintStyle: TextStyle(
+                        color: Theme.of(context)
+                            .colorScheme
+                            .onSurface
+                            .withValues(alpha: 0.35),
+                      ),
+                      border: InputBorder.none,
+                      isDense: true,
+                    ),
+                  ),
+                ),
+                if (controller.text.isNotEmpty)
+                  FruitIconButton(
+                    icon: Icon(
+                      LucideIcons.xCircle,
+                      size: 20,
+                      color: Theme.of(context)
+                          .colorScheme
+                          .onSurface
+                          .withValues(alpha: 0.4),
+                    ),
+                    onPressed: () => controller.clear(),
+                    tooltip: 'Clear',
+                  ),
+              ],
+            ),
+          ),
+        ),
       );
-    }
-
-    // Apply Neumorphism if enabled and in Fruit style
-    final isFruitStyle =
-        context.watch<ThemeProvider>().themeStyle == ThemeStyle.fruit;
-    final useNeumorphism = settingsProvider.useNeumorphism &&
-        isFruitStyle &&
-        !settingsProvider.useTrueBlack;
-
-    if (useNeumorphism) {
+    } else {
+      // Standard Material 3 SearchBar fallback
       searchBar = SearchBar(
         controller: controller,
         focusNode: focusNode,
@@ -105,21 +127,18 @@ class ShowListSearchBar extends StatelessWidget {
         elevation: const WidgetStatePropertyAll(0),
         shape: WidgetStatePropertyAll(RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(28),
-          side: BorderSide.none, // Removed for Neumorphism
+          side: BorderSide(color: Theme.of(context).colorScheme.outline),
         )),
       );
+    }
 
-      searchBar = LiquidGlassWrapper(
-        enabled: true,
+    if (context.watch<DeviceService>().isTv) {
+      searchBar = TvFocusWrapper(
         borderRadius: BorderRadius.circular(28),
-        opacity: 0.1, // Subtle glass effect for the search bar basin
-        blur: 8,
-        child: NeumorphicWrapper(
-          borderRadius: 28,
-          style: NeumorphicStyle.concave,
-          intensity: 0.85, // Refined intensity
-          child: searchBar,
-        ),
+        onTap: () {
+          focusNode.requestFocus();
+        },
+        child: searchBar,
       );
     }
 

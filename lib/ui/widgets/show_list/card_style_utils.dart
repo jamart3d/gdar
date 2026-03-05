@@ -154,7 +154,9 @@ class CardStyle {
       }
     }
 
-    final bool useLetterpress = themeProvider.themeStyle == ThemeStyle.fruit;
+    final sp = Provider.of<SettingsProvider>(context, listen: false);
+    final bool isLiquidGlassOff = isFruit && !sp.fruitEnableLiquidGlass;
+    final bool useLetterpress = isFruit && !isLiquidGlassOff;
 
     final finalTopStyle = venueStyle.copyWith(
       fontSize: topSize * effectiveScale,
@@ -215,22 +217,28 @@ class CardStyle {
     bool suppressOuterGlow = isExpanded && show.sources.length > 1;
     bool showGlow = settings.glowMode > 0;
 
-    final isFruitWeb = themeProvider.themeStyle == ThemeStyle.fruit &&
+    final isFruitHighlight = themeProvider.themeStyle == ThemeStyle.fruit &&
         isPlaying &&
         settings.highlightCurrentShowCard;
 
-    bool useRgb = (settings.highlightPlayingWithRgb && isPlaying) || isFruitWeb;
+    bool useRgb = settings.highlightPlayingWithRgb && isPlaying;
+    if (isFruitHighlight) {
+      showGlow =
+          true; // Force border for Fruit highlight, but use theme colors unless RGB is enabled
+    }
+
     bool showShadow =
         settings.glowMode > 0 && (!isTrueBlackMode || settings.glowMode >= 2);
 
     double baseOpacity = settings.glowMode / 100.0;
     double glowOpacity = isPlaying ? baseOpacity : baseOpacity * 0.25;
 
-    // Fruit hairline border logic
-    double cardBorderWidth = 3.0; // Default
+    // Border Width: Increase for TV visibility (baseline fix)
+    double cardBorderWidth = deviceService.isTv ? 4.0 : 3.0;
     if (themeProvider.themeStyle == ThemeStyle.fruit) {
       if (!isExpanded && !isPlaying) {
-        cardBorderWidth = 0.5;
+        cardBorderWidth =
+            deviceService.isTv ? 1.0 : 0.5; // Hairline is thicker on TV
       }
     }
 

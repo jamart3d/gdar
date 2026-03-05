@@ -6,6 +6,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.49+149] - 2026-03-05
+
+### Added
+- **UI/UX (Fruit)**: Implemented "Living List" layout for Playback Screen—centered header and integrated Now Playing card directly into the tracklist.
+- **UI/UX (Fruit)**: Upgraded Now Playing card with circular neumorphic controls and polished progress bar.
+- **Infrastructure**: Finalized `env_doctor.py` v4.2.0 for automated environment health checks and agent rule validation.
+
+### Changed
+- **UI/UX (Fruit)**: Refined header spacing and dark mode backgrounds to precisely match premium design mocks.
+- **UI/UX (AMOLED)**: Hardened True Black depth—preserved subtle shadows in glow mode to maintain UI hierarchy.
+
+### Fixed
+- **Settings**: Enforced strict "Default Off" policy for Premium Highlight, Liquid Glass, and Dense List features.
+- **UI/UX (Fruit)**: Restored Fruit Card aesthetics and fixed tracklist scrolling logic.
+
 ## [1.1.48+148] - 2026-03-04
 
 ### Changed

@@ -85,8 +85,8 @@ class AppThemes {
     if (style == ThemeStyle.fruit) {
       switch (fruitColorOption) {
         case FruitColorOption.sophisticate:
-          primaryColor = const Color(0xFF5856D6); // Apple Indigo
-          scaffoldBg = const Color(0xFFF2F2F7);
+          primaryColor = const Color(0xFF5C6BC0); // Custom Indigo
+          scaffoldBg = const Color(0xFFE0E5EC); // Soft light blue-gray
           break;
         case FruitColorOption.minimalist:
           primaryColor = const Color(0xFF34C759); // Apple Green
@@ -171,24 +171,29 @@ class AppThemes {
     Color scaffoldBg = const Color(0xFF1C1C1E); // Apple System Gray 6 (Dark)
     Color primaryColor = Colors.blue;
     Color cardColor = Colors.black;
+    Color surfaceColor = const Color(0xFF1C1C1E);
 
     if (style == ThemeStyle.fruit) {
       switch (fruitColorOption) {
         case FruitColorOption.sophisticate:
-          primaryColor = const Color(0xFF5E5CE6); // Apple Indigo (Dark)
-          scaffoldBg = const Color(0xFF121212); // Slate Charcoal
+          primaryColor = const Color(0xFF00E676); // Neon Green
+          scaffoldBg = const Color(0xFF0F172A); // Slate 900 (Mock Alignment)
+          surfaceColor = const Color(0xFF1E293B); // Slate 800
           break;
         case FruitColorOption.minimalist:
           primaryColor = const Color(0xFF30D158); // Apple Green (Dark)
           scaffoldBg = const Color(0xFF1C1C1E); // Keep standard dark
+          surfaceColor = scaffoldBg;
           break;
         case FruitColorOption.creative:
           primaryColor = const Color(0xFFFF375F); // Apple Pink (Dark)
           scaffoldBg = const Color(0xFF1A1A1A); // Warm Charcoal
+          surfaceColor = scaffoldBg;
           break;
       }
     } else {
       scaffoldBg = Colors.black;
+      surfaceColor = scaffoldBg;
     }
 
     final baseTheme = ThemeData(
@@ -197,7 +202,7 @@ class AppThemes {
       colorScheme: ColorScheme.fromSeed(
         seedColor: primaryColor,
         brightness: Brightness.dark,
-        surface: scaffoldBg,
+        surface: surfaceColor,
       ),
       scaffoldBackgroundColor: scaffoldBg,
       appBarTheme: AppBarTheme(
@@ -220,6 +225,10 @@ class AppThemes {
 
     if (style == ThemeStyle.fruit) {
       return baseTheme.copyWith(
+        splashFactory: NoSplash.splashFactory,
+        highlightColor: Colors.transparent,
+        splashColor: Colors.transparent,
+        hoverColor: Colors.white.withValues(alpha: 0.05),
         cardTheme: CardThemeData(
           color: Colors.black.withValues(alpha: 0.65),
           elevation: 0,

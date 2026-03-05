@@ -213,6 +213,11 @@ class FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
   bool get playOnTap => false;
   @override
   bool get playRandomOnCompletion => false;
+
+  @override
+  bool get fruitEnableLiquidGlass => false;
+  @override
+  void toggleFruitEnableLiquidGlass() {}
   @override
   bool get playRandomOnStartup => false;
   @override
@@ -381,6 +386,12 @@ class FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
   double get oilLogoTrailScale => 1.0;
   @override
   double get oilLogoTrailInitialScale => 0.92;
+  @override
+  bool get oilScreensaver4kSupport => false;
+  @override
+  bool get oilTvPremiumHighlight => false;
+  @override
+  void toggleOilTvPremiumHighlight() {}
   @override
   Map<String, bool> get sourceCategoryFilters => {};
 
