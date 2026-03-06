@@ -199,6 +199,21 @@ The web version is now a full Progressive Web App (PWA) with a custom, high-perf
 
 ## TV Experience (Feb 2024)
 
-- **Dual-Pane Layout**: Side-by-side show list and track list for efficient navigation on large screens.
 - **Focus Management**: Customized D-pad navigation logic to ensure natural movement between lists, scrollbars, and controls.
 - **Inactivity Handling**: Automatic screensaver activation with a "Ghost Menu" accessible via D-pad for quick visual adjustments.
+
+## Repository Auditing (Jules)
+
+This repository is optimized for automated auditing via **Jules** (`jules.google.com`). Specialized audit prompts are located in `web/tests/`.
+
+### **How to Run Audits**
+Direct Jules to the following files for specific verification tasks:
+
+1. **Combined Audio & UI Audit (Recommended)**:
+   > "Read `web/tests/jules_audit.md` and `web/tests/jules_fruit_audit.md`. Perform a combined High-Performance Audio and Fruit UI audit on the latest build in a headless Chrome instance."
+
+2. **Audio Performance Only**:
+   > "Read `web/tests/jules_audit.md` and perform the high-performance audio engine audit on the latest build."
+
+3. **Fruit UI & Aesthetic Only**:
+   > "Read `web/tests/jules_fruit_audit.md` and perform the Fruit UI & Liquid Glass aesthetic audit on the latest build."
