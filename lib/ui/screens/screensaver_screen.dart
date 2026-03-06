@@ -201,6 +201,7 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
       bannerFont: settings.oilBannerFont,
       logoTrailIntensity: settings.oilLogoTrailIntensity,
       logoTrailSlices: settings.oilLogoTrailSlices,
+      logoTrailDynamic: settings.oilLogoTrailDynamic,
       logoTrailLength: settings.oilLogoTrailLength,
       flatTextProximity: settings.oilFlatTextProximity,
       flatTextPlacement: settings.oilFlatTextPlacement,

@@ -27,6 +27,7 @@ class StealBackground extends PositionComponent
   // Smoothed logo position in 0–1 UV space.
   // Lerped each frame toward the raw sin/cos target position.
   // Read by StealBanner via game.smoothedLogoPos to keep rings locked to logo.
+  Offset _velocity = Offset.zero;
   Offset _smoothedPos = const Offset(0.5, 0.5);
 
   /// Beat pulse accumulator: 0.0→1.0, spikes on beat, decays per frame.
@@ -185,10 +186,26 @@ class StealBackground extends PositionComponent
     // Time-corrected alpha: 1 - (1 - base)^dt_ratio
     final posAlpha = 1.0 - pow(1.0 - baseAlpha, dt * 60);
 
+    final oldPos = _smoothedPos;
     _smoothedPos = Offset(
       _smoothedPos.dx + (rawX - _smoothedPos.dx) * posAlpha,
       _smoothedPos.dy + (rawY - _smoothedPos.dy) * posAlpha,
     );
+
+    // Track smoothed velocity for dynamic trail scaling
+    if (dt > 0) {
+      final delta = Offset(
+        (_smoothedPos.dx - oldPos.dx) * size.x,
+        (_smoothedPos.dy - oldPos.dy) * size.y,
+      );
+      // Smooth the velocity a bit to avoid jitter in slice count
+      final instantVelocity = delta.distance / dt;
+      final velocityAlpha = 1.0 - pow(0.1, dt * 60); // fast smoothing
+      _velocity = Offset(
+        _velocity.dx + (instantVelocity - _velocity.dx) * velocityAlpha,
+        0,
+      );
+    }
 
     // Beat pulse: spike on beat, exponential decay
     final energy = game.currentEnergy;
@@ -231,7 +248,18 @@ class StealBackground extends PositionComponent
   // ── Trail rendering ────────────────────────────────────────────────────────
 
   void _renderTrail(ui.Canvas canvas) {
-    final slices = config.logoTrailSlices.clamp(2, 32);
+    int slices = config.logoTrailSlices.clamp(2, 32);
+
+    if (config.logoTrailDynamic) {
+      // Dynamic scaling: higher velocity = more slices.
+      // Typical high velocity is ~100-200 pixels/sec at flow 0.1
+      final v = _velocity.dx;
+      // Map 0 -> 200 to 0.0 -> 1.0
+      final nv = (v / 200.0).clamp(0.0, 1.0);
+      // Min 2 slices, Max is the user setting
+      slices = (2 + (nv * (config.logoTrailSlices - 2))).round();
+    }
+
     final intensity = config.logoTrailIntensity.clamp(0.0, 1.0);
     // Request one extra so we can skip i=0 (current position = live logo)
     final positions = game.getTrailPositions(slices + 1);

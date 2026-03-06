@@ -155,93 +155,71 @@ class _TvFocusWrapperState extends State<TvFocusWrapper> {
       ),
     );
 
-    // Determine the border width that AnimatedGradientBorder will inject.
+    // Unified logic for the decorative border.
+    // We always mount AnimatedGradientBorder to keep the widget tree stable,
+    // preventing focus-loss "loops" during layout shifts.
     final double activeBorderWidth;
+    final double activeGlowOpacity;
+    final bool activeShowShadow;
+    final bool activeShowGlow;
+    final double activeAnimationSpeed;
+
     if (showPremium) {
       activeBorderWidth = 6.0;
+      activeGlowOpacity = 0.8;
+      activeShowShadow = true;
+      activeShowGlow = true;
+      activeAnimationSpeed = sp.rgbAnimationSpeed * 1.5;
     } else if (showPlayingRgb || (widget.useRgbBorder && _isFocused)) {
       activeBorderWidth = _isFocused ? 4.0 : 2.5;
+      activeGlowOpacity = 0.0;
+      activeShowShadow = false;
+      activeShowGlow = true; // Still true to render the line
+      activeAnimationSpeed = sp.rgbAnimationSpeed;
     } else {
       activeBorderWidth = 0.0;
+      activeGlowOpacity = 0.0;
+      activeShowShadow = false;
+      activeShowGlow = false;
+      activeAnimationSpeed = 1.0;
     }
 
     // We compensate for the padding injected by AnimatedGradientBorder so the overall
-    // dimensions of the TvFocusWrapper never change, preventing track list flow jumping.
-    final double maxBorderWidth = 6.0;
-    content = Padding(
-      padding: EdgeInsets.all(maxBorderWidth - activeBorderWidth),
-      child: content,
-    );
+    // dimensions of the TvFocusWrapper never change, preventing list flow jumping.
+    // However, if the feature is globally OFF, we don't want to inject extra
+    // empty space into the UI.
+    final bool isFeaturePossible = sp.oilTvPremiumHighlight ||
+        sp.highlightPlayingWithRgb ||
+        widget.useRgbBorder;
 
-    if (showPlayingRgb) {
-      content = AnimatedGradientBorder(
-        borderRadius: radius.topLeft.x,
-        borderWidth: activeBorderWidth,
-        ignoreGlobalClock: true,
-        animationSpeed: sp.rgbAnimationSpeed,
-        colors: const [
-          Colors.red,
-          Colors.yellow,
-          Colors.green,
-          Colors.cyan,
-          Colors.blue,
-          Colors.purple,
-          Colors.red,
-        ],
-        showGlow: true, // Needs to be true to render at all
-        showShadow: false, // Turn off outer neon glow
-        glowOpacity: 0.0,
-        backgroundColor: Colors.transparent,
-        usePadding:
-            true, // MUST be true or RepaintBoundary thrashing freezes TV
+    final double maxBorderWidth = isFeaturePossible ? 6.0 : activeBorderWidth;
+
+    content = AnimatedGradientBorder(
+      borderRadius: radius.topLeft.x,
+      borderWidth: activeBorderWidth,
+      ignoreGlobalClock: true,
+      animationSpeed: activeAnimationSpeed,
+      colors: const [
+        Colors.red,
+        Colors.yellow,
+        Colors.green,
+        Colors.cyan,
+        Colors.blue,
+        Colors.purple,
+        Colors.red,
+      ],
+      showGlow: activeShowGlow,
+      showShadow: activeShowShadow,
+      glowOpacity: activeGlowOpacity,
+      backgroundColor: Colors.transparent,
+      usePadding: true, // Necessary for stability
+      enabled:
+          isFeaturePossible, // Only enable if we might actually show something
+      child: Padding(
+        padding: EdgeInsets.all(maxBorderWidth - activeBorderWidth),
         child: content,
-      );
-    } else if (showPremium) {
-      content = AnimatedGradientBorder(
-        borderRadius: radius.topLeft.x,
-        borderWidth: activeBorderWidth,
-        colors: const [
-          Colors.red,
-          Colors.yellow,
-          Colors.green,
-          Colors.cyan,
-          Colors.blue,
-          Colors.purple,
-          Colors.red,
-        ],
-        showGlow: true,
-        showShadow: true,
-        glowOpacity: 0.8, // Strong RGB glow
-        animationSpeed: sp.rgbAnimationSpeed * 1.5,
-        ignoreGlobalClock: true,
-        backgroundColor: Colors.transparent,
-        usePadding:
-            true, // MUST be true or RepaintBoundary thrashing freezes TV
-        child: content,
-      );
-    } else if (widget.useRgbBorder && _isFocused) {
-      content = AnimatedGradientBorder(
-        borderRadius: radius.topLeft.x,
-        borderWidth: activeBorderWidth,
-        ignoreGlobalClock: true,
-        animationSpeed: sp.rgbAnimationSpeed,
-        colors: const [
-          Colors.red,
-          Colors.yellow,
-          Colors.green,
-          Colors.cyan,
-          Colors.blue,
-          Colors.purple,
-          Colors.red,
-        ],
-        showGlow: true, // Master switch
-        showShadow: false, // Crisp line
-        backgroundColor: Colors.transparent,
-        usePadding:
-            true, // MUST be true or RepaintBoundary thrashing freezes TV
-        child: content,
-      );
-    }
+      ),
+    );
 
     return Focus(
       focusNode: widget.focusNode,

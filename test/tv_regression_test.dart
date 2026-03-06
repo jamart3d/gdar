@@ -393,6 +393,10 @@ class FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
   @override
   void toggleOilTvPremiumHighlight() {}
   @override
+  bool get oilLogoTrailDynamic => true;
+  @override
+  void toggleOilLogoTrailDynamic() {}
+  @override
   Map<String, bool> get sourceCategoryFilters => {};
 
   @override

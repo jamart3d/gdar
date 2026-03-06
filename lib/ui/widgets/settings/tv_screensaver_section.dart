@@ -209,6 +209,17 @@ class TvScreensaverSection extends StatelessWidget {
 
           const SizedBox(height: 16),
 
+          _ToggleRow(
+            label: 'Dynamic Trails',
+            subtitle: 'Scale trail quality based on movement speed',
+            value: settings.oilLogoTrailDynamic,
+            onChanged: (_) => settings.toggleOilLogoTrailDynamic(),
+            colorScheme: colorScheme,
+            textTheme: textTheme,
+          ),
+
+          const SizedBox(height: 16),
+
           TvStepperRow(
             label: 'Trail Slices',
             value: settings.oilLogoTrailSlices.toDouble(),

@@ -287,10 +287,13 @@ class PlaybackScreenState extends State<PlaybackScreen>
   void _focusTrack(int index, {bool shouldScroll = true}) {
     if (index < 0) return;
 
-    // Prune stale focus nodes that are far from the target to prevent
-    // ghost premium highlights and unbounded memory growth.
-    // IMPORTANT: never dispose a node that currently has focus — that
-    // confuses the focus system and causes the premium glow to stick.
+    // Safety: ensure all other track nodes lose focus before we request focus
+    // on the target. This prevents "ghost" highlights where multiple nodes
+    // claim to have focus during rapid scrolling or widget recycling.
+    for (final node in _trackFocusNodes.values) {
+      if (node.hasFocus) node.unfocus();
+    }
+
     final keysToRemove = _trackFocusNodes.keys
         .where((k) =>
             (k - index).abs() > 20 &&
@@ -659,11 +662,25 @@ class PlaybackScreenState extends State<PlaybackScreen>
                         },
                         onFocusRight: widget.onTrackListRight,
                         onTrackFocused: (index) {
-                          // Use gentle visibility-only scroll (force: false).
-                          // Aggressive alignment scroll (force: true) causes
-                          // list re-layouts that disrupt focus when premium
-                          // highlight is enabled.
-                          _scrollToCurrentTrack(true, forceTargetIndex: index);
+                          if (!_itemScrollController.isAttached) return;
+
+                          // SAFE-ZONE SCROLLING:
+                          // Only scroll if the newly focused item is near the viewport edges.
+                          // This prevents the "wacky flow" caused by constant re-centering.
+                          final positions =
+                              _itemPositionsListener.itemPositions.value;
+                          if (positions.isEmpty) return;
+
+                          final firstVisible = positions.first.index;
+                          final lastVisible = positions.last.index;
+
+                          // If we are looking at the top few or bottom few items, trigger a gentle scroll.
+                          // We use a 1-item buffer to keep things smooth.
+                          if (index <= firstVisible + 1 ||
+                              index >= lastVisible - 1) {
+                            _scrollToCurrentTrack(true,
+                                forceTargetIndex: index);
+                          }
                         },
                         onWrapAround: _focusTrack,
                       ),

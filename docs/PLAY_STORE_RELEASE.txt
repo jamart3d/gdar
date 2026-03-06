@@ -1,61 +1,17 @@
+What's new in v1.1.53
+• Implemented "Surgical Stabilization" for Premium Highlights to prevent focus loops.
+• Added "Safe-Zone Scrolling" to the track list to minimize UI jumping.
+• Resolved "leftover highlights" by explicitly clearing focus on every move.
+• Fixed layout shifting by ensuring the RGB border widget stays mounted.
+• Optimized RGB border performance with a zero-cost short-circuit.
+
+---
+
 What's new in v1.1.52
-
-• TV: Implemented auto-scrolling for the show list to keep focused items in view.
-• TV: Updated "Premium Highlight" to use the RGB rainbow spectrum.
-• TV: Refined playing track border to be a crisp RGB line without glow.
-• TV: Saved rating stars in the playback header now use filled yellow icons.
-• TV: Resolved focus looping bug in the track list with passive container guards.
-• TV: Fixed stale focus node cleanup to prevent memory leaks.
-• TV: Added safety guards to the scroll controller for smoother pane switching.
+• Implemented auto-scrolling for the left panel Show List.
+• Updated "Premium Highlight" and playing track borders to the RGB rainbow spectrum.
+• Refined playing track border to be a crisp line without glow.
+• Changed playback header rating stars to filled yellow for better visibility.
+• Fixed several focus and navigation issues on Google TV.
 
 ---
-What's new in v1.1.51
-
-• TV: Header icons and title now scale properly for 10-foot UI readability.
-• TV: UI Scale is now auto-enabled on first run for TV devices.
-• Fruit Theme: SectionCard maintains glass aesthetic even with Neumorphism off.
-• Agent: Added platform-safe shell execution rules and audit workflow.
-
----
-What's new in v1.1.50
-
-• UI/UX (TV): Fixed logical highlight and border visibility issues in the Show List.
-• UI/UX (TV): Stabilized layout shifting in animated borders and fixed structural padding bugs.
-• UI/UX (TV): Bridged focus navigation gaps for a smoother D-pad experience.
-• Audio (TV): Resolved race condition in random show (dice) playback.
-• Audio: Hardened track validation for more reliable playback metadata.
-
----
-What's new in v1.1.49
-
-• UI/UX (Fruit): Redesigned Playback Screen with "Living List" layout and neumorphic controls.
-• UI/UX (Fruit): Refined header spacing and backgrounds to match premium design mocks.
-• UI/UX (AMOLED): Hardened True Black depth—preserved shadows in glow mode.
-• Settings: Enforced strict "Default Off" policy for Premium Highlight and Liquid Glass.
-• Infrastructure: Finalized env_doctor.py v4.2.0 for environment health checks.
-• UI/UX (Fruit): Restored aesthetics and fixed scrolling.
-
----
-What's new in v1.1.48
-
-• Web: Refined the Fruit theme "Show List" screen with premium "Stitch" vertical cards.
-• Web: Updated the Fruit app bar with a centered layout and premium branding.
-• Settings: Added a "Dense Show List" toggle for the Fruit theme to fit more shows on screen.
-• Fixed: Shadow visibility in True Black mode when glow mode is active.
-• Fixed: Double-padding issue on the PlaybackScreen AppBar for mobile.
-• Improved: Core platform stability and regression test coverage.
-
----
-What's new in v1.1.47
-
-• Mobile: New "Fruit UI" layout for the playing screen — a cleaner, more focused experience on phone and tablet.
-• Settings: Added a "Dense Show List" toggle in Appearance settings for the Fruit theme to fit more shows on screen.
-• Fixed: Resolved extra top padding on the mobile playing screen app bar.
-• Tests: Improved reliability of mock providers in the test suite.
-
----
-What's new in v1.1.46
-
-• Screensaver: New Trail Initial Scale setting — control the starting size of the logo trail effect relative to the logo scale (default 92%, range 50–200%).
-• Fixed: Screensaver audio reactivity permission handling on Android — resolved async context gap crash.
-• Internal: Improved test coverage and reliability across TV screen and screensaver test suites.

@@ -96,6 +96,7 @@ class SettingsProvider with ChangeNotifier {
   // Audio Reactivity Tuning
   static const String _oilAudioPeakDecayKey = 'oil_audio_peak_decay';
   static const String _oilAudioBassBoostKey = 'oil_audio_bass_boost';
+  static const String _oilLogoTrailDynamicKey = 'oil_logo_trail_dynamic';
   static const String _oilAudioReactivityStrengthKey =
       'oil_audio_reactivity_strength';
   static const String _oilAudioGraphModeKey = 'oil_audio_graph_mode';
@@ -227,6 +228,7 @@ class SettingsProvider with ChangeNotifier {
   // Trail effect
   late double _oilLogoTrailIntensity;
   late int _oilLogoTrailSlices;
+  late bool _oilLogoTrailDynamic;
   late double _oilLogoTrailLength;
   late double _oilLogoTrailScale;
   late double _oilLogoTrailInitialScale;
@@ -395,6 +397,7 @@ class SettingsProvider with ChangeNotifier {
   // Trail effect getters
   double get oilLogoTrailIntensity => _oilLogoTrailIntensity;
   int get oilLogoTrailSlices => _oilLogoTrailSlices;
+  bool get oilLogoTrailDynamic => _oilLogoTrailDynamic;
   double get oilLogoTrailLength => _oilLogoTrailLength;
   double get oilLogoTrailScale => _oilLogoTrailScale;
   double get oilLogoTrailInitialScale => _oilLogoTrailInitialScale;
@@ -749,6 +752,8 @@ class SettingsProvider with ChangeNotifier {
         DefaultSettings.oilLogoTrailIntensity;
     _oilLogoTrailSlices = _prefs.getInt(_oilLogoTrailSlicesKey) ??
         DefaultSettings.oilLogoTrailSlices;
+    _oilLogoTrailDynamic = _prefs.getBool(_oilLogoTrailDynamicKey) ??
+        DefaultSettings.oilLogoTrailDynamic;
     _oilLogoTrailLength = _prefs.getDouble(_oilLogoTrailLengthKey) ??
         DefaultSettings.oilLogoTrailLength;
     _oilLogoTrailScale = _prefs.getDouble(_oilLogoTrailScaleKey) ??
@@ -1048,6 +1053,8 @@ class SettingsProvider with ChangeNotifier {
           _oilLogoTrailIntensity = value.clamp(0.0, 1.0));
   Future<void> setOilLogoTrailSlices(int value) => _updateIntPreference(
       _oilLogoTrailSlicesKey, _oilLogoTrailSlices = value.clamp(2, 16));
+  void toggleOilLogoTrailDynamic() => _updatePreference(
+      _oilLogoTrailDynamicKey, _oilLogoTrailDynamic = !_oilLogoTrailDynamic);
   Future<void> setOilLogoTrailLength(double value) => _updateDoublePreference(
       _oilLogoTrailLengthKey, _oilLogoTrailLength = value.clamp(0.0, 1.0));
   Future<void> setOilLogoTrailScale(double value) => _updateDoublePreference(

@@ -15,6 +15,7 @@ class StealConfig {
   final double bannerFlicker;
   final double bannerGlowBlur;
   final bool enableAudioReactivity;
+  final bool logoTrailDynamic;
 
   /// Overall quality/performance level: 0=High, 1=Balanced, 2=Fast.
   final int performanceLevel;
@@ -135,6 +136,7 @@ class StealConfig {
     this.bannerFlicker = 0.0,
     this.bannerGlowBlur = 0.5,
     this.enableAudioReactivity = true,
+    this.logoTrailDynamic = true,
     this.performanceLevel = 0,
     this.showInfoBanner = true,
     this.bannerText = '',
@@ -184,6 +186,7 @@ class StealConfig {
       bannerFlicker: (map['bannerFlicker'] as num?)?.toDouble() ?? 0.0,
       bannerGlowBlur: (map['bannerGlowBlur'] as num?)?.toDouble() ?? 0.5,
       enableAudioReactivity: map['enableAudioReactivity'] as bool? ?? true,
+      logoTrailDynamic: map['logoTrailDynamic'] as bool? ?? true,
       performanceLevel: (map['performanceLevel'] as int?) ??
           ((map['performanceMode'] as bool? ?? false) ? 2 : 0),
       showInfoBanner: map['showInfoBanner'] as bool? ?? true,
@@ -241,6 +244,7 @@ class StealConfig {
       'bannerFlicker': bannerFlicker,
       'bannerGlowBlur': bannerGlowBlur,
       'enableAudioReactivity': enableAudioReactivity,
+      'logoTrailDynamic': logoTrailDynamic,
       'performanceLevel': performanceLevel,
       'showInfoBanner': showInfoBanner,
       'bannerText': bannerText,
@@ -289,6 +293,7 @@ class StealConfig {
     double? bannerFlicker,
     double? bannerGlowBlur,
     bool? enableAudioReactivity,
+    bool? logoTrailDynamic,
     int? performanceLevel,
     bool? showInfoBanner,
     String? bannerText,
@@ -336,6 +341,7 @@ class StealConfig {
       bannerGlowBlur: bannerGlowBlur ?? this.bannerGlowBlur,
       enableAudioReactivity:
           enableAudioReactivity ?? this.enableAudioReactivity,
+      logoTrailDynamic: logoTrailDynamic ?? this.logoTrailDynamic,
       performanceLevel: performanceLevel ?? this.performanceLevel,
       showInfoBanner: showInfoBanner ?? this.showInfoBanner,
       bannerText: bannerText ?? this.bannerText,
@@ -390,6 +396,7 @@ class StealConfig {
         bannerFlicker == other.bannerFlicker &&
         bannerGlowBlur == other.bannerGlowBlur &&
         enableAudioReactivity == other.enableAudioReactivity &&
+        logoTrailDynamic == other.logoTrailDynamic &&
         performanceLevel == other.performanceLevel &&
         showInfoBanner == other.showInfoBanner &&
         bannerText == other.bannerText &&
@@ -438,6 +445,7 @@ class StealConfig {
         bannerFlicker,
         bannerGlowBlur,
         enableAudioReactivity,
+        logoTrailDynamic,
         performanceLevel,
         showInfoBanner,
         bannerText,

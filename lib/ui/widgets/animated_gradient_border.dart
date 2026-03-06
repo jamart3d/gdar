@@ -117,26 +117,10 @@ class _AnimatedGradientBorderState extends State<AnimatedGradientBorder>
 
   @override
   Widget build(BuildContext context) {
-    if (!widget.enabled) return widget.child;
-
     final sp = context.watch<SettingsProvider>();
     final performanceMode = sp.performanceMode;
     final isPlaying = context.watch<AudioProvider>().isPlaying;
     final isWebPlayback = kIsWeb && isPlaying;
-
-    if (!widget.showGlow) {
-      if (!widget.usePadding) return widget.child;
-      return Padding(
-        padding: EdgeInsets.all(widget.borderWidth),
-        child: Container(
-          decoration: BoxDecoration(
-            color: widget.backgroundColor ?? Theme.of(context).cardColor,
-            borderRadius: BorderRadius.circular(widget.borderRadius),
-          ),
-          child: widget.child,
-        ),
-      );
-    }
 
     // 1. Ensure we have an animation source if one wasn't set in didChangeDependencies
     if (_animationSource == null) {
@@ -144,7 +128,6 @@ class _AnimatedGradientBorderState extends State<AnimatedGradientBorder>
     }
 
     // 2. Safe cleanup of local controller if we've switched to global
-    // We do this via a post-frame callback or similar to avoid mid-build side-effects.
     if (_usingGlobalClock && _localController != null) {
       final controllerToDispose = _localController;
       _localController = null;
@@ -163,6 +146,13 @@ class _AnimatedGradientBorderState extends State<AnimatedGradientBorder>
           Theme.of(context).colorScheme.primary,
         ];
 
+    // STABILITY: We always return the same structure (RepaintBoundary -> CustomPaint -> Padding -> Container -> child)
+    // even if disabled or showGlow is false. We simply pass 0.0 values to the painter and padding.
+    // This prevents structural widget tree changes that break TV focus nodes.
+
+    final bool isEffectActive =
+        widget.enabled && (widget.showGlow || widget.borderWidth > 0);
+
     return AnimatedBuilder(
       animation: animation,
       child: widget.child,
@@ -172,18 +162,17 @@ class _AnimatedGradientBorderState extends State<AnimatedGradientBorder>
             painter: _GradientBorderPainter(
               colors: colors,
               borderRadius: widget.borderRadius,
-              borderWidth: widget.borderWidth,
+              borderWidth: isEffectActive ? widget.borderWidth : 0.0,
               rotation: animation.value * 2 * 3.14159,
-              // Web Performance Optimization: Reduce blur/glow during playback
-              // Performance Mode: Keep animation but disable expensive shadows/glow
-              showShadow: performanceMode
-                  ? false
-                  : (isWebPlayback ? false : widget.showShadow),
+              showShadow: isEffectActive && !performanceMode && !isWebPlayback
+                  ? widget.showShadow
+                  : false,
               glowOpacity: isWebPlayback ? 0.2 : widget.glowOpacity,
             ),
             child: widget.usePadding
                 ? Padding(
-                    padding: EdgeInsets.all(widget.borderWidth),
+                    padding: EdgeInsets.all(
+                        isEffectActive ? widget.borderWidth : 0.0),
                     child: Container(
                       decoration: BoxDecoration(
                         color: widget.backgroundColor ??
@@ -221,6 +210,8 @@ class _GradientBorderPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
+    if (borderWidth <= 0) return;
+
     final rect = Rect.fromLTWH(0, 0, size.width, size.height);
 
     // 1. Draw RGB Shadow

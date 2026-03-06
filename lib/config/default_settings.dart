@@ -76,8 +76,8 @@ class DefaultSettings {
   static const int oilScreensaverInactivityMinutes = 1;
 
   // Steal Visualizer Parameters
-  static const double oilFlowSpeed = 0.1;
-  static const double oilPulseIntensity = 1.0;
+  static const double oilFlowSpeed = 0.08;
+  static const double oilPulseIntensity = 0.4;
   static const String oilPalette = 'acid_green';
   static const double oilFilmGrain = 0.15;
   static const double oilHeatDrift = 0.0;
@@ -99,7 +99,7 @@ class DefaultSettings {
       0.7; // Updated default for smoother feel
   static const String oilBannerDisplayMode = 'ring';
   static const String oilBannerFont = 'RockSalt';
-  static const double oilFlatTextProximity = 0.0;
+  static const double oilFlatTextProximity = 0.7;
   static const String oilFlatTextPlacement = 'below';
   static const double oilBannerResolution = 2.0;
 
@@ -109,6 +109,7 @@ class DefaultSettings {
   static const double oilLogoTrailLength = 0.5;
   static const double oilLogoTrailInitialScale = 0.92;
   static const double oilLogoTrailScale = 0.1; // 10% reduction per slice
+  static const bool oilLogoTrailDynamic = true;
 
   // Ring controls (3-ring gap model)
   static const double oilInnerRingScale = 0.2;
