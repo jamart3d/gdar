@@ -224,7 +224,11 @@ Direct Jules to the following files for specific verification tasks:
 5. **Cross-Platform Guard (Mobile/TV Verification)**:
    > "Read `test/prompts/jules_platform_guard_audit.md`. Perform a code-level architectural audit ensuring no platform leaks between Web, TV, and Phone."
 
-### **Automated Health Check (/checkup)**
-Jules can automatically maintain repository health by running the specialized `/checkup` workflow. This fixes lints, formats code, and runs targeted tests.
-- **Command**:
-  > "Run the `@[/checkup]` workflow on the current branch."
+### **Automated Health & Unit Testing (`@[/checkup]`)**
+Jules can autonomously maintain repository health by running the specialized `@[/checkup]` workflow. This covers:
+- **Unit Testing**: Runs `flutter test` on relevant changed files.
+- **Linting & Formatting**: Automatically fixes style violations and standardizes code.
+- **Static Analysis**: Identifies potential runtime errors or deprecated API usage.
+
+**To trigger a full health check/unit test run:**
+> "Run the `@[/checkup]` workflow on the current branch and report the Health Score."
