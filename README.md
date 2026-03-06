@@ -209,11 +209,17 @@ This repository is optimized for automated auditing via **Jules** (`jules.google
 ### **How to Run Audits**
 Direct Jules to the following files for specific verification tasks:
 
-1. **Combined Audio & UI Audit (Recommended)**:
-   > "Read `web/tests/jules_audit.md` and `web/tests/jules_fruit_audit.md`. Perform a combined High-Performance Audio and Fruit UI audit on the latest build in a headless Chrome instance."
+1. **Full System Audit (Deep Scan)**:
+   > "Read `web/tests/jules_audit.md`, `web/tests/jules_fruit_audit.md`, and `web/tests/jules_integrity_audit.md`. Perform a comprehensive system audit covering Audio, UI Aesthetics, and Platform Integrity on the latest build in a headless Chrome instance."
 
 2. **Audio Performance Only**:
-   > "Read `web/tests/jules_audit.md` and perform the high-performance audio engine audit on the latest build."
+   > "Read `web/tests/jules_audit.md` and perform the high-performance audio engine audit."
 
 3. **Fruit UI & Aesthetic Only**:
-   > "Read `web/tests/jules_fruit_audit.md` and perform the Fruit UI & Liquid Glass aesthetic audit on the latest build."
+   > "Read `web/tests/jules_fruit_audit.md` and perform the Fruit UI & Liquid Glass aesthetic audit."
+  - [x] Create Jules "Stress & Persistence" audit prompt <!-- id: 28 -->
+- [x] Create Jules "Fruit UI & Liquid Glass" audit prompt <!-- id: 33 -->
+- [x] Create Jules "Persistence & Integrity" audit prompt <!-- id: 34 -->
+- [ ] Document final results in walkthrough <!-- id: 27 -->
+4. **Persistence & Integrity Only**:
+   > "Read `web/tests/jules_integrity_audit.md` and perform the architectural persistence and platform integrity audit."
