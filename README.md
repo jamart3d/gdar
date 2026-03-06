@@ -204,25 +204,25 @@ The web version is now a full Progressive Web App (PWA) with a custom, high-perf
 
 ## Repository Auditing (Jules)
 
-This repository is optimized for automated auditing via **Jules** (`jules.google.com`). Specialized audit prompts are located in `.agent/prompts/jules/`.
+This repository is optimized for automated auditing via **Jules** (`jules.google.com`). Specialized audit prompts are located in `test/prompts/`.
 
 ### **How to Run Audits**
 Direct Jules to the following files for specific verification tasks:
 
 1. **Full System Audit (Deep Scan)**:
-   > "Read the Jules prompts in `.agent/prompts/jules/`. Perform a comprehensive system audit covering Audio, UI Aesthetics, and Platform Integrity on the latest build in a headless Chrome instance."
+   > "Read the Jules prompts in `test/prompts/`. Perform a comprehensive system audit covering Audio, UI Aesthetics, and Platform Integrity on the latest build in a headless Chrome instance."
 
 2. **Audio Performance Only**:
-   > "Read `.agent/prompts/jules/jules_audit.md` and perform the high-performance audio engine audit."
+   > "Read `test/prompts/jules_audit.md` and perform the high-performance audio engine audit."
 
 3. **Fruit UI & Aesthetic Only**:
-   > "Read `.agent/prompts/jules/jules_fruit_audit.md` and perform the Fruit UI & Liquid Glass aesthetic audit."
+   > "Read `test/prompts/jules_fruit_audit.md` and perform the Fruit UI & Liquid Glass aesthetic audit."
 
 4. **Persistence & Integrity**:
-   > "Read `.agent/prompts/jules/jules_integrity_audit.md` and perform the architectural persistence and platform integrity audit."
+   > "Read `test/prompts/jules_integrity_audit.md` and perform the architectural persistence and platform integrity audit."
 
 5. **Cross-Platform Guard (Mobile/TV Verification)**:
-   > "Read `.agent/prompts/jules/jules_platform_guard_audit.md`. Perform a code-level architectural audit ensuring no platform leaks between Web, TV, and Phone."
+   > "Read `test/prompts/jules_platform_guard_audit.md`. Perform a code-level architectural audit ensuring no platform leaks between Web, TV, and Phone."
 
 ### **Automated Health Check (/checkup)**
 Jules can automatically maintain repository health by running the specialized `/checkup` workflow. This fixes lints, formats code, and runs targeted tests.
