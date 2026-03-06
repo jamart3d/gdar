@@ -1,3 +1,13 @@
+What's new in v1.1.54
+• Implemented TV "Switch Pane" shortcut and Back-to-master navigation.
+• Gated "Fruit" Liquid Glass theme to Web/PWA platforms only.
+• Eliminated TV "bounce scroll" glitches via synchronized list keying.
+• Added high-pressure CPU stress testing to the automated audio audit.
+• Initialized "Size Guard" for ongoing app size and asset optimization.
+• Dimmed inactive panes in TV dual-layout for clearer focus.
+
+---
+
 What's new in v1.1.53
 • Implemented "Surgical Stabilization" for Premium Highlights to prevent focus loops.
 • Added "Safe-Zone Scrolling" to the track list to minimize UI jumping.

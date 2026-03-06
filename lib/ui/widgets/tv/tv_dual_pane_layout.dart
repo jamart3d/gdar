@@ -158,6 +158,20 @@ class _TvDualPaneLayoutState extends State<TvDualPaneLayout> {
     });
   }
 
+  void _focusLeftPane() {
+    if (!mounted) return;
+    setState(() => _focusedPane = 0);
+    _diceFocusNode.requestFocus();
+  }
+
+  void _togglePane() {
+    if (_focusedPane == 0) {
+      _focusRightPane();
+    } else {
+      _focusLeftPane();
+    }
+  }
+
   @override
   void dispose() {
     _diceFocusNode.dispose();
@@ -179,7 +193,13 @@ class _TvDualPaneLayoutState extends State<TvDualPaneLayout> {
       canPop: !audioProvider.isPlaying,
       onPopInvokedWithResult: (didPop, result) {
         if (didPop) return;
-        _showExitDialog(context);
+
+        // If in playback pane, BACK goes back to show list instead of exiting
+        if (_focusedPane == 1) {
+          _focusLeftPane();
+        } else {
+          _showExitDialog(context);
+        }
       },
       child: Shortcuts(
         shortcuts: <LogicalKeySet, Intent>{
@@ -193,6 +213,8 @@ class _TvDualPaneLayoutState extends State<TvDualPaneLayout> {
               const TvNextTrackIntent(),
           LogicalKeySet(LogicalKeyboardKey.mediaTrackPrevious):
               const TvPreviousTrackIntent(),
+          LogicalKeySet(LogicalKeyboardKey.tab): const _SwitchPaneIntent(),
+          LogicalKeySet(LogicalKeyboardKey.keyS): const _SwitchPaneIntent(),
         },
         child: Actions(
           actions: <Type, Action<Intent>>{
@@ -219,6 +241,12 @@ class _TvDualPaneLayoutState extends State<TvDualPaneLayout> {
                 return null;
               },
             ),
+            _SwitchPaneIntent: CallbackAction<_SwitchPaneIntent>(
+              onInvoke: (intent) {
+                _togglePane();
+                return null;
+              },
+            ),
           },
           child: Scaffold(
             body: Stack(
@@ -240,10 +268,11 @@ class _TvDualPaneLayoutState extends State<TvDualPaneLayout> {
                             curve: Curves.fastOutSlowIn,
                             opacity: _focusedPane == 0
                                 ? 1.0
-                                : 0.2, // Increased dimming from 0.4
+                                : 0.3, // Increased visibility of inactive pane just slightly
                             child: Column(
                               children: [
                                 TvHeader(
+                                  isActive: _focusedPane == 0,
                                   autofocusDice: true,
                                   diceFocusNode: _diceFocusNode,
                                   gearsFocusNode: _gearsFocusNode,
@@ -313,10 +342,11 @@ class _TvDualPaneLayoutState extends State<TvDualPaneLayout> {
                             curve: Curves.fastOutSlowIn,
                             opacity: _focusedPane == 1
                                 ? 1.0
-                                : 0.2, // Increased dimming from 0.4
+                                : 0.3, // Match left pane dimming
                             child: PlaybackScreen(
                               key: _playbackScreenKey,
                               isPane: true,
+                              isActive: _focusedPane == 1,
                               scrollbarFocusNode: _rightScrollbarFocusNode,
                               onScrollbarRight: () {
                                 // Wrap around from Right Scrollbar (far right) to Dice (far left)
@@ -369,4 +399,8 @@ class _TvDualPaneLayoutState extends State<TvDualPaneLayout> {
       },
     );
   }
+}
+
+class _SwitchPaneIntent extends Intent {
+  const _SwitchPaneIntent();
 }

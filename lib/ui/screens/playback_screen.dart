@@ -65,6 +65,7 @@ class PlaybackScreen extends StatefulWidget {
   final VoidCallback? onScrollbarRight;
   final VoidCallback? onTrackListLeft;
   final VoidCallback? onTrackListRight;
+  final bool isActive;
 
   const PlaybackScreen({
     super.key,
@@ -76,6 +77,7 @@ class PlaybackScreen extends StatefulWidget {
     this.onScrollbarRight,
     this.onTrackListLeft,
     this.onTrackListRight,
+    this.isActive = true,
   });
 
   @override
@@ -118,7 +120,9 @@ class PlaybackScreenState extends State<PlaybackScreen>
           showMessage(context, 'Playback Error: $error');
         }
       });
-      _scrollToCurrentTrack(false);
+      // Removed to prevent "bounce scroll" glitch; TrackListView now handles
+      // initial positioning via initialScrollIndex.
+      // _scrollToCurrentTrack(false);
     });
   }
 
@@ -286,6 +290,9 @@ class PlaybackScreenState extends State<PlaybackScreen>
 
   void _focusTrack(int index, {bool shouldScroll = true}) {
     if (index < 0) return;
+    final audioProvider = context.read<AudioProvider>();
+    final currentSource = audioProvider.currentSource;
+    if (currentSource == null) return;
 
     // Safety: ensure all other track nodes lose focus before we request focus
     // on the target. This prevents "ghost" highlights where multiple nodes
@@ -315,7 +322,47 @@ class PlaybackScreenState extends State<PlaybackScreen>
     }
 
     if (shouldScroll && _itemScrollController.isAttached) {
-      _itemScrollController.jumpTo(index: index, alignment: 0.3);
+      final positions = _itemPositionsListener.itemPositions.value;
+
+      // If the list exists but has no positions yet, it's likely just mounting.
+      // Trust the initialScrollIndex of the widget for the first frame.
+      if (positions.isEmpty) return;
+
+      bool alreadyAligned = false;
+      final target = positions.where((p) => p.index == index).firstOrNull;
+
+      if (target != null) {
+        final double currentEdge = target.itemLeadingEdge;
+        // 1. Is it exactly where we want it (within 3% margin)?
+        if ((currentEdge - 0.3).abs() < 0.03) {
+          alreadyAligned = true;
+        } else {
+          // 2. Are we at the edges? (Slack logic)
+          final last = positions.reduce((a, b) => a.index > b.index ? a : b);
+          final first = positions.reduce((a, b) => a.index < b.index ? a : b);
+
+          // Total items for this source
+          final int totalItems = _calculateTotalItems(currentSource);
+
+          if (last.index == totalItems - 1 && last.itemTrailingEdge <= 1.05) {
+            // We are at the bottom. If item is visible, don't force it up to 0.3.
+            if (target.itemLeadingEdge >= 0 &&
+                target.itemTrailingEdge <= 1.05) {
+              alreadyAligned = true;
+            }
+          } else if (first.index == 0 && first.itemLeadingEdge >= -0.05) {
+            // We are at the top. If item is visible, don't force it down to 0.3.
+            if (target.itemLeadingEdge >= -0.05 &&
+                target.itemTrailingEdge <= 1.0) {
+              alreadyAligned = true;
+            }
+          }
+        }
+      }
+
+      if (!alreadyAligned) {
+        _itemScrollController.jumpTo(index: index, alignment: 0.3);
+      }
     }
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -542,52 +589,55 @@ class PlaybackScreenState extends State<PlaybackScreen>
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    // Row 1: date (left) + right column: rating stars + src badge
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          currentShow.formattedDate,
-                          style: TextStyle(
-                            fontFamily: 'RockSalt',
-                            fontSize: 17,
-                            fontWeight: FontWeight.w500,
-                            color:
-                                colorScheme.onSurface.withValues(alpha: 0.70),
+                    AnimatedOpacity(
+                      duration: const Duration(milliseconds: 200),
+                      opacity: widget.isActive ? 1.0 : 0.4,
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            currentShow.formattedDate,
+                            style: TextStyle(
+                              fontFamily: 'RockSalt',
+                              fontSize: 17,
+                              fontWeight: FontWeight.w500,
+                              color:
+                                  colorScheme.onSurface.withValues(alpha: 0.70),
+                            ),
                           ),
-                        ),
-                        const Spacer(),
-                        // Stars + badge stacked, both 3pt from right edge
-                        Padding(
-                          padding: const EdgeInsets.only(right: 3),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              ValueListenableBuilder<Box<Rating>>(
-                                valueListenable:
-                                    CatalogService().ratingsListenable,
-                                builder: (context, _, __) {
-                                  final r = CatalogService()
-                                      .getRating(currentSource.id);
-                                  return _RatingStars(
-                                    rating: r,
-                                    color: Colors.amber,
-                                  );
-                                },
-                              ),
-                              if (currentSource.src != null) ...[
-                                const SizedBox(height: 4),
-                                SrcBadge(
-                                  src: currentSource.src!,
-                                  isPlaying: false,
-                                  matchShnidLook: true,
+                          const Spacer(),
+                          // Stars + badge stacked, both 3pt from right edge
+                          Padding(
+                            padding: const EdgeInsets.only(right: 3),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                ValueListenableBuilder<Box<Rating>>(
+                                  valueListenable:
+                                      CatalogService().ratingsListenable,
+                                  builder: (context, _, __) {
+                                    final r = CatalogService()
+                                        .getRating(currentSource.id);
+                                    return _RatingStars(
+                                      rating: r,
+                                      color: Colors.amber,
+                                    );
+                                  },
                                 ),
+                                if (currentSource.src != null) ...[
+                                  const SizedBox(height: 4),
+                                  SrcBadge(
+                                    src: currentSource.src!,
+                                    isPlaying: false,
+                                    matchShnidLook: true,
+                                  ),
+                                ],
                               ],
-                            ],
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                     const SizedBox(height: 12),
                     // Row 2: venue + location only
@@ -647,6 +697,7 @@ class PlaybackScreenState extends State<PlaybackScreen>
                   children: [
                     Expanded(
                       child: TrackListView(
+                        key: ValueKey(currentSource.id),
                         source: currentSource,
                         bottomPadding: 16.0,
                         topPadding: 0.0,
@@ -655,9 +706,12 @@ class PlaybackScreenState extends State<PlaybackScreen>
                         audioProvider: audioProvider,
                         trackFocusNodes: _trackFocusNodes,
                         trackListFocusNode: _trackListFocusNode,
+                        initialScrollAlignment: 0.3,
                         onFocusLeft: () {
+                          // Keep constant alignment at 0.3 instead of 0.5 to prevent "bounce"
+                          // when re-entering the pane.
                           _scrollToCurrentTrack(true,
-                              force: true, alignment: 0.5);
+                              force: true, alignment: 0.3);
                           widget.onTrackListLeft?.call();
                         },
                         onFocusRight: widget.onTrackListRight,

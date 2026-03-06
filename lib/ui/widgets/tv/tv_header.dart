@@ -20,6 +20,7 @@ class TvHeader extends StatelessWidget {
   final FocusNode? gearsFocusNode;
   final VoidCallback? onLeft;
   final VoidCallback? onRight;
+  final bool isActive;
 
   const TvHeader({
     super.key,
@@ -31,6 +32,7 @@ class TvHeader extends StatelessWidget {
     this.gearsFocusNode,
     this.onLeft,
     this.onRight,
+    this.isActive = true,
   });
 
   @override
@@ -84,10 +86,14 @@ class TvHeader extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
-                ShakedownTitle(
-                  fontSize: 22 * scaleFactor,
-                  animateOnStart: true,
-                  shakeDelay: const Duration(milliseconds: 1700),
+                AnimatedOpacity(
+                  duration: const Duration(milliseconds: 200),
+                  opacity: isActive ? 1.0 : 0.5,
+                  child: ShakedownTitle(
+                    fontSize: 22 * scaleFactor,
+                    animateOnStart: true,
+                    shakeDelay: const Duration(milliseconds: 1700),
+                  ),
                 ),
               ],
             ),

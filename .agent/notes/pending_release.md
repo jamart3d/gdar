@@ -1,10 +1,15 @@
 # Pending Release Notes
 
 ### Added
-- **UI/UX (TV)**: Implemented "Surgical Stabilization" for Premium Highlights. The widget tree now remains structurally identical whether highlights are on or off, preventing focus loops and "wacky flow" during navigation.
-- **UI/UX (TV)**: Added "Safe-Zone Scrolling" to the track list. Intelligent visibility checks now prevent unnecessary list movement, only scrolling when the focused item reaches the viewport edges.
+- **UI/UX (TV)**: Implemented "Switch Pane" shortcut (Tab/S), Back-to-master navigation, and dimming visual indicators for inactive panes.
+- **UI/UX (Web/PWA)**: Created `docs/fruit_theme_spec.md` to formally define the "Fruit" (Liquid Glass) aesthetic for Web/PWA platforms.
+- **Testing**: Added "Phase 4: CPU Throttling & Timer Drift" to `jules_audit.md` for stress-testing the JS audio scheduler on Web/PWA.
+- **Infrastructure**: Initialized `size_guard` skill for ongoing app size and asset optimization audits.
+
+### Changed
+- **UI/UX (TV)**: Relocated "TV Safe Area" and "Default Screensaver Settings" to Backlog/Low Priority to focus on core performance.
+- **UI/UX (TV)**: Dimmed inactive headers in the TV dual-pane layout for clearer focus indication.
 
 ### Fixed
-- **UI/UX (TV)**: Resolved "leftover highlights" bug by implementing an explicit unfocus broadcast across all track nodes before a new focus is granted.
-- **UI/UX (TV)**: Fixed layout shifting caused by mounting/unmounting `AnimatedGradientBorder` by ensuring it stays mounted and uses zero-padding when features are disabled.
-- **UI/UX (TV)**: Added a zero-cost performance short-circuit to the RGB border painter when the border width is zero.
+- **UI/UX (TV)**: Synchronized list keying with `ValueKey(currentSource.id)` and updated alignment to fully eliminate "bounce scroll" glitches.
+- **Theme**: Surgically gated "Fruit" theme logic to ensure it only applies to Web/PWA, strictly enforcing Material 3 on Native and TV.

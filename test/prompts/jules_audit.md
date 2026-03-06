@@ -34,4 +34,10 @@
 4.  **Verify**: Does the "Liquid Glass" blur lag? Does the audio stutter?
 5.  **Screenshot**: Take a screenshot of the Playback Panel during a transition.
 
+### Phase 4: CPU Throttling & Timer Drift (Web/PWA)
+1.  **Throttling**: Open Chrome DevTools > Performance > CPU: **6x slowdown**.
+2.  **Monitor**: Start any show and monitor `gapless_audio_engine.js` internal console logs.
+3.  **Audit**: Observe the look-ahead scheduler for the next track. Does the timer drift or jitter during the 3s transition window?
+4.  **Verification**: 0ms transition must be maintained even under heavy CPU pressure or UI isolate lag.
+
 **Report:** Provide the full Console log and any screenshots if glitches occur.

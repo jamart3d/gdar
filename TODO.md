@@ -8,28 +8,25 @@
 ## 🖥️ Google TV
 
 ### High Priority
-- [ ] **Default Screensaver Settings**: Set default visual style, speed, etc. for a premium out-of-the-box experience.
-- [ ] **Search UX**: Optimize search overlay for large screens; ensure on-screen keyboard doesn't obscure results.
-- [ ] **Pane Navigation Polish**: "Switch Pane" shortcut and visual indicator for inactive pane focus state.
-- [ ] **Settings Two-Pane Layout**: Redesign Settings screen for 16:9 using a Master-Detail pattern.
+- [x] **Pane Navigation Polish**: "Switch Pane" shortcut (Tab/S), Back-to-master navigation, and dimming visual indicators for inactive panes.
+- [x] **Track List Entry Transition**: Fix the "bounce scroll" glitch when entering the track list; ensure the initial scroll to the currently playing track is anchored and doesn't visually jitter.
+- [x] **Settings Two-Pane Layout**: Redesign Settings screen for 16:9 using a Master-Detail pattern.
 
-### Visual & Motion
-- [ ] **Display Typography**: Audit and upgrade headers to `DisplayMedium` / `DisplayLarge` on the playback pane.
-- [ ] **Dynamic Screensaver Slices**: Adjust number of logo slices dynamically based on translation velocity (more slices at higher speeds for a more "liquid" trail).
+### Performance & Optimization
+- [x] **Neon Glow Optimization**: Implement Rasterized Glyph Cache for `StealBanner`. Real-time Gaussian blurs were replaced with optimized static rasterization.
+- [x] **App Size Audit**: Initialized `size_guard` skill. Found 11.43MB assets; icons need optimization to WebP.
 
-### Performance
-- [ ] **Neon Glow Optimization** *(CRITICAL)*: Implement Rasterized Glyph Cache for `StealBanner`. Real-time Gaussian blurs are too expensive for TV SOCs.
-- [ ] **App Size Audit**: Run optimization audit looking for TV-only assets that could be trimmed.
-- [ ] **TV Safe Area**: Global setting to adjust margins for older panels that crop edges.
+### Backlog / Low Priority
+- [ ] **Default Screensaver Settings**: Fine-tune default visual style, speed, and performance mode for a premium out-of-the-box experience.
+- [ ] **TV Safe Area**: Global setting to adjust margins for rare older panels with overscan/edge-cropping issues.
 
 ### Debug
-- [ ] **Logo Position Jump**: Diagnose visual jolt/reset every few minutes with audio reactivity off. See `reports/archive/TODO_position_jump_debug.md` for full investigation notes.
-- [ ] **Premium TV Highlight Flow**: When `oilTvPremiumHighlight` is ON, the right-side track list has unstable D-pad navigation — focus can loop back to the currently playing track. 
-    - *Status*: Applied partial fixes (focus node pruning, gentle scrolling, focus-theft guards).
-    - *Blocking*: The `AnimatedGradientBorder` mount/unmount cycle in `TvFocusWrapper` triggers layout shifts that disrupt `ScrollablePositionedList` focus nodes. Needs a stabilized widget tree approach (always mount the border, toggle visibility via opacity/width).
+- [x] **Logo Position Jump**: Diagnose visual jolt/reset every few minutes with audio reactivity off. Resolved via position-reset mitigation.
+- [x] **Premium TV Highlight Flow**: When `oilTvPremiumHighlight` is ON, the right-side track list has unstable D-pad navigation — focus can loop back to the currently playing track. 
+    - *Result*: Resolved via "Surgical Stabilization" (stable widget tree in `TvFocusWrapper`) and Safe-Zone Scrolling in `PlaybackScreen`.
 
 ### Future Ideas
-- [ ] **Voice Search**: "Play shows from Winterland 1973" via Google Assistant.
+- [ ] **Voice & Modern Search UX**: Optimize search overlay for large screens/keyboard and add voice capabilities ("Play shows from Winterland 1973" via Google Assistant).
 - [ ] **Flutter GPU Investigation**: Explore `flutter_gpu` for higher-fidelity fluid simulation in the lava lamp screensaver.
 
 ---
@@ -38,7 +35,7 @@
 
 - [ ] **Background Longevity**: Extend playback when tab is backgrounded/throttled.
   - [ ] Explore Silent Video looping or Web Workers for timer consistency.
-  - [ ] Audit `gapless_audio_engine.js` for timer drift during CPU throttling.
+  - [x] **Timer Drift Audit**: Added Phase 4 to `test/prompts/jules_audit.md` to audit `gapless_audio_engine.js` under 6x CPU throttling.
 - [ ] **Bug — Track Skip on Buffer**: Engine skips next track if it isn't fully buffered when current track ends.
 - [ ] **Mobile Preload Setting**: User setting to choose how many tracks to buffer/preload ahead (currently defaults to 1).
 
@@ -46,8 +43,4 @@
 
 ## 📄 Spec & Documentation
 
-- [ ] **Merge Platform Specs into Feature Specs**: Consolidate `web_ui_design_spec.md` and `phone_ui_design_spec.md` into unified cross-platform specs.
-  - [ ] Create `spec_browse_flow.md` (routing, layout, logic for Years/Shows/Tracks).
-  - [ ] Create `spec_music_player.md` (sliding panel, playback controls, animations, audio service).
-  - [ ] Create `spec_settings.md` (configuration options and theme toggles).
-- [ ] **Centralize Theme Logic**: Document that `kIsWeb` applies the "Fruit" theme, referencing `fruit_theme_spec.md` as the styling source of truth.
+- [x] **Centralize Theme Logic**: Documented that `kIsWeb` applies the "Fruit" theme, referencing `docs/fruit_theme_spec.md` as the styling source of truth. Logic is surgically gated in `ThemeProvider`.

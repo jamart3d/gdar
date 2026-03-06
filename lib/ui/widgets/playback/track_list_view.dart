@@ -36,6 +36,8 @@ class TrackListView extends StatelessWidget {
   final ValueChanged<int>? onTrackFocused;
   final void Function(int, {bool shouldScroll})?
       onWrapAround; // Added for robust wrap-around
+  final int? initialScrollIndex;
+  final double initialScrollAlignment;
 
   const TrackListView({
     super.key,
@@ -51,6 +53,8 @@ class TrackListView extends StatelessWidget {
     this.onFocusRight,
     this.onTrackFocused,
     this.onWrapAround,
+    this.initialScrollIndex,
+    this.initialScrollAlignment = 0.0,
   });
 
   @override
@@ -88,11 +92,26 @@ class TrackListView extends StatelessWidget {
         trackToListItemIndex[source.tracks.length - 1] ??
             (listItems.length - 1);
 
+    int resolvedInitialIndex = initialScrollIndex ?? 0;
+    if (initialScrollIndex == null && audioProvider.currentTrack != null) {
+      for (int i = 0; i < listItems.length; i++) {
+        final item = listItems[i];
+        if (item is Track &&
+            item.title == audioProvider.currentTrack!.title &&
+            item.trackNumber == audioProvider.currentTrack!.trackNumber) {
+          resolvedInitialIndex = i;
+          break;
+        }
+      }
+    }
+
     return Focus(
       focusNode: trackListFocusNode,
       child: ScrollablePositionedList.builder(
         itemScrollController: itemScrollController,
         itemPositionsListener: itemPositionsListener,
+        initialScrollIndex: resolvedInitialIndex,
+        initialAlignment: initialScrollAlignment,
         padding: EdgeInsets.fromLTRB(8, topPadding, 8, bottomPadding),
         itemCount: listItems.length,
         itemBuilder: (context, index) {
