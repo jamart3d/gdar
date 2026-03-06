@@ -25,12 +25,16 @@ import 'package:shakedown/services/catalog_service.dart';
 import 'package:shakedown/providers/update_provider.dart';
 import 'package:shakedown/services/device_service.dart';
 import 'package:shakedown/services/wakelock_service.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:shakedown/ui/widgets/tv/tv_dual_pane_layout.dart';
 import 'package:shakedown/services/inactivity_service.dart';
 import 'package:shakedown/ui/screens/screensaver_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Force local font assets for all environments (prevents network fetching errors in audits/tests)
+  GoogleFonts.config.allowRuntimeFetching = false;
 
   initLogger();
 

@@ -205,6 +205,17 @@ The web version is now a full Progressive Web App (PWA) with a custom, high-perf
 - **Auto-Scrolling**: Intelligent visibility guards in the Show List and Track List that automatically scroll the view to keep the focused item comfortably within the viewport (30% margin).
 - **Inactivity Handling**: Automatic screensaver activation with a "Ghost Menu" accessible via D-pad for quick visual adjustments.
 
+## Developer Tooling
+
+For maximum productivity, this repository is optimized for the following high-performance CLI tools:
+- **ripgrep (`rg`)**: Lightning-fast code searching.
+- **fd (`fdfind`)**: Rapid file finding that respects `.gitignore`.
+- **jq**: Powerful JSON processor for inspecting large source data.
+- **fzf**: Fuzzy finder for navigating files and shell history.
+- **bat (`batcat`)**: Syntax-highlighted `cat` for clearer code reading.
+
+Detailed setup instructions for both Windows and Linux can be found in [AGENT_ENVIRONMENT.md](docs/AGENT_ENVIRONMENT.md).
+
 ## Repository Auditing (Jules)
 This repository is optimized for high-performance auditing via **Jules** (`jules.google.com`). These cloud-based audits are exploratory and visual, complementing our local deterministic tests. Specialized audit prompts are located in `test/prompts/`.
 
@@ -226,9 +237,13 @@ Direct Jules to the following file for a 100% comprehensive system check:
 
 ### **Automated Health & Unit Testing (`@[/checkup]`)**
 **Arlo** (your local Antigravity agent) can autonomously maintain repository health by running the specialized `@[/checkup]` workflow. This covers:
-- **Unit Testing**: Runs `flutter test` on relevant changed files.
+- **Unit Testing**: Runs `flutter test` on relevant changed files. **(Arlo handles < 5 files locally; Larger runs or full suites are handed off to Jules to save tokens).**
 - **Linting & Formatting**: Automatically fixes style violations and standardizes code.
 - **Static Analysis**: Identifies potential runtime errors or deprecated API usage.
 
-**To trigger a full health check/unit test run via Arlo:**
-> "Run the `@[/checkup]` workflow on the current branch and report the Health Score."
+**To trigger a targeted local check (Small Tasks):**
+> "Run the `@[/checkup]` workflow on the current branch."
+
+**To trigger a Full High-Volume Test (Large Tasks):**
+> "Run all tests via Jules (jules new 'Run all tests')."
+

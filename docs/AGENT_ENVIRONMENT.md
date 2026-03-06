@@ -60,6 +60,9 @@ The agent relies on high-performance tools and specific PowerShell syntax.
 *   **Required CLI Tools**:
     *   **ripgrep (`rg`)**: `choco install ripgrep` or `scoop install ripgrep`.
     *   **fd**: `choco install fd` or `scoop install fd`.
+    *   **jq**: `choco install jq` or `scoop install jq`.
+    *   **fzf**: `choco install fzf` or `scoop install fzf`.
+    *   **bat**: `choco install bat` or `scoop install bat`.
 *   **Shell Syntax**: Chained commands MUST use `;` for separation (e.g., `cd path ; ls`). Never use `&&`.
 *   **Brain Location**: `%USERPROFILE%\.gemini\antigravity\brain`
 
@@ -67,7 +70,12 @@ The agent relies on high-performance tools and specific PowerShell syntax.
 The agent uses standard Linux utilities and bash syntax.
 *   **Required CLI Tools**:
     *   **ripgrep (`rg`)**: `sudo apt install ripgrep`.
-    *   **fd-find (`fd`)**: `sudo apt install fd-find`.
+    *   **fd-find (`fdfind`)**: `sudo apt install fd-find`. 
+        *   *(Tip: Add `alias fd='fdfind'` to your `.bashrc` or `.zshrc` for speed).*
+    *   **jq**: `sudo apt install jq` (High-performance JSON processor).
+    *   **fzf**: `sudo apt install fzf` (Fuzzy finder for files and history).
+    *   **bat**: `sudo apt install bat` (Syntax-highlighted `cat`).
+        *   *(Tip: Add `alias bat='batcat'` to your `.bashrc` for speed).*
 *   **Shell Syntax**: Standard `&&` or `;` can be used for chaining.
 *   **Brain Location**: `~/.gemini/antigravity/brain`
 
@@ -120,9 +128,9 @@ While the underlying technology is **Antigravity**, assigning a personal name li
 
 ### Best Practices for Interaction:
 1.  **Workflow First**: Instead of asking Arlo to "clean up the project," use the command `/clean`. This ensures the agent follows the pre-defined, safe procedure.
-2.  **Contextual Awareness**: Arlo has access to `lib/`, `test/`, and `.agent/specs/`. When starting a feature, refer specifically to a spec file in `.agent/specs/` to ensure architectural alignment.
+2.  **Contextual Awareness**: Arlo has access to `lib/`, `test/`, and the entire `.agent/` directory (including `rules/`, `specs/`, `workflows/`, and `skills/`). When starting a feature, refer specifically to a spec file in `.agent/specs/` to ensure architectural alignment.
 3.  **Turbo Execution**: Steps in workflows marked with `// turbo` can be executed automatically by Arlo (if configured with `SafeToAutoRun: true`). This accelerates routine tasks like formatting and linting.
-4.  **Verification**: Always ask Arlo to run `/checkup` after a significant refactor to ensure no regressions were introduced.
+4.  **Verification**: Always run `/checkup` for a rapid local sanity check. For **significant refactors**, follow it up with a full **Jules Audit** to ensure comprehensive regression coverage.
 
 ### Arlo's Execution & Guardrails
 To prevent accidental breakages, Arlo operates under strict quota and execution guardrails (`.agent/rules/efficiency_guardrails.md`). 
@@ -146,7 +154,7 @@ To maintain a high-performance codebase like **myapp**, we use a two-tiered veri
 *   **Primary Execution**: **Arlo** (Local Antigravity Agent) via `@[/checkup]` or `flutter test`.
 *   **High-Volume Execution**: **Jules** (External Cloud Platform) via the CLI + Auth Token.
 *   **Location**: `/test/`
-*   **The "Why"**: These are for binary, deterministic logic. If a function returns `X` but expected `Y`, it fails. This is the first line of defense against logic, syntax, and structural regressions. **Jules is preferred for high-volume or final CI-style runs** as it offers a more stable and high-performance execution environment than local machines.
+*   **The "Why"**: These are for binary, deterministic logic. If a function returns `X` but expected `Y`, it fails. This is the first line of defense against logic, syntax, and structural regressions. **Jules is REQUIRED for high-volume or full suites (> 5 files)** to protect Arlo's token quota and context stability.
 
 ### 2. Cognitive Audits (Prompt-Based)
 *   **Agent**: **Jules** (External Cloud Platform at `jules.google.com`)

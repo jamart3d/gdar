@@ -27,15 +27,16 @@ Always-loaded + trigger-based behavioral guardrails:
 
 ## 4. Agent Workflows (`.agent/workflows/`)
 Slash-command automation:
-`/checkup`, `/save`, `/glass_audit`, `/spec_audit`,
-`/tv_flow_audit`, `/quality_audit`, `/test_fixer`,
-`/screenshot_audit`, `/mock_regen`, `/image_to_code`, `/session_debrief`.
+`/checkup` (Local Sanity), `/save`, `/fruit_audit`, `/audit`,
+`/issue_report`, `/screenshot_audit`, `/mock_regen`, `/image_to_code`, `/session_debrief`.
 
 ## 5. Agent Skills (`.agent/skills/`)
 * `shipit/` — Autonomous release pipeline (version, build, deploy).
+* `test_run_guard/` — Safety logic for background test runners.
 * `test_mocking_templates/` — Mockito stubs & MultiProvider setup.
 * `web_debug_suite/` — Web audio engine debug tools.
 * `dev_tools/` — ADB wrappers for screenshots and logs.
+* `ripple_control/` — Dependency ripple detection.
 
 ## 6. Static Configs (root + `.vscode/`)
 * `.editorconfig`, `.gitattributes` — Cross-platform formatting.

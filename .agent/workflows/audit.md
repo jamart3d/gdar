@@ -14,7 +14,7 @@ Run the sections relevant to the user's request. If the user just says "audit", 
 
 ## Section 1: General Health Check
 1. **Analyze**: `mcp_dart-mcp-server_analyze_files`
-2. **Test**: `mcp_dart-mcp-server_run_tests`
+2. **Test**: `mcp_dart-mcp-server_run_tests`. **(Arlo handles < 5 files locally; for full suites, use Jules).**
 3. **Format**: `mcp_dart-mcp-server_dart_format`
 4. **Debug Clean**: Scan for `print(` and `logger.` statements.
 5. **Dependencies**: `flutter pub outdated`.

@@ -32,3 +32,10 @@ A curated allow-list of safe commands lives in `.agent/rules/auto_approve.md`.
 * **Read-only commands** (file reads, `git status/log/diff`, `flutter analyze`, directory listings, path lookups) MUST always be run with `SafeToAutoRun: true`. Never prompt the user for these.
 * **Platform syntax**: Windows 10 uses PowerShell — chain commands with `;` not `&&`. ChromeOS uses bash — `&&` is fine.
 * Autonomous skills (`shipit`, etc.) are exempt from Rule 1 (Stop and Ask) for the commands explicitly listed in `auto_approve.md`.
+
+### 7. Testing Thresholds (Arlo vs. Jules)
+To protect token quota and provide high-performance feedback:
+* **Small Tests (< 5 files):** Arlo handles these locally for immediate feedback.
+* **Large Tests (Full suite or > 5 files):** Arlo MUST stop and suggest using **Jules** (Web UI or CLI).
+* **Action:** If the user asks for a "full test run" or "all tests", Arlo should explain the token cost and provide the Jules CLI command (e.g., `jules new "Run all tests"`) instead of executing `flutter test` locally.
+

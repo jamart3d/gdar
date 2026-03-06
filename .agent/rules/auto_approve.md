@@ -47,6 +47,11 @@ They are read-only or strictly non-destructive and the user must never be prompt
 | Command | Notes |
 |---|---|
 | `where.exe ...` | Find executable path |
+| `rg ...` | ripgrep |
+| `fd ...` | fd-find |
+| `jq ...` | JSON processing |
+| `fzf ...` | Fuzzy find |
+| `bat ...` | Syntax highlighted cat |
 | `$env:...` reads | Environment variable reads |
 | `cat` (if aliased) | File content |
 
@@ -61,7 +66,11 @@ They are read-only or strictly non-destructive and the user must never be prompt
 | `ls -la ...` | Directory listing |
 | `find ...` | File search |
 | `grep ...` | Text search in files |
-| `fd ...` | Fast file finder |
+| `rg ...` | **ripgrep** (Fastsest search) |
+| `fd ...` / `fdfind ...` | **fd** (Fastest file find) |
+| `jq ...` | High-performance JSON processing |
+| `fzf ...` | Fuzzy find (read-only) |
+| `bat ...` / `batcat ...` | Syntax highlighted cat |
 | `wc -l ...` | Line count |
 | `head` / `tail` | Partial file read |
 | `pwd` | Current directory |

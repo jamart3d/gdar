@@ -23,8 +23,9 @@ This workflow is optimized for speed and developer productivity. It prioritizes 
 
 ## 3. Intelligent Testing
 // turbo
-1. **Targeted Run**: Run `mcp_dart-mcp-server_run_tests` on specific test files related to current changes (detected via `git status`).
-2. **Full Run (Optional)**: If targeted tests pass, run the full test suite in the background.
+1. **Targeted Run**: Run `mcp_dart-mcp-server_run_tests` on specific test files related to current changes (detected via `git status`). Limit to < 5 files.
+2. **Jules Handoff**: If a full test suite is requested or needed, Arlo should suggest: `"Run all tests via Jules (jules new 'Run all tests') to save tokens."`
+
 
 ## 4. Visual/Design Check (Micro)
 1. Scan current working file for `withOpacity()` (deprecated preference) and suggest `.withValues(alpha: ...)`.
