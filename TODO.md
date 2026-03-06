@@ -59,4 +59,4 @@
 
 ## 🤖 Agent Tooling & Workflows
 
-- [ ] **PowerShell Pipe Workaround**: For Windows PowerShell agent execution, look into changing commands that use a pipe (`|`) to instead write output to a temporary file in `%TEMP%` and then read it, bypassing the shell's restricted pipe features.
+- [x] **PowerShell Pipe Workaround**: For Windows PowerShell agent execution, look into changing commands that use a pipe (`|`) to instead write output to a temporary file in `%TEMP%` and then read it, bypassing the shell's restricted pipe features.

@@ -133,6 +133,9 @@ To prevent accidental breakages, Arlo operates under strict quota and execution 
         *   **Git State**: `git status`, `git log`, `git diff`, `git branch`, `git rev-parse HEAD`.
         *   **Tooling**: `flutter analyze`, `dart analyze`, `flutter format .`, `flutter --version`, `where.exe`.
         *   (For **ChromeOS/Linux**, standard bash equivalents like `cat`, `ls`, and `grep` are substituted).
+*   **Cross-Platform Shell Mastery**: Arlo uses the `.agent/skills/cross_platform_shell` skill to intelligently switch between OS paradigms:
+    *   **Command Chaining**: Semicolons (`;`) for PowerShell vs. `&&` for Bash.
+    *   **Pipe Workarounds**: PowerShell pipes (`|`) can be brittle in automated wrappers. On Windows, Arlo avoids long piped commands by writing output out to `%TEMP%` and reading it sequentially, bypassing environment restrictions.
 
 ---
 
@@ -178,16 +181,17 @@ The following specialized prompts (located in `test/prompts/`) are submitted to 
 
     *   **Option B: CLI via Windows (PowerShell)**: 
         ```powershell
-        Get-Content .\test\prompts\master_audit.md | jules prompt
+        Get-Content .\test\prompts\master_audit.md | jules new
         ```
         
     *   **Option C: CLI via ChromeOS (Linux/bash)**: 
         ```bash
-        cat test/prompts/master_audit.md | jules prompt
+        cat test/prompts/master_audit.md | jules new
         ```
         
     *   **For Running Deterministic Tests (Any Interface)**: 
         > "Run the `flutter test` suite and report any failures."
+        *(Via CLI: `jules new "Run the flutter test suite and report any failures."`)*
 
 4.  **Feedback Loop**: Bring logs back to Arlo for implementation work.
 
