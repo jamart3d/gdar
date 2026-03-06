@@ -89,6 +89,10 @@ These commands are auto-approved ONLY when executed within the specific skill wo
 - `git add .` (or individual files)
 - `git commit -m "..."`
 - `git commit --amend`
+- `git push`
+- `flutter build appbundle --release`
+- `flutter build web --release`
+- `firebase deploy --only hosting`
 
 ---
 

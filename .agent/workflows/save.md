@@ -5,6 +5,8 @@ description: Quick-save workflow to commit and push changes.
 
 **TRIGGERS:** save, backup, commit
 
+// turbo-all
+
 ## Usage
 Run this workflow whenever you want to quickly backup your work.
 
