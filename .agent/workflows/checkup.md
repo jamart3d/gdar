@@ -33,4 +33,4 @@ This workflow is optimized for speed and developer productivity. It prioritizes 
 ## 5. Summary
 1. Provide a "Health Score" (Errors/Warnings count).
 2. List automated fixes applied (if any).
-3. If tests failed, offer to trigger the `/test_fixer` workflow.
+3. If tests failed, offer to trigger the `/issue_report` workflow.
