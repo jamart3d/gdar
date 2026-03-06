@@ -10,6 +10,7 @@ import 'package:shakedown/services/device_service.dart';
 import 'package:shakedown/ui/widgets/show_list/fast_scrollbar.dart';
 import 'package:shakedown/ui/widgets/show_list/show_list_item.dart';
 import 'package:shakedown/ui/widgets/tv/tv_scrollbar.dart';
+import 'package:shakedown/providers/theme_provider.dart';
 
 /// The scrollable list of shows displayed in [ShowListScreen].
 class ShowListBody extends StatelessWidget {
@@ -29,6 +30,7 @@ class ShowListBody extends StatelessWidget {
   final Map<int, FocusNode>? showFocusNodes;
   final void Function(int, {bool shouldScroll})? onFocusShow;
   final VoidCallback? onFocusRight;
+  final double topPadding;
 
   const ShowListBody({
     super.key,
@@ -48,6 +50,7 @@ class ShowListBody extends StatelessWidget {
     this.showFocusNodes,
     this.onFocusShow,
     this.onFocusRight,
+    this.topPadding = 0.0,
   });
 
   @override
@@ -69,6 +72,7 @@ class ShowListBody extends StatelessWidget {
       itemScrollController: itemScrollController,
       itemPositionsListener: itemPositionsListener,
       padding: EdgeInsets.only(
+        top: topPadding,
         bottom: isTv ? 40 : 160,
         right: isTv ? 0 : 28, // reserve space for fast scrollbar thumb
       ),
@@ -157,6 +161,9 @@ class ShowListBody extends StatelessWidget {
       );
     }
 
+    final bool isFruit =
+        context.read<ThemeProvider>().themeStyle == ThemeStyle.fruit;
+
     // Phone: measure mini player height accurately from its layout constants
     // rather than hardcoding, so it works across all device safe area sizes.
     final bottomSafeArea = MediaQuery.of(context).padding.bottom;
@@ -168,8 +175,9 @@ class ShowListBody extends StatelessWidget {
     //   bottom padding: 20px
     //   ─────────────────────
     //   content total:  86px  + device bottom safe area
-    final miniPlayerHeight =
-        audioProvider.currentTrack != null ? 86.0 + bottomSafeArea : 0.0;
+    final miniPlayerHeight = (audioProvider.currentTrack != null && !isFruit)
+        ? 86.0 + bottomSafeArea
+        : 0.0;
 
     return Stack(
       children: [

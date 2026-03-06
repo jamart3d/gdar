@@ -4,12 +4,10 @@ import 'package:shakedown/providers/settings_provider.dart';
 import 'package:shakedown/providers/show_list_provider.dart';
 import 'package:shakedown/services/device_service.dart';
 import 'package:shakedown/ui/widgets/tv/tv_focus_wrapper.dart';
-import 'package:shakedown/ui/widgets/theme/neumorphic_wrapper.dart';
 import 'package:shakedown/ui/widgets/theme/liquid_glass_wrapper.dart';
 import 'package:shakedown/providers/theme_provider.dart';
 
 import 'package:lucide_icons/lucide_icons.dart';
-import 'package:shakedown/ui/widgets/theme/fruit_icon_button.dart';
 
 class ShowListSearchBar extends StatelessWidget {
   final TextEditingController controller;
@@ -34,68 +32,92 @@ class ShowListSearchBar extends StatelessWidget {
 
     Widget searchBar;
 
-    if (isFruitStyle &&
-        settingsProvider.useNeumorphism &&
-        !settingsProvider.useTrueBlack) {
-      // Custom Fruit Search Basin (Non-Material 3)
-      searchBar = LiquidGlassWrapper(
-        enabled: true,
-        borderRadius: BorderRadius.circular(28),
-        opacity: 0.1,
-        blur: 8,
-        child: NeumorphicWrapper(
-          borderRadius: 28,
-          style: NeumorphicStyle.concave,
-          intensity: 0.85,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Row(
-              children: [
-                Icon(
-                  LucideIcons.search,
-                  size: 20,
-                  color: Theme.of(context)
-                      .colorScheme
-                      .onSurface
-                      .withValues(alpha: 0.5),
+    final bool useFruitGlass = isFruitStyle &&
+        (settingsProvider.fruitEnableLiquidGlass ||
+            settingsProvider.useNeumorphism) &&
+        !settingsProvider.useTrueBlack;
+
+    if (useFruitGlass) {
+      // Custom Fruit Search Basin (Simplified - buttons managed by AppBar)
+      searchBar = ListenableBuilder(
+        listenable: focusNode,
+        builder: (context, child) {
+          final hasFocus = focusNode.hasFocus;
+          final primaryColor = Theme.of(context).colorScheme.primary;
+
+          return LiquidGlassWrapper(
+            enabled: true,
+            borderRadius: BorderRadius.circular(28),
+            opacity: 0.65,
+            blur: 15,
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(28),
+                border: Border.all(
+                  color: hasFocus
+                      ? primaryColor.withValues(alpha: 0.5)
+                      : Colors.transparent,
+                  width: 1.5,
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: TextField(
-                    controller: controller,
-                    focusNode: focusNode,
-                    onSubmitted: onSubmitted,
-                    style: Theme.of(context).textTheme.bodyLarge,
-                    decoration: InputDecoration(
-                      hintText: 'Search venue, date, location...',
-                      hintStyle: TextStyle(
-                        color: Theme.of(context)
-                            .colorScheme
-                            .onSurface
-                            .withValues(alpha: 0.35),
+              ),
+              child: Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                child: Row(
+                  children: [
+                    Icon(
+                      LucideIcons.search,
+                      size: 18,
+                      color: hasFocus
+                          ? primaryColor
+                          : Theme.of(context)
+                              .colorScheme
+                              .onSurface
+                              .withValues(alpha: 0.7),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: TextField(
+                        controller: controller,
+                        focusNode: focusNode,
+                        onSubmitted: onSubmitted,
+                        style: Theme.of(context)
+                            .textTheme
+                            .bodyLarge
+                            ?.copyWith(fontSize: 16),
+                        decoration: const InputDecoration(
+                          hintText: 'Search venue, date, location...',
+                          hintStyle: TextStyle(
+                            fontSize: 14,
+                            color: Colors.black38,
+                          ),
+                          border: InputBorder.none,
+                          isDense: true,
+                        ),
                       ),
-                      border: InputBorder.none,
-                      isDense: true,
                     ),
-                  ),
+                    if (controller.text.isNotEmpty)
+                      IconButton(
+                        visualDensity: VisualDensity.compact,
+                        icon: Icon(
+                          LucideIcons.xCircle,
+                          size: 18,
+                          color: hasFocus
+                              ? primaryColor.withValues(alpha: 0.8)
+                              : Theme.of(context)
+                                  .colorScheme
+                                  .onSurface
+                                  .withValues(alpha: 0.6),
+                        ),
+                        onPressed: () => controller.clear(),
+                      ),
+                  ],
                 ),
-                if (controller.text.isNotEmpty)
-                  FruitIconButton(
-                    icon: Icon(
-                      LucideIcons.xCircle,
-                      size: 20,
-                      color: Theme.of(context)
-                          .colorScheme
-                          .onSurface
-                          .withValues(alpha: 0.4),
-                    ),
-                    onPressed: () => controller.clear(),
-                    tooltip: 'Clear',
-                  ),
-              ],
+              ),
             ),
-          ),
-        ),
+          );
+        },
       );
     } else {
       // Standard Material 3 SearchBar fallback

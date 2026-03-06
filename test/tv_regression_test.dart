@@ -430,6 +430,11 @@ class FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
   @override
   void setRgbAnimationSpeed(double speed) {}
   @override
+  void setFruitEnableLiquidGlass(bool value) {}
+  @override
+  void setHighlightPlayingWithRgb(bool value) {}
+
+  @override
   Future<void> setSeedColor(Color? color) async {}
   @override
   void toggleHideTrackDuration() {}

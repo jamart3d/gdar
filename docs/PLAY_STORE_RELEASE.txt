@@ -1,3 +1,11 @@
+What's new in v1.1.56
+• Fixed infinite-width crash in segmented controls.
+• Upgraded Settings screen header with premium "Liquid Glass" translucency.
+• Integrated FruitTabBar bottom navigation directly into the Settings screen.
+• Addressed PowerShell pipe compatibility in agent TODOs.
+
+---
+
 What's new in v1.1.55
 • Added "Consider Donating to the Internet Archive" link with heartbeat icon.
 • Implemented TV "Switch Pane" shortcut and Back-to-master navigation.

@@ -19,6 +19,7 @@ import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:shakedown/ui/screens/show_list/show_list_logic_mixin.dart';
 import 'package:shakedown/ui/widgets/show_list/show_list_shell.dart';
 import 'package:shakedown/ui/widgets/show_list/show_list_body.dart';
+import 'package:shakedown/providers/theme_provider.dart';
 import 'package:shakedown/services/device_service.dart';
 
 class ShowListScreen extends StatefulWidget {
@@ -402,7 +403,11 @@ class ShowListScreenState extends State<ShowListScreen>
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     final isTrueBlackMode = isDarkMode && settingsProvider.useTrueBlack;
 
-    if (!isTrueBlackMode &&
+    final themeProvider = context.watch<ThemeProvider>();
+    final isFruit = themeProvider.themeStyle == ThemeStyle.fruit;
+
+    if (!isFruit &&
+        !isTrueBlackMode &&
         settingsProvider.highlightCurrentShowCard &&
         audioProvider.currentShow != null) {
       String seed = audioProvider.currentShow!.name;
@@ -449,6 +454,7 @@ class ShowListScreenState extends State<ShowListScreen>
         showFocusNodes: _showFocusNodes,
         onFocusShow: focusShow,
         onShowFocused: _onShowFocused,
+        topPadding: isFruit ? (MediaQuery.paddingOf(context).top + 80) : 0,
       ),
     );
   }

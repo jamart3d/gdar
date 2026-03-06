@@ -13,6 +13,7 @@ import 'package:shakedown/providers/theme_provider.dart';
 import 'package:shakedown/ui/widgets/theme/fruit_icon_button.dart';
 import 'package:shakedown/ui/widgets/theme/liquid_glass_wrapper.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:shakedown/ui/widgets/show_list/show_list_search_bar.dart';
 
 class ShowListAppBar extends StatelessWidget implements PreferredSizeWidget {
   final Animation<double> randomPulseAnimation;
@@ -23,6 +24,9 @@ class ShowListAppBar extends StatelessWidget implements PreferredSizeWidget {
   final VoidCallback onTitleTap;
   final Color? backgroundColor;
   final bool enableDiceHaptics;
+  final TextEditingController? searchController;
+  final FocusNode? searchFocusNode;
+  final Function(String)? onSearchSubmitted;
 
   const ShowListAppBar({
     super.key,
@@ -34,6 +38,9 @@ class ShowListAppBar extends StatelessWidget implements PreferredSizeWidget {
     required this.onTitleTap,
     this.backgroundColor,
     this.enableDiceHaptics = false,
+    this.searchController,
+    this.searchFocusNode,
+    this.onSearchSubmitted,
   });
 
   @override
@@ -331,21 +338,76 @@ class ShowListAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   Widget _buildFruitFloatingHeader(BuildContext context) {
     final showListProvider = context.watch<ShowListProvider>();
+    final primaryColor = Theme.of(context).colorScheme.primary;
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.end,
-        children: [
-          // Right: Search (matches "More" button position)
-          _buildFruitHeaderButton(
-            context,
-            icon: showListProvider.isSearchVisible
-                ? LucideIcons.x
-                : LucideIcons.search,
-            onPressed: onToggleSearch,
-          ),
-        ],
+      padding: const EdgeInsets.symmetric(horizontal: 24.0),
+      child: Center(
+        child: Row(
+          children: [
+            // Left/Center Area: Title or Search
+            Expanded(
+              child: showListProvider.isSearchVisible &&
+                      searchController != null &&
+                      searchFocusNode != null
+                  ? Row(
+                      children: [
+                        Expanded(
+                          child: ShowListSearchBar(
+                            controller: searchController!,
+                            focusNode: searchFocusNode!,
+                            onSubmitted: onSearchSubmitted ?? (_) {},
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        TextButton(
+                          onPressed: () {
+                            showListProvider.setSearchVisible(false);
+                            searchController!.clear();
+                          },
+                          child: Text(
+                            'Cancel',
+                            style: TextStyle(
+                              color: primaryColor,
+                              fontWeight: FontWeight.w600,
+                              fontSize: 15,
+                            ),
+                          ),
+                        ),
+                      ],
+                    )
+                  : Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        GestureDetector(
+                          onTap: onTitleTap,
+                          child: const ShakedownTitle(
+                            fontSize: 20,
+                            animateOnStart: true,
+                            shakeDelay: Duration(milliseconds: 1700),
+                          ),
+                        ),
+                        _buildFruitHeaderButton(
+                          context,
+                          icon: LucideIcons.search,
+                          onPressed: onToggleSearch,
+                        ),
+                      ],
+                    ),
+            ),
+            const SizedBox(width: 12),
+            // Right Area: Fixed Theme Toggle (Never Moves)
+            _buildFruitHeaderButton(
+              context,
+              icon: Theme.of(context).brightness == Brightness.dark
+                  ? Icons.light_mode_outlined
+                  : Icons.dark_mode_outlined,
+              onPressed: () {
+                context.read<ThemeProvider>().toggleTheme();
+              },
+            ),
+          ],
+        ),
       ),
     );
   }

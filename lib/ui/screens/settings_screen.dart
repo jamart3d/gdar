@@ -17,6 +17,11 @@ import 'package:shakedown/providers/update_provider.dart';
 import 'package:shakedown/ui/widgets/onboarding/update_banner.dart';
 import 'package:shakedown/services/device_service.dart';
 import 'package:shakedown/ui/screens/tv_settings_screen.dart';
+import 'package:shakedown/ui/widgets/fruit_tab_bar.dart';
+import 'package:shakedown/ui/widgets/theme/fruit_icon_button.dart';
+import 'package:shakedown/ui/widgets/theme/liquid_glass_wrapper.dart';
+import 'package:shakedown/ui/widgets/theme/neumorphic_wrapper.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 
 class SettingsScreen extends StatefulWidget {
   final String? highlightSetting;
@@ -113,26 +118,22 @@ class _SettingsScreenState extends State<SettingsScreen>
   Widget build(BuildContext context) {
     final settingsProvider = context.watch<SettingsProvider>();
     final audioProvider = context.watch<AudioProvider>();
+    final themeProvider = context.watch<ThemeProvider>();
+    final isFruit = themeProvider.themeStyle == ThemeStyle.fruit;
     final scaleFactor =
         FontLayoutConfig.getEffectiveScale(context, settingsProvider);
 
     final updateProvider = context.watch<UpdateProvider>();
 
-    // Check for TV mode and return dedicated screen
     if (context.read<DeviceService>().isTv) {
-      // We need to pass necessary props if any, or TvSettingsScreen manages its own state.
-      // The current settings screen manages `highlightSetting` which might be deep-linked.
-      // TvSettingsScreen doesn't support deep-linking yet, but we can add it later.
       return const TvSettingsScreen();
     }
 
     Color? backgroundColor;
-    // Only apply custom background color if NOT in "True Black" mode.
-    // True Black mode = Dark Mode + Custom Seed + No Dynamic Color.
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     final isTrueBlackMode = isDarkMode && settingsProvider.useTrueBlack;
 
-    if (context.read<ThemeProvider>().themeStyle != ThemeStyle.fruit &&
+    if (!isFruit &&
         !isTrueBlackMode &&
         settingsProvider.highlightCurrentShowCard &&
         audioProvider.currentShow != null) {
@@ -153,10 +154,80 @@ class _SettingsScreenState extends State<SettingsScreen>
       scaffoldBackgroundColor: effectiveBackgroundColor,
       appBarTheme: baseTheme.appBarTheme.copyWith(
         backgroundColor: effectiveBackgroundColor,
-        surfaceTintColor:
-            Colors.transparent, // Disable tint to align with scaffold
+        surfaceTintColor: Colors.transparent,
       ),
     );
+
+    final List<Widget> slivers = [
+      if (isFruit)
+        SliverToBoxAdapter(
+          child: SizedBox(height: MediaQuery.paddingOf(context).top + 80),
+        )
+      else
+        const SliverAppBar.large(
+          title: Text('Settings'),
+        ),
+      SliverList(
+        delegate: SliverChildListDelegate([
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: UpdateBanner(
+              updateInfo: updateProvider.updateInfo,
+              isSimulated: updateProvider.isSimulated,
+              onUpdateSelected: () => updateProvider.startUpdate(),
+              scaleFactor: scaleFactor,
+            ),
+          ),
+          SupportSection(scaleFactor: scaleFactor),
+          UsageInstructionsSection(
+            scaleFactor: scaleFactor,
+            initiallyExpanded: widget.highlightSetting == 'usage_instructions',
+          ),
+          AppearanceSection(
+            key: const ValueKey('appearance_section'),
+            scaleFactor: scaleFactor,
+            initiallyExpanded: widget.highlightSetting == 'appearance',
+            showFontSelection: widget.showFontSelection,
+          ),
+          InterfaceSection(
+            scaleFactor: scaleFactor,
+            initiallyExpanded: widget.highlightSetting == 'interface',
+          ),
+          const SourceFilterSettings(key: ValueKey('source_filter_section')),
+          PlaybackSection(
+            scaleFactor: scaleFactor,
+            initiallyExpanded: _playbackExpanded ||
+                widget.highlightSetting == 'play_on_tap' ||
+                widget.highlightSetting == 'playback_messages' ||
+                widget.highlightSetting == 'offline_buffering' ||
+                widget.highlightSetting == 'playback' ||
+                widget.highlightSetting == 'random_playback' ||
+                widget.highlightSetting == 'enable_buffer_agent',
+            highlightTriggerCount: _highlightTriggerCount,
+            activeHighlightKey: _activeHighlightKey,
+            settingKeys: _settingKeys,
+            onScrollToSetting: _scrollToSetting,
+            isHighlightSettingMatching: widget.highlightSetting == 'playback',
+          ),
+          Builder(builder: (context) {
+            if (!_settingKeys.containsKey('collection_statistics')) {
+              _settingKeys['collection_statistics'] =
+                  GlobalKey(debugLabel: 'collection_statistics');
+            }
+            return Container(
+              key: _settingKeys['collection_statistics'],
+              child: CollectionStatistics(
+                initiallyExpanded:
+                    widget.highlightSetting == 'collection_statistics',
+              ),
+            );
+          }),
+          DataSection(scaleFactor: scaleFactor),
+          AboutSection(scaleFactor: scaleFactor),
+          const SizedBox(height: 50),
+        ]),
+      ),
+    ];
 
     return AnimatedTheme(
       data: effectiveTheme,
@@ -170,79 +241,125 @@ class _SettingsScreenState extends State<SettingsScreen>
               : const TextScaler.linear(1.0),
         ),
         child: Scaffold(
-          // No explicit background color needed; inherits from Theme
-          body: CustomScrollView(
-            slivers: [
-              const SliverAppBar.large(
-                title: Text('Settings'),
-              ),
-              SliverList(
-                delegate: SliverChildListDelegate([
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                    child: UpdateBanner(
-                      updateInfo: updateProvider.updateInfo,
-                      isSimulated: updateProvider.isSimulated,
-                      onUpdateSelected: () => updateProvider.startUpdate(),
-                      scaleFactor: scaleFactor,
+          body: Stack(
+            children: [
+              CustomScrollView(slivers: slivers),
+              if (isFruit)
+                Positioned(
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  child: _buildFruitHeader(context),
+                ),
+            ],
+          ),
+          bottomNavigationBar: isFruit
+              ? FruitTabBar(
+                  selectedIndex: 3,
+                  onOpenPlaybackScreen: () {
+                    // Navigate to playback if needed? FruitTabBar handles Now item too.
+                    // Usually this callback opens the full player screen.
+                  },
+                )
+              : null,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFruitHeader(BuildContext context) {
+    final settingsProvider = context.watch<SettingsProvider>();
+    final themeProvider = context.watch<ThemeProvider>();
+
+    return ShaderMask(
+      shaderCallback: (bounds) {
+        return const LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [Colors.black, Colors.transparent],
+          stops: [0.7, 1.0],
+        ).createShader(bounds);
+      },
+      blendMode: BlendMode.dstIn,
+      child: LiquidGlassWrapper(
+        enabled: themeProvider.themeStyle == ThemeStyle.fruit &&
+            settingsProvider.fruitEnableLiquidGlass,
+        showBorder: false,
+        blur: 25,
+        opacity: 0.85,
+        borderRadius: BorderRadius.zero,
+        child: Container(
+          height: MediaQuery.paddingOf(context).top + 80,
+          padding: EdgeInsets.only(top: MediaQuery.paddingOf(context).top),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24.0),
+            child: Row(
+              children: [
+                _buildFruitHeaderButton(
+                  context,
+                  icon: LucideIcons.chevronLeft,
+                  onPressed: () => Navigator.of(context).pop(),
+                ),
+                const Expanded(
+                  child: Center(
+                    child: Text(
+                      'Settings',
+                      style: TextStyle(
+                        fontFamily: 'Inter',
+                        fontSize: 20,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: -0.5,
+                      ),
                     ),
                   ),
-                  SupportSection(scaleFactor: scaleFactor),
-                  UsageInstructionsSection(
-                    scaleFactor: scaleFactor,
-                    initiallyExpanded:
-                        widget.highlightSetting == 'usage_instructions',
-                  ),
-                  AppearanceSection(
-                    scaleFactor: scaleFactor,
-                    initiallyExpanded: widget.highlightSetting == 'appearance',
-                    showFontSelection: widget.showFontSelection,
-                  ),
-                  InterfaceSection(
-                    scaleFactor: scaleFactor,
-                    initiallyExpanded: widget.highlightSetting == 'interface',
-                  ),
-                  const SourceFilterSettings(
-                      key: ValueKey('source_filter_section')),
-                  PlaybackSection(
-                    scaleFactor: scaleFactor,
-                    initiallyExpanded: _playbackExpanded ||
-                        widget.highlightSetting == 'play_on_tap' ||
-                        widget.highlightSetting == 'playback_messages' ||
-                        widget.highlightSetting == 'offline_buffering' ||
-                        widget.highlightSetting == 'playback' ||
-                        widget.highlightSetting == 'random_playback' ||
-                        widget.highlightSetting == 'enable_buffer_agent',
-                    highlightTriggerCount: _highlightTriggerCount,
-                    activeHighlightKey: _activeHighlightKey,
-                    settingKeys: _settingKeys,
-                    onScrollToSetting: _scrollToSetting,
-                    isHighlightSettingMatching:
-                        widget.highlightSetting == 'playback',
-                  ),
-                  Builder(builder: (context) {
-                    // Register key for scrolling
-                    if (!_settingKeys.containsKey('collection_statistics')) {
-                      _settingKeys['collection_statistics'] =
-                          GlobalKey(debugLabel: 'collection_statistics');
-                    }
-                    return Container(
-                      key: _settingKeys['collection_statistics'],
-                      child: CollectionStatistics(
-                        initiallyExpanded:
-                            widget.highlightSetting == 'collection_statistics',
-                      ),
-                    );
-                  }),
-                  DataSection(scaleFactor: scaleFactor),
-                  AboutSection(scaleFactor: scaleFactor),
-                  const SizedBox(height: 50),
-                ]),
-              ),
-            ],
+                ),
+                _buildFruitHeaderButton(
+                  context,
+                  icon: Theme.of(context).brightness == Brightness.dark
+                      ? LucideIcons.sun
+                      : LucideIcons.moon,
+                  onPressed: () => themeProvider.toggleTheme(),
+                ),
+              ],
+            ),
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildFruitHeaderButton(BuildContext context,
+      {required IconData icon, required VoidCallback onPressed}) {
+    final settingsProvider = context.watch<SettingsProvider>();
+    final useNeumorphic =
+        settingsProvider.useNeumorphism && !settingsProvider.useTrueBlack;
+
+    if (useNeumorphic) {
+      return NeumorphicWrapper(
+        isCircle: true,
+        borderRadius: 100,
+        intensity: 0.8,
+        color: Colors.transparent,
+        child: LiquidGlassWrapper(
+          enabled: true,
+          borderRadius: BorderRadius.circular(100),
+          opacity: 0.12,
+          blur: 8,
+          child: FruitIconButton(
+            icon: Icon(icon),
+            onPressed: onPressed,
+            size: 20,
+            padding: 10,
+          ),
+        ),
+      );
+    }
+
+    return FruitIconButton(
+      icon: Icon(icon),
+      onPressed: onPressed,
+      size: 20,
+      padding: 10,
     );
   }
 }

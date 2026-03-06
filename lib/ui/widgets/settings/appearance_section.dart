@@ -124,49 +124,49 @@ class _AppearanceSectionState extends State<AppearanceSection> {
                           borderRadius:
                               BorderRadius.circular(isFruit ? 28 : 24),
                           child: SingleChildScrollView(
+                            key:
+                                const PageStorageKey('appearance_theme_scroll'),
+                            controller:
+                                ScrollController(keepScrollOffset: false),
                             scrollDirection: Axis.horizontal,
                             child: themeProvider.themeStyle == ThemeStyle.fruit
-                                ? SizedBox(
-                                    width:
-                                        MediaQuery.of(context).size.width - 32,
-                                    child: FruitSegmentedControl<ThemeMode>(
-                                      values: ThemeMode.values,
-                                      selectedValue:
-                                          themeProvider.selectedThemeMode,
-                                      onSelectionChanged: (newMode) {
-                                        AppHaptics.lightImpact(
-                                            context.read<DeviceService>());
-                                        context
-                                            .read<ThemeProvider>()
-                                            .setThemeMode(newMode);
-                                        final sp =
-                                            context.read<SettingsProvider>();
-                                        final isLightMode = newMode ==
-                                                ThemeMode.light ||
-                                            (newMode == ThemeMode.system &&
-                                                MediaQuery.platformBrightnessOf(
-                                                        context) ==
-                                                    Brightness.light);
-                                        if (isLightMode && sp.useTrueBlack) {
-                                          sp.toggleUseTrueBlack();
-                                        }
-                                      },
-                                      labelBuilder: (mode) {
-                                        IconData icon;
-                                        switch (mode) {
-                                          case ThemeMode.system:
-                                            icon = LucideIcons.monitor;
-                                            break;
-                                          case ThemeMode.light:
-                                            icon = LucideIcons.sun;
-                                            break;
-                                          case ThemeMode.dark:
-                                            icon = LucideIcons.moon;
-                                            break;
-                                        }
-                                        return Icon(icon, size: 20);
-                                      },
-                                    ),
+                                ? FruitSegmentedControl<ThemeMode>(
+                                    values: ThemeMode.values,
+                                    selectedValue:
+                                        themeProvider.selectedThemeMode,
+                                    onSelectionChanged: (newMode) {
+                                      AppHaptics.lightImpact(
+                                          context.read<DeviceService>());
+                                      context
+                                          .read<ThemeProvider>()
+                                          .setThemeMode(newMode);
+                                      final sp =
+                                          context.read<SettingsProvider>();
+                                      final isLightMode = newMode ==
+                                              ThemeMode.light ||
+                                          (newMode == ThemeMode.system &&
+                                              MediaQuery.platformBrightnessOf(
+                                                      context) ==
+                                                  Brightness.light);
+                                      if (isLightMode && sp.useTrueBlack) {
+                                        sp.toggleUseTrueBlack();
+                                      }
+                                    },
+                                    labelBuilder: (mode) {
+                                      IconData icon;
+                                      switch (mode) {
+                                        case ThemeMode.system:
+                                          icon = LucideIcons.monitor;
+                                          break;
+                                        case ThemeMode.light:
+                                          icon = LucideIcons.sun;
+                                          break;
+                                        case ThemeMode.dark:
+                                          icon = LucideIcons.moon;
+                                          break;
+                                      }
+                                      return Icon(icon, size: 20);
+                                    },
                                   )
                                 : SegmentedButton<ThemeMode>(
                                     segments: [
@@ -251,64 +251,63 @@ class _AppearanceSectionState extends State<AppearanceSection> {
                     return TvFocusWrapper(
                       borderRadius: BorderRadius.circular(isFruit ? 28 : 24),
                       child: SingleChildScrollView(
+                        key: const PageStorageKey('appearance_style_scroll'),
+                        controller: ScrollController(keepScrollOffset: false),
                         scrollDirection: Axis.horizontal,
                         child: themeProvider.themeStyle == ThemeStyle.fruit
-                            ? SizedBox(
-                                width: MediaQuery.of(context).size.width - 32,
-                                child: FruitSegmentedControl<ThemeStyle>(
-                                  values: themeProvider.isFruitAllowed
-                                      ? ThemeStyle.values
-                                      : [ThemeStyle.android],
-                                  selectedValue: themeProvider.themeStyle,
-                                  onSelectionChanged: (style) {
-                                    AppHaptics.lightImpact(
-                                        context.read<DeviceService>());
-                                    context
-                                        .read<ThemeProvider>()
-                                        .setThemeStyle(style);
+                            ? FruitSegmentedControl<ThemeStyle>(
+                                values: themeProvider.isFruitAllowed
+                                    ? ThemeStyle.values
+                                    : [ThemeStyle.android],
+                                selectedValue: themeProvider.themeStyle,
+                                onSelectionChanged: (style) {
+                                  AppHaptics.lightImpact(
+                                      context.read<DeviceService>());
+                                  context
+                                      .read<ThemeProvider>()
+                                      .setThemeStyle(style);
 
-                                    // Theme-specific constraints
-                                    final sp = context.read<SettingsProvider>();
-                                    if (style == ThemeStyle.fruit) {
-                                      sp.setUseNeumorphism(true);
-                                      if (sp.useTrueBlack) {
-                                        sp.toggleUseTrueBlack();
-                                      }
-                                      if (sp.useDynamicColor) {
-                                        sp.toggleUseDynamicColor();
-                                      }
-                                      if (sp.glowMode == 0) {
-                                        sp.setGlowMode(65);
-                                      }
-                                    } else {
-                                      sp.setUseNeumorphism(false);
-                                      if (!sp.useTrueBlack) {
-                                        sp.toggleUseTrueBlack();
-                                      }
-                                      if (!sp.useDynamicColor) {
-                                        sp.toggleUseDynamicColor();
-                                      }
+                                  // Theme-specific constraints
+                                  final sp = context.read<SettingsProvider>();
+                                  if (style == ThemeStyle.fruit) {
+                                    sp.setUseNeumorphism(true);
+                                    if (sp.useTrueBlack) {
+                                      sp.toggleUseTrueBlack();
                                     }
-                                  },
-                                  labelBuilder: (style) {
-                                    IconData icon;
-                                    switch (style) {
-                                      case ThemeStyle.android:
-                                        icon = themeProvider.themeStyle ==
-                                                ThemeStyle.fruit
-                                            ? LucideIcons.bot
-                                            : Icons.smart_toy_rounded;
-                                        break;
-                                      case ThemeStyle.fruit:
-                                        icon = themeProvider.themeStyle ==
-                                                ThemeStyle.fruit
-                                            ? LucideIcons.apple
-                                            : Icons.apple_rounded;
-                                        break;
+                                    if (sp.useDynamicColor) {
+                                      sp.toggleUseDynamicColor();
                                     }
-                                    return Icon(icon, size: 20);
-                                  },
-                                ),
+                                    if (sp.glowMode == 0) {
+                                      sp.setGlowMode(65);
+                                    }
+                                  } else {
+                                    sp.setUseNeumorphism(false);
+                                    if (!sp.useTrueBlack) {
+                                      sp.toggleUseTrueBlack();
+                                    }
+                                    if (!sp.useDynamicColor) {
+                                      sp.toggleUseDynamicColor();
+                                    }
+                                  }
+                                },
+                                labelBuilder: (style) {
+                                  IconData icon;
+                                  switch (style) {
+                                    case ThemeStyle.android:
+                                      icon = themeProvider.themeStyle ==
+                                              ThemeStyle.fruit
+                                          ? LucideIcons.bot
+                                          : Icons.smart_toy_rounded;
+                                      break;
+                                    case ThemeStyle.fruit:
+                                      icon = themeProvider.themeStyle ==
+                                              ThemeStyle.fruit
+                                          ? LucideIcons.apple
+                                          : Icons.apple_rounded;
+                                      break;
+                                  }
+                                  return Icon(icon, size: 20);
+                                },
                               )
                             : SegmentedButton<ThemeStyle>(
                                 segments: [
@@ -399,6 +398,8 @@ class _AppearanceSectionState extends State<AppearanceSection> {
                       return TvFocusWrapper(
                         borderRadius: BorderRadius.circular(isFruit ? 28 : 24),
                         child: SingleChildScrollView(
+                          key: const PageStorageKey('appearance_color_scroll'),
+                          controller: ScrollController(keepScrollOffset: false),
                           scrollDirection: Axis.horizontal,
                           child: themeProvider.themeStyle == ThemeStyle.fruit
                               ? SizedBox(
@@ -497,32 +498,58 @@ class _AppearanceSectionState extends State<AppearanceSection> {
               },
               secondary: const Icon(LucideIcons.listFilter),
             ),
-            TvSwitchListTile(
-              dense: true,
-              visualDensity: VisualDensity.compact,
-              title: FittedBox(
-                  fit: BoxFit.scaleDown,
-                  alignment: Alignment.centerLeft,
-                  child: Text('Enable Liquid Glass',
-                      style: Theme.of(context)
-                          .textTheme
-                          .titleMedium
-                          ?.copyWith(fontSize: 16 * widget.scaleFactor))),
-              subtitle: FittedBox(
-                  fit: BoxFit.scaleDown,
-                  alignment: Alignment.centerLeft,
-                  child: Text('Apply translucent blur over background elements',
-                      style: Theme.of(context)
-                          .textTheme
-                          .bodySmall
-                          ?.copyWith(fontSize: 12 * widget.scaleFactor))),
-              value: settingsProvider.fruitEnableLiquidGlass,
-              onChanged: (value) {
-                AppHaptics.lightImpact(context.read<DeviceService>());
-                context.read<SettingsProvider>().toggleFruitEnableLiquidGlass();
-              },
-              secondary: const Icon(LucideIcons.droplet),
-            ),
+            (() {
+              final isGated = settingsProvider.performanceMode;
+              const reason = 'Disabled in Simple Theme';
+
+              return TvSwitchListTile(
+                dense: true,
+                visualDensity: VisualDensity.compact,
+                title: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerLeft,
+                    child: Text('Enable Liquid Glass',
+                        style: Theme.of(context)
+                            .textTheme
+                            .titleMedium
+                            ?.copyWith(
+                                fontSize: 16 * widget.scaleFactor,
+                                color: isGated
+                                    ? colorScheme.onSurface
+                                        .withValues(alpha: 0.5)
+                                    : null))),
+                subtitle: isGated
+                    ? Text(reason,
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            fontSize: 12 * widget.scaleFactor,
+                            color:
+                                colorScheme.secondary.withValues(alpha: 0.7)))
+                    : FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                            'Apply translucent blur over background elements',
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodySmall
+                                ?.copyWith(fontSize: 12 * widget.scaleFactor))),
+                value: !isGated && settingsProvider.fruitEnableLiquidGlass,
+                onChanged: isGated
+                    ? null
+                    : (value) {
+                        AppHaptics.lightImpact(context.read<DeviceService>());
+                        context
+                            .read<SettingsProvider>()
+                            .toggleFruitEnableLiquidGlass();
+                      },
+                secondary: Icon(
+                  LucideIcons.droplet,
+                  color: isGated
+                      ? colorScheme.onSurface.withValues(alpha: 0.3)
+                      : null,
+                ),
+              );
+            })(),
           ],
           TvSwitchListTile(
             dense: true,
@@ -787,38 +814,56 @@ class _AppearanceSectionState extends State<AppearanceSection> {
             ),
         ],
         if (true) // Enable RGB for all platforms
-          TvSwitchListTile(
-            dense: true,
-            visualDensity: VisualDensity.compact,
-            title: FittedBox(
-                fit: BoxFit.scaleDown,
-                alignment: Alignment.centerLeft,
-                child: Text('Highlight Playing with RGB',
-                    style: Theme.of(context)
-                        .textTheme
-                        .titleMedium
-                        ?.copyWith(fontSize: 16 * widget.scaleFactor))),
-            subtitle: FittedBox(
-                fit: BoxFit.scaleDown,
-                alignment: Alignment.centerLeft,
-                child: Text('Animate border with RGB colors',
-                    style: Theme.of(context)
-                        .textTheme
-                        .bodySmall
-                        ?.copyWith(fontSize: 12 * widget.scaleFactor))),
-            value: settingsProvider.highlightPlayingWithRgb,
-            onChanged: (value) {
-              final provider = context.read<SettingsProvider>();
-              provider.toggleHighlightPlayingWithRgb();
-              // If turning RGB OFF and True Black is ON, turn off Glow too
-              if (!value && provider.useTrueBlack) {
-                provider.setGlowMode(0);
-              }
-            },
-            secondary: Icon(themeProvider.themeStyle == ThemeStyle.fruit
-                ? LucideIcons.zap
-                : Icons.animation_rounded),
-          ),
+          (() {
+            final isGated = settingsProvider.performanceMode;
+            const reason = 'Disabled in Simple Theme';
+
+            return TvSwitchListTile(
+              dense: true,
+              visualDensity: VisualDensity.compact,
+              title: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child: Text('Highlight Playing with RGB',
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          fontSize: 16 * widget.scaleFactor,
+                          color: isGated
+                              ? colorScheme.onSurface.withValues(alpha: 0.5)
+                              : null))),
+              subtitle: isGated
+                  ? Text(reason,
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          fontSize: 12 * widget.scaleFactor,
+                          color: colorScheme.secondary.withValues(alpha: 0.7)))
+                  : FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerLeft,
+                      child: Text('Animate border with RGB colors',
+                          style: Theme.of(context)
+                              .textTheme
+                              .bodySmall
+                              ?.copyWith(fontSize: 12 * widget.scaleFactor))),
+              value: !isGated && settingsProvider.highlightPlayingWithRgb,
+              onChanged: isGated
+                  ? null
+                  : (value) {
+                      final provider = context.read<SettingsProvider>();
+                      provider.toggleHighlightPlayingWithRgb();
+                      // If turning RGB OFF and True Black is ON, turn off Glow too
+                      if (!value && provider.useTrueBlack) {
+                        provider.setGlowMode(0);
+                      }
+                    },
+              secondary: Icon(
+                themeProvider.themeStyle == ThemeStyle.fruit
+                    ? LucideIcons.zap
+                    : Icons.animation_rounded,
+                color: isGated
+                    ? colorScheme.onSurface.withValues(alpha: 0.3)
+                    : null,
+              ),
+            );
+          })(),
         if (settingsProvider.highlightPlayingWithRgb)
           Padding(
             padding:
@@ -863,59 +908,56 @@ class _AppearanceSectionState extends State<AppearanceSection> {
                     borderRadius:
                         BorderRadius.circular(21), // MATCH INNER RADIUS (24-3)
                     child: SingleChildScrollView(
+                      key: const PageStorageKey('rgb_speed_scroll'),
+                      controller: ScrollController(keepScrollOffset: false),
                       scrollDirection: Axis.horizontal,
                       child: themeProvider.themeStyle == ThemeStyle.fruit
-                          ? SizedBox(
-                              width: MediaQuery.of(context).size.width - 32,
-                              child: FruitSegmentedControl<double>(
-                                values: const [1.0, 0.5, 0.25, 0.1],
-                                selectedValue:
-                                    settingsProvider.rgbAnimationSpeed,
-                                onSelectionChanged: (value) {
-                                  AppHaptics.lightImpact(
-                                      context.read<DeviceService>());
-                                  context
-                                      .read<SettingsProvider>()
-                                      .setRgbAnimationSpeed(value);
-                                },
-                                labelBuilder: (value) {
-                                  if (value == 1.0) {
-                                    return Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        const Icon(LucideIcons.zap, size: 14),
-                                        const SizedBox(width: 4),
-                                        Text(
-                                          'Fast',
-                                          style: TextStyle(
-                                              fontSize:
-                                                  12 * widget.scaleFactor),
-                                        ),
-                                      ],
-                                    );
-                                  }
-                                  if (value == 0.5) {
-                                    return Text(
-                                      'Med',
-                                      style: TextStyle(
-                                          fontSize: 12 * widget.scaleFactor),
-                                    );
-                                  }
-                                  if (value == 0.25) {
-                                    return Text(
-                                      'Slow',
-                                      style: TextStyle(
-                                          fontSize: 12 * widget.scaleFactor),
-                                    );
-                                  }
+                          ? FruitSegmentedControl<double>(
+                              values: const [1.0, 0.5, 0.25, 0.1],
+                              selectedValue: settingsProvider.rgbAnimationSpeed,
+                              onSelectionChanged: (value) {
+                                AppHaptics.lightImpact(
+                                    context.read<DeviceService>());
+                                context
+                                    .read<SettingsProvider>()
+                                    .setRgbAnimationSpeed(value);
+                              },
+                              labelBuilder: (value) {
+                                if (value == 1.0) {
+                                  return Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      const Icon(LucideIcons.zap, size: 14),
+                                      const SizedBox(width: 4),
+                                      Text(
+                                        'Fast',
+                                        style: TextStyle(
+                                            fontSize: 12 * widget.scaleFactor),
+                                      ),
+                                    ],
+                                  );
+                                }
+                                if (value == 0.5) {
                                   return Text(
-                                    'Off',
+                                    'Med',
                                     style: TextStyle(
                                         fontSize: 12 * widget.scaleFactor),
                                   );
-                                },
-                                borderRadius: BorderRadius.circular(21),
-                              ),
+                                }
+                                if (value == 0.25) {
+                                  return Text(
+                                    'Slow',
+                                    style: TextStyle(
+                                        fontSize: 12 * widget.scaleFactor),
+                                  );
+                                }
+                                return Text(
+                                  'Off',
+                                  style: TextStyle(
+                                      fontSize: 12 * widget.scaleFactor),
+                                );
+                              },
+                              borderRadius: BorderRadius.circular(21),
                             )
                           : SegmentedButton<double>(
                               segments: [

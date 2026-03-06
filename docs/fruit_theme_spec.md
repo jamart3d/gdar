@@ -11,6 +11,7 @@ The "Fruit" theme is a specialized, liquid-glass aesthetic inspired by modern de
 The Fruit theme emphasizes:
 - **Depth**: Multi-layered surfaces with varying opacities.
 - **Translucency**: "Liquid Glass" effects using `withValues(alpha: ...)` for background blur simulations.
+- **Vapor Transitions**: Use of `ShaderMask` with linear gradients to "melt" header and modal edges into the content, eliminating sharp visual lines.
 - **Typography**: Strictly uses the **Apple Inter** typography set for a professional, crisp feel on high-resolution monitors.
 - **Interaction**: Subtle hover transforms and the complete removal of standard Material "Splash" ripples (using `NoSplash.splashFactory`).
 
@@ -33,10 +34,14 @@ The theme supports three distinct "modes" which cycle randomly upon initial acti
 - **Background (Light)**: Warm Tint (`0xFFFFF9F9`)
 - **Background (Dark)**: Warm Charcoal (`0xFF1A1A1A`)
 
+## 🧱 Aesthetic Governance
+- **No Dynamic Tinting**: Strictly forbidden. The Fruit theme must always remain true to its curated palette. Show-based spectral washes or background color overrides used in other themes are disabled to maintain professional color consistency.
+- **Borderless Glass**: All glass components (headers, cards, modals) must have `showBorder: false` to avoid sharp geometric lines. Transitions must rely on blur depth and shader masks.
+
 ## 📐 Component Specs
 - **Cards**: Border radius `14`, Opacity `0.65`, Elevation `0`.
-- **Dialogs**: Border radius `16`, Opacity `0.8`, Elevation `0`.
-- **Navigation**: Transparent AppBars with blur effects (where possible).
+- **Dialogs**: Border radius `24`, Opacity `0.35`, Blur `30`, Elevation `0`.
+- **Navigation**: "Vapor" Floating AppBars with `ShaderMask` transitions and no bottom borders.
 
 ---
-*Implementation Reference: `lib/utils/app_themes.dart` and `lib/providers/theme_provider.dart`.*
+*Implementation Reference: `lib/utils/app_themes.dart`, `lib/providers/theme_provider.dart`, and `lib/ui/widgets/theme/liquid_glass_wrapper.dart`.*

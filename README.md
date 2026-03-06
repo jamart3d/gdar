@@ -37,10 +37,11 @@ A Flutter application for browsing and playing concert recordings of the Gratefu
   - **True Black Mode**: Pitch black backgrounds for OLED screens.
   - **Glow Effects**: Adjustable glow intensity for the playback card, adding a premium feel.
   - **Oil Slide Screensaver**: 
-    - A high-art, psychedelic visualizer that activates during inactivity.
+    - A high-art, psychedelic visualizer that activates during inactivity. Detailed settings and reactivity logic can be found in the [Screensaver Manual](docs/SCREENSAVER_MANUAL.md).
     - **Visual Styles**: Choose between **Standard (Psychedelic)**, **Lava Lamp**, and **Silk** modes.
     - **Customization**: Adjust viscosity, flow speed, and palettes.
     - **Audio Reactivity**: The visualizer pulses and reacts to the music's frequency and intensity.
+
   - **Fruit Theme (Premium)**:
     - Dedicated Apple-inspired design for Web/PWA with **14px** architectural corner radii.
     - **Apple Liquid Glass**: High-precision backdrop blurring paired with a subtle internal highlight (inset glow) that simulates glassy refraction.
@@ -205,14 +206,13 @@ The web version is now a full Progressive Web App (PWA) with a custom, high-perf
 - **Inactivity Handling**: Automatic screensaver activation with a "Ghost Menu" accessible via D-pad for quick visual adjustments.
 
 ## Repository Auditing (Jules)
-
-This repository is optimized for automated auditing via **Jules** (`jules.google.com`). Specialized audit prompts are located in `test/prompts/`.
+This repository is optimized for high-performance auditing via **Jules** (`jules.google.com`). These cloud-based audits are exploratory and visual, complementing our local deterministic tests. Specialized audit prompts are located in `test/prompts/`.
 
 ### **How to Run Audits**
 Direct Jules to the following file for a 100% comprehensive system check:
 
 1. **Universal Master Audit (Single Run)**:
-   > "Read `test/prompts/master_audit.md`. Perform a full GDAR system audit (Phases 1-5) in a headless Chrome instance and provide a Pass/Fail table."
+   > "Perform the **Master Release Audit** located in `test/prompts/master_audit.md` and provide a detailed PASS/FAIL report."
 
 ---
 *Legacy/Specialized Audits (Available if needed for isolated debugging):*
@@ -221,11 +221,14 @@ Direct Jules to the following file for a 100% comprehensive system check:
 - `jules_integrity_audit.md` (Persistence Only)
 - `jules_platform_guard_audit.md` (Cross-platform Architecture Only)
 
+> [!TIP]
+> **Jules Token Efficiency**: Providing an **Auth Token** (via CLI, Web interface, or environment configuration) is the high-performance path for all auditing. It is significantly more efficient for managing high-frequency concurrent audits and is required for the "Headless Chrome" stress-tests defined in the Master Audit.
+
 ### **Automated Health & Unit Testing (`@[/checkup]`)**
-Jules can autonomously maintain repository health by running the specialized `@[/checkup]` workflow. This covers:
+**Arlo** (your local Antigravity agent) can autonomously maintain repository health by running the specialized `@[/checkup]` workflow. This covers:
 - **Unit Testing**: Runs `flutter test` on relevant changed files.
 - **Linting & Formatting**: Automatically fixes style violations and standardizes code.
 - **Static Analysis**: Identifies potential runtime errors or deprecated API usage.
 
-**To trigger a full health check/unit test run:**
+**To trigger a full health check/unit test run via Arlo:**
 > "Run the `@[/checkup]` workflow on the current branch and report the Health Score."

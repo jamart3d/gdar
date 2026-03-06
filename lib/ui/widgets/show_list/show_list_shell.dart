@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:shakedown/services/device_service.dart';
 import 'package:shakedown/providers/audio_provider.dart';
 import 'package:shakedown/providers/show_list_provider.dart';
 import 'package:shakedown/ui/widgets/mini_player.dart';
@@ -67,37 +66,20 @@ class ShowListShell extends StatelessWidget {
     final bool shouldShowMiniPlayer = audioProvider.currentShow != null &&
         !isRollActive &&
         !isPane &&
+        !isFruit &&
         !(showListProvider.isSearchVisible && searchFocusNode.hasFocus);
 
     final bodyContent = Stack(
       children: [
         Column(
           children: [
-            if (isFruit)
-              SizedBox(
-                height: MediaQuery.paddingOf(context).top +
-                    (settingsProvider.fruitDenseList ? 8 : 12) +
-                    (settingsProvider.fruitDenseList
-                        ? 40
-                        : 48), // Adjusted for app bar height
+            if (!isFruit)
+              ShowListSearchBar(
+                controller: searchController,
+                focusNode: searchFocusNode,
+                onSubmitted: onSearchSubmitted,
+                animationDuration: animationDuration,
               ),
-            if (isPane && !context.read<DeviceService>().isTv && !isFruit)
-              ShowListAppBar(
-                backgroundColor: backgroundColor,
-                randomPulseAnimation: randomPulseAnimation,
-                searchPulseAnimation: searchPulseAnimation,
-                isRandomShowLoading: isRandomShowLoading,
-                enableDiceHaptics: enableDiceHaptics,
-                onRandomPlay: onRandomPlay,
-                onToggleSearch: onToggleSearch,
-                onTitleTap: onTitleTap,
-              ),
-            ShowListSearchBar(
-              controller: searchController,
-              focusNode: searchFocusNode,
-              onSubmitted: onSearchSubmitted,
-              animationDuration: animationDuration,
-            ),
             Expanded(child: body),
           ],
         ),
@@ -106,38 +88,51 @@ class ShowListShell extends StatelessWidget {
             top: 0,
             left: 0,
             right: 0,
-            child: LiquidGlassWrapper(
-              enabled: isFruit && settingsProvider.fruitEnableLiquidGlass,
-              blur: 20,
-              opacity: 0.8,
-              borderRadius: BorderRadius.zero,
-              child: Container(
-                padding: EdgeInsets.only(
-                  top: MediaQuery.paddingOf(context).top + 16,
-                  bottom: settingsProvider.fruitDenseList
-                      ? 8
-                      : 16, // Adjusted bottom padding
-                ),
-                decoration: BoxDecoration(
-                  border: Border(
-                    bottom: BorderSide(
-                      color: Theme.of(context)
-                          .colorScheme
-                          .onSurface
-                          .withValues(alpha: 0.05),
-                      width: 1.0,
+            child: ShaderMask(
+              shaderCallback: (bounds) {
+                return const LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [Colors.black, Colors.transparent],
+                  stops: [
+                    0.7,
+                    1.0
+                  ], // Fade begins earlier for smoother transition
+                ).createShader(bounds);
+              },
+              blendMode: BlendMode.dstIn,
+              child: LiquidGlassWrapper(
+                enabled: isFruit && settingsProvider.fruitEnableLiquidGlass,
+                showBorder: false, // Remove internal sharp border
+                blur: 25,
+                opacity: 0.85,
+                borderRadius: BorderRadius.zero,
+                child: Container(
+                  height: MediaQuery.paddingOf(context).top + 80,
+                  padding: EdgeInsets.only(
+                    top: MediaQuery.paddingOf(context).top,
+                  ),
+                  decoration: const BoxDecoration(
+                    // Removing the border entirely to ensure no sharp line
+                    border: null,
+                  ),
+                  alignment: Alignment.topCenter,
+                  child: SizedBox(
+                    height: 80,
+                    child: ShowListAppBar(
+                      backgroundColor: Colors.transparent,
+                      randomPulseAnimation: randomPulseAnimation,
+                      searchPulseAnimation: searchPulseAnimation,
+                      isRandomShowLoading: isRandomShowLoading,
+                      enableDiceHaptics: enableDiceHaptics,
+                      onRandomPlay: onRandomPlay,
+                      onToggleSearch: onToggleSearch,
+                      onTitleTap: onTitleTap,
+                      searchController: searchController,
+                      searchFocusNode: searchFocusNode,
+                      onSearchSubmitted: onSearchSubmitted,
                     ),
                   ),
-                ),
-                child: ShowListAppBar(
-                  backgroundColor: Colors.transparent,
-                  randomPulseAnimation: randomPulseAnimation,
-                  searchPulseAnimation: searchPulseAnimation,
-                  isRandomShowLoading: isRandomShowLoading,
-                  enableDiceHaptics: enableDiceHaptics,
-                  onRandomPlay: onRandomPlay,
-                  onToggleSearch: onToggleSearch,
-                  onTitleTap: onTitleTap,
                 ),
               ),
             ),

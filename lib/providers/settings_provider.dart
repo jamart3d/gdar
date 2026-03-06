@@ -314,6 +314,13 @@ class SettingsProvider with ChangeNotifier {
     _updatePreference(_fruitEnableLiquidGlassKey, _fruitEnableLiquidGlass);
   }
 
+  void setFruitEnableLiquidGlass(bool value) {
+    if (_fruitEnableLiquidGlass != value) {
+      _fruitEnableLiquidGlass = value;
+      _updatePreference(_fruitEnableLiquidGlassKey, _fruitEnableLiquidGlass);
+    }
+  }
+
   NeumorphicStyle get neumorphicStyle => _neumorphicStyle;
   bool get performanceMode => _performanceMode;
   bool get forceTv => _forceTv;
@@ -909,6 +916,14 @@ class SettingsProvider with ChangeNotifier {
   void toggleHighlightPlayingWithRgb() => _updatePreference(
       _highlightPlayingWithRgbKey,
       _highlightPlayingWithRgb = !_highlightPlayingWithRgb);
+
+  void setHighlightPlayingWithRgb(bool value) {
+    if (_highlightPlayingWithRgb != value) {
+      _highlightPlayingWithRgb = value;
+      _updatePreference(_highlightPlayingWithRgbKey, _highlightPlayingWithRgb);
+    }
+  }
+
   void toggleShowPlaybackMessages() => _updatePreference(
       _showPlaybackMessagesKey, _showPlaybackMessages = !_showPlaybackMessages);
   void toggleSortOldestFirst() => _updatePreference(
@@ -929,8 +944,17 @@ class SettingsProvider with ChangeNotifier {
 //
   void setUseNeumorphism(bool value) =>
       _updatePreference(_useNeumorphismKey, _useNeumorphism = value);
-  void togglePerformanceMode() => _updatePreference(
-      _performanceModeKey, _performanceMode = !_performanceMode);
+  void togglePerformanceMode() {
+    _performanceMode = !_performanceMode;
+    _updatePreference(_performanceModeKey, _performanceMode);
+
+    if (_performanceMode) {
+      // Disable expensive visuals when Performance Mode is ON
+      setFruitEnableLiquidGlass(false);
+      setGlowMode(0);
+      setHighlightPlayingWithRgb(false);
+    }
+  }
 
   void toggleForceTv() => _updatePreference(_forceTvKey, _forceTv = !_forceTv);
 

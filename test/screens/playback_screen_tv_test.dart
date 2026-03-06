@@ -160,6 +160,11 @@ class FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
   Future<void> setSeedColor(Color? color) async {}
 
   @override
+  void setFruitEnableLiquidGlass(bool value) {}
+  @override
+  void setHighlightPlayingWithRgb(bool value) {}
+
+  @override
   bool get hideTrackDuration => false;
   @override
   void toggleHideTrackDuration() {}

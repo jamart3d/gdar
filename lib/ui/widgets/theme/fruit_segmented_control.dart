@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 class FruitSegmentedControl<T> extends StatelessWidget {
@@ -24,8 +25,11 @@ class FruitSegmentedControl<T> extends StatelessWidget {
     final effectiveBorderRadius = borderRadius ?? BorderRadius.circular(28);
     final selectedIndex = values.indexOf(selectedValue);
 
+    final computedWidth = math.max(280.0, _calculateMinWidth(context));
+
     return Container(
       height: height,
+      width: computedWidth,
       decoration: BoxDecoration(
         color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
         borderRadius: effectiveBorderRadius,
@@ -37,7 +41,9 @@ class FruitSegmentedControl<T> extends StatelessWidget {
             duration: const Duration(milliseconds: 250),
             curve: Curves.easeInOutCubicEmphasized,
             alignment: Alignment(
-              -1.0 + (selectedIndex / (values.length - 1)) * 2,
+              values.length > 1
+                  ? (-1.0 + (selectedIndex / (values.length - 1)) * 2)
+                  : 0.0,
               0.0,
             ),
             child: FractionallySizedBox(
@@ -67,17 +73,21 @@ class FruitSegmentedControl<T> extends StatelessWidget {
                   onTap: () => onSelectionChanged(value),
                   behavior: HitTestBehavior.opaque,
                   child: Center(
-                    child: AnimatedDefaultTextStyle(
-                      duration: const Duration(milliseconds: 250),
-                      style: theme.textTheme.labelMedium!.copyWith(
-                        fontWeight:
-                            isSelected ? FontWeight.w600 : FontWeight.normal,
-                        color: isSelected
-                            ? theme.colorScheme.onSurface
-                            : theme.colorScheme.onSurface
-                                .withValues(alpha: 0.6),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 4),
+                      child: AnimatedDefaultTextStyle(
+                        duration: const Duration(milliseconds: 250),
+                        style: theme.textTheme.labelMedium!.copyWith(
+                          fontWeight:
+                              isSelected ? FontWeight.w600 : FontWeight.normal,
+                          color: isSelected
+                              ? theme.colorScheme.onSurface
+                              : theme.colorScheme.onSurface
+                                  .withValues(alpha: 0.6),
+                          fontSize: 12,
+                        ),
+                        child: labelBuilder(value),
                       ),
-                      child: labelBuilder(value),
                     ),
                   ),
                 ),
@@ -87,5 +97,10 @@ class FruitSegmentedControl<T> extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  double _calculateMinWidth(BuildContext context) {
+    // Estimating minimum comfortable width based on children count
+    return values.length * 64.0;
   }
 }

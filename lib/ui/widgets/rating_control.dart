@@ -101,6 +101,7 @@ class RatingControl extends StatelessWidget {
           color: Colors.transparent,
           child: LiquidGlassWrapper(
             enabled: true,
+            showBorder: false, // Maintain no-sharp-edge rule
             borderRadius: BorderRadius.circular(12),
             opacity: brightness == Brightness.light ? 0.15 : 0.08,
             blur: 6,
@@ -294,6 +295,7 @@ class _RatingDialogState extends State<RatingDialog> {
                       color: Colors.transparent,
                       child: LiquidGlassWrapper(
                         enabled: true,
+                        showBorder: false,
                         borderRadius: BorderRadius.circular(8),
                         opacity: 0.12,
                         blur: 10.0,
@@ -446,6 +448,7 @@ class _RatingDialogState extends State<RatingDialog> {
                                   color: Colors.transparent,
                                   child: LiquidGlassWrapper(
                                     enabled: true,
+                                    showBorder: false,
                                     borderRadius: BorderRadius.circular(16),
                                     opacity: 0.08,
                                     blur: 18.0,
@@ -504,6 +507,7 @@ class _RatingDialogState extends State<RatingDialog> {
                             color: Colors.transparent,
                             child: LiquidGlassWrapper(
                               enabled: true,
+                              showBorder: false,
                               borderRadius: BorderRadius.circular(20),
                               opacity: 0.06,
                               blur: 8.0,
@@ -610,9 +614,10 @@ class _RatingDialogState extends State<RatingDialog> {
     } else if (isFruitNeumorphic) {
       content = LiquidGlassWrapper(
         enabled: true,
-        borderRadius: BorderRadius.circular(16),
-        opacity: 0.4, // Higher opacity for dialog legibility
-        blur: 25,
+        showBorder: false, // Seamless Vapor feel
+        borderRadius: BorderRadius.circular(24),
+        opacity: 0.35, // Slightly more subtle for deep glass look
+        blur: 30, // Deeper blur for the dialog back-plate
         child: NeumorphicWrapper(
           enabled: true,
           borderRadius: 16,

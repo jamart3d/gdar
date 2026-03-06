@@ -23,6 +23,7 @@ import 'package:shakedown/ui/styles/app_typography.dart';
 import 'package:shakedown/utils/font_layout_config.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:shakedown/providers/theme_provider.dart';
+import 'package:shakedown/ui/widgets/show_list/embedded_mini_player.dart';
 import 'package:shakedown/services/device_service.dart';
 import 'package:shakedown/ui/widgets/tv/tv_focus_wrapper.dart';
 import 'package:shakedown/ui/widgets/theme/fruit_icon_button.dart';
@@ -752,7 +753,13 @@ class _TrackListScreenState extends State<TrackListScreen> {
         Widget content = Column(
           children: [
             headerContent,
-            if (isFruit) metadataRow,
+            if (isFruit) ...[
+              metadataRow,
+              if (isThisShowPlaying) ...[
+                const SizedBox(height: 20),
+                EmbeddedMiniPlayer(scaleFactor: scaleFactor),
+              ],
+            ],
           ],
         );
 

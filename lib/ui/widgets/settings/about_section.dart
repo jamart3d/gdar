@@ -29,6 +29,7 @@ class SupportSection extends StatelessWidget {
       lucideIcon: LucideIcons.heart,
       initiallyExpanded: true,
       collapsible: false,
+      showHeader: false,
       children: [
         _buildClickableLink(
           context,

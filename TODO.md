@@ -19,6 +19,9 @@
 ### Backlog / Low Priority
 - [ ] **Default Screensaver Settings**: Fine-tune default visual style, speed, and performance mode for a premium out-of-the-box experience.
 - [ ] **TV Safe Area**: Global setting to adjust margins for rare older panels with overscan/edge-cropping issues.
+- [ ] **Screensaver Settings Polish**: Introduce an "Advanced Options" toggle in TV Settings to hide deep-tweak knobs and clean up D-pad navigation.
+- [ ] **Audio-Responsive Trails**: Tie Trail Intensity and Trail Blur directly to real-time audio `energy.overall` or `beatPulse` in the screensaver.
+- [ ] **Audio-Driven Shader "Boiling"**: Tie `uOverall` to the `heatDrift`/`flowSpeed` uniforms in `steal.frag` so background dynamics match song intensity.
 
 ### Debug
 - [x] **Logo Position Jump**: Diagnose visual jolt/reset every few minutes with audio reactivity off. Resolved via position-reset mitigation.
@@ -51,3 +54,9 @@
  
  - [x] **Consolidate Jules Audits**: Created [master_audit.md](file:///c:/Users/jeff/StudioProjects/gdar/test/prompts/master_audit.md) as the 100% comprehensive (Phases 1-7) pre-release standard.
  - [ ] **Port Widget Tests**: Convert remaining flakey unit tests into Jules E2E observation phases for 100% reliable coverage.
+
+---
+
+## 🤖 Agent Tooling & Workflows
+
+- [ ] **PowerShell Pipe Workaround**: For Windows PowerShell agent execution, look into changing commands that use a pipe (`|`) to instead write output to a temporary file in `%TEMP%` and then read it, bypassing the shell's restricted pipe features.

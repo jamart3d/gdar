@@ -12,6 +12,7 @@ import 'package:shakedown/ui/widgets/rating_control.dart';
 import 'package:shakedown/ui/widgets/src_badge.dart';
 import 'package:shakedown/services/catalog_service.dart';
 import 'package:shakedown/services/device_service.dart';
+import 'package:shakedown/ui/widgets/show_list/embedded_mini_player.dart';
 import 'package:shakedown/ui/widgets/conditional_marquee.dart';
 import 'package:shakedown/ui/widgets/show_list/card_style_utils.dart';
 import 'package:shakedown/ui/widgets/theme/liquid_glass_wrapper.dart';
@@ -82,11 +83,12 @@ class _ShowListCardState extends State<ShowListCard> {
     );
 
     final hPadding = settingsProvider.performanceMode ? 8.0 : 16.0;
+    final vPadding = (isFruit && settingsProvider.fruitDenseList) ? 2.0 : 6.0;
     final outerPadding = EdgeInsets.fromLTRB(
       hPadding,
-      isTv ? 2 : 6, // Minimal top padding for TV
+      isTv ? 2 : vPadding,
       hPadding,
-      widget.isExpanded ? 2 : (isTv ? 2 : 6), // Minimal bottom padding for TV
+      widget.isExpanded ? 2 : (isTv ? 2 : vPadding),
     );
 
     Widget content;
@@ -94,7 +96,7 @@ class _ShowListCardState extends State<ShowListCard> {
     if (!isTv && (style.showGlow || style.useRgb) && !style.suppressOuterGlow) {
       content = Container(
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(isFruit ? 24 : 28),
+          borderRadius: BorderRadius.circular(isFruit ? 14 : 28),
           boxShadow: (style.showShadow &&
                   !style.useRgb &&
                   !settingsProvider.performanceMode)
@@ -111,7 +113,7 @@ class _ShowListCardState extends State<ShowListCard> {
               : [],
         ),
         child: AnimatedGradientBorder(
-          borderRadius: isTv ? 12 : (isFruit ? 24 : 28),
+          borderRadius: isTv ? 12 : (isFruit ? 14 : 28),
           borderWidth: 3,
           colors: style.useRgb
               ? const [
@@ -135,17 +137,17 @@ class _ShowListCardState extends State<ShowListCard> {
           animationSpeed: settingsProvider.rgbAnimationSpeed,
           child: NeumorphicWrapper(
             enabled: isFruit && settingsProvider.useNeumorphism,
-            borderRadius: isFruit ? 24 : 28,
+            borderRadius: isFruit ? 14 : 28,
             intensity: 1.2, // Increased for stronger effect
             child: LiquidGlassWrapper(
               enabled: isFruit && settingsProvider.fruitEnableLiquidGlass,
-              borderRadius: BorderRadius.circular(isFruit ? 24 : 28),
+              borderRadius: BorderRadius.circular(isFruit ? 14 : 28),
               blur: 15,
-              opacity: _isHovered ? 0.6 : 0.7,
+              opacity: _isHovered ? 0.6 : 0.65,
               color: style.backgroundColor,
               child: _buildCardContent(
                 context: context,
-                borderRadius: isTv ? 12 : (isFruit ? 24 : 28),
+                borderRadius: isTv ? 12 : (isFruit ? 14 : 28),
                 backgroundColor: isFruit && !settingsProvider.useTrueBlack
                     ? Colors.transparent
                     : style.backgroundColor,
@@ -165,22 +167,22 @@ class _ShowListCardState extends State<ShowListCard> {
         shadowColor: colorScheme.shadow.withValues(alpha: 0.1),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(
-              isTv ? 12 : (isFruit ? 24 : 28)), // Refined Fruit radius
+              isTv ? 12 : (isFruit ? 14 : 28)), // Refined Fruit radius
           side: BorderSide(
             color: isTv ? Colors.transparent : style.cardBorderColor,
-            width: isTv ? 0 : style.cardBorderWidth,
+            width: isFruit ? 0.8 : (isTv ? 0 : style.cardBorderWidth),
           ),
         ),
         child: NeumorphicWrapper(
           enabled: isFruit &&
               settingsProvider.useNeumorphism &&
               !settingsProvider.performanceMode,
-          borderRadius: isTv ? 12 : (isFruit ? 24 : 28),
+          borderRadius: isTv ? 12 : (isFruit ? 14 : 28),
           intensity: 1.2, // Increased for stronger effect
           child: LiquidGlassWrapper(
             enabled: isFruit && settingsProvider.fruitEnableLiquidGlass,
             borderRadius:
-                BorderRadius.circular(isTv ? 12 : (isFruit ? 24 : 28)),
+                BorderRadius.circular(isTv ? 12 : (isFruit ? 14 : 28)),
             blur: 15,
             opacity: _isHovered ? 0.6 : 0.7,
             color: style.backgroundColor,
@@ -1119,6 +1121,11 @@ class _ShowListCardState extends State<ShowListCard> {
                                       style.effectiveScale, false),
                               ],
                             ),
+                          if (widget.isPlaying) ...[
+                            const SizedBox(height: 12),
+                            EmbeddedMiniPlayer(
+                                scaleFactor: style.effectiveScale),
+                          ],
                         ],
                       ),
                     ),

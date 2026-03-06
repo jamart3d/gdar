@@ -6,6 +6,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
  
+## [1.1.56+156] - 2026-03-06
+
+### Fixed
+- **UI/UX (Fruit)**: Fixed infinite-width crash in segmented controls by dynamically calculating width boundaries and optimizing horizontal scrolling.
+- **UI/UX (Fruit)**: Upgraded Settings screen header with premium "Liquid Glass" translucency and `FruitIconButton` styling.
+- **UI/UX (Fruit)**: Integrated `FruitTabBar` bottom navigation directly into the Settings screen for deeper context retention.
+- **Workflows**: Addressed PowerShell pipe compatibility in agent TODOs.
 ## [1.1.55+155] - 2026-03-06
 
 ### Added

@@ -16,6 +16,7 @@ class LiquidGlassWrapper extends StatelessWidget {
   final BorderRadius? borderRadius;
   final Color? color;
   final bool enabled;
+  final bool showBorder;
 
   const LiquidGlassWrapper({
     super.key,
@@ -25,6 +26,7 @@ class LiquidGlassWrapper extends StatelessWidget {
     this.borderRadius,
     this.color,
     this.enabled = true,
+    this.showBorder = true,
   });
 
   @override
@@ -76,7 +78,7 @@ class LiquidGlassWrapper extends StatelessWidget {
                         .clamp(0.0, 1.0)
                     : effectiveOpacity),
             borderRadius: borderRadius,
-            border: (isFruitTheme && !isFruitGlassEnabled)
+            border: (isFruitTheme && !isFruitGlassEnabled) || !showBorder
                 ? null
                 : Border.all(
                     color: baseColor.withValues(alpha: 0.1),
@@ -96,10 +98,12 @@ class LiquidGlassWrapper extends StatelessWidget {
           decoration: BoxDecoration(
             color: baseColor.withValues(alpha: opacity),
             borderRadius: borderRadius,
-            border: Border.all(
-              color: baseColor.withValues(alpha: 0.1),
-              width: 0.5,
-            ),
+            border: showBorder
+                ? Border.all(
+                    color: baseColor.withValues(alpha: 0.1),
+                    width: 0.5,
+                  )
+                : null,
           ),
           child: child,
         ),
