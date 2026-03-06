@@ -1,0 +1,65 @@
+[log] %c[Engine Tracker] window._gdarAudio being set to: color: #ff00ff; font-weight: bold; Web Audio (Gapless)
+[error] Failed to load resource: the server responded with a status of 404 (File not found)
+[warning] %c[Shakedown] localStorage FLUSHED via URL parameter. color: #ff0000; font-weight: bold;
+[log] [Shakedown] Strategy decision BEFORE fallback: webAudio. Reason: Defaulting to Web Audio mode (Desktop).
+[log] %c[Engine Tracker] window._gdarAudio being set to: color: #ff00ff; font-weight: bold; Web Audio (Gapless)
+[log] [Shakedown] FINAL STRATEGY: webAudio. (Selected: Web Audio (Gapless)). Override: null
+[log] [Shakedown] window._gdarAudio is now configured: Web Audio (Gapless)
+[warning] [GroupMarkerNotSet(crbug.com/242999)!:A0501800F4390000]Automatic fallback to software WebGL has been deprecated. Please use the --enable-unsafe-swiftshader (about:flags#enable-unsafe-swiftshader) flag to opt in to lower security guarantees for trusted content.
+[warning] Firebase config not found. Analytics disabled.
+[debug] Installing/Activating first service worker.
+[debug] Activated new service worker.
+[debug] Injecting <script> tag. Using callback.
+[warning] Failed to load font Inter at assets/fonts/Inter-Regular.ttf
+[warning] Verify that assets/fonts/Inter-Regular.ttf contains a valid font.
+[warning] Failed to load font Inter at assets/fonts/Inter-SemiBold.ttf
+[warning] Verify that assets/fonts/Inter-SemiBold.ttf contains a valid font.
+[warning] Failed to load font Inter at assets/fonts/Inter-Bold.ttf
+[warning] Verify that assets/fonts/Inter-Bold.ttf contains a valid font.
+[warning] [GroupMarkerNotSet(crbug.com/242999)!:A0201800F4390000]Automatic fallback to software WebGL has been deprecated. Please use the --enable-unsafe-swiftshader (about:flags#enable-unsafe-swiftshader) flag to opt in to lower security guarantees for trusted content.
+[warning] [GroupMarkerNotSet(crbug.com/242999)!:A0C05300F4390000]Automatic fallback to software WebGL has been deprecated. Please use the --enable-unsafe-swiftshader (about:flags#enable-unsafe-swiftshader) flag to opt in to lower security guarantees for trusted content.
+[warning] [.WebGL-0x1b340a526800]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels
+[warning] [.WebGL-0x1b340a526800]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels
+[log] Got object store box in database ratings.
+[warning] [.WebGL-0x1b340a526800]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels
+[warning] [.WebGL-0x1b340a526800]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat)
+[warning] Failed to parse font family "Inter_700"
+[warning] Failed to parse font family "Inter_600"
+[warning] Failed to parse font family "Inter_regular"
+[log] Got object store box in database play_counts.
+[log] Got object store box in database user_history.
+[log] [gdar engine] Global listeners registered
+[log] [gdar engine] AudioContext created
+[log] [hybrid] Tab hidden. backgroundMode: relisten
+[error] Failed to load resource: the server responded with a status of 404 (File not found)
+[log] %c[Engine Tracker] window._gdarAudio being set to: color: #ff00ff; font-weight: bold; Web Audio (Gapless)
+[log] [Shakedown] Strategy decision BEFORE fallback: hybrid. Reason: User override detected: hybrid
+[log] %c[Engine Tracker] window._gdarAudio being set to: color: #ff00ff; font-weight: bold; hybrid_orchestrator
+[log] [Shakedown] FINAL STRATEGY: hybrid. (Selected: hybrid_orchestrator). Override: hybrid
+[log] [hybrid engine] Background Mode set to: relisten
+[log] [Shakedown] window._gdarAudio is now configured: hybrid_orchestrator
+[log] [Shakedown] Diagnostic - Audio Keys in LocalStorage: flutter.audio_engine_mode="hybrid"
+[warning] [GroupMarkerNotSet(crbug.com/242999)!:A0501800F4390000]Automatic fallback to software WebGL has been deprecated. Please use the --enable-unsafe-swiftshader (about:flags#enable-unsafe-swiftshader) flag to opt in to lower security guarantees for trusted content.
+[debug] Loading from existing service worker.
+[debug] Service worker already active.
+[debug] Injecting <script> tag. Using callback.
+[warning] Firebase config not found. Analytics disabled.
+[warning] Failed to load font Inter at assets/fonts/Inter-Regular.ttf
+[warning] Verify that assets/fonts/Inter-Regular.ttf contains a valid font.
+[warning] Failed to load font Inter at assets/fonts/Inter-SemiBold.ttf
+[warning] Verify that assets/fonts/Inter-SemiBold.ttf contains a valid font.
+[warning] Failed to load font Inter at assets/fonts/Inter-Bold.ttf
+[warning] Verify that assets/fonts/Inter-Bold.ttf contains a valid font.
+[log] [gdar engine] Global listeners registered
+[log] [gdar engine] AudioContext created
+[log] [html5] AudioContext created
+[log] [html5] Initialized Exact Relisten Engine
+[log] [hybrid] Background scheduler worker started
+[log] Got object store box in database ratings.
+[warning] [GroupMarkerNotSet(crbug.com/242999)!:A0201800F4390000]Automatic fallback to software WebGL has been deprecated. Please use the --enable-unsafe-swiftshader (about:flags#enable-unsafe-swiftshader) flag to opt in to lower security guarantees for trusted content.
+[warning] [GroupMarkerNotSet(crbug.com/242999)!:A0F05300F4390000]Automatic fallback to software WebGL has been deprecated. Please use the --enable-unsafe-swiftshader (about:flags#enable-unsafe-swiftshader) flag to opt in to lower security guarantees for trusted content.
+[log] Got object store box in database play_counts.
+[warning] Failed to parse font family "Inter_700"
+[warning] Failed to parse font family "Inter_600"
+[warning] Failed to parse font family "Inter_regular"
+[log] Got object store box in database user_history.
