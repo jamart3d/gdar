@@ -26,6 +26,17 @@ The TV UI utilizes a persistent dual-pane layout within `TvDualPaneLayout`.
 
 ## 3. Interaction Flows
 
+## Interactive Navigation Logic
+
+### Pane Switching
+- **Shortcut**: `Tab` or `S` keys (mapped globally when `TvDualPaneLayout` is active).
+- **Behavior**: Toggles `_activePane` state. Focus is immediately shifted to the most recently focused item in the target pane to prevent "lost focus" on entry.
+- **Visuals**: Inactive panes are dimmed to `0.3` opacity. Inactive headers are dimmed to `0.4` or `0.5` based on state.
+
+### Detail Dismissal (Back-to-Master)
+- **Constraint**: Pressing `Back` (Remote/Escape) while focus is in the **Playback Pane** (Detail) must shift focus back to the **Show List** (Master).
+- **Goal**: Prevents the exit confirmation dialog from appearing prematurely. The user must feel that the Master-Detail layout is a single, navigable space.
+
 ### 3.1 Clicking an "Active" Show
 When a show that is already playing is selected in the Show List:
 1.  **If Multi-Source:** The show expands in the left pane to reveal SHNIDs. Focus remains in the list.

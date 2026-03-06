@@ -45,15 +45,40 @@ class StealGame extends FlameGame {
   int _trailHead = 0;
   int _trailFrameCount = 0;
 
-  /// Returns up to [count] trail positions, newest first.
+  /// Returns up to [count] trail positions, newest first, with temporal interpolation
+  /// to eliminate "stepping" as the logo moves.
   List<Offset> getTrailPositions(int count) {
-    final clamped = count.clamp(0, _trailBufferCapacity);
+    final interval = (1 + (config.logoTrailLength * 14.5).round()).clamp(1, 30);
+    final frac = _trailFrameCount / interval.toDouble();
+
+    final clamped = count.clamp(0, _trailBufferCapacity - 1);
     final result = <Offset>[];
-    for (int i = 0; i < clamped; i++) {
-      final idx =
-          ((_trailHead - i) % _trailBufferCapacity + _trailBufferCapacity) %
+
+    // Position 0 is always the "live" position (i=0)
+    result.add(smoothedLogoPos);
+
+    if (clamped <= 1) return result;
+
+    for (int i = 1; i < clamped; i++) {
+      // Find the two buffer indices to interpolate between
+      // If i=1 (first ghost), we want it to be at 'interval' frames ago.
+      // Current head is 'frameCount' frames ago.
+      // k is the offset relative to head in samples.
+      final findK = i - frac;
+      final k = findK.floor();
+      final t = findK - k;
+
+      final idx1 =
+          ((_trailHead - k) % _trailBufferCapacity + _trailBufferCapacity) %
               _trailBufferCapacity;
-      result.add(_trailBuffer[idx]);
+      final idx2 = ((_trailHead - (k + 1)) % _trailBufferCapacity +
+              _trailBufferCapacity) %
+          _trailBufferCapacity;
+
+      final p1 = _trailBuffer[idx1];
+      final p2 = _trailBuffer[idx2];
+
+      result.add(Offset.lerp(p1, p2, t.clamp(0.0, 1.0))!);
     }
     return result;
   }

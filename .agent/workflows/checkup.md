@@ -29,6 +29,7 @@ This workflow is optimized for speed and developer productivity. It prioritizes 
 ## 4. Visual/Design Check (Micro)
 1. Scan current working file for `withOpacity()` (deprecated preference) and suggest `.withValues(alpha: ...)`.
 2. Scan for hardcoded colors (e.g., `Colors.red`) and suggest using `colorScheme`.
+3. **Audit App Size:** Trigger the `size_guard` skill to scan `assets/` for newly added large files or unoptimized PNGs.
 
 ## 5. Summary
 1. Provide a "Health Score" (Errors/Warnings count).

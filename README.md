@@ -209,22 +209,17 @@ The web version is now a full Progressive Web App (PWA) with a custom, high-perf
 This repository is optimized for automated auditing via **Jules** (`jules.google.com`). Specialized audit prompts are located in `test/prompts/`.
 
 ### **How to Run Audits**
-Direct Jules to the following files for specific verification tasks:
+Direct Jules to the following file for a 100% comprehensive system check:
 
-1. **Full System Audit (Deep Scan)**:
-   > "Read the Jules prompts in `test/prompts/`. Perform a comprehensive system audit covering Audio, UI Aesthetics, and Platform Integrity on the latest build in a headless Chrome instance."
+1. **Universal Master Audit (Single Run)**:
+   > "Read `test/prompts/master_audit.md`. Perform a full GDAR system audit (Phases 1-5) in a headless Chrome instance and provide a Pass/Fail table."
 
-2. **Audio Performance Only**:
-   > "Read `test/prompts/jules_audit.md` and perform the high-performance audio engine audit."
-
-3. **Fruit UI & Aesthetic Only**:
-   > "Read `test/prompts/jules_fruit_audit.md` and perform the Fruit UI & Liquid Glass aesthetic audit."
-
-4. **Persistence & Integrity**:
-   > "Read `test/prompts/jules_integrity_audit.md` and perform the architectural persistence and platform integrity audit."
-
-5. **Cross-Platform Guard (Mobile/TV Verification)**:
-   > "Read `test/prompts/jules_platform_guard_audit.md`. Perform a code-level architectural audit ensuring no platform leaks between Web, TV, and Phone."
+---
+*Legacy/Specialized Audits (Available if needed for isolated debugging):*
+- `jules_audit.md` (Audio Only)
+- `jules_fruit_audit.md` (Web Aesthetics Only)
+- `jules_integrity_audit.md` (Persistence Only)
+- `jules_platform_guard_audit.md` (Cross-platform Architecture Only)
 
 ### **Automated Health & Unit Testing (`@[/checkup]`)**
 Jules can autonomously maintain repository health by running the specialized `@[/checkup]` workflow. This covers:

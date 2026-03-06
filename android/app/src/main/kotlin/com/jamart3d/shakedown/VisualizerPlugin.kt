@@ -193,7 +193,8 @@ class VisualizerPlugin : MethodCallHandler, EventChannel.StreamHandler {
         if (eventSink == null) return
 
         val numFrequencies = fft.size / 2
-        val frequencyResolution = samplingRate / 2.0 / numFrequencies
+        // samplingRate is in milliHertz, so we divide by 1000 to get standard Hz
+        val frequencyResolution = (samplingRate / 1000.0) / 2.0 / numFrequencies
 
         // ── Legacy 3-band accumulation ──────────────────────────────────
         var bassSum = 0.0; var midSum = 0.0; var trebleSum = 0.0

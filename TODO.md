@@ -44,3 +44,10 @@
 ## 📄 Spec & Documentation
 
 - [x] **Centralize Theme Logic**: Documented that `kIsWeb` applies the "Fruit" theme, referencing `docs/fruit_theme_spec.md` as the styling source of truth. Logic is surgically gated in `ThemeProvider`.
+ 
+ ---
+ 
+ ## 🧪 Testing & Auditing
+ 
+ - [x] **Consolidate Jules Audits**: Created [master_audit.md](file:///c:/Users/jeff/StudioProjects/gdar/test/prompts/master_audit.md) as the 100% comprehensive (Phases 1-7) pre-release standard.
+ - [ ] **Port Widget Tests**: Convert remaining flakey unit tests into Jules E2E observation phases for 100% reliable coverage.

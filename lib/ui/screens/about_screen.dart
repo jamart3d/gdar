@@ -9,6 +9,8 @@ import 'package:shakedown/providers/audio_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:shakedown/utils/color_generator.dart';
 import 'package:shakedown/utils/utils.dart';
+import 'package:shakedown/ui/widgets/pulsing_heart_icon.dart';
+import 'package:shakedown/providers/theme_provider.dart';
 
 class AboutScreen extends StatelessWidget {
   const AboutScreen({super.key});
@@ -145,6 +147,17 @@ class AboutBody extends StatelessWidget {
             'https://archive.org/about/terms.php',
             icon: Icons.gavel,
           ),
+          const SizedBox(height: 16),
+          _buildClickableLink(
+            context,
+            'Consider Donating to the Internet Archive',
+            'https://archive.org/donate/',
+            customIcon: PulsingHeartIcon(
+              scaleFactor: 1.0,
+              isFruit:
+                  context.read<ThemeProvider>().themeStyle == ThemeStyle.fruit,
+            ),
+          ),
           const SizedBox(height: 24),
         ],
       ),
@@ -165,10 +178,11 @@ class AboutBody extends StatelessWidget {
   }
 
   Widget _buildClickableLink(BuildContext context, String text, String url,
-      {IconData? icon}) {
+      {IconData? icon, Widget? customIcon}) {
     final colorScheme = Theme.of(context).colorScheme;
     return TvListTile(
-      leading: icon != null ? Icon(icon, color: colorScheme.primary) : null,
+      leading: customIcon ??
+          (icon != null ? Icon(icon, color: colorScheme.primary) : null),
       title: Text(
         text,
         style: TextStyle(

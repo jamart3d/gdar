@@ -115,14 +115,6 @@ class StealBanner extends Component with HasGameReference<StealGame> {
 
   final _rng = Random();
 
-  // Secondary smoothing for flat mode — extra lerp pass on top of
-  // smoothedLogoPos to absorb any residual per-frame jitter.
-  Offset _flatSmoothPos = const Offset(0.5, 0.5);
-
-  // Pre-computed pixel center for flat mode — set in update(), read in render().
-  // Avoids timing skew between update/render threads reading smoothedLogoPos.
-  Offset _flatPixelCenter = const Offset(0.0, 0.0);
-
   // ── Public API ─────────────────────────────────────────────────────────────
 
   void updateBanner(
@@ -295,23 +287,6 @@ class StealBanner extends Component with HasGameReference<StealGame> {
         }
       }
     }
-
-    // Secondary smooth for flat mode — extra lerp pass on top of smoothedLogoPos
-    // absorbs residual per-frame jitter that ring mode hides via rotation.
-    // Time-corrected so behaviour is identical at any frame rate.
-    if (config.bannerDisplayMode == 'flat') {
-      final target = game.smoothedLogoPos;
-      final alpha = 1.0 - pow(1.0 - 0.15, dt * 60);
-      _flatSmoothPos = Offset(
-        _flatSmoothPos.dx + (target.dx - _flatSmoothPos.dx) * alpha,
-        _flatSmoothPos.dy + (target.dy - _flatSmoothPos.dy) * alpha,
-      );
-      // Pre-compute pixel center here so render() reads a stable value
-      // from this update tick — avoids timing skew between update/render.
-      final w = game.size.x;
-      final h = game.size.y;
-      _flatPixelCenter = Offset(_flatSmoothPos.dx * w, _flatSmoothPos.dy * h);
-    }
   }
 
   void _tickFade(
@@ -467,8 +442,7 @@ class StealBanner extends Component with HasGameReference<StealGame> {
     final isFlat = config.bannerDisplayMode == 'flat';
 
     if (isFlat) {
-      // Use pre-computed pixel center from update() — stable, no timing skew
-      _renderFlat(canvas, _flatPixelCenter, minDim, glowEnabled, config);
+      _renderFlat(canvas, center, minDim, glowEnabled, config);
     } else {
       _renderRings(canvas, center, minDim, glowEnabled, config);
     }
@@ -823,7 +797,7 @@ class StealBanner extends Component with HasGameReference<StealGame> {
     if (opacity <= 0.0) return;
 
     final blurAmount = config.blurAmount.clamp(0.0, 1.0) * 12.0;
-    final resolution = game.size.x;
+    final resolution = config.bannerResolution.clamp(1.0, 4.0);
 
     // Check if we need to clear glyph cache (font or glow param changed)
     if (_lastGlowBlur != blurAmount ||
@@ -841,23 +815,35 @@ class StealBanner extends Component with HasGameReference<StealGame> {
         _glyphCache.putIfAbsent(char, () => _rasterizeChar(char, config));
 
     final paint = Paint()
-      ..color = color.withValues(alpha: opacity)
+      ..colorFilter =
+          ColorFilter.mode(color.withValues(alpha: opacity), BlendMode.modulate)
       ..isAntiAlias = true;
 
     // Draw the rasterized image.
     // The image has padding for the glow, so we center it.
+    // Scale back down if we rasterized at higher resolution
+    final rs = config.bannerResolution.clamp(1.0, 4.0);
+    if (rs != 1.0) {
+      canvas.save();
+      canvas.scale(1.0 / rs);
+    }
+
     canvas.drawImage(
       glyph.image,
       Offset(
-        -glyph.coreWidth / 2 - glyph.padding,
-        -glyph.coreHeight / 2 - glyph.padding,
+        (-glyph.coreWidth / 2 - glyph.padding),
+        (-glyph.coreHeight / 2 - glyph.padding),
       ),
       paint,
     );
+
+    if (rs != 1.0) canvas.restore();
   }
 
   _RasterGlyph _rasterizeChar(String char, StealConfig config) {
-    final blurAmount = config.blurAmount.clamp(0.0, 1.0) * 12.0;
+    final res = config.bannerResolution.clamp(1.0, 4.0);
+    final fontSize = _defaultFontSize * res;
+    final blurAmount = config.blurAmount.clamp(0.0, 1.0) * 12.0 * res;
 
     // Measure core size
     final painter = TextPainter(
@@ -865,7 +851,7 @@ class StealBanner extends Component with HasGameReference<StealGame> {
         text: char,
         style: TextStyle(
           fontFamily: config.bannerFont,
-          fontSize: _defaultFontSize,
+          fontSize: fontSize,
           fontWeight: FontWeight.w600,
           color: Colors.white,
         ),
@@ -877,7 +863,7 @@ class StealBanner extends Component with HasGameReference<StealGame> {
     final ch = painter.height;
 
     // Add padding for the neon glow blur
-    final padding = blurAmount * 2.5 + 4.0;
+    final padding = blurAmount * 2.5 + 4.0 * res;
     final iw = (cw + padding * 2).ceil();
     final ih = (ch + padding * 2).ceil();
 
