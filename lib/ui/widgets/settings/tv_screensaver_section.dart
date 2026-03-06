@@ -227,7 +227,7 @@ class TvScreensaverSection extends StatelessWidget {
             label: 'Trail Spread',
             value: settings.oilLogoTrailLength,
             min: 0.0,
-            max: 1.0,
+            max: 2.0,
             step: 0.05,
             leftLabel: 'Tight',
             rightLabel: 'Long',

@@ -30,6 +30,7 @@ class TrackListView extends StatelessWidget {
   final ItemPositionsListener itemPositionsListener;
   final AudioProvider audioProvider;
   final Map<int, FocusNode>? trackFocusNodes;
+  final FocusNode? trackListFocusNode;
   final VoidCallback? onFocusLeft;
   final VoidCallback? onFocusRight;
   final ValueChanged<int>? onTrackFocused;
@@ -45,6 +46,7 @@ class TrackListView extends StatelessWidget {
     required this.itemPositionsListener,
     required this.audioProvider,
     this.trackFocusNodes,
+    this.trackListFocusNode,
     this.onFocusLeft,
     this.onFocusRight,
     this.onTrackFocused,
@@ -86,31 +88,34 @@ class TrackListView extends StatelessWidget {
         trackToListItemIndex[source.tracks.length - 1] ??
             (listItems.length - 1);
 
-    return ScrollablePositionedList.builder(
-      itemScrollController: itemScrollController,
-      itemPositionsListener: itemPositionsListener,
-      padding: EdgeInsets.fromLTRB(8, topPadding, 8, bottomPadding),
-      itemCount: listItems.length,
-      itemBuilder: (context, index) {
-        final item = listItems[index];
-        if (item is String) {
-          return _buildSetHeader(context, item);
-        } else if (item is Track) {
-          final trackIndex = listItemToTrackIndex[index] ?? 0;
-          return _buildTrackItem(
-            context,
-            audioProvider,
-            item,
-            trackIndex,
-            index,
-            isTrueBlackMode,
-            firstTrackListIndex,
-            lastTrackListIndex,
-            ValueKey('track_${item.trackNumber}_${item.title}_$index'),
-          );
-        }
-        return const SizedBox.shrink();
-      },
+    return Focus(
+      focusNode: trackListFocusNode,
+      child: ScrollablePositionedList.builder(
+        itemScrollController: itemScrollController,
+        itemPositionsListener: itemPositionsListener,
+        padding: EdgeInsets.fromLTRB(8, topPadding, 8, bottomPadding),
+        itemCount: listItems.length,
+        itemBuilder: (context, index) {
+          final item = listItems[index];
+          if (item is String) {
+            return _buildSetHeader(context, item);
+          } else if (item is Track) {
+            final trackIndex = listItemToTrackIndex[index] ?? 0;
+            return _buildTrackItem(
+              context,
+              audioProvider,
+              item,
+              trackIndex,
+              index,
+              isTrueBlackMode,
+              firstTrackListIndex,
+              lastTrackListIndex,
+              ValueKey('track_${item.trackNumber}_${item.title}_$index'),
+            );
+          }
+          return const SizedBox.shrink();
+        },
+      ),
     );
   }
 
@@ -172,7 +177,7 @@ class TrackListView extends StatelessWidget {
           decoration: BoxDecoration(
             color: showMobilePlayingBorder
                 ? Colors.transparent
-                : (isPlaying && !isFruit)
+                : (isPlaying && !isFruit && !isTv)
                     ? (isTrueBlackMode
                         ? Colors.black
                         : colorScheme.primaryContainer)
@@ -214,23 +219,11 @@ class TrackListView extends StatelessWidget {
                     ),
                   ),
                 )
-              : (isPlaying && isFruit)
-                  ? LiquidGlassWrapper(
-                      enabled: true,
-                      borderRadius: BorderRadius.circular(14),
-                      opacity: isTrueBlackMode ? 0.15 : 0.22,
-                      blur: 10,
-                      child: Padding(
-                        padding: const EdgeInsets.all(6.0),
-                        child: _buildTrackListTile(context, audioProvider,
-                            track, trackIndex, isPlaying, scaleFactor, false),
-                      ),
-                    )
-                  : Padding(
-                      padding: EdgeInsets.all(isFruit ? 6.0 : 8.0),
-                      child: _buildTrackListTile(context, audioProvider, track,
-                          trackIndex, isPlaying, scaleFactor, false),
-                    ),
+              : Padding(
+                  padding: EdgeInsets.all(isFruit ? 6.0 : 8.0),
+                  child: _buildTrackListTile(context, audioProvider, track,
+                      trackIndex, isPlaying, scaleFactor, false),
+                ),
         );
 
         if (isTv) {
@@ -241,17 +234,15 @@ class TrackListView extends StatelessWidget {
             focusNode: trackFocusNodes?[listIndex],
             scaleOnFocus: 1.0,
             isPlaying: isPlaying,
-            focusBackgroundColor: isPlaying
-                ? (isTrueBlackMode
-                    ? Colors.white10
-                    : colorScheme.primary.withValues(alpha: 0.1))
-                : Colors.transparent,
+            focusBackgroundColor: Colors.transparent,
             focusColor: colorScheme.primary,
             borderRadius: BorderRadius.circular(8),
-            // Distinguish the playing track on TV with a subtle glow,
-            // but ONLY if the user has the playing-RGB setting on.
-            // This prevents it from being mixed up with the Premium focus glow.
-            showGlow: isPlaying && settingsProvider.highlightPlayingWithRgb,
+            // We rely purely on the crisp border for selection to avoid
+            // BoxShadows filling the hollow transparent center of the item.
+            showGlow: false,
+            // Prevent the active track from stealing the Premium neon pink/blue glow.
+            // That glow is strictly reserved for the item the user is actively focused on.
+            overridePremiumHighlight: isPlaying && !isFruit ? false : null,
             onFocusChange: (focused) {
               if (focused) onTrackFocused?.call(listIndex);
             },

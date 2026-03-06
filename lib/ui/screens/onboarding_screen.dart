@@ -66,9 +66,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   Future<void> _checkArchiveReachability() async {
     try {
-      await http
-          .head(Uri.parse('https://archive.org'))
-          .timeout(const Duration(seconds: 3));
+      await http.head(
+        Uri.parse('https://archive.org'),
+        headers: {'User-Agent': 'GDAR/1.0.0 (shakedown_app@googlegroups.com)'},
+      ).timeout(const Duration(seconds: 3));
       if (mounted) {
         setState(() {
           _archiveReachable = true;

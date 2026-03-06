@@ -99,7 +99,7 @@ class TvHeader extends StatelessWidget {
                 PageRouteBuilder(
                   pageBuilder: (context, animation, secondaryAnimation) =>
                       const SettingsScreen(),
-                  transitionDuration: Duration.zero,
+                  transitionDuration: const Duration(milliseconds: 80),
                 ),
               );
             },

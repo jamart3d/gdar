@@ -236,8 +236,8 @@ class _TvDualPaneLayoutState extends State<TvDualPaneLayout> {
                             if (hasFocus) setState(() => _focusedPane = 0);
                           },
                           child: AnimatedOpacity(
-                            duration: const Duration(milliseconds: 400),
-                            curve: Curves.easeInOut,
+                            duration: const Duration(milliseconds: 80),
+                            curve: Curves.fastOutSlowIn,
                             opacity: _focusedPane == 0
                                 ? 1.0
                                 : 0.2, // Increased dimming from 0.4
@@ -309,8 +309,8 @@ class _TvDualPaneLayoutState extends State<TvDualPaneLayout> {
                             if (hasFocus) setState(() => _focusedPane = 1);
                           },
                           child: AnimatedOpacity(
-                            duration: const Duration(milliseconds: 400),
-                            curve: Curves.easeInOut,
+                            duration: const Duration(milliseconds: 80),
+                            curve: Curves.fastOutSlowIn,
                             opacity: _focusedPane == 1
                                 ? 1.0
                                 : 0.2, // Increased dimming from 0.4

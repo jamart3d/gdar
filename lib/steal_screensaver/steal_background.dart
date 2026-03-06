@@ -231,7 +231,7 @@ class StealBackground extends PositionComponent
   // ── Trail rendering ────────────────────────────────────────────────────────
 
   void _renderTrail(ui.Canvas canvas) {
-    final slices = config.logoTrailSlices.clamp(2, 16);
+    final slices = config.logoTrailSlices.clamp(2, 32);
     final intensity = config.logoTrailIntensity.clamp(0.0, 1.0);
     // Request one extra so we can skip i=0 (current position = live logo)
     final positions = game.getTrailPositions(slices + 1);

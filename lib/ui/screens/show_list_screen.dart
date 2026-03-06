@@ -89,6 +89,34 @@ class ShowListScreenState extends State<ShowListScreen>
     }
   }
 
+  void _onShowFocused(int index) {
+    if (!mounted || !context.read<DeviceService>().isTv) return;
+
+    // Check visibility and scroll if needed
+    final positions = _itemPositionsListener.itemPositions.value;
+    if (positions.isEmpty) return;
+
+    final targetPos = positions.where((p) => p.index == index).toList();
+
+    bool needsScroll = true;
+    if (targetPos.isNotEmpty) {
+      final pos = targetPos.first;
+      // If comfortably visible (between 10% and 90% of viewport), don't scroll
+      if (pos.itemLeadingEdge > 0.1 && pos.itemTrailingEdge < 0.9) {
+        needsScroll = false;
+      }
+    }
+
+    if (needsScroll) {
+      _itemScrollController.scrollTo(
+        index: index,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOutCubic,
+        alignment: 0.3, // Keep focused items 30% from the top
+      );
+    }
+  }
+
   late Animation<double> _animation;
   late AnimationController _searchPulseController;
   late Animation<double> _searchPulseAnimation;
@@ -420,6 +448,7 @@ class ShowListScreenState extends State<ShowListScreen>
         onSourceLongPressed: onSourceLongPressed,
         showFocusNodes: _showFocusNodes,
         onFocusShow: focusShow,
+        onShowFocused: _onShowFocused,
       ),
     );
   }

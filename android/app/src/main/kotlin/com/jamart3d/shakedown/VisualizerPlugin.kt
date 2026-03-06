@@ -28,7 +28,7 @@ class VisualizerPlugin : MethodCallHandler, EventChannel.StreamHandler {
         private const val METHOD_CHANNEL = "shakedown/visualizer"
         private const val EVENT_CHANNEL = "shakedown/visualizer_events"
 
-        private const val CAPTURE_RATE_MS = 16 // ~60 FPS
+        // Capture rate is set dynamically via Visualizer.getMaxCaptureRate() (millihertz).
 
         // Smoothing: 60% old value, 40% new — fixed, not user-configurable
         private const val SMOOTHING = 0.6
@@ -124,6 +124,7 @@ class VisualizerPlugin : MethodCallHandler, EventChannel.StreamHandler {
             release()
             visualizer = Visualizer(audioSessionId).apply {
                 captureSize = Visualizer.getCaptureSizeRange()[1]
+                val maxRate = Visualizer.getMaxCaptureRate() // millihertz, typically 20000 mHz = 20 Hz
                 setDataCaptureListener(
                     object : Visualizer.OnDataCaptureListener {
                         override fun onWaveFormDataCapture(
@@ -136,7 +137,7 @@ class VisualizerPlugin : MethodCallHandler, EventChannel.StreamHandler {
                             fft?.let { processFftData(it, samplingRate) }
                         }
                     },
-                    CAPTURE_RATE_MS,
+                    maxRate,
                     false,
                     true
                 )
@@ -259,10 +260,16 @@ class VisualizerPlugin : MethodCallHandler, EventChannel.StreamHandler {
         val overall = (finalBass + finalMid + finalTreble) / 3.0
 
         // ── 8-band processing ───────────────────────────────────────────
+        val isSilent = rawBass < SILENCE_THRESHOLD && rawMid < SILENCE_THRESHOLD && rawTreble < SILENCE_THRESHOLD
         val finalBands = DoubleArray(8)
         for (b in 0 until 8) {
             val rawBand = if (bandCounts[b] > 0) sqrt(bandSums[b] / bandCounts[b]) / 128.0 else 0.0
-            peakBands[b] = max(peakBands[b] * peakDecay, max(rawBand, PEAK_FLOOR))
+            // Mirror the 3-band silence gating: decay peaks during silence
+            if (isSilent) {
+                peakBands[b] = max(peakBands[b] * peakDecay, PEAK_FLOOR)
+            } else {
+                peakBands[b] = max(peakBands[b] * peakDecay, max(rawBand, PEAK_FLOOR))
+            }
             val normalized = if (rawBand < SILENCE_THRESHOLD) 0.0 else (rawBand / peakBands[b]).coerceIn(0.0, 1.0)
             smoothBands[b] = smoothBands[b] * SMOOTHING + normalized * (1.0 - SMOOTHING)
             finalBands[b] = (smoothBands[b] * reactivityStrength).coerceIn(0.0, 1.0)

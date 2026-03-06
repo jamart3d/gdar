@@ -15,6 +15,7 @@ import 'package:shakedown/services/device_service.dart';
 import 'package:shakedown/ui/widgets/conditional_marquee.dart';
 import 'package:shakedown/ui/widgets/show_list/card_style_utils.dart';
 import 'package:shakedown/ui/widgets/theme/liquid_glass_wrapper.dart';
+import 'package:shakedown/ui/widgets/tv/tv_focus_wrapper.dart';
 import 'package:shakedown/ui/widgets/theme/neumorphic_wrapper.dart';
 
 /// A card displaying summary information for a [Show].
@@ -27,6 +28,9 @@ class ShowListCard extends StatefulWidget {
   final VoidCallback onTap;
   final VoidCallback onLongPress;
   final bool alwaysShowRatingInteraction;
+  final FocusNode? focusNode;
+  final FocusOnKeyEventCallback? onKeyEvent;
+  final ValueChanged<bool>? onFocusChange;
 
   const ShowListCard({
     super.key,
@@ -38,6 +42,9 @@ class ShowListCard extends StatefulWidget {
     required this.onTap,
     required this.onLongPress,
     this.alwaysShowRatingInteraction = false,
+    this.focusNode,
+    this.onKeyEvent,
+    this.onFocusChange,
   });
 
   @override
@@ -45,13 +52,14 @@ class ShowListCard extends StatefulWidget {
 }
 
 class _ShowListCardState extends State<ShowListCard> {
-  static const Duration _animationDuration = Duration(milliseconds: 300);
+  static const Duration _animationDuration = Duration(milliseconds: 80);
   bool _isHovered = false;
 
   void _onHover(bool isHovering) {
     if (_isHovered != isHovering) {
       setState(() => _isHovered = isHovering);
     }
+    widget.onFocusChange?.call(isHovering);
   }
 
   @override
@@ -83,109 +91,61 @@ class _ShowListCardState extends State<ShowListCard> {
 
     Widget content;
 
-    if ((!isTv || style.useRgb) &&
-        (style.showGlow || style.useRgb) &&
-        !style.suppressOuterGlow) {
-      content = Padding(
-        padding: outerPadding,
-        child: Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(isFruit ? 24 : 28),
-            boxShadow: (style.showShadow &&
-                    !style.useRgb &&
-                    !settingsProvider.performanceMode)
-                ? [
-                    BoxShadow(
-                      color: colorScheme.primary.withValues(
-                          alpha: (0.2 + (_isHovered ? 0.1 : 0)) *
-                              0.2 *
-                              style.glowOpacity),
-                      blurRadius: _isHovered ? 16 : 12,
-                      spreadRadius: _isHovered ? 3 : 2,
-                    ),
-                  ]
-                : [],
-          ),
-          child: AnimatedGradientBorder(
-            borderRadius: isTv ? 12 : (isFruit ? 24 : 28),
-            borderWidth: 3,
-            colors: style.useRgb
-                ? const [
-                    Colors.red,
-                    Colors.yellow,
-                    Colors.green,
-                    Colors.cyan,
-                    Colors.blue,
-                    Colors.purple,
-                    Colors.red,
-                  ]
-                : [
-                    colorScheme.primary,
-                    colorScheme.tertiary,
-                    colorScheme.secondary,
-                    colorScheme.primary,
-                  ],
-            showGlow: true,
-            showShadow: !isTv && style.showShadow,
-            glowOpacity: (style.useRgb ? 0.5 : 0.2) * style.glowOpacity,
-            animationSpeed: settingsProvider.rgbAnimationSpeed,
-            child: NeumorphicWrapper(
-              enabled: isFruit && settingsProvider.useNeumorphism,
-              borderRadius: isFruit ? 24 : 28,
-              intensity: 1.2, // Increased for stronger effect
-              child: LiquidGlassWrapper(
-                enabled: isFruit && settingsProvider.fruitEnableLiquidGlass,
-                borderRadius: BorderRadius.circular(isFruit ? 24 : 28),
-                blur: 15,
-                opacity: _isHovered ? 0.6 : 0.7,
-                color: style.backgroundColor,
-                child: _buildCardContent(
-                  context: context,
-                  borderRadius: isTv ? 12 : (isFruit ? 24 : 28),
-                  backgroundColor: isFruit && !settingsProvider.useTrueBlack
-                      ? Colors.transparent
-                      : style.backgroundColor,
-                  style: style,
-                  settingsProvider: settingsProvider,
-                  colorScheme: colorScheme,
-                  isTv: isTv,
-                ),
-              ),
-            ),
-          ),
+    if (!isTv && (style.showGlow || style.useRgb) && !style.suppressOuterGlow) {
+      content = Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(isFruit ? 24 : 28),
+          boxShadow: (style.showShadow &&
+                  !style.useRgb &&
+                  !settingsProvider.performanceMode)
+              ? [
+                  BoxShadow(
+                    color: colorScheme.primary.withValues(
+                        alpha: (0.2 + (_isHovered ? 0.1 : 0)) *
+                            0.2 *
+                            style.glowOpacity),
+                    blurRadius: _isHovered ? 16 : 12,
+                    spreadRadius: _isHovered ? 3 : 2,
+                  ),
+                ]
+              : [],
         ),
-      );
-    } else {
-      content = Padding(
-        padding: outerPadding,
-        child: Card(
-          margin: EdgeInsets.zero,
-          elevation: widget.isExpanded ? 2 : 0,
-          shadowColor: colorScheme.shadow.withValues(alpha: 0.1),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(
-                isTv ? 12 : (isFruit ? 24 : 28)), // Refined Fruit radius
-            side: BorderSide(
-              color: style.cardBorderColor,
-              width: style.cardBorderWidth,
-            ),
-          ),
+        child: AnimatedGradientBorder(
+          borderRadius: isTv ? 12 : (isFruit ? 24 : 28),
+          borderWidth: 3,
+          colors: style.useRgb
+              ? const [
+                  Colors.red,
+                  Colors.yellow,
+                  Colors.green,
+                  Colors.cyan,
+                  Colors.blue,
+                  Colors.purple,
+                  Colors.red,
+                ]
+              : [
+                  colorScheme.primary,
+                  colorScheme.tertiary,
+                  colorScheme.secondary,
+                  colorScheme.primary,
+                ],
+          showGlow: true,
+          showShadow: !isTv && style.showShadow,
+          glowOpacity: (style.useRgb ? 0.5 : 0.2) * style.glowOpacity,
+          animationSpeed: settingsProvider.rgbAnimationSpeed,
           child: NeumorphicWrapper(
-            enabled: isFruit &&
-                settingsProvider.useNeumorphism &&
-                !settingsProvider.performanceMode,
-            borderRadius: isTv ? 12 : (isFruit ? 24 : 28),
+            enabled: isFruit && settingsProvider.useNeumorphism,
+            borderRadius: isFruit ? 24 : 28,
             intensity: 1.2, // Increased for stronger effect
             child: LiquidGlassWrapper(
               enabled: isFruit && settingsProvider.fruitEnableLiquidGlass,
-              borderRadius:
-                  BorderRadius.circular(isTv ? 12 : (isFruit ? 24 : 28)),
+              borderRadius: BorderRadius.circular(isFruit ? 24 : 28),
               blur: 15,
               opacity: _isHovered ? 0.6 : 0.7,
               color: style.backgroundColor,
               child: _buildCardContent(
                 context: context,
-                borderRadius: isTv ? 12 : (isFruit ? 14 : 28),
+                borderRadius: isTv ? 12 : (isFruit ? 24 : 28),
                 backgroundColor: isFruit && !settingsProvider.useTrueBlack
                     ? Colors.transparent
                     : style.backgroundColor,
@@ -198,12 +158,52 @@ class _ShowListCardState extends State<ShowListCard> {
           ),
         ),
       );
+    } else {
+      content = Card(
+        margin: EdgeInsets.zero,
+        elevation: widget.isExpanded ? 2 : 0,
+        shadowColor: colorScheme.shadow.withValues(alpha: 0.1),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(
+              isTv ? 12 : (isFruit ? 24 : 28)), // Refined Fruit radius
+          side: BorderSide(
+            color: isTv ? Colors.transparent : style.cardBorderColor,
+            width: isTv ? 0 : style.cardBorderWidth,
+          ),
+        ),
+        child: NeumorphicWrapper(
+          enabled: isFruit &&
+              settingsProvider.useNeumorphism &&
+              !settingsProvider.performanceMode,
+          borderRadius: isTv ? 12 : (isFruit ? 24 : 28),
+          intensity: 1.2, // Increased for stronger effect
+          child: LiquidGlassWrapper(
+            enabled: isFruit && settingsProvider.fruitEnableLiquidGlass,
+            borderRadius:
+                BorderRadius.circular(isTv ? 12 : (isFruit ? 24 : 28)),
+            blur: 15,
+            opacity: _isHovered ? 0.6 : 0.7,
+            color: style.backgroundColor,
+            child: _buildCardContent(
+              context: context,
+              borderRadius: isTv ? 12 : (isFruit ? 14 : 28),
+              backgroundColor: isFruit && !settingsProvider.useTrueBlack
+                  ? Colors.transparent
+                  : style.backgroundColor,
+              style: style,
+              settingsProvider: settingsProvider,
+              colorScheme: colorScheme,
+              isTv: isTv,
+            ),
+          ),
+        ),
+      );
     }
 
-    if (isFruit && !settingsProvider.performanceMode) {
+    if (isFruit && !settingsProvider.performanceMode && !isTv) {
       content = AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        curve: Curves.easeOutCubic,
+        duration: const Duration(milliseconds: 80),
+        curve: Curves.fastOutSlowIn,
         transform: Matrix4.identity()
           ..scaleByDouble(
               _isHovered ? 1.012 : 1.0, _isHovered ? 1.012 : 1.0, 1.0, 1.0),
@@ -221,7 +221,27 @@ class _ShowListCardState extends State<ShowListCard> {
       }
     }
 
-    return content;
+    if (isTv) {
+      content = TvFocusWrapper(
+        focusNode: widget.focusNode,
+        onKeyEvent: widget.onKeyEvent,
+        onTap: widget.onTap,
+        onLongPress: widget.onLongPress,
+        borderRadius: BorderRadius.circular(12),
+        onFocusChange: _onHover,
+        isPlaying: widget.isPlaying,
+        showGlow: true,
+        // Prevent the playing show from stealing the premium glow —
+        // that glow is strictly reserved for the actively focused item.
+        overridePremiumHighlight: widget.isPlaying ? false : null,
+        child: content,
+      );
+    }
+
+    return Padding(
+      padding: outerPadding,
+      child: content,
+    );
   }
 
   Widget _buildCardContent({
@@ -285,7 +305,9 @@ class _ShowListCardState extends State<ShowListCard> {
           canRequestFocus: !isTv,
           borderRadius: BorderRadius.circular(borderRadius),
           onTap: () {
-            AppHaptics.selectionClick(context.read<DeviceService>());
+            if (!isTv) {
+              AppHaptics.selectionClick(context.read<DeviceService>());
+            }
             widget.onTap();
           },
           onLongPress: widget.onLongPress,
@@ -434,7 +456,7 @@ class _ShowListCardState extends State<ShowListCard> {
                             key: ValueKey('icon_${widget.show.name}'),
                             turns: widget.isExpanded ? 0.5 : 0,
                             duration: _animationDuration,
-                            curve: Curves.easeInOutCubicEmphasized,
+                            curve: Curves.fastOutSlowIn,
                             child: Container(
                               padding: const EdgeInsets.all(4),
                               decoration: BoxDecoration(

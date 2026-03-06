@@ -296,7 +296,7 @@ class StealBanner extends Component with HasGameReference<StealGame> {
       }
     }
 
-    // Secondary smooth for flat mode — extra lerp on top of smoothedLogoPos
+    // Secondary smooth for flat mode — extra lerp pass on top of smoothedLogoPos
     // absorbs residual per-frame jitter that ring mode hides via rotation.
     // Time-corrected so behaviour is identical at any frame rate.
     if (config.bannerDisplayMode == 'flat') {
@@ -483,13 +483,6 @@ class StealBanner extends Component with HasGameReference<StealGame> {
     bool glowEnabled,
     StealConfig config,
   ) {
-    // The shader logo has a soft falloff; 55% of logoRadius sits just beyond
-    // the visual edge. flatTextProximity=0 → full gap; =1 → text at center.
-    final logoRadius = minDim * 0.5 * config.logoScale.clamp(0.1, 1.0);
-    final baseGap = logoRadius * 0.55;
-    final proximity = config.flatTextProximity.clamp(0.0, 1.0);
-    final effectiveGap = baseGap * (1.0 - proximity);
-
     // Line order: title, venue, date
     final lines = [
       (_middleCurrent, _middleWords, _middleOpacity), // track title
@@ -498,22 +491,48 @@ class StealBanner extends Component with HasGameReference<StealGame> {
     ];
 
     final isAbove = config.flatTextPlacement == 'above';
-
-    // For 'above' and 'below' placement, center the text block vertically on the logo
-    // or stacked appropriately.
     final visibleCount =
         lines.where((l) => l.$1.isNotEmpty && l.$3 > 0.01).length;
     final lineHeight = _flatLineHeight * config.flatLineSpacing;
     final blockHeight = visibleCount * lineHeight;
 
-    // Starting Y for below placement: below the visual edge of the logo.
-    final belowStartY = center.dy + effectiveGap + lineHeight * 0.5;
+    // Proximity 0.0: Full gap (Away)
+    // Proximity 0.5: No gap (Edge - resting on visual bounds)
+    // Proximity 1.0: Center (Centered vertically on the logo)
+    final logoRadius = minDim * 0.5 * config.logoScale.clamp(0.1, 1.0);
+    // 0.51 multiplier for a tighter "No Gap" look than the previous 0.55
+    final baseGap = logoRadius * 0.51;
+    final proximity = config.flatTextProximity.clamp(0.0, 1.0);
 
-    // Starting Y for above placement: above the visual edge of the logo.
-    // We want the BOTTOM of the block to be 'effectiveGap' above the logo.
-    // blockHeight is the total vertical span.
-    final aboveStartY =
-        center.dy - effectiveGap - (blockHeight - lineHeight * 0.5);
+    final centerY = center.dy;
+    final double blockCenterY;
+
+    if (proximity <= 0.5) {
+      // Transition from Away (2*baseGap) to Edge (1*baseGap)
+      final t = proximity / 0.5;
+      final currentOffset = baseGap * (2.0 - t);
+      if (isAbove) {
+        blockCenterY = centerY - currentOffset - blockHeight / 2;
+      } else {
+        blockCenterY = centerY + currentOffset + blockHeight / 2;
+      }
+    } else {
+      // Transition from Edge (baseGap) to Centered (0 offset)
+      final t = (proximity - 0.5) / 0.5;
+      if (isAbove) {
+        // As proximity goes 0.5 -> 1.0, block center goes from
+        // [centerY - baseGap - blockHeight/2] up to [centerY]
+        blockCenterY =
+            ui.lerpDouble(centerY - baseGap - blockHeight / 2, centerY, t)!;
+      } else {
+        // As proximity goes 0.5 -> 1.0, block center goes from
+        // [centerY + baseGap + blockHeight/2] down to [centerY]
+        blockCenterY =
+            ui.lerpDouble(centerY + baseGap + blockHeight / 2, centerY, t)!;
+      }
+    }
+
+    final startY = blockCenterY - (blockHeight / 2) + (lineHeight / 2);
 
     int visibleIndex = 0;
     for (int i = 0; i < lines.length; i++) {
@@ -525,18 +544,10 @@ class StealBanner extends Component with HasGameReference<StealGame> {
 
       final effectiveOpacity = _opacity * lineOpacity;
 
-      final Offset lineCenter;
-      if (isAbove) {
-        lineCenter = Offset(
-          center.dx,
-          aboveStartY + visibleIndex * lineHeight,
-        );
-      } else {
-        lineCenter = Offset(
-          center.dx,
-          belowStartY + visibleIndex * lineHeight,
-        );
-      }
+      final lineCenter = Offset(
+        center.dx,
+        startY + visibleIndex * lineHeight,
+      );
 
       _drawFlatLine(
         canvas,
@@ -798,10 +809,12 @@ class StealBanner extends Component with HasGameReference<StealGame> {
     }
   }
 
+  // ── Paint Char ─────────────────────────────────────────────────────────────
+
   void _paintChar(
-    Canvas canvas,
+    ui.Canvas canvas,
     String char,
-    double charWidth,
+    double width,
     Color color,
     double opacity,
     bool glowEnabled,
@@ -809,119 +822,100 @@ class StealBanner extends Component with HasGameReference<StealGame> {
   ) {
     if (opacity <= 0.0) return;
 
-    final glyph = _getRasterizedGlyph(char, glowEnabled, config);
-    final res = config.bannerResolution;
+    final blurAmount = config.blurAmount.clamp(0.0, 1.0) * 12.0;
+    final resolution = game.size.x;
 
-    // Offset centers the 'core' text and accommodates the shadow padding
-    final offset = Offset(
-      (-charWidth / 2 - glyph.padding) * res,
-      (-glyph.coreHeight / 2 - glyph.padding) * res,
-    );
+    // Check if we need to clear glyph cache (font or glow param changed)
+    if (_lastGlowBlur != blurAmount ||
+        _lastGlowEnabled != glowEnabled ||
+        _lastFontFamily != config.bannerFont ||
+        _lastResolution != resolution) {
+      _glyphCache.clear();
+      _lastGlowBlur = blurAmount;
+      _lastGlowEnabled = glowEnabled;
+      _lastFontFamily = config.bannerFont;
+      _lastResolution = resolution;
+    }
+
+    final glyph =
+        _glyphCache.putIfAbsent(char, () => _rasterizeChar(char, config));
 
     final paint = Paint()
-      ..colorFilter = ui.ColorFilter.mode(
-        color.withValues(alpha: opacity),
-        ui.BlendMode.srcIn,
-      )
-      ..isAntiAlias = true
-      ..filterQuality = config.performanceLevel >= 2
-          ? FilterQuality.medium
-          : FilterQuality.high;
+      ..color = color.withValues(alpha: opacity)
+      ..isAntiAlias = true;
 
-    canvas.save();
-    // Scale down the high-res glyph to maintain original visual footprint
-    canvas.scale(1.0 / res);
-    canvas.drawImage(glyph.image, offset, paint);
-    canvas.restore();
+    // Draw the rasterized image.
+    // The image has padding for the glow, so we center it.
+    canvas.drawImage(
+      glyph.image,
+      Offset(
+        -glyph.coreWidth / 2 - glyph.padding,
+        -glyph.coreHeight / 2 - glyph.padding,
+      ),
+      paint,
+    );
   }
 
-  _RasterGlyph _getRasterizedGlyph(
-      String char, bool glowEnabled, StealConfig config) {
-    if (_lastGlowEnabled != glowEnabled ||
-        _lastGlowBlur != config.bannerGlowBlur ||
-        _lastFontFamily != config.bannerFont ||
-        _lastResolution != config.bannerResolution) {
-      for (final g in _glyphCache.values) {
-        g.image.dispose();
-      }
-      _glyphCache.clear();
-      _lastGlowEnabled = glowEnabled;
-      _lastGlowBlur = config.bannerGlowBlur;
-      _lastFontFamily = config.bannerFont;
-      _lastResolution = config.bannerResolution;
-    }
+  _RasterGlyph _rasterizeChar(String char, StealConfig config) {
+    final blurAmount = config.blurAmount.clamp(0.0, 1.0) * 12.0;
 
-    if (_glyphCache.containsKey(char)) {
-      return _glyphCache[char]!;
-    }
-
-    final res = config.bannerResolution;
-    final double padding = 24.0 * res; // accommodate max blur radius
-    final recorder = ui.PictureRecorder();
-    final canvas = Canvas(recorder);
-
-    // Draw solid white so color filtering maps cleanly
-    final glowShadows = glowEnabled
-        ? _buildGlowShadows(Colors.white, 1.0, config.bannerGlowBlur * res)
-        : null;
-
+    // Measure core size
     final painter = TextPainter(
       text: TextSpan(
         text: char,
         style: TextStyle(
           fontFamily: config.bannerFont,
-          color: Colors.white,
-          fontSize: _defaultFontSize * res,
+          fontSize: _defaultFontSize,
           fontWeight: FontWeight.w600,
-          letterSpacing: 0,
-          shadows: glowShadows,
+          color: Colors.white,
         ),
       ),
       textDirection: ui.TextDirection.ltr,
     )..layout();
 
-    final width = painter.width + padding * 2;
-    final height = painter.height + padding * 2;
+    final cw = painter.width;
+    final ch = painter.height;
 
-    painter.paint(canvas, Offset(padding, padding));
+    // Add padding for the neon glow blur
+    final padding = blurAmount * 2.5 + 4.0;
+    final iw = (cw + padding * 2).ceil();
+    final ih = (ch + padding * 2).ceil();
+
+    final recorder = ui.PictureRecorder();
+    final canvas = Canvas(recorder);
+
+    if (config.bannerGlow) {
+      // Outer glow: wide blur
+      final glowPaint = Paint()
+        ..maskFilter = MaskFilter.blur(BlurStyle.normal, blurAmount);
+      canvas.saveLayer(null, glowPaint);
+      canvas.translate(padding, padding);
+      painter.paint(canvas, Offset.zero);
+      canvas.restore();
+
+      // Inner glow: tighter blur for core intensity
+      final coreGlowPaint = Paint()
+        ..maskFilter = MaskFilter.blur(BlurStyle.normal, blurAmount * 0.3);
+      canvas.saveLayer(null, coreGlowPaint);
+      canvas.translate(padding, padding);
+      painter.paint(canvas, Offset.zero);
+      canvas.restore();
+    }
+
+    // Draw pure white core
+    canvas.save();
+    canvas.translate(padding, padding);
+    painter.paint(canvas, Offset.zero);
+    canvas.restore();
 
     final picture = recorder.endRecording();
-    final image = picture.toImageSync(width.ceil(), height.ceil());
+    final image = picture.toImageSync(iw, ih);
 
-    final glyph = _RasterGlyph(
+    return _RasterGlyph(
       image: image,
-      coreWidth: painter.width,
-      coreHeight: painter.height,
+      coreWidth: cw,
+      coreHeight: ch,
       padding: padding,
     );
-    _glyphCache[char] = glyph;
-    return glyph;
-  }
-
-  /// Builds a list of [Shadow]s that approximate a neon tube glow.
-  /// All layers baked into a single TextPainter — zero saveLayer cost.
-  List<Shadow> _buildGlowShadows(
-      Color baseColor, double opacity, double blurFactor) {
-    final hsl = HSLColor.fromColor(baseColor);
-    final bloom = hsl.withSaturation(1.0).withLightness(0.50).toColor();
-    final halo = hsl.withSaturation(1.0).withLightness(0.75).toColor();
-
-    // The halo blur scales from tight (1.0 blurRadius at 0% setting)
-    // to wide/scattered (15.0 blurRadius at 100% setting)
-    // Minimum 0 so there is still text
-    final currentHaloBlur = ui.lerpDouble(1.0, 15.0, blurFactor) ?? 2.0;
-
-    return [
-      // Mid bloom
-      Shadow(
-          color: bloom.withValues(alpha: opacity * 0.50),
-          blurRadius: 6,
-          offset: Offset.zero),
-      // Tight halo
-      Shadow(
-          color: halo.withValues(alpha: opacity * 0.80),
-          blurRadius: currentHaloBlur,
-          offset: Offset.zero),
-    ];
   }
 }

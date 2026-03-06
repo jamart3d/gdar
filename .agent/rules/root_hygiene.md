@@ -15,3 +15,7 @@ Only standard project files belong at root: `pubspec.yaml`, `README.md`, `CHANGE
 If you generate any file outside of `lib/`, `test/`, `.agent/`, or `docs/`, you must either:
 1. Delete it before the task is complete, or
 2. Explicitly tell the user it exists and why it should stay.
+
+> [!TIP]
+> Use the **`/clean`** workflow to automatically audit and scrub the project root of non-essential files.
+

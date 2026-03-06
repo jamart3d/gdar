@@ -6,6 +6,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.52+152] - 2026-03-05
+
+### Added
+- **UI/UX (TV)**: Implemented auto-scrolling for the left panel Show List to keep focused items visible.
+
+### Changed
+- **UI/UX (TV)**: Updated "Premium Highlight" to use the RGB rainbow spectrum, matching the playing track border aesthetic.
+- **UI/UX (TV)**: Refined playing track border to be a crisp RGB line without glow, reserving the intense glow exclusively for the active focus.
+- **UI/UX (TV)**: Changed playback header rating stars to filled yellow icons (Colors.amber) for better visibility and consistency.
+
+### Fixed
+- **UI/UX (TV)**: Resolved focus looping bug in the track list by introducing container focus guards and gentle visibility-only scrolling.
+- **UI/UX (TV)**: Fixed stale focus node cleanup to prevent memory leaks and "ghost" highlights without dropping active focus.
+- **UI/UX (TV)**: Prevented playing shows from "stealing" the premium glow from the user's active cursor.
+- **Stability**: Added `isAttached` safety guards to the TV scroll controller to prevent crashes during rapid pane switching.
+
 ## [1.1.51+151] - 2026-03-05
 
 ### Added

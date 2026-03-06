@@ -14,7 +14,11 @@ class AudioCacheService with ChangeNotifier {
     required MediaItem tag,
     required bool useCache,
   }) {
-    return AudioSource.uri(uri, tag: tag);
+    return AudioSource.uri(
+      uri,
+      tag: tag,
+      headers: {'User-Agent': 'GDAR/1.0.0 (shakedown_app@googlegroups.com)'},
+    );
   }
 
   void monitorCache(bool enabled) {}

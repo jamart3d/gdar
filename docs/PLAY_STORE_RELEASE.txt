@@ -1,3 +1,14 @@
+What's new in v1.1.52
+
+• TV: Implemented auto-scrolling for the show list to keep focused items in view.
+• TV: Updated "Premium Highlight" to use the RGB rainbow spectrum.
+• TV: Refined playing track border to be a crisp RGB line without glow.
+• TV: Saved rating stars in the playback header now use filled yellow icons.
+• TV: Resolved focus looping bug in the track list with passive container guards.
+• TV: Fixed stale focus node cleanup to prevent memory leaks.
+• TV: Added safety guards to the scroll controller for smoother pane switching.
+
+---
 What's new in v1.1.51
 
 • TV: Header icons and title now scale properly for 10-foot UI readability.

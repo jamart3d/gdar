@@ -36,8 +36,7 @@ class StealGame extends FlameGame {
 
   // ── Trail position ring buffer ─────────────────────────────────────────────
   // Stores recent smoothed logo positions for ghost slice rendering.
-  // Max capacity = max supported slices. Sampled every N frames based on
-  // logoTrailLength (higher = more frames skipped = longer spread trail).
+  // Store more slices so they can stretch across the screen: capacity bumped from 16 to 32
   static const int _trailBufferCapacity = 16;
   final List<Offset> _trailBuffer = List.filled(
     _trailBufferCapacity,
@@ -120,7 +119,11 @@ class StealGame extends FlameGame {
   @override
   void update(double dt) {
     super.update(dt);
-    _time += dt;
+    // Cap dt for the position-curve clock so dropped frames don't cause the
+    // Lissajous target to leap forward and produce a visible logo "jump".
+    // Other systems (smoothing, palette cycle, trail) receive real dt for
+    // correct time-corrected behavior.
+    _time += dt.clamp(0.0, 1.0 / 30.0);
 
     if (config.paletteCycle && !isWoodstockActive) {
       _tickCycle(dt);
@@ -139,8 +142,8 @@ class StealGame extends FlameGame {
 
     // Sample interval: higher logoTrailLength = more frames between snapshots
     // = positions spread further apart = longer visible trail.
-    // At 0.0 → every frame. At 1.0 → every 12 frames.
-    final interval = (1 + (config.logoTrailLength * 11).round()).clamp(1, 12);
+    // At 0.0 → every frame. At 2.0 → every ~30 frames.
+    final interval = (1 + (config.logoTrailLength * 14.5).round()).clamp(1, 30);
     _trailFrameCount++;
     if (_trailFrameCount >= interval) {
       _trailFrameCount = 0;

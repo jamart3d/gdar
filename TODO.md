@@ -15,6 +15,7 @@
 
 ### Visual & Motion
 - [ ] **Display Typography**: Audit and upgrade headers to `DisplayMedium` / `DisplayLarge` on the playback pane.
+- [ ] **Dynamic Screensaver Slices**: Adjust number of logo slices dynamically based on translation velocity (more slices at higher speeds for a more "liquid" trail).
 
 ### Performance
 - [ ] **Neon Glow Optimization** *(CRITICAL)*: Implement Rasterized Glyph Cache for `StealBanner`. Real-time Gaussian blurs are too expensive for TV SOCs.
@@ -23,6 +24,9 @@
 
 ### Debug
 - [ ] **Logo Position Jump**: Diagnose visual jolt/reset every few minutes with audio reactivity off. See `reports/archive/TODO_position_jump_debug.md` for full investigation notes.
+- [ ] **Premium TV Highlight Flow**: When `oilTvPremiumHighlight` is ON, the right-side track list has unstable D-pad navigation — focus can loop back to the currently playing track. 
+    - *Status*: Applied partial fixes (focus node pruning, gentle scrolling, focus-theft guards).
+    - *Blocking*: The `AnimatedGradientBorder` mount/unmount cycle in `TvFocusWrapper` triggers layout shifts that disrupt `ScrollablePositionedList` focus nodes. Needs a stabilized widget tree approach (always mount the border, toggle visibility via opacity/width).
 
 ### Future Ideas
 - [ ] **Voice Search**: "Play shows from Winterland 1973" via Google Assistant.

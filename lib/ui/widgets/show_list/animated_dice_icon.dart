@@ -75,8 +75,11 @@ class _AnimatedDiceIconState extends State<AnimatedDiceIcon>
       if (status == AnimationStatus.completed &&
           _hapticsEnabledForCurrentRoll) {
         // Landing "Thud" haptic
-        logger.t('AnimatedDiceIcon: Landing Haptic (status=completed)');
-        AppHaptics.mediumImpact(context.read<DeviceService>());
+        final isTv = context.read<DeviceService>().isTv;
+        if (!isTv) {
+          logger.t('AnimatedDiceIcon: Landing Haptic (status=completed)');
+          AppHaptics.mediumImpact(context.read<DeviceService>());
+        }
       }
     });
 
@@ -146,9 +149,12 @@ class _AnimatedDiceIconState extends State<AnimatedDiceIcon>
 
     if (widget.changeFaces && face != _lastHapticFace) {
       if (_hapticsEnabledForCurrentRoll) {
-        logger.t(
-            'AnimatedDiceIcon: Face Change Haptic -> $face (t: ${t.toStringAsFixed(2)})');
-        AppHaptics.lightImpact(context.read<DeviceService>());
+        final isTv = context.read<DeviceService>().isTv;
+        if (!isTv) {
+          logger.t(
+              'AnimatedDiceIcon: Face Change Haptic -> $face (t: ${t.toStringAsFixed(2)})');
+          AppHaptics.lightImpact(context.read<DeviceService>());
+        }
       }
       _lastHapticFace = face;
     }

@@ -344,8 +344,12 @@ class ShowListProvider with ChangeNotifier {
       try {
         logger
             .i('Checking archive.org status (Attempt ${i + 1}/$maxRetries)...');
-        final response =
-            await http.head(Uri.parse('https://archive.org')).timeout(timeout);
+        final response = await http.head(
+          Uri.parse('https://archive.org'),
+          headers: {
+            'User-Agent': 'GDAR/1.0.0 (shakedown_app@googlegroups.com)'
+          },
+        ).timeout(timeout);
         if (response.statusCode >= 200 && response.statusCode < 400) {
           logger.i('archive.org is reachable.');
           isArchiveDown = false;

@@ -14,7 +14,6 @@ import 'package:shakedown/utils/utils.dart';
 import 'package:shakedown/ui/widgets/show_list/show_list_card.dart';
 import 'package:shakedown/ui/widgets/show_list_item_details.dart';
 import 'package:shakedown/ui/widgets/swipe_action_background.dart';
-import 'package:shakedown/ui/widgets/tv/tv_focus_wrapper.dart';
 
 class ShowListItem extends StatelessWidget {
   final Show show;
@@ -69,47 +68,39 @@ class ShowListItem extends StatelessWidget {
       isLoading: isLoading,
       onTap: onTap,
       onLongPress: onLongPress,
-    );
-
-    if (isTv) {
-      card = TvFocusWrapper(
-        focusNode: focusNode,
-        onTap: onTap,
-        onLongPress: onLongPress,
-        scaleOnFocus: 1.0, // Disable scaling
-        focusBackgroundColor: Colors.transparent, // Transparent background
-        focusColor: Theme.of(context).colorScheme.primary, // Primary border
-        isPlaying: isPlaying,
-        borderRadius: BorderRadius.circular(12),
-        onFocusChange: (focused) {
-          if (focused) onFocusChange?.call(index);
-        },
-        onKeyEvent: (node, event) {
-          if (event.logicalKey == LogicalKeyboardKey.arrowLeft) {
-            if (event is KeyDownEvent) onFocusLeft?.call();
-            return KeyEventResult.handled;
-          } else if (event.logicalKey == LogicalKeyboardKey.arrowDown) {
-            final shows = context.read<ShowListProvider>().filteredShows;
-            if (index == shows.length - 1) {
-              if (event is KeyDownEvent) {
-                onWrapAround?.call(0);
-              }
-              return KeyEventResult.handled; // Anchor
+      focusNode: isTv ? focusNode : null,
+      onFocusChange: isTv
+          ? (focused) {
+              if (focused) onFocusChange?.call(index);
             }
-          } else if (event.logicalKey == LogicalKeyboardKey.arrowUp) {
-            if (index == 0) {
-              if (event is KeyDownEvent) {
+          : null,
+      onKeyEvent: isTv
+          ? (node, event) {
+              if (event.logicalKey == LogicalKeyboardKey.arrowLeft) {
+                if (event is KeyDownEvent) onFocusLeft?.call();
+                return KeyEventResult.handled;
+              } else if (event.logicalKey == LogicalKeyboardKey.arrowDown) {
                 final shows = context.read<ShowListProvider>().filteredShows;
-                onWrapAround?.call(shows.length - 1);
+                if (index == shows.length - 1) {
+                  if (event is KeyDownEvent) {
+                    onWrapAround?.call(0);
+                  }
+                  return KeyEventResult.handled; // Anchor
+                }
+              } else if (event.logicalKey == LogicalKeyboardKey.arrowUp) {
+                if (index == 0) {
+                  if (event is KeyDownEvent) {
+                    final shows =
+                        context.read<ShowListProvider>().filteredShows;
+                    onWrapAround?.call(shows.length - 1);
+                  }
+                  return KeyEventResult.handled; // Anchor
+                }
               }
-              return KeyEventResult.handled; // Anchor
+              return KeyEventResult.ignored;
             }
-          }
-          return KeyEventResult.ignored;
-        },
-        child: card,
-      );
-    }
+          : null,
+    );
 
     return Column(
       key: ValueKey('${show.name}_${show.date}'),

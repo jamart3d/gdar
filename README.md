@@ -197,9 +197,11 @@ The web version is now a full Progressive Web App (PWA) with a custom, high-perf
 - **Media Session API**: Full integration with browser/OS media controls (Play/Pause/Skip) and "Now Playing" metadata.
 - **Installable**: Full manifest support for "Add to Home Screen" on iOS, Android, and desktop Chrome/Edge/Safari.
 
-## TV Experience (Feb 2024)
+## TV Experience (Feb 2026)
 
-- **Focus Management**: Customized D-pad navigation logic to ensure natural movement between lists, scrollbars, and controls.
+- **Focus Management**: Deeply customized D-pad navigation logic to ensure natural movement. Includes stale-node pruning and focus-persistence guards to prevent focus "ghosting" during rapid pane switching.
+- **Premium TV Highlight**: A high-intensity RGB rainbow glow effect for the actively focused item, with specialized logic to prevent "glow theft" by the currently playing track.
+- **Auto-Scrolling**: Intelligent visibility guards in the Show List and Track List that automatically scroll the view to keep the focused item comfortably within the viewport (30% margin).
 - **Inactivity Handling**: Automatic screensaver activation with a "Ghost Menu" accessible via D-pad for quick visual adjustments.
 
 ## Repository Auditing (Jules)

@@ -13,5 +13,12 @@ policy_domain: Audio Architecture
 * **Action:** Use `just_audio` for the primary playback engine on native targets.
 * **Action:** Implement `just_audio_background` for OS-level media notifications and background persistence.
 * **Action:** Sync track metadata to the OS media controller on every track change.
-* **Action:** Use **Hive** for show metadata caching and persistent play counts.
-* **Constraint: NEVER use `ConcatenatingAudioSource`.** This class is legacy/deprecated in favor of the direct `setAudioSources` API on the player. Using the old wrapper causes synchronization/shuffle bugs on Android and TV.
+* **Action:** Use **Hive** for show metadata caching and persistent play counts on all native/desktop targets.
+* **Action:** Use a flattened `AudioSource` list for all queue management.
+* **Constraint: NEVER use `ConcatenatingAudioSource`.** Using the old wrapper causes synchronization/shuffle bugs.
+
+### 3. Web Engine Architecture
+* **Action:** Use an isolated `AudioWorklet` worker for the Web Audio engine.
+* **Action:** Implement `HybridAudioOrchestrator` for seamless Engine 1 → Engine 2 handoff.
+* **Constraint:** Never refactor the Relisten engine to use `ReadableStream`.
+* **Constraint:** Never share an `AudioContext` across tracks.

@@ -43,10 +43,11 @@ class _RatingStars extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       spacing: 2,
       children: List.generate(total, (i) {
+        final bool filled = i < rating;
         return Icon(
-          i < rating ? LucideIcons.star : LucideIcons.star,
+          filled ? Icons.star : Icons.star_border,
           size: 16,
-          color: color,
+          color: filled ? color : color.withValues(alpha: 0.3),
         );
       }),
     );
@@ -92,6 +93,7 @@ class PlaybackScreenState extends State<PlaybackScreen>
   StreamSubscription? _errorSubscription;
   String? _lastTrackTitle;
   final Map<int, FocusNode> _trackFocusNodes = {};
+  final FocusNode _trackListFocusNode = FocusNode(canRequestFocus: false);
 
   @override
   void initState() {
@@ -128,6 +130,7 @@ class PlaybackScreenState extends State<PlaybackScreen>
     for (var node in _trackFocusNodes.values) {
       node.dispose();
     }
+    _trackListFocusNode.dispose();
     super.dispose();
   }
 
@@ -211,14 +214,9 @@ class PlaybackScreenState extends State<PlaybackScreen>
       }
 
       if (syncFocus && context.read<DeviceService>().isTv) {
-        bool listHasFocus = false;
-        for (var node in _trackFocusNodes.values) {
-          if (node.hasFocus) {
-            listHasFocus = true;
-            break;
-          }
-        }
-        if (listHasFocus) {
+        // Only snatch focus if the list does NOT already have it.
+        // We check the container-level node which covers the whole track area.
+        if (!_trackListFocusNode.hasFocus) {
           _focusTrack(targetIndex, shouldScroll: false);
         }
       }
@@ -289,6 +287,20 @@ class PlaybackScreenState extends State<PlaybackScreen>
   void _focusTrack(int index, {bool shouldScroll = true}) {
     if (index < 0) return;
 
+    // Prune stale focus nodes that are far from the target to prevent
+    // ghost premium highlights and unbounded memory growth.
+    // IMPORTANT: never dispose a node that currently has focus — that
+    // confuses the focus system and causes the premium glow to stick.
+    final keysToRemove = _trackFocusNodes.keys
+        .where((k) =>
+            (k - index).abs() > 20 &&
+            !(_trackFocusNodes[k]?.hasPrimaryFocus ?? false))
+        .toList();
+    for (final k in keysToRemove) {
+      _trackFocusNodes[k]?.dispose();
+      _trackFocusNodes.remove(k);
+    }
+
     bool needsRebuild = false;
     if (!_trackFocusNodes.containsKey(index)) {
       _trackFocusNodes[index] = FocusNode();
@@ -304,7 +316,7 @@ class PlaybackScreenState extends State<PlaybackScreen>
     }
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
+      if (mounted && (_trackFocusNodes[index]?.canRequestFocus ?? false)) {
         _trackFocusNodes[index]?.requestFocus();
       }
     });
@@ -464,9 +476,18 @@ class PlaybackScreenState extends State<PlaybackScreen>
     if (audioProvider.currentTrack?.title != _lastTrackTitle) {
       _lastTrackTitle = audioProvider.currentTrack?.title;
       WidgetsBinding.instance.addPostFrameCallback((_) {
+        // Only force focus to the new playing track if we aren't currently exploring the list
+        // on TV. Otherwise, just scroll it into view naturally without hijacking the user's remote.
+        final isTv = context.read<DeviceService>().isTv;
+        final bool listHasFocus = isTv && _trackListFocusNode.hasFocus;
+
         final isPanelOpen = _panelPositionNotifier.value > 0.1;
-        _scrollToCurrentTrack(true,
-            maxVisibleY: isPanelOpen ? 0.4 : 1.0, syncFocus: true);
+        _scrollToCurrentTrack(
+          true,
+          maxVisibleY: isPanelOpen ? 0.4 : 1.0,
+          syncFocus:
+              !listHasFocus, // Don't snatch focus if user is actively navigating
+        );
       });
     }
 
@@ -548,7 +569,7 @@ class PlaybackScreenState extends State<PlaybackScreen>
                                       .getRating(currentSource.id);
                                   return _RatingStars(
                                     rating: r,
-                                    color: colorScheme.primary,
+                                    color: Colors.amber,
                                   );
                                 },
                               ),
@@ -630,6 +651,7 @@ class PlaybackScreenState extends State<PlaybackScreen>
                         itemPositionsListener: _itemPositionsListener,
                         audioProvider: audioProvider,
                         trackFocusNodes: _trackFocusNodes,
+                        trackListFocusNode: _trackListFocusNode,
                         onFocusLeft: () {
                           _scrollToCurrentTrack(true,
                               force: true, alignment: 0.5);
@@ -637,8 +659,11 @@ class PlaybackScreenState extends State<PlaybackScreen>
                         },
                         onFocusRight: widget.onTrackListRight,
                         onTrackFocused: (index) {
-                          _scrollToCurrentTrack(true,
-                              force: true, forceTargetIndex: index);
+                          // Use gentle visibility-only scroll (force: false).
+                          // Aggressive alignment scroll (force: true) causes
+                          // list re-layouts that disrupt focus when premium
+                          // highlight is enabled.
+                          _scrollToCurrentTrack(true, forceTargetIndex: index);
                         },
                         onWrapAround: _focusTrack,
                       ),

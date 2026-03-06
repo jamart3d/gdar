@@ -24,6 +24,7 @@ class TvFocusWrapper extends StatefulWidget {
   final bool isPlaying;
   final FocusOnKeyEventCallback? onKeyEvent;
   final ValueChanged<bool>? onFocusChange;
+  final bool? overridePremiumHighlight;
 
   const TvFocusWrapper({
     super.key,
@@ -41,6 +42,7 @@ class TvFocusWrapper extends StatefulWidget {
     this.onKeyEvent,
     this.focusBackgroundColor,
     this.onFocusChange,
+    this.overridePremiumHighlight,
   });
 
   @override
@@ -109,9 +111,16 @@ class _TvFocusWrapperState extends State<TvFocusWrapper> {
     final colorScheme = Theme.of(context).colorScheme;
     final sp = context.watch<SettingsProvider>();
     final radius = widget.borderRadius ?? BorderRadius.circular(28);
-    final isPremium = sp.oilTvPremiumHighlight;
-    final showPremium = isPremium && _isFocused;
-    final showPlayingRgb = widget.isPlaying && sp.highlightPlayingWithRgb;
+    // Only the actively focused item can be premium
+    final isPremium =
+        (widget.overridePremiumHighlight ?? sp.oilTvPremiumHighlight) &&
+            _isFocused;
+    final showPremium = isPremium;
+
+    // The playing track gets an RGB border.
+    // If it is ALSO focused and premium is ON, showPremium takes precedence below.
+    final showPlayingRgb =
+        widget.isPlaying && sp.highlightPlayingWithRgb && !showPremium;
 
     Widget content = AnimatedContainer(
       duration: const Duration(milliseconds: 200),
@@ -146,10 +155,28 @@ class _TvFocusWrapperState extends State<TvFocusWrapper> {
       ),
     );
 
+    // Determine the border width that AnimatedGradientBorder will inject.
+    final double activeBorderWidth;
+    if (showPremium) {
+      activeBorderWidth = 6.0;
+    } else if (showPlayingRgb || (widget.useRgbBorder && _isFocused)) {
+      activeBorderWidth = _isFocused ? 4.0 : 2.5;
+    } else {
+      activeBorderWidth = 0.0;
+    }
+
+    // We compensate for the padding injected by AnimatedGradientBorder so the overall
+    // dimensions of the TvFocusWrapper never change, preventing track list flow jumping.
+    final double maxBorderWidth = 6.0;
+    content = Padding(
+      padding: EdgeInsets.all(maxBorderWidth - activeBorderWidth),
+      child: content,
+    );
+
     if (showPlayingRgb) {
       content = AnimatedGradientBorder(
         borderRadius: radius.topLeft.x,
-        borderWidth: _isFocused ? 4.0 : 2.5, // Thicker stroke if focused
+        borderWidth: activeBorderWidth,
         ignoreGlobalClock: true,
         animationSpeed: sp.rgbAnimationSpeed,
         colors: const [
@@ -161,36 +188,41 @@ class _TvFocusWrapperState extends State<TvFocusWrapper> {
           Colors.purple,
           Colors.red,
         ],
-        showGlow: true,
-        showShadow:
-            sp.oilTvPremiumHighlight && _isFocused, // Glow if premium focused
-        glowOpacity: (sp.oilTvPremiumHighlight && _isFocused) ? 0.8 : 0.0,
+        showGlow: true, // Needs to be true to render at all
+        showShadow: false, // Turn off outer neon glow
+        glowOpacity: 0.0,
         backgroundColor: Colors.transparent,
-        usePadding: true,
+        usePadding:
+            true, // MUST be true or RepaintBoundary thrashing freezes TV
         child: content,
       );
     } else if (showPremium) {
       content = AnimatedGradientBorder(
         borderRadius: radius.topLeft.x,
-        borderWidth: 6.0, // Premium thick border
+        borderWidth: activeBorderWidth,
         colors: const [
-          Color(0xFFFF00FF), // Neon Pink
-          Color(0xFF00FFFF), // Cyan
-          Color(0xFF0000FF), // Blue
-          Color(0xFFFF00FF), // Neon Pink
+          Colors.red,
+          Colors.yellow,
+          Colors.green,
+          Colors.cyan,
+          Colors.blue,
+          Colors.purple,
+          Colors.red,
         ],
         showGlow: true,
-        glowOpacity: 0.8, // Strong neon glow
+        showShadow: true,
+        glowOpacity: 0.8, // Strong RGB glow
         animationSpeed: sp.rgbAnimationSpeed * 1.5,
         ignoreGlobalClock: true,
         backgroundColor: Colors.transparent,
-        usePadding: true,
+        usePadding:
+            true, // MUST be true or RepaintBoundary thrashing freezes TV
         child: content,
       );
     } else if (widget.useRgbBorder && _isFocused) {
       content = AnimatedGradientBorder(
         borderRadius: radius.topLeft.x,
-        borderWidth: _isFocused ? 4.0 : 2.5, // Thicker stroke if focused
+        borderWidth: activeBorderWidth,
         ignoreGlobalClock: true,
         animationSpeed: sp.rgbAnimationSpeed,
         colors: const [
@@ -205,7 +237,8 @@ class _TvFocusWrapperState extends State<TvFocusWrapper> {
         showGlow: true, // Master switch
         showShadow: false, // Crisp line
         backgroundColor: Colors.transparent,
-        usePadding: true,
+        usePadding:
+            true, // MUST be true or RepaintBoundary thrashing freezes TV
         child: content,
       );
     }
@@ -255,8 +288,8 @@ class _TvFocusWrapperState extends State<TvFocusWrapper> {
         onLongPress: widget.onLongPress,
         child: AnimatedScale(
           scale: _isFocused ? widget.scaleOnFocus : 1.0,
-          duration: const Duration(milliseconds: 200),
-          curve: Curves.easeOutBack,
+          duration: const Duration(milliseconds: 80),
+          curve: Curves.fastOutSlowIn,
           child: content,
         ),
       ),
