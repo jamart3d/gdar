@@ -217,9 +217,6 @@ Direct Jules to the following files for specific verification tasks:
 
 3. **Fruit UI & Aesthetic Only**:
    > "Read `web/tests/jules_fruit_audit.md` and perform the Fruit UI & Liquid Glass aesthetic audit."
-  - [x] Create Jules "Stress & Persistence" audit prompt <!-- id: 28 -->
-- [x] Create Jules "Fruit UI & Liquid Glass" audit prompt <!-- id: 33 -->
-- [x] Create Jules "Persistence & Integrity" audit prompt <!-- id: 34 -->
-- [ ] Document final results in walkthrough <!-- id: 27 -->
+
 4. **Persistence & Integrity Only**:
    > "Read `web/tests/jules_integrity_audit.md` and perform the architectural persistence and platform integrity audit."
