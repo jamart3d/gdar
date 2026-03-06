@@ -14,7 +14,7 @@ trigger: always_on
 * **Style & Performance:** Adhere strictly to the official Dart style guide,
   use `flutter format`, and use `const` constructors everywhere possible to
   prevent unnecessary rebuilds.
-* **Design System:** **Material 3 (Expressive) is the foundation for ALL platforms.** 
+* **Design System:** **Material 3 (Expressive) is the default foundation for ALL platforms.** 
     * The "Fruit" (Liquid Glass) style is an **optional visual layer** available *only* for the Web UI and PWA. 
     * Always gate "Fruit" logic with `kIsWeb` or PWA-specific checks.
 

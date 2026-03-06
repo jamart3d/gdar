@@ -63,7 +63,7 @@ class ThemeProvider with ChangeNotifier {
 
   ThemeProvider({this.isTv = false})
       : _themeModeIndex = isTv ? 2 : 0,
-        _themeStyleIndex = (kIsWeb && !isTv) ? 1 : 0, // Default to Fruit on Web
+        _themeStyleIndex = 0, // Default to Android on all platforms
         _fruitColorOptionIndex = 0 {
     unawaited(_loadThemePreference());
   }
@@ -122,12 +122,11 @@ class ThemeProvider with ChangeNotifier {
     _themeModeIndex = prefs.getInt(_themeModeKey) ?? (isTv ? 2 : 0);
 
     if (!prefs.containsKey(_webFruitThemeInitKey)) {
-      _themeStyleIndex = isFruitAllowed ? 1 : 0;
+      _themeStyleIndex = 0; // Default to Android
       await prefs.setBool(_webFruitThemeInitKey, true);
       await prefs.setInt(_themeStyleKey, _themeStyleIndex);
     } else {
-      _themeStyleIndex =
-          prefs.getInt(_themeStyleKey) ?? (isFruitAllowed ? 1 : 0);
+      _themeStyleIndex = prefs.getInt(_themeStyleKey) ?? 0;
 
       // Safety check for existing preferences: Force back to Android if it drifted
       if (!isFruitAllowed && _themeStyleIndex == 1) {

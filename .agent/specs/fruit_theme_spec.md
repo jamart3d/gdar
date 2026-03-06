@@ -1,6 +1,6 @@
 # Fruit Theme Specification: GDAR Audio Player
 
-This document defines the **Fruit** (Liquid Glass) theme, a premium, tactile, and immersive aesthetic developed for the GDAR ecosystem. While its most advanced visual features (Liquid Glass) are optimized for the Web, it serves as the design standard for premium components.
+This document defines the **Fruit** (Liquid Glass) theme, a premium, tactile, and immersive aesthetic developed for the GDAR ecosystem. It is an **optional visual layer** for the Web UI/PWA, while **Android (Material 3)** remains the default style across all platforms.
 
 ## 1. Aesthetic Philosophy
 The "Fruit" look centers on depth, translucency, and physical responsiveness. It moves away from Material's elevation-based shadow model towards a model of blurred surfaces and tactile feedback.
