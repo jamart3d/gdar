@@ -38,13 +38,20 @@
 
 ## 🌐 Web / PWA
 
-- [ ] **Fruit Style Settings**: Verify first-time activation correctly disables Dense, Glow, RGB, and Performance modes.
-- [ ] **Fruit Style Playback Screen**: Fix "current track bounce slap" during sticky header transition.
+- [ ] **Fruit Style Settings**: Ensure first-time activation defaults to: Dense OFF, Glass ON, Simple OFF, Glow OFF, RGB OFF.
+- [ ] **Fruit Style Playback Screen**: 
+  - [ ] Lower the top header metadata info.
+  - [ ] Implement marquee with horizontal fade for long Venue/Location text (Apple Glass style).
+  - [ ] Implement regular glass list with play controls in the current track (no fancy sticking).
+  - [ ] Now button on bottom tab bar should scroll current track back into view if offscreen.
+- [ ] **Fruit Style Show List**: When not stacked, the current show should have the player to the left of the stars.
+- [ ] **Fruit Style Rate Show Dialog**: Refresh dialog with glass style and themed stars; ensure compatibility with Simple Theme.
 - [ ] **Background Longevity**: Extend playback when tab is backgrounded/throttled.
   - [ ] Explore Silent Video looping or Web Workers for timer consistency.
   - [x] **Timer Drift Audit**: Added Phase 4 to `test/prompts/jules_audit.md` to audit `gapless_audio_engine.js` under 6x CPU throttling.
 - [ ] **Bug — Track Skip on Buffer**: Engine skips next track if it isn't fully buffered when current track ends.
 - [ ] **Mobile Preload Setting**: User setting to choose how many tracks to buffer/preload ahead (currently defaults to 1).
+- [ ] **Playback Settings**: Investigate a short fade-in playback option (on start/resume) to reduce audio "popping".
 
 ---
 
