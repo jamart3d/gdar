@@ -33,6 +33,11 @@
 - [ ] **Voice & Modern Search UX**: Optimize search overlay for large screens/keyboard and add voice capabilities ("Play shows from Winterland 1973" via Google Assistant).
 - [ ] **Analog VU Meters**: Add a visualization option to display the audio bar graph as vintage analog needle meters (old-school high-end HiFi style).
 - [ ] **Flutter GPU Investigation**: Explore `flutter_gpu` for higher-fidelity fluid simulation in the lava lamp screensaver.
+- [ ] **Live Playlist (Session History)**: Implement a *Persistent* "Live Playlist" (storing the last 50 shows). 
+    - **Spec:** Referenced in `docs/live_playlist_spec.md`.
+    - **Logic:** Enable "Reverse-Show" navigation: going back from the first track of a show takes you to the last track of the *previous* show played.
+    - **UX:** Added "Undo/History" capability: allow users to jump back to a previous track/position if they accidentally block a show or skip a favorite track.
+    - **Persistence:** The list survives app restarts, allowing for multi-day session continuity via `SharedPreferences`.
 
 ---
 
