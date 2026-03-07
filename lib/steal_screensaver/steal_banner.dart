@@ -577,6 +577,12 @@ class StealBanner extends Component with HasGameReference<StealGame> {
     }
 
     double x = center.dx - totalWidth / 2;
+    double y = center.dy;
+
+    if (config.bannerPixelSnap) {
+      x = x.roundToDouble();
+      y = y.roundToDouble();
+    }
 
     for (int wi = 0; wi < wordList.length; wi++) {
       final word = wordList[wi];
@@ -586,12 +592,7 @@ class StealBanner extends Component with HasGameReference<StealGame> {
         final charWidth = _measureChar(char) * lSpace;
 
         double charX = x + charWidth / 2;
-        double charY = center.dy;
-
-        if (config.bannerPixelSnap) {
-          charX = charX.roundToDouble();
-          charY = charY.roundToDouble();
-        }
+        double charY = y;
 
         canvas.save();
         canvas.translate(charX, charY);
@@ -746,6 +747,13 @@ class StealBanner extends Component with HasGameReference<StealGame> {
     }
 
     double angle = startAngle - pi / 2 - currentSpan / 2;
+    double centerX = center.dx;
+    double centerY = center.dy;
+
+    if (config.bannerPixelSnap) {
+      centerX = centerX.roundToDouble();
+      centerY = centerY.roundToDouble();
+    }
 
     for (int wi = 0; wi < wordList.length; wi++) {
       final word = wordList[wi];
@@ -758,13 +766,8 @@ class StealBanner extends Component with HasGameReference<StealGame> {
 
         final centerAngle = angle + charAngle / 2;
 
-        double charX = center.dx + radius * cos(centerAngle);
-        double charY = center.dy + radius * sin(centerAngle);
-
-        if (config.bannerPixelSnap) {
-          charX = charX.roundToDouble();
-          charY = charY.roundToDouble();
-        }
+        double charX = centerX + radius * cos(centerAngle);
+        double charY = centerY + radius * sin(centerAngle);
 
         canvas.save();
         canvas.translate(charX, charY);

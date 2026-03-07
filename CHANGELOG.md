@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.58+158] - 2026-03-07
+
+### Fixed
+- **Screensaver**: Refined "Text Pixel Snapping" to use anchor-level alignment. This resolves the observation where individual letters would jitter/crawl independently during extremely slow animations.
+
 ## [1.1.57+157] - 2026-03-07
 
 ### Added
