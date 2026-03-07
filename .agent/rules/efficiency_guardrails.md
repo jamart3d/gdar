@@ -31,7 +31,10 @@ Unless the user explicitly asks for "deep reasoning" or "architectural planning,
 A curated allow-list of safe commands lives in `.agent/rules/auto_approve.md`.
 * **Read-only commands** (file reads, `git status/log/diff`, `flutter analyze`, directory listings, path lookups) MUST always be run with `SafeToAutoRun: true`. Never prompt the user for these.
 * **Platform syntax**: Windows 10 uses PowerShell — chain commands with `;` not `&&`. ChromeOS uses bash — `&&` is fine.
-* Autonomous skills (`shipit`, etc.) are exempt from Rule 1 (Stop and Ask) for the commands explicitly listed in `auto_approve.md`.
+* Autonomous skills (`shipit`, etc.) are exempt from Rule 1 (Stop and Ask) for the commands explicitly listed in `auto_approve.md`. 
+* **URGENT GATING**: The `shipit` skill MUST NOT be triggered by the word "save". It requires explicit keywords: "shipit", "release", "deploy", or "prod".
+* **Save vs. Ship Boundary**: Any request containing "save" must ONLY trigger the `/save` workflow. You are strictly forbidden from jumping to a release pipeline unless the user explicitly confirms a production deployment intent.
+* **Confirmation Requirement**: Even for "Autonomous" skills, you must provide a `notify_user` preview before starting the first command if that command is a long-running build or production deployment.
 
 ### 7. Testing Thresholds (Arlo vs. Jules)
 To protect token quota and provide high-performance feedback:
