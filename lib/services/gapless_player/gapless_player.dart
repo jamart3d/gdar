@@ -32,8 +32,9 @@ enum HybridBackgroundMode {
   none;
 
   static HybridBackgroundMode fromString(String? value) {
-    if (value == 'relisten')
+    if (value == 'relisten') {
       return HybridBackgroundMode.html5; // Migration path
+    }
     return HybridBackgroundMode.values.firstWhere(
       (e) => e.name == value,
       orElse: () => HybridBackgroundMode.html5,
