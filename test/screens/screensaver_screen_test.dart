@@ -79,6 +79,7 @@ void main() {
     when(mockSettingsProvider.oilFlatTextProximity).thenReturn(0.5);
     when(mockSettingsProvider.oilFlatTextPlacement).thenReturn('center');
     when(mockSettingsProvider.oilScreensaver4kSupport).thenReturn(false);
+    when(mockSettingsProvider.oilBannerPixelSnap).thenReturn(true);
 
     // Mock AudioProvider's audioPlayer for ScreensaverScreen
     final mockAudioPlayer = MockAudioPlayerRelaxed();

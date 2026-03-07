@@ -88,6 +88,7 @@ void main() {
     when(mockSettingsProvider.enableSwipeToBlock).thenReturn(false);
     when(mockSettingsProvider.oilAudioGraphMode).thenReturn('off');
     when(mockSettingsProvider.oilBeatSensitivity).thenReturn(0.5);
+    when(mockSettingsProvider.oilBannerPixelSnap).thenReturn(true);
   });
 
   Widget createWidgetUnderTest() {

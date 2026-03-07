@@ -997,6 +997,13 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
       ) as double);
 
   @override
+  bool get oilBannerPixelSnap => (super.noSuchMethod(
+        Invocation.getter(#oilBannerPixelSnap),
+        returnValue: false,
+        returnValueForMissingStub: false,
+      ) as bool);
+
+  @override
   double get oilBannerLetterSpacing => (super.noSuchMethod(
         Invocation.getter(#oilBannerLetterSpacing),
         returnValue: 0.0,
@@ -2217,6 +2224,16 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
         Invocation.method(
           #setOilBannerResolution,
           [value],
+        ),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
+
+  @override
+  _i5.Future<void> toggleOilBannerPixelSnap() => (super.noSuchMethod(
+        Invocation.method(
+          #toggleOilBannerPixelSnap,
+          [],
         ),
         returnValue: _i5.Future<void>.value(),
         returnValueForMissingStub: _i5.Future<void>.value(),
