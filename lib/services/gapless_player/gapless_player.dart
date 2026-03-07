@@ -26,15 +26,17 @@ enum AudioEngineMode {
 
 /// Strategies for background playback longevity in Hybrid mode.
 enum HybridBackgroundMode {
-  relisten,
+  html5,
   heartbeat,
   video,
   none;
 
   static HybridBackgroundMode fromString(String? value) {
+    if (value == 'relisten')
+      return HybridBackgroundMode.html5; // Migration path
     return HybridBackgroundMode.values.firstWhere(
       (e) => e.name == value,
-      orElse: () => HybridBackgroundMode.relisten,
+      orElse: () => HybridBackgroundMode.html5,
     );
   }
 }

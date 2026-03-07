@@ -1151,8 +1151,8 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
   @override
   _i4.HybridBackgroundMode get hybridBackgroundMode => (super.noSuchMethod(
         Invocation.getter(#hybridBackgroundMode),
-        returnValue: _i4.HybridBackgroundMode.relisten,
-        returnValueForMissingStub: _i4.HybridBackgroundMode.relisten,
+        returnValue: _i4.HybridBackgroundMode.html5,
+        returnValueForMissingStub: _i4.HybridBackgroundMode.html5,
       ) as _i4.HybridBackgroundMode);
 
   @override

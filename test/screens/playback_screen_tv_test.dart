@@ -415,8 +415,7 @@ class FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
   void setHybridHandoffMode(HybridHandoffMode value) {}
 
   @override
-  HybridBackgroundMode get hybridBackgroundMode =>
-      HybridBackgroundMode.relisten;
+  HybridBackgroundMode get hybridBackgroundMode => HybridBackgroundMode.html5;
   @override
   void setHybridBackgroundMode(HybridBackgroundMode value) {}
 

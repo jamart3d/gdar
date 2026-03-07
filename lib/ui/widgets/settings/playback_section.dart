@@ -656,7 +656,7 @@ class PlaybackSection extends StatelessWidget {
                       scaleFactor: scaleFactor,
                       segments: [
                         _Segment(
-                          value: HybridBackgroundMode.relisten,
+                          value: HybridBackgroundMode.html5,
                           label: 'HTML5',
                           tooltip: 'Hand off to HTML5 for background',
                           icon: isFruit
