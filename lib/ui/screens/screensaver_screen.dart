@@ -213,6 +213,8 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
       trackWordSpacing: settings.oilTrackWordSpacing,
       logoAntiAlias: settings.oilLogoAntiAlias,
       logoTrailScale: settings.oilLogoTrailScale,
+      bannerResolution: settings.oilBannerResolution,
+      bannerPixelSnap: settings.oilBannerPixelSnap,
     );
 
     final screenSize = MediaQuery.sizeOf(context);

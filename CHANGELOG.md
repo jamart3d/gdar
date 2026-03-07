@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.57+157] - 2026-03-07
+
+### Added
+- **Screensaver**: Added "Text Pixel Snapping" toggle to settings to eliminate sub-pixel text jitter during slow animations (`oilBannerPixelSnap`).
+
 ### Fixed
 - **Testing**: Resolved critical test regressions in `playback_screen_test.dart` by updating manual `MockSettingsProvider` stubs for new `oil*` settings.
 - **Testing**: Fixed `ScreensaverScreen` timer leaks by implementing a 600ms catch-up `pump` to clear `initState` delays.

@@ -451,6 +451,15 @@ class TvScreensaverSection extends StatelessWidget {
               onChanged: (v) => settings.setOilBannerResolution(v),
             ),
             const SizedBox(height: 16),
+            _ToggleRow(
+              label: 'Text Pixel Snapping',
+              subtitle: 'Reduces letter jitter during slow animations',
+              value: settings.oilBannerPixelSnap,
+              onChanged: (_) => settings.toggleOilBannerPixelSnap(),
+              colorScheme: colorScheme,
+              textTheme: textTheme,
+            ),
+            const SizedBox(height: 16),
             TvStepperRow(
               label: 'Letter Spacing (General)',
               value: settings.oilBannerLetterSpacing,

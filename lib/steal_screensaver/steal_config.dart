@@ -43,6 +43,7 @@ class StealConfig {
   /// Multiplier for text rasterization resolution (supersampling).
   /// 1.0 = native, 2.0 = double resolution (sharper), etc.
   final double bannerResolution;
+  final bool bannerPixelSnap;
 
   /// Spacing between letters in the banner.
   final double bannerLetterSpacing;
@@ -158,6 +159,7 @@ class StealConfig {
     this.flatTextProximity = 0.0,
     this.flatTextPlacement = 'below',
     this.bannerResolution = 2.0,
+    this.bannerPixelSnap = true,
     this.bannerLetterSpacing = 1.02,
     this.bannerWordSpacing = 0.4,
     this.trackLetterSpacing = 1.02,
@@ -212,6 +214,7 @@ class StealConfig {
       flatTextProximity: (map['flatTextProximity'] as num?)?.toDouble() ?? 0.0,
       flatTextPlacement: map['flatTextPlacement'] as String? ?? 'below',
       bannerResolution: (map['bannerResolution'] as num?)?.toDouble() ?? 2.0,
+      bannerPixelSnap: map['bannerPixelSnap'] as bool? ?? true,
       bannerLetterSpacing:
           (map['bannerLetterSpacing'] as num?)?.toDouble() ?? 1.02,
       bannerWordSpacing: (map['bannerWordSpacing'] as num?)?.toDouble() ?? 0.4,
@@ -266,6 +269,7 @@ class StealConfig {
       'flatTextProximity': flatTextProximity,
       'flatTextPlacement': flatTextPlacement,
       'bannerResolution': bannerResolution,
+      'bannerPixelSnap': bannerPixelSnap,
       'bannerLetterSpacing': bannerLetterSpacing,
       'bannerWordSpacing': bannerWordSpacing,
       'trackLetterSpacing': trackLetterSpacing,
@@ -315,6 +319,7 @@ class StealConfig {
     double? flatTextProximity,
     String? flatTextPlacement,
     double? bannerResolution,
+    bool? bannerPixelSnap,
     double? bannerLetterSpacing,
     double? bannerWordSpacing,
     double? trackLetterSpacing,
@@ -365,6 +370,7 @@ class StealConfig {
       flatTextProximity: flatTextProximity ?? this.flatTextProximity,
       flatTextPlacement: flatTextPlacement ?? this.flatTextPlacement,
       bannerResolution: bannerResolution ?? this.bannerResolution,
+      bannerPixelSnap: bannerPixelSnap ?? this.bannerPixelSnap,
       bannerLetterSpacing: bannerLetterSpacing ?? this.bannerLetterSpacing,
       bannerWordSpacing: bannerWordSpacing ?? this.bannerWordSpacing,
       trackLetterSpacing: trackLetterSpacing ?? this.trackLetterSpacing,
@@ -418,6 +424,7 @@ class StealConfig {
         flatTextProximity == other.flatTextProximity &&
         flatTextPlacement == other.flatTextPlacement &&
         bannerResolution == other.bannerResolution &&
+        bannerPixelSnap == other.bannerPixelSnap &&
         bannerLetterSpacing == other.bannerLetterSpacing &&
         bannerWordSpacing == other.bannerWordSpacing &&
         trackLetterSpacing == other.trackLetterSpacing &&
@@ -467,6 +474,7 @@ class StealConfig {
         flatTextProximity,
         flatTextPlacement,
         bannerResolution,
+        bannerPixelSnap,
         bannerLetterSpacing,
         bannerWordSpacing,
         trackLetterSpacing,

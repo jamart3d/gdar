@@ -102,6 +102,7 @@ class DefaultSettings {
   static const double oilFlatTextProximity = 0.7;
   static const String oilFlatTextPlacement = 'below';
   static const double oilBannerResolution = 2.0;
+  static const bool oilBannerPixelSnap = true;
 
   // Trail effect
   static const double oilLogoTrailIntensity = 0.0;

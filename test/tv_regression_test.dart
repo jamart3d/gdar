@@ -351,6 +351,10 @@ class FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
   @override
   Future<void> setOilBannerResolution(double value) async {}
   @override
+  bool get oilBannerPixelSnap => true;
+  @override
+  Future<void> toggleOilBannerPixelSnap() async {}
+  @override
   double get oilBannerLetterSpacing => 1.02;
   @override
   Future<void> setOilBannerLetterSpacing(double value) async {}

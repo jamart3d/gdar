@@ -585,8 +585,16 @@ class StealBanner extends Component with HasGameReference<StealGame> {
       for (final char in word.text.characters) {
         final charWidth = _measureChar(char) * lSpace;
 
+        double charX = x + charWidth / 2;
+        double charY = center.dy;
+
+        if (config.bannerPixelSnap) {
+          charX = charX.roundToDouble();
+          charY = charY.roundToDouble();
+        }
+
         canvas.save();
-        canvas.translate(x + charWidth / 2, center.dy);
+        canvas.translate(charX, charY);
 
         final opacity = effectiveOpacity * wordBrightness;
 
@@ -750,8 +758,13 @@ class StealBanner extends Component with HasGameReference<StealGame> {
 
         final centerAngle = angle + charAngle / 2;
 
-        final charX = center.dx + radius * cos(centerAngle);
-        final charY = center.dy + radius * sin(centerAngle);
+        double charX = center.dx + radius * cos(centerAngle);
+        double charY = center.dy + radius * sin(centerAngle);
+
+        if (config.bannerPixelSnap) {
+          charX = charX.roundToDouble();
+          charY = charY.roundToDouble();
+        }
 
         canvas.save();
         canvas.translate(charX, charY);

@@ -74,6 +74,12 @@ class SettingsProvider with ChangeNotifier {
   static const String _oilPaletteKey = 'oil_palette';
   static const String _oilFilmGrainKey = 'oil_film_grain';
   static const String _oilHeatDriftKey = 'oil_heat_drift';
+  static const String _oilTranslationSmoothingKey = 'oil_translation_smoothing';
+  static const String _oilBlurAmountKey = 'oil_blur_amount';
+  static const String _oilFlatColorKey = 'oil_flat_color';
+  static const String _oilBannerGlowKey = 'oil_banner_glow';
+  static const String _oilBannerFlickerKey = 'oil_banner_flicker';
+  static const String _oilBannerGlowBlurKey = 'oil_banner_glow_blur';
   static const String _oilEnableAudioReactivityKey =
       'oil_enable_audio_reactivity';
   static const String _oilPerformanceLevelKey = 'oil_performance_level';
@@ -84,6 +90,8 @@ class SettingsProvider with ChangeNotifier {
   static const String _oilBannerFontKey = 'oil_banner_font';
   static const String _oilFlatTextProximityKey = 'oil_flat_text_proximity';
   static const String _oilFlatTextPlacementKey = 'oil_flat_text_placement';
+  static const String _oilBannerResolutionKey = 'oil_banner_resolution';
+  static const String _oilBannerPixelSnapKey = 'oil_banner_pixel_snap';
 
   // Trail effect
   static const String _oilLogoTrailIntensityKey = 'oil_logo_trail_intensity';
@@ -103,13 +111,6 @@ class SettingsProvider with ChangeNotifier {
   static const String _oilBeatSensitivityKey = 'oil_beat_sensitivity';
   static const String _oilShowInfoBannerKey = 'oil_show_info_banner';
   static const String _oilLogoScaleKey = 'oil_logo_scale';
-  static const String _oilTranslationSmoothingKey = 'oil_translation_smoothing';
-  static const String _oilBlurAmountKey = 'oil_blur_amount';
-  static const String _oilFlatColorKey = 'oil_flat_color';
-  static const String _oilBannerGlowKey = 'oil_banner_glow';
-  static const String _oilBannerFlickerKey = 'oil_banner_flicker';
-  static const String _oilBannerGlowBlurKey = 'oil_banner_glow_blur';
-  static const String _oilBannerResolutionKey = 'oil_banner_resolution';
   static const String _oilBannerLetterSpacingKey = 'oil_banner_letter_spacing';
   static const String _oilBannerWordSpacingKey = 'oil_banner_word_spacing';
   static const String _oilTrackLetterSpacingKey = 'oil_track_letter_spacing';
@@ -221,6 +222,7 @@ class SettingsProvider with ChangeNotifier {
   late double _oilFlatTextProximity;
   late String _oilFlatTextPlacement;
   late double _oilBannerResolution;
+  late bool _oilBannerPixelSnap;
   late double _oilBannerLetterSpacing;
   late double _oilBannerWordSpacing;
   late double _oilTrackLetterSpacing;
@@ -398,6 +400,7 @@ class SettingsProvider with ChangeNotifier {
   double get oilFlatTextProximity => _oilFlatTextProximity;
   String get oilFlatTextPlacement => _oilFlatTextPlacement;
   double get oilBannerResolution => _oilBannerResolution;
+  bool get oilBannerPixelSnap => _oilBannerPixelSnap;
   double get oilBannerLetterSpacing => _oilBannerLetterSpacing;
   double get oilBannerWordSpacing => _oilBannerWordSpacing;
   double get oilTrackLetterSpacing => _oilTrackLetterSpacing;
@@ -769,6 +772,8 @@ class SettingsProvider with ChangeNotifier {
         DefaultSettings.oilFlatTextPlacement;
     _oilBannerResolution = _prefs.getDouble(_oilBannerResolutionKey) ??
         DefaultSettings.oilBannerResolution;
+    _oilBannerPixelSnap = _prefs.getBool(_oilBannerPixelSnapKey) ??
+        DefaultSettings.oilBannerPixelSnap;
     _oilBannerLetterSpacing = _prefs.getDouble(_oilBannerLetterSpacingKey) ??
         DefaultSettings.oilBannerLetterSpacing;
     _oilBannerWordSpacing = _prefs.getDouble(_oilBannerWordSpacingKey) ??
@@ -1147,6 +1152,9 @@ class SettingsProvider with ChangeNotifier {
 
   Future<void> setOilBannerResolution(double value) => _updateDoublePreference(
       _oilBannerResolutionKey, _oilBannerResolution = value.clamp(1.0, 4.0));
+
+  Future<void> toggleOilBannerPixelSnap() => _updatePreference(
+      _oilBannerPixelSnapKey, _oilBannerPixelSnap = !_oilBannerPixelSnap);
 
   // Ring control setters
   Future<void> setOilInnerRingScale(double value) => _updateDoublePreference(
