@@ -36,6 +36,8 @@
 
 ## 🌐 Web / PWA
 
+- [ ] **Fruit Style Settings**: Verify first-time activation correctly disables Dense, Glow, RGB, and Performance modes.
+- [ ] **Fruit Style Playback Screen**: Fix "current track bounce slap" during sticky header transition.
 - [ ] **Background Longevity**: Extend playback when tab is backgrounded/throttled.
   - [ ] Explore Silent Video looping or Web Workers for timer consistency.
   - [x] **Timer Drift Audit**: Added Phase 4 to `test/prompts/jules_audit.md` to audit `gapless_audio_engine.js` under 6x CPU throttling.

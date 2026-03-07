@@ -138,6 +138,8 @@ class MockSettingsProvider extends ChangeNotifier implements SettingsProvider {
   @override
   bool get uiScale => false;
   @override
+  bool get isTv => true;
+  @override
   String get appFont => 'Roboto';
   @override
   bool get showTrackNumbers => true;
@@ -194,6 +196,15 @@ class MockSettingsProvider extends ChangeNotifier implements SettingsProvider {
   bool get showOnboarding => false;
   @override
   bool get performanceMode => false;
+  @override
+  bool get fruitDenseList => false;
+  @override
+  bool get oilTvPremiumHighlight => false;
+
+  @override
+  void setGlowMode(int value) {}
+  @override
+  void setHighlightPlayingWithRgb(bool value) {}
 
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
@@ -268,6 +279,9 @@ class MockCatalogService extends CatalogService {
 }
 
 class MockThemeProvider extends ChangeNotifier implements ThemeProvider {
+  @override
+  bool testOnlyOverrideFruitAllowed = false;
+
   @override
   ThemeStyle get themeStyle => ThemeStyle.android;
   @override

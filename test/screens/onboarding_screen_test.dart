@@ -23,6 +23,9 @@ class MockThemeProvider extends ChangeNotifier implements ThemeProvider {
   bool get isTv => false;
 
   @override
+  bool testOnlyOverrideFruitAllowed = false;
+
+  @override
   bool get isFruitAllowed => true;
 
   @override
@@ -41,6 +44,9 @@ class MockThemeProvider extends ChangeNotifier implements ThemeProvider {
     _themeStyle = style;
     notifyListeners();
   }
+
+  @override
+  void setSettingsProvider(SettingsProvider provider) {}
 
   FruitColorOption _fruitColorOption = FruitColorOption.sophisticate;
   @override

@@ -132,6 +132,9 @@ class _GdarAppState extends State<GdarApp> {
         SettingsProvider(widget.prefs, isTv: widget.isTv);
     _showListProvider = widget.showListProvider ?? ShowListProvider();
 
+    // Link providers for theme-specific settings resets
+    ThemeProvider.getInstance?.setSettingsProvider(_settingsProvider);
+
     if (widget.showListProvider == null) {
       _showListProvider.init(widget.prefs);
     }

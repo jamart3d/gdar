@@ -985,18 +985,15 @@ class _TrackListScreenState extends State<TrackListScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 14.0),
           child: Row(
             children: [
-              SizedBox(
-                width: 32,
-                child: Text(
-                  '${index + 1}',
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color:
-                            colorScheme.onSurfaceVariant.withValues(alpha: 0.3),
-                        fontWeight: FontWeight.w800,
-                        fontFamily: 'Inter',
-                      ),
+              Container(
+                width: 5,
+                height: 5,
+                decoration: BoxDecoration(
+                  color: colorScheme.primary,
+                  shape: BoxShape.circle,
                 ),
               ),
+              const SizedBox(width: 12),
               Expanded(
                 child: Text(
                   track.title,
@@ -1007,6 +1004,7 @@ class _TrackListScreenState extends State<TrackListScreen> {
                       ),
                 ),
               ),
+              const SizedBox(width: 12),
               Text(
                 Duration(seconds: track.duration)
                     .toString()

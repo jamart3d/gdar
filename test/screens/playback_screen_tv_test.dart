@@ -69,9 +69,17 @@ class FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
   void toggleFruitEnableLiquidGlass() {}
 
   @override
+  bool get enableHaptics => true;
+  @override
+  void toggleEnableHaptics() {}
+
+  @override
   bool get showTrackNumbers => true;
   @override
   int get glowMode => 0;
+
+  @override
+  void resetFruitFirstTimeSettings() {}
 
   @override
   bool get useTrueBlack => false;
@@ -586,6 +594,10 @@ void main() {
     mockTvDeviceService = MockTvDeviceService();
 
     when(mockAudioProvider.audioPlayer).thenReturn(mockAudioPlayer);
+    when(mockAudioProvider.playbackErrorStream)
+        .thenAnswer((_) => Stream.value(''));
+    when(mockAudioProvider.isPlaying).thenReturn(false);
+    when(mockAudioPlayer.sequence).thenReturn([]);
     when(mockAudioPlayer.currentIndex).thenReturn(0);
     when(mockAudioPlayer.position).thenReturn(Duration.zero);
     when(mockAudioPlayer.bufferedPosition).thenReturn(Duration.zero);

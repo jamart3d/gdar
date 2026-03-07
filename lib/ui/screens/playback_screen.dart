@@ -7,6 +7,9 @@ import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:shakedown/providers/audio_provider.dart';
 import 'package:shakedown/providers/settings_provider.dart';
 import 'package:shakedown/providers/theme_provider.dart';
+import 'package:shakedown/ui/widgets/rating_control.dart';
+import 'package:shakedown/ui/widgets/src_badge.dart';
+import 'package:shakedown/ui/widgets/shnid_badge.dart';
 import 'package:shakedown/ui/widgets/fruit_tab_bar.dart';
 import 'package:shakedown/ui/widgets/theme/liquid_glass_wrapper.dart';
 import 'package:shakedown/ui/widgets/playback/fruit_track_list.dart';
@@ -19,7 +22,6 @@ import 'package:shakedown/models/track.dart';
 import 'package:shakedown/models/source.dart';
 import 'package:shakedown/models/rating.dart';
 import 'package:shakedown/services/catalog_service.dart';
-import 'package:shakedown/ui/widgets/src_badge.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'dart:async';
 import 'package:shakedown/utils/utils.dart';
@@ -449,6 +451,16 @@ class PlaybackScreenState extends State<PlaybackScreen>
       dateText = currentShow.formattedDate;
     }
 
+    final catalog = CatalogService();
+    final String? ratingKey = audioProvider.currentSource?.id;
+    int rating = 0;
+    bool isPlayed = false;
+
+    if (ratingKey != null) {
+      rating = catalog.getRating(ratingKey);
+      isPlayed = catalog.isPlayed(ratingKey);
+    }
+
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 24.0 * scaleFactor),
       child: Row(
@@ -491,6 +503,44 @@ class PlaybackScreenState extends State<PlaybackScreen>
                         .onSurfaceVariant
                         .withValues(alpha: 0.6),
                   ),
+                ),
+                SizedBox(height: 6 * scaleFactor),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    RatingControl(
+                      rating: rating,
+                      isPlayed: isPlayed,
+                      compact: true,
+                      size: 20 * scaleFactor,
+                      onTap: () async {
+                        if (ratingKey == null) return;
+                        await showDialog(
+                          context: context,
+                          builder: (context) => RatingDialog(
+                            initialRating: rating,
+                            sourceId: ratingKey,
+                            isPlayed: isPlayed,
+                            onRatingChanged: (newRating) {
+                              catalog.setRating(ratingKey, newRating);
+                            },
+                          ),
+                        );
+                      },
+                    ),
+                    SizedBox(width: 8 * scaleFactor),
+                    SrcBadge(
+                      src: audioProvider.currentSource?.src ?? '',
+                      scaleFactor: scaleFactor,
+                    ),
+                    if (audioProvider.currentSource?.id != null) ...[
+                      SizedBox(width: 4 * scaleFactor),
+                      ShnidBadge(
+                        text: audioProvider.currentSource!.id,
+                        scaleFactor: scaleFactor,
+                      ),
+                    ],
+                  ],
                 ),
               ],
             ),
@@ -547,7 +597,12 @@ class PlaybackScreenState extends State<PlaybackScreen>
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     final isTrueBlackMode = isDarkMode && settingsProvider.useTrueBlack;
 
-    if (!isTrueBlackMode && settingsProvider.highlightCurrentShowCard) {
+    final themeProvider = context.read<ThemeProvider>();
+    final isFruit = themeProvider.themeStyle == ThemeStyle.fruit;
+
+    if (!isTrueBlackMode &&
+        settingsProvider.highlightCurrentShowCard &&
+        !isFruit) {
       String seed = currentShow.name;
       if (currentShow.sources.length > 1) {
         seed = currentSource.id;
@@ -574,6 +629,10 @@ class PlaybackScreenState extends State<PlaybackScreen>
       screenHeight * (settingsProvider.uiScale ? 0.42 : 0.40),
       screenHeight * 0.85,
     );
+
+    const double appBarHeight = 130.0;
+    final double immersiveTopPadding =
+        MediaQuery.paddingOf(context).top + appBarHeight;
 
     final Widget playbackContent = ValueListenableBuilder<double>(
       valueListenable: _panelPositionNotifier,
@@ -759,11 +818,6 @@ class PlaybackScreenState extends State<PlaybackScreen>
             60.0 +
             ((maxPanelHeight - minPanelHeight) * panelPosition);
 
-        const double topGap = 0.0;
-        const double appBarHeight = kToolbarHeight;
-        final double immersiveTopPadding =
-            MediaQuery.paddingOf(context).top + topGap + appBarHeight;
-
         return Stack(
           children: [
             TrackListView(
@@ -791,9 +845,6 @@ class PlaybackScreenState extends State<PlaybackScreen>
       },
     );
 
-    final themeProvider = context.watch<ThemeProvider>();
-    final isFruit = themeProvider.themeStyle == ThemeStyle.fruit;
-
     if (widget.isPane) {
       return Container(
         color: backgroundColor.withValues(alpha: 0.7),
@@ -807,7 +858,11 @@ class PlaybackScreenState extends State<PlaybackScreen>
         backgroundColor: backgroundColor,
         body: Stack(
           children: [
-            FruitTrackList(trackShow: currentShow, scaleFactor: scaleFactor),
+            FruitTrackList(
+              trackShow: currentShow,
+              scaleFactor: scaleFactor,
+              topOffset: immersiveTopPadding,
+            ),
             // ── FRUIT STICKY HEADER ──
             Positioned(
               top: 0,

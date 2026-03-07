@@ -97,6 +97,17 @@ class MockSettingsProvider extends SettingsProvider {
   bool get useNeumorphism => false;
   @override
   bool get performanceMode => false;
+  @override
+  bool get fruitDenseList => false;
+  @override
+  int get glowMode => 0;
+  @override
+  bool get highlightPlayingWithRgb => false;
+
+  @override
+  void setGlowMode(int value) {}
+  @override
+  void setHighlightPlayingWithRgb(bool value) {}
 }
 
 class MockDeviceService extends ChangeNotifier implements DeviceService {
@@ -125,6 +136,12 @@ class MockThemeProvider extends ChangeNotifier implements ThemeProvider {
   ThemeMode get currentThemeMode => ThemeMode.dark;
   @override
   bool get isDarkMode => true;
+
+  @override
+  bool testOnlyOverrideFruitAllowed = false;
+
+  @override
+  bool get isFruitAllowed => true;
 
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);

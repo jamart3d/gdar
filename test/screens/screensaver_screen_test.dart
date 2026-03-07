@@ -1,44 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:provider/provider.dart';
 import 'package:shakedown/providers/audio_provider.dart';
 import 'package:shakedown/providers/settings_provider.dart';
-import 'package:shakedown/ui/screens/screensaver_screen.dart';
-import 'package:shakedown/steal_screensaver/steal_visualizer.dart';
 import 'package:shakedown/services/device_service.dart';
 import 'package:shakedown/services/wakelock_service.dart';
-import 'package:flutter/services.dart';
+import 'package:shakedown/ui/screens/screensaver_screen.dart';
+import 'package:shakedown/steal_screensaver/steal_visualizer.dart';
 import 'package:shakedown/services/gapless_player/gapless_player.dart';
-import 'package:mockito/annotations.dart';
+
 import 'screensaver_screen_test.mocks.dart';
 
 @GenerateNiceMocks([
   MockSpec<SettingsProvider>(),
   MockSpec<AudioProvider>(),
+  MockSpec<DeviceService>(),
   MockSpec<WakelockService>(),
-  MockSpec<GaplessPlayer>(
-      as: #MockAudioPlayerRelaxed, onMissingStub: OnMissingStub.returnDefault),
+  MockSpec<GaplessPlayer>(as: #MockAudioPlayerRelaxed),
 ])
-
-// Manual mock to avoid build_runner for this quick fix
-class MockDeviceService extends ChangeNotifier implements DeviceService {
-  @override
-  bool get isTv => true;
-  @override
-  bool get isMobile => false;
-  @override
-  bool get isDesktop => false;
-  @override
-  bool get isSafari => false;
-  @override
-  bool get isPwa => false;
-  @override
-  String? get deviceName => 'Mock Device';
-  @override
-  Future<void> refresh() async {}
-}
-
 void main() {
   late MockSettingsProvider mockSettingsProvider;
   late MockAudioProvider mockAudioProvider;
@@ -51,11 +32,13 @@ void main() {
     mockDeviceService = MockDeviceService();
     mockWakelockService = MockWakelockService();
 
+    reset(mockSettingsProvider);
+    reset(mockAudioProvider);
+
     // Default mock behavior for SettingsProvider
     when(mockSettingsProvider.oilEnableAudioReactivity).thenReturn(true);
     when(mockSettingsProvider.oilFlowSpeed).thenReturn(0.5);
     when(mockSettingsProvider.oilPalette).thenReturn('acid_green');
-
     when(mockSettingsProvider.oilPulseIntensity).thenReturn(0.8);
     when(mockSettingsProvider.oilHeatDrift).thenReturn(0.3);
     when(mockSettingsProvider.oilScreensaverMode).thenReturn('standard');
@@ -77,8 +60,6 @@ void main() {
     when(mockSettingsProvider.oilAudioReactivityStrength).thenReturn(1.0);
     when(mockSettingsProvider.oilBannerDisplayMode).thenReturn('ring');
     when(mockSettingsProvider.oilLogoScale).thenReturn(0.5);
-
-    // New trail properties
     when(mockSettingsProvider.oilLogoTrailIntensity).thenReturn(0.0);
     when(mockSettingsProvider.oilLogoTrailSlices).thenReturn(6);
     when(mockSettingsProvider.oilLogoTrailLength).thenReturn(0.5);
@@ -93,15 +74,24 @@ void main() {
     when(mockSettingsProvider.oilTrackWordSpacing).thenReturn(0.2);
     when(mockSettingsProvider.oilLogoAntiAlias).thenReturn(false);
     when(mockSettingsProvider.oilBannerResolution).thenReturn(2.0);
+    when(mockSettingsProvider.oilLogoTrailDynamic).thenReturn(false);
+    when(mockSettingsProvider.oilTranslationSmoothing).thenReturn(0.5);
+    when(mockSettingsProvider.oilFlatTextProximity).thenReturn(0.5);
+    when(mockSettingsProvider.oilFlatTextPlacement).thenReturn('center');
+    when(mockSettingsProvider.oilScreensaver4kSupport).thenReturn(false);
 
-    // Mock AudioProvider's audioPlayer for ScreensaverScreen
     // Mock AudioProvider's audioPlayer for ScreensaverScreen
     final mockAudioPlayer = MockAudioPlayerRelaxed();
     when(mockAudioProvider.audioPlayer).thenReturn(mockAudioPlayer);
+    when(mockAudioProvider.isPlaying).thenReturn(false);
     when(mockAudioPlayer.androidAudioSessionId).thenReturn(0);
+
+    // Mock DeviceService
+    when(mockDeviceService.isTv).thenReturn(true);
+    when(mockDeviceService.isMobile).thenReturn(false);
   });
 
-  Widget createWidgetUnderTest() {
+  Widget createTestableWidget({required Widget child}) {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider<SettingsProvider>.value(
@@ -110,57 +100,47 @@ void main() {
         ChangeNotifierProvider<DeviceService>.value(value: mockDeviceService),
         Provider<WakelockService>.value(value: mockWakelockService),
       ],
-      child: const MaterialApp(
-        home: ScreensaverScreen(),
+      child: MaterialApp(
+        home: child,
       ),
     );
   }
 
-  testWidgets('ScreensaverScreen renders StealVisualizer',
-      (WidgetTester tester) async {
-    // Mock MethodChannel for VisualizerAudioReactor.isAvailable
-    const MethodChannel channel = MethodChannel('shakedown/visualizer');
-    tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(channel,
-        (MethodCall methodCall) async {
-      if (methodCall.method == 'isAvailable') {
-        return false; // Force fallback to mock reactor
-      }
-      return null;
+  group('ScreensaverScreen', () {
+    testWidgets('renders StealVisualizer', (WidgetTester tester) async {
+      await tester
+          .pumpWidget(createTestableWidget(child: const ScreensaverScreen()));
+      expect(find.byType(StealVisualizer), findsOneWidget);
+      await tester.pumpWidget(Container());
+      await tester.pump(const Duration(milliseconds: 600));
     });
 
-    await tester.pumpWidget(createWidgetUnderTest());
-    await tester.pump(const Duration(
-        milliseconds: 500)); // Allow initState delayed timer to fire
+    testWidgets('passes correct configuration to StealVisualizer',
+        (WidgetTester tester) async {
+      await tester
+          .pumpWidget(createTestableWidget(child: const ScreensaverScreen()));
 
-    expect(find.byType(StealVisualizer), findsOneWidget);
-  });
-
-  testWidgets(
-      'ScreensaverScreen passes correct configuration to StealVisualizer',
-      (WidgetTester tester) async {
-    // Setup specific mock values
-    when(mockSettingsProvider.oilFlowSpeed).thenReturn(0.8);
-
-    // Mock MethodChannel for VisualizerAudioReactor.isAvailable
-    const MethodChannel channel = MethodChannel('shakedown/visualizer');
-    tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(channel,
-        (MethodCall methodCall) async {
-      if (methodCall.method == 'isAvailable') {
-        return false;
-      }
-      return null;
+      final StealVisualizer visualizer =
+          tester.widget(find.byType(StealVisualizer));
+      expect(visualizer.config.palette, 'acid_green');
+      expect(visualizer.config.flowSpeed, 0.5);
+      await tester.pumpWidget(Container());
+      await tester.pump(const Duration(milliseconds: 600));
     });
 
-    await tester.pumpWidget(createWidgetUnderTest());
-    await tester.pump(const Duration(
-        milliseconds: 500)); // Allow initState delayed timer to fire
+    testWidgets('exits when onExit is called', (WidgetTester tester) async {
+      await tester
+          .pumpWidget(createTestableWidget(child: const ScreensaverScreen()));
 
-    // Verify
-    final visualizerFinder = find.byType(StealVisualizer);
-    expect(visualizerFinder, findsOneWidget);
+      final StealVisualizer visualizer =
+          tester.widget(find.byType(StealVisualizer));
+      visualizer.onExit!();
+      await tester.pumpAndSettle();
 
-    final visualizer = tester.widget<StealVisualizer>(visualizerFinder);
-    expect(visualizer.config.flowSpeed, 0.8);
-    expect(visualizer.config.palette, 'acid_green'); // Default mock value
+      expect(find.byType(ScreensaverScreen), findsNothing);
+      await tester.pumpWidget(Container());
+      await tester.pump(
+          const Duration(milliseconds: 600)); // Clear initState Future.delayed
+    });
   });
 }

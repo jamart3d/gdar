@@ -72,13 +72,10 @@ class ShowListAppBar extends StatelessWidget implements PreferredSizeWidget {
       scrolledUnderElevation: 0,
       surfaceTintColor: Colors.transparent,
       shape: isFruit ? const Border(bottom: BorderSide.none) : null,
-      title: GestureDetector(
-        onTap: onTitleTap,
-        child: const ShakedownTitle(
-          fontSize: 16,
-          animateOnStart: true,
-          shakeDelay: Duration(milliseconds: 1700),
-        ),
+      title: const ShakedownTitle(
+        fontSize: 16,
+        animateOnStart: true,
+        shakeDelay: Duration(milliseconds: 1700),
       ),
       actions: _buildActions(context),
     );
@@ -379,13 +376,10 @@ class ShowListAppBar extends StatelessWidget implements PreferredSizeWidget {
                   : Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        GestureDetector(
-                          onTap: onTitleTap,
-                          child: const ShakedownTitle(
-                            fontSize: 20,
-                            animateOnStart: true,
-                            shakeDelay: Duration(milliseconds: 1700),
-                          ),
+                        const ShakedownTitle(
+                          fontSize: 20,
+                          animateOnStart: true,
+                          shakeDelay: Duration(milliseconds: 1700),
                         ),
                         _buildFruitHeaderButton(
                           context,

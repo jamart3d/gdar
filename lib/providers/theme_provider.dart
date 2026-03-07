@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shakedown/utils/pwa_theme_sync.dart';
+import 'package:shakedown/providers/settings_provider.dart';
 
 enum ThemeStyle { android, fruit }
 
@@ -12,6 +13,9 @@ enum NeumorphicStyle { convex, concave }
 enum FruitColorOption { sophisticate, minimalist, creative }
 
 class ThemeProvider with ChangeNotifier {
+  static ThemeProvider? _instance;
+  static ThemeProvider? get getInstance => _instance;
+
   static const String _themeModeKey = 'theme_mode_preference';
   static const String _themeStyleKey = 'theme_style_preference';
   static const String _fruitColorOptionKey = 'fruit_color_option_preference';
@@ -25,12 +29,15 @@ class ThemeProvider with ChangeNotifier {
   int _fruitColorOptionIndex;
   final bool isTv;
 
+  @visibleForTesting
+  bool testOnlyOverrideFruitAllowed = false;
+
   /// Whether the Fruit theme is allowed on this platform/configuration.
   /// Strictly follows the "Walled Architecture" policy:
   /// - Web/PWA: Allowed (Exclusive Domain).
   /// - Native (Any): Forbidden.
   /// - TV: Forbidden.
-  bool get isFruitAllowed => kIsWeb && !isTv;
+  bool get isFruitAllowed => testOnlyOverrideFruitAllowed || (kIsWeb && !isTv);
 
   ThemeMode get currentThemeMode {
     switch (_themeModeIndex) {
@@ -66,6 +73,7 @@ class ThemeProvider with ChangeNotifier {
       : _themeModeIndex = isTv ? 2 : 0,
         _themeStyleIndex = 0, // Default to Android on all platforms
         _fruitColorOptionIndex = 0 {
+    _instance = this;
     unawaited(_loadThemePreference());
   }
 
@@ -83,6 +91,12 @@ class ThemeProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  SettingsProvider? _settingsProvider;
+
+  void setSettingsProvider(SettingsProvider provider) {
+    _settingsProvider = provider;
+  }
+
   void setThemeStyle(ThemeStyle style) {
     // Audit check: Don't allow Fruit theme where forbidden by spec.
     if (!isFruitAllowed && style == ThemeStyle.fruit) return;
@@ -90,14 +104,25 @@ class ThemeProvider with ChangeNotifier {
     bool wasFruit = themeStyle == ThemeStyle.fruit;
     _themeStyleIndex = style == ThemeStyle.fruit ? 1 : 0;
 
-    // Randomly select a color option when switching TO fruit theme
+    // One-time reset when switching TO fruit theme
     if (style == ThemeStyle.fruit && !wasFruit) {
       _fruitColorOptionIndex = Random().nextInt(3);
+
+      _checkAndResetFruitSettings();
     }
 
     unawaited(_saveThemePreference());
     _syncPwaBranding();
     notifyListeners();
+  }
+
+  Future<void> _checkAndResetFruitSettings() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (!prefs.containsKey(_webFruitThemeInitKey) ||
+        prefs.getBool(_webFruitThemeInitKey) == false) {
+      _settingsProvider?.resetFruitFirstTimeSettings();
+      await prefs.setBool(_webFruitThemeInitKey, true);
+    }
   }
 
   void setFruitColorOption(FruitColorOption option) {
@@ -124,18 +149,11 @@ class ThemeProvider with ChangeNotifier {
 
     // Default to TV mode setting (2=Dark) or System (0)
     _themeModeIndex = prefs.getInt(_themeModeKey) ?? (isTv ? 2 : 0);
+    _themeStyleIndex = prefs.getInt(_themeStyleKey) ?? 0;
 
-    if (!prefs.containsKey(_webFruitThemeInitKey)) {
-      _themeStyleIndex = 0; // Default to Android
-      await prefs.setBool(_webFruitThemeInitKey, true);
-      await prefs.setInt(_themeStyleKey, _themeStyleIndex);
-    } else {
-      _themeStyleIndex = prefs.getInt(_themeStyleKey) ?? 0;
-
-      // Safety check for existing preferences: Force back to Android if it drifted
-      if (!isFruitAllowed && _themeStyleIndex == 1) {
-        _themeStyleIndex = 0;
-      }
+    // Safety check for existing preferences: Force back to Android if it drifted
+    if (!isFruitAllowed && _themeStyleIndex == 1) {
+      _themeStyleIndex = 0;
     }
 
     _fruitColorOptionIndex = prefs.getInt(_fruitColorOptionKey) ?? 0;

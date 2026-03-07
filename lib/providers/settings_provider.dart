@@ -134,6 +134,7 @@ class SettingsProvider with ChangeNotifier {
   static const String _omitHttpPathInCopyKey = 'omit_http_path_in_copy';
   static const String _showSplashScreenKey = 'show_splash_screen';
   static const String _forceTvKey = 'force_tv';
+  static const String _enableHapticsKey = 'enable_haptics';
   late bool _showSplashScreen;
   bool get showSplashScreen => _showSplashScreen;
   bool get isFirstRun => _isFirstRun;
@@ -191,6 +192,7 @@ class SettingsProvider with ChangeNotifier {
   late NeumorphicStyle _neumorphicStyle;
   late bool _performanceMode;
   late bool _forceTv;
+  late bool _enableHaptics;
 
   // Web Gapless Engine
   late AudioEngineMode _audioEngineMode;
@@ -303,6 +305,7 @@ class SettingsProvider with ChangeNotifier {
   bool get omitHttpPathInCopy => _omitHttpPathInCopy;
   bool get useNeumorphism => _useNeumorphism;
   bool get fruitEnableLiquidGlass => _fruitEnableLiquidGlass;
+  bool get enableHaptics => _enableHaptics;
 
   void toggleUseNeumorphism() {
     _useNeumorphism = !_useNeumorphism;
@@ -463,6 +466,26 @@ class SettingsProvider with ChangeNotifier {
   static const MethodChannel _uiScaleChannel =
       MethodChannel('com.jamart3d.shakedown/ui_scale');
 
+  void resetFruitFirstTimeSettings() {
+    // Disable dense list for Fruit
+    _fruitDenseList = false;
+    _prefs.setBool(_fruitDenseListKey, false);
+
+    // Disable Simple Icon and Simple Theme
+    _simpleRandomIcon = false;
+    _prefs.setBool(_simpleRandomIconKey, false);
+    _performanceMode = false;
+    _prefs.setBool(_performanceModeKey, false);
+
+    // Turn off Glow and RGB
+    _oilBannerGlow = false;
+    _prefs.setBool(_oilBannerGlowKey, false);
+    setGlowMode(0);
+    setHighlightPlayingWithRgb(false);
+
+    notifyListeners();
+  }
+
   SettingsProvider(this._prefs, {this.isTv = false}) {
     _init();
     _setupUiScaleChannel();
@@ -556,6 +579,7 @@ class SettingsProvider with ChangeNotifier {
     _abbreviateMonth =
         _prefs.getBool(_abbreviateMonthKey) ?? DefaultSettings.abbreviateMonth;
     _simpleRandomIcon = _prefs.getBool(_simpleRandomIconKey) ?? false;
+    _enableHaptics = _prefs.getBool(_enableHapticsKey) ?? true;
     _fruitDenseList = _prefs.getBool(_fruitDenseListKey) ?? false;
 
     // Screensaver Migration
@@ -665,6 +689,7 @@ class SettingsProvider with ChangeNotifier {
             DefaultSettings.neumorphicStyle.index];
     _performanceMode =
         _prefs.getBool(_performanceModeKey) ?? DefaultSettings.performanceMode;
+    _enableHaptics = _prefs.getBool(_enableHapticsKey) ?? true;
 
     // Web Gapless Engine Migration
     if (_prefs.containsKey('web_gapless_engine')) {
@@ -960,6 +985,9 @@ class SettingsProvider with ChangeNotifier {
 
   void setForceTv(bool value) =>
       _updatePreference(_forceTvKey, _forceTv = value);
+
+  void toggleEnableHaptics() =>
+      _updatePreference(_enableHapticsKey, _enableHaptics = !_enableHaptics);
 
   void toggleFruitDenseList() =>
       _updatePreference(_fruitDenseListKey, _fruitDenseList = !_fruitDenseList);

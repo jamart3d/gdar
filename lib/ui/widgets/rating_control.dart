@@ -246,7 +246,13 @@ class _RatingDialogState extends State<RatingDialog> {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text('Rate Show', style: textTheme.titleLarge),
+              Text(
+                'Rate Show',
+                style: textTheme.titleLarge?.copyWith(
+                  fontWeight: isFruit ? FontWeight.w800 : null,
+                  fontFamily: isFruit ? 'Inter' : null,
+                ),
+              ),
               if (widget.sourceId != null && widget.sourceId!.isNotEmpty) ...[
                 const SizedBox(width: 16),
                 Builder(builder: (context) {
@@ -541,6 +547,17 @@ class _RatingDialogState extends State<RatingDialog> {
                   : (isFruit ? LucideIcons.circle : Icons.circle_outlined),
               color: _isPlayed ? colorScheme.primary : colorScheme.outline,
             ),
+            subtitle: isFruit
+                ? Text(
+                    'MARK AS PLAYED',
+                    style: textTheme.labelSmall?.copyWith(
+                      color:
+                          colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 1.2,
+                    ),
+                  )
+                : null,
             value: _isPlayed,
             onChanged: (value) async {
               if (!value && _isPlayed) {

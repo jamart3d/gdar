@@ -16,8 +16,9 @@ import 'package:shakedown/providers/settings_provider.dart' as _i4;
 import 'package:shakedown/providers/show_list_provider.dart' as _i12;
 import 'package:shakedown/providers/theme_provider.dart' as _i6;
 import 'package:shakedown/services/audio_cache_service.dart' as _i13;
+import 'package:shakedown/services/device_service.dart' as _i14;
 import 'package:shakedown/services/gapless_player/gapless_player.dart' as _i2;
-import 'package:shakedown/services/wakelock_service.dart' as _i14;
+import 'package:shakedown/services/wakelock_service.dart' as _i15;
 
 // ignore_for_file: type=lint
 // ignore_for_file: avoid_redundant_argument_values
@@ -320,6 +321,13 @@ class MockSettingsProvider extends _i1.Mock implements _i4.SettingsProvider {
       ) as bool);
 
   @override
+  bool get fruitDenseList => (super.noSuchMethod(
+        Invocation.getter(#fruitDenseList),
+        returnValue: false,
+        returnValueForMissingStub: false,
+      ) as bool);
+
+  @override
   bool get marqueeEnabled => (super.noSuchMethod(
         Invocation.getter(#marqueeEnabled),
         returnValue: false,
@@ -343,6 +351,20 @@ class MockSettingsProvider extends _i1.Mock implements _i4.SettingsProvider {
   @override
   bool get useNeumorphism => (super.noSuchMethod(
         Invocation.getter(#useNeumorphism),
+        returnValue: false,
+        returnValueForMissingStub: false,
+      ) as bool);
+
+  @override
+  bool get fruitEnableLiquidGlass => (super.noSuchMethod(
+        Invocation.getter(#fruitEnableLiquidGlass),
+        returnValue: false,
+        returnValueForMissingStub: false,
+      ) as bool);
+
+  @override
+  bool get enableHaptics => (super.noSuchMethod(
+        Invocation.getter(#enableHaptics),
         returnValue: false,
         returnValueForMissingStub: false,
       ) as bool);
@@ -622,6 +644,13 @@ class MockSettingsProvider extends _i1.Mock implements _i4.SettingsProvider {
       ) as int);
 
   @override
+  bool get oilLogoTrailDynamic => (super.noSuchMethod(
+        Invocation.getter(#oilLogoTrailDynamic),
+        returnValue: false,
+        returnValueForMissingStub: false,
+      ) as bool);
+
+  @override
   double get oilLogoTrailLength => (super.noSuchMethod(
         Invocation.getter(#oilLogoTrailLength),
         returnValue: 0.0,
@@ -789,6 +818,20 @@ class MockSettingsProvider extends _i1.Mock implements _i4.SettingsProvider {
       ) as double);
 
   @override
+  bool get oilScreensaver4kSupport => (super.noSuchMethod(
+        Invocation.getter(#oilScreensaver4kSupport),
+        returnValue: false,
+        returnValueForMissingStub: false,
+      ) as bool);
+
+  @override
+  bool get oilTvPremiumHighlight => (super.noSuchMethod(
+        Invocation.getter(#oilTvPremiumHighlight),
+        returnValue: false,
+        returnValueForMissingStub: false,
+      ) as bool);
+
+  @override
   bool get randomOnlyUnplayed => (super.noSuchMethod(
         Invocation.getter(#randomOnlyUnplayed),
         returnValue: false,
@@ -894,6 +937,33 @@ class MockSettingsProvider extends _i1.Mock implements _i4.SettingsProvider {
       );
 
   @override
+  void toggleUseNeumorphism() => super.noSuchMethod(
+        Invocation.method(
+          #toggleUseNeumorphism,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void toggleFruitEnableLiquidGlass() => super.noSuchMethod(
+        Invocation.method(
+          #toggleFruitEnableLiquidGlass,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void setFruitEnableLiquidGlass(bool? value) => super.noSuchMethod(
+        Invocation.method(
+          #setFruitEnableLiquidGlass,
+          [value],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
   void setAudioEngineMode(_i2.AudioEngineMode? mode) => super.noSuchMethod(
         Invocation.method(
           #setAudioEngineMode,
@@ -961,6 +1031,15 @@ class MockSettingsProvider extends _i1.Mock implements _i4.SettingsProvider {
   void toggleEnableShakedownTween() => super.noSuchMethod(
         Invocation.method(
           #toggleEnableShakedownTween,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void resetFruitFirstTimeSettings() => super.noSuchMethod(
+        Invocation.method(
+          #resetFruitFirstTimeSettings,
           [],
         ),
         returnValueForMissingStub: null,
@@ -1120,6 +1199,15 @@ class MockSettingsProvider extends _i1.Mock implements _i4.SettingsProvider {
       );
 
   @override
+  void setHighlightPlayingWithRgb(bool? value) => super.noSuchMethod(
+        Invocation.method(
+          #setHighlightPlayingWithRgb,
+          [value],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
   void toggleShowPlaybackMessages() => super.noSuchMethod(
         Invocation.method(
           #toggleShowPlaybackMessages,
@@ -1192,15 +1280,6 @@ class MockSettingsProvider extends _i1.Mock implements _i4.SettingsProvider {
       );
 
   @override
-  void toggleUseNeumorphism() => super.noSuchMethod(
-        Invocation.method(
-          #toggleUseNeumorphism,
-          [],
-        ),
-        returnValueForMissingStub: null,
-      );
-
-  @override
   void setUseNeumorphism(bool? value) => super.noSuchMethod(
         Invocation.method(
           #setUseNeumorphism,
@@ -1232,6 +1311,33 @@ class MockSettingsProvider extends _i1.Mock implements _i4.SettingsProvider {
         Invocation.method(
           #setForceTv,
           [value],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void toggleEnableHaptics() => super.noSuchMethod(
+        Invocation.method(
+          #toggleEnableHaptics,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void toggleFruitDenseList() => super.noSuchMethod(
+        Invocation.method(
+          #toggleFruitDenseList,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void toggleOilTvPremiumHighlight() => super.noSuchMethod(
+        Invocation.method(
+          #toggleOilTvPremiumHighlight,
+          [],
         ),
         returnValueForMissingStub: null,
       );
@@ -1535,6 +1641,15 @@ class MockSettingsProvider extends _i1.Mock implements _i4.SettingsProvider {
         returnValue: _i7.Future<void>.value(),
         returnValueForMissingStub: _i7.Future<void>.value(),
       ) as _i7.Future<void>);
+
+  @override
+  void toggleOilLogoTrailDynamic() => super.noSuchMethod(
+        Invocation.method(
+          #toggleOilLogoTrailDynamic,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
 
   @override
   _i7.Future<void> setOilLogoTrailLength(double? value) => (super.noSuchMethod(
@@ -2285,10 +2400,103 @@ class MockAudioProvider extends _i1.Mock implements _i9.AudioProvider {
       );
 }
 
+/// A class which mocks [DeviceService].
+///
+/// See the documentation for Mockito's code generation for more information.
+class MockDeviceService extends _i1.Mock implements _i14.DeviceService {
+  @override
+  bool get isTv => (super.noSuchMethod(
+        Invocation.getter(#isTv),
+        returnValue: false,
+        returnValueForMissingStub: false,
+      ) as bool);
+
+  @override
+  bool get isSafari => (super.noSuchMethod(
+        Invocation.getter(#isSafari),
+        returnValue: false,
+        returnValueForMissingStub: false,
+      ) as bool);
+
+  @override
+  bool get isPwa => (super.noSuchMethod(
+        Invocation.getter(#isPwa),
+        returnValue: false,
+        returnValueForMissingStub: false,
+      ) as bool);
+
+  @override
+  bool get isMobile => (super.noSuchMethod(
+        Invocation.getter(#isMobile),
+        returnValue: false,
+        returnValueForMissingStub: false,
+      ) as bool);
+
+  @override
+  bool get isDesktop => (super.noSuchMethod(
+        Invocation.getter(#isDesktop),
+        returnValue: false,
+        returnValueForMissingStub: false,
+      ) as bool);
+
+  @override
+  bool get hasListeners => (super.noSuchMethod(
+        Invocation.getter(#hasListeners),
+        returnValue: false,
+        returnValueForMissingStub: false,
+      ) as bool);
+
+  @override
+  _i7.Future<void> refresh() => (super.noSuchMethod(
+        Invocation.method(
+          #refresh,
+          [],
+        ),
+        returnValue: _i7.Future<void>.value(),
+        returnValueForMissingStub: _i7.Future<void>.value(),
+      ) as _i7.Future<void>);
+
+  @override
+  void addListener(_i8.VoidCallback? listener) => super.noSuchMethod(
+        Invocation.method(
+          #addListener,
+          [listener],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void removeListener(_i8.VoidCallback? listener) => super.noSuchMethod(
+        Invocation.method(
+          #removeListener,
+          [listener],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void dispose() => super.noSuchMethod(
+        Invocation.method(
+          #dispose,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void notifyListeners() => super.noSuchMethod(
+        Invocation.method(
+          #notifyListeners,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
+}
+
 /// A class which mocks [WakelockService].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockWakelockService extends _i1.Mock implements _i14.WakelockService {
+class MockWakelockService extends _i1.Mock implements _i15.WakelockService {
   @override
   _i7.Future<bool> get enabled => (super.noSuchMethod(
         Invocation.getter(#enabled),

@@ -1,16 +1,12 @@
 import 'package:flutter/foundation.dart';
-import 'dart:js_interop';
 
-@JS('updateThemeBranding')
-external void _updateThemeBranding(JSString themeColor, JSString bgColor);
+// Conditional import to prevent 'dart:js_interop' from breaking VM tests
+import 'pwa_theme_sync_noop.dart'
+    if (dart.library.js_interop) 'pwa_theme_sync_web.dart';
 
 class PwaThemeSync {
   static void update(String themeColor, String bgColor) {
     if (!kIsWeb) return;
-    try {
-      _updateThemeBranding(themeColor.toJS, bgColor.toJS);
-    } catch (e) {
-      debugPrint('PWA Theme Sync failed: $e');
-    }
+    PwaThemeSyncInternal.updateEffect(themeColor, bgColor);
   }
 }

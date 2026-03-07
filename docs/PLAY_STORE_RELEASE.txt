@@ -1,3 +1,12 @@
+What's new in v1.1.57+157
+• Resolved critical test regressions in playback and screensaver screens.
+• Fixed timer leaks in screensaver initialization for stable performance.
+• Enforced strict "Default Off" policy for Fruit theme premium features.
+• Regenerated all platform mocks to synchronize with latest Provider APIs.
+• Updated agent efficiency rules with explicit testing thresholds.
+
+---
+
 What's new in v1.1.56
 • Fixed infinite-width crash in segmented controls.
 • Upgraded Settings screen header with premium "Liquid Glass" translucency.

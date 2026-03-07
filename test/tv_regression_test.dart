@@ -194,6 +194,9 @@ class FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
   @override
   String get appFont => 'default';
   @override
+  void resetFruitFirstTimeSettings() {}
+
+  @override
   bool get highlightCurrentShowCard => false;
   @override
   bool get showDayOfWeek => true;
@@ -433,6 +436,11 @@ class FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
   void setFruitEnableLiquidGlass(bool value) {}
   @override
   void setHighlightPlayingWithRgb(bool value) {}
+
+  @override
+  bool get enableHaptics => true;
+  @override
+  void toggleEnableHaptics() {}
 
   @override
   Future<void> setSeedColor(Color? color) async {}

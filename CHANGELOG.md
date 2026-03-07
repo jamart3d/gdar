@@ -6,12 +6,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- **Testing**: Resolved critical test regressions in `playback_screen_test.dart` by updating manual `MockSettingsProvider` stubs for new `oil*` settings.
+- **Testing**: Fixed `ScreensaverScreen` timer leaks by implementing a 600ms catch-up `pump` to clear `initState` delays.
+- **Theme**: Hardened `SettingsProvider` to ensure "Fruit" (Liquid Glass) features (Dense List, Simple Icons, Glow) are strictly disabled on first-time activation.
+- **Infrastructure**: Regenerated all platform mocks via `build_runner` to synchronize with the latest Provider APIs.
+
 ### Changed
 - **Testing Strategy**: Codified the "Inner Loop" vs. "Outer Loop" distinction. Arlo now handles targeted local checks (< 5 files) via `/checkup`, while full regression suites are offloaded to Jules.
 - **Rules**: Updated `efficiency_guardrails.md` with explicit testing thresholds to conserve tokens and improve performance.
 - **Workflows**: Modified `/checkup` and `/audit` to enforce the 5-file local testing limit and provide a "Jules Handoff" prompt.
 - **Documentation**: Synchronized `AGENT_ENVIRONMENT.md`, `README.md`, and `project_structure_map.md` with the new testing protocols.
 - **Infrastructure**: Updated `env_doctor.py` templates to maintain synchronization of agent directory mappings.
+
+<-- slide -->
 ## [1.1.56+156] - 2026-03-06
 
 ### Fixed

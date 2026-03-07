@@ -96,6 +96,87 @@ class MockSettingsProvider extends Mock implements SettingsProvider {
   @override
   set showExpandIcon(bool value) {}
 
+  @override
+  bool get oilLogoTrailDynamic => false;
+  @override
+  double get oilFlowSpeed => 0.5;
+  @override
+  String get oilPalette => 'classic';
+  @override
+  double get oilFilmGrain => 0.0;
+  @override
+  double get oilPulseIntensity => 0.5;
+  @override
+  double get oilHeatDrift => 0.5;
+  @override
+  bool get oilEnableAudioReactivity => false;
+  @override
+  int get oilPerformanceLevel => 0;
+  @override
+  double get oilLogoScale => 0.5;
+  @override
+  double get oilTranslationSmoothing => 0.5;
+  @override
+  double get oilBlurAmount => 0.0;
+  @override
+  bool get oilFlatColor => false;
+  @override
+  bool get oilBannerGlow => false;
+  @override
+  double get oilBannerFlicker => 0.0;
+  @override
+  bool get oilShowInfoBanner => true;
+  @override
+  bool get oilPaletteCycle => false;
+  @override
+  double get oilPaletteTransitionSpeed => 1.0;
+  @override
+  double get oilInnerRingScale => 1.0;
+  @override
+  double get oilInnerToMiddleGap => 0.5;
+  @override
+  double get oilMiddleToOuterGap => 0.5;
+  @override
+  double get oilOrbitDrift => 0.5;
+  @override
+  String get oilBannerDisplayMode => 'ring';
+  @override
+  String get oilBannerFont => 'default';
+  @override
+  double get oilLogoTrailIntensity => 0.0;
+  @override
+  int get oilLogoTrailSlices => 1;
+  @override
+  double get oilLogoTrailLength => 1.0;
+  @override
+  double get oilFlatTextProximity => 0.5;
+  @override
+  String get oilFlatTextPlacement => 'center';
+  @override
+  String get oilAudioGraphMode => 'off';
+  @override
+  double get oilBeatSensitivity => 0.5;
+  @override
+  double get oilInnerRingFontScale => 1.0;
+  @override
+  double get oilInnerRingSpacingMultiplier => 1.0;
+  @override
+  double get oilTrackLetterSpacing => 1.0;
+  @override
+  double get oilTrackWordSpacing => 1.0;
+  @override
+  bool get oilLogoAntiAlias => true;
+  @override
+  double get oilLogoTrailScale => 1.0;
+  @override
+  double get oilAudioPeakDecay => 0.9;
+  @override
+  double get oilAudioBassBoost => 1.0;
+  @override
+  double get oilAudioReactivityStrength => 1.0;
+  @override
+  bool get oilScreensaver4kSupport => false;
+
   // New Getters that were missing
   @override
   bool get showDayOfWeek => true;
@@ -245,6 +326,7 @@ void main() {
         .thenAnswer((_) => Stream.value(Duration.zero));
     when(mockAudioProvider.playbackErrorStream)
         .thenAnswer((_) => Stream.value(''));
+    when(mockAudioProvider.isPlaying).thenReturn(false);
     when(mockAudioPlayer.sequence).thenReturn([]);
     when(mockAudioPlayer.sequenceStateStream)
         .thenAnswer((_) => const Stream.empty());
@@ -315,6 +397,8 @@ void main() {
     await tester
         .pumpWidget(createTestableWidget(child: const PlaybackScreen()));
 
+    await tester.ensureVisible(find.text(dummyTrack2.title));
+    await tester.pump(const Duration(milliseconds: 500));
     await tester.tap(find.text(dummyTrack2.title));
 
     verify(mockAudioProvider.seekToTrack(1)).called(1);

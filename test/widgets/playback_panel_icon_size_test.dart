@@ -111,6 +111,9 @@ class MockSettingsProvider extends Mock implements SettingsProvider {
 
 class MockThemeProvider extends Mock implements ThemeProvider {
   @override
+  bool testOnlyOverrideFruitAllowed = false;
+
+  @override
   ThemeStyle get themeStyle => ThemeStyle.android;
 
   @override

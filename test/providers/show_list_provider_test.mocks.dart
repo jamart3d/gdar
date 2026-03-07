@@ -504,6 +504,13 @@ class MockSettingsProvider extends _i1.Mock implements _i9.SettingsProvider {
       ) as bool);
 
   @override
+  bool get fruitDenseList => (super.noSuchMethod(
+        Invocation.getter(#fruitDenseList),
+        returnValue: false,
+        returnValueForMissingStub: false,
+      ) as bool);
+
+  @override
   bool get marqueeEnabled => (super.noSuchMethod(
         Invocation.getter(#marqueeEnabled),
         returnValue: false,
@@ -527,6 +534,20 @@ class MockSettingsProvider extends _i1.Mock implements _i9.SettingsProvider {
   @override
   bool get useNeumorphism => (super.noSuchMethod(
         Invocation.getter(#useNeumorphism),
+        returnValue: false,
+        returnValueForMissingStub: false,
+      ) as bool);
+
+  @override
+  bool get fruitEnableLiquidGlass => (super.noSuchMethod(
+        Invocation.getter(#fruitEnableLiquidGlass),
+        returnValue: false,
+        returnValueForMissingStub: false,
+      ) as bool);
+
+  @override
+  bool get enableHaptics => (super.noSuchMethod(
+        Invocation.getter(#enableHaptics),
         returnValue: false,
         returnValueForMissingStub: false,
       ) as bool);
@@ -806,6 +827,13 @@ class MockSettingsProvider extends _i1.Mock implements _i9.SettingsProvider {
       ) as int);
 
   @override
+  bool get oilLogoTrailDynamic => (super.noSuchMethod(
+        Invocation.getter(#oilLogoTrailDynamic),
+        returnValue: false,
+        returnValueForMissingStub: false,
+      ) as bool);
+
+  @override
   double get oilLogoTrailLength => (super.noSuchMethod(
         Invocation.getter(#oilLogoTrailLength),
         returnValue: 0.0,
@@ -973,6 +1001,20 @@ class MockSettingsProvider extends _i1.Mock implements _i9.SettingsProvider {
       ) as double);
 
   @override
+  bool get oilScreensaver4kSupport => (super.noSuchMethod(
+        Invocation.getter(#oilScreensaver4kSupport),
+        returnValue: false,
+        returnValueForMissingStub: false,
+      ) as bool);
+
+  @override
+  bool get oilTvPremiumHighlight => (super.noSuchMethod(
+        Invocation.getter(#oilTvPremiumHighlight),
+        returnValue: false,
+        returnValueForMissingStub: false,
+      ) as bool);
+
+  @override
   bool get randomOnlyUnplayed => (super.noSuchMethod(
         Invocation.getter(#randomOnlyUnplayed),
         returnValue: false,
@@ -1078,6 +1120,33 @@ class MockSettingsProvider extends _i1.Mock implements _i9.SettingsProvider {
       );
 
   @override
+  void toggleUseNeumorphism() => super.noSuchMethod(
+        Invocation.method(
+          #toggleUseNeumorphism,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void toggleFruitEnableLiquidGlass() => super.noSuchMethod(
+        Invocation.method(
+          #toggleFruitEnableLiquidGlass,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void setFruitEnableLiquidGlass(bool? value) => super.noSuchMethod(
+        Invocation.method(
+          #setFruitEnableLiquidGlass,
+          [value],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
   void setAudioEngineMode(_i12.AudioEngineMode? mode) => super.noSuchMethod(
         Invocation.method(
           #setAudioEngineMode,
@@ -1145,6 +1214,15 @@ class MockSettingsProvider extends _i1.Mock implements _i9.SettingsProvider {
   void toggleEnableShakedownTween() => super.noSuchMethod(
         Invocation.method(
           #toggleEnableShakedownTween,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void resetFruitFirstTimeSettings() => super.noSuchMethod(
+        Invocation.method(
+          #resetFruitFirstTimeSettings,
           [],
         ),
         returnValueForMissingStub: null,
@@ -1304,6 +1382,15 @@ class MockSettingsProvider extends _i1.Mock implements _i9.SettingsProvider {
       );
 
   @override
+  void setHighlightPlayingWithRgb(bool? value) => super.noSuchMethod(
+        Invocation.method(
+          #setHighlightPlayingWithRgb,
+          [value],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
   void toggleShowPlaybackMessages() => super.noSuchMethod(
         Invocation.method(
           #toggleShowPlaybackMessages,
@@ -1376,15 +1463,6 @@ class MockSettingsProvider extends _i1.Mock implements _i9.SettingsProvider {
       );
 
   @override
-  void toggleUseNeumorphism() => super.noSuchMethod(
-        Invocation.method(
-          #toggleUseNeumorphism,
-          [],
-        ),
-        returnValueForMissingStub: null,
-      );
-
-  @override
   void setUseNeumorphism(bool? value) => super.noSuchMethod(
         Invocation.method(
           #setUseNeumorphism,
@@ -1416,6 +1494,33 @@ class MockSettingsProvider extends _i1.Mock implements _i9.SettingsProvider {
         Invocation.method(
           #setForceTv,
           [value],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void toggleEnableHaptics() => super.noSuchMethod(
+        Invocation.method(
+          #toggleEnableHaptics,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void toggleFruitDenseList() => super.noSuchMethod(
+        Invocation.method(
+          #toggleFruitDenseList,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void toggleOilTvPremiumHighlight() => super.noSuchMethod(
+        Invocation.method(
+          #toggleOilTvPremiumHighlight,
+          [],
         ),
         returnValueForMissingStub: null,
       );
@@ -1719,6 +1824,15 @@ class MockSettingsProvider extends _i1.Mock implements _i9.SettingsProvider {
         returnValue: _i7.Future<void>.value(),
         returnValueForMissingStub: _i7.Future<void>.value(),
       ) as _i7.Future<void>);
+
+  @override
+  void toggleOilLogoTrailDynamic() => super.noSuchMethod(
+        Invocation.method(
+          #toggleOilLogoTrailDynamic,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
 
   @override
   _i7.Future<void> setOilLogoTrailLength(double? value) => (super.noSuchMethod(

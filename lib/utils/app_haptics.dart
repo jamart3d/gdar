@@ -16,55 +16,60 @@ class AppHaptics {
   }
 
   /// Triggers a selection click haptic.
-  static Future<void> selectionClick(DeviceService deviceService) async {
-    if (_shouldSkip(deviceService)) return;
+  static Future<void> selectionClick(DeviceService deviceService,
+      {bool enabled = true}) async {
+    if (!enabled || _shouldSkip(deviceService)) return;
 
     if (kIsWeb) {
-      _vibrateWeb(10); // Subtle tick
+      _vibrateWeb(20); // Subtle tick, increased for PWA visibility
     } else {
       await HapticFeedback.selectionClick();
     }
   }
 
   /// Triggers a light impact haptic.
-  static Future<void> lightImpact(DeviceService deviceService) async {
-    if (_shouldSkip(deviceService)) return;
+  static Future<void> lightImpact(DeviceService deviceService,
+      {bool enabled = true}) async {
+    if (!enabled || _shouldSkip(deviceService)) return;
 
     if (kIsWeb) {
-      _vibrateWeb(15);
+      _vibrateWeb(20); // Increased from 15ms for better perceptibility
     } else {
       await HapticFeedback.lightImpact();
     }
   }
 
   /// Triggers a medium impact haptic.
-  static Future<void> mediumImpact(DeviceService deviceService) async {
-    if (_shouldSkip(deviceService)) return;
+  static Future<void> mediumImpact(DeviceService deviceService,
+      {bool enabled = true}) async {
+    if (!enabled || _shouldSkip(deviceService)) return;
 
     if (kIsWeb) {
-      _vibrateWeb(30);
+      _vibrateWeb(40); // Increased from 30ms
     } else {
       await HapticFeedback.mediumImpact();
     }
   }
 
   /// Triggers a heavy impact haptic.
-  static Future<void> heavyImpact(DeviceService deviceService) async {
-    if (_shouldSkip(deviceService)) return;
+  static Future<void> heavyImpact(DeviceService deviceService,
+      {bool enabled = true}) async {
+    if (!enabled || _shouldSkip(deviceService)) return;
 
     if (kIsWeb) {
-      _vibrateWeb(50);
+      _vibrateWeb(70); // Increased from 50ms
     } else {
       await HapticFeedback.heavyImpact();
     }
   }
 
   /// Triggers a vibrate haptic.
-  static Future<void> vibrate(DeviceService deviceService) async {
-    if (_shouldSkip(deviceService)) return;
+  static Future<void> vibrate(DeviceService deviceService,
+      {bool enabled = true}) async {
+    if (!enabled || _shouldSkip(deviceService)) return;
 
     if (kIsWeb) {
-      _vibrateWeb(100);
+      _vibrateWeb(120); // Increased from 100ms
     } else {
       await HapticFeedback.vibrate();
     }

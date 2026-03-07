@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shakedown/models/track.dart';
@@ -11,11 +12,13 @@ import 'package:shakedown/providers/settings_provider.dart';
 class FruitTrackList extends StatefulWidget {
   final Show trackShow;
   final double scaleFactor;
+  final double topOffset;
 
   const FruitTrackList({
     super.key,
     required this.trackShow,
     required this.scaleFactor,
+    this.topOffset = 0,
   });
 
   @override
@@ -55,7 +58,7 @@ class _FruitTrackListState extends State<FruitTrackList> {
     final viewportHeight = containerBox.size.height;
     final cardHeight = box.size.height;
 
-    final bool offTop = position.dy < 0;
+    final bool offTop = position.dy < widget.topOffset;
     final bool offBottom = (position.dy + cardHeight) > viewportHeight;
 
     if (offTop != _isOffScreenTop || offBottom != _isOffScreenBottom) {
@@ -85,71 +88,118 @@ class _FruitTrackListState extends State<FruitTrackList> {
 
     return Stack(
       children: [
-        NotificationListener<ScrollNotification>(
-          onNotification: (notification) {
-            _handleScroll();
-            return false;
-          },
-          child: ListView.builder(
-            controller: _scrollController,
-            padding: EdgeInsets.fromLTRB(
-              24.0 * widget.scaleFactor, // px-6
-              70.0 * widget.scaleFactor, // Avoid overlap with floating header
-              24.0 * widget.scaleFactor,
-              140.0 * widget.scaleFactor, // pb-tabbar
-            ),
-            itemCount: tracks.length,
-            itemBuilder: (context, i) {
-              final isPlayed = i <= currentTrackIndex;
-              final opacity = isPlayed ? 1.0 : 0.6;
+        ListView.builder(
+          controller: _scrollController,
+          padding: EdgeInsets.fromLTRB(
+            24.0 * widget.scaleFactor, // px-6
+            180.0 * widget.scaleFactor, // Avoid overlap with floating header
+            24.0 * widget.scaleFactor,
+            140.0 * widget.scaleFactor, // pb-tabbar
+          ),
+          itemCount: tracks.length,
+          itemBuilder: (context, i) {
+            final isPlayed = i <= currentTrackIndex;
+            final opacity = isPlayed ? 1.0 : 0.6;
 
-              if (i == currentTrackIndex &&
-                  audioProvider.currentTrack != null) {
-                return Opacity(
-                  // Hide original when sticky is active at top or bottom
-                  opacity: (_isOffScreenTop || _isOffScreenBottom) ? 0.0 : 1.0,
-                  child: Padding(
-                    key: _nowPlayingKey,
-                    padding:
-                        EdgeInsets.symmetric(vertical: 20 * widget.scaleFactor),
-                    child: FruitNowPlayingCard(
-                      trackShow: widget.trackShow,
-                      track: audioProvider.currentTrack!,
-                      index: i + 1,
-                      scaleFactor: widget.scaleFactor,
-                    ),
-                  ),
-                );
-              }
-
+            if (i == currentTrackIndex && audioProvider.currentTrack != null) {
               return Opacity(
-                opacity: opacity,
-                child: _buildTrackItem(
-                  context: context,
-                  track: tracks[i],
-                  index: i,
-                  isActive: false, // Card handles active state
-                  audioProvider: audioProvider,
+                // Hide original when sticky is active at top or bottom
+                opacity: (_isOffScreenTop || _isOffScreenBottom) ? 0.0 : 1.0,
+                child: Padding(
+                  key: _nowPlayingKey,
+                  padding:
+                      EdgeInsets.symmetric(vertical: 20 * widget.scaleFactor),
+                  child: FruitNowPlayingCard(
+                    trackShow: widget.trackShow,
+                    track: audioProvider.currentTrack!,
+                    index: i + 1,
+                    scaleFactor: widget.scaleFactor,
+                  ),
                 ),
               );
-            },
-          ),
+            }
+
+            return Opacity(
+              opacity: opacity,
+              child: _buildTrackItem(
+                context: context,
+                track: tracks[i],
+                index: i,
+                isActive: false, // Card handles active state
+                audioProvider: audioProvider,
+              ),
+            );
+          },
         ),
         // Sticky Top
         if (_isOffScreenTop)
           Positioned(
-            top: 0,
-            left: 24 * widget.scaleFactor,
-            right: 24 * widget.scaleFactor,
-            child: buildStickyCard(currentTrackIndex),
+            top: widget.topOffset,
+            left: 0,
+            right: 0,
+            child: ClipRRect(
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                child: Container(
+                  padding: EdgeInsets.fromLTRB(
+                    24 * widget.scaleFactor,
+                    20 * widget.scaleFactor, // Match list padding
+                    24 * widget.scaleFactor,
+                    20 * widget.scaleFactor, // Match list padding
+                  ),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context)
+                        .colorScheme
+                        .surface
+                        .withValues(alpha: 0.1), // Glass tint
+                    border: Border(
+                      bottom: BorderSide(
+                        color: Theme.of(context)
+                            .colorScheme
+                            .onSurface
+                            .withValues(alpha: 0.05),
+                      ),
+                    ),
+                  ),
+                  child: buildStickyCard(currentTrackIndex),
+                ),
+              ),
+            ),
           ),
         // Sticky Bottom
         if (_isOffScreenBottom)
           Positioned(
             bottom: 110 * widget.scaleFactor, // Above tab bar
-            left: 24 * widget.scaleFactor,
-            right: 24 * widget.scaleFactor,
-            child: buildStickyCard(currentTrackIndex),
+            left: 0,
+            right: 0,
+            child: ClipRRect(
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                child: Container(
+                  padding: EdgeInsets.fromLTRB(
+                    24 * widget.scaleFactor,
+                    20 * widget.scaleFactor, // Match list padding
+                    24 * widget.scaleFactor,
+                    20 * widget.scaleFactor, // Match list padding
+                  ),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context)
+                        .colorScheme
+                        .surface
+                        .withValues(alpha: 0.1), // Glass tint
+                    border: Border(
+                      top: BorderSide(
+                        color: Theme.of(context)
+                            .colorScheme
+                            .onSurface
+                            .withValues(alpha: 0.05),
+                      ),
+                    ),
+                  ),
+                  child: buildStickyCard(currentTrackIndex),
+                ),
+              ),
+            ),
           ),
       ],
     );
@@ -244,16 +294,31 @@ class _FruitTrackRowState extends State<_FruitTrackRow> {
                 SizedBox(width: 16 * widget.scaleFactor), // gap-4
               ],
               Expanded(
-                child: Text(
-                  widget.track.title,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontFamily: 'Inter',
-                    fontSize: 15 * widget.scaleFactor, // text-base-ish
-                    fontWeight: FontWeight.w600, // font-semibold
-                    color: colorScheme.onSurface.withValues(alpha: 0.8),
-                  ),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 5 * widget.scaleFactor,
+                      height: 5 * widget.scaleFactor,
+                      decoration: BoxDecoration(
+                        color: colorScheme.primary,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                    SizedBox(width: 10 * widget.scaleFactor),
+                    Expanded(
+                      child: Text(
+                        widget.track.title,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontFamily: 'Inter',
+                          fontSize: 15 * widget.scaleFactor, // text-base-ish
+                          fontWeight: FontWeight.w600, // font-semibold
+                          color: colorScheme.onSurface.withValues(alpha: 0.8),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
               if (!hideDuration)

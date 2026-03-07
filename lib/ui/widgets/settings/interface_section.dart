@@ -115,6 +115,33 @@ class InterfaceSection extends StatelessWidget {
           secondary:
               Icon(isFruit ? LucideIcons.rocket : Icons.rocket_launch_rounded),
         ),
+        TvSwitchListTile(
+          dense: true,
+          visualDensity: VisualDensity.compact,
+          title: FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerLeft,
+              child: Text('Haptic Feedback',
+                  style: Theme.of(context)
+                      .textTheme
+                      .titleMedium
+                      ?.copyWith(fontSize: 16 * scaleFactor))),
+          subtitle: FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerLeft,
+              child: Text('Vibrate on interactions (PWA/Mobile)',
+                  style: Theme.of(context)
+                      .textTheme
+                      .bodySmall
+                      ?.copyWith(fontSize: 12 * scaleFactor))),
+          value: settingsProvider.enableHaptics,
+          onChanged: (value) {
+            context.read<SettingsProvider>().toggleEnableHaptics();
+            AppHaptics.lightImpact(context.read<DeviceService>(),
+                enabled: value);
+          },
+          secondary: Icon(isFruit ? LucideIcons.vibrate : Icons.vibration),
+        ),
 
         const SizedBox(height: 8),
         const Divider(),
