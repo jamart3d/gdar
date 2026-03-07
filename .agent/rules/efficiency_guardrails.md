@@ -36,9 +36,11 @@ A curated allow-list of safe commands lives in `.agent/rules/auto_approve.md`.
 * **Save vs. Ship Boundary**: Any request containing "save" must ONLY trigger the `/save` workflow. You are strictly forbidden from jumping to a release pipeline unless the user explicitly confirms a production deployment intent.
 * **Confirmation Requirement**: Even for "Autonomous" skills, you must provide a `notify_user` preview before starting the first command if that command is a long-running build or production deployment.
 
-### 7. Testing Thresholds (Arlo vs. Jules)
-To protect token quota and provide high-performance feedback:
-* **Small Tests (< 5 files):** Arlo handles these locally for immediate feedback.
-* **Large Tests (Full suite or > 5 files):** Arlo MUST stop and suggest using **Jules** (Web UI or CLI).
-* **Action:** If the user asks for a "full test run" or "all tests", Arlo should explain the token cost and provide the Jules CLI command (e.g., `jules new "Run all tests"`) instead of executing `flutter test` locally.
-
+### 8. Negative Constraint Integrity
+To prevent persistent oversights and "stale" implementation details:
+* **Action:** When a user explicitly rejects a term, feature, or implementation detail (e.g., "no marquee"), you MUST perform a case-insensitive search across ALL active artifacts (`task.md`, `implementation_plan.md`) and remove or update every instance immediately. 
+* **Constraint:** You are strictly forbidden from requesting review via `notify_user` on an artifact that still contains rejected terminology or concepts.
+### 8. Negative Constraint Integrity
+To prevent persistent oversights and "stale" implementation details:
+* **Action:** When a user explicitly rejects a term, feature, or implementation detail (e.g., "no marquee"), you MUST perform a case-insensitive search across ALL active artifacts (`task.md`, `implementation_plan.md`) and remove or update every instance immediately. 
+* **Constraint:** You are strictly forbidden from requesting review via `notify_user` on an artifact that still contains rejected terminology or concepts.

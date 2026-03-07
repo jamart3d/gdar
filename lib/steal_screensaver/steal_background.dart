@@ -30,9 +30,6 @@ class StealBackground extends PositionComponent
   Offset _velocity = Offset.zero;
   Offset _smoothedPos = const Offset(0.5, 0.5);
 
-  /// Beat pulse accumulator: 0.0→1.0, spikes on beat, decays per frame.
-  double _beatPulse = 0.0;
-
   /// Current smoothed logo position (0–1 UV space). Used by StealBanner.
   Offset get smoothedLogoPos => _smoothedPos;
 
@@ -206,16 +203,6 @@ class StealBackground extends PositionComponent
         0,
       );
     }
-
-    // Beat pulse: spike on beat, exponential decay
-    final energy = game.currentEnergy;
-    if (energy.isBeat) {
-      _beatPulse = 1.0;
-    } else {
-      // Decay ~90% per 0.2s at 60fps: factor ≈ 0.96 per frame
-      _beatPulse *= pow(0.04, dt).clamp(0.0, 1.0).toDouble();
-      if (_beatPulse < 0.01) _beatPulse = 0.0;
-    }
   }
 
   @override
@@ -271,12 +258,8 @@ class StealBackground extends PositionComponent
     final w = size.x;
     final h = size.y;
 
-    // Logo render size MUST match shader logic in steal.frag:
-    // shader base height is 110px.
-    final basePulse = _beatPulse * 0.08;
-    final pulseScale =
-        (1.0 + game.currentEnergy.bass * 0.2 * config.pulseIntensity);
-    final logoRenderSize = (config.logoScale + basePulse) * 110.0 * pulseScale;
+    final basePulse = game.beatPulse * 0.08;
+    final logoRenderSize = (config.logoScale + basePulse) * 110.0;
 
     // Use palette color desaturated — but keep it bright enough to see
     final baseColor =
@@ -369,7 +352,7 @@ class StealBackground extends PositionComponent
     _shader!.setFloat(idx++, config.pulseIntensity.clamp(0.0, 5.0));
     _shader!.setFloat(idx++, config.heatDrift.clamp(0.0, 5.0));
     // Apply beat pulse: up to 8% scale boost on beat detection
-    final beatBoost = _beatPulse * 0.08;
+    final beatBoost = game.beatPulse * 0.08;
     _shader!.setFloat(idx++, (config.logoScale + beatBoost).clamp(0.05, 1.1));
     _shader!.setFloat(idx++, config.blurAmount.clamp(0.0, 1.0));
     _shader!.setFloat(idx++, config.flatColor ? 1.0 : 0.0);

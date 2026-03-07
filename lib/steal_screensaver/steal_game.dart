@@ -33,6 +33,7 @@ class StealGame extends FlameGame {
   double _holdDuration = 0.0;
   bool _cycling = false;
   String _lastPalette = '';
+  double _beatPulse = 0.0;
 
   // ── Trail position ring buffer ─────────────────────────────────────────────
   // Stores recent smoothed logo positions for ghost slice rendering.
@@ -158,6 +159,16 @@ class StealGame extends FlameGame {
 
     _tickWoodstock(dt);
     _tickTrailBuffer();
+    _tickPulse(dt);
+  }
+
+  void _tickPulse(double dt) {
+    if (_currentEnergy.isBeat) {
+      _beatPulse = 1.0;
+    } else {
+      _beatPulse *= pow(0.04, dt).clamp(0.0, 1.0).toDouble();
+      if (_beatPulse < 0.01) _beatPulse = 0.0;
+    }
   }
 
   // ── Trail buffer ───────────────────────────────────────────────────────────
@@ -337,6 +348,14 @@ class StealGame extends FlameGame {
   /// Used by StealBanner to keep rings locked to the logo center.
   Offset get smoothedLogoPos =>
       _background?.smoothedLogoPos ?? const Offset(0.5, 0.5);
+
+  /// Unified beat pulse factor (0.0 to 1.0) with exponential decay.
+  double get beatPulse => _beatPulse;
+
+  /// Unified pulse scale multiplier combining base scale and audio energy.
+  /// Used to synchronize logo and banner expansion.
+  double get pulseScale =>
+      (1.0 + _currentEnergy.bass * 0.2 * config.pulseIntensity);
 }
 
 enum _WoodstockPhase { idle, yellow, green }

@@ -223,9 +223,11 @@ class StealBanner extends Component with HasGameReference<StealGame> {
 
     final StealConfig config = game.config;
     final minDim = min(game.size.x, game.size.y);
-    final innerR = _innerRadius(minDim, config);
-    final middleR = _middleRadius(minDim, config, innerR);
-    final outerR = _outerRadius(minDim, config, middleR);
+    final beatPulse = game.beatPulse;
+    final pulseScale = game.pulseScale;
+    final innerR = _innerRadius(minDim, config, beatPulse, pulseScale);
+    final middleR = _middleRadius(minDim, config, innerR, pulseScale);
+    final outerR = _outerRadius(minDim, config, middleR, pulseScale);
 
     if (_visible) {
       _innerAngle += _baseRotationSpeed * innerR * dt;
@@ -406,19 +408,23 @@ class StealBanner extends Component with HasGameReference<StealGame> {
   double _logoScaleFactor(StealConfig config) =>
       config.logoScale.clamp(0.1, 1.0) / 0.5; // 1.0 at default logoScale=0.5
 
-  double _innerRadius(double minDim, StealConfig config) =>
+  double _innerRadius(double minDim, StealConfig config, double beatPulse,
+          double pulseScale) =>
       minDim *
       _baseInnerRadiusRatio *
       config.innerRingScale.clamp(0.1, 2.0) *
-      _logoScaleFactor(config);
+      (_logoScaleFactor(config) + beatPulse * 0.16) *
+      pulseScale;
 
-  double _middleRadius(double minDim, StealConfig config, double innerR) {
+  double _middleRadius(
+      double minDim, StealConfig config, double innerR, double pulseScale) {
     final gap = config.innerToMiddleGap.clamp(0.0, 1.0);
     return innerR +
         minDim * (_minRingClearance + gap * 0.08) * _logoScaleFactor(config);
   }
 
-  double _outerRadius(double minDim, StealConfig config, double middleR) {
+  double _outerRadius(
+      double minDim, StealConfig config, double middleR, double pulseScale) {
     final gap = config.middleToOuterGap.clamp(0.0, 1.0);
     return middleR +
         minDim * (_minRingClearance + gap * 0.08) * _logoScaleFactor(config);
@@ -436,15 +442,28 @@ class StealBanner extends Component with HasGameReference<StealGame> {
 
     final StealConfig config = game.config;
     final logoPos = game.smoothedLogoPos;
-    final center = Offset(logoPos.dx * w, logoPos.dy * h);
     final minDim = min(w, h);
     final glowEnabled = config.bannerGlow;
     final isFlat = config.bannerDisplayMode == 'flat';
 
+    // ── Unified Snapping & Pulse Scale ──────────────────────────────────────
+    // Snap the logo center once for the entire block to prevent "crawling" 
+    // jitter between lines. We also fetch the unified pulse scale.
+    Offset center = Offset(logoPos.dx * w, logoPos.dy * h);
+    if (config.bannerPixelSnap) {
+      center = Offset(center.dx.roundToDouble(), center.dy.roundToDouble());
+    }
+
+    // Unified pulse factors (0.0 to 1.0) with exponential decay
+    final beatPulse = game.beatPulse;
+    final pulseScale = game.pulseScale;
+
     if (isFlat) {
-      _renderFlat(canvas, center, minDim, glowEnabled, config);
+      _renderFlat(canvas, center, minDim, glowEnabled, config,
+          beatPulse: beatPulse, pulseScale: pulseScale);
     } else {
-      _renderRings(canvas, center, minDim, glowEnabled, config);
+      _renderRings(canvas, center, minDim, glowEnabled, config,
+          beatPulse: beatPulse, pulseScale: pulseScale);
     }
   }
 
@@ -455,8 +474,10 @@ class StealBanner extends Component with HasGameReference<StealGame> {
     Offset center,
     double minDim,
     bool glowEnabled,
-    StealConfig config,
-  ) {
+    StealConfig config, {
+    required double beatPulse,
+    required double pulseScale,
+  }) {
     // Line order: title, venue, date
     final lines = [
       (_middleCurrent, _middleWords, _middleOpacity), // track title
@@ -478,13 +499,18 @@ class StealBanner extends Component with HasGameReference<StealGame> {
     final baseGap = logoRadius * 0.51;
     final proximity = config.flatTextProximity.clamp(0.0, 1.0);
 
+    // Audio reactive shift: the whole block moves away/toward center on beat
+    // but remains a RIGID unit.
+    final basePulse = beatPulse * 0.08;
+    final audioShiftScale = pulseScale * (1.0 + basePulse / config.logoScale);
+
     final centerY = center.dy;
     final double blockCenterY;
 
     if (proximity <= 0.5) {
       // Transition from Away (2*baseGap) to Edge (1*baseGap)
       final t = proximity / 0.5;
-      final currentOffset = baseGap * (2.0 - t);
+      final currentOffset = baseGap * (2.0 - t) * audioShiftScale;
       if (isAbove) {
         blockCenterY = centerY - currentOffset - blockHeight / 2;
       } else {
@@ -493,16 +519,15 @@ class StealBanner extends Component with HasGameReference<StealGame> {
     } else {
       // Transition from Edge (baseGap) to Centered (0 offset)
       final t = (proximity - 0.5) / 0.5;
+      final lerpBaseOffset = (baseGap + blockHeight / 2) * audioShiftScale;
       if (isAbove) {
         // As proximity goes 0.5 -> 1.0, block center goes from
         // [centerY - baseGap - blockHeight/2] up to [centerY]
-        blockCenterY =
-            ui.lerpDouble(centerY - baseGap - blockHeight / 2, centerY, t)!;
+        blockCenterY = ui.lerpDouble(centerY - lerpBaseOffset, centerY, t)!;
       } else {
         // As proximity goes 0.5 -> 1.0, block center goes from
         // [centerY + baseGap + blockHeight/2] down to [centerY]
-        blockCenterY =
-            ui.lerpDouble(centerY + baseGap + blockHeight / 2, centerY, t)!;
+        blockCenterY = ui.lerpDouble(centerY + lerpBaseOffset, centerY, t)!;
       }
     }
 
@@ -579,10 +604,8 @@ class StealBanner extends Component with HasGameReference<StealGame> {
     double x = center.dx - totalWidth / 2;
     double y = center.dy;
 
-    if (config.bannerPixelSnap) {
-      x = x.roundToDouble();
-      y = y.roundToDouble();
-    }
+    // NO per-line pixel snap here. We snap the SHARED center anchor in render()
+    // to ensure all lines move in perfect, rigid synchronization.
 
     for (int wi = 0; wi < wordList.length; wi++) {
       final word = wordList[wi];
@@ -645,11 +668,13 @@ class StealBanner extends Component with HasGameReference<StealGame> {
     Offset center,
     double minDim,
     bool glowEnabled,
-    StealConfig config,
-  ) {
-    final innerR = _innerRadius(minDim, config);
-    final middleR = _middleRadius(minDim, config, innerR);
-    final outerR = _outerRadius(minDim, config, middleR);
+    StealConfig config, {
+    required double beatPulse,
+    required double pulseScale,
+  }) {
+    final innerR = _innerRadius(minDim, config, beatPulse, pulseScale);
+    final middleR = _middleRadius(minDim, config, innerR, pulseScale);
+    final outerR = _outerRadius(minDim, config, middleR, pulseScale);
 
     if (_outerCurrent.isNotEmpty && _outerOpacity > 0.01) {
       _drawRing(canvas, _outerCurrent, _outerWords, center, outerR, _outerAngle,
