@@ -46,6 +46,7 @@
   - [ ] Now button on bottom tab bar should scroll current track back into view if offscreen.
 - [ ] **Fruit Style Show List**: When not stacked, the current show should have the player to the left of the stars.
 - [ ] **Fruit Style Rate Show Dialog**: Refresh dialog with glass style and themed stars; ensure compatibility with Simple Theme.
+- [ ] **Fruit Style Glass SnackBar**: Implement floating "glass-morphic" notification pill with support for "Restart" and other actions.
 - [ ] **Background Longevity**: Extend playback when tab is backgrounded/throttled.
   - [ ] Explore Silent Video looping or Web Workers for timer consistency.
   - [x] **Timer Drift Audit**: Added Phase 4 to `test/prompts/jules_audit.md` to audit `gapless_audio_engine.js` under 6x CPU throttling.
