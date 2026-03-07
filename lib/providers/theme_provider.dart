@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:shakedown/utils/pwa_theme_sync.dart';
 
 enum ThemeStyle { android, fruit }
 
@@ -78,6 +79,7 @@ class ThemeProvider with ChangeNotifier {
     }
 
     unawaited(_saveThemePreference());
+    _syncPwaBranding();
     notifyListeners();
   }
 
@@ -94,12 +96,14 @@ class ThemeProvider with ChangeNotifier {
     }
 
     unawaited(_saveThemePreference());
+    _syncPwaBranding();
     notifyListeners();
   }
 
   void setFruitColorOption(FruitColorOption option) {
     _fruitColorOptionIndex = option.index;
     unawaited(_saveThemePreference());
+    _syncPwaBranding();
     notifyListeners();
   }
 
@@ -135,6 +139,58 @@ class ThemeProvider with ChangeNotifier {
     }
 
     _fruitColorOptionIndex = prefs.getInt(_fruitColorOptionKey) ?? 0;
+    _syncPwaBranding();
     notifyListeners();
+  }
+
+  void _syncPwaBranding() {
+    if (!kIsWeb) return;
+
+    String themeColor = '#000000';
+    String bgColor = '#000000';
+
+    if (isDarkMode) {
+      if (themeStyle == ThemeStyle.fruit) {
+        switch (fruitColorOption) {
+          case FruitColorOption.sophisticate:
+            themeColor = '#00E676';
+            bgColor = '#0F172A';
+            break;
+          case FruitColorOption.minimalist:
+            themeColor = '#30D158';
+            bgColor = '#1C1C1E';
+            break;
+          case FruitColorOption.creative:
+            themeColor = '#FF375F';
+            bgColor = '#1A1A1A';
+            break;
+        }
+      } else {
+        themeColor = '#000000';
+        bgColor = '#000000';
+      }
+    } else {
+      if (themeStyle == ThemeStyle.fruit) {
+        switch (fruitColorOption) {
+          case FruitColorOption.sophisticate:
+            themeColor = '#5C6BC0';
+            bgColor = '#E0E5EC';
+            break;
+          case FruitColorOption.minimalist:
+            themeColor = '#34C759';
+            bgColor = '#FFFFFF';
+            break;
+          case FruitColorOption.creative:
+            themeColor = '#FF2D55';
+            bgColor = '#FFF9F9';
+            break;
+        }
+      } else {
+        themeColor = '#FFFFFF'; // Match AppBar
+        bgColor = '#F5F5F5'; // Match Scaffold
+      }
+    }
+
+    PwaThemeSync.update(themeColor, bgColor);
   }
 }
