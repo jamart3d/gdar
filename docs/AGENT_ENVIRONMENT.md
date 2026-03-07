@@ -1,7 +1,7 @@
 # myapp Agent Environment & Setup Guide
 
 ## Overview
-This document outlines the specialized agentic environment used for developing myapp. It describes the `.agent` directory structure, necessary tools for Windows-based development, and the integration of the **Arlo (Antigravity)** agent.
+This document outlines the specialized agentic environment used for developing myapp. It describes the `.agent` directory structure, necessary tools for Windows, Linux, and Chromebook-based development, and the integration of the **Arlo (Antigravity)** agent.
 
 ---
 
@@ -15,12 +15,14 @@ These markdown files provide the strict operational boundaries for the agent.
 *   **auto_approve.md**: List of safe, read-only commands for auto-execution.
 *   **efficiency_guardrails.md**: Token and quota management rules.
 *   **fruit_theme.md**: Rules for the theme styles (if applicable).
+*   **fruit_theme_boundaries.md**: Rules for ensuring theme isolation.
 *   **Gemini.md**: Primary coding and architecture standards (Clean Architecture).
 *   **mobile_rules.md**: Platform-specific rules for mobile.
 *   **platform_shell.md**: Environment-specific shell rules (Windows/Linux).
 *   **root_hygiene.md**: Rules for maintaining a clean project root.
 *   **screensaver.md**: Specific rules for screensaver/animation logic.
 *   **testing_stubs.md**: Rules for mocking and test architecture.
+*   **tv_focus_stability.md**: Advanced focus management rules for TV.
 *   **tv_rules.md**: Focus management and UI rules for Android TV / Google TV.
 *   **web_audio_scheduling.md**: Deep specs for the web audio engine.
 
@@ -29,8 +31,10 @@ Standardized slash commands that trigger complex, multi-step actions.
 *   **/audit**: Full quality, design, and conformance check.
 *   **/checkup**: Rapid health check, formatting, linting, and tests.
 *   **/clean**: Automated project root hygiene and cleanup.
+*   **/fruit_audit**: Scans UI for correct theme gating.
 *   **/image_to_code**: UI or asset generation via Stitch MCP.
 *   **/issue_report**: Investigation and standardized report generation.
+*   **/jules**: Formalized handoff to Jules for full verification.
 *   **/mock_regen**: Automated regeneration of test stubs/mocks.
 *   **/save**: Quick commit and push workflow.
 *   **/screenshot_audit**: Context-aware UI audit from screenshots.
@@ -49,6 +53,19 @@ Specialized toolsets and instructions for complex tasks.
 *   **test_mocking_templates**: Standardized templates for mocking services.
 *   **test_run_guard**: Poll and bail-out logic for background test runners.
 *   **web_debug_suite**: Complex web-state and audio debugging tools.
+
+### 4. Specs (`.agent/specs/`)
+Detailed architectural and design specifications that define the "Single Source of Truth" for the project.
+*   **android_theme_spec.md**: Specifications for the Android system theme.
+*   **fruit_theme_spec.md**: Deep design specifications for the "Fruit" aesthetic.
+*   **native_audio_spec.md**: Specs for the high-performance native audio engines.
+*   **phone_ui_design_spec.md**: Visual guidelines for the mobile interface.
+*   **phone_ui_flow_spec.md**: Interaction flow and navigation logic for mobile.
+*   **tv_screensaver_spec.md**: Specialized specs for the TV screensaver engine.
+*   **tv_ui_design_spec.md**: Visual guidelines for the 10ft TV interface.
+*   **tv_ui_flow_spec.md**: Interaction flow and focus logic for Android TV.
+*   **web_ui_audio_engines.md**: Matrix of audio engine behaviors (Web Audio vs. HTML5).
+*   **web_ui_design_spec.md**: Visual guidelines for the web/PWA interface.
 
 ---
 
@@ -89,10 +106,14 @@ The agent's local state and artifacts are stored in the user profile directory. 
     ```powershell
     Get-ChildItem -Path "$HOME\.gemini\antigravity\brain" -Recurse | Measure-Object -Property Length -Sum
     ```
+    > [!WARNING]
+    > **Storage Ballooning**: On Windows, the brain directory has been observed to balloon significantly (700MB+). Routine inspection is required to prevent storage exhaustion.
 *   **ChromeOS/Linux (bash)**:
     ```bash
     du -sh ~/.gemini/antigravity/brain
     ```
+    > [!NOTE]
+    > While storage ballooning is confirmed on Windows, similar investigative monitoring is required on ChromeOS/Linux to see if those environments experience the same growth pattern.
 
 ### 2. Cleanup Strategy
 *   **Manual Purge**: You can safely delete older subdirectories within `brain/` for closed or stale sessions.
@@ -115,6 +136,110 @@ MCP servers provide a standard way for Jules to interact with your local environ
 
 ---
 
+## 🚀 Development Execution & Device Setup
+To run and debug **myapp** across its primary targets, use the following specialized execution flows and ADB configurations.
+
+### 1. Web & PWA (Chrome)
+For the most accurate "Fruit" theme and Liquid Glass testing, use the Chrome device target:
+*   **Command**: `flutter run -d chrome`
+*   **Requirements**: 
+    *   Chrome browser installed.
+    *   `flutter config --enable-web` must be active.
+
+### 2. Windows 10/11 (Android Emulator)
+When debugging the Material 3 Expressive UI or TV dual-pane layouts on a Windows host:
+*   **Command**: `flutter run` (selecting the emulator from the list or specifying `-d <device_id>`).
+*   **ADB Setup**: 
+    *   Ensure `platform-tools` is in your Windows `%PATH%`.
+    *   Emulator must have **Developer Options** and **USB Debugging** enabled.
+    *   **Tip**: Use `adb devices` in PowerShell to verify the tether before running.
+
+### 3. ChromeOS / Linux (WiFi ADB)
+For high-performance testing on Chromebooks or remote development:
+*   **Command**: `flutter run -d <ip_address>:5555`
+*   **Helper Scripts**: Use the following scripts in `~/bin/` to automate the tether:
+    *   `phone_pair`: Initial pairing and setup (automates `adb tcpip`).
+        ```bash
+        #!/bin/bash
+        # 1. Look for the Android Pairing service
+        echo "Searching for Android Pairing service (ensure 'Pair device with pairing code' is open)..."
+        LINE=$(avahi-browse -rtp _adb-tls-pairing._tcp | grep "^=" | grep "IPv4" | head -n 1)
+
+        if [ -z "$LINE" ]; then
+            echo "ERROR: Pairing service not found."
+            echo "Make sure you are on the 'Pair device with pairing code' screen on your phone."
+            exit 1
+        fi
+
+        # 2. Extract IP and Port
+        IP=$(echo "$LINE" | cut -d';' -f8)
+        PORT=$(echo "$LINE" | cut -d';' -f9)
+        echo "Found Pairing Service at $IP:$PORT"
+
+        # 3. Ask for the code
+        read -p "Enter the 6-digit pairing code: " CODE
+
+        # 4. Execute pair
+        /home/jam/Android/Sdk/platform-tools/adb pair "$IP:$PORT" "$CODE"
+        ```
+    *   `phone_soft`: Re-connects to a soft-rebooted or disconnected device via WiFi.
+        ```bash
+        #!/bin/bash
+        # Soft reset: only drops current connections instead of killing the whole server
+        /home/jam/Android/Sdk/platform-tools/adb disconnect 
+
+        # Search for the Android 16 mDNS broadcast
+        LINE=$(avahi-browse -rtp _adb-tls-connect._tcp | grep "^=")
+
+        if [ -z "$LINE" ]; then
+            echo "Phone not found. Is Wireless Debugging ON?"
+        else
+            IP=$(echo "$LINE" | cut -d';' -f8)
+            PORT=$(echo "$LINE" | cut -d';' -f9)
+            echo "Syncing with Android 16 at $IP:$PORT"
+            /home/jam/Android/Sdk/platform-tools/adb connect "$IP:$PORT"
+        fi
+        ```
+*   **ADB WiFi Configuration (Modern/Pairing)**:
+    1.  Enable **Developer Options** and **Wireless Debugging** on the target Android device.
+    2.  Open the **"Pair device with pairing code"** screen on the phone to broadcast the `_adb-tls-pairing._tcp` service.
+    3.  Run the helper script: `~/bin/phone_pair`.
+    4.  Enter the 6-digit pairing code when prompted. The script uses `avahi-browse` to auto-detect the IP/Port and executes `adb pair`.
+    5.  Once paired, use `~/bin/phone_soft` to complete the connection (or `adb connect <device_ip>:5555`).
+*   **Requirements**: 
+    *   Linux development environment (Crostini) enabled.
+    *   `android-sdk-platform-tools` installed.
+    *   `avahi-utils` installed (for `avahi-browse` service discovery).
+
+---
+
+## 🧠 How Arlo Processes Context
+To maintain architectural alignment and project state, **Arlo** (Antigravity) performs a multi-layered analysis of the environment during every interaction.
+
+### 1. Automatic Context (Injected Every Prompt)
+With every message, the following is automatically provided to the agent:
+*   **Active Document**: The file currently focused in the editor, including the exact cursor position.
+*   **Open Tabs**: A list of other files currently open in the IDE.
+*   **Core Rules**: The contents of `.agent/rules/` (specifically `Gemini.md`, `architecture_context.md`, and `efficiency_guardrails.md`).
+
+### 2. Proactive Discovery (Task-Start Analysis)
+At the beginning of a new task or conversation, Arlo proactively "pulls" information from:
+*   **Project Root (`/`)**: A directory listing to understand high-level structure.
+*   **Agent Directory (`.agent/`)**:
+    *   `rules/` & `specs/`: Checked for domain-specific constraints (e.g., `audio_architecture.md`).
+    *   `workflows/`: Consulted when a slash command (e.g., `/audit`) is triggered.
+*   **Project Manifests**: 
+    *   `pubspec.yaml`: To confirm Flutter/Dart versions and active dependencies.
+    *   `CHANGELOG.md`: To review the recent history of changes and versioning.
+
+### 3. Persistent Knowledge (Long-term Memory)
+*   **Knowledge Items (KIs)**: Distilled summaries of past architectural decisions and patterns are reviewed at the start of every session to ensure consistency without "re-learning" the codebase.
+
+### 4. Selective Research (On-Demand)
+To conserve token quota, Arlo does **not** perform broad scans of the entire `lib/` or `test/` tree unless specifically searching for a symbol or verifying a cross-file "ripple" effect.
+
+---
+
 ## 🤖 Working with Arlo (Antigravity)
 **Arlo** is your local pair-programming persona, powered by the **Antigravity** agent engine and Gemini.
 
@@ -128,7 +253,9 @@ While the underlying technology is **Antigravity**, assigning a personal name li
 
 ### Best Practices for Interaction:
 1.  **Workflow First**: Instead of asking Arlo to "clean up the project," use the command `/clean`. This ensures the agent follows the pre-defined, safe procedure.
-2.  **Contextual Awareness**: Arlo has access to `lib/`, `test/`, and the entire `.agent/` directory (including `rules/`, `specs/`, `workflows/`, and `skills/`). When starting a feature, refer specifically to a spec file in `.agent/specs/` to ensure architectural alignment.
+2.  **Contextual Awareness**: Arlo has access to `lib/`, `test/`, and the entire `.agent/` directory. For specialized logic, Arlo also consults the following:
+    *   **`docs/`**: Consulted *on-demand* when researching specific features (e.g., `TV_DISPLAY_PATTERNS.md` or `SCREENSAVER_MANUAL.md`). These are considered the project's extended manual.
+    *   **`reports/`**: Consulted *after* automated workflows (like `/audit` or `/checkup`) or during deep debugging to review historical logs and analysis results.
 3.  **Turbo Execution**: Steps in workflows marked with `// turbo` can be executed automatically by Arlo (if configured with `SafeToAutoRun: true`). This accelerates routine tasks like formatting and linting.
 4.  **Verification**: Always run `/checkup` for a rapid local sanity check. For **significant refactors**, follow it up with a full **Jules Audit** to ensure comprehensive regression coverage.
 
@@ -205,6 +332,41 @@ The following specialized prompts (located in `test/prompts/`) are submitted to 
 
 > [!TIP]
 > **Jules Token Efficiency**: Providing an **Auth Token** (via CLI, Web interface, or environment configuration) is the high-performance path for all auditing. It is significantly more efficient for managing high-frequency concurrent audits and is required for the "Headless Chrome" stress-tests defined in the Master Audit.
+
+---
+
+## 📸 Screenshot & Deep Link Testing
+Use these ADB shell commands for capturing UI state and testing intent-based features.
+
+### 1. Capturing Screenshots
+To capture a high-quality screenshot from a connected device/emulator:
+*   **Capture**: `adb shell screencap -p /sdcard/screen.png`
+*   **Pull to Host**: `adb pull /sdcard/screen.png .`
+*   **Cleanup**: `adb shell rm /sdcard/screen.png`
+
+### 2. Testing Deep Links
+The application uses a custom URI scheme (e.g., `myapp://`). You can trigger specific routes or actions via ADB:
+*   **Command**: 
+    ```bash
+    adb shell am start -a android.intent.action.VIEW \
+        -c android.intent.category.BROWSABLE \
+        -d "myapp://path/to/action" \
+        com.user.myapp
+    ```
+
+### 3. Testing Media Search (Assistant/Gemini)
+To simulate a "Play [X] on MyApp" voice command:
+*   **Command**:
+    ```bash
+    adb shell am start -a android.media.action.MEDIA_PLAY_FROM_SEARCH \
+        -e query "ARTIST OR SONG" \
+        com.user.myapp
+    ```
+
+### 4. Automated Python Utilities
+You can automate complex UI verification (like font rendering or static screen grabs) by combining ADB shell commands and Deep Links in Python. 
+
+*   **Helper Scripts**: See `tools/` for automated verification utilities (e.g., `verify_fonts.py`).
 
 ---
 

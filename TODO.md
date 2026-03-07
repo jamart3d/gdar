@@ -1,4 +1,4 @@
-# GDAR — Open TODO Items
+# myapp — Open TODO Items
 
 > Consolidated from `todo.md`, `TODO_TV_UI.md`, `WEB_GAPLESS_TODO.md`, and `TODO_position_jump_debug.md`.
 > Originals archived to `reports/archive/`.
@@ -20,6 +20,7 @@
 - [ ] **Default Screensaver Settings**: Fine-tune default visual style, speed, and performance mode for a premium out-of-the-box experience.
 - [ ] **TV Safe Area**: Global setting to adjust margins for rare older panels with overscan/edge-cropping issues.
 - [ ] **Screensaver Settings Polish**: Introduce an "Advanced Options" toggle in TV Settings to hide deep-tweak knobs and clean up D-pad navigation.
+- [ ] **Screensaver Text "Crawl" Investigation**: Individual letters in the show info text appear to crawl/jitter independently as they translate around with the logo. Investigate the cause (likely precision/rendering issue) and add a toggle to disable this behavior if desired.
 - [ ] **Audio-Responsive Trails**: Tie Trail Intensity and Trail Blur directly to real-time audio `energy.overall` or `beatPulse` in the screensaver.
 - [ ] **Audio-Driven Shader "Boiling"**: Tie `uOverall` to the `heatDrift`/`flowSpeed` uniforms in `steal.frag` so background dynamics match song intensity.
 
@@ -30,6 +31,7 @@
 
 ### Future Ideas
 - [ ] **Voice & Modern Search UX**: Optimize search overlay for large screens/keyboard and add voice capabilities ("Play shows from Winterland 1973" via Google Assistant).
+- [ ] **Analog VU Meters**: Add a visualization option to display the audio bar graph as vintage analog needle meters (old-school high-end HiFi style).
 - [ ] **Flutter GPU Investigation**: Explore `flutter_gpu` for higher-fidelity fluid simulation in the lava lamp screensaver.
 
 ---
@@ -63,3 +65,13 @@
 ## 🤖 Agent Tooling & Workflows
 
 - [x] **PowerShell Pipe Workaround**: For Windows PowerShell agent execution, look into changing commands that use a pipe (`|`) to instead write output to a temporary file in `%TEMP%` and then read it, bypassing the shell's restricted pipe features.
+
+---
+
+## 🛠️ Generic Template Transformation
+
+- [/] **Generalize Project Metadata**: Rename `gdar` → `myapp` in `pubspec.yaml`, `README.md`, and documentation.
+- [ ] **Prune Domain Logic**: Remove project-specific audio engines, models, and heavy JSON datasets.
+- [ ] **Preserve Agentic Core**: Extract and keep the "Single Source of Truth" rules (`.agent/rules`) and automation workflows.
+- [ ] **Generalize Theme specs**: Update `fruit_theme_spec.md` and related UI specs to be project-agnostic while keeping the "Liquid Glass" experimentation layer.
+- [ ] **Verify Multi-Target Baseline**: Ensure the generic template builds and runs on Chrome (Web), Android (Phone), and Android TV (10ft UI).

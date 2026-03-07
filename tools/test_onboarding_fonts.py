@@ -6,9 +6,9 @@ Tests all font and UI scale combinations on onboarding page 3
 to verify font normalization consistency.
 
 Usage:
-    python3 scripts/test_onboarding_fonts.py
-    python3 scripts/test_onboarding_fonts.py --report-only
-    python3 scripts/test_onboarding_fonts.py --tag baseline
+    python3 tools/test_onboarding_fonts.py
+    python3 tools/test_onboarding_fonts.py --report-only
+    python3 tools/test_onboarding_fonts.py --tag baseline
 """
 
 import subprocess

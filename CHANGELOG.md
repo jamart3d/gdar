@@ -16,8 +16,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Testing Strategy**: Codified the "Inner Loop" vs. "Outer Loop" distinction. Arlo now handles targeted local checks (< 5 files) via `/checkup`, while full regression suites are offloaded to Jules.
 - **Rules**: Updated `efficiency_guardrails.md` with explicit testing thresholds to conserve tokens and improve performance.
 - **Workflows**: Modified `/checkup` and `/audit` to enforce the 5-file local testing limit and provide a "Jules Handoff" prompt.
-- **Documentation**: Synchronized `AGENT_ENVIRONMENT.md`, `README.md`, and `project_structure_map.md` with the new testing protocols.
-- **Infrastructure**: Updated `env_doctor.py` templates to maintain synchronization of agent directory mappings.
+### Documentation
+- **Agent Environment**: Finalized `docs/AGENT_ENVIRONMENT.md` with comprehensive guides for ADB, Deep Links, and Chromebook developer setups. Uses generic placeholders (`com.user.myapp`, `myapp://`) for universal template utility.
+- **Automation**: Integrated `tools/verify_fonts.py` as a template for automating UI verification via ADB and Deep Links, featuring automated HTML contact sheet generation.
 
 <-- slide -->
 ## [1.1.56+156] - 2026-03-06
