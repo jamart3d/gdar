@@ -68,6 +68,7 @@
                 length: 0,
                 end: (i) => 0
             };
+            this.style = {};
         }
         play() { this.paused = false; return Promise.resolve(); }
         pause() { this.paused = true; }
@@ -146,9 +147,23 @@
 
     // Mock document
     if (!g.document) {
+        const listeners = {};
         g.document = {
-            addEventListener: () => { },
-            removeEventListener: () => { },
+            addEventListener: (type, cb) => {
+                if (!listeners[type]) listeners[type] = [];
+                listeners[type].push(cb);
+            },
+            removeEventListener: (type, cb) => {
+                if (listeners[type]) {
+                    listeners[type] = listeners[type].filter(l => l !== cb);
+                }
+            },
+            dispatchEvent: (event) => {
+                const type = event.type;
+                if (listeners[type]) {
+                    listeners[type].forEach(cb => cb(event));
+                }
+            },
             createElement: (tag) => {
                 if (tag === 'video') return new MockAudio();
                 return {};

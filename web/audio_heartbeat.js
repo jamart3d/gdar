@@ -1,10 +1,10 @@
 /**
  * GDAR Audio Heartbeat
- * 
+ *
  * Plays a tiny, silent, looping base64 audio file using the standard HTML5 <audio> tag.
- * Mobile operating systems (iOS Safari, Android Chrome) strictly throttle or sleep 
+ * Mobile operating systems (iOS Safari, Android Chrome) strictly throttle or sleep
  * Javascript memory/Web Workers when the screen is off unless there is an active media element playing.
- * 
+ *
  * By spinning up this silent heartbeat on play, we trick the OS into keeping our background tab fully alive,
  * which in turn keeps the Web Audio API (gapless_audio_engine.js) running at 100% precision.
  */
@@ -86,6 +86,18 @@
                 _heartbeatVideo.pause();
             }
             _log.log('[gdar heartbeat] All background survival heartbeats stopped.');
+        },
+
+        isAudioActive: function () {
+            return !!(_heartbeatAudio && !_heartbeatAudio.paused);
+        },
+
+        isVideoActive: function () {
+            return !!(_heartbeatVideo && !_heartbeatVideo.paused);
+        },
+
+        isActive: function () {
+            return !!(this.isAudioActive() || this.isVideoActive());
         }
     };
 

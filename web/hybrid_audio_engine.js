@@ -1,14 +1,14 @@
 /**
  * GDAR Hybrid Audio Engine (Foreground: Web Audio, Background: Passive HTML5)
- * 
+ *
  * Wraps the full Web Audio engine (foreground) and the passive <audio> element (background).
- * 
+ *
  * Boundary-Only Handoffs:
  * - When visibilitychange fires mid-track, set a _pendingHandoff flag. Don't interrupt.
  * - At the next track boundary (_onTrackBoundary), check the flag. If set, load the next track
  *   into the passive <audio> element and switch to it instead of the Web Audio graph.
  * - If the user returns to the tab before the track ends, clear the flag — stay in foreground mode.
- * - On foreground restore: pause passive element, reconstruct AudioContext at that position, 
+ * - On foreground restore: pause passive element, reconstruct AudioContext at that position,
  *   resume Web Audio.
  */
 (function () {
@@ -145,12 +145,12 @@
 
         _currentIndex = event.to;
 
-        // Selection: Ensure we transition to the Foreground (Web Audio) engine 
+        // Selection: Ensure we transition to the Foreground (Web Audio) engine
         // for subsequent tracks. HTML5 is only used for the very first "Instant Start".
         if (_activeEngine === _bgEngine) {
             if (document.visibilityState !== 'hidden') {
                 _log.log('[hybrid] Track Boundary: Attempting Foreground Restore for the next track.');
-                // We keep _bgEngine as the active engine (reporting 'ready') 
+                // We keep _bgEngine as the active engine (reporting 'ready')
                 // and use the restore loop to swap to Web Audio ONLY once it's decoded.
                 _executeForegroundRestore(0);
             } else {
@@ -324,7 +324,7 @@
             } else if (duration > 223) { // HTML5_BUFFER_LIMIT
                 _log.log(`[hybrid] Track ${index} is LONG (${duration.toFixed(1)}s). Waiting for buffer exhaustion to hand off.`);
 
-                // CRITICAL: Pre-decode the NEXT track in WebAudio now, just in case the handoff 
+                // CRITICAL: Pre-decode the NEXT track in WebAudio now, just in case the handoff
                 // happens near the end of the current track.
                 if (index + 1 < _playlist.length) {
                     _log.log(`[hybrid] Pre-preparing next track (${index + 1}) in Web Audio...`);
@@ -370,7 +370,7 @@
                 _log.log(`[hybrid] Track ${index} fits in initial HTML5 buffer (${duration.toFixed(1)}s). Staying in HTML5.`);
                 _instantHandoffPending = false;
 
-                // CRITICAL: Pre-decode the NEXT track in WebAudio now, so it's ready for a gapless 
+                // CRITICAL: Pre-decode the NEXT track in WebAudio now, so it's ready for a gapless
                 // transition when the HTML5 engine reaches the boundary.
                 if (index + 1 < _playlist.length) {
                     _log.log(`[hybrid] Pre-preparing next track (${index + 1}) in Web Audio...`);
@@ -398,7 +398,9 @@
             _playing = shouldPlay;
 
             const pure = _isPureWebAudio();
-            if (document.visibilityState !== 'hidden' && !pure) {
+            // BACKGROUND OPTIMIZATION: We now allow Instant-Start (HTML5) even when hidden,
+            // because HTML5 is more robust for background initiates than Web Audio.
+            if (!pure) {
                 _log.log('[hybrid] syncState: Choosing HTML5 (Background) for Instant Start');
                 _activeEngine = _bgEngine;
                 _instantHandoffPending = shouldPlay;
@@ -431,10 +433,10 @@
             _fgEngine.setPlaylist(tracks, _currentIndex);
             _bgEngine.setPlaylist(tracks, _currentIndex);
 
-            // Optimization: If UI is visible, we want an "Instant-Start" using the HTML5 engine
+            // Optimization: We now allow "Instant-Start" using the HTML5 engine even when hidden
             // rather than forcing the user to wait for _fgEngine (WebAudio) to download and decode.
             const pure = _isPureWebAudio();
-            if (document.visibilityState !== 'hidden' && !pure) {
+            if (!pure) {
                 _log.log('[hybrid] setPlaylist: Choosing HTML5 (Background) for Instant Start');
                 _instantHandoffPending = true;
                 _instantHandoffIndex = _currentIndex;
@@ -458,18 +460,15 @@
 
             // Start heartbeats if tab is already hidden and mode is not 'relisten'
             if (document.visibilityState === 'hidden') {
-                if (_backgroundMode === 'heartbeat') {
-                    if (window._gdarHeartbeat) window._gdarHeartbeat.startAudioHeartbeat();
-                } else if (_backgroundMode === 'video') {
-                    if (window._gdarHeartbeat) window._gdarHeartbeat.startVideoHeartbeat();
-                }
+                _log.log('[hybrid] play(): Hidden startup detected. Priming heartbeats.');
+                if (window._gdarHeartbeat) window._gdarHeartbeat.startHeartbeat();
             }
 
             // HYBRID CORE: Always prioritize HTML5 for "Instant Start" if Web Audio is not yet ready/playing
             const fgState = _fgEngine.getState();
             const fgReady = fgState.playing && fgState.processingState === 'ready';
 
-            if (!fgReady && _activeEngine !== _bgEngine && document.visibilityState !== 'hidden') {
+            if (!fgReady && _activeEngine !== _bgEngine) {
                 _log.log('[hybrid] Startup: Web Audio not ready. Initiating HTML5 Instant Start.');
                 _instantHandoffPending = true;
                 _instantHandoffIndex = _currentIndex;
@@ -482,7 +481,7 @@
                 _activeEngine.play();
 
                 // If setPlaylist or another command primed us for an instant handoff, we must launch it now
-                if (_instantHandoffPending && _activeEngine === _bgEngine && document.visibilityState !== 'hidden') {
+                if (_instantHandoffPending && _activeEngine === _bgEngine) {
                     _log.log('[hybrid] play: Launching pending Instant Start handoff');
                     _attemptHandoff(_currentIndex, true);
                 }
@@ -524,7 +523,7 @@
             _currentIndex = index;
 
             const pure = _isPureWebAudio();
-            if (document.visibilityState !== 'hidden' && !pure) {
+            if (!pure) {
                 _log.log(`[hybrid engine] SeekToIndex(${index}) initializing Instant-Start.`);
 
                 // CRITICAL: STOP WebAudio strictly to prevent simultaneous playback

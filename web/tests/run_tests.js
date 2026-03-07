@@ -20,7 +20,7 @@ loadEngine('hybrid_html5_engine.js');
 loadEngine('hybrid_audio_engine.js');
 
 const _fgEngine = global._gdarAudio;
-const _bgEngine = global._hybridHtml5Audio; // Hybrid uses this, not passive!
+const _html5Engine = global._hybridHtml5Audio; // Hybrid uses this structurally isolated worker
 const _hybridEngine = global._hybridAudio;
 
 // Simple Assertion Helper
@@ -37,12 +37,12 @@ function assert(condition, message) {
 console.log('\n--- Running Hybrid Engine Regression Tests ---\n');
 
 // 1. Verify syncState is called during attemptHandoff
-let bgSynced = false;
-const originalSync = _bgEngine.syncState;
-_bgEngine.syncState = (index, pos, play) => {
-    bgSynced = true;
-    assert(play === true, 'bgEngine should be started with play=true');
-    originalSync.call(_bgEngine, index, pos, play);
+let html5Synced = false;
+const originalSync = _html5Engine.syncState;
+_html5Engine.syncState = (index, pos, play) => {
+    html5Synced = true;
+    assert(play === true, 'html5Engine should be started with play=true');
+    originalSync.call(_html5Engine, index, pos, play);
 };
 
 // Reset state
