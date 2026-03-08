@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shakedown/config/default_settings.dart';
 import 'package:shakedown/utils/logger.dart';
+import 'package:shakedown/utils/web_perf_hint.dart';
 
 import 'package:shakedown/providers/theme_provider.dart';
 import 'package:shakedown/services/gapless_player/gapless_player.dart';
@@ -699,9 +700,20 @@ class SettingsProvider with ChangeNotifier {
     _neumorphicStyle = NeumorphicStyle.values[
         _prefs.getInt(_neumorphicStyleKey) ??
             DefaultSettings.neumorphicStyle.index];
+    final hasPerformancePreference = _prefs.containsKey(_performanceModeKey);
     _performanceMode = _prefs.getBool(_performanceModeKey) ??
         _dBool(WebDefaults.performanceMode, TvDefaults.performanceMode,
             PhoneDefaults.performanceMode);
+
+    if (!hasPerformancePreference &&
+        kIsWeb &&
+        isLikelyLowPowerWebDevice() &&
+        !_performanceMode) {
+      _performanceMode = true;
+      _prefs.setBool(_performanceModeKey, true);
+      logger.i(
+          'SettingsProvider: Auto-enabled performance mode for low-power web mobile device.');
+    }
 
     if (_performanceMode) {
       _glowMode = 0;
@@ -964,8 +976,7 @@ class SettingsProvider with ChangeNotifier {
 
   void toggleHighlightPlayingWithRgb() {
     if (_performanceMode) return;
-    _updatePreference(
-        _highlightPlayingWithRgbKey,
+    _updatePreference(_highlightPlayingWithRgbKey,
         _highlightPlayingWithRgb = !_highlightPlayingWithRgb);
   }
 

@@ -52,6 +52,35 @@ class ShowListShell extends StatelessWidget {
     this.scrollbarFocusNode,
   });
 
+  Widget _buildFruitHeader(BuildContext context) {
+    return Container(
+      height: MediaQuery.paddingOf(context).top + 80,
+      padding: EdgeInsets.only(
+        top: MediaQuery.paddingOf(context).top,
+      ),
+      decoration: const BoxDecoration(
+        border: null,
+      ),
+      alignment: Alignment.topCenter,
+      child: SizedBox(
+        height: 80,
+        child: ShowListAppBar(
+          backgroundColor: Colors.transparent,
+          randomPulseAnimation: randomPulseAnimation,
+          searchPulseAnimation: searchPulseAnimation,
+          isRandomShowLoading: isRandomShowLoading,
+          enableDiceHaptics: enableDiceHaptics,
+          onRandomPlay: onRandomPlay,
+          onToggleSearch: onToggleSearch,
+          onTitleTap: onTitleTap,
+          searchController: searchController,
+          searchFocusNode: searchFocusNode,
+          onSearchSubmitted: onSearchSubmitted,
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final audioProvider = context.watch<AudioProvider>();
@@ -88,54 +117,35 @@ class ShowListShell extends StatelessWidget {
             top: 0,
             left: 0,
             right: 0,
-            child: ShaderMask(
-              shaderCallback: (bounds) {
-                return const LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [Colors.black, Colors.transparent],
-                  stops: [
-                    0.7,
-                    1.0
-                  ], // Fade begins earlier for smoother transition
-                ).createShader(bounds);
-              },
-              blendMode: BlendMode.dstIn,
-              child: LiquidGlassWrapper(
-                enabled: isFruit && settingsProvider.fruitEnableLiquidGlass,
-                showBorder: false, // Remove internal sharp border
-                blur: 25,
-                opacity: 0.85,
-                borderRadius: BorderRadius.zero,
-                child: Container(
-                  height: MediaQuery.paddingOf(context).top + 80,
-                  padding: EdgeInsets.only(
-                    top: MediaQuery.paddingOf(context).top,
-                  ),
-                  decoration: const BoxDecoration(
-                    // Removing the border entirely to ensure no sharp line
-                    border: null,
-                  ),
-                  alignment: Alignment.topCenter,
-                  child: SizedBox(
-                    height: 80,
-                    child: ShowListAppBar(
-                      backgroundColor: Colors.transparent,
-                      randomPulseAnimation: randomPulseAnimation,
-                      searchPulseAnimation: searchPulseAnimation,
-                      isRandomShowLoading: isRandomShowLoading,
-                      enableDiceHaptics: enableDiceHaptics,
-                      onRandomPlay: onRandomPlay,
-                      onToggleSearch: onToggleSearch,
-                      onTitleTap: onTitleTap,
-                      searchController: searchController,
-                      searchFocusNode: searchFocusNode,
-                      onSearchSubmitted: onSearchSubmitted,
+            child: settingsProvider.performanceMode
+                ? LiquidGlassWrapper(
+                    enabled: isFruit && settingsProvider.fruitEnableLiquidGlass,
+                    showBorder: false,
+                    blur: 8,
+                    opacity: 0.9,
+                    borderRadius: BorderRadius.zero,
+                    child: _buildFruitHeader(context),
+                  )
+                : ShaderMask(
+                    shaderCallback: (bounds) {
+                      return const LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [Colors.black, Colors.transparent],
+                        stops: [0.7, 1.0],
+                      ).createShader(bounds);
+                    },
+                    blendMode: BlendMode.dstIn,
+                    child: LiquidGlassWrapper(
+                      enabled:
+                          isFruit && settingsProvider.fruitEnableLiquidGlass,
+                      showBorder: false,
+                      blur: 8,
+                      opacity: 0.9,
+                      borderRadius: BorderRadius.zero,
+                      child: _buildFruitHeader(context),
                     ),
                   ),
-                ),
-              ),
-            ),
           ),
         AnimatedPositioned(
           duration: const Duration(milliseconds: 600),

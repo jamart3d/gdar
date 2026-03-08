@@ -45,7 +45,13 @@ class ScreensaverScreen extends StatefulWidget {
 
 class _ScreensaverScreenState extends State<ScreensaverScreen> {
   AudioReactor? _audioReactor;
+  bool _isInitializingAudioReactor = false;
   WakelockService? _wakelockService;
+
+  double? _lastPushedPeakDecay;
+  double? _lastPushedBassBoost;
+  double? _lastPushedReactivityStrength;
+  double? _lastPushedBeatSensitivity;
 
   @override
   void initState() {
@@ -68,19 +74,33 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
   @override
   void didUpdateWidget(ScreensaverScreen oldWidget) {
     super.didUpdateWidget(oldWidget);
-    _pushAudioConfig();
   }
 
-  void _pushAudioConfig() {
-    if (_audioReactor is VisualizerAudioReactor) {
-      final settings = Provider.of<SettingsProvider>(context, listen: false);
-      (_audioReactor as VisualizerAudioReactor).updateConfig(
-        peakDecay: settings.oilAudioPeakDecay,
-        bassBoost: settings.oilAudioBassBoost,
-        reactivityStrength: settings.oilAudioReactivityStrength,
-        beatSensitivity: settings.oilBeatSensitivity,
-      );
-    }
+  void _pushAudioConfig(SettingsProvider settings) {
+    if (_audioReactor is! VisualizerAudioReactor) return;
+
+    final peakDecay = settings.oilAudioPeakDecay;
+    final bassBoost = settings.oilAudioBassBoost;
+    final reactivityStrength = settings.oilAudioReactivityStrength;
+    final beatSensitivity = settings.oilBeatSensitivity;
+
+    final unchanged = _lastPushedPeakDecay == peakDecay &&
+        _lastPushedBassBoost == bassBoost &&
+        _lastPushedReactivityStrength == reactivityStrength &&
+        _lastPushedBeatSensitivity == beatSensitivity;
+    if (unchanged) return;
+
+    (_audioReactor as VisualizerAudioReactor).updateConfig(
+      peakDecay: peakDecay,
+      bassBoost: bassBoost,
+      reactivityStrength: reactivityStrength,
+      beatSensitivity: beatSensitivity,
+    );
+
+    _lastPushedPeakDecay = peakDecay;
+    _lastPushedBassBoost = bassBoost;
+    _lastPushedReactivityStrength = reactivityStrength;
+    _lastPushedBeatSensitivity = beatSensitivity;
   }
 
   bool _handleGlobalKeyEvent(KeyEvent event) {
@@ -94,45 +114,78 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
   }
 
   Future<void> _initAudioReactor() async {
-    final settings = Provider.of<SettingsProvider>(context, listen: false);
-    final deviceService = Provider.of<DeviceService>(context, listen: false);
+    if (_isInitializingAudioReactor || _audioReactor != null) return;
+    _isInitializingAudioReactor = true;
 
-    // Web never has the real visualizer, and if reactivity is off skip entirely.
-    if (kIsWeb || !settings.oilEnableAudioReactivity) return;
+    try {
+      final settings = Provider.of<SettingsProvider>(context, listen: false);
+      final deviceService = Provider.of<DeviceService>(context, listen: false);
 
-    // MANDATORY für Android: Record Audio permission is required for the Visualizer API.
-    if (defaultTargetPlatform == TargetPlatform.android) {
-      final status = await Permission.microphone.status;
-      if (!status.isGranted) {
-        final result = await Permission.microphone.request();
-        if (!result.isGranted) {
-          debugPrint(
-              'Screensaver: Audio permission denied. Reactivity disabled.');
-          return;
+      // Web never has the real visualizer, and if reactivity is off skip entirely.
+      if (kIsWeb || !settings.oilEnableAudioReactivity) return;
+
+      // MANDATORY for Android: Record Audio permission is required for the Visualizer API.
+      if (defaultTargetPlatform == TargetPlatform.android) {
+        final status = await Permission.microphone.status;
+        if (!status.isGranted) {
+          final result = await Permission.microphone.request();
+          if (!result.isGranted) {
+            debugPrint(
+                'Screensaver: Audio permission denied. Reactivity disabled.');
+            return;
+          }
         }
       }
-    }
 
-    // Get the app's audio session ID on Android so we tap the right output.
-    if (!mounted) return;
-    int? sessionId;
-    if (defaultTargetPlatform == TargetPlatform.android) {
-      final audioProvider = Provider.of<AudioProvider>(context, listen: false);
-      sessionId = audioProvider.audioPlayer.androidAudioSessionId;
-    }
+      // Get the app's audio session ID on Android so we tap the right output.
+      if (!mounted) return;
+      int? sessionId;
+      if (defaultTargetPlatform == TargetPlatform.android) {
+        final audioProvider =
+            Provider.of<AudioProvider>(context, listen: false);
+        sessionId = audioProvider.audioPlayer.androidAudioSessionId;
+      }
 
-    // Factory only returns a real reactor when isTv == true AND on Android.
-    final reactor = await AudioReactorFactory.create(
-      audioSessionId: sessionId,
-      isTv: deviceService.isTv,
-    );
+      // Factory only returns a real reactor when isTv == true AND on Android.
+      final reactor = await AudioReactorFactory.create(
+        audioSessionId: sessionId,
+        isTv: deviceService.isTv,
+      );
 
-    if (mounted) {
+      if (!mounted) {
+        reactor?.dispose();
+        return;
+      }
+
       setState(() => _audioReactor = reactor);
       if (reactor is VisualizerAudioReactor) {
-        _pushAudioConfig();
+        _pushAudioConfig(settings);
       }
       reactor?.start();
+    } finally {
+      _isInitializingAudioReactor = false;
+    }
+  }
+
+  void _clearPushedAudioConfig() {
+    _lastPushedPeakDecay = null;
+    _lastPushedBassBoost = null;
+    _lastPushedReactivityStrength = null;
+    _lastPushedBeatSensitivity = null;
+  }
+
+  void _ensureAudioReactorState(SettingsProvider settings) {
+    if (kIsWeb || !settings.oilEnableAudioReactivity) {
+      if (_audioReactor != null) {
+        _audioReactor?.dispose();
+        _audioReactor = null;
+        _clearPushedAudioConfig();
+      }
+      return;
+    }
+
+    if (_audioReactor == null && !_isInitializingAudioReactor) {
+      _initAudioReactor();
     }
   }
 
@@ -156,6 +209,8 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
     HardwareKeyboard.instance.removeHandler(_handleGlobalKeyEvent);
     _wakelockService?.disable();
     _audioReactor?.dispose();
+    _audioReactor = null;
+    _clearPushedAudioConfig();
     super.dispose();
   }
 
@@ -164,14 +219,8 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
     final settings = context.watch<SettingsProvider>();
     final audioProvider = context.watch<AudioProvider>();
 
-    // Push live audio configuration whenever settings change.
-    // This allows tuning knobs (bass boost, peak decay) to apply in real-time.
-    if (_audioReactor != null) {
-      _pushAudioConfig();
-    } else if (settings.oilEnableAudioReactivity && !kIsWeb) {
-      // If reactor was null but is now enabled, try to init it.
-      _initAudioReactor();
-    }
+    _ensureAudioReactorState(settings);
+    if (_audioReactor != null) _pushAudioConfig(settings);
 
     final config = StealConfig(
       flowSpeed: settings.oilFlowSpeed,

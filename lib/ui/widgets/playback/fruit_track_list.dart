@@ -1,4 +1,5 @@
 import 'dart:ui';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shakedown/models/track.dart';
@@ -32,6 +33,7 @@ class _FruitTrackListState extends State<FruitTrackList> {
   final GlobalKey _nowPlayingKey = GlobalKey();
   bool _isOffScreenTop = false;
   bool _isOffScreenBottom = false;
+  int _lastObservedTrackIndex = -1;
 
   @override
   void initState() {
@@ -107,6 +109,9 @@ class _FruitTrackListState extends State<FruitTrackList> {
     final tracks = audioProvider.currentSource?.tracks ?? [];
 
     final bool isSimple = settingsProvider.performanceMode;
+    final bool isWebMobile =
+        kIsWeb && MediaQuery.sizeOf(context).shortestSide < 700;
+    final double stickyBlurSigma = isWebMobile ? 4 : 8;
 
     // Use a simplified version for the sticky overlay
     Widget buildStickyCard(int index) {
@@ -120,8 +125,10 @@ class _FruitTrackListState extends State<FruitTrackList> {
       );
     }
 
-    // Trigger state check after build to handle manual track selection
-    WidgetsBinding.instance.addPostFrameCallback((_) => _handleScroll());
+    if (currentTrackIndex != _lastObservedTrackIndex) {
+      _lastObservedTrackIndex = currentTrackIndex;
+      WidgetsBinding.instance.addPostFrameCallback((_) => _handleScroll());
+    }
 
     return Stack(
       children: [
@@ -134,22 +141,24 @@ class _FruitTrackListState extends State<FruitTrackList> {
             controller: _scrollController,
             padding: EdgeInsets.fromLTRB(
               24.0 * widget.scaleFactor, // px-6
-              110.0 * widget.scaleFactor, // Avoid overlap with fixed 80px header + breather
+              110.0 *
+                  widget
+                      .scaleFactor, // Avoid overlap with fixed 80px header + breather
               24.0 * widget.scaleFactor,
-              (140.0 + widget.bottomOffset) * widget.scaleFactor, // pb-tabbar + dynamic mini-player
+              (140.0 + widget.bottomOffset) *
+                  widget.scaleFactor, // pb-tabbar + dynamic mini-player
             ),
             itemCount: tracks.length,
             itemBuilder: (context, i) {
               final isPlayed = i <= currentTrackIndex;
               final opacity = isPlayed ? 1.0 : 0.6;
-              final isCurrent = i == currentTrackIndex && audioProvider.currentTrack != null;
-              
+              final isCurrent =
+                  i == currentTrackIndex && audioProvider.currentTrack != null;
+
               if (isCurrent && settingsProvider.fruitStickyNowPlaying) {
                 return Opacity(
                   // Hide original when sticky is active at top or bottom
-                  opacity: (_isOffScreenTop || _isOffScreenBottom)
-                      ? 0.0
-                      : 1.0,
+                  opacity: (_isOffScreenTop || _isOffScreenBottom) ? 0.0 : 1.0,
                   child: Padding(
                     key: _nowPlayingKey,
                     padding:
@@ -200,7 +209,10 @@ class _FruitTrackListState extends State<FruitTrackList> {
                       child: buildStickyCard(currentTrackIndex),
                     )
                   : BackdropFilter(
-                      filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                      filter: ImageFilter.blur(
+                        sigmaX: stickyBlurSigma,
+                        sigmaY: stickyBlurSigma,
+                      ),
                       child: Container(
                         padding: EdgeInsets.fromLTRB(
                           24 * widget.scaleFactor,
@@ -246,7 +258,10 @@ class _FruitTrackListState extends State<FruitTrackList> {
                       child: buildStickyCard(currentTrackIndex),
                     )
                   : BackdropFilter(
-                      filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                      filter: ImageFilter.blur(
+                        sigmaX: stickyBlurSigma,
+                        sigmaY: stickyBlurSigma,
+                      ),
                       child: Container(
                         padding: EdgeInsets.fromLTRB(
                           24 * widget.scaleFactor,
@@ -345,12 +360,12 @@ class _FruitTrackRowState extends State<_FruitTrackRow> {
                 widget.scaleFactor, // RESPECT DENSE TOGGLE
           ),
           decoration: BoxDecoration(
-            color: widget.isActive 
-                ? colorScheme.primary.withValues(alpha: 0.05) 
+            color: widget.isActive
+                ? colorScheme.primary.withValues(alpha: 0.05)
                 : Colors.transparent,
             border: Border(
               bottom: BorderSide(
-                color: widget.isActive 
+                color: widget.isActive
                     ? colorScheme.primary.withValues(alpha: 0.2)
                     : colorScheme.onSurface.withValues(alpha: 0.08),
                 width: 1.0,
@@ -395,9 +410,11 @@ class _FruitTrackRowState extends State<_FruitTrackRow> {
                         style: TextStyle(
                           fontFamily: 'Inter',
                           fontSize: 15 * widget.scaleFactor, // text-base-ish
-                          fontWeight: widget.isActive ? FontWeight.w800 : FontWeight.w600,
-                          color: widget.isActive 
-                              ? colorScheme.primary 
+                          fontWeight: widget.isActive
+                              ? FontWeight.w800
+                              : FontWeight.w600,
+                          color: widget.isActive
+                              ? colorScheme.primary
                               : colorScheme.onSurface.withValues(alpha: 0.8),
                         ),
                       ),

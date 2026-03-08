@@ -2,7 +2,6 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/foundation.dart';
-import 'package:shakedown/providers/audio_provider.dart';
 import 'package:shakedown/providers/settings_provider.dart';
 import 'package:shakedown/services/device_service.dart';
 import 'package:shakedown/providers/theme_provider.dart';
@@ -38,15 +37,17 @@ class LiquidGlassWrapper extends StatelessWidget {
 
     final sp = context.watch<SettingsProvider>();
     final settingsMode = sp.performanceMode;
-    final isPlaying = context.watch<AudioProvider>().isPlaying;
 
     final tp = context.watch<ThemeProvider>();
     final bool isFruitTheme = tp.themeStyle == ThemeStyle.fruit;
     final bool isFruitGlassEnabled = sp.fruitEnableLiquidGlass;
 
-    // Web optimization: Lower blur sigma during playback
-    final double effectiveBlur =
-        (kIsWeb && isPlaying) ? (blur / 2.5).clamp(8.0, 15.0) : blur;
+    // Web optimization: keep blur budget conservative for mobile GPUs.
+    final isLikelyWebMobile =
+        kIsWeb && MediaQuery.sizeOf(context).shortestSide < 700;
+    final double effectiveBlur = isLikelyWebMobile
+        ? blur.clamp(4.0, 8.0)
+        : (kIsWeb ? blur.clamp(6.0, 12.0) : blur);
 
     final baseColor = color ??
         (Theme.of(context).brightness == Brightness.dark

@@ -37,7 +37,7 @@ class StealGame extends FlameGame {
 
   // ── Trail position ring buffer ─────────────────────────────────────────────
   // Stores recent smoothed logo positions for ghost slice rendering.
-  // Store more slices so they can stretch across the screen: capacity bumped from 16 to 32
+  // Store recent slices for ghost trails. Capacity currently 16.
   static const int _trailBufferCapacity = 16;
   final List<Offset> _trailBuffer = List.filled(
     _trailBufferCapacity,
@@ -134,6 +134,11 @@ class StealGame extends FlameGame {
   void updateAudioReactor(AudioReactor? newReactor) {
     _audioReactor = newReactor;
     _subscribeToReactor(newReactor);
+    if (newReactor == null) {
+      _currentEnergy = const AudioEnergy.zero();
+      _beatPulse = 0.0;
+      _graph?.energy = _currentEnergy;
+    }
   }
 
   void updateBannerText(String text) {

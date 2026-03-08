@@ -12,11 +12,11 @@
     window._gdarAudioConfig = {
         logTypes: {
             errors: true,         // Critical audio initialization or HTTP errors
-            heartbeat: true,      // Background survival heartbeat start/stop events
+            heartbeat: false,     // Background survival heartbeat start/stop events
             buffer: false,        // Heavy spam: fetch progress, decode times, prefetching
-            playState: true,      // Essential track starts, stops, and transitions
-            gapTiming: true,      // Performance.now() physical gap execution prints
-            hybridHandoff: true   // Hybrid foreground/background Orchestration details
+            playState: false,     // Essential track starts, stops, and transitions
+            gapTiming: false,     // Performance.now() physical gap execution prints
+            hybridHandoff: false  // Hybrid foreground/background Orchestration details
         }
     };
 
@@ -68,3 +68,4 @@
     window._gdarLogger = Logger;
 
 })();
+

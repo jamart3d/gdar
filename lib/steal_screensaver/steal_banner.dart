@@ -223,8 +223,9 @@ class StealBanner extends Component with HasGameReference<StealGame> {
 
     final StealConfig config = game.config;
     final minDim = min(game.size.x, game.size.y);
-    final beatPulse = game.beatPulse;
-    final pulseScale = game.pulseScale;
+    // Keep track-info motion independent from audio reactivity.
+    const beatPulse = 0.0;
+    const pulseScale = 1.0;
     final innerR = _innerRadius(minDim, config, beatPulse, pulseScale);
     final middleR = _middleRadius(minDim, config, innerR, pulseScale);
     final outerR = _outerRadius(minDim, config, middleR, pulseScale);
@@ -447,16 +448,13 @@ class StealBanner extends Component with HasGameReference<StealGame> {
     final isFlat = config.bannerDisplayMode == 'flat';
 
     // ── Unified Snapping & Pulse Scale ──────────────────────────────────────
-    // Snap the logo center once for the entire block to prevent "crawling" 
+    // Snap the logo center once for the entire block to prevent "crawling"
     // jitter between lines. We also fetch the unified pulse scale.
     Offset center = Offset(logoPos.dx * w, logoPos.dy * h);
-    if (config.bannerPixelSnap) {
-      center = Offset(center.dx.roundToDouble(), center.dy.roundToDouble());
-    }
-
     // Unified pulse factors (0.0 to 1.0) with exponential decay
-    final beatPulse = game.beatPulse;
-    final pulseScale = game.pulseScale;
+    // Keep track-info motion independent from audio reactivity.
+    const beatPulse = 0.0;
+    const pulseScale = 1.0;
 
     if (isFlat) {
       _renderFlat(canvas, center, minDim, glowEnabled, config,
@@ -774,12 +772,6 @@ class StealBanner extends Component with HasGameReference<StealGame> {
     double angle = startAngle - pi / 2 - currentSpan / 2;
     double centerX = center.dx;
     double centerY = center.dy;
-
-    if (config.bannerPixelSnap) {
-      centerX = centerX.roundToDouble();
-      centerY = centerY.roundToDouble();
-    }
-
     for (int wi = 0; wi < wordList.length; wi++) {
       final word = wordList[wi];
       final wordBrightness = glowEnabled ? word.brightness : 1.0;

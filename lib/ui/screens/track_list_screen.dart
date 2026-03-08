@@ -184,7 +184,7 @@ class _TrackListScreenState extends State<TrackListScreen> {
                   intensity: 1.1,
                   color: Colors.transparent,
                   child: LiquidGlassWrapper(
-                    enabled: true,
+                    enabled: usePremium,
                     borderRadius: BorderRadius.circular(100),
                     opacity: 0.85,
                     blur: 15.0,
@@ -694,6 +694,45 @@ class _TrackListScreenState extends State<TrackListScreen> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
+              ValueListenableBuilder(
+                valueListenable: CatalogService().ratingsListenable,
+                builder: (context, _, __) {
+                  final catalog = CatalogService();
+                  final String ratingKey = widget.source.id;
+                  final int rating = catalog.getRating(ratingKey);
+                  final bool isPlayed = catalog.isPlayed(ratingKey);
+
+                  return RatingControl(
+                    key: ValueKey('${ratingKey}_${rating}_$isPlayed'),
+                    rating: rating,
+                    isPlayed: isPlayed,
+                    compact: true,
+                    size: 15 * scaleFactor,
+                    onTap: () async {
+                      unawaited(showDialog(
+                        context: context,
+                        builder: (context) => RatingDialog(
+                          initialRating: catalog.getRating(ratingKey),
+                          sourceId: widget.source.id,
+                          sourceUrl: widget.source.tracks.isNotEmpty
+                              ? widget.source.tracks.first.url
+                              : null,
+                          isPlayed: catalog.isPlayed(ratingKey),
+                          onRatingChanged: (newRating) {
+                            catalog.setRating(ratingKey, newRating);
+                          },
+                          onPlayedChanged: (bool newIsPlayed) {
+                            if (newIsPlayed != catalog.isPlayed(ratingKey)) {
+                              catalog.togglePlayed(ratingKey);
+                            }
+                          },
+                        ),
+                      ));
+                    },
+                  );
+                },
+              ),
+              const SizedBox(width: 16),
               SrcBadge(
                 src: widget.source.src ?? '',
                 scaleFactor: scaleFactor,
@@ -704,19 +743,22 @@ class _TrackListScreenState extends State<TrackListScreen> {
                 NeumorphicWrapper(
                   isCircle: true,
                   borderRadius: 100,
-                  intensity: 0.8,
+                  intensity: 0.7,
                   color: Colors.transparent,
                   child: LiquidGlassWrapper(
-                    enabled: true,
+                    enabled: usePremium,
                     borderRadius: BorderRadius.circular(100),
-                    opacity: 0.12,
-                    blur: 8,
-                    child: IconButton(
+                    opacity: 0.14,
+                    blur: 6,
+                    child: FruitIconButton(
                       icon: Icon(
                         LucideIcons.play,
-                        size: 24 * scaleFactor,
+                        size: 18 * scaleFactor,
                         color: colorScheme.primary,
                       ),
+                      size: 22 * scaleFactor,
+                      padding: 8 * scaleFactor,
+                      tooltip: 'Play Show',
                       onPressed: () async {
                         unawaited(AppHaptics.selectionClick(
                             context.read<DeviceService>()));
@@ -1121,38 +1163,37 @@ class _TrackListScreenState extends State<TrackListScreen> {
   }
 
   Widget _buildFruitHeader(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           _buildFruitNavButton(
             context,
             icon: LucideIcons.chevronLeft,
             onPressed: () => Navigator.of(context).pop(),
           ),
-          // Stars center
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: List.generate(
-                3,
-                (index) => Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 2.0),
-                      child: Icon(
-                        Icons.star,
-                        size: 14,
-                        color:
-                            isDark ? Colors.blueAccent : Colors.blue.shade400,
-                      ),
-                    )),
+          Expanded(
+            child: Center(
+              child: Text(
+                'TRACKS',
+                style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                      color:
+                          colorScheme.onSurfaceVariant.withValues(alpha: 0.65),
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 1.6,
+                    ),
+              ),
+            ),
           ),
           _buildFruitNavButton(
             context,
-            icon: LucideIcons.moreHorizontal,
+            icon: Theme.of(context).brightness == Brightness.dark
+                ? Icons.light_mode_outlined
+                : Icons.dark_mode_outlined,
             onPressed: () {
-              // Placeholder for more options
+              context.read<ThemeProvider>().toggleTheme();
             },
           ),
         ],

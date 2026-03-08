@@ -277,22 +277,30 @@ class VisualizerPlugin : MethodCallHandler, EventChannel.StreamHandler {
         }
 
         // ── Beat detection (onset detection on bass energy) ─────────────
-        // Compare current bass to running average; spike = beat
-        recentBassHistory.addLast(rawBass)
-        if (recentBassHistory.size > ONSET_HISTORY_SIZE) {
-            recentBassHistory.removeFirst()
+        // Detect beat from pre-boost bass so visual gain does not alter trigger rate.
+        val beatBass = if (bassBoost > 0.0) {
+            (rawBass / bassBoost).coerceIn(0.0, 2.0)
+        } else {
+            rawBass
         }
 
         var isBeat = false
         if (recentBassHistory.size >= 3) {
             val avgBass = recentBassHistory.average()
-            // threshold scales with sensitivity: 0.0 → needs 3x avg, 1.0 → needs 1.5x avg
+            // threshold scales with sensitivity: 0.0 -> needs 3x avg, 1.0 -> needs 1x avg
             val threshold = 1.0 + (1.0 - beatSensitivity) * 2.0
             val nowMs = System.currentTimeMillis()
-            if (rawBass > avgBass * threshold && (nowMs - lastBeatTimeMs) > MIN_BEAT_GAP_MS) {
+            if (beatBass > avgBass * threshold &&
+                (nowMs - lastBeatTimeMs) > MIN_BEAT_GAP_MS
+            ) {
                 isBeat = true
                 lastBeatTimeMs = nowMs
             }
+        }
+
+        recentBassHistory.addLast(beatBass)
+        if (recentBassHistory.size > ONSET_HISTORY_SIZE) {
+            recentBassHistory.removeFirst()
         }
 
         val data = mapOf(

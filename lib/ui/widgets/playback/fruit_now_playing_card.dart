@@ -63,16 +63,6 @@ class FruitNowPlayingCard extends StatelessWidget {
                   children: [
                     Row(
                       children: [
-                        // Dot Indicator - absolute start
-                        Container(
-                          width: 5 * scaleFactor,
-                          height: 5 * scaleFactor,
-                          decoration: BoxDecoration(
-                            color: colorScheme.primary,
-                            shape: BoxShape.circle,
-                          ),
-                        ),
-                        SizedBox(width: 10 * scaleFactor),
                         Expanded(
                           child: Text(
                             track.title,

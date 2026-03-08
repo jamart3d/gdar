@@ -91,9 +91,9 @@ class DefaultSettings {
   static const int oilPerformanceLevel = 0;
   static const bool oilPaletteCycle = true;
   static const double oilPaletteTransitionSpeed = 5.0;
-  static const double oilAudioReactivityStrength = 1.0;
-  static const double oilAudioBassBoost = 2.0;
-  static const double oilAudioPeakDecay = 0.95;
+  static const double oilAudioReactivityStrength = 1.1;
+  static const double oilAudioBassBoost = 1.6;
+  static const double oilAudioPeakDecay = 0.996;
   static const bool oilShowInfoBanner = false;
   static const double oilTranslationSmoothing =
       0.7; // Updated default for smoother feel
@@ -132,7 +132,7 @@ class DefaultSettings {
   static const String oilAudioGraphMode = 'off';
 
   /// Beat detection sensitivity (0.0 = gentle, 1.0 = aggressive).
-  static const double oilBeatSensitivity = 0.5;
+  static const double oilBeatSensitivity = 0.55;
 
   static const bool oilTvPremiumHighlight = false;
   static const bool omitHttpPathInCopy = true;

@@ -18,6 +18,7 @@ class VisualizerAudioReactor implements AudioReactor {
 
   final int? audioSessionId;
   bool _isRunning = false;
+  bool _isDisposed = false;
   StreamSubscription<dynamic>? _eventSubscription;
 
   VisualizerAudioReactor({this.audioSessionId});
@@ -27,7 +28,7 @@ class VisualizerAudioReactor implements AudioReactor {
 
   @override
   void start() async {
-    if (_isRunning) return;
+    if (_isRunning || _isDisposed) return;
 
     try {
       final result = await _methodChannel.invokeMethod('initialize', {
@@ -44,12 +45,12 @@ class VisualizerAudioReactor implements AudioReactor {
         await _methodChannel.invokeMethod('start');
       }
     } catch (e) {
-      _energyController.add(const AudioEnergy.zero());
+      _safeAdd(const AudioEnergy.zero());
     }
   }
 
   /// Push updated tuning knobs to the native side in real time.
-  /// Call this whenever settings change — no restart needed.
+  /// Call this whenever settings change - no restart needed.
   @override
   void updateConfig({
     double? peakDecay,
@@ -57,7 +58,7 @@ class VisualizerAudioReactor implements AudioReactor {
     double? reactivityStrength,
     double? beatSensitivity,
   }) {
-    if (!_isRunning) return;
+    if (!_isRunning || _isDisposed) return;
     unawaited(_methodChannel.invokeMethod('updateConfig', {
       if (peakDecay != null) 'peakDecay': peakDecay,
       if (bassBoost != null) 'bassBoost': bassBoost,
@@ -68,10 +69,15 @@ class VisualizerAudioReactor implements AudioReactor {
 
   @override
   Future<void> stop() async {
-    if (!_isRunning) return;
+    if (!_isRunning && _eventSubscription == null) return;
     _isRunning = false;
-    unawaited(_eventSubscription?.cancel());
+    final subscription = _eventSubscription;
     _eventSubscription = null;
+    try {
+      await subscription?.cancel();
+    } catch (e) {
+      // Ignore stream cancellation errors during cleanup.
+    }
     try {
       await _methodChannel.invokeMethod('stop');
       await _methodChannel.invokeMethod('release');
@@ -82,9 +88,18 @@ class VisualizerAudioReactor implements AudioReactor {
 
   @override
   void dispose() {
-    // stop() returns Future<void> now, but we don't await in dispose
-    unawaited(stop());
-    _energyController.close();
+    if (_isDisposed) return;
+    _isDisposed = true;
+    unawaited(stop().whenComplete(() {
+      if (!_energyController.isClosed) {
+        unawaited(_energyController.close());
+      }
+    }));
+  }
+
+  void _safeAdd(AudioEnergy energy) {
+    if (_isDisposed || _energyController.isClosed) return;
+    _energyController.add(energy);
   }
 
   void _handleVisualizerData(dynamic data) {
@@ -116,7 +131,7 @@ class VisualizerAudioReactor implements AudioReactor {
         ];
       }
 
-      _energyController.add(AudioEnergy(
+      _safeAdd(AudioEnergy(
         bass: bass.clamp(0.0, 1.0),
         mid: mid.clamp(0.0, 1.0),
         treble: treble.clamp(0.0, 1.0),
@@ -128,7 +143,7 @@ class VisualizerAudioReactor implements AudioReactor {
   }
 
   void _handleError(dynamic error) {
-    _energyController.add(const AudioEnergy.zero());
+    _safeAdd(const AudioEnergy.zero());
   }
 
   static Future<bool> isAvailable() async {

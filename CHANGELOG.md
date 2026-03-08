@@ -6,6 +6,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.60+160] - 2026-03-07
+
+### Added
+- **Infrastructure**: Added `tool/verify.dart` for automated cross-platform formatting and analysis checks.
+- **UI/UX (TV)**: Added audio-reactivity hint cards under screensaver controls (Logo Scale, Pulse Intensity) when reactivity is active.
+- **Web/Performance**: Implemented a low-power web heuristic to auto-enable performance mode on resource-constrained devices.
+
+### Changed
+- **UI/UX (Web/Fruit)**: Refined Now Playing card by removing the leading dot from the track title.
+- **UI/UX (Web/Fruit)**: Upgraded Track List screen header with a theme toggle and removed redundant rating/source badges.
+- **Screensaver**: Decoupled track info motion from audio reactivity for smoother, independent translation behavior.
+- **Screensaver**: Optimized graph visuals with performance-aware glow, gradients, peak-hold caps, and a new HUD panel for Corner mode.
+- **Default Settings**: Adjusted audio reactivity defaults (Strength 1.1, Bass Boost 1.6, Peak Decay 0.996, Sensitivity 0.55) for a more responsive initial experience.
+
+### Fixed
+- **Screensaver**: Hardened initialization and disposal cycles to prevent race conditions and memory leaks.
+- **Screensaver**: Fixed `StealGame` reset behavior to immediately clear energy and graph data when the reactor is removed.
+- **Visualizer**: Refined native Android beat detection to use pre-boost bass and historical thresholds for more accurate triggers.
+- **Web/Performance**: Reduced rebuild costs in glass wrappers and optimized track list scroll reaction churn.
+
 ## [1.1.59+159] - 2026-03-07
 
 ### Added

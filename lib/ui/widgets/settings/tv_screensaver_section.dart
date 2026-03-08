@@ -192,6 +192,14 @@ class TvScreensaverSection extends StatelessWidget {
             valueFormatter: (v) => '${(v * 100).round()}%',
             onChanged: (v) => settings.setOilLogoScale(v),
           ),
+          const SizedBox(height: 8),
+          _ReactiveHint(
+            message:
+                'Audio reactive: beat pulses are applied on top of this base size.',
+            colorScheme: colorScheme,
+            textTheme: textTheme,
+            isFruit: isFruit,
+          ),
 
           const SizedBox(height: 16),
 
@@ -326,6 +334,14 @@ class TvScreensaverSection extends StatelessWidget {
             leftLabel: 'Subtle',
             rightLabel: 'Strong',
             onChanged: (v) => settings.setOilPulseIntensity(v),
+          ),
+          const SizedBox(height: 8),
+          _ReactiveHint(
+            message:
+                'Audio reactive: higher values amplify bass-driven logo expansion.',
+            colorScheme: colorScheme,
+            textTheme: textTheme,
+            isFruit: isFruit,
           ),
 
           const SizedBox(height: 16),
@@ -1004,6 +1020,60 @@ class _AnimatedPaletteSegmentState extends State<_AnimatedPaletteSegment>
 }
 
 // ── Shared helpers ─────────────────────────────────────────────────────────
+
+class _ReactiveHint extends StatelessWidget {
+  final String message;
+  final ColorScheme colorScheme;
+  final TextTheme textTheme;
+  final bool isFruit;
+
+  const _ReactiveHint({
+    required this.message,
+    required this.colorScheme,
+    required this.textTheme,
+    required this.isFruit,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      decoration: BoxDecoration(
+        color: colorScheme.primary.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: colorScheme.primary.withValues(alpha: 0.28),
+          width: 1,
+        ),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(top: 1),
+            child: Icon(
+              isFruit ? LucideIcons.activity : Icons.graphic_eq,
+              size: 14,
+              color: colorScheme.primary,
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              message,
+              style: textTheme.bodySmall?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+                fontSize: 11,
+                height: 1.25,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
 
 class _QualitySegmentedButton extends StatelessWidget {
   final int selectedLevel; // 0=High, 1=Balanced, 2=Fast
