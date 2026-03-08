@@ -52,6 +52,9 @@ They are read-only or strictly non-destructive and the user must never be prompt
 | `jq ...` | JSON processing |
 | `fzf ...` | Fuzzy find |
 | `bat ...` | Syntax highlighted cat |
+| `gh pr list`, `gh pr view`, `gh pr status` | Read-only GitHub PR inspection |
+| `gh issue list`, `gh issue view` | Read-only GitHub Issue inspection |
+| `gh run list`, `gh run view` | Read-only GitHub Actions run inspection |
 | `$env:...` reads | Environment variable reads |
 | `cat` (if aliased) | File content |
 
@@ -90,6 +93,9 @@ Same as Windows table above — identical commands on ChromeOS.
 | `echo ...` | Print value |
 | `env` | Print environment |
 | `printenv ...` | Specific env var |
+| `gh pr list`, `gh pr view`, `gh pr status` | Same as Windows above |
+| `gh issue list`, `gh issue view` | Same as Windows above |
+| `gh run list`, `gh run view` | Same as Windows above |
 
 ## 🟢 Skill-Specific Exceptions
 These commands are auto-approved ONLY when executed within the specific skill workflow:

@@ -1,4 +1,4 @@
-﻿import 'dart:async';
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
@@ -213,6 +213,13 @@ class FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
   @override
   bool get sortOldestFirst => true;
   @override
+  void toggleSortOldestFirst() {}
+
+  @override
+  bool get fruitStickyNowPlaying => false;
+  @override
+  void toggleFruitStickyNowPlaying() {}
+  @override
   bool get playOnTap => false;
   @override
   bool get playRandomOnCompletion => false;
@@ -406,8 +413,6 @@ class FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
   @override
   Map<String, bool> get sourceCategoryFilters => {};
 
-  @override
-  void toggleSortOldestFirst() {}
   @override
   void toggleShowSplashScreen() {}
   @override

@@ -40,7 +40,9 @@ A curated allow-list of safe commands lives in `.agent/rules/auto_approve.md`.
 To prevent persistent oversights and "stale" implementation details:
 * **Action:** When a user explicitly rejects a term, feature, or implementation detail (e.g., "no marquee"), you MUST perform a case-insensitive search across ALL active artifacts (`task.md`, `implementation_plan.md`) and remove or update every instance immediately. 
 * **Constraint:** You are strictly forbidden from requesting review via `notify_user` on an artifact that still contains rejected terminology or concepts.
-### 8. Negative Constraint Integrity
-To prevent persistent oversights and "stale" implementation details:
-* **Action:** When a user explicitly rejects a term, feature, or implementation detail (e.g., "no marquee"), you MUST perform a case-insensitive search across ALL active artifacts (`task.md`, `implementation_plan.md`) and remove or update every instance immediately. 
-* **Constraint:** You are strictly forbidden from requesting review via `notify_user` on an artifact that still contains rejected terminology or concepts.
+
+### 9. Technical & Documentation Integrity
+To prevent "Cognitive Compression" and information loss during file refactors:
+* **Constraint:** When refactoring, splitting, or migrating technical manuals (e.g., `docs/`, `.agent/specs/`), you are STRICTLY FORBIDDEN from summarizing, paraphrasing, or omiting technical blocks (shell commands, Bash/Python scripts, deep-link maps, architectural diagrams).
+* **Action:** Content must be moved ATOMICALLY. Every specific configuration detail from the source must exist in the destination before the source is modified or deleted.
+* **Verification:** After a documentation split, you must verify that "Anchor Content" (specific CLI strings or script paths) matches the original source exactly.

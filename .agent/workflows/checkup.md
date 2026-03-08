@@ -8,7 +8,7 @@ description: Rapid health check with automated fixes for linting, formatting, an
 This workflow is optimized for speed and developer productivity. It prioritizes automated fixes and parallel analysis using optimized MCP tools.
 
 > [!NOTE]
-> **FAST MODE DEFAULT**: This workflow is designed to be lean and fast. If significant architectural failures are found, consider upgrading to `/quality_audit` or `/issue_report`.
+> **FAST MODE DEFAULT**: This workflow is designed to be lean and fast. If significant architectural failures are found, consider upgrading to `/audit` or `/issue_report`.
 
 ## 1. Automated Code Hygiene (MCP Optimized)
 // turbo

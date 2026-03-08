@@ -17,6 +17,7 @@ class FruitNowPlayingCard extends StatelessWidget {
   final Track track;
   final int index;
   final double scaleFactor;
+  final bool showNext;
 
   const FruitNowPlayingCard({
     super.key,
@@ -24,6 +25,7 @@ class FruitNowPlayingCard extends StatelessWidget {
     required this.track,
     required this.index,
     required this.scaleFactor,
+    this.showNext = true,
   });
 
   @override
@@ -95,17 +97,18 @@ class FruitNowPlayingCard extends StatelessWidget {
               ),
               SizedBox(width: 12 * scaleFactor),
               // Skip Next Button (Compact)
-              FruitIconButton(
-                onPressed: () => audioProvider.seekToNext(),
-                icon: Icon(
-                  LucideIcons.skipForward,
-                  color: colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
-                  size: 18 * scaleFactor,
+              if (showNext)
+                FruitIconButton(
+                  onPressed: () => audioProvider.seekToNext(),
+                  icon: Icon(
+                    LucideIcons.skipForward,
+                    color: colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+                    size: 18 * scaleFactor,
+                  ),
+                  size: 20 * scaleFactor,
+                  padding: 4 * scaleFactor,
+                  tooltip: 'Skip Next',
                 ),
-                size: 20 * scaleFactor,
-                padding: 4 * scaleFactor,
-                tooltip: 'Skip Next',
-              ),
             ],
           ),
         ),

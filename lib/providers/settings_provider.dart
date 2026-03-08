@@ -63,6 +63,7 @@ class SettingsProvider with ChangeNotifier {
   static const String _webSourceFiltersInitKey = 'web_source_filters_init_v1';
   static const String _simpleRandomIconKey = 'simple_random_icon';
   static const String _fruitDenseListKey = 'fruit_dense_list';
+  static const String _fruitStickyNowPlayingKey = 'fruit_sticky_now_playing';
 
   // Screensaver (steal)
   static const String _useOilScreensaverKey = 'use_oil_screensaver';
@@ -194,6 +195,7 @@ class SettingsProvider with ChangeNotifier {
   late bool _performanceMode;
   late bool _forceTv;
   late bool _enableHaptics;
+  late bool _fruitStickyNowPlaying;
 
   // Web Gapless Engine
   late AudioEngineMode _audioEngineMode;
@@ -307,6 +309,7 @@ class SettingsProvider with ChangeNotifier {
   bool get omitHttpPathInCopy => _omitHttpPathInCopy;
   bool get useNeumorphism => _useNeumorphism;
   bool get fruitEnableLiquidGlass => _fruitEnableLiquidGlass;
+  bool get fruitStickyNowPlaying => _fruitStickyNowPlaying;
   bool get enableHaptics => _enableHaptics;
 
   void toggleUseNeumorphism() {
@@ -324,6 +327,11 @@ class SettingsProvider with ChangeNotifier {
       _fruitEnableLiquidGlass = value;
       _updatePreference(_fruitEnableLiquidGlassKey, _fruitEnableLiquidGlass);
     }
+  }
+
+  void toggleFruitStickyNowPlaying() {
+    _fruitStickyNowPlaying = !_fruitStickyNowPlaying;
+    _updatePreference(_fruitStickyNowPlayingKey, _fruitStickyNowPlaying);
   }
 
   NeumorphicStyle get neumorphicStyle => _neumorphicStyle;
@@ -477,8 +485,8 @@ class SettingsProvider with ChangeNotifier {
     // Disable Simple Icon and Simple Theme
     _simpleRandomIcon = false;
     _prefs.setBool(_simpleRandomIconKey, false);
-    _performanceMode = false;
-    _prefs.setBool(_performanceModeKey, false);
+    _performanceMode = true;
+    _prefs.setBool(_performanceModeKey, true);
 
     // Turn off Glow and RGB
     _oilBannerGlow = false;
@@ -584,6 +592,7 @@ class SettingsProvider with ChangeNotifier {
     _simpleRandomIcon = _prefs.getBool(_simpleRandomIconKey) ?? false;
     _enableHaptics = _prefs.getBool(_enableHapticsKey) ?? true;
     _fruitDenseList = _prefs.getBool(_fruitDenseListKey) ?? false;
+    _fruitStickyNowPlaying = _prefs.getBool(_fruitStickyNowPlayingKey) ?? false;
 
     // Screensaver Migration
     final defaultScreensaver = _dBool(WebDefaults.useOilScreensaver,
@@ -690,8 +699,15 @@ class SettingsProvider with ChangeNotifier {
     _neumorphicStyle = NeumorphicStyle.values[
         _prefs.getInt(_neumorphicStyleKey) ??
             DefaultSettings.neumorphicStyle.index];
-    _performanceMode =
-        _prefs.getBool(_performanceModeKey) ?? DefaultSettings.performanceMode;
+    _performanceMode = _prefs.getBool(_performanceModeKey) ??
+        _dBool(WebDefaults.performanceMode, TvDefaults.performanceMode,
+            PhoneDefaults.performanceMode);
+
+    if (_performanceMode) {
+      _glowMode = 0;
+      _highlightPlayingWithRgb = false;
+      _fruitEnableLiquidGlass = false;
+    }
     _enableHaptics = _prefs.getBool(_enableHapticsKey) ?? true;
 
     // Web Gapless Engine Migration
@@ -941,13 +957,20 @@ class SettingsProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  void setGlowMode(int mode) =>
-      _updateIntPreference(_glowModeKey, _glowMode = mode);
-  void toggleHighlightPlayingWithRgb() => _updatePreference(
-      _highlightPlayingWithRgbKey,
-      _highlightPlayingWithRgb = !_highlightPlayingWithRgb);
+  void setGlowMode(int mode) {
+    if (_performanceMode && mode > 0) return;
+    _updateIntPreference(_glowModeKey, _glowMode = mode);
+  }
+
+  void toggleHighlightPlayingWithRgb() {
+    if (_performanceMode) return;
+    _updatePreference(
+        _highlightPlayingWithRgbKey,
+        _highlightPlayingWithRgb = !_highlightPlayingWithRgb);
+  }
 
   void setHighlightPlayingWithRgb(bool value) {
+    if (_performanceMode && value) return;
     if (_highlightPlayingWithRgb != value) {
       _highlightPlayingWithRgb = value;
       _updatePreference(_highlightPlayingWithRgbKey, _highlightPlayingWithRgb);

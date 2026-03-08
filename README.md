@@ -214,7 +214,7 @@ For maximum productivity, this repository is optimized for the following high-pe
 - **fzf**: Fuzzy finder for navigating files and shell history.
 - **bat (`batcat`)**: Syntax-highlighted `cat` for clearer code reading.
 
-Detailed setup instructions for both Windows and Linux can be found in [AGENT_ENVIRONMENT.md](docs/AGENT_ENVIRONMENT.md).
+Detailed setup instructions for both Windows and Linux can be found in [ANTIGRAVITY_SETUP.md](docs/ANTIGRAVITY_SETUP.md).
 
 ## Repository Auditing (Jules)
 This repository is optimized for high-performance auditing via **Jules** (`jules.google.com`). These cloud-based audits are exploratory and visual, complementing our local deterministic tests. Specialized audit prompts are located in `test/prompts/`.

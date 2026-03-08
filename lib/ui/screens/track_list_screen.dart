@@ -12,7 +12,6 @@ import 'package:shakedown/ui/screens/playback_screen.dart';
 import 'package:shakedown/ui/screens/settings_screen.dart';
 import 'package:shakedown/ui/widgets/theme/neumorphic_wrapper.dart';
 import 'package:shakedown/ui/widgets/theme/liquid_glass_wrapper.dart';
-import 'package:shakedown/ui/widgets/mini_player.dart';
 import 'package:shakedown/ui/widgets/shnid_badge.dart';
 import 'package:shakedown/ui/widgets/src_badge.dart';
 import 'package:shakedown/ui/widgets/rating_control.dart';
@@ -27,6 +26,7 @@ import 'package:shakedown/ui/widgets/show_list/embedded_mini_player.dart';
 import 'package:shakedown/services/device_service.dart';
 import 'package:shakedown/ui/widgets/tv/tv_focus_wrapper.dart';
 import 'package:shakedown/ui/widgets/theme/fruit_icon_button.dart';
+import 'package:shakedown/ui/widgets/fruit_tab_bar.dart';
 
 class TrackListScreen extends StatefulWidget {
   final Show show;
@@ -245,9 +245,6 @@ class _TrackListScreenState extends State<TrackListScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final audioProvider = context.watch<AudioProvider>();
-    final isDifferentShowPlaying = audioProvider.currentShow != null &&
-        audioProvider.currentShow!.name != widget.show.name;
     final settingsProvider = context.watch<SettingsProvider>();
     final themeProvider = context.watch<ThemeProvider>();
 
@@ -410,23 +407,11 @@ class _TrackListScreenState extends State<TrackListScreen> {
               right: 0,
               child: _buildFruitHeader(context),
             ),
-          AnimatedPositioned(
-            duration: const Duration(milliseconds: 600),
-            curve: Curves.easeOutCubic,
-            left: 0,
-            right: 0,
-            bottom: isDifferentShowPlaying ? 0 : -100,
-            child: AnimatedOpacity(
-              duration: const Duration(milliseconds: 400),
-              opacity: isDifferentShowPlaying ? 1.0 : 0.0,
-              child: MiniPlayer(
-                onTap: _openPlaybackScreen,
-                hideControls: context.read<DeviceService>().isTv,
-              ),
-            ),
-          ),
         ],
       ),
+      bottomNavigationBar: themeProvider.themeStyle == ThemeStyle.fruit
+          ? FruitTabBar(onOpenPlaybackScreen: _openPlaybackScreen)
+          : null,
     );
   }
 
@@ -434,7 +419,11 @@ class _TrackListScreenState extends State<TrackListScreen> {
     final audioProvider = context.watch<AudioProvider>();
     final isDifferentShowPlaying = audioProvider.currentShow != null &&
         audioProvider.currentShow!.name != widget.show.name;
-    final bottomPadding = isDifferentShowPlaying ? 160.0 : 40.0;
+    final themeProvider = context.read<ThemeProvider>();
+    final isFruit = themeProvider.themeStyle == ThemeStyle.fruit;
+    final bottomPadding = isFruit
+        ? (isDifferentShowPlaying ? 180.0 : 140.0)
+        : (isDifferentShowPlaying ? 160.0 : 40.0);
 
     if (widget.show.sources.isEmpty) {
       return const Center(child: Text('No tracks available for this show.'));
@@ -458,7 +447,6 @@ class _TrackListScreenState extends State<TrackListScreen> {
       listItems.addAll(tracks);
     });
 
-    final themeProvider = context.watch<ThemeProvider>();
     if (themeProvider.themeStyle == ThemeStyle.fruit) {
       return _buildFruitBody(context, listItems, bottomPadding);
     }

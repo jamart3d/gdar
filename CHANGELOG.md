@@ -6,6 +6,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.59+159] - 2026-03-07
+
+### Added
+- **PWA Dynamic Branding**: Synchronized browser `theme_color` with the application background. Respects "True Black" and Light/Dark themes for both Android and Fruit styles.
+
+### Changed
+- **Navigation (Web)**: Restored fixed bottom navigation bar to the Track List screen and optimized list padding.
+- **Documentation**: Updated `ANTIGRAVITY_SETUP.md` with the optimal `flub` alias for web-server development.
+
+### Fixed
+- **UI/UX (Fruit)**: Resolved non-functional "NOW" navigation button in the Settings screen tab bar.
+- **UI/UX (Fruit)**: Removed redundant mini-player from the Track List screen for a cleaner layout.
+- **Theme Consistency**: Enforced `performanceMode` (Simple Theme) constraints on the `FruitTabBar` and page headers.
+
 ## [1.1.58+158] - 2026-03-07
 
 ### Fixed

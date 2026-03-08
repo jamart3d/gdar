@@ -1,7 +1,9 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shakedown/providers/audio_provider.dart';
 import 'package:shakedown/providers/settings_provider.dart';
+import 'package:shakedown/ui/screens/playback_screen.dart';
 import 'package:shakedown/ui/widgets/settings/about_section.dart';
 import 'package:shakedown/ui/widgets/settings/appearance_section.dart';
 import 'package:shakedown/ui/widgets/settings/collection_statistics.dart';
@@ -111,6 +113,39 @@ class _SettingsScreenState extends State<SettingsScreen>
         curve: Curves.easeInOutCubicEmphasized,
         alignment: 0.5,
       );
+    }
+  }
+
+  Future<void> _openPlaybackScreen() async {
+    final localContext = context;
+    // Pause global clock
+    try {
+      localContext.read<AnimationController>().stop();
+    } catch (_) {}
+
+    unawaited(Navigator.of(localContext).push(
+      PageRouteBuilder(
+        pageBuilder: (context, animation, secondaryAnimation) =>
+            const PlaybackScreen(),
+        transitionDuration: const Duration(milliseconds: 300),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          const begin = Offset(0.0, 1.0);
+          const end = Offset.zero;
+          const curve = Curves.easeInOut;
+          var tween =
+              Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+          return SlideTransition(
+              position: animation.drive(tween), child: child);
+        },
+      ),
+    ));
+
+    // Resume clock
+    if (localContext.mounted) {
+      try {
+        final controller = localContext.read<AnimationController>();
+        unawaited(controller.repeat());
+      } catch (_) {}
     }
   }
 
@@ -256,10 +291,7 @@ class _SettingsScreenState extends State<SettingsScreen>
           bottomNavigationBar: isFruit
               ? FruitTabBar(
                   selectedIndex: 3,
-                  onOpenPlaybackScreen: () {
-                    // Navigate to playback if needed? FruitTabBar handles Now item too.
-                    // Usually this callback opens the full player screen.
-                  },
+                  onOpenPlaybackScreen: _openPlaybackScreen,
                 )
               : null,
         ),

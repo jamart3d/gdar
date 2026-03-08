@@ -57,6 +57,11 @@ class FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
   void toggleSortOldestFirst() {}
 
   @override
+  bool get fruitStickyNowPlaying => false;
+  @override
+  void toggleFruitStickyNowPlaying() {}
+
+  @override
   bool get uiScale => false;
   @override
   bool get showSingleShnid => false;

@@ -277,7 +277,7 @@ class _AppearanceSectionState extends State<AppearanceSection> {
                                     if (sp.useDynamicColor) {
                                       sp.toggleUseDynamicColor();
                                     }
-                                    if (sp.glowMode == 0) {
+                                    if (sp.glowMode == 0 && !sp.performanceMode) {
                                       sp.setGlowMode(65);
                                     }
                                   } else {
@@ -347,7 +347,7 @@ class _AppearanceSectionState extends State<AppearanceSection> {
                                     if (sp.useDynamicColor) {
                                       sp.toggleUseDynamicColor();
                                     }
-                                    if (sp.glowMode == 0) {
+                                    if (sp.glowMode == 0 && !sp.performanceMode) {
                                       sp.setGlowMode(65);
                                     }
                                   } else {
@@ -864,7 +864,8 @@ class _AppearanceSectionState extends State<AppearanceSection> {
               ),
             );
           })(),
-        if (settingsProvider.highlightPlayingWithRgb)
+        if (!settingsProvider.performanceMode &&
+            settingsProvider.highlightPlayingWithRgb)
           Padding(
             padding:
                 const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),

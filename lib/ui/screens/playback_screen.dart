@@ -13,6 +13,7 @@ import 'package:shakedown/ui/widgets/shnid_badge.dart';
 import 'package:shakedown/ui/widgets/fruit_tab_bar.dart';
 import 'package:shakedown/ui/widgets/theme/liquid_glass_wrapper.dart';
 import 'package:shakedown/ui/widgets/playback/fruit_track_list.dart';
+import 'package:shakedown/ui/widgets/playback/fruit_now_playing_card.dart';
 import 'package:shakedown/ui/widgets/playback/playback_panel.dart';
 import 'package:shakedown/ui/widgets/playback/track_list_view.dart';
 import 'package:shakedown/ui/widgets/playback/playback_app_bar.dart';
@@ -96,6 +97,7 @@ class PlaybackScreenState extends State<PlaybackScreen>
   final ValueNotifier<double> _panelPositionNotifier = ValueNotifier(0.0);
   StreamSubscription? _errorSubscription;
   String? _lastTrackTitle;
+  bool? _lastStickyState;
   final Map<int, FocusNode> _trackFocusNodes = {};
   final FocusNode _trackListFocusNode = FocusNode(canRequestFocus: false);
 
@@ -439,6 +441,7 @@ class PlaybackScreenState extends State<PlaybackScreen>
 
   Widget _buildFruitTopBar(BuildContext context, double scaleFactor) {
     final audioProvider = context.watch<AudioProvider>();
+    final settingsProvider = context.watch<SettingsProvider>();
     final currentShow = audioProvider.currentShow;
     if (currentShow == null) return const SizedBox.shrink();
 
@@ -547,7 +550,100 @@ class PlaybackScreenState extends State<PlaybackScreen>
           ),
           _FruitHeaderButton(
             onTap: () {
-              // More options
+              final size = MediaQuery.sizeOf(context);
+              final double topPadding = MediaQuery.paddingOf(context).top;
+              
+              // Force alignment to the right
+              final RelativeRect position = RelativeRect.fromLTRB(
+                size.width - 24 * scaleFactor, 
+                topPadding + 70 * scaleFactor, 
+                24 * scaleFactor, 
+                0,
+              );
+
+              showMenu(
+                context: context,
+                position: position,
+                elevation: settingsProvider.performanceMode ? 4 : 0,
+                color: settingsProvider.performanceMode 
+                  ? Theme.of(context).colorScheme.surface 
+                  : Theme.of(context).colorScheme.surface.withValues(alpha: 0.85),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(24 * scaleFactor),
+                  side: BorderSide(
+                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.1),
+                    width: 1.0,
+                  ),
+                ),
+                items: [
+                  PopupMenuItem(
+                    onTap: () => settingsProvider.toggleFruitStickyNowPlaying(),
+                    child: SizedBox(
+                      width: 200 * scaleFactor,
+                      child: Row(
+                        children: [
+                          Icon(
+                            settingsProvider.fruitStickyNowPlaying
+                                ? LucideIcons.checkCircle2
+                                : LucideIcons.circle,
+                            size: 18 * scaleFactor,
+                            color: settingsProvider.fruitStickyNowPlaying 
+                                ? Theme.of(context).colorScheme.primary 
+                                : null,
+                          ),
+                          SizedBox(width: 12 * scaleFactor),
+                          Text(
+                            'Sticky Now Playing',
+                            style: TextStyle(fontSize: 14 * scaleFactor),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  PopupMenuItem(
+                    onTap: () => settingsProvider.toggleShowTrackNumbers(),
+                    child: Row(
+                      children: [
+                        Icon(
+                          settingsProvider.showTrackNumbers
+                              ? LucideIcons.checkCircle2
+                              : LucideIcons.circle,
+                          size: 18 * scaleFactor,
+                          color: settingsProvider.showTrackNumbers 
+                              ? Theme.of(context).colorScheme.primary 
+                              : null,
+                        ),
+                        SizedBox(width: 12 * scaleFactor),
+                        Text(
+                          'Track Numbers',
+                          style: TextStyle(fontSize: 14 * scaleFactor),
+                        ),
+                      ],
+                    ),
+                  ),
+                  PopupMenuItem(
+                    onTap: () => settingsProvider.toggleHideTrackDuration(),
+                    child: Row(
+                      children: [
+                        Icon(
+                          !settingsProvider.hideTrackDuration
+                              ? LucideIcons.checkCircle2
+                              : LucideIcons.circle,
+                          size: 18 * scaleFactor,
+                          color: !settingsProvider.hideTrackDuration 
+                              ? Theme.of(context).colorScheme.primary 
+                              : null,
+                        ),
+                        SizedBox(width: 12 * scaleFactor),
+                        Text(
+                          'Track Duration',
+                          style: TextStyle(fontSize: 14 * scaleFactor),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              );
             },
             icon: LucideIcons.moreHorizontal,
             scaleFactor: scaleFactor,
@@ -561,6 +657,9 @@ class PlaybackScreenState extends State<PlaybackScreen>
   Widget build(BuildContext context) {
     final audioProvider = context.watch<AudioProvider>();
     final settingsProvider = context.watch<SettingsProvider>();
+    final themeProvider = context.watch<ThemeProvider>();
+    final isFruit = themeProvider.themeStyle == ThemeStyle.fruit;
+
     final currentShow = audioProvider.currentShow;
     final currentSource = audioProvider.currentSource;
 
@@ -573,8 +672,15 @@ class PlaybackScreenState extends State<PlaybackScreen>
       );
     }
 
-    if (audioProvider.currentTrack?.title != _lastTrackTitle) {
+    final stickyNowPlaying = settingsProvider.fruitStickyNowPlaying;
+    final bool trackChanged = audioProvider.currentTrack?.title != _lastTrackTitle;
+    final bool stickyToggledOn = stickyNowPlaying && _lastStickyState == false;
+    final bool isInitialBuild = _lastStickyState == null;
+
+    if (trackChanged || stickyToggledOn || (isInitialBuild && isFruit)) {
       _lastTrackTitle = audioProvider.currentTrack?.title;
+      _lastStickyState = stickyNowPlaying;
+
       WidgetsBinding.instance.addPostFrameCallback((_) {
         // Only force focus to the new playing track if we aren't currently exploring the list
         // on TV. Otherwise, just scroll it into view naturally without hijacking the user's remote.
@@ -596,9 +702,6 @@ class PlaybackScreenState extends State<PlaybackScreen>
 
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     final isTrueBlackMode = isDarkMode && settingsProvider.useTrueBlack;
-
-    final themeProvider = context.read<ThemeProvider>();
-    final isFruit = themeProvider.themeStyle == ThemeStyle.fruit;
 
     if (!isTrueBlackMode &&
         settingsProvider.highlightCurrentShowCard &&
@@ -630,7 +733,7 @@ class PlaybackScreenState extends State<PlaybackScreen>
       screenHeight * 0.85,
     );
 
-    const double appBarHeight = 130.0;
+    const double appBarHeight = 80.0;
     final double immersiveTopPadding =
         MediaQuery.paddingOf(context).top + appBarHeight;
 
@@ -862,21 +965,37 @@ class PlaybackScreenState extends State<PlaybackScreen>
               trackShow: currentShow,
               scaleFactor: scaleFactor,
               topOffset: immersiveTopPadding,
+              bottomOffset: settingsProvider.fruitStickyNowPlaying ? 0 : 80,
             ),
+            if (!settingsProvider.fruitStickyNowPlaying &&
+                audioProvider.currentTrack != null)
+              Positioned(
+                left: 16 * scaleFactor,
+                right: 16 * scaleFactor,
+                bottom: 12 * scaleFactor,
+                child: FruitNowPlayingCard(
+                  trackShow: currentShow,
+                  track: audioProvider.currentTrack!,
+                  index: (audioProvider.audioPlayer.currentIndex ?? 0) + 1,
+                  scaleFactor: scaleFactor,
+                  showNext: false,
+                ),
+              ),
             // ── FRUIT STICKY HEADER ──
-            Positioned(
-              top: 0,
-              left: 0,
-              right: 0,
-              child: LiquidGlassWrapper(
+            if (isFruit)
+              Positioned(
+                top: 0,
+                left: 0,
+                right: 0,
+                child: LiquidGlassWrapper(
                 enabled: isFruit && settingsProvider.fruitEnableLiquidGlass,
                 blur: 20,
                 opacity: 0.8,
                 borderRadius: BorderRadius.zero,
                 child: Container(
+                  height: MediaQuery.paddingOf(context).top + 80,
                   padding: EdgeInsets.only(
-                    top: MediaQuery.paddingOf(context).top + 24 * scaleFactor,
-                    bottom: 24 * scaleFactor,
+                    top: MediaQuery.paddingOf(context).top,
                   ),
                   decoration: BoxDecoration(
                     border: Border(
@@ -889,6 +1008,7 @@ class PlaybackScreenState extends State<PlaybackScreen>
                       ),
                     ),
                   ),
+                  alignment: Alignment.center,
                   child: _buildFruitTopBar(context, scaleFactor),
                 ),
               ),
@@ -996,6 +1116,27 @@ class _FruitHeaderButtonState extends State<_FruitHeaderButton> {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final settingsProvider = context.watch<SettingsProvider>();
+    final isSimple = settingsProvider.performanceMode;
+
+    Widget content = SizedBox(
+      width: 44 * widget.scaleFactor,
+      height: 44 * widget.scaleFactor,
+      child: Icon(
+        widget.icon,
+        size: 24 * widget.scaleFactor,
+        color: colorScheme.onSurfaceVariant,
+      ),
+    );
+
+    if (!isSimple) {
+      content = NeumorphicWrapper(
+        intensity: 0.6,
+        borderRadius: 12 * widget.scaleFactor,
+        child: content,
+      );
+    }
+
     return GestureDetector(
       onTapDown: (_) => setState(() => _isPressed = true),
       onTapUp: (_) => setState(() => _isPressed = false),
@@ -1004,19 +1145,7 @@ class _FruitHeaderButtonState extends State<_FruitHeaderButton> {
       child: AnimatedOpacity(
         duration: const Duration(milliseconds: 100),
         opacity: _isPressed ? 0.6 : 1.0,
-        child: NeumorphicWrapper(
-          intensity: 0.6,
-          borderRadius: 12 * widget.scaleFactor,
-          child: SizedBox(
-            width: 44 * widget.scaleFactor,
-            height: 44 * widget.scaleFactor,
-            child: Icon(
-              widget.icon,
-              size: 24 * widget.scaleFactor,
-              color: colorScheme.onSurfaceVariant,
-            ),
-          ),
-        ),
+        child: content,
       ),
     );
   }

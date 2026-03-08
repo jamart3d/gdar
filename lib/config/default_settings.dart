@@ -151,6 +151,7 @@ class WebDefaults extends DefaultSettings {
   static const bool useTrueBlack = false; // OLED burn-in not a concern on web
   static const bool useNeumorphism = true; // Fruit / Liquid Glass theme
   static const String appFont = 'rock_salt';
+  static const bool performanceMode = true; // Simple Theme by default on Web
 
   // Screensaver: disabled by default on web (no idle-lock risk)
   static const bool useOilScreensaver = false;
@@ -158,12 +159,15 @@ class WebDefaults extends DefaultSettings {
   // Splash only shown on first run (handled dynamically in provider)
   static const bool showSplashScreen = false;
 
-  // Audio: hybrid engine gives instant-start gapless on browser
-  static const String audioEngineMode = 'hybrid';
+  // Audio: html5 engine is now the default for web compatibility
+  static const String audioEngineMode = 'html5';
 }
 
 /// Defaults for the Google TV UI.
 class TvDefaults extends DefaultSettings {
+  // Appearance
+  static const bool performanceMode = false;
+
   // Screensaver: steal mode looks great on TV
   static const String oilScreensaverMode = 'steal';
 
@@ -181,6 +185,7 @@ class TvDefaults extends DefaultSettings {
 class PhoneDefaults extends DefaultSettings {
   // Appearance
   static const bool useNeumorphism = false;
+  static const bool performanceMode = false;
 
   // Screen should turn off normally — music plays in background without keeping screen on
   static const bool preventSleep = false;

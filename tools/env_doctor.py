@@ -1,11 +1,11 @@
 """
-GDAR Environment Doctor v4.1
+GDAR Environment Doctor v4.2
 ─────────────────────────────
 One-shot project bootstrap and health checker.
 
 MODES:
-    python tools/env_doctor.py               # apply (creates missing files/dirs)
-    python tools/env_doctor.py --dry-run      # preview without touching disk
+    python tools/env_doctor.py               # dry run (preview changes)
+    python tools/env_doctor.py --apply        # actually create/fix things
     python tools/env_doctor.py --check        # read-only health report
     python tools/env_doctor.py --force        # overwrite existing static configs
 
@@ -31,7 +31,8 @@ import sys
 from datetime import datetime
 from pathlib import Path
 
-__version__ = "4.1.0"
+__version__ = "4.3.0"
+SPEC_VERSION = "1.20.3"  # Aligned with March 2026 Antigravity Update
 
 # ─────────────────────────────────────────────────────────────────────────────
 # 1. STATIC CONFIGS — rarely change, safe to write if missing
@@ -621,17 +622,52 @@ REQUIRED_DIRS = [
 
 EXPECTED_AGENT_FILES = {
     # Rules (always-on)
-    ".agent/rules/gemini.md":                "Project-wide coding & design rules",
+    ".agent/rules/GEMINI.md":                "Project-wide coding & design rules",
     ".agent/rules/architecture_context.md":  "Domain-specific architecture constraints",
     ".agent/rules/efficiency_guardrails.md": "Agent efficiency & quota guardrails",
+    ".agent/rules/auto_approve.md":          "Command auto-approval policy",
+    ".agent/rules/root_hygiene.md":          "Project root cleanliness rules",
     # Rules (trigger-based)
-    ".agent/rules/screensaver.md":           "TV screensaver guardrails",
+    ".agent/rules/tv_rules.md":           "TV & Screensaver guardrails",
     ".agent/rules/android_theme.md":         "Mobile M3 theme guardrails",
     ".agent/rules/fruit_theme.md":           "Web Liquid Glass theme guardrails",
     ".agent/rules/phone_platform.md":        "Phone hardware & layout guardrails",
-    ".agent/rules/tv_ui_flow.md":            "TV navigation & focus guardrails",
     ".agent/rules/native_audio.md":          "Native audio engine guardrails",
     ".agent/rules/web_audio.md":             "Web audio engine guardrails",
+    ".agent/rules/canvas_rendering.md":      "Canvas & Shader rendering rules",
+    ".agent/rules/fruit_theme_boundaries.md":"Fruit theme UI boundaries",
+    ".agent/rules/audio_architecture.md":    "Audio engine architecture rules",
+    ".agent/rules/platform_shell.md":        "Cross-platform shell wrappers",
+    ".agent/rules/testing_stubs.md":         "Standardized Mockito templates",
+    ".agent/rules/tv_focus_stability.md":    "TV focus trap protection",
+    ".agent/rules/web_audio_scheduling.md":  "Web Audio API scheduling rules",
+
+    ".agent/rules/auto_approve.md": """\
+# Auto-Approve Command Rules
+# ───────────────────────────
+# Commands here run with SafeToAutoRun: true.
+
+## Read-Only / Safe
+- git status, git log, git diff
+- flutter analyze, flutter doctor
+- ls, cat, pwd, find, rg
+
+## ❌ NEVER Auto-Approve
+- rm, del (deletions)
+- git push, git commit (mutations)
+- firebase deploy (production)
+""",
+
+    ".agent/rules/root_hygiene.md": """\
+---
+trigger: always_on
+---
+# Root Hygiene Rule
+# ────────────────
+- Scratch files go to /tmp/.
+- No backups or debug logs in project root.
+- Use /clean workflow for cleanup.
+""",
     # Specs
     ".agent/specs/android_theme_spec.md":    "Mobile Material 3 design tokens",
     ".agent/specs/fruit_theme_spec.md":      "Web Liquid Glass theme spec",
@@ -642,41 +678,42 @@ EXPECTED_AGENT_FILES = {
     ".agent/specs/tv_ui_design_spec.md":     "TV UI design tokens",
     ".agent/specs/tv_ui_flow_spec.md":       "TV navigation & focus management",
     ".agent/specs/web_ui_audio_engines.md":  "Web audio engine architecture",
+    ".agent/specs/live_playlist_spec.md":    "Session history & live playlist logic",
     ".agent/specs/web_ui_design_spec.md":    "Web UI design tokens",
     # Workflows
+    ".agent/workflows/audit_size.md":        "Application size & asset audit",
+    ".agent/workflows/audit_specs.md":       "Dynamic platform spec audit",
+    ".agent/workflows/check_mock_parity.md":  "SettingsProvider mock sync check",
     ".agent/workflows/checkup.md":           "Health check with auto-fixes",
-    ".agent/workflows/dev_tools.md":         "Device interaction utilities",
-    ".agent/workflows/git_sync.md":          "Version control operations",
-    ".agent/workflows/glass_audit.md":       "Liquid Glass design audit",
-    ".agent/workflows/improve_liquid.md":    "Liquid Glass improvement suggestions",
-    ".agent/workflows/inject_debug_tools.md":"Debug tool injection",
+    ".agent/workflows/clean.md":             "Root directory cleanup",
+    ".agent/workflows/fruit_audit.md":       "Fruit theme gating audit",
+    ".agent/workflows/image_to_code.md":     "Stitch/Banana UI generation",
     ".agent/workflows/issue_report.md":      "Issue investigation & reporting",
-    ".agent/workflows/quality_audit.md":     "Code quality & performance audit",
-    ".agent/workflows/release_manager.md":   "Build & deployment management",
+    ".agent/workflows/jules.md":             "Formalized handoff to Jules",
+    ".agent/workflows/mock_regen.md":        "Mockito stub regeneration",
     ".agent/workflows/save.md":              "Quick-save commit & push",
-    ".agent/workflows/spec_audit.md":        "Spec compliance audit",
-    ".agent/workflows/test_fixer.md":        "Auto-fix test stub errors",
-    ".agent/workflows/tv_flow_audit.md":     "TV UI layout & navigation audit",
     ".agent/workflows/screenshot_audit.md":  "Context-aware UI audit",
-    ".agent/workflows/mock_regen.md":        "Mockito test stub regeneration",
-    ".agent/workflows/image_to_code.md":     "UI mockup to Flutter code",
-    ".agent/workflows/session_debrief.md":   "End-of-session knowledge extraction",
+    ".agent/workflows/session_debrief.md":   "Knowledge extraction",
+    ".agent/workflows/verify_settings_defaults.md": "Pre-release setting verification",
     # Skills
     ".agent/skills/shipit/SKILL.md":                    "Autonomous release pipeline",
     ".agent/skills/audio_engine_diagnostics/SKILL.md":  "Audio engine debugging",
     ".agent/skills/dev_tools/SKILL.md":                 "ADB wrappers & device utils",
+    ".agent/skills/ripple_control/SKILL.md":            "Dependency ripple detection",
     ".agent/skills/test_mocking_templates/SKILL.md":    "Mockito stubs & providers",
+    ".agent/skills/test_run_guard/SKILL.md":            "Test runner safety logic",
     ".agent/skills/web_debug_suite/SKILL.md":           "Web audio debug tools",
 }
 
 EXPECTED_DOC_FILES = {
-    "docs/agents.md":                  "Agent persona, goals & project overview",
-    "docs/dev_environment.md":         "Windows/ChromeOS setup guide",
-    "docs/json_schema_reference.md":   "JSON data schema reference",
-    "docs/project_structure_map.md":   "Project directory map",
+    "docs/SPEC_ANTIGRAVITY.md":        "Generic Antigravity platform specification",
+    "docs/SCREENSAVER_MANUAL.md":      "Deep manual for vis/shader math",
+    "docs/GLOSSARY.md":                "Glossary of agentic terms & patterns",
+    "docs/DATA_SCHEMA.md":             "JSON data structure reference",
 }
 
 EXPECTED_ROOT_FILES = {
+    "AGENTS.md":     "Agent persona, goals & project overview",
     "todo.md":       "Project task list",
     "CHANGELOG.md":  "Project changelog (Keep a Changelog format)",
     "pubspec.yaml":  "Flutter project definition",
@@ -791,10 +828,10 @@ def _check(root: Path) -> None:
         found_dups = True
         issues += 1
 
-    # Check for duplicate guide.md (should be merged into agents.md)
+    # Check for duplicate AGENTS.md (should be merged into GEMINI.md or standardized)
     guide = root / "docs" / "guide.md"
-    if guide.exists() and (root / "docs" / "agents.md").exists():
-        print(f"  ⚠️  docs/guide.md — should be merged into docs/agents.md")
+    if guide.exists() and (root / "docs" / "AGENTS.md").exists():
+        print(f"  ⚠️  docs/guide.md — should be merged into docs/AGENTS.md")
         print(f"     Run --apply to merge automatically.")
         issues += 1
 
@@ -905,8 +942,8 @@ trigger: always_on
 
 
 def _merge_agent_docs(root: Path, *, dry_run: bool) -> bool:
-    """Merge agents.md + guide.md into a single clean agents.md."""
-    agents = root / "docs" / "agents.md"
+    """Merge docs/guide.md into the cleaner root AGENTS.md."""
+    agents = root / "AGENTS.md"
     guide = root / "docs" / "guide.md"
     changed = False
 
@@ -1174,15 +1211,17 @@ def _parse() -> argparse.Namespace:
         epilog="""\
 examples:
   python tools/env_doctor.py --check     # health report
-  python tools/env_doctor.py --dry-run   # preview changes
-  python tools/env_doctor.py             # create missing files
+  python tools/env_doctor.py             # dry run (default)
+  python tools/env_doctor.py --apply     # create missing files
   python tools/env_doctor.py --force     # reset static configs
 """,
     )
     p.add_argument("--check", action="store_true",
                    help="Read-only health report.")
+    p.add_argument("--apply", action="store_true",
+                   help="Actually create files and apply fixes.")
     p.add_argument("--dry-run", action="store_true",
-                   help="Preview without touching disk.")
+                   help="Preview without touching disk (now the default).")
     p.add_argument("--force", action="store_true",
                    help="Overwrite static configs (backs up first).")
     p.add_argument("--root", default=".", metavar="DIR",
@@ -1202,4 +1241,7 @@ if __name__ == "__main__":
     if args.check:
         _check(root)
     else:
-        _apply(root, dry_run=args.dry_run, force=args.force)
+        # Default to dry run unless --apply is explicitly passed.
+        # If --dry-run is passed, it takes precedence over --apply for safety.
+        dry_run = True if args.dry_run else (not args.apply)
+        _apply(root, dry_run=dry_run, force=args.force)

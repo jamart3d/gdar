@@ -94,7 +94,12 @@ class ThemeProvider with ChangeNotifier {
   SettingsProvider? _settingsProvider;
 
   void setSettingsProvider(SettingsProvider provider) {
+    if (_settingsProvider != null) {
+      _settingsProvider!.removeListener(_syncPwaBranding);
+    }
     _settingsProvider = provider;
+    _settingsProvider!.addListener(_syncPwaBranding);
+    _syncPwaBranding();
   }
 
   void setThemeStyle(ThemeStyle style) {
@@ -167,45 +172,77 @@ class ThemeProvider with ChangeNotifier {
     String themeColor = '#000000';
     String bgColor = '#000000';
 
+    final bool useTrueBlack = _settingsProvider?.useTrueBlack ?? false;
+
     if (isDarkMode) {
-      if (themeStyle == ThemeStyle.fruit) {
+      if (useTrueBlack) {
+        themeColor = '#000000';
+        // bgColor = '#000000'; // Leaving background_color alone as requested
+      } else if (themeStyle == ThemeStyle.fruit) {
         switch (fruitColorOption) {
           case FruitColorOption.sophisticate:
-            themeColor = '#00E676';
-            bgColor = '#0F172A';
+            themeColor = '#0F172A';
             break;
           case FruitColorOption.minimalist:
-            themeColor = '#30D158';
-            bgColor = '#1C1C1E';
+            themeColor = '#1C1C1E';
             break;
           case FruitColorOption.creative:
-            themeColor = '#FF375F';
-            bgColor = '#1A1A1A';
+            themeColor = '#1A1A1A';
             break;
         }
       } else {
         themeColor = '#000000';
+      }
+    } else {
+      if (themeStyle == ThemeStyle.fruit) {
+        switch (fruitColorOption) {
+          case FruitColorOption.sophisticate:
+            themeColor = '#E0E5EC';
+            break;
+          case FruitColorOption.minimalist:
+            themeColor = '#FFFFFF';
+            break;
+          case FruitColorOption.creative:
+            themeColor = '#FFF9F9';
+            break;
+        }
+      } else {
+        themeColor = '#F5F5F5'; // Scaffold background
+      }
+    }
+
+    // Keep active bgColor from existing logic for now
+    if (isDarkMode) {
+      if (themeStyle == ThemeStyle.fruit) {
+        switch (fruitColorOption) {
+          case FruitColorOption.sophisticate:
+            bgColor = '#0F172A';
+            break;
+          case FruitColorOption.minimalist:
+            bgColor = '#1C1C1E';
+            break;
+          case FruitColorOption.creative:
+            bgColor = '#1A1A1A';
+            break;
+        }
+      } else {
         bgColor = '#000000';
       }
     } else {
       if (themeStyle == ThemeStyle.fruit) {
         switch (fruitColorOption) {
           case FruitColorOption.sophisticate:
-            themeColor = '#5C6BC0';
             bgColor = '#E0E5EC';
             break;
           case FruitColorOption.minimalist:
-            themeColor = '#34C759';
             bgColor = '#FFFFFF';
             break;
           case FruitColorOption.creative:
-            themeColor = '#FF2D55';
             bgColor = '#FFF9F9';
             break;
         }
       } else {
-        themeColor = '#FFFFFF'; // Match AppBar
-        bgColor = '#F5F5F5'; // Match Scaffold
+        bgColor = '#F5F5F5';
       }
     }
 

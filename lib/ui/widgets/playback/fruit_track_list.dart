@@ -13,12 +13,14 @@ class FruitTrackList extends StatefulWidget {
   final Show trackShow;
   final double scaleFactor;
   final double topOffset;
+  final double bottomOffset;
 
   const FruitTrackList({
     super.key,
     required this.trackShow,
     required this.scaleFactor,
     this.topOffset = 0,
+    this.bottomOffset = 0,
   });
 
   @override
@@ -52,14 +54,42 @@ class _FruitTrackListState extends State<FruitTrackList> {
         _nowPlayingKey.currentContext?.findRenderObject() as RenderBox?;
     final RenderBox? containerBox = context.findRenderObject() as RenderBox?;
 
-    if (box == null || containerBox == null) return;
+    if (containerBox == null) return;
 
-    final position = box.localToGlobal(Offset.zero, ancestor: containerBox);
-    final viewportHeight = containerBox.size.height;
-    final cardHeight = box.size.height;
+    bool offTop = false;
+    bool offBottom = false;
 
-    final bool offTop = position.dy < widget.topOffset;
-    final bool offBottom = (position.dy + cardHeight) > viewportHeight;
+    if (box != null) {
+      // Inline card is in the tree, use actual position
+      final position = box.localToGlobal(Offset.zero, ancestor: containerBox);
+      final viewportHeight = containerBox.size.height;
+      final cardHeight = box.size.height;
+
+      offTop = position.dy < widget.topOffset;
+      offBottom = (position.dy + cardHeight) > viewportHeight;
+    } else {
+      // Inline card is NOT in the tree (off-screen).
+      // We need to determine if it's off-top or off-bottom.
+      if (_scrollController.hasClients) {
+        final audioProvider = context.read<AudioProvider>();
+        final currentTrackIndex = audioProvider.audioPlayer.currentIndex ?? 0;
+
+        // Simple heuristic: if we are at offset 0, and item is not found,
+        // it's likely further down the list.
+        // If offset is high, and item is not found, we check if it's likely above.
+        // Better: Compare index with estimated scroll position.
+        // Assuming average item height of 80px.
+        final estimatedTopIndex = _scrollController.offset / 80.0;
+
+        if (currentTrackIndex < estimatedTopIndex) {
+          offTop = true;
+          offBottom = false;
+        } else {
+          offTop = false;
+          offBottom = true;
+        }
+      }
+    }
 
     if (offTop != _isOffScreenTop || offBottom != _isOffScreenBottom) {
       setState(() {
@@ -72,8 +102,11 @@ class _FruitTrackListState extends State<FruitTrackList> {
   @override
   Widget build(BuildContext context) {
     final audioProvider = context.watch<AudioProvider>();
+    final settingsProvider = context.watch<SettingsProvider>();
     final currentTrackIndex = audioProvider.audioPlayer.currentIndex ?? 0;
     final tracks = audioProvider.currentSource?.tracks ?? [];
+
+    final bool isSimple = settingsProvider.performanceMode;
 
     // Use a simplified version for the sticky overlay
     Widget buildStickyCard(int index) {
@@ -83,122 +116,161 @@ class _FruitTrackListState extends State<FruitTrackList> {
         track: audioProvider.currentTrack!,
         index: index + 1,
         scaleFactor: widget.scaleFactor,
+        showNext: false,
       );
     }
 
+    // Trigger state check after build to handle manual track selection
+    WidgetsBinding.instance.addPostFrameCallback((_) => _handleScroll());
+
     return Stack(
       children: [
-        ListView.builder(
-          controller: _scrollController,
-          padding: EdgeInsets.fromLTRB(
-            24.0 * widget.scaleFactor, // px-6
-            180.0 * widget.scaleFactor, // Avoid overlap with floating header
-            24.0 * widget.scaleFactor,
-            140.0 * widget.scaleFactor, // pb-tabbar
-          ),
-          itemCount: tracks.length,
-          itemBuilder: (context, i) {
-            final isPlayed = i <= currentTrackIndex;
-            final opacity = isPlayed ? 1.0 : 0.6;
-
-            if (i == currentTrackIndex && audioProvider.currentTrack != null) {
-              return Opacity(
-                // Hide original when sticky is active at top or bottom
-                opacity: (_isOffScreenTop || _isOffScreenBottom) ? 0.0 : 1.0,
-                child: Padding(
-                  key: _nowPlayingKey,
-                  padding:
-                      EdgeInsets.symmetric(vertical: 20 * widget.scaleFactor),
-                  child: FruitNowPlayingCard(
-                    trackShow: widget.trackShow,
-                    track: audioProvider.currentTrack!,
-                    index: i + 1,
-                    scaleFactor: widget.scaleFactor,
+        NotificationListener<ScrollNotification>(
+          onNotification: (notification) {
+            _handleScroll();
+            return false;
+          },
+          child: ListView.builder(
+            controller: _scrollController,
+            padding: EdgeInsets.fromLTRB(
+              24.0 * widget.scaleFactor, // px-6
+              110.0 * widget.scaleFactor, // Avoid overlap with fixed 80px header + breather
+              24.0 * widget.scaleFactor,
+              (140.0 + widget.bottomOffset) * widget.scaleFactor, // pb-tabbar + dynamic mini-player
+            ),
+            itemCount: tracks.length,
+            itemBuilder: (context, i) {
+              final isPlayed = i <= currentTrackIndex;
+              final opacity = isPlayed ? 1.0 : 0.6;
+              final isCurrent = i == currentTrackIndex && audioProvider.currentTrack != null;
+              
+              if (isCurrent && settingsProvider.fruitStickyNowPlaying) {
+                return Opacity(
+                  // Hide original when sticky is active at top or bottom
+                  opacity: (_isOffScreenTop || _isOffScreenBottom)
+                      ? 0.0
+                      : 1.0,
+                  child: Padding(
+                    key: _nowPlayingKey,
+                    padding:
+                        EdgeInsets.symmetric(vertical: 20 * widget.scaleFactor),
+                    child: FruitNowPlayingCard(
+                      trackShow: widget.trackShow,
+                      track: audioProvider.currentTrack!,
+                      index: i + 1,
+                      scaleFactor: widget.scaleFactor,
+                      showNext: false,
+                    ),
                   ),
+                );
+              }
+
+              // If it's the current track but sticky is OFF, render as a regular item
+              // but tagged with the key so we can still track its position if needed
+              return Opacity(
+                opacity: opacity,
+                child: _buildTrackItem(
+                  context: context,
+                  track: tracks[i],
+                  index: i,
+                  isActive: isCurrent,
+                  audioProvider: audioProvider,
+                  key: isCurrent ? _nowPlayingKey : null,
                 ),
               );
-            }
-
-            return Opacity(
-              opacity: opacity,
-              child: _buildTrackItem(
-                context: context,
-                track: tracks[i],
-                index: i,
-                isActive: false, // Card handles active state
-                audioProvider: audioProvider,
-              ),
-            );
-          },
+            },
+          ),
         ),
         // Sticky Top
-        if (_isOffScreenTop)
+        if (settingsProvider.fruitStickyNowPlaying && _isOffScreenTop)
           Positioned(
             top: widget.topOffset,
             left: 0,
             right: 0,
             child: ClipRRect(
-              child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                child: Container(
-                  padding: EdgeInsets.fromLTRB(
-                    24 * widget.scaleFactor,
-                    20 * widget.scaleFactor, // Match list padding
-                    24 * widget.scaleFactor,
-                    20 * widget.scaleFactor, // Match list padding
-                  ),
-                  decoration: BoxDecoration(
-                    color: Theme.of(context)
-                        .colorScheme
-                        .surface
-                        .withValues(alpha: 0.1), // Glass tint
-                    border: Border(
-                      bottom: BorderSide(
-                        color: Theme.of(context)
-                            .colorScheme
-                            .onSurface
-                            .withValues(alpha: 0.05),
+              child: isSimple
+                  ? Container(
+                      padding: EdgeInsets.fromLTRB(
+                        24 * widget.scaleFactor,
+                        20 * widget.scaleFactor,
+                        24 * widget.scaleFactor,
+                        20 * widget.scaleFactor,
+                      ),
+                      color: Theme.of(context).colorScheme.surface,
+                      child: buildStickyCard(currentTrackIndex),
+                    )
+                  : BackdropFilter(
+                      filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                      child: Container(
+                        padding: EdgeInsets.fromLTRB(
+                          24 * widget.scaleFactor,
+                          20 * widget.scaleFactor,
+                          24 * widget.scaleFactor,
+                          20 * widget.scaleFactor,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Theme.of(context)
+                              .colorScheme
+                              .surface
+                              .withValues(alpha: 0.1),
+                          border: Border(
+                            bottom: BorderSide(
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .onSurface
+                                  .withValues(alpha: 0.05),
+                            ),
+                          ),
+                        ),
+                        child: buildStickyCard(currentTrackIndex),
                       ),
                     ),
-                  ),
-                  child: buildStickyCard(currentTrackIndex),
-                ),
-              ),
             ),
           ),
         // Sticky Bottom
-        if (_isOffScreenBottom)
+        if (settingsProvider.fruitStickyNowPlaying && _isOffScreenBottom)
           Positioned(
             bottom: 110 * widget.scaleFactor, // Above tab bar
             left: 0,
             right: 0,
             child: ClipRRect(
-              child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                child: Container(
-                  padding: EdgeInsets.fromLTRB(
-                    24 * widget.scaleFactor,
-                    20 * widget.scaleFactor, // Match list padding
-                    24 * widget.scaleFactor,
-                    20 * widget.scaleFactor, // Match list padding
-                  ),
-                  decoration: BoxDecoration(
-                    color: Theme.of(context)
-                        .colorScheme
-                        .surface
-                        .withValues(alpha: 0.1), // Glass tint
-                    border: Border(
-                      top: BorderSide(
-                        color: Theme.of(context)
-                            .colorScheme
-                            .onSurface
-                            .withValues(alpha: 0.05),
+              child: isSimple
+                  ? Container(
+                      padding: EdgeInsets.fromLTRB(
+                        24 * widget.scaleFactor,
+                        20 * widget.scaleFactor,
+                        24 * widget.scaleFactor,
+                        20 * widget.scaleFactor,
+                      ),
+                      color: Theme.of(context).colorScheme.surface,
+                      child: buildStickyCard(currentTrackIndex),
+                    )
+                  : BackdropFilter(
+                      filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                      child: Container(
+                        padding: EdgeInsets.fromLTRB(
+                          24 * widget.scaleFactor,
+                          20 * widget.scaleFactor,
+                          24 * widget.scaleFactor,
+                          20 * widget.scaleFactor,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Theme.of(context)
+                              .colorScheme
+                              .surface
+                              .withValues(alpha: 0.1),
+                          border: Border(
+                            top: BorderSide(
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .onSurface
+                                  .withValues(alpha: 0.05),
+                            ),
+                          ),
+                        ),
+                        child: buildStickyCard(currentTrackIndex),
                       ),
                     ),
-                  ),
-                  child: buildStickyCard(currentTrackIndex),
-                ),
-              ),
             ),
           ),
       ],
@@ -211,12 +283,15 @@ class _FruitTrackListState extends State<FruitTrackList> {
     required int index,
     required bool isActive,
     required AudioProvider audioProvider,
+    Key? key,
   }) {
     return _FruitTrackRow(
+      key: key,
       track: track,
       index: index,
       audioProvider: audioProvider,
       scaleFactor: widget.scaleFactor,
+      isActive: isActive,
     );
   }
 }
@@ -226,12 +301,15 @@ class _FruitTrackRow extends StatefulWidget {
   final int index;
   final AudioProvider audioProvider;
   final double scaleFactor;
+  final bool isActive;
 
   const _FruitTrackRow({
+    super.key,
     required this.track,
     required this.index,
     required this.audioProvider,
     required this.scaleFactor,
+    this.isActive = false,
   });
 
   @override
@@ -267,10 +345,14 @@ class _FruitTrackRowState extends State<_FruitTrackRow> {
                 widget.scaleFactor, // RESPECT DENSE TOGGLE
           ),
           decoration: BoxDecoration(
-            color: Colors.transparent,
+            color: widget.isActive 
+                ? colorScheme.primary.withValues(alpha: 0.05) 
+                : Colors.transparent,
             border: Border(
               bottom: BorderSide(
-                color: colorScheme.onSurface.withValues(alpha: 0.08),
+                color: widget.isActive 
+                    ? colorScheme.primary.withValues(alpha: 0.2)
+                    : colorScheme.onSurface.withValues(alpha: 0.08),
                 width: 1.0,
               ),
             ),
@@ -313,8 +395,10 @@ class _FruitTrackRowState extends State<_FruitTrackRow> {
                         style: TextStyle(
                           fontFamily: 'Inter',
                           fontSize: 15 * widget.scaleFactor, // text-base-ish
-                          fontWeight: FontWeight.w600, // font-semibold
-                          color: colorScheme.onSurface.withValues(alpha: 0.8),
+                          fontWeight: widget.isActive ? FontWeight.w800 : FontWeight.w600,
+                          color: widget.isActive 
+                              ? colorScheme.primary 
+                              : colorScheme.onSurface.withValues(alpha: 0.8),
                         ),
                       ),
                     ),

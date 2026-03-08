@@ -1,3 +1,12 @@
+What's new in v1.1.59+159
+• Synchronized browser theme color with PWA background.
+• Restored bottom navigation to the Web Track List screen.
+• Fixed non-functional navigation in the Fruit Settings header.
+• Optimized Web layout by removing redundant players and blurs.
+• Updated setup guide with the optimal web-server run command.
+
+---
+
 What's new in v1.1.58+158
 • Refined "Text Pixel Snapping" to fix individual letter crawling.
 

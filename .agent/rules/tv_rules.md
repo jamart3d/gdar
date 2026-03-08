@@ -8,7 +8,7 @@ policy_domain: TV Platform
 * **Action:** Wrap every interactive TV element in `TvFocusWrapper` (1.05x scale + glow border).
 * **Action:** Dim inactive panes or background elements to 0.2 opacity when focus is elsewhere.
 * **Action:** Use a standardized duration for transitions (prefer `<100ms` for premium feel over `0ms` instant) to ensure focus clarity.
-* **Constraint:** Never use tactile/haptic feedback on TV builds. Focus is purely visual.
+* **Constraint:** Never use tactile/haptic feedback on TV builds. Focus is purely visual. This constraint applies to the entire app and the screensaver flow.
 * **Constraint:** Never use organic ripples or spring animations on TV; stick to direct linear or fast-out/slow-in transforms.
 
 ### 2. Optimization [CRITICAL]

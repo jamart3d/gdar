@@ -86,9 +86,11 @@ The TV UI uses a hybrid navigation model:
 3. **Power Actions**: Long-press bypasses modals for immediate "lean-back" playback.
 
 ## 5. Performance & Physics
-- **Transitions**: All TV transitions are instantaneous (`Duration.zero`) to match the Translucent Material aesthetic.
-- **Physics**: No organic ripples or "breathing" animations; focus is communicated via static high-contrast borders.
-- **Interaction Feedback**: All haptic feedback is **STRICTLY PROHIBITED** on TV builds. Focus is purely visual.
+- **Safe-Zone Scrolling:** Do NOT jump the scroll position to perfectly center-focused items. Use a "Visibility-Only" strategy; only adjust the offset when the item approaches the viewport boundaries.
+- **Surgical Stabilization (Anti-Bounce):** Maintain exact widget tree structure when focus changes. Use transparent borders/padding instead of conditional wrapping to prevent element tree rebuilds on low-power hardware.
+- **Transitions:** All TV transitions are instantaneous (`Duration.zero`) to match the Translucent Material aesthetic.
+- **Physics:** No organic ripples or "breathing" animations.
+- **Interaction Feedback:** All haptic feedback is **STRICTLY PROHIBITED** on TV builds. Focus is purely visual.
 *   **Focus Scale:** Focused items scale by $1.05\times$ (managed by `TvFocusWrapper`).
 *   **Wakelock:** The `WakelockService` is active during any playback state on TV to prevent the screen from dimming.
 
