@@ -16,7 +16,9 @@ The `.agent` directory contains the specialized configurations, automation scrip
 *   **fruit_theme_boundaries.md**: Rules for ensuring theme isolation.
 *   **Gemini.md**: Primary coding and architecture standards (Clean Architecture).
 *   **mobile_rules.md**: Platform-specific rules for mobile.
+*   **performance_mode_gates.md**: Unified registry for Simple Theme visual gates.
 *   **platform_shell.md**: Environment-specific shell rules (Windows/Linux).
+*   **pwa_branding_sync.md**: Rules for dynamic PWA theme/background syncing.
 *   **root_hygiene.md**: Rules for maintaining a clean project root.
 *   **screensaver.md**: Specific rules for screensaver/animation logic.
 *   **testing_stubs.md**: Rules for mocking and test architecture.
@@ -37,12 +39,14 @@ The `.agent` directory contains the specialized configurations, automation scrip
 *   **/screenshot_audit**: Context-aware UI audit from screenshots.
 *   **/session_debrief**: End-of-day summary and rule refinement.
 *   **/verify_settings_defaults**: Pre-release check for premium/experimental flags.
+*   **/web_stress_test**: Verifies performance and visual gates in PWA.
 
 ### 3. Skills (`.agent/skills/`)
 *   **audio_engine_diagnostics**: Debugging tools for hybrid audio engines.
 *   **dev_tools**: Utilities for interacting with connected devices.
 *   **focus_trap_protection**: Audit for focus-safe TV patterns.
 *   **mock_alignment_audit**: UI auditing against provided mocks.
+*   **pwa_manifest_auditor**: Audits PWA branding and manifest sync.
 *   **ripple_control**: Detection and management of dependency ripples.
 *   **shipit**: Production release and deployment pipeline.
 *   **size_guard**: CI/CD-style check for bundle size regressions.
