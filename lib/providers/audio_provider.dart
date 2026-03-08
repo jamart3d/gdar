@@ -303,15 +303,23 @@ class AudioProvider with ChangeNotifier {
         final item = currentSource.tag as MediaItem;
         final sourceId = item.extras?['source_id'] as String?;
 
+        // Once playback reaches the pending random source, clear pending state.
+        // Keeping it set blocks source-sync updates and can leave currentTrack null
+        // when transitioning to subsequent shows.
+        if (sourceId != null &&
+            _pendingRandomShowRequest != null &&
+            _pendingRandomShowRequest!.source.id == sourceId) {
+          _pendingRandomShowRequest = null;
+        }
+
         // If the source ID has changed, we need to update our internal "Current Show"
         // This handles the transition from Show A -> Show B automatically.
         if (sourceId != null && _currentSource?.id != sourceId) {
-          // If we are currently MANUALLY switching sources or have a random roll pending,
-          // ignore any mismatch (which is likely due to the player stream reporting
-          // the old source during teardown or before the new one starts).
-          if (_isSwitchingSource || _pendingRandomShowRequest != null) {
+          // If we are currently manually switching sources,
+          // ignore any mismatch (likely from teardown/early player events).
+          if (_isSwitchingSource) {
             logger.d(
-                'Ignoring source mismatch during manual switch/random roll (Player: $sourceId, App: ${_currentSource?.id})');
+                'Ignoring source mismatch during manual switch (Player: $sourceId, App: ${_currentSource?.id})');
           } else {
             _updateCurrentShowFromSourceId(sourceId);
           }

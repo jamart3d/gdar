@@ -5,6 +5,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+ 
+## [1.1.62+162] - 2026-03-07
+ 
+### Fixed
+- **Audio (State)**: Hardened `AudioProvider` transition logic to properly clear stale "pending" show state when the player synchronizes with the new track source. This ensures track titles and metadata (like screensaver rings) update correctly during automated show transitions.
 
 ## [1.1.61+161] - 2026-03-08
 

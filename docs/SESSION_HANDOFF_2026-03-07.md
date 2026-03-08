@@ -1,6 +1,6 @@
 # Session Handoff (Screensaver + Web UI)
 
-Updated: 2026-03-07 (America/Los_Angeles)
+Updated: 2026-03-08 (America/Los_Angeles)
 Workspace: C:\Users\jeff\StudioProjects\gdar
 
 ## What was done
@@ -99,3 +99,50 @@ Workspace: C:\Users\jeff\StudioProjects\gdar
 ## Open / optional follow-ups
 - Optional adaptive beat cooldown (tempo-aware) instead of fixed 200ms.
 - Optional setting to reduce graph glow independently from global performance level.
+
+
+### Post-handoff additions (2026-03-08)
+
+#### Web audio engine audit + fixes
+- Audited web engine selection and hidden-tab behavior for long PWA sessions.
+- Fixed Hybrid background mode mismatch (`html5` vs legacy `relisten`) and normalized handling.
+- Hidden startup now respects selected background strategy instead of always starting both heartbeat tricks.
+- Files:
+  - `web/hybrid_audio_engine.js`
+  - `web/hybrid_init.js`
+  - `lib/providers/settings_provider.dart`
+
+#### New web setting: Hidden Session Preset
+- Added visible preset in Web Playback settings:
+  - `Stability` = Hybrid + Buffered + Video
+  - `Balanced` = Hybrid + Buffered + Heartbeat
+  - `Max Gapless` = WebAudio + Immediate + Heartbeat
+- Added enum/persistence and apply logic.
+- Files:
+  - `lib/services/gapless_player/gapless_player.dart`
+  - `lib/providers/settings_provider.dart`
+  - `lib/ui/widgets/settings/playback_section.dart`
+
+#### Screensaver continuity + smoothness updates
+- Reduced long-session logo reposition jumps by normalizing trigonometric angle inputs.
+- Smoothed beat pulse attack and made beat scale boost respect reactivity settings.
+- Added independent `Beat Impact` setting (0.0-1.0) to control beat spike strength.
+- Files:
+  - `lib/steal_screensaver/steal_background.dart`
+  - `lib/steal_screensaver/steal_game.dart`
+  - `lib/steal_screensaver/steal_config.dart`
+  - `lib/providers/settings_provider.dart`
+  - `lib/ui/screens/screensaver_screen.dart`
+  - `lib/config/default_settings.dart`
+  - `lib/ui/widgets/settings/tv_screensaver_section.dart`
+
+#### Screensaver anti-burn-in graph drift
+- Added subtle continuous graph drift to reduce static OLED retention risk.
+- Adjusted drift to remain corner-anchored (inward-only movement) in corner mode.
+- File:
+  - `lib/steal_screensaver/steal_graph.dart`
+
+#### TV new-show transition/current-track fix
+- Fixed a state path where pending random selection could block source-sync updates and cause transient `currentTrack == null` after show transitions.
+- File:
+  - `lib/providers/audio_provider.dart`

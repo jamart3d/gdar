@@ -1,3 +1,8 @@
+What's new in v1.1.62+162
+• Fixed stale UI state in show transitions by ensuring metadata syncs correctly.
+
+---
+
 What's new in v1.1.61+161
 • Overhauled ShnidBadge for consistent HTML-style link behavior.
 • Fixed missing sourceUrl in RatingDialog from show list view.
