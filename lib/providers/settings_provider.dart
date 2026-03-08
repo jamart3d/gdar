@@ -61,6 +61,7 @@ class SettingsProvider with ChangeNotifier {
       'crossfade_duration_seconds';
   static const String _hybridHandoffModeKey = 'hybrid_handoff_mode';
   static const String _hybridBackgroundModeKey = 'hybrid_background_mode';
+  static const String _hiddenSessionPresetKey = 'hidden_session_preset';
   static const String _webSourceFiltersInitKey = 'web_source_filters_init_v1';
   static const String _simpleRandomIconKey = 'simple_random_icon';
   static const String _fruitDenseListKey = 'fruit_dense_list';
@@ -111,6 +112,7 @@ class SettingsProvider with ChangeNotifier {
       'oil_audio_reactivity_strength';
   static const String _oilAudioGraphModeKey = 'oil_audio_graph_mode';
   static const String _oilBeatSensitivityKey = 'oil_beat_sensitivity';
+  static const String _oilBeatImpactKey = 'oil_beat_impact';
   static const String _oilShowInfoBannerKey = 'oil_show_info_banner';
   static const String _oilLogoScaleKey = 'oil_logo_scale';
   static const String _oilBannerLetterSpacingKey = 'oil_banner_letter_spacing';
@@ -205,6 +207,7 @@ class SettingsProvider with ChangeNotifier {
   late double _crossfadeDurationSeconds;
   late HybridHandoffMode _hybridHandoffMode;
   late HybridBackgroundMode _hybridBackgroundMode;
+  late HiddenSessionPreset _hiddenSessionPreset;
 
   // Screensaver (steal)
   late bool _useOilScreensaver;
@@ -246,6 +249,7 @@ class SettingsProvider with ChangeNotifier {
   late double _oilAudioReactivityStrength;
   late String _oilAudioGraphMode;
   late double _oilBeatSensitivity;
+  late double _oilBeatImpact;
   late bool _oilShowInfoBanner;
   late double _oilLogoScale;
   late double _oilTranslationSmoothing;
@@ -381,6 +385,8 @@ class SettingsProvider with ChangeNotifier {
   }
 
   HybridBackgroundMode get hybridBackgroundMode => _hybridBackgroundMode;
+
+  HiddenSessionPreset get hiddenSessionPreset => _hiddenSessionPreset;
   void setHybridBackgroundMode(HybridBackgroundMode mode) {
     _hybridBackgroundMode = mode;
     _prefs.setString(_hybridBackgroundModeKey, mode.name);
@@ -388,6 +394,41 @@ class SettingsProvider with ChangeNotifier {
     if (kIsWeb) {
       GaplessPlayer().setHybridBackgroundMode(mode.name);
     }
+    notifyListeners();
+  }
+
+  void setHiddenSessionPreset(HiddenSessionPreset preset) {
+    _hiddenSessionPreset = preset;
+
+    switch (preset) {
+      case HiddenSessionPreset.stability:
+        _audioEngineMode = AudioEngineMode.hybrid;
+        _hybridHandoffMode = HybridHandoffMode.buffered;
+        _hybridBackgroundMode = HybridBackgroundMode.video;
+        break;
+      case HiddenSessionPreset.balanced:
+        _audioEngineMode = AudioEngineMode.hybrid;
+        _hybridHandoffMode = HybridHandoffMode.buffered;
+        _hybridBackgroundMode = HybridBackgroundMode.heartbeat;
+        break;
+      case HiddenSessionPreset.maxGapless:
+        _audioEngineMode = AudioEngineMode.webAudio;
+        _hybridHandoffMode = HybridHandoffMode.immediate;
+        _hybridBackgroundMode = HybridBackgroundMode.heartbeat;
+        break;
+    }
+
+    _prefs.setString(_hiddenSessionPresetKey, _hiddenSessionPreset.name);
+    _prefs.setString(_audioEngineModeKey, _audioEngineMode.name);
+    _prefs.setString(_hybridHandoffModeKey, _hybridHandoffMode.name);
+    _prefs.setString(_hybridBackgroundModeKey, _hybridBackgroundMode.name);
+
+    if (kIsWeb) {
+      final player = GaplessPlayer();
+      player.setHybridHandoffMode(_hybridHandoffMode.name);
+      player.setHybridBackgroundMode(_hybridBackgroundMode.name);
+    }
+
     notifyListeners();
   }
 
@@ -430,6 +471,7 @@ class SettingsProvider with ChangeNotifier {
   double get oilAudioReactivityStrength => _oilAudioReactivityStrength;
   String get oilAudioGraphMode => _oilAudioGraphMode;
   double get oilBeatSensitivity => _oilBeatSensitivity;
+  double get oilBeatImpact => _oilBeatImpact;
   bool get oilShowInfoBanner => _oilShowInfoBanner;
   double get oilLogoScale => _oilLogoScale;
   double get oilTranslationSmoothing => _oilTranslationSmoothing;
@@ -755,7 +797,9 @@ class SettingsProvider with ChangeNotifier {
     _hybridHandoffMode = HybridHandoffMode.fromString(
         _prefs.getString(_hybridHandoffModeKey) ?? 'buffered');
     _hybridBackgroundMode = HybridBackgroundMode.fromString(
-        _prefs.getString(_hybridBackgroundModeKey) ?? 'relisten');
+        _prefs.getString(_hybridBackgroundModeKey) ?? 'html5');
+    _hiddenSessionPreset = HiddenSessionPreset.fromString(
+        _prefs.getString(_hiddenSessionPresetKey) ?? 'balanced');
 
     // Screensaver
     _useOilScreensaver = _prefs.getBool(_useOilScreensaverKey) ??
@@ -839,6 +883,8 @@ class SettingsProvider with ChangeNotifier {
         DefaultSettings.oilAudioGraphMode;
     _oilBeatSensitivity = _prefs.getDouble(_oilBeatSensitivityKey) ??
         DefaultSettings.oilBeatSensitivity;
+    _oilBeatImpact =
+        _prefs.getDouble(_oilBeatImpactKey) ?? DefaultSettings.oilBeatImpact;
 
     // Banner & visual
     _oilShowInfoBanner = _prefs.getBool(_oilShowInfoBannerKey) ??
@@ -1166,6 +1212,8 @@ class SettingsProvider with ChangeNotifier {
       _updateStringPreference(_oilAudioGraphModeKey, _oilAudioGraphMode = mode);
   Future<void> setOilBeatSensitivity(double value) => _updateDoublePreference(
       _oilBeatSensitivityKey, _oilBeatSensitivity = value.clamp(0.0, 1.0));
+  Future<void> setOilBeatImpact(double value) => _updateDoublePreference(
+      _oilBeatImpactKey, _oilBeatImpact = value.clamp(0.0, 1.0));
   void toggleOilShowInfoBanner() => _updatePreference(
       _oilShowInfoBannerKey, _oilShowInfoBanner = !_oilShowInfoBanner);
   Future<void> setOilLogoScale(double value) =>

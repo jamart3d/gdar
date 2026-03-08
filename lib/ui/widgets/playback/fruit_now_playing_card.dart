@@ -34,17 +34,21 @@ class FruitNowPlayingCard extends StatelessWidget {
     final settingsProvider = context.watch<SettingsProvider>();
     final colorScheme = Theme.of(context).colorScheme;
 
+    final isSimple = settingsProvider.performanceMode;
+
     return NeumorphicWrapper(
-      enabled: settingsProvider.useNeumorphism,
+      enabled: settingsProvider.useNeumorphism && !isSimple,
       intensity: 0.8,
       borderRadius: 16.0 * scaleFactor,
       child: LiquidGlassWrapper(
-        enabled: settingsProvider.fruitEnableLiquidGlass,
+        enabled: settingsProvider.fruitEnableLiquidGlass && !isSimple,
         borderRadius: BorderRadius.circular(16.0 * scaleFactor),
         child: Container(
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(16.0 * scaleFactor),
-            color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.15),
+            color: isSimple
+                ? colorScheme.surfaceContainer
+                : colorScheme.surfaceContainerHighest.withValues(alpha: 0.15),
           ),
           padding: EdgeInsets.symmetric(
             horizontal: 16.0 * scaleFactor,

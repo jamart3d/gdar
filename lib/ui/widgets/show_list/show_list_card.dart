@@ -744,6 +744,10 @@ class _ShowListCardState extends State<ShowListCard> {
                           builder: (context) => RatingDialog(
                             initialRating: rating,
                             sourceId: ratingKey,
+                            sourceUrl: (targetSource != null &&
+                                    targetSource.tracks.isNotEmpty)
+                                ? targetSource.tracks.first.url
+                                : null,
                             isPlayed: isPlayed,
                             onRatingChanged: (newRating) {
                               catalog.setRating(ratingKey, newRating);
@@ -884,6 +888,11 @@ class _ShowListCardState extends State<ShowListCard> {
                                           builder: (context) => RatingDialog(
                                             initialRating: rating,
                                             sourceId: ratingKey,
+                                            sourceUrl: (targetSource != null &&
+                                                    targetSource
+                                                        .tracks.isNotEmpty)
+                                                ? targetSource.tracks.first.url
+                                                : null,
                                             isPlayed: isPlayed,
                                             onRatingChanged: (newRating) {
                                               catalog.setRating(
@@ -1018,6 +1027,10 @@ class _ShowListCardState extends State<ShowListCard> {
                                     builder: (ctx) => RatingDialog(
                                       initialRating: rating,
                                       sourceId: ratingKey,
+                                      sourceUrl: (targetSource != null &&
+                                              targetSource.tracks.isNotEmpty)
+                                          ? targetSource.tracks.first.url
+                                          : null,
                                       isPlayed: isPlayed,
                                       onRatingChanged: (r) => CatalogService()
                                           .setRating(ratingKey, r),

@@ -61,7 +61,7 @@
     let _crossfadeDuration = 3.0;
 
     // Advanced Hybrid Settings
-    let _backgroundMode = 'relisten'; // relisten | heartbeat | video | none
+    let _backgroundMode = 'html5'; // html5 | heartbeat | video | none
     let _handoffMode = 'buffered';    // buffered | immediate | none
 
     // Mode state
@@ -176,18 +176,27 @@
     _bgEngine.onTrackChange((e) => _forwardTrack(e, _bgEngine));
     _bgEngine.onError((e) => _forwardError(e, _bgEngine));
 
+    function _applyHiddenSurvivalStrategy() {
+        _log.log(`[hybrid] Applying hidden survival strategy: ${_backgroundMode}`);
+        if (!window._gdarHeartbeat) return;
+
+        if (_backgroundMode === 'heartbeat') {
+            window._gdarHeartbeat.startAudioHeartbeat();
+            return;
+        }
+        if (_backgroundMode === 'video') {
+            window._gdarHeartbeat.startVideoHeartbeat();
+            return;
+        }
+        // html5/none do not force heartbeat tricks.
+        window._gdarHeartbeat.stopHeartbeat();
+    }
+
     // Handle visibility changes based on selected backgroundMode
     document.addEventListener('visibilitychange', () => {
         if (document.visibilityState === 'hidden') {
             _log.log(`[hybrid] Tab hidden. backgroundMode: ${_backgroundMode}`);
-
-            // Background survival: We NO LONGER swap to HTML5 at the boundary by default.
-            // We trust the survival tricks (heartbeat/video) to keep Web Audio alive.
-            if (_backgroundMode === 'heartbeat') {
-                if (window._gdarHeartbeat) window._gdarHeartbeat.startAudioHeartbeat();
-            } else if (_backgroundMode === 'video') {
-                if (window._gdarHeartbeat) window._gdarHeartbeat.startVideoHeartbeat();
-            }
+            _applyHiddenSurvivalStrategy();
         } else {
             _log.log('[hybrid] Tab visible. Ensuring survival tricks are off.');
             if (window._gdarHeartbeat) window._gdarHeartbeat.stopHeartbeat();
@@ -458,10 +467,10 @@
         play: function () {
             _playing = true;
 
-            // Start heartbeats if tab is already hidden and mode is not 'relisten'
+            // Respect selected hidden-tab survival strategy on hidden startup.
             if (document.visibilityState === 'hidden') {
-                _log.log('[hybrid] play(): Hidden startup detected. Priming heartbeats.');
-                if (window._gdarHeartbeat) window._gdarHeartbeat.startHeartbeat();
+                _log.log('[hybrid] play(): Hidden startup detected. Applying selected strategy.');
+                _applyHiddenSurvivalStrategy();
             }
 
             // HYBRID CORE: Always prioritize HTML5 for "Instant Start" if Web Audio is not yet ready/playing
@@ -567,9 +576,11 @@
         },
 
         setHybridBackgroundMode: function (mode) {
-            if (['relisten', 'heartbeat', 'video', 'none'].includes(mode)) {
-                _backgroundMode = mode;
-                _log.log('[hybrid engine] Background Mode set to:', mode);
+            const normalized = (mode || '').toLowerCase();
+            const mapped = normalized === 'relisten' ? 'html5' : normalized;
+            if (['html5', 'heartbeat', 'video', 'none'].includes(mapped)) {
+                _backgroundMode = mapped;
+                _log.log('[hybrid engine] Background Mode set to:', mapped);
             }
         },
 

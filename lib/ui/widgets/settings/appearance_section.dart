@@ -277,7 +277,8 @@ class _AppearanceSectionState extends State<AppearanceSection> {
                                     if (sp.useDynamicColor) {
                                       sp.toggleUseDynamicColor();
                                     }
-                                    if (sp.glowMode == 0 && !sp.performanceMode) {
+                                    if (sp.glowMode == 0 &&
+                                        !sp.performanceMode) {
                                       sp.setGlowMode(65);
                                     }
                                   } else {
@@ -347,7 +348,8 @@ class _AppearanceSectionState extends State<AppearanceSection> {
                                     if (sp.useDynamicColor) {
                                       sp.toggleUseDynamicColor();
                                     }
-                                    if (sp.glowMode == 0 && !sp.performanceMode) {
+                                    if (sp.glowMode == 0 &&
+                                        !sp.performanceMode) {
                                       sp.setGlowMode(65);
                                     }
                                   } else {

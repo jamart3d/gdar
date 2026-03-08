@@ -121,7 +121,7 @@
         // Advanced Hybrid Settings Sync
         if (selectedEngine === window._hybridAudio) {
             try {
-                const bgMode = localStorage.getItem('flutter.hybrid_background_mode') || '"relisten"';
+                const bgMode = localStorage.getItem('flutter.hybrid_background_mode') || '"html5"';
                 const handoffMode = localStorage.getItem('flutter.hybrid_handoff_mode') || '"buffered"';
 
                 selectedEngine.setHybridBackgroundMode(bgMode.replace(/"/g, '').toLowerCase());

@@ -541,6 +541,16 @@ class PlaybackScreenState extends State<PlaybackScreen>
                       ShnidBadge(
                         text: audioProvider.currentSource!.id,
                         scaleFactor: scaleFactor,
+                        onTap: () {
+                          if (audioProvider.currentSource!.tracks.isNotEmpty) {
+                            launchArchivePage(
+                                audioProvider.currentSource!.tracks.first.url,
+                                context);
+                          } else {
+                            launchArchiveDetails(
+                                audioProvider.currentSource!.id, context);
+                          }
+                        },
                       ),
                     ],
                   ],
@@ -552,12 +562,12 @@ class PlaybackScreenState extends State<PlaybackScreen>
             onTap: () {
               final size = MediaQuery.sizeOf(context);
               final double topPadding = MediaQuery.paddingOf(context).top;
-              
+
               // Force alignment to the right
               final RelativeRect position = RelativeRect.fromLTRB(
-                size.width - 24 * scaleFactor, 
-                topPadding + 70 * scaleFactor, 
-                24 * scaleFactor, 
+                size.width - 24 * scaleFactor,
+                topPadding + 70 * scaleFactor,
+                24 * scaleFactor,
                 0,
               );
 
@@ -565,13 +575,19 @@ class PlaybackScreenState extends State<PlaybackScreen>
                 context: context,
                 position: position,
                 elevation: settingsProvider.performanceMode ? 4 : 0,
-                color: settingsProvider.performanceMode 
-                  ? Theme.of(context).colorScheme.surface 
-                  : Theme.of(context).colorScheme.surface.withValues(alpha: 0.85),
+                color: settingsProvider.performanceMode
+                    ? Theme.of(context).colorScheme.surface
+                    : Theme.of(context)
+                        .colorScheme
+                        .surface
+                        .withValues(alpha: 0.85),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(24 * scaleFactor),
                   side: BorderSide(
-                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.1),
+                    color: Theme.of(context)
+                        .colorScheme
+                        .onSurface
+                        .withValues(alpha: 0.1),
                     width: 1.0,
                   ),
                 ),
@@ -587,8 +603,8 @@ class PlaybackScreenState extends State<PlaybackScreen>
                                 ? LucideIcons.checkCircle2
                                 : LucideIcons.circle,
                             size: 18 * scaleFactor,
-                            color: settingsProvider.fruitStickyNowPlaying 
-                                ? Theme.of(context).colorScheme.primary 
+                            color: settingsProvider.fruitStickyNowPlaying
+                                ? Theme.of(context).colorScheme.primary
                                 : null,
                           ),
                           SizedBox(width: 12 * scaleFactor),
@@ -609,8 +625,8 @@ class PlaybackScreenState extends State<PlaybackScreen>
                               ? LucideIcons.checkCircle2
                               : LucideIcons.circle,
                           size: 18 * scaleFactor,
-                          color: settingsProvider.showTrackNumbers 
-                              ? Theme.of(context).colorScheme.primary 
+                          color: settingsProvider.showTrackNumbers
+                              ? Theme.of(context).colorScheme.primary
                               : null,
                         ),
                         SizedBox(width: 12 * scaleFactor),
@@ -630,8 +646,8 @@ class PlaybackScreenState extends State<PlaybackScreen>
                               ? LucideIcons.checkCircle2
                               : LucideIcons.circle,
                           size: 18 * scaleFactor,
-                          color: !settingsProvider.hideTrackDuration 
-                              ? Theme.of(context).colorScheme.primary 
+                          color: !settingsProvider.hideTrackDuration
+                              ? Theme.of(context).colorScheme.primary
                               : null,
                         ),
                         SizedBox(width: 12 * scaleFactor),
@@ -673,7 +689,8 @@ class PlaybackScreenState extends State<PlaybackScreen>
     }
 
     final stickyNowPlaying = settingsProvider.fruitStickyNowPlaying;
-    final bool trackChanged = audioProvider.currentTrack?.title != _lastTrackTitle;
+    final bool trackChanged =
+        audioProvider.currentTrack?.title != _lastTrackTitle;
     final bool stickyToggledOn = stickyNowPlaying && _lastStickyState == false;
     final bool isInitialBuild = _lastStickyState == null;
 
@@ -988,31 +1005,36 @@ class PlaybackScreenState extends State<PlaybackScreen>
                 left: 0,
                 right: 0,
                 child: LiquidGlassWrapper(
-                enabled: isFruit && settingsProvider.fruitEnableLiquidGlass,
-                blur: 20,
-                opacity: 0.8,
-                borderRadius: BorderRadius.zero,
-                child: Container(
-                  height: MediaQuery.paddingOf(context).top + 80,
-                  padding: EdgeInsets.only(
-                    top: MediaQuery.paddingOf(context).top,
-                  ),
-                  decoration: BoxDecoration(
-                    border: Border(
-                      bottom: BorderSide(
-                        color: Theme.of(context)
-                            .colorScheme
-                            .onSurface
-                            .withValues(alpha: 0.05),
-                        width: 1.0,
+                  enabled: isFruit &&
+                      settingsProvider.fruitEnableLiquidGlass &&
+                      !settingsProvider.performanceMode,
+                  blur: 20,
+                  opacity: 0.8,
+                  borderRadius: BorderRadius.zero,
+                  child: Container(
+                    height: MediaQuery.paddingOf(context).top + 80,
+                    padding: EdgeInsets.only(
+                      top: MediaQuery.paddingOf(context).top,
+                    ),
+                    decoration: BoxDecoration(
+                      color: settingsProvider.performanceMode
+                          ? Theme.of(context).colorScheme.surface
+                          : null,
+                      border: Border(
+                        bottom: BorderSide(
+                          color: Theme.of(context)
+                              .colorScheme
+                              .onSurface
+                              .withValues(alpha: 0.05),
+                          width: 1.0,
+                        ),
                       ),
                     ),
+                    alignment: Alignment.center,
+                    child: _buildFruitTopBar(context, scaleFactor),
                   ),
-                  alignment: Alignment.center,
-                  child: _buildFruitTopBar(context, scaleFactor),
                 ),
               ),
-            ),
           ],
         ),
         bottomNavigationBar: FruitTabBar(

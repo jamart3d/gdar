@@ -492,6 +492,57 @@ class PlaybackSection extends StatelessWidget {
                 ),
               ),
             ),
+            const SizedBox(height: 16),
+            Padding(
+              padding: EdgeInsets.only(left: 40.0 * scaleFactor),
+              child: Text(
+                'Hidden Session Preset',
+                style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                      fontSize: 14 * scaleFactor,
+                      fontWeight: FontWeight.bold,
+                    ),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Padding(
+              padding: EdgeInsets.only(left: 40.0 * scaleFactor),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: _SegmentedWrap<HiddenSessionPreset>(
+                  isFruit: isFruit,
+                  scaleFactor: scaleFactor,
+                  segments: [
+                    _Segment(
+                      value: HiddenSessionPreset.stability,
+                      label: 'Stability',
+                      tooltip: 'Hybrid + buffered + video survival',
+                      icon: isFruit ? LucideIcons.shield : Icons.shield_rounded,
+                    ),
+                    _Segment(
+                      value: HiddenSessionPreset.balanced,
+                      label: 'Balanced',
+                      tooltip: 'Hybrid + buffered + heartbeat survival',
+                      icon: isFruit ? LucideIcons.scale : Icons.balance_rounded,
+                    ),
+                    _Segment(
+                      value: HiddenSessionPreset.maxGapless,
+                      label: 'Max Gapless',
+                      tooltip: 'Web Audio first, best continuity when alive',
+                      icon: isFruit ? LucideIcons.zap : Icons.flash_on_rounded,
+                    ),
+                  ],
+                  selectedValue: sp.hiddenSessionPreset,
+                  onSelectionChanged: (HiddenSessionPreset preset) {
+                    AppHaptics.lightImpact(context.read<DeviceService>());
+                    sp.setHiddenSessionPreset(preset);
+                    showMessage(
+                      context,
+                      'Preset applied. Relaunch required if engine changed.',
+                    );
+                  },
+                ),
+              ),
+            ),
             if (sp.audioEngineMode == AudioEngineMode.hybrid ||
                 sp.audioEngineMode == AudioEngineMode.webAudio ||
                 sp.audioEngineMode == AudioEngineMode.auto ||

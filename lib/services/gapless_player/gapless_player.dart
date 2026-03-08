@@ -55,3 +55,17 @@ enum HybridHandoffMode {
     );
   }
 }
+
+/// Presets for long hidden-tab/PWA playback sessions.
+enum HiddenSessionPreset {
+  stability,
+  balanced,
+  maxGapless;
+
+  static HiddenSessionPreset fromString(String? value) {
+    return HiddenSessionPreset.values.firstWhere(
+      (e) => e.name == value,
+      orElse: () => HiddenSessionPreset.balanced,
+    );
+  }
+}

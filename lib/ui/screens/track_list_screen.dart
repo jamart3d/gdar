@@ -43,172 +43,6 @@ class TrackListScreen extends StatefulWidget {
 }
 
 class _TrackListScreenState extends State<TrackListScreen> {
-  OverlayEntry? _overlayEntry;
-
-  // Logic identifying the current source/track is removed as requested.
-
-  void _onTrackTapped(BuildContext itemContext, Source source, int trackIndex) {
-    final audioProvider = context.read<AudioProvider>();
-    final settingsProvider = context.read<SettingsProvider>();
-
-    final isCurrentSource = audioProvider.currentSource?.id == source.id;
-
-    // If Play on Tap is disabled, prevent switching sources by tap
-    if (!isCurrentSource && !settingsProvider.playOnTap) {
-      unawaited(AppHaptics.mediumImpact(
-          context.read<DeviceService>())); // Distinct "blocked" feedback
-      _showContextualOverlay(itemContext);
-      return;
-    }
-
-    unawaited(AppHaptics.selectionClick(
-        context.read<DeviceService>())); // Success feedback
-    audioProvider.playSource(widget.show, source, initialIndex: trackIndex);
-
-    if (context.read<DeviceService>().isTv) {
-      Navigator.of(context).pop();
-      audioProvider.requestPlaybackFocus();
-    }
-  }
-
-  void _showContextualOverlay(BuildContext itemContext) {
-    _overlayEntry?.remove();
-    _overlayEntry = null;
-
-    final renderBox = itemContext.findRenderObject() as RenderBox?;
-    if (renderBox == null) return;
-
-    final size = renderBox.size;
-    final offset = renderBox.localToGlobal(Offset.zero);
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
-
-    _overlayEntry = OverlayEntry(
-      builder: (context) => Positioned(
-        left: offset.dx + 8,
-        top: offset.dy,
-        width: size.width - 16,
-        height: size.height,
-        child: Material(
-          color: Colors.transparent,
-          child: Center(
-            child: Builder(builder: (context) {
-              final tp = context.watch<ThemeProvider>();
-              final sp = context.watch<SettingsProvider>();
-              final isFruit = tp.themeStyle == ThemeStyle.fruit;
-              final usePremium =
-                  sp.useNeumorphism && isFruit && !sp.useTrueBlack;
-
-              final Widget pill = Container(
-                height: 48,
-                decoration: BoxDecoration(
-                  color: colorScheme.primaryContainer,
-                  borderRadius: BorderRadius.circular(100),
-                  boxShadow: usePremium
-                      ? null
-                      : [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.2),
-                            blurRadius: 10,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                  border: Border.all(
-                    color:
-                        colorScheme.onPrimaryContainer.withValues(alpha: 0.1),
-                    width: 1,
-                  ),
-                ),
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.touch_app_outlined,
-                      color: colorScheme.onPrimaryContainer,
-                      size: 20,
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Text(
-                        'Play on Tap disabled',
-                        style: textTheme.labelLarge?.copyWith(
-                          color: colorScheme.onPrimaryContainer,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                    TextButton(
-                      onPressed: () async {
-                        _overlayEntry?.remove();
-                        _overlayEntry = null;
-
-                        try {
-                          context.read<AnimationController>().stop();
-                        } catch (_) {}
-
-                        unawaited(Navigator.of(context).push(
-                          PageRouteBuilder(
-                            pageBuilder:
-                                (context, animation, secondaryAnimation) =>
-                                    const SettingsScreen(
-                              highlightSetting: 'play_on_tap',
-                            ),
-                            transitionDuration: Duration.zero,
-                          ),
-                        ));
-
-                        if (context.mounted) {
-                          try {
-                            final controller =
-                                context.read<AnimationController>();
-                            unawaited(controller.repeat());
-                          } catch (_) {}
-                        }
-                      },
-                      child: Text(
-                        'SETTINGS',
-                        style: textTheme.labelLarge?.copyWith(
-                          color: colorScheme.primary,
-                          fontWeight: FontWeight.w900,
-                          letterSpacing: 1.2,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              );
-
-              if (usePremium) {
-                return NeumorphicWrapper(
-                  borderRadius: 100,
-                  intensity: 1.1,
-                  color: Colors.transparent,
-                  child: LiquidGlassWrapper(
-                    enabled: usePremium,
-                    borderRadius: BorderRadius.circular(100),
-                    opacity: 0.85,
-                    blur: 15.0,
-                    child: pill,
-                  ),
-                );
-              }
-
-              return pill;
-            }),
-          ),
-        ),
-      ),
-    );
-
-    Overlay.of(context).insert(_overlayEntry!);
-    Future.delayed(const Duration(seconds: 3), () {
-      if (_overlayEntry != null) {
-        _overlayEntry?.remove();
-        _overlayEntry = null;
-      }
-    });
-  }
-
   Future<void> _openPlaybackScreen() async {
     if (context.read<DeviceService>().isTv) return;
     final localContext = context;
@@ -263,66 +97,71 @@ class _TrackListScreenState extends State<TrackListScreen> {
                       crossAxisAlignment: CrossAxisAlignment.end,
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Flexible(
-                          child: ValueListenableBuilder(
-                            valueListenable: CatalogService().ratingsListenable,
-                            builder: (context, _, __) {
-                              final String ratingKey = widget.source.id;
-                              final catalog = CatalogService();
-                              final isPlayed = catalog.isPlayed(ratingKey);
-                              final rating = catalog.getRating(ratingKey);
+                        ValueListenableBuilder(
+                          valueListenable: CatalogService().ratingsListenable,
+                          builder: (context, _, __) {
+                            final String ratingKey = widget.source.id;
+                            final catalog = CatalogService();
+                            final isPlayed = catalog.isPlayed(ratingKey);
+                            final rating = catalog.getRating(ratingKey);
 
-                              return RatingControl(
-                                key: ValueKey(
-                                    '${ratingKey}_${rating}_$isPlayed'),
-                                rating: rating,
-                                size: 12 *
-                                    (settingsProvider.uiScale ? 1.25 : 1.0),
-                                isPlayed: isPlayed,
-                                compact: true,
-                                onTap: () async {
-                                  unawaited(showDialog(
-                                    context: context,
-                                    builder: (context) => RatingDialog(
-                                      initialRating:
-                                          catalog.getRating(ratingKey),
-                                      sourceId: widget.source.id,
-                                      sourceUrl: widget.source.tracks.isNotEmpty
-                                          ? widget.source.tracks.first.url
-                                          : null,
-                                      isPlayed: catalog.isPlayed(ratingKey),
-                                      onRatingChanged: (newRating) {
-                                        catalog.setRating(ratingKey, newRating);
-                                      },
-                                      onPlayedChanged: (bool newIsPlayed) {
-                                        // Direct toggle since we don't have explicit setPlayed(bool) yet
-                                        // or just use togglePlayed if it matches logic
-                                        if (newIsPlayed !=
-                                            catalog.isPlayed(ratingKey)) {
-                                          catalog.togglePlayed(ratingKey);
-                                        }
-                                      },
-                                    ),
-                                  ));
-                                },
-                              );
-                            },
-                          ),
+                            return RatingControl(
+                              key: ValueKey('${ratingKey}_${rating}_$isPlayed'),
+                              rating: rating,
+                              size:
+                                  12 * (settingsProvider.uiScale ? 1.25 : 1.0),
+                              isPlayed: isPlayed,
+                              compact: true,
+                              onTap: () async {
+                                unawaited(showDialog(
+                                  context: context,
+                                  builder: (context) => RatingDialog(
+                                    initialRating: catalog.getRating(ratingKey),
+                                    sourceId: widget.source.id,
+                                    sourceUrl: widget.source.tracks.isNotEmpty
+                                        ? widget.source.tracks.first.url
+                                        : null,
+                                    isPlayed: catalog.isPlayed(ratingKey),
+                                    onRatingChanged: (newRating) {
+                                      catalog.setRating(ratingKey, newRating);
+                                    },
+                                    onPlayedChanged: (bool newIsPlayed) {
+                                      // Direct toggle since we don't have explicit setPlayed(bool) yet
+                                      // or just use togglePlayed if it matches logic
+                                      if (newIsPlayed !=
+                                          catalog.isPlayed(ratingKey)) {
+                                        catalog.togglePlayed(ratingKey);
+                                      }
+                                    },
+                                  ),
+                                ));
+                              },
+                            );
+                          },
                         ),
-                        Flexible(
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              if (widget.source.src != null) ...[
-                                SrcBadge(
-                                  src: widget.source.src!,
-                                  matchShnidLook: true,
-                                ),
-                                const SizedBox(width: 4),
-                              ],
-                              ShnidBadge(text: widget.source.id),
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            if (widget.source.src != null) ...[
+                              SrcBadge(
+                                src: widget.source.src!,
+                                matchShnidLook: true,
+                              ),
+                              const SizedBox(width: 4),
                             ],
-                          ),
+                            ShnidBadge(
+                              text: widget.source.id,
+                              onTap: () {
+                                if (widget.source.tracks.isNotEmpty) {
+                                  launchArchivePage(
+                                      widget.source.tracks.first.url, context);
+                                } else {
+                                  launchArchiveDetails(
+                                      widget.source.id, context);
+                                }
+                              },
+                            ),
+                          ],
                         ),
                       ],
                     ),
@@ -402,7 +241,7 @@ class _TrackListScreenState extends State<TrackListScreen> {
           _buildBody(),
           if (themeProvider.themeStyle == ThemeStyle.fruit)
             Positioned(
-              top: MediaQuery.paddingOf(context).top + 8,
+              top: MediaQuery.paddingOf(context).top,
               left: 0,
               right: 0,
               child: _buildFruitHeader(context),
@@ -417,10 +256,11 @@ class _TrackListScreenState extends State<TrackListScreen> {
 
   Widget _buildBody() {
     final audioProvider = context.watch<AudioProvider>();
+    final themeProvider = context.watch<ThemeProvider>();
+    final isFruit = themeProvider.themeStyle == ThemeStyle.fruit;
     final isDifferentShowPlaying = audioProvider.currentShow != null &&
         audioProvider.currentShow!.name != widget.show.name;
-    final themeProvider = context.read<ThemeProvider>();
-    final isFruit = themeProvider.themeStyle == ThemeStyle.fruit;
+
     final bottomPadding = isFruit
         ? (isDifferentShowPlaying ? 180.0 : 140.0)
         : (isDifferentShowPlaying ? 160.0 : 40.0);
@@ -775,6 +615,13 @@ class _TrackListScreenState extends State<TrackListScreen> {
               ShnidBadge(
                 text: widget.source.id,
                 scaleFactor: scaleFactor,
+                onTap: () {
+                  if (widget.source.tracks.isNotEmpty) {
+                    launchArchivePage(widget.source.tracks.first.url, context);
+                  } else {
+                    launchArchiveDetails(widget.source.id, context);
+                  }
+                },
               ),
             ],
           ),
@@ -823,54 +670,7 @@ class _TrackListScreenState extends State<TrackListScreen> {
           );
         }
 
-        if (kIsWeb) {
-          cardChild = InkWell(
-            onTap: () async {
-              if (!isThisShowPlaying) {
-                unawaited(
-                    AppHaptics.selectionClick(context.read<DeviceService>()));
-                if (ap.currentShow != null &&
-                    ap.currentShow!.name != widget.show.name) {
-                  await ap.stopAndClear();
-                }
-                await executePlayAndNavigate();
-              }
-            },
-            onLongPress: () async {
-              unawaited(AppHaptics.mediumImpact(context.read<DeviceService>()));
-              if (ap.currentShow != null) {
-                await ap.stopAndClear();
-              }
-              await executePlayAndNavigate();
-            },
-            child: content,
-          );
-        } else {
-          cardChild = isThisShowPlaying
-              ? content
-              : InkWell(
-                  onTap: () async {
-                    if (!isThisShowPlaying) {
-                      unawaited(AppHaptics.selectionClick(
-                          context.read<DeviceService>()));
-                      if (ap.currentShow != null &&
-                          ap.currentShow!.name != widget.show.name) {
-                        await ap.stopAndClear();
-                      }
-                      await executePlayAndNavigate();
-                    }
-                  },
-                  onLongPress: () async {
-                    unawaited(
-                        AppHaptics.mediumImpact(context.read<DeviceService>()));
-                    if (ap.currentShow != null) {
-                      await ap.stopAndClear();
-                    }
-                    await executePlayAndNavigate();
-                  },
-                  child: content,
-                );
-        }
+        cardChild = content;
 
         Widget card = Card(
           elevation: 0,
@@ -1009,48 +809,44 @@ class _TrackListScreenState extends State<TrackListScreen> {
     final isFruit = tp.themeStyle == ThemeStyle.fruit;
 
     if (isFruit) {
-      return InkWell(
-        onTap: () => _onTrackTapped(context, source, index),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 14.0),
-          child: Row(
-            children: [
-              Container(
-                width: 5,
-                height: 5,
-                decoration: BoxDecoration(
-                  color: colorScheme.primary,
-                  shape: BoxShape.circle,
-                ),
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 14.0),
+        child: Row(
+          children: [
+            Container(
+              width: 5,
+              height: 5,
+              decoration: BoxDecoration(
+                color: colorScheme.primary,
+                shape: BoxShape.circle,
               ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  track.title,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        fontWeight: FontWeight.w700,
-                        fontFamily: 'Inter',
-                        color: colorScheme.onSurface.withValues(alpha: 0.9),
-                      ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Text(
-                Duration(seconds: track.duration)
-                    .toString()
-                    .split('.')
-                    .first
-                    .padLeft(8, '0')
-                    .substring(3),
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color:
-                          colorScheme.onSurfaceVariant.withValues(alpha: 0.3),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                track.title,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       fontWeight: FontWeight.w700,
                       fontFamily: 'Inter',
+                      color: colorScheme.onSurface.withValues(alpha: 0.9),
                     ),
               ),
-            ],
-          ),
+            ),
+            const SizedBox(width: 12),
+            Text(
+              Duration(seconds: track.duration)
+                  .toString()
+                  .split('.')
+                  .first
+                  .padLeft(8, '0')
+                  .substring(3),
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: colorScheme.onSurfaceVariant.withValues(alpha: 0.3),
+                    fontWeight: FontWeight.w700,
+                    fontFamily: 'Inter',
+                  ),
+            ),
+          ],
         ),
       );
     }
@@ -1124,16 +920,17 @@ class _TrackListScreenState extends State<TrackListScreen> {
         return Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
           child: TvFocusWrapper(
-            onTap: () => _onTrackTapped(context, source, index),
+            onTap: null, // Restrict playback to the play icon
             borderRadius: BorderRadius.circular(16),
             child: itemContent,
           ),
         );
       }
 
-      final Widget item = InkWell(
-        borderRadius: BorderRadius.circular(16),
-        onTap: () => _onTrackTapped(context, source, index),
+      final Widget item = Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+        ),
         child: itemContent,
       );
 
@@ -1166,7 +963,7 @@ class _TrackListScreenState extends State<TrackListScreen> {
     final colorScheme = Theme.of(context).colorScheme;
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+      padding: const EdgeInsets.symmetric(horizontal: 24.0),
       child: Row(
         children: [
           _buildFruitNavButton(
@@ -1203,22 +1000,32 @@ class _TrackListScreenState extends State<TrackListScreen> {
 
   Widget _buildFruitNavButton(BuildContext context,
       {required IconData icon, required VoidCallback onPressed}) {
-    return NeumorphicWrapper(
-      isCircle: true,
-      borderRadius: 100,
-      intensity: 0.8,
-      color: Colors.transparent,
-      child: LiquidGlassWrapper(
-        enabled: true,
-        borderRadius: BorderRadius.circular(100),
-        opacity: 0.05,
-        blur: 5.0,
-        child: FruitIconButton(
-          icon: Icon(icon),
-          size: 20,
-          onPressed: onPressed,
+    final settingsProvider = context.watch<SettingsProvider>();
+    final useNeumorphic =
+        settingsProvider.useNeumorphism && !settingsProvider.useTrueBlack;
+
+    if (useNeumorphic) {
+      return NeumorphicWrapper(
+        isCircle: true,
+        borderRadius: 100,
+        intensity: 0.8,
+        color: Colors.transparent,
+        child: LiquidGlassWrapper(
+          enabled: true,
+          borderRadius: BorderRadius.circular(100),
+          opacity: 0.12,
+          blur: 8,
+          child: FruitIconButton(
+            icon: Icon(icon),
+            onPressed: onPressed,
+          ),
         ),
-      ),
+      );
+    }
+
+    return FruitIconButton(
+      icon: Icon(icon),
+      onPressed: onPressed,
     );
   }
 }

@@ -425,6 +425,7 @@ class PlaybackPanel extends StatelessWidget {
                                           text: currentSource.id,
                                           showUnderline: true,
                                           scaleFactor: isFruit ? 1.4 : 1.0,
+                                          interactive: false,
                                         ),
                                         tooltip: 'Open in Archive.org',
                                       ),

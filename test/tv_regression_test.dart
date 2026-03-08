@@ -188,6 +188,10 @@ class FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
   @override
   bool get uiScale => false;
   @override
+  double get oilBeatImpact => 1.0;
+  @override
+  Future<void> setOilBeatImpact(double value) async {}
+  @override
   double get oilLogoScale => 1.0;
   @override
   Future<void> setOilLogoScale(double value) async {}
@@ -648,6 +652,11 @@ class FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
 
   @override
   bool get hasListeners => super.hasListeners;
+
+  @override
+  HiddenSessionPreset get hiddenSessionPreset => HiddenSessionPreset.balanced;
+  @override
+  void setHiddenSessionPreset(HiddenSessionPreset preset) {}
 }
 
 class MockShowListProvider extends ChangeNotifier implements ShowListProvider {

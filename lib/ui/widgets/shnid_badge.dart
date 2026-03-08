@@ -5,17 +5,22 @@ import 'package:shakedown/providers/theme_provider.dart';
 import 'package:shakedown/ui/widgets/theme/neumorphic_wrapper.dart';
 import 'package:shakedown/ui/widgets/theme/liquid_glass_wrapper.dart';
 import 'package:shakedown/utils/font_layout_config.dart';
+import 'package:shakedown/utils/utils.dart';
 
 class ShnidBadge extends StatelessWidget {
   final String text;
   final bool showUnderline;
   final double scaleFactor;
+  final VoidCallback? onTap;
+  final bool interactive;
 
   const ShnidBadge({
     super.key,
     required this.text,
     this.showUnderline = false,
     this.scaleFactor = 1.0,
+    this.onTap,
+    this.interactive = true,
   });
 
   @override
@@ -51,6 +56,8 @@ class ShnidBadge extends StatelessWidget {
       style: Theme.of(context).textTheme.labelSmall?.copyWith(
           color: textColor,
           fontWeight: FontWeight.w600,
+          decoration: TextDecoration.underline,
+          decorationColor: textColor.withValues(alpha: 0.5),
           fontSize: ((settingsProvider.appFont == 'rock_salt')
                   ? 7.5 * effectiveScale
                   : 9.0 * effectiveScale) *
@@ -112,6 +119,14 @@ class ShnidBadge extends StatelessWidget {
       child: content,
     );
 
+    Widget badgeWithTap = interactive
+        ? GestureDetector(
+            onTap: onTap ?? () => launchArchiveDetails(text, context),
+            behavior: HitTestBehavior.opaque,
+            child: badge,
+          )
+        : badge;
+
     if (useNeumorphic) {
       return NeumorphicWrapper(
         isCircle: false,
@@ -123,11 +138,11 @@ class ShnidBadge extends StatelessWidget {
           borderRadius: BorderRadius.circular(10.0),
           opacity: 0.08,
           blur: 5.0,
-          child: badge,
+          child: badgeWithTap,
         ),
       );
     }
 
-    return badge;
+    return badgeWithTap;
   }
 }

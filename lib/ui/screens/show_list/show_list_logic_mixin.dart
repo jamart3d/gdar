@@ -245,6 +245,9 @@ mixin ShowListLogicMixin<T extends StatefulWidget>
             builder: (context) => RatingDialog(
               initialRating: catalog.getRating(sourceToPlay.id),
               sourceId: sourceToPlay.id,
+              sourceUrl: sourceToPlay.tracks.isNotEmpty
+                  ? sourceToPlay.tracks.first.url
+                  : null,
               isPlayed: catalog.isPlayed(sourceToPlay.id),
               onRatingChanged: (newRating) {
                 catalog.setRating(sourceToPlay.id, newRating);
@@ -280,6 +283,8 @@ mixin ShowListLogicMixin<T extends StatefulWidget>
             builder: (context) => RatingDialog(
               initialRating: catalog.getRating(source.id),
               sourceId: source.id,
+              sourceUrl:
+                  source.tracks.isNotEmpty ? source.tracks.first.url : null,
               isPlayed: catalog.isPlayed(source.id),
               onRatingChanged: (newRating) {
                 catalog.setRating(source.id, newRating);

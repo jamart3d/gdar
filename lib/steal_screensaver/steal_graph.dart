@@ -91,6 +91,25 @@ class StealGraph extends Component with HasGameReference<StealGame> {
     return 6.0;
   }
 
+  Offset _burnInDrift() {
+    // Very slow, tiny drift to prevent OLED static-pixel retention.
+    // Keep drift inward so corner mode visually stays in the corner.
+    final t = game.time;
+    final amp = _isFast
+        ? 0.7
+        : _isBalanced
+            ? 1.1
+            : 1.6;
+
+    final nx = (sin(t * 0.031) + sin(t * 0.017 + 1.3) * 0.35 + 1.35) / 2.7;
+    final ny =
+        (cos(t * 0.027 + 0.4) + cos(t * 0.019 + 2.1) * 0.30 + 1.30) / 2.6;
+
+    final x = nx.clamp(0.0, 1.0) * amp; // right only
+    final y = -ny.clamp(0.0, 1.0) * amp; // up only
+    return Offset(x, y);
+  }
+
   @override
   void update(double dt) {
     super.update(dt);
@@ -190,8 +209,9 @@ class StealGraph extends Component with HasGameReference<StealGame> {
 
   /// Render 8-bar EQ + Beat anchored bottom-left using FFT band data.
   void _renderCorner(Canvas canvas) {
-    final startY = game.size.y - _bottomPadding;
-    const startX = _leftPadding;
+    final drift = _burnInDrift();
+    final startY = game.size.y - _bottomPadding + drift.dy;
+    final startX = _leftPadding + drift.dx;
 
     if (!_isFast) {
       _renderCornerHudPanel(canvas, startX, startY);
@@ -266,8 +286,9 @@ class StealGraph extends Component with HasGameReference<StealGame> {
   }
 
   void _renderCornerHudPanel(Canvas canvas, double startX, double startY) {
-    final width = (_cornerBarCount * _barWidth) + ((_cornerBarCount - 1) * _barGap) + 18;
-    final height = _maxBarHeight + 40;
+    const width =
+        (_cornerBarCount * _barWidth) + ((_cornerBarCount - 1) * _barGap) + 18;
+    const height = _maxBarHeight + 40;
     final panelRect = RRect.fromRectAndRadius(
       Rect.fromLTWH(startX - 10, startY - _maxBarHeight - 14, width, height),
       const Radius.circular(10),
@@ -314,8 +335,9 @@ class StealGraph extends Component with HasGameReference<StealGame> {
   /// Render 8-band radial EQ centered on the logo.
   void _renderCircular(Canvas canvas) {
     final logoUV = game.smoothedLogoPos;
-    final cx = logoUV.dx * game.size.x;
-    final cy = logoUV.dy * game.size.y;
+    final drift = _burnInDrift();
+    final cx = logoUV.dx * game.size.x + (drift.dx * 0.4);
+    final cy = logoUV.dy * game.size.y + (drift.dy * 0.4);
 
     final minDim = min(game.size.x, game.size.y);
     final dynamicRadius =

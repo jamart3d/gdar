@@ -256,6 +256,7 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
       flatTextPlacement: settings.oilFlatTextPlacement,
       audioGraphMode: settings.oilAudioGraphMode,
       beatSensitivity: settings.oilBeatSensitivity,
+      beatImpact: settings.oilBeatImpact,
       innerRingFontScale: settings.oilInnerRingFontScale,
       innerRingSpacingMultiplier: settings.oilInnerRingSpacingMultiplier,
       trackLetterSpacing: settings.oilTrackLetterSpacing,

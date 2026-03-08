@@ -67,6 +67,10 @@ class FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
   bool get showSingleShnid => false;
   @override
   bool get isTv => false;
+  @override
+  double get oilBeatImpact => 1.0;
+  @override
+  Future<void> setOilBeatImpact(double value) async {}
 
   @override
   bool get fruitEnableLiquidGlass => false;
@@ -560,6 +564,11 @@ class FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
 
   @override
   bool get hasListeners => super.hasListeners;
+
+  @override
+  HiddenSessionPreset get hiddenSessionPreset => HiddenSessionPreset.balanced;
+  @override
+  void setHiddenSessionPreset(HiddenSessionPreset preset) {}
 }
 
 @GenerateMocks([AudioProvider, GaplessPlayer])

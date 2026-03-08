@@ -29,6 +29,10 @@ Exception in `gemini.md` rules).
 
 ## Steps
 
+### 0. Check for Problems ← DO THIS FIRST
+1. Run `dart run tool/verify.dart` (or `mcp_dart-mcp-server_analyze_files` and `mcp_dart-mcp-server_run_tests`).
+2. **CRITICAL**: If any errors are found, **ABORT** the release immediately. Do not bump versions or start builds if the codebase is unstable.
+
 ### 1. Version Bump
 1. Read current `version` from `pubspec.yaml`.
 2. Increment build number (e.g., `1.0.3+3` → `1.0.3+4`).

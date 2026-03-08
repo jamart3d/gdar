@@ -53,8 +53,7 @@ class StealBackground extends PositionComponent
 
     // Randomise motion path for this session
     final rng = Random();
-    _phaseOffset =
-        rng.nextDouble() * 2 * pi * 10; // random start anywhere on curve
+    _phaseOffset = rng.nextDouble() * 2 * pi; // random start on curve
     _freqNudgeX1 = 1.3 + (rng.nextDouble() - 0.5) * 0.3; // 1.15 – 1.45
     _freqNudgeY1 = 1.7 + (rng.nextDouble() - 0.5) * 0.3; // 1.55 – 1.85
     _freqNudgeX2 = 2.9 + (rng.nextDouble() - 0.5) * 0.4; // 2.70 – 3.10
@@ -162,18 +161,20 @@ class StealBackground extends PositionComponent
     }
 
     // Compute raw logo target position.
-    // _phaseOffset randomised at init so each session starts at a different
-    // point. _freqNudge values vary the curve shape slightly each session.
+    // Keep angle arguments bounded to avoid floating-point precision drift
+    // during very long sessions (which can present as occasional jumps).
     final safeTime = game.time.clamp(0.0, double.infinity);
     final t =
         (safeTime + _phaseOffset) * config.flowSpeed.clamp(0.0, 2.0) * 0.5;
     final drift = config.orbitDrift.clamp(0.0, 2.0);
-    final rawX = 0.5 +
-        0.25 * drift * sin(t * _freqNudgeX1) +
-        0.1 * drift * sin(t * _freqNudgeX2);
-    final rawY = 0.5 +
-        0.25 * drift * cos(t * _freqNudgeY1) +
-        0.1 * drift * cos(t * _freqNudgeY2);
+
+    final argX1 = _normalizeAngle(t * _freqNudgeX1);
+    final argX2 = _normalizeAngle(t * _freqNudgeX2);
+    final argY1 = _normalizeAngle(t * _freqNudgeY1);
+    final argY2 = _normalizeAngle(t * _freqNudgeY2);
+
+    final rawX = 0.5 + 0.25 * drift * sin(argX1) + 0.1 * drift * sin(argX2);
+    final rawY = 0.5 + 0.25 * drift * cos(argY1) + 0.1 * drift * cos(argY2);
 
     // Lerp smoothedPos toward raw pos using time-based decay
     final s = config.translationSmoothing.clamp(0.0, 1.0);
@@ -351,8 +352,12 @@ class StealBackground extends PositionComponent
     _shader!.setFloat(idx++, 0.0); // filmGrain hardcoded off
     _shader!.setFloat(idx++, config.pulseIntensity.clamp(0.0, 5.0));
     _shader!.setFloat(idx++, config.heatDrift.clamp(0.0, 5.0));
-    // Apply beat pulse: up to 8% scale boost on beat detection
-    final beatBoost = game.beatPulse * 0.08;
+    // Beat boost now respects Pulse Intensity so low-reactivity settings stay calm.
+    final beatBoostStrength = config.enableAudioReactivity
+        ? config.pulseIntensity.clamp(0.0, 1.5)
+        : 0.0;
+    final beatBoost =
+        game.beatPulse * 0.08 * beatBoostStrength * config.beatImpact;
     _shader!.setFloat(idx++, (config.logoScale + beatBoost).clamp(0.05, 1.1));
     _shader!.setFloat(idx++, config.blurAmount.clamp(0.0, 1.0));
     _shader!.setFloat(idx++, config.flatColor ? 1.0 : 0.0);
@@ -362,10 +367,28 @@ class StealBackground extends PositionComponent
     _shader!.setFloat(idx++, _smoothedPos.dx); // uLogoPosX
     _shader!.setFloat(idx++, _smoothedPos.dy); // uLogoPosY
 
-    _shader!.setFloat(idx++, energy.bass.clamp(0.0, 5.0));
-    _shader!.setFloat(idx++, energy.mid.clamp(0.0, 5.0));
-    _shader!.setFloat(idx++, energy.treble.clamp(0.0, 5.0));
-    _shader!.setFloat(idx++, energy.overall.clamp(0.0, 5.0));
+    final isCornerOnly = config.audioGraphMode == 'corner_only';
+
+    _shader!.setFloat(
+        idx++,
+        (!isCornerOnly && config.enableAudioReactivity)
+            ? energy.bass.clamp(0.0, 5.0)
+            : 0.0);
+    _shader!.setFloat(
+        idx++,
+        (!isCornerOnly && config.enableAudioReactivity)
+            ? energy.mid.clamp(0.0, 5.0)
+            : 0.0);
+    _shader!.setFloat(
+        idx++,
+        (!isCornerOnly && config.enableAudioReactivity)
+            ? energy.treble.clamp(0.0, 5.0)
+            : 0.0);
+    _shader!.setFloat(
+        idx++,
+        (!isCornerOnly && config.enableAudioReactivity)
+            ? energy.overall.clamp(0.0, 5.0)
+            : 0.0);
 
     // Always write exactly 4 colors — shader always expects uColor1–uColor4
     final colors = _currentColors.length == _colorCount
@@ -379,6 +402,12 @@ class StealBackground extends PositionComponent
     }
 
     _shader!.setImageSampler(0, _logoTexture!);
+  }
+
+  double _normalizeAngle(double angle) {
+    const tau = 2 * pi;
+    final mod = angle % tau;
+    return mod < 0 ? mod + tau : mod;
   }
 
   List<Color> _getPaletteColors(String name) {

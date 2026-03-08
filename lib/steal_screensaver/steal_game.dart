@@ -168,8 +168,14 @@ class StealGame extends FlameGame {
   }
 
   void _tickPulse(double dt) {
+    if (config.audioGraphMode == 'corner_only') {
+      _beatPulse = 0.0;
+      return;
+    }
+
     if (_currentEnergy.isBeat) {
-      _beatPulse = 1.0;
+      // Smooth attack avoids single-frame pop when beat flags flap.
+      _beatPulse += (1.0 - _beatPulse) * (1.0 - exp(-14.0 * dt));
     } else {
       _beatPulse *= pow(0.04, dt).clamp(0.0, 1.0).toDouble();
       if (_beatPulse < 0.01) _beatPulse = 0.0;
@@ -318,7 +324,8 @@ class StealGame extends FlameGame {
   void _applyGraphConfig(StealConfig cfg) {
     _graph?.isVisible =
         cfg.audioGraphMode != 'off' && cfg.enableAudioReactivity;
-    _graph?.graphMode = cfg.audioGraphMode;
+    _graph?.graphMode =
+        cfg.audioGraphMode == 'corner_only' ? 'corner' : cfg.audioGraphMode;
   }
 
   void _applyBannerConfig(StealConfig cfg) {
@@ -359,8 +366,9 @@ class StealGame extends FlameGame {
 
   /// Unified pulse scale multiplier combining base scale and audio energy.
   /// Used to synchronize logo and banner expansion.
-  double get pulseScale =>
-      (1.0 + _currentEnergy.bass * 0.2 * config.pulseIntensity);
+  double get pulseScale => config.audioGraphMode == 'corner_only'
+      ? 1.0
+      : (1.0 + _currentEnergy.bass * 0.2 * config.pulseIntensity);
 }
 
 enum _WoodstockPhase { idle, yellow, green }

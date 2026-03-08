@@ -221,7 +221,9 @@ class CardStyle {
         isPlaying &&
         settings.highlightCurrentShowCard;
 
-    bool useRgb = !settings.performanceMode && settings.highlightPlayingWithRgb && isPlaying;
+    bool useRgb = !settings.performanceMode &&
+        settings.highlightPlayingWithRgb &&
+        isPlaying;
     if (isFruitHighlight) {
       showGlow =
           true; // Force border for Fruit highlight, but use theme colors unless RGB is enabled

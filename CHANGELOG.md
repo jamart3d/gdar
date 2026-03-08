@@ -6,6 +6,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.61+161] - 2026-03-08
+
+### Fixed
+- **UI/UX (ShnidBadge)**: Overhauled `ShnidBadge` with a consistent HTML-style link behavior (onTap + underline) across all platforms.
+- **UI/UX (RatingDialog)**: Resolved a regression where the "Internet Archive" link was missing the `sourceUrl` when rating shows from the list view.
+- **UI/UX (Fruit)**: Refined hit-testing on Fruit-style cards to ensure glass and neumorphic overlays don't intercept badge link taps.
+- **Layout**: Stabilized `TrackListScreen` header by removing layout-squashing `Flexible` wrappers, ensuring badge links remain accessible.
+
+### Changed
+- **UI/UX (Fruit)**: Reverted the experimental global mini-player for Fruit style to restore the original browsing layout as requested.
+
 ## [1.1.60+160] - 2026-03-07
 
 ### Added

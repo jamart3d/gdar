@@ -94,13 +94,15 @@ class RatingControl extends StatelessWidget {
         content = innerStars;
       } else {
         content = NeumorphicWrapper(
-          enabled: true,
+          enabled: !settingsProvider.performanceMode,
           isCircle: false,
           borderRadius: 12,
           intensity: 0.8,
-          color: Colors.transparent,
+          color: settingsProvider.performanceMode
+              ? colorScheme.surfaceContainerHighest
+              : Colors.transparent,
           child: LiquidGlassWrapper(
-            enabled: true,
+            enabled: !settingsProvider.performanceMode,
             showBorder: false, // Maintain no-sharp-edge rule
             borderRadius: BorderRadius.circular(12),
             opacity: brightness == Brightness.light ? 0.15 : 0.08,
@@ -158,11 +160,11 @@ class RatingControl extends StatelessWidget {
             itemSize: scaledSize,
             ignoreGestures: true,
             ratingWidget: RatingWidget(
-              full: Icon(isFruit ? Icons.star : Icons.star,
+              full: Icon(isFruit ? Icons.star_rate_rounded : Icons.star,
                   color: isFruit ? colorScheme.primary : Colors.amber),
-              half: Icon(isFruit ? Icons.star_half : Icons.star_half,
+              half: Icon(isFruit ? Icons.star_rate_rounded : Icons.star_half,
                   color: isFruit ? colorScheme.primary : Colors.amber),
-              empty: Icon(isFruit ? Icons.star_border : Icons.star_border,
+              empty: Icon(isFruit ? Icons.star_rate_rounded : Icons.star_border,
                   color: Colors.grey),
             ),
             onRatingUpdate: (_) {},
@@ -298,9 +300,12 @@ class _RatingDialogState extends State<RatingDialog> {
                     return NeumorphicWrapper(
                       borderRadius: 8,
                       intensity: 0.9,
-                      color: Colors.transparent,
+                      enabled: !settingsProvider.performanceMode,
+                      color: settingsProvider.performanceMode
+                          ? colorScheme.tertiaryContainer
+                          : Colors.transparent,
                       child: LiquidGlassWrapper(
-                        enabled: true,
+                        enabled: !settingsProvider.performanceMode,
                         showBorder: false,
                         borderRadius: BorderRadius.circular(8),
                         opacity: 0.12,
@@ -411,7 +416,7 @@ class _RatingDialogState extends State<RatingDialog> {
                                 ratingWidget: RatingWidget(
                                   full: Icon(
                                     isFruit
-                                        ? LucideIcons.star
+                                        ? Icons.star_rate_rounded
                                         : Icons.star_rounded,
                                     color: (_currentRating == 0 && _isPlayed)
                                         ? Colors.blueGrey.withValues(alpha: 0.4)
@@ -421,7 +426,7 @@ class _RatingDialogState extends State<RatingDialog> {
                                   ),
                                   half: Icon(
                                     isFruit
-                                        ? LucideIcons.star
+                                        ? Icons.star_rate_rounded
                                         : Icons.star_half_rounded,
                                     color: isFruit
                                         ? colorScheme.primary
@@ -429,10 +434,13 @@ class _RatingDialogState extends State<RatingDialog> {
                                   ),
                                   empty: Icon(
                                     isFruit
-                                        ? LucideIcons.star
+                                        ? Icons.star_rate_rounded
                                         : Icons.star_rounded,
-                                    color:
-                                        Colors.blueGrey.withValues(alpha: 0.3),
+                                    color: isFruit
+                                        ? colorScheme.onSurface
+                                            .withValues(alpha: 0.1)
+                                        : Colors.blueGrey
+                                            .withValues(alpha: 0.3),
                                   ),
                                 ),
                                 onRatingUpdate: (rating) {
@@ -447,13 +455,15 @@ class _RatingDialogState extends State<RatingDialog> {
 
                               if (isFruitNeumorphic) {
                                 return NeumorphicWrapper(
-                                  enabled: true,
+                                  enabled: !settingsProvider.performanceMode,
                                   isPressed: true,
                                   borderRadius: 16,
                                   intensity: 1.0,
-                                  color: Colors.transparent,
+                                  color: settingsProvider.performanceMode
+                                      ? colorScheme.surfaceContainerHighest
+                                      : Colors.transparent,
                                   child: LiquidGlassWrapper(
-                                    enabled: true,
+                                    enabled: !settingsProvider.performanceMode,
                                     showBorder: false,
                                     borderRadius: BorderRadius.circular(16),
                                     opacity: 0.08,
@@ -510,9 +520,12 @@ class _RatingDialogState extends State<RatingDialog> {
                             borderRadius: 20,
                             intensity: 0.7,
                             isPressed: true,
-                            color: Colors.transparent,
+                            enabled: !settingsProvider.performanceMode,
+                            color: settingsProvider.performanceMode
+                                ? colorScheme.secondaryContainer
+                                : Colors.transparent,
                             child: LiquidGlassWrapper(
-                              enabled: true,
+                              enabled: !settingsProvider.performanceMode,
                               showBorder: false,
                               borderRadius: BorderRadius.circular(20),
                               opacity: 0.06,
@@ -586,7 +599,7 @@ class _RatingDialogState extends State<RatingDialog> {
         _buildActionOption(
           context,
           'Block (Red Star)',
-          Icons.star,
+          isFruit ? Icons.star_rate_rounded : Icons.star,
           isFruitNeumorphic
               ? Colors.redAccent.withValues(alpha: 0.85)
               : Colors.redAccent,
@@ -600,7 +613,7 @@ class _RatingDialogState extends State<RatingDialog> {
         _buildActionOption(
           context,
           'Clear Rating',
-          Icons.star,
+          isFruit ? Icons.star_rate_rounded : Icons.star,
           isFruitNeumorphic
               ? colorScheme.onSurfaceVariant.withValues(alpha: 0.6)
               : Colors.grey,
@@ -630,17 +643,22 @@ class _RatingDialogState extends State<RatingDialog> {
       );
     } else if (isFruitNeumorphic) {
       content = LiquidGlassWrapper(
-        enabled: true,
+        enabled: !settingsProvider.performanceMode,
         showBorder: false, // Seamless Vapor feel
         borderRadius: BorderRadius.circular(24),
         opacity: 0.35, // Slightly more subtle for deep glass look
         blur: 30, // Deeper blur for the dialog back-plate
         child: NeumorphicWrapper(
-          enabled: true,
+          enabled: !settingsProvider.performanceMode,
+          color: settingsProvider.performanceMode
+              ? colorScheme.surface
+              : Colors.transparent,
           borderRadius: 16,
           intensity: 1.1,
           child: Material(
-            color: Colors.transparent,
+            color: settingsProvider.performanceMode
+                ? colorScheme.surface
+                : Colors.transparent,
             child: content,
           ),
         ),
@@ -706,26 +724,101 @@ class _RatingDialogState extends State<RatingDialog> {
     final settingsProvider = context.read<SettingsProvider>();
     final double scaleFactor = settingsProvider.uiScale ? 1.5 : 1.0;
 
+    final colorScheme = Theme.of(context).colorScheme;
+    final isFruit =
+        context.read<ThemeProvider>().themeStyle == ThemeStyle.fruit;
+    final isFruitNeumorphic = isFruit &&
+        settingsProvider.useNeumorphism &&
+        !settingsProvider.useTrueBlack;
+
     return showDialog<bool>(
       context: context,
       builder: (context) => MediaQuery(
         data: MediaQuery.of(context).copyWith(
           textScaler: TextScaler.linear(scaleFactor),
         ),
-        child: AlertDialog(
-          title: Text(title),
-          content: Text(content),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: const Text('Cancel'),
-            ),
-            TextButton(
-              onPressed: () => Navigator.pop(context, true),
-              child: const Text('Confirm'),
-            ),
-          ],
-        ),
+        child: isFruitNeumorphic
+            ? Dialog(
+                backgroundColor: Colors.transparent,
+                elevation: 0,
+                child: LiquidGlassWrapper(
+                  enabled: !settingsProvider.performanceMode,
+                  borderRadius: BorderRadius.circular(24),
+                  opacity: 0.4,
+                  blur: 25,
+                  child: NeumorphicWrapper(
+                    enabled: !settingsProvider.performanceMode,
+                    borderRadius: 24,
+                    color: settingsProvider.performanceMode
+                        ? colorScheme.surface
+                        : Colors.transparent,
+                    child: Container(
+                      padding: const EdgeInsets.all(24),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(title,
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .titleLarge
+                                  ?.copyWith(
+                                      fontWeight: FontWeight.bold,
+                                      fontFamily: 'Inter')),
+                          const SizedBox(height: 16),
+                          Text(content,
+                              textAlign: TextAlign.center,
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodyMedium
+                                  ?.copyWith(fontFamily: 'Inter')),
+                          const SizedBox(height: 24),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(context, false),
+                                child: Text('Cancel',
+                                    style: TextStyle(
+                                        color: colorScheme.onSurface
+                                            .withValues(alpha: 0.6),
+                                        fontWeight: FontWeight.bold)),
+                              ),
+                              const SizedBox(width: 8),
+                              ElevatedButton(
+                                onPressed: () => Navigator.pop(context, true),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: colorScheme.primary,
+                                  foregroundColor: colorScheme.onPrimary,
+                                  elevation: 0,
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12)),
+                                ),
+                                child: const Text('Confirm',
+                                    style:
+                                        TextStyle(fontWeight: FontWeight.bold)),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              )
+            : AlertDialog(
+                title: Text(title),
+                content: Text(content),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context, false),
+                    child: const Text('Cancel'),
+                  ),
+                  TextButton(
+                    onPressed: () => Navigator.pop(context, true),
+                    child: const Text('Confirm'),
+                  ),
+                ],
+              ),
       ),
     );
   }

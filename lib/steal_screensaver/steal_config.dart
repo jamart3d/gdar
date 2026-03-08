@@ -65,11 +65,14 @@ class StealConfig {
   /// 1.0 = standard, 0.5 = tight, 2.0 = double spaced.
   final double flatLineSpacing;
 
-  /// Audio graph display mode: 'off', 'corner', or 'circular'.
+  /// Audio graph display mode: 'off', 'corner', 'corner_only', or 'circular'.
   final String audioGraphMode;
 
   /// Beat detection sensitivity (0.0 = gentle, 1.0 = aggressive).
   final double beatSensitivity;
+
+  /// Visual beat scale impact (0.0 = off, 1.0 = full).
+  final double beatImpact;
 
   /// Font size multiplier for the inner (date) ring.
   /// 1.0 = same as other rings, <1.0 = smaller text to fit tighter arcs.
@@ -167,6 +170,7 @@ class StealConfig {
     this.flatLineSpacing = 1.0,
     this.audioGraphMode = 'off',
     this.beatSensitivity = 0.5,
+    this.beatImpact = 0.4,
     this.innerRingFontScale = 1.0,
     this.innerRingSpacingMultiplier = 1.0,
     this.logoAntiAlias = false,
@@ -224,6 +228,7 @@ class StealConfig {
       flatLineSpacing: (map['flatLineSpacing'] as num?)?.toDouble() ?? 1.0,
       audioGraphMode: map['audioGraphMode'] as String? ?? 'off',
       beatSensitivity: (map['beatSensitivity'] as num?)?.toDouble() ?? 0.5,
+      beatImpact: (map['beatImpact'] as num?)?.toDouble() ?? 0.4,
       innerRingFontScale:
           (map['innerRingFontScale'] as num?)?.toDouble() ?? 1.0,
       innerRingSpacingMultiplier:
@@ -277,6 +282,7 @@ class StealConfig {
       'flatLineSpacing': flatLineSpacing,
       'audioGraphMode': audioGraphMode,
       'beatSensitivity': beatSensitivity,
+      'beatImpact': beatImpact,
       'innerRingFontScale': innerRingFontScale,
       'innerRingSpacingMultiplier': innerRingSpacingMultiplier,
       'logoAntiAlias': logoAntiAlias,
@@ -327,6 +333,7 @@ class StealConfig {
     double? flatLineSpacing,
     String? audioGraphMode,
     double? beatSensitivity,
+    double? beatImpact,
     double? innerRingFontScale,
     double? innerRingSpacingMultiplier,
     bool? logoAntiAlias,
@@ -378,6 +385,7 @@ class StealConfig {
       flatLineSpacing: flatLineSpacing ?? this.flatLineSpacing,
       audioGraphMode: audioGraphMode ?? this.audioGraphMode,
       beatSensitivity: beatSensitivity ?? this.beatSensitivity,
+      beatImpact: beatImpact ?? this.beatImpact,
       innerRingFontScale: innerRingFontScale ?? this.innerRingFontScale,
       innerRingSpacingMultiplier:
           innerRingSpacingMultiplier ?? this.innerRingSpacingMultiplier,
@@ -432,6 +440,7 @@ class StealConfig {
         flatLineSpacing == other.flatLineSpacing &&
         audioGraphMode == other.audioGraphMode &&
         beatSensitivity == other.beatSensitivity &&
+        beatImpact == other.beatImpact &&
         innerRingFontScale == other.innerRingFontScale &&
         innerRingSpacingMultiplier == other.innerRingSpacingMultiplier &&
         logoAntiAlias == other.logoAntiAlias;
@@ -482,6 +491,7 @@ class StealConfig {
         flatLineSpacing,
         audioGraphMode,
         beatSensitivity,
+        beatImpact,
         innerRingFontScale,
         innerRingSpacingMultiplier,
         logoAntiAlias,

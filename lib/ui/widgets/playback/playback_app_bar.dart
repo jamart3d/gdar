@@ -18,6 +18,7 @@ import 'package:shakedown/ui/widgets/rating_control.dart';
 import 'package:shakedown/ui/widgets/shnid_badge.dart';
 import 'package:shakedown/ui/widgets/src_badge.dart';
 import 'package:shakedown/ui/widgets/theme/neumorphic_wrapper.dart';
+import 'package:shakedown/utils/utils.dart';
 import 'package:shakedown/ui/widgets/theme/liquid_glass_wrapper.dart';
 
 class PlaybackAppBar extends StatelessWidget {
@@ -56,7 +57,9 @@ class PlaybackAppBar extends StatelessWidget {
       leading: kIsWeb
           ? Builder(builder: (context) {
               final Widget menuBtn = FruitIconButton(
-                icon: Icon(isFruit ? LucideIcons.menu : Icons.menu_rounded),
+                icon: Icon(isFruit
+                    ? LucideIcons.chevronLeft
+                    : Icons.chevron_left_rounded),
                 onPressed: () => Navigator.of(context).pop(),
                 tooltip: 'Back to Show List',
                 padding: 0,
@@ -174,7 +177,17 @@ class PlaybackAppBar extends StatelessWidget {
                         matchShnidLook: true,
                       ),
                     const SizedBox(height: 2),
-                    ShnidBadge(text: currentSource.id),
+                    ShnidBadge(
+                      text: currentSource.id,
+                      onTap: () {
+                        if (currentSource.tracks.isNotEmpty) {
+                          launchArchivePage(
+                              currentSource.tracks.first.url, context);
+                        } else {
+                          launchArchiveDetails(currentSource.id, context);
+                        }
+                      },
+                    ),
                   ],
                 ),
               ],
