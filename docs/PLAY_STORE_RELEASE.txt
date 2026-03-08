@@ -1,3 +1,9 @@
+What's new in v1.1.63+163
+• Testing: Enhanced tv_settings_screen_test.dart with robust MockAudioProvider and stabilized AboutSection tests.
+• UI/UX (TV): Hidden Haptic Feedback and Swipe to Block settings from the TV interface, adhering to platform interaction rules (tv_rules.md).
+
+---
+
 What's new in v1.1.62+162
 • Fixed stale UI state in show transitions by ensuring metadata syncs correctly.
 

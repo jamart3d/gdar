@@ -53,11 +53,13 @@ class StealBackground extends PositionComponent
 
     // Randomise motion path for this session
     final rng = Random();
+    // Use a smaller frequency GCD (0.2) to extend the loop duration to ~13 minutes
+    // while keeping it perfectly closed and continuous.
     _phaseOffset = rng.nextDouble() * 2 * pi; // random start on curve
-    _freqNudgeX1 = 1.3 + (rng.nextDouble() - 0.5) * 0.3; // 1.15 – 1.45
-    _freqNudgeY1 = 1.7 + (rng.nextDouble() - 0.5) * 0.3; // 1.55 – 1.85
-    _freqNudgeX2 = 2.9 + (rng.nextDouble() - 0.5) * 0.4; // 2.70 – 3.10
-    _freqNudgeY2 = 3.1 + (rng.nextDouble() - 0.5) * 0.4; // 2.90 – 3.30
+    _freqNudgeX1 = 0.8;
+    _freqNudgeY1 = 1.0;
+    _freqNudgeX2 = 1.4;
+    _freqNudgeY2 = 1.8;
 
     try {
       await _loadResources();
@@ -66,7 +68,9 @@ class StealBackground extends PositionComponent
       _targetColors = List.of(initial);
 
       // Initialize logo to its correct starting position on the path
-      final t = _phaseOffset * config.flowSpeed.clamp(0.0, 2.0) * 0.5;
+      // Apply phaseOffset AFTER the speed multiplier so the starting position
+      // is truly random across the entire 0-2pi range regardless of flow speed.
+      final t = (0.0 * config.flowSpeed.clamp(0.0, 2.0) * 0.5) + _phaseOffset;
       final drift = config.orbitDrift.clamp(0.0, 2.0);
       final startX = 0.5 +
           0.25 * drift * sin(t * _freqNudgeX1) +
@@ -165,7 +169,7 @@ class StealBackground extends PositionComponent
     // during very long sessions (which can present as occasional jumps).
     final safeTime = game.time.clamp(0.0, double.infinity);
     final t =
-        (safeTime + _phaseOffset) * config.flowSpeed.clamp(0.0, 2.0) * 0.5;
+        (safeTime * config.flowSpeed.clamp(0.0, 2.0) * 0.5) + _phaseOffset;
     final drift = config.orbitDrift.clamp(0.0, 2.0);
 
     final argX1 = _normalizeAngle(t * _freqNudgeX1);

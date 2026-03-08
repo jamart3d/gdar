@@ -219,6 +219,9 @@ class StealBanner extends Component with HasGameReference<StealGame> {
 
   @override
   void update(double dt) {
+    // Clamp dt to prevent jumps during frame drops, matching StealGame behavior.
+    final clampedDt = dt.clamp(0.0, 1.0 / 30.0);
+
     _currentColor = Color.lerp(_currentColor, _color, 0.025)!;
 
     final StealConfig config = game.config;
@@ -231,18 +234,18 @@ class StealBanner extends Component with HasGameReference<StealGame> {
     final outerR = _outerRadius(minDim, config, middleR, pulseScale);
 
     if (_visible) {
-      _innerAngle += _baseRotationSpeed * innerR * dt;
-      _middleAngle += _baseRotationSpeed * middleR * dt;
-      _outerAngle += _baseRotationSpeed * outerR * dt;
+      _innerAngle += _baseRotationSpeed * innerR * clampedDt;
+      _middleAngle += _baseRotationSpeed * middleR * clampedDt;
+      _outerAngle += _baseRotationSpeed * outerR * clampedDt;
       if (_innerAngle > 2 * pi) _innerAngle -= 2 * pi;
       if (_middleAngle > 2 * pi) _middleAngle -= 2 * pi;
       if (_outerAngle > 2 * pi) _outerAngle -= 2 * pi;
-      _opacity = (_opacity + _fadeSpeed * dt).clamp(0.0, 1.0);
+      _opacity = (_opacity + _fadeSpeed * clampedDt).clamp(0.0, 1.0);
     } else {
-      _opacity = (_opacity - _fadeSpeed * dt).clamp(0.0, 1.0);
+      _opacity = (_opacity - _fadeSpeed * clampedDt).clamp(0.0, 1.0);
     }
 
-    _tickFade(dt, _outerFadingOut, _outerOpacity, _outerPending, (v) {
+    _tickFade(clampedDt, _outerFadingOut, _outerOpacity, _outerPending, (v) {
       _outerOpacity = v;
     }, (v) {
       _outerCurrent = v;
@@ -253,7 +256,7 @@ class StealBanner extends Component with HasGameReference<StealGame> {
     }, (v) {
       _outerWords = v;
     });
-    _tickFade(dt, _middleFadingOut, _middleOpacity, _middlePending, (v) {
+    _tickFade(clampedDt, _middleFadingOut, _middleOpacity, _middlePending, (v) {
       _middleOpacity = v;
     }, (v) {
       _middleCurrent = v;
@@ -264,7 +267,7 @@ class StealBanner extends Component with HasGameReference<StealGame> {
     }, (v) {
       _middleWords = v;
     });
-    _tickFade(dt, _innerFadingOut, _innerOpacity, _innerPending, (v) {
+    _tickFade(clampedDt, _innerFadingOut, _innerOpacity, _innerPending, (v) {
       _innerOpacity = v;
     }, (v) {
       _innerCurrent = v;
@@ -280,7 +283,7 @@ class StealBanner extends Component with HasGameReference<StealGame> {
       final strength = config.bannerFlicker.clamp(0.0, 1.0);
       for (final words in [_outerWords, _middleWords, _innerWords]) {
         for (final word in words) {
-          _tickWordFlicker(word, dt, strength);
+          _tickWordFlicker(word, clampedDt, strength);
         }
       }
     } else {
@@ -451,6 +454,9 @@ class StealBanner extends Component with HasGameReference<StealGame> {
     // Snap the logo center once for the entire block to prevent "crawling"
     // jitter between lines. We also fetch the unified pulse scale.
     Offset center = Offset(logoPos.dx * w, logoPos.dy * h);
+    // Note: We no longer round 'center' here because it affects ring mode smoothness.
+    // Snapping is now handled more precisely at the block/line level in _renderFlat.
+
     // Unified pulse factors (0.0 to 1.0) with exponential decay
     // Keep track-info motion independent from audio reactivity.
     const beatPulse = 0.0;
@@ -503,7 +509,7 @@ class StealBanner extends Component with HasGameReference<StealGame> {
     final audioShiftScale = pulseScale * (1.0 + basePulse / config.logoScale);
 
     final centerY = center.dy;
-    final double blockCenterY;
+    double blockCenterY;
 
     if (proximity <= 0.5) {
       // Transition from Away (2*baseGap) to Edge (1*baseGap)
@@ -527,6 +533,11 @@ class StealBanner extends Component with HasGameReference<StealGame> {
         // [centerY + baseGap + blockHeight/2] down to [centerY]
         blockCenterY = ui.lerpDouble(centerY + lerpBaseOffset, centerY, t)!;
       }
+    }
+
+    // Snap the block center vertically to prevent jitter between lines
+    if (config.bannerPixelSnap) {
+      blockCenterY = blockCenterY.roundToDouble();
     }
 
     final startY = blockCenterY - (blockHeight / 2) + (lineHeight / 2);
@@ -602,8 +613,12 @@ class StealBanner extends Component with HasGameReference<StealGame> {
     double x = center.dx - totalWidth / 2;
     double y = center.dy;
 
-    // NO per-line pixel snap here. We snap the SHARED center anchor in render()
-    // to ensure all lines move in perfect, rigid synchronization.
+    // Rigid pixel snap: we snap the START of the line to prevent jitter.
+    // Characters remain sub-pixel relative to this anchor for smooth kerning.
+    if (config.bannerPixelSnap) {
+      x = x.roundToDouble();
+      y = y.roundToDouble();
+    }
 
     for (int wi = 0; wi < wordList.length; wi++) {
       final word = wordList[wi];
@@ -850,6 +865,7 @@ class StealBanner extends Component with HasGameReference<StealGame> {
     final paint = Paint()
       ..colorFilter =
           ColorFilter.mode(color.withValues(alpha: opacity), BlendMode.modulate)
+      ..filterQuality = ui.FilterQuality.medium
       ..isAntiAlias = true;
 
     // Draw the rasterized image.

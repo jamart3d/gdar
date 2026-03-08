@@ -5,7 +5,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
- 
+
+## [1.1.63+163] - 2026-03-08
+
+### Added
+- **Testing**: Enhanced `tv_settings_screen_test.dart` with robust `MockAudioProvider` and stabilized `AboutSection` tests by replacing flaky `pumpAndSettle` calls with periodic `pump` cycles.
+
+### Fixed
+- **UI/UX (TV)**: Hidden "Haptic Feedback" and "Swipe to Block" settings from the TV interface, adhering to platform interaction rules (`tv_rules.md`).
+
 ## [1.1.62+162] - 2026-03-07
  
 ### Fixed

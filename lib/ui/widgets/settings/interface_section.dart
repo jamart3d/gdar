@@ -115,33 +115,34 @@ class InterfaceSection extends StatelessWidget {
           secondary:
               Icon(isFruit ? LucideIcons.rocket : Icons.rocket_launch_rounded),
         ),
-        TvSwitchListTile(
-          dense: true,
-          visualDensity: VisualDensity.compact,
-          title: FittedBox(
-              fit: BoxFit.scaleDown,
-              alignment: Alignment.centerLeft,
-              child: Text('Haptic Feedback',
-                  style: Theme.of(context)
-                      .textTheme
-                      .titleMedium
-                      ?.copyWith(fontSize: 16 * scaleFactor))),
-          subtitle: FittedBox(
-              fit: BoxFit.scaleDown,
-              alignment: Alignment.centerLeft,
-              child: Text('Vibrate on interactions (PWA/Mobile)',
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodySmall
-                      ?.copyWith(fontSize: 12 * scaleFactor))),
-          value: settingsProvider.enableHaptics,
-          onChanged: (value) {
-            context.read<SettingsProvider>().toggleEnableHaptics();
-            AppHaptics.lightImpact(context.read<DeviceService>(),
-                enabled: value);
-          },
-          secondary: Icon(isFruit ? LucideIcons.vibrate : Icons.vibration),
-        ),
+        if (!context.read<DeviceService>().isTv)
+          TvSwitchListTile(
+            dense: true,
+            visualDensity: VisualDensity.compact,
+            title: FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: Text('Haptic Feedback',
+                    style: Theme.of(context)
+                        .textTheme
+                        .titleMedium
+                        ?.copyWith(fontSize: 16 * scaleFactor))),
+            subtitle: FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: Text('Vibrate on interactions (PWA/Mobile)',
+                    style: Theme.of(context)
+                        .textTheme
+                        .bodySmall
+                        ?.copyWith(fontSize: 12 * scaleFactor))),
+            value: settingsProvider.enableHaptics,
+            onChanged: (value) {
+              context.read<SettingsProvider>().toggleEnableHaptics();
+              AppHaptics.lightImpact(context.read<DeviceService>(),
+                  enabled: value);
+            },
+            secondary: Icon(isFruit ? LucideIcons.vibrate : Icons.vibration),
+          ),
 
         const SizedBox(height: 8),
         const Divider(),
@@ -378,30 +379,30 @@ class InterfaceSection extends StatelessWidget {
         const Divider(),
         const SizedBox(height: 8),
 
-        // 5. Gestures Group
-        SwitchListTile(
-          dense: true,
-          visualDensity: VisualDensity.compact,
-          title: Text('Enable Swipe to Block',
-              style: Theme.of(context)
-                  .textTheme
-                  .titleMedium
-                  ?.copyWith(fontSize: 16 * scaleFactor)),
-          subtitle: Text('Allows swiping list items to block them',
-              style: Theme.of(context)
-                  .textTheme
-                  .bodySmall
-                  ?.copyWith(fontSize: 12 * scaleFactor)),
-          value: settingsProvider.enableSwipeToBlock,
-          onChanged: (value) {
-            AppHaptics.lightImpact(context.read<DeviceService>());
-            context.read<SettingsProvider>().toggleEnableSwipeToBlock();
-          },
-          secondary:
-              Icon(isFruit ? LucideIcons.moveHorizontal : Icons.swipe_rounded),
-          contentPadding:
-              const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-        ),
+        if (!context.read<DeviceService>().isTv)
+          SwitchListTile(
+            dense: true,
+            visualDensity: VisualDensity.compact,
+            title: Text('Enable Swipe to Block',
+                style: Theme.of(context)
+                    .textTheme
+                    .titleMedium
+                    ?.copyWith(fontSize: 16 * scaleFactor)),
+            subtitle: Text('Allows swiping list items to block them',
+                style: Theme.of(context)
+                    .textTheme
+                    .bodySmall
+                    ?.copyWith(fontSize: 12 * scaleFactor)),
+            value: settingsProvider.enableSwipeToBlock,
+            onChanged: (value) {
+              AppHaptics.lightImpact(context.read<DeviceService>());
+              context.read<SettingsProvider>().toggleEnableSwipeToBlock();
+            },
+            secondary: Icon(
+                isFruit ? LucideIcons.moveHorizontal : Icons.swipe_rounded),
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+          ),
       ],
     );
   }

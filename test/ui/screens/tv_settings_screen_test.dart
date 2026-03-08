@@ -27,6 +27,8 @@ class MockAudioProvider extends ChangeNotifier implements AudioProvider {
   Source? get currentSource => null;
   @override
   Show? get currentShow => null;
+  @override
+  bool get isPlaying => false;
 
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
@@ -93,7 +95,7 @@ void main() {
         ChangeNotifierProvider<UpdateProvider>(
             create: (_) => MockUpdateProvider()),
         ChangeNotifierProvider<DeviceService>(
-            create: (_) => MockDeviceService()),
+            create: (_) => MockDeviceService()..isTv = true),
       ],
       child: const MaterialApp(
         home: TvSettingsScreen(),
@@ -111,7 +113,7 @@ void main() {
     final settingsProvider = SettingsProvider(prefs);
 
     await tester.pumpWidget(createTestableWidget(settingsProvider));
-    await tester.pumpAndSettle();
+    await tester.pump(const Duration(milliseconds: 500));
 
     // Verify "About" category is present
     final aboutCategoryFinder = find.text('About');
@@ -122,7 +124,7 @@ void main() {
 
     await tester.scrollUntilVisible(aboutCategoryFinder, 50,
         scrollable: scrollable);
-    await tester.pumpAndSettle();
+    await tester.pump(const Duration(milliseconds: 500));
 
     expect(aboutCategoryFinder, findsOneWidget);
 
@@ -138,5 +140,31 @@ void main() {
     expect(find.byType(AboutBody), findsOneWidget);
     // Use a text finder that is definitely in AboutBody
     expect(find.text('Shakedown'), findsOneWidget);
+  });
+
+  testWidgets(
+      'Haptic Feedback and Swipe to Block are hidden in TV Interface Settings',
+      (WidgetTester tester) async {
+    tester.view.physicalSize = const Size(1920, 1080);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.resetPhysicalSize);
+
+    final settingsProvider = SettingsProvider(prefs);
+
+    await tester.pumpWidget(createTestableWidget(settingsProvider));
+    await tester.pump(const Duration(milliseconds: 500));
+
+    // Select Interface category
+    final interfaceCategoryFinder = find.text('Interface');
+    await tester.tap(interfaceCategoryFinder);
+    await tester.pump(const Duration(milliseconds: 500));
+
+    // Verify Haptic Feedback is NOT present
+    expect(find.text('Haptic Feedback'), findsNothing);
+    expect(find.text('Vibrate on interactions (PWA/Mobile)'), findsNothing);
+
+    // Verify Swipe to Block is NOT present (using text segments to be safe)
+    expect(find.text('Enable Swipe to Block'), findsNothing);
+    expect(find.textContaining('swipe list items to block'), findsNothing);
   });
 }

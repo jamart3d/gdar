@@ -435,6 +435,15 @@ class _TvScreensaverSectionState extends State<TvScreensaverSection> {
                   textTheme: textTheme,
                 ),
 
+                _ToggleRow(
+                  label: 'Pixel Snapping',
+                  subtitle: 'Snap text to full pixels for maximum stability',
+                  value: settings.oilBannerPixelSnap,
+                  onChanged: (_) => settings.toggleOilBannerPixelSnap(),
+                  colorScheme: colorScheme,
+                  textTheme: textTheme,
+                ),
+
                 if (settings.oilShowInfoBanner) ...[
                   const SizedBox(height: 16),
 
