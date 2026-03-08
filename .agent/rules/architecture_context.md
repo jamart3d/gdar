@@ -27,3 +27,7 @@ When dealing with external data fetching (such as pulling tide data or remote co
 ### 5. UI Padding & Scaffold
 * **Action:** When using a custom `Positioned` AppBar inside a `Stack` (e.g., in `PlaybackScreen`), set `primary: false` on the parent `Scaffold`.
 * **Constraint:** This prevents the `Scaffold` from adding its own automatic top padding (status bar height), which results in "double-padding" when the AppBar is already handling its own offset.
+ 
+### 6. Async Playback Transitions
+* **Action**: When implementing "pending" or "look-ahead" states for show selection (e.g., during dice rolls or automated transitions), ensure these states are strictly cleared or synchronized when the underlying audio engine's `currentIndexStream` or `MediaItem` tag emits a new value.
+* **Constraint**: Do not rely on loose timers or `Future.delayed` to synchronize UI metadata with the audio engine; authoritative stream synchronization is mandatory to prevent stale metadata.
