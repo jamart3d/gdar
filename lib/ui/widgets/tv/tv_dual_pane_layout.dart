@@ -9,7 +9,6 @@ import 'package:shakedown/ui/widgets/tv/tv_exit_dialog.dart';
 import 'package:provider/provider.dart';
 
 import 'package:shakedown/providers/audio_provider.dart';
-import 'package:shakedown/providers/settings_provider.dart';
 import 'package:shakedown/ui/widgets/playback/playback_messages.dart';
 
 // TV Remote Control Intents
@@ -186,7 +185,6 @@ class _TvDualPaneLayoutState extends State<TvDualPaneLayout> {
   @override
   Widget build(BuildContext context) {
     final audioProvider = context.watch<AudioProvider>();
-    final settingsProvider = context.watch<SettingsProvider>();
 
     // We use a Stack to float the Playback Bar at the bottom
     return PopScope(

@@ -10,7 +10,7 @@ import 'package:shakedown/ui/widgets/show_list/show_list_search_bar.dart';
 import 'package:shakedown/ui/widgets/theme/fruit_ui.dart';
 
 class _FakeThemeProvider extends ChangeNotifier implements ThemeProvider {
-  ThemeStyle _themeStyle = ThemeStyle.fruit;
+  final ThemeStyle _themeStyle = ThemeStyle.fruit;
   bool _darkMode = false;
 
   @override
@@ -114,7 +114,7 @@ void main() {
     deviceService = _FakeDeviceService();
   });
 
-  Widget _wrap(Widget child) {
+  Widget wrapWithProviders(Widget child) {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider<ThemeProvider>.value(value: themeProvider),
@@ -132,7 +132,7 @@ void main() {
     final focusNode = FocusNode();
 
     await tester.pumpWidget(
-      _wrap(
+      wrapWithProviders(
         ShowListSearchBar(
           controller: controller,
           focusNode: focusNode,

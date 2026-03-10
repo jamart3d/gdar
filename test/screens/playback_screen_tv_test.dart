@@ -52,6 +52,8 @@ class MockShowListProvider extends ChangeNotifier implements ShowListProvider {
 
 class FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
   @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+  @override
   bool get sortOldestFirst => true;
   @override
   void toggleSortOldestFirst() {}

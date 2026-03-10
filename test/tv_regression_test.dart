@@ -170,6 +170,8 @@ class MockTvDeviceService extends ChangeNotifier implements DeviceService {
 
 class FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
   @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+  @override
   AudioEngineMode get audioEngineMode => AudioEngineMode.auto;
   @override
   void setAudioEngineMode(AudioEngineMode mode) {}
