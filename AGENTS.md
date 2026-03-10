@@ -30,6 +30,15 @@ pair programmer and mentor.
 * **Google TV / Android TV:** Material Dark (OLED), D-Pad focus, dual-pane.
 * **Web / PWA:** Fruit (Liquid Glass) theme with BackdropFilter.
 
+## UI Platform Contract
+* **Android Phone/Tablet:** Material 3 Expressive is allowed and expected.
+* **Google TV / Android TV:** TV-focused Material Dark patterns only.
+* **Web / PWA (Fruit):** Apple Liquid Glass only.
+* **Fruit hard rule:** No Material 3 widgets, visuals, ripples, FAB patterns,
+  or M3 interaction language in Fruit screens.
+* **Fallback rule:** If Fruit effects are disabled (performance or settings),
+  keep Fruit structure and controls; do not swap to M3 components.
+
 ## Key Packages
 * `just_audio`, `just_audio_background`, `provider`
 * `shared_preferences`, `logger`, `hive`, `hive_flutter`

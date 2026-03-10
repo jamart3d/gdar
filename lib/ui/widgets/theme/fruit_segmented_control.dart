@@ -1,11 +1,13 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class FruitSegmentedControl<T> extends StatelessWidget {
   final List<T> values;
   final T selectedValue;
   final ValueChanged<T> onSelectionChanged;
   final Widget Function(T value) labelBuilder;
+  final String Function(T value)? semanticLabelBuilder;
   final double height;
   final BorderRadius? borderRadius;
 
@@ -15,6 +17,7 @@ class FruitSegmentedControl<T> extends StatelessWidget {
     required this.selectedValue,
     required this.onSelectionChanged,
     required this.labelBuilder,
+    this.semanticLabelBuilder,
     this.height = 36,
     this.borderRadius,
   });
@@ -68,25 +71,54 @@ class FruitSegmentedControl<T> extends StatelessWidget {
           Row(
             children: values.map((value) {
               final isSelected = value == selectedValue;
+              final semanticLabel =
+                  semanticLabelBuilder?.call(value) ?? value.toString();
+              void activate() => onSelectionChanged(value);
               return Expanded(
-                child: GestureDetector(
-                  onTap: () => onSelectionChanged(value),
-                  behavior: HitTestBehavior.opaque,
-                  child: Center(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 4),
-                      child: AnimatedDefaultTextStyle(
-                        duration: const Duration(milliseconds: 250),
-                        style: theme.textTheme.labelMedium!.copyWith(
-                          fontWeight:
-                              isSelected ? FontWeight.w600 : FontWeight.normal,
-                          color: isSelected
-                              ? theme.colorScheme.onSurface
-                              : theme.colorScheme.onSurface
-                                  .withValues(alpha: 0.6),
-                          fontSize: 12,
+                child: Semantics(
+                  button: true,
+                  selected: isSelected,
+                  label: semanticLabel,
+                  child: ExcludeSemantics(
+                    child: FocusableActionDetector(
+                      enabled: true,
+                      mouseCursor: SystemMouseCursors.click,
+                      shortcuts: const <ShortcutActivator, Intent>{
+                        SingleActivator(LogicalKeyboardKey.enter):
+                            ActivateIntent(),
+                        SingleActivator(LogicalKeyboardKey.space):
+                            ActivateIntent(),
+                      },
+                      actions: <Type, Action<Intent>>{
+                        ActivateIntent: CallbackAction<ActivateIntent>(
+                          onInvoke: (_) {
+                            activate();
+                            return null;
+                          },
                         ),
-                        child: labelBuilder(value),
+                      },
+                      child: GestureDetector(
+                        onTap: activate,
+                        behavior: HitTestBehavior.opaque,
+                        child: Center(
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 4),
+                            child: AnimatedDefaultTextStyle(
+                              duration: const Duration(milliseconds: 250),
+                              style: theme.textTheme.labelMedium!.copyWith(
+                                fontWeight: isSelected
+                                    ? FontWeight.w600
+                                    : FontWeight.normal,
+                                color: isSelected
+                                    ? theme.colorScheme.onSurface
+                                    : theme.colorScheme.onSurface
+                                        .withValues(alpha: 0.6),
+                                fontSize: 12,
+                              ),
+                              child: labelBuilder(value),
+                            ),
+                          ),
+                        ),
                       ),
                     ),
                   ),

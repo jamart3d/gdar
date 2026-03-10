@@ -6,10 +6,10 @@ import 'package:shakedown/ui/widgets/mini_player.dart';
 import 'package:shakedown/ui/widgets/show_list/show_list_app_bar.dart';
 import 'package:shakedown/ui/widgets/show_list/show_list_search_bar.dart';
 import 'package:shakedown/ui/widgets/show_list/clipboard_feedback_overlay.dart';
-import 'package:shakedown/ui/widgets/theme/liquid_glass_wrapper.dart';
 import 'package:shakedown/providers/settings_provider.dart';
 import 'package:shakedown/providers/theme_provider.dart';
 import 'package:shakedown/ui/widgets/fruit_tab_bar.dart';
+import 'package:shakedown/ui/widgets/theme/fruit_ui.dart';
 
 /// The layout shell for [ShowListScreen], including AppBar, SearchBar, and MiniPlayer.
 class ShowListShell extends StatelessWidget {
@@ -30,6 +30,7 @@ class ShowListShell extends StatelessWidget {
   final VoidCallback onTitleTap;
   final bool isPane;
   final FocusNode? scrollbarFocusNode;
+  final bool showFruitTabBar;
 
   const ShowListShell({
     super.key,
@@ -50,6 +51,7 @@ class ShowListShell extends StatelessWidget {
     this.isPane = false,
     this.enableDiceHaptics = false,
     this.scrollbarFocusNode,
+    this.showFruitTabBar = true,
   });
 
   Widget _buildFruitHeader(BuildContext context) {
@@ -118,12 +120,11 @@ class ShowListShell extends StatelessWidget {
             left: 0,
             right: 0,
             child: settingsProvider.performanceMode
-                ? LiquidGlassWrapper(
-                    enabled: isFruit && settingsProvider.fruitEnableLiquidGlass,
-                    showBorder: false,
-                    blur: 8,
-                    opacity: 0.9,
+                ? FruitSurface(
                     borderRadius: BorderRadius.zero,
+                    showBorder: false,
+                    blur: FruitTokens.blurSoft,
+                    opacity: 0.9,
                     child: _buildFruitHeader(context),
                   )
                 : ShaderMask(
@@ -136,11 +137,9 @@ class ShowListShell extends StatelessWidget {
                       ).createShader(bounds);
                     },
                     blendMode: BlendMode.dstIn,
-                    child: LiquidGlassWrapper(
-                      enabled:
-                          isFruit && settingsProvider.fruitEnableLiquidGlass,
+                    child: FruitSurface(
                       showBorder: false,
-                      blur: 8,
+                      blur: FruitTokens.blurSoft,
                       opacity: 0.9,
                       borderRadius: BorderRadius.zero,
                       child: _buildFruitHeader(context),
@@ -180,8 +179,19 @@ class ShowListShell extends StatelessWidget {
               onTitleTap: onTitleTap,
             ),
       body: bodyContent,
-      bottomNavigationBar: isFruit && !isPane
-          ? FruitTabBar(onOpenPlaybackScreen: onOpenPlaybackScreen)
+      bottomNavigationBar: isFruit && !isPane && showFruitTabBar
+          ? FruitTabBar(
+              selectedIndex: 1,
+              onTabSelected: (index) {
+                if (index == 0) {
+                  onOpenPlaybackScreen();
+                } else if (index == 2) {
+                  onRandomPlay();
+                } else if (index == 3) {
+                  onTitleTap();
+                }
+              },
+            )
           : null,
     );
   }

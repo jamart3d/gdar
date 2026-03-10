@@ -435,6 +435,19 @@ class PlaybackPanel extends StatelessWidget {
                               ),
                               const SizedBox(height: 4),
                               const PlaybackProgressBar(),
+                              if (kIsWeb &&
+                                  settingsProvider.showDevAudioHud) ...[
+                                SizedBox(height: 8 * scaleFactor),
+                                const Align(
+                                  alignment: Alignment.centerLeft,
+                                  child: PlaybackMessages(
+                                    textAlign: TextAlign.left,
+                                    showDivider: false,
+                                    showStatusLine: false,
+                                    compactDevHud: true,
+                                  ),
+                                ),
+                              ],
                               const SizedBox(height: 4),
                               ValueListenableBuilder<double>(
                                 valueListenable: panelPositionNotifier,
@@ -443,10 +456,14 @@ class PlaybackPanel extends StatelessWidget {
                                       panelPosition: position);
                                 },
                               ),
-                              if (settingsProvider.showPlaybackMessages) ...[
-                                SizedBox(height: 8 * scaleFactor),
-                                const PlaybackMessages(),
-                              ],
+                              SizedBox(height: 8 * scaleFactor),
+                              const Align(
+                                alignment: Alignment.centerLeft,
+                                child: PlaybackMessages(
+                                  textAlign: TextAlign.left,
+                                  showDevHudInline: false,
+                                ),
+                              ),
                             ],
                           ),
                         ),

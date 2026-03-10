@@ -4,8 +4,8 @@ import 'package:shakedown/providers/settings_provider.dart';
 import 'package:shakedown/providers/show_list_provider.dart';
 import 'package:shakedown/services/device_service.dart';
 import 'package:shakedown/ui/widgets/tv/tv_focus_wrapper.dart';
-import 'package:shakedown/ui/widgets/theme/liquid_glass_wrapper.dart';
 import 'package:shakedown/providers/theme_provider.dart';
+import 'package:shakedown/ui/widgets/theme/fruit_ui.dart';
 
 import 'package:lucide_icons/lucide_icons.dart';
 
@@ -32,28 +32,22 @@ class ShowListSearchBar extends StatelessWidget {
 
     Widget searchBar;
 
-    final bool useFruitGlass = isFruitStyle &&
-        (settingsProvider.fruitEnableLiquidGlass ||
-            settingsProvider.useNeumorphism) &&
-        !settingsProvider.useTrueBlack;
-
-    if (useFruitGlass) {
-      // Custom Fruit Search Basin (Simplified - buttons managed by AppBar)
+    if (isFruitStyle) {
+      // Fruit Search Basin: never fallback to Material widgets in Fruit mode.
       searchBar = ListenableBuilder(
         listenable: focusNode,
         builder: (context, child) {
           final hasFocus = focusNode.hasFocus;
           final primaryColor = Theme.of(context).colorScheme.primary;
 
-          return LiquidGlassWrapper(
-            enabled: true,
-            borderRadius: BorderRadius.circular(28),
+          return FruitSurface(
+            borderRadius: BorderRadius.circular(FruitTokens.radiusLarge),
+            blur: FruitTokens.blurStrong,
             opacity: 0.65,
-            blur: 15,
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 200),
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(28),
+                borderRadius: BorderRadius.circular(FruitTokens.radiusLarge),
                 border: Border.all(
                   color: hasFocus
                       ? primaryColor.withValues(alpha: 0.5)
@@ -98,19 +92,10 @@ class ShowListSearchBar extends StatelessWidget {
                       ),
                     ),
                     if (controller.text.isNotEmpty)
-                      IconButton(
-                        visualDensity: VisualDensity.compact,
-                        icon: Icon(
-                          LucideIcons.xCircle,
-                          size: 18,
-                          color: hasFocus
-                              ? primaryColor.withValues(alpha: 0.8)
-                              : Theme.of(context)
-                                  .colorScheme
-                                  .onSurface
-                                  .withValues(alpha: 0.6),
-                        ),
-                        onPressed: () => controller.clear(),
+                      FruitActionButton(
+                        icon: LucideIcons.xCircle,
+                        tooltip: 'Clear',
+                        onPressed: controller.clear,
                       ),
                   ],
                 ),

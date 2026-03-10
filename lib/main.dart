@@ -11,6 +11,7 @@ import 'package:shakedown/ui/screens/onboarding_screen.dart';
 import 'package:shakedown/ui/screens/playback_screen.dart';
 import 'package:shakedown/ui/screens/settings_screen.dart';
 import 'package:shakedown/ui/screens/show_list_screen.dart';
+import 'package:shakedown/ui/screens/fruit_tab_host_screen.dart';
 import 'package:shakedown/ui/screens/splash_screen.dart';
 import 'package:shakedown/ui/screens/track_list_screen.dart';
 import 'package:shakedown/utils/app_themes.dart';
@@ -273,14 +274,31 @@ class _GdarAppState extends State<GdarApp> {
         } else if (uri.host == 'navigate') {
           if (kReleaseMode) return;
           final screen = uri.queryParameters['screen']?.toLowerCase();
+          final isFruit =
+              Provider.of<ThemeProvider>(context, listen: false).themeStyle ==
+                  ThemeStyle.fruit;
+          final isTv = context.read<DeviceService>().isTv;
           logger.i('Main: [Session #$_sessionId] Navigating to: $screen');
 
           if (screen == 'settings') {
             final highlight = uri.queryParameters['highlight'];
-            unawaited(Navigator.of(context).push(
-              MaterialPageRoute(
-                  builder: (_) => SettingsScreen(highlightSetting: highlight)),
-            ));
+            if (isFruit && !isTv) {
+              unawaited(Navigator.of(context).pushAndRemoveUntil(
+                MaterialPageRoute(
+                  builder: (_) => FruitTabHostScreen(
+                    initialTab: 3,
+                    settingsHighlight: highlight,
+                  ),
+                ),
+                (route) => false,
+              ));
+            } else {
+              unawaited(Navigator.of(context).push(
+                MaterialPageRoute(
+                    builder: (_) =>
+                        SettingsScreen(highlightSetting: highlight)),
+              ));
+            }
           } else if (screen == 'splash') {
             unawaited(Navigator.of(context).pushAndRemoveUntil(
               MaterialPageRoute(builder: (_) => const SplashScreen()),
@@ -292,10 +310,18 @@ class _GdarAppState extends State<GdarApp> {
               (route) => false,
             ));
           } else if (screen == 'home') {
-            unawaited(Navigator.of(context).pushAndRemoveUntil(
-              MaterialPageRoute(builder: (_) => const ShowListScreen()),
-              (route) => false,
-            ));
+            if (isFruit && !isTv) {
+              unawaited(Navigator.of(context).pushAndRemoveUntil(
+                MaterialPageRoute(
+                    builder: (_) => const FruitTabHostScreen(initialTab: 1)),
+                (route) => false,
+              ));
+            } else {
+              unawaited(Navigator.of(context).pushAndRemoveUntil(
+                MaterialPageRoute(builder: (_) => const ShowListScreen()),
+                (route) => false,
+              ));
+            }
 
             final action = uri.queryParameters['action']?.toLowerCase();
             if (action == 'search') {
@@ -311,10 +337,18 @@ class _GdarAppState extends State<GdarApp> {
             }
           } else if (screen == 'player') {
             final openPanel = uri.queryParameters['panel'] == 'open';
-            unawaited(Navigator.of(context).push(
-              MaterialPageRoute(
-                  builder: (_) => PlaybackScreen(initiallyOpen: openPanel)),
-            ));
+            if (isFruit && !isTv) {
+              unawaited(Navigator.of(context).pushAndRemoveUntil(
+                MaterialPageRoute(
+                    builder: (_) => const FruitTabHostScreen(initialTab: 0)),
+                (route) => false,
+              ));
+            } else {
+              unawaited(Navigator.of(context).push(
+                MaterialPageRoute(
+                    builder: (_) => PlaybackScreen(initiallyOpen: openPanel)),
+              ));
+            }
           } else if (screen == 'track_list') {
             final indexStr = uri.queryParameters['index'];
             final showListProvider =
@@ -662,7 +696,9 @@ class _GdarAppState extends State<GdarApp> {
                           ? const SplashScreen()
                           : (context.watch<DeviceService>().isTv
                               ? const TvDualPaneLayout()
-                              : const ShowListScreen())),
+                              : (themeProvider.themeStyle == ThemeStyle.fruit
+                                  ? const FruitTabHostScreen()
+                                  : const ShowListScreen()))),
                   builder: (context, child) {
                     final isTrueBlack = themeProvider.isDarkMode &&
                         settingsProvider.useTrueBlack;

@@ -8,10 +8,8 @@ import 'package:shakedown/ui/screens/settings_screen.dart';
 import 'package:shakedown/ui/widgets/show_list/animated_dice_icon.dart';
 import 'package:shakedown/services/device_service.dart';
 import 'package:shakedown/ui/widgets/tv/tv_focus_wrapper.dart';
-import 'package:shakedown/ui/widgets/theme/neumorphic_wrapper.dart';
 import 'package:shakedown/providers/theme_provider.dart';
-import 'package:shakedown/ui/widgets/theme/fruit_icon_button.dart';
-import 'package:shakedown/ui/widgets/theme/liquid_glass_wrapper.dart';
+import 'package:shakedown/ui/widgets/theme/fruit_ui.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:shakedown/ui/widgets/show_list/show_list_search_bar.dart';
 
@@ -87,227 +85,132 @@ class ShowListAppBar extends StatelessWidget implements PreferredSizeWidget {
     final showListProvider = context.watch<ShowListProvider>();
 
     final isTv = context.watch<DeviceService>().isTv;
-    final themeStyle = context.watch<ThemeProvider>().themeStyle;
-    final isFruit = themeStyle == ThemeStyle.fruit;
-    final useNeumorphic = settingsProvider.useNeumorphism &&
-        isFruit &&
-        !settingsProvider.useTrueBlack;
 
     Widget wrap(Widget child,
-        {VoidCallback? onTap,
-        BorderRadius? radius,
-        bool isCircle = false, // Standardize to rounded square for Fruit
-        double intensity = 1.2}) {
-      Widget interactive = child;
-      if (useNeumorphic) {
-        interactive = NeumorphicWrapper(
-          isCircle: isCircle,
-          borderRadius: radius?.topLeft.x ?? 12,
-          intensity: intensity,
-          // Background color for the glass effect
-          color: Colors.transparent,
-          child: LiquidGlassWrapper(
-            enabled: true,
-            borderRadius: radius ?? BorderRadius.circular(isCircle ? 28 : 12),
-            opacity: 0.08, // Slightly more subtle glass
-            blur: 5, // Sharper subtle blur
-            child: child,
-          ),
-        );
-      }
-
+        {VoidCallback? onTap, BorderRadius? radius, bool isCircle = false}) {
       final Widget wrapped = Padding(
-        padding: EdgeInsets.symmetric(horizontal: (isFruit ? 16.0 : 8.0)),
+        padding: const EdgeInsets.symmetric(horizontal: 8.0),
         child: isTv
             ? TvFocusWrapper(
                 onTap: onTap,
                 borderRadius:
                     radius ?? BorderRadius.circular(isCircle ? 28 : 12),
-                child: interactive,
+                child: child,
               )
-            : interactive,
+            : child,
       );
 
       return wrapped;
     }
 
     return [
-      if (!isFruit) ...[
-        if (settingsProvider.nonRandom)
-          if (isRandomShowLoading)
-            const Padding(
-              padding: EdgeInsets.all(12.0),
-              child: SizedBox(
-                width: 24,
-                height: 24,
-                child: CircularProgressIndicator(strokeWidth: 2.5),
-              ),
-            )
-          else
-            wrap(
-              IconButton(
-                icon: const Icon(Icons.playlist_play_rounded),
-                onPressed: onRandomPlay,
-                tooltip: 'Play Next Show',
-              ),
-              onTap: onRandomPlay,
-            )
-        else if (settingsProvider.simpleRandomIcon)
-          if (isRandomShowLoading)
-            const Padding(
-              padding: EdgeInsets.all(12.0),
-              child: SizedBox(
-                width: 24,
-                height: 24,
-                child: CircularProgressIndicator(strokeWidth: 2.5),
-              ),
-            )
-          else
-            wrap(
-              settingsProvider.useNeumorphism
-                  ? IconButton(
-                      icon: const Icon(Icons.question_mark_rounded),
-                      onPressed: onRandomPlay,
-                      tooltip: 'Play Random Show',
-                    )
-                  : ScaleTransition(
-                      scale: randomPulseAnimation,
-                      child: IconButton(
-                        icon: const Icon(Icons.question_mark_rounded),
-                        onPressed: onRandomPlay,
-                        tooltip: 'Play Random Show',
-                      ),
-                    ),
-              onTap: onRandomPlay,
-            )
+      if (settingsProvider.nonRandom)
+        if (isRandomShowLoading)
+          const Padding(
+            padding: EdgeInsets.all(12.0),
+            child: SizedBox(
+              width: 24,
+              height: 24,
+              child: CircularProgressIndicator(strokeWidth: 2.5),
+            ),
+          )
         else
-          // Expressive Animated Dice (M3)
-          // Handles its own loading state (spinning)
           wrap(
-            AnimatedDiceIcon(
+            IconButton(
+              icon: const Icon(Icons.playlist_play_rounded),
               onPressed: onRandomPlay,
-              isLoading: isRandomShowLoading,
-              enableHaptics: enableDiceHaptics,
-              tooltip: 'Play Random Show',
-              useLucide: isFruit,
+              tooltip: 'Play Next Show',
             ),
             onTap: onRandomPlay,
-            radius: BorderRadius.circular(12),
+          )
+      else if (settingsProvider.simpleRandomIcon)
+        if (isRandomShowLoading)
+          const Padding(
+            padding: EdgeInsets.all(12.0),
+            child: SizedBox(
+              width: 24,
+              height: 24,
+              child: CircularProgressIndicator(strokeWidth: 2.5),
+            ),
+          )
+        else
+          wrap(
+            ScaleTransition(
+              scale: randomPulseAnimation,
+              child: IconButton(
+                icon: const Icon(Icons.question_mark_rounded),
+                onPressed: onRandomPlay,
+                tooltip: 'Play Random Show',
+              ),
+            ),
+            onTap: onRandomPlay,
+          )
+      else
+        // Expressive Animated Dice (M3)
+        // Handles its own loading state (spinning)
+        wrap(
+          AnimatedDiceIcon(
+            onPressed: onRandomPlay,
+            isLoading: isRandomShowLoading,
+            enableHaptics: enableDiceHaptics,
+            tooltip: 'Play Random Show',
+            useLucide: false,
           ),
-      ],
+          onTap: onRandomPlay,
+          radius: BorderRadius.circular(12),
+        ),
       // Gap removed to match spacing between Search and Settings (standard AppBar spacing)
       wrap(
-        settingsProvider.useNeumorphism
-            ? (isFruit
-                ? FruitIconButton(
-                    icon: Icon(showListProvider.isSearchVisible
-                        ? LucideIcons.x
-                        : LucideIcons.search),
-                    onPressed: onToggleSearch,
-                    tooltip: 'Search',
+        ScaleTransition(
+          scale: searchPulseAnimation,
+          child: IconButton(
+            icon: const Icon(Icons.search_rounded),
+            isSelected: showListProvider.isSearchVisible,
+            style: showListProvider.isSearchVisible
+                ? IconButton.styleFrom(
+                    backgroundColor: colorScheme.surfaceContainer,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12.0),
+                      side: BorderSide(color: colorScheme.outline),
+                    ),
                   )
-                : IconButton(
-                    icon: const Icon(Icons.search_rounded),
-                    isSelected: showListProvider.isSearchVisible,
-                    style: showListProvider.isSearchVisible
-                        ? IconButton.styleFrom(
-                            backgroundColor: colorScheme.surfaceContainer,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12.0),
-                              side: BorderSide(color: colorScheme.outline),
-                            ),
-                          )
-                        : null,
-                    onPressed: onToggleSearch,
-                  ))
-            : ScaleTransition(
-                scale: searchPulseAnimation,
-                child: isFruit
-                    ? FruitIconButton(
-                        icon: Icon(showListProvider.isSearchVisible
-                            ? LucideIcons.x
-                            : LucideIcons.search),
-                        onPressed: onToggleSearch,
-                        tooltip: 'Search',
-                      )
-                    : IconButton(
-                        icon: const Icon(Icons.search_rounded),
-                        isSelected: showListProvider.isSearchVisible,
-                        style: showListProvider.isSearchVisible
-                            ? IconButton.styleFrom(
-                                backgroundColor: colorScheme.surfaceContainer,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12.0),
-                                  side: BorderSide(color: colorScheme.outline),
-                                ),
-                              )
-                            : null,
-                        onPressed: onToggleSearch,
-                      ),
-              ),
+                : null,
+            onPressed: onToggleSearch,
+          ),
+        ),
         onTap: onToggleSearch,
       ),
       wrap(
-        isFruit
-            ? FruitIconButton(
-                icon: const Icon(LucideIcons.settings),
-                onPressed: () async {
-                  // Pause global clock before navigating to generic pages (Settings)
-                  // to prevent "visual jumps" when returning.
-                  try {
-                    context.read<AnimationController>().stop();
-                  } catch (_) {}
+        IconButton(
+          icon: const Icon(Icons.settings_rounded),
+          iconSize: 24.0,
+          onPressed: () async {
+            // Pause global clock before navigating to generic pages (Settings)
+            // to prevent "visual jumps" when returning.
+            try {
+              context.read<AnimationController>().stop();
+            } catch (_) {}
 
-                  unawaited(Navigator.of(context).push(
-                    PageRouteBuilder(
-                      pageBuilder: (context, animation, secondaryAnimation) =>
-                          const SettingsScreen(),
-                      transitionDuration: Duration.zero,
-                    ),
-                  ));
-
-                  // Resume clock on return
-                  if (context.mounted) {
-                    try {
-                      final controller = context.read<AnimationController>();
-                      if (!controller.isAnimating) {
-                        unawaited(controller.repeat());
-                      }
-                    } catch (_) {}
-                  }
-                },
-                tooltip: 'Settings',
-              )
-            : IconButton(
-                icon: const Icon(Icons.settings_rounded),
-                iconSize: 24.0,
-                onPressed: () async {
-                  // Pause global clock before navigating to generic pages (Settings)
-                  // to prevent "visual jumps" when returning.
-                  try {
-                    context.read<AnimationController>().stop();
-                  } catch (_) {}
-
-                  unawaited(Navigator.of(context).push(
-                    PageRouteBuilder(
-                      pageBuilder: (context, animation, secondaryAnimation) =>
-                          const SettingsScreen(),
-                      transitionDuration: Duration.zero,
-                    ),
-                  ));
-
-                  // Resume clock on return
-                  if (context.mounted) {
-                    try {
-                      final controller = context.read<AnimationController>();
-                      if (!controller.isAnimating) {
-                        unawaited(controller.repeat());
-                      }
-                    } catch (_) {}
-                  }
-                },
-                tooltip: 'Settings',
+            unawaited(Navigator.of(context).push(
+              PageRouteBuilder(
+                pageBuilder: (context, animation, secondaryAnimation) =>
+                    const SettingsScreen(),
+                transitionDuration: Duration.zero,
               ),
+            ));
+
+            // Resume clock on return
+            if (context.mounted) {
+              try {
+                final controller = context.read<AnimationController>();
+                if (!controller.isAnimating) {
+                  unawaited(controller.repeat());
+                }
+              } catch (_) {}
+            }
+          },
+          tooltip: 'Settings',
+        ),
         onTap: () async {
           // Trigger the same logic as icon button handler
           try {
@@ -335,7 +238,6 @@ class ShowListAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   Widget _buildFruitFloatingHeader(BuildContext context) {
     final showListProvider = context.watch<ShowListProvider>();
-    final primaryColor = Theme.of(context).colorScheme.primary;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24.0),
@@ -357,19 +259,12 @@ class ShowListAppBar extends StatelessWidget implements PreferredSizeWidget {
                           ),
                         ),
                         const SizedBox(width: 8),
-                        TextButton(
+                        FruitTextAction(
+                          label: 'Cancel',
                           onPressed: () {
                             showListProvider.setSearchVisible(false);
                             searchController!.clear();
                           },
-                          child: Text(
-                            'Cancel',
-                            style: TextStyle(
-                              color: primaryColor,
-                              fontWeight: FontWeight.w600,
-                              fontSize: 15,
-                            ),
-                          ),
                         ),
                       ],
                     )
@@ -408,31 +303,8 @@ class ShowListAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   Widget _buildFruitHeaderButton(BuildContext context,
       {required IconData icon, required VoidCallback onPressed}) {
-    final settingsProvider = context.watch<SettingsProvider>();
-    final useNeumorphic =
-        settingsProvider.useNeumorphism && !settingsProvider.useTrueBlack;
-
-    if (useNeumorphic) {
-      return NeumorphicWrapper(
-        isCircle: true,
-        borderRadius: 100,
-        intensity: 0.8,
-        color: Colors.transparent,
-        child: LiquidGlassWrapper(
-          enabled: true,
-          borderRadius: BorderRadius.circular(100),
-          opacity: 0.12,
-          blur: 8,
-          child: FruitIconButton(
-            icon: Icon(icon),
-            onPressed: onPressed,
-          ),
-        ),
-      );
-    }
-
-    return FruitIconButton(
-      icon: Icon(icon),
+    return FruitActionButton(
+      icon: icon,
       onPressed: onPressed,
     );
   }

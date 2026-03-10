@@ -22,6 +22,7 @@ class RatingControl extends StatelessWidget {
   final double size;
   final bool isPlayed;
   final bool compact;
+  final bool enforceMinTapTarget;
 
   const RatingControl({
     super.key,
@@ -30,6 +31,7 @@ class RatingControl extends StatelessWidget {
     this.size = 24.0,
     this.isPlayed = false,
     this.compact = false,
+    this.enforceMinTapTarget = false,
   });
 
   @override
@@ -183,12 +185,25 @@ class RatingControl extends StatelessWidget {
         AppHaptics.selectionClick(context.read<DeviceService>());
         onTap!();
       },
-      child: compact
-          ? content
-          : ConstrainedBox(
-              constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
+      child: enforceMinTapTarget
+          ? ConstrainedBox(
+              constraints: BoxConstraints(
+                minWidth: compact
+                    ? ((scaledSize * 1.35).clamp(40.0, 44.0)).toDouble()
+                    : 48.0,
+                minHeight: compact
+                    ? ((scaledSize * 1.35).clamp(40.0, 44.0)).toDouble()
+                    : 48.0,
+              ),
               child: Center(child: content),
-            ),
+            )
+          : (compact
+              ? content
+              : ConstrainedBox(
+                  constraints:
+                      const BoxConstraints(minWidth: 48, minHeight: 48),
+                  child: Center(child: content),
+                )),
     );
   }
 }

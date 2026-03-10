@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:shakedown/providers/audio_provider.dart';
-import 'package:shakedown/ui/screens/settings_screen.dart';
 import 'package:shakedown/utils/utils.dart';
 import 'package:shakedown/utils/font_layout_config.dart';
 import 'package:shakedown/providers/settings_provider.dart';
@@ -10,15 +10,17 @@ import 'package:shakedown/providers/show_list_provider.dart';
 import 'package:shakedown/ui/widgets/show_list/animated_dice_icon.dart';
 import 'package:shakedown/ui/widgets/theme/liquid_glass_wrapper.dart';
 import 'package:shakedown/providers/theme_provider.dart';
+import 'package:shakedown/services/device_service.dart';
+import 'package:shakedown/utils/app_haptics.dart';
 
 class FruitTabBar extends StatelessWidget {
-  final VoidCallback onOpenPlaybackScreen;
   final int selectedIndex;
+  final ValueChanged<int> onTabSelected;
 
   const FruitTabBar({
     super.key,
-    required this.onOpenPlaybackScreen,
     this.selectedIndex = 1, // Default to LIBRARY
+    required this.onTabSelected,
   });
 
   @override
@@ -68,51 +70,63 @@ class FruitTabBar extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          _FruitTabItem(
-            icon: LucideIcons.playCircle,
-            label: 'NOW',
-            isActive: selectedIndex == 0,
-            scaleFactor: scaleFactor,
-            onTap: () {
-              if (audioProvider.currentTrack != null) {
-                onOpenPlaybackScreen();
-              } else {
-                showMessage(context, 'No track playing');
-              }
-            },
+          Expanded(
+            child: _FruitTabItem(
+              icon: LucideIcons.playCircle,
+              label: 'PLAY',
+              isActive: selectedIndex == 0,
+              scaleFactor: scaleFactor,
+              onTap: () {
+                if (audioProvider.currentTrack != null) {
+                  onTabSelected(0);
+                } else {
+                  showMessage(context, 'No track playing');
+                }
+              },
+            ),
           ),
-          _FruitTabItem(
-            icon: LucideIcons.library,
-            label: 'LIBRARY',
-            isActive: selectedIndex == 1,
-            scaleFactor: scaleFactor,
-            onTap: () {
-              if (selectedIndex != 1) {
-                Navigator.of(context).popUntil((route) => route.isFirst);
-              }
-            },
+          Expanded(
+            child: _FruitTabItem(
+              icon: LucideIcons.library,
+              label: 'LIBRARY',
+              isActive: selectedIndex == 1,
+              scaleFactor: scaleFactor,
+              onTap: () {
+                onTabSelected(1);
+              },
+            ),
           ),
-          _FruitTabItem(
-            icon: LucideIcons.cassetteTape,
-            label: 'SOURCE',
-            isActive: selectedIndex == 2,
-            isLoading: showListProvider.isChoosingRandomShow,
-            scaleFactor: scaleFactor,
-            onTap: () {
-              // Keeping random for now as it was mapped to index 2
-              audioProvider.playRandomShow();
-            },
+          Expanded(
+            child: _FruitTabItem(
+              icon: settingsProvider.nonRandom
+                  ? LucideIcons.list
+                  : LucideIcons.dice5,
+              label: settingsProvider.nonRandom ? 'NEXT' : 'RANDOM',
+              isActive: selectedIndex == 2,
+              isLoading: showListProvider.isChoosingRandomShow,
+              enableHaptics: settingsProvider.enableHaptics,
+              useAnimatedRandomIcon: !settingsProvider.nonRandom &&
+                  !settingsProvider.simpleRandomIcon,
+              scaleFactor: scaleFactor,
+              onTap: () {
+                AppHaptics.selectionClick(
+                  context.read<DeviceService>(),
+                  enabled: settingsProvider.enableHaptics,
+                );
+                onTabSelected(2);
+              },
+            ),
           ),
-          _FruitTabItem(
-            icon: LucideIcons.settings,
-            label: 'SETTINGS',
-            isActive: selectedIndex == 3,
-            scaleFactor: scaleFactor,
-            onTap: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const SettingsScreen()),
-              );
-            },
+          Expanded(
+            child: _FruitTabItem(
+              icon: LucideIcons.settings,
+              label: 'SETTINGS',
+              isActive: selectedIndex == 3,
+              scaleFactor: scaleFactor,
+              onTap: () {
+                onTabSelected(3);
+              },
+            ),
           ),
         ],
       ),
@@ -140,6 +154,8 @@ class _FruitTabItem extends StatefulWidget {
   final VoidCallback onTap;
 
   final bool isLoading;
+  final bool enableHaptics;
+  final bool useAnimatedRandomIcon;
 
   const _FruitTabItem({
     required this.icon,
@@ -148,6 +164,8 @@ class _FruitTabItem extends StatefulWidget {
     required this.scaleFactor,
     required this.onTap,
     this.isLoading = false,
+    this.enableHaptics = false,
+    this.useAnimatedRandomIcon = true,
   });
 
   @override
@@ -156,6 +174,11 @@ class _FruitTabItem extends StatefulWidget {
 
 class _FruitTabItemState extends State<_FruitTabItem> {
   bool _isPressed = false;
+  bool _isFocused = false;
+
+  void _activate() {
+    widget.onTap();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -164,43 +187,71 @@ class _FruitTabItemState extends State<_FruitTabItem> {
         ? colorScheme.primary
         : colorScheme.onSurfaceVariant.withValues(alpha: 0.6); // text-slate-400
 
-    return GestureDetector(
-      onTapDown: (_) => setState(() => _isPressed = true),
-      onTapUp: (_) => setState(() => _isPressed = false),
-      onTapCancel: () => setState(() => _isPressed = false),
-      onTap: widget.onTap,
-      child: AnimatedOpacity(
-        duration: const Duration(milliseconds: 100),
-        opacity: _isPressed ? 0.6 : 1.0,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (widget.label == 'SOURCE')
-              AnimatedDiceIcon(
-                onPressed: widget.onTap,
-                isLoading: widget.isLoading,
-                naked: true,
-                disableSquash: true,
-                useLucide: true,
-              )
-            else
-              Icon(
-                widget.icon,
-                color: color,
-                size: 24 * widget.scaleFactor, // w-6 h-6
-              ),
-            SizedBox(height: 6 * widget.scaleFactor), // gap-1.5
-            Text(
-              widget.label.toUpperCase(),
-              style: TextStyle(
-                fontFamily: 'Inter',
-                fontSize: 9 * widget.scaleFactor, // text-[9px]
-                fontWeight: FontWeight.w700, // font-bold
-                letterSpacing: 2.0, // tracking-widest
-                color: color,
+    final semanticsLabel = '${widget.label.toLowerCase()} tab';
+    return Semantics(
+      button: true,
+      selected: widget.isActive,
+      label: semanticsLabel,
+      child: ExcludeSemantics(
+        child: FocusableActionDetector(
+          enabled: true,
+          mouseCursor: SystemMouseCursors.click,
+          onShowFocusHighlight: (value) {
+            setState(() => _isFocused = value);
+          },
+          shortcuts: const <ShortcutActivator, Intent>{
+            SingleActivator(LogicalKeyboardKey.enter): ActivateIntent(),
+            SingleActivator(LogicalKeyboardKey.space): ActivateIntent(),
+          },
+          actions: <Type, Action<Intent>>{
+            ActivateIntent: CallbackAction<ActivateIntent>(
+              onInvoke: (_) {
+                _activate();
+                return null;
+              },
+            ),
+          },
+          child: GestureDetector(
+            onTapDown: (_) => setState(() => _isPressed = true),
+            onTapUp: (_) => setState(() => _isPressed = false),
+            onTapCancel: () => setState(() => _isPressed = false),
+            onTap: _activate,
+            child: AnimatedOpacity(
+              duration: const Duration(milliseconds: 100),
+              opacity: _isPressed ? 0.6 : (_isFocused ? 0.85 : 1.0),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (widget.label == 'RANDOM' && widget.useAnimatedRandomIcon)
+                    AnimatedDiceIcon(
+                      onPressed: widget.onTap,
+                      isLoading: widget.isLoading,
+                      enableHaptics: widget.enableHaptics,
+                      naked: true,
+                      disableSquash: true,
+                      useLucide: true,
+                    )
+                  else
+                    Icon(
+                      widget.icon,
+                      color: color,
+                      size: 24 * widget.scaleFactor, // w-6 h-6
+                    ),
+                  SizedBox(height: 6 * widget.scaleFactor), // gap-1.5
+                  Text(
+                    widget.label.toUpperCase(),
+                    style: TextStyle(
+                      fontFamily: 'Inter',
+                      fontSize: 9 * widget.scaleFactor, // text-[9px]
+                      fontWeight: FontWeight.w700, // font-bold
+                      letterSpacing: 2.0, // tracking-widest
+                      color: color,
+                    ),
+                  ),
+                ],
               ),
             ),
-          ],
+          ),
         ),
       ),
     );

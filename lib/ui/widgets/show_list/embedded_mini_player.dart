@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:shakedown/providers/audio_provider.dart';
 import 'package:shakedown/services/device_service.dart';
@@ -8,10 +9,12 @@ import 'package:just_audio/just_audio.dart';
 
 class EmbeddedMiniPlayer extends StatelessWidget {
   final double scaleFactor;
+  final bool compact;
 
   const EmbeddedMiniPlayer({
     super.key,
     this.scaleFactor = 1.0,
+    this.compact = false,
   });
 
   String _formatDuration(Duration duration) {
@@ -33,8 +36,17 @@ class EmbeddedMiniPlayer extends StatelessWidget {
 
     if (currentTrack == null) return const SizedBox.shrink();
 
+    final horizontalPad = compact ? 8.0 : 10.0;
+    final verticalPad = compact ? 5.0 : 8.0;
+    final buttonSize = (compact ? 26.0 : 32.0) * scaleFactor;
+    final iconSize = (compact ? 14.0 : 16.0) * scaleFactor;
+    final loaderSize = (compact ? 12.0 : 14.0) * scaleFactor;
+    final titleSize = (compact ? 10.5 : 12.0) * scaleFactor;
+    final timeSize = (compact ? 8.5 : 10.0) * scaleFactor;
+
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      padding: EdgeInsets.symmetric(
+          horizontal: horizontalPad, vertical: verticalPad),
       decoration: BoxDecoration(
         color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
         borderRadius: BorderRadius.circular(16),
@@ -51,47 +63,75 @@ class EmbeddedMiniPlayer extends StatelessWidget {
 
               bool isLoading = processingState == ProcessingState.loading ||
                   processingState == ProcessingState.buffering;
+              final bool isPlaying = playing == true;
 
-              return GestureDetector(
-                onTap: () {
-                  AppHaptics.lightImpact(context.read<DeviceService>());
-                  if (playing == true) {
-                    audioProvider.audioPlayer.pause();
-                  } else {
-                    audioProvider.audioPlayer.play();
-                  }
-                },
-                child: Container(
-                  width: 32 * scaleFactor,
-                  height: 32 * scaleFactor,
-                  decoration: BoxDecoration(
-                    color: colorScheme.primary,
-                    shape: BoxShape.circle,
-                  ),
-                  child: Center(
-                    child: isLoading
-                        ? SizedBox(
-                            width: 14 * scaleFactor,
-                            height: 14 * scaleFactor,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation<Color>(
-                                  colorScheme.onPrimary),
-                            ),
-                          )
-                        : Icon(
-                            playing == true
-                                ? LucideIcons.pause
-                                : LucideIcons.play,
-                            size: 16 * scaleFactor,
-                            color: colorScheme.onPrimary,
-                          ),
+              void activate() {
+                AppHaptics.lightImpact(context.read<DeviceService>());
+                if (isPlaying) {
+                  audioProvider.audioPlayer.pause();
+                } else {
+                  audioProvider.audioPlayer.play();
+                }
+              }
+
+              return Semantics(
+                button: true,
+                toggled: isPlaying,
+                label: isPlaying ? 'Pause playback' : 'Resume playback',
+                child: ExcludeSemantics(
+                  child: FocusableActionDetector(
+                    enabled: true,
+                    mouseCursor: SystemMouseCursors.click,
+                    shortcuts: const <ShortcutActivator, Intent>{
+                      SingleActivator(LogicalKeyboardKey.enter):
+                          ActivateIntent(),
+                      SingleActivator(LogicalKeyboardKey.space):
+                          ActivateIntent(),
+                    },
+                    actions: <Type, Action<Intent>>{
+                      ActivateIntent: CallbackAction<ActivateIntent>(
+                        onInvoke: (_) {
+                          activate();
+                          return null;
+                        },
+                      ),
+                    },
+                    child: GestureDetector(
+                      onTap: activate,
+                      child: Container(
+                        width: buttonSize,
+                        height: buttonSize,
+                        decoration: BoxDecoration(
+                          color: colorScheme.primary,
+                          shape: BoxShape.circle,
+                        ),
+                        child: Center(
+                          child: isLoading
+                              ? SizedBox(
+                                  width: loaderSize,
+                                  height: loaderSize,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                        colorScheme.onPrimary),
+                                  ),
+                                )
+                              : Icon(
+                                  isPlaying
+                                      ? LucideIcons.pause
+                                      : LucideIcons.play,
+                                  size: iconSize,
+                                  color: colorScheme.onPrimary,
+                                ),
+                        ),
+                      ),
+                    ),
                   ),
                 ),
               );
             },
           ),
-          const SizedBox(width: 12),
+          SizedBox(width: compact ? 8 : 12),
           // Info & Progress
           Expanded(
             child: Column(
@@ -105,7 +145,7 @@ class EmbeddedMiniPlayer extends StatelessWidget {
                         currentTrack.title,
                         style: TextStyle(
                           fontFamily: 'Inter',
-                          fontSize: 12 * scaleFactor,
+                          fontSize: titleSize,
                           fontWeight: FontWeight.w600,
                           color: colorScheme.onSurface,
                         ),
@@ -113,7 +153,7 @@ class EmbeddedMiniPlayer extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
-                    const SizedBox(width: 8),
+                    SizedBox(width: compact ? 6 : 8),
                     StreamBuilder<Duration>(
                       stream: audioProvider.positionStream,
                       initialData: audioProvider.audioPlayer.position,
@@ -125,10 +165,12 @@ class EmbeddedMiniPlayer extends StatelessWidget {
                           builder: (context, durSnap) {
                             final dur = durSnap.data ?? Duration.zero;
                             return Text(
-                              '${_formatDuration(pos)} / ${_formatDuration(dur)}',
+                              compact
+                                  ? _formatDuration(pos)
+                                  : '${_formatDuration(pos)} / ${_formatDuration(dur)}',
                               style: TextStyle(
                                 fontFamily: 'Inter',
-                                fontSize: 10 * scaleFactor,
+                                fontSize: timeSize,
                                 fontWeight: FontWeight.w400,
                                 color: colorScheme.onSurface
                                     .withValues(alpha: 0.5),
@@ -140,7 +182,7 @@ class EmbeddedMiniPlayer extends StatelessWidget {
                     ),
                   ],
                 ),
-                const SizedBox(height: 6),
+                SizedBox(height: compact ? 3 : 6),
                 // Progress Bar
                 StreamBuilder<Duration>(
                   stream: audioProvider.positionStream,

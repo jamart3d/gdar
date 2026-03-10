@@ -121,6 +121,35 @@ class PlaybackSection extends StatelessWidget {
                 isFruit ? LucideIcons.messageSquare : Icons.message_rounded),
           ),
         ),
+        if (kIsWeb)
+          TvSwitchListTile(
+            dense: true,
+            visualDensity: VisualDensity.compact,
+            title: FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: Text('Show Dev Audio HUD',
+                    style: Theme.of(context)
+                        .textTheme
+                        .titleMedium
+                        ?.copyWith(fontSize: 16 * scaleFactor))),
+            subtitle: FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: Text('Persistent engine + playback keychart (dev)',
+                    style: Theme.of(context)
+                        .textTheme
+                        .bodySmall
+                        ?.copyWith(fontSize: 12 * scaleFactor))),
+            value: settingsProvider.showDevAudioHud,
+            onChanged: (value) {
+              context.read<SettingsProvider>().toggleShowDevAudioHud();
+            },
+            secondary:
+                Icon(isFruit ? LucideIcons.badgeInfo : Icons.developer_mode),
+          ),
+        if (kIsWeb && settingsProvider.showDevAudioHud)
+          _buildDevHudAbbreviationLegend(context, scaleFactor),
         if (!context.read<DeviceService>().isTv && !kIsWeb)
           HighlightableSetting(
             key: ValueKey(
@@ -581,13 +610,6 @@ class PlaybackSection extends StatelessWidget {
                             ? LucideIcons.list
                             : Icons.linear_scale_rounded,
                       ),
-                      _Segment(
-                        value: 'crossfade',
-                        label: 'Crossfade',
-                        icon: isFruit
-                            ? LucideIcons.activity
-                            : Icons.multiline_chart_rounded,
-                      ),
                     ],
                     selectedValue: sp.trackTransitionMode,
                     onSelectionChanged: (String mode) {
@@ -597,42 +619,6 @@ class PlaybackSection extends StatelessWidget {
                   ),
                 ),
               ),
-              if (sp.trackTransitionMode == 'crossfade') ...[
-                const SizedBox(height: 16),
-                Padding(
-                  padding: EdgeInsets.only(
-                      left: 40.0 * scaleFactor, right: 16.0 * scaleFactor),
-                  child: Row(
-                    children: [
-                      Text(
-                        'Crossfade Duration',
-                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                              fontSize: 14 * scaleFactor,
-                            ),
-                      ),
-                      Expanded(
-                        child: Slider(
-                          value: sp.crossfadeDurationSeconds,
-                          min: 1.0,
-                          max: 12.0,
-                          divisions: 11,
-                          label: '${sp.crossfadeDurationSeconds.toInt()}s',
-                          onChanged: (value) {
-                            sp.setCrossfadeDurationSeconds(value);
-                          },
-                        ),
-                      ),
-                      Text(
-                        '${sp.crossfadeDurationSeconds.toInt()}s',
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              fontSize: 14 * scaleFactor,
-                              fontWeight: FontWeight.bold,
-                            ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
               if (sp.audioEngineMode == AudioEngineMode.hybrid) ...[
                 const SizedBox(height: 16),
                 Padding(
@@ -778,6 +764,68 @@ class PlaybackSection extends StatelessWidget {
         },
       ),
     ];
+  }
+
+  static Widget _buildDevHudAbbreviationLegend(
+    BuildContext context,
+    double scaleFactor,
+  ) {
+    final theme = Theme.of(context);
+    final titleStyle = theme.textTheme.titleSmall?.copyWith(
+      fontSize: 13 * scaleFactor,
+      fontWeight: FontWeight.w700,
+    );
+    final bodyStyle = theme.textTheme.bodySmall?.copyWith(
+      fontSize: 12 * scaleFactor,
+      height: 1.35,
+    );
+
+    return Padding(
+      padding: EdgeInsets.fromLTRB(
+        56 * scaleFactor,
+        0,
+        16 * scaleFactor,
+        8 * scaleFactor,
+      ),
+      child: Container(
+        width: double.infinity,
+        padding: EdgeInsets.symmetric(
+          horizontal: 12 * scaleFactor,
+          vertical: 10 * scaleFactor,
+        ),
+        decoration: BoxDecoration(
+          color:
+              theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.35),
+          borderRadius: BorderRadius.circular(12 * scaleFactor),
+          border: Border.all(
+            color: theme.colorScheme.onSurface.withValues(alpha: 0.08),
+          ),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('HUD Abbreviations', style: titleStyle),
+            SizedBox(height: 6 * scaleFactor),
+            Text(
+              'ENG engine  •  TX transition  •  HF handoff  •  BG background',
+              style: bodyStyle,
+            ),
+            Text(
+              'PF prefetch  •  PS processing  •  P player  •  ST engine state',
+              style: bodyStyle,
+            ),
+            Text(
+              'POS position/duration  •  BUF buffered  •  HD headroom',
+              style: bodyStyle,
+            ),
+            Text(
+              'NX next buffered  •  IDX track index  •  SIG signal  •  E error',
+              style: bodyStyle,
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
 

@@ -1,9 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
+import 'package:shakedown/providers/theme_provider.dart';
+import 'package:shakedown/ui/widgets/theme/fruit_tooltip.dart';
 
 class FruitIconButton extends StatefulWidget {
   final Widget icon;
   final VoidCallback? onPressed;
   final String? tooltip;
+  final String? semanticLabel;
   final Color? color;
   final double size;
   final double padding;
@@ -13,6 +18,7 @@ class FruitIconButton extends StatefulWidget {
     required this.icon,
     this.onPressed,
     this.tooltip,
+    this.semanticLabel,
     this.color,
     this.size = 24.0,
     this.padding = 8.0,
@@ -24,6 +30,11 @@ class FruitIconButton extends StatefulWidget {
 
 class _FruitIconButtonState extends State<FruitIconButton> {
   bool _isPressed = false;
+  bool _isFocused = false;
+
+  void _activate() {
+    widget.onPressed?.call();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -42,23 +53,61 @@ class _FruitIconButtonState extends State<FruitIconButton> {
     );
 
     if (widget.tooltip != null) {
-      content = Tooltip(
-        message: widget.tooltip!,
-        child: content,
-      );
+      final isFruit =
+          context.watch<ThemeProvider>().themeStyle == ThemeStyle.fruit;
+      if (isFruit) {
+        content = FruitTooltip(
+          message: widget.tooltip!,
+          child: content,
+        );
+      } else {
+        content = Tooltip(
+          message: widget.tooltip!,
+          child: content,
+        );
+      }
     }
 
-    return GestureDetector(
-      onTapDown: (_) => setState(() => _isPressed = true),
-      onTapUp: (_) => setState(() => _isPressed = false),
-      onTapCancel: () => setState(() => _isPressed = false),
-      onTap: widget.onPressed,
-      behavior: HitTestBehavior.opaque,
-      child: AnimatedOpacity(
-        duration: const Duration(milliseconds: 100),
-        opacity: _isPressed ? 0.4 : 1.0,
-        child: content,
+    final isEnabled = widget.onPressed != null;
+    final interactive = FocusableActionDetector(
+      enabled: isEnabled,
+      mouseCursor:
+          isEnabled ? SystemMouseCursors.click : SystemMouseCursors.basic,
+      onShowFocusHighlight: (value) {
+        setState(() => _isFocused = value);
+      },
+      shortcuts: const <ShortcutActivator, Intent>{
+        SingleActivator(LogicalKeyboardKey.enter): ActivateIntent(),
+        SingleActivator(LogicalKeyboardKey.space): ActivateIntent(),
+      },
+      actions: <Type, Action<Intent>>{
+        ActivateIntent: CallbackAction<ActivateIntent>(
+          onInvoke: (_) {
+            _activate();
+            return null;
+          },
+        ),
+      },
+      child: GestureDetector(
+        onTapDown: isEnabled ? (_) => setState(() => _isPressed = true) : null,
+        onTapUp: isEnabled ? (_) => setState(() => _isPressed = false) : null,
+        onTapCancel:
+            isEnabled ? () => setState(() => _isPressed = false) : null,
+        onTap: isEnabled ? _activate : null,
+        behavior: HitTestBehavior.opaque,
+        child: AnimatedOpacity(
+          duration: const Duration(milliseconds: 100),
+          opacity: _isPressed ? 0.4 : (_isFocused ? 0.85 : 1.0),
+          child: content,
+        ),
       ),
+    );
+
+    return Semantics(
+      button: true,
+      enabled: isEnabled,
+      label: widget.semanticLabel ?? widget.tooltip,
+      child: ExcludeSemantics(child: interactive),
     );
   }
 }

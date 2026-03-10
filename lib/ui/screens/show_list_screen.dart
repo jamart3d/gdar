@@ -27,6 +27,9 @@ class ShowListScreen extends StatefulWidget {
   final FocusNode? scrollbarFocusNode;
   final VoidCallback? onFocusLeft;
   final VoidCallback? onFocusPlayback;
+  final bool showFruitTabBar;
+  final VoidCallback? onOpenPlaybackRequested;
+  final VoidCallback? onSettingsRequested;
 
   const ShowListScreen({
     super.key,
@@ -34,6 +37,9 @@ class ShowListScreen extends StatefulWidget {
     this.scrollbarFocusNode,
     this.onFocusLeft,
     this.onFocusPlayback,
+    this.showFruitTabBar = true,
+    this.onOpenPlaybackRequested,
+    this.onSettingsRequested,
   });
 
   @override
@@ -372,9 +378,40 @@ class ShowListScreenState extends State<ShowListScreen>
     super.dispose();
   }
 
+  Future<void> scrollToCurrentShowFromTab() async {
+    if (!mounted) return;
+    final settings = context.read<SettingsProvider>();
+    final showListProvider = context.read<ShowListProvider>();
+    final currentShow = context.read<AudioProvider>().currentShow;
+    if (currentShow == null) return;
+
+    // Wait for the list to mount/attach after tab transition.
+    for (int i = 0; i < 20 && !_itemScrollController.isAttached; i++) {
+      await Future<void>.delayed(const Duration(milliseconds: 50));
+      if (!mounted) return;
+    }
+
+    if (!_itemScrollController.isAttached) return;
+
+    final targetIndex = showListProvider.filteredShows.indexOf(currentShow);
+    if (targetIndex == -1) return;
+
+    if (!mounted) return;
+    if (settings.performanceMode) {
+      _itemScrollController.jumpTo(index: targetIndex, alignment: 0.3);
+      return;
+    }
+
+    await reliablyScrollToShow(
+      currentShow,
+      duration: const Duration(milliseconds: 700),
+    );
+  }
+
   void _syncSearchState() {
     if (!mounted) return;
-    final isVisible = context.read<ShowListProvider>().isSearchVisible;
+    final showListProvider = context.read<ShowListProvider>();
+    final isVisible = showListProvider.isSearchVisible;
 
     if (isVisible) {
       if (!_searchFocusNode.hasFocus) _searchFocusNode.requestFocus();
@@ -433,10 +470,13 @@ class ShowListScreenState extends State<ShowListScreen>
       searchFocusNode: _searchFocusNode,
       onSearchSubmitted: onSearchSubmitted,
       animationDuration: _animationDuration,
-      onOpenPlaybackScreen: openPlaybackScreen,
+      onOpenPlaybackScreen:
+          widget.onOpenPlaybackRequested ?? openPlaybackScreen,
       showPasteFeedback: showPasteFeedback,
-      onTitleTap: () => navigateTo(const SettingsScreen()),
+      onTitleTap: widget.onSettingsRequested ??
+          () => navigateTo(const SettingsScreen()),
       scrollbarFocusNode: widget.scrollbarFocusNode,
+      showFruitTabBar: widget.showFruitTabBar,
       body: ShowListBody(
         showListProvider: showListProvider,
         audioProvider: audioProvider,

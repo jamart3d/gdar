@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:shakedown/models/track.dart';
 import 'package:shakedown/models/show.dart';
@@ -11,6 +13,8 @@ import 'package:shakedown/providers/settings_provider.dart';
 import 'package:shakedown/utils/utils.dart';
 import 'package:shakedown/services/device_service.dart';
 import 'package:shakedown/utils/app_haptics.dart';
+import 'package:shakedown/ui/widgets/playback/playback_messages.dart';
+import 'package:just_audio/just_audio.dart';
 
 class FruitNowPlayingCard extends StatelessWidget {
   final Show trackShow;
@@ -81,11 +85,59 @@ class FruitNowPlayingCard extends StatelessWidget {
                           ),
                         ),
                         SizedBox(width: 8 * scaleFactor),
-                        _buildDurationInfo(audioProvider, colorScheme),
+                        const Flexible(
+                          child: PlaybackMessages(
+                            textAlign: TextAlign.left,
+                            showDivider: false,
+                            showDevHudInline: false,
+                          ),
+                        ),
+                        SizedBox(width: 8 * scaleFactor),
+                        _buildDurationInfo(
+                          audioProvider,
+                          colorScheme,
+                          isSimple: isSimple,
+                        ),
                       ],
                     ),
                     SizedBox(height: 8 * scaleFactor),
-                    _buildCompactProgressBar(audioProvider, colorScheme),
+                    StreamBuilder<PlayerState>(
+                      stream: audioProvider.playerStateStream,
+                      initialData: audioProvider.audioPlayer.playerState,
+                      builder: (context, stateSnapshot) {
+                        final processingState =
+                            stateSnapshot.data?.processingState;
+                        final isLoading =
+                            processingState == ProcessingState.loading;
+                        final isBuffering =
+                            processingState == ProcessingState.buffering;
+                        return StreamBuilder<Duration>(
+                          stream: audioProvider.bufferedPositionStream,
+                          initialData:
+                              audioProvider.audioPlayer.bufferedPosition,
+                          builder: (context, bufferedSnapshot) {
+                            final buffered =
+                                bufferedSnapshot.data ?? Duration.zero;
+                            return _buildCompactProgressBar(
+                              audioProvider,
+                              colorScheme,
+                              isLoading: isLoading,
+                              isBuffering: isBuffering,
+                              bufferedPositionMs: buffered.inMilliseconds,
+                            );
+                          },
+                        );
+                      },
+                    ),
+                    if (kIsWeb && settingsProvider.showDevAudioHud) ...[
+                      SizedBox(height: 8 * scaleFactor),
+                      const PlaybackMessages(
+                        textAlign: TextAlign.left,
+                        showDivider: false,
+                        showStatusLine: false,
+                        compactDevHud: true,
+                      ),
+                    ],
                   ],
                 ),
               ),
@@ -112,34 +164,61 @@ class FruitNowPlayingCard extends StatelessWidget {
 
   Widget _buildCompactPlayButton(BuildContext context,
       AudioProvider audioProvider, ColorScheme colorScheme) {
-    return GestureDetector(
-      onTap: () {
-        AppHaptics.lightImpact(context.read<DeviceService>());
-        if (audioProvider.isPlaying) {
-          audioProvider.pause();
-        } else {
-          audioProvider.resume();
-        }
-      },
-      child: Container(
-        width: 36 * scaleFactor,
-        height: 36 * scaleFactor,
-        decoration: BoxDecoration(
-          color: colorScheme.primary,
-          shape: BoxShape.circle,
-          boxShadow: [
-            BoxShadow(
-              color: colorScheme.primary.withValues(alpha: 0.3),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
+    void activate() {
+      AppHaptics.lightImpact(context.read<DeviceService>());
+      if (audioProvider.isPlaying) {
+        audioProvider.pause();
+      } else {
+        audioProvider.resume();
+      }
+    }
+
+    return Semantics(
+      button: true,
+      toggled: audioProvider.isPlaying,
+      label: audioProvider.isPlaying ? 'Pause playback' : 'Resume playback',
+      child: ExcludeSemantics(
+        child: FocusableActionDetector(
+          enabled: true,
+          mouseCursor: SystemMouseCursors.click,
+          shortcuts: const <ShortcutActivator, Intent>{
+            SingleActivator(LogicalKeyboardKey.enter): ActivateIntent(),
+            SingleActivator(LogicalKeyboardKey.space): ActivateIntent(),
+          },
+          actions: <Type, Action<Intent>>{
+            ActivateIntent: CallbackAction<ActivateIntent>(
+              onInvoke: (_) {
+                activate();
+                return null;
+              },
             ),
-          ],
-        ),
-        child: Center(
-          child: Icon(
-            audioProvider.isPlaying ? LucideIcons.pause : LucideIcons.play,
-            size: 18 * scaleFactor,
-            color: colorScheme.onPrimary,
+          },
+          child: GestureDetector(
+            onTap: activate,
+            child: Container(
+              width: 36 * scaleFactor,
+              height: 36 * scaleFactor,
+              decoration: BoxDecoration(
+                color: colorScheme.primary,
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: colorScheme.primary.withValues(alpha: 0.3),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Center(
+                child: Icon(
+                  audioProvider.isPlaying
+                      ? LucideIcons.pause
+                      : LucideIcons.play,
+                  size: 18 * scaleFactor,
+                  color: colorScheme.onPrimary,
+                ),
+              ),
+            ),
           ),
         ),
       ),
@@ -147,27 +226,77 @@ class FruitNowPlayingCard extends StatelessWidget {
   }
 
   Widget _buildDurationInfo(
-      AudioProvider audioProvider, ColorScheme colorScheme) {
+    AudioProvider audioProvider,
+    ColorScheme colorScheme, {
+    required bool isSimple,
+  }) {
     final pos = audioProvider.audioPlayer.position;
     final dur = audioProvider.audioPlayer.duration ?? Duration.zero;
+    final elapsed = formatDuration(pos);
+    final total = formatDuration(dur);
 
-    return Text(
-      '${formatDuration(pos)} / ${formatDuration(dur)}',
-      style: TextStyle(
-        fontFamily: 'Inter',
-        fontSize: 10 * scaleFactor,
-        fontWeight: FontWeight.w500,
-        color: colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
+    return Container(
+      padding: EdgeInsets.symmetric(
+        horizontal: 6 * scaleFactor,
+        vertical: 2 * scaleFactor,
+      ),
+      decoration: BoxDecoration(
+        color: isSimple
+            ? colorScheme.onSurface.withValues(alpha: 0.06)
+            : colorScheme.primary.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(6 * scaleFactor),
+      ),
+      child: RichText(
+        text: TextSpan(
+          style: TextStyle(
+            fontFamily: 'Inter',
+            fontSize: 11 * scaleFactor,
+            fontWeight: FontWeight.w700,
+          ),
+          children: [
+            TextSpan(
+              text: elapsed,
+              style: TextStyle(
+                color: isSimple
+                    ? colorScheme.onSurface.withValues(alpha: 0.92)
+                    : colorScheme.primary,
+              ),
+            ),
+            TextSpan(
+              text: ' / ',
+              style: TextStyle(
+                color: colorScheme.onSurfaceVariant.withValues(alpha: 0.65),
+              ),
+            ),
+            TextSpan(
+              text: total,
+              style: TextStyle(
+                color: isSimple
+                    ? colorScheme.onSurfaceVariant.withValues(alpha: 0.88)
+                    : colorScheme.onSurface.withValues(alpha: 0.9),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildCompactProgressBar(
-      AudioProvider audioProvider, ColorScheme colorScheme) {
+    AudioProvider audioProvider,
+    ColorScheme colorScheme, {
+    required bool isLoading,
+    required bool isBuffering,
+    required int bufferedPositionMs,
+  }) {
     final duration = audioProvider.audioPlayer.duration?.inMilliseconds ?? 0;
     final position = audioProvider.audioPlayer.position.inMilliseconds;
     final double progress =
         (duration > 0) ? (position / duration).clamp(0.0, 1.0) : 0.0;
+    final double bufferedProgress =
+        (duration > 0) ? (bufferedPositionMs / duration).clamp(0.0, 1.0) : 0.0;
+    final bool hasKnownDuration = duration > 0;
+    final bool showLoadingPulse = isLoading || isBuffering;
 
     return Stack(
       children: [
@@ -179,6 +308,29 @@ class FruitNowPlayingCard extends StatelessWidget {
             borderRadius: BorderRadius.circular(4 * scaleFactor),
           ),
         ),
+        if (!isLoading)
+          FractionallySizedBox(
+            widthFactor: bufferedProgress,
+            child: Container(
+              height: 3.0 * scaleFactor,
+              decoration: BoxDecoration(
+                color: colorScheme.tertiary.withValues(alpha: 0.35),
+                borderRadius: BorderRadius.circular(4 * scaleFactor),
+              ),
+            ),
+          ),
+        if (isLoading && !hasKnownDuration)
+          SizedBox(
+            height: 3.0 * scaleFactor,
+            width: double.infinity,
+            child: LinearProgressIndicator(
+              value: null,
+              backgroundColor: Colors.transparent,
+              valueColor: AlwaysStoppedAnimation<Color>(
+                colorScheme.tertiary.withValues(alpha: 0.5),
+              ),
+            ),
+          ),
         FractionallySizedBox(
           widthFactor: progress,
           child: Container(
@@ -189,6 +341,18 @@ class FruitNowPlayingCard extends StatelessWidget {
             ),
           ),
         ),
+        if (showLoadingPulse)
+          Align(
+            alignment: Alignment.centerRight,
+            child: Container(
+              width: 6 * scaleFactor,
+              height: 6 * scaleFactor,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: isLoading ? colorScheme.primary : colorScheme.tertiary,
+              ),
+            ),
+          ),
       ],
     );
   }

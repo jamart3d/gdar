@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:url_launcher/link.dart';
 import 'package:provider/provider.dart';
 import 'package:shakedown/providers/settings_provider.dart';
 import 'package:shakedown/providers/theme_provider.dart';
@@ -13,6 +15,7 @@ class ShnidBadge extends StatelessWidget {
   final double scaleFactor;
   final VoidCallback? onTap;
   final bool interactive;
+  final Uri? uri;
 
   const ShnidBadge({
     super.key,
@@ -21,6 +24,7 @@ class ShnidBadge extends StatelessWidget {
     this.scaleFactor = 1.0,
     this.onTap,
     this.interactive = true,
+    this.uri,
   });
 
   @override
@@ -119,13 +123,78 @@ class ShnidBadge extends StatelessWidget {
       child: content,
     );
 
-    Widget badgeWithTap = interactive
-        ? GestureDetector(
-            onTap: onTap ?? () => launchArchiveDetails(text, context),
-            behavior: HitTestBehavior.opaque,
-            child: badge,
-          )
-        : badge;
+    Widget badgeWithTap = badge;
+    if (interactive) {
+      final semanticLabel = 'Open archive details for $text';
+      if (uri != null) {
+        badgeWithTap = Link(
+          uri: uri,
+          target: LinkTarget.blank,
+          builder: (context, followLink) {
+            final activate = onTap ??
+                followLink ??
+                () => launchArchiveDetails(text, context);
+            return Semantics(
+              link: true,
+              button: true,
+              label: semanticLabel,
+              child: ExcludeSemantics(
+                child: FocusableActionDetector(
+                  enabled: true,
+                  mouseCursor: SystemMouseCursors.click,
+                  shortcuts: const <ShortcutActivator, Intent>{
+                    SingleActivator(LogicalKeyboardKey.enter): ActivateIntent(),
+                    SingleActivator(LogicalKeyboardKey.space): ActivateIntent(),
+                  },
+                  actions: <Type, Action<Intent>>{
+                    ActivateIntent: CallbackAction<ActivateIntent>(
+                      onInvoke: (_) {
+                        activate();
+                        return null;
+                      },
+                    ),
+                  },
+                  child: GestureDetector(
+                    onTap: activate,
+                    behavior: HitTestBehavior.opaque,
+                    child: badge,
+                  ),
+                ),
+              ),
+            );
+          },
+        );
+      } else {
+        final activate = onTap ?? () => launchArchiveDetails(text, context);
+        badgeWithTap = Semantics(
+          button: true,
+          label: semanticLabel,
+          child: ExcludeSemantics(
+            child: FocusableActionDetector(
+              enabled: true,
+              mouseCursor: SystemMouseCursors.click,
+              shortcuts: const <ShortcutActivator, Intent>{
+                SingleActivator(LogicalKeyboardKey.enter): ActivateIntent(),
+                SingleActivator(LogicalKeyboardKey.space): ActivateIntent(),
+              },
+              actions: <Type, Action<Intent>>{
+                ActivateIntent: CallbackAction<ActivateIntent>(
+                  onInvoke: (_) {
+                    activate();
+                    return null;
+                  },
+                ),
+              },
+              child: GestureDetector(
+                onTap: activate,
+                behavior: HitTestBehavior.opaque,
+                child: badge,
+              ),
+            ),
+          ),
+        );
+      }
+    }
 
     if (useNeumorphic) {
       return NeumorphicWrapper(

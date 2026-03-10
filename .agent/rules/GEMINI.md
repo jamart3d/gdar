@@ -16,9 +16,15 @@ trigger: always_on
 * **Style & Performance:** Adhere strictly to the official Dart style guide,
   use `flutter format`, and use `const` constructors everywhere possible to
   prevent unnecessary rebuilds.
-* **Design System:** **Material 3 (Expressive) is the default foundation for ALL platforms.** 
-    * The "Fruit" (Liquid Glass) style is an **optional visual layer** available *only* for the Web UI and PWA. 
-    * Always gate "Fruit" logic with `kIsWeb` or PWA-specific checks.
+* **Design System:** Use strict platform separation.
+  * **Android Phone/Tablet:** Material 3 (Expressive) is the foundation.
+  * **Google TV / Android TV:** TV-focused Material Dark + D-Pad UX.
+  * **Web/PWA Fruit:** Apple Liquid Glass only.
+  * **Hard rule for Fruit:** No Material 3 widgets, ripples, FAB patterns,
+    or M3 interaction language on Fruit screens.
+  * If Fruit glass effects are disabled for performance, keep Fruit layout and
+    controls (no M3 fallback swap).
+  * Always gate Fruit logic with `kIsWeb`/PWA checks.
 
 ### 2. RELEASE MANAGEMENT
 * **Action:** Write all release history to root `CHANGELOG.md` using

@@ -56,14 +56,18 @@ class PlaybackAppBar extends StatelessWidget {
       scrolledUnderElevation: 0,
       leading: kIsWeb
           ? Builder(builder: (context) {
-              final Widget menuBtn = FruitIconButton(
-                icon: Icon(isFruit
-                    ? LucideIcons.chevronLeft
-                    : Icons.chevron_left_rounded),
-                onPressed: () => Navigator.of(context).pop(),
-                tooltip: 'Back to Show List',
-                padding: 0,
-              );
+              final Widget menuBtn = isFruit
+                  ? FruitIconButton(
+                      icon: const Icon(LucideIcons.chevronLeft),
+                      onPressed: () => Navigator.of(context).pop(),
+                      tooltip: 'Back to Show List',
+                      padding: 0,
+                    )
+                  : IconButton(
+                      icon: const Icon(Icons.chevron_left_rounded),
+                      onPressed: () => Navigator.of(context).pop(),
+                      tooltip: 'Back to Show List',
+                    );
 
               if (useNeumorphic) {
                 return Padding(
@@ -195,34 +199,43 @@ class PlaybackAppBar extends StatelessWidget {
           ),
         ),
         Builder(builder: (context) {
-          final Widget btn = FruitIconButton(
-            icon: Icon(isFruit ? LucideIcons.settings : Icons.settings_rounded),
-            size: 24.0,
-            padding: 0,
-            onPressed: () async {
+          Future<void> onSettingsPressed() async {
+            try {
+              context.read<AnimationController>().stop();
+            } catch (_) {}
+
+            unawaited(Navigator.of(context).push(
+              PageRouteBuilder(
+                pageBuilder: (context, animation, secondaryAnimation) =>
+                    const SettingsScreen(),
+                transitionDuration: Duration.zero,
+              ),
+            ));
+
+            if (context.mounted) {
               try {
-                context.read<AnimationController>().stop();
+                final controller = context.read<AnimationController>();
+                if (!controller.isAnimating) {
+                  unawaited(controller.repeat());
+                }
               } catch (_) {}
+            }
+          }
 
-              unawaited(Navigator.of(context).push(
-                PageRouteBuilder(
-                  pageBuilder: (context, animation, secondaryAnimation) =>
-                      const SettingsScreen(),
-                  transitionDuration: Duration.zero,
-                ),
-              ));
-
-              if (context.mounted) {
-                try {
-                  final controller = context.read<AnimationController>();
-                  if (!controller.isAnimating) {
-                    unawaited(controller.repeat());
-                  }
-                } catch (_) {}
-              }
-            },
-            tooltip: 'Settings',
-          );
+          final Widget btn = isFruit
+              ? FruitIconButton(
+                  icon: const Icon(LucideIcons.settings),
+                  size: 24.0,
+                  padding: 0,
+                  onPressed: onSettingsPressed,
+                  tooltip: 'Settings',
+                )
+              : IconButton(
+                  icon: const Icon(Icons.settings_rounded),
+                  iconSize: 24.0,
+                  onPressed: onSettingsPressed,
+                  tooltip: 'Settings',
+                );
 
           return Padding(
             padding: EdgeInsets.symmetric(horizontal: actionPadding),

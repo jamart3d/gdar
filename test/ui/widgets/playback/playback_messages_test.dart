@@ -134,6 +134,17 @@ void main() {
       expect(find.text('Buffering...'), findsOneWidget);
     });
 
+    testWidgets(
+        'Keeps playback status visible when showPlaybackMessages is false',
+        (tester) async {
+      when(mockSettingsProvider.showPlaybackMessages).thenReturn(false);
+      when(mockAudioPlayer.playerState)
+          .thenReturn(PlayerState(true, ProcessingState.buffering));
+
+      await tester.pumpWidget(createWidgetUnderTest());
+      expect(find.text('Buffering...'), findsOneWidget);
+    });
+
     testWidgets('Displays Agent Message when notification received',
         (tester) async {
       // 1. Start with normal buffering

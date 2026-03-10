@@ -33,6 +33,7 @@ extension type _GdarAudioEngine(JSObject _) {
   external void stop();
   external void seek(double seconds);
   external void prepareToPlay(JSString url);
+  external void setTrackTransitionMode(JSString mode);
   external void setCrossfadeDurationSeconds(JSNumber seconds);
   external void seekToIndex(int index);
   external void setPrefetchSeconds(int s);
@@ -118,6 +119,7 @@ class GaplessPlayer {
   final _processingStateController =
       StreamController<ProcessingState>.broadcast();
   final _engineStateStringController = StreamController<String>.broadcast();
+  final _engineContextStateController = StreamController<String>.broadcast();
   final _positionController = StreamController<Duration>.broadcast();
   final _bufferedPositionController = StreamController<Duration>.broadcast();
   final _durationController = StreamController<Duration?>.broadcast();
@@ -322,6 +324,9 @@ class GaplessPlayer {
     final currentContext = s.contextState;
     final contextChanged = _lastContextState != currentContext;
     _lastContextState = currentContext;
+    if (currentContext != null && currentContext.isNotEmpty) {
+      _engineContextStateController.add(currentContext);
+    }
 
     if (_currentIndex != wasIndex || contextChanged) {
       _indexController.add(_currentIndex);
@@ -481,6 +486,11 @@ class GaplessPlayer {
   /// Emits the raw string processing state from the JS engine (e.g. 'handoff_countdown')
   Stream<String> get engineStateStringStream =>
       _useJsEngine ? _engineStateStringController.stream : const Stream.empty();
+
+  /// Emits the raw JS contextState (e.g. 'hybrid_foreground').
+  Stream<String> get engineContextStateStream => _useJsEngine
+      ? _engineContextStateController.stream
+      : const Stream.empty();
 
   Stream<SequenceState?> get sequenceStateStream => _useJsEngine
       ? _sequenceStateController.stream
@@ -646,6 +656,18 @@ class GaplessPlayer {
     }
   }
 
+  void setTrackTransitionMode(String mode) {
+    if (_useJsEngine) {
+      final normalized = mode == 'gap' ? 'gap' : 'gapless';
+      _callEngine((e) {
+        final obj = _JSObject(e as JSObject);
+        if (obj.hasOwnProperty('setTrackTransitionMode'.toJS)) {
+          e.setTrackTransitionMode(normalized.toJS);
+        }
+      });
+    }
+  }
+
   /// Releases all resources.
   Future<void> dispose() async {
     if (!_useJsEngine) {
@@ -656,11 +678,15 @@ class GaplessPlayer {
     await _playbackEventController.close();
     await _playingController.close();
     await _processingStateController.close();
+    await _engineStateStringController.close();
+    await _engineContextStateController.close();
     await _positionController.close();
     await _bufferedPositionController.close();
     await _durationController.close();
     await _indexController.close();
     await _sequenceStateController.close();
+    await _nextTrackBufferedController.close();
+    await _nextTrackTotalController.close();
   }
 
   /// Reloads the web page.

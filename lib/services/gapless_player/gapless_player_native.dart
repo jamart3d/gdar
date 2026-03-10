@@ -104,6 +104,9 @@ class GaplessPlayer {
   /// Stream of the raw string state from the JS engine (e.g. 'handoff_countdown')
   Stream<String> get engineStateStringStream => const Stream.empty();
 
+  /// Stream of the raw JS contextState (e.g. 'hybrid_foreground').
+  Stream<String> get engineContextStateStream => const Stream.empty();
+
   /// Stream of current index changes.
   Stream<int?> get currentIndexStream => _player.currentIndexStream;
 
@@ -143,6 +146,11 @@ class GaplessPlayer {
 
   /// Sets the hybrid background mode. No-op on native.
   void setHybridBackgroundMode(String mode) {
+    // Not applicable natively
+  }
+
+  /// Sets transition mode for web engines. No-op on native.
+  void setTrackTransitionMode(String mode) {
     // Not applicable natively
   }
 

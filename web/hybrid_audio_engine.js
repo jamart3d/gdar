@@ -58,7 +58,6 @@
 
     // Track Transition Settings
     let _transitionMode = 'gapless';
-    let _crossfadeDuration = 3.0;
 
     // Advanced Hybrid Settings
     let _backgroundMode = 'html5'; // html5 | heartbeat | video | none
@@ -561,18 +560,10 @@
         },
 
         setTrackTransitionMode: function (mode) {
-            if (['gap', 'gapless', 'crossfade'].includes(mode)) {
+            if (['gap', 'gapless'].includes(mode)) {
                 _transitionMode = mode;
-                if (mode === 'crossfade') {
-                    _log.warn('[hybrid engine] Crossfade mode not yet implemented. Gapless used.');
-                }
                 _log.log('[hybrid engine] Transition Mode:', mode);
             }
-        },
-
-        setCrossfadeDuration: function (seconds) {
-            _crossfadeDuration = Math.max(1.0, Math.min(12.0, seconds));
-            _log.log('[hybrid engine] Crossfade Duration:', _crossfadeDuration, 's');
         },
 
         setHybridBackgroundMode: function (mode) {

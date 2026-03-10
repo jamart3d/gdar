@@ -1,9 +1,19 @@
+import 'dart:async';
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:shakedown/utils/logger.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:provider/provider.dart';
 import 'package:shakedown/providers/audio_provider.dart';
 import 'package:shakedown/services/device_service.dart';
+import 'package:shakedown/providers/settings_provider.dart';
+import 'package:shakedown/providers/theme_provider.dart';
+
+String? _lastSnackMessage;
+DateTime? _lastSnackTime;
+OverlayEntry? _fruitMessageOverlay;
+Timer? _fruitMessageTimer;
 
 String formatDuration(Duration d) {
   String twoDigits(int n) => n.toString().padLeft(2, '0');
@@ -78,13 +88,167 @@ void showMessage(BuildContext context, String message) {
   if (isTv) {
     context.read<AudioProvider>().showNotification(message);
   } else {
-    ScaffoldMessenger.of(context).hideCurrentSnackBar();
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        duration: const Duration(seconds: 3),
-      ),
-    );
+    final now = DateTime.now();
+    final isRapidDuplicate = _lastSnackMessage == message &&
+        _lastSnackTime != null &&
+        now.difference(_lastSnackTime!) < const Duration(milliseconds: 1500);
+    if (isRapidDuplicate) return;
+
+    _lastSnackMessage = message;
+    _lastSnackTime = now;
+
+    final bool isFruit = _isFruitTheme(context);
+    if (isFruit) {
+      _showFruitMessageOverlay(context, message);
+      return;
+    }
+
+    _showMaterialSnackBar(context, message);
+  }
+}
+
+bool _isFruitTheme(BuildContext context) {
+  try {
+    return context.read<ThemeProvider>().themeStyle == ThemeStyle.fruit;
+  } catch (_) {
+    return false;
+  }
+}
+
+void _showMaterialSnackBar(BuildContext context, String message) {
+  final messenger = ScaffoldMessenger.of(context);
+  messenger.clearSnackBars();
+  messenger.showSnackBar(
+    SnackBar(
+      content: Text(message),
+      duration: const Duration(seconds: 3),
+    ),
+  );
+}
+
+void _removeFruitMessageOverlay() {
+  _fruitMessageTimer?.cancel();
+  _fruitMessageTimer = null;
+  _fruitMessageOverlay?.remove();
+  _fruitMessageOverlay = null;
+}
+
+void _showFruitMessageOverlay(BuildContext context, String message) {
+  final overlay = Overlay.maybeOf(context, rootOverlay: true);
+  if (overlay == null) {
+    _showMaterialSnackBar(context, message);
+    return;
+  }
+
+  _removeFruitMessageOverlay();
+  final colorScheme = Theme.of(context).colorScheme;
+  final isDark = Theme.of(context).brightness == Brightness.dark;
+  final bool useLiquidGlass = _shouldUseFruitLiquidGlass(context);
+
+  _fruitMessageOverlay = OverlayEntry(
+    builder: (overlayContext) {
+      final media = MediaQuery.maybeOf(overlayContext);
+      final bottomInset = media?.viewInsets.bottom ?? 0;
+      final safeBottom = media?.padding.bottom ?? 0;
+      return Positioned.fill(
+        child: IgnorePointer(
+          child: SafeArea(
+            child: Align(
+              alignment: Alignment.bottomCenter,
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(
+                  16,
+                  16,
+                  16,
+                  20 + safeBottom + bottomInset,
+                ),
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 560),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(18),
+                    child: BackdropFilter(
+                      filter: ImageFilter.blur(
+                        sigmaX: useLiquidGlass ? 14 : 0,
+                        sigmaY: useLiquidGlass ? 14 : 0,
+                      ),
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(
+                          color: useLiquidGlass
+                              ? (isDark
+                                  ? Colors.black.withValues(alpha: 0.45)
+                                  : Colors.white.withValues(alpha: 0.58))
+                              : (isDark
+                                  ? colorScheme.surfaceContainerHigh
+                                  : colorScheme.surface),
+                          borderRadius: BorderRadius.circular(18),
+                          border: Border.all(
+                            color: useLiquidGlass
+                                ? (isDark
+                                    ? Colors.white.withValues(alpha: 0.18)
+                                    : Colors.white.withValues(alpha: 0.65))
+                                : colorScheme.outlineVariant
+                                    .withValues(alpha: isDark ? 0.7 : 0.9),
+                            width: 0.8,
+                          ),
+                          boxShadow: useLiquidGlass
+                              ? [
+                                  BoxShadow(
+                                    color: Colors.black.withValues(alpha: 0.14),
+                                    blurRadius: 22,
+                                    offset: const Offset(0, 8),
+                                  ),
+                                ]
+                              : [],
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 18,
+                            vertical: 14,
+                          ),
+                          child: Semantics(
+                            liveRegion: true,
+                            label: message,
+                            child: Text(
+                              message,
+                              textAlign: TextAlign.center,
+                              maxLines: 3,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontFamily: 'Inter',
+                                fontWeight: FontWeight.w600,
+                                fontSize: 13,
+                                letterSpacing: 0.1,
+                                color: isDark
+                                    ? colorScheme.onSurface
+                                    : colorScheme.onSurface,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+    },
+  );
+
+  overlay.insert(_fruitMessageOverlay!);
+  _fruitMessageTimer = Timer(const Duration(seconds: 3), () {
+    _removeFruitMessageOverlay();
+  });
+}
+
+bool _shouldUseFruitLiquidGlass(BuildContext context) {
+  try {
+    final settings = context.read<SettingsProvider>();
+    return settings.fruitEnableLiquidGlass && !settings.performanceMode;
+  } catch (_) {
+    return false;
   }
 }
 

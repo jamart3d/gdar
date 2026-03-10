@@ -415,17 +415,25 @@ mixin ShowListLogicMixin<T extends StatefulWidget>
     }
 
     final showListProvider = context.read<ShowListProvider>();
+    final settingsProvider = context.read<SettingsProvider>();
+    final isSimpleTheme = settingsProvider.performanceMode;
     final show = selection.show;
 
     if (show.sources.length > 1) {
       showListProvider.expandShow(showListProvider.getShowKey(show));
-      animationController.forward(from: 0.0);
+      if (!isSimpleTheme) {
+        animationController.forward(from: 0.0);
+      }
     }
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
-        reliablyScrollToShow(show,
-            duration: const Duration(milliseconds: 1200));
+        reliablyScrollToShow(
+          show,
+          duration: isSimpleTheme
+              ? const Duration(milliseconds: 120)
+              : const Duration(milliseconds: 1200),
+        );
       }
     });
 
@@ -444,6 +452,15 @@ mixin ShowListLogicMixin<T extends StatefulWidget>
     unawaited(AppHaptics.mediumImpact(context.read<DeviceService>()));
     final showListProvider = context.read<ShowListProvider>();
     final audioProvider = context.read<AudioProvider>();
+
+    if (showListProvider.isChoosingRandomShow || isRandomShowLoading) {
+      return;
+    }
+
+    if (audioProvider.pendingRandomShowRequest != null) {
+      await audioProvider.playPendingSelection();
+      return;
+    }
 
     if (!showListProvider.hasUsedRandomButton) {
       showListProvider.markRandomButtonUsed();

@@ -58,6 +58,11 @@
 - [ ] **Bug — Track Skip on Buffer**: Engine skips next track if it isn't fully buffered when current track ends.
 - [ ] **Mobile Preload Setting**: User setting to choose how many tracks to buffer/preload ahead (currently defaults to 1).
 - [ ] **Playback Settings**: Investigate a short fade-in playback option (on start/resume) to reduce audio "popping".
+- [ ] **Web Audio Engine Wiring Cleanup**: Route hybrid/background/handoff runtime updates through active `AudioProvider.audioPlayer` only (avoid creating ad-hoc `GaplessPlayer()` in settings flows).
+- [ ] **Hybrid Background Sync**: In `AudioProvider.update()`, sync `hybridBackgroundMode` to active player along with handoff mode.
+- [ ] **Transition/Crossfade Contract**: Unify Dart/JS method naming and fully wire `trackTransitionMode` + `crossfadeDurationSeconds`; hide unsupported UI paths until complete.
+- [ ] **Adaptive PWA Engine Profile**: Add first-run profile selection for modern vs older phones (`hybrid balanced` vs `html5 stability`).
+- [ ] **Long Background Soak Test Matrix**: Validate hidden playback longevity per preset (`stability`, `balanced`, `maxGapless`) across modern and older mobile browsers.
 
 ---
 

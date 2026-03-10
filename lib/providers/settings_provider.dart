@@ -10,6 +10,18 @@ import 'package:shakedown/utils/web_perf_hint.dart';
 import 'package:shakedown/providers/theme_provider.dart';
 import 'package:shakedown/services/gapless_player/gapless_player.dart';
 
+enum WebEngineProfile {
+  modern,
+  legacy;
+
+  static WebEngineProfile fromString(String? value) {
+    return WebEngineProfile.values.firstWhere(
+      (e) => e.name == value,
+      orElse: () => WebEngineProfile.modern,
+    );
+  }
+}
+
 class SettingsProvider with ChangeNotifier {
   final SharedPreferences _prefs;
   final bool isTv;
@@ -46,6 +58,8 @@ class SettingsProvider with ChangeNotifier {
   static const String _highlightPlayingWithRgbKey =
       'highlight_playing_with_rgb';
   static const String _showPlaybackMessagesKey = 'show_playback_messages';
+  static const String _showDevAudioHudKey = 'show_dev_audio_hud';
+  static const String _devAudioHudSnapshotKey = 'dev_audio_hud_snapshot';
   static const String _sortOldestFirstKey = 'sort_oldest_first';
   static const String _useStrictSrcCategorizationKey =
       'use_strict_src_categorization';
@@ -62,6 +76,8 @@ class SettingsProvider with ChangeNotifier {
   static const String _hybridHandoffModeKey = 'hybrid_handoff_mode';
   static const String _hybridBackgroundModeKey = 'hybrid_background_mode';
   static const String _hiddenSessionPresetKey = 'hidden_session_preset';
+  static const String _webEngineProfileInitKey = 'web_engine_profile_init_v1';
+  static const String _webEngineProfileChoiceKey = 'web_engine_profile_choice';
   static const String _webSourceFiltersInitKey = 'web_source_filters_init_v1';
   static const String _simpleRandomIconKey = 'simple_random_icon';
   static const String _fruitDenseListKey = 'fruit_dense_list';
@@ -180,6 +196,8 @@ class SettingsProvider with ChangeNotifier {
   late int _glowMode;
   late bool _highlightPlayingWithRgb;
   late bool _showPlaybackMessages;
+  late bool _showDevAudioHud;
+  String _devAudioHudSnapshot = '';
   late bool _sortOldestFirst;
   late bool _useStrictSrcCategorization;
   late bool _offlineBuffering;
@@ -208,6 +226,7 @@ class SettingsProvider with ChangeNotifier {
   late HybridHandoffMode _hybridHandoffMode;
   late HybridBackgroundMode _hybridBackgroundMode;
   late HiddenSessionPreset _hiddenSessionPreset;
+  late WebEngineProfile _webEngineProfile;
 
   // Screensaver (steal)
   late bool _useOilScreensaver;
@@ -297,6 +316,8 @@ class SettingsProvider with ChangeNotifier {
   int get glowMode => _glowMode;
   bool get highlightPlayingWithRgb => _highlightPlayingWithRgb;
   bool get showPlaybackMessages => _showPlaybackMessages;
+  bool get showDevAudioHud => _showDevAudioHud;
+  String get devAudioHudSnapshot => _devAudioHudSnapshot;
   bool get sortOldestFirst => _sortOldestFirst;
   bool get useStrictSrcCategorization => _useStrictSrcCategorization;
   bool get offlineBuffering => _offlineBuffering;
@@ -361,8 +382,9 @@ class SettingsProvider with ChangeNotifier {
 
   String get trackTransitionMode => _trackTransitionMode;
   void setTrackTransitionMode(String mode) {
-    _trackTransitionMode = mode;
-    _prefs.setString(_trackTransitionModeKey, mode);
+    final normalized = mode == 'gap' ? 'gap' : 'gapless';
+    _trackTransitionMode = normalized;
+    _prefs.setString(_trackTransitionModeKey, normalized);
     notifyListeners();
   }
 
@@ -377,23 +399,16 @@ class SettingsProvider with ChangeNotifier {
   void setHybridHandoffMode(HybridHandoffMode mode) {
     _hybridHandoffMode = mode;
     _prefs.setString(_hybridHandoffModeKey, mode.name);
-    // Notify player if on web
-    if (kIsWeb) {
-      GaplessPlayer().setHybridHandoffMode(mode.name);
-    }
     notifyListeners();
   }
 
   HybridBackgroundMode get hybridBackgroundMode => _hybridBackgroundMode;
 
   HiddenSessionPreset get hiddenSessionPreset => _hiddenSessionPreset;
+  WebEngineProfile get webEngineProfile => _webEngineProfile;
   void setHybridBackgroundMode(HybridBackgroundMode mode) {
     _hybridBackgroundMode = mode;
     _prefs.setString(_hybridBackgroundModeKey, mode.name);
-    // Notify player if on web
-    if (kIsWeb) {
-      GaplessPlayer().setHybridBackgroundMode(mode.name);
-    }
     notifyListeners();
   }
 
@@ -423,13 +438,42 @@ class SettingsProvider with ChangeNotifier {
     _prefs.setString(_hybridHandoffModeKey, _hybridHandoffMode.name);
     _prefs.setString(_hybridBackgroundModeKey, _hybridBackgroundMode.name);
 
-    if (kIsWeb) {
-      final player = GaplessPlayer();
-      player.setHybridHandoffMode(_hybridHandoffMode.name);
-      player.setHybridBackgroundMode(_hybridBackgroundMode.name);
+    notifyListeners();
+  }
+
+  void setWebEngineProfile(WebEngineProfile profile) {
+    if (!kIsWeb) return;
+    _webEngineProfile = profile;
+    _applyWebEngineProfile(profile, persistPrefs: true);
+    _prefs.setBool(_webEngineProfileInitKey, true);
+    _prefs.setString(_webEngineProfileChoiceKey, profile.name);
+    notifyListeners();
+  }
+
+  void _applyWebEngineProfile(
+    WebEngineProfile profile, {
+    required bool persistPrefs,
+  }) {
+    switch (profile) {
+      case WebEngineProfile.modern:
+        _hiddenSessionPreset = HiddenSessionPreset.balanced;
+        _audioEngineMode = AudioEngineMode.hybrid;
+        _hybridHandoffMode = HybridHandoffMode.buffered;
+        _hybridBackgroundMode = HybridBackgroundMode.heartbeat;
+        break;
+      case WebEngineProfile.legacy:
+        _hiddenSessionPreset = HiddenSessionPreset.stability;
+        _audioEngineMode = AudioEngineMode.html5;
+        _hybridHandoffMode = HybridHandoffMode.buffered;
+        _hybridBackgroundMode = HybridBackgroundMode.video;
+        break;
     }
 
-    notifyListeners();
+    if (!persistPrefs) return;
+    _prefs.setString(_hiddenSessionPresetKey, _hiddenSessionPreset.name);
+    _prefs.setString(_audioEngineModeKey, _audioEngineMode.name);
+    _prefs.setString(_hybridHandoffModeKey, _hybridHandoffMode.name);
+    _prefs.setString(_hybridBackgroundModeKey, _hybridBackgroundMode.name);
   }
 
   // Screensaver getters
@@ -704,6 +748,9 @@ class SettingsProvider with ChangeNotifier {
             DefaultSettings.showSplashScreen, DefaultSettings.showSplashScreen);
     _showPlaybackMessages = _prefs.getBool(_showPlaybackMessagesKey) ??
         DefaultSettings.showPlaybackMessages;
+    _showDevAudioHud =
+        _prefs.getBool(_showDevAudioHudKey) ?? DefaultSettings.showDevAudioHud;
+    _devAudioHudSnapshot = _prefs.getString(_devAudioHudSnapshotKey) ?? '';
     _sortOldestFirst =
         _prefs.getBool(_sortOldestFirstKey) ?? DefaultSettings.sortOldestFirst;
     _useStrictSrcCategorization =
@@ -777,6 +824,25 @@ class SettingsProvider with ChangeNotifier {
               _dStr(WebDefaults.audioEngineMode, PhoneDefaults.audioEngineMode,
                   PhoneDefaults.audioEngineMode));
     }
+    _webEngineProfile = WebEngineProfile.fromString(
+      _prefs.getString(_webEngineProfileChoiceKey),
+    );
+
+    final hasAdaptiveProfileInit =
+        _prefs.getBool(_webEngineProfileInitKey) ?? false;
+    final bool hasExplicitEngineOverride =
+        _prefs.containsKey(_audioEngineModeKey) &&
+            _audioEngineMode != AudioEngineMode.auto;
+    if (kIsWeb && !hasAdaptiveProfileInit && !hasExplicitEngineOverride) {
+      _webEngineProfile = isLikelyLowPowerWebDevice()
+          ? WebEngineProfile.legacy
+          : WebEngineProfile.modern;
+      _applyWebEngineProfile(_webEngineProfile, persistPrefs: true);
+      _prefs.setBool(_webEngineProfileInitKey, true);
+      _prefs.setString(_webEngineProfileChoiceKey, _webEngineProfile.name);
+      logger.i(
+          'SettingsProvider: Adaptive web engine profile applied: ${_webEngineProfile.name}');
+    }
     // Greedy prefetch (-1) if in Web Audio mode, otherwise use fixed 30s
     _webPrefetchSeconds = (_audioEngineMode == AudioEngineMode.webAudio)
         ? -1
@@ -791,6 +857,10 @@ class SettingsProvider with ChangeNotifier {
 
     _trackTransitionMode = _prefs.getString(_trackTransitionModeKey) ??
         DefaultSettings.trackTransitionMode;
+    if (_trackTransitionMode == 'crossfade') {
+      _trackTransitionMode = 'gapless';
+      _prefs.setString(_trackTransitionModeKey, _trackTransitionMode);
+    }
     _crossfadeDurationSeconds =
         _prefs.getDouble(_crossfadeDurationSecondsKey) ??
             DefaultSettings.crossfadeDurationSeconds;
@@ -1036,6 +1106,15 @@ class SettingsProvider with ChangeNotifier {
 
   void toggleShowPlaybackMessages() => _updatePreference(
       _showPlaybackMessagesKey, _showPlaybackMessages = !_showPlaybackMessages);
+  void toggleShowDevAudioHud() => _updatePreference(
+      _showDevAudioHudKey, _showDevAudioHud = !_showDevAudioHud);
+
+  Future<void> saveDevAudioHudSnapshot(String snapshot) async {
+    if (_devAudioHudSnapshot == snapshot) return;
+    _devAudioHudSnapshot = snapshot;
+    await _prefs.setString(_devAudioHudSnapshotKey, snapshot);
+  }
+
   void toggleSortOldestFirst() => _updatePreference(
       _sortOldestFirstKey, _sortOldestFirst = !_sortOldestFirst);
   void toggleUseStrictSrcCategorization() => _updatePreference(

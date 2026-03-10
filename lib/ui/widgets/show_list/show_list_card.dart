@@ -285,12 +285,17 @@ class _ShowListCardState extends State<ShowListCard> {
             ? 54.0
             : (isFruit ? 48.0 : 58.0)); // v135 standard height for phone: 58.0
     final double cardHeight = baseHeight * style.effectiveScale;
+    final bool isDesktopInlinePlaying =
+        kIsWeb && !useMobileLayout && !isTv && widget.isPlaying;
     final double controlZoneWidth = (kIsWeb)
         ? ((isFruit || !useMobileLayout)
                 ? (useMobileLayout ? 84.0 : (isFruit ? 180.0 : 140.0))
                 : style.config.baseControlZoneWidth) *
             style.effectiveScale
         : (style.config.baseControlZoneWidth * style.effectiveScale);
+    final double effectiveControlZoneWidth = isDesktopInlinePlaying
+        ? (340.0 * style.effectiveScale)
+        : controlZoneWidth;
 
     return Container(
       height: cardHeight,
@@ -317,7 +322,7 @@ class _ShowListCardState extends State<ShowListCard> {
             clipBehavior: Clip.none,
             children: [
               Positioned.fill(
-                right: controlZoneWidth,
+                right: effectiveControlZoneWidth,
                 child: Container(
                   decoration: BoxDecoration(
                     border: Border.all(
@@ -622,6 +627,8 @@ class _ShowListCardState extends State<ShowListCard> {
                     deviceService.isPwa ||
                     deviceService.isMobile) &&
                 !isTv;
+            final bool showDesktopEmbeddedPlayer =
+                kIsWeb && !useMobileLayout && !isTv && widget.isPlaying;
 
             final catalog = CatalogService();
             final bool usePremium =
@@ -728,13 +735,16 @@ class _ShowListCardState extends State<ShowListCard> {
                 rating: rating,
                 isPlayed: isPlayed,
                 size: isFruit
-                    ? (useMobileLayout ? 26 : 30)
+                    ? (settings.performanceMode
+                        ? (useMobileLayout ? 22 : 26)
+                        : (useMobileLayout ? 26 : 30))
                     : (kIsWeb && useMobileLayout
                         ? 30
                         : useMobileLayout
                             ? 19
                             : 20),
                 compact: true,
+                enforceMinTapTarget: true,
                 onTap: (widget.isPlaying ||
                         widget.alwaysShowRatingInteraction ||
                         show.sources.length == 1)
@@ -873,12 +883,26 @@ class _ShowListCardState extends State<ShowListCard> {
                           mainAxisSize: MainAxisSize.min,
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
+                            if (showDesktopEmbeddedPlayer) ...[
+                              SizedBox(
+                                width:
+                                    (isFruit ? 172.0 : 166.0) * effectiveScale,
+                                child: EmbeddedMiniPlayer(
+                                  scaleFactor: effectiveScale * 0.88,
+                                  compact: true,
+                                ),
+                              ),
+                              const SizedBox(width: 6),
+                            ],
                             if (showRating && ratingKey != null)
                               RatingControl(
                                 rating: rating,
                                 isPlayed: isPlayed,
-                                size: isFruit ? 24 : (kIsWeb ? 28 : 19),
+                                size: isFruit
+                                    ? (settings.performanceMode ? 24 : 28)
+                                    : (kIsWeb ? 28 : 19),
                                 compact: true,
+                                enforceMinTapTarget: true,
                                 onTap: (widget.isPlaying ||
                                         widget.alwaysShowRatingInteraction ||
                                         show.sources.length == 1)
@@ -960,6 +984,8 @@ class _ShowListCardState extends State<ShowListCard> {
     final bool isDense = settingsProvider.fruitDenseList;
     final double vPad = isDense ? 12.0 : 18.0;
     const double hPad = 16.0;
+    final double miniPlayerGap = isDense ? 10.0 : 12.0;
+    final double miniPlayerSlotHeight = 48.0 * style.effectiveScale;
 
     // Duration: sum all tracks from the primary source
     final Source? primarySource =
@@ -1014,10 +1040,11 @@ class _ShowListCardState extends State<ShowListCard> {
                         child: RatingControl(
                           rating: rating,
                           isPlayed: isPlayed,
-                          size: isDense
-                              ? 14
-                              : 15, // Reduced to match text cap height
+                          size: settingsProvider.performanceMode
+                              ? (isDense ? 18 : 20)
+                              : (isDense ? 22 : 24),
                           compact: true,
+                          enforceMinTapTarget: true,
                           onTap: (widget.isPlaying ||
                                   widget.alwaysShowRatingInteraction ||
                                   widget.show.sources.length == 1)
@@ -1134,11 +1161,22 @@ class _ShowListCardState extends State<ShowListCard> {
                                       style.effectiveScale, false),
                               ],
                             ),
-                          if (widget.isPlaying) ...[
-                            const SizedBox(height: 12),
-                            EmbeddedMiniPlayer(
-                                scaleFactor: style.effectiveScale),
-                          ],
+                          SizedBox(height: miniPlayerGap),
+                          SizedBox(
+                            height: miniPlayerSlotHeight,
+                            child: AnimatedOpacity(
+                              duration: const Duration(milliseconds: 120),
+                              curve: Curves.easeOutCubic,
+                              opacity: widget.isPlaying ? 1.0 : 0.0,
+                              child: IgnorePointer(
+                                ignoring: !widget.isPlaying,
+                                child: widget.isPlaying
+                                    ? EmbeddedMiniPlayer(
+                                        scaleFactor: style.effectiveScale)
+                                    : const SizedBox.shrink(),
+                              ),
+                            ),
+                          ),
                         ],
                       ),
                     ),

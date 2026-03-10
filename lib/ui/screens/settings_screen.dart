@@ -28,11 +28,15 @@ import 'package:lucide_icons/lucide_icons.dart';
 class SettingsScreen extends StatefulWidget {
   final String? highlightSetting;
   final bool showFontSelection;
+  final bool showFruitTabBar;
+  final VoidCallback? onBackRequested;
 
   const SettingsScreen({
     super.key,
     this.highlightSetting,
     this.showFontSelection = false,
+    this.showFruitTabBar = true,
+    this.onBackRequested,
   });
 
   @override
@@ -288,10 +292,19 @@ class _SettingsScreenState extends State<SettingsScreen>
                 ),
             ],
           ),
-          bottomNavigationBar: isFruit
+          bottomNavigationBar: isFruit && widget.showFruitTabBar
               ? FruitTabBar(
                   selectedIndex: 3,
-                  onOpenPlaybackScreen: _openPlaybackScreen,
+                  onTabSelected: (index) {
+                    if (index == 0) {
+                      _openPlaybackScreen();
+                    } else if (index == 1) {
+                      (widget.onBackRequested ??
+                          () => Navigator.of(context).pop())();
+                    } else if (index == 2) {
+                      context.read<AudioProvider>().playRandomShow();
+                    }
+                  },
                 )
               : null,
         ),
@@ -330,7 +343,8 @@ class _SettingsScreenState extends State<SettingsScreen>
                 _buildFruitHeaderButton(
                   context,
                   icon: LucideIcons.chevronLeft,
-                  onPressed: () => Navigator.of(context).pop(),
+                  onPressed: widget.onBackRequested ??
+                      () => Navigator.of(context).pop(),
                 ),
                 const Expanded(
                   child: Center(

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 
 import 'package:provider/provider.dart';
@@ -7,6 +8,7 @@ import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:shakedown/providers/audio_provider.dart';
 import 'package:shakedown/providers/settings_provider.dart';
 import 'package:shakedown/providers/theme_provider.dart';
+import 'package:shakedown/ui/screens/settings_screen.dart';
 import 'package:shakedown/ui/widgets/rating_control.dart';
 import 'package:shakedown/ui/widgets/src_badge.dart';
 import 'package:shakedown/ui/widgets/shnid_badge.dart';
@@ -69,6 +71,8 @@ class PlaybackScreen extends StatefulWidget {
   final VoidCallback? onTrackListLeft;
   final VoidCallback? onTrackListRight;
   final bool isActive;
+  final bool showFruitTabBar;
+  final VoidCallback? onBackRequested;
 
   const PlaybackScreen({
     super.key,
@@ -81,6 +85,8 @@ class PlaybackScreen extends StatefulWidget {
     this.onTrackListLeft,
     this.onTrackListRight,
     this.isActive = true,
+    this.showFruitTabBar = true,
+    this.onBackRequested,
   });
 
   @override
@@ -456,6 +462,7 @@ class PlaybackScreenState extends State<PlaybackScreen>
 
     final catalog = CatalogService();
     final String? ratingKey = audioProvider.currentSource?.id;
+    final Source? currentSource = audioProvider.currentSource;
     int rating = 0;
     bool isPlayed = false;
 
@@ -470,9 +477,10 @@ class PlaybackScreenState extends State<PlaybackScreen>
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           _FruitHeaderButton(
-            onTap: () => Navigator.of(context).pop(),
+            onTap: widget.onBackRequested ?? () => Navigator.of(context).pop(),
             icon: LucideIcons.chevronLeft,
             scaleFactor: scaleFactor,
+            semanticLabel: 'Back to library',
           ),
           // Center: Metadata
           Expanded(
@@ -541,16 +549,18 @@ class PlaybackScreenState extends State<PlaybackScreen>
                       ShnidBadge(
                         text: audioProvider.currentSource!.id,
                         scaleFactor: scaleFactor,
-                        onTap: () {
-                          if (audioProvider.currentSource!.tracks.isNotEmpty) {
-                            launchArchivePage(
-                                audioProvider.currentSource!.tracks.first.url,
-                                context);
-                          } else {
-                            launchArchiveDetails(
-                                audioProvider.currentSource!.id, context);
+                        uri: () {
+                          if (currentSource == null) return null;
+                          if (currentSource.tracks.isNotEmpty) {
+                            final transformed = transformArchiveUrl(
+                                currentSource.tracks.first.url);
+                            if (transformed != null && transformed.isNotEmpty) {
+                              return Uri.parse(transformed);
+                            }
                           }
-                        },
+                          return Uri.parse(
+                              'https://archive.org/details/${currentSource.id}');
+                        }(),
                       ),
                     ],
                   ],
@@ -663,6 +673,7 @@ class PlaybackScreenState extends State<PlaybackScreen>
             },
             icon: LucideIcons.moreHorizontal,
             scaleFactor: scaleFactor,
+            semanticLabel: 'Playback options',
           ),
         ],
       ),
@@ -1037,10 +1048,40 @@ class PlaybackScreenState extends State<PlaybackScreen>
               ),
           ],
         ),
-        bottomNavigationBar: FruitTabBar(
-          selectedIndex: 0, // NOW
-          onOpenPlaybackScreen: () {},
-        ),
+        bottomNavigationBar: widget.showFruitTabBar
+            ? FruitTabBar(
+                selectedIndex: 0, // NOW
+                onTabSelected: (index) {
+                  if (index == 1) {
+                    widget.onBackRequested?.call();
+                  } else if (index == 2) {
+                    context.read<AudioProvider>().playRandomShow();
+                  } else if (index == 3) {
+                    Navigator.of(context).push(
+                      PageRouteBuilder(
+                        pageBuilder: (context, animation, secondaryAnimation) =>
+                            SettingsScreen(
+                          onBackRequested: widget.onBackRequested,
+                        ),
+                        transitionDuration: const Duration(milliseconds: 300),
+                        transitionsBuilder:
+                            (context, animation, secondaryAnimation, child) {
+                          const begin = Offset(0.0, 1.0);
+                          const end = Offset.zero;
+                          const curve = Curves.easeInOut;
+                          final tween = Tween(begin: begin, end: end)
+                              .chain(CurveTween(curve: curve));
+                          return SlideTransition(
+                            position: animation.drive(tween),
+                            child: child,
+                          );
+                        },
+                      ),
+                    );
+                  }
+                },
+              )
+            : null,
       );
     }
 
@@ -1121,11 +1162,13 @@ class _FruitHeaderButton extends StatefulWidget {
   final VoidCallback onTap;
   final IconData icon;
   final double scaleFactor;
+  final String semanticLabel;
 
   const _FruitHeaderButton({
     required this.onTap,
     required this.icon,
     required this.scaleFactor,
+    required this.semanticLabel,
   });
 
   @override
@@ -1134,6 +1177,7 @@ class _FruitHeaderButton extends StatefulWidget {
 
 class _FruitHeaderButtonState extends State<_FruitHeaderButton> {
   bool _isPressed = false;
+  bool _isFocused = false;
 
   @override
   Widget build(BuildContext context) {
@@ -1159,15 +1203,40 @@ class _FruitHeaderButtonState extends State<_FruitHeaderButton> {
       );
     }
 
-    return GestureDetector(
-      onTapDown: (_) => setState(() => _isPressed = true),
-      onTapUp: (_) => setState(() => _isPressed = false),
-      onTapCancel: () => setState(() => _isPressed = false),
-      onTap: widget.onTap,
-      child: AnimatedOpacity(
-        duration: const Duration(milliseconds: 100),
-        opacity: _isPressed ? 0.6 : 1.0,
-        child: content,
+    return Semantics(
+      button: true,
+      label: widget.semanticLabel,
+      child: ExcludeSemantics(
+        child: FocusableActionDetector(
+          enabled: true,
+          mouseCursor: SystemMouseCursors.click,
+          onShowFocusHighlight: (value) {
+            setState(() => _isFocused = value);
+          },
+          shortcuts: const <ShortcutActivator, Intent>{
+            SingleActivator(LogicalKeyboardKey.enter): ActivateIntent(),
+            SingleActivator(LogicalKeyboardKey.space): ActivateIntent(),
+          },
+          actions: <Type, Action<Intent>>{
+            ActivateIntent: CallbackAction<ActivateIntent>(
+              onInvoke: (_) {
+                widget.onTap();
+                return null;
+              },
+            ),
+          },
+          child: GestureDetector(
+            onTapDown: (_) => setState(() => _isPressed = true),
+            onTapUp: (_) => setState(() => _isPressed = false),
+            onTapCancel: () => setState(() => _isPressed = false),
+            onTap: widget.onTap,
+            child: AnimatedOpacity(
+              duration: const Duration(milliseconds: 100),
+              opacity: _isPressed ? 0.6 : (_isFocused ? 0.85 : 1.0),
+              child: content,
+            ),
+          ),
+        ),
       ),
     );
   }

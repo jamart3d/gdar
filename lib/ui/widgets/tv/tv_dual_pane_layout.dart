@@ -367,16 +367,15 @@ class _TvDualPaneLayoutState extends State<TvDualPaneLayout> {
                     ],
                   ),
                 ),
-                // Playback Messages (Top Right - No Gap)
-                if (settingsProvider.showPlaybackMessages)
-                  const Positioned(
-                    top: 0,
-                    right: 3,
-                    child: PlaybackMessages(
-                      textAlign: TextAlign.right,
-                      showDivider: true,
-                    ),
+                // Playback Status + Messages (Top Right - No Gap)
+                const Positioned(
+                  top: 0,
+                  right: 3,
+                  child: PlaybackMessages(
+                    textAlign: TextAlign.right,
+                    showDivider: true,
                   ),
+                ),
               ],
             ),
           ),

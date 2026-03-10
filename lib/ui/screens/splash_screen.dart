@@ -133,21 +133,27 @@ class _SplashScreenState extends State<SplashScreen>
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         final isTv = context.read<DeviceService>().isTv;
+        final settingsProvider = context.read<SettingsProvider>();
+        final useSimpleTransition = settingsProvider.performanceMode;
         final nextScreen =
             isTv ? const TvDualPaneLayout() : const ShowListScreen();
 
         Navigator.of(context).pushReplacement(
           PageRouteBuilder(
             pageBuilder: (context, animation, secondaryAnimation) => nextScreen,
-            transitionsBuilder:
-                (context, animation, secondaryAnimation, child) {
-              final curvedAnimation = CurvedAnimation(
-                parent: animation,
-                curve: Curves.easeInOutCubic,
-              );
-              return FadeTransition(opacity: curvedAnimation, child: child);
-            },
-            transitionDuration: const Duration(milliseconds: 2500),
+            transitionsBuilder: useSimpleTransition
+                ? (context, animation, secondaryAnimation, child) => child
+                : (context, animation, secondaryAnimation, child) {
+                    final curvedAnimation = CurvedAnimation(
+                      parent: animation,
+                      curve: Curves.easeInOutCubic,
+                    );
+                    return FadeTransition(
+                        opacity: curvedAnimation, child: child);
+                  },
+            transitionDuration: useSimpleTransition
+                ? Duration.zero
+                : const Duration(milliseconds: 2500),
           ),
         );
       }

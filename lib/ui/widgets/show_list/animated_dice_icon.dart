@@ -2,6 +2,8 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shakedown/providers/settings_provider.dart';
+import 'package:shakedown/providers/theme_provider.dart';
+import 'package:shakedown/ui/widgets/theme/fruit_tooltip.dart';
 import 'package:shakedown/utils/font_layout_config.dart';
 import 'package:shakedown/utils/app_haptics.dart';
 import 'package:shakedown/services/device_service.dart';
@@ -64,6 +66,7 @@ class _AnimatedDiceIconState extends State<AnimatedDiceIcon>
       vsync: this,
       duration: const Duration(seconds: 2),
     );
+    _syncRollDuration();
 
     _idleController = AnimationController(
       vsync: this,
@@ -90,6 +93,13 @@ class _AnimatedDiceIconState extends State<AnimatedDiceIcon>
     }
   }
 
+  void _syncRollDuration() {
+    final settingsProvider = context.read<SettingsProvider>();
+    _controller.duration = settingsProvider.performanceMode
+        ? const Duration(milliseconds: 500)
+        : const Duration(seconds: 2);
+  }
+
   void _generateRollSequence() {
     // 3 or 4 faces
     final int count = 3 + math.Random().nextInt(2);
@@ -113,6 +123,7 @@ class _AnimatedDiceIconState extends State<AnimatedDiceIcon>
     if (widget.isLoading && !oldWidget.isLoading) {
       logger.d(
           'AnimatedDiceIcon: Roll STARTED (isLoading=true, enableHaptics=${widget.enableHaptics})');
+      _syncRollDuration();
       _rollLeft = !_rollLeft;
       _hapticsEnabledForCurrentRoll = widget.enableHaptics;
       _generateRollSequence();
@@ -186,12 +197,15 @@ class _AnimatedDiceIconState extends State<AnimatedDiceIcon>
 
         if (_controller.isAnimating) {
           final t = _controller.value;
+          final bool isSimpleTheme = settingsProvider.performanceMode;
 
           // --- Rotation (Spin) ---
-          // Exactly 1 full rotation over 2s.
+          // Simple Theme: quarter turn for calmer motion.
+          // Default: one full rotation over 2s.
           final directionMultiplier = _rollLeft ? -1.0 : 1.0;
+          final double turns = isSimpleTheme ? 0.25 : 1.0;
           // Force perfectly flat landing (0 or 2pi)
-          angle = t * 2 * math.pi * directionMultiplier;
+          angle = t * 2 * math.pi * turns * directionMultiplier;
 
           // --- Squash & Stretch (Landing Bump) ---
           // We want 3 quick pulses, and then a BIGGER bump at the end.
@@ -271,24 +285,36 @@ class _AnimatedDiceIconState extends State<AnimatedDiceIcon>
       return iconContent;
     }
 
+    final bool isFruit =
+        context.watch<ThemeProvider>().themeStyle == ThemeStyle.fruit;
+
+    Widget button = IconButton(
+      iconSize: scaledIconSize,
+      padding:
+          const EdgeInsets.all(12.0), // Standard padding (total 56x56 base)
+      onPressed: widget.onPressed,
+      tooltip: isFruit ? null : widget.tooltip,
+      style: IconButton.styleFrom(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12.0),
+        ),
+      ),
+      icon: iconContent,
+    );
+
+    if (isFruit && widget.tooltip != null && widget.tooltip!.isNotEmpty) {
+      button = FruitTooltip(
+        message: widget.tooltip!,
+        child: button,
+      );
+    }
+
     return SizedBox(
       width: 56.0 * effectiveScale,
       height: 48.0 * effectiveScale, // Buffer room for Neumorphic shadows
       child: FittedBox(
         fit: BoxFit.scaleDown,
-        child: IconButton(
-          iconSize: scaledIconSize,
-          padding:
-              const EdgeInsets.all(12.0), // Standard padding (total 56x56 base)
-          onPressed: widget.onPressed,
-          tooltip: widget.tooltip,
-          style: IconButton.styleFrom(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12.0),
-            ),
-          ),
-          icon: iconContent,
-        ),
+        child: button,
       ),
     );
   }

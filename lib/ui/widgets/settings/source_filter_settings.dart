@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:shakedown/providers/settings_provider.dart';
 import 'package:shakedown/providers/show_list_provider.dart';
@@ -252,11 +253,16 @@ class _TactileBadgeState extends State<_TactileBadge>
 
   void _handleTapUp(TapUpDetails details) {
     _controller.reverse();
-    widget.onTap();
+    _activate();
   }
 
   void _handleTapCancel() {
     _controller.reverse();
+  }
+
+  void _activate() {
+    AppHaptics.lightImpact(context.read<DeviceService>());
+    widget.onTap();
   }
 
   @override
@@ -266,45 +272,71 @@ class _TactileBadgeState extends State<_TactileBadge>
     final scaleFactor =
         FontLayoutConfig.getEffectiveScale(context, settingsProvider);
 
-    return GestureDetector(
-      onTapDown: _handleTapDown,
-      onTapUp: _handleTapUp,
-      onTapCancel: _handleTapCancel,
-      onLongPress: widget.onLongPress != null
-          ? () {
-              AppHaptics.mediumImpact(context.read<DeviceService>());
-              widget.onLongPress!();
-            }
-          : null,
-      child: ScaleTransition(
-        scale: _scaleAnimation,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-          decoration: BoxDecoration(
-            color: widget.isActive
-                ? colorScheme.onSurface.withValues(alpha: 0.12)
-                : Colors.transparent,
-            borderRadius: BorderRadius.circular(10),
-            border: Border.all(
-              color: widget.isActive
-                  ? Colors.transparent
-                  : colorScheme.outline.withValues(alpha: 0.3),
-              width: 1,
+    return Semantics(
+      button: true,
+      toggled: widget.isActive,
+      label: '${widget.label} source filter',
+      onTap: _activate,
+      onLongPress: widget.onLongPress,
+      child: ExcludeSemantics(
+        child: FocusableActionDetector(
+          enabled: true,
+          mouseCursor: SystemMouseCursors.click,
+          shortcuts: const <ShortcutActivator, Intent>{
+            SingleActivator(LogicalKeyboardKey.enter): ActivateIntent(),
+            SingleActivator(LogicalKeyboardKey.space): ActivateIntent(),
+          },
+          actions: <Type, Action<Intent>>{
+            ActivateIntent: CallbackAction<ActivateIntent>(
+              onInvoke: (_) {
+                _activate();
+                return null;
+              },
             ),
-          ),
-          child: FittedBox(
-            fit: BoxFit.scaleDown,
-            child: Text(
-              widget.label.toUpperCase(),
-              style: Theme.of(context).textTheme.labelSmall?.copyWith(
+          },
+          child: GestureDetector(
+            onTapDown: _handleTapDown,
+            onTapUp: _handleTapUp,
+            onTapCancel: _handleTapCancel,
+            onLongPress: widget.onLongPress != null
+                ? () {
+                    AppHaptics.mediumImpact(context.read<DeviceService>());
+                    widget.onLongPress!();
+                  }
+                : null,
+            child: ScaleTransition(
+              scale: _scaleAnimation,
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                decoration: BoxDecoration(
+                  color: widget.isActive
+                      ? colorScheme.onSurface.withValues(alpha: 0.12)
+                      : Colors.transparent,
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(
                     color: widget.isActive
-                        ? colorScheme.onSurface
-                        : colorScheme.onSurface.withValues(alpha: 0.7),
-                    fontWeight: FontWeight.w700,
-                    fontSize: 9 * scaleFactor,
-                    letterSpacing: 0.5,
+                        ? Colors.transparent
+                        : colorScheme.outline.withValues(alpha: 0.3),
+                    width: 1,
                   ),
+                ),
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    widget.label.toUpperCase(),
+                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                          color: widget.isActive
+                              ? colorScheme.onSurface
+                              : colorScheme.onSurface.withValues(alpha: 0.7),
+                          fontWeight: FontWeight.w700,
+                          fontSize: 9 * scaleFactor,
+                          letterSpacing: 0.5,
+                        ),
+                  ),
+                ),
+              ),
             ),
           ),
         ),

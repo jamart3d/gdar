@@ -32,6 +32,7 @@ class DefaultSettings {
   static const bool nonRandom = false;
   static const bool preventSleep = false;
   static const bool showPlaybackMessages = true;
+  static const bool showDevAudioHud = false;
 
   // Web Gapless Engine (web-only)
   static const String audioEngineMode =
@@ -39,8 +40,7 @@ class DefaultSettings {
   static const int webPrefetchSeconds = 30;
 
   // Track Transitions (hybrid/standard engines)
-  static const String trackTransitionMode =
-      'gapless'; // gap, gapless, crossfade
+  static const String trackTransitionMode = 'gapless'; // gap, gapless
   static const double crossfadeDurationSeconds = 3.0; // 1.0 - 12.0
 
   // Data & Filtering

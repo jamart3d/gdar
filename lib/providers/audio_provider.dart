@@ -248,6 +248,21 @@ class AudioProvider with ChangeNotifier {
       _audioPlayer
           .setHybridHandoffMode(settingsProvider.hybridHandoffMode.name);
     }
+
+    // Sync hybrid background survival mode
+    if (_settingsProvider != null &&
+        settingsProvider.hybridBackgroundMode !=
+            _settingsProvider!.hybridBackgroundMode) {
+      _audioPlayer
+          .setHybridBackgroundMode(settingsProvider.hybridBackgroundMode.name);
+    }
+
+    // Sync transition mode (gap/gapless) for JS engines that support it.
+    if (_settingsProvider != null &&
+        settingsProvider.trackTransitionMode !=
+            _settingsProvider!.trackTransitionMode) {
+      _audioPlayer.setTrackTransitionMode(settingsProvider.trackTransitionMode);
+    }
     _settingsProvider = settingsProvider;
     _updateBufferAgent();
     // Update cache monitoring based on setting
@@ -691,6 +706,9 @@ class AudioProvider with ChangeNotifier {
   String? get error => _error;
 
   void _setError(String message) {
+    if (_error == message) {
+      return;
+    }
     _error = message;
     _errorController.add(message);
     notifyListeners();
