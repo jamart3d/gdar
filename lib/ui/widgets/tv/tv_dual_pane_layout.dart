@@ -145,6 +145,11 @@ class _TvDualPaneLayoutState extends State<TvDualPaneLayout> {
     if (!mounted) return;
     setState(() => _focusedPane = 1);
 
+    // Only request physical focus if we are the current route.
+    // This prevents background focus-stealing during track changes while in Settings.
+    final isCurrent = ModalRoute.of(context)?.isCurrent ?? true;
+    if (!isCurrent) return;
+
     // Give it a frame to ensure AudioProvider state has propagated to PlaybackScreen
     // and that its internal track list logic has updated its indices.
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -160,6 +165,9 @@ class _TvDualPaneLayoutState extends State<TvDualPaneLayout> {
   void _focusLeftPane() {
     if (!mounted) return;
     setState(() => _focusedPane = 0);
+
+    final isCurrent = ModalRoute.of(context)?.isCurrent ?? true;
+    if (!isCurrent) return;
     _diceFocusNode.requestFocus();
   }
 
@@ -366,12 +374,14 @@ class _TvDualPaneLayoutState extends State<TvDualPaneLayout> {
                   ),
                 ),
                 // Playback Status + Messages (Top Right - No Gap)
-                const Positioned(
-                  top: 0,
-                  right: 3,
-                  child: PlaybackMessages(
-                    textAlign: TextAlign.right,
-                    showDivider: true,
+                const Align(
+                  alignment: Alignment.topRight,
+                  child: Padding(
+                    padding: EdgeInsets.only(top: 0, right: 3),
+                    child: PlaybackMessages(
+                      textAlign: TextAlign.right,
+                      showDivider: true,
+                    ),
                   ),
                 ),
               ],

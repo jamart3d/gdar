@@ -157,34 +157,52 @@ class _AnimatedGradientBorderState extends State<AnimatedGradientBorder>
       animation: animation,
       child: widget.child,
       builder: (context, child) {
-        return RepaintBoundary(
-          child: CustomPaint(
-            painter: _GradientBorderPainter(
-              colors: colors,
-              borderRadius: widget.borderRadius,
-              borderWidth: isEffectActive ? widget.borderWidth : 0.0,
-              rotation: animation.value * 2 * 3.14159,
-              showShadow: isEffectActive && !performanceMode && !isWebPlayback
-                  ? widget.showShadow
-                  : false,
-              glowOpacity: isWebPlayback ? 0.2 : widget.glowOpacity,
+        final double spreadPadding =
+            (isEffectActive && widget.showGlow) ? 18.0 : 0.0;
+
+        final innerContent = widget.usePadding
+            ? Padding(
+                padding:
+                    EdgeInsets.all(isEffectActive ? widget.borderWidth : 0.0),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color:
+                        widget.backgroundColor ?? Theme.of(context).cardColor,
+                    borderRadius: BorderRadius.circular(widget.borderRadius),
+                  ),
+                  child: child,
+                ),
+              )
+            : child!;
+
+        return Stack(
+          clipBehavior: Clip.none,
+          alignment: Alignment.center,
+          children: [
+            Positioned(
+              left: -spreadPadding,
+              top: -spreadPadding,
+              right: -spreadPadding,
+              bottom: -spreadPadding,
+              child: RepaintBoundary(
+                child: CustomPaint(
+                  painter: _GradientBorderPainter(
+                    colors: colors,
+                    borderRadius: widget.borderRadius,
+                    borderWidth: isEffectActive ? widget.borderWidth : 0.0,
+                    rotation: animation.value * 2 * 3.14159,
+                    showShadow:
+                        isEffectActive && !performanceMode && !isWebPlayback
+                            ? widget.showShadow
+                            : false,
+                    glowOpacity: isWebPlayback ? 0.2 : widget.glowOpacity,
+                    spreadPadding: spreadPadding,
+                  ),
+                ),
+              ),
             ),
-            child: widget.usePadding
-                ? Padding(
-                    padding: EdgeInsets.all(
-                        isEffectActive ? widget.borderWidth : 0.0),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: widget.backgroundColor ??
-                            Theme.of(context).cardColor,
-                        borderRadius:
-                            BorderRadius.circular(widget.borderRadius),
-                      ),
-                      child: child,
-                    ),
-                  )
-                : child,
-          ),
+            innerContent,
+          ],
         );
       },
     );
@@ -198,6 +216,7 @@ class _GradientBorderPainter extends CustomPainter {
   final double rotation;
   final bool showShadow;
   final double glowOpacity;
+  final double spreadPadding;
 
   _GradientBorderPainter({
     required this.colors,
@@ -206,13 +225,15 @@ class _GradientBorderPainter extends CustomPainter {
     required this.rotation,
     this.showShadow = true,
     this.glowOpacity = 0.5,
+    this.spreadPadding = 0.0,
   });
 
   @override
   void paint(Canvas canvas, Size size) {
     if (borderWidth <= 0) return;
 
-    final rect = Rect.fromLTWH(0, 0, size.width, size.height);
+    final rect = Rect.fromLTWH(spreadPadding, spreadPadding,
+        size.width - spreadPadding * 2, size.height - spreadPadding * 2);
 
     // 1. Draw RGB Shadow
     if (showShadow) {
@@ -261,6 +282,7 @@ class _GradientBorderPainter extends CustomPainter {
         oldDelegate.borderRadius != borderRadius ||
         oldDelegate.borderWidth != borderWidth ||
         oldDelegate.showShadow != showShadow ||
-        oldDelegate.glowOpacity != glowOpacity;
+        oldDelegate.glowOpacity != glowOpacity ||
+        oldDelegate.spreadPadding != spreadPadding;
   }
 }

@@ -37,6 +37,7 @@ class _StealVisualizerState extends State<StealVisualizer> {
     );
 
     _easterEggDetector = EasterEggDetector(
+      everyHour: widget.config.woodstockEveryHour,
       onEasterEggTriggered: (egg) {
         if (egg == EasterEgg.woodstockMode) {
           _game.triggerWoodstockMode();
@@ -44,8 +45,8 @@ class _StealVisualizerState extends State<StealVisualizer> {
       },
     );
 
-    // Check immediately on launch — if it's already 4:20 when screensaver opens
-    if (EasterEggDetector.isWoodstockTime()) {
+    // Check immediately on launch — if it's already time when screensaver opens
+    if (EasterEggDetector.isWoodstockTime(widget.config.woodstockEveryHour)) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _game.triggerWoodstockMode();
       });
@@ -66,6 +67,7 @@ class _StealVisualizerState extends State<StealVisualizer> {
     // updateConfig calls that were causing the translation jolt.
     if (widget.config != oldWidget.config) {
       _game.updateConfig(widget.config);
+      _easterEggDetector.updateEveryHour(widget.config.woodstockEveryHour);
     }
     if (widget.config.bannerText != oldWidget.config.bannerText) {
       _game.updateBannerText(widget.config.bannerText);

@@ -195,11 +195,6 @@ class _TvScreensaverSectionState extends State<TvScreensaverSection> {
                     style: textTheme.bodyLarge
                         ?.copyWith(color: colorScheme.onSurface),
                   ),
-                  subtitle: Text(
-                    'Test the Steal Your Face visual effect now',
-                    style: textTheme.bodySmall
-                        ?.copyWith(color: colorScheme.onSurfaceVariant),
-                  ),
                   onTap: () => ScreensaverScreen.show(context),
                 ),
 
@@ -431,15 +426,6 @@ class _TvScreensaverSectionState extends State<TvScreensaverSection> {
                   subtitle: 'Display venue, title, and date',
                   value: settings.oilShowInfoBanner,
                   onChanged: (_) => settings.toggleOilShowInfoBanner(),
-                  colorScheme: colorScheme,
-                  textTheme: textTheme,
-                ),
-
-                _ToggleRow(
-                  label: 'Pixel Snapping',
-                  subtitle: 'Snap text to full pixels for maximum stability',
-                  value: settings.oilBannerPixelSnap,
-                  onChanged: (_) => settings.toggleOilBannerPixelSnap(),
                   colorScheme: colorScheme,
                   textTheme: textTheme,
                 ),
@@ -931,6 +917,71 @@ class _TvScreensaverSectionState extends State<TvScreensaverSection> {
                   ),
                 ],
 
+                const SizedBox(height: 24),
+
+                // ── Frequency Isolation ─────────────────────────────────────
+                _SectionHeader(
+                    title: 'Frequency Isolation', colorScheme: colorScheme),
+                const SizedBox(height: 8),
+
+                Text(
+                  'Logo Scale Source',
+                  style: textTheme.bodySmall
+                      ?.copyWith(color: colorScheme.onSurfaceVariant),
+                ),
+                const SizedBox(height: 8),
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child: _BandSegmentedButton(
+                    selected: settings.oilScaleSource,
+                    onSelect: (val) => settings.setOilScaleSource(val),
+                    colorScheme: colorScheme,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                TvStepperRow(
+                  label: 'Scale Multiplier',
+                  value: settings.oilScaleMultiplier,
+                  min: 0.1,
+                  max: 2.0,
+                  step: 0.1,
+                  leftLabel: '0.1x',
+                  rightLabel: '2.0x',
+                  valueFormatter: (v) => '${v.toStringAsFixed(1)}x',
+                  onChanged: (v) => settings.setOilScaleMultiplier(v),
+                ),
+
+                const SizedBox(height: 24),
+
+                Text(
+                  'Logo Color Source',
+                  style: textTheme.bodySmall
+                      ?.copyWith(color: colorScheme.onSurfaceVariant),
+                ),
+                const SizedBox(height: 8),
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child: _BandSegmentedButton(
+                    selected: settings.oilColorSource,
+                    onSelect: (val) => settings.setOilColorSource(val),
+                    colorScheme: colorScheme,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                TvStepperRow(
+                  label: 'Color Pulse Multiplier',
+                  value: settings.oilColorMultiplier,
+                  min: 0.0,
+                  max: 2.0,
+                  step: 0.1,
+                  leftLabel: '0.0x',
+                  rightLabel: '2.0x',
+                  valueFormatter: (v) => '${v.toStringAsFixed(1)}x',
+                  onChanged: (v) => settings.setOilColorMultiplier(v),
+                ),
+
                 const SizedBox(height: 32),
 
                 // ── Performance ──────────────────────────────────────────────
@@ -1337,6 +1388,66 @@ class _ToggleRow extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _BandSegmentedButton extends StatelessWidget {
+  final int selected;
+  final ValueChanged<int> onSelect;
+  final ColorScheme colorScheme;
+
+  const _BandSegmentedButton({
+    required this.selected,
+    required this.onSelect,
+    required this.colorScheme,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    // -1 = All, 0-7 = Bands
+    final options = [-1, 0, 1, 2, 3, 4, 5, 6, 7];
+
+    return TvFocusWrapper(
+      onKeyEvent: (node, event) {
+        if (event is KeyDownEvent) {
+          final idx = options.indexOf(selected);
+          if (event.logicalKey == LogicalKeyboardKey.arrowLeft && idx > 0) {
+            onSelect(options[idx - 1]);
+            return KeyEventResult.handled;
+          } else if (event.logicalKey == LogicalKeyboardKey.arrowRight &&
+              idx < options.length - 1) {
+            onSelect(options[idx + 1]);
+            return KeyEventResult.handled;
+          }
+        }
+        return KeyEventResult.ignored;
+      },
+      child: SegmentedButton<int>(
+        segments: options.map((val) {
+          String label;
+          if (val == -1) {
+            label = 'ALL';
+          } else if (val == 0) {
+            label = '0:SUB';
+          } else if (val == 7) {
+            label = '7:AIR';
+          } else {
+            label = val.toString();
+          }
+
+          return ButtonSegment<int>(
+            value: val,
+            label: Text(
+              label,
+              style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
+            ),
+          );
+        }).toList(),
+        selected: {selected},
+        onSelectionChanged: (Set<int> s) => onSelect(s.first),
+        showSelectedIcon: false,
       ),
     );
   }

@@ -366,9 +366,19 @@ class StealGame extends FlameGame {
 
   /// Unified pulse scale multiplier combining base scale and audio energy.
   /// Used to synchronize logo and banner expansion.
-  double get pulseScale => config.audioGraphMode == 'corner_only'
-      ? 1.0
-      : (1.0 + _currentEnergy.bass * 0.2 * config.pulseIntensity);
+  double get pulseScale {
+    if (config.audioGraphMode == 'corner_only' ||
+        !config.enableAudioReactivity) {
+      return 1.0;
+    }
+
+    final energy = config.scaleSource == -1
+        ? _currentEnergy.bass
+        : _currentEnergy.bands[config.scaleSource.clamp(0, 7)];
+
+    return (1.0 +
+        energy * 0.2 * config.pulseIntensity * config.scaleMultiplier);
+  }
 }
 
 enum _WoodstockPhase { idle, yellow, green }

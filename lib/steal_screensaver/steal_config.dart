@@ -86,6 +86,16 @@ class StealConfig {
   /// Whether to apply fwidth-based anti-aliasing on the logo alpha edge.
   final bool logoAntiAlias;
 
+  /// Source for logo scale reactivity (-1 = overall, 0-7 = bands).
+  final int scaleSource;
+  final double scaleMultiplier;
+
+  /// Source for logo color reactivity (-1 = overall, 0-7 = bands).
+  final int colorSource;
+  final double colorMultiplier;
+
+  final bool woodstockEveryHour;
+
   static const Map<String, List<Color>> palettes = {
     'psychedelic': [
       Color(0xFFFF00FF),
@@ -174,6 +184,11 @@ class StealConfig {
     this.innerRingFontScale = 1.0,
     this.innerRingSpacingMultiplier = 1.0,
     this.logoAntiAlias = false,
+    this.scaleSource = -1,
+    this.scaleMultiplier = 1.0,
+    this.colorSource = -1,
+    this.colorMultiplier = 1.0,
+    this.woodstockEveryHour = true,
   });
 
   factory StealConfig.fromMap(Map<String, dynamic> map) {
@@ -234,6 +249,11 @@ class StealConfig {
       innerRingSpacingMultiplier:
           (map['innerRingSpacingMultiplier'] as num?)?.toDouble() ?? 1.0,
       logoAntiAlias: map['logoAntiAlias'] as bool? ?? false,
+      scaleSource: map['scaleSource'] as int? ?? -1,
+      scaleMultiplier: (map['scaleMultiplier'] as num?)?.toDouble() ?? 1.0,
+      colorSource: map['colorSource'] as int? ?? -1,
+      colorMultiplier: (map['colorMultiplier'] as num?)?.toDouble() ?? 1.0,
+      woodstockEveryHour: map['woodstockEveryHour'] as bool? ?? true,
     );
   }
 
@@ -286,6 +306,11 @@ class StealConfig {
       'innerRingFontScale': innerRingFontScale,
       'innerRingSpacingMultiplier': innerRingSpacingMultiplier,
       'logoAntiAlias': logoAntiAlias,
+      'scaleSource': scaleSource,
+      'scaleMultiplier': scaleMultiplier,
+      'colorSource': colorSource,
+      'colorMultiplier': colorMultiplier,
+      'woodstockEveryHour': woodstockEveryHour,
     };
   }
 
@@ -337,6 +362,11 @@ class StealConfig {
     double? innerRingFontScale,
     double? innerRingSpacingMultiplier,
     bool? logoAntiAlias,
+    int? scaleSource,
+    double? scaleMultiplier,
+    int? colorSource,
+    double? colorMultiplier,
+    bool? woodstockEveryHour,
   }) {
     return StealConfig(
       flowSpeed: flowSpeed ?? this.flowSpeed,
@@ -390,6 +420,11 @@ class StealConfig {
       innerRingSpacingMultiplier:
           innerRingSpacingMultiplier ?? this.innerRingSpacingMultiplier,
       logoAntiAlias: logoAntiAlias ?? this.logoAntiAlias,
+      scaleSource: scaleSource ?? this.scaleSource,
+      scaleMultiplier: scaleMultiplier ?? this.scaleMultiplier,
+      colorSource: colorSource ?? this.colorSource,
+      colorMultiplier: colorMultiplier ?? this.colorMultiplier,
+      woodstockEveryHour: woodstockEveryHour ?? this.woodstockEveryHour,
     );
   }
 
@@ -443,7 +478,12 @@ class StealConfig {
         beatImpact == other.beatImpact &&
         innerRingFontScale == other.innerRingFontScale &&
         innerRingSpacingMultiplier == other.innerRingSpacingMultiplier &&
-        logoAntiAlias == other.logoAntiAlias;
+        logoAntiAlias == other.logoAntiAlias &&
+        scaleSource == other.scaleSource &&
+        scaleMultiplier == other.scaleMultiplier &&
+        colorSource == other.colorSource &&
+        colorMultiplier == other.colorMultiplier &&
+        woodstockEveryHour == other.woodstockEveryHour;
   }
 
   @override
@@ -495,5 +535,10 @@ class StealConfig {
         innerRingFontScale,
         innerRingSpacingMultiplier,
         logoAntiAlias,
+        scaleSource,
+        scaleMultiplier,
+        colorSource,
+        colorMultiplier,
+        woodstockEveryHour,
       ]);
 }

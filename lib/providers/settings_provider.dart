@@ -148,6 +148,11 @@ class SettingsProvider with ChangeNotifier {
       'oil_inner_ring_spacing_multiplier';
   static const String _oilScreensaver4kSupportKey =
       'oil_screensaver_4k_support';
+  static const String _oilScaleSourceKey = 'oil_scale_source';
+  static const String _oilScaleMultiplierKey = 'oil_scale_multiplier';
+  static const String _oilColorSourceKey = 'oil_color_source';
+  static const String _oilColorMultiplierKey = 'oil_color_multiplier';
+  static const String _oilWoodstockEveryHourKey = 'oil_woodstock_every_hour';
   static const String _oilTvPremiumHighlightKey = 'oil_tv_premium_highlight';
 
   static const String _marqueeEnabledKey = 'marquee_enabled';
@@ -288,7 +293,13 @@ class SettingsProvider with ChangeNotifier {
   late double _oilInnerRingSpacingMultiplier;
   late bool _oilScreensaver4kSupport;
   late bool _oilTvPremiumHighlight;
+  late int _oilScaleSource;
+  late double _oilScaleMultiplier;
+  late int _oilColorSource;
+  late double _oilColorMultiplier;
+  late bool _oilWoodstockEveryHour;
 
+  // Track Layout State
   Color? _seedColor;
 
   static const String _randomOnlyUnplayedKey = 'random_only_unplayed';
@@ -535,6 +546,13 @@ class SettingsProvider with ChangeNotifier {
   double get oilInnerRingSpacingMultiplier => _oilInnerRingSpacingMultiplier;
   bool get oilScreensaver4kSupport => _oilScreensaver4kSupport;
   bool get oilTvPremiumHighlight => _oilTvPremiumHighlight;
+  int get oilScaleSource => _oilScaleSource;
+  double get oilScaleMultiplier => _oilScaleMultiplier;
+  int get oilColorSource => _oilColorSource;
+  double get oilColorMultiplier => _oilColorMultiplier;
+  bool get oilWoodstockEveryHour => _oilWoodstockEveryHour;
+
+  // Track Layout State
 
   Color? get seedColor => _seedColor;
   bool get randomOnlyUnplayed => _randomOnlyUnplayed;
@@ -990,11 +1008,22 @@ class SettingsProvider with ChangeNotifier {
     _oilInnerRingSpacingMultiplier =
         _prefs.getDouble(_oilInnerRingSpacingMultiplierKey) ??
             DefaultSettings.oilInnerRingSpacingMultiplier;
-
     _oilScreensaver4kSupport =
         _prefs.getBool(_oilScreensaver4kSupportKey) ?? false;
     _oilTvPremiumHighlight = _prefs.getBool(_oilTvPremiumHighlightKey) ??
         DefaultSettings.oilTvPremiumHighlight;
+
+    // Reactivity isolation
+    _oilScaleSource =
+        _prefs.getInt(_oilScaleSourceKey) ?? DefaultSettings.oilScaleSource;
+    _oilScaleMultiplier = _prefs.getDouble(_oilScaleMultiplierKey) ??
+        DefaultSettings.oilScaleMultiplier;
+    _oilColorSource =
+        _prefs.getInt(_oilColorSourceKey) ?? DefaultSettings.oilColorSource;
+    _oilColorMultiplier = _prefs.getDouble(_oilColorMultiplierKey) ??
+        DefaultSettings.oilColorMultiplier;
+    _oilWoodstockEveryHour = _prefs.getBool(_oilWoodstockEveryHourKey) ??
+        DefaultSettings.oilWoodstockEveryHour;
 
     // TV screensaver mode override — use TvDefaults as the canonical source.
     if (isTv) _oilScreensaverMode = TvDefaults.oilScreensaverMode;
@@ -1332,6 +1361,28 @@ class SettingsProvider with ChangeNotifier {
   Future<void> setOilInnerRingSpacingMultiplier(double value) =>
       _updateDoublePreference(_oilInnerRingSpacingMultiplierKey,
           _oilInnerRingSpacingMultiplier = value.clamp(0.3, 1.0));
+
+  Future<void> setOilScaleSource(int value) async {
+    _oilScaleSource = value;
+    await _prefs.setInt(_oilScaleSourceKey, value);
+    notifyListeners();
+  }
+
+  Future<void> setOilScaleMultiplier(double value) => _updateDoublePreference(
+      _oilScaleMultiplierKey, _oilScaleMultiplier = value.clamp(0.1, 2.0));
+
+  Future<void> setOilColorSource(int value) async {
+    _oilColorSource = value;
+    await _prefs.setInt(_oilColorSourceKey, value);
+    notifyListeners();
+  }
+
+  Future<void> setOilColorMultiplier(double value) => _updateDoublePreference(
+      _oilColorMultiplierKey, _oilColorMultiplier = value.clamp(0.0, 2.0));
+
+  void toggleOilWoodstockEveryHour() => _updatePreference(
+      _oilWoodstockEveryHourKey,
+      _oilWoodstockEveryHour = !_oilWoodstockEveryHour);
 
   // Source Filtering
   static const String _filterHighestShnidKey = 'filter_highest_shnid';

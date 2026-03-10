@@ -107,7 +107,13 @@
         if (_activeEngine === _fgEngine && state.processingState === 'suspended') {
             _log.log('[hybrid] Forced Suspension detected in Web Audio.');
             state.processingState = 'suspended_by_os';
-            _playing = false; // Stop the local flag
+
+            if (_playing) {
+                _log.warn('[hybrid] Suspension Recovery: Web Audio suspended while playing. Triggering immediate HTML5 handoff.');
+                _executeFailureHandoff();
+            } else {
+                _playing = false; // Stop the local flag
+            }
         }
 
         // STALL RECOVERY: Escape Hatch to HTML5
@@ -196,6 +202,12 @@
         if (document.visibilityState === 'hidden') {
             _log.log(`[hybrid] Tab hidden. backgroundMode: ${_backgroundMode}`);
             _applyHiddenSurvivalStrategy();
+
+            if (_activeEngine === _fgEngine && _playing) {
+                _log.log('[hybrid] Background Handoff: Tab hidden while playing in foreground. Pre-emptively swapping to HTML5.');
+                _instantHandoffPending = true;
+                _attemptHandoff(_currentIndex, true);
+            }
         } else {
             _log.log('[hybrid] Tab visible. Ensuring survival tricks are off.');
             if (window._gdarHeartbeat) window._gdarHeartbeat.stopHeartbeat();
@@ -405,6 +417,10 @@
             _currentIndex = index;
             _playing = shouldPlay;
 
+            if (document.visibilityState === 'hidden') {
+                _applyHiddenSurvivalStrategy();
+            }
+
             const pure = _isPureWebAudio();
             // BACKGROUND OPTIMIZATION: We now allow Instant-Start (HTML5) even when hidden,
             // because HTML5 is more robust for background initiates than Web Audio.
@@ -572,6 +588,10 @@
             if (['html5', 'heartbeat', 'video', 'none'].includes(mapped)) {
                 _backgroundMode = mapped;
                 _log.log('[hybrid engine] Background Mode set to:', mapped);
+
+                if (document.visibilityState === 'hidden') {
+                    _applyHiddenSurvivalStrategy();
+                }
             }
         },
 

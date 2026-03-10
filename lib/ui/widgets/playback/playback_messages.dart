@@ -264,7 +264,7 @@ class _PlaybackMessagesState extends State<PlaybackMessages>
                 );
               },
             ),
-            if (kIsWeb)
+            if (kIsWeb && !context.watch<DeviceService>().isTv)
               StreamBuilder<Duration?>(
                 stream: audioProvider.nextTrackBufferedStream,
                 initialData: audioProvider.audioPlayer.nextTrackBuffered,
@@ -352,7 +352,11 @@ class _PlaybackMessagesState extends State<PlaybackMessages>
 
         return Column(
           mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
+          crossAxisAlignment: widget.textAlign == TextAlign.right
+              ? CrossAxisAlignment.end
+              : (widget.textAlign == TextAlign.left
+                  ? CrossAxisAlignment.start
+                  : CrossAxisAlignment.center),
           children: rows,
         );
       },

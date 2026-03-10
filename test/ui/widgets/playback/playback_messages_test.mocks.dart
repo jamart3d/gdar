@@ -646,6 +646,26 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
       ) as bool);
 
   @override
+  bool get showDevAudioHud => (super.noSuchMethod(
+        Invocation.getter(#showDevAudioHud),
+        returnValue: false,
+        returnValueForMissingStub: false,
+      ) as bool);
+
+  @override
+  String get devAudioHudSnapshot => (super.noSuchMethod(
+        Invocation.getter(#devAudioHudSnapshot),
+        returnValue: _i12.dummyValue<String>(
+          this,
+          Invocation.getter(#devAudioHudSnapshot),
+        ),
+        returnValueForMissingStub: _i12.dummyValue<String>(
+          this,
+          Invocation.getter(#devAudioHudSnapshot),
+        ),
+      ) as String);
+
+  @override
   bool get sortOldestFirst => (super.noSuchMethod(
         Invocation.getter(#sortOldestFirst),
         returnValue: false,
@@ -765,6 +785,13 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
       ) as bool);
 
   @override
+  bool get fruitStickyNowPlaying => (super.noSuchMethod(
+        Invocation.getter(#fruitStickyNowPlaying),
+        returnValue: false,
+        returnValueForMissingStub: false,
+      ) as bool);
+
+  @override
   bool get enableHaptics => (super.noSuchMethod(
         Invocation.getter(#enableHaptics),
         returnValue: false,
@@ -846,6 +873,20 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
         returnValue: _i2.HybridBackgroundMode.html5,
         returnValueForMissingStub: _i2.HybridBackgroundMode.html5,
       ) as _i2.HybridBackgroundMode);
+
+  @override
+  _i2.HiddenSessionPreset get hiddenSessionPreset => (super.noSuchMethod(
+        Invocation.getter(#hiddenSessionPreset),
+        returnValue: _i2.HiddenSessionPreset.stability,
+        returnValueForMissingStub: _i2.HiddenSessionPreset.stability,
+      ) as _i2.HiddenSessionPreset);
+
+  @override
+  _i10.WebEngineProfile get webEngineProfile => (super.noSuchMethod(
+        Invocation.getter(#webEngineProfile),
+        returnValue: _i10.WebEngineProfile.modern,
+        returnValueForMissingStub: _i10.WebEngineProfile.modern,
+      ) as _i10.WebEngineProfile);
 
   @override
   bool get useOilScreensaver => (super.noSuchMethod(
@@ -1122,6 +1163,13 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
       ) as double);
 
   @override
+  double get oilBeatImpact => (super.noSuchMethod(
+        Invocation.getter(#oilBeatImpact),
+        returnValue: 0.0,
+        returnValueForMissingStub: 0.0,
+      ) as double);
+
+  @override
   bool get oilShowInfoBanner => (super.noSuchMethod(
         Invocation.getter(#oilShowInfoBanner),
         returnValue: false,
@@ -1236,6 +1284,41 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
   @override
   bool get oilTvPremiumHighlight => (super.noSuchMethod(
         Invocation.getter(#oilTvPremiumHighlight),
+        returnValue: false,
+        returnValueForMissingStub: false,
+      ) as bool);
+
+  @override
+  int get oilScaleSource => (super.noSuchMethod(
+        Invocation.getter(#oilScaleSource),
+        returnValue: 0,
+        returnValueForMissingStub: 0,
+      ) as int);
+
+  @override
+  double get oilScaleMultiplier => (super.noSuchMethod(
+        Invocation.getter(#oilScaleMultiplier),
+        returnValue: 0.0,
+        returnValueForMissingStub: 0.0,
+      ) as double);
+
+  @override
+  int get oilColorSource => (super.noSuchMethod(
+        Invocation.getter(#oilColorSource),
+        returnValue: 0,
+        returnValueForMissingStub: 0,
+      ) as int);
+
+  @override
+  double get oilColorMultiplier => (super.noSuchMethod(
+        Invocation.getter(#oilColorMultiplier),
+        returnValue: 0.0,
+        returnValueForMissingStub: 0.0,
+      ) as double);
+
+  @override
+  bool get oilWoodstockEveryHour => (super.noSuchMethod(
+        Invocation.getter(#oilWoodstockEveryHour),
         returnValue: false,
         returnValueForMissingStub: false,
       ) as bool);
@@ -1373,6 +1456,15 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
       );
 
   @override
+  void toggleFruitStickyNowPlaying() => super.noSuchMethod(
+        Invocation.method(
+          #toggleFruitStickyNowPlaying,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
   void setAudioEngineMode(_i2.AudioEngineMode? mode) => super.noSuchMethod(
         Invocation.method(
           #setAudioEngineMode,
@@ -1414,6 +1506,26 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
         Invocation.method(
           #setHybridBackgroundMode,
           [mode],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void setHiddenSessionPreset(_i2.HiddenSessionPreset? preset) =>
+      super.noSuchMethod(
+        Invocation.method(
+          #setHiddenSessionPreset,
+          [preset],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void setWebEngineProfile(_i10.WebEngineProfile? profile) =>
+      super.noSuchMethod(
+        Invocation.method(
+          #setWebEngineProfile,
+          [profile],
         ),
         returnValueForMissingStub: null,
       );
@@ -1624,6 +1736,26 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
         ),
         returnValueForMissingStub: null,
       );
+
+  @override
+  void toggleShowDevAudioHud() => super.noSuchMethod(
+        Invocation.method(
+          #toggleShowDevAudioHud,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  _i5.Future<void> saveDevAudioHudSnapshot(String? snapshot) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #saveDevAudioHudSnapshot,
+          [snapshot],
+        ),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
 
   @override
   void toggleSortOldestFirst() => super.noSuchMethod(
@@ -2142,6 +2274,16 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
       ) as _i5.Future<void>);
 
   @override
+  _i5.Future<void> setOilBeatImpact(double? value) => (super.noSuchMethod(
+        Invocation.method(
+          #setOilBeatImpact,
+          [value],
+        ),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
+
+  @override
   void toggleOilShowInfoBanner() => super.noSuchMethod(
         Invocation.method(
           #toggleOilShowInfoBanner,
@@ -2300,6 +2442,55 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
         returnValue: _i5.Future<void>.value(),
         returnValueForMissingStub: _i5.Future<void>.value(),
       ) as _i5.Future<void>);
+
+  @override
+  _i5.Future<void> setOilScaleSource(int? value) => (super.noSuchMethod(
+        Invocation.method(
+          #setOilScaleSource,
+          [value],
+        ),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
+
+  @override
+  _i5.Future<void> setOilScaleMultiplier(double? value) => (super.noSuchMethod(
+        Invocation.method(
+          #setOilScaleMultiplier,
+          [value],
+        ),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
+
+  @override
+  _i5.Future<void> setOilColorSource(int? value) => (super.noSuchMethod(
+        Invocation.method(
+          #setOilColorSource,
+          [value],
+        ),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
+
+  @override
+  _i5.Future<void> setOilColorMultiplier(double? value) => (super.noSuchMethod(
+        Invocation.method(
+          #setOilColorMultiplier,
+          [value],
+        ),
+        returnValue: _i5.Future<void>.value(),
+        returnValueForMissingStub: _i5.Future<void>.value(),
+      ) as _i5.Future<void>);
+
+  @override
+  void toggleOilWoodstockEveryHour() => super.noSuchMethod(
+        Invocation.method(
+          #toggleOilWoodstockEveryHour,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
 
   @override
   void toggleFilterHighestShnid() => super.noSuchMethod(
@@ -2584,6 +2775,13 @@ class MockGaplessPlayer extends _i1.Mock implements _i2.GaplessPlayer {
       ) as _i5.Stream<String>);
 
   @override
+  _i5.Stream<String> get engineContextStateStream => (super.noSuchMethod(
+        Invocation.getter(#engineContextStateStream),
+        returnValue: _i5.Stream<String>.empty(),
+        returnValueForMissingStub: _i5.Stream<String>.empty(),
+      ) as _i5.Stream<String>);
+
+  @override
   _i5.Stream<int?> get currentIndexStream => (super.noSuchMethod(
         Invocation.getter(#currentIndexStream),
         returnValue: _i5.Stream<int?>.empty(),
@@ -2671,6 +2869,15 @@ class MockGaplessPlayer extends _i1.Mock implements _i2.GaplessPlayer {
   void setHybridBackgroundMode(String? mode) => super.noSuchMethod(
         Invocation.method(
           #setHybridBackgroundMode,
+          [mode],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void setTrackTransitionMode(String? mode) => super.noSuchMethod(
+        Invocation.method(
+          #setTrackTransitionMode,
           [mode],
         ),
         returnValueForMissingStub: null,

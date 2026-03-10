@@ -265,6 +265,14 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
       logoTrailScale: settings.oilLogoTrailScale,
       bannerResolution: settings.oilBannerResolution,
       bannerPixelSnap: settings.oilBannerPixelSnap,
+      bannerLetterSpacing: settings.oilBannerLetterSpacing,
+      bannerWordSpacing: settings.oilBannerWordSpacing,
+      flatLineSpacing: settings.oilFlatLineSpacing,
+      scaleSource: settings.oilScaleSource,
+      scaleMultiplier: settings.oilScaleMultiplier,
+      colorSource: settings.oilColorSource,
+      colorMultiplier: settings.oilColorMultiplier,
+      woodstockEveryHour: settings.oilWoodstockEveryHour,
     );
 
     final screenSize = MediaQuery.sizeOf(context);

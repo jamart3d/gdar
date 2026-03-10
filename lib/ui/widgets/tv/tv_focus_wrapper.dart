@@ -165,8 +165,8 @@ class _TvFocusWrapperState extends State<TvFocusWrapper> {
     final double activeAnimationSpeed;
 
     if (showPremium) {
-      activeBorderWidth = 6.0;
-      activeGlowOpacity = 0.8;
+      activeBorderWidth = 4.0;
+      activeGlowOpacity = 0.45;
       activeShowShadow = true;
       activeShowGlow = true;
       activeAnimationSpeed = sp.rgbAnimationSpeed * 1.5;

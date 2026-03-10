@@ -37,9 +37,9 @@ class PlaybackSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final settingsProvider = context.watch<SettingsProvider>();
-    final audioProvider = context.watch<AudioProvider>();
     final themeProvider = context.watch<ThemeProvider>();
     final isFruit = themeProvider.themeStyle == ThemeStyle.fruit;
+    final isTv = context.read<DeviceService>().isTv;
 
     return SectionCard(
       key: ValueKey(
@@ -150,7 +150,7 @@ class PlaybackSection extends StatelessWidget {
           ),
         if (kIsWeb && settingsProvider.showDevAudioHud)
           _buildDevHudAbbreviationLegend(context, scaleFactor),
-        if (!context.read<DeviceService>().isTv && !kIsWeb)
+        if (!isTv && !kIsWeb)
           HighlightableSetting(
             key: ValueKey(
                 'offline_buffering_${highlightTriggerCount}_${activeHighlightKey == 'offline_buffering'}'),
@@ -167,18 +167,20 @@ class PlaybackSection extends StatelessWidget {
                           .textTheme
                           .titleMedium
                           ?.copyWith(fontSize: 16 * scaleFactor))),
-              subtitle: FittedBox(
-                  fit: BoxFit.scaleDown,
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    settingsProvider.offlineBuffering
-                        ? 'Cached ${audioProvider.cachedTrackCount} of (${audioProvider.currentSource?.tracks.length ?? 0} + 5) tracks'
-                        : 'Cache current show tracks to disk',
-                    style: Theme.of(context)
-                        .textTheme
-                        .bodySmall
-                        ?.copyWith(fontSize: 12 * scaleFactor),
-                  )),
+              subtitle: Consumer<AudioProvider>(
+                builder: (context, ap, _) => FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      settingsProvider.offlineBuffering
+                          ? 'Cached ${ap.cachedTrackCount} of (${ap.currentSource?.tracks.length ?? 0} + 5) tracks'
+                          : 'Cache current show tracks to disk',
+                      style: Theme.of(context)
+                          .textTheme
+                          .bodySmall
+                          ?.copyWith(fontSize: 12 * scaleFactor),
+                    )),
+              ),
               value: settingsProvider.offlineBuffering,
               onChanged: (value) {
                 AppHaptics.lightImpact(context.read<DeviceService>());

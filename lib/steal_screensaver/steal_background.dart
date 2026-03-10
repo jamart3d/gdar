@@ -373,26 +373,33 @@ class StealBackground extends PositionComponent
 
     final isCornerOnly = config.audioGraphMode == 'corner_only';
 
-    _shader!.setFloat(
-        idx++,
-        (!isCornerOnly && config.enableAudioReactivity)
-            ? energy.bass.clamp(0.0, 5.0)
-            : 0.0);
-    _shader!.setFloat(
-        idx++,
-        (!isCornerOnly && config.enableAudioReactivity)
-            ? energy.mid.clamp(0.0, 5.0)
-            : 0.0);
-    _shader!.setFloat(
-        idx++,
-        (!isCornerOnly && config.enableAudioReactivity)
-            ? energy.treble.clamp(0.0, 5.0)
-            : 0.0);
-    _shader!.setFloat(
-        idx++,
-        (!isCornerOnly && config.enableAudioReactivity)
-            ? energy.overall.clamp(0.0, 5.0)
-            : 0.0);
+    final react = !isCornerOnly && config.enableAudioReactivity;
+
+    // Scale Energy (Slot 14, historically ebass)
+    double sE = 0.0;
+    if (react) {
+      sE = config.scaleSource == -1
+          ? energy.bass
+          : energy.bands[config.scaleSource.clamp(0, 7)];
+      sE *= config.scaleMultiplier;
+    }
+    _shader!.setFloat(idx++, sE.clamp(0.0, 5.0));
+
+    // Mid Energy (Slot 15, historically emid)
+    _shader!.setFloat(idx++, react ? energy.mid.clamp(0.0, 5.0) : 0.0);
+
+    // Color Energy (Slot 16, historically etreble)
+    double cE = 0.0;
+    if (react) {
+      cE = config.colorSource == -1
+          ? energy.treble
+          : energy.bands[config.colorSource.clamp(0, 7)];
+      cE *= config.colorMultiplier;
+    }
+    _shader!.setFloat(idx++, cE.clamp(0.0, 5.0));
+
+    // Overall Energy (Slot 17)
+    _shader!.setFloat(idx++, react ? energy.overall.clamp(0.0, 5.0) : 0.0);
 
     // Always write exactly 4 colors — shader always expects uColor1–uColor4
     final colors = _currentColors.length == _colorCount

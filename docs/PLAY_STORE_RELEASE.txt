@@ -1,3 +1,12 @@
+What's new in v1.1.64+164
+• Screensaver: Implemented Advanced Audio Reactivity with 8-band frequency isolation.
+• UI/UX (TV): Resolved playback message overflow and refined focus highlight aesthetics.
+• UI/UX (TV): Improved Show List card layout with larger stars and unified badges.
+• Screensaver: Added hidden "Woodstock Every Hour" easter egg functionality.
+• Infrastructure: Integrated Puppeteer stress tests for Wasm stability verification.
+
+---
+
 What's new in v1.1.63+163
 • Testing: Enhanced tv_settings_screen_test.dart with robust MockAudioProvider and stabilized AboutSection tests.
 • UI/UX (TV): Hidden Haptic Feedback and Swipe to Block settings from the TV interface, adhering to platform interaction rules (tv_rules.md).

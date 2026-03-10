@@ -182,6 +182,12 @@ class MockGaplessPlayer extends _i1.Mock implements _i3.GaplessPlayer {
       ) as _i5.Stream<String>);
 
   @override
+  _i5.Stream<String> get engineContextStateStream => (super.noSuchMethod(
+        Invocation.getter(#engineContextStateStream),
+        returnValue: _i5.Stream<String>.empty(),
+      ) as _i5.Stream<String>);
+
+  @override
   _i5.Stream<int?> get currentIndexStream => (super.noSuchMethod(
         Invocation.getter(#currentIndexStream),
         returnValue: _i5.Stream<int?>.empty(),
@@ -266,6 +272,15 @@ class MockGaplessPlayer extends _i1.Mock implements _i3.GaplessPlayer {
   void setHybridBackgroundMode(String? mode) => super.noSuchMethod(
         Invocation.method(
           #setHybridBackgroundMode,
+          [mode],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void setTrackTransitionMode(String? mode) => super.noSuchMethod(
+        Invocation.method(
+          #setTrackTransitionMode,
           [mode],
         ),
         returnValueForMissingStub: null,

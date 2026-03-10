@@ -631,8 +631,10 @@ class _ShowListCardState extends State<ShowListCard> {
                 kIsWeb && !useMobileLayout && !isTv && widget.isPlaying;
 
             final catalog = CatalogService();
-            final bool usePremium =
-                settings.useNeumorphism && isFruit && !settings.useTrueBlack;
+            final bool usePremium = settings.useNeumorphism &&
+                isFruit &&
+                !settings.useTrueBlack &&
+                !isTv;
             int rating = 0;
             bool isPlayed = false;
 
@@ -706,11 +708,7 @@ class _ShowListCardState extends State<ShowListCard> {
               srcBadge = wrapItemForPremium(srcBadge,
                   isPressed: true, paddingH: 4, paddingV: 2);
 
-              if (kIsWeb) {
-                badgeRowChildren.add(srcBadge);
-              } else {
-                columnChildren.add(srcBadge);
-              }
+              badgeRowChildren.add(srcBadge);
             }
 
             if (shouldShowBadge) {
@@ -718,15 +716,11 @@ class _ShowListCardState extends State<ShowListCard> {
               badge = wrapItemForPremium(badge,
                   isPressed: true, paddingH: 4, paddingV: 2);
 
-              if (kIsWeb) {
-                if (badgeRowChildren.isNotEmpty) {
-                  badgeRowChildren.add(SizedBox(
-                      width: isFruit ? (usePremium ? 6.0 : 8.0) : 4.0));
-                }
-                badgeRowChildren.add(badge);
-              } else {
-                columnChildren.add(badge);
+              if (badgeRowChildren.isNotEmpty) {
+                badgeRowChildren.add(
+                    SizedBox(width: isFruit ? (usePremium ? 6.0 : 8.0) : 4.0));
               }
+              badgeRowChildren.add(badge);
             }
 
             Widget? ratingWidget;
@@ -738,13 +732,15 @@ class _ShowListCardState extends State<ShowListCard> {
                     ? (settings.performanceMode
                         ? (useMobileLayout ? 22 : 26)
                         : (useMobileLayout ? 26 : 30))
-                    : (kIsWeb && useMobileLayout
-                        ? 30
-                        : useMobileLayout
-                            ? 19
-                            : 20),
+                    : (isTv
+                        ? 28 // Increased size for TV as requested
+                        : (kIsWeb && useMobileLayout
+                            ? 30
+                            : useMobileLayout
+                                ? 19
+                                : 20)),
                 compact: true,
-                enforceMinTapTarget: true,
+                enforceMinTapTarget: !isTv,
                 onTap: (widget.isPlaying ||
                         widget.alwaysShowRatingInteraction ||
                         show.sources.length == 1)
@@ -778,17 +774,24 @@ class _ShowListCardState extends State<ShowListCard> {
                   isPressed: false, paddingH: 6, paddingV: 4);
             }
 
-            if (ratingWidget != null && !kIsWeb) {
-              columnChildren.insert(0, ratingWidget);
-            }
+            if (!kIsWeb) {
+              if (ratingWidget != null) {
+                columnChildren.add(ratingWidget);
+              }
 
-            if (badgeRowChildren.isNotEmpty && !kIsWeb) {
-              columnChildren.add(
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: badgeRowChildren,
-                ),
-              );
+              if (badgeRowChildren.isNotEmpty) {
+                columnChildren.add(
+                  Padding(
+                    padding: const EdgeInsets.only(top: 2),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: badgeRowChildren,
+                    ),
+                  ),
+                );
+              }
             }
 
             return Padding(
@@ -798,26 +801,30 @@ class _ShowListCardState extends State<ShowListCard> {
                 bottom: 4.0,
               ),
               child: (!kIsWeb)
-                  ? Column(
-                      mainAxisSize: MainAxisSize.max,
-                      mainAxisAlignment: isTv
-                          ? MainAxisAlignment.center
-                          : MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: columnChildren.map((w) {
-                        return Container(
-                          decoration: BoxDecoration(
-                            border: Border.all(
-                              color: settings.showDebugLayout
-                                  ? Colors.purple.withValues(alpha: 0.5)
-                                  : Colors.transparent,
-                              width: 1,
+                  ? FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerRight,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.max,
+                        mainAxisAlignment: isTv
+                            ? MainAxisAlignment.center
+                            : MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: columnChildren.map((w) {
+                          return Container(
+                            decoration: BoxDecoration(
+                              border: Border.all(
+                                color: settings.showDebugLayout
+                                    ? Colors.purple.withValues(alpha: 0.5)
+                                    : Colors.transparent,
+                                width: 1,
+                              ),
                             ),
-                          ),
-                          alignment: Alignment.centerRight,
-                          child: w,
-                        );
-                      }).toList(),
+                            alignment: Alignment.centerRight,
+                            child: w,
+                          );
+                        }).toList(),
+                      ),
                     )
                   : (useMobileLayout
                       ? (isFruit

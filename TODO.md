@@ -23,6 +23,7 @@
 - [x] **Screensaver Text "Crawl" Investigation**: Individual letters in the show info text appear to crawl/jitter independently as they translate around with the logo. Investigate the cause (likely precision/rendering issue) and add a toggle to disable this behavior if desired.
 - [ ] **Audio-Responsive Trails**: Tie Trail Intensity and Trail Blur directly to real-time audio `energy.overall` or `beatPulse` in the screensaver.
 - [ ] **Audio-Driven Shader "Boiling"**: Tie `uOverall` to the `heatDrift`/`flowSpeed` uniforms in `steal.frag` so background dynamics match song intensity.
+- [ ] **Screensaver Auto-Transition Delay**: Add a setting to control the elapsed time before automatically playing the next show when the screensaver is active.
 
 ### Debug
 - [x] **Logo Position Jump**: Diagnose visual jolt/reset every few minutes with audio reactivity off. Resolved via position-reset mitigation.

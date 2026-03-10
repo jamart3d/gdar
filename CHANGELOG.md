@@ -6,6 +6,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.64+164] - 2026-03-10
+
+### Added
+- **Screensaver**: Implemented "Advanced Audio Reactivity" with 8-band frequency isolation.
+- **Screensaver**: Added "Woodstock Every Hour" hidden easter egg functionality.
+- **Infrastructure**: Added Puppeteer hybrid stress test suite for Web/Wasm stability verification.
+
+### Fixed
+- **UI/UX (TV)**: Resolved playback message overflow by gating web-only buffering indicators.
+- **UI/UX (TV)**: Refined premium focus highlights with softer glow (0.65 -> 0.45) and reduced width to prevent neighbor clipping.
+- **UI/UX (TV)**: Standardized Show List card metrics; increased star size to 28 for 10-foot UI legibility and unified metadata badges into a single row.
+- **Testing**: Resolved `Null` pointer errors in `screensaver_screen_test.dart` via mock recruitment and stub synchronization.
+
+
 ## [1.1.63+163] - 2026-03-08
 
 ### Added

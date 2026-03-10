@@ -42,9 +42,11 @@ class RatingControl extends StatelessWidget {
     final scaledSize = AppTypography.responsiveFontSize(context, size);
 
     final isFruit = themeProvider.themeStyle == ThemeStyle.fruit;
+    final isTv = context.watch<DeviceService>().isTv;
     final isFruitNeumorphic = isFruit &&
         settingsProvider.useNeumorphism &&
-        !settingsProvider.useTrueBlack;
+        !settingsProvider.useTrueBlack &&
+        !isTv;
 
     Widget content;
 

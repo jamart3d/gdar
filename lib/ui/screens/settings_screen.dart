@@ -155,6 +155,10 @@ class _SettingsScreenState extends State<SettingsScreen>
 
   @override
   Widget build(BuildContext context) {
+    if (context.read<DeviceService>().isTv) {
+      return const TvSettingsScreen();
+    }
+
     final settingsProvider = context.watch<SettingsProvider>();
     final audioProvider = context.watch<AudioProvider>();
     final themeProvider = context.watch<ThemeProvider>();
@@ -163,10 +167,6 @@ class _SettingsScreenState extends State<SettingsScreen>
         FontLayoutConfig.getEffectiveScale(context, settingsProvider);
 
     final updateProvider = context.watch<UpdateProvider>();
-
-    if (context.read<DeviceService>().isTv) {
-      return const TvSettingsScreen();
-    }
 
     Color? backgroundColor;
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;

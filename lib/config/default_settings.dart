@@ -84,8 +84,8 @@ class DefaultSettings {
   static const double oilLogoScale = .5;
   static const double oilBlurAmount = 0.0;
   static const bool oilFlatColor = true;
-  static const bool oilBannerGlow = false;
-  static const double oilBannerFlicker = 0.0;
+  static const bool oilBannerGlow = true;
+  static const double oilBannerFlicker = 0.6;
   static const double oilBannerGlowBlur = 0.5;
   static const bool oilEnableAudioReactivity = false;
   static const int oilPerformanceLevel = 0;
@@ -93,24 +93,24 @@ class DefaultSettings {
   static const double oilPaletteTransitionSpeed = 5.0;
   static const double oilAudioReactivityStrength = 1.1;
   static const double oilAudioBassBoost = 1.6;
-  static const double oilAudioPeakDecay = 0.996;
-  static const bool oilShowInfoBanner = false;
+  static const double oilAudioPeakDecay = 0.992;
+  static const bool oilShowInfoBanner = true;
   static const double oilTranslationSmoothing =
-      0.7; // Updated default for smoother feel
-  static const String oilBannerDisplayMode = 'ring';
+      0.85; // Updated default for smoother feel
+  static const String oilBannerDisplayMode = 'flat';
   static const String oilBannerFont = 'RockSalt';
   static const double oilFlatTextProximity = 0.7;
-  static const String oilFlatTextPlacement = 'below';
+  static const String oilFlatTextPlacement = 'above';
   static const double oilBannerResolution = 2.0;
-  static const bool oilBannerPixelSnap = true;
+  static const bool oilBannerPixelSnap = false;
 
   // Trail effect
-  static const double oilLogoTrailIntensity = 0.0;
-  static const int oilLogoTrailSlices = 8;
+  static const double oilLogoTrailIntensity = 1.0;
+  static const int oilLogoTrailSlices = 16;
   static const double oilLogoTrailLength = 0.5;
   static const double oilLogoTrailInitialScale = 0.92;
-  static const double oilLogoTrailScale = 0.1; // 10% reduction per slice
-  static const bool oilLogoTrailDynamic = true;
+  static const double oilLogoTrailScale = 0.5; // 10% reduction per slice
+  static const bool oilLogoTrailDynamic = false;
 
   // Ring controls (3-ring gap model)
   static const double oilInnerRingScale = 0.2;
@@ -132,8 +132,16 @@ class DefaultSettings {
   static const String oilAudioGraphMode = 'off';
 
   /// Beat detection sensitivity (0.0 = gentle, 1.0 = aggressive).
-  static const double oilBeatSensitivity = 0.55;
-  static const double oilBeatImpact = 0.4;
+  static const double oilBeatSensitivity = 0.45;
+  static const double oilBeatImpact = 0.25;
+
+  /// Audio Reactivity Isolation
+  /// -1 = Overall/Default, 0-7 = FFT Bands
+  static const int oilScaleSource = -1;
+  static const double oilScaleMultiplier = 1.0;
+  static const int oilColorSource = 6; // Treble/Brilliance default
+  static const double oilColorMultiplier = 1.0;
+  static const bool oilWoodstockEveryHour = true;
 
   static const bool oilTvPremiumHighlight = false;
   static const bool omitHttpPathInCopy = true;
@@ -180,6 +188,9 @@ class TvDefaults extends DefaultSettings {
 
   // Prevent screen sleep by default — TV is a lean-back device
   static const bool preventSleep = true;
+
+  // TV uses a clean UI; playback messages are off by default.
+  static const bool showPlaybackMessages = false;
 }
 
 /// Defaults for the Phone / Android UI.

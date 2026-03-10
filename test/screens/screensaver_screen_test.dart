@@ -80,6 +80,12 @@ void main() {
     when(mockSettingsProvider.oilFlatTextPlacement).thenReturn('center');
     when(mockSettingsProvider.oilScreensaver4kSupport).thenReturn(false);
     when(mockSettingsProvider.oilBannerPixelSnap).thenReturn(true);
+    when(mockSettingsProvider.oilBeatImpact).thenReturn(0.25);
+    when(mockSettingsProvider.oilScaleSource).thenReturn(-1);
+    when(mockSettingsProvider.oilScaleMultiplier).thenReturn(1.0);
+    when(mockSettingsProvider.oilColorSource).thenReturn(6);
+    when(mockSettingsProvider.oilColorMultiplier).thenReturn(1.0);
+    when(mockSettingsProvider.oilWoodstockEveryHour).thenReturn(true);
 
     // Mock AudioProvider's audioPlayer for ScreensaverScreen
     final mockAudioPlayer = MockAudioPlayerRelaxed();
