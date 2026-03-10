@@ -1,21 +1,57 @@
+import 'dart:ui' show Tristate;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:provider/provider.dart';
+import 'package:shakedown/providers/settings_provider.dart';
+import 'package:shakedown/providers/theme_provider.dart';
 import 'package:shakedown/ui/widgets/theme/fruit_icon_button.dart';
 import 'package:shakedown/ui/widgets/theme/fruit_segmented_control.dart';
 import 'package:shakedown/ui/widgets/theme/fruit_switch.dart';
 import 'package:shakedown/ui/widgets/theme/fruit_ui.dart';
 
+class _FakeThemeProvider extends ChangeNotifier implements ThemeProvider {
+  @override
+  ThemeStyle get themeStyle => ThemeStyle.fruit;
+  @override
+  bool get isDarkMode => false;
+  @override
+  bool get isFruitAllowed => true;
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+class _FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
+  @override
+  bool get fruitEnableLiquidGlass => true;
+  @override
+  bool get useNeumorphism => true;
+  @override
+  bool get useTrueBlack => false;
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
 void main() {
+  Widget wrapWithProviders(Widget child) {
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider<ThemeProvider>.value(
+            value: _FakeThemeProvider()),
+        ChangeNotifierProvider<SettingsProvider>.value(
+            value: _FakeSettingsProvider()),
+      ],
+      child: MaterialApp(home: Scaffold(body: child)),
+    );
+  }
+
   testWidgets('FruitIconButton exposes button semantics and label',
       (tester) async {
     await tester.pumpWidget(
-      MaterialApp(
-        home: Scaffold(
-          body: FruitIconButton(
-            icon: const Icon(Icons.settings),
-            tooltip: 'Open settings',
-            onPressed: () {},
-          ),
+      wrapWithProviders(
+        FruitIconButton(
+          icon: const Icon(Icons.settings),
+          tooltip: 'Open settings',
+          onPressed: () {},
         ),
       ),
     );
@@ -24,19 +60,17 @@ void main() {
 
     final semantics = tester.getSemantics(find.byType(FruitIconButton));
     expect(semantics.flagsCollection.isButton, isTrue);
-    expect(semantics.flagsCollection.hasEnabledState, isTrue);
-    expect(semantics.flagsCollection.isEnabled, isTrue);
+    expect(semantics.flagsCollection.isEnabled != Tristate.none, isTrue);
+    expect(semantics.flagsCollection.isEnabled == Tristate.isTrue, isTrue);
   });
 
   testWidgets('FruitSwitch exposes toggle semantics', (tester) async {
     await tester.pumpWidget(
-      MaterialApp(
-        home: Scaffold(
-          body: FruitSwitch(
-            value: true,
-            semanticLabel: 'Liquid glass',
-            onChanged: (_) {},
-          ),
+      wrapWithProviders(
+        FruitSwitch(
+          value: true,
+          semanticLabel: 'Liquid glass',
+          onChanged: (_) {},
         ),
       ),
     );
@@ -45,19 +79,17 @@ void main() {
 
     final semantics = tester.getSemantics(find.byType(FruitSwitch));
     expect(semantics.flagsCollection.isButton, isTrue);
-    expect(semantics.flagsCollection.hasToggledState, isTrue);
-    expect(semantics.flagsCollection.isToggled, isTrue);
+    expect(semantics.flagsCollection.isToggled != Tristate.none, isTrue);
+    expect(semantics.flagsCollection.isToggled == Tristate.isTrue, isTrue);
   });
 
   testWidgets('FruitTextAction exposes button semantics and label',
       (tester) async {
     await tester.pumpWidget(
-      const MaterialApp(
-        home: Scaffold(
-          body: FruitTextAction(
-            label: 'Cancel',
-            onPressed: _noop,
-          ),
+      wrapWithProviders(
+        const FruitTextAction(
+          label: 'Cancel',
+          onPressed: _noop,
         ),
       ),
     );
@@ -71,15 +103,13 @@ void main() {
   testWidgets('FruitSegmentedControl exposes segment button semantics',
       (tester) async {
     await tester.pumpWidget(
-      MaterialApp(
-        home: Scaffold(
-          body: FruitSegmentedControl<String>(
-            values: const ['Library', 'Play'],
-            selectedValue: 'Library',
-            onSelectionChanged: (_) {},
-            semanticLabelBuilder: (value) => '$value view',
-            labelBuilder: (value) => Text(value),
-          ),
+      wrapWithProviders(
+        FruitSegmentedControl<String>(
+          values: const ['Library', 'Play'],
+          selectedValue: 'Library',
+          onSelectionChanged: (_) {},
+          semanticLabelBuilder: (value) => '$value view',
+          labelBuilder: (value) => Text(value),
         ),
       ),
     );
@@ -95,9 +125,11 @@ void main() {
     );
 
     expect(selectedSemantics.flagsCollection.isButton, isTrue);
-    expect(selectedSemantics.flagsCollection.isSelected, isTrue);
+    expect(selectedSemantics.flagsCollection.isSelected == Tristate.isTrue,
+        isTrue);
     expect(unselectedSemantics.flagsCollection.isButton, isTrue);
-    expect(unselectedSemantics.flagsCollection.isSelected, isFalse);
+    expect(unselectedSemantics.flagsCollection.isSelected == Tristate.isFalse,
+        isTrue);
   });
 }
 
