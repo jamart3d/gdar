@@ -246,7 +246,7 @@ class _FruitTrackListState extends State<FruitTrackList> {
         // Sticky Bottom
         if (settingsProvider.fruitStickyNowPlaying && _isOffScreenBottom)
           Positioned(
-            bottom: 110 * widget.scaleFactor, // Above tab bar
+            bottom: 100 * widget.scaleFactor, // Above tab bar
             left: 0,
             right: 0,
             child: ClipRRect(

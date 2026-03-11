@@ -6,6 +6,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.66+166] - 2026-03-11
+
+### Added
+- **UI/UX (Debug)**: Implemented "Smart Coloring" for the debug layout, applying distinct functional colors to Venue, Metadata, Progress, and Control sections to improve developer scannability.
+- **UI/UX (Debug)**: Added granular debug outlines to internal components of `PlaybackProgressBar` and `PlaybackControls` for high-precision layout inspection.
+
+### Fixed
+- **UI/UX (HUD)**: Refined the heartbeat dot in the developer HUD—relocated it immediately before the background chip and enforced strict hidden state when inactive or stopped to reduce visual clutter.
+- **Verification**: Verified project health and enforced strict formatting/analysis standards via `tool/verify.dart`.
+
 ## [1.1.65+165] - 2026-03-10
 
 ### Added

@@ -13,6 +13,7 @@
 
   let _ctx = null;          // AudioContext
   let _gainNode = null;     // Master GainNode ? destination
+  let _volume = 1.0;
 
   let _playlist = [];       // [{url, title, artist, album, id}]
   let _currentIndex = -1;
@@ -78,7 +79,7 @@
     }
     _ctx = new Ctx();
     _gainNode = _ctx.createGain();
-    _gainNode.gain.value = 1.0;
+    _gainNode.gain.value = _volume;
     _gainNode.connect(_ctx.destination);
     _log.log('[gdar engine] AudioContext created');
   }
@@ -600,7 +601,7 @@
           nextTrackTotal: nextTotal,
           playlistLength: _playlist.length,
           processingState: ps,
-          contextState: _ctx ? _ctx.state : 'none',
+          contextState: _ctx ? (_ctx.state === 'running' || _ctx.state === 'suspended' ? _ctx.state + ' (WA)' : _ctx.state) : 'none',
         });
       } catch (_) { }
     }
@@ -613,6 +614,10 @@
   }
 
   function _emitError(msg) {
+    if (msg && (msg.includes('Aborted') || msg.includes('AbortError') || msg.includes('Failed to fetch'))) {
+      _log.log('[gdar engine] Silencing intended abort/noise error:', msg);
+      return;
+    }
     _log.error('[gdar engine]', msg);
     if (_onError) {
       try { _onError({ message: msg }); } catch (_) { }
@@ -701,9 +706,8 @@
         _startTrack(buf, _currentTrackStartOffset, null);
         _emitTrackChange(-1, index);
       }).catch(err => {
-          _emitError('Decode error: ' + err.message);
         _loadingIndex = -1;
-          _emitError('Decode error: ' + err.message);
+        _emitError('Decode error: ' + err.message);
       });
     },
 
@@ -801,6 +805,12 @@
 
     setPrefetchSeconds: function (s) {
       _prefetchSeconds = Math.max(5, Math.min(120, s));
+    },
+
+    setVolume: function (v) {
+      const next = Math.max(0, Math.min(1, Number(v) || 0));
+      _volume = next;
+      if (_gainNode) _gainNode.gain.value = _volume;
     },
 
     getState: function () {

@@ -7,13 +7,15 @@ import 'package:sliding_up_panel/sliding_up_panel.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:shakedown/providers/audio_provider.dart';
 import 'package:shakedown/providers/settings_provider.dart';
+import 'package:shakedown/providers/show_list_provider.dart';
 import 'package:shakedown/providers/theme_provider.dart';
-import 'package:shakedown/ui/screens/settings_screen.dart';
 import 'package:shakedown/ui/widgets/rating_control.dart';
 import 'package:shakedown/ui/widgets/src_badge.dart';
 import 'package:shakedown/ui/widgets/shnid_badge.dart';
 import 'package:shakedown/ui/widgets/fruit_tab_bar.dart';
+import 'package:shakedown/ui/widgets/theme/fruit_icon_button.dart';
 import 'package:shakedown/ui/widgets/theme/liquid_glass_wrapper.dart';
+import 'package:shakedown/ui/screens/fruit_tab_host_screen.dart';
 import 'package:shakedown/ui/widgets/playback/fruit_track_list.dart';
 import 'package:shakedown/ui/widgets/playback/fruit_now_playing_card.dart';
 import 'package:shakedown/ui/widgets/playback/playback_panel.dart';
@@ -688,14 +690,89 @@ class PlaybackScreenState extends State<PlaybackScreen>
     final isFruit = themeProvider.themeStyle == ThemeStyle.fruit;
     final isTv = context.watch<DeviceService>().isTv;
 
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final double scaleFactor =
+        FontLayoutConfig.getEffectiveScale(context, settingsProvider);
+
     final currentShow = audioProvider.currentShow;
     final currentSource = audioProvider.currentSource;
 
+    Color backgroundColor = colorScheme.surface;
+    final isDarkMode = theme.brightness == Brightness.dark;
+    final isTrueBlackMode = isDarkMode && settingsProvider.useTrueBlack;
+
+    if (currentShow != null && currentSource != null) {
+      if (!isTrueBlackMode &&
+          settingsProvider.highlightCurrentShowCard &&
+          !isFruit) {
+        String seed = currentShow.name;
+        if (currentShow.sources.length > 1) {
+          seed = currentSource.id;
+        }
+        backgroundColor =
+            ColorGenerator.getColor(seed, brightness: theme.brightness);
+      }
+    }
+
     if (currentShow == null || currentSource == null) {
+      final showListProvider = context.watch<ShowListProvider>();
+      final isChoosing = showListProvider.isChoosingRandomShow;
+
       return Scaffold(
-        appBar: AppBar(),
-        body: const Center(
-          child: Text('No show selected.'),
+        backgroundColor: backgroundColor,
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          leading: isFruit
+              ? Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: FruitIconButton(
+                    icon: const Icon(LucideIcons.chevronLeft),
+                    onPressed: () => widget.onBackRequested?.call(),
+                  ),
+                )
+              : null,
+        ),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              if (isChoosing) ...[
+                const CircularProgressIndicator(),
+                const SizedBox(height: 24),
+                Text(
+                  'SELECTING RANDOM SHOW...',
+                  style: theme.textTheme.labelLarge?.copyWith(
+                    color: colorScheme.primary,
+                    letterSpacing: 2.0,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ] else ...[
+                Icon(
+                  LucideIcons.playCircle,
+                  size: 64 * scaleFactor,
+                  color: colorScheme.onSurfaceVariant.withValues(alpha: 0.2),
+                ),
+                const SizedBox(height: 24),
+                Text(
+                  'No show selected.',
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+                ),
+                const SizedBox(height: 32),
+                if (!isFruit)
+                  ElevatedButton.icon(
+                    onPressed: () =>
+                        context.read<AudioProvider>().playRandomShow(),
+                    icon: const Icon(LucideIcons.dice5),
+                    label: const Text('Play Random Show'),
+                  ),
+              ],
+            ],
+          ),
         ),
       );
     }
@@ -726,29 +803,14 @@ class PlaybackScreenState extends State<PlaybackScreen>
       });
     }
 
-    final colorScheme = Theme.of(context).colorScheme;
-    Color backgroundColor = colorScheme.surface;
-
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    final isTrueBlackMode = isDarkMode && settingsProvider.useTrueBlack;
-
-    if (!isTrueBlackMode &&
-        settingsProvider.highlightCurrentShowCard &&
-        !isFruit) {
-      String seed = currentShow.name;
-      if (currentShow.sources.length > 1) {
-        seed = currentSource.id;
-      }
-      backgroundColor = ColorGenerator.getColor(seed,
-          brightness: Theme.of(context).brightness);
-    }
-
-    final double scaleFactor =
-        FontLayoutConfig.getEffectiveScale(context, settingsProvider);
+    // backgroundColor, colorScheme, scaleFactor already initialized above
 
     final double bottomPadding = MediaQuery.of(context).padding.bottom;
     final double baseHeight = settingsProvider.uiScale ? 75.0 : 96.0;
-    final double minPanelHeight = (baseHeight * scaleFactor) + bottomPadding;
+    // In Fruit theme, we shift the min panel height up by 80px to float above the tab bar.
+    final double fruitOffset = isFruit ? 80.0 : 0.0;
+    final double minPanelHeight =
+        (baseHeight * scaleFactor) + bottomPadding + fruitOffset;
 
     final double screenHeight = MediaQuery.of(context).size.height;
     // Ensure we have enough room for the expanded content column even on small phones.
@@ -757,7 +819,7 @@ class PlaybackScreenState extends State<PlaybackScreen>
     final double targetMaxHeight = minPanelHeight + minExpandedHeight;
 
     // Clamp between default percentage and 85% of screen height.
-    final double maxPanelHeight = targetMaxHeight.clamp(
+    final double maxPanelHeight = (targetMaxHeight).clamp(
       screenHeight * (settingsProvider.uiScale ? 0.42 : 0.40),
       screenHeight * 0.85,
     );
@@ -1001,7 +1063,7 @@ class PlaybackScreenState extends State<PlaybackScreen>
               Positioned(
                 left: 16 * scaleFactor,
                 right: 16 * scaleFactor,
-                bottom: 12 * scaleFactor,
+                bottom: 100.0 * scaleFactor,
                 child: FruitNowPlayingCard(
                   trackShow: currentShow,
                   track: audioProvider.currentTrack!,
@@ -1054,34 +1116,51 @@ class PlaybackScreenState extends State<PlaybackScreen>
                 selectedIndex: 0, // NOW
                 onTabSelected: (index) {
                   if (index == 1) {
-                    if (widget.onBackRequested != null) {
-                      widget.onBackRequested!.call();
-                    } else {
-                      Navigator.of(context).maybePop();
-                    }
-                  } else if (index == 2) {
-                    context.read<AudioProvider>().playRandomShow();
-                  } else if (index == 3) {
-                    Navigator.of(context).push(
+                    Navigator.of(context).pushAndRemoveUntil(
                       PageRouteBuilder(
                         pageBuilder: (context, animation, secondaryAnimation) =>
-                            SettingsScreen(
-                          onBackRequested: widget.onBackRequested,
-                        ),
-                        transitionDuration: const Duration(milliseconds: 300),
-                        transitionsBuilder:
-                            (context, animation, secondaryAnimation, child) {
-                          const begin = Offset(0.0, 1.0);
-                          const end = Offset.zero;
-                          const curve = Curves.easeInOut;
-                          final tween = Tween(begin: begin, end: end)
-                              .chain(CurveTween(curve: curve));
-                          return SlideTransition(
-                            position: animation.drive(tween),
-                            child: child,
-                          );
-                        },
+                            const FruitTabHostScreen(initialTab: 1),
+                        transitionDuration: Duration.zero,
                       ),
+                      (route) => false,
+                    );
+                  } else if (index == 2) {
+                    final showListProvider = context.read<ShowListProvider>();
+                    showListProvider.setIsChoosingRandomShow(true);
+                    final resetMs =
+                        context.read<SettingsProvider>().performanceMode
+                            ? 600
+                            : 2400;
+                    unawaited(Future<void>.delayed(
+                      Duration(milliseconds: resetMs),
+                      () {
+                        if (showListProvider.isChoosingRandomShow) {
+                          showListProvider.setIsChoosingRandomShow(false);
+                        }
+                      },
+                    ));
+                    if (mounted) {
+                      Navigator.of(context).pushAndRemoveUntil(
+                        PageRouteBuilder(
+                          pageBuilder:
+                              (context, animation, secondaryAnimation) =>
+                                  const FruitTabHostScreen(
+                            initialTab: 1,
+                            triggerRandomOnStart: true,
+                          ),
+                          transitionDuration: Duration.zero,
+                        ),
+                        (route) => false,
+                      );
+                    }
+                  } else if (index == 3) {
+                    Navigator.of(context).pushAndRemoveUntil(
+                      PageRouteBuilder(
+                        pageBuilder: (context, animation, secondaryAnimation) =>
+                            const FruitTabHostScreen(initialTab: 3),
+                        transitionDuration: Duration.zero,
+                      ),
+                      (route) => false,
                     );
                   }
                 },

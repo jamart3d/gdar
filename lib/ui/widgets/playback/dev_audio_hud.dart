@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:marquee/marquee.dart';
 import 'package:provider/provider.dart';
 import 'package:shakedown/providers/audio_provider.dart';
 import 'package:shakedown/providers/settings_provider.dart';
@@ -27,6 +29,11 @@ class DevAudioHud extends StatefulWidget {
   final String? agentMessage;
   final String? notificationMessage;
 
+  // New fields for error/issue reporting
+  final String? lastIssueMessage;
+  final DateTime? lastIssueAt;
+  final VoidCallback? onClearIssue;
+
   const DevAudioHud({
     super.key,
     required this.audioProvider,
@@ -41,6 +48,9 @@ class DevAudioHud extends StatefulWidget {
     this.engineContextState,
     this.agentMessage,
     this.notificationMessage,
+    this.lastIssueMessage,
+    this.lastIssueAt,
+    this.onClearIssue,
   });
 
   @override
@@ -135,6 +145,7 @@ class _DevAudioHudState extends State<DevAudioHud> {
               child: LayoutBuilder(
                 builder: (context, constraints) {
                   final narrow = constraints.maxWidth < 360;
+                  // "POS" removed from all keys
                   final keys = narrow
                       ? const [
                           'ENG',
@@ -144,7 +155,6 @@ class _DevAudioHudState extends State<DevAudioHud> {
                           'AE',
                           'PF',
                           'PS',
-                          'P',
                           'BUF',
                           'HD',
                           'E',
@@ -160,8 +170,6 @@ class _DevAudioHudState extends State<DevAudioHud> {
                           'AE',
                           'PF',
                           'PS',
-                          'P',
-                          'POS',
                           'BUF',
                           'HD',
                           'NX',
@@ -170,25 +178,14 @@ class _DevAudioHudState extends State<DevAudioHud> {
                           'SIG',
                           'MSG'
                         ];
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      _buildHeartbeatDot(
-                        labelsFontSize,
-                        widget.colorScheme,
-                        active: heartbeatActive,
-                      ),
-                      const SizedBox(height: 6),
-                      _buildHudFieldWrap(
-                        fields: fields,
-                        orderedKeys: keys,
-                        labelsFontSize: labelsFontSize,
-                        colorScheme: widget.colorScheme,
-                        fontFamily: widget.fontFamily,
-                        isFruit: isFruitMode,
-                      ),
-                    ],
+                  return _buildHudFieldWrap(
+                    fields: fields,
+                    orderedKeys: keys,
+                    labelsFontSize: labelsFontSize,
+                    colorScheme: widget.colorScheme,
+                    fontFamily: widget.fontFamily,
+                    isFruit: isFruitMode,
+                    heartbeatActive: heartbeatActive,
                   );
                 },
               ),
@@ -201,21 +198,45 @@ class _DevAudioHudState extends State<DevAudioHud> {
 
   Widget _buildHeartbeatDot(double labelsFontSize, ColorScheme colorScheme,
       {required bool active}) {
-    final size = labelsFontSize * 0.62;
-    final color = !active
-        ? colorScheme.onSurfaceVariant.withValues(alpha: 0.35)
-        : (_heartbeatPulseOn
-            ? colorScheme.primary
-            : colorScheme.primary.withValues(alpha: 0.45));
+    if (!active) return const SizedBox.shrink();
+
+    final size = labelsFontSize * 0.5; // Slightly smaller for inline use
+    final color = _heartbeatPulseOn
+        ? colorScheme.primary
+        : colorScheme.primary.withValues(alpha: 0.45);
+
     return AnimatedContainer(
       duration: const Duration(milliseconds: 220),
       width: size,
       height: size,
+      margin: const EdgeInsets.only(right: 4),
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         color: color,
+        boxShadow: [
+          if (_heartbeatPulseOn)
+            BoxShadow(
+              color: colorScheme.primary.withValues(alpha: 0.3),
+              blurRadius: 4,
+              spreadRadius: 1,
+            ),
+        ],
       ),
     );
+  }
+
+  void _safeSetState(VoidCallback fn) {
+    if (!mounted) return;
+    final phase = SchedulerBinding.instance.schedulerPhase;
+    if (phase == SchedulerPhase.idle ||
+        phase == SchedulerPhase.postFrameCallbacks) {
+      setState(fn);
+      return;
+    }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      setState(fn);
+    });
   }
 
   void _syncHeartbeatPulse(bool active) {
@@ -223,7 +244,7 @@ class _DevAudioHudState extends State<DevAudioHud> {
       _heartbeatPulseTimer?.cancel();
       _heartbeatPulseTimer = null;
       if (_heartbeatPulseOn) {
-        setState(() {
+        _safeSetState(() {
           _heartbeatPulseOn = false;
         });
       }
@@ -235,7 +256,7 @@ class _DevAudioHudState extends State<DevAudioHud> {
     _heartbeatPulseTimer =
         Timer.periodic(const Duration(milliseconds: 900), (_) {
       if (!mounted || !widget.isAppVisible) return;
-      setState(() => _heartbeatPulseOn = !_heartbeatPulseOn);
+      _safeSetState(() => _heartbeatPulseOn = !_heartbeatPulseOn);
     });
   }
 
@@ -259,19 +280,56 @@ class _DevAudioHudState extends State<DevAudioHud> {
     required ColorScheme colorScheme,
     required String? fontFamily,
     required bool isFruit,
+    required bool heartbeatActive,
   }) {
     final chips = <Widget>[];
     for (final key in orderedKeys) {
       final value = fields[key];
       if (value == null) continue;
-      Widget chip = Container(
-        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-        decoration: BoxDecoration(
-          color: colorScheme.onSurface.withValues(alpha: 0.06),
-          borderRadius: BorderRadius.circular(6),
-        ),
-        child: Text(
-          '$key:$value',
+
+      // Insert heartbeat dot before BG chip if active
+      if (key == 'BG' && heartbeatActive) {
+        chips.add(
+          Padding(
+            padding: const EdgeInsets.only(right: 2, top: 4),
+            child: _buildHeartbeatDot(
+              labelsFontSize,
+              colorScheme,
+              active: true,
+            ),
+          ),
+        );
+      }
+
+      Widget valueWidget;
+      if (key == 'MSG' && value.length > 30) {
+        // Implement Marquee for long messages
+        valueWidget = SizedBox(
+          width: 150,
+          height: labelsFontSize * 1.2,
+          child: Marquee(
+            text: value,
+            style: TextStyle(
+              color: colorScheme.onSurfaceVariant.withValues(alpha: 0.96),
+              fontWeight: FontWeight.w700,
+              fontSize: labelsFontSize * 0.84,
+              fontFamily: fontFamily ?? 'RobotoMono',
+              fontFeatures: const [FontFeature.tabularFigures()],
+            ),
+            scrollAxis: Axis.horizontal,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            blankSpace: 20.0,
+            velocity: 30.0,
+            pauseAfterRound: const Duration(seconds: 1),
+            accelerationDuration: const Duration(seconds: 1),
+            accelerationCurve: Curves.linear,
+            decelerationDuration: const Duration(milliseconds: 500),
+            decelerationCurve: Curves.easeOut,
+          ),
+        );
+      } else {
+        valueWidget = Text(
+          value,
           style: TextStyle(
             color: colorScheme.onSurfaceVariant.withValues(alpha: 0.96),
             fontWeight: FontWeight.w700,
@@ -279,8 +337,40 @@ class _DevAudioHudState extends State<DevAudioHud> {
             fontFamily: fontFamily ?? 'RobotoMono',
             fontFeatures: const [FontFeature.tabularFigures()],
           ),
+        );
+      }
+
+      Widget chip = Container(
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+        decoration: BoxDecoration(
+          color: colorScheme.onSurface.withValues(alpha: 0.06),
+          borderRadius: BorderRadius.circular(6),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              '$key:',
+              style: TextStyle(
+                color: colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
+                fontWeight: FontWeight.w700,
+                fontSize: labelsFontSize * 0.84,
+                fontFamily: fontFamily ?? 'RobotoMono',
+              ),
+            ),
+            valueWidget,
+          ],
         ),
       );
+
+      // Wrap MSG chip in GestureDetector for clearing issues
+      if (key == 'MSG') {
+        chip = GestureDetector(
+          onTap: widget.onClearIssue,
+          child: chip,
+        );
+      }
+
       if (isFruit) {
         final tooltip = _hudFieldTooltip(key, value);
         if (tooltip.isNotEmpty) {
@@ -314,26 +404,32 @@ class _DevAudioHudState extends State<DevAudioHud> {
     String? notificationMessage,
   ) {
     final position = audioProvider.audioPlayer.position;
-    final duration = audioProvider.audioPlayer.duration;
-    final durationText = duration == null ? '--:--' : formatDuration(duration);
     final headroom = buffered - position;
     final headroomSec = headroom.inSeconds;
     final headroomText = '${headroomSec >= 0 ? '+' : ''}${headroomSec}s';
     final err = (audioProvider.error != null && audioProvider.error!.isNotEmpty)
         ? 'ERR'
         : 'OK';
-    final signal =
-        (notificationMessage != null && notificationMessage.trim().isNotEmpty)
+
+    // Priority: Last Issue > Notification > Agent Message
+    final signal = (widget.lastIssueMessage != null &&
+            widget.lastIssueMessage!.isNotEmpty)
+        ? 'ISS'
+        : (notificationMessage != null && notificationMessage.trim().isNotEmpty)
             ? 'NTF'
             : (agentMessage != null && agentMessage.trim().isNotEmpty)
                 ? 'AGT'
                 : '--';
-    final rawMsg =
-        (notificationMessage != null && notificationMessage.trim().isNotEmpty)
+
+    final rawMsg = (widget.lastIssueMessage != null &&
+            widget.lastIssueMessage!.isNotEmpty)
+        ? widget.lastIssueMessage!.trim()
+        : (notificationMessage != null && notificationMessage.trim().isNotEmpty)
             ? notificationMessage.trim()
             : (agentMessage != null && agentMessage.trim().isNotEmpty)
                 ? agentMessage.trim()
                 : '--';
+
     final msg = rawMsg == '--' ? rawMsg : _compactMessage(rawMsg);
 
     final effectiveMode = sp.audioEngineMode == AudioEngineMode.auto
@@ -347,13 +443,13 @@ class _DevAudioHudState extends State<DevAudioHud> {
     final prefetch =
         sp.webPrefetchSeconds < 0 ? 'G' : '${sp.webPrefetchSeconds}s';
     final processing = _shortProcessing(playerState?.processingState);
-    final player = _shortPlayerState(playerState);
+    // player variable removed
     final engineState = _shortEngineState(engineStateString);
 
+    // "POS" fully removed from snapshot string
     return 'ENG:$mode • TX:$transition • HF:$handoff • BG:$background • '
         'AE:$activeEngine • '
-        'PF:$prefetch • PS:$processing • P:$player • '
-        'POS:${formatDuration(position)}/$durationText • '
+        'PF:$prefetch • PS:$processing • '
         'BUF:${formatDuration(buffered)} • HD:$headroomText • '
         'NX:${formatDuration(nextBuffered)} • '
         'E:$err • ST:$engineState • SIG:$signal • MSG:$msg';
@@ -365,8 +461,9 @@ class _DevAudioHudState extends State<DevAudioHud> {
         .replaceAll('•', '-')
         .replaceAll(RegExp(r'\s+'), ' ')
         .trim();
-    if (cleaned.length <= 26) return cleaned;
-    return '${cleaned.substring(0, 25)}…';
+    // No longer aggressively truncating here because we have Marquee
+    if (cleaned.length <= 100) return cleaned;
+    return '${cleaned.substring(0, 97)}…';
   }
 
   String _shortMode(AudioEngineMode mode) {
@@ -417,21 +514,16 @@ class _DevAudioHudState extends State<DevAudioHud> {
   }
 
   String _shortActiveEngine(String? contextState, AudioEngineMode mode) {
-    if (mode != AudioEngineMode.hybrid) return '--';
     if (contextState == null || contextState.isEmpty) return '?';
+    if (contextState.contains('(WA)')) return 'WA';
+    if (contextState.contains('(H5)')) return 'H5';
+    if (contextState.contains('(VI)')) return 'VI';
+    if (contextState.contains('(HBT)')) return 'HBT';
+    // Legacy/Hybrid mode fallbacks
     if (contextState.contains('hybrid_background')) return 'BG';
     if (contextState.contains('hybrid_foreground')) return 'FG';
+    if (mode != AudioEngineMode.hybrid) return '--';
     return '?';
-  }
-
-  String _shortPlayerState(PlayerState? state) {
-    final processing = state?.processingState;
-    if (processing == ProcessingState.loading) return 'LD';
-    if (processing == ProcessingState.buffering) return 'BUF';
-    if (processing == ProcessingState.completed) return 'END';
-    if (processing == ProcessingState.idle) return 'IDL';
-    if (state?.playing ?? false) return 'PLY';
-    return 'PAU';
   }
 
   String _shortProcessing(ProcessingState? processing) {
@@ -467,8 +559,7 @@ class _DevAudioHudState extends State<DevAudioHud> {
         return 'Processing state: $value';
       case 'P':
         return 'Player state: $value';
-      case 'POS':
-        return 'Position/duration: $value';
+      // Case 'POS' removed
       case 'BUF':
         return 'Buffered amount: $value';
       case 'HD':

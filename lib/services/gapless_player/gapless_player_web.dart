@@ -35,6 +35,7 @@ extension type _GdarAudioEngine(JSObject _) {
   external void prepareToPlay(JSString url);
   external void setTrackTransitionMode(JSString mode);
   external void setCrossfadeDurationSeconds(JSNumber seconds);
+  external void setHandoffCrossfadeMs(JSNumber ms);
   external void seekToIndex(JSNumber index);
   external void setPrefetchSeconds(JSNumber s);
   external _GdarState getState();
@@ -43,6 +44,8 @@ extension type _GdarAudioEngine(JSObject _) {
   external void onError(JSFunction cb);
   external void setHybridBackgroundMode(JSString mode);
   external void setHybridHandoffMode(JSString mode);
+  external void setHybridAllowHiddenWebAudio(JSBoolean enabled);
+  external void setHybridForceHtml5Start(JSBoolean enabled);
 }
 
 /// Snapshot of engine state returned by [_GdarAudioEngine.getState].
@@ -663,6 +666,18 @@ class GaplessPlayer {
     }
   }
 
+  /// Updates the hybrid handoff crossfade window (ms).
+  void setHandoffCrossfadeMs(int ms) {
+    if (_useJsEngine) {
+      _callEngine((e) {
+        final obj = _JSObject(e as JSObject);
+        if (obj.hasOwnProperty('setHandoffCrossfadeMs'.toJS)) {
+          e.setHandoffCrossfadeMs(ms.toJS);
+        }
+      });
+    }
+  }
+
   /// Updates the web prefetch window (seconds).
   void setWebPrefetchSeconds(int seconds) {
     if (_useJsEngine) {
@@ -687,6 +702,28 @@ class GaplessPlayer {
         final obj = _JSObject(e as JSObject);
         if (obj.hasOwnProperty('setHybridHandoffMode'.toJS)) {
           e.setHybridHandoffMode(mode.toJS);
+        }
+      });
+    }
+  }
+
+  void setHybridAllowHiddenWebAudio(bool enabled) {
+    if (_useJsEngine) {
+      _callEngine((e) {
+        final obj = _JSObject(e as JSObject);
+        if (obj.hasOwnProperty('setHybridAllowHiddenWebAudio'.toJS)) {
+          e.setHybridAllowHiddenWebAudio(enabled.toJS);
+        }
+      });
+    }
+  }
+
+  void setHybridForceHtml5Start(bool enabled) {
+    if (_useJsEngine) {
+      _callEngine((e) {
+        final obj = _JSObject(e as JSObject);
+        if (obj.hasOwnProperty('setHybridForceHtml5Start'.toJS)) {
+          e.setHybridForceHtml5Start(enabled.toJS);
         }
       });
     }

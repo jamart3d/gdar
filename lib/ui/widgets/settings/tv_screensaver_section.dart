@@ -877,7 +877,9 @@ class _TvScreensaverSectionState extends State<TvScreensaverSection> {
                                 'off',
                                 'corner',
                                 'corner_only',
-                                'circular'
+                                'circular',
+                                'ekg',
+                                'circular_ekg'
                               ];
                               final idx =
                                   modes.indexOf(settings.oilAudioGraphMode);
@@ -905,6 +907,10 @@ class _TvScreensaverSectionState extends State<TvScreensaverSection> {
                                   label: Text('Corner Only')),
                               ButtonSegment(
                                   value: 'circular', label: Text('Circular')),
+                              ButtonSegment(value: 'ekg', label: Text('EKG')),
+                              ButtonSegment(
+                                  value: 'circular_ekg',
+                                  label: Text('Circ EKG')),
                             ],
                             selected: {settings.oilAudioGraphMode},
                             onSelectionChanged: (Set<String> s) =>
@@ -912,6 +918,102 @@ class _TvScreensaverSectionState extends State<TvScreensaverSection> {
                             showSelectedIcon: false,
                           ),
                         ),
+                        if (settings.oilAudioGraphMode == 'ekg' ||
+                            settings.oilAudioGraphMode == 'circular_ekg') ...[
+                          const SizedBox(height: 16),
+                          Row(
+                            children: [
+                              if (settings.oilAudioGraphMode ==
+                                  'circular_ekg') ...[
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'EKG Radius',
+                                        style: textTheme.bodySmall?.copyWith(
+                                            color:
+                                                colorScheme.onSurfaceVariant),
+                                      ),
+                                      const SizedBox(height: 8),
+                                      TvFocusWrapper(
+                                        onKeyEvent: (node, event) {
+                                          if (event is KeyDownEvent) {
+                                            if (event.logicalKey ==
+                                                LogicalKeyboardKey.arrowLeft) {
+                                              settings.setOilEkgRadius(
+                                                  (settings.oilEkgRadius - 0.1)
+                                                      .clamp(0.1, 2.0));
+                                              return KeyEventResult.handled;
+                                            } else if (event.logicalKey ==
+                                                LogicalKeyboardKey.arrowRight) {
+                                              settings.setOilEkgRadius(
+                                                  (settings.oilEkgRadius + 0.1)
+                                                      .clamp(0.1, 2.0));
+                                              return KeyEventResult.handled;
+                                            }
+                                          }
+                                          return KeyEventResult.ignored;
+                                        },
+                                        child: Slider(
+                                          value: settings.oilEkgRadius,
+                                          min: 0.1,
+                                          max: 2.0,
+                                          onChanged: settings.setOilEkgRadius,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(width: 24),
+                              ],
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Line Replication',
+                                      style: textTheme.bodySmall?.copyWith(
+                                          color: colorScheme.onSurfaceVariant),
+                                    ),
+                                    const SizedBox(height: 8),
+                                    TvFocusWrapper(
+                                      onKeyEvent: (node, event) {
+                                        if (event is KeyDownEvent) {
+                                          if (event.logicalKey ==
+                                              LogicalKeyboardKey.arrowLeft) {
+                                            settings.setOilEkgReplication(
+                                                (settings.oilEkgReplication - 1)
+                                                    .clamp(1, 5));
+                                            return KeyEventResult.handled;
+                                          } else if (event.logicalKey ==
+                                              LogicalKeyboardKey.arrowRight) {
+                                            settings.setOilEkgReplication(
+                                                (settings.oilEkgReplication + 1)
+                                                    .clamp(1, 5));
+                                            return KeyEventResult.handled;
+                                          }
+                                        }
+                                        return KeyEventResult.ignored;
+                                      },
+                                      child: Slider(
+                                        value: settings.oilEkgReplication
+                                            .toDouble(),
+                                        min: 1,
+                                        max: 5,
+                                        divisions: 4,
+                                        label: '${settings.oilEkgReplication}',
+                                        onChanged: (v) => settings
+                                            .setOilEkgReplication(v.toInt()),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
                       ],
                     ),
                   ),

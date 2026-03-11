@@ -67,6 +67,8 @@ class ShowListBody extends StatelessWidget {
     }
 
     final isTv = context.watch<DeviceService>().isTv;
+    final bool isFruit =
+        context.read<ThemeProvider>().themeStyle == ThemeStyle.fruit;
 
     final list = ScrollablePositionedList.builder(
       itemScrollController: itemScrollController,
@@ -74,7 +76,7 @@ class ShowListBody extends StatelessWidget {
       padding: EdgeInsets.only(
         top: topPadding,
         left: isTv ? 6.0 : 0.0,
-        bottom: isTv ? 40 : 160,
+        bottom: isTv ? 40 : (isFruit ? 180 : 160),
         right: isTv ? 0 : 28, // reserve space for fast scrollbar thumb
       ),
       itemCount: showListProvider.filteredShows.length,
@@ -164,9 +166,6 @@ class ShowListBody extends StatelessWidget {
         ),
       );
     }
-
-    final bool isFruit =
-        context.read<ThemeProvider>().themeStyle == ThemeStyle.fruit;
 
     // Phone: measure mini player height accurately from its layout constants
     // rather than hardcoding, so it works across all device safe area sizes.

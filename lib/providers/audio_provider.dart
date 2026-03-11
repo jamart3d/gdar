@@ -264,6 +264,29 @@ class AudioProvider with ChangeNotifier {
           .setHybridBackgroundMode(settingsProvider.hybridBackgroundMode.name);
     }
 
+    // Sync allow-hidden Web Audio behavior
+    if (_settingsProvider == null ||
+        settingsProvider.allowHiddenWebAudio !=
+            _settingsProvider!.allowHiddenWebAudio) {
+      _audioPlayer
+          .setHybridAllowHiddenWebAudio(settingsProvider.allowHiddenWebAudio);
+    }
+
+    if (_settingsProvider == null ||
+        settingsProvider.hybridForceHtml5Start !=
+            _settingsProvider!.hybridForceHtml5Start) {
+      _audioPlayer.setHybridForceHtml5Start(
+        settingsProvider.hybridForceHtml5Start,
+      );
+    }
+
+    // Sync hybrid handoff crossfade duration
+    if (_settingsProvider == null ||
+        settingsProvider.handoffCrossfadeMs !=
+            _settingsProvider!.handoffCrossfadeMs) {
+      _audioPlayer.setHandoffCrossfadeMs(settingsProvider.handoffCrossfadeMs);
+    }
+
     // Sync transition mode (gap/gapless) for JS engines that support it.
     if (_settingsProvider != null &&
         settingsProvider.trackTransitionMode !=
@@ -487,6 +510,7 @@ class AudioProvider with ChangeNotifier {
     _currentSource = source;
     // Notify ShowListProvider to ensuring visibility
     _showListProvider?.setPlayingShow(show.name, source.id);
+    _showListProvider?.setIsChoosingRandomShow(false);
     _hasMarkedAsPlayed = false; // Reset for new source
     notifyListeners(); // Notify immediately so the UI can update
 

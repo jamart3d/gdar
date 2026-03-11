@@ -418,6 +418,7 @@ class PlaybackSection extends StatelessWidget {
     double scaleFactor,
     bool isFruit,
   ) {
+    final audioProvider = context.watch<AudioProvider>();
     return [
       Padding(
         padding: EdgeInsets.only(
@@ -458,6 +459,20 @@ class PlaybackSection extends StatelessWidget {
                 'Select the low-level processing engine for gapless playback.',
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
                       fontSize: 12 * scaleFactor,
+                    ),
+              ),
+            ),
+            const SizedBox(height: 6),
+            Padding(
+              padding: EdgeInsets.only(left: 40.0 * scaleFactor),
+              child: Text(
+                'Engine changes apply after relaunch (or browser refresh).',
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      fontSize: 12 * scaleFactor,
+                      color: Theme.of(context)
+                          .colorScheme
+                          .onSurface
+                          .withAlpha(160),
                     ),
               ),
             ),
@@ -521,6 +536,56 @@ class PlaybackSection extends StatelessWidget {
                         'Relaunch required for engine change to take effect.');
                   },
                 ),
+              ),
+            ),
+            const SizedBox(height: 10),
+            Padding(
+              padding: EdgeInsets.only(left: 40.0 * scaleFactor),
+              child: StreamBuilder<String>(
+                stream: audioProvider.audioPlayer.engineContextStateStream,
+                initialData: 'unknown',
+                builder: (context, snapshot) {
+                  final contextState = snapshot.data ?? 'unknown';
+                  return Container(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 12 * scaleFactor,
+                      vertical: 8 * scaleFactor,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context)
+                          .colorScheme
+                          .surfaceContainerHighest
+                          .withValues(alpha: 0.25),
+                      borderRadius: BorderRadius.circular(10 * scaleFactor),
+                      border: Border.all(
+                        color: Theme.of(context)
+                            .colorScheme
+                            .onSurface
+                            .withValues(alpha: 0.08),
+                      ),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Active Engine: ${audioProvider.audioPlayer.engineName}',
+                          style:
+                              Theme.of(context).textTheme.bodySmall?.copyWith(
+                                    fontSize: 12 * scaleFactor,
+                                  ),
+                        ),
+                        SizedBox(height: 4 * scaleFactor),
+                        Text(
+                          'Context: $contextState',
+                          style:
+                              Theme.of(context).textTheme.bodySmall?.copyWith(
+                                    fontSize: 12 * scaleFactor,
+                                  ),
+                        ),
+                      ],
+                    ),
+                  );
+                },
               ),
             ),
             const SizedBox(height: 16),
@@ -735,6 +800,97 @@ class PlaybackSection extends StatelessWidget {
                     ),
                   ),
                 ),
+                const SizedBox(height: 12),
+                Padding(
+                  padding: EdgeInsets.only(left: 40.0 * scaleFactor),
+                  child: SwitchListTile.adaptive(
+                    contentPadding: EdgeInsets.zero,
+                    title: Text(
+                      'Allow Web Audio while hidden',
+                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                            fontSize: 13 * scaleFactor,
+                            fontWeight: FontWeight.w600,
+                          ),
+                    ),
+                    subtitle: Text(
+                      'Keeps Web Audio active in background. '
+                      'May stop sooner on mobile.',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            fontSize: 12 * scaleFactor,
+                          ),
+                    ),
+                    value: sp.allowHiddenWebAudio,
+                    onChanged: (value) {
+                      AppHaptics.lightImpact(context.read<DeviceService>());
+                      sp.setAllowHiddenWebAudio(value);
+                    },
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Padding(
+                  padding: EdgeInsets.only(left: 40.0 * scaleFactor),
+                  child: SwitchListTile.adaptive(
+                    contentPadding: EdgeInsets.zero,
+                    title: Text(
+                      'Force HTML5 start',
+                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                            fontSize: 13 * scaleFactor,
+                            fontWeight: FontWeight.w600,
+                          ),
+                    ),
+                    subtitle: Text(
+                      'Always start via HTML5 before handing off.',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            fontSize: 12 * scaleFactor,
+                          ),
+                    ),
+                    value: sp.hybridForceHtml5Start,
+                    onChanged: (value) {
+                      AppHaptics.lightImpact(context.read<DeviceService>());
+                      sp.setHybridForceHtml5Start(value);
+                    },
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Padding(
+                  padding: EdgeInsets.only(left: 40.0 * scaleFactor),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Handoff Crossfade',
+                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                              fontSize: 13 * scaleFactor,
+                              fontWeight: FontWeight.w600,
+                            ),
+                      ),
+                      const SizedBox(height: 6),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Slider(
+                              min: 0,
+                              max: 200,
+                              divisions: 20,
+                              value: sp.handoffCrossfadeMs.toDouble(),
+                              onChanged: (value) {
+                                sp.setHandoffCrossfadeMs(value.round());
+                              },
+                            ),
+                          ),
+                          SizedBox(width: 8 * scaleFactor),
+                          Text(
+                            '${sp.handoffCrossfadeMs}ms',
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodySmall
+                                ?.copyWith(fontSize: 12 * scaleFactor),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
               ],
             ],
           ],
@@ -813,7 +969,7 @@ class PlaybackSection extends StatelessWidget {
               style: bodyStyle,
             ),
             Text(
-              'PF prefetch  •  PS processing  •  P player  •  ST engine state',
+              'PF prefetch  •  PS processing  •  ST engine state',
               style: bodyStyle,
             ),
             Text(

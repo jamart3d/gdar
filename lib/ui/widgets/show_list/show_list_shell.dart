@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
 import 'package:shakedown/providers/audio_provider.dart';
-import 'package:shakedown/providers/show_list_provider.dart';
 import 'package:shakedown/ui/widgets/mini_player.dart';
 import 'package:shakedown/ui/widgets/show_list/show_list_app_bar.dart';
 import 'package:shakedown/ui/widgets/show_list/show_list_search_bar.dart';
@@ -88,20 +87,17 @@ class ShowListShell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final audioProvider = context.watch<AudioProvider>();
-    final showListProvider = context.watch<ShowListProvider>();
-
     final themeProvider = context.watch<ThemeProvider>();
     final settingsProvider =
         context.watch<SettingsProvider>(); // Defined settingsProvider
-    final isFruit = themeProvider.themeStyle == ThemeStyle.fruit;
+    final bool isFruit = themeProvider.themeStyle == ThemeStyle.fruit;
     final bool disableShader = kIsWeb && isWasmRuntime();
 
-    final bool isRollActive = showListProvider.isChoosingRandomShow;
-    final bool shouldShowMiniPlayer = audioProvider.currentShow != null &&
-        !isRollActive &&
-        !isPane &&
-        !isFruit &&
-        !(showListProvider.isSearchVisible && searchFocusNode.hasFocus);
+    // MiniPlayer logic:
+    // - Always show in Android style if a track is loaded.
+    // - Hide in Fruit style because FruitTabBar provides a dedicated Play tab.
+    final bool shouldShowMiniPlayer =
+        !isFruit && audioProvider.currentTrack != null;
 
     final bodyContent = Stack(
       children: [
@@ -150,11 +146,11 @@ class ShowListShell extends StatelessWidget {
                   ),
           ),
         AnimatedPositioned(
-          duration: const Duration(milliseconds: 600),
+          duration: const Duration(milliseconds: 300),
           curve: Curves.easeOutCubic,
           left: 0,
           right: 0,
-          bottom: shouldShowMiniPlayer ? 0 : -100,
+          bottom: shouldShowMiniPlayer ? (isFruit ? 80.0 : 0.0) : -120,
           child: AnimatedOpacity(
             duration: const Duration(milliseconds: 400),
             opacity: shouldShowMiniPlayer ? 1.0 : 0.0,

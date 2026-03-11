@@ -1,3 +1,11 @@
+What's new in v1.1.66+166
+• Implemented Smart Coloring for the debug layout, applying distinct functional colors to major sections to improve developer scannability.
+• Added granular debug outlines to internal components for high-precision layout inspection.
+• Refined the heartbeat dot in the developer HUD—relocated it and enforced strict hidden state to reduce visual clutter.
+• Verified project health and enforced strict formatting/analysis standards via tool/verify.dart.
+
+---
+
 What's new in v1.1.65+165
 • Added custom JavaScript error logger to capture and dump unhandled WebAssembly errors for easier debugging on mobile.
 • Removed --wasm requirement from the production deployment pipeline to bypass Skwasm crashes on certain devices.

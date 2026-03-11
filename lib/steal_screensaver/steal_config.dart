@@ -65,8 +65,14 @@ class StealConfig {
   /// 1.0 = standard, 0.5 = tight, 2.0 = double spaced.
   final double flatLineSpacing;
 
-  /// Audio graph display mode: 'off', 'corner', 'corner_only', or 'circular'.
+  /// Audio graph display mode: 'off', 'corner', 'corner_only', 'circular', 'ekg', or 'circular_ekg'.
   final String audioGraphMode;
+
+  /// Radius multiplier for EKG (0.5x to 2.0x of base logo radius).
+  final double ekgRadius;
+
+  /// Number of parallel offset lines for EKG (1 to 5).
+  final int ekgReplication;
 
   /// Beat detection sensitivity (0.0 = gentle, 1.0 = aggressive).
   final double beatSensitivity;
@@ -133,6 +139,12 @@ class StealConfig {
       Color(0xFFFF4500),
       Color(0xFF00FFFF),
     ],
+    'classic': [
+      Color(0xFF34E7FF),
+      Color(0xFF4AF3C6),
+      Color(0xFF8BFF91),
+      Color(0xFFFFE66D),
+    ],
   };
 
   const StealConfig({
@@ -142,8 +154,7 @@ class StealConfig {
     this.pulseIntensity = 0.5,
     this.heatDrift = 0.2,
     this.logoScale = 0.5,
-    this.translationSmoothing =
-        0.7, // Increased default smoothing for floatier feel
+    this.translationSmoothing = 0.7,
     this.blurAmount = 0.0,
     this.flatColor = false,
     this.bannerGlow = false,
@@ -179,6 +190,8 @@ class StealConfig {
     this.trackWordSpacing = 0.4,
     this.flatLineSpacing = 1.0,
     this.audioGraphMode = 'off',
+    this.ekgRadius = 1.0,
+    this.ekgReplication = 1,
     this.beatSensitivity = 0.5,
     this.beatImpact = 0.4,
     this.innerRingFontScale = 1.0,
@@ -242,6 +255,8 @@ class StealConfig {
       trackWordSpacing: (map['trackWordSpacing'] as num?)?.toDouble() ?? 0.4,
       flatLineSpacing: (map['flatLineSpacing'] as num?)?.toDouble() ?? 1.0,
       audioGraphMode: map['audioGraphMode'] as String? ?? 'off',
+      ekgRadius: (map['ekgRadius'] as num?)?.toDouble() ?? 1.0,
+      ekgReplication: (map['ekgReplication'] as int?) ?? 1,
       beatSensitivity: (map['beatSensitivity'] as num?)?.toDouble() ?? 0.5,
       beatImpact: (map['beatImpact'] as num?)?.toDouble() ?? 0.4,
       innerRingFontScale:
@@ -301,6 +316,8 @@ class StealConfig {
       'trackWordSpacing': trackWordSpacing,
       'flatLineSpacing': flatLineSpacing,
       'audioGraphMode': audioGraphMode,
+      'ekgRadius': ekgRadius,
+      'ekgReplication': ekgReplication,
       'beatSensitivity': beatSensitivity,
       'beatImpact': beatImpact,
       'innerRingFontScale': innerRingFontScale,
@@ -357,6 +374,8 @@ class StealConfig {
     double? trackWordSpacing,
     double? flatLineSpacing,
     String? audioGraphMode,
+    double? ekgRadius,
+    int? ekgReplication,
     double? beatSensitivity,
     double? beatImpact,
     double? innerRingFontScale,
@@ -414,6 +433,8 @@ class StealConfig {
       trackWordSpacing: trackWordSpacing ?? this.trackWordSpacing,
       flatLineSpacing: flatLineSpacing ?? this.flatLineSpacing,
       audioGraphMode: audioGraphMode ?? this.audioGraphMode,
+      ekgRadius: ekgRadius ?? this.ekgRadius,
+      ekgReplication: ekgReplication ?? this.ekgReplication,
       beatSensitivity: beatSensitivity ?? this.beatSensitivity,
       beatImpact: beatImpact ?? this.beatImpact,
       innerRingFontScale: innerRingFontScale ?? this.innerRingFontScale,
@@ -474,6 +495,8 @@ class StealConfig {
         trackWordSpacing == other.trackWordSpacing &&
         flatLineSpacing == other.flatLineSpacing &&
         audioGraphMode == other.audioGraphMode &&
+        ekgRadius == other.ekgRadius &&
+        ekgReplication == other.ekgReplication &&
         beatSensitivity == other.beatSensitivity &&
         beatImpact == other.beatImpact &&
         innerRingFontScale == other.innerRingFontScale &&
@@ -530,6 +553,8 @@ class StealConfig {
         trackWordSpacing,
         flatLineSpacing,
         audioGraphMode,
+        ekgRadius,
+        ekgReplication,
         beatSensitivity,
         beatImpact,
         innerRingFontScale,

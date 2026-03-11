@@ -90,8 +90,13 @@ class _PlaybackProgressBarState extends State<PlaybackProgressBar>
             final hasKnownDuration = totalDuration.inSeconds > 0;
             return Row(
               children: [
-                SizedBox(
+                Container(
                   width: 72 * scaleFactor,
+                  decoration: settingsProvider.showDebugLayout
+                      ? BoxDecoration(
+                          border: Border.all(color: Colors.blue, width: 1),
+                        )
+                      : null,
                   child: _buildTimeBadge(
                     context: context,
                     text: formatDuration(position),
@@ -104,212 +109,234 @@ class _PlaybackProgressBarState extends State<PlaybackProgressBar>
                 ),
                 const SizedBox(width: 8),
                 Expanded(
-                  child: StreamBuilder<Duration>(
-                    stream: audioProvider.bufferedPositionStream,
-                    initialData: audioProvider.audioPlayer.bufferedPosition,
-                    builder: (context, bufferedSnapshot) {
-                      final bufferedPosition =
-                          bufferedSnapshot.data ?? Duration.zero;
-                      return StreamBuilder<PlayerState>(
-                        stream: audioProvider.playerStateStream,
-                        initialData: audioProvider.audioPlayer.playerState,
-                        builder: (context, stateSnapshot) {
-                          final processingState =
-                              stateSnapshot.data?.processingState;
-                          final isBuffering =
-                              processingState == ProcessingState.buffering ||
-                                  processingState == ProcessingState.loading;
-                          final bufferingPercentage = (hasKnownDuration
-                                  ? bufferedPosition.inSeconds /
-                                      totalDuration.inSeconds
-                                  : 0.0)
-                              .clamp(0.0, 1.0);
-                          final positionPercentage = (hasKnownDuration
-                                  ? position.inSeconds / totalDuration.inSeconds
-                                  : 0.0)
-                              .clamp(0.0, 1.0);
+                  child: Container(
+                    decoration: settingsProvider.showDebugLayout
+                        ? BoxDecoration(
+                            border: Border.all(color: Colors.purple, width: 1),
+                          )
+                        : null,
+                    child: StreamBuilder<Duration>(
+                      stream: audioProvider.bufferedPositionStream,
+                      initialData: audioProvider.audioPlayer.bufferedPosition,
+                      builder: (context, bufferedSnapshot) {
+                        final bufferedPosition =
+                            bufferedSnapshot.data ?? Duration.zero;
+                        return StreamBuilder<PlayerState>(
+                          stream: audioProvider.playerStateStream,
+                          initialData: audioProvider.audioPlayer.playerState,
+                          builder: (context, stateSnapshot) {
+                            final processingState =
+                                stateSnapshot.data?.processingState;
+                            final isBuffering =
+                                processingState == ProcessingState.buffering ||
+                                    processingState == ProcessingState.loading;
+                            final bufferingPercentage = (hasKnownDuration
+                                    ? bufferedPosition.inSeconds /
+                                        totalDuration.inSeconds
+                                    : 0.0)
+                                .clamp(0.0, 1.0);
+                            final positionPercentage = (hasKnownDuration
+                                    ? position.inSeconds /
+                                        totalDuration.inSeconds
+                                    : 0.0)
+                                .clamp(0.0, 1.0);
 
-                          return AnimatedBuilder(
-                              animation: _thumbRadiusAnimation,
-                              builder: (context, child) {
-                                return SliderTheme(
-                                  data: SliderTheme.of(context).copyWith(
-                                    trackHeight:
-                                        12 * scaleFactor, // Expressive height
-                                    thumbShape: RoundSliderThumbShape(
-                                        enabledThumbRadius:
-                                            _thumbRadiusAnimation.value *
-                                                scaleFactor),
-                                    overlayShape: RoundSliderOverlayShape(
-                                        overlayRadius: 22 * scaleFactor),
-                                    activeTrackColor: Colors.transparent,
-                                    inactiveTrackColor: Colors.transparent,
-                                    thumbColor: colorScheme.primary,
-                                    overlayColor: colorScheme.primary
-                                        .withValues(alpha: 0.2),
-                                  ),
-                                  child: Stack(
-                                    alignment: Alignment.center,
-                                    children: [
-                                      // Background Track
-                                      Container(
-                                        height: 12 * scaleFactor,
-                                        decoration: BoxDecoration(
-                                          color: isTrueBlackMode
-                                              ? Colors.white12
-                                              : colorScheme.onSurface
-                                                  .withValues(alpha: 0.2),
-                                          borderRadius: BorderRadius.circular(
-                                              6 * scaleFactor),
+                            return AnimatedBuilder(
+                                animation: _thumbRadiusAnimation,
+                                builder: (context, child) {
+                                  return SliderTheme(
+                                    data: SliderTheme.of(context).copyWith(
+                                      trackHeight:
+                                          12 * scaleFactor, // Expressive height
+                                      thumbShape: RoundSliderThumbShape(
+                                          enabledThumbRadius:
+                                              _thumbRadiusAnimation.value *
+                                                  scaleFactor),
+                                      overlayShape: RoundSliderOverlayShape(
+                                          overlayRadius: 22 * scaleFactor),
+                                      activeTrackColor: Colors.transparent,
+                                      inactiveTrackColor: Colors.transparent,
+                                      thumbColor: colorScheme.primary,
+                                      overlayColor: colorScheme.primary
+                                          .withValues(alpha: 0.2),
+                                    ),
+                                    child: Stack(
+                                      alignment: Alignment.center,
+                                      children: [
+                                        // Background Track
+                                        Container(
+                                          height: 12 * scaleFactor,
+                                          decoration: BoxDecoration(
+                                            color: isTrueBlackMode
+                                                ? Colors.white12
+                                                : colorScheme.onSurface
+                                                    .withValues(alpha: 0.2),
+                                            borderRadius: BorderRadius.circular(
+                                                6 * scaleFactor),
+                                          ),
                                         ),
-                                      ),
-                                      if (!hasKnownDuration && isBuffering)
-                                        ClipRRect(
-                                          borderRadius: BorderRadius.circular(
-                                              6 * scaleFactor),
-                                          child: SizedBox(
-                                            height: 12 * scaleFactor,
-                                            child: LinearProgressIndicator(
-                                              value: null,
-                                              backgroundColor:
-                                                  Colors.transparent,
-                                              valueColor:
-                                                  AlwaysStoppedAnimation<Color>(
-                                                colorScheme.tertiary
-                                                    .withValues(alpha: 0.45),
+                                        if (!hasKnownDuration && isBuffering)
+                                          ClipRRect(
+                                            borderRadius: BorderRadius.circular(
+                                                6 * scaleFactor),
+                                            child: SizedBox(
+                                              height: 12 * scaleFactor,
+                                              child: LinearProgressIndicator(
+                                                value: null,
+                                                backgroundColor:
+                                                    Colors.transparent,
+                                                valueColor:
+                                                    AlwaysStoppedAnimation<
+                                                        Color>(
+                                                  colorScheme.tertiary
+                                                      .withValues(alpha: 0.45),
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        // Buffered Progress
+                                        Align(
+                                          alignment: Alignment.centerLeft,
+                                          child: FractionallySizedBox(
+                                            widthFactor: bufferingPercentage,
+                                            child: Container(
+                                              height: 12 * scaleFactor,
+                                              decoration: BoxDecoration(
+                                                color: colorScheme.tertiary
+                                                    .withValues(alpha: 0.35),
+                                                borderRadius:
+                                                    BorderRadius.circular(
+                                                        6 * scaleFactor),
                                               ),
                                             ),
                                           ),
                                         ),
-                                      // Buffered Progress
-                                      Align(
-                                        alignment: Alignment.centerLeft,
-                                        child: FractionallySizedBox(
-                                          widthFactor: bufferingPercentage,
-                                          child: Container(
-                                            height: 12 * scaleFactor,
-                                            decoration: BoxDecoration(
-                                              color: colorScheme.tertiary
-                                                  .withValues(alpha: 0.35),
-                                              borderRadius:
-                                                  BorderRadius.circular(
-                                                      6 * scaleFactor),
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                      // Active Progress
-                                      Align(
-                                        alignment: Alignment.centerLeft,
-                                        child: FractionallySizedBox(
-                                          widthFactor: positionPercentage,
-                                          child: Stack(
-                                            children: [
-                                              Container(
-                                                height: 12 * scaleFactor,
-                                                decoration: BoxDecoration(
-                                                  gradient: LinearGradient(
-                                                    colors: [
-                                                      colorScheme.primary,
-                                                      colorScheme
-                                                          .tertiary, // Expressive gradient
-                                                    ],
+                                        // Active Progress
+                                        Align(
+                                          alignment: Alignment.centerLeft,
+                                          child: FractionallySizedBox(
+                                            widthFactor: positionPercentage,
+                                            child: Stack(
+                                              children: [
+                                                Container(
+                                                  height: 12 * scaleFactor,
+                                                  decoration: BoxDecoration(
+                                                    gradient: LinearGradient(
+                                                      colors: [
+                                                        colorScheme.primary,
+                                                        colorScheme
+                                                            .tertiary, // Expressive gradient
+                                                      ],
+                                                    ),
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            6 * scaleFactor),
                                                   ),
-                                                  borderRadius:
-                                                      BorderRadius.circular(
-                                                          6 * scaleFactor),
                                                 ),
-                                              ),
-                                              if (isBuffering)
-                                                TweenAnimationBuilder<double>(
-                                                  tween: Tween(
-                                                      begin: 0.0, end: 1.0),
-                                                  duration: const Duration(
-                                                      milliseconds: 1500),
-                                                  builder:
-                                                      (context, value, child) {
-                                                    return Container(
-                                                      height: 12 * scaleFactor,
-                                                      decoration: BoxDecoration(
-                                                        borderRadius:
-                                                            BorderRadius
-                                                                .circular(6 *
-                                                                    scaleFactor),
-                                                        gradient:
-                                                            LinearGradient(
-                                                          begin: Alignment
-                                                              .centerLeft,
-                                                          end: Alignment
-                                                              .centerRight,
-                                                          stops: [
-                                                            (value - 0.2).clamp(
-                                                                0.0, 1.0),
-                                                            value,
-                                                            (value + 0.2).clamp(
-                                                                0.0, 1.0),
-                                                          ],
-                                                          colors: [
-                                                            Colors.transparent,
-                                                            colorScheme
-                                                                .onPrimary
-                                                                .withValues(
-                                                                    alpha: 0.4),
-                                                            Colors.transparent,
-                                                          ],
+                                                if (isBuffering)
+                                                  TweenAnimationBuilder<double>(
+                                                    tween: Tween(
+                                                        begin: 0.0, end: 1.0),
+                                                    duration: const Duration(
+                                                        milliseconds: 1500),
+                                                    builder: (context, value,
+                                                        child) {
+                                                      return Container(
+                                                        height:
+                                                            12 * scaleFactor,
+                                                        decoration:
+                                                            BoxDecoration(
+                                                          borderRadius:
+                                                              BorderRadius
+                                                                  .circular(6 *
+                                                                      scaleFactor),
+                                                          gradient:
+                                                              LinearGradient(
+                                                            begin: Alignment
+                                                                .centerLeft,
+                                                            end: Alignment
+                                                                .centerRight,
+                                                            stops: [
+                                                              (value - 0.2)
+                                                                  .clamp(
+                                                                      0.0, 1.0),
+                                                              value,
+                                                              (value + 0.2)
+                                                                  .clamp(
+                                                                      0.0, 1.0),
+                                                            ],
+                                                            colors: [
+                                                              Colors
+                                                                  .transparent,
+                                                              colorScheme
+                                                                  .onPrimary
+                                                                  .withValues(
+                                                                      alpha:
+                                                                          0.4),
+                                                              Colors
+                                                                  .transparent,
+                                                            ],
+                                                          ),
                                                         ),
-                                                      ),
-                                                    );
-                                                  },
-                                                  onEnd: () {
-                                                    if (isBuffering &&
-                                                        context.mounted) {
-                                                      (context as Element)
-                                                          .markNeedsBuild();
-                                                    }
-                                                  },
-                                                ),
-                                            ],
+                                                      );
+                                                    },
+                                                    onEnd: () {
+                                                      if (isBuffering &&
+                                                          context.mounted) {
+                                                        (context as Element)
+                                                            .markNeedsBuild();
+                                                      }
+                                                    },
+                                                  ),
+                                              ],
+                                            ),
                                           ),
                                         ),
-                                      ),
-                                      // Interactive Slider (Transparent Overlay)
-                                      Slider(
-                                        min: 0.0,
-                                        max: hasKnownDuration
-                                            ? totalDuration.inSeconds.toDouble()
-                                            : 1.0,
-                                        value: position.inSeconds
-                                            .toDouble()
-                                            .clamp(
-                                                0.0,
-                                                (hasKnownDuration
-                                                        ? totalDuration
-                                                            .inSeconds
-                                                        : 1)
-                                                    .toDouble()),
-                                        onChangeStart: (_) =>
-                                            _updateInteractionState(true),
-                                        onChanged: hasKnownDuration
-                                            ? (value) {
-                                                audioProvider.seek(Duration(
-                                                    seconds: value.round()));
-                                              }
-                                            : null,
-                                        onChangeEnd: (_) =>
-                                            _updateInteractionState(false),
-                                      ),
-                                    ],
-                                  ),
-                                );
-                              });
-                        },
-                      );
-                    },
+                                        // Interactive Slider (Transparent Overlay)
+                                        Slider(
+                                          min: 0.0,
+                                          max: hasKnownDuration
+                                              ? totalDuration.inSeconds
+                                                  .toDouble()
+                                              : 1.0,
+                                          value: position.inSeconds
+                                              .toDouble()
+                                              .clamp(
+                                                  0.0,
+                                                  (hasKnownDuration
+                                                          ? totalDuration
+                                                              .inSeconds
+                                                          : 1)
+                                                      .toDouble()),
+                                          onChangeStart: (_) =>
+                                              _updateInteractionState(true),
+                                          onChanged: hasKnownDuration
+                                              ? (value) {
+                                                  audioProvider.seek(Duration(
+                                                      seconds: value.round()));
+                                                }
+                                              : null,
+                                          onChangeEnd: (_) =>
+                                              _updateInteractionState(false),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                });
+                          },
+                        );
+                      },
+                    ),
                   ),
                 ),
                 const SizedBox(width: 8),
-                SizedBox(
+                Container(
                   width: 72 * scaleFactor,
+                  decoration: settingsProvider.showDebugLayout
+                      ? BoxDecoration(
+                          border: Border.all(color: Colors.orange, width: 1),
+                        )
+                      : null,
                   child: StreamBuilder<Duration>(
                     stream: audioProvider.bufferedPositionStream,
                     initialData: audioProvider.audioPlayer.bufferedPosition,
@@ -345,22 +372,34 @@ class _PlaybackProgressBarState extends State<PlaybackProgressBar>
                     } else if (!hasKnownDuration) {
                       indicatorText = '• Buffer';
                     }
-                    if (indicatorText == null) return const SizedBox.shrink();
-                    return SizedBox(
-                      width: 92 * scaleFactor,
-                      child: Text(
-                        indicatorText,
-                        textAlign: TextAlign.left,
-                        style: Theme.of(context)
-                            .textTheme
-                            .bodySmall
-                            ?.apply(fontSizeFactor: scaleFactor * 0.9)
-                            .copyWith(
-                          color: indicatorColor,
-                          fontWeight: FontWeight.w600,
-                          fontFamily: fontFamily,
-                          fontFeatures: [const FontFeature.tabularFigures()],
-                        ),
+                    final bool showIndicator = indicatorText != null;
+                    return Container(
+                      decoration: settingsProvider.showDebugLayout
+                          ? BoxDecoration(
+                              border:
+                                  Border.all(color: Colors.purple, width: 1),
+                            )
+                          : null,
+                      child: SizedBox(
+                        width: 92 * scaleFactor,
+                        child: showIndicator
+                            ? Text(
+                                indicatorText,
+                                textAlign: TextAlign.left,
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodySmall
+                                    ?.apply(fontSizeFactor: scaleFactor * 0.9)
+                                    .copyWith(
+                                  color: indicatorColor,
+                                  fontWeight: FontWeight.w600,
+                                  fontFamily: fontFamily,
+                                  fontFeatures: [
+                                    const FontFeature.tabularFigures()
+                                  ],
+                                ),
+                              )
+                            : const SizedBox.shrink(),
                       ),
                     );
                   },

@@ -652,6 +652,10 @@
 
         setPrefetchSeconds: function (s) { /* No-op */ },
 
+        setVolume: function (v) {
+            if (_queue) _queue.setVolume(v);
+        },
+
         getState: function () {
             return _translateState(_queue?.currentTrack);
         },

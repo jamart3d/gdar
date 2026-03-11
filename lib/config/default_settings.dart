@@ -32,7 +32,8 @@ class DefaultSettings {
   static const bool nonRandom = false;
   static const bool preventSleep = false;
   static const bool showPlaybackMessages = true;
-  static const bool showDevAudioHud = false;
+  static const bool showDevAudioHud = true;
+  static const String devHudMode = 'full';
 
   // Web Gapless Engine (web-only)
   static const String audioEngineMode =
@@ -42,6 +43,8 @@ class DefaultSettings {
   // Track Transitions (hybrid/standard engines)
   static const String trackTransitionMode = 'gapless'; // gap, gapless
   static const double crossfadeDurationSeconds = 3.0; // 1.0 - 12.0
+  static const int handoffCrossfadeMs = 0; // 0 = off, 0-200 recommended
+  static const bool hybridForceHtml5Start = false;
 
   // Data & Filtering
   static const bool showSingleShnid = false;
@@ -69,6 +72,7 @@ class DefaultSettings {
   // Misc
   static const bool showSplashScreen = true;
   static const bool enableSwipeToBlock = false;
+  static const bool showDebugLayout = true;
 
   // Screensaver (steal)
   static const bool useOilScreensaver = true;
@@ -128,8 +132,14 @@ class DefaultSettings {
   /// Logo anti-aliasing: fwidth smoothstep on alpha edge (TV-only setting).
   static const bool oilLogoAntiAlias = false;
 
-  /// Audio graph display mode: 'off', 'corner', or 'circular'.
+  /// Audio graph display mode: 'off', 'corner', 'circular', 'ekg', or 'circular_ekg'.
   static const String oilAudioGraphMode = 'off';
+
+  /// Radius multiplier for EKG (0.5x to 2.0x of base logo radius).
+  static const double oilEkgRadius = 1.0;
+
+  /// Number of parallel offset lines for EKG (1 to 5).
+  static const int oilEkgReplication = 1;
 
   /// Beat detection sensitivity (0.0 = gentle, 1.0 = aggressive).
   static const double oilBeatSensitivity = 0.45;

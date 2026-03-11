@@ -13,6 +13,7 @@
 - [x] **Settings Two-Pane Layout**: Redesign Settings screen for 16:9 using a Master-Detail pattern.
 
 ### Performance & Optimization
+- [ ] **Multi-Logo Swarm Mode**: Implement a "Swarm" mode to instance the logo across the screen. Use `drawImageRect` or `SpriteBatch` for high performance on Google TV 2020, disabling expensive blurs for secondary instances to maintain 60fps.
 - [x] **Neon Glow Optimization**: Implement Rasterized Glyph Cache for `StealBanner`. Real-time Gaussian blurs were replaced with optimized static rasterization.
 - [x] **App Size Audit**: Initialized `size_guard` skill. Found 11.43MB assets; icons need optimization to WebP.
 
@@ -57,6 +58,7 @@
   - [ ] Explore Silent Video looping or Web Workers for timer consistency.
   - [x] **Timer Drift Audit**: Added Phase 4 to `test/prompts/jules_audit.md` to audit `gapless_audio_engine.js` under 6x CPU throttling.
 - [ ] **Bug — Track Skip on Buffer**: Engine skips next track if it isn't fully buffered when current track ends.
+- [ ] **HUD Improvements**: Improve readability for smaller displays with a multi-mode HUD (Full, Mini, Micro) that cycles on tap. [cc6f95db]
 - [ ] **Mobile Preload Setting**: User setting to choose how many tracks to buffer/preload ahead (currently defaults to 1).
 - [ ] **Playback Settings**: Investigate a short fade-in playback option (on start/resume) to reduce audio "popping".
 - [ ] **Web Audio Engine Wiring Cleanup**: Route hybrid/background/handoff runtime updates through active `AudioProvider.audioPlayer` only (avoid creating ad-hoc `GaplessPlayer()` in settings flows).

@@ -125,6 +125,7 @@ class FruitNowPlayingCard extends StatelessWidget {
                               isLoading: isLoading,
                               isBuffering: isBuffering,
                               bufferedPositionMs: buffered.inMilliseconds,
+                              isSimple: isSimple,
                             );
                           },
                         );
@@ -291,6 +292,7 @@ class FruitNowPlayingCard extends StatelessWidget {
     required bool isLoading,
     required bool isBuffering,
     required int bufferedPositionMs,
+    required bool isSimple,
   }) {
     final duration = audioProvider.audioPlayer.duration?.inMilliseconds ?? 0;
     final position = audioProvider.audioPlayer.position.inMilliseconds;
@@ -299,7 +301,7 @@ class FruitNowPlayingCard extends StatelessWidget {
     final double bufferedProgress =
         (duration > 0) ? (bufferedPositionMs / duration).clamp(0.0, 1.0) : 0.0;
     final bool hasKnownDuration = duration > 0;
-    final bool showLoadingPulse = isLoading || isBuffering;
+    final bool showLoadingPulse = (isLoading || isBuffering) && !isSimple;
 
     return Stack(
       children: [
@@ -326,13 +328,20 @@ class FruitNowPlayingCard extends StatelessWidget {
           SizedBox(
             height: 3.0 * scaleFactor,
             width: double.infinity,
-            child: LinearProgressIndicator(
-              value: null,
-              backgroundColor: Colors.transparent,
-              valueColor: AlwaysStoppedAnimation<Color>(
-                colorScheme.tertiary.withValues(alpha: 0.5),
-              ),
-            ),
+            child: isSimple
+                ? Container(
+                    decoration: BoxDecoration(
+                      color: colorScheme.tertiary.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(4 * scaleFactor),
+                    ),
+                  )
+                : LinearProgressIndicator(
+                    value: null,
+                    backgroundColor: Colors.transparent,
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      colorScheme.tertiary.withValues(alpha: 0.5),
+                    ),
+                  ),
           ),
         FractionallySizedBox(
           widthFactor: progress,

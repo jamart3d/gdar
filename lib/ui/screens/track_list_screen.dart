@@ -9,6 +9,7 @@ import 'package:shakedown/models/source.dart';
 import 'package:shakedown/models/track.dart';
 import 'package:shakedown/providers/audio_provider.dart';
 import 'package:shakedown/providers/settings_provider.dart';
+import 'package:shakedown/providers/show_list_provider.dart';
 import 'package:shakedown/ui/screens/playback_screen.dart';
 import 'package:shakedown/ui/screens/settings_screen.dart';
 import 'package:shakedown/ui/widgets/theme/neumorphic_wrapper.dart';
@@ -283,7 +284,7 @@ class _TrackListScreenState extends State<TrackListScreen> {
       ),
       bottomNavigationBar: themeProvider.themeStyle == ThemeStyle.fruit
           ? FruitTabBar(
-              selectedIndex: 2,
+              selectedIndex: 1,
               onTabSelected: (index) {
                 if (index == 0) {
                   _openPlaybackScreen();
@@ -297,26 +298,41 @@ class _TrackListScreenState extends State<TrackListScreen> {
                     (route) => false,
                   );
                 } else if (index == 2) {
-                  context.read<AudioProvider>().playRandomShow();
+                  final showListProvider = context.read<ShowListProvider>();
+                  showListProvider.setIsChoosingRandomShow(true);
+                  final resetMs =
+                      context.read<SettingsProvider>().performanceMode
+                          ? 600
+                          : 2400;
+                  unawaited(Future<void>.delayed(
+                    Duration(milliseconds: resetMs),
+                    () {
+                      if (showListProvider.isChoosingRandomShow) {
+                        showListProvider.setIsChoosingRandomShow(false);
+                      }
+                    },
+                  ));
+                  if (mounted) {
+                    Navigator.of(context).pushAndRemoveUntil(
+                      PageRouteBuilder(
+                        pageBuilder: (context, animation, secondaryAnimation) =>
+                            const FruitTabHostScreen(
+                          initialTab: 1,
+                          triggerRandomOnStart: true,
+                        ),
+                        transitionDuration: Duration.zero,
+                      ),
+                      (route) => false,
+                    );
+                  }
                 } else if (index == 3) {
-                  Navigator.of(context).push(
+                  Navigator.of(context).pushAndRemoveUntil(
                     PageRouteBuilder(
                       pageBuilder: (context, animation, secondaryAnimation) =>
-                          const SettingsScreen(),
-                      transitionDuration: const Duration(milliseconds: 300),
-                      transitionsBuilder:
-                          (context, animation, secondaryAnimation, child) {
-                        const begin = Offset(0.0, 1.0);
-                        const end = Offset.zero;
-                        const curve = Curves.easeInOut;
-                        final tween = Tween(begin: begin, end: end)
-                            .chain(CurveTween(curve: curve));
-                        return SlideTransition(
-                          position: animation.drive(tween),
-                          child: child,
-                        );
-                      },
+                          const FruitTabHostScreen(initialTab: 3),
+                      transitionDuration: Duration.zero,
                     ),
+                    (route) => false,
                   );
                 }
               },

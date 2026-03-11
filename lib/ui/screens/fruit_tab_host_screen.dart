@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:shakedown/providers/audio_provider.dart';
 import 'package:shakedown/providers/settings_provider.dart';
 import 'package:shakedown/providers/show_list_provider.dart';
+import 'package:shakedown/providers/theme_provider.dart';
 import 'package:shakedown/ui/screens/playback_screen.dart';
 import 'package:shakedown/ui/screens/settings_screen.dart';
 import 'package:shakedown/ui/screens/show_list_screen.dart';
@@ -13,11 +14,13 @@ import 'package:shakedown/ui/widgets/fruit_tab_bar.dart';
 class FruitTabHostScreen extends StatefulWidget {
   final int initialTab;
   final String? settingsHighlight;
+  final bool triggerRandomOnStart;
 
   const FruitTabHostScreen({
     super.key,
     this.initialTab = 1,
     this.settingsHighlight,
+    this.triggerRandomOnStart = false,
   });
 
   @override
@@ -33,6 +36,7 @@ class _FruitTabHostScreenState extends State<FruitTabHostScreen> {
       GlobalKey<ShowListScreenState>();
   int _selectedTab = 1;
   bool _isHandlingRandomTab = false;
+  bool _didRedirectToAndroid = false;
 
   @override
   void initState() {
@@ -48,6 +52,11 @@ class _FruitTabHostScreenState extends State<FruitTabHostScreen> {
       if (audioProvider.currentShow != null) {
         await _scrollLibraryToCurrentShow();
       }
+    });
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || !widget.triggerRandomOnStart) return;
+      unawaited(_selectTab(2));
     });
   }
 
@@ -69,33 +78,71 @@ class _FruitTabHostScreenState extends State<FruitTabHostScreen> {
     }
   }
 
+  void _scheduleRandomReset(ShowListProvider showListProvider) {
+    final resetMs =
+        context.read<SettingsProvider>().performanceMode ? 600 : 2400;
+    unawaited(Future<void>.delayed(Duration(milliseconds: resetMs), () {
+      if (!mounted) return;
+      if (showListProvider.isChoosingRandomShow) {
+        showListProvider.setIsChoosingRandomShow(false);
+      }
+    }));
+  }
+
+  void _jumpToPlayTabImmediate() {
+    if (!mounted || _selectedTab == 0) return;
+    if (!_pageController.hasClients) return;
+
+    setState(() => _selectedTab = 0);
+    _pageController.jumpToPage(_tabToPage[0]!);
+  }
+
   Future<void> _selectTab(int tabIndex) async {
     if (tabIndex == 2) {
       if (_isHandlingRandomTab) return;
       _isHandlingRandomTab = true;
       final audioProvider = context.read<AudioProvider>();
       final showListProvider = context.read<ShowListProvider>();
+
       try {
+        // 1. INSTANT FEEDBACK: Highlight the tab and start the roll animation immediately
+        setState(() => _selectedTab = 2);
+        showListProvider.setIsChoosingRandomShow(true);
+
+        // 2. SAFETY: If the show list hasn't even loaded yet (first click after boot),
+        // we must wait for it, otherwise playRandomShow() will fail silently.
+        if (showListProvider.allShows.isEmpty && showListProvider.isLoading) {
+          debugPrint('Dice: Waiting for show list initialization...');
+          await showListProvider.initializationComplete;
+        }
+
         if (audioProvider.pendingRandomShowRequest != null) {
           await audioProvider.playPendingSelection();
-          await _selectTab(0);
+          audioProvider.clearPendingRandomShowRequest();
+          await Future<void>.delayed(const Duration(milliseconds: 50));
+          _jumpToPlayTabImmediate();
           return;
         }
 
-        if (showListProvider.isChoosingRandomShow) {
-          return;
+        // 3. TRIGGER SELECTION: Wait for the random show to be picked
+        debugPrint('Dice: Triggering playRandomShow...');
+        final picked = await audioProvider.playRandomShow();
+
+        if (picked == null) {
+          debugPrint(
+              'Dice: No show was picked (list might be empty or filtered).');
         }
 
-        showListProvider.setIsChoosingRandomShow(true);
-        unawaited(audioProvider.playRandomShow());
-        // Safety reset in case downstream listeners are not mounted yet.
-        unawaited(Future<void>.delayed(const Duration(milliseconds: 2400), () {
-          if (!mounted) return;
-          if (showListProvider.isChoosingRandomShow) {
-            showListProvider.setIsChoosingRandomShow(false);
-          }
-        }));
-        await _selectTab(0);
+        // 4. TRANSITION: Jump to Playback even if picked is null (to show error/empty state)
+        if (mounted) {
+          await Future<void>.delayed(const Duration(milliseconds: 100));
+          _jumpToPlayTabImmediate();
+        }
+
+        _scheduleRandomReset(showListProvider);
+      } catch (e) {
+        debugPrint('Dice Error: $e');
+        if (mounted) _jumpToPlayTabImmediate();
       } finally {
         _isHandlingRandomTab = false;
       }
@@ -145,7 +192,43 @@ class _FruitTabHostScreenState extends State<FruitTabHostScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = context.watch<ThemeProvider>();
+    if (themeProvider.themeStyle != ThemeStyle.fruit) {
+      if (!_didRedirectToAndroid) {
+        _didRedirectToAndroid = true;
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!mounted) return;
+          Widget target;
+          if (_selectedTab == 0) {
+            target = const PlaybackScreen(showFruitTabBar: false);
+          } else if (_selectedTab == 3) {
+            target = SettingsScreen(
+              showFruitTabBar: false,
+              highlightSetting: widget.settingsHighlight,
+            );
+          } else {
+            target = const ShowListScreen(showFruitTabBar: false);
+          }
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (_) => target),
+          );
+        });
+      }
+
+      if (_selectedTab == 0) {
+        return const PlaybackScreen(showFruitTabBar: false);
+      }
+      if (_selectedTab == 3) {
+        return SettingsScreen(
+          showFruitTabBar: false,
+          highlightSetting: widget.settingsHighlight,
+        );
+      }
+      return const ShowListScreen(showFruitTabBar: false);
+    }
+
     return Scaffold(
+      extendBody: true,
       body: PageView(
         controller: _pageController,
         physics: const NeverScrollableScrollPhysics(),
@@ -166,6 +249,7 @@ class _FruitTabHostScreenState extends State<FruitTabHostScreen> {
             showFruitTabBar: false,
             onOpenPlaybackRequested: () => _selectTab(0),
             onSettingsRequested: () => _selectTab(3),
+            skipStartupRandom: widget.triggerRandomOnStart,
           ),
           SettingsScreen(
             showFruitTabBar: false,

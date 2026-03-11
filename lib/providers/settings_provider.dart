@@ -11,6 +11,19 @@ import 'package:shakedown/providers/theme_provider.dart';
 import 'package:shakedown/services/gapless_player/gapless_player.dart';
 import 'package:shakedown/utils/web_runtime.dart';
 
+enum DevHudMode {
+  full,
+  mini,
+  micro;
+
+  static DevHudMode fromString(String? value) {
+    return DevHudMode.values.firstWhere(
+      (e) => e.name == value,
+      orElse: () => DevHudMode.full,
+    );
+  }
+}
+
 enum WebEngineProfile {
   modern,
   legacy;
@@ -60,6 +73,7 @@ class SettingsProvider with ChangeNotifier {
       'highlight_playing_with_rgb';
   static const String _showPlaybackMessagesKey = 'show_playback_messages';
   static const String _showDevAudioHudKey = 'show_dev_audio_hud';
+  static const String _devHudModeKey = 'dev_hud_mode';
   static const String _devAudioHudSnapshotKey = 'dev_audio_hud_snapshot';
   static const String _sortOldestFirstKey = 'sort_oldest_first';
   static const String _useStrictSrcCategorizationKey =
@@ -76,6 +90,9 @@ class SettingsProvider with ChangeNotifier {
       'crossfade_duration_seconds';
   static const String _hybridHandoffModeKey = 'hybrid_handoff_mode';
   static const String _hybridBackgroundModeKey = 'hybrid_background_mode';
+  static const String _allowHiddenWebAudioKey = 'allow_hidden_web_audio';
+  static const String _handoffCrossfadeMsKey = 'handoff_crossfade_ms';
+  static const String _hybridForceHtml5StartKey = 'hybrid_force_html5_start';
   static const String _hiddenSessionPresetKey = 'hidden_session_preset';
   static const String _webEngineProfileInitKey = 'web_engine_profile_init_v1';
   static const String _webEngineProfileChoiceKey = 'web_engine_profile_choice';
@@ -128,6 +145,8 @@ class SettingsProvider with ChangeNotifier {
   static const String _oilAudioReactivityStrengthKey =
       'oil_audio_reactivity_strength';
   static const String _oilAudioGraphModeKey = 'oil_audio_graph_mode';
+  static const String _oilEkgRadiusKey = 'oil_ekg_radius';
+  static const String _oilEkgReplicationKey = 'oil_ekg_replication';
   static const String _oilBeatSensitivityKey = 'oil_beat_sensitivity';
   static const String _oilBeatImpactKey = 'oil_beat_impact';
   static const String _oilShowInfoBannerKey = 'oil_show_info_banner';
@@ -203,6 +222,7 @@ class SettingsProvider with ChangeNotifier {
   late bool _highlightPlayingWithRgb;
   late bool _showPlaybackMessages;
   late bool _showDevAudioHud;
+  late DevHudMode _devHudMode;
   String _devAudioHudSnapshot = '';
   late bool _sortOldestFirst;
   late bool _useStrictSrcCategorization;
@@ -231,6 +251,9 @@ class SettingsProvider with ChangeNotifier {
   late double _crossfadeDurationSeconds;
   late HybridHandoffMode _hybridHandoffMode;
   late HybridBackgroundMode _hybridBackgroundMode;
+  late bool _allowHiddenWebAudio;
+  late int _handoffCrossfadeMs;
+  late bool _hybridForceHtml5Start;
   late HiddenSessionPreset _hiddenSessionPreset;
   late WebEngineProfile _webEngineProfile;
 
@@ -299,6 +322,8 @@ class SettingsProvider with ChangeNotifier {
   late int _oilColorSource;
   late double _oilColorMultiplier;
   late bool _oilWoodstockEveryHour;
+  late double _oilEkgRadius;
+  late int _oilEkgReplication;
 
   // Track Layout State
   Color? _seedColor;
@@ -417,6 +442,27 @@ class SettingsProvider with ChangeNotifier {
 
   HybridBackgroundMode get hybridBackgroundMode => _hybridBackgroundMode;
 
+  bool get allowHiddenWebAudio => _allowHiddenWebAudio;
+  void setAllowHiddenWebAudio(bool value) {
+    _allowHiddenWebAudio = value;
+    _prefs.setBool(_allowHiddenWebAudioKey, value);
+    notifyListeners();
+  }
+
+  int get handoffCrossfadeMs => _handoffCrossfadeMs;
+  void setHandoffCrossfadeMs(int ms) {
+    _handoffCrossfadeMs = ms.clamp(0, 200);
+    _prefs.setInt(_handoffCrossfadeMsKey, _handoffCrossfadeMs);
+    notifyListeners();
+  }
+
+  bool get hybridForceHtml5Start => _hybridForceHtml5Start;
+  void setHybridForceHtml5Start(bool value) {
+    _hybridForceHtml5Start = value;
+    _prefs.setBool(_hybridForceHtml5StartKey, value);
+    notifyListeners();
+  }
+
   HiddenSessionPreset get hiddenSessionPreset => _hiddenSessionPreset;
   WebEngineProfile get webEngineProfile => _webEngineProfile;
   void setHybridBackgroundMode(HybridBackgroundMode mode) {
@@ -433,16 +479,22 @@ class SettingsProvider with ChangeNotifier {
         _audioEngineMode = AudioEngineMode.hybrid;
         _hybridHandoffMode = HybridHandoffMode.buffered;
         _hybridBackgroundMode = HybridBackgroundMode.video;
+        _allowHiddenWebAudio = false;
+        _hybridForceHtml5Start = true;
         break;
       case HiddenSessionPreset.balanced:
         _audioEngineMode = AudioEngineMode.hybrid;
         _hybridHandoffMode = HybridHandoffMode.buffered;
         _hybridBackgroundMode = HybridBackgroundMode.heartbeat;
+        _allowHiddenWebAudio = false;
+        _hybridForceHtml5Start = true;
         break;
       case HiddenSessionPreset.maxGapless:
         _audioEngineMode = AudioEngineMode.webAudio;
         _hybridHandoffMode = HybridHandoffMode.immediate;
         _hybridBackgroundMode = HybridBackgroundMode.heartbeat;
+        _allowHiddenWebAudio = true;
+        _hybridForceHtml5Start = false;
         break;
     }
 
@@ -450,6 +502,8 @@ class SettingsProvider with ChangeNotifier {
     _prefs.setString(_audioEngineModeKey, _audioEngineMode.name);
     _prefs.setString(_hybridHandoffModeKey, _hybridHandoffMode.name);
     _prefs.setString(_hybridBackgroundModeKey, _hybridBackgroundMode.name);
+    _prefs.setBool(_allowHiddenWebAudioKey, _allowHiddenWebAudio);
+    _prefs.setBool(_hybridForceHtml5StartKey, _hybridForceHtml5Start);
 
     notifyListeners();
   }
@@ -473,12 +527,16 @@ class SettingsProvider with ChangeNotifier {
         _audioEngineMode = AudioEngineMode.hybrid;
         _hybridHandoffMode = HybridHandoffMode.buffered;
         _hybridBackgroundMode = HybridBackgroundMode.heartbeat;
+        _allowHiddenWebAudio = false;
+        _hybridForceHtml5Start = true;
         break;
       case WebEngineProfile.legacy:
         _hiddenSessionPreset = HiddenSessionPreset.stability;
         _audioEngineMode = AudioEngineMode.html5;
         _hybridHandoffMode = HybridHandoffMode.buffered;
         _hybridBackgroundMode = HybridBackgroundMode.video;
+        _allowHiddenWebAudio = false;
+        _hybridForceHtml5Start = true;
         break;
     }
 
@@ -487,6 +545,8 @@ class SettingsProvider with ChangeNotifier {
     _prefs.setString(_audioEngineModeKey, _audioEngineMode.name);
     _prefs.setString(_hybridHandoffModeKey, _hybridHandoffMode.name);
     _prefs.setString(_hybridBackgroundModeKey, _hybridBackgroundMode.name);
+    _prefs.setBool(_allowHiddenWebAudioKey, _allowHiddenWebAudio);
+    _prefs.setBool(_hybridForceHtml5StartKey, _hybridForceHtml5Start);
   }
 
   // Screensaver getters
@@ -527,6 +587,8 @@ class SettingsProvider with ChangeNotifier {
   double get oilAudioBassBoost => _oilAudioBassBoost;
   double get oilAudioReactivityStrength => _oilAudioReactivityStrength;
   String get oilAudioGraphMode => _oilAudioGraphMode;
+  double get oilEkgRadius => _oilEkgRadius;
+  int get oilEkgReplication => _oilEkgReplication;
   double get oilBeatSensitivity => _oilBeatSensitivity;
   double get oilBeatImpact => _oilBeatImpact;
   bool get oilShowInfoBanner => _oilShowInfoBanner;
@@ -770,6 +832,8 @@ class SettingsProvider with ChangeNotifier {
         DefaultSettings.showPlaybackMessages;
     _showDevAudioHud =
         _prefs.getBool(_showDevAudioHudKey) ?? DefaultSettings.showDevAudioHud;
+    _devHudMode = DevHudMode.fromString(
+        _prefs.getString(_devHudModeKey) ?? DefaultSettings.devHudMode);
     _devAudioHudSnapshot = _prefs.getString(_devAudioHudSnapshotKey) ?? '';
     _sortOldestFirst =
         _prefs.getBool(_sortOldestFirstKey) ?? DefaultSettings.sortOldestFirst;
@@ -799,7 +863,8 @@ class SettingsProvider with ChangeNotifier {
         DefaultSettings.enableSwipeToBlock;
     _omitHttpPathInCopy = _prefs.getBool(_omitHttpPathInCopyKey) ??
         DefaultSettings.omitHttpPathInCopy;
-    _showDebugLayout = _prefs.getBool(_showDebugLayoutKey) ?? false;
+    _showDebugLayout =
+        _prefs.getBool(_showDebugLayoutKey) ?? DefaultSettings.showDebugLayout;
     _enableShakedownTween = _prefs.getBool(_enableShakedownTweenKey) ?? true;
     _useNeumorphism = _prefs.getBool(_useNeumorphismKey) ??
         _dBool(WebDefaults.useNeumorphism, DefaultSettings.useNeumorphism,
@@ -890,6 +955,11 @@ class SettingsProvider with ChangeNotifier {
         _prefs.getString(_hybridBackgroundModeKey) ?? 'html5');
     _hiddenSessionPreset = HiddenSessionPreset.fromString(
         _prefs.getString(_hiddenSessionPresetKey) ?? 'balanced');
+    _allowHiddenWebAudio = _prefs.getBool(_allowHiddenWebAudioKey) ?? false;
+    _handoffCrossfadeMs = _prefs.getInt(_handoffCrossfadeMsKey) ??
+        DefaultSettings.handoffCrossfadeMs;
+    _hybridForceHtml5Start = _prefs.getBool(_hybridForceHtml5StartKey) ??
+        DefaultSettings.hybridForceHtml5Start;
 
     // Screensaver
     _useOilScreensaver = _prefs.getBool(_useOilScreensaverKey) ??
@@ -1026,6 +1096,10 @@ class SettingsProvider with ChangeNotifier {
         DefaultSettings.oilColorMultiplier;
     _oilWoodstockEveryHour = _prefs.getBool(_oilWoodstockEveryHourKey) ??
         DefaultSettings.oilWoodstockEveryHour;
+    _oilEkgRadius =
+        _prefs.getDouble(_oilEkgRadiusKey) ?? DefaultSettings.oilEkgRadius;
+    _oilEkgReplication = _prefs.getInt(_oilEkgReplicationKey) ??
+        DefaultSettings.oilEkgReplication;
 
     // TV screensaver mode override — use TvDefaults as the canonical source.
     if (isTv) _oilScreensaverMode = TvDefaults.oilScreensaverMode;
@@ -1139,6 +1213,17 @@ class SettingsProvider with ChangeNotifier {
       _showPlaybackMessagesKey, _showPlaybackMessages = !_showPlaybackMessages);
   void toggleShowDevAudioHud() => _updatePreference(
       _showDevAudioHudKey, _showDevAudioHud = !_showDevAudioHud);
+
+  DevHudMode get devHudMode => _devHudMode;
+
+  void setDevHudMode(DevHudMode mode) =>
+      _updateStringPreference(_devHudModeKey, (_devHudMode = mode).name);
+
+  void cycleDevHudMode() {
+    final next =
+        DevHudMode.values[(_devHudMode.index + 1) % DevHudMode.values.length];
+    setDevHudMode(next);
+  }
 
   Future<void> saveDevAudioHudSnapshot(String snapshot) async {
     if (_devAudioHudSnapshot == snapshot) return;
@@ -1382,9 +1467,14 @@ class SettingsProvider with ChangeNotifier {
   Future<void> setOilColorMultiplier(double value) => _updateDoublePreference(
       _oilColorMultiplierKey, _oilColorMultiplier = value.clamp(0.0, 2.0));
 
-  void toggleOilWoodstockEveryHour() => _updatePreference(
-      _oilWoodstockEveryHourKey,
-      _oilWoodstockEveryHour = !_oilWoodstockEveryHour);
+  void setOilWoodstockEveryHour(bool value) => _updatePreference(
+      _oilWoodstockEveryHourKey, _oilWoodstockEveryHour = value);
+
+  Future<void> setOilEkgRadius(double value) => _updateDoublePreference(
+      _oilEkgRadiusKey, _oilEkgRadius = value.clamp(0.1, 2.0));
+
+  Future<void> setOilEkgReplication(int value) => _updateIntPreference(
+      _oilEkgReplicationKey, _oilEkgReplication = value.clamp(1, 5));
 
   // Source Filtering
   static const String _filterHighestShnidKey = 'filter_highest_shnid';

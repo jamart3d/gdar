@@ -38,14 +38,19 @@ class FruitTabBar extends StatelessWidget {
     final isDarkMode = theme.brightness == Brightness.dark;
     final isTrueBlackMode = isDarkMode && settingsProvider.useTrueBlack;
     final isFruitColor = themeProvider.themeStyle == ThemeStyle.fruit;
-    final bool isLiquidGlassOff =
-        isFruitColor && !settingsProvider.fruitEnableLiquidGlass;
+    final bool isLiquidGlassEnabled =
+        isFruitColor && settingsProvider.fruitEnableLiquidGlass;
+    final bool isLiquidGlassOff = isFruitColor && !isLiquidGlassEnabled;
 
-    final backgroundColor = isLiquidGlassOff
-        ? (isDarkMode ? colorScheme.surface : theme.scaffoldBackgroundColor)
-        : (isTrueBlackMode
-            ? Colors.black.withValues(alpha: 0.8)
-            : Colors.white.withValues(alpha: 0.4)); // Matches liquid glass
+    final backgroundColor = isTrueBlackMode
+        ? Colors.black.withValues(alpha: 0.85)
+        : isLiquidGlassEnabled
+            ? Colors.transparent
+            : isLiquidGlassOff
+                ? (isDarkMode
+                    ? colorScheme.surface
+                    : theme.scaffoldBackgroundColor)
+                : Colors.white.withValues(alpha: 0.4); // Matches liquid glass
 
     final content = Container(
       padding: EdgeInsets.fromLTRB(
@@ -56,16 +61,6 @@ class FruitTabBar extends StatelessWidget {
       ),
       decoration: BoxDecoration(
         color: backgroundColor,
-        border: isLiquidGlassOff
-            ? null // No "hard line" in high-contrast mode
-            : Border(
-                top: BorderSide(
-                  color: isTrueBlackMode
-                      ? colorScheme.onSurface.withValues(alpha: 0.1)
-                      : Colors.white.withValues(alpha: 0.6), // border-white/60
-                  width: 1.0,
-                ),
-              ),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -99,7 +94,7 @@ class FruitTabBar extends StatelessWidget {
           Expanded(
             child: _FruitTabItem(
               icon: settingsProvider.nonRandom
-                  ? LucideIcons.list
+                  ? LucideIcons.skipForward
                   : LucideIcons.dice5,
               label: settingsProvider.nonRandom ? 'NEXT' : 'RANDOM',
               isActive: selectedIndex == 2,
@@ -137,10 +132,11 @@ class FruitTabBar extends StatelessWidget {
     }
 
     return LiquidGlassWrapper(
-      enabled: settingsProvider.useNeumorphism, // Always blur when appropriate
-      blur: 16.0,
-      opacity: 0.4,
+      enabled: isLiquidGlassEnabled,
+      blur: 18.0,
+      opacity: 0.45,
       borderRadius: BorderRadius.zero,
+      showBorder: false,
       child: content,
     );
   }
@@ -177,7 +173,23 @@ class _FruitTabItemState extends State<_FruitTabItem> {
   bool _isFocused = false;
 
   void _activate() {
+    if (_isPressed) {
+      setState(() => _isPressed = false);
+    }
     widget.onTap();
+  }
+
+  @override
+  void didUpdateWidget(covariant _FruitTabItem oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.isActive && !widget.isActive) {
+      if (_isPressed || _isFocused) {
+        setState(() {
+          _isPressed = false;
+          _isFocused = false;
+        });
+      }
+    }
   }
 
   @override
@@ -188,6 +200,8 @@ class _FruitTabItemState extends State<_FruitTabItem> {
         : colorScheme.onSurfaceVariant.withValues(alpha: 0.6); // text-slate-400
 
     final semanticsLabel = '${widget.label.toLowerCase()} tab';
+    final isSimple = context.watch<SettingsProvider>().performanceMode;
+
     return Semantics(
       button: true,
       selected: widget.isActive,
@@ -212,48 +226,75 @@ class _FruitTabItemState extends State<_FruitTabItem> {
             ),
           },
           child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
             onTapDown: (_) => setState(() => _isPressed = true),
             onTapUp: (_) => setState(() => _isPressed = false),
             onTapCancel: () => setState(() => _isPressed = false),
             onTap: _activate,
-            child: AnimatedOpacity(
-              duration: const Duration(milliseconds: 100),
-              opacity: _isPressed ? 0.6 : (_isFocused ? 0.85 : 1.0),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  if (widget.label == 'RANDOM' && widget.useAnimatedRandomIcon)
-                    AnimatedDiceIcon(
-                      onPressed: widget.onTap,
-                      isLoading: widget.isLoading,
-                      enableHaptics: widget.enableHaptics,
-                      naked: true,
-                      disableSquash: true,
-                      useLucide: true,
-                    )
-                  else
-                    Icon(
-                      widget.icon,
-                      color: color,
-                      size: 24 * widget.scaleFactor, // w-6 h-6
+            child: isSimple
+                ? Opacity(
+                    opacity: _isPressed ? 0.6 : (_isFocused ? 0.85 : 1.0),
+                    child: Transform.scale(
+                      scale: _isPressed ? 0.94 : 1.0,
+                      child: Container(
+                        width: double.infinity,
+                        color: Colors.transparent,
+                        child: _buildTabContent(color),
+                      ),
                     ),
-                  SizedBox(height: 6 * widget.scaleFactor), // gap-1.5
-                  Text(
-                    widget.label.toUpperCase(),
-                    style: TextStyle(
-                      fontFamily: 'Inter',
-                      fontSize: 9 * widget.scaleFactor, // text-[9px]
-                      fontWeight: FontWeight.w700, // font-bold
-                      letterSpacing: 2.0, // tracking-widest
-                      color: color,
+                  )
+                : AnimatedScale(
+                    scale: _isPressed ? 0.94 : 1.0,
+                    duration: const Duration(milliseconds: 100),
+                    curve: Curves.easeOutCubic,
+                    child: AnimatedOpacity(
+                      duration: const Duration(milliseconds: 100),
+                      opacity: _isPressed ? 0.6 : (_isFocused ? 0.85 : 1.0),
+                      child: Container(
+                        width: double.infinity,
+                        color: Colors.transparent,
+                        child: _buildTabContent(color),
+                      ),
                     ),
                   ),
-                ],
-              ),
-            ),
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildTabContent(Color color) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (widget.label == 'RANDOM' && widget.useAnimatedRandomIcon)
+          AnimatedDiceIcon(
+            onPressed: widget.onTap,
+            isLoading: widget.isLoading,
+            enableHaptics: widget.enableHaptics,
+            naked: true,
+            disableSquash: true,
+            useLucide: true,
+            iconColor: color,
+          )
+        else
+          Icon(
+            widget.icon,
+            color: color,
+            size: 24 * widget.scaleFactor, // w-6 h-6
+          ),
+        SizedBox(height: 6 * widget.scaleFactor), // gap-1.5
+        Text(
+          widget.label.toUpperCase(),
+          style: TextStyle(
+            fontFamily: 'Inter',
+            fontSize: 9 * widget.scaleFactor, // text-[9px]
+            fontWeight: FontWeight.w700, // font-bold
+            letterSpacing: 2.0, // tracking-widest
+            color: color,
+          ),
+        ),
+      ],
     );
   }
 }

@@ -261,7 +261,7 @@
                 nextTrackTotal: nextTrackTotal,
                 playlistLength: _playlist.length,
                 processingState: ps,
-                contextState: 'passive',
+                contextState: 'passive (H5)',
             });
         } catch (_) { }
     }

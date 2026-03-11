@@ -70,6 +70,14 @@
         reason = `Mobile/Tablet/PWA environment detected -> HTML5 streaming engine (Fresh Start).`;
     }
 
+    const forceHtml5Start = localStorage.getItem('flutter.hybrid_force_html5_start') === 'true' || 
+                           localStorage.getItem('flutter.hybrid_force_html5_start') === '"true"';
+
+    if (forceHtml5Start && strategy === 'webAudio') {
+        strategy = 'hybrid';
+        reason = 'Force HTML5 Start enabled -> Upgrading Desktop strategy to Hybrid orchestrator.';
+    }
+
     console.log(`[Shakedown] Strategy decision BEFORE fallback: ${strategy}. Reason: ${reason}`);
 
     if (override === 'standard') {
@@ -123,9 +131,11 @@
             try {
                 const bgMode = localStorage.getItem('flutter.hybrid_background_mode') || '"html5"';
                 const handoffMode = localStorage.getItem('flutter.hybrid_handoff_mode') || '"buffered"';
+                const forceHtml5 = localStorage.getItem('flutter.hybrid_force_html5_start') || 'false';
 
                 selectedEngine.setHybridBackgroundMode(bgMode.replace(/"/g, '').toLowerCase());
                 selectedEngine.setHybridHandoffMode(handoffMode.replace(/"/g, '').toLowerCase());
+                selectedEngine.setHybridForceHtml5Start(forceHtml5 === 'true' || forceHtml5 === '"true"');
             } catch (e) {
                 _log.error('[Shakedown] Failed to sync advanced hybrid settings:', e.message);
             }

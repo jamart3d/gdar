@@ -4,7 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
 import 'package:shakedown/providers/audio_provider.dart';
 import 'package:shakedown/providers/settings_provider.dart';
-import 'package:shakedown/ui/screens/playback_screen.dart';
+import 'package:shakedown/providers/show_list_provider.dart';
 import 'package:shakedown/ui/widgets/settings/about_section.dart';
 import 'package:shakedown/ui/widgets/settings/appearance_section.dart';
 import 'package:shakedown/ui/widgets/settings/collection_statistics.dart';
@@ -25,6 +25,8 @@ import 'package:shakedown/ui/widgets/theme/fruit_icon_button.dart';
 import 'package:shakedown/ui/widgets/theme/liquid_glass_wrapper.dart';
 import 'package:shakedown/ui/widgets/theme/neumorphic_wrapper.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:shakedown/ui/screens/fruit_tab_host_screen.dart';
+import 'package:shakedown/ui/screens/show_list_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   final String? highlightSetting;
@@ -128,22 +130,14 @@ class _SettingsScreenState extends State<SettingsScreen>
       localContext.read<AnimationController>().stop();
     } catch (_) {}
 
-    unawaited(Navigator.of(localContext).push(
+    await Navigator.of(localContext).pushAndRemoveUntil(
       PageRouteBuilder(
         pageBuilder: (context, animation, secondaryAnimation) =>
-            const PlaybackScreen(),
-        transitionDuration: const Duration(milliseconds: 300),
-        transitionsBuilder: (context, animation, secondaryAnimation, child) {
-          const begin = Offset(0.0, 1.0);
-          const end = Offset.zero;
-          const curve = Curves.easeInOut;
-          var tween =
-              Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-          return SlideTransition(
-              position: animation.drive(tween), child: child);
-        },
+            const FruitTabHostScreen(initialTab: 0),
+        transitionDuration: Duration.zero,
       ),
-    ));
+      (route) => false,
+    );
 
     // Resume clock
     if (localContext.mounted) {
@@ -152,6 +146,16 @@ class _SettingsScreenState extends State<SettingsScreen>
         unawaited(controller.repeat());
       } catch (_) {}
     }
+  }
+
+  void _handleAndroidBack(BuildContext context) {
+    if (Navigator.of(context).canPop()) {
+      Navigator.of(context).pop();
+      return;
+    }
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(builder: (_) => const ShowListScreen()),
+    );
   }
 
   @override
@@ -204,8 +208,12 @@ class _SettingsScreenState extends State<SettingsScreen>
           child: SizedBox(height: MediaQuery.paddingOf(context).top + 80),
         )
       else
-        const SliverAppBar.large(
-          title: Text('Settings'),
+        SliverAppBar.large(
+          title: const Text('Settings'),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () => _handleAndroidBack(context),
+          ),
         ),
       SliverList(
         delegate: SliverChildListDelegate([
@@ -300,10 +308,44 @@ class _SettingsScreenState extends State<SettingsScreen>
                     if (index == 0) {
                       _openPlaybackScreen();
                     } else if (index == 1) {
-                      (widget.onBackRequested ??
-                          () => Navigator.of(context).pop())();
+                      Navigator.of(context).pushAndRemoveUntil(
+                        PageRouteBuilder(
+                          pageBuilder:
+                              (context, animation, secondaryAnimation) =>
+                                  const FruitTabHostScreen(initialTab: 1),
+                          transitionDuration: Duration.zero,
+                        ),
+                        (route) => false,
+                      );
                     } else if (index == 2) {
-                      context.read<AudioProvider>().playRandomShow();
+                      final showListProvider = context.read<ShowListProvider>();
+                      showListProvider.setIsChoosingRandomShow(true);
+                      final resetMs =
+                          context.read<SettingsProvider>().performanceMode
+                              ? 600
+                              : 2400;
+                      unawaited(Future<void>.delayed(
+                        Duration(milliseconds: resetMs),
+                        () {
+                          if (showListProvider.isChoosingRandomShow) {
+                            showListProvider.setIsChoosingRandomShow(false);
+                          }
+                        },
+                      ));
+                      if (mounted) {
+                        Navigator.of(context).pushAndRemoveUntil(
+                          PageRouteBuilder(
+                            pageBuilder:
+                                (context, animation, secondaryAnimation) =>
+                                    const FruitTabHostScreen(
+                              initialTab: 1,
+                              triggerRandomOnStart: true,
+                            ),
+                            transitionDuration: Duration.zero,
+                          ),
+                          (route) => false,
+                        );
+                      }
                     }
                   },
                 )

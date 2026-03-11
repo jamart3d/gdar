@@ -380,179 +380,161 @@ class _AppearanceSectionState extends State<AppearanceSection> {
               ],
             ),
           ),
-          if (themeProvider.themeStyle == ThemeStyle.fruit) ...[
-            Padding(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Color',
-                    style: Theme.of(context)
-                        .textTheme
-                        .bodyMedium
-                        ?.copyWith(fontSize: 16.0 * widget.scaleFactor),
-                  ),
-                  const SizedBox(height: 8),
-                  LayoutBuilder(
-                    builder: (context, constraints) {
-                      return TvFocusWrapper(
-                        borderRadius: BorderRadius.circular(isFruit ? 28 : 24),
-                        child: SingleChildScrollView(
-                          key: const PageStorageKey('appearance_color_scroll'),
-                          controller: ScrollController(keepScrollOffset: false),
-                          scrollDirection: Axis.horizontal,
-                          child: themeProvider.themeStyle == ThemeStyle.fruit
-                              ? SizedBox(
-                                  width: MediaQuery.of(context).size.width - 32,
-                                  child:
-                                      FruitSegmentedControl<FruitColorOption>(
-                                    values: FruitColorOption.values,
-                                    selectedValue:
-                                        themeProvider.fruitColorOption,
-                                    onSelectionChanged: (option) {
-                                      AppHaptics.lightImpact(
-                                          context.read<DeviceService>());
-                                      themeProvider.setFruitColorOption(option);
-                                    },
-                                    labelBuilder: (option) {
-                                      IconData icon;
-                                      switch (option) {
-                                        case FruitColorOption.sophisticate:
-                                          icon = LucideIcons.moon;
-                                          break;
-                                        case FruitColorOption.minimalist:
-                                          icon = LucideIcons.sun;
-                                          break;
-                                        case FruitColorOption.creative:
-                                          icon = LucideIcons.palette;
-                                          break;
-                                      }
-                                      return Icon(icon, size: 20);
-                                    },
-                                  ),
-                                )
-                              : SegmentedButton<FruitColorOption>(
-                                  segments: const [
-                                    ButtonSegment(
-                                      value: FruitColorOption.sophisticate,
-                                      icon: Icon(LucideIcons.moon),
-                                    ),
-                                    ButtonSegment(
-                                      value: FruitColorOption.minimalist,
-                                      icon: Icon(LucideIcons.sun),
-                                    ),
-                                    ButtonSegment(
-                                      value: FruitColorOption.creative,
-                                      icon: Icon(LucideIcons.palette),
-                                    ),
-                                  ],
-                                  selected: {themeProvider.fruitColorOption},
-                                  onSelectionChanged:
-                                      (Set<FruitColorOption> newSelection) {
-                                    AppHaptics.lightImpact(
-                                        context.read<DeviceService>());
-                                    themeProvider.setFruitColorOption(
-                                        newSelection.first);
-                                  },
-                                  showSelectedIcon: false,
-                                  style: ButtonStyle(
-                                    shape: WidgetStateProperty.all(
-                                      RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(
-                                              isFruit ? 28 : 24)),
-                                    ),
-                                  ),
-                                ),
-                        ),
-                      );
-                    },
-                  ),
-                ],
-              ),
-            ),
-            // Glass, Hover, and Neumorphism are mandatory features of the Fruit theme
-            // and are managed automatically, so they are hidden from settings to reduce clutter.
-            TvSwitchListTile(
-              dense: true,
-              visualDensity: VisualDensity.compact,
-              title: FittedBox(
-                  fit: BoxFit.scaleDown,
-                  alignment: Alignment.centerLeft,
-                  child: Text('Dense Show List',
-                      style: Theme.of(context)
-                          .textTheme
-                          .titleMedium
-                          ?.copyWith(fontSize: 16 * widget.scaleFactor))),
-              subtitle: FittedBox(
-                  fit: BoxFit.scaleDown,
-                  alignment: Alignment.centerLeft,
-                  child: Text('Shows more items on screen with tighter spacing',
-                      style: Theme.of(context)
-                          .textTheme
-                          .bodySmall
-                          ?.copyWith(fontSize: 12 * widget.scaleFactor))),
-              value: settingsProvider.fruitDenseList,
-              onChanged: (value) {
-                AppHaptics.lightImpact(context.read<DeviceService>());
-                context.read<SettingsProvider>().toggleFruitDenseList();
-              },
-              secondary: const Icon(LucideIcons.listFilter),
-            ),
-            (() {
-              final isGated = settingsProvider.performanceMode;
-              const reason = 'Disabled in Simple Theme';
-
-              return TvSwitchListTile(
-                dense: true,
-                visualDensity: VisualDensity.compact,
-                title: FittedBox(
-                    fit: BoxFit.scaleDown,
-                    alignment: Alignment.centerLeft,
-                    child: Text('Enable Liquid Glass',
-                        style: Theme.of(context)
-                            .textTheme
-                            .titleMedium
-                            ?.copyWith(
-                                fontSize: 16 * widget.scaleFactor,
-                                color: isGated
-                                    ? colorScheme.onSurface
-                                        .withValues(alpha: 0.5)
-                                    : null))),
-                subtitle: isGated
-                    ? Text(reason,
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            fontSize: 12 * widget.scaleFactor,
-                            color:
-                                colorScheme.secondary.withValues(alpha: 0.7)))
-                    : FittedBox(
-                        fit: BoxFit.scaleDown,
-                        alignment: Alignment.centerLeft,
-                        child: Text(
-                            'Apply translucent blur over background elements',
-                            style: Theme.of(context)
-                                .textTheme
-                                .bodySmall
-                                ?.copyWith(fontSize: 12 * widget.scaleFactor))),
-                value: !isGated && settingsProvider.fruitEnableLiquidGlass,
-                onChanged: isGated
-                    ? null
-                    : (value) {
-                        AppHaptics.lightImpact(context.read<DeviceService>());
-                        context
-                            .read<SettingsProvider>()
-                            .toggleFruitEnableLiquidGlass();
-                      },
-                secondary: Icon(
-                  LucideIcons.droplet,
-                  color: isGated
-                      ? colorScheme.onSurface.withValues(alpha: 0.3)
-                      : null,
+          AnimatedSwitcher(
+            duration: const Duration(milliseconds: 400),
+            reverseDuration: const Duration(milliseconds: 200),
+            switchInCurve: Curves.easeOutCubic,
+            switchOutCurve: Curves.easeInCubic,
+            transitionBuilder: (Widget child, Animation<double> animation) {
+              return FadeTransition(
+                opacity: animation,
+                child: SizeTransition(
+                  sizeFactor: animation,
+                  axisAlignment: -1.0,
+                  child: child,
                 ),
               );
-            })(),
-          ],
+            },
+            child: themeProvider.themeStyle == ThemeStyle.fruit
+                ? Column(
+                    key: const ValueKey('fruit_options_group'),
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16.0, vertical: 8.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Accent Color',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodyMedium
+                                  ?.copyWith(
+                                      fontSize: 16.0 * widget.scaleFactor),
+                            ),
+                            const SizedBox(height: 8),
+                            FruitSegmentedControl<FruitColorOption>(
+                              values: FruitColorOption.values,
+                              selectedValue: themeProvider.fruitColorOption,
+                              onSelectionChanged: (option) {
+                                AppHaptics.lightImpact(
+                                    context.read<DeviceService>());
+                                themeProvider.setFruitColorOption(option);
+                              },
+                              labelBuilder: (option) {
+                                IconData icon;
+                                switch (option) {
+                                  case FruitColorOption.sophisticate:
+                                    icon = LucideIcons.moon;
+                                    break;
+                                  case FruitColorOption.minimalist:
+                                    icon = LucideIcons.sun;
+                                    break;
+                                  case FruitColorOption.creative:
+                                    icon = LucideIcons.palette;
+                                    break;
+                                }
+                                return Icon(icon, size: 20);
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                      TvSwitchListTile(
+                        dense: true,
+                        visualDensity: VisualDensity.compact,
+                        title: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: Alignment.centerLeft,
+                            child: Text('Dense Show List',
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .titleMedium
+                                    ?.copyWith(
+                                        fontSize: 16 * widget.scaleFactor))),
+                        subtitle: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                                'Shows more items on screen with tighter spacing',
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodySmall
+                                    ?.copyWith(
+                                        fontSize: 12 * widget.scaleFactor))),
+                        value: settingsProvider.fruitDenseList,
+                        onChanged: (value) {
+                          AppHaptics.lightImpact(context.read<DeviceService>());
+                          context
+                              .read<SettingsProvider>()
+                              .toggleFruitDenseList();
+                        },
+                        secondary: const Icon(LucideIcons.listFilter),
+                      ),
+                      (() {
+                        final isGated = settingsProvider.performanceMode;
+                        const reason = 'Disabled in Simple Theme';
+
+                        return TvSwitchListTile(
+                          dense: true,
+                          visualDensity: VisualDensity.compact,
+                          title: FittedBox(
+                              fit: BoxFit.scaleDown,
+                              alignment: Alignment.centerLeft,
+                              child: Text('Enable Liquid Glass',
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .titleMedium
+                                      ?.copyWith(
+                                          fontSize: 16 * widget.scaleFactor,
+                                          color: isGated
+                                              ? colorScheme.onSurface
+                                                  .withValues(alpha: 0.5)
+                                              : null))),
+                          subtitle: isGated
+                              ? Text(reason,
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .bodySmall
+                                      ?.copyWith(
+                                          fontSize: 12 * widget.scaleFactor,
+                                          color: colorScheme.secondary
+                                              .withValues(alpha: 0.7)))
+                              : FittedBox(
+                                  fit: BoxFit.scaleDown,
+                                  alignment: Alignment.centerLeft,
+                                  child: Text(
+                                      'Apply translucent blur over background elements',
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodySmall
+                                          ?.copyWith(
+                                              fontSize:
+                                                  12 * widget.scaleFactor))),
+                          value: !isGated &&
+                              settingsProvider.fruitEnableLiquidGlass,
+                          onChanged: isGated
+                              ? null
+                              : (value) {
+                                  AppHaptics.lightImpact(
+                                      context.read<DeviceService>());
+                                  context
+                                      .read<SettingsProvider>()
+                                      .toggleFruitEnableLiquidGlass();
+                                },
+                          secondary: Icon(
+                            LucideIcons.droplet,
+                            color: isGated
+                                ? colorScheme.onSurface.withValues(alpha: 0.3)
+                                : null,
+                          ),
+                        );
+                      })(),
+                    ],
+                  )
+                : const SizedBox.shrink(),
+          ),
           TvSwitchListTile(
             dense: true,
             visualDensity: VisualDensity.compact,
@@ -1043,42 +1025,32 @@ class _AppearanceSectionState extends State<AppearanceSection> {
               ],
             ),
           ),
-        if (!context.read<DeviceService>().isTv)
-          Opacity(
-            opacity: themeProvider.themeStyle == ThemeStyle.fruit ? 0.5 : 1.0,
-            child: AbsorbPointer(
-              absorbing: themeProvider.themeStyle == ThemeStyle.fruit,
-              child: TvListTile(
-                dense: true,
-                visualDensity: VisualDensity.compact,
-                leading: Icon(themeProvider.themeStyle == ThemeStyle.fruit
-                    ? LucideIcons.type
-                    : Icons.text_format_rounded),
-                title: FittedBox(
-                    fit: BoxFit.scaleDown,
-                    alignment: Alignment.centerLeft,
-                    child: Text('App Font',
-                        style: Theme.of(context)
-                            .textTheme
-                            .titleMedium
-                            ?.copyWith(fontSize: 16 * widget.scaleFactor))),
-                subtitle: FittedBox(
-                    fit: BoxFit.scaleDown,
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                        themeProvider.themeStyle == ThemeStyle.fruit
-                            ? 'Inter (Forced by Fruit Theme)'
-                            : _getFontDisplayName(settingsProvider.appFont),
-                        style: Theme.of(context)
-                            .textTheme
-                            .bodySmall
-                            ?.copyWith(fontSize: 12 * widget.scaleFactor))),
-                onTap: () {
-                  AppHaptics.lightImpact(context.read<DeviceService>());
-                  FontSelectionDialog.show(context);
-                },
-              ),
-            ),
+        if (!context.read<DeviceService>().isTv &&
+            themeProvider.themeStyle != ThemeStyle.fruit)
+          TvListTile(
+            dense: true,
+            visualDensity: VisualDensity.compact,
+            leading: const Icon(Icons.text_format_rounded),
+            title: FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: Text('App Font',
+                    style: Theme.of(context)
+                        .textTheme
+                        .titleMedium
+                        ?.copyWith(fontSize: 16 * widget.scaleFactor))),
+            subtitle: FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: Text(_getFontDisplayName(settingsProvider.appFont),
+                    style: Theme.of(context)
+                        .textTheme
+                        .bodySmall
+                        ?.copyWith(fontSize: 12 * widget.scaleFactor))),
+            onTap: () {
+              AppHaptics.lightImpact(context.read<DeviceService>());
+              FontSelectionDialog.show(context);
+            },
           ),
       ],
     );

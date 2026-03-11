@@ -36,6 +36,8 @@ class _PlaybackMessagesState extends State<PlaybackMessages>
     with WidgetsBindingObserver {
   String? _agentMessage;
   String? _notificationMessage;
+  String? _lastIssueMessage;
+  DateTime? _lastIssueAt;
   String? _engineStateString;
   String? _engineContextState;
   Timer? _notificationTimer;
@@ -65,6 +67,8 @@ class _PlaybackMessagesState extends State<PlaybackMessages>
       if (mounted) {
         setState(() {
           _agentMessage = event.message;
+          _lastIssueMessage = event.message;
+          _lastIssueAt = DateTime.now();
         });
       }
     });
@@ -73,6 +77,8 @@ class _PlaybackMessagesState extends State<PlaybackMessages>
       if (mounted) {
         setState(() {
           _notificationMessage = msg;
+          _lastIssueMessage = msg;
+          _lastIssueAt = DateTime.now();
         });
         _notificationTimer?.cancel();
         _notificationTimer = Timer(const Duration(seconds: 4), () {
@@ -178,6 +184,16 @@ class _PlaybackMessagesState extends State<PlaybackMessages>
         engineContextState: _engineContextState,
         agentMessage: _agentMessage,
         notificationMessage: _notificationMessage,
+        lastIssueMessage: _lastIssueMessage,
+        lastIssueAt: _lastIssueAt,
+        onClearIssue: () {
+          if (mounted) {
+            setState(() {
+              _lastIssueMessage = null;
+              _lastIssueAt = null;
+            });
+          }
+        },
       );
     }
 
@@ -346,6 +362,16 @@ class _PlaybackMessagesState extends State<PlaybackMessages>
             engineContextState: _engineContextState,
             agentMessage: _agentMessage,
             notificationMessage: _notificationMessage,
+            lastIssueMessage: _lastIssueMessage,
+            lastIssueAt: _lastIssueAt,
+            onClearIssue: () {
+              if (mounted) {
+                setState(() {
+                  _lastIssueMessage = null;
+                  _lastIssueAt = null;
+                });
+              }
+            },
           ));
         }
 

@@ -62,6 +62,9 @@
     // Advanced Hybrid Settings
     let _backgroundMode = 'html5'; // html5 | heartbeat | video | none
     let _handoffMode = 'buffered';    // buffered | immediate | none
+    let _allowHiddenWebAudio = false;
+    let _handoffCrossfadeMs = 0;
+    let _forceHtml5Start = false;
 
     // Mode state
     let _activeEngine = _fgEngine; // Default to Web Audio API
@@ -95,6 +98,56 @@
     let _onStateChange = null;
     let _onTrackChange = null;
     let _onError = null;
+
+    function _syncHiddenAllowance() {
+        try {
+            const prefKey = 'flutter.allow_hidden_web_audio';
+            const rawKey = 'allow_hidden_web_audio';
+            const stored = localStorage.getItem(prefKey) || localStorage.getItem(rawKey);
+            const normalized = stored ? stored.replace(/"/g, '').toLowerCase() : '';
+            _allowHiddenWebAudio = normalized == 'true';
+        } catch (_) {
+            _allowHiddenWebAudio = false;
+        }
+    }
+
+    function _setVolumeSafe(engine, volume) {
+        if (engine && typeof engine.setVolume === 'function') {
+            engine.setVolume(volume);
+        }
+    }
+
+    function _startHandoffCrossfade() {
+        const duration = Math.max(0, _handoffCrossfadeMs || 0);
+        if (duration === 0) {
+            _bgEngine.stop();
+            return;
+        }
+
+        const start = performance.now();
+        _setVolumeSafe(_fgEngine, 0);
+        _setVolumeSafe(_bgEngine, 1);
+
+        const tick = () => {
+            const elapsed = performance.now() - start;
+            const t = Math.min(1, elapsed / duration);
+            _setVolumeSafe(_fgEngine, t);
+            _setVolumeSafe(_bgEngine, 1 - t);
+
+            if (t < 1) {
+                if (document.visibilityState === 'hidden') {
+                    setTimeout(tick, 16);
+                } else {
+                    requestAnimationFrame(tick);
+                }
+            } else {
+                _setVolumeSafe(_fgEngine, 1);
+                _bgEngine.stop();
+            }
+        };
+
+        tick();
+    }
 
     // --- Engine Routing -------------------------------------------------------
 
@@ -141,7 +194,13 @@
             }
         }
 
-        state.contextState = 'hybrid_' + (_activeEngine === _bgEngine ? 'background' : 'foreground');
+        let __tech = '??';
+        if (_activeEngine === _fgEngine) { __tech = '(WA)'; }
+        else if (_backgroundMode === 'html5') { __tech = '(H5)'; }
+        else if (_backgroundMode === 'video') { __tech = '(VI)'; }
+        else if (_backgroundMode === 'heartbeat') { __tech = '(HBT)'; }
+        else { __tech = 'OFF'; }
+        state.contextState = 'hybrid ' + __tech;
         _onStateChange(state);
     }
 
@@ -212,10 +271,11 @@
     // Handle visibility changes based on selected backgroundMode
     document.addEventListener('visibilitychange', () => {
         if (document.visibilityState === 'hidden') {
+            _syncHiddenAllowance();
             _log.log(`[hybrid] Tab hidden. backgroundMode: ${_backgroundMode}`);
             _applyHiddenSurvivalStrategy();
 
-            if (_activeEngine === _fgEngine && _playing) {
+            if (_activeEngine === _fgEngine && _playing && !_allowHiddenWebAudio) {
                 _log.log('[hybrid] Background Handoff: Tab hidden while playing in foreground. Pre-emptively swapping to HTML5.');
                 _instantHandoffPending = true;
                 _attemptHandoff(_currentIndex, true);
@@ -280,7 +340,11 @@
                 const swapStart = performance.now();
                 _activeEngine = _fgEngine;
                 _log.log('[hybrid] ACTIVE ENGINE SWAPPED: Now using Web Audio (Foreground)');
-                _bgEngine.stop();
+                if (_handoffCrossfadeMs > 0) {
+                    _startHandoffCrossfade();
+                } else {
+                    _bgEngine.stop();
+                }
                 _handoffInProgress = false;
 
                 const swapTime = performance.now() - swapStart;
@@ -444,9 +508,10 @@
             }
 
             const pure = _isPureWebAudio();
+            const forceHtml5 = _forceHtml5Start === true;
             // BACKGROUND OPTIMIZATION: We now allow Instant-Start (HTML5) even when hidden,
             // because HTML5 is more robust for background initiates than Web Audio.
-            if (!pure) {
+            if (!pure || forceHtml5) {
                 _log.log('[hybrid] syncState: Choosing HTML5 (Background) for Instant Start');
                 _activeEngine = _bgEngine;
                 _instantHandoffPending = shouldPlay;
@@ -482,7 +547,8 @@
             // Optimization: We now allow "Instant-Start" using the HTML5 engine even when hidden
             // rather than forcing the user to wait for _fgEngine (WebAudio) to download and decode.
             const pure = _isPureWebAudio();
-            if (!pure) {
+            const forceHtml5 = _forceHtml5Start === true;
+            if (!pure || forceHtml5) {
                 _log.log('[hybrid] setPlaylist: Choosing HTML5 (Background) for Instant Start');
                 _instantHandoffPending = true;
                 _instantHandoffIndex = _currentIndex;
@@ -612,6 +678,7 @@
             const mapped = normalized === 'relisten' ? 'html5' : normalized;
             if (['html5', 'heartbeat', 'video', 'none'].includes(mapped)) {
                 _backgroundMode = mapped;
+                _syncHiddenAllowance();
                 _log.log('[hybrid engine] Background Mode set to:', mapped);
 
                 if (document.visibilityState === 'hidden') {
@@ -623,9 +690,26 @@
         setHybridHandoffMode: function (mode) {
             if (['buffered', 'immediate', 'none'].includes(mode)) {
                 _handoffMode = mode;
+                _syncHiddenAllowance();
                 _log.log('[hybrid engine] Handoff Mode set to:', mode);
                 // If set to none, disable the buffer-exhaustion worker checks
             }
+        },
+
+        setHybridAllowHiddenWebAudio: function (enabled) {
+            _allowHiddenWebAudio = !!enabled;
+            _log.log('[hybrid engine] Allow hidden Web Audio:', _allowHiddenWebAudio);
+        },
+
+        setHandoffCrossfadeMs: function (ms) {
+            const next = Math.max(0, Math.min(200, Number(ms) || 0));
+            _handoffCrossfadeMs = next;
+            _log.log('[hybrid engine] Handoff crossfade ms:', next);
+        },
+
+        setHybridForceHtml5Start: function (enabled) {
+            _forceHtml5Start = !!enabled;
+            _log.log('[hybrid engine] Force HTML5 start:', _forceHtml5Start);
         },
 
         engineType: 'hybrid_orchestrator',
@@ -633,7 +717,13 @@
         getState: function () {
             const state = _activeEngine.getState();
             state.playing = _playing;
-            state.contextState = 'hybrid_' + (_activeEngine === _bgEngine ? 'background' : 'foreground');
+            let __tech = '??';
+        if (_activeEngine === _fgEngine) { __tech = '(WA)'; }
+        else if (_backgroundMode === 'html5') { __tech = '(H5)'; }
+        else if (_backgroundMode === 'video') { __tech = '(VI)'; }
+        else if (_backgroundMode === 'heartbeat') { __tech = '(HBT)'; }
+        else { __tech = 'OFF'; }
+        state.contextState = 'hybrid_' + __tech;
             return state;
         },
 

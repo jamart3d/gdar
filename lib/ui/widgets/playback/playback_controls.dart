@@ -95,31 +95,38 @@ class _PlaybackControlsState extends State<PlaybackControls> {
                     onTapDown: (_) => setState(() => _isPrevPressed = true),
                     onTapUp: (_) => setState(() => _isPrevPressed = false),
                     onTapCancel: () => setState(() => _isPrevPressed = false),
-                    child: NeumorphicWrapper(
-                      enabled: isFruitNeumorphic,
-                      borderRadius: 12,
-                      intensity: 1.1, // Softer skip buttons
-                      offset: const Offset(4, 4),
-                      blur: 18,
-                      isPressed: _isPrevPressed,
-                      child: LiquidGlassWrapper(
-                        enabled: isFruit,
-                        borderRadius: BorderRadius.circular(12),
-                        opacity: 0.05,
-                        blur: 5.0,
-                        child: FruitIconButton(
-                          icon: const Icon(LucideIcons.skipBack),
-                          size: iconSize,
-                          color: colorScheme.onSurface,
-                          padding: 0,
-                          onPressed: isFirstTrack
-                              ? null
-                              : () {
-                                  AppHaptics.selectionClick(
-                                      context.read<DeviceService>());
-                                  audioProvider.seekToPrevious();
-                                },
-                          tooltip: 'Skip Previous',
+                    child: Container(
+                      decoration: settingsProvider.showDebugLayout
+                          ? BoxDecoration(
+                              border: Border.all(color: Colors.cyan, width: 1),
+                            )
+                          : null,
+                      child: NeumorphicWrapper(
+                        enabled: isFruitNeumorphic,
+                        borderRadius: 12,
+                        intensity: 1.1, // Softer skip buttons
+                        offset: const Offset(4, 4),
+                        blur: 18,
+                        isPressed: _isPrevPressed,
+                        child: LiquidGlassWrapper(
+                          enabled: isFruit,
+                          borderRadius: BorderRadius.circular(12),
+                          opacity: 0.05,
+                          blur: 5.0,
+                          child: FruitIconButton(
+                            icon: const Icon(LucideIcons.skipBack),
+                            size: iconSize,
+                            color: colorScheme.onSurface,
+                            padding: 0,
+                            onPressed: isFirstTrack
+                                ? null
+                                : () {
+                                    AppHaptics.selectionClick(
+                                        context.read<DeviceService>());
+                                    audioProvider.seekToPrevious();
+                                  },
+                            tooltip: 'Skip Previous',
+                          ),
                         ),
                       ),
                     ),
@@ -137,82 +144,91 @@ class _PlaybackControlsState extends State<PlaybackControls> {
                     onTapDown: (_) => setState(() => _isPlayPressed = true),
                     onTapUp: (_) => setState(() => _isPlayPressed = false),
                     onTapCancel: () => setState(() => _isPlayPressed = false),
-                    child: NeumorphicWrapper(
-                      enabled: isFruitNeumorphic,
-                      isCircle: true,
-                      isPressed: _isPlayPressed,
-                      intensity: 1.5, // Stronger pop for main play
-                      blur: 24,
-                      child: AnimatedGradientBorder(
-                        enabled:
-                            settingsProvider.highlightPlayingWithRgb && isFruit,
-                        borderRadius: playButtonSize / 2,
-                        borderWidth: 3.5,
-                        ignoreGlobalClock: true,
-                        showGlow: true,
-                        glowOpacity: 0.5 * (settingsProvider.glowMode / 100.0),
-                        animationSpeed: settingsProvider.rgbAnimationSpeed,
-                        colors: const [
-                          Colors.red,
-                          Colors.yellow,
-                          Colors.green,
-                          Colors.cyan,
-                          Colors.blue,
-                          Colors.purple,
-                          Colors.red,
-                        ],
-                        child: LiquidGlassWrapper(
-                          enabled: isFruit,
-                          borderRadius:
-                              BorderRadius.circular(playButtonSize / 2),
-                          opacity: 0.08,
-                          blur: 8.0,
-                          child: Container(
-                            width: playButtonSize,
-                            height: playButtonSize,
-                            decoration: BoxDecoration(
-                              // Let NeumorphicWrapper handle the color/gradient
-                              color: isFruitNeumorphic
-                                  ? Colors.transparent
-                                  : colorScheme.primary,
-                              shape: BoxShape.circle,
+                    child: Container(
+                      decoration: settingsProvider.showDebugLayout
+                          ? BoxDecoration(
+                              border: Border.all(color: Colors.pink, width: 1),
+                            )
+                          : null,
+                      child: NeumorphicWrapper(
+                        enabled: isFruitNeumorphic,
+                        isCircle: true,
+                        isPressed: _isPlayPressed,
+                        intensity: 1.5, // Stronger pop for main play
+                        blur: 24,
+                        child: AnimatedGradientBorder(
+                          enabled: settingsProvider.highlightPlayingWithRgb &&
+                              isFruit,
+                          borderRadius: playButtonSize / 2,
+                          borderWidth: 3.5,
+                          ignoreGlobalClock: true,
+                          showGlow: true,
+                          glowOpacity:
+                              0.5 * (settingsProvider.glowMode / 100.0),
+                          animationSpeed: settingsProvider.rgbAnimationSpeed,
+                          colors: const [
+                            Colors.red,
+                            Colors.yellow,
+                            Colors.green,
+                            Colors.cyan,
+                            Colors.blue,
+                            Colors.purple,
+                            Colors.red,
+                          ],
+                          child: LiquidGlassWrapper(
+                            enabled: isFruit,
+                            borderRadius:
+                                BorderRadius.circular(playButtonSize / 2),
+                            opacity: 0.08,
+                            blur: 8.0,
+                            child: Container(
+                              width: playButtonSize,
+                              height: playButtonSize,
+                              decoration: BoxDecoration(
+                                // Let NeumorphicWrapper handle the color/gradient
+                                color: isFruitNeumorphic
+                                    ? Colors.transparent
+                                    : colorScheme.primary,
+                                shape: BoxShape.circle,
+                              ),
+                              child: (processingState ==
+                                          ProcessingState.loading ||
+                                      processingState ==
+                                          ProcessingState.buffering)
+                                  ? Padding(
+                                      padding: const EdgeInsets.all(18.0),
+                                      child: FruitActivityIndicator(
+                                        radius:
+                                            17.0, // Radius for 34px diameter
+                                        color: isFruitNeumorphic
+                                            ? colorScheme.primary
+                                            : colorScheme.onPrimary,
+                                      ),
+                                    )
+                                  : FruitIconButton(
+                                      key: const ValueKey('play_pause_button'),
+                                      size: playIconSize,
+                                      onPressed: () {
+                                        AppHaptics.selectionClick(
+                                            context.read<DeviceService>());
+                                        if (playing) {
+                                          audioProvider.pause();
+                                        } else {
+                                          audioProvider.play();
+                                        }
+                                      },
+                                      icon: Icon(
+                                        playing
+                                            ? LucideIcons.pause
+                                            : LucideIcons.play,
+                                        color: isFruitNeumorphic
+                                            ? colorScheme.primary
+                                            : colorScheme.onPrimary,
+                                      ),
+                                      padding: 0,
+                                      tooltip: playing ? 'Pause' : 'Play',
+                                    ),
                             ),
-                            child: (processingState ==
-                                        ProcessingState.loading ||
-                                    processingState ==
-                                        ProcessingState.buffering)
-                                ? Padding(
-                                    padding: const EdgeInsets.all(18.0),
-                                    child: FruitActivityIndicator(
-                                      radius: 17.0, // Radius for 34px diameter
-                                      color: isFruitNeumorphic
-                                          ? colorScheme.primary
-                                          : colorScheme.onPrimary,
-                                    ),
-                                  )
-                                : FruitIconButton(
-                                    key: const ValueKey('play_pause_button'),
-                                    size: playIconSize,
-                                    onPressed: () {
-                                      AppHaptics.selectionClick(
-                                          context.read<DeviceService>());
-                                      if (playing) {
-                                        audioProvider.pause();
-                                      } else {
-                                        audioProvider.play();
-                                      }
-                                    },
-                                    icon: Icon(
-                                      playing
-                                          ? LucideIcons.pause
-                                          : LucideIcons.play,
-                                      color: isFruitNeumorphic
-                                          ? colorScheme.primary
-                                          : colorScheme.onPrimary,
-                                    ),
-                                    padding: 0,
-                                    tooltip: playing ? 'Pause' : 'Play',
-                                  ),
                           ),
                         ),
                       ),
@@ -227,31 +243,38 @@ class _PlaybackControlsState extends State<PlaybackControls> {
                     onTapDown: (_) => setState(() => _isNextPressed = true),
                     onTapUp: (_) => setState(() => _isNextPressed = false),
                     onTapCancel: () => setState(() => _isNextPressed = false),
-                    child: NeumorphicWrapper(
-                      enabled: isFruitNeumorphic,
-                      borderRadius: 12,
-                      intensity: 1.1, // Softer skip buttons
-                      offset: const Offset(4, 4),
-                      blur: 18,
-                      isPressed: _isNextPressed,
-                      child: LiquidGlassWrapper(
-                        enabled: isFruit,
-                        borderRadius: BorderRadius.circular(12),
-                        opacity: 0.05,
-                        blur: 5.0,
-                        child: FruitIconButton(
-                          icon: const Icon(LucideIcons.skipForward),
-                          size: iconSize,
-                          color: colorScheme.onSurface,
-                          padding: 0,
-                          onPressed: isLastTrack
-                              ? null
-                              : () {
-                                  AppHaptics.selectionClick(
-                                      context.read<DeviceService>());
-                                  audioProvider.seekToNext();
-                                },
-                          tooltip: 'Skip Next',
+                    child: Container(
+                      decoration: settingsProvider.showDebugLayout
+                          ? BoxDecoration(
+                              border: Border.all(color: Colors.cyan, width: 1),
+                            )
+                          : null,
+                      child: NeumorphicWrapper(
+                        enabled: isFruitNeumorphic,
+                        borderRadius: 12,
+                        intensity: 1.1, // Softer skip buttons
+                        offset: const Offset(4, 4),
+                        blur: 18,
+                        isPressed: _isNextPressed,
+                        child: LiquidGlassWrapper(
+                          enabled: isFruit,
+                          borderRadius: BorderRadius.circular(12),
+                          opacity: 0.05,
+                          blur: 5.0,
+                          child: FruitIconButton(
+                            icon: const Icon(LucideIcons.skipForward),
+                            size: iconSize,
+                            color: colorScheme.onSurface,
+                            padding: 0,
+                            onPressed: isLastTrack
+                                ? null
+                                : () {
+                                    AppHaptics.selectionClick(
+                                        context.read<DeviceService>());
+                                    audioProvider.seekToNext();
+                                  },
+                            tooltip: 'Skip Next',
+                          ),
                         ),
                       ),
                     ),

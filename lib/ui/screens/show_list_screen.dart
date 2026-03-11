@@ -31,6 +31,7 @@ class ShowListScreen extends StatefulWidget {
   final bool showFruitTabBar;
   final VoidCallback? onOpenPlaybackRequested;
   final VoidCallback? onSettingsRequested;
+  final bool skipStartupRandom;
 
   const ShowListScreen({
     super.key,
@@ -41,6 +42,7 @@ class ShowListScreen extends StatefulWidget {
     this.showFruitTabBar = true,
     this.onOpenPlaybackRequested,
     this.onSettingsRequested,
+    this.skipStartupRandom = false,
   });
 
   @override
@@ -217,7 +219,7 @@ class ShowListScreenState extends State<ShowListScreen>
     });
 
     final settingsProvider = context.read<SettingsProvider>();
-    if (settingsProvider.playRandomOnStartup) {
+    if (settingsProvider.playRandomOnStartup && !widget.skipStartupRandom) {
       _handleStartupRandomPlay(_showListProvider, _audioProvider);
     }
 

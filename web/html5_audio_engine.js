@@ -537,7 +537,7 @@
             nextTrackTotal: 0,
             playlistLength: (_queue && _queue.tracks) ? _queue.tracks.length : 0,
             processingState: 'idle',
-            contextState: 'html5'
+            contextState: 'html5 (H5)'
         };
 
         const currentTime = track.currentTime || 0;
@@ -564,7 +564,7 @@
             nextTrackTotal: nextTrack && isFinite(nextTrack.duration) ? nextTrack.duration : 0,
             playlistLength: (_queue && _queue.tracks) ? _queue.tracks.length : 0,
             processingState: 'ready',
-            contextState: 'html5'
+            contextState: 'html5 (H5)'
         };
     }
 

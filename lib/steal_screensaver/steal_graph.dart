@@ -7,14 +7,16 @@ import 'package:shakedown/utils/web_runtime.dart';
 import 'package:shakedown/visualizer/audio_reactor.dart';
 import 'package:shakedown/steal_screensaver/steal_game.dart';
 
-/// Audio reactivity graph with two display modes:
+/// Audio reactivity graph with multiple display modes:
 /// - corner: 8-bar EQ + Beat indicator, anchored bottom-left.
 /// - circular: 8-band radial EQ centered on the logo.
+/// - ekg: 150-sample horizontal guitar-tuned EKG line across bottom.
+/// - circular_ekg: 150-sample circular guitar-tuned EKG orbiting logo.
 class StealGraph extends Component with HasGameReference<StealGame> {
   AudioEnergy energy = const AudioEnergy.zero();
   bool isVisible = false;
 
-  /// Display mode: 'corner', 'circular', or 'off'.
+  /// Display mode: 'corner', 'circular', 'ekg', 'circular_ekg', or 'off'.
   String graphMode = 'off';
 
   /// Number of FFT bands rendered.
@@ -47,6 +49,12 @@ class StealGraph extends Component with HasGameReference<StealGame> {
   static const double _circBarWidth = 6.0;
   static const double _circMaxBarHeight = 40.0;
 
+  // EKG layout.
+  static const int _ekgSampleCount = 150;
+  static const double _ekgMaxHeight = 45.0;
+  static const double _ekgRiseSmoothing = 18.0;
+  static const double _ekgFallSmoothing = 8.0;
+
   // Smoothing and visual timing.
   static const double _riseSmoothing = 15.0;
   static const double _fallSmoothing = 5.0;
@@ -64,6 +72,10 @@ class StealGraph extends Component with HasGameReference<StealGame> {
 
   // Peak-hold values for circular bars.
   final List<double> _circularPeakHeights = List.filled(_bandCount, 0.0);
+
+  // EKG history buffer (0.0 - 1.0)
+  final List<double> _ekgHistory = List.filled(_ekgSampleCount, 0.0);
+  double _lastEkgVal = 0.0;
 
   // Short-lived beat flash factor for HUD accent.
   double _beatFlash = 0.0;
@@ -135,6 +147,33 @@ class StealGraph extends Component with HasGameReference<StealGame> {
         dt,
       );
     }
+
+    // Always update EKG buffer if visible and in an EKG mode
+    if (graphMode == 'ekg' || graphMode == 'circular_ekg') {
+      _updateEkgHistory(dt);
+    }
+  }
+
+  /// Extracts "guitar" energy from mids (bands 2, 3, 4) and updates the rolling history.
+  void _updateEkgHistory(double dt) {
+    final bands = energy.bands;
+    if (bands.length < 5) return;
+
+    // Isolate guitar range: LowMid + Mid + UpperMid
+    final target = (bands[2] + bands[3] + bands[4]) / 3.0;
+
+    // Smoothed rise/fall
+    if (target > _lastEkgVal) {
+      _lastEkgVal += (target - _lastEkgVal) * _ekgRiseSmoothing * dt;
+    } else {
+      _lastEkgVal += (target - _lastEkgVal) * _ekgFallSmoothing * dt;
+    }
+
+    // Shift history left
+    for (int i = 0; i < _ekgSampleCount - 1; i++) {
+      _ekgHistory[i] = _ekgHistory[i + 1];
+    }
+    _ekgHistory[_ekgSampleCount - 1] = _lastEkgVal.clamp(0.0, 1.0);
   }
 
   /// Smooth the 8-band FFT data + Beat for corner graph rendering.
@@ -201,10 +240,134 @@ class StealGraph extends Component with HasGameReference<StealGame> {
   void render(Canvas canvas) {
     if (!isVisible) return;
 
-    if (graphMode == 'corner') {
-      _renderCorner(canvas);
-    } else if (graphMode == 'circular') {
-      _renderCircular(canvas);
+    switch (graphMode) {
+      case 'corner':
+        _renderCorner(canvas);
+      case 'circular':
+        _renderCircular(canvas);
+      case 'ekg':
+        _renderEKG(canvas);
+      case 'circular_ekg':
+        _renderCircularEKG(canvas);
+    }
+  }
+
+  /// Render 150-sample horizontal EKG line across the bottom.
+  void _renderEKG(Canvas canvas) {
+    final drift = _burnInDrift();
+    final w = game.size.x;
+    final h = game.size.y;
+    final centerY = h - _bottomPadding + drift.dy - (_ekgMaxHeight / 2);
+    final startX = _leftPadding + drift.dx;
+    final availableWidth = w - (_leftPadding * 2);
+
+    final color = _bandColors[0]; // Phosphor Green/Blue
+    final replication = game.config.ekgReplication.clamp(1, 5);
+
+    for (int r = replication - 1; r >= 0; r--) {
+      final opacity = 1.0 / (r + 1);
+      final verticalOffset = r * 4.0; // Offset each line slightly
+      final beatThick = energy.isBeat ? 0.8 : 0.0;
+
+      final points = <Offset>[];
+      for (int i = 0; i < _ekgSampleCount; i++) {
+        final x = startX + (i / (_ekgSampleCount - 1)) * availableWidth;
+        final y =
+            centerY - (_ekgHistory[i] * _ekgMaxHeight) + (verticalOffset * 0.5);
+        points.add(Offset(x, y));
+      }
+
+      if (r == 0 && _glowSigma > 0.0) {
+        final glowPaint = Paint()
+          ..color =
+              color.withValues(alpha: (0.15 + (_beatFlash * 0.1)) * opacity)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 3.5 + beatThick
+          ..strokeCap = StrokeCap.round
+          ..maskFilter = isWasmSafeMode()
+              ? null
+              : MaskFilter.blur(BlurStyle.normal, _glowSigma);
+        canvas.drawPoints(PointMode.polygon, points, glowPaint);
+      }
+
+      final corePaint = Paint()
+        ..color =
+            color.withValues(alpha: (0.85 + (_beatFlash * 0.15)) * opacity)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2.0 + (r == 0 ? beatThick : 0.0)
+        ..strokeCap = StrokeCap.round;
+      canvas.drawPoints(PointMode.polygon, points, corePaint);
+    }
+
+    // Label
+    canvas.save();
+    canvas.translate(startX, centerY + (_ekgMaxHeight / 2) + 12.0);
+    _textPainter.text = TextSpan(
+      text: 'EKG GUITAR (MID 250-2000Hz)',
+      style: TextStyle(
+        color: color.withValues(alpha: 0.45),
+        fontSize: 8,
+        fontWeight: FontWeight.w600,
+        letterSpacing: 1.1,
+        fontFamily: 'RobotoMono',
+      ),
+    );
+    _textPainter.layout();
+    _textPainter.paint(canvas, Offset.zero);
+    canvas.restore();
+  }
+
+  /// Render 150-sample circular EKG line orbiting the logo.
+  void _renderCircularEKG(Canvas canvas) {
+    final logoUV = game.smoothedLogoPos;
+    final drift = _burnInDrift();
+    final cx = logoUV.dx * game.size.x + (drift.dx * 0.4);
+    final cy = logoUV.dy * game.size.y + (drift.dy * 0.4);
+
+    final minDim = min(game.size.x, game.size.y);
+    final baseRadius =
+        (game.config.logoScale * minDim * 0.52 * game.config.ekgRadius)
+            .clamp(20.0, 600.0);
+
+    final color = _bandColors[2]; // More greenish for circular EKG
+    final replication = game.config.ekgReplication.clamp(1, 5);
+
+    for (int r = replication - 1; r >= 0; r--) {
+      final opacity = 1.0 / (r + 1);
+      final radiusOffset = r * 5.0;
+      final beatThick = energy.isBeat ? 1.0 : 0.0;
+
+      final points = <Offset>[];
+      for (int i = 0; i < _ekgSampleCount; i++) {
+        // Rotate history so newest is at the "top" or leading the circle
+        final angle = (i / _ekgSampleCount) * 2 * pi - (pi / 2);
+        final rad =
+            baseRadius + radiusOffset + (_ekgHistory[i] * _ekgMaxHeight * 0.8);
+        points.add(Offset(cx + rad * cos(angle), cy + rad * sin(angle)));
+      }
+      // Close the circle loop for PointMode.polygon
+      points.add(points.first);
+
+      if (r == 0 && _glowSigma > 0.0) {
+        final glowPaint = Paint()
+          ..color =
+              color.withValues(alpha: (0.15 + (_beatFlash * 0.1)) * opacity)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 3.5 + beatThick
+          ..strokeCap = StrokeCap.round
+          ..maskFilter = isWasmSafeMode()
+              ? null
+              : MaskFilter.blur(BlurStyle.normal, _glowSigma);
+        canvas.drawPoints(PointMode.polygon, points, glowPaint);
+      }
+
+      final corePaint = Paint()
+        ..color =
+            color.withValues(alpha: (0.85 + (_beatFlash * 0.15)) * opacity)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2.0 + (r == 0 ? beatThick : 0.0)
+        ..strokeCap = StrokeCap.round;
+      canvas.drawPoints(PointMode.polygon, points, corePaint);
     }
   }
 

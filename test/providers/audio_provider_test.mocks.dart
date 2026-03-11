@@ -347,6 +347,33 @@ class MockAudioPlayerRelaxed extends _i1.Mock implements _i4.GaplessPlayer {
       );
 
   @override
+  void setHybridAllowHiddenWebAudio(bool? enabled) => super.noSuchMethod(
+        Invocation.method(
+          #setHybridAllowHiddenWebAudio,
+          [enabled],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void setHandoffCrossfadeMs(int? ms) => super.noSuchMethod(
+        Invocation.method(
+          #setHandoffCrossfadeMs,
+          [ms],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void setHybridForceHtml5Start(bool? enabled) => super.noSuchMethod(
+        Invocation.method(
+          #setHybridForceHtml5Start,
+          [enabled],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
   void setTrackTransitionMode(String? mode) => super.noSuchMethod(
         Invocation.method(
           #setTrackTransitionMode,
@@ -1220,6 +1247,27 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
       ) as _i4.HybridBackgroundMode);
 
   @override
+  bool get allowHiddenWebAudio => (super.noSuchMethod(
+        Invocation.getter(#allowHiddenWebAudio),
+        returnValue: false,
+        returnValueForMissingStub: false,
+      ) as bool);
+
+  @override
+  int get handoffCrossfadeMs => (super.noSuchMethod(
+        Invocation.getter(#handoffCrossfadeMs),
+        returnValue: 0,
+        returnValueForMissingStub: 0,
+      ) as int);
+
+  @override
+  bool get hybridForceHtml5Start => (super.noSuchMethod(
+        Invocation.getter(#hybridForceHtml5Start),
+        returnValue: false,
+        returnValueForMissingStub: false,
+      ) as bool);
+
+  @override
   _i4.HiddenSessionPreset get hiddenSessionPreset => (super.noSuchMethod(
         Invocation.getter(#hiddenSessionPreset),
         returnValue: _i4.HiddenSessionPreset.stability,
@@ -1501,6 +1549,20 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
       ) as String);
 
   @override
+  double get oilEkgRadius => (super.noSuchMethod(
+        Invocation.getter(#oilEkgRadius),
+        returnValue: 0.0,
+        returnValueForMissingStub: 0.0,
+      ) as double);
+
+  @override
+  int get oilEkgReplication => (super.noSuchMethod(
+        Invocation.getter(#oilEkgReplication),
+        returnValue: 0,
+        returnValueForMissingStub: 0,
+      ) as int);
+
+  @override
   double get oilBeatSensitivity => (super.noSuchMethod(
         Invocation.getter(#oilBeatSensitivity),
         returnValue: 0.0,
@@ -1718,6 +1780,13 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
       ) as bool);
 
   @override
+  _i10.DevHudMode get devHudMode => (super.noSuchMethod(
+        Invocation.getter(#devHudMode),
+        returnValue: _i10.DevHudMode.full,
+        returnValueForMissingStub: _i10.DevHudMode.full,
+      ) as _i10.DevHudMode);
+
+  @override
   double get rgbAnimationSpeed => (super.noSuchMethod(
         Invocation.getter(#rgbAnimationSpeed),
         returnValue: 0.0,
@@ -1841,6 +1910,33 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
         Invocation.method(
           #setHybridHandoffMode,
           [mode],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void setAllowHiddenWebAudio(bool? value) => super.noSuchMethod(
+        Invocation.method(
+          #setAllowHiddenWebAudio,
+          [value],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void setHandoffCrossfadeMs(int? ms) => super.noSuchMethod(
+        Invocation.method(
+          #setHandoffCrossfadeMs,
+          [ms],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void setHybridForceHtml5Start(bool? value) => super.noSuchMethod(
+        Invocation.method(
+          #setHybridForceHtml5Start,
+          [value],
         ),
         returnValueForMissingStub: null,
       );
@@ -2086,6 +2182,24 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
   void toggleShowDevAudioHud() => super.noSuchMethod(
         Invocation.method(
           #toggleShowDevAudioHud,
+          [],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void setDevHudMode(_i10.DevHudMode? mode) => super.noSuchMethod(
+        Invocation.method(
+          #setDevHudMode,
+          [mode],
+        ),
+        returnValueForMissingStub: null,
+      );
+
+  @override
+  void cycleDevHudMode() => super.noSuchMethod(
+        Invocation.method(
+          #cycleDevHudMode,
           [],
         ),
         returnValueForMissingStub: null,
@@ -2829,13 +2943,33 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
       ) as _i6.Future<void>);
 
   @override
-  void toggleOilWoodstockEveryHour() => super.noSuchMethod(
+  void setOilWoodstockEveryHour(bool? value) => super.noSuchMethod(
         Invocation.method(
-          #toggleOilWoodstockEveryHour,
-          [],
+          #setOilWoodstockEveryHour,
+          [value],
         ),
         returnValueForMissingStub: null,
       );
+
+  @override
+  _i6.Future<void> setOilEkgRadius(double? value) => (super.noSuchMethod(
+        Invocation.method(
+          #setOilEkgRadius,
+          [value],
+        ),
+        returnValue: _i6.Future<void>.value(),
+        returnValueForMissingStub: _i6.Future<void>.value(),
+      ) as _i6.Future<void>);
+
+  @override
+  _i6.Future<void> setOilEkgReplication(int? value) => (super.noSuchMethod(
+        Invocation.method(
+          #setOilEkgReplication,
+          [value],
+        ),
+        returnValue: _i6.Future<void>.value(),
+        returnValueForMissingStub: _i6.Future<void>.value(),
+      ) as _i6.Future<void>);
 
   @override
   void toggleFilterHighestShnid() => super.noSuchMethod(

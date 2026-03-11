@@ -149,6 +149,21 @@ class GaplessPlayer {
     // Not applicable natively
   }
 
+  /// Sets whether Web Audio should remain active while hidden. No-op on native.
+  void setHybridAllowHiddenWebAudio(bool enabled) {
+    // Not applicable natively
+  }
+
+  /// Sets hybrid handoff crossfade in milliseconds. No-op on native.
+  void setHandoffCrossfadeMs(int ms) {
+    // Not applicable natively
+  }
+
+  /// Forces HTML5 instant-start in hybrid. No-op on native.
+  void setHybridForceHtml5Start(bool enabled) {
+    // Not applicable natively
+  }
+
   /// Sets transition mode for web engines. No-op on native.
   void setTrackTransitionMode(String mode) {
     // Not applicable natively

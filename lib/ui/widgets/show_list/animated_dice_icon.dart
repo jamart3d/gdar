@@ -20,6 +20,7 @@ class AnimatedDiceIcon extends StatefulWidget {
   final bool enableHaptics;
   final bool naked;
   final bool disableSquash;
+  final Color? iconColor;
 
   const AnimatedDiceIcon({
     super.key,
@@ -31,6 +32,7 @@ class AnimatedDiceIcon extends StatefulWidget {
     this.useLucide = false,
     this.naked = false,
     this.disableSquash = false,
+    this.iconColor,
   });
 
   @override
@@ -49,9 +51,6 @@ class _AnimatedDiceIconState extends State<AnimatedDiceIcon>
   bool _rollLeft = false;
   List<int> _rollSequence = [];
   bool _hapticsEnabledForCurrentRoll = false;
-
-  // Travel positions
-  // Travel positions - REMOVED
 
   // Internal variable to enable slow idle rotation
   final bool _enableIdleRotation = false;
@@ -181,6 +180,7 @@ class _AnimatedDiceIconState extends State<AnimatedDiceIcon>
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final iconColor = widget.iconColor ?? colorScheme.primary;
     final settingsProvider = context.watch<SettingsProvider>();
     final effectiveScale =
         FontLayoutConfig.getEffectiveScale(context, settingsProvider);
@@ -200,33 +200,22 @@ class _AnimatedDiceIconState extends State<AnimatedDiceIcon>
           final bool isSimpleTheme = settingsProvider.performanceMode;
 
           // --- Rotation (Spin) ---
-          // Simple Theme: quarter turn for calmer motion.
-          // Default: one full rotation over 2s.
           final directionMultiplier = _rollLeft ? -1.0 : 1.0;
           final double turns = isSimpleTheme ? 0.25 : 1.0;
-          // Force perfectly flat landing (0 or 2pi)
           angle = t * 2 * math.pi * turns * directionMultiplier;
 
           // --- Squash & Stretch (Landing Bump) ---
-          // We want 3 quick pulses, and then a BIGGER bump at the end.
-          // Final bump peaks at t=0.9 and settles.
           if (settingsProvider.useNeumorphism || widget.disableSquash) {
-            // Architectural solidity: No squash/stretch
             scaleX = scaleY = 1.0;
           } else {
             double scale;
             if (t < 0.8) {
-              // Fast cycling pulses
               final double pulse = math.sin(t * 10 * math.pi);
               scale = 1.0 + (0.08 * pulse * pulse);
             } else {
-              // Final landing "Thud" (Impact & Settle)
-              // Range t: 0.8 -> 1.0. normalized t2: 0 -> 1.
               final double t2 = (t - 0.8) / 0.2;
-
-              // Asymmetric Bounce: Sharper rise (impact), slower settle.
               final double bump = math.sin(math.pow(t2, 0.5) * math.pi);
-              scale = 1.0 + (0.12 * bump); // Reduced intensity (1.12x)
+              scale = 1.0 + (0.12 * bump);
             }
             scaleX = scale;
             scaleY = scale;
@@ -239,15 +228,12 @@ class _AnimatedDiceIconState extends State<AnimatedDiceIcon>
             currentFace = _rollSequence[index];
           }
         } else if (widget.isLoading) {
-          // Decoupled: Finished roll but still loading.
-          // Landed flat.
           angle = 0.0;
           scaleX = scaleY = 1.0;
           if (_rollSequence.isNotEmpty) {
             currentFace = _rollSequence.last;
           }
         } else {
-          // Idle
           if (_enableIdleRotation) {
             final directionMultiplier = _rollLeft ? -1.0 : 1.0;
             angle = _staticAngle +
@@ -264,9 +250,9 @@ class _AnimatedDiceIconState extends State<AnimatedDiceIcon>
             alignment: Alignment.center,
             child: widget.useLucide
                 ? Icon(
-                    LucideIcons.dice5,
+                    _getLucideDiceIcon(currentFace),
                     size: scaledIconSize,
-                    color: colorScheme.primary,
+                    color: iconColor,
                   )
                 : CustomPaint(
                     size: Size(scaledIconSize, scaledIconSize),
@@ -290,8 +276,7 @@ class _AnimatedDiceIconState extends State<AnimatedDiceIcon>
 
     Widget button = IconButton(
       iconSize: scaledIconSize,
-      padding:
-          const EdgeInsets.all(12.0), // Standard padding (total 56x56 base)
+      padding: const EdgeInsets.all(12.0),
       onPressed: widget.onPressed,
       tooltip: isFruit ? null : widget.tooltip,
       style: IconButton.styleFrom(
@@ -311,12 +296,31 @@ class _AnimatedDiceIconState extends State<AnimatedDiceIcon>
 
     return SizedBox(
       width: 56.0 * effectiveScale,
-      height: 48.0 * effectiveScale, // Buffer room for Neumorphic shadows
+      height: 48.0 * effectiveScale,
       child: FittedBox(
         fit: BoxFit.scaleDown,
         child: button,
       ),
     );
+  }
+
+  IconData _getLucideDiceIcon(int face) {
+    switch (face) {
+      case 1:
+        return LucideIcons.dice1;
+      case 2:
+        return LucideIcons.dice2;
+      case 3:
+        return LucideIcons.dice3;
+      case 4:
+        return LucideIcons.dice4;
+      case 5:
+        return LucideIcons.dice5;
+      case 6:
+        return LucideIcons.dice6;
+      default:
+        return LucideIcons.dice5;
+    }
   }
 }
 
@@ -335,7 +339,7 @@ class DicePainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final RRect rect = RRect.fromRectAndRadius(
       Rect.fromLTWH(0, 0, size.width, size.height),
-      Radius.circular(size.width * 0.15), // Sharper corners (standard dice)
+      Radius.circular(size.width * 0.15),
     );
 
     final Paint bodyPaint = Paint()
@@ -355,45 +359,45 @@ class DicePainter extends CustomPainter {
     final double top = size.height * 0.25;
     final double bottom = size.height * 0.75;
 
+    void drawDot(double x, double y) {
+      canvas.drawCircle(Offset(x, y), dotSize / 2, dotPaint);
+    }
+
     switch (face) {
       case 1:
-        _drawDot(canvas, center, center, dotSize, dotPaint);
+        drawDot(center, center);
         break;
       case 2:
-        _drawDot(canvas, right, top, dotSize, dotPaint);
-        _drawDot(canvas, left, bottom, dotSize, dotPaint);
+        drawDot(right, top);
+        drawDot(left, bottom);
         break;
       case 3:
-        _drawDot(canvas, right, top, dotSize, dotPaint);
-        _drawDot(canvas, center, center, dotSize, dotPaint);
-        _drawDot(canvas, left, bottom, dotSize, dotPaint);
+        drawDot(right, top);
+        drawDot(center, center);
+        drawDot(left, bottom);
         break;
       case 4:
-        _drawDot(canvas, left, top, dotSize, dotPaint);
-        _drawDot(canvas, right, top, dotSize, dotPaint);
-        _drawDot(canvas, left, bottom, dotSize, dotPaint);
-        _drawDot(canvas, right, bottom, dotSize, dotPaint);
+        drawDot(left, top);
+        drawDot(right, top);
+        drawDot(left, bottom);
+        drawDot(right, bottom);
         break;
       case 5:
-        _drawDot(canvas, left, top, dotSize, dotPaint);
-        _drawDot(canvas, right, top, dotSize, dotPaint);
-        _drawDot(canvas, center, center, dotSize, dotPaint);
-        _drawDot(canvas, left, bottom, dotSize, dotPaint);
-        _drawDot(canvas, right, bottom, dotSize, dotPaint);
+        drawDot(left, top);
+        drawDot(right, top);
+        drawDot(center, center);
+        drawDot(left, bottom);
+        drawDot(right, bottom);
         break;
       case 6:
-        _drawDot(canvas, left, top, dotSize, dotPaint);
-        _drawDot(canvas, right, top, dotSize, dotPaint);
-        _drawDot(canvas, left, center, dotSize, dotPaint);
-        _drawDot(canvas, right, center, dotSize, dotPaint);
-        _drawDot(canvas, left, bottom, dotSize, dotPaint);
-        _drawDot(canvas, right, bottom, dotSize, dotPaint);
+        drawDot(left, top);
+        drawDot(right, top);
+        drawDot(left, center);
+        drawDot(right, center);
+        drawDot(left, bottom);
+        drawDot(right, bottom);
         break;
     }
-  }
-
-  void _drawDot(Canvas canvas, double x, double y, double r, Paint paint) {
-    canvas.drawCircle(Offset(x, y), r / 2, paint);
   }
 
   @override

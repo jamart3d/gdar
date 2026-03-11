@@ -109,6 +109,33 @@ void showMessage(BuildContext context, String message) {
   }
 }
 
+void showIssueMessage(
+  BuildContext context,
+  String message, {
+  VoidCallback? onClear,
+}) {
+  if (!context.mounted) return;
+
+  final isTv = context.read<DeviceService>().isTv;
+  if (isTv) {
+    context.read<AudioProvider>().showNotification(message);
+    onClear?.call();
+    return;
+  }
+
+  final bool isFruit = _isFruitTheme(context);
+  if (isFruit) {
+    _showFruitIssueOverlay(context, message, onClear: onClear);
+    return;
+  }
+
+  _showMaterialSnackBarWithAction(
+    context,
+    message,
+    onClear: onClear,
+  );
+}
+
 bool _isFruitTheme(BuildContext context) {
   try {
     return context.read<ThemeProvider>().themeStyle == ThemeStyle.fruit;
@@ -124,6 +151,27 @@ void _showMaterialSnackBar(BuildContext context, String message) {
     SnackBar(
       content: Text(message),
       duration: const Duration(seconds: 3),
+    ),
+  );
+}
+
+void _showMaterialSnackBarWithAction(
+  BuildContext context,
+  String message, {
+  VoidCallback? onClear,
+}) {
+  final messenger = ScaffoldMessenger.of(context);
+  messenger.clearSnackBars();
+  messenger.showSnackBar(
+    SnackBar(
+      content: Text(message),
+      duration: const Duration(seconds: 6),
+      action: onClear == null
+          ? null
+          : SnackBarAction(
+              label: 'Clear',
+              onPressed: onClear,
+            ),
     ),
   );
 }
@@ -269,6 +317,173 @@ void _showFruitMessageOverlay(BuildContext context, String message) {
       _removeFruitMessageOverlay();
     });
   }
+}
+
+void _showFruitIssueOverlay(
+  BuildContext context,
+  String message, {
+  VoidCallback? onClear,
+}) {
+  final overlay = Overlay.maybeOf(context, rootOverlay: true);
+  if (overlay == null) {
+    _showMaterialSnackBarWithAction(context, message, onClear: onClear);
+    return;
+  }
+
+  _removeFruitMessageOverlay();
+  final colorScheme = Theme.of(context).colorScheme;
+  final isDark = Theme.of(context).brightness == Brightness.dark;
+  final bool useLiquidGlass = _shouldUseFruitLiquidGlass(context);
+
+  _fruitMessageOverlay = OverlayEntry(
+    builder: (overlayContext) {
+      final media = MediaQuery.maybeOf(overlayContext);
+      final bottomInset = media?.viewInsets.bottom ?? 0;
+      final safeBottom = media?.padding.bottom ?? 0;
+      return Positioned.fill(
+        child: SafeArea(
+          child: Align(
+            alignment: Alignment.bottomCenter,
+            child: Padding(
+              padding: EdgeInsets.fromLTRB(
+                16,
+                16,
+                16,
+                20 + safeBottom + bottomInset,
+              ),
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 560),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(18),
+                  child: Builder(builder: (context) {
+                    final messageContent = Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 18,
+                        vertical: 14,
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Expanded(
+                            child: Text(
+                              message,
+                              textAlign: TextAlign.center,
+                              maxLines: 3,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontFamily: 'Inter',
+                                fontWeight: FontWeight.w600,
+                                fontSize: 13,
+                                letterSpacing: 0.1,
+                                color: isDark
+                                    ? colorScheme.onSurface
+                                    : colorScheme.onSurface,
+                              ),
+                            ),
+                          ),
+                          if (onClear != null) ...[
+                            const SizedBox(width: 12),
+                            GestureDetector(
+                              onTap: () {
+                                onClear();
+                                _removeFruitMessageOverlay();
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 10,
+                                  vertical: 6,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: colorScheme.primary
+                                      .withValues(alpha: 0.18),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Text(
+                                  'Clear',
+                                  style: TextStyle(
+                                    color: colorScheme.primary,
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    );
+
+                    return useLiquidGlass
+                        ? BackdropFilter(
+                            filter: ImageFilter.blur(
+                              sigmaX: 14,
+                              sigmaY: 14,
+                            ),
+                            child: DecoratedBox(
+                              decoration: BoxDecoration(
+                                color: isDark
+                                    ? Colors.black.withValues(alpha: 0.45)
+                                    : Colors.white.withValues(alpha: 0.58),
+                                borderRadius: BorderRadius.circular(18),
+                                border: Border.all(
+                                  color: isDark
+                                      ? Colors.white.withValues(alpha: 0.18)
+                                      : Colors.white.withValues(alpha: 0.65),
+                                  width: 0.8,
+                                ),
+                                boxShadow: isWasmSafeMode()
+                                    ? null
+                                    : [
+                                        BoxShadow(
+                                          color: Colors.black
+                                              .withValues(alpha: 0.14),
+                                          blurRadius: 22,
+                                          offset: const Offset(0, 8),
+                                        ),
+                                      ],
+                              ),
+                              child: messageContent,
+                            ),
+                          )
+                        : DecoratedBox(
+                            decoration: BoxDecoration(
+                              color: isDark
+                                  ? colorScheme.surfaceContainerHigh
+                                  : colorScheme.surface,
+                              borderRadius: BorderRadius.circular(18),
+                              border: Border.all(
+                                color: colorScheme.outlineVariant
+                                    .withValues(alpha: isDark ? 0.7 : 0.9),
+                                width: 0.8,
+                              ),
+                              boxShadow: isWasmSafeMode()
+                                  ? null
+                                  : [
+                                      BoxShadow(
+                                        color:
+                                            Colors.black.withValues(alpha: 0.2),
+                                        blurRadius: 12,
+                                        offset: const Offset(0, 6),
+                                      ),
+                                    ],
+                            ),
+                            child: messageContent,
+                          );
+                  }),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+    },
+  );
+
+  overlay.insert(_fruitMessageOverlay!);
+  _fruitMessageTimer?.cancel();
+  _fruitMessageTimer = Timer(const Duration(seconds: 8), () {
+    _removeFruitMessageOverlay();
+  });
 }
 
 bool _shouldUseFruitLiquidGlass(BuildContext context) {
