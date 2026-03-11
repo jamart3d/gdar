@@ -255,11 +255,16 @@ class _TvDualPaneLayoutState extends State<TvDualPaneLayout> {
             ),
           },
           child: Scaffold(
+            primary: false,
+            backgroundColor: Colors.transparent,
             body: Stack(
               children: [
                 // Main Dual-Pane Content
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 48.0),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 0.0,
+                    vertical: 12.0,
+                  ),
                   child: Row(
                     children: [
                       // Left Pane: Header + Show List
@@ -312,27 +317,6 @@ class _TvDualPaneLayoutState extends State<TvDualPaneLayout> {
                                 ),
                               ],
                             ),
-                          ),
-                        ),
-                      ),
-                      // Vertical Glass Divider
-                      Container(
-                        width: 1.0,
-                        height: double.infinity,
-                        margin: const EdgeInsets.symmetric(
-                            vertical: 96.0, horizontal: 16.0),
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                            colors: [
-                              Colors.white.withValues(alpha: 0.0),
-                              Colors.white.withValues(
-                                  alpha: 0.15), // Increased from 0.08
-                              Colors.white.withValues(
-                                  alpha: 0.15), // Increased from 0.08
-                              Colors.white.withValues(alpha: 0.0),
-                            ],
                           ),
                         ),
                       ),

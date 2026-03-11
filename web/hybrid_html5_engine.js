@@ -89,6 +89,7 @@
             this.webAudioLoadingState = GaplessPlaybackLoadingState.LOADING;
             fetch(this.trackUrl)
                 .then((res) => res.arrayBuffer())
+                .then((res) => new Promise(resolve => setTimeout(() => resolve(res), 0)))
                 .then((res) =>
                     this.audioContext.decodeAudioData(
                         res,
@@ -515,6 +516,15 @@
 
     let _queue = null;
     let _onStateChange = null;
+    let _lastStateEmitMs = 0;
+
+    function _emitStateThrottled(track) {
+        if (!_onStateChange) return;
+        const now = performance.now();
+        if (now - _lastStateEmitMs < 250) return;
+        _lastStateEmitMs = now;
+        _onStateChange(_translateState(track));
+    }
     let _onTrackChange = null;
     let _onError = null;
     let _lastIndex = -1;
@@ -567,7 +577,7 @@
             if (_queue) return;
             _queue = new Queue({
                 onProgress: (track) => {
-                    if (_onStateChange) _onStateChange(_translateState(track));
+                    _emitStateThrottled(track);
                 },
                 onEnded: () => {
                     _log.log('[html5] Queue.onEnded triggered');

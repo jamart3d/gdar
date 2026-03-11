@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
 import 'package:shakedown/providers/audio_provider.dart';
 import 'package:shakedown/providers/show_list_provider.dart';
@@ -10,6 +11,7 @@ import 'package:shakedown/providers/settings_provider.dart';
 import 'package:shakedown/providers/theme_provider.dart';
 import 'package:shakedown/ui/widgets/fruit_tab_bar.dart';
 import 'package:shakedown/ui/widgets/theme/fruit_ui.dart';
+import 'package:shakedown/utils/web_runtime.dart';
 
 /// The layout shell for [ShowListScreen], including AppBar, SearchBar, and MiniPlayer.
 class ShowListShell extends StatelessWidget {
@@ -92,6 +94,7 @@ class ShowListShell extends StatelessWidget {
     final settingsProvider =
         context.watch<SettingsProvider>(); // Defined settingsProvider
     final isFruit = themeProvider.themeStyle == ThemeStyle.fruit;
+    final bool disableShader = kIsWeb && isWasmRuntime();
 
     final bool isRollActive = showListProvider.isChoosingRandomShow;
     final bool shouldShowMiniPlayer = audioProvider.currentShow != null &&
@@ -119,7 +122,7 @@ class ShowListShell extends StatelessWidget {
             top: 0,
             left: 0,
             right: 0,
-            child: settingsProvider.performanceMode
+            child: (settingsProvider.performanceMode || disableShader)
                 ? FruitSurface(
                     borderRadius: BorderRadius.zero,
                     showBorder: false,

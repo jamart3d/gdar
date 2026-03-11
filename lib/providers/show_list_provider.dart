@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:shakedown/services/catalog_service.dart';
 import 'package:shakedown/models/show.dart';
@@ -310,8 +309,10 @@ class ShowListProvider with ChangeNotifier {
     try {
       await _catalogService.initialize(prefs: prefs);
 
-      // Listen for rating changes to update filters
-      _catalogService.ratingsListenable.addListener(_onRatingsChanged);
+      // Listen for rating changes to update filters (native only — Hive not used on web)
+      if (!kIsWeb) {
+        _catalogService.ratingsListenable.addListener(_onRatingsChanged);
+      }
 
       _allShows = _catalogService.allShows;
       _scanAvailableCategories();
@@ -362,7 +363,7 @@ class ShowListProvider with ChangeNotifier {
       } on TimeoutException {
         logger.w('archive.org check timed out (Attempt ${i + 1}/$maxRetries)');
         isArchiveDown = true;
-      } on SocketException catch (e) {
+      } on Exception catch (e) {
         logger.e(
             'Failed to connect to archive.org: $e (Attempt ${i + 1}/$maxRetries)');
         isArchiveDown = true;

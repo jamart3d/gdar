@@ -1,3 +1,4 @@
+import 'package:shakedown/utils/web_runtime.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:shakedown/models/show.dart';
@@ -640,14 +641,16 @@ class _MiniPlayerState extends State<MiniPlayer> {
                                       decoration: BoxDecoration(
                                         color: colorScheme.primary,
                                         shape: BoxShape.circle,
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color: colorScheme.primary
-                                                .withValues(alpha: 0.3),
-                                            blurRadius: 8,
-                                            offset: const Offset(0, 4),
-                                          )
-                                        ],
+                                        boxShadow: isWasmSafeMode()
+                                            ? null
+                                            : [
+                                                BoxShadow(
+                                                  color: colorScheme.primary
+                                                      .withValues(alpha: 0.3),
+                                                  blurRadius: 8,
+                                                  offset: const Offset(0, 4),
+                                                )
+                                              ],
                                       ),
                                       child: FruitActivityIndicator(
                                         radius: 11.0 * scaleFactor,
@@ -678,14 +681,16 @@ class _MiniPlayerState extends State<MiniPlayer> {
                                     decoration: BoxDecoration(
                                       color: colorScheme.primary,
                                       shape: BoxShape.circle,
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: colorScheme.primary
-                                              .withValues(alpha: 0.3),
-                                          blurRadius: 8,
-                                          offset: const Offset(0, 4),
-                                        )
-                                      ],
+                                      boxShadow: isWasmSafeMode()
+                                          ? null
+                                          : [
+                                              BoxShadow(
+                                                color: colorScheme.primary
+                                                    .withValues(alpha: 0.3),
+                                                blurRadius: 8,
+                                                offset: const Offset(0, 4),
+                                              )
+                                            ],
                                     ),
                                     child: FruitIconButton(
                                       icon: Icon(iconData),

@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:shakedown/services/device_service.dart';
 import 'package:shakedown/utils/app_haptics.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
@@ -45,6 +46,10 @@ class _FastScrollbarState extends State<FastScrollbar>
   int _lastYear = -1;
 
   OverlayEntry? _overlayEntry;
+  Offset _lastChipOffset = Offset.zero;
+  double _lastTrackHeight = 0.0;
+  Offset _lastTrackGlobal = Offset.zero;
+  bool _pendingTrackMetrics = false;
   Timer? _hideTimer;
 
   // Fade: controls thumb + track visibility (auto-hide)
@@ -180,11 +185,19 @@ class _FastScrollbarState extends State<FastScrollbar>
   }
 
   double _fractionFromGlobal(double globalY) {
+    final phase = SchedulerBinding.instance.schedulerPhase;
+    if (phase == SchedulerPhase.persistentCallbacks ||
+        phase == SchedulerPhase.midFrameMicrotasks) {
+      _scheduleTrackMetricsUpdate();
+      return _thumbFraction;
+    }
     final renderBox =
         _trackKey.currentContext?.findRenderObject() as RenderBox?;
     if (renderBox == null) return _thumbFraction;
+    _lastTrackGlobal = renderBox.localToGlobal(Offset.zero);
+    _lastTrackHeight = renderBox.size.height;
     final localY = renderBox.globalToLocal(Offset(0, globalY)).dy;
-    final trackH = renderBox.size.height;
+    final trackH = _lastTrackHeight;
     final usable = trackH - widget.thumbHeight;
     if (usable <= 0) return 0;
     return ((localY - widget.thumbHeight / 2) / usable).clamp(0.0, 1.0);
@@ -208,6 +221,24 @@ class _FastScrollbarState extends State<FastScrollbar>
 
   // ── Overlay ────────────────────────────────────────────────────────
 
+  void _scheduleTrackMetricsUpdate() {
+    if (_pendingTrackMetrics) return;
+    _pendingTrackMetrics = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _pendingTrackMetrics = false;
+      if (!mounted) return;
+      _updateTrackMetrics();
+    });
+  }
+
+  void _updateTrackMetrics() {
+    final renderBox =
+        _trackKey.currentContext?.findRenderObject() as RenderBox?;
+    if (renderBox == null) return;
+    _lastTrackGlobal = renderBox.localToGlobal(Offset.zero);
+    _lastTrackHeight = renderBox.size.height;
+  }
+
   void _showOverlay() {
     _removeOverlay();
     _overlayEntry = OverlayEntry(
@@ -225,21 +256,31 @@ class _FastScrollbarState extends State<FastScrollbar>
   }
 
   Offset _chipPosition() {
+    final phase = SchedulerBinding.instance.schedulerPhase;
+    if (phase == SchedulerPhase.persistentCallbacks ||
+        phase == SchedulerPhase.midFrameMicrotasks) {
+      _scheduleTrackMetricsUpdate();
+      return _lastChipOffset;
+    }
     final renderBox =
         _trackKey.currentContext?.findRenderObject() as RenderBox?;
-    if (renderBox == null) return Offset.zero;
+    if (renderBox == null) return _lastChipOffset;
 
-    final trackGlobal = renderBox.localToGlobal(Offset.zero);
-    final trackH = renderBox.size.height;
+    _lastTrackGlobal = renderBox.localToGlobal(Offset.zero);
+    _lastTrackHeight = renderBox.size.height;
+
+    final trackGlobal = _lastTrackGlobal;
+    final trackH = _lastTrackHeight;
     final usable = trackH - widget.thumbHeight;
     final thumbTop = trackGlobal.dy + _thumbFraction * usable;
     final thumbCenterY = thumbTop + widget.thumbHeight / 2;
 
     // Chip sits to the left of the thumb track, vertically centered on thumb
-    return Offset(
+    _lastChipOffset = Offset(
       trackGlobal.dx - 76,
       thumbCenterY - 20,
     );
+    return _lastChipOffset;
   }
 
   String _currentYear() {

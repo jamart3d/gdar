@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:shakedown/models/show.dart';
 import 'package:shakedown/models/source.dart';
 import 'package:shakedown/providers/audio_provider.dart';
@@ -54,6 +55,7 @@ class ShowListScreenState extends State<ShowListScreen>
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _searchFocusNode = FocusNode();
   final ItemScrollController _itemScrollController = ItemScrollController();
+  bool _pendingSearchSync = false;
   final ItemPositionsListener _itemPositionsListener =
       ItemPositionsListener.create();
 
@@ -410,6 +412,26 @@ class ShowListScreenState extends State<ShowListScreen>
 
   void _syncSearchState() {
     if (!mounted) return;
+    final phase = SchedulerBinding.instance.schedulerPhase;
+    if (phase == SchedulerPhase.persistentCallbacks ||
+        phase == SchedulerPhase.midFrameMicrotasks) {
+      _scheduleSearchSync();
+      return;
+    }
+    _syncSearchStateNow();
+  }
+
+  void _scheduleSearchSync() {
+    if (_pendingSearchSync) return;
+    _pendingSearchSync = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _pendingSearchSync = false;
+      if (!mounted) return;
+      _syncSearchStateNow();
+    });
+  }
+
+  void _syncSearchStateNow() {
     final showListProvider = context.read<ShowListProvider>();
     final isVisible = showListProvider.isSearchVisible;
 
@@ -425,8 +447,6 @@ class ShowListScreenState extends State<ShowListScreen>
         _searchPulseController.reset();
       }
     }
-    // Force rebuild to update UI if needed (though existing build uses provider)
-    // Actually _buildSearchBar uses provider now? I need to update build too.
   }
 
   @override
@@ -458,8 +478,9 @@ class ShowListScreenState extends State<ShowListScreen>
 
     return ShowListShell(
       isPane: widget.isPane,
-      backgroundColor:
-          backgroundColor ?? Theme.of(context).scaffoldBackgroundColor,
+      backgroundColor: widget.isPane
+          ? Colors.transparent
+          : (backgroundColor ?? Theme.of(context).scaffoldBackgroundColor),
       randomPulseAnimation: _randomPulseAnimation,
       searchPulseAnimation: _searchPulseAnimation,
       isRandomShowLoading: isRandomShowLoading,

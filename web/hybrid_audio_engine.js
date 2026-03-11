@@ -7,7 +7,7 @@
  * - When visibilitychange fires mid-track, set a _pendingHandoff flag. Don't interrupt.
  * - At the next track boundary (_onTrackBoundary), check the flag. If set, load the next track
  *   into the passive <audio> element and switch to it instead of the Web Audio graph.
- * - If the user returns to the tab before the track ends, clear the flag — stay in foreground mode.
+ * - If the user returns to the tab before the track ends, clear the flag � stay in foreground mode.
  * - On foreground restore: pause passive element, reconstruct AudioContext at that position,
  *   resume Web Audio.
  */
@@ -49,7 +49,7 @@
         return;
     }
 
-    // ─── State ────────────────────────────────────────────────────────────────
+    // --- State ----------------------------------------------------------------
 
     let _playlist = [];
     let _currentIndex = -1;
@@ -68,6 +68,8 @@
     let _stallTimer = null;
     let _instantHandoffPending = false;
     let _instantHandoffIndex = -1;
+    let _handoffInProgress = false;
+    let _lastStateForwardMs = 0;
 
     // Web Worker for background timing
     let _schedulerWorker = null;
@@ -94,7 +96,7 @@
     let _onTrackChange = null;
     let _onError = null;
 
-    // ─── Engine Routing ───────────────────────────────────────────────────────
+    // --- Engine Routing -------------------------------------------------------
 
     function _forwardState(state, sourceEngine) {
         if (!_onStateChange) return;
@@ -102,6 +104,11 @@
         // Critical Fix: Do not let the Web Audio API overwrite the UI with "buffering" events
         // while the HTML5 engine is successfully driving playback during an Instant Start.
         if (sourceEngine !== _activeEngine) return;
+        if (_handoffInProgress) {
+            const now = performance.now();
+            if (now - _lastStateForwardMs < 250) return;
+            _lastStateForwardMs = now;
+        }
 
         // Detect OS-forced suspension
         if (_activeEngine === _fgEngine && state.processingState === 'suspended') {
@@ -141,6 +148,11 @@
     function _forwardTrack(event, sourceEngine) {
         if (!_onTrackChange) return;
         if (sourceEngine !== _activeEngine) return;
+        if (_handoffInProgress) {
+            const now = performance.now();
+            if (now - _lastStateForwardMs < 250) return;
+            _lastStateForwardMs = now;
+        }
 
         // Invalidate any background restoration loops for the old track
         _handoffAttemptId++;
@@ -227,7 +239,7 @@
         }
     }
 
-    // ─── Handoff/Restore Logic ────────────────────────────────────────────────
+    // --- Handoff/Restore Logic ------------------------------------------------
 
     /**
      * Executes the restore from Background (Passive HTML5) to Foreground (Web Audio).
@@ -236,6 +248,7 @@
     function _executeForegroundRestore(pollCount = 0, attemptId) {
         // Use the current handoff ID if not provided (for the starting call)
         const id = attemptId || _handoffAttemptId;
+        _handoffInProgress = true;
 
         // TERMINATION GUARD: If a new handoff or seek has started, kill this loop immediately.
         if (id !== _handoffAttemptId) {
@@ -244,12 +257,13 @@
         }
 
         if (pollCount > 50) { // Give up after 5 seconds
+            _handoffInProgress = false;
             _log.error('[hybrid] Handoff FAILED: Foreground never became ready. Staying on HTML5.');
             return;
         }
 
         if (pollCount === 0) {
-            _log.log('[hybrid] Starting restore → Web Audio API (Foreground) loop ID:', id);
+            _log.log('[hybrid] Starting restore ? Web Audio API (Foreground) loop ID:', id);
             const state = _bgEngine.getState();
             _fgEngine.syncState(state.index, state.position || 0, true);
         }
@@ -267,6 +281,7 @@
                 _activeEngine = _fgEngine;
                 _log.log('[hybrid] ACTIVE ENGINE SWAPPED: Now using Web Audio (Foreground)');
                 _bgEngine.stop();
+                _handoffInProgress = false;
 
                 const swapTime = performance.now() - swapStart;
                 _log.log(`[hybrid] HANDOFF COMPLETE (ID: ${id}). Settle cycles: ${pollCount}, Swap hitch: ${swapTime.toFixed(2)}ms`);
@@ -299,6 +314,7 @@
         if (_handoffMode === 'none') {
             _log.log('[hybrid] Handoff disabled via handoffMode=none. Using WebAudio directly.');
             _fgEngine.syncState(index, 0, true);
+            _handoffInProgress = false;
             _activeEngine = _fgEngine;
             _bgEngine.stop();
             return;
@@ -311,6 +327,7 @@
         if (isShortTrack) {
             _log.log('[hybrid] Skipping HTML5 start for short track (' + track.duration + 's). Using WebAudio directly.');
             _fgEngine.syncState(index, 0, true);
+            _handoffInProgress = false;
             _activeEngine = _fgEngine;
             _bgEngine.stop();
             return;
@@ -323,7 +340,9 @@
         _activeEngine = _bgEngine;
 
         // Silently prep foreground
-        _fgEngine.prepareToPlay(index).then(() => {
+        _handoffInProgress = true;
+        setTimeout(() => {
+            _fgEngine.prepareToPlay(index).then(() => {
             if (_handoffAttemptId !== attemptId) return;
             if (_currentIndex !== index) return;
 
@@ -389,6 +408,7 @@
             } else {
                 _log.log(`[hybrid] Track ${index} fits in initial HTML5 buffer (${duration.toFixed(1)}s). Staying in HTML5.`);
                 _instantHandoffPending = false;
+                _handoffInProgress = false;
 
                 // CRITICAL: Pre-decode the NEXT track in WebAudio now, so it's ready for a gapless
                 // transition when the HTML5 engine reaches the boundary.
@@ -398,13 +418,15 @@
                 }
             }
 
-        }).catch(err => {
+            }).catch(err => {
             _log.error('[hybrid] Failed to prepare instant handoff:', err);
             _instantHandoffPending = false;
-        });
+            _handoffInProgress = false;
+            });
+        }, 0);
     }
 
-    // ─── Public API ───────────────────────────────────────────────────────────
+    // --- Public API -----------------------------------------------------------
 
     const api = {
         init: function () {
@@ -519,6 +541,7 @@
             _handoffAttemptId++;
             if (window._gdarHeartbeat) window._gdarHeartbeat.stopHeartbeat();
             _instantHandoffPending = false;
+            _handoffInProgress = false;
             _activeEngine.pause();
         },
 
@@ -529,6 +552,7 @@
             _handoffAttemptId++;
             if (window._gdarHeartbeat) window._gdarHeartbeat.stopHeartbeat();
             _instantHandoffPending = false;
+            _handoffInProgress = false;
             _activeEngine.stop();
             if (_activeEngine === _fgEngine) _bgEngine.stop();
             else _fgEngine.stop();
@@ -544,6 +568,7 @@
             // Increment ID to cancel any pending handoff loop or buffer-check intervals
             _handoffAttemptId++;
             _instantHandoffPending = false;
+            _handoffInProgress = false;
             _currentIndex = index;
 
             const pure = _isPureWebAudio();

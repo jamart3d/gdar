@@ -11,6 +11,7 @@ import 'package:shakedown/providers/settings_provider.dart';
 import 'package:shakedown/services/device_service.dart';
 import 'package:shakedown/services/gapless_player/gapless_player.dart';
 import 'package:shakedown/ui/widgets/playback/playback_messages.dart';
+import 'package:shakedown/providers/theme_provider.dart';
 
 import 'playback_messages_test.mocks.dart';
 
@@ -103,6 +104,10 @@ void main() {
         ChangeNotifierProvider<SettingsProvider>.value(
             value: mockSettingsProvider),
         ChangeNotifierProvider<DeviceService>.value(value: mockDeviceService),
+        // Add a stub ThemeProvider so the widget can resolve it
+        ChangeNotifierProvider<ThemeProvider>(
+          create: (_) => ThemeProvider(isTv: false),
+        ),
       ],
       child: const MaterialApp(
         home: Scaffold(

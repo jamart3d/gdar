@@ -9,6 +9,7 @@ import 'package:shakedown/utils/web_perf_hint.dart';
 
 import 'package:shakedown/providers/theme_provider.dart';
 import 'package:shakedown/services/gapless_player/gapless_player.dart';
+import 'package:shakedown/utils/web_runtime.dart';
 
 enum WebEngineProfile {
   modern,
@@ -345,7 +346,8 @@ class SettingsProvider with ChangeNotifier {
   bool get enableSwipeToBlock => _enableSwipeToBlock;
   bool get omitHttpPathInCopy => _omitHttpPathInCopy;
   bool get useNeumorphism => _useNeumorphism;
-  bool get fruitEnableLiquidGlass => _fruitEnableLiquidGlass;
+  bool get fruitEnableLiquidGlass =>
+      isWasmSafeMode() ? false : _fruitEnableLiquidGlass;
   bool get fruitStickyNowPlaying => _fruitStickyNowPlaying;
   bool get enableHaptics => _enableHaptics;
 
@@ -372,7 +374,7 @@ class SettingsProvider with ChangeNotifier {
   }
 
   NeumorphicStyle get neumorphicStyle => _neumorphicStyle;
-  bool get performanceMode => _performanceMode;
+  bool get performanceMode => isWasmSafeMode() ? true : _performanceMode;
   bool get forceTv => _forceTv;
 
   /// Whether the custom gapless Web Audio engine is enabled (web-only).

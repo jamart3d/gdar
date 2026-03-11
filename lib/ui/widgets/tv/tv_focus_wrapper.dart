@@ -6,6 +6,7 @@ import 'package:shakedown/services/device_service.dart';
 import 'package:provider/provider.dart';
 import 'package:shakedown/providers/settings_provider.dart';
 import 'package:shakedown/ui/widgets/animated_gradient_border.dart';
+import 'package:shakedown/utils/web_runtime.dart';
 
 /// A wrapper widget that handles TV focus states with premium animations.
 /// It provides a spring-based scale effect and optional RGB animated border.
@@ -138,7 +139,7 @@ class _TvFocusWrapperState extends State<TvFocusWrapper> {
                   : Colors.transparent,
           width: sp.isTv ? 4.0 : 3.0,
         ),
-        boxShadow: (widget.showGlow && _isFocused)
+        boxShadow: (widget.showGlow && _isFocused && !isWasmSafeMode())
             ? [
                 BoxShadow(
                   color: (widget.focusColor ?? colorScheme.primary)

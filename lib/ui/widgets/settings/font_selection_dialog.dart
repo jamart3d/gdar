@@ -18,6 +18,7 @@ class FontSelectionDialog extends StatelessWidget {
     // Map of internal value to display name and TextStyle
     final Map<String, TextStyle?> fonts = {
       'default': const TextStyle(fontFamily: 'Roboto'), // Enforce Roboto
+      'inter': const TextStyle(fontFamily: 'Inter'),
       'caveat': const TextStyle(fontFamily: 'Caveat'),
       'permanent_marker': const TextStyle(fontFamily: 'Permanent Marker'),
       'rock_salt': const TextStyle(fontFamily: 'RockSalt'),
@@ -25,6 +26,7 @@ class FontSelectionDialog extends StatelessWidget {
 
     final Map<String, String> displayNames = {
       'default': 'Default (Roboto)',
+      'inter': 'Inter',
       'caveat': 'Caveat',
       'permanent_marker': 'Permanent Marker',
       'rock_salt': 'Rock Salt',

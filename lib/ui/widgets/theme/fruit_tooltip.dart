@@ -2,10 +2,12 @@ import 'dart:async';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:shakedown/providers/settings_provider.dart';
 import 'package:shakedown/providers/theme_provider.dart';
+import 'package:shakedown/utils/web_runtime.dart';
 
 class FruitTooltip extends StatefulWidget {
   final Widget child;
@@ -68,6 +70,9 @@ class _FruitTooltipState extends State<FruitTooltip> {
 
   Widget _buildTooltipBubble(
       bool useGlass, bool isDark, ColorScheme colorScheme) {
+    final bool disableBlur = kIsWeb && isWasmRuntime();
+    final bool effectiveGlass = useGlass && !disableBlur;
+
     final Widget content = Text(
       widget.message,
       textAlign: TextAlign.center,
@@ -80,14 +85,14 @@ class _FruitTooltipState extends State<FruitTooltip> {
     );
 
     final decoration = BoxDecoration(
-      color: useGlass
+      color: effectiveGlass
           ? (isDark
               ? Colors.black.withValues(alpha: 0.48)
               : Colors.white.withValues(alpha: 0.9))
           : (isDark ? Colors.black87 : Colors.white),
       borderRadius: BorderRadius.circular(12),
       border: Border.all(
-        color: useGlass
+        color: effectiveGlass
             ? Colors.white.withValues(alpha: 0.25)
             : colorScheme.outlineVariant,
         width: 0.8,
@@ -95,7 +100,7 @@ class _FruitTooltipState extends State<FruitTooltip> {
       boxShadow: [
         BoxShadow(
           color: Colors.black.withValues(alpha: 0.2),
-          blurRadius: useGlass ? 22 : 8,
+          blurRadius: effectiveGlass ? 22 : 8,
           offset: const Offset(0, 6),
         ),
       ],
@@ -110,12 +115,19 @@ class _FruitTooltipState extends State<FruitTooltip> {
       ),
     );
 
+    if (!effectiveGlass) {
+      return Container(
+        decoration: decoration,
+        child: child,
+      );
+    }
+
     return ClipRRect(
       borderRadius: BorderRadius.circular(12),
       child: BackdropFilter(
         filter: ImageFilter.blur(
-          sigmaX: useGlass ? 14 : 0,
-          sigmaY: useGlass ? 14 : 0,
+          sigmaX: 14,
+          sigmaY: 14,
         ),
         child: Container(
           decoration: decoration,

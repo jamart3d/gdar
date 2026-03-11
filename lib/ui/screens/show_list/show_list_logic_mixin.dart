@@ -366,6 +366,13 @@ mixin ShowListLogicMixin<T extends StatefulWidget>
       // No full-screen player on TV.
       return;
     }
+
+    final widgetInstance = widget as dynamic;
+    if (widgetInstance.onOpenPlaybackRequested != null) {
+      widgetInstance.onOpenPlaybackRequested!();
+      return;
+    }
+
     await navigateTo(const PlaybackScreen(), instant: false);
 
     if (!mounted) return;

@@ -136,6 +136,7 @@ class AudioProvider with ChangeNotifier {
   AudioCacheService _audioCacheService;
   final WakelockService _wakelockService;
   StreamSubscription<Duration>? _bufferedPositionSubscription;
+  DateTime _lastBufferedNotify = DateTime.fromMillisecondsSinceEpoch(0);
 
   AudioProvider({
     GaplessPlayer? audioPlayer,
@@ -160,6 +161,12 @@ class AudioProvider with ChangeNotifier {
     // Listen to buffer updates for real-time reporting
     _bufferedPositionSubscription =
         _audioPlayer.bufferedPositionStream.listen((_) {
+      final now = DateTime.now();
+      if (now.difference(_lastBufferedNotify) <
+          const Duration(milliseconds: 250)) {
+        return;
+      }
+      _lastBufferedNotify = now;
       notifyListeners();
     });
 

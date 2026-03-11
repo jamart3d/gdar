@@ -1,9 +1,9 @@
 ---
-description: Test PWA rendering performance and Simple Theme gates.
+description: Test PWA rendering performance, Simple Theme gates, and Wasm UI responsiveness.
 ---
 # Web Stress Test Workflow
 
-This workflow is designed to verify that the application remains performant and follows the "Simple Theme" rules in the browser.
+This workflow verifies web performance, Simple Theme constraints, and detects UI freezes during engine playback and track transitions.
 
 1.  **Environment Check**:
     - Ensure you are running on the `web-server` device:
@@ -22,6 +22,26 @@ This workflow is designed to verify that the application remains performant and 
     - **Verify**: No UI stalls during the switch.
     - **Verify**: Metadata remains in sync after engine handoff.
 
-4.  **Reporting**:
-    - If jank is detected (>16ms frames), identify the offending Widget (usually a nested `Stack` with `Opacity` or `Blur`).
+4.  **Wasm Runtime Smoke Test**:
+    - Build the application for Wasm:
+    ```bash
+    flutter build web --wasm
+    ```
+    - Serve `build/web` using the local Wasm server in `.agent/stress_test/hybrid_stress.js`.
+    - **Verify**: App loads without console errors.
+    - **Identify**: Specifically look for `Unsupported operation: _Namespace` or `dart:io` crashes during initialization.
+
+5.  **Wasm UI Freeze Stress Test**:
+    - Run the Puppeteer test:
+    ```bash
+    node .agent/stress_test/hybrid_stress.js
+    ```
+    - **Verify**: UI heartbeat remains active (no stalls > 1s).
+    - **Verify**: No long tasks > 200ms appear during track transitions.
+    - **Verify**: Track transitions do not freeze UI while audio continues.
+    - **Artifacts**: If a freeze is detected, the script captures a screenshot in `.agent/stress_test`.
+
+6.  **Reporting**:
+    - If jank is detected (>16ms frames), identify the offending Widget (often nested `Stack` with `Opacity` or `BackdropFilter`).
+    - If freezes occur, compare HTML5 vs WebAudio vs Hybrid using the stress test and capture logs.
     - Use the `/clean` workflow if build artifacts are stale.

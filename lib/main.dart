@@ -30,59 +30,86 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:shakedown/ui/widgets/tv/tv_dual_pane_layout.dart';
 import 'package:shakedown/services/inactivity_service.dart';
 import 'package:shakedown/ui/screens/screensaver_screen.dart';
+import 'package:shakedown/utils/web_error_logger.dart';
 
 Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized();
+  await runZonedGuarded(() async {
+    WidgetsFlutterBinding.ensureInitialized();
 
-  // Force local font assets for all environments (prevents network fetching errors in audits/tests)
-  GoogleFonts.config.allowRuntimeFetching = false;
+    // Force local font assets for all environments (prevents network fetching
+    // errors in audits/tests).
+    GoogleFonts.config.allowRuntimeFetching = false;
 
-  initLogger();
+    initLogger();
 
-  final prefs = await SharedPreferences.getInstance();
-
-  bool isTv = false;
-  try {
-    if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
-      const deviceChannel = MethodChannel('com.jamart3d.shakedown/device');
-      final bool? result = await deviceChannel.invokeMethod<bool>('isTv');
-      isTv = result ?? false;
+    if (kIsWeb) {
+      initWebErrorLogger();
     }
-  } catch (e) {
-    debugPrint('Error detecting TV in main: $e');
-  }
 
-  // Check for manual override
-  if (prefs.getBool('force_tv') == true) {
-    isTv = true;
-  }
+    FlutterError.onError = (details) {
+      FlutterError.presentError(details);
+      if (kIsWeb) {
+        recordWebError(details.exception, details.stack,
+            context: 'FlutterError');
+      }
+    };
 
-  if (!kIsWeb) {
-    if (!isTv) {
-      await SystemChrome.setPreferredOrientations([
-        DeviceOrientation.portraitUp,
-        DeviceOrientation.portraitDown,
-      ]);
-    } else {
-      await SystemChrome.setPreferredOrientations([
-        DeviceOrientation.landscapeLeft,
-        DeviceOrientation.landscapeRight,
-      ]);
+    PlatformDispatcher.instance.onError = (error, stack) {
+      if (kIsWeb) {
+        recordWebError(error, stack, context: 'PlatformDispatcher');
+      }
+      return false;
+    };
+
+    final prefs = await SharedPreferences.getInstance();
+
+    bool isTv = false;
+    try {
+      if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
+        const deviceChannel = MethodChannel('com.jamart3d.shakedown/device');
+        final bool? result = await deviceChannel.invokeMethod<bool>('isTv');
+        isTv = result ?? false;
+      }
+    } catch (e) {
+      debugPrint('Error detecting TV in main: $e');
     }
-  }
 
-  await AudioProvider.clearAudioCache();
+    // Check for manual override
+    if (prefs.getBool('force_tv') == true) {
+      isTv = true;
+    }
 
-  if (!kIsWeb) {
-    await JustAudioBackground.init(
-      androidNotificationChannelId: 'com.jamart3d.shakedown.channel.audio',
-      androidNotificationChannelName: 'Audio Playback',
-      androidNotificationOngoing: true,
-      androidNotificationIcon: 'mipmap/ic_launcher',
-    );
-  }
+    if (!kIsWeb) {
+      if (!isTv) {
+        await SystemChrome.setPreferredOrientations([
+          DeviceOrientation.portraitUp,
+          DeviceOrientation.portraitDown,
+        ]);
+      } else {
+        await SystemChrome.setPreferredOrientations([
+          DeviceOrientation.landscapeLeft,
+          DeviceOrientation.landscapeRight,
+        ]);
+      }
+    }
 
-  runApp(GdarApp(prefs: prefs, isTv: isTv));
+    await AudioProvider.clearAudioCache();
+
+    if (!kIsWeb) {
+      await JustAudioBackground.init(
+        androidNotificationChannelId: 'com.jamart3d.shakedown.channel.audio',
+        androidNotificationChannelName: 'Audio Playback',
+        androidNotificationOngoing: true,
+        androidNotificationIcon: 'mipmap/ic_launcher',
+      );
+    }
+
+    runApp(GdarApp(prefs: prefs, isTv: isTv));
+  }, (error, stack) {
+    if (kIsWeb) {
+      recordWebError(error, stack, context: 'Zone');
+    }
+  });
 }
 
 class GdarApp extends StatefulWidget {

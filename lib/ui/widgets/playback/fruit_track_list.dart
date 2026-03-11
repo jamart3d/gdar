@@ -1,6 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:shakedown/models/track.dart';
@@ -10,6 +11,7 @@ import 'package:shakedown/ui/widgets/playback/fruit_now_playing_card.dart';
 import 'package:shakedown/services/device_service.dart';
 import 'package:shakedown/utils/app_haptics.dart';
 import 'package:shakedown/providers/settings_provider.dart';
+import 'package:shakedown/utils/web_runtime.dart';
 
 class FruitTrackList extends StatefulWidget {
   final Show trackShow;
@@ -110,6 +112,7 @@ class _FruitTrackListState extends State<FruitTrackList> {
     final tracks = audioProvider.currentSource?.tracks ?? [];
 
     final bool isSimple = settingsProvider.performanceMode;
+    final bool disableBlur = isSimple || isWasmSafeMode();
     final bool isWebMobile =
         kIsWeb && MediaQuery.sizeOf(context).shortestSide < 700;
     final double stickyBlurSigma = isWebMobile ? 4 : 8;
@@ -198,7 +201,7 @@ class _FruitTrackListState extends State<FruitTrackList> {
             left: 0,
             right: 0,
             child: ClipRRect(
-              child: isSimple
+              child: disableBlur
                   ? Container(
                       padding: EdgeInsets.fromLTRB(
                         24 * widget.scaleFactor,
@@ -247,7 +250,7 @@ class _FruitTrackListState extends State<FruitTrackList> {
             left: 0,
             right: 0,
             child: ClipRRect(
-              child: isSimple
+              child: disableBlur
                   ? Container(
                       padding: EdgeInsets.fromLTRB(
                         24 * widget.scaleFactor,

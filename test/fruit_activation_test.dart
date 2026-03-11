@@ -36,7 +36,7 @@ void main() {
       expect(settingsProvider.fruitDenseList, false);
       expect(settingsProvider.glowMode, 0);
       expect(settingsProvider.highlightPlayingWithRgb, false);
-      expect(settingsProvider.performanceMode, false);
+      expect(settingsProvider.performanceMode, true);
     });
 
     test('ThemeProvider triggers reset exactly once when switching to Fruit',

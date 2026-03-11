@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:flame/components.dart';
 import 'package:flutter/material.dart'
     show Colors, TextStyle, TextSpan, TextPainter, TextDirection, FontWeight;
+import 'package:shakedown/utils/web_runtime.dart';
 import 'package:shakedown/visualizer/audio_reactor.dart';
 import 'package:shakedown/steal_screensaver/steal_game.dart';
 
@@ -233,7 +234,9 @@ class StealGraph extends Component with HasGameReference<StealGame> {
         final glowPaint = Paint()
           ..color = color.withValues(alpha: 0.22 + (_beatFlash * 0.18))
           ..style = PaintingStyle.fill
-          ..maskFilter = MaskFilter.blur(BlurStyle.normal, _glowSigma);
+          ..maskFilter = isWasmSafeMode()
+              ? null
+              : MaskFilter.blur(BlurStyle.normal, _glowSigma);
         canvas.drawRRect(rect, glowPaint);
       }
 
@@ -373,7 +376,9 @@ class StealGraph extends Component with HasGameReference<StealGame> {
         final glowPaint = Paint()
           ..color = color.withValues(alpha: 0.16 + (_beatFlash * 0.14))
           ..style = PaintingStyle.fill
-          ..maskFilter = MaskFilter.blur(BlurStyle.normal, _glowSigma);
+          ..maskFilter = isWasmSafeMode()
+              ? null
+              : MaskFilter.blur(BlurStyle.normal, _glowSigma);
         canvas.drawPath(path, glowPaint);
       }
 

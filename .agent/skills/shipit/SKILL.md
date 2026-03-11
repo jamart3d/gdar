@@ -67,7 +67,7 @@ Exception in `gemini.md` rules).
 
 ### 4. Build
 1. Run `flutter build appbundle --release` (Android).
-2. Run `flutter build web --wasm` (Web).
+2. Run `flutter build web` (Web).
 
 ### 5. Deploy Web
 1. Run `firebase deploy --only hosting`.

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:shakedown/utils/web_runtime.dart';
 
 class FruitSwitch extends StatelessWidget {
   final bool value;
@@ -76,13 +77,15 @@ class FruitSwitch extends StatelessWidget {
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color: Colors.white,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.1),
-                        blurRadius: 1,
-                        offset: const Offset(0, 1),
-                      ),
-                    ],
+                    boxShadow: isWasmSafeMode()
+                        ? null
+                        : [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.1),
+                              blurRadius: 1,
+                              offset: const Offset(0, 1),
+                            ),
+                          ],
                   ),
                 ),
               ),

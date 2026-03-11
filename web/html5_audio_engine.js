@@ -1,7 +1,7 @@
 /**
  * HTML5 Audio Engine (Exact Relisten Gapless Port)
- * 
- * This engine maps our project's audio API to the exact logic from 
+ *
+ * This engine maps our project's audio API to the exact logic from
  * RelistenNet/relisten-web's gapless.cjs.
  */
 (function () {
@@ -125,7 +125,7 @@
             if (this.isPaused) {
                 this.webAudioPausedAt = this.audioContext.currentTime;
                 this.bufferSourceNode.playbackRate.value = 0;
-                this.gainNode.disconnect(this.audioContext.destination);
+                try { this.gainNode.disconnect(this.audioContext.destination); } catch (e) { }
                 this.bufferSourceNode.onended = null;
             }
 
@@ -513,6 +513,15 @@
 
     let _queue = null;
     let _onStateChange = null;
+    let _lastStateEmitMs = 0;
+
+    function _emitStateThrottled(track) {
+        if (!_onStateChange) return;
+        const now = performance.now();
+        if (now - _lastStateEmitMs < 250) return;
+        _lastStateEmitMs = now;
+        _onStateChange(_translateState(track));
+    }
     let _onTrackChange = null;
     let _onError = null;
     let _lastIndex = -1;
@@ -548,11 +557,11 @@
         return {
             playing: !track.isPaused,
             index: track.idx,
-            position: currentTime,
-            duration: duration,
-            currentTrackBuffered: track.bufferedAmount || currentTime,
-            nextTrackBuffered: nextTrackBuffered,
-            nextTrackTotal: nextTrack?.duration || 0,
+            position: isFinite(currentTime) ? currentTime : 0,
+            duration: isFinite(duration) ? duration : 0,
+            currentTrackBuffered: isFinite(track.bufferedAmount) ? track.bufferedAmount : currentTime,
+            nextTrackBuffered: isFinite(nextTrackBuffered) ? nextTrackBuffered : 0,
+            nextTrackTotal: nextTrack && isFinite(nextTrack.duration) ? nextTrack.duration : 0,
             playlistLength: (_queue && _queue.tracks) ? _queue.tracks.length : 0,
             processingState: 'ready',
             contextState: 'html5'
@@ -565,7 +574,7 @@
             if (_queue) return;
             _queue = new Queue({
                 onProgress: (track) => {
-                    if (_onStateChange) _onStateChange(_translateState(track));
+                    _emitStateThrottled(track);
                 },
                 onEnded: () => {
                     _log.log('[html5] Queue.onEnded triggered');

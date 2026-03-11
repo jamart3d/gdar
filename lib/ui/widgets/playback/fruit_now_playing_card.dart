@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shakedown/utils/web_runtime.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -201,13 +202,15 @@ class FruitNowPlayingCard extends StatelessWidget {
               decoration: BoxDecoration(
                 color: colorScheme.primary,
                 shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: colorScheme.primary.withValues(alpha: 0.3),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
+                boxShadow: isWasmSafeMode()
+                    ? null
+                    : [
+                        BoxShadow(
+                          color: colorScheme.primary.withValues(alpha: 0.3),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
               ),
               child: Center(
                 child: Icon(

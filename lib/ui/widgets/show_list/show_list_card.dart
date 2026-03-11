@@ -82,7 +82,8 @@ class _ShowListCardState extends State<ShowListCard> {
       isHovered: _isHovered,
     );
 
-    final hPadding = settingsProvider.performanceMode ? 8.0 : 16.0;
+    final hPadding =
+        isTv ? 16.0 : (settingsProvider.performanceMode ? 8.0 : 16.0);
     final vPadding = (isFruit && settingsProvider.fruitDenseList) ? 2.0 : 6.0;
     final outerPadding = EdgeInsets.fromLTRB(
       hPadding,
@@ -333,7 +334,8 @@ class _ShowListCardState extends State<ShowListCard> {
                   ),
                   child: Container(
                     alignment: Alignment.centerLeft,
-                    padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                    padding:
+                        EdgeInsets.symmetric(horizontal: isTv ? 6.0 : 12.0),
                     child: Builder(builder: (context) {
                       final Widget textArea = (!kIsWeb || useMobileLayout)
                           ? Column(

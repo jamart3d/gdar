@@ -41,6 +41,15 @@ class DeviceService extends ChangeNotifier {
 
   Future<void> _init() async {
     try {
+      final prefs = await SharedPreferences.getInstance();
+      if (prefs.getBool('force_tv') == true) {
+        _isTv = true;
+      }
+    } catch (e) {
+      // Ignore pref errors here
+    }
+
+    try {
       final deviceInfo = DeviceInfoPlugin();
 
       if (kIsWeb) {

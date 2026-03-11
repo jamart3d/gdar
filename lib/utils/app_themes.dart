@@ -64,12 +64,12 @@ class AppThemes {
     ThemeStyle style = ThemeStyle.android,
     FruitColorOption fruitColorOption = FruitColorOption.sophisticate,
   }) {
-    final effectiveFont = style == ThemeStyle.fruit ? 'inter' : appFont;
+    final effectiveFont = style == ThemeStyle.fruit ? 'Inter' : appFont;
     final baseTextTheme = ThemeData.light().textTheme;
 
     final TextTheme textTheme;
     if (style == ThemeStyle.fruit) {
-      final config = FontConfig.get('inter');
+      final config = FontConfig.get('Inter');
       final double scaleMultiplier = uiScale ? 1.35 : 1.0;
       final double totalScale = config.scaleFactor * scaleMultiplier;
       textTheme = buildAppleInterTextTheme(false, scaleFactor: totalScale);
@@ -154,12 +154,12 @@ class AppThemes {
     ThemeStyle style = ThemeStyle.android,
     FruitColorOption fruitColorOption = FruitColorOption.sophisticate,
   }) {
-    final effectiveFont = style == ThemeStyle.fruit ? 'inter' : appFont;
+    final effectiveFont = style == ThemeStyle.fruit ? 'Inter' : appFont;
     final baseTextTheme = ThemeData.dark().textTheme;
 
     final TextTheme textTheme;
     if (style == ThemeStyle.fruit) {
-      final config = FontConfig.get('inter');
+      final config = FontConfig.get('Inter');
       final double scaleMultiplier = uiScale ? 1.35 : 1.0;
       final double totalScale = config.scaleFactor * scaleMultiplier;
       textTheme = buildAppleInterTextTheme(true, scaleFactor: totalScale);

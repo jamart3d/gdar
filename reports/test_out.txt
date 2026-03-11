@@ -1,0 +1,1577 @@
+00:00 +0: loading C:/Users/jeff/StudioProjects/gdar/test/ui/widgets/playback/playback_messages_test.dart
+00:00 +0: PlaybackMessages Displays nothing when showPlaybackMessages is false
+══╡ EXCEPTION CAUGHT BY WIDGETS LIBRARY ╞═══════════════════════════════════════════════════════════
+The following ProviderNotFoundException was thrown building PlaybackMessages(dirty, dependencies:
+[InheritedCupertinoTheme, _InheritedProviderScope<AudioProvider?>,
+_InheritedProviderScope<SettingsProvider?>, _InheritedTheme, _LocalizationsScope-[GlobalKey#52955]],
+state: _PlaybackMessagesState#996dc):
+Error: Could not find the correct Provider<ThemeProvider> above this PlaybackMessages Widget
+
+This happens because you used a `BuildContext` that does not include the provider
+of your choice. There are a few common scenarios:
+
+- You added a new provider in your `main.dart` and performed a hot-reload.
+  To fix, perform a hot-restart.
+
+- The provider you are trying to read is in a different route.
+
+  Providers are "scoped". So if you insert of provider inside a route, then
+  other routes will not be able to access that provider.
+
+- You used a `BuildContext` that is an ancestor of the provider you are trying to read.
+
+  Make sure that PlaybackMessages is under your MultiProvider/Provider<ThemeProvider>.
+  This usually happens when you are creating a provider and trying to read it immediately.
+
+  For example, instead of:
+
+  ```
+  Widget build(BuildContext context) {
+    return Provider<Example>(
+      create: (_) => Example(),
+      // Will throw a ProviderNotFoundError, because `context` is associated
+      // to the widget that is the parent of `Provider<Example>`
+      child: Text(context.watch<Example>().toString()),
+    );
+  }
+  ```
+
+  consider using `builder` like so:
+
+  ```
+  Widget build(BuildContext context) {
+    return Provider<Example>(
+      create: (_) => Example(),
+      // we use `builder` to obtain a new `BuildContext` that has access to the provider
+      builder: (context, child) {
+        // No longer throws
+        return Text(context.watch<Example>().toString());
+      }
+    );
+  }
+  ```
+
+If none of these solutions work, consider asking for help on StackOverflow:
+https://stackoverflow.com/questions/tagged/flutter
+
+The relevant error-causing widget was:
+  PlaybackMessages
+  PlaybackMessages:file:///C:/Users/jeff/StudioProjects/gdar/test/ui/widgets/playback/playback_messages_test.dart:109:17
+
+When the exception was thrown, this was the stack:
+#0      Provider._inheritedElementOf (package:provider/src/provider.dart:377:7)
+#1      Provider.of (package:provider/src/provider.dart:327:30)
+#2      WatchContext.watch (package:provider/src/provider.dart:727:21)
+#3      _PlaybackMessagesState.build (package:shakedown/ui/widgets/playback/playback_messages.dart:152:35)
+#4      StatefulElement.build (package:flutter/src/widgets/framework.dart:5931:27)
+#5      ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5817:15)
+#6      StatefulElement.performRebuild (package:flutter/src/widgets/framework.dart:5982:11)
+#7      Element.rebuild (package:flutter/src/widgets/framework.dart:5529:7)
+#8      ComponentElement._firstBuild (package:flutter/src/widgets/framework.dart:5799:5)
+#9      StatefulElement._firstBuild (package:flutter/src/widgets/framework.dart:5973:11)
+#10     ComponentElement.mount (package:flutter/src/widgets/framework.dart:5793:5)
+...     Normal element mounting (25 frames)
+#35     Element.inflateWidget (package:flutter/src/widgets/framework.dart:4587:20)
+#36     MultiChildRenderObjectElement.inflateWidget (package:flutter/src/widgets/framework.dart:7264:36)
+#37     MultiChildRenderObjectElement.mount (package:flutter/src/widgets/framework.dart:7279:32)
+...     Normal element mounting (364 frames)
+#401    Element.inflateWidget (package:flutter/src/widgets/framework.dart:4587:20)
+#402    MultiChildRenderObjectElement.inflateWidget (package:flutter/src/widgets/framework.dart:7264:36)
+#403    MultiChildRenderObjectElement.mount (package:flutter/src/widgets/framework.dart:7279:32)
+...     Normal element mounting (473 frames)
+#876    _InheritedProviderScopeElement.mount (package:provider/src/inherited_provider.dart:424:11)
+...     Normal element mounting (7 frames)
+#883    _InheritedProviderScopeElement.mount (package:provider/src/inherited_provider.dart:424:11)
+...     Normal element mounting (7 frames)
+#890    _InheritedProviderScopeElement.mount (package:provider/src/inherited_provider.dart:424:11)
+...     Normal element mounting (7 frames)
+#897    SingleChildWidgetElementMixin.mount (package:nested/nested.dart:222:11)
+...     Normal element mounting (7 frames)
+#904    _NestedHookElement.mount (package:nested/nested.dart:187:11)
+...     Normal element mounting (7 frames)
+#911    SingleChildWidgetElementMixin.mount (package:nested/nested.dart:222:11)
+#912    Element.inflateWidget (package:flutter/src/widgets/framework.dart:4587:20)
+#913    Element.updateChild (package:flutter/src/widgets/framework.dart:4053:20)
+#914    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5841:16)
+#915    Element.rebuild (package:flutter/src/widgets/framework.dart:5529:7)
+#916    ProxyElement.update (package:flutter/src/widgets/framework.dart:6149:5)
+#917    _InheritedNotifierElement.update (package:flutter/src/widgets/inherited_notifier.dart:108:11)
+#918    Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#919    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5841:16)
+#920    StatefulElement.performRebuild (package:flutter/src/widgets/framework.dart:5982:11)
+#921    Element.rebuild (package:flutter/src/widgets/framework.dart:5529:7)
+#922    StatefulElement.update (package:flutter/src/widgets/framework.dart:6007:5)
+#923    Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#924    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5841:16)
+#925    Element.rebuild (package:flutter/src/widgets/framework.dart:5529:7)
+#926    ProxyElement.update (package:flutter/src/widgets/framework.dart:6149:5)
+#927    _InheritedNotifierElement.update (package:flutter/src/widgets/inherited_notifier.dart:108:11)
+#928    Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#929    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5841:16)
+#930    StatefulElement.performRebuild (package:flutter/src/widgets/framework.dart:5982:11)
+#931    Element.rebuild (package:flutter/src/widgets/framework.dart:5529:7)
+#932    StatefulElement.update (package:flutter/src/widgets/framework.dart:6007:5)
+#933    Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#934    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5841:16)
+#935    StatefulElement.performRebuild (package:flutter/src/widgets/framework.dart:5982:11)
+#936    Element.rebuild (package:flutter/src/widgets/framework.dart:5529:7)
+#937    StatefulElement.update (package:flutter/src/widgets/framework.dart:6007:5)
+#938    Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#939    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5841:16)
+#940    Element.rebuild (package:flutter/src/widgets/framework.dart:5529:7)
+#941    ProxyElement.update (package:flutter/src/widgets/framework.dart:6149:5)
+#942    Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#943    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5841:16)
+#944    StatefulElement.performRebuild (package:flutter/src/widgets/framework.dart:5982:11)
+#945    Element.rebuild (package:flutter/src/widgets/framework.dart:5529:7)
+#946    StatefulElement.update (package:flutter/src/widgets/framework.dart:6007:5)
+#947    Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#948    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5841:16)
+#949    Element.rebuild (package:flutter/src/widgets/framework.dart:5529:7)
+#950    ProxyElement.update (package:flutter/src/widgets/framework.dart:6149:5)
+#951    Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#952    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5841:16)
+#953    Element.rebuild (package:flutter/src/widgets/framework.dart:5529:7)
+#954    ProxyElement.update (package:flutter/src/widgets/framework.dart:6149:5)
+#955    Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#956    _RawViewElement._updateChild (package:flutter/src/widgets/view.dart:481:16)
+#957    _RawViewElement.update (package:flutter/src/widgets/view.dart:568:5)
+#958    Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#959    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5841:16)
+#960    Element.rebuild (package:flutter/src/widgets/framework.dart:5529:7)
+#961    StatelessElement.update (package:flutter/src/widgets/framework.dart:5895:5)
+#962    Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#963    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5841:16)
+#964    StatefulElement.performRebuild (package:flutter/src/widgets/framework.dart:5982:11)
+#965    Element.rebuild (package:flutter/src/widgets/framework.dart:5529:7)
+#966    StatefulElement.update (package:flutter/src/widgets/framework.dart:6007:5)
+#967    Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#968    RootElement._rebuild (package:flutter/src/widgets/binding.dart:1822:16)
+#969    RootElement.update (package:flutter/src/widgets/binding.dart:1800:5)
+#970    RootElement.performRebuild (package:flutter/src/widgets/binding.dart:1814:7)
+#971    Element.rebuild (package:flutter/src/widgets/framework.dart:5529:7)
+#972    BuildScope._tryRebuild (package:flutter/src/widgets/framework.dart:2750:15)
+#973    BuildScope._flushDirtyElements (package:flutter/src/widgets/framework.dart:2807:11)
+#974    BuildOwner.buildScope (package:flutter/src/widgets/framework.dart:3111:18)
+#975    AutomatedTestWidgetsFlutterBinding.drawFrame (package:flutter_test/src/binding.dart:2131:19)
+#976    RendererBinding._handlePersistentFrameCallback (package:flutter/src/rendering/binding.dart:495:5)
+#977    SchedulerBinding._invokeFrameCallback (package:flutter/src/scheduler/binding.dart:1430:15)
+#978    SchedulerBinding.handleDrawFrame (package:flutter/src/scheduler/binding.dart:1345:9)
+#979    AutomatedTestWidgetsFlutterBinding.pump.<anonymous closure> (package:flutter_test/src/binding.dart:1960:9)
+#982    TestAsyncUtils.guard (package:flutter_test/src/test_async_utils.dart:74:41)
+#983    AutomatedTestWidgetsFlutterBinding.pump (package:flutter_test/src/binding.dart:1949:27)
+#984    WidgetTester.pumpWidget.<anonymous closure> (package:flutter_test/src/widget_tester.dart:598:22)
+#987    TestAsyncUtils.guard (package:flutter_test/src/test_async_utils.dart:74:41)
+#988    WidgetTester.pumpWidget (package:flutter_test/src/widget_tester.dart:595:27)
+#989    main.<anonymous closure>.<anonymous closure> (file:///C:/Users/jeff/StudioProjects/gdar/test/ui/widgets/playback/playback_messages_test.dart:119:20)
+#990    testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:29)
+<asynchronous suspension>
+#991    TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1682:5)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided 5 frames from dart:async and package:stack_trace)
+
+════════════════════════════════════════════════════════════════════════════════════════════════════
+00:00 +0 -1: PlaybackMessages Displays nothing when showPlaybackMessages is false [E]
+  Test failed. See exception logs above.
+  The test description was: Displays nothing when showPlaybackMessages is false
+  
+00:00 +0 -1: PlaybackMessages Displays "Loading..." when loading
+══╡ EXCEPTION CAUGHT BY WIDGETS LIBRARY ╞═══════════════════════════════════════════════════════════
+The following ProviderNotFoundException was thrown building PlaybackMessages(dirty, dependencies:
+[InheritedCupertinoTheme, _InheritedProviderScope<AudioProvider?>,
+_InheritedProviderScope<SettingsProvider?>, _InheritedTheme, _LocalizationsScope-[GlobalKey#6e82c]],
+state: _PlaybackMessagesState#afe09):
+Error: Could not find the correct Provider<ThemeProvider> above this PlaybackMessages Widget
+
+This happens because you used a `BuildContext` that does not include the provider
+of your choice. There are a few common scenarios:
+
+- You added a new provider in your `main.dart` and performed a hot-reload.
+  To fix, perform a hot-restart.
+
+- The provider you are trying to read is in a different route.
+
+  Providers are "scoped". So if you insert of provider inside a route, then
+  other routes will not be able to access that provider.
+
+- You used a `BuildContext` that is an ancestor of the provider you are trying to read.
+
+  Make sure that PlaybackMessages is under your MultiProvider/Provider<ThemeProvider>.
+  This usually happens when you are creating a provider and trying to read it immediately.
+
+  For example, instead of:
+
+  ```
+  Widget build(BuildContext context) {
+    return Provider<Example>(
+      create: (_) => Example(),
+      // Will throw a ProviderNotFoundError, because `context` is associated
+      // to the widget that is the parent of `Provider<Example>`
+      child: Text(context.watch<Example>().toString()),
+    );
+  }
+  ```
+
+  consider using `builder` like so:
+
+  ```
+  Widget build(BuildContext context) {
+    return Provider<Example>(
+      create: (_) => Example(),
+      // we use `builder` to obtain a new `BuildContext` that has access to the provider
+      builder: (context, child) {
+        // No longer throws
+        return Text(context.watch<Example>().toString());
+      }
+    );
+  }
+  ```
+
+If none of these solutions work, consider asking for help on StackOverflow:
+https://stackoverflow.com/questions/tagged/flutter
+
+The relevant error-causing widget was:
+  PlaybackMessages
+  PlaybackMessages:file:///C:/Users/jeff/StudioProjects/gdar/test/ui/widgets/playback/playback_messages_test.dart:109:17
+
+When the exception was thrown, this was the stack:
+#0      Provider._inheritedElementOf (package:provider/src/provider.dart:377:7)
+#1      Provider.of (package:provider/src/provider.dart:327:30)
+#2      WatchContext.watch (package:provider/src/provider.dart:727:21)
+#3      _PlaybackMessagesState.build (package:shakedown/ui/widgets/playback/playback_messages.dart:152:35)
+#4      StatefulElement.build (package:flutter/src/widgets/framework.dart:5931:27)
+#5      ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5817:15)
+#6      StatefulElement.performRebuild (package:flutter/src/widgets/framework.dart:5982:11)
+#7      Element.rebuild (package:flutter/src/widgets/framework.dart:5529:7)
+#8      ComponentElement._firstBuild (package:flutter/src/widgets/framework.dart:5799:5)
+#9      StatefulElement._firstBuild (package:flutter/src/widgets/framework.dart:5973:11)
+#10     ComponentElement.mount (package:flutter/src/widgets/framework.dart:5793:5)
+...     Normal element mounting (25 frames)
+#35     Element.inflateWidget (package:flutter/src/widgets/framework.dart:4587:20)
+#36     MultiChildRenderObjectElement.inflateWidget (package:flutter/src/widgets/framework.dart:7264:36)
+#37     MultiChildRenderObjectElement.mount (package:flutter/src/widgets/framework.dart:7279:32)
+...     Normal element mounting (364 frames)
+#401    Element.inflateWidget (package:flutter/src/widgets/framework.dart:4587:20)
+#402    MultiChildRenderObjectElement.inflateWidget (package:flutter/src/widgets/framework.dart:7264:36)
+#403    MultiChildRenderObjectElement.mount (package:flutter/src/widgets/framework.dart:7279:32)
+...     Normal element mounting (473 frames)
+#876    _InheritedProviderScopeElement.mount (package:provider/src/inherited_provider.dart:424:11)
+...     Normal element mounting (7 frames)
+#883    _InheritedProviderScopeElement.mount (package:provider/src/inherited_provider.dart:424:11)
+...     Normal element mounting (7 frames)
+#890    _InheritedProviderScopeElement.mount (package:provider/src/inherited_provider.dart:424:11)
+...     Normal element mounting (7 frames)
+#897    SingleChildWidgetElementMixin.mount (package:nested/nested.dart:222:11)
+...     Normal element mounting (7 frames)
+#904    _NestedHookElement.mount (package:nested/nested.dart:187:11)
+...     Normal element mounting (7 frames)
+#911    SingleChildWidgetElementMixin.mount (package:nested/nested.dart:222:11)
+#912    Element.inflateWidget (package:flutter/src/widgets/framework.dart:4587:20)
+#913    Element.updateChild (package:flutter/src/widgets/framework.dart:4053:20)
+#914    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5841:16)
+#915    Element.rebuild (package:flutter/src/widgets/framework.dart:5529:7)
+#916    ProxyElement.update (package:flutter/src/widgets/framework.dart:6149:5)
+#917    _InheritedNotifierElement.update (package:flutter/src/widgets/inherited_notifier.dart:108:11)
+#918    Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#919    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5841:16)
+#920    StatefulElement.performRebuild (package:flutter/src/widgets/framework.dart:5982:11)
+#921    Element.rebuild (package:flutter/src/widgets/framework.dart:5529:7)
+#922    StatefulElement.update (package:flutter/src/widgets/framework.dart:6007:5)
+#923    Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#924    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5841:16)
+#925    Element.rebuild (package:flutter/src/widgets/framework.dart:5529:7)
+#926    ProxyElement.update (package:flutter/src/widgets/framework.dart:6149:5)
+#927    _InheritedNotifierElement.update (package:flutter/src/widgets/inherited_notifier.dart:108:11)
+#928    Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#929    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5841:16)
+#930    StatefulElement.performRebuild (package:flutter/src/widgets/framework.dart:5982:11)
+#931    Element.rebuild (package:flutter/src/widgets/framework.dart:5529:7)
+#932    StatefulElement.update (package:flutter/src/widgets/framework.dart:6007:5)
+#933    Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#934    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5841:16)
+#935    StatefulElement.performRebuild (package:flutter/src/widgets/framework.dart:5982:11)
+#936    Element.rebuild (package:flutter/src/widgets/framework.dart:5529:7)
+#937    StatefulElement.update (package:flutter/src/widgets/framework.dart:6007:5)
+#938    Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#939    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5841:16)
+#940    Element.rebuild (package:flutter/src/widgets/framework.dart:5529:7)
+#941    ProxyElement.update (package:flutter/src/widgets/framework.dart:6149:5)
+#942    Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#943    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5841:16)
+#944    StatefulElement.performRebuild (package:flutter/src/widgets/framework.dart:5982:11)
+#945    Element.rebuild (package:flutter/src/widgets/framework.dart:5529:7)
+#946    StatefulElement.update (package:flutter/src/widgets/framework.dart:6007:5)
+#947    Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#948    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5841:16)
+#949    Element.rebuild (package:flutter/src/widgets/framework.dart:5529:7)
+#950    ProxyElement.update (package:flutter/src/widgets/framework.dart:6149:5)
+#951    Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#952    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5841:16)
+#953    Element.rebuild (package:flutter/src/widgets/framework.dart:5529:7)
+#954    ProxyElement.update (package:flutter/src/widgets/framework.dart:6149:5)
+#955    Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#956    _RawViewElement._updateChild (package:flutter/src/widgets/view.dart:481:16)
+#957    _RawViewElement.update (package:flutter/src/widgets/view.dart:568:5)
+#958    Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#959    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5841:16)
+#960    Element.rebuild (package:flutter/src/widgets/framework.dart:5529:7)
+#961    StatelessElement.update (package:flutter/src/widgets/framework.dart:5895:5)
+#962    Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#963    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5841:16)
+#964    StatefulElement.performRebuild (package:flutter/src/widgets/framework.dart:5982:11)
+#965    Element.rebuild (package:flutter/src/widgets/framework.dart:5529:7)
+#966    StatefulElement.update (package:flutter/src/widgets/framework.dart:6007:5)
+#967    Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#968    RootElement._rebuild (package:flutter/src/widgets/binding.dart:1822:16)
+#969    RootElement.update (package:flutter/src/widgets/binding.dart:1800:5)
+#970    RootElement.performRebuild (package:flutter/src/widgets/binding.dart:1814:7)
+#971    Element.rebuild (package:flutter/src/widgets/framework.dart:5529:7)
+#972    BuildScope._tryRebuild (package:flutter/src/widgets/framework.dart:2750:15)
+#973    BuildScope._flushDirtyElements (package:flutter/src/widgets/framework.dart:2807:11)
+#974    BuildOwner.buildScope (package:flutter/src/widgets/framework.dart:3111:18)
+#975    AutomatedTestWidgetsFlutterBinding.drawFrame (package:flutter_test/src/binding.dart:2131:19)
+#976    RendererBinding._handlePersistentFrameCallback (package:flutter/src/rendering/binding.dart:495:5)
+#977    SchedulerBinding._invokeFrameCallback (package:flutter/src/scheduler/binding.dart:1430:15)
+#978    SchedulerBinding.handleDrawFrame (package:flutter/src/scheduler/binding.dart:1345:9)
+#979    AutomatedTestWidgetsFlutterBinding.pump.<anonymous closure> (package:flutter_test/src/binding.dart:1960:9)
+#982    TestAsyncUtils.guard (package:flutter_test/src/test_async_utils.dart:74:41)
+#983    AutomatedTestWidgetsFlutterBinding.pump (package:flutter_test/src/binding.dart:1949:27)
+#984    WidgetTester.pumpWidget.<anonymous closure> (package:flutter_test/src/widget_tester.dart:598:22)
+#987    TestAsyncUtils.guard (package:flutter_test/src/test_async_utils.dart:74:41)
+#988    WidgetTester.pumpWidget (package:flutter_test/src/widget_tester.dart:595:27)
+#989    main.<anonymous closure>.<anonymous closure> (file:///C:/Users/jeff/StudioProjects/gdar/test/ui/widgets/playback/playback_messages_test.dart:126:20)
+#990    testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:29)
+<asynchronous suspension>
+#991    TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1682:5)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided 5 frames from dart:async and package:stack_trace)
+
+════════════════════════════════════════════════════════════════════════════════════════════════════
+══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞════════════════════════════════════════════════════
+The following TestFailure was thrown running a test:
+Expected: exactly one matching candidate
+  Actual: _TextWidgetFinder:<Found 0 widgets with text "Loading...": []>
+   Which: means none were found but one was expected
+
+When the exception was thrown, this was the stack:
+#4      main.<anonymous closure>.<anonymous closure> (file:///C:/Users/jeff/StudioProjects/gdar/test/ui/widgets/playback/playback_messages_test.dart:127:7)
+<asynchronous suspension>
+#5      testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#6      TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1682:5)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided one frame from package:stack_trace)
+
+This was caught by the test expectation on the following line:
+  file:///C:/Users/jeff/StudioProjects/gdar/test/ui/widgets/playback/playback_messages_test.dart line 127
+The test description was:
+  Displays "Loading..." when loading
+════════════════════════════════════════════════════════════════════════════════════════════════════
+══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞════════════════════════════════════════════════════
+The following message was thrown:
+Multiple exceptions (2) were detected during the running of the current test, and at least one was
+unexpected.
+════════════════════════════════════════════════════════════════════════════════════════════════════
+00:00 +0 -2: PlaybackMessages Displays "Loading..." when loading [E]
+  Test failed. See exception logs above.
+  The test description was: Displays "Loading..." when loading
+  
+00:00 +0 -2: PlaybackMessages Displays "Buffering..." when buffering
+══╡ EXCEPTION CAUGHT BY WIDGETS LIBRARY ╞═══════════════════════════════════════════════════════════
+The following ProviderNotFoundException was thrown building PlaybackMessages(dirty, dependencies:
+[InheritedCupertinoTheme, _InheritedProviderScope<AudioProvider?>,
+_InheritedProviderScope<SettingsProvider?>, _InheritedTheme, _LocalizationsScope-[GlobalKey#3ca85]],
+state: _PlaybackMessagesState#2c0c7):
+Error: Could not find the correct Provider<ThemeProvider> above this PlaybackMessages Widget
+
+This happens because you used a `BuildContext` that does not include the provider
+of your choice. There are a few common scenarios:
+
+- You added a new provider in your `main.dart` and performed a hot-reload.
+  To fix, perform a hot-restart.
+
+- The provider you are trying to read is in a different route.
+
+  Providers are "scoped". So if you insert of provider inside a route, then
+  other routes will not be able to access that provider.
+
+- You used a `BuildContext` that is an ancestor of the provider you are trying to read.
+
+  Make sure that PlaybackMessages is under your MultiProvider/Provider<ThemeProvider>.
+  This usually happens when you are creating a provider and trying to read it immediately.
+
+  For example, instead of:
+
+  ```
+  Widget build(BuildContext context) {
+    return Provider<Example>(
+      create: (_) => Example(),
+      // Will throw a ProviderNotFoundError, because `context` is associated
+      // to the widget that is the parent of `Provider<Example>`
+      child: Text(context.watch<Example>().toString()),
+    );
+  }
+  ```
+
+  consider using `builder` like so:
+
+  ```
+  Widget build(BuildContext context) {
+    return Provider<Example>(
+      create: (_) => Example(),
+      // we use `builder` to obtain a new `BuildContext` that has access to the provider
+      builder: (context, child) {
+        // No longer throws
+        return Text(context.watch<Example>().toString());
+      }
+    );
+  }
+  ```
+
+If none of these solutions work, consider asking for help on StackOverflow:
+https://stackoverflow.com/questions/tagged/flutter
+
+The relevant error-causing widget was:
+  PlaybackMessages
+  PlaybackMessages:file:///C:/Users/jeff/StudioProjects/gdar/test/ui/widgets/playback/playback_messages_test.dart:109:17
+
+When the exception was thrown, this was the stack:
+#0      Provider._inheritedElementOf (package:provider/src/provider.dart:377:7)
+#1      Provider.of (package:provider/src/provider.dart:327:30)
+#2      WatchContext.watch (package:provider/src/provider.dart:727:21)
+#3      _PlaybackMessagesState.build (package:shakedown/ui/widgets/playback/playback_messages.dart:152:35)
+#4      StatefulElement.build (package:flutter/src/widgets/framework.dart:5931:27)
+#5      ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5817:15)
+#6      StatefulElement.performRebuild (package:flutter/src/widgets/framework.dart:5982:11)
+#7      Element.rebuild (package:flutter/src/widgets/framework.dart:5529:7)
+#8      ComponentElement._firstBuild (package:flutter/src/widgets/framework.dart:5799:5)
+#9      StatefulElement._firstBuild (package:flutter/src/widgets/framework.dart:5973:11)
+#10     ComponentElement.mount (package:flutter/src/widgets/framework.dart:5793:5)
+...     Normal element mounting (25 frames)
+#35     Element.inflateWidget (package:flutter/src/widgets/framework.dart:4587:20)
+#36     MultiChildRenderObjectElement.inflateWidget (package:flutter/src/widgets/framework.dart:7264:36)
+#37     MultiChildRenderObjectElement.mount (package:flutter/src/widgets/framework.dart:7279:32)
+...     Normal element mounting (364 frames)
+#401    Element.inflateWidget (package:flutter/src/widgets/framework.dart:4587:20)
+#402    MultiChildRenderObjectElement.inflateWidget (package:flutter/src/widgets/framework.dart:7264:36)
+#403    MultiChildRenderObjectElement.mount (package:flutter/src/widgets/framework.dart:7279:32)
+...     Normal element mounting (473 frames)
+#876    _InheritedProviderScopeElement.mount (package:provider/src/inherited_provider.dart:424:11)
+...     Normal element mounting (7 frames)
+#883    _InheritedProviderScopeElement.mount (package:provider/src/inherited_provider.dart:424:11)
+...     Normal element mounting (7 frames)
+#890    _InheritedProviderScopeElement.mount (package:provider/src/inherited_provider.dart:424:11)
+...     Normal element mounting (7 frames)
+#897    SingleChildWidgetElementMixin.mount (package:nested/nested.dart:222:11)
+...     Normal element mounting (7 frames)
+#904    _NestedHookElement.mount (package:nested/nested.dart:187:11)
+...     Normal element mounting (7 frames)
+#911    SingleChildWidgetElementMixin.mount (package:nested/nested.dart:222:11)
+#912    Element.inflateWidget (package:flutter/src/widgets/framework.dart:4587:20)
+#913    Element.updateChild (package:flutter/src/widgets/framework.dart:4053:20)
+#914    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5841:16)
+#915    Element.rebuild (package:flutter/src/widgets/framework.dart:5529:7)
+#916    ProxyElement.update (package:flutter/src/widgets/framework.dart:6149:5)
+#917    _InheritedNotifierElement.update (package:flutter/src/widgets/inherited_notifier.dart:108:11)
+#918    Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#919    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5841:16)
+#920    StatefulElement.performRebuild (package:flutter/src/widgets/framework.dart:5982:11)
+#921    Element.rebuild (package:flutter/src/widgets/framework.dart:5529:7)
+#922    StatefulElement.update (package:flutter/src/widgets/framework.dart:6007:5)
+#923    Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#924    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5841:16)
+#925    Element.rebuild (package:flutter/src/widgets/framework.dart:5529:7)
+#926    ProxyElement.update (package:flutter/src/widgets/framework.dart:6149:5)
+#927    _InheritedNotifierElement.update (package:flutter/src/widgets/inherited_notifier.dart:108:11)
+#928    Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#929    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5841:16)
+#930    StatefulElement.performRebuild (package:flutter/src/widgets/framework.dart:5982:11)
+#931    Element.rebuild (package:flutter/src/widgets/framework.dart:5529:7)
+#932    StatefulElement.update (package:flutter/src/widgets/framework.dart:6007:5)
+#933    Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#934    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5841:16)
+#935    StatefulElement.performRebuild (package:flutter/src/widgets/framework.dart:5982:11)
+#936    Element.rebuild (package:flutter/src/widgets/framework.dart:5529:7)
+#937    StatefulElement.update (package:flutter/src/widgets/framework.dart:6007:5)
+#938    Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#939    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5841:16)
+#940    Element.rebuild (package:flutter/src/widgets/framework.dart:5529:7)
+#941    ProxyElement.update (package:flutter/src/widgets/framework.dart:6149:5)
+#942    Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#943    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5841:16)
+#944    StatefulElement.performRebuild (package:flutter/src/widgets/framework.dart:5982:11)
+#945    Element.rebuild (package:flutter/src/widgets/framework.dart:5529:7)
+#946    StatefulElement.update (package:flutter/src/widgets/framework.dart:6007:5)
+#947    Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#948    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5841:16)
+#949    Element.rebuild (package:flutter/src/widgets/framework.dart:5529:7)
+#950    ProxyElement.update (package:flutter/src/widgets/framework.dart:6149:5)
+#951    Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#952    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5841:16)
+#953    Element.rebuild (package:flutter/src/widgets/framework.dart:5529:7)
+#954    ProxyElement.update (package:flutter/src/widgets/framework.dart:6149:5)
+#955    Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#956    _RawViewElement._updateChild (package:flutter/src/widgets/view.dart:481:16)
+#957    _RawViewElement.update (package:flutter/src/widgets/view.dart:568:5)
+#958    Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#959    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5841:16)
+#960    Element.rebuild (package:flutter/src/widgets/framework.dart:5529:7)
+#961    StatelessElement.update (package:flutter/src/widgets/framework.dart:5895:5)
+#962    Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#963    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5841:16)
+#964    StatefulElement.performRebuild (package:flutter/src/widgets/framework.dart:5982:11)
+#965    Element.rebuild (package:flutter/src/widgets/framework.dart:5529:7)
+#966    StatefulElement.update (package:flutter/src/widgets/framework.dart:6007:5)
+#967    Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#968    RootElement._rebuild (package:flutter/src/widgets/binding.dart:1822:16)
+#969    RootElement.update (package:flutter/src/widgets/binding.dart:1800:5)
+#970    RootElement.performRebuild (package:flutter/src/widgets/binding.dart:1814:7)
+#971    Element.rebuild (package:flutter/src/widgets/framework.dart:5529:7)
+#972    BuildScope._tryRebuild (package:flutter/src/widgets/framework.dart:2750:15)
+#973    BuildScope._flushDirtyElements (package:flutter/src/widgets/framework.dart:2807:11)
+#974    BuildOwner.buildScope (package:flutter/src/widgets/framework.dart:3111:18)
+#975    AutomatedTestWidgetsFlutterBinding.drawFrame (package:flutter_test/src/binding.dart:2131:19)
+#976    RendererBinding._handlePersistentFrameCallback (package:flutter/src/rendering/binding.dart:495:5)
+#977    SchedulerBinding._invokeFrameCallback (package:flutter/src/scheduler/binding.dart:1430:15)
+#978    SchedulerBinding.handleDrawFrame (package:flutter/src/scheduler/binding.dart:1345:9)
+#979    AutomatedTestWidgetsFlutterBinding.pump.<anonymous closure> (package:flutter_test/src/binding.dart:1960:9)
+#982    TestAsyncUtils.guard (package:flutter_test/src/test_async_utils.dart:74:41)
+#983    AutomatedTestWidgetsFlutterBinding.pump (package:flutter_test/src/binding.dart:1949:27)
+#984    WidgetTester.pumpWidget.<anonymous closure> (package:flutter_test/src/widget_tester.dart:598:22)
+#987    TestAsyncUtils.guard (package:flutter_test/src/test_async_utils.dart:74:41)
+#988    WidgetTester.pumpWidget (package:flutter_test/src/widget_tester.dart:595:27)
+#989    main.<anonymous closure>.<anonymous closure> (file:///C:/Users/jeff/StudioProjects/gdar/test/ui/widgets/playback/playback_messages_test.dart:133:20)
+#990    testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:29)
+<asynchronous suspension>
+#991    TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1682:5)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided 5 frames from dart:async and package:stack_trace)
+
+════════════════════════════════════════════════════════════════════════════════════════════════════
+══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞════════════════════════════════════════════════════
+The following TestFailure was thrown running a test:
+Expected: exactly one matching candidate
+  Actual: _TextWidgetFinder:<Found 0 widgets with text "Buffering...": []>
+   Which: means none were found but one was expected
+
+When the exception was thrown, this was the stack:
+#4      main.<anonymous closure>.<anonymous closure> (file:///C:/Users/jeff/StudioProjects/gdar/test/ui/widgets/playback/playback_messages_test.dart:134:7)
+<asynchronous suspension>
+#5      testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#6      TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1682:5)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided one frame from package:stack_trace)
+
+This was caught by the test expectation on the following line:
+  file:///C:/Users/jeff/StudioProjects/gdar/test/ui/widgets/playback/playback_messages_test.dart line 134
+The test description was:
+  Displays "Buffering..." when buffering
+════════════════════════════════════════════════════════════════════════════════════════════════════
+══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞════════════════════════════════════════════════════
+The following message was thrown:
+Multiple exceptions (2) were detected during the running of the current test, and at least one was
+unexpected.
+════════════════════════════════════════════════════════════════════════════════════════════════════
+00:00 +0 -3: PlaybackMessages Displays "Buffering..." when buffering [E]
+  Test failed. See exception logs above.
+  The test description was: Displays "Buffering..." when buffering
+  
+00:00 +0 -3: PlaybackMessages Keeps playback status visible when showPlaybackMessages is false
+══╡ EXCEPTION CAUGHT BY WIDGETS LIBRARY ╞═══════════════════════════════════════════════════════════
+The following ProviderNotFoundException was thrown building PlaybackMessages(dirty, dependencies:
+[InheritedCupertinoTheme, _InheritedProviderScope<AudioProvider?>,
+_InheritedProviderScope<SettingsProvider?>, _InheritedTheme, _LocalizationsScope-[GlobalKey#b0564]],
+state: _PlaybackMessagesState#84f53):
+Error: Could not find the correct Provider<ThemeProvider> above this PlaybackMessages Widget
+
+This happens because you used a `BuildContext` that does not include the provider
+of your choice. There are a few common scenarios:
+
+- You added a new provider in your `main.dart` and performed a hot-reload.
+  To fix, perform a hot-restart.
+
+- The provider you are trying to read is in a different route.
+
+  Providers are "scoped". So if you insert of provider inside a route, then
+  other routes will not be able to access that provider.
+
+- You used a `BuildContext` that is an ancestor of the provider you are trying to read.
+
+  Make sure that PlaybackMessages is under your MultiProvider/Provider<ThemeProvider>.
+  This usually happens when you are creating a provider and trying to read it immediately.
+
+  For example, instead of:
+
+  ```
+  Widget build(BuildContext context) {
+    return Provider<Example>(
+      create: (_) => Example(),
+      // Will throw a ProviderNotFoundError, because `context` is associated
+      // to the widget that is the parent of `Provider<Example>`
+      child: Text(context.watch<Example>().toString()),
+    );
+  }
+  ```
+
+  consider using `builder` like so:
+
+  ```
+  Widget build(BuildContext context) {
+    return Provider<Example>(
+      create: (_) => Example(),
+      // we use `builder` to obtain a new `BuildContext` that has access to the provider
+      builder: (context, child) {
+        // No longer throws
+        return Text(context.watch<Example>().toString());
+      }
+    );
+  }
+  ```
+
+If none of these solutions work, consider asking for help on StackOverflow:
+https://stackoverflow.com/questions/tagged/flutter
+
+The relevant error-causing widget was:
+  PlaybackMessages
+  PlaybackMessages:file:///C:/Users/jeff/StudioProjects/gdar/test/ui/widgets/playback/playback_messages_test.dart:109:17
+
+When the exception was thrown, this was the stack:
+#0      Provider._inheritedElementOf (package:provider/src/provider.dart:377:7)
+#1      Provider.of (package:provider/src/provider.dart:327:30)
+#2      WatchContext.watch (package:provider/src/provider.dart:727:21)
+#3      _PlaybackMessagesState.build (package:shakedown/ui/widgets/playback/playback_messages.dart:152:35)
+#4      StatefulElement.build (package:flutter/src/widgets/framework.dart:5931:27)
+#5      ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5817:15)
+#6      StatefulElement.performRebuild (package:flutter/src/widgets/framework.dart:5982:11)
+#7      Element.rebuild (package:flutter/src/widgets/framework.dart:5529:7)
+#8      ComponentElement._firstBuild (package:flutter/src/widgets/framework.dart:5799:5)
+#9      StatefulElement._firstBuild (package:flutter/src/widgets/framework.dart:5973:11)
+#10     ComponentElement.mount (package:flutter/src/widgets/framework.dart:5793:5)
+...     Normal element mounting (25 frames)
+#35     Element.inflateWidget (package:flutter/src/widgets/framework.dart:4587:20)
+#36     MultiChildRenderObjectElement.inflateWidget (package:flutter/src/widgets/framework.dart:7264:36)
+#37     MultiChildRenderObjectElement.mount (package:flutter/src/widgets/framework.dart:7279:32)
+...     Normal element mounting (364 frames)
+#401    Element.inflateWidget (package:flutter/src/widgets/framework.dart:4587:20)
+#402    MultiChildRenderObjectElement.inflateWidget (package:flutter/src/widgets/framework.dart:7264:36)
+#403    MultiChildRenderObjectElement.mount (package:flutter/src/widgets/framework.dart:7279:32)
+...     Normal element mounting (473 frames)
+#876    _InheritedProviderScopeElement.mount (package:provider/src/inherited_provider.dart:424:11)
+...     Normal element mounting (7 frames)
+#883    _InheritedProviderScopeElement.mount (package:provider/src/inherited_provider.dart:424:11)
+...     Normal element mounting (7 frames)
+#890    _InheritedProviderScopeElement.mount (package:provider/src/inherited_provider.dart:424:11)
+...     Normal element mounting (7 frames)
+#897    SingleChildWidgetElementMixin.mount (package:nested/nested.dart:222:11)
+...     Normal element mounting (7 frames)
+#904    _NestedHookElement.mount (package:nested/nested.dart:187:11)
+...     Normal element mounting (7 frames)
+#911    SingleChildWidgetElementMixin.mount (package:nested/nested.dart:222:11)
+#912    Element.inflateWidget (package:flutter/src/widgets/framework.dart:4587:20)
+#913    Element.updateChild (package:flutter/src/widgets/framework.dart:4053:20)
+#914    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5841:16)
+#915    Element.rebuild (package:flutter/src/widgets/framework.dart:5529:7)
+#916    ProxyElement.update (package:flutter/src/widgets/framework.dart:6149:5)
+#917    _InheritedNotifierElement.update (package:flutter/src/widgets/inherited_notifier.dart:108:11)
+#918    Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#919    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5841:16)
+#920    StatefulElement.performRebuild (package:flutter/src/widgets/framework.dart:5982:11)
+#921    Element.rebuild (package:flutter/src/widgets/framework.dart:5529:7)
+#922    StatefulElement.update (package:flutter/src/widgets/framework.dart:6007:5)
+#923    Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#924    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5841:16)
+#925    Element.rebuild (package:flutter/src/widgets/framework.dart:5529:7)
+#926    ProxyElement.update (package:flutter/src/widgets/framework.dart:6149:5)
+#927    _InheritedNotifierElement.update (package:flutter/src/widgets/inherited_notifier.dart:108:11)
+#928    Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#929    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5841:16)
+#930    StatefulElement.performRebuild (package:flutter/src/widgets/framework.dart:5982:11)
+#931    Element.rebuild (package:flutter/src/widgets/framework.dart:5529:7)
+#932    StatefulElement.update (package:flutter/src/widgets/framework.dart:6007:5)
+#933    Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#934    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5841:16)
+#935    StatefulElement.performRebuild (package:flutter/src/widgets/framework.dart:5982:11)
+#936    Element.rebuild (package:flutter/src/widgets/framework.dart:5529:7)
+#937    StatefulElement.update (package:flutter/src/widgets/framework.dart:6007:5)
+#938    Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#939    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5841:16)
+#940    Element.rebuild (package:flutter/src/widgets/framework.dart:5529:7)
+#941    ProxyElement.update (package:flutter/src/widgets/framework.dart:6149:5)
+#942    Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#943    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5841:16)
+#944    StatefulElement.performRebuild (package:flutter/src/widgets/framework.dart:5982:11)
+#945    Element.rebuild (package:flutter/src/widgets/framework.dart:5529:7)
+#946    StatefulElement.update (package:flutter/src/widgets/framework.dart:6007:5)
+#947    Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#948    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5841:16)
+#949    Element.rebuild (package:flutter/src/widgets/framework.dart:5529:7)
+#950    ProxyElement.update (package:flutter/src/widgets/framework.dart:6149:5)
+#951    Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#952    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5841:16)
+#953    Element.rebuild (package:flutter/src/widgets/framework.dart:5529:7)
+#954    ProxyElement.update (package:flutter/src/widgets/framework.dart:6149:5)
+#955    Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#956    _RawViewElement._updateChild (package:flutter/src/widgets/view.dart:481:16)
+#957    _RawViewElement.update (package:flutter/src/widgets/view.dart:568:5)
+#958    Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#959    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5841:16)
+#960    Element.rebuild (package:flutter/src/widgets/framework.dart:5529:7)
+#961    StatelessElement.update (package:flutter/src/widgets/framework.dart:5895:5)
+#962    Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#963    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5841:16)
+#964    StatefulElement.performRebuild (package:flutter/src/widgets/framework.dart:5982:11)
+#965    Element.rebuild (package:flutter/src/widgets/framework.dart:5529:7)
+#966    StatefulElement.update (package:flutter/src/widgets/framework.dart:6007:5)
+#967    Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#968    RootElement._rebuild (package:flutter/src/widgets/binding.dart:1822:16)
+#969    RootElement.update (package:flutter/src/widgets/binding.dart:1800:5)
+#970    RootElement.performRebuild (package:flutter/src/widgets/binding.dart:1814:7)
+#971    Element.rebuild (package:flutter/src/widgets/framework.dart:5529:7)
+#972    BuildScope._tryRebuild (package:flutter/src/widgets/framework.dart:2750:15)
+#973    BuildScope._flushDirtyElements (package:flutter/src/widgets/framework.dart:2807:11)
+#974    BuildOwner.buildScope (package:flutter/src/widgets/framework.dart:3111:18)
+#975    AutomatedTestWidgetsFlutterBinding.drawFrame (package:flutter_test/src/binding.dart:2131:19)
+#976    RendererBinding._handlePersistentFrameCallback (package:flutter/src/rendering/binding.dart:495:5)
+#977    SchedulerBinding._invokeFrameCallback (package:flutter/src/scheduler/binding.dart:1430:15)
+#978    SchedulerBinding.handleDrawFrame (package:flutter/src/scheduler/binding.dart:1345:9)
+#979    AutomatedTestWidgetsFlutterBinding.pump.<anonymous closure> (package:flutter_test/src/binding.dart:1960:9)
+#982    TestAsyncUtils.guard (package:flutter_test/src/test_async_utils.dart:74:41)
+#983    AutomatedTestWidgetsFlutterBinding.pump (package:flutter_test/src/binding.dart:1949:27)
+#984    WidgetTester.pumpWidget.<anonymous closure> (package:flutter_test/src/widget_tester.dart:598:22)
+#987    TestAsyncUtils.guard (package:flutter_test/src/test_async_utils.dart:74:41)
+#988    WidgetTester.pumpWidget (package:flutter_test/src/widget_tester.dart:595:27)
+#989    main.<anonymous closure>.<anonymous closure> (file:///C:/Users/jeff/StudioProjects/gdar/test/ui/widgets/playback/playback_messages_test.dart:144:20)
+#990    testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:29)
+<asynchronous suspension>
+#991    TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1682:5)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided 5 frames from dart:async and package:stack_trace)
+
+════════════════════════════════════════════════════════════════════════════════════════════════════
+══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞════════════════════════════════════════════════════
+The following TestFailure was thrown running a test:
+Expected: exactly one matching candidate
+  Actual: _TextWidgetFinder:<Found 0 widgets with text "Buffering...": []>
+   Which: means none were found but one was expected
+
+When the exception was thrown, this was the stack:
+#4      main.<anonymous closure>.<anonymous closure> (file:///C:/Users/jeff/StudioProjects/gdar/test/ui/widgets/playback/playback_messages_test.dart:145:7)
+<asynchronous suspension>
+#5      testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#6      TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1682:5)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided one frame from package:stack_trace)
+
+This was caught by the test expectation on the following line:
+  file:///C:/Users/jeff/StudioProjects/gdar/test/ui/widgets/playback/playback_messages_test.dart line 145
+The test description was:
+  Keeps playback status visible when showPlaybackMessages is false
+════════════════════════════════════════════════════════════════════════════════════════════════════
+══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞════════════════════════════════════════════════════
+The following message was thrown:
+Multiple exceptions (2) were detected during the running of the current test, and at least one was
+unexpected.
+════════════════════════════════════════════════════════════════════════════════════════════════════
+00:00 +0 -4: PlaybackMessages Keeps playback status visible when showPlaybackMessages is false [E]
+  Test failed. See exception logs above.
+  The test description was: Keeps playback status visible when showPlaybackMessages is false
+  
+00:00 +0 -4: PlaybackMessages Displays Agent Message when notification received
+══╡ EXCEPTION CAUGHT BY WIDGETS LIBRARY ╞═══════════════════════════════════════════════════════════
+The following ProviderNotFoundException was thrown building PlaybackMessages(dirty, dependencies:
+[InheritedCupertinoTheme, _InheritedProviderScope<AudioProvider?>,
+_InheritedProviderScope<SettingsProvider?>, _InheritedTheme, _LocalizationsScope-[GlobalKey#68777]],
+state: _PlaybackMessagesState#1da9a):
+Error: Could not find the correct Provider<ThemeProvider> above this PlaybackMessages Widget
+
+This happens because you used a `BuildContext` that does not include the provider
+of your choice. There are a few common scenarios:
+
+- You added a new provider in your `main.dart` and performed a hot-reload.
+  To fix, perform a hot-restart.
+
+- The provider you are trying to read is in a different route.
+
+  Providers are "scoped". So if you insert of provider inside a route, then
+  other routes will not be able to access that provider.
+
+- You used a `BuildContext` that is an ancestor of the provider you are trying to read.
+
+  Make sure that PlaybackMessages is under your MultiProvider/Provider<ThemeProvider>.
+  This usually happens when you are creating a provider and trying to read it immediately.
+
+  For example, instead of:
+
+  ```
+  Widget build(BuildContext context) {
+    return Provider<Example>(
+      create: (_) => Example(),
+      // Will throw a ProviderNotFoundError, because `context` is associated
+      // to the widget that is the parent of `Provider<Example>`
+      child: Text(context.watch<Example>().toString()),
+    );
+  }
+  ```
+
+  consider using `builder` like so:
+
+  ```
+  Widget build(BuildContext context) {
+    return Provider<Example>(
+      create: (_) => Example(),
+      // we use `builder` to obtain a new `BuildContext` that has access to the provider
+      builder: (context, child) {
+        // No longer throws
+        return Text(context.watch<Example>().toString());
+      }
+    );
+  }
+  ```
+
+If none of these solutions work, consider asking for help on StackOverflow:
+https://stackoverflow.com/questions/tagged/flutter
+
+The relevant error-causing widget was:
+  PlaybackMessages
+  PlaybackMessages:file:///C:/Users/jeff/StudioProjects/gdar/test/ui/widgets/playback/playback_messages_test.dart:109:17
+
+When the exception was thrown, this was the stack:
+#0      Provider._inheritedElementOf (package:provider/src/provider.dart:377:7)
+#1      Provider.of (package:provider/src/provider.dart:327:30)
+#2      WatchContext.watch (package:provider/src/provider.dart:727:21)
+#3      _PlaybackMessagesState.build (package:shakedown/ui/widgets/playback/playback_messages.dart:152:35)
+#4      StatefulElement.build (package:flutter/src/widgets/framework.dart:5931:27)
+#5      ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5817:15)
+#6      StatefulElement.performRebuild (package:flutter/src/widgets/framework.dart:5982:11)
+#7      Element.rebuild (package:flutter/src/widgets/framework.dart:5529:7)
+#8      ComponentElement._firstBuild (package:flutter/src/widgets/framework.dart:5799:5)
+#9      StatefulElement._firstBuild (package:flutter/src/widgets/framework.dart:5973:11)
+#10     ComponentElement.mount (package:flutter/src/widgets/framework.dart:5793:5)
+...     Normal element mounting (25 frames)
+#35     Element.inflateWidget (package:flutter/src/widgets/framework.dart:4587:20)
+#36     MultiChildRenderObjectElement.inflateWidget (package:flutter/src/widgets/framework.dart:7264:36)
+#37     MultiChildRenderObjectElement.mount (package:flutter/src/widgets/framework.dart:7279:32)
+...     Normal element mounting (364 frames)
+#401    Element.inflateWidget (package:flutter/src/widgets/framework.dart:4587:20)
+#402    MultiChildRenderObjectElement.inflateWidget (package:flutter/src/widgets/framework.dart:7264:36)
+#403    MultiChildRenderObjectElement.mount (package:flutter/src/widgets/framework.dart:7279:32)
+...     Normal element mounting (473 frames)
+#876    _InheritedProviderScopeElement.mount (package:provider/src/inherited_provider.dart:424:11)
+...     Normal element mounting (7 frames)
+#883    _InheritedProviderScopeElement.mount (package:provider/src/inherited_provider.dart:424:11)
+...     Normal element mounting (7 frames)
+#890    _InheritedProviderScopeElement.mount (package:provider/src/inherited_provider.dart:424:11)
+...     Normal element mounting (7 frames)
+#897    SingleChildWidgetElementMixin.mount (package:nested/nested.dart:222:11)
+...     Normal element mounting (7 frames)
+#904    _NestedHookElement.mount (package:nested/nested.dart:187:11)
+...     Normal element mounting (7 frames)
+#911    SingleChildWidgetElementMixin.mount (package:nested/nested.dart:222:11)
+#912    Element.inflateWidget (package:flutter/src/widgets/framework.dart:4587:20)
+#913    Element.updateChild (package:flutter/src/widgets/framework.dart:4053:20)
+#914    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5841:16)
+#915    Element.rebuild (package:flutter/src/widgets/framework.dart:5529:7)
+#916    ProxyElement.update (package:flutter/src/widgets/framework.dart:6149:5)
+#917    _InheritedNotifierElement.update (package:flutter/src/widgets/inherited_notifier.dart:108:11)
+#918    Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#919    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5841:16)
+#920    StatefulElement.performRebuild (package:flutter/src/widgets/framework.dart:5982:11)
+#921    Element.rebuild (package:flutter/src/widgets/framework.dart:5529:7)
+#922    StatefulElement.update (package:flutter/src/widgets/framework.dart:6007:5)
+#923    Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#924    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5841:16)
+#925    Element.rebuild (package:flutter/src/widgets/framework.dart:5529:7)
+#926    ProxyElement.update (package:flutter/src/widgets/framework.dart:6149:5)
+#927    _InheritedNotifierElement.update (package:flutter/src/widgets/inherited_notifier.dart:108:11)
+#928    Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#929    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5841:16)
+#930    StatefulElement.performRebuild (package:flutter/src/widgets/framework.dart:5982:11)
+#931    Element.rebuild (package:flutter/src/widgets/framework.dart:5529:7)
+#932    StatefulElement.update (package:flutter/src/widgets/framework.dart:6007:5)
+#933    Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#934    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5841:16)
+#935    StatefulElement.performRebuild (package:flutter/src/widgets/framework.dart:5982:11)
+#936    Element.rebuild (package:flutter/src/widgets/framework.dart:5529:7)
+#937    StatefulElement.update (package:flutter/src/widgets/framework.dart:6007:5)
+#938    Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#939    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5841:16)
+#940    Element.rebuild (package:flutter/src/widgets/framework.dart:5529:7)
+#941    ProxyElement.update (package:flutter/src/widgets/framework.dart:6149:5)
+#942    Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#943    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5841:16)
+#944    StatefulElement.performRebuild (package:flutter/src/widgets/framework.dart:5982:11)
+#945    Element.rebuild (package:flutter/src/widgets/framework.dart:5529:7)
+#946    StatefulElement.update (package:flutter/src/widgets/framework.dart:6007:5)
+#947    Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#948    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5841:16)
+#949    Element.rebuild (package:flutter/src/widgets/framework.dart:5529:7)
+#950    ProxyElement.update (package:flutter/src/widgets/framework.dart:6149:5)
+#951    Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#952    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5841:16)
+#953    Element.rebuild (package:flutter/src/widgets/framework.dart:5529:7)
+#954    ProxyElement.update (package:flutter/src/widgets/framework.dart:6149:5)
+#955    Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#956    _RawViewElement._updateChild (package:flutter/src/widgets/view.dart:481:16)
+#957    _RawViewElement.update (package:flutter/src/widgets/view.dart:568:5)
+#958    Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#959    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5841:16)
+#960    Element.rebuild (package:flutter/src/widgets/framework.dart:5529:7)
+#961    StatelessElement.update (package:flutter/src/widgets/framework.dart:5895:5)
+#962    Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#963    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5841:16)
+#964    StatefulElement.performRebuild (package:flutter/src/widgets/framework.dart:5982:11)
+#965    Element.rebuild (package:flutter/src/widgets/framework.dart:5529:7)
+#966    StatefulElement.update (package:flutter/src/widgets/framework.dart:6007:5)
+#967    Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#968    RootElement._rebuild (package:flutter/src/widgets/binding.dart:1822:16)
+#969    RootElement.update (package:flutter/src/widgets/binding.dart:1800:5)
+#970    RootElement.performRebuild (package:flutter/src/widgets/binding.dart:1814:7)
+#971    Element.rebuild (package:flutter/src/widgets/framework.dart:5529:7)
+#972    BuildScope._tryRebuild (package:flutter/src/widgets/framework.dart:2750:15)
+#973    BuildScope._flushDirtyElements (package:flutter/src/widgets/framework.dart:2807:11)
+#974    BuildOwner.buildScope (package:flutter/src/widgets/framework.dart:3111:18)
+#975    AutomatedTestWidgetsFlutterBinding.drawFrame (package:flutter_test/src/binding.dart:2131:19)
+#976    RendererBinding._handlePersistentFrameCallback (package:flutter/src/rendering/binding.dart:495:5)
+#977    SchedulerBinding._invokeFrameCallback (package:flutter/src/scheduler/binding.dart:1430:15)
+#978    SchedulerBinding.handleDrawFrame (package:flutter/src/scheduler/binding.dart:1345:9)
+#979    AutomatedTestWidgetsFlutterBinding.pump.<anonymous closure> (package:flutter_test/src/binding.dart:1960:9)
+#982    TestAsyncUtils.guard (package:flutter_test/src/test_async_utils.dart:74:41)
+#983    AutomatedTestWidgetsFlutterBinding.pump (package:flutter_test/src/binding.dart:1949:27)
+#984    WidgetTester.pumpWidget.<anonymous closure> (package:flutter_test/src/widget_tester.dart:598:22)
+#987    TestAsyncUtils.guard (package:flutter_test/src/test_async_utils.dart:74:41)
+#988    WidgetTester.pumpWidget (package:flutter_test/src/widget_tester.dart:595:27)
+#989    main.<anonymous closure>.<anonymous closure> (file:///C:/Users/jeff/StudioProjects/gdar/test/ui/widgets/playback/playback_messages_test.dart:153:20)
+#990    testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:29)
+<asynchronous suspension>
+#991    TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1682:5)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided 5 frames from dart:async and package:stack_trace)
+
+════════════════════════════════════════════════════════════════════════════════════════════════════
+══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞════════════════════════════════════════════════════
+The following TestFailure was thrown running a test:
+Expected: exactly one matching candidate
+  Actual: _TextWidgetFinder:<Found 0 widgets with text "Buffering...": []>
+   Which: means none were found but one was expected
+
+When the exception was thrown, this was the stack:
+#4      main.<anonymous closure>.<anonymous closure> (file:///C:/Users/jeff/StudioProjects/gdar/test/ui/widgets/playback/playback_messages_test.dart:154:7)
+<asynchronous suspension>
+#5      testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#6      TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1682:5)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided one frame from package:stack_trace)
+
+This was caught by the test expectation on the following line:
+  file:///C:/Users/jeff/StudioProjects/gdar/test/ui/widgets/playback/playback_messages_test.dart line 154
+The test description was:
+  Displays Agent Message when notification received
+════════════════════════════════════════════════════════════════════════════════════════════════════
+══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞════════════════════════════════════════════════════
+The following message was thrown:
+Multiple exceptions (2) were detected during the running of the current test, and at least one was
+unexpected.
+════════════════════════════════════════════════════════════════════════════════════════════════════
+00:00 +0 -5: PlaybackMessages Displays Agent Message when notification received [E]
+  Test failed. See exception logs above.
+  The test description was: Displays Agent Message when notification received
+  
+00:00 +0 -5: PlaybackMessages Clears Agent Message when playback resumes (Ready + Playing)
+══╡ EXCEPTION CAUGHT BY WIDGETS LIBRARY ╞═══════════════════════════════════════════════════════════
+The following ProviderNotFoundException was thrown building PlaybackMessages(dirty, dependencies:
+[InheritedCupertinoTheme, _InheritedProviderScope<AudioProvider?>,
+_InheritedProviderScope<SettingsProvider?>, _InheritedTheme, _LocalizationsScope-[GlobalKey#c7dc3]],
+state: _PlaybackMessagesState#7a4f1):
+Error: Could not find the correct Provider<ThemeProvider> above this PlaybackMessages Widget
+
+This happens because you used a `BuildContext` that does not include the provider
+of your choice. There are a few common scenarios:
+
+- You added a new provider in your `main.dart` and performed a hot-reload.
+  To fix, perform a hot-restart.
+
+- The provider you are trying to read is in a different route.
+
+  Providers are "scoped". So if you insert of provider inside a route, then
+  other routes will not be able to access that provider.
+
+- You used a `BuildContext` that is an ancestor of the provider you are trying to read.
+
+  Make sure that PlaybackMessages is under your MultiProvider/Provider<ThemeProvider>.
+  This usually happens when you are creating a provider and trying to read it immediately.
+
+  For example, instead of:
+
+  ```
+  Widget build(BuildContext context) {
+    return Provider<Example>(
+      create: (_) => Example(),
+      // Will throw a ProviderNotFoundError, because `context` is associated
+      // to the widget that is the parent of `Provider<Example>`
+      child: Text(context.watch<Example>().toString()),
+    );
+  }
+  ```
+
+  consider using `builder` like so:
+
+  ```
+  Widget build(BuildContext context) {
+    return Provider<Example>(
+      create: (_) => Example(),
+      // we use `builder` to obtain a new `BuildContext` that has access to the provider
+      builder: (context, child) {
+        // No longer throws
+        return Text(context.watch<Example>().toString());
+      }
+    );
+  }
+  ```
+
+If none of these solutions work, consider asking for help on StackOverflow:
+https://stackoverflow.com/questions/tagged/flutter
+
+The relevant error-causing widget was:
+  PlaybackMessages
+  PlaybackMessages:file:///C:/Users/jeff/StudioProjects/gdar/test/ui/widgets/playback/playback_messages_test.dart:109:17
+
+When the exception was thrown, this was the stack:
+#0      Provider._inheritedElementOf (package:provider/src/provider.dart:377:7)
+#1      Provider.of (package:provider/src/provider.dart:327:30)
+#2      WatchContext.watch (package:provider/src/provider.dart:727:21)
+#3      _PlaybackMessagesState.build (package:shakedown/ui/widgets/playback/playback_messages.dart:152:35)
+#4      StatefulElement.build (package:flutter/src/widgets/framework.dart:5931:27)
+#5      ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5817:15)
+#6      StatefulElement.performRebuild (package:flutter/src/widgets/framework.dart:5982:11)
+#7      Element.rebuild (package:flutter/src/widgets/framework.dart:5529:7)
+#8      ComponentElement._firstBuild (package:flutter/src/widgets/framework.dart:5799:5)
+#9      StatefulElement._firstBuild (package:flutter/src/widgets/framework.dart:5973:11)
+#10     ComponentElement.mount (package:flutter/src/widgets/framework.dart:5793:5)
+...     Normal element mounting (25 frames)
+#35     Element.inflateWidget (package:flutter/src/widgets/framework.dart:4587:20)
+#36     MultiChildRenderObjectElement.inflateWidget (package:flutter/src/widgets/framework.dart:7264:36)
+#37     MultiChildRenderObjectElement.mount (package:flutter/src/widgets/framework.dart:7279:32)
+...     Normal element mounting (364 frames)
+#401    Element.inflateWidget (package:flutter/src/widgets/framework.dart:4587:20)
+#402    MultiChildRenderObjectElement.inflateWidget (package:flutter/src/widgets/framework.dart:7264:36)
+#403    MultiChildRenderObjectElement.mount (package:flutter/src/widgets/framework.dart:7279:32)
+...     Normal element mounting (473 frames)
+#876    _InheritedProviderScopeElement.mount (package:provider/src/inherited_provider.dart:424:11)
+...     Normal element mounting (7 frames)
+#883    _InheritedProviderScopeElement.mount (package:provider/src/inherited_provider.dart:424:11)
+...     Normal element mounting (7 frames)
+#890    _InheritedProviderScopeElement.mount (package:provider/src/inherited_provider.dart:424:11)
+...     Normal element mounting (7 frames)
+#897    SingleChildWidgetElementMixin.mount (package:nested/nested.dart:222:11)
+...     Normal element mounting (7 frames)
+#904    _NestedHookElement.mount (package:nested/nested.dart:187:11)
+...     Normal element mounting (7 frames)
+#911    SingleChildWidgetElementMixin.mount (package:nested/nested.dart:222:11)
+#912    Element.inflateWidget (package:flutter/src/widgets/framework.dart:4587:20)
+#913    Element.updateChild (package:flutter/src/widgets/framework.dart:4053:20)
+#914    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5841:16)
+#915    Element.rebuild (package:flutter/src/widgets/framework.dart:5529:7)
+#916    ProxyElement.update (package:flutter/src/widgets/framework.dart:6149:5)
+#917    _InheritedNotifierElement.update (package:flutter/src/widgets/inherited_notifier.dart:108:11)
+#918    Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#919    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5841:16)
+#920    StatefulElement.performRebuild (package:flutter/src/widgets/framework.dart:5982:11)
+#921    Element.rebuild (package:flutter/src/widgets/framework.dart:5529:7)
+#922    StatefulElement.update (package:flutter/src/widgets/framework.dart:6007:5)
+#923    Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#924    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5841:16)
+#925    Element.rebuild (package:flutter/src/widgets/framework.dart:5529:7)
+#926    ProxyElement.update (package:flutter/src/widgets/framework.dart:6149:5)
+#927    _InheritedNotifierElement.update (package:flutter/src/widgets/inherited_notifier.dart:108:11)
+#928    Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#929    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5841:16)
+#930    StatefulElement.performRebuild (package:flutter/src/widgets/framework.dart:5982:11)
+#931    Element.rebuild (package:flutter/src/widgets/framework.dart:5529:7)
+#932    StatefulElement.update (package:flutter/src/widgets/framework.dart:6007:5)
+#933    Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#934    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5841:16)
+#935    StatefulElement.performRebuild (package:flutter/src/widgets/framework.dart:5982:11)
+#936    Element.rebuild (package:flutter/src/widgets/framework.dart:5529:7)
+#937    StatefulElement.update (package:flutter/src/widgets/framework.dart:6007:5)
+#938    Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#939    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5841:16)
+#940    Element.rebuild (package:flutter/src/widgets/framework.dart:5529:7)
+#941    ProxyElement.update (package:flutter/src/widgets/framework.dart:6149:5)
+#942    Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#943    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5841:16)
+#944    StatefulElement.performRebuild (package:flutter/src/widgets/framework.dart:5982:11)
+#945    Element.rebuild (package:flutter/src/widgets/framework.dart:5529:7)
+#946    StatefulElement.update (package:flutter/src/widgets/framework.dart:6007:5)
+#947    Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#948    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5841:16)
+#949    Element.rebuild (package:flutter/src/widgets/framework.dart:5529:7)
+#950    ProxyElement.update (package:flutter/src/widgets/framework.dart:6149:5)
+#951    Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#952    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5841:16)
+#953    Element.rebuild (package:flutter/src/widgets/framework.dart:5529:7)
+#954    ProxyElement.update (package:flutter/src/widgets/framework.dart:6149:5)
+#955    Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#956    _RawViewElement._updateChild (package:flutter/src/widgets/view.dart:481:16)
+#957    _RawViewElement.update (package:flutter/src/widgets/view.dart:568:5)
+#958    Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#959    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5841:16)
+#960    Element.rebuild (package:flutter/src/widgets/framework.dart:5529:7)
+#961    StatelessElement.update (package:flutter/src/widgets/framework.dart:5895:5)
+#962    Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#963    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5841:16)
+#964    StatefulElement.performRebuild (package:flutter/src/widgets/framework.dart:5982:11)
+#965    Element.rebuild (package:flutter/src/widgets/framework.dart:5529:7)
+#966    StatefulElement.update (package:flutter/src/widgets/framework.dart:6007:5)
+#967    Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#968    RootElement._rebuild (package:flutter/src/widgets/binding.dart:1822:16)
+#969    RootElement.update (package:flutter/src/widgets/binding.dart:1800:5)
+#970    RootElement.performRebuild (package:flutter/src/widgets/binding.dart:1814:7)
+#971    Element.rebuild (package:flutter/src/widgets/framework.dart:5529:7)
+#972    BuildScope._tryRebuild (package:flutter/src/widgets/framework.dart:2750:15)
+#973    BuildScope._flushDirtyElements (package:flutter/src/widgets/framework.dart:2807:11)
+#974    BuildOwner.buildScope (package:flutter/src/widgets/framework.dart:3111:18)
+#975    AutomatedTestWidgetsFlutterBinding.drawFrame (package:flutter_test/src/binding.dart:2131:19)
+#976    RendererBinding._handlePersistentFrameCallback (package:flutter/src/rendering/binding.dart:495:5)
+#977    SchedulerBinding._invokeFrameCallback (package:flutter/src/scheduler/binding.dart:1430:15)
+#978    SchedulerBinding.handleDrawFrame (package:flutter/src/scheduler/binding.dart:1345:9)
+#979    AutomatedTestWidgetsFlutterBinding.pump.<anonymous closure> (package:flutter_test/src/binding.dart:1960:9)
+#982    TestAsyncUtils.guard (package:flutter_test/src/test_async_utils.dart:74:41)
+#983    AutomatedTestWidgetsFlutterBinding.pump (package:flutter_test/src/binding.dart:1949:27)
+#984    WidgetTester.pumpWidget.<anonymous closure> (package:flutter_test/src/widget_tester.dart:598:22)
+#987    TestAsyncUtils.guard (package:flutter_test/src/test_async_utils.dart:74:41)
+#988    WidgetTester.pumpWidget (package:flutter_test/src/widget_tester.dart:595:27)
+#989    main.<anonymous closure>.<anonymous closure> (file:///C:/Users/jeff/StudioProjects/gdar/test/ui/widgets/playback/playback_messages_test.dart:172:20)
+#990    testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:29)
+<asynchronous suspension>
+#991    TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1682:5)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided 5 frames from dart:async and package:stack_trace)
+
+════════════════════════════════════════════════════════════════════════════════════════════════════
+══╡ EXCEPTION CAUGHT BY WIDGETS LIBRARY ╞═══════════════════════════════════════════════════════════
+The following ProviderNotFoundException was thrown building PlaybackMessages(dirty, dependencies:
+[InheritedCupertinoTheme, _InheritedProviderScope<AudioProvider?>,
+_InheritedProviderScope<SettingsProvider?>, _InheritedTheme, _LocalizationsScope-[GlobalKey#c7dc3]],
+state: _PlaybackMessagesState#7a4f1):
+Error: Could not find the correct Provider<ThemeProvider> above this PlaybackMessages Widget
+
+This happens because you used a `BuildContext` that does not include the provider
+of your choice. There are a few common scenarios:
+
+- You added a new provider in your `main.dart` and performed a hot-reload.
+  To fix, perform a hot-restart.
+
+- The provider you are trying to read is in a different route.
+
+  Providers are "scoped". So if you insert of provider inside a route, then
+  other routes will not be able to access that provider.
+
+- You used a `BuildContext` that is an ancestor of the provider you are trying to read.
+
+  Make sure that PlaybackMessages is under your MultiProvider/Provider<ThemeProvider>.
+  This usually happens when you are creating a provider and trying to read it immediately.
+
+  For example, instead of:
+
+  ```
+  Widget build(BuildContext context) {
+    return Provider<Example>(
+      create: (_) => Example(),
+      // Will throw a ProviderNotFoundError, because `context` is associated
+      // to the widget that is the parent of `Provider<Example>`
+      child: Text(context.watch<Example>().toString()),
+    );
+  }
+  ```
+
+  consider using `builder` like so:
+
+  ```
+  Widget build(BuildContext context) {
+    return Provider<Example>(
+      create: (_) => Example(),
+      // we use `builder` to obtain a new `BuildContext` that has access to the provider
+      builder: (context, child) {
+        // No longer throws
+        return Text(context.watch<Example>().toString());
+      }
+    );
+  }
+  ```
+
+If none of these solutions work, consider asking for help on StackOverflow:
+https://stackoverflow.com/questions/tagged/flutter
+
+The relevant error-causing widget was:
+  PlaybackMessages
+  PlaybackMessages:file:///C:/Users/jeff/StudioProjects/gdar/test/ui/widgets/playback/playback_messages_test.dart:109:17
+
+When the exception was thrown, this was the stack:
+#0      Provider._inheritedElementOf (package:provider/src/provider.dart:377:7)
+#1      Provider.of (package:provider/src/provider.dart:327:30)
+#2      WatchContext.watch (package:provider/src/provider.dart:727:21)
+#3      _PlaybackMessagesState.build (package:shakedown/ui/widgets/playback/playback_messages.dart:152:35)
+#4      StatefulElement.build (package:flutter/src/widgets/framework.dart:5931:27)
+#5      ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5817:15)
+#6      StatefulElement.performRebuild (package:flutter/src/widgets/framework.dart:5982:11)
+#7      Element.rebuild (package:flutter/src/widgets/framework.dart:5529:7)
+#8      BuildScope._tryRebuild (package:flutter/src/widgets/framework.dart:2750:15)
+#9      BuildScope._flushDirtyElements (package:flutter/src/widgets/framework.dart:2807:11)
+#10     BuildOwner.buildScope (package:flutter/src/widgets/framework.dart:3111:18)
+#11     AutomatedTestWidgetsFlutterBinding.drawFrame (package:flutter_test/src/binding.dart:2131:19)
+#12     RendererBinding._handlePersistentFrameCallback (package:flutter/src/rendering/binding.dart:495:5)
+#13     SchedulerBinding._invokeFrameCallback (package:flutter/src/scheduler/binding.dart:1430:15)
+#14     SchedulerBinding.handleDrawFrame (package:flutter/src/scheduler/binding.dart:1345:9)
+#15     AutomatedTestWidgetsFlutterBinding.pump.<anonymous closure> (package:flutter_test/src/binding.dart:1960:9)
+#18     TestAsyncUtils.guard (package:flutter_test/src/test_async_utils.dart:74:41)
+#19     AutomatedTestWidgetsFlutterBinding.pump (package:flutter_test/src/binding.dart:1949:27)
+#20     WidgetTester.pumpAndSettle.<anonymous closure> (package:flutter_test/src/widget_tester.dart:719:23)
+#23     TestAsyncUtils.guard (package:flutter_test/src/test_async_utils.dart:74:41)
+#24     WidgetTester.pumpAndSettle (package:flutter_test/src/widget_tester.dart:712:27)
+#25     main.<anonymous closure>.<anonymous closure> (file:///C:/Users/jeff/StudioProjects/gdar/test/ui/widgets/playback/playback_messages_test.dart:175:20)
+<asynchronous suspension>
+#26     testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#27     TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1682:5)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided 5 frames from dart:async and package:stack_trace)
+
+════════════════════════════════════════════════════════════════════════════════════════════════════
+══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞════════════════════════════════════════════════════
+The following TestFailure was thrown running a test:
+Expected: exactly one matching candidate
+  Actual: _TextWidgetFinder:<Found 0 widgets with text "Retrying...": []>
+   Which: means none were found but one was expected
+
+When the exception was thrown, this was the stack:
+#4      main.<anonymous closure>.<anonymous closure> (file:///C:/Users/jeff/StudioProjects/gdar/test/ui/widgets/playback/playback_messages_test.dart:176:7)
+<asynchronous suspension>
+#5      testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#6      TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1682:5)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided one frame from package:stack_trace)
+
+This was caught by the test expectation on the following line:
+  file:///C:/Users/jeff/StudioProjects/gdar/test/ui/widgets/playback/playback_messages_test.dart line 176
+The test description was:
+  Clears Agent Message when playback resumes (Ready + Playing)
+════════════════════════════════════════════════════════════════════════════════════════════════════
+══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞════════════════════════════════════════════════════
+The following message was thrown:
+Multiple exceptions (3) were detected during the running of the current test, and at least one was
+unexpected.
+════════════════════════════════════════════════════════════════════════════════════════════════════
+00:00 +0 -6: PlaybackMessages Clears Agent Message when playback resumes (Ready + Playing) [E]
+  Test failed. See exception logs above.
+  The test description was: Clears Agent Message when playback resumes (Ready + Playing)
+  
+00:00 +0 -6: PlaybackMessages Does NOT clear Agent Message if paused (Ready + Not Playing)
+══╡ EXCEPTION CAUGHT BY WIDGETS LIBRARY ╞═══════════════════════════════════════════════════════════
+The following ProviderNotFoundException was thrown building PlaybackMessages(dirty, dependencies:
+[InheritedCupertinoTheme, _InheritedProviderScope<AudioProvider?>,
+_InheritedProviderScope<SettingsProvider?>, _InheritedTheme, _LocalizationsScope-[GlobalKey#76431]],
+state: _PlaybackMessagesState#5d09e):
+Error: Could not find the correct Provider<ThemeProvider> above this PlaybackMessages Widget
+
+This happens because you used a `BuildContext` that does not include the provider
+of your choice. There are a few common scenarios:
+
+- You added a new provider in your `main.dart` and performed a hot-reload.
+  To fix, perform a hot-restart.
+
+- The provider you are trying to read is in a different route.
+
+  Providers are "scoped". So if you insert of provider inside a route, then
+  other routes will not be able to access that provider.
+
+- You used a `BuildContext` that is an ancestor of the provider you are trying to read.
+
+  Make sure that PlaybackMessages is under your MultiProvider/Provider<ThemeProvider>.
+  This usually happens when you are creating a provider and trying to read it immediately.
+
+  For example, instead of:
+
+  ```
+  Widget build(BuildContext context) {
+    return Provider<Example>(
+      create: (_) => Example(),
+      // Will throw a ProviderNotFoundError, because `context` is associated
+      // to the widget that is the parent of `Provider<Example>`
+      child: Text(context.watch<Example>().toString()),
+    );
+  }
+  ```
+
+  consider using `builder` like so:
+
+  ```
+  Widget build(BuildContext context) {
+    return Provider<Example>(
+      create: (_) => Example(),
+      // we use `builder` to obtain a new `BuildContext` that has access to the provider
+      builder: (context, child) {
+        // No longer throws
+        return Text(context.watch<Example>().toString());
+      }
+    );
+  }
+  ```
+
+If none of these solutions work, consider asking for help on StackOverflow:
+https://stackoverflow.com/questions/tagged/flutter
+
+The relevant error-causing widget was:
+  PlaybackMessages
+  PlaybackMessages:file:///C:/Users/jeff/StudioProjects/gdar/test/ui/widgets/playback/playback_messages_test.dart:109:17
+
+When the exception was thrown, this was the stack:
+#0      Provider._inheritedElementOf (package:provider/src/provider.dart:377:7)
+#1      Provider.of (package:provider/src/provider.dart:327:30)
+#2      WatchContext.watch (package:provider/src/provider.dart:727:21)
+#3      _PlaybackMessagesState.build (package:shakedown/ui/widgets/playback/playback_messages.dart:152:35)
+#4      StatefulElement.build (package:flutter/src/widgets/framework.dart:5931:27)
+#5      ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5817:15)
+#6      StatefulElement.performRebuild (package:flutter/src/widgets/framework.dart:5982:11)
+#7      Element.rebuild (package:flutter/src/widgets/framework.dart:5529:7)
+#8      ComponentElement._firstBuild (package:flutter/src/widgets/framework.dart:5799:5)
+#9      StatefulElement._firstBuild (package:flutter/src/widgets/framework.dart:5973:11)
+#10     ComponentElement.mount (package:flutter/src/widgets/framework.dart:5793:5)
+...     Normal element mounting (25 frames)
+#35     Element.inflateWidget (package:flutter/src/widgets/framework.dart:4587:20)
+#36     MultiChildRenderObjectElement.inflateWidget (package:flutter/src/widgets/framework.dart:7264:36)
+#37     MultiChildRenderObjectElement.mount (package:flutter/src/widgets/framework.dart:7279:32)
+...     Normal element mounting (364 frames)
+#401    Element.inflateWidget (package:flutter/src/widgets/framework.dart:4587:20)
+#402    MultiChildRenderObjectElement.inflateWidget (package:flutter/src/widgets/framework.dart:7264:36)
+#403    MultiChildRenderObjectElement.mount (package:flutter/src/widgets/framework.dart:7279:32)
+...     Normal element mounting (473 frames)
+#876    _InheritedProviderScopeElement.mount (package:provider/src/inherited_provider.dart:424:11)
+...     Normal element mounting (7 frames)
+#883    _InheritedProviderScopeElement.mount (package:provider/src/inherited_provider.dart:424:11)
+...     Normal element mounting (7 frames)
+#890    _InheritedProviderScopeElement.mount (package:provider/src/inherited_provider.dart:424:11)
+...     Normal element mounting (7 frames)
+#897    SingleChildWidgetElementMixin.mount (package:nested/nested.dart:222:11)
+...     Normal element mounting (7 frames)
+#904    _NestedHookElement.mount (package:nested/nested.dart:187:11)
+...     Normal element mounting (7 frames)
+#911    SingleChildWidgetElementMixin.mount (package:nested/nested.dart:222:11)
+#912    Element.inflateWidget (package:flutter/src/widgets/framework.dart:4587:20)
+#913    Element.updateChild (package:flutter/src/widgets/framework.dart:4053:20)
+#914    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5841:16)
+#915    Element.rebuild (package:flutter/src/widgets/framework.dart:5529:7)
+#916    ProxyElement.update (package:flutter/src/widgets/framework.dart:6149:5)
+#917    _InheritedNotifierElement.update (package:flutter/src/widgets/inherited_notifier.dart:108:11)
+#918    Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#919    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5841:16)
+#920    StatefulElement.performRebuild (package:flutter/src/widgets/framework.dart:5982:11)
+#921    Element.rebuild (package:flutter/src/widgets/framework.dart:5529:7)
+#922    StatefulElement.update (package:flutter/src/widgets/framework.dart:6007:5)
+#923    Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#924    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5841:16)
+#925    Element.rebuild (package:flutter/src/widgets/framework.dart:5529:7)
+#926    ProxyElement.update (package:flutter/src/widgets/framework.dart:6149:5)
+#927    _InheritedNotifierElement.update (package:flutter/src/widgets/inherited_notifier.dart:108:11)
+#928    Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#929    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5841:16)
+#930    StatefulElement.performRebuild (package:flutter/src/widgets/framework.dart:5982:11)
+#931    Element.rebuild (package:flutter/src/widgets/framework.dart:5529:7)
+#932    StatefulElement.update (package:flutter/src/widgets/framework.dart:6007:5)
+#933    Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#934    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5841:16)
+#935    StatefulElement.performRebuild (package:flutter/src/widgets/framework.dart:5982:11)
+#936    Element.rebuild (package:flutter/src/widgets/framework.dart:5529:7)
+#937    StatefulElement.update (package:flutter/src/widgets/framework.dart:6007:5)
+#938    Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#939    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5841:16)
+#940    Element.rebuild (package:flutter/src/widgets/framework.dart:5529:7)
+#941    ProxyElement.update (package:flutter/src/widgets/framework.dart:6149:5)
+#942    Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#943    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5841:16)
+#944    StatefulElement.performRebuild (package:flutter/src/widgets/framework.dart:5982:11)
+#945    Element.rebuild (package:flutter/src/widgets/framework.dart:5529:7)
+#946    StatefulElement.update (package:flutter/src/widgets/framework.dart:6007:5)
+#947    Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#948    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5841:16)
+#949    Element.rebuild (package:flutter/src/widgets/framework.dart:5529:7)
+#950    ProxyElement.update (package:flutter/src/widgets/framework.dart:6149:5)
+#951    Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#952    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5841:16)
+#953    Element.rebuild (package:flutter/src/widgets/framework.dart:5529:7)
+#954    ProxyElement.update (package:flutter/src/widgets/framework.dart:6149:5)
+#955    Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#956    _RawViewElement._updateChild (package:flutter/src/widgets/view.dart:481:16)
+#957    _RawViewElement.update (package:flutter/src/widgets/view.dart:568:5)
+#958    Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#959    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5841:16)
+#960    Element.rebuild (package:flutter/src/widgets/framework.dart:5529:7)
+#961    StatelessElement.update (package:flutter/src/widgets/framework.dart:5895:5)
+#962    Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#963    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5841:16)
+#964    StatefulElement.performRebuild (package:flutter/src/widgets/framework.dart:5982:11)
+#965    Element.rebuild (package:flutter/src/widgets/framework.dart:5529:7)
+#966    StatefulElement.update (package:flutter/src/widgets/framework.dart:6007:5)
+#967    Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#968    RootElement._rebuild (package:flutter/src/widgets/binding.dart:1822:16)
+#969    RootElement.update (package:flutter/src/widgets/binding.dart:1800:5)
+#970    RootElement.performRebuild (package:flutter/src/widgets/binding.dart:1814:7)
+#971    Element.rebuild (package:flutter/src/widgets/framework.dart:5529:7)
+#972    BuildScope._tryRebuild (package:flutter/src/widgets/framework.dart:2750:15)
+#973    BuildScope._flushDirtyElements (package:flutter/src/widgets/framework.dart:2807:11)
+#974    BuildOwner.buildScope (package:flutter/src/widgets/framework.dart:3111:18)
+#975    AutomatedTestWidgetsFlutterBinding.drawFrame (package:flutter_test/src/binding.dart:2131:19)
+#976    RendererBinding._handlePersistentFrameCallback (package:flutter/src/rendering/binding.dart:495:5)
+#977    SchedulerBinding._invokeFrameCallback (package:flutter/src/scheduler/binding.dart:1430:15)
+#978    SchedulerBinding.handleDrawFrame (package:flutter/src/scheduler/binding.dart:1345:9)
+#979    AutomatedTestWidgetsFlutterBinding.pump.<anonymous closure> (package:flutter_test/src/binding.dart:1960:9)
+#982    TestAsyncUtils.guard (package:flutter_test/src/test_async_utils.dart:74:41)
+#983    AutomatedTestWidgetsFlutterBinding.pump (package:flutter_test/src/binding.dart:1949:27)
+#984    WidgetTester.pumpWidget.<anonymous closure> (package:flutter_test/src/widget_tester.dart:598:22)
+#987    TestAsyncUtils.guard (package:flutter_test/src/test_async_utils.dart:74:41)
+#988    WidgetTester.pumpWidget (package:flutter_test/src/widget_tester.dart:595:27)
+#989    main.<anonymous closure>.<anonymous closure> (file:///C:/Users/jeff/StudioProjects/gdar/test/ui/widgets/playback/playback_messages_test.dart:196:20)
+#990    testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:29)
+<asynchronous suspension>
+#991    TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1682:5)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided 5 frames from dart:async and package:stack_trace)
+
+════════════════════════════════════════════════════════════════════════════════════════════════════
+══╡ EXCEPTION CAUGHT BY WIDGETS LIBRARY ╞═══════════════════════════════════════════════════════════
+The following ProviderNotFoundException was thrown building PlaybackMessages(dirty, dependencies:
+[InheritedCupertinoTheme, _InheritedProviderScope<AudioProvider?>,
+_InheritedProviderScope<SettingsProvider?>, _InheritedTheme, _LocalizationsScope-[GlobalKey#76431]],
+state: _PlaybackMessagesState#5d09e):
+Error: Could not find the correct Provider<ThemeProvider> above this PlaybackMessages Widget
+
+This happens because you used a `BuildContext` that does not include the provider
+of your choice. There are a few common scenarios:
+
+- You added a new provider in your `main.dart` and performed a hot-reload.
+  To fix, perform a hot-restart.
+
+- The provider you are trying to read is in a different route.
+
+  Providers are "scoped". So if you insert of provider inside a route, then
+  other routes will not be able to access that provider.
+
+- You used a `BuildContext` that is an ancestor of the provider you are trying to read.
+
+  Make sure that PlaybackMessages is under your MultiProvider/Provider<ThemeProvider>.
+  This usually happens when you are creating a provider and trying to read it immediately.
+
+  For example, instead of:
+
+  ```
+  Widget build(BuildContext context) {
+    return Provider<Example>(
+      create: (_) => Example(),
+      // Will throw a ProviderNotFoundError, because `context` is associated
+      // to the widget that is the parent of `Provider<Example>`
+      child: Text(context.watch<Example>().toString()),
+    );
+  }
+  ```
+
+  consider using `builder` like so:
+
+  ```
+  Widget build(BuildContext context) {
+    return Provider<Example>(
+      create: (_) => Example(),
+      // we use `builder` to obtain a new `BuildContext` that has access to the provider
+      builder: (context, child) {
+        // No longer throws
+        return Text(context.watch<Example>().toString());
+      }
+    );
+  }
+  ```
+
+If none of these solutions work, consider asking for help on StackOverflow:
+https://stackoverflow.com/questions/tagged/flutter
+
+The relevant error-causing widget was:
+  PlaybackMessages
+  PlaybackMessages:file:///C:/Users/jeff/StudioProjects/gdar/test/ui/widgets/playback/playback_messages_test.dart:109:17
+
+When the exception was thrown, this was the stack:
+#0      Provider._inheritedElementOf (package:provider/src/provider.dart:377:7)
+#1      Provider.of (package:provider/src/provider.dart:327:30)
+#2      WatchContext.watch (package:provider/src/provider.dart:727:21)
+#3      _PlaybackMessagesState.build (package:shakedown/ui/widgets/playback/playback_messages.dart:152:35)
+#4      StatefulElement.build (package:flutter/src/widgets/framework.dart:5931:27)
+#5      ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5817:15)
+#6      StatefulElement.performRebuild (package:flutter/src/widgets/framework.dart:5982:11)
+#7      Element.rebuild (package:flutter/src/widgets/framework.dart:5529:7)
+#8      BuildScope._tryRebuild (package:flutter/src/widgets/framework.dart:2750:15)
+#9      BuildScope._flushDirtyElements (package:flutter/src/widgets/framework.dart:2807:11)
+#10     BuildOwner.buildScope (package:flutter/src/widgets/framework.dart:3111:18)
+#11     AutomatedTestWidgetsFlutterBinding.drawFrame (package:flutter_test/src/binding.dart:2131:19)
+#12     RendererBinding._handlePersistentFrameCallback (package:flutter/src/rendering/binding.dart:495:5)
+#13     SchedulerBinding._invokeFrameCallback (package:flutter/src/scheduler/binding.dart:1430:15)
+#14     SchedulerBinding.handleDrawFrame (package:flutter/src/scheduler/binding.dart:1345:9)
+#15     AutomatedTestWidgetsFlutterBinding.pump.<anonymous closure> (package:flutter_test/src/binding.dart:1960:9)
+#18     TestAsyncUtils.guard (package:flutter_test/src/test_async_utils.dart:74:41)
+#19     AutomatedTestWidgetsFlutterBinding.pump (package:flutter_test/src/binding.dart:1949:27)
+#20     WidgetTester.pumpAndSettle.<anonymous closure> (package:flutter_test/src/widget_tester.dart:719:23)
+#23     TestAsyncUtils.guard (package:flutter_test/src/test_async_utils.dart:74:41)
+#24     WidgetTester.pumpAndSettle (package:flutter_test/src/widget_tester.dart:712:27)
+#25     main.<anonymous closure>.<anonymous closure> (file:///C:/Users/jeff/StudioProjects/gdar/test/ui/widgets/playback/playback_messages_test.dart:199:20)
+<asynchronous suspension>
+#26     testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#27     TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1682:5)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided 5 frames from dart:async and package:stack_trace)
+
+════════════════════════════════════════════════════════════════════════════════════════════════════
+══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞════════════════════════════════════════════════════
+The following TestFailure was thrown running a test:
+Expected: exactly one matching candidate
+  Actual: _TextWidgetFinder:<Found 0 widgets with text "Retrying...": []>
+   Which: means none were found but one was expected
+
+When the exception was thrown, this was the stack:
+#4      main.<anonymous closure>.<anonymous closure> (file:///C:/Users/jeff/StudioProjects/gdar/test/ui/widgets/playback/playback_messages_test.dart:206:7)
+<asynchronous suspension>
+#5      testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#6      TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1682:5)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided one frame from package:stack_trace)
+
+This was caught by the test expectation on the following line:
+  file:///C:/Users/jeff/StudioProjects/gdar/test/ui/widgets/playback/playback_messages_test.dart line 206
+The test description was:
+  Does NOT clear Agent Message if paused (Ready + Not Playing)
+════════════════════════════════════════════════════════════════════════════════════════════════════
+══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞════════════════════════════════════════════════════
+The following message was thrown:
+Multiple exceptions (3) were detected during the running of the current test, and at least one was
+unexpected.
+════════════════════════════════════════════════════════════════════════════════════════════════════
+00:00 +0 -7: PlaybackMessages Does NOT clear Agent Message if paused (Ready + Not Playing) [E]
+  Test failed. See exception logs above.
+  The test description was: Does NOT clear Agent Message if paused (Ready + Not Playing)
+  
+00:00 +0 -7: Some tests failed.

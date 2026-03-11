@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shakedown/providers/settings_provider.dart';
 import 'package:shakedown/ui/widgets/tv/tv_focus_wrapper.dart';
+import 'package:shakedown/utils/web_runtime.dart';
 
 class RainbowColorPicker extends StatelessWidget {
   final double scaleFactor;
@@ -107,7 +108,7 @@ class RainbowColorPicker extends StatelessWidget {
                   : colorScheme.outline.withValues(alpha: 0.3),
               width: isSelected ? 3 * scaleFactor : 1 * scaleFactor,
             ),
-            boxShadow: isSelected
+            boxShadow: (isSelected && !isWasmSafeMode())
                 ? [
                     BoxShadow(
                       color: colorScheme.primary.withValues(alpha: 0.4),

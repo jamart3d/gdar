@@ -149,9 +149,10 @@ class _PlaybackMessagesState extends State<PlaybackMessages>
     final colorScheme = Theme.of(context).colorScheme;
     final audioProvider = context.watch<AudioProvider>();
     final settingsProvider = context.watch<SettingsProvider>();
-    final themeProvider = context.watch<ThemeProvider?>();
-    final isFruitTheme = themeProvider?.themeStyle == ThemeStyle.fruit;
-    final isWebUi = kIsWeb && !context.watch<DeviceService>().isTv;
+    final themeProvider = context.watch<ThemeProvider>();
+    final isFruitTheme = themeProvider.themeStyle == ThemeStyle.fruit;
+    final isTv = context.watch<DeviceService>().isTv;
+    final isWebUi = kIsWeb && !isTv;
     final showDevHud =
         isWebUi && settingsProvider.showDevAudioHud && widget.showDevHudInline;
     final double scaleFactor =
@@ -264,7 +265,7 @@ class _PlaybackMessagesState extends State<PlaybackMessages>
                 );
               },
             ),
-            if (kIsWeb && !context.watch<DeviceService>().isTv)
+            if (kIsWeb && !isTv)
               StreamBuilder<Duration?>(
                 stream: audioProvider.nextTrackBufferedStream,
                 initialData: audioProvider.audioPlayer.nextTrackBuffered,

@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:flutter/foundation.dart';
 import 'package:shakedown/providers/audio_provider.dart';
 import 'package:shakedown/providers/settings_provider.dart';
+import 'package:shakedown/utils/web_runtime.dart';
 
 class AnimatedGradientBorder extends StatefulWidget {
   final Widget child;
@@ -117,10 +118,17 @@ class _AnimatedGradientBorderState extends State<AnimatedGradientBorder>
 
   @override
   Widget build(BuildContext context) {
+    if (isWasmSafeMode()) return widget.child;
+
     final sp = context.watch<SettingsProvider>();
     final performanceMode = sp.performanceMode;
     final isPlaying = context.watch<AudioProvider>().isPlaying;
     final isWebPlayback = kIsWeb && isPlaying;
+    final bool disableGlow = performanceMode || isWebPlayback;
+
+    if (!widget.enabled && widget.borderWidth <= 0) {
+      return widget.child;
+    }
 
     // 1. Ensure we have an animation source if one wasn't set in didChangeDependencies
     if (_animationSource == null) {
@@ -150,8 +158,9 @@ class _AnimatedGradientBorderState extends State<AnimatedGradientBorder>
     // even if disabled or showGlow is false. We simply pass 0.0 values to the painter and padding.
     // This prevents structural widget tree changes that break TV focus nodes.
 
-    final bool isEffectActive =
-        widget.enabled && (widget.showGlow || widget.borderWidth > 0);
+    final bool isEffectActive = widget.enabled &&
+        (widget.showGlow || widget.borderWidth > 0) &&
+        !disableGlow;
 
     return AnimatedBuilder(
       animation: animation,
@@ -191,10 +200,12 @@ class _AnimatedGradientBorderState extends State<AnimatedGradientBorder>
                     borderRadius: widget.borderRadius,
                     borderWidth: isEffectActive ? widget.borderWidth : 0.0,
                     rotation: animation.value * 2 * 3.14159,
-                    showShadow:
-                        isEffectActive && !performanceMode && !isWebPlayback
-                            ? widget.showShadow
-                            : false,
+                    showShadow: isEffectActive &&
+                            !performanceMode &&
+                            !isWebPlayback &&
+                            !disableGlow
+                        ? widget.showShadow
+                        : false,
                     glowOpacity: isWebPlayback ? 0.2 : widget.glowOpacity,
                     spreadPadding: spreadPadding,
                   ),

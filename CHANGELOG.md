@@ -6,6 +6,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.65+165] - 2026-03-10
+
+### Added
+- **Web**: Added custom JavaScript error logger `web_error_logger.js` and custom `flutter_bootstrap.js` to capture and dump unhandled WebAssembly errors to the DOM for easier debugging on mobile.
+
+### Fixed
+- **Web**: Removed `--wasm` requirement from the production deployment pipeline to temporarily bypass Skwasm `RuntimeError: function signature mismatch` crashes on certain devices.
+
 ## [1.1.64+164] - 2026-03-10
 
 ### Added
@@ -18,6 +26,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **UI/UX (TV)**: Refined premium focus highlights with softer glow (0.65 -> 0.45) and reduced width to prevent neighbor clipping.
 - **UI/UX (TV)**: Standardized Show List card metrics; increased star size to 28 for 10-foot UI legibility and unified metadata badges into a single row.
 - **Testing**: Resolved `Null` pointer errors in `screensaver_screen_test.dart` via mock recruitment and stub synchronization.
+- **Web/Wasm**: Resolved critical UI freezes during playback and tab switching by implementing strict JS interop primitive types and non-finite number guards.
+- **Web/Wasm**: Fixed "Provider not found" crashes during asynchronous state updates by refactoring Provider access patterns in `PlaybackMessages`.
+- **Infrastructure**: Resolved Wasm initialization failure caused by inadvertent `dart:io` imports in `ShowListProvider` and `AudioCacheService`.
 
 
 ## [1.1.63+163] - 2026-03-08

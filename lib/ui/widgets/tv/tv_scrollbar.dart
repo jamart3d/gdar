@@ -99,65 +99,72 @@ class _TvScrollbarState extends State<TvScrollbar> {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
 
-    return TvFocusWrapper(
-      focusNode: widget.focusNode,
-      onKeyEvent: (node, event) {
-        if (event is KeyDownEvent) {
-          if (event.logicalKey == LogicalKeyboardKey.arrowUp) {
-            _scrollBy(-3);
-            return KeyEventResult.handled;
-          } else if (event.logicalKey == LogicalKeyboardKey.arrowDown) {
-            _scrollBy(3);
-            return KeyEventResult.handled;
-          } else if (event.logicalKey == LogicalKeyboardKey.arrowLeft) {
-            if (widget.onLeft != null) {
-              widget.onLeft!();
+    return Padding(
+      padding: const EdgeInsets.only(right: 3, top: 6, bottom: 6),
+      child: TvFocusWrapper(
+        focusNode: widget.focusNode,
+        onKeyEvent: (node, event) {
+          if (event is KeyDownEvent) {
+            if (event.logicalKey == LogicalKeyboardKey.arrowUp) {
+              _scrollBy(-3);
               return KeyEventResult.handled;
-            }
-          } else if (event.logicalKey == LogicalKeyboardKey.arrowRight) {
-            if (widget.onRight != null) {
-              widget.onRight!();
+            } else if (event.logicalKey == LogicalKeyboardKey.arrowDown) {
+              _scrollBy(3);
               return KeyEventResult.handled;
+            } else if (event.logicalKey == LogicalKeyboardKey.arrowLeft) {
+              if (widget.onLeft != null) {
+                widget.onLeft!();
+                return KeyEventResult.handled;
+              }
+            } else if (event.logicalKey == LogicalKeyboardKey.arrowRight) {
+              if (widget.onRight != null) {
+                widget.onRight!();
+                return KeyEventResult.handled;
+              }
             }
           }
-        }
-        return KeyEventResult.ignored;
-      },
-      borderRadius: BorderRadius.circular(4),
-      child: Container(
-        width: 12,
-        height: double.infinity,
-        margin: const EdgeInsets.symmetric(horizontal: 2),
-        decoration: BoxDecoration(
-          color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
-          borderRadius: BorderRadius.circular(6),
-        ),
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            final trackHeight = constraints.maxHeight;
-            // Thumb height based on list size approximation (min 40)
-            final thumbHeight = math.max(
-                40.0, trackHeight * (10 / math.max(10, widget.itemCount)));
-            final availableRun = trackHeight - thumbHeight;
-            final topOffset = availableRun * _scrollProgress;
+          return KeyEventResult.ignored;
+        },
+        borderRadius: BorderRadius.circular(6),
+        child: Container(
+          width: 12,
+          height: double.infinity,
+          margin: const EdgeInsets.only(
+            right:
+                0, // Margin now handled by outer Padding to prevent glow clipping
+            left: 2,
+          ),
+          decoration: BoxDecoration(
+            color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+            borderRadius: BorderRadius.circular(6),
+          ),
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final trackHeight = constraints.maxHeight;
+              // Thumb height based on list size approximation (min 40)
+              final thumbHeight = math.max(
+                  40.0, trackHeight * (10 / math.max(10, widget.itemCount)));
+              final availableRun = trackHeight - thumbHeight;
+              final topOffset = availableRun * _scrollProgress;
 
-            return Stack(
-              children: [
-                Positioned(
-                  top: topOffset,
-                  child: Container(
-                    width: 12,
-                    height: thumbHeight,
-                    decoration: BoxDecoration(
-                      color:
-                          colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
-                      borderRadius: BorderRadius.circular(6),
+              return Stack(
+                children: [
+                  Positioned(
+                    top: topOffset,
+                    child: Container(
+                      width: 12,
+                      height: thumbHeight,
+                      decoration: BoxDecoration(
+                        color:
+                            colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
                     ),
                   ),
-                ),
-              ],
-            );
-          },
+                ],
+              );
+            },
+          ),
         ),
       ),
     );

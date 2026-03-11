@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
 import 'package:shakedown/providers/audio_provider.dart';
 import 'package:shakedown/providers/settings_provider.dart';
@@ -315,6 +316,64 @@ class _SettingsScreenState extends State<SettingsScreen>
   Widget _buildFruitHeader(BuildContext context) {
     final settingsProvider = context.watch<SettingsProvider>();
     final themeProvider = context.watch<ThemeProvider>();
+    const bool isWeb = kIsWeb;
+
+    final headerContent = Container(
+      height: MediaQuery.paddingOf(context).top + 80,
+      padding: EdgeInsets.only(top: MediaQuery.paddingOf(context).top),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 24.0),
+        child: Row(
+          children: [
+            _buildFruitHeaderButton(
+              context,
+              icon: LucideIcons.chevronLeft,
+              onPressed:
+                  widget.onBackRequested ?? () => Navigator.of(context).pop(),
+            ),
+            const Expanded(
+              child: Center(
+                child: Text(
+                  'Settings',
+                  style: TextStyle(
+                    fontFamily: 'Inter',
+                    fontSize: 20,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: -0.5,
+                  ),
+                ),
+              ),
+            ),
+            _buildFruitHeaderButton(
+              context,
+              icon: Theme.of(context).brightness == Brightness.dark
+                  ? LucideIcons.sun
+                  : LucideIcons.moon,
+              onPressed: () => themeProvider.toggleTheme(),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    if (isWeb) {
+      final baseColor = Theme.of(context).colorScheme.surface;
+      return Container(
+        decoration: BoxDecoration(
+          color: baseColor.withValues(alpha: 0.9),
+          border: Border(
+            bottom: BorderSide(
+              color: Theme.of(context)
+                  .colorScheme
+                  .onSurface
+                  .withValues(alpha: 0.1),
+              width: 1.0,
+            ),
+          ),
+        ),
+        child: headerContent,
+      );
+    }
 
     return ShaderMask(
       shaderCallback: (bounds) {
@@ -333,43 +392,7 @@ class _SettingsScreenState extends State<SettingsScreen>
         blur: 25,
         opacity: 0.85,
         borderRadius: BorderRadius.zero,
-        child: Container(
-          height: MediaQuery.paddingOf(context).top + 80,
-          padding: EdgeInsets.only(top: MediaQuery.paddingOf(context).top),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24.0),
-            child: Row(
-              children: [
-                _buildFruitHeaderButton(
-                  context,
-                  icon: LucideIcons.chevronLeft,
-                  onPressed: widget.onBackRequested ??
-                      () => Navigator.of(context).pop(),
-                ),
-                const Expanded(
-                  child: Center(
-                    child: Text(
-                      'Settings',
-                      style: TextStyle(
-                        fontFamily: 'Inter',
-                        fontSize: 20,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: -0.5,
-                      ),
-                    ),
-                  ),
-                ),
-                _buildFruitHeaderButton(
-                  context,
-                  icon: Theme.of(context).brightness == Brightness.dark
-                      ? LucideIcons.sun
-                      : LucideIcons.moon,
-                  onPressed: () => themeProvider.toggleTheme(),
-                ),
-              ],
-            ),
-          ),
-        ),
+        child: headerContent,
       ),
     );
   }
@@ -387,7 +410,7 @@ class _SettingsScreenState extends State<SettingsScreen>
         intensity: 0.8,
         color: Colors.transparent,
         child: LiquidGlassWrapper(
-          enabled: true,
+          enabled: !kIsWeb,
           borderRadius: BorderRadius.circular(100),
           opacity: 0.12,
           blur: 8,

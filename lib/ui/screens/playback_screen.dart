@@ -686,6 +686,7 @@ class PlaybackScreenState extends State<PlaybackScreen>
     final settingsProvider = context.watch<SettingsProvider>();
     final themeProvider = context.watch<ThemeProvider>();
     final isFruit = themeProvider.themeStyle == ThemeStyle.fruit;
+    final isTv = context.watch<DeviceService>().isTv;
 
     final currentShow = audioProvider.currentShow;
     final currentSource = audioProvider.currentSource;
@@ -709,11 +710,11 @@ class PlaybackScreenState extends State<PlaybackScreen>
       _lastTrackTitle = audioProvider.currentTrack?.title;
       _lastStickyState = stickyNowPlaying;
 
+      final bool capturedIsTv = isTv;
       WidgetsBinding.instance.addPostFrameCallback((_) {
         // Only force focus to the new playing track if we aren't currently exploring the list
         // on TV. Otherwise, just scroll it into view naturally without hijacking the user's remote.
-        final isTv = context.read<DeviceService>().isTv;
-        final bool listHasFocus = isTv && _trackListFocusNode.hasFocus;
+        final bool listHasFocus = capturedIsTv && _trackListFocusNode.hasFocus;
 
         final isPanelOpen = _panelPositionNotifier.value > 0.1;
         _scrollToCurrentTrack(
@@ -929,7 +930,7 @@ class PlaybackScreenState extends State<PlaybackScreen>
                         onWrapAround: _focusTrack,
                       ),
                     ),
-                    if (context.read<DeviceService>().isTv)
+                    if (context.watch<DeviceService>().isTv)
                       TvScrollbar(
                         itemPositionsListener: _itemPositionsListener,
                         itemScrollController: _itemScrollController,
@@ -1053,7 +1054,11 @@ class PlaybackScreenState extends State<PlaybackScreen>
                 selectedIndex: 0, // NOW
                 onTabSelected: (index) {
                   if (index == 1) {
-                    widget.onBackRequested?.call();
+                    if (widget.onBackRequested != null) {
+                      widget.onBackRequested!.call();
+                    } else {
+                      Navigator.of(context).maybePop();
+                    }
                   } else if (index == 2) {
                     context.read<AudioProvider>().playRandomShow();
                   } else if (index == 3) {

@@ -1,3 +1,9 @@
+What's new in v1.1.65+165
+• Added custom JavaScript error logger to capture and dump unhandled WebAssembly errors for easier debugging on mobile.
+• Removed --wasm requirement from the production deployment pipeline to bypass Skwasm crashes on certain devices.
+
+---
+
 What's new in v1.1.64+164
 • Screensaver: Implemented Advanced Audio Reactivity with 8-band frequency isolation.
 • UI/UX (TV): Resolved playback message overflow and refined focus highlight aesthetics.

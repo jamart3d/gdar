@@ -2,6 +2,7 @@ import 'dart:math';
 import 'dart:ui' as ui;
 import 'package:flame/components.dart';
 import 'package:flutter/material.dart';
+import 'package:shakedown/utils/web_runtime.dart';
 import 'package:shakedown/utils/app_date_utils.dart';
 import 'package:shakedown/steal_screensaver/steal_config.dart';
 import 'package:shakedown/steal_screensaver/steal_game.dart';
@@ -921,7 +922,9 @@ class StealBanner extends Component with HasGameReference<StealGame> {
     if (config.bannerGlow) {
       // Outer glow: wide blur
       final glowPaint = Paint()
-        ..maskFilter = MaskFilter.blur(BlurStyle.normal, blurAmount);
+        ..maskFilter = isWasmSafeMode()
+            ? null
+            : MaskFilter.blur(BlurStyle.normal, blurAmount);
       canvas.saveLayer(null, glowPaint);
       canvas.translate(padding, padding);
       painter.paint(canvas, Offset.zero);
@@ -929,7 +932,9 @@ class StealBanner extends Component with HasGameReference<StealGame> {
 
       // Inner glow: tighter blur for core intensity
       final coreGlowPaint = Paint()
-        ..maskFilter = MaskFilter.blur(BlurStyle.normal, blurAmount * 0.3);
+        ..maskFilter = isWasmSafeMode()
+            ? null
+            : MaskFilter.blur(BlurStyle.normal, blurAmount * 0.3);
       canvas.saveLayer(null, coreGlowPaint);
       canvas.translate(padding, padding);
       painter.paint(canvas, Offset.zero);

@@ -46,8 +46,8 @@ class TvHeader extends StatelessWidget {
         FontLayoutConfig.getEffectiveScale(context, settingsProvider);
 
     return Padding(
-      padding: EdgeInsets.fromLTRB(16 * scaleFactor, 12 * scaleFactor,
-          16 * scaleFactor, 8 * scaleFactor),
+      padding: EdgeInsets.fromLTRB(20 * scaleFactor, 16 * scaleFactor,
+          20 * scaleFactor, 8 * scaleFactor),
       child: Row(
         children: [
           // 1. Dice Icon (Large)

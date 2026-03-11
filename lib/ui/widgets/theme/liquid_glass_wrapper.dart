@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:shakedown/providers/settings_provider.dart';
 import 'package:shakedown/services/device_service.dart';
 import 'package:shakedown/providers/theme_provider.dart';
+import 'package:shakedown/utils/web_runtime.dart';
 
 /// A wrapper widget that applies a "liquid glass" effect.
 /// Uses BackdropFilter for blur and semi-transparent colors.
@@ -59,6 +60,7 @@ class LiquidGlassWrapper extends StatelessWidget {
     // OR if the Fruit theme is active and the user explicitly disabled the Liquid Glass setting.
     final bool shouldBypassBlur = settingsMode ||
         !isAllowedPlatform ||
+        isWasmSafeMode() ||
         (isFruitTheme && !isFruitGlassEnabled);
 
     if (shouldBypassBlur) {

@@ -66,13 +66,14 @@ class ShowListBody extends StatelessWidget {
           child: Text('No shows match your search or filters.'));
     }
 
-    final isTv = context.read<DeviceService>().isTv;
+    final isTv = context.watch<DeviceService>().isTv;
 
     final list = ScrollablePositionedList.builder(
       itemScrollController: itemScrollController,
       itemPositionsListener: itemPositionsListener,
       padding: EdgeInsets.only(
         top: topPadding,
+        left: isTv ? 6.0 : 0.0,
         bottom: isTv ? 40 : 160,
         right: isTv ? 0 : 28, // reserve space for fast scrollbar thumb
       ),
@@ -100,64 +101,67 @@ class ShowListBody extends StatelessWidget {
     );
 
     if (isTv) {
-      return Row(
-        children: [
-          Expanded(child: list),
-          TvScrollbar(
-            itemPositionsListener: itemPositionsListener,
-            itemScrollController: itemScrollController,
-            itemCount: showListProvider.filteredShows.length,
-            focusNode: scrollbarFocusNode,
-            onLeft: () {
-              final positions = itemPositionsListener.itemPositions.value;
-              if (positions.isEmpty) return;
+      return Padding(
+        padding: const EdgeInsets.only(top: 12.0),
+        child: Row(
+          children: [
+            Expanded(child: list),
+            TvScrollbar(
+              itemPositionsListener: itemPositionsListener,
+              itemScrollController: itemScrollController,
+              itemCount: showListProvider.filteredShows.length,
+              focusNode: scrollbarFocusNode,
+              onLeft: () {
+                final positions = itemPositionsListener.itemPositions.value;
+                if (positions.isEmpty) return;
 
-              final visibleIndices = positions.map((p) => p.index).toSet();
+                final visibleIndices = positions.map((p) => p.index).toSet();
 
-              // 1. Prioritize currently expanded show IF it is visible
-              if (showListProvider.expandedShowKey != null) {
-                final index = showListProvider.filteredShows.indexWhere((s) =>
-                    showListProvider.getShowKey(s) ==
-                    showListProvider.expandedShowKey);
-                if (index != -1 && visibleIndices.contains(index)) {
-                  onFocusShow?.call(index, shouldScroll: false);
-                  return;
+                // 1. Prioritize currently expanded show IF it is visible
+                if (showListProvider.expandedShowKey != null) {
+                  final index = showListProvider.filteredShows.indexWhere((s) =>
+                      showListProvider.getShowKey(s) ==
+                      showListProvider.expandedShowKey);
+                  if (index != -1 && visibleIndices.contains(index)) {
+                    onFocusShow?.call(index, shouldScroll: false);
+                    return;
+                  }
                 }
-              }
 
-              // 2. Fallback: Find middle visible item
-              final sorted = positions.toList()
-                ..sort((a, b) => a.index.compareTo(b.index));
+                // 2. Fallback: Find middle visible item
+                final sorted = positions.toList()
+                  ..sort((a, b) => a.index.compareTo(b.index));
 
-              double bestDistance = 999.0;
-              int targetIndex = -1;
-              for (var pos in sorted) {
-                final itemCenter =
-                    (pos.itemLeadingEdge + pos.itemTrailingEdge) / 2;
-                final distance = (itemCenter - 0.5).abs();
-                if (distance < bestDistance) {
-                  bestDistance = distance;
-                  targetIndex = pos.index;
+                double bestDistance = 999.0;
+                int targetIndex = -1;
+                for (var pos in sorted) {
+                  final itemCenter =
+                      (pos.itemLeadingEdge + pos.itemTrailingEdge) / 2;
+                  final distance = (itemCenter - 0.5).abs();
+                  if (distance < bestDistance) {
+                    bestDistance = distance;
+                    targetIndex = pos.index;
+                  }
                 }
-              }
 
-              if (targetIndex != -1) {
-                final show = showListProvider.filteredShows[targetIndex];
-                if (showListProvider.expandedShowKey !=
-                    showListProvider.getShowKey(show)) {
-                  showListProvider
-                      .expandShow(showListProvider.getShowKey(show));
+                if (targetIndex != -1) {
+                  final show = showListProvider.filteredShows[targetIndex];
+                  if (showListProvider.expandedShowKey !=
+                      showListProvider.getShowKey(show)) {
+                    showListProvider
+                        .expandShow(showListProvider.getShowKey(show));
+                  }
+                  onFocusShow?.call(targetIndex, shouldScroll: false);
                 }
-                onFocusShow?.call(targetIndex, shouldScroll: false);
-              }
-            },
-            onRight: onFocusRight ??
-                () {
-                  FocusScope.of(context)
-                      .focusInDirection(TraversalDirection.right);
-                },
-          ),
-        ],
+              },
+              onRight: onFocusRight ??
+                  () {
+                    FocusScope.of(context)
+                        .focusInDirection(TraversalDirection.right);
+                  },
+            ),
+          ],
+        ),
       );
     }
 
