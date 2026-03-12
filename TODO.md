@@ -103,3 +103,7 @@
 - [ ] **Preserve Agentic Core**: Extract and keep the "Single Source of Truth" rules (`.agent/rules`) and automation workflows.
 - [ ] **Generalize Theme specs**: Update `fruit_theme_spec.md` and related UI specs to be project-agnostic while keeping the "Liquid Glass" experimentation layer.
 - [ ] **Verify Multi-Target Baseline**: Ensure the generic template builds and runs on Chrome (Web), Android (Phone), and Android TV (10ft UI).
+## Web Audio Engines
+- [ ] **Review Report**: 2026-03-12 web audio engines issue report saved to `reports/2026-03-12_web_audio_engines_issue_report.md`.
+- [ ] **Decision**: Confirm default web/PWA engine profile (HTML5 vs Hybrid Balanced) based on long background sessions priority.
+- [ ] **Validation**: Run long background soak tests across `stability`, `balanced`, and `maxGapless` presets.
