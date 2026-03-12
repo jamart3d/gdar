@@ -50,7 +50,7 @@ class SrcBadge extends StatelessWidget {
     return Container(
       padding: padding ??
           EdgeInsets.symmetric(
-            horizontal: 6 * scaleFactor,
+            horizontal: 4 * scaleFactor, // Reduced from 6
             vertical: 1.0 * scaleFactor,
           ),
       alignment: Alignment.center,
@@ -77,11 +77,11 @@ class SrcBadge extends StatelessWidget {
         style: Theme.of(context).textTheme.labelSmall?.copyWith(
               color: textColor,
               fontWeight: FontWeight.bold,
-              height: matchShnidLook ? 1.5 : 1.0,
+              height: matchShnidLook ? 1.4 : 1.0, // Reduced from 1.5
               fontSize: (matchShnidLook
                       ? (settingsProvider.appFont == 'rock_salt'
-                          ? 7.5 * effectiveScale
-                          : 9.0 * effectiveScale)
+                          ? 6.5 * effectiveScale // Reduced from 7.5
+                          : 8.0 * effectiveScale) // Reduced from 9.0
                       : fontSize *
                           (settingsProvider.appFont == 'rock_salt'
                               ? 0.7

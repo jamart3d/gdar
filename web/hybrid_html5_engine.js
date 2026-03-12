@@ -9,7 +9,8 @@
 
     const _log = (window._gdarLogger || console);
     const isBrowser = typeof window !== 'undefined';
-    const PRELOAD_NUM_TRACKS = 5;
+    // Memory-safe prefetch limit for long shows
+    const PRELOAD_NUM_TRACKS = 2;
 
     // ─── Relisten Core (gapless.cjs) ──────────────────────────────────────────
     // Ported from: https://github.com/RelistenNet/relisten-web/blob/master/public/gapless.cjs
@@ -245,7 +246,7 @@
             this.queue.onEnded();
         }
 
-        onProgress() {
+        onProgress(isTick = false) {
             if (!this.isActiveTrack) return;
             const remaining = this.duration - this.currentTime;
             const nextTrack = this.queue.nextTrack;
@@ -253,8 +254,8 @@
                 this.queue.loadTrack(this.idx + 1, true);
             }
             this.queue.onProgress(this);
-            if (this.isPaused) return;
-            window.requestAnimationFrame(this.onProgress);
+            if (this.isPaused || isTick) return;
+            window.requestAnimationFrame(() => this.onProgress(false));
         }
 
         setVolume(nextVolume) {
@@ -567,7 +568,19 @@
             nextTrackTotal: nextTrack?.duration || 0,
             playlistLength: (_queue && _queue.tracks) ? _queue.tracks.length : 0,
             processingState: (track.currentTime > 0 && track.duration > 0 && currentTime >= (duration - 0.1) && track.idx >= _queue.tracks.length - 1) ? 'completed' : 'ready',
-            contextState: 'html5'
+            contextState: 'html5',
+            heartbeatActive: (function () {
+                if (document.visibilityState === 'visible') return true;
+                return window._gdarHeartbeat ? window._gdarHeartbeat.isActive() : false;
+            })(),
+            heartbeatNeeded: (function () {
+                const ua = navigator.userAgent;
+                if (/Windows/i.test(ua) || (/Macintosh/i.test(ua) && navigator.maxTouchPoints === 0)) return false;
+                const isAndroid = /Android/i.test(ua);
+                const isIOS = /iPhone|iPad|iPod/i.test(ua);
+                const isMacPad = navigator.maxTouchPoints > 0 && /Macintosh/.test(ua);
+                return isAndroid || isIOS || isMacPad;
+            })()
         };
     }
 
@@ -600,6 +613,13 @@
                 }
             });
             _log.log('[html5] Initialized Exact Relisten Engine');
+
+            // Background survival sync: Ensure prefetching logic runs even when RAF is throttled.
+            window.addEventListener('gdar-worker-tick', () => {
+                if (_queue && _queue.currentTrack) {
+                    _queue.currentTrack.onProgress(true); // Call as tick
+                }
+            });
         },
 
         setPlaylist: function (tracks, startIndex) {

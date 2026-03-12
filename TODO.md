@@ -66,6 +66,11 @@
 - [ ] **Transition/Crossfade Contract**: Unify Dart/JS method naming and fully wire `trackTransitionMode` + `crossfadeDurationSeconds`; hide unsupported UI paths until complete.
 - [ ] **Adaptive PWA Engine Profile**: Add first-run profile selection for modern vs older phones (`hybrid balanced` vs `html5 stability`).
 - [ ] **Long Background Soak Test Matrix**: Validate hidden playback longevity per preset (`stability`, `balanced`, `maxGapless`) across modern and older mobile browsers.
+- [ ] **UI Technical Debt Cleanup**:
+- [x] **UI Technical Debt Cleanup**: Continue the pattern from `PlaybackPanel` refactor to strip "ghost" theme logic (`isFruit`, `isTv`) from components that are only ever reached by a single platform/theme path.
+  - [x] Audit `MiniPlayer` for leaked Fruit UI logic in the Material path.
+  - [x] Audit `PlaybackControls` and `PlaybackProgressBar` for similar platform-specific gates that should be moved up to the screen level.
+
 
 ---
 
@@ -80,6 +85,8 @@
  - [x] **Consolidate Jules Audits**: Created [master_audit.md](file:///c:/Users/jeff/StudioProjects/gdar/test/prompts/master_audit.md) as the 100% comprehensive (Phases 1-7) pre-release standard.
  - [ ] **Port Widget Tests**: Convert remaining flakey unit tests into Jules E2E observation phases for 100% reliable coverage.
 - [ ] **Politeness Policy**: Ensure all automated tests (Jules/Arlo) consistently use local mocks and never hit `archive.org` directly. Verify this isolation as part of the CI/CD pipeline.
+- [ ] **TV Show List Widget Tests**: Verify TV cards always show stars + source badge and remain stable with multi-source shows. How: add a widget test in `test/ui/show_list/tv_show_list_card_test.dart` that pumps `ShowListCard` with `DeviceService(isTv: true)` and asserts `RatingControl` and `SrcBadge` render for single- and multi-source shows.
+- [ ] **TV UI Smoke Pass**: Quick manual pass of the dual-pane layout. How: run the TV build, open the left show list, confirm stars/badges on several cards, scroll with D-pad, and ensure focus movement and scrollbar still work.
 
 ---
 

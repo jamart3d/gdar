@@ -68,6 +68,7 @@ class ShowListItem extends StatelessWidget {
       isLoading: isLoading,
       onTap: onTap,
       onLongPress: onLongPress,
+      alwaysShowRatingInteraction: isTv,
       focusNode: isTv ? focusNode : null,
       onFocusChange: isTv
           ? (focused) {

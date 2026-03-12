@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
-
+import 'package:shakedown/utils/app_reload/app_reload.dart';
 import 'package:shakedown/utils/logger.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:provider/provider.dart';
@@ -109,6 +109,36 @@ void showMessage(BuildContext context, String message) {
   }
 }
 
+void showRestartMessage(BuildContext context, String message) {
+  if (!context.mounted) return;
+
+  final isTv = context.read<DeviceService>().isTv;
+  if (isTv) {
+    context.read<AudioProvider>().showNotification(message);
+    return;
+  }
+
+  final bool isFruit = _isFruitTheme(context);
+  if (isFruit) {
+    _showFruitIssueOverlay(
+      context,
+      message,
+      actionLabel: 'Restart',
+      onAction: () => restartApp(),
+    );
+    return;
+  }
+
+  _showMaterialSnackBarWithAction(
+    context,
+    message,
+    actionLabel: 'Restart',
+    onAction: () => restartApp(),
+  );
+}
+
+// restartApp() is now imported from app_reload.dart
+
 void showIssueMessage(
   BuildContext context,
   String message, {
@@ -132,7 +162,8 @@ void showIssueMessage(
   _showMaterialSnackBarWithAction(
     context,
     message,
-    onClear: onClear,
+    actionLabel: 'Clear',
+    onAction: onClear,
   );
 }
 
@@ -158,20 +189,32 @@ void _showMaterialSnackBar(BuildContext context, String message) {
 void _showMaterialSnackBarWithAction(
   BuildContext context,
   String message, {
-  VoidCallback? onClear,
+  String? actionLabel,
+  VoidCallback? onAction,
 }) {
   final messenger = ScaffoldMessenger.of(context);
   messenger.clearSnackBars();
   messenger.showSnackBar(
     SnackBar(
-      content: Text(message),
-      duration: const Duration(seconds: 6),
-      action: onClear == null
-          ? null
-          : SnackBarAction(
-              label: 'Clear',
-              onPressed: onClear,
-            ),
+      content: Row(
+        children: [
+          Icon(
+            Icons.refresh_rounded,
+            color: Theme.of(context).colorScheme.primaryContainer,
+            size: 20,
+          ),
+          const SizedBox(width: 12),
+          Expanded(child: Text(message)),
+        ],
+      ),
+      duration: const Duration(seconds: 10),
+      action: (actionLabel != null && onAction != null)
+          ? SnackBarAction(
+              label: actionLabel,
+              onPressed: onAction,
+              textColor: Theme.of(context).colorScheme.primary,
+            )
+          : null,
     ),
   );
 }
@@ -322,11 +365,18 @@ void _showFruitMessageOverlay(BuildContext context, String message) {
 void _showFruitIssueOverlay(
   BuildContext context,
   String message, {
+  String? actionLabel,
+  VoidCallback? onAction,
   VoidCallback? onClear,
 }) {
   final overlay = Overlay.maybeOf(context, rootOverlay: true);
   if (overlay == null) {
-    _showMaterialSnackBarWithAction(context, message, onClear: onClear);
+    _showMaterialSnackBarWithAction(
+      context,
+      message,
+      actionLabel: 'Clear',
+      onAction: onClear,
+    );
     return;
   }
 
@@ -381,7 +431,34 @@ void _showFruitIssueOverlay(
                               ),
                             ),
                           ),
-                          if (onClear != null) ...[
+                          if (onAction != null && actionLabel != null) ...[
+                            const SizedBox(width: 12),
+                            GestureDetector(
+                              onTap: () {
+                                onAction();
+                                _removeFruitMessageOverlay();
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 10,
+                                  vertical: 6,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: colorScheme.primary
+                                      .withValues(alpha: 0.18),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Text(
+                                  actionLabel,
+                                  style: TextStyle(
+                                    color: colorScheme.primary,
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ] else if (onClear != null) ...[
                             const SizedBox(width: 12),
                             GestureDetector(
                               onTap: () {

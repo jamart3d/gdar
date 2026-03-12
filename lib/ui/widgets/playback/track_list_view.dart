@@ -329,7 +329,7 @@ class TrackListView extends StatelessWidget {
       fontWeight: isFruit ? FontWeight.w500 : FontWeight.w500,
       letterSpacing: isFruit ? 0.3 : null,
       fontFeatures: const [FontFeature.tabularFigures()],
-    ).merge(TextStyle(fontFamily: isFruit ? null : 'Roboto'));
+    ).merge(const TextStyle(fontFamily: 'Roboto'));
   }
 
   Widget _buildTrackListTile(BuildContext context, AudioProvider audioProvider,
@@ -379,17 +379,26 @@ class TrackListView extends StatelessWidget {
                 width: isFruit ? 32 : 24,
                 height: isFruit ? 32 : 24,
                 child: Center(
-                  child: FruitActivityIndicator(
-                    radius: 10,
-                    color: isFruit ? titleColor : colorScheme.primary,
-                  ),
+                  child: isFruit
+                      ? FruitActivityIndicator(
+                          radius: 10,
+                          color: titleColor,
+                        )
+                      : SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: colorScheme.primary,
+                          ),
+                        ),
                 ),
               );
             } else {
               Widget icon = Icon(
                 playing
-                    ? (isFruit ? LucideIcons.pause : Icons.pause)
-                    : (isFruit ? LucideIcons.play : Icons.play_arrow),
+                    ? (isFruit ? LucideIcons.pause : Icons.pause_rounded)
+                    : (isFruit ? LucideIcons.play : Icons.play_arrow_rounded),
                 color: isFruit ? titleColor : colorScheme.primary,
                 size: isFruit ? 18 : 24,
               );

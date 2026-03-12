@@ -4,9 +4,6 @@ import 'package:url_launcher/link.dart';
 import 'package:provider/provider.dart';
 import 'package:shakedown/services/device_service.dart';
 import 'package:shakedown/providers/settings_provider.dart';
-import 'package:shakedown/providers/theme_provider.dart';
-import 'package:shakedown/ui/widgets/theme/neumorphic_wrapper.dart';
-import 'package:shakedown/ui/widgets/theme/liquid_glass_wrapper.dart';
 import 'package:shakedown/utils/font_layout_config.dart';
 import 'package:shakedown/utils/utils.dart';
 
@@ -30,7 +27,6 @@ class ShnidBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Hide entirely on TV to match v1.1.55 behavior and prevent web link leak
     final isTv = context.watch<DeviceService>().isTv;
     if (isTv || text.isEmpty) return const SizedBox.shrink();
 
@@ -39,22 +35,15 @@ class ShnidBadge extends StatelessWidget {
     final double effectiveScale =
         FontLayoutConfig.getEffectiveScale(context, settingsProvider);
 
-    // Check for True Black mode
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     final isTrueBlackMode = isDarkMode && settingsProvider.useTrueBlack;
 
-    final List<Color> gradientColors;
-    if (isTrueBlackMode) {
-      gradientColors = [
-        Colors.black,
-        Colors.black,
-      ];
-    } else {
-      gradientColors = [
-        colorScheme.secondaryContainer.withValues(alpha: 0.7),
-        colorScheme.secondaryContainer.withValues(alpha: 0.5),
-      ];
-    }
+    final List<Color> gradientColors = isTrueBlackMode
+        ? [Colors.black, Colors.black]
+        : [
+            colorScheme.secondaryContainer.withValues(alpha: 0.7),
+            colorScheme.secondaryContainer.withValues(alpha: 0.5),
+          ];
 
     final textColor = colorScheme.onSecondaryContainer;
 
@@ -63,8 +52,6 @@ class ShnidBadge extends StatelessWidget {
       style: Theme.of(context).textTheme.labelSmall?.copyWith(
           color: textColor,
           fontWeight: FontWeight.w600,
-          decoration: TextDecoration.underline,
-          decorationColor: textColor.withValues(alpha: 0.5),
           fontSize: ((settingsProvider.appFont == 'rock_salt')
                   ? 7.5 * effectiveScale
                   : 9.0 * effectiveScale) *
@@ -81,14 +68,12 @@ class ShnidBadge extends StatelessWidget {
 
     if (showUnderline) {
       content = Container(
-        padding: EdgeInsets.only(
-          bottom: (settingsProvider.appFont == 'rock_salt') ? 3.0 : 1.0,
-        ),
+        padding: const EdgeInsets.only(bottom: 2.5),
         decoration: BoxDecoration(
           border: Border(
             bottom: BorderSide(
               color: textColor.withValues(alpha: 0.5),
-              width: 1.5,
+              width: 1.2,
             ),
           ),
         ),
@@ -96,16 +81,9 @@ class ShnidBadge extends StatelessWidget {
       );
     }
 
-    final themeProvider = context.watch<ThemeProvider>();
-    final isFruit = themeProvider.themeStyle == ThemeStyle.fruit;
-    final useNeumorphic = isFruit &&
-        settingsProvider.useNeumorphism &&
-        !settingsProvider.useTrueBlack;
-
     Widget badge = Container(
       padding: EdgeInsets.symmetric(
-          horizontal: (isFruit ? 8 : 6) * scaleFactor,
-          vertical: (isFruit ? 4 : 2.0) * scaleFactor),
+          horizontal: 6 * scaleFactor, vertical: 1.0 * scaleFactor),
       constraints: const BoxConstraints(maxWidth: 100),
       decoration: BoxDecoration(
         gradient: LinearGradient(
@@ -113,108 +91,64 @@ class ShnidBadge extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(isFruit ? 10 : 8),
-        boxShadow: useNeumorphic
-            ? [] // Neumorphic wrapper handles shadows
-            : [
-                BoxShadow(
-                    color: colorScheme.shadow.withValues(alpha: 0.05),
-                    blurRadius: 2,
-                    offset: const Offset(0, 1))
-              ],
+        borderRadius: BorderRadius.circular(8),
+        boxShadow: [
+          BoxShadow(
+              color: colorScheme.shadow.withValues(alpha: 0.05),
+              blurRadius: 2,
+              offset: const Offset(0, 1))
+        ],
       ),
       child: content,
     );
 
-    Widget badgeWithTap = badge;
-    if (interactive) {
-      final semanticLabel = 'Open archive details for $text';
-      if (uri != null) {
-        badgeWithTap = Link(
-          uri: uri,
-          target: LinkTarget.blank,
-          builder: (context, followLink) {
-            final activate = onTap ??
-                followLink ??
-                () => launchArchiveDetails(text, context);
-            return Semantics(
-              link: true,
-              button: true,
-              label: semanticLabel,
-              child: ExcludeSemantics(
-                child: FocusableActionDetector(
-                  enabled: true,
-                  mouseCursor: SystemMouseCursors.click,
-                  shortcuts: const <ShortcutActivator, Intent>{
-                    SingleActivator(LogicalKeyboardKey.enter): ActivateIntent(),
-                    SingleActivator(LogicalKeyboardKey.space): ActivateIntent(),
-                  },
-                  actions: <Type, Action<Intent>>{
-                    ActivateIntent: CallbackAction<ActivateIntent>(
-                      onInvoke: (_) {
-                        activate();
-                        return null;
-                      },
-                    ),
-                  },
-                  child: GestureDetector(
-                    onTap: activate,
-                    behavior: HitTestBehavior.opaque,
-                    child: badge,
-                  ),
-                ),
-              ),
-            );
-          },
-        );
-      } else {
-        final activate = onTap ?? () => launchArchiveDetails(text, context);
-        badgeWithTap = Semantics(
-          button: true,
-          label: semanticLabel,
-          child: ExcludeSemantics(
-            child: FocusableActionDetector(
-              enabled: true,
-              mouseCursor: SystemMouseCursors.click,
-              shortcuts: const <ShortcutActivator, Intent>{
-                SingleActivator(LogicalKeyboardKey.enter): ActivateIntent(),
-                SingleActivator(LogicalKeyboardKey.space): ActivateIntent(),
-              },
-              actions: <Type, Action<Intent>>{
-                ActivateIntent: CallbackAction<ActivateIntent>(
-                  onInvoke: (_) {
-                    activate();
-                    return null;
-                  },
-                ),
-              },
-              child: GestureDetector(
-                onTap: activate,
-                behavior: HitTestBehavior.opaque,
-                child: badge,
-              ),
-            ),
-          ),
-        );
-      }
-    }
+    if (!interactive) return badge;
 
-    if (useNeumorphic) {
-      return NeumorphicWrapper(
-        isCircle: false,
-        borderRadius: 10.0,
-        intensity: 0.9,
-        color: Colors.transparent,
-        child: LiquidGlassWrapper(
-          enabled: true,
-          borderRadius: BorderRadius.circular(10.0),
-          opacity: 0.08,
-          blur: 5.0,
-          child: badgeWithTap,
-        ),
+    final semanticLabel = 'Open archive details for $text';
+    final activate = onTap ?? () => launchArchiveDetails(text, context);
+
+    if (uri != null) {
+      return Link(
+        uri: uri,
+        target: LinkTarget.blank,
+        builder: (context, followLink) {
+          final linkActivate = followLink ?? activate;
+          return _wrapWithFocus(context, badge, linkActivate, semanticLabel);
+        },
       );
     }
 
-    return badgeWithTap;
+    return _wrapWithFocus(context, badge, activate, semanticLabel);
+  }
+
+  Widget _wrapWithFocus(
+      BuildContext context, Widget child, VoidCallback onTap, String label) {
+    return Semantics(
+      button: true,
+      label: label,
+      child: ExcludeSemantics(
+        child: FocusableActionDetector(
+          enabled: true,
+          mouseCursor: SystemMouseCursors.click,
+          shortcuts: const <ShortcutActivator, Intent>{
+            SingleActivator(LogicalKeyboardKey.enter): ActivateIntent(),
+            SingleActivator(LogicalKeyboardKey.space): ActivateIntent(),
+          },
+          actions: <Type, Action<Intent>>{
+            ActivateIntent: CallbackAction<ActivateIntent>(
+              onInvoke: (_) {
+                onTap();
+                return null;
+              },
+            ),
+          },
+          child: GestureDetector(
+            onTap: onTap,
+            behavior: HitTestBehavior.opaque,
+            child: child,
+          ),
+        ),
+      ),
+    );
   }
 }

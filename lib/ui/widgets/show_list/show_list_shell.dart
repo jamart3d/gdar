@@ -96,8 +96,10 @@ class ShowListShell extends StatelessWidget {
     // MiniPlayer logic:
     // - Always show in Android style if a track is loaded.
     // - Hide in Fruit style because FruitTabBar provides a dedicated Play tab.
-    final bool shouldShowMiniPlayer =
-        !isFruit && audioProvider.currentTrack != null;
+    // - Always hide on TV as it has a dedicated layout.
+    final bool shouldShowMiniPlayer = !settingsProvider.isTv &&
+        !isFruit &&
+        audioProvider.currentTrack != null;
 
     final bodyContent = Stack(
       children: [

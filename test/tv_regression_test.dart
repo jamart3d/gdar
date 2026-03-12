@@ -58,6 +58,14 @@ class MockAudioProvider extends ChangeNotifier implements ap.AudioProvider {
   @override
   Stream<Duration?> get nextTrackTotalStream => const Stream.empty();
   @override
+  Stream<bool> get heartbeatActiveStream => const Stream.empty();
+  @override
+  Stream<bool> get heartbeatNeededStream => const Stream.empty();
+  @override
+  Stream<String> get engineStateStringStream => const Stream.empty();
+  @override
+  Stream<String> get engineContextStateStream => const Stream.empty();
+  @override
   Stream<String> get playbackErrorStream => const Stream.empty();
   @override
   Stream<String> get notificationStream => const Stream.empty();
@@ -148,6 +156,14 @@ class MockGaplessPlayer extends Mock implements GaplessPlayer {
   @override
   Stream<int?> get currentIndexStream => Stream.value(null);
   @override
+  Stream<bool> get heartbeatActiveStream => Stream.value(false);
+  @override
+  Stream<bool> get heartbeatNeededStream => Stream.value(false);
+  @override
+  Stream<String> get engineStateStringStream => const Stream.empty();
+  @override
+  Stream<String> get engineContextStateStream => const Stream.empty();
+  @override
   Stream<SequenceState?> get sequenceStateStream => const Stream.empty();
 }
 
@@ -177,6 +193,16 @@ class FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
   void setAudioEngineMode(AudioEngineMode mode) {}
   @override
   bool get useOilScreensaver => true;
+  @override
+  int get oilScaleSource => 1;
+  @override
+  double get oilScaleMultiplier => 1.0;
+  @override
+  int get oilColorSource => 0;
+  @override
+  double get oilColorMultiplier => 1.0;
+  @override
+  bool get oilWoodstockEveryHour => false;
   @override
   bool get preventSleep => false;
   @override
@@ -576,6 +602,30 @@ class FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
   Future<void> toggleOilLogoAntiAlias() async {}
   @override
   Future<void> toggleOilPaletteCycle() async {}
+  @override
+  bool get oilScaleSineEnabled => false;
+  @override
+  double get oilScaleSineFreq => 1.0;
+  @override
+  double get oilScaleSineAmp => 0.0;
+  @override
+  void toggleOilScaleSineEnabled() {}
+  @override
+  Future<void> setOilScaleSineFreq(double value) async {}
+  @override
+  Future<void> setOilScaleSineAmp(double value) async {}
+  @override
+  double get oilEkgRadius => 1.0;
+  @override
+  Future<void> setOilEkgRadius(double value) async {}
+  @override
+  int get oilEkgReplication => 1;
+  @override
+  Future<void> setOilEkgReplication(int value) async {}
+  @override
+  double get oilEkgSpread => 1.0;
+  @override
+  Future<void> setOilEkgSpread(double value) async {}
 
   @override
   bool get oilShowInfoBanner => true;
@@ -861,6 +911,7 @@ void main() {
     )));
 
     // Verify TvStepperRow is used for Flow Speed
+    await tester.pump(const Duration(seconds: 1));
     expect(find.text('Flow Speed'), findsOneWidget);
     expect(find.byType(TvStepperRow),
         findsAtLeastNWidgets(1)); // Should find several

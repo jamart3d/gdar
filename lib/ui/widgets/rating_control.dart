@@ -98,7 +98,7 @@ class RatingControl extends StatelessWidget {
         content = innerStars;
       } else {
         content = NeumorphicWrapper(
-          enabled: !settingsProvider.performanceMode,
+          enabled: !isTv && !settingsProvider.performanceMode,
           isCircle: false,
           borderRadius: 12,
           intensity: 0.8,
@@ -106,7 +106,7 @@ class RatingControl extends StatelessWidget {
               ? colorScheme.surfaceContainerHighest
               : Colors.transparent,
           child: LiquidGlassWrapper(
-            enabled: !settingsProvider.performanceMode,
+            enabled: !isTv && !settingsProvider.performanceMode,
             showBorder: false, // Maintain no-sharp-edge rule
             borderRadius: BorderRadius.circular(12),
             opacity: brightness == Brightness.light ? 0.15 : 0.08,
@@ -119,57 +119,42 @@ class RatingControl extends StatelessWidget {
         );
       }
     } else {
+      // Android / Expressive Style (RADICALLY DIFFERENT from Fruit)
       if (rating == -1) {
         content = Semantics(
           label: 'Blocked show',
           child: Icon(
-            isFruit ? LucideIcons.star : Icons.star,
+            Icons.star_rounded,
             size: scaledSize,
-            color: Colors.red,
-          ),
-        );
-      } else if (rating == 0 && isPlayed) {
-        content = Semantics(
-          key: ValueKey('rating_0_played_$isPlayed'),
-          label: 'Played, unrated',
-          child: RatingBar(
-            initialRating: 1,
-            minRating: 1,
-            direction: Axis.horizontal,
-            allowHalfRating: false,
-            itemCount: 3,
-            itemSize: scaledSize,
-            ignoreGestures: true,
-            ratingWidget: RatingWidget(
-              full: Icon(isFruit ? LucideIcons.star : Icons.star,
-                  color: Colors.grey),
-              half: Icon(isFruit ? LucideIcons.star : Icons.star_half,
-                  color: Colors.grey),
-              empty: Icon(isFruit ? LucideIcons.star : Icons.star_border,
-                  color: Colors.grey),
-            ),
-            onRatingUpdate: (_) {},
+            color: Colors.redAccent,
           ),
         );
       } else {
         content = Semantics(
-          key: ValueKey('rating_$rating'),
-          label: 'Rated $rating stars',
+          label: rating == 0 && isPlayed
+              ? 'Played, unrated'
+              : 'Rated $rating stars',
           child: RatingBar(
-            initialRating: rating.toDouble(),
+            initialRating: (rating == 0 && isPlayed) ? 1.0 : rating.toDouble(),
             minRating: 1,
             direction: Axis.horizontal,
             allowHalfRating: false,
             itemCount: 3,
             itemSize: scaledSize,
+            itemPadding: const EdgeInsets.symmetric(horizontal: 1.0),
             ignoreGestures: true,
             ratingWidget: RatingWidget(
-              full: Icon(isFruit ? Icons.star_rate_rounded : Icons.star,
-                  color: isFruit ? colorScheme.primary : Colors.amber),
-              half: Icon(isFruit ? Icons.star_rate_rounded : Icons.star_half,
-                  color: isFruit ? colorScheme.primary : Colors.amber),
-              empty: Icon(isFruit ? Icons.star_rate_rounded : Icons.star_border,
-                  color: Colors.grey),
+              full: Icon(
+                Icons.star_rounded,
+                color: (rating == 0 && isPlayed)
+                    ? colorScheme.outline.withValues(alpha: 0.5)
+                    : Colors.amber,
+              ),
+              half: const Icon(Icons.star_half_rounded, color: Colors.amber),
+              empty: Icon(
+                Icons.star_rounded,
+                color: colorScheme.onSurface.withValues(alpha: 0.1),
+              ),
             ),
             onRatingUpdate: (_) {},
           ),
@@ -187,20 +172,18 @@ class RatingControl extends StatelessWidget {
         AppHaptics.selectionClick(context.read<DeviceService>());
         onTap!();
       },
-      child: enforceMinTapTarget
-          ? ConstrainedBox(
-              constraints: BoxConstraints(
-                minWidth: compact
-                    ? ((scaledSize * 1.35).clamp(40.0, 44.0)).toDouble()
-                    : 48.0,
-                minHeight: compact
-                    ? ((scaledSize * 1.35).clamp(40.0, 44.0)).toDouble()
-                    : 48.0,
-              ),
-              child: Center(child: content),
-            )
-          : (compact
-              ? content
+      child: compact
+          ? content // No wrapping/padding for compact layouts
+          : (enforceMinTapTarget
+              ? ConstrainedBox(
+                  constraints: BoxConstraints(
+                    minWidth:
+                        ((scaledSize * 1.35).clamp(40.0, 48.0)).toDouble(),
+                    minHeight:
+                        ((scaledSize * 1.35).clamp(40.0, 48.0)).toDouble(),
+                  ),
+                  child: Center(child: content),
+                )
               : ConstrainedBox(
                   constraints:
                       const BoxConstraints(minWidth: 48, minHeight: 48),
@@ -286,14 +269,23 @@ class _RatingDialogState extends State<RatingDialog> {
                               .withValues(alpha: 0.7),
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: Text(
-                      widget.sourceId!,
-                      style: textTheme.titleMedium?.copyWith(
-                        color: colorScheme.onTertiaryContainer,
-                        fontWeight: FontWeight.bold,
-                        decoration: TextDecoration.underline,
-                        decorationColor: colorScheme.onTertiaryContainer
-                            .withValues(alpha: 0.6),
+                    child: Container(
+                      padding: const EdgeInsets.only(bottom: 1.5),
+                      decoration: BoxDecoration(
+                        border: Border(
+                          bottom: BorderSide(
+                            color: colorScheme.onTertiaryContainer
+                                .withValues(alpha: 0.6),
+                            width: 1.2,
+                          ),
+                        ),
+                      ),
+                      child: Text(
+                        widget.sourceId!,
+                        style: textTheme.titleMedium?.copyWith(
+                          color: colorScheme.onTertiaryContainer,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                   );
@@ -472,7 +464,8 @@ class _RatingDialogState extends State<RatingDialog> {
 
                               if (isFruitNeumorphic) {
                                 return NeumorphicWrapper(
-                                  enabled: !settingsProvider.performanceMode,
+                                  enabled: !isTv &&
+                                      !settingsProvider.performanceMode,
                                   isPressed: true,
                                   borderRadius: 16,
                                   intensity: 1.0,
@@ -480,7 +473,8 @@ class _RatingDialogState extends State<RatingDialog> {
                                       ? colorScheme.surfaceContainerHighest
                                       : Colors.transparent,
                                   child: LiquidGlassWrapper(
-                                    enabled: !settingsProvider.performanceMode,
+                                    enabled: !isTv &&
+                                        !settingsProvider.performanceMode,
                                     showBorder: false,
                                     borderRadius: BorderRadius.circular(16),
                                     opacity: 0.08,
@@ -537,12 +531,13 @@ class _RatingDialogState extends State<RatingDialog> {
                             borderRadius: 20,
                             intensity: 0.7,
                             isPressed: true,
-                            enabled: !settingsProvider.performanceMode,
+                            enabled: !isTv && !settingsProvider.performanceMode,
                             color: settingsProvider.performanceMode
                                 ? colorScheme.secondaryContainer
                                 : Colors.transparent,
                             child: LiquidGlassWrapper(
-                              enabled: !settingsProvider.performanceMode,
+                              enabled:
+                                  !isTv && !settingsProvider.performanceMode,
                               showBorder: false,
                               borderRadius: BorderRadius.circular(20),
                               opacity: 0.06,
@@ -596,6 +591,7 @@ class _RatingDialogState extends State<RatingDialog> {
                   context,
                   'Mark as Unplayed?',
                   'This will remove the show from your played list.',
+                  isTv,
                 );
 
                 if (confirmed != true) return;
@@ -621,6 +617,7 @@ class _RatingDialogState extends State<RatingDialog> {
               ? Colors.redAccent.withValues(alpha: 0.85)
               : Colors.redAccent,
           -1,
+          isTv,
         ),
         Divider(
             height: 1,
@@ -635,6 +632,7 @@ class _RatingDialogState extends State<RatingDialog> {
               ? colorScheme.onSurfaceVariant.withValues(alpha: 0.6)
               : Colors.grey,
           0,
+          isTv,
         ),
         const SizedBox(height: 8),
       ],
@@ -660,13 +658,13 @@ class _RatingDialogState extends State<RatingDialog> {
       );
     } else if (isFruitNeumorphic) {
       content = LiquidGlassWrapper(
-        enabled: !settingsProvider.performanceMode,
+        enabled: !isTv && !settingsProvider.performanceMode,
         showBorder: false, // Seamless Vapor feel
         borderRadius: BorderRadius.circular(24),
         opacity: 0.35, // Slightly more subtle for deep glass look
         blur: 30, // Deeper blur for the dialog back-plate
         child: NeumorphicWrapper(
-          enabled: !settingsProvider.performanceMode,
+          enabled: !isTv && !settingsProvider.performanceMode,
           color: settingsProvider.performanceMode
               ? colorScheme.surface
               : Colors.transparent,
@@ -698,7 +696,7 @@ class _RatingDialogState extends State<RatingDialog> {
   }
 
   Widget _buildActionOption(BuildContext context, String text, IconData icon,
-      Color color, int rating) {
+      Color color, int rating, bool isTv) {
     final isFruit =
         context.read<ThemeProvider>().themeStyle == ThemeStyle.fruit;
     return TvListTile(
@@ -710,6 +708,7 @@ class _RatingDialogState extends State<RatingDialog> {
             context,
             'Block Show?',
             'This show has a rating. Blocking it will remove the rating.',
+            isTv,
           );
           if (confirmed != true) return;
         } else if (rating == 0 && _currentRating > 0) {
@@ -718,6 +717,7 @@ class _RatingDialogState extends State<RatingDialog> {
             context,
             'Clear Rating?',
             'Are you sure you want to remove the rating for this show?',
+            isTv,
           );
           if (confirmed != true) return;
         }
@@ -737,7 +737,7 @@ class _RatingDialogState extends State<RatingDialog> {
   }
 
   Future<bool?> _showScaledConfirmationDialog(
-      BuildContext context, String title, String content) {
+      BuildContext context, String title, String content, bool isTv) {
     final settingsProvider = context.read<SettingsProvider>();
     final double scaleFactor = settingsProvider.uiScale ? 1.5 : 1.0;
 
@@ -746,7 +746,8 @@ class _RatingDialogState extends State<RatingDialog> {
         context.read<ThemeProvider>().themeStyle == ThemeStyle.fruit;
     final isFruitNeumorphic = isFruit &&
         settingsProvider.useNeumorphism &&
-        !settingsProvider.useTrueBlack;
+        !settingsProvider.useTrueBlack &&
+        !isTv;
 
     return showDialog<bool>(
       context: context,

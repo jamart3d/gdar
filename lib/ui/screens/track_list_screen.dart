@@ -115,6 +115,7 @@ class _TrackListScreenState extends State<TrackListScreen> {
   Widget build(BuildContext context) {
     final settingsProvider = context.watch<SettingsProvider>();
     final themeProvider = context.watch<ThemeProvider>();
+    final isTv = context.watch<DeviceService>().isTv;
 
     return Scaffold(
       appBar: themeProvider.themeStyle == ThemeStyle.fruit
@@ -242,7 +243,7 @@ class _TrackListScreenState extends State<TrackListScreen> {
                     },
                   );
 
-                  if (useNeumorphic) {
+                  if (useNeumorphic && !isTv) {
                     return Padding(
                       padding: EdgeInsets.symmetric(
                           horizontal: kIsWeb ? (isFruit ? 16.0 : 8.0) : 8.0),
@@ -252,7 +253,7 @@ class _TrackListScreenState extends State<TrackListScreen> {
                         intensity: 1.2,
                         color: Colors.transparent,
                         child: LiquidGlassWrapper(
-                          enabled: true,
+                          enabled: !isTv,
                           borderRadius: BorderRadius.circular(12.0),
                           opacity: 0.08,
                           blur: 5.0,
@@ -439,13 +440,15 @@ class _TrackListScreenState extends State<TrackListScreen> {
             ),
           );
 
-          if (usePremium) {
+          final isTv = context.read<DeviceService>().isTv;
+
+          if (usePremium && !isTv) {
             card = NeumorphicWrapper(
               borderRadius: 28,
               intensity: 1.0,
               color: Colors.transparent,
               child: LiquidGlassWrapper(
-                enabled: true,
+                enabled: !isTv,
                 borderRadius: BorderRadius.circular(28),
                 opacity: 0.08,
                 blur: 15.0,
@@ -623,6 +626,8 @@ class _TrackListScreenState extends State<TrackListScreen> {
 
         Widget cardChild;
 
+        final isTv = context.read<DeviceService>().isTv;
+
         Widget content = Column(
           children: [
             headerContent,
@@ -642,13 +647,13 @@ class _TrackListScreenState extends State<TrackListScreen> {
           child: cardChild,
         );
 
-        if (usePremium) {
+        if (usePremium && !isTv) {
           card = NeumorphicWrapper(
             borderRadius: 24,
             intensity: 1.0,
             color: Colors.transparent,
             child: LiquidGlassWrapper(
-              enabled: true,
+              enabled: !isTv,
               borderRadius: BorderRadius.circular(24),
               opacity: 0.08,
               blur: 15.0,
@@ -739,14 +744,16 @@ class _TrackListScreenState extends State<TrackListScreen> {
             ),
           );
 
-          if (usePremium) {
+          final isTv = context.read<DeviceService>().isTv;
+
+          if (usePremium && !isTv) {
             return NeumorphicWrapper(
               borderRadius: 50,
               intensity: 0.8,
               isPressed: true,
               color: Colors.transparent,
               child: LiquidGlassWrapper(
-                enabled: true,
+                enabled: !isTv,
                 borderRadius: BorderRadius.circular(50),
                 opacity: 0.05,
                 blur: 5.0,
@@ -894,7 +901,9 @@ class _TrackListScreenState extends State<TrackListScreen> {
         child: itemContent,
       );
 
-      if (usePremium && isCurrentTrack) {
+      final isTv = context.read<DeviceService>().isTv;
+
+      if (usePremium && isCurrentTrack && !isTv) {
         return Padding(
           padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
           child: NeumorphicWrapper(
@@ -902,7 +911,7 @@ class _TrackListScreenState extends State<TrackListScreen> {
             intensity: 1.0,
             color: Colors.transparent,
             child: LiquidGlassWrapper(
-              enabled: true,
+              enabled: !isTv,
               borderRadius: BorderRadius.circular(16),
               opacity: 0.08,
               blur: 10.0,
@@ -1137,17 +1146,18 @@ class _TrackListScreenState extends State<TrackListScreen> {
   Widget _buildFruitNavButton(BuildContext context,
       {required IconData icon, required VoidCallback onPressed}) {
     final settingsProvider = context.watch<SettingsProvider>();
+    final isTv = context.watch<DeviceService>().isTv;
     final useNeumorphic =
         settingsProvider.useNeumorphism && !settingsProvider.useTrueBlack;
 
-    if (useNeumorphic) {
+    if (useNeumorphic && !isTv) {
       return NeumorphicWrapper(
         isCircle: true,
         borderRadius: 100,
         intensity: 0.8,
         color: Colors.transparent,
         child: LiquidGlassWrapper(
-          enabled: true,
+          enabled: !isTv,
           borderRadius: BorderRadius.circular(100),
           opacity: 0.12,
           blur: 8,

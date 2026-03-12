@@ -2,13 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart';
 import 'package:shakedown/utils/app_date_utils.dart';
-import 'package:lucide_icons/lucide_icons.dart';
 import 'package:provider/provider.dart';
 import 'package:shakedown/models/show.dart';
 import 'package:shakedown/models/source.dart';
 import 'package:shakedown/providers/audio_provider.dart';
 import 'package:shakedown/providers/settings_provider.dart';
-import 'package:shakedown/providers/theme_provider.dart';
 import 'package:shakedown/services/catalog_service.dart';
 import 'package:shakedown/services/device_service.dart';
 import 'package:shakedown/ui/styles/app_typography.dart';
@@ -20,11 +18,8 @@ import 'package:shakedown/ui/widgets/playback/playback_progress_bar.dart';
 import 'package:shakedown/ui/widgets/rating_control.dart';
 import 'package:shakedown/ui/widgets/shnid_badge.dart';
 import 'package:shakedown/ui/widgets/src_badge.dart';
-import 'package:shakedown/ui/widgets/theme/liquid_glass_wrapper.dart';
-import 'package:shakedown/ui/widgets/theme/neumorphic_wrapper.dart';
 import 'package:shakedown/utils/font_layout_config.dart';
 import 'package:shakedown/utils/utils.dart';
-import 'package:shakedown/ui/widgets/theme/fruit_icon_button.dart';
 
 class PlaybackPanel extends StatelessWidget {
   final Show currentShow;
@@ -50,11 +45,6 @@ class PlaybackPanel extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
     final audioProvider = context.watch<AudioProvider>();
     final settingsProvider = context.watch<SettingsProvider>();
-    final themeProvider = context.watch<ThemeProvider>();
-    final isFruit = themeProvider.themeStyle == ThemeStyle.fruit;
-    final useNeumorphic = settingsProvider.useNeumorphism &&
-        isFruit &&
-        !settingsProvider.useTrueBlack;
 
     final scaleFactor =
         FontLayoutConfig.getEffectiveScale(context, settingsProvider);
@@ -65,635 +55,340 @@ class PlaybackPanel extends StatelessWidget {
     final String formattedDate =
         AppDateUtils.formatDate(currentShow.date, settings: settingsProvider);
 
-    final deviceService = context.watch<DeviceService>();
-    if (deviceService.isTv) {
-      return _buildTvLayout(
-        context,
-        currentShow,
-        currentSource,
-        audioProvider,
-        settingsProvider,
-        scaleFactor,
-        formattedDate,
-        onVenueTap,
-      );
-    }
+    final panelColor =
+        isTrueBlackMode ? Colors.black : colorScheme.surfaceContainer;
 
-    final panelColor = isTrueBlackMode
-        ? Colors.black
-        : Theme.of(context).colorScheme.surfaceContainer;
-
-    return LiquidGlassWrapper(
-        enabled: isFruit && !isTrueBlackMode,
-        blur: 32.0,
-        opacity: 0.90, // nice opaque frosted glass
+    return Container(
+      decoration: BoxDecoration(
         color: panelColor,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(24.0)),
-        child: Container(
-          decoration: BoxDecoration(
-            color:
-                (isFruit && !isTrueBlackMode && kIsWeb && !deviceService.isTv)
-                    ? Colors.transparent
-                    : panelColor,
-            borderRadius:
-                const BorderRadius.vertical(top: Radius.circular(24.0)),
-            border: isTrueBlackMode
-                ? Border.all(
-                    color: colorScheme.onSurface.withValues(alpha: 0.2),
-                    width: 1.0,
-                  )
-                : null,
-          ),
-          child: Column(
-            children: [
-              SizedBox(
-                height: minHeight,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        border: isTrueBlackMode
+            ? Border.all(
+                color: colorScheme.onSurface.withValues(alpha: 0.2),
+                width: 1.0,
+              )
+            : null,
+      ),
+      child: Column(
+        children: [
+          // ── HANDLE & VENUE HEADER ──
+          SizedBox(
+            height: minHeight,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                Column(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const SizedBox(height: 8),
-                        Container(
-                          width: 32,
-                          height: 4,
-                          decoration: BoxDecoration(
-                            color: colorScheme.onSurfaceVariant
-                                .withValues(alpha: 0.4),
-                            borderRadius: BorderRadius.circular(2),
-                          ),
-                        ),
-                      ],
-                    ),
-                    GestureDetector(
-                      behavior: HitTestBehavior.opaque,
-                      onTap: onVenueTap,
-                      child: Padding(
-                        padding: EdgeInsets.only(
-                          left: isFruit ? 16.0 : 12.0,
-                          right: isFruit ? 16.0 : 12.0,
-                          bottom: 24.0 + bottomPadding,
-                        ),
-                        child: Row(
-                          mainAxisAlignment: settingsProvider.hideTrackDuration
-                              ? MainAxisAlignment.center
-                              : MainAxisAlignment.start,
-                          children: [
-                            Expanded(
-                              child: Container(
-                                decoration: settingsProvider.showDebugLayout
-                                    ? BoxDecoration(
-                                        border: Border.all(
-                                            color: Colors.red, width: 2),
-                                      )
-                                    : null,
-                                child: NeumorphicWrapper(
-                                  enabled: isFruit &&
-                                      settingsProvider.useNeumorphism &&
-                                      !settingsProvider.useTrueBlack,
-                                  borderRadius: 12,
-                                  intensity: 0.8,
-                                  color: Colors.transparent,
-                                  child: LiquidGlassWrapper(
-                                    enabled: isFruit,
-                                    borderRadius: BorderRadius.circular(12),
-                                    opacity: 0.05,
-                                    blur: 5,
-                                    child: Container(
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 12, vertical: 6),
-                                      child: SizedBox(
-                                        height:
-                                            AppTypography.responsiveFontSize(
-                                                    context, 18.0) *
-                                                2.0,
-                                        width: double.infinity,
-                                        child: ConditionalMarquee(
-                                          text: currentShow.venue,
-                                          style:
-                                              textTheme.headlineSmall?.copyWith(
-                                            fontSize: AppTypography
-                                                .responsiveFontSize(
-                                                    context, 18.0),
-                                            color: colorScheme.onSurface,
-                                          ),
-                                          blankSpace: 60.0,
-                                          pauseAfterRound:
-                                              const Duration(seconds: 3),
-                                          textAlign:
-                                              settingsProvider.hideTrackDuration
-                                                  ? TextAlign.center
-                                                  : TextAlign.start,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
+                    const SizedBox(height: 6),
+                    Container(
+                      width: 32,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color:
+                            colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
+                        borderRadius: BorderRadius.circular(2),
                       ),
                     ),
                   ],
                 ),
-              ),
-              Expanded(
-                child: ValueListenableBuilder<double>(
+                ValueListenableBuilder<double>(
                   valueListenable: panelPositionNotifier,
-                  builder: (context, value, child) {
-                    // Closed (0.0): +100 (Hidden down)
-                    // Open (1.0): -20 (Up slightly to create gap from bottom)
-                    final double yOffset =
-                        (100.0 - 120.0 * value) * scaleFactor;
-                    return Transform.translate(
-                      offset: Offset(0, yOffset),
-                      child: Container(
-                        width: double.infinity,
-                        padding: EdgeInsets.fromLTRB(
-                          isFruit ? 16 : 12,
-                          0,
-                          isFruit ? 16 : 12,
-                          16 * scaleFactor,
+                  builder: (context, position, _) {
+                    // Provide a comfortable gap that scales with the panel state
+                    // iPhone/Phone gets a tighter gap (8-12) than Web (12-20)
+                    const double baseGap = kIsWeb ? 12.0 : 8.0;
+                    const double openExtra = kIsWeb ? 8.0 : 4.0;
+                    return SizedBox(height: baseGap + (openExtra * position));
+                  },
+                ),
+                ValueListenableBuilder<double>(
+                  valueListenable: panelPositionNotifier,
+                  builder: (context, position, _) {
+                    return GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      onTap: onVenueTap,
+                      child: Padding(
+                        padding: EdgeInsets.only(
+                          left: 12.0,
+                          right: 12.0,
+                          bottom: 4.0 + (bottomPadding * (1.0 - position)),
                         ),
-                        child: LayoutBuilder(
-                          builder: (context, constraints) {
-                            return FittedBox(
-                              fit: BoxFit.scaleDown,
-                              alignment: Alignment.topCenter,
-                              child: SizedBox(
-                                width: constraints.maxWidth,
-                                child: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Row(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.end,
-                                      children: [
-                                        Expanded(
-                                          child: Container(
-                                            decoration:
-                                                settingsProvider.showDebugLayout
-                                                    ? BoxDecoration(
-                                                        border: Border.all(
-                                                            color: Colors.blue,
-                                                            width: 2),
-                                                      )
-                                                    : null,
-                                            child: NeumorphicWrapper(
-                                              enabled: isFruit &&
-                                                  settingsProvider
-                                                      .useNeumorphism &&
-                                                  !settingsProvider
-                                                      .useTrueBlack,
-                                              borderRadius: 12,
-                                              intensity: 0.8,
-                                              color: Colors.transparent,
-                                              child: LiquidGlassWrapper(
-                                                enabled: isFruit,
-                                                borderRadius:
-                                                    BorderRadius.circular(12),
-                                                opacity: 0.05,
-                                                blur: 5,
-                                                child: Container(
-                                                  padding:
-                                                      const EdgeInsets.all(8.0),
-                                                  child: Column(
-                                                    crossAxisAlignment:
-                                                        CrossAxisAlignment
-                                                            .start,
-                                                    mainAxisSize:
-                                                        MainAxisSize.min,
-                                                    children: [
-                                                      Padding(
-                                                        padding:
-                                                            const EdgeInsets
-                                                                .only(
-                                                                left: 8.0),
-                                                        child: Text(
-                                                          currentSource
-                                                                  .location ??
-                                                              'Location N/A',
-                                                          style: textTheme
-                                                              .titleSmall
-                                                              ?.copyWith(
-                                                            fontSize: AppTypography
-                                                                .responsiveFontSize(
-                                                                    context,
-                                                                    16.0),
-                                                            color: colorScheme
-                                                                .secondary,
-                                                            fontWeight:
-                                                                FontWeight.w500,
-                                                          ),
-                                                        ),
-                                                      ),
-                                                      const SizedBox(height: 4),
-                                                      Row(
-                                                        children: [
-                                                          Flexible(
-                                                            child: Transform
-                                                                .translate(
-                                                              offset:
-                                                                  const Offset(
-                                                                      0, 2),
-                                                              child: SizedBox(
-                                                                height: AppTypography
-                                                                        .responsiveFontSize(
-                                                                            context,
-                                                                            14.0) *
-                                                                    2.2,
-                                                                child: Padding(
-                                                                  padding:
-                                                                      const EdgeInsets
-                                                                          .only(
-                                                                    left: 8.0,
-                                                                    right: 4.0,
-                                                                  ),
-                                                                  child:
-                                                                      ConditionalMarquee(
-                                                                    text:
-                                                                        formattedDate,
-                                                                    style: textTheme
-                                                                        .titleMedium
-                                                                        ?.copyWith(
-                                                                      fontSize: AppTypography.responsiveFontSize(
-                                                                          context,
-                                                                          14.0),
-                                                                      color: colorScheme
-                                                                          .onSurfaceVariant,
-                                                                      height:
-                                                                          1.2,
-                                                                    ),
-                                                                  ),
-                                                                ),
-                                                              ),
-                                                            ),
-                                                          ),
-                                                          Builder(builder:
-                                                              (context) {
-                                                            final Widget
-                                                                iconBtn =
-                                                                FruitIconButton(
-                                                              icon: Icon(
-                                                                  isFruit
-                                                                      ? LucideIcons
-                                                                          .copy
-                                                                      : Icons
-                                                                          .copy_rounded,
-                                                                  size: (isFruit
-                                                                          ? 28
-                                                                          : 20) *
-                                                                      scaleFactor,
-                                                                  color: colorScheme
-                                                                      .onSurfaceVariant),
-                                                              padding: 0,
-                                                              onPressed: () {
-                                                                final track =
-                                                                    audioProvider
-                                                                        .currentTrack;
-                                                                if (track ==
-                                                                    null) {
-                                                                  return;
-                                                                }
-                                                                final locationStr =
-                                                                    currentSource.location !=
-                                                                            null
-                                                                        ? ' - ${currentSource.location}'
-                                                                        : '';
-                                                                final urlStr =
-                                                                    settingsProvider
-                                                                            .omitHttpPathInCopy
-                                                                        ? ''
-                                                                        : '\n${track.url.replaceAll('/download/', '/details/').split('/').sublist(0, 5).join('/')}';
-                                                                final info =
-                                                                    '${currentShow.venue}$locationStr - $formattedDate - ${currentSource.id}\n${track.title}$urlStr';
-                                                                Clipboard.setData(
-                                                                    ClipboardData(
-                                                                        text:
-                                                                            info));
-                                                                AppHaptics.selectionClick(
-                                                                    context.read<
-                                                                        DeviceService>());
-                                                                showMessage(
-                                                                    context,
-                                                                    'Details copied to clipboard');
-                                                              },
-                                                              tooltip:
-                                                                  'Copy Details',
-                                                            );
-                                                            if (useNeumorphic) {
-                                                              return Padding(
-                                                                padding:
-                                                                    const EdgeInsets
-                                                                        .only(
-                                                                        left:
-                                                                            6.0),
-                                                                child:
-                                                                    NeumorphicWrapper(
-                                                                  isCircle:
-                                                                      false,
-                                                                  borderRadius:
-                                                                      12.0,
-                                                                  intensity:
-                                                                      1.2,
-                                                                  color: Colors
-                                                                      .transparent,
-                                                                  child:
-                                                                      LiquidGlassWrapper(
-                                                                    enabled:
-                                                                        true,
-                                                                    borderRadius:
-                                                                        BorderRadius.circular(
-                                                                            12.0),
-                                                                    opacity:
-                                                                        0.08,
-                                                                    blur: 5.0,
-                                                                    child:
-                                                                        iconBtn,
-                                                                  ),
-                                                                ),
-                                                              );
-                                                            }
-                                                            return Padding(
-                                                              padding:
-                                                                  const EdgeInsets
-                                                                      .only(
-                                                                left: 8.0,
-                                                                bottom: 4.0,
-                                                              ),
-                                                              child: iconBtn,
-                                                            );
-                                                          }),
-                                                        ],
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                        const SizedBox(width: 8),
-                                        Container(
-                                          decoration:
-                                              settingsProvider.showDebugLayout
-                                                  ? BoxDecoration(
-                                                      border: Border.all(
-                                                          color: Colors.green,
-                                                          width: 2),
-                                                    )
-                                                  : null,
-                                          child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.end,
-                                            children: [
-                                              // Rating Stars
-                                              ConstrainedBox(
-                                                constraints:
-                                                    const BoxConstraints(
-                                                        minWidth: 48,
-                                                        minHeight: 48),
-                                                child: Center(
-                                                  child: _buildRatingButton(
-                                                    context,
-                                                    currentShow,
-                                                    currentSource,
-                                                    isFruit: isFruit,
-                                                  ),
-                                                ),
-                                              ),
-                                              const SizedBox(height: 4),
-                                              if (currentSource.src != null)
-                                                SrcBadge(
-                                                  src: currentSource.src!,
-                                                  matchShnidLook: true,
-                                                  scaleFactor:
-                                                      isFruit ? 1.4 : 1.0,
-                                                ),
-                                              const SizedBox(height: 4),
-                                              FruitIconButton(
-                                                padding: 0,
-                                                onPressed: () {
-                                                  if (currentSource
-                                                      .tracks.isNotEmpty) {
-                                                    launchArchivePage(
-                                                        currentSource
-                                                            .tracks.first.url,
-                                                        context);
-                                                  }
-                                                },
-                                                icon: ShnidBadge(
-                                                  text: currentSource.id,
-                                                  showUnderline: true,
-                                                  scaleFactor:
-                                                      isFruit ? 1.4 : 1.0,
-                                                  interactive: false,
-                                                ),
-                                                tooltip: 'Open in Archive.org',
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Container(
-                                      decoration:
-                                          settingsProvider.showDebugLayout
-                                              ? BoxDecoration(
-                                                  border: Border.all(
-                                                      color: Colors.orange,
-                                                      width: 2),
-                                                )
-                                              : null,
-                                      child: const PlaybackProgressBar(),
-                                    ),
-                                    if (kIsWeb &&
-                                        settingsProvider.showDevAudioHud) ...[
-                                      SizedBox(height: 8 * scaleFactor),
-                                      Align(
-                                        alignment: Alignment.centerLeft,
-                                        child: Container(
-                                          decoration:
-                                              settingsProvider.showDebugLayout
-                                                  ? BoxDecoration(
-                                                      border: Border.all(
-                                                          color: Colors.purple,
-                                                          width: 2),
-                                                    )
-                                                  : null,
-                                          child: const PlaybackMessages(
-                                            textAlign: TextAlign.left,
-                                            showDivider: false,
-                                            showStatusLine: false,
-                                            compactDevHud: true,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                    const SizedBox(height: 4),
-                                    ValueListenableBuilder<double>(
-                                      valueListenable: panelPositionNotifier,
-                                      builder: (context, position, _) {
-                                        return Container(
-                                          decoration:
-                                              settingsProvider.showDebugLayout
-                                                  ? BoxDecoration(
-                                                      border: Border.all(
-                                                          color: Colors.cyan,
-                                                          width: 2),
-                                                    )
-                                                  : null,
-                                          child: PlaybackControls(
-                                              panelPosition: position),
-                                        );
-                                      },
-                                    ),
-                                    SizedBox(height: 8 * scaleFactor),
-                                    Align(
-                                      alignment: Alignment.centerLeft,
-                                      child: Container(
-                                        decoration:
-                                            settingsProvider.showDebugLayout
-                                                ? BoxDecoration(
-                                                    border: Border.all(
-                                                        color: Colors.pink,
-                                                        width: 2),
-                                                  )
-                                                : null,
-                                        child: const PlaybackMessages(
-                                          textAlign: TextAlign.left,
-                                          showDevHudInline: false,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            );
-                          },
+                        child: SizedBox(
+                          height:
+                              AppTypography.responsiveFontSize(context, 22.0) *
+                                  2.4,
+                          width: double.infinity,
+                          child: ConditionalMarquee(
+                            text: currentShow.venue,
+                            style: textTheme.headlineSmall?.copyWith(
+                              fontSize: AppTypography.responsiveFontSize(
+                                  context, 22.0),
+                              color: colorScheme.onSurface,
+                            ),
+                            blankSpace: 60.0,
+                            pauseAfterRound: const Duration(seconds: 3),
+                            textAlign: settingsProvider.hideTrackDuration
+                                ? TextAlign.center
+                                : TextAlign.start,
+                          ),
                         ),
                       ),
                     );
                   },
                 ),
-              ),
-            ],
-          ),
-        ));
-  }
-
-  Widget _buildTvLayout(
-    BuildContext context,
-    Show currentShow,
-    Source currentSource,
-    AudioProvider audioProvider,
-    SettingsProvider settingsProvider,
-    double scaleFactor,
-    String formattedDate,
-    VoidCallback onVenueTap,
-  ) {
-    final track = audioProvider.currentTrack;
-    if (track == null) return const SizedBox.shrink();
-
-    final textTheme = Theme.of(context).textTheme;
-    final colorScheme = Theme.of(context).colorScheme;
-
-    return Container(
-      padding: const EdgeInsets.all(24.0),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          // 1. Current Track Title (Hero)
-          SizedBox(
-            height: AppTypography.responsiveFontSize(context, 28.0) * 1.5,
-            child: ConditionalMarquee(
-              text: track.title,
-              style: textTheme.headlineMedium?.copyWith(
-                fontSize: AppTypography.responsiveFontSize(context, 28.0),
-                fontWeight: FontWeight.bold,
-                color: colorScheme.onSurface,
-              ),
-            ),
-          ),
-          const SizedBox(height: 12),
-          // 2. Metadata Row: Venue | Location | Date
-          FittedBox(
-            fit: BoxFit.scaleDown,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      Icons.stadium_rounded,
-                      size: 20,
-                      color: colorScheme.secondary,
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      currentShow.venue,
-                      style: textTheme.titleMedium?.copyWith(
-                        color: colorScheme.secondary,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
-                Text(
-                  '  •  ',
-                  style: TextStyle(
-                    color: colorScheme.onSurfaceVariant.withValues(alpha: 0.3),
-                  ),
-                ),
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      Icons.place_outlined,
-                      size: 20,
-                      color: colorScheme.onSurfaceVariant,
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      currentSource.location ?? 'N/A',
-                      style: textTheme.titleMedium?.copyWith(
-                        color: colorScheme.onSurfaceVariant,
-                      ),
-                    ),
-                  ],
-                ),
-                Text(
-                  '  •  ',
-                  style: TextStyle(
-                    color: colorScheme.onSurfaceVariant.withValues(alpha: 0.3),
-                  ),
-                ),
-                Text(
-                  formattedDate,
-                  style: textTheme.titleMedium?.copyWith(
-                    color: colorScheme.onSurfaceVariant,
-                  ),
-                ),
               ],
             ),
           ),
-          const SizedBox(height: 32),
-          // 3. Progress Bar
-          const PlaybackProgressBar(),
-          const SizedBox(height: 16),
-          // 4. Controls
-          const PlaybackControls(panelPosition: 1.0),
+
+          // ── EXPANDED CONTENT ──
+          Expanded(
+            child: ValueListenableBuilder<double>(
+              valueListenable: panelPositionNotifier,
+              builder: (context, value, child) {
+                // Resting position (value=1.0) is tighter on Phone (-24) than Web (-12)
+                const double restingOffset = kIsWeb ? -12.0 : -24.0;
+                const double startOffset = 80.0;
+                final double yOffset =
+                    (startOffset + (restingOffset - startOffset) * value) *
+                        scaleFactor;
+
+                return Transform.translate(
+                  offset: Offset(0, yOffset),
+                  child: SingleChildScrollView(
+                    physics: const ClampingScrollPhysics(),
+                    child: Container(
+                      width: double.infinity,
+                      padding: EdgeInsets.fromLTRB(
+                        12,
+                        0,
+                        12,
+                        12 * scaleFactor,
+                      ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          // ── METADATA BOX (Location, Date, ID) ──
+                          Padding(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8.0, vertical: 4.0),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      // 1. LOCATION LINE
+                                      () {
+                                        final double locScore =
+                                            (currentSource.location?.length ??
+                                                    0) *
+                                                18.0;
+                                        final double dateScore =
+                                            formattedDate.length * 14.0;
+                                        final bool isLocShorter =
+                                            currentSource.location != null &&
+                                                locScore < dateScore;
+
+                                        return Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Flexible(
+                                              child: Padding(
+                                                padding: const EdgeInsets.only(
+                                                    left: 2.0, right: 2.0),
+                                                child: Text(
+                                                  currentSource.location ?? '',
+                                                  style: textTheme.titleSmall
+                                                      ?.copyWith(
+                                                    fontSize: AppTypography
+                                                        .responsiveFontSize(
+                                                            context, 18.0),
+                                                    color:
+                                                        colorScheme.secondary,
+                                                    fontWeight: FontWeight.w500,
+                                                  ),
+                                                  maxLines: 1,
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                ),
+                                              ),
+                                            ),
+                                            if (isLocShorter) ...[
+                                              const SizedBox(
+                                                  width: kIsWeb ? 13 : 8),
+                                              _buildCopyButton(
+                                                context,
+                                                audioProvider,
+                                                settingsProvider,
+                                                currentShow,
+                                                currentSource,
+                                                formattedDate,
+                                                scaleFactor,
+                                                1.6,
+                                              ),
+                                            ],
+                                          ],
+                                        );
+                                      }(),
+                                      const SizedBox(height: 2),
+                                      // 2. DATE LINE
+                                      () {
+                                        final double locScore =
+                                            (currentSource.location?.length ??
+                                                    0) *
+                                                18.0;
+                                        final double dateScore =
+                                            formattedDate.length * 14.0;
+                                        final bool isDateShorter =
+                                            currentSource.location == null ||
+                                                locScore >= dateScore;
+
+                                        return Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Flexible(
+                                              child: Transform.translate(
+                                                offset: const Offset(0, 2),
+                                                child: SizedBox(
+                                                  height: AppTypography
+                                                          .responsiveFontSize(
+                                                              context, 14.0) *
+                                                      2.8,
+                                                  child: Padding(
+                                                    padding:
+                                                        const EdgeInsets.only(
+                                                      left: 4.0,
+                                                      right: 4.0,
+                                                    ),
+                                                    child: ConditionalMarquee(
+                                                      text: formattedDate,
+                                                      style: textTheme
+                                                          .titleMedium
+                                                          ?.copyWith(
+                                                        fontSize: AppTypography
+                                                            .responsiveFontSize(
+                                                                context, 14.0),
+                                                        color: colorScheme
+                                                            .onSurfaceVariant,
+                                                        height: 1.2,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                            if (isDateShorter) ...[
+                                              const SizedBox(width: 10),
+                                              _buildCopyButton(
+                                                context,
+                                                audioProvider,
+                                                settingsProvider,
+                                                currentShow,
+                                                currentSource,
+                                                formattedDate,
+                                                scaleFactor,
+                                                2.0,
+                                              ),
+                                            ],
+                                          ],
+                                        );
+                                      }(),
+                                    ],
+                                  ),
+                                ),
+                                SizedBox(
+                                  height: 48,
+                                  child: VerticalDivider(
+                                      width: 16,
+                                      thickness: 1,
+                                      color: colorScheme.onSurface
+                                          .withValues(alpha: 0.1)),
+                                ),
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.end,
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    _buildRatingButton(
+                                      context,
+                                      currentShow,
+                                      currentSource,
+                                    ),
+                                    const SizedBox(height: 2),
+                                    if (currentSource.src != null) ...[
+                                      SrcBadge(
+                                        src: currentSource.src!,
+                                        matchShnidLook: true,
+                                        scaleFactor: scaleFactor,
+                                      ),
+                                      const SizedBox(height: 2),
+                                    ],
+                                    GestureDetector(
+                                      onTap: () {
+                                        if (currentSource.tracks.isNotEmpty) {
+                                          launchArchivePage(
+                                              currentSource.tracks.first.url,
+                                              context);
+                                        }
+                                      },
+                                      child: ShnidBadge(
+                                        text: currentSource.id,
+                                        showUnderline: true,
+                                        scaleFactor: scaleFactor,
+                                        interactive: false,
+                                      ),
+                                    )
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          const PlaybackProgressBar(),
+                          if (kIsWeb && settingsProvider.showDevAudioHud) ...[
+                            SizedBox(height: 8 * scaleFactor),
+                            const Align(
+                              alignment: Alignment.center,
+                              child: PlaybackMessages(
+                                textAlign: TextAlign.center,
+                                showDivider: false,
+                                showStatusLine: false,
+                                compactDevHud: true,
+                              ),
+                            ),
+                          ],
+                          const SizedBox(height: 12),
+                          ValueListenableBuilder<double>(
+                            valueListenable: panelPositionNotifier,
+                            builder: (context, position, _) {
+                              return PlaybackControls(panelPosition: position);
+                            },
+                          ),
+                          SizedBox(height: 8 * scaleFactor),
+                          const Align(
+                            alignment: Alignment.center,
+                            child: PlaybackMessages(
+                              textAlign: TextAlign.center,
+                              showDevHudInline: false,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildRatingButton(BuildContext context, Show show, Source source,
-      {bool isFruit = false}) {
+  Widget _buildRatingButton(BuildContext context, Show show, Source source) {
     final String ratingKey = source.id;
 
     return ValueListenableBuilder(
@@ -706,7 +401,8 @@ class PlaybackPanel extends StatelessWidget {
         return RatingControl(
           rating: rating,
           isPlayed: isPlayed,
-          size: isFruit ? 32.0 : 24.0,
+          size: 26.0,
+          compact: true,
           onTap: () async {
             await showDialog(
               context: context,
@@ -729,6 +425,44 @@ class PlaybackPanel extends StatelessWidget {
           },
         );
       },
+    );
+  }
+
+  Widget _buildCopyButton(
+    BuildContext context,
+    AudioProvider audioProvider,
+    SettingsProvider settingsProvider,
+    dynamic currentShow,
+    dynamic currentSource,
+    String formattedDate,
+    double scaleFactor,
+    double scale,
+  ) {
+    return Transform.scale(
+      scale: scale,
+      child: IconButton(
+        visualDensity: VisualDensity.compact,
+        icon: const Icon(Icons.copy_rounded),
+        iconSize: 20 * scaleFactor,
+        onPressed: () {
+          final track = audioProvider.currentTrack;
+          if (track == null) return;
+          final locationStr = currentSource.location != null
+              ? ' - ${currentSource.location}'
+              : '';
+          final urlStr = settingsProvider.omitHttpPathInCopy
+              ? ''
+              : '\n${track.url.replaceAll('/download/', '/details/').split('/').sublist(0, 5).join('/')}';
+          final info =
+              '${currentShow.venue}$locationStr - $formattedDate - ${currentSource.id}\n${track.title}$urlStr';
+          Clipboard.setData(ClipboardData(text: info));
+          AppHaptics.selectionClick(context.read<DeviceService>());
+          showMessage(context, 'Details copied to clipboard');
+        },
+        tooltip: 'Copy Details',
+        padding: EdgeInsets.zero,
+        constraints: const BoxConstraints(),
+      ),
     );
   }
 }

@@ -113,6 +113,12 @@ class AudioProvider with ChangeNotifier {
       _audioPlayer.nextTrackBufferedStream;
   Stream<Duration?> get nextTrackTotalStream =>
       _audioPlayer.nextTrackTotalStream;
+  Stream<bool> get heartbeatActiveStream => _audioPlayer.heartbeatActiveStream;
+  Stream<bool> get heartbeatNeededStream => _audioPlayer.heartbeatNeededStream;
+  Stream<String> get engineStateStringStream =>
+      _audioPlayer.engineStateStringStream;
+  Stream<String> get engineContextStateStream =>
+      _audioPlayer.engineContextStateStream;
   Stream<String> get playbackErrorStream => _errorController.stream;
   Stream<({Show show, Source source})> get randomShowRequestStream =>
       _randomShowRequestController.stream;

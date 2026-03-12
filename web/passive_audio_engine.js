@@ -261,7 +261,29 @@
                 nextTrackTotal: nextTrackTotal,
                 playlistLength: _playlist.length,
                 processingState: ps,
-                contextState: 'passive (H5)',
+                heartbeatActive: (function () {
+                    if (document.visibilityState === 'visible') return true;
+                    return window._gdarHeartbeat ? window._gdarHeartbeat.isActive() : false;
+                })(),
+                heartbeatNeeded: (function () {
+                    const ua = navigator.userAgent || '';
+                    if (/Windows/i.test(ua) || (/Macintosh/i.test(ua) && navigator.maxTouchPoints === 0)) return false;
+                    const isAndroid = /Android/i.test(ua);
+                    const isIOS = /iPhone|iPad|iPod/i.test(ua);
+                    const isMacPad = navigator.maxTouchPoints > 0 && /Macintosh/.test(ua);
+                    return isAndroid || isIOS || isMacPad;
+                })(),
+                contextState: (function() {
+                    const ua = navigator.userAgent || '';
+                    const hbNeeded = (function() {
+                        if (/Windows/i.test(ua) || (/Macintosh/i.test(ua) && navigator.maxTouchPoints === 0)) return false;
+                        const isAndroid = /Android/i.test(ua);
+                        const isIOS = /iPhone|iPad|iPod/i.test(ua);
+                        const isMacPad = navigator.maxTouchPoints > 0 && /Macintosh/.test(ua);
+                        return isAndroid || isIOS || isMacPad;
+                    })();
+                    return 'passive (H5)' + (hbNeeded ? ' [HBN]' : ' [HBO]') + ' v1.1.hb';
+                })()
             });
         } catch (_) { }
     }
@@ -424,7 +446,29 @@
                 nextTrackTotal: _playlist[_currentIndex + 1] ? (_playlist[_currentIndex + 1].duration || 0) : 0,
                 playlistLength: _playlist.length,
                 processingState: _loadingState,
-                contextState: 'passive',
+                contextState: (function() {
+                    const ua = navigator.userAgent || '';
+                    const hbNeeded = (function() {
+                        if (/Windows/i.test(ua) || (/Macintosh/i.test(ua) && navigator.maxTouchPoints === 0)) return false;
+                        const isAndroid = /Android/i.test(ua);
+                        const isIOS = /iPhone|iPad|iPod/i.test(ua);
+                        const isMacPad = navigator.maxTouchPoints > 0 && /Macintosh/.test(ua);
+                        return isAndroid || isIOS || isMacPad;
+                    })();
+                    return 'passive' + (hbNeeded ? ' [HBN]' : ' [HBO]') + ' v1.1.hb';
+                })(),
+                heartbeatActive: (function () {
+                    if (document.visibilityState === 'visible') return true;
+                    return window._gdarHeartbeat ? window._gdarHeartbeat.isActive() : false;
+                })(),
+                heartbeatNeeded: (function () {
+                    const ua = navigator.userAgent || '';
+                    if (/Windows/i.test(ua) || (/Macintosh/i.test(ua) && navigator.maxTouchPoints === 0)) return false;
+                    const isAndroid = /Android/i.test(ua);
+                    const isIOS = /iPhone|iPad|iPod/i.test(ua);
+                    const isMacPad = navigator.maxTouchPoints > 0 && /Macintosh/.test(ua);
+                    return isAndroid || isIOS || isMacPad;
+                })(),
             };
         },
 

@@ -19,6 +19,7 @@ import 'package:shakedown/ui/widgets/shnid_badge.dart';
 import 'package:shakedown/ui/widgets/src_badge.dart';
 import 'package:shakedown/ui/widgets/theme/neumorphic_wrapper.dart';
 import 'package:shakedown/utils/utils.dart';
+import 'package:shakedown/services/device_service.dart';
 import 'package:shakedown/ui/widgets/theme/liquid_glass_wrapper.dart';
 
 class PlaybackAppBar extends StatelessWidget {
@@ -40,6 +41,7 @@ class PlaybackAppBar extends StatelessWidget {
     final double opacity = (1.0 - (panelPosition * 5.0)).clamp(0.0, 1.0);
     final settingsProvider = context.watch<SettingsProvider>();
     final themeProvider = context.watch<ThemeProvider>();
+    final isTv = context.watch<DeviceService>().isTv;
     final isFruit = themeProvider.themeStyle == ThemeStyle.fruit;
     final useNeumorphic = settingsProvider.useNeumorphism &&
         isFruit &&
@@ -69,7 +71,7 @@ class PlaybackAppBar extends StatelessWidget {
                       tooltip: 'Back to Show List',
                     );
 
-              if (useNeumorphic) {
+              if (useNeumorphic && !isTv) {
                 return Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: NeumorphicWrapper(
@@ -78,7 +80,7 @@ class PlaybackAppBar extends StatelessWidget {
                     intensity: 1.2,
                     color: Colors.transparent,
                     child: LiquidGlassWrapper(
-                      enabled: true,
+                      enabled: !isTv,
                       borderRadius: BorderRadius.circular(12.0),
                       opacity: 0.08,
                       blur: 5.0,
@@ -239,14 +241,14 @@ class PlaybackAppBar extends StatelessWidget {
 
           return Padding(
             padding: EdgeInsets.symmetric(horizontal: actionPadding),
-            child: useNeumorphic
+            child: (useNeumorphic && !isTv)
                 ? NeumorphicWrapper(
                     isCircle: false,
                     borderRadius: 12.0,
                     intensity: 1.2,
                     color: Colors.transparent,
                     child: LiquidGlassWrapper(
-                      enabled: true,
+                      enabled: !isTv,
                       borderRadius: BorderRadius.circular(12.0),
                       opacity: 0.08,
                       blur: 5.0,

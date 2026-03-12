@@ -6,7 +6,6 @@ import 'package:shakedown/services/device_service.dart';
 import 'package:shakedown/utils/utils.dart'; // for formatDuration
 import 'package:just_audio/just_audio.dart';
 import 'package:provider/provider.dart';
-import 'package:shakedown/providers/theme_provider.dart';
 
 class PlaybackProgressBar extends StatefulWidget {
   const PlaybackProgressBar({super.key});
@@ -69,11 +68,7 @@ class _PlaybackProgressBarState extends State<PlaybackProgressBar>
 
     // Check for True Black mode
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    final isTrueBlackMode = isDarkMode && settingsProvider.useTrueBlack;
-
-    final isFruit =
-        context.watch<ThemeProvider>().themeStyle == ThemeStyle.fruit;
-    final String? fontFamily = isFruit ? null : 'Roboto';
+    final bool isTrueBlackMode = isDarkMode && settingsProvider.useTrueBlack;
 
     final audioProvider = context.watch<AudioProvider>();
 
@@ -88,33 +83,23 @@ class _PlaybackProgressBarState extends State<PlaybackProgressBar>
           builder: (context, durationSnapshot) {
             final totalDuration = durationSnapshot.data ?? Duration.zero;
             final hasKnownDuration = totalDuration.inSeconds > 0;
-            return Row(
-              children: [
-                Container(
-                  width: 72 * scaleFactor,
-                  decoration: settingsProvider.showDebugLayout
-                      ? BoxDecoration(
-                          border: Border.all(color: Colors.blue, width: 1),
-                        )
-                      : null,
-                  child: _buildTimeBadge(
+
+            return SizedBox(
+              height: 32 * scaleFactor,
+              child: Row(
+                children: [
+                  // 1. ELAPSED TIME
+                  _buildTimeBadge(
                     context: context,
                     text: formatDuration(position),
                     scaleFactor: scaleFactor,
-                    fontFamily: fontFamily,
-                    alignRight: true,
+                    alignRight: false,
                     isSimple: isSimple,
                     role: _timeRoleElapsed,
                   ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Container(
-                    decoration: settingsProvider.showDebugLayout
-                        ? BoxDecoration(
-                            border: Border.all(color: Colors.purple, width: 1),
-                          )
-                        : null,
+                  SizedBox(width: 4 * scaleFactor),
+                  // 2. SEEK BAR (Expanded to fill space)
+                  Expanded(
                     child: StreamBuilder<Duration>(
                       stream: audioProvider.bufferedPositionStream,
                       initialData: audioProvider.audioPlayer.bufferedPosition,
@@ -141,203 +126,176 @@ class _PlaybackProgressBarState extends State<PlaybackProgressBar>
                                     : 0.0)
                                 .clamp(0.0, 1.0);
 
-                            return AnimatedBuilder(
-                                animation: _thumbRadiusAnimation,
-                                builder: (context, child) {
-                                  return SliderTheme(
-                                    data: SliderTheme.of(context).copyWith(
-                                      trackHeight:
-                                          12 * scaleFactor, // Expressive height
-                                      thumbShape: RoundSliderThumbShape(
-                                          enabledThumbRadius:
-                                              _thumbRadiusAnimation.value *
-                                                  scaleFactor),
-                                      overlayShape: RoundSliderOverlayShape(
-                                          overlayRadius: 22 * scaleFactor),
-                                      activeTrackColor: Colors.transparent,
-                                      inactiveTrackColor: Colors.transparent,
-                                      thumbColor: colorScheme.primary,
-                                      overlayColor: colorScheme.primary
-                                          .withValues(alpha: 0.2),
+                            return Stack(
+                              alignment: Alignment.center,
+                              children: [
+                                // Background Track
+                                Container(
+                                  height: 12 * scaleFactor,
+                                  decoration: BoxDecoration(
+                                    color: isTrueBlackMode
+                                        ? Colors.white12
+                                        : colorScheme.onSurface
+                                            .withValues(alpha: 0.2),
+                                    borderRadius:
+                                        BorderRadius.circular(6 * scaleFactor),
+                                  ),
+                                ),
+                                if (!hasKnownDuration && isBuffering)
+                                  ClipRRect(
+                                    borderRadius:
+                                        BorderRadius.circular(6 * scaleFactor),
+                                    child: SizedBox(
+                                      height: 12 * scaleFactor,
+                                      child: LinearProgressIndicator(
+                                        value: null,
+                                        backgroundColor: Colors.transparent,
+                                        valueColor:
+                                            AlwaysStoppedAnimation<Color>(
+                                          colorScheme.tertiary
+                                              .withValues(alpha: 0.45),
+                                        ),
+                                      ),
                                     ),
+                                  ),
+                                // Buffered Progress
+                                Align(
+                                  alignment: Alignment.centerLeft,
+                                  child: FractionallySizedBox(
+                                    widthFactor: bufferingPercentage,
+                                    child: Container(
+                                      height: 12 * scaleFactor,
+                                      decoration: BoxDecoration(
+                                        color: colorScheme.tertiary
+                                            .withValues(alpha: 0.35),
+                                        borderRadius: BorderRadius.circular(
+                                            6 * scaleFactor),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                // Active Progress
+                                Align(
+                                  alignment: Alignment.centerLeft,
+                                  child: FractionallySizedBox(
+                                    widthFactor: positionPercentage,
                                     child: Stack(
-                                      alignment: Alignment.center,
                                       children: [
-                                        // Background Track
                                         Container(
                                           height: 12 * scaleFactor,
                                           decoration: BoxDecoration(
-                                            color: isTrueBlackMode
-                                                ? Colors.white12
-                                                : colorScheme.onSurface
-                                                    .withValues(alpha: 0.2),
-                                            borderRadius: BorderRadius.circular(
-                                                6 * scaleFactor),
-                                          ),
-                                        ),
-                                        if (!hasKnownDuration && isBuffering)
-                                          ClipRRect(
-                                            borderRadius: BorderRadius.circular(
-                                                6 * scaleFactor),
-                                            child: SizedBox(
-                                              height: 12 * scaleFactor,
-                                              child: LinearProgressIndicator(
-                                                value: null,
-                                                backgroundColor:
-                                                    Colors.transparent,
-                                                valueColor:
-                                                    AlwaysStoppedAnimation<
-                                                        Color>(
-                                                  colorScheme.tertiary
-                                                      .withValues(alpha: 0.45),
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                        // Buffered Progress
-                                        Align(
-                                          alignment: Alignment.centerLeft,
-                                          child: FractionallySizedBox(
-                                            widthFactor: bufferingPercentage,
-                                            child: Container(
-                                              height: 12 * scaleFactor,
-                                              decoration: BoxDecoration(
-                                                color: colorScheme.tertiary
-                                                    .withValues(alpha: 0.35),
-                                                borderRadius:
-                                                    BorderRadius.circular(
-                                                        6 * scaleFactor),
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                        // Active Progress
-                                        Align(
-                                          alignment: Alignment.centerLeft,
-                                          child: FractionallySizedBox(
-                                            widthFactor: positionPercentage,
-                                            child: Stack(
-                                              children: [
-                                                Container(
-                                                  height: 12 * scaleFactor,
-                                                  decoration: BoxDecoration(
-                                                    gradient: LinearGradient(
-                                                      colors: [
-                                                        colorScheme.primary,
-                                                        colorScheme
-                                                            .tertiary, // Expressive gradient
-                                                      ],
-                                                    ),
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            6 * scaleFactor),
-                                                  ),
-                                                ),
-                                                if (isBuffering)
-                                                  TweenAnimationBuilder<double>(
-                                                    tween: Tween(
-                                                        begin: 0.0, end: 1.0),
-                                                    duration: const Duration(
-                                                        milliseconds: 1500),
-                                                    builder: (context, value,
-                                                        child) {
-                                                      return Container(
-                                                        height:
-                                                            12 * scaleFactor,
-                                                        decoration:
-                                                            BoxDecoration(
-                                                          borderRadius:
-                                                              BorderRadius
-                                                                  .circular(6 *
-                                                                      scaleFactor),
-                                                          gradient:
-                                                              LinearGradient(
-                                                            begin: Alignment
-                                                                .centerLeft,
-                                                            end: Alignment
-                                                                .centerRight,
-                                                            stops: [
-                                                              (value - 0.2)
-                                                                  .clamp(
-                                                                      0.0, 1.0),
-                                                              value,
-                                                              (value + 0.2)
-                                                                  .clamp(
-                                                                      0.0, 1.0),
-                                                            ],
-                                                            colors: [
-                                                              Colors
-                                                                  .transparent,
-                                                              colorScheme
-                                                                  .onPrimary
-                                                                  .withValues(
-                                                                      alpha:
-                                                                          0.4),
-                                                              Colors
-                                                                  .transparent,
-                                                            ],
-                                                          ),
-                                                        ),
-                                                      );
-                                                    },
-                                                    onEnd: () {
-                                                      if (isBuffering &&
-                                                          context.mounted) {
-                                                        (context as Element)
-                                                            .markNeedsBuild();
-                                                      }
-                                                    },
-                                                  ),
+                                            gradient: LinearGradient(
+                                              colors: [
+                                                colorScheme.primary,
+                                                colorScheme.tertiary,
                                               ],
                                             ),
+                                            borderRadius: BorderRadius.circular(
+                                                6 * scaleFactor),
                                           ),
                                         ),
-                                        // Interactive Slider (Transparent Overlay)
-                                        Slider(
-                                          min: 0.0,
-                                          max: hasKnownDuration
-                                              ? totalDuration.inSeconds
-                                                  .toDouble()
-                                              : 1.0,
-                                          value: position.inSeconds
-                                              .toDouble()
-                                              .clamp(
-                                                  0.0,
-                                                  (hasKnownDuration
-                                                          ? totalDuration
-                                                              .inSeconds
-                                                          : 1)
-                                                      .toDouble()),
-                                          onChangeStart: (_) =>
-                                              _updateInteractionState(true),
-                                          onChanged: hasKnownDuration
-                                              ? (value) {
-                                                  audioProvider.seek(Duration(
-                                                      seconds: value.round()));
-                                                }
-                                              : null,
-                                          onChangeEnd: (_) =>
-                                              _updateInteractionState(false),
-                                        ),
+                                        if (isBuffering)
+                                          TweenAnimationBuilder<double>(
+                                            tween: Tween(begin: 0.0, end: 1.0),
+                                            duration: const Duration(
+                                                milliseconds: 1500),
+                                            builder: (context, value, child) {
+                                              return Container(
+                                                height: 12 * scaleFactor,
+                                                decoration: BoxDecoration(
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                          6 * scaleFactor),
+                                                  gradient: LinearGradient(
+                                                    begin: Alignment.centerLeft,
+                                                    end: Alignment.centerRight,
+                                                    stops: [
+                                                      (value - 0.2)
+                                                          .clamp(0.0, 1.0),
+                                                      value,
+                                                      (value + 0.2)
+                                                          .clamp(0.0, 1.0),
+                                                    ],
+                                                    colors: [
+                                                      Colors.transparent,
+                                                      colorScheme.onPrimary
+                                                          .withValues(
+                                                              alpha: 0.4),
+                                                      Colors.transparent,
+                                                    ],
+                                                  ),
+                                                ),
+                                              );
+                                            },
+                                            onEnd: () {
+                                              if (isBuffering &&
+                                                  context.mounted) {
+                                                (context as Element)
+                                                    .markNeedsBuild();
+                                              }
+                                            },
+                                          ),
                                       ],
                                     ),
-                                  );
-                                });
+                                  ),
+                                ),
+                                // Interactive Slider (Transparent Overlay)
+                                AnimatedBuilder(
+                                  animation: _thumbRadiusAnimation,
+                                  builder: (context, child) {
+                                    return SliderTheme(
+                                      data: SliderTheme.of(context).copyWith(
+                                        trackHeight: 12 * scaleFactor,
+                                        thumbShape: RoundSliderThumbShape(
+                                            enabledThumbRadius:
+                                                _thumbRadiusAnimation.value *
+                                                    scaleFactor),
+                                        overlayShape: RoundSliderOverlayShape(
+                                            overlayRadius: 22 * scaleFactor),
+                                        activeTrackColor: Colors.transparent,
+                                        inactiveTrackColor: Colors.transparent,
+                                        thumbColor: colorScheme.primary,
+                                        overlayColor: colorScheme.primary
+                                            .withValues(alpha: 0.2),
+                                      ),
+                                      child: Slider(
+                                        min: 0.0,
+                                        max: hasKnownDuration
+                                            ? totalDuration.inSeconds.toDouble()
+                                            : 1.0,
+                                        value: position.inSeconds
+                                            .toDouble()
+                                            .clamp(
+                                                0.0,
+                                                (hasKnownDuration
+                                                        ? totalDuration
+                                                            .inSeconds
+                                                        : 1)
+                                                    .toDouble()),
+                                        onChangeStart: (_) =>
+                                            _updateInteractionState(true),
+                                        onChanged: hasKnownDuration
+                                            ? (value) {
+                                                audioProvider.seek(Duration(
+                                                    seconds: value.round()));
+                                              }
+                                            : null,
+                                        onChangeEnd: (_) =>
+                                            _updateInteractionState(false),
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ],
+                            );
                           },
                         );
                       },
                     ),
                   ),
-                ),
-                const SizedBox(width: 8),
-                Container(
-                  width: 72 * scaleFactor,
-                  decoration: settingsProvider.showDebugLayout
-                      ? BoxDecoration(
-                          border: Border.all(color: Colors.orange, width: 1),
-                        )
-                      : null,
-                  child: StreamBuilder<Duration>(
+                  SizedBox(width: 4 * scaleFactor),
+                  // 3. TOTAL/BUFFERED TIME
+                  StreamBuilder<Duration>(
                     stream: audioProvider.bufferedPositionStream,
                     initialData: audioProvider.audioPlayer.bufferedPosition,
                     builder: (context, bufferedSnapshot) {
@@ -347,64 +305,14 @@ class _PlaybackProgressBarState extends State<PlaybackProgressBar>
                         text: formatDuration(
                             hasKnownDuration ? totalDuration : buffered),
                         scaleFactor: scaleFactor,
-                        fontFamily: fontFamily,
-                        alignRight: false,
+                        alignRight: true,
                         isSimple: isSimple,
                         role: _timeRoleTotal,
                       );
                     },
                   ),
-                ),
-                StreamBuilder<PlayerState>(
-                  stream: audioProvider.playerStateStream,
-                  initialData: audioProvider.audioPlayer.playerState,
-                  builder: (context, stateSnapshot) {
-                    final processing = stateSnapshot.data?.processingState;
-                    String? indicatorText;
-                    Color indicatorColor =
-                        colorScheme.onSurfaceVariant.withValues(alpha: 0.78);
-                    if (processing == ProcessingState.loading) {
-                      indicatorText = '• Loading';
-                      indicatorColor = colorScheme.primary;
-                    } else if (processing == ProcessingState.buffering) {
-                      indicatorText = '• Buffering';
-                      indicatorColor = colorScheme.tertiary;
-                    } else if (!hasKnownDuration) {
-                      indicatorText = '• Buffer';
-                    }
-                    final bool showIndicator = indicatorText != null;
-                    return Container(
-                      decoration: settingsProvider.showDebugLayout
-                          ? BoxDecoration(
-                              border:
-                                  Border.all(color: Colors.purple, width: 1),
-                            )
-                          : null,
-                      child: SizedBox(
-                        width: 92 * scaleFactor,
-                        child: showIndicator
-                            ? Text(
-                                indicatorText,
-                                textAlign: TextAlign.left,
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .bodySmall
-                                    ?.apply(fontSizeFactor: scaleFactor * 0.9)
-                                    .copyWith(
-                                  color: indicatorColor,
-                                  fontWeight: FontWeight.w600,
-                                  fontFamily: fontFamily,
-                                  fontFeatures: [
-                                    const FontFeature.tabularFigures()
-                                  ],
-                                ),
-                              )
-                            : const SizedBox.shrink(),
-                      ),
-                    );
-                  },
-                ),
-              ],
+                ],
+              ),
             );
           },
         );
@@ -416,7 +324,6 @@ class _PlaybackProgressBarState extends State<PlaybackProgressBar>
     required BuildContext context,
     required String text,
     required double scaleFactor,
-    required String? fontFamily,
     required bool alignRight,
     required bool isSimple,
     required int role,
@@ -449,7 +356,7 @@ class _PlaybackProgressBarState extends State<PlaybackProgressBar>
           color: textColor,
           fontWeight: FontWeight.w700,
           fontSize: 12.5 * scaleFactor,
-          fontFamily: fontFamily,
+          fontFamily: 'Roboto',
           fontFeatures: [const FontFeature.tabularFigures()],
         ),
       ),

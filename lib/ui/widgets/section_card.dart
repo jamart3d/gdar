@@ -181,7 +181,9 @@ class SectionCard extends StatelessWidget {
                 ),
     );
 
-    if (useNeumorphism) {
+    final isTv = context.watch<DeviceService>().isTv;
+
+    if (useNeumorphism && !isTv) {
       return Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
         child: NeumorphicWrapper(
@@ -198,7 +200,7 @@ class SectionCard extends StatelessWidget {
     final useTrueBlack = settingsProvider.useTrueBlack;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    if (isFruit) {
+    if (isFruit && !isTv) {
       return Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
         child: LiquidGlassWrapper(

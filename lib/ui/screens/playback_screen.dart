@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 
@@ -813,14 +814,21 @@ class PlaybackScreenState extends State<PlaybackScreen>
         (baseHeight * scaleFactor) + bottomPadding + fruitOffset;
 
     final double screenHeight = MediaQuery.of(context).size.height;
-    // Ensure we have enough room for the expanded content column even on small phones.
-    // 210 is roughly the height of Location + Date + Progress + Controls at 1.0 scale.
-    final double minExpandedHeight = 180.0 * scaleFactor;
+    // Ensure we have enough room for the expanded content column.
+    // 260px comfortably covers Metadata + Progress + Controls + Spacers.
+    // We add more for Web if the Audio HUD is enabled to prevent clipping or scrolling.
+    final bool showHud = kIsWeb && settingsProvider.showDevAudioHud;
+    final double minExpandedHeight = (showHud ? 320.0 : 260.0) * scaleFactor;
     final double targetMaxHeight = minPanelHeight + minExpandedHeight;
 
     // Clamp between default percentage and 85% of screen height.
+    // On Web, we increase the minimum percentage slightly to ensure the HUD is visible
+    // without requiring the user to scroll the panel content.
     final double maxPanelHeight = (targetMaxHeight).clamp(
-      screenHeight * (settingsProvider.uiScale ? 0.42 : 0.40),
+      screenHeight *
+          (kIsWeb
+              ? (settingsProvider.uiScale ? 0.52 : 0.48)
+              : (settingsProvider.uiScale ? 0.42 : 0.40)),
       screenHeight * 0.85,
     );
 
@@ -1180,7 +1188,7 @@ class PlaybackScreenState extends State<PlaybackScreen>
             color: Colors.transparent,
             borderRadius:
                 const BorderRadius.vertical(top: Radius.circular(24.0)),
-            boxShadow: isTrueBlackMode
+            boxShadow: isTrueBlackMode || isTv
                 ? []
                 : (settingsProvider.useNeumorphism)
                     ? NeumorphicWrapper.getShadows(
@@ -1269,6 +1277,8 @@ class _FruitHeaderButtonState extends State<_FruitHeaderButton> {
     final settingsProvider = context.watch<SettingsProvider>();
     final isSimple = settingsProvider.performanceMode;
 
+    final isTv = context.watch<DeviceService>().isTv;
+
     Widget content = SizedBox(
       width: 44 * widget.scaleFactor,
       height: 44 * widget.scaleFactor,
@@ -1279,7 +1289,7 @@ class _FruitHeaderButtonState extends State<_FruitHeaderButton> {
       ),
     );
 
-    if (!isSimple) {
+    if (!isSimple && !isTv) {
       content = NeumorphicWrapper(
         intensity: 0.6,
         borderRadius: 12 * widget.scaleFactor,

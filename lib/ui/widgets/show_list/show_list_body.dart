@@ -76,7 +76,7 @@ class ShowListBody extends StatelessWidget {
       padding: EdgeInsets.only(
         top: topPadding,
         left: isTv ? 6.0 : 0.0,
-        bottom: isTv ? 40 : (isFruit ? 180 : 160),
+        bottom: isTv ? 28 : (isFruit ? 180 : 160),
         right: isTv ? 0 : 28, // reserve space for fast scrollbar thumb
       ),
       itemCount: showListProvider.filteredShows.length,
@@ -104,7 +104,7 @@ class ShowListBody extends StatelessWidget {
 
     if (isTv) {
       return Padding(
-        padding: const EdgeInsets.only(top: 12.0),
+        padding: const EdgeInsets.only(top: 6.0),
         child: Row(
           children: [
             Expanded(child: list),
@@ -177,10 +177,11 @@ class ShowListBody extends StatelessWidget {
     //   title:          19px * 2.2 lineHeight ≈ 42px
     //   bottom padding: 20px
     //   ─────────────────────
-    //   content total:  86px  + device bottom safe area
-    final miniPlayerHeight = (audioProvider.currentTrack != null && !isFruit)
-        ? 86.0 + bottomSafeArea
-        : 0.0;
+    // content total:  86px  + device bottom safe area
+    final miniPlayerHeight =
+        (audioProvider.currentTrack != null && !isFruit && !isTv)
+            ? 86.0 + bottomSafeArea
+            : 0.0;
 
     return Stack(
       children: [

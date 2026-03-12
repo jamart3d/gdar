@@ -939,7 +939,8 @@ class _TvScreensaverSectionState extends State<TvScreensaverSection> {
                                       const SizedBox(height: 8),
                                       TvFocusWrapper(
                                         onKeyEvent: (node, event) {
-                                          if (event is KeyDownEvent) {
+                                          if (event is KeyDownEvent ||
+                                              event is KeyRepeatEvent) {
                                             if (event.logicalKey ==
                                                 LogicalKeyboardKey.arrowLeft) {
                                               settings.setOilEkgRadius(
@@ -956,11 +957,13 @@ class _TvScreensaverSectionState extends State<TvScreensaverSection> {
                                           }
                                           return KeyEventResult.ignored;
                                         },
-                                        child: Slider(
-                                          value: settings.oilEkgRadius,
-                                          min: 0.1,
-                                          max: 2.0,
-                                          onChanged: settings.setOilEkgRadius,
+                                        child: ExcludeFocus(
+                                          child: Slider(
+                                            value: settings.oilEkgRadius,
+                                            min: 0.1,
+                                            max: 2.0,
+                                            onChanged: settings.setOilEkgRadius,
+                                          ),
                                         ),
                                       ),
                                     ],
@@ -980,32 +983,82 @@ class _TvScreensaverSectionState extends State<TvScreensaverSection> {
                                     const SizedBox(height: 8),
                                     TvFocusWrapper(
                                       onKeyEvent: (node, event) {
-                                        if (event is KeyDownEvent) {
+                                        if (event is KeyDownEvent ||
+                                            event is KeyRepeatEvent) {
                                           if (event.logicalKey ==
                                               LogicalKeyboardKey.arrowLeft) {
                                             settings.setOilEkgReplication(
                                                 (settings.oilEkgReplication - 1)
-                                                    .clamp(1, 5));
+                                                    .clamp(1, 10));
                                             return KeyEventResult.handled;
                                           } else if (event.logicalKey ==
                                               LogicalKeyboardKey.arrowRight) {
                                             settings.setOilEkgReplication(
                                                 (settings.oilEkgReplication + 1)
-                                                    .clamp(1, 5));
+                                                    .clamp(1, 10));
                                             return KeyEventResult.handled;
                                           }
                                         }
                                         return KeyEventResult.ignored;
                                       },
-                                      child: Slider(
-                                        value: settings.oilEkgReplication
-                                            .toDouble(),
-                                        min: 1,
-                                        max: 5,
-                                        divisions: 4,
-                                        label: '${settings.oilEkgReplication}',
-                                        onChanged: (v) => settings
-                                            .setOilEkgReplication(v.toInt()),
+                                      child: ExcludeFocus(
+                                        child: Slider(
+                                          value: settings.oilEkgReplication
+                                              .toDouble(),
+                                          min: 1,
+                                          max: 10,
+                                          divisions: 9,
+                                          label:
+                                              '${settings.oilEkgReplication}',
+                                          onChanged: (v) => settings
+                                              .setOilEkgReplication(v.toInt()),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(width: 24),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Line Spread',
+                                      style: textTheme.bodySmall?.copyWith(
+                                          color: colorScheme.onSurfaceVariant),
+                                    ),
+                                    const SizedBox(height: 8),
+                                    TvFocusWrapper(
+                                      onKeyEvent: (node, event) {
+                                        if (event is KeyDownEvent ||
+                                            event is KeyRepeatEvent) {
+                                          if (event.logicalKey ==
+                                              LogicalKeyboardKey.arrowLeft) {
+                                            settings.setOilEkgSpread(
+                                                (settings.oilEkgSpread - 0.5)
+                                                    .clamp(0.0, 20.0));
+                                            return KeyEventResult.handled;
+                                          } else if (event.logicalKey ==
+                                              LogicalKeyboardKey.arrowRight) {
+                                            settings.setOilEkgSpread(
+                                                (settings.oilEkgSpread + 0.5)
+                                                    .clamp(0.0, 20.0));
+                                            return KeyEventResult.handled;
+                                          }
+                                        }
+                                        return KeyEventResult.ignored;
+                                      },
+                                      child: ExcludeFocus(
+                                        child: Slider(
+                                          value: settings.oilEkgSpread,
+                                          min: 0.0,
+                                          max: 20.0,
+                                          divisions: 40,
+                                          label: settings.oilEkgSpread
+                                              .toStringAsFixed(1),
+                                          onChanged: settings.setOilEkgSpread,
+                                        ),
                                       ),
                                     ),
                                   ],
@@ -1053,6 +1106,46 @@ class _TvScreensaverSectionState extends State<TvScreensaverSection> {
                   valueFormatter: (v) => '${v.toStringAsFixed(1)}x',
                   onChanged: (v) => settings.setOilScaleMultiplier(v),
                 ),
+
+                const SizedBox(height: 24),
+
+                _ToggleRow(
+                  label: 'Sine Wave Drive',
+                  subtitle: 'Modulate logo scale with a periodic wave',
+                  value: settings.oilScaleSineEnabled,
+                  onChanged: (_) => settings.toggleOilScaleSineEnabled(),
+                  colorScheme: colorScheme,
+                  textTheme: textTheme,
+                ),
+                if (settings.oilScaleSineEnabled) ...[
+                  const SizedBox(height: 16),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Column(
+                      children: [
+                        TvStepperRow(
+                          label: 'Sine Frequency',
+                          value: settings.oilScaleSineFreq,
+                          min: 0.01,
+                          max: 10.0,
+                          step: 0.05,
+                          onChanged: settings.setOilScaleSineFreq,
+                          valueFormatter: (v) => '${v.toStringAsFixed(2)} Hz',
+                        ),
+                        const SizedBox(height: 12),
+                        TvStepperRow(
+                          label: 'Sine Amplitude',
+                          value: settings.oilScaleSineAmp,
+                          min: 0.0,
+                          max: 1.0,
+                          step: 0.05,
+                          onChanged: settings.setOilScaleSineAmp,
+                          valueFormatter: (v) => '${(v * 100).round()}%',
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
 
                 const SizedBox(height: 24),
 

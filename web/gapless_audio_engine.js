@@ -601,7 +601,30 @@
           nextTrackTotal: nextTotal,
           playlistLength: _playlist.length,
           processingState: ps,
-          contextState: _ctx ? (_ctx.state === 'running' || _ctx.state === 'suspended' ? _ctx.state + ' (WA)' : _ctx.state) : 'none',
+          heartbeatNeeded: (function () {
+            const ua = navigator.userAgent;
+            if (/Windows/i.test(ua) || (/Macintosh/i.test(ua) && navigator.maxTouchPoints === 0)) return false;
+            const isAndroid = /Android/i.test(ua);
+            const isIOS = /iPhone|iPad|iPod/i.test(ua);
+            const isMacPad = navigator.maxTouchPoints > 0 && /Macintosh/.test(ua);
+            return isAndroid || isIOS || isMacPad;
+          })(),
+          heartbeatActive: (function () {
+            if (document.visibilityState === 'visible' && _playing) return true;
+            return window._gdarHeartbeat ? window._gdarHeartbeat.isActive() : false;
+          })(),
+          contextState: (function() {
+             const hbNeeded = (function() {
+                const ua = navigator.userAgent;
+                if (/Windows/i.test(ua) || (/Macintosh/i.test(ua) && navigator.maxTouchPoints === 0)) return false;
+                const isAndroid = /Android/i.test(ua);
+                const isIOS = /iPhone|iPad|iPod/i.test(ua);
+                const isMacPad = navigator.maxTouchPoints > 0 && /Macintosh/.test(ua);
+                return isAndroid || isIOS || isMacPad;
+             })();
+             const base = _ctx ? (_ctx.state === 'running' || _ctx.state === 'suspended' ? _ctx.state + ' (WA)' : _ctx.state) : 'none';
+             return base + (hbNeeded ? ' [HBN]' : ' [HBO]') + ' v1.1.hb';
+          })(),
         });
       } catch (_) { }
     }
@@ -825,7 +848,30 @@
         nextTrackTotal: (_playlist[_currentIndex + 1] && isFinite(_playlist[_currentIndex + 1].duration) ? _playlist[_currentIndex + 1].duration : 0) || (_scheduledSource && isFinite(_scheduledSource.buffer.duration) ? _scheduledSource.buffer.duration : 0),
         playlistLength: _playlist.length,
         processingState: ps,
-        contextState: _ctx ? _ctx.state : 'none',
+        heartbeatActive: (function () {
+          if (document.visibilityState === 'visible' && _playing) return true;
+          return window._gdarHeartbeat ? window._gdarHeartbeat.isActive() : false;
+        })(),
+        heartbeatNeeded: (function () {
+          const ua = navigator.userAgent;
+          if (/Windows/i.test(ua) || (/Macintosh/i.test(ua) && navigator.maxTouchPoints === 0)) return false;
+          const isAndroid = /Android/i.test(ua);
+          const isIOS = /iPhone|iPad|iPod/i.test(ua);
+          const isMacPad = navigator.maxTouchPoints > 0 && /Macintosh/.test(ua);
+          return isAndroid || isIOS || isMacPad;
+        })(),
+        contextState: (function() {
+            const hbNeeded = (function() {
+                const ua = navigator.userAgent;
+                if (/Windows/i.test(ua) || (/Macintosh/i.test(ua) && navigator.maxTouchPoints === 0)) return false;
+                const isAndroid = /Android/i.test(ua);
+                const isIOS = /iPhone|iPad|iPod/i.test(ua);
+                const isMacPad = navigator.maxTouchPoints > 0 && /Macintosh/.test(ua);
+                return isAndroid || isIOS || isMacPad;
+            })();
+            const base = _ctx ? _ctx.state : 'none';
+            return base + (hbNeeded ? ' [HBN]' : ' [HBO]');
+        })(),
       };
     },
 

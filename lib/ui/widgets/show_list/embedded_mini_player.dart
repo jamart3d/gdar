@@ -169,11 +169,14 @@ class EmbeddedMiniPlayer extends StatelessWidget {
                                   ? _formatDuration(pos)
                                   : '${_formatDuration(pos)} / ${_formatDuration(dur)}',
                               style: TextStyle(
-                                fontFamily: 'Inter',
+                                fontFamily: 'Roboto',
                                 fontSize: timeSize,
                                 fontWeight: FontWeight.w400,
                                 color: colorScheme.onSurface
                                     .withValues(alpha: 0.5),
+                                fontFeatures: const [
+                                  FontFeature.tabularFigures()
+                                ],
                               ),
                             );
                           },

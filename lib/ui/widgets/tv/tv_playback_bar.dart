@@ -96,6 +96,7 @@ class _TvPlaybackBarState extends State<TvPlaybackBar> {
                   fontFamily: 'Roboto', // Monospaced-ish for time
                   fontSize: 14,
                   color: colorScheme.onSurfaceVariant,
+                  fontFeatures: const [FontFeature.tabularFigures()],
                 ),
               );
             },
@@ -194,6 +195,7 @@ class _TvPlaybackBarState extends State<TvPlaybackBar> {
                   fontFamily: 'Roboto',
                   fontSize: 14,
                   color: colorScheme.onSurfaceVariant,
+                  fontFeatures: const [FontFeature.tabularFigures()],
                 ),
               );
             },

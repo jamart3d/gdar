@@ -6,6 +6,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.67+167] - 2026-03-12
+
+### Added
+- **UI/UX (HUD)**: Implemented interactive popup menus for developer HUD chips (ENG, TX, HF, BG, STB) on Web, allowing direct adjustment of engine and hybrid modes.
+- **UI/UX (HUD)**: Added a new "STB" (Session Preset) chip to the HUD to show and control the `HiddenSessionPreset` (Stability, Balanced, Max Gapless).
+- **UI/UX (HUD)**: Optimized long message display in the HUD using animated Marquee text.
+- **UI/UX (Settings)**: Added automated "Relaunch Required" notifications using `showRestartMessage` for critical engine and stability settings (Audio Engine, Handoff, Background Strategy, etc.).
+- **Deep Links**: Added a new `force_tv=true` deep link parameter for testing the TV UI on non-TV devices, including a confirmation dialog and automated app restart.
+
+### Fixed
+- Resolved layout overflow in `PlaybackPanel` using scale-to-fit logic for venue metadata.
+- Removed redundant playback state indicator from `PlaybackProgressBar` to clean up the UI and prevent duplicate status reporting when HUD is active.
+- Mirrored duration alignment in `PlaybackProgressBar` (Elapsed: Left, Total: Right) for a cleaner, balanced aesthetic.
+- Refactored `PlaybackProgressBar` to a stacked layout, allowing the seeker bar to expand to full width while moving timestamps to a secondary row.
+- Resolved linting issues in `DevAudioHud` by enforcing block enclosures for conditional statements.
+- **Testing (Regression)**: Resolved `NoSuchMethodError` and `TestFailure` in `tv_regression_test.dart` by synchronizing `FakeSettingsProvider` with the latest `SettingsProvider` API (Oil screensaver sine wave and EKG settings).
+- **Testing (Regression)**: Fixed the "Flow Speed" text finder in TV regression tests to match the updated UI wording.
+
+
 ## [1.1.66+166] - 2026-03-11
 
 ### Added

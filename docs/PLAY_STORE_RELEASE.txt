@@ -1,3 +1,14 @@
+What's new in v1.1.67+167
+• UI/UX (HUD): Implemented interactive popup menus for developer HUD chips on Web.
+• UI/UX (HUD): Added a STB chip to the HUD for session preset control.
+• UI/UX (HUD): Optimized long message display with animated Marquee text.
+• UI/UX (Settings): Added automated Relaunch Required notifications for critical settings.
+• Deep Links: Added force_tv=true parameter for cross-platform TV UI testing.
+• Fixed layout overflow in PlaybackPanel and refined PlaybackProgressBar visuals.
+• Resolved regression test failures and NoSuchMethodErrors in TV suite.
+
+---
+
 What's new in v1.1.66+166
 • Implemented Smart Coloring for the debug layout, applying distinct functional colors to major sections to improve developer scannability.
 • Added granular debug outlines to internal components for high-precision layout inspection.

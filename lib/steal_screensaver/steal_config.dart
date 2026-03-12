@@ -71,8 +71,11 @@ class StealConfig {
   /// Radius multiplier for EKG (0.5x to 2.0x of base logo radius).
   final double ekgRadius;
 
-  /// Number of parallel offset lines for EKG (1 to 5).
+  /// Number of parallel offset lines for EKG (1 to 10).
   final int ekgReplication;
+
+  /// Vertical/Radial spread between replicated EKG lines.
+  final double ekgSpread;
 
   /// Beat detection sensitivity (0.0 = gentle, 1.0 = aggressive).
   final double beatSensitivity;
@@ -95,6 +98,15 @@ class StealConfig {
   /// Source for logo scale reactivity (-1 = overall, 0-7 = bands).
   final int scaleSource;
   final double scaleMultiplier;
+
+  /// Whether to add a sine wave drive to the logo scale.
+  final bool scaleSineEnabled;
+
+  /// Frequency of the logo scale sine wave in Hz.
+  final double scaleSineFreq;
+
+  /// Amplitude of the logo scale sine wave (0.0 to 1.0).
+  final double scaleSineAmp;
 
   /// Source for logo color reactivity (-1 = overall, 0-7 = bands).
   final int colorSource;
@@ -192,6 +204,7 @@ class StealConfig {
     this.audioGraphMode = 'off',
     this.ekgRadius = 1.0,
     this.ekgReplication = 1,
+    this.ekgSpread = 4.0,
     this.beatSensitivity = 0.5,
     this.beatImpact = 0.4,
     this.innerRingFontScale = 1.0,
@@ -199,6 +212,9 @@ class StealConfig {
     this.logoAntiAlias = false,
     this.scaleSource = -1,
     this.scaleMultiplier = 1.0,
+    this.scaleSineEnabled = false,
+    this.scaleSineFreq = 0.5,
+    this.scaleSineAmp = 0.2,
     this.colorSource = -1,
     this.colorMultiplier = 1.0,
     this.woodstockEveryHour = true,
@@ -257,6 +273,7 @@ class StealConfig {
       audioGraphMode: map['audioGraphMode'] as String? ?? 'off',
       ekgRadius: (map['ekgRadius'] as num?)?.toDouble() ?? 1.0,
       ekgReplication: (map['ekgReplication'] as int?) ?? 1,
+      ekgSpread: (map['ekgSpread'] as num?)?.toDouble() ?? 4.0,
       beatSensitivity: (map['beatSensitivity'] as num?)?.toDouble() ?? 0.5,
       beatImpact: (map['beatImpact'] as num?)?.toDouble() ?? 0.4,
       innerRingFontScale:
@@ -266,6 +283,9 @@ class StealConfig {
       logoAntiAlias: map['logoAntiAlias'] as bool? ?? false,
       scaleSource: map['scaleSource'] as int? ?? -1,
       scaleMultiplier: (map['scaleMultiplier'] as num?)?.toDouble() ?? 1.0,
+      scaleSineEnabled: map['scaleSineEnabled'] as bool? ?? false,
+      scaleSineFreq: (map['scaleSineFreq'] as num?)?.toDouble() ?? 0.5,
+      scaleSineAmp: (map['scaleSineAmp'] as num?)?.toDouble() ?? 0.2,
       colorSource: map['colorSource'] as int? ?? -1,
       colorMultiplier: (map['colorMultiplier'] as num?)?.toDouble() ?? 1.0,
       woodstockEveryHour: map['woodstockEveryHour'] as bool? ?? true,
@@ -325,6 +345,9 @@ class StealConfig {
       'logoAntiAlias': logoAntiAlias,
       'scaleSource': scaleSource,
       'scaleMultiplier': scaleMultiplier,
+      'scaleSineEnabled': scaleSineEnabled,
+      'scaleSineFreq': scaleSineFreq,
+      'scaleSineAmp': scaleSineAmp,
       'colorSource': colorSource,
       'colorMultiplier': colorMultiplier,
       'woodstockEveryHour': woodstockEveryHour,
@@ -376,6 +399,7 @@ class StealConfig {
     String? audioGraphMode,
     double? ekgRadius,
     int? ekgReplication,
+    double? ekgSpread,
     double? beatSensitivity,
     double? beatImpact,
     double? innerRingFontScale,
@@ -383,6 +407,9 @@ class StealConfig {
     bool? logoAntiAlias,
     int? scaleSource,
     double? scaleMultiplier,
+    bool? scaleSineEnabled,
+    double? scaleSineFreq,
+    double? scaleSineAmp,
     int? colorSource,
     double? colorMultiplier,
     bool? woodstockEveryHour,
@@ -435,6 +462,7 @@ class StealConfig {
       audioGraphMode: audioGraphMode ?? this.audioGraphMode,
       ekgRadius: ekgRadius ?? this.ekgRadius,
       ekgReplication: ekgReplication ?? this.ekgReplication,
+      ekgSpread: ekgSpread ?? this.ekgSpread,
       beatSensitivity: beatSensitivity ?? this.beatSensitivity,
       beatImpact: beatImpact ?? this.beatImpact,
       innerRingFontScale: innerRingFontScale ?? this.innerRingFontScale,
@@ -443,6 +471,9 @@ class StealConfig {
       logoAntiAlias: logoAntiAlias ?? this.logoAntiAlias,
       scaleSource: scaleSource ?? this.scaleSource,
       scaleMultiplier: scaleMultiplier ?? this.scaleMultiplier,
+      scaleSineEnabled: scaleSineEnabled ?? this.scaleSineEnabled,
+      scaleSineFreq: scaleSineFreq ?? this.scaleSineFreq,
+      scaleSineAmp: scaleSineAmp ?? this.scaleSineAmp,
       colorSource: colorSource ?? this.colorSource,
       colorMultiplier: colorMultiplier ?? this.colorMultiplier,
       woodstockEveryHour: woodstockEveryHour ?? this.woodstockEveryHour,
@@ -497,6 +528,7 @@ class StealConfig {
         audioGraphMode == other.audioGraphMode &&
         ekgRadius == other.ekgRadius &&
         ekgReplication == other.ekgReplication &&
+        ekgSpread == other.ekgSpread &&
         beatSensitivity == other.beatSensitivity &&
         beatImpact == other.beatImpact &&
         innerRingFontScale == other.innerRingFontScale &&
@@ -504,6 +536,9 @@ class StealConfig {
         logoAntiAlias == other.logoAntiAlias &&
         scaleSource == other.scaleSource &&
         scaleMultiplier == other.scaleMultiplier &&
+        scaleSineEnabled == other.scaleSineEnabled &&
+        scaleSineFreq == other.scaleSineFreq &&
+        scaleSineAmp == other.scaleSineAmp &&
         colorSource == other.colorSource &&
         colorMultiplier == other.colorMultiplier &&
         woodstockEveryHour == other.woodstockEveryHour;
@@ -555,6 +590,7 @@ class StealConfig {
         audioGraphMode,
         ekgRadius,
         ekgReplication,
+        ekgSpread,
         beatSensitivity,
         beatImpact,
         innerRingFontScale,
@@ -562,6 +598,9 @@ class StealConfig {
         logoAntiAlias,
         scaleSource,
         scaleMultiplier,
+        scaleSineEnabled,
+        scaleSineFreq,
+        scaleSineAmp,
         colorSource,
         colorMultiplier,
         woodstockEveryHour,

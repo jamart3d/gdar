@@ -532,7 +532,7 @@ class PlaybackSection extends StatelessWidget {
                   onSelectionChanged: (AudioEngineMode mode) {
                     AppHaptics.lightImpact(context.read<DeviceService>());
                     sp.setAudioEngineMode(mode);
-                    showMessage(context,
+                    showRestartMessage(context,
                         'Relaunch required for engine change to take effect.');
                   },
                 ),
@@ -631,7 +631,7 @@ class PlaybackSection extends StatelessWidget {
                   onSelectionChanged: (HiddenSessionPreset preset) {
                     AppHaptics.lightImpact(context.read<DeviceService>());
                     sp.setHiddenSessionPreset(preset);
-                    showMessage(
+                    showRestartMessage(
                       context,
                       'Preset applied. Relaunch required if engine changed.',
                     );
@@ -735,6 +735,8 @@ class PlaybackSection extends StatelessWidget {
                       onSelectionChanged: (HybridHandoffMode mode) {
                         AppHaptics.lightImpact(context.read<DeviceService>());
                         sp.setHybridHandoffMode(mode);
+                        showRestartMessage(
+                            context, 'Handoff mode change requires relaunch.');
                       },
                     ),
                   ),
@@ -796,6 +798,8 @@ class PlaybackSection extends StatelessWidget {
                       onSelectionChanged: (HybridBackgroundMode mode) {
                         AppHaptics.lightImpact(context.read<DeviceService>());
                         sp.setHybridBackgroundMode(mode);
+                        showRestartMessage(context,
+                            'Survival strategy change requires relaunch.');
                       },
                     ),
                   ),
@@ -823,6 +827,8 @@ class PlaybackSection extends StatelessWidget {
                     onChanged: (value) {
                       AppHaptics.lightImpact(context.read<DeviceService>());
                       sp.setAllowHiddenWebAudio(value);
+                      showRestartMessage(context,
+                          'Relaunch required to apply hidden session logic.');
                     },
                   ),
                 ),
@@ -848,6 +854,8 @@ class PlaybackSection extends StatelessWidget {
                     onChanged: (value) {
                       AppHaptics.lightImpact(context.read<DeviceService>());
                       sp.setHybridForceHtml5Start(value);
+                      showRestartMessage(context,
+                          'Relaunch required to apply boot logic changes.');
                     },
                   ),
                 ),

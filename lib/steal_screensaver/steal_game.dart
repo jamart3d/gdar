@@ -101,8 +101,8 @@ class StealGame extends FlameGame {
     _background = StealBackground(config: config)..priority = -10;
     await add(_background!);
 
-    // Graph is added AFTER background so it renders on top of the shader
-    _graph = StealGraph()..priority = 0;
+    // Graph is added with priority 5 so it renders on top of the shader but behind text (priority 10)
+    _graph = StealGraph()..priority = 5;
     await add(_graph!);
 
     _banner = StealBanner()..priority = 10;

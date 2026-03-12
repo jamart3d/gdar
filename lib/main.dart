@@ -16,6 +16,7 @@ import 'package:shakedown/ui/screens/splash_screen.dart';
 import 'package:shakedown/ui/screens/track_list_screen.dart';
 import 'package:shakedown/utils/app_themes.dart';
 import 'package:shakedown/utils/logger.dart';
+import 'package:shakedown/utils/utils.dart';
 import 'package:just_audio_background/just_audio_background.dart';
 import 'package:app_links/app_links.dart';
 import 'package:provider/provider.dart';
@@ -439,13 +440,11 @@ class _GdarAppState extends State<GdarApp> {
                 .i('Main: [Session #$_sessionId] Force TV UI set to: $enabled');
             settingsProvider.setForceTv(enabled);
 
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(enabled
-                    ? 'TV UI Forced. RESTART APP to apply.'
-                    : 'TV UI Force Disabled. RESTART APP to apply.'),
-                duration: const Duration(seconds: 5),
-              ),
+            showRestartMessage(
+              context,
+              enabled
+                  ? 'TV UI Forced. Restart required.'
+                  : 'TV UI Force Disabled. Restart required.',
             );
           }
         } else if (uri.host == 'settings') {

@@ -101,6 +101,12 @@ class GaplessPlayer {
   /// Only applicable to web gapless engine; empty stream natively.
   Stream<Duration?> get nextTrackTotalStream => const Stream.empty();
 
+  /// Stream of heartbeat active state.
+  Stream<bool> get heartbeatActiveStream => Stream.value(false);
+
+  /// Stream of heartbeat needed state.
+  Stream<bool> get heartbeatNeededStream => Stream.value(false);
+
   /// Stream of the raw string state from the JS engine (e.g. 'handoff_countdown')
   Stream<String> get engineStateStringStream => const Stream.empty();
 

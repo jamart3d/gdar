@@ -177,7 +177,7 @@ class _PlaybackMessagesState extends State<PlaybackMessages>
         playerState: audioProvider.audioPlayer.playerState,
         labelsFontSize: labelsFontSize,
         colorScheme: colorScheme,
-        fontFamily: fontFamily,
+        fontFamily: 'Roboto',
         compact: true,
         isAppVisible: _isAppVisible,
         engineStateString: _engineStateString,
@@ -276,7 +276,8 @@ class _PlaybackMessagesState extends State<PlaybackMessages>
                   style: TextStyle(
                     color: colorScheme.onSurfaceVariant,
                     fontSize: labelsFontSize,
-                    fontFamily: fontFamily,
+                    fontFamily: 'Roboto',
+                    fontFeatures: const [FontFeature.tabularFigures()],
                   ),
                 );
               },
@@ -310,7 +311,8 @@ class _PlaybackMessagesState extends State<PlaybackMessages>
                           style: TextStyle(
                             color: colorScheme.onSurfaceVariant,
                             fontSize: labelsFontSize,
-                            fontFamily: fontFamily,
+                            fontFamily: 'Roboto',
+                            fontFeatures: const [FontFeature.tabularFigures()],
                           ),
                         ),
                       ],

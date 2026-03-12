@@ -179,16 +179,23 @@ class _TvSettingsScreenState extends State<TvSettingsScreen> {
                                         : colorScheme.onSurfaceVariant,
                                   ),
                                   const SizedBox(width: 16),
-                                  Text(
-                                    _categories[index],
-                                    style: TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: isSelected
-                                          ? FontWeight.bold
-                                          : FontWeight.normal,
-                                      color: isSelected
-                                          ? colorScheme.onPrimaryContainer
-                                          : colorScheme.onSurfaceVariant,
+                                  Expanded(
+                                    child: FittedBox(
+                                      fit: BoxFit.scaleDown,
+                                      alignment: Alignment.centerLeft,
+                                      child: Text(
+                                        _categories[index],
+                                        maxLines: 1,
+                                        style: TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: isSelected
+                                              ? FontWeight.bold
+                                              : FontWeight.normal,
+                                          color: isSelected
+                                              ? colorScheme.onPrimaryContainer
+                                              : colorScheme.onSurfaceVariant,
+                                        ),
+                                      ),
                                     ),
                                   ),
                                 ],

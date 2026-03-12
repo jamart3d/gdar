@@ -61,6 +61,14 @@ class FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
   @override
   bool get fruitStickyNowPlaying => false;
   @override
+  int get oilScaleSource => 1;
+  @override
+  int get oilColorSource => 0;
+  @override
+  double get oilColorMultiplier => 1.0;
+  @override
+  bool get oilWoodstockEveryHour => false;
+  @override
   void toggleFruitStickyNowPlaying() {}
 
   @override

@@ -457,11 +457,12 @@ class _FruitTrackRowState extends State<_FruitTrackRow> {
                       Text(
                         _formatDuration(widget.track.duration),
                         style: TextStyle(
-                          fontFamily: 'Inter',
+                          fontFamily: 'Roboto',
                           fontSize: 10 * widget.scaleFactor, // text-[10px]
                           fontWeight: FontWeight.w500, // font-medium
                           color: colorScheme.onSurfaceVariant
                               .withValues(alpha: 0.4),
+                          fontFeatures: const [FontFeature.tabularFigures()],
                         ),
                       ),
                   ],

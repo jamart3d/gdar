@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'dart:math';
+import 'dart:math' as math;
 import 'dart:ui' as ui;
 import 'package:flame/components.dart';
 import 'package:flutter/material.dart' show Color, HSLColor;
@@ -52,10 +52,10 @@ class StealBackground extends PositionComponent
     await super.onLoad();
 
     // Randomise motion path for this session
-    final rng = Random();
+    final rng = math.Random();
     // Use a smaller frequency GCD (0.2) to extend the loop duration to ~13 minutes
     // while keeping it perfectly closed and continuous.
-    _phaseOffset = rng.nextDouble() * 2 * pi; // random start on curve
+    _phaseOffset = rng.nextDouble() * 2 * math.pi; // random start on curve
     _freqNudgeX1 = 0.8;
     _freqNudgeY1 = 1.0;
     _freqNudgeX2 = 1.4;
@@ -73,12 +73,12 @@ class StealBackground extends PositionComponent
       final t = (0.0 * config.flowSpeed.clamp(0.0, 2.0) * 0.5) + _phaseOffset;
       final drift = config.orbitDrift.clamp(0.0, 2.0);
       final startX = 0.5 +
-          0.25 * drift * sin(t * _freqNudgeX1) +
-          0.1 * drift * sin(t * _freqNudgeX2);
+          0.25 * drift * math.sin(t * _freqNudgeX1) +
+          0.1 * drift * math.sin(t * _freqNudgeX2);
       final startY = 0.5 +
-          0.25 * drift * cos(t * _freqNudgeY1) +
-          0.1 * drift * cos(t * _freqNudgeY2);
-      _smoothedPos = Offset(startX, startY);
+          0.25 * drift * math.cos(t * _freqNudgeY1) +
+          0.1 * drift * math.cos(t * _freqNudgeY2);
+      _smoothedPos = ui.Offset(startX, startY);
     } catch (_) {}
   }
 
@@ -100,7 +100,7 @@ class StealBackground extends PositionComponent
     this.size = size;
   }
 
-  void overrideTargetColors(List<Color> colors, double lerpSpeed) {
+  void overrideTargetColors(List<ui.Color> colors, double lerpSpeed) {
     _colorLerpSpeed = lerpSpeed;
     _targetColors = _expandColors(colors);
     if (_currentColors.isEmpty) {
@@ -135,11 +135,11 @@ class StealBackground extends PositionComponent
 
   /// Pads or trims a color list to exactly [_colorCount] entries.
   /// Shorter lists repeat their last color; longer lists are truncated.
-  List<Color> _expandColors(List<Color> colors) {
+  List<ui.Color> _expandColors(List<ui.Color> colors) {
     if (colors.isEmpty) {
-      return List.filled(_colorCount, const Color(0xFFFFFFFF));
+      return List.filled(_colorCount, const ui.Color(0xFFFFFFFF));
     }
-    final result = <Color>[];
+    final result = <ui.Color>[];
     for (int i = 0; i < _colorCount; i++) {
       result.add(colors[i < colors.length ? i : colors.length - 1]);
     }
@@ -152,11 +152,11 @@ class StealBackground extends PositionComponent
 
     // Color lerp — time corrected for frame-rate independence
     // _colorLerpSpeed is based on 60fps frame factor
-    final colorAlpha = 1.0 - pow(1.0 - _colorLerpSpeed, dt * 60);
+    final colorAlpha = 1.0 - math.pow(1.0 - _colorLerpSpeed, dt * 60);
 
     for (int i = 0; i < _colorCount; i++) {
       if (_currentColors.length > i && _targetColors.length > i) {
-        _currentColors[i] = Color.lerp(
+        _currentColors[i] = ui.Color.lerp(
           _currentColors[i],
           _targetColors[i],
           colorAlpha,
@@ -177,8 +177,10 @@ class StealBackground extends PositionComponent
     final argY1 = _normalizeAngle(t * _freqNudgeY1);
     final argY2 = _normalizeAngle(t * _freqNudgeY2);
 
-    final rawX = 0.5 + 0.25 * drift * sin(argX1) + 0.1 * drift * sin(argX2);
-    final rawY = 0.5 + 0.25 * drift * cos(argY1) + 0.1 * drift * cos(argY2);
+    final rawX =
+        0.5 + 0.25 * drift * math.sin(argX1) + 0.1 * drift * math.sin(argX2);
+    final rawY =
+        0.5 + 0.25 * drift * math.cos(argY1) + 0.1 * drift * math.cos(argY2);
 
     // Lerp smoothedPos toward raw pos using time-based decay
     final s = config.translationSmoothing.clamp(0.0, 1.0);
@@ -186,24 +188,24 @@ class StealBackground extends PositionComponent
     // s=0 -> baseAlpha=1 (instant). s=1 -> baseAlpha=0.01 (very slow).
     final baseAlpha = 1.0 - s * 0.99;
     // Time-corrected alpha: 1 - (1 - base)^dt_ratio
-    final posAlpha = 1.0 - pow(1.0 - baseAlpha, dt * 60);
+    final posAlpha = 1.0 - math.pow(1.0 - baseAlpha, dt * 60);
 
     final oldPos = _smoothedPos;
-    _smoothedPos = Offset(
+    _smoothedPos = ui.Offset(
       _smoothedPos.dx + (rawX - _smoothedPos.dx) * posAlpha,
       _smoothedPos.dy + (rawY - _smoothedPos.dy) * posAlpha,
     );
 
     // Track smoothed velocity for dynamic trail scaling
     if (dt > 0) {
-      final delta = Offset(
+      final delta = ui.Offset(
         (_smoothedPos.dx - oldPos.dx) * size.x,
         (_smoothedPos.dy - oldPos.dy) * size.y,
       );
       // Smooth the velocity a bit to avoid jitter in slice count
       final instantVelocity = delta.distance / dt;
-      final velocityAlpha = 1.0 - pow(0.1, dt * 60); // fast smoothing
-      _velocity = Offset(
+      final velocityAlpha = 1.0 - math.pow(0.1, dt * 60); // fast smoothing
+      _velocity = ui.Offset(
         _velocity.dx + (instantVelocity - _velocity.dx) * velocityAlpha,
         0,
       );
@@ -267,8 +269,9 @@ class StealBackground extends PositionComponent
     final logoRenderSize = (config.logoScale + basePulse) * 110.0;
 
     // Use palette color desaturated — but keep it bright enough to see
-    final baseColor =
-        _currentColors.isNotEmpty ? _currentColors[0] : const Color(0xFFFFFFFF);
+    final baseColor = _currentColors.isNotEmpty
+        ? _currentColors[0]
+        : const ui.Color(0xFFFFFFFF);
     final hsl = HSLColor.fromColor(baseColor);
     final ghostTint = hsl
         .withSaturation((hsl.saturation * 0.5).clamp(0.0, 1.0))
@@ -383,6 +386,13 @@ class StealBackground extends PositionComponent
           : energy.bands[config.scaleSource.clamp(0, 7)];
       sE *= config.scaleMultiplier;
     }
+
+    if (config.scaleSineEnabled) {
+      final double time = DateTime.now().millisecondsSinceEpoch / 1000.0;
+      final double sine = math.sin(time * 2.0 * math.pi * config.scaleSineFreq);
+      sE += sine * config.scaleSineAmp;
+    }
+
     _shader!.setFloat(idx++, sE.clamp(0.0, 5.0));
 
     // Mid Energy (Slot 15, historically emid)
@@ -416,12 +426,12 @@ class StealBackground extends PositionComponent
   }
 
   double _normalizeAngle(double angle) {
-    const tau = 2 * pi;
+    const tau = 2 * math.pi;
     final mod = angle % tau;
     return mod < 0 ? mod + tau : mod;
   }
 
-  List<Color> _getPaletteColors(String name) {
+  List<ui.Color> _getPaletteColors(String name) {
     return StealConfig.palettes[name] ?? StealConfig.palettes.values.first;
   }
 

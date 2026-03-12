@@ -147,6 +147,7 @@ class SettingsProvider with ChangeNotifier {
   static const String _oilAudioGraphModeKey = 'oil_audio_graph_mode';
   static const String _oilEkgRadiusKey = 'oil_ekg_radius';
   static const String _oilEkgReplicationKey = 'oil_ekg_replication';
+  static const String _oilEkgSpreadKey = 'oil_ekg_spread';
   static const String _oilBeatSensitivityKey = 'oil_beat_sensitivity';
   static const String _oilBeatImpactKey = 'oil_beat_impact';
   static const String _oilShowInfoBannerKey = 'oil_show_info_banner';
@@ -170,6 +171,9 @@ class SettingsProvider with ChangeNotifier {
       'oil_screensaver_4k_support';
   static const String _oilScaleSourceKey = 'oil_scale_source';
   static const String _oilScaleMultiplierKey = 'oil_scale_multiplier';
+  static const String _oilScaleSineEnabledKey = 'oil_scale_sine_enabled';
+  static const String _oilScaleSineFreqKey = 'oil_scale_sine_freq';
+  static const String _oilScaleSineAmpKey = 'oil_scale_sine_amp';
   static const String _oilColorSourceKey = 'oil_color_source';
   static const String _oilColorMultiplierKey = 'oil_color_multiplier';
   static const String _oilWoodstockEveryHourKey = 'oil_woodstock_every_hour';
@@ -324,6 +328,10 @@ class SettingsProvider with ChangeNotifier {
   late bool _oilWoodstockEveryHour;
   late double _oilEkgRadius;
   late int _oilEkgReplication;
+  late double _oilEkgSpread;
+  late bool _oilScaleSineEnabled;
+  late double _oilScaleSineFreq;
+  late double _oilScaleSineAmp;
 
   // Track Layout State
   Color? _seedColor;
@@ -589,6 +597,7 @@ class SettingsProvider with ChangeNotifier {
   String get oilAudioGraphMode => _oilAudioGraphMode;
   double get oilEkgRadius => _oilEkgRadius;
   int get oilEkgReplication => _oilEkgReplication;
+  double get oilEkgSpread => _oilEkgSpread;
   double get oilBeatSensitivity => _oilBeatSensitivity;
   double get oilBeatImpact => _oilBeatImpact;
   bool get oilShowInfoBanner => _oilShowInfoBanner;
@@ -615,6 +624,9 @@ class SettingsProvider with ChangeNotifier {
   int get oilColorSource => _oilColorSource;
   double get oilColorMultiplier => _oilColorMultiplier;
   bool get oilWoodstockEveryHour => _oilWoodstockEveryHour;
+  bool get oilScaleSineEnabled => _oilScaleSineEnabled;
+  double get oilScaleSineFreq => _oilScaleSineFreq;
+  double get oilScaleSineAmp => _oilScaleSineAmp;
 
   // Track Layout State
 
@@ -1100,6 +1112,14 @@ class SettingsProvider with ChangeNotifier {
         _prefs.getDouble(_oilEkgRadiusKey) ?? DefaultSettings.oilEkgRadius;
     _oilEkgReplication = _prefs.getInt(_oilEkgReplicationKey) ??
         DefaultSettings.oilEkgReplication;
+    _oilEkgSpread =
+        _prefs.getDouble(_oilEkgSpreadKey) ?? DefaultSettings.oilEkgSpread;
+    _oilScaleSineEnabled = _prefs.getBool(_oilScaleSineEnabledKey) ??
+        DefaultSettings.oilScaleSineEnabled;
+    _oilScaleSineFreq = _prefs.getDouble(_oilScaleSineFreqKey) ??
+        DefaultSettings.oilScaleSineFreq;
+    _oilScaleSineAmp = _prefs.getDouble(_oilScaleSineAmpKey) ??
+        DefaultSettings.oilScaleSineAmp;
 
     // TV screensaver mode override — use TvDefaults as the canonical source.
     if (isTv) _oilScreensaverMode = TvDefaults.oilScreensaverMode;
@@ -1467,6 +1487,15 @@ class SettingsProvider with ChangeNotifier {
   Future<void> setOilColorMultiplier(double value) => _updateDoublePreference(
       _oilColorMultiplierKey, _oilColorMultiplier = value.clamp(0.0, 2.0));
 
+  void toggleOilScaleSineEnabled() => _updatePreference(
+      _oilScaleSineEnabledKey, _oilScaleSineEnabled = !_oilScaleSineEnabled);
+
+  Future<void> setOilScaleSineFreq(double value) => _updateDoublePreference(
+      _oilScaleSineFreqKey, _oilScaleSineFreq = value.clamp(0.01, 10.0));
+
+  Future<void> setOilScaleSineAmp(double value) => _updateDoublePreference(
+      _oilScaleSineAmpKey, _oilScaleSineAmp = value.clamp(0.0, 1.0));
+
   void setOilWoodstockEveryHour(bool value) => _updatePreference(
       _oilWoodstockEveryHourKey, _oilWoodstockEveryHour = value);
 
@@ -1474,7 +1503,10 @@ class SettingsProvider with ChangeNotifier {
       _oilEkgRadiusKey, _oilEkgRadius = value.clamp(0.1, 2.0));
 
   Future<void> setOilEkgReplication(int value) => _updateIntPreference(
-      _oilEkgReplicationKey, _oilEkgReplication = value.clamp(1, 5));
+      _oilEkgReplicationKey, _oilEkgReplication = value.clamp(1, 10));
+
+  Future<void> setOilEkgSpread(double value) => _updateDoublePreference(
+      _oilEkgSpreadKey, _oilEkgSpread = value.clamp(0.0, 20.0));
 
   // Source Filtering
   static const String _filterHighestShnidKey = 'filter_highest_shnid';

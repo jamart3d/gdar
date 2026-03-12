@@ -9,6 +9,7 @@ import 'package:shakedown/providers/theme_provider.dart';
 import 'package:provider/provider.dart';
 
 import 'package:shakedown/ui/widgets/rating_control.dart';
+import 'package:shakedown/ui/widgets/shnid_badge.dart';
 import 'package:shakedown/ui/widgets/src_badge.dart';
 import 'package:shakedown/services/catalog_service.dart';
 import 'package:shakedown/services/device_service.dart';
@@ -516,14 +517,16 @@ class _ShowListCardState extends State<ShowListCard> {
         context.read<ThemeProvider>().themeStyle == ThemeStyle.fruit;
 
     final String badgeText;
-    if (widget.isPlaying &&
+    if (settingsProvider.showSingleShnid && show.sources.length == 1) {
+      badgeText = '#${show.sources.first.id}';
+    } else if (widget.isPlaying &&
         widget.playingSource != null &&
         settingsProvider.showSingleShnid) {
-      badgeText = widget.playingSource!.id.replaceAll(RegExp(r'[^0-9]'), '');
-    } else if (show.sources.length == 1 && settingsProvider.showSingleShnid) {
-      badgeText = show.sources.first.id.replaceAll(RegExp(r'[^0-9]'), '');
+      badgeText = '#${widget.playingSource!.id}';
     } else {
-      badgeText = '${show.sources.length}';
+      badgeText = show.sources.length > 1
+          ? '${show.sources.length} SOURCES'
+          : '1 SOURCE';
     }
 
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
@@ -576,24 +579,29 @@ class _ShowListCardState extends State<ShowListCard> {
               offset: const Offset(0, 1))
         ],
       ),
-      child: isTv
-          ? FittedBox(
-              fit: BoxFit.scaleDown,
-              child: Text(
-                badgeText,
-                style: style,
-                overflow: TextOverflow.ellipsis,
-                maxLines: 1,
-                textAlign: TextAlign.center,
-              ),
+      child: isFruit
+          ? ShnidBadge(
+              text: badgeText,
+              scaleFactor: effectiveScale,
             )
-          : Text(
-              badgeText,
-              style: style,
-              overflow: TextOverflow.ellipsis,
-              maxLines: 1,
-              textAlign: TextAlign.center,
-            ),
+          : (isTv
+              ? FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    badgeText,
+                    style: style,
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
+                    textAlign: TextAlign.center,
+                  ),
+                )
+              : Text(
+                  badgeText,
+                  style: style,
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
+                  textAlign: TextAlign.center,
+                )),
     );
   }
 
@@ -797,181 +805,208 @@ class _ShowListCardState extends State<ShowListCard> {
             }
 
             return Padding(
-              padding: const EdgeInsets.only(
+              padding: EdgeInsets.only(
                 right: 8.0, // v134 standard gutter
-                top: 4.0,
-                bottom: 4.0,
+                top: isTv ? 2.0 : 4.0,
+                bottom: isTv ? 2.0 : 4.0,
               ),
-              child: (!kIsWeb)
+              child: isTv
                   ? FittedBox(
                       fit: BoxFit.scaleDown,
                       alignment: Alignment.centerRight,
                       child: Column(
-                        mainAxisSize: MainAxisSize.max,
-                        mainAxisAlignment: isTv
-                            ? MainAxisAlignment.center
-                            : MainAxisAlignment.spaceBetween,
+                        mainAxisSize: MainAxisSize.min,
                         crossAxisAlignment: CrossAxisAlignment.end,
-                        children: columnChildren.map((w) {
-                          return Container(
-                            decoration: BoxDecoration(
-                              border: Border.all(
-                                color: settings.showDebugLayout
-                                    ? Colors.purple.withValues(alpha: 0.5)
-                                    : Colors.transparent,
-                                width: 1,
-                              ),
+                        children: [
+                          if (ratingWidget != null) ratingWidget,
+                          if (ratingWidget != null &&
+                              badgeRowChildren.isNotEmpty)
+                            SizedBox(height: 4 * effectiveScale),
+                          if (badgeRowChildren.isNotEmpty)
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: badgeRowChildren,
                             ),
-                            alignment: Alignment.centerRight,
-                            child: w,
-                          );
-                        }).toList(),
+                        ],
                       ),
                     )
-                  : (useMobileLayout
-                      ? (isFruit
-                          ? Builder(builder: (context) {
-                              final badges = badgeRowChildren
-                                  .where((w) => w is! SizedBox)
-                                  .toList();
-                              return FittedBox(
-                                fit: BoxFit.scaleDown,
+                  : !kIsWeb
+                      ? FittedBox(
+                          fit: BoxFit.scaleDown,
+                          alignment: Alignment.centerRight,
+                          child: Column(
+                            mainAxisSize: MainAxisSize.max,
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: columnChildren.map((w) {
+                              return Container(
+                                decoration: BoxDecoration(
+                                  border: Border.all(
+                                    color: settings.showDebugLayout
+                                        ? Colors.purple.withValues(alpha: 0.5)
+                                        : Colors.transparent,
+                                    width: 1,
+                                  ),
+                                ),
                                 alignment: Alignment.centerRight,
-                                child: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  children: [
-                                    if (ratingWidget != null) ratingWidget,
-                                    if (ratingWidget != null &&
-                                        badges.isNotEmpty)
-                                      SizedBox(height: usePremium ? 4 : 6),
-                                    if (badges.isNotEmpty)
-                                      Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: badges
-                                            .asMap()
-                                            .entries
-                                            .map((e) => Padding(
-                                                  padding: EdgeInsets.only(
-                                                      right: e.key <
-                                                              badges.length - 1
-                                                          ? 4
-                                                          : 0),
-                                                  child: e.value,
-                                                ))
-                                            .toList(),
-                                      ),
-                                  ],
-                                ),
+                                child: w,
                               );
-                            })
-                          : FittedBox(
-                              fit: BoxFit.scaleDown,
-                              alignment: Alignment.centerRight,
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                crossAxisAlignment: CrossAxisAlignment.end,
-                                children: [
-                                  if (ratingWidget != null)
-                                    Padding(
-                                      padding: const EdgeInsets.only(bottom: 2),
-                                      child: ratingWidget,
-                                    ),
-                                  const SizedBox(height: 2),
-                                  if (badgeRowChildren.isNotEmpty)
-                                    Row(
+                            }).toList(),
+                          ),
+                        )
+                      : useMobileLayout
+                          ? (isFruit
+                              ? Builder(builder: (context) {
+                                  final badges = badgeRowChildren
+                                      .where((w) => w is! SizedBox)
+                                      .toList();
+                                  return FittedBox(
+                                    fit: BoxFit.scaleDown,
+                                    alignment: Alignment.centerRight,
+                                    child: Column(
                                       mainAxisSize: MainAxisSize.min,
-                                      children: badgeRowChildren,
-                                    ),
-                                ],
-                              ),
-                            ))
-                      : Row(
-                          mainAxisSize: MainAxisSize.min,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            if (showDesktopEmbeddedPlayer) ...[
-                              SizedBox(
-                                width:
-                                    (isFruit ? 172.0 : 166.0) * effectiveScale,
-                                child: EmbeddedMiniPlayer(
-                                  scaleFactor: effectiveScale * 0.88,
-                                  compact: true,
-                                ),
-                              ),
-                              const SizedBox(width: 6),
-                            ],
-                            if (showRating && ratingKey != null)
-                              RatingControl(
-                                rating: rating,
-                                isPlayed: isPlayed,
-                                size: isFruit
-                                    ? (settings.performanceMode ? 24 : 28)
-                                    : (kIsWeb ? 28 : 19),
-                                compact: true,
-                                enforceMinTapTarget: true,
-                                onTap: (widget.isPlaying ||
-                                        widget.alwaysShowRatingInteraction ||
-                                        show.sources.length == 1)
-                                    ? () async {
-                                        await showDialog(
-                                          context: context,
-                                          builder: (context) => RatingDialog(
-                                            initialRating: rating,
-                                            sourceId: ratingKey,
-                                            sourceUrl: (targetSource != null &&
-                                                    targetSource
-                                                        .tracks.isNotEmpty)
-                                                ? targetSource.tracks.first.url
-                                                : null,
-                                            isPlayed: isPlayed,
-                                            onRatingChanged: (newRating) {
-                                              catalog.setRating(
-                                                  ratingKey, newRating);
-                                            },
-                                            onPlayedChanged:
-                                                (bool newIsPlayed) {
-                                              if (newIsPlayed !=
-                                                  catalog.isPlayed(ratingKey)) {
-                                                catalog.togglePlayed(ratingKey);
-                                              }
-                                            },
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.center,
+                                      children: [
+                                        if (ratingWidget != null) ratingWidget,
+                                        if (ratingWidget != null &&
+                                            badges.isNotEmpty)
+                                          SizedBox(height: usePremium ? 4 : 6),
+                                        if (badges.isNotEmpty)
+                                          Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: badges
+                                                .asMap()
+                                                .entries
+                                                .map((e) => Padding(
+                                                      padding: EdgeInsets.only(
+                                                          right: e.key <
+                                                                  badges.length -
+                                                                      1
+                                                              ? 4
+                                                              : 0),
+                                                      child: e.value,
+                                                    ))
+                                                .toList(),
                                           ),
-                                        );
-                                      }
-                                    : null,
-                              ),
-                            if (showRating &&
-                                ratingKey != null &&
-                                badgeRowChildren.isNotEmpty)
-                              SizedBox(width: isFruit ? 24 : 8),
-                            if (badgeRowChildren.isNotEmpty)
-                              Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  for (int i = 0;
-                                      i < badgeRowChildren.length;
-                                      i++) ...[
-                                    if (badgeRowChildren[i] is SizedBox)
-                                      badgeRowChildren[i]
-                                    else if (usePremium &&
-                                        badgeRowChildren[i]
-                                            is NeumorphicWrapper)
-                                      // Unwrap premium glass shell in non-stacked Fruit layout
-                                      (((badgeRowChildren[i]
-                                                      as NeumorphicWrapper)
-                                                  .child as LiquidGlassWrapper)
-                                              .child as Padding)
-                                          .child!
-                                    else
-                                      badgeRowChildren[i]
-                                  ]
+                                      ],
+                                    ),
+                                  );
+                                })
+                              : FittedBox(
+                                  fit: BoxFit.scaleDown,
+                                  alignment: Alignment.centerRight,
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    crossAxisAlignment: CrossAxisAlignment.end,
+                                    children: [
+                                      if (ratingWidget != null)
+                                        Padding(
+                                          padding:
+                                              const EdgeInsets.only(bottom: 2),
+                                          child: ratingWidget,
+                                        ),
+                                      const SizedBox(height: 2),
+                                      if (badgeRowChildren.isNotEmpty)
+                                        Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: badgeRowChildren,
+                                        ),
+                                    ],
+                                  ),
+                                ))
+                          : Row(
+                              mainAxisSize: MainAxisSize.min,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                if (showDesktopEmbeddedPlayer) ...[
+                                  SizedBox(
+                                    width: (isFruit ? 172.0 : 166.0) *
+                                        effectiveScale,
+                                    child: EmbeddedMiniPlayer(
+                                      scaleFactor: effectiveScale * 0.88,
+                                      compact: true,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 6),
                                 ],
-                              ),
-                          ],
-                        )),
+                                if (showRating && ratingKey != null)
+                                  RatingControl(
+                                    rating: rating,
+                                    isPlayed: isPlayed,
+                                    size: isFruit
+                                        ? (settings.performanceMode ? 24 : 28)
+                                        : (kIsWeb ? 28 : 19),
+                                    compact: true,
+                                    enforceMinTapTarget: true,
+                                    onTap: (widget.isPlaying ||
+                                            widget
+                                                .alwaysShowRatingInteraction ||
+                                            show.sources.length == 1)
+                                        ? () async {
+                                            await showDialog(
+                                              context: context,
+                                              builder: (context) =>
+                                                  RatingDialog(
+                                                initialRating: rating,
+                                                sourceId: ratingKey,
+                                                sourceUrl:
+                                                    (targetSource != null &&
+                                                            targetSource.tracks
+                                                                .isNotEmpty)
+                                                        ? targetSource
+                                                            .tracks.first.url
+                                                        : null,
+                                                isPlayed: isPlayed,
+                                                onRatingChanged: (newRating) {
+                                                  catalog.setRating(
+                                                      ratingKey, newRating);
+                                                },
+                                                onPlayedChanged:
+                                                    (bool newIsPlayed) {
+                                                  if (newIsPlayed !=
+                                                      catalog.isPlayed(
+                                                          ratingKey)) {
+                                                    catalog.togglePlayed(
+                                                        ratingKey);
+                                                  }
+                                                },
+                                              ),
+                                            );
+                                          }
+                                        : null,
+                                  ),
+                                if (showRating &&
+                                    ratingKey != null &&
+                                    badgeRowChildren.isNotEmpty)
+                                  SizedBox(width: isFruit ? 24 : 8),
+                                if (badgeRowChildren.isNotEmpty)
+                                  Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      for (int i = 0;
+                                          i < badgeRowChildren.length;
+                                          i++) ...[
+                                        if (badgeRowChildren[i] is SizedBox)
+                                          badgeRowChildren[i]
+                                        else if (usePremium &&
+                                            badgeRowChildren[i]
+                                                is NeumorphicWrapper)
+                                          // Unwrap premium glass shell in non-stacked Fruit layout
+                                          (((badgeRowChildren[i]
+                                                          as NeumorphicWrapper)
+                                                      .child as LiquidGlassWrapper)
+                                                  .child as Padding)
+                                              .child!
+                                        else
+                                          badgeRowChildren[i]
+                                      ]
+                                    ],
+                                  ),
+                              ],
+                            ),
             );
           },
         );

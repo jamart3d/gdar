@@ -2,10 +2,18 @@ import 'dart:math';
 import 'dart:ui';
 import 'package:flame/components.dart';
 import 'package:flutter/material.dart'
-    show Colors, TextStyle, TextSpan, TextPainter, TextDirection, FontWeight;
+    show
+        Colors,
+        TextStyle,
+        TextSpan,
+        TextPainter,
+        TextDirection,
+        FontWeight,
+        HSLColor;
 import 'package:shakedown/utils/web_runtime.dart';
 import 'package:shakedown/visualizer/audio_reactor.dart';
 import 'package:shakedown/steal_screensaver/steal_game.dart';
+import 'package:shakedown/steal_screensaver/steal_config.dart';
 
 /// Audio reactivity graph with multiple display modes:
 /// - corner: 8-bar EQ + Beat indicator, anchored bottom-left.
@@ -261,12 +269,15 @@ class StealGraph extends Component with HasGameReference<StealGame> {
     final startX = _leftPadding + drift.dx;
     final availableWidth = w - (_leftPadding * 2);
 
-    final color = _bandColors[0]; // Phosphor Green/Blue
-    final replication = game.config.ekgReplication.clamp(1, 5);
+    final color =
+        const Color(0xFF34E7FF).withValues(alpha: 0.8); // Phosphor Blue
+
+    final replication = game.config.ekgReplication.clamp(1, 10);
+    final spread = game.config.ekgSpread;
 
     for (int r = replication - 1; r >= 0; r--) {
-      final opacity = 1.0 / (r + 1);
-      final verticalOffset = r * 4.0; // Offset each line slightly
+      final opacity = (1.0 / (r + 1)) * color.a;
+      final verticalOffset = r * spread; // Offset each line slightly
       final beatThick = energy.isBeat ? 0.8 : 0.0;
 
       final points = <Offset>[];
@@ -329,12 +340,23 @@ class StealGraph extends Component with HasGameReference<StealGame> {
         (game.config.logoScale * minDim * 0.52 * game.config.ekgRadius)
             .clamp(20.0, 600.0);
 
-    final color = _bandColors[2]; // More greenish for circular EKG
-    final replication = game.config.ekgReplication.clamp(1, 5);
+    final paletteColors = StealConfig.palettes[game.config.palette] ??
+        StealConfig.palettes.values.first;
+    final rawColor =
+        paletteColors.isNotEmpty ? paletteColors.first : Colors.white;
+    final hsl = HSLColor.fromColor(rawColor);
+    final color = hsl
+        .withSaturation((hsl.saturation * 0.4).clamp(0.0, 1.0))
+        .withLightness((hsl.lightness * 0.6).clamp(0.1, 1.0))
+        .toColor()
+        .withValues(alpha: 0.4);
+
+    final replication = game.config.ekgReplication.clamp(1, 10);
+    final spread = game.config.ekgSpread;
 
     for (int r = replication - 1; r >= 0; r--) {
-      final opacity = 1.0 / (r + 1);
-      final radiusOffset = r * 5.0;
+      final opacity = (1.0 / (r + 1)) * color.a;
+      final radiusOffset = r * spread;
       final beatThick = energy.isBeat ? 1.0 : 0.0;
 
       final points = <Offset>[];

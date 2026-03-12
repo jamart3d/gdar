@@ -7,7 +7,7 @@
  * - When visibilitychange fires mid-track, set a _pendingHandoff flag. Don't interrupt.
  * - At the next track boundary (_onTrackBoundary), check the flag. If set, load the next track
  *   into the passive <audio> element and switch to it instead of the Web Audio graph.
- * - If the user returns to the tab before the track ends, clear the flag — stay in foreground mode.
+ * - If the user returns to the tab before the track ends, clear the flag â€” stay in foreground mode.
  * - On foreground restore: pause passive element, reconstruct AudioContext at that position,
  *   resume Web Audio.
  */
@@ -200,7 +200,22 @@
         else if (_backgroundMode === 'video') { __tech = '(VI)'; }
         else if (_backgroundMode === 'heartbeat') { __tech = '(HBT)'; }
         else { __tech = 'OFF'; }
-        state.contextState = 'hybrid ' + __tech;
+
+        const hbNeeded = (function () {
+            const ua = navigator.userAgent || '';
+            if (/Windows/i.test(ua) || (/Macintosh/i.test(ua) && navigator.maxTouchPoints === 0)) return false;
+            const isAndroid = /Android/i.test(ua);
+            const isIOS = /iPhone|iPad|iPod/i.test(ua);
+            const isMacPad = navigator.maxTouchPoints > 0 && /Macintosh/.test(ua);
+            return isAndroid || isIOS || isMacPad;
+        })();
+        state.heartbeatNeeded = hbNeeded;
+        state.contextState = 'hybrid ' + __tech + (hbNeeded ? ' [HBN]' : ' [HBO]') + ' v1.1.hb';
+
+        state.heartbeatActive = (function () {
+            if (document.visibilityState === 'visible' && _playing) return true;
+            return window._gdarHeartbeat ? window._gdarHeartbeat.isActive() : false;
+        })();
         _onStateChange(state);
     }
 
@@ -509,10 +524,18 @@
 
             const pure = _isPureWebAudio();
             const forceHtml5 = _forceHtml5Start === true;
-            // BACKGROUND OPTIMIZATION: We now allow Instant-Start (HTML5) even when hidden,
-            // because HTML5 is more robust for background initiates than Web Audio.
-            if (!pure || forceHtml5) {
-                _log.log('[hybrid] syncState: Choosing HTML5 (Background) for Instant Start');
+            
+            // OPTIMIZATION: Use HTML5 (Instant Start) if:
+            // 1. Force flag is set
+            // 2. We are not locked to pure WebAudio AND (hidden OR track is very long > 15m)
+            // Long tracks (900s) take too long to decode in WebAudio, so we play H5 first 
+            // and hand off to WebAudio once it's buffered/decoded in the background.
+            const track = _playlist[index];
+            const isLongTrack = track && track.duration > 900;
+            const isHidden = document.visibilityState === 'hidden';
+
+            if (forceHtml5 || (!pure && (isHidden || isLongTrack))) {
+                _log.log(`[hybrid] syncState: Choosing HTML5 (Background) for Instant Start (reason: ${forceHtml5 ? 'forced' : isHidden ? 'hidden' : 'long_track'})`);
                 _activeEngine = _bgEngine;
                 _instantHandoffPending = shouldPlay;
                 _instantHandoffIndex = index;
@@ -718,12 +741,35 @@
             const state = _activeEngine.getState();
             state.playing = _playing;
             let __tech = '??';
-        if (_activeEngine === _fgEngine) { __tech = '(WA)'; }
-        else if (_backgroundMode === 'html5') { __tech = '(H5)'; }
-        else if (_backgroundMode === 'video') { __tech = '(VI)'; }
-        else if (_backgroundMode === 'heartbeat') { __tech = '(HBT)'; }
-        else { __tech = 'OFF'; }
-        state.contextState = 'hybrid_' + __tech;
+            if (_activeEngine === _fgEngine) { __tech = '(WA)'; }
+            else if (_backgroundMode === 'html5') { __tech = '(H5)'; }
+            else if (_backgroundMode === 'video') { __tech = '(VI)'; }
+            else if (_backgroundMode === 'heartbeat') { __tech = '(HBT)'; }
+            else { __tech = 'OFF'; }
+
+            const hbNeeded = (function () {
+                const ua = navigator.userAgent;
+                if (/Windows/i.test(ua) || (/Macintosh/i.test(ua) && navigator.maxTouchPoints === 0)) return false;
+                const isAndroid = /Android/i.test(ua);
+                const isIOS = /iPhone|iPad|iPod/i.test(ua);
+                const isMacPad = navigator.maxTouchPoints > 0 && /Macintosh/.test(ua);
+                return isAndroid || isIOS || isMacPad;
+            })();
+            state.heartbeatNeeded = hbNeeded;
+            state.contextState = 'hybrid_' + __tech + (hbNeeded ? ' [HBN]' : ' [HBO]');
+
+            state.heartbeatActive = (function () {
+                if (document.visibilityState === 'visible' && _playing) return true;
+                return window._gdarHeartbeat ? window._gdarHeartbeat.isActive() : false;
+            })();
+            state.heartbeatNeeded = (function () {
+                const ua = navigator.userAgent;
+                if (/Windows/i.test(ua) || (/Macintosh/i.test(ua) && navigator.maxTouchPoints === 0)) return false;
+                const isAndroid = /Android/i.test(ua);
+                const isIOS = /iPhone|iPad|iPod/i.test(ua);
+                const isMacPad = navigator.maxTouchPoints > 0 && /Macintosh/.test(ua);
+                return isAndroid || isIOS || isMacPad;
+            })();
             return state;
         },
 

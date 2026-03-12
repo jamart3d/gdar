@@ -91,6 +91,14 @@ extension type _GdarState(JSObject _) implements JSObject {
   @JS('processingState')
   external JSString? get processingStateJS;
   String? get processingState => processingStateJS?.toDart;
+
+  @JS('heartbeatActive')
+  external JSBoolean? get heartbeatActiveJS;
+  bool? get heartbeatActive => heartbeatActiveJS?.toDart;
+
+  @JS('heartbeatNeeded')
+  external JSBoolean? get heartbeatNeededJS;
+  bool? get heartbeatNeeded => heartbeatNeededJS?.toDart;
 }
 
 /// Track change event sent from the JS engine.
@@ -154,6 +162,8 @@ class GaplessPlayer {
   final _sequenceStateController = StreamController<SequenceState?>.broadcast();
   final _nextTrackBufferedController = StreamController<Duration?>.broadcast();
   final _nextTrackTotalController = StreamController<Duration?>.broadcast();
+  final _heartbeatActiveController = StreamController<bool>.broadcast();
+  final _heartbeatNeededController = StreamController<bool>.broadcast();
 
   bool _playing = false;
   int? _currentIndex;
@@ -162,6 +172,8 @@ class GaplessPlayer {
   double _currentTrackBufferedSec = 0;
   double _nextTrackBufferedSec = 0;
   double _nextTrackTotalSec = 0;
+  bool _heartbeatActive = false;
+  bool _heartbeatNeeded = true;
   ProcessingState _processingState = ProcessingState.idle;
   List<IndexedAudioSource> _sequence = [];
   String? _lastContextState;
@@ -332,6 +344,18 @@ class GaplessPlayer {
       _playing = s.playing ?? false;
       if (wasPlaying != _playing) {
         _playingController.add(_playing);
+      }
+
+      final hbActive = s.heartbeatActive ?? false;
+      if (_heartbeatActive != hbActive) {
+        _heartbeatActive = hbActive;
+        _heartbeatActiveController.add(_heartbeatActive);
+      }
+
+      final hbNeeded = s.heartbeatNeeded ?? true;
+      if (_heartbeatNeeded != hbNeeded) {
+        _heartbeatNeeded = hbNeeded;
+        _heartbeatNeededController.add(_heartbeatNeeded);
       }
     } catch (e, st) {
       logger.w('GaplessPlayerWeb: Error unboxing engine state: $e\n$st');
@@ -519,6 +543,12 @@ class GaplessPlayer {
 
   Stream<Duration?> get nextTrackTotalStream =>
       _useJsEngine ? _nextTrackTotalController.stream : const Stream.empty();
+
+  Stream<bool> get heartbeatActiveStream =>
+      _useJsEngine ? _heartbeatActiveController.stream : Stream.value(false);
+
+  Stream<bool> get heartbeatNeededStream =>
+      _useJsEngine ? _heartbeatNeededController.stream : Stream.value(true);
 
   /// Emits the raw string processing state from the JS engine (e.g. 'handoff_countdown')
   Stream<String> get engineStateStringStream =>
@@ -760,6 +790,8 @@ class GaplessPlayer {
     await _sequenceStateController.close();
     await _nextTrackBufferedController.close();
     await _nextTrackTotalController.close();
+    await _heartbeatActiveController.close();
+    await _heartbeatNeededController.close();
   }
 
   /// Reloads the web page.

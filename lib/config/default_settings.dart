@@ -72,7 +72,7 @@ class DefaultSettings {
   // Misc
   static const bool showSplashScreen = true;
   static const bool enableSwipeToBlock = false;
-  static const bool showDebugLayout = true;
+  static const bool showDebugLayout = false;
 
   // Screensaver (steal)
   static const bool useOilScreensaver = true;
@@ -138,8 +138,11 @@ class DefaultSettings {
   /// Radius multiplier for EKG (0.5x to 2.0x of base logo radius).
   static const double oilEkgRadius = 1.0;
 
-  /// Number of parallel offset lines for EKG (1 to 5).
+  /// Number of parallel offset lines for EKG (1 to 10).
   static const int oilEkgReplication = 1;
+
+  /// Vertical/Radial spread between replicated EKG lines.
+  static const double oilEkgSpread = 4.0;
 
   /// Beat detection sensitivity (0.0 = gentle, 1.0 = aggressive).
   static const double oilBeatSensitivity = 0.45;
@@ -149,6 +152,9 @@ class DefaultSettings {
   /// -1 = Overall/Default, 0-7 = FFT Bands
   static const int oilScaleSource = -1;
   static const double oilScaleMultiplier = 1.0;
+  static const bool oilScaleSineEnabled = false;
+  static const double oilScaleSineFreq = 0.5;
+  static const double oilScaleSineAmp = 0.2;
   static const int oilColorSource = 6; // Treble/Brilliance default
   static const double oilColorMultiplier = 1.0;
   static const bool oilWoodstockEveryHour = true;
