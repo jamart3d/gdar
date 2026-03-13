@@ -73,18 +73,17 @@
   - [ ] **Fruit Theme Gating Audit**: Verify `ElevatedButton` and `InkWell` in `playback_screen.dart` and `mini_player.dart` are correctly gated for Fruit theme. [v168]
   - [x] **Asset Optimization**: Build successfully tree-shook icons, reducing asset size. [v168]
 
-
-
 ---
 
 ## 📄 Spec & Documentation
 
 - [x] **Centralize Theme Logic**: Documented that `kIsWeb` applies the "Fruit" theme, referencing `docs/fruit_theme_spec.md` as the styling source of truth. Logic is surgically gated in `ThemeProvider`.
- 
+- [ ] **Infrastructure Guide**: Update `ANTIGRAVITY_SETUP.md` with instructions for managing upstream branch tracking to avoid push failures.
+
  ---
- 
+
  ## 🧪 Testing & Auditing
- 
+
  - [x] **Consolidate Jules Audits**: Created [master_audit.md](file:///c:/Users/jeff/StudioProjects/gdar/test/prompts/master_audit.md) as the 100% comprehensive (Phases 1-7) pre-release standard.
  - [ ] **Port Widget Tests**: Convert remaining flakey unit tests into Jules E2E observation phases for 100% reliable coverage.
 - [ ] **Politeness Policy**: Ensure all automated tests (Jules/Arlo) consistently use local mocks and never hit `archive.org` directly. Verify this isolation as part of the CI/CD pipeline.
@@ -96,6 +95,8 @@
 ## 🤖 Agent Tooling & Workflows
 
 - [x] **PowerShell Pipe Workaround**: For Windows PowerShell agent execution, look into changing commands that use a pipe (`|`) to instead write output to a temporary file in `%TEMP%` and then read it, bypassing the shell's restricted pipe features.
+- [ ] **Cross-Platform Rule**: Create a rule for cross-platform dependency synchronization (e.g., ensuring `GeneratedPluginRegistrant` is updated after major bumps).
+- [ ] **Release Check Workflow**: Add a `/release_check` workflow that runs only the verify and metadata audit without starting a full build.
 
 ---
 
@@ -106,6 +107,7 @@
 - [ ] **Preserve Agentic Core**: Extract and keep the "Single Source of Truth" rules (`.agent/rules`) and automation workflows.
 - [ ] **Generalize Theme specs**: Update `fruit_theme_spec.md` and related UI specs to be project-agnostic while keeping the "Liquid Glass" experimentation layer.
 - [ ] **Verify Multi-Target Baseline**: Ensure the generic template builds and runs on Chrome (Web), Android (Phone), and Android TV (10ft UI).
+
 ## Web Audio Engines
 - [ ] **Review Report**: 2026-03-12 web audio engines issue report saved to `reports/2026-03-12_web_audio_engines_issue_report.md`.
 - [ ] **Decision**: Confirm default web/PWA engine profile (HTML5 vs Hybrid Balanced) based on long background sessions priority.
