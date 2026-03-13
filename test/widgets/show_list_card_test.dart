@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:shakedown/models/show.dart';
-import 'package:shakedown/models/source.dart';
+import 'package:shakedown_core/models/show.dart';
+import 'package:shakedown_core/models/source.dart';
 import 'package:shakedown/providers/settings_provider.dart';
 import 'package:shakedown/providers/theme_provider.dart';
 import 'package:shakedown/providers/audio_provider.dart';

@@ -1,7 +1,6 @@
 import 'dart:async';
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter/services.dart';
-import 'package:shakedown/utils/logger.dart';
 
 /// Service to monitor user inactivity and trigger screensaver.
 ///
@@ -25,8 +24,6 @@ class InactivityService {
     if (_isEnabled) {
       _resetTimer();
     }
-    logger.d(
-        'InactivityService: Updated duration to ${_inactivityDuration.inMinutes} min');
   }
 
   /// Start monitoring for inactivity.
@@ -34,8 +31,6 @@ class InactivityService {
     if (_isEnabled) return;
     _isEnabled = true;
     _resetTimer();
-    logger.i(
-        'InactivityService: Started monitoring (timeout: ${_inactivityDuration.inMinutes} min)');
   }
 
   /// Stop monitoring for inactivity.
@@ -43,7 +38,6 @@ class InactivityService {
     _isEnabled = false;
     _inactivityTimer?.cancel();
     _inactivityTimer = null;
-    logger.i('InactivityService: Stopped monitoring');
   }
 
   /// Call this when user activity is detected.
@@ -55,8 +49,6 @@ class InactivityService {
   void _resetTimer() {
     _inactivityTimer?.cancel();
     _inactivityTimer = Timer(_inactivityDuration, () {
-      logger.i(
-          'InactivityService: Inactivity timeout reached, triggering screensaver');
       onInactivityTimeout();
     });
   }

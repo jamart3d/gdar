@@ -2,10 +2,11 @@ import 'dart:async';
 import 'dart:math';
 import 'package:shakedown/services/wakelock_service.dart';
 
-import 'package:flutter/foundation.dart';
-import 'package:shakedown/models/show.dart';
-import 'package:shakedown/models/source.dart';
-import 'package:shakedown/models/track.dart';
+import 'dart:ui' show VoidCallback;
+import 'package:flutter/foundation.dart' show ChangeNotifier, kIsWeb;
+import 'package:shakedown_core/models/show.dart';
+import 'package:shakedown_core/models/source.dart';
+import 'package:shakedown_core/models/track.dart';
 import 'package:shakedown/providers/settings_provider.dart';
 import 'package:shakedown/providers/show_list_provider.dart';
 import 'package:shakedown/services/catalog_service.dart';
@@ -27,8 +28,10 @@ class AudioProvider with ChangeNotifier {
   final _errorController = StreamController<String>.broadcast();
   final _randomShowRequestController =
       StreamController<({Show show, Source source})>.broadcast();
-  final _bufferAgentNotificationController = StreamController<
-      ({String message, VoidCallback? retryAction})>.broadcast();
+  final _bufferAgentNotificationController =
+      StreamController<
+        ({String message, VoidCallback? retryAction})
+      >.broadcast();
   final _notificationController = StreamController<String>.broadcast();
   final _playbackFocusRequestController = StreamController<void>.broadcast();
 
@@ -123,8 +126,8 @@ class AudioProvider with ChangeNotifier {
   Stream<({Show show, Source source})> get randomShowRequestStream =>
       _randomShowRequestController.stream;
   Stream<({String message, VoidCallback? retryAction})>
-      get bufferAgentNotificationStream =>
-          _bufferAgentNotificationController.stream;
+  get bufferAgentNotificationStream =>
+      _bufferAgentNotificationController.stream;
   Stream<String> get notificationStream => _notificationController.stream;
   Stream<void> get playbackFocusRequestStream =>
       _playbackFocusRequestController.stream;
@@ -150,12 +153,13 @@ class AudioProvider with ChangeNotifier {
     AudioCacheService? audioCacheService,
     WakelockService? wakelockService,
     bool useWebGaplessEngine = true,
-  })  : _catalogService = catalogService ?? CatalogService(),
-        _audioCacheService = audioCacheService ?? AudioCacheService(),
-        _wakelockService = wakelockService ?? WakelockService() {
+  }) : _catalogService = catalogService ?? CatalogService(),
+       _audioCacheService = audioCacheService ?? AudioCacheService(),
+       _wakelockService = wakelockService ?? WakelockService() {
     _audioPlayer = audioPlayer ?? GaplessPlayer();
-    logger
-        .i('AudioProvider initialized with Engine: ${_audioPlayer.engineName}');
+    logger.i(
+      'AudioProvider initialized with Engine: ${_audioPlayer.engineName}',
+    );
     logger.i('Engine Selection Reason: ${_audioPlayer.selectionReason}');
     _listenForPlaybackProgress();
     _listenForErrors();
@@ -165,8 +169,9 @@ class AudioProvider with ChangeNotifier {
     _audioCacheService.addListener(notifyListeners);
 
     // Listen to buffer updates for real-time reporting
-    _bufferedPositionSubscription =
-        _audioPlayer.bufferedPositionStream.listen((_) {
+    _bufferedPositionSubscription = _audioPlayer.bufferedPositionStream.listen((
+      _,
+    ) {
       final now = DateTime.now();
       if (now.difference(_lastBufferedNotify) <
           const Duration(milliseconds: 250)) {
@@ -188,15 +193,17 @@ class AudioProvider with ChangeNotifier {
   }
 
   void _listenForProcessingState() {
-    _processingStateSubscription =
-        _audioPlayer.processingStateStream.listen((state) {
+    _processingStateSubscription = _audioPlayer.processingStateStream.listen((
+      state,
+    ) {
       // Manage Wake Lock based on playback state
       _updateWakeLockState();
 
       if (state == ProcessingState.completed) {
         final shouldPlay = _settingsProvider?.playRandomOnCompletion ?? false;
         logger.i(
-            'AudioProvider: ProcessingState.completed received. AutoPlay: $shouldPlay');
+          'AudioProvider: ProcessingState.completed received. AutoPlay: $shouldPlay',
+        );
         if (shouldPlay) {
           logger.i('Playback completed. Triggering fallback random show...');
           // Use playRandomShow (Stop & Load) as fallback
@@ -258,24 +265,27 @@ class AudioProvider with ChangeNotifier {
     if (_settingsProvider != null &&
         settingsProvider.hybridHandoffMode !=
             _settingsProvider!.hybridHandoffMode) {
-      _audioPlayer
-          .setHybridHandoffMode(settingsProvider.hybridHandoffMode.name);
+      _audioPlayer.setHybridHandoffMode(
+        settingsProvider.hybridHandoffMode.name,
+      );
     }
 
     // Sync hybrid background survival mode
     if (_settingsProvider != null &&
         settingsProvider.hybridBackgroundMode !=
             _settingsProvider!.hybridBackgroundMode) {
-      _audioPlayer
-          .setHybridBackgroundMode(settingsProvider.hybridBackgroundMode.name);
+      _audioPlayer.setHybridBackgroundMode(
+        settingsProvider.hybridBackgroundMode.name,
+      );
     }
 
     // Sync allow-hidden Web Audio behavior
     if (_settingsProvider == null ||
         settingsProvider.allowHiddenWebAudio !=
             _settingsProvider!.allowHiddenWebAudio) {
-      _audioPlayer
-          .setHybridAllowHiddenWebAudio(settingsProvider.allowHiddenWebAudio);
+      _audioPlayer.setHybridAllowHiddenWebAudio(
+        settingsProvider.allowHiddenWebAudio,
+      );
     }
 
     if (_settingsProvider == null ||
@@ -302,8 +312,9 @@ class AudioProvider with ChangeNotifier {
     _settingsProvider = settingsProvider;
     _updateBufferAgent();
     // Update cache monitoring based on setting
-    _audioCacheService
-        .monitorCache(_settingsProvider?.offlineBuffering ?? false);
+    _audioCacheService.monitorCache(
+      _settingsProvider?.offlineBuffering ?? false,
+    );
   }
 
   void _updateBufferAgent() {
@@ -313,9 +324,10 @@ class AudioProvider with ChangeNotifier {
       _bufferAgent = BufferAgent(
         _audioPlayer,
         onRecoveryNotification: (message, retryAction) {
-          _bufferAgentNotificationController.add(
-            (message: message, retryAction: retryAction),
-          );
+          _bufferAgentNotificationController.add((
+            message: message,
+            retryAction: retryAction,
+          ));
         },
       );
       logger.i('AudioProvider: Buffer Agent enabled');
@@ -340,12 +352,14 @@ class AudioProvider with ChangeNotifier {
         if (!_isTransitioning && shouldPlay) {
           // Safety check: ensure we really are on the last track by verifying sequence length
           logger.i(
-              'Started last track (Index $index, Length ${sequence.length}). Pre-queueing next random show...');
+            'Started last track (Index $index, Length ${sequence.length}). Pre-queueing next random show...',
+          );
           _isTransitioning = true; // Block duplicates
           await queueRandomShow();
         } else {
           logger.d(
-              'Last track reached (Index $index, Length ${sequence.length}), but skipping queue. Transitioning: $_isTransitioning, AutoPlay: $shouldPlay');
+            'Last track reached (Index $index, Length ${sequence.length}), but skipping queue. Transitioning: $_isTransitioning, AutoPlay: $shouldPlay',
+          );
         }
       }
 
@@ -370,7 +384,8 @@ class AudioProvider with ChangeNotifier {
           // ignore any mismatch (likely from teardown/early player events).
           if (_isSwitchingSource) {
             logger.d(
-                'Ignoring source mismatch during manual switch (Player: $sourceId, App: ${_currentSource?.id})');
+              'Ignoring source mismatch during manual switch (Player: $sourceId, App: ${_currentSource?.id})',
+            );
           } else {
             _updateCurrentShowFromSourceId(sourceId);
           }
@@ -385,11 +400,13 @@ class AudioProvider with ChangeNotifier {
   }
 
   void _listenForErrors() {
-    _playbackEventSubscription = _audioPlayer.playbackEventStream
-        .listen((event) {}, onError: (Object e, StackTrace stackTrace) {
-      logger.e('Playback error', error: e, stackTrace: stackTrace);
-      _errorController.add('Playback error: $e');
-    });
+    _playbackEventSubscription = _audioPlayer.playbackEventStream.listen(
+      (event) {},
+      onError: (Object e, StackTrace stackTrace) {
+        logger.e('Playback error', error: e, stackTrace: stackTrace);
+        _errorController.add('Playback error: $e');
+      },
+    );
   }
 
   @override
@@ -470,14 +487,16 @@ class AudioProvider with ChangeNotifier {
     final catalog = _catalogService;
 
     logger.i(
-        'Playing random source: ${source.id} (Rating: ${catalog.getRating(source.id)}, Played: ${catalog.isPlayed(source.id)})');
+      'Playing random source: ${source.id} (Rating: ${catalog.getRating(source.id)}, Played: ${catalog.isPlayed(source.id)})',
+    );
 
     _pendingRandomShowRequest = selection;
     _randomShowRequestController.add(selection);
 
     if (animationOnly) {
       logger.i(
-          'playRandomShow: [TEST MODE] Skipping playback, triggering animation/scroll only.');
+        'playRandomShow: [TEST MODE] Skipping playback, triggering animation/scroll only.',
+      );
       // Ensure UI has time to react to the stream event
       return show;
     }
@@ -510,8 +529,12 @@ class AudioProvider with ChangeNotifier {
     await playSource(show, source);
   }
 
-  Future<void> playSource(Show show, Source source,
-      {int initialIndex = 0, Duration? initialPosition}) async {
+  Future<void> playSource(
+    Show show,
+    Source source, {
+    int initialIndex = 0,
+    Duration? initialPosition,
+  }) async {
     _currentShow = show;
     _currentSource = source;
     // Notify ShowListProvider to ensuring visibility
@@ -522,8 +545,11 @@ class AudioProvider with ChangeNotifier {
 
     try {
       _isSwitchingSource = true;
-      await _loadAndPlayAudio(source,
-          initialIndex: initialIndex, initialPosition: initialPosition);
+      await _loadAndPlayAudio(
+        source,
+        initialIndex: initialIndex,
+        initialPosition: initialPosition,
+      );
     } finally {
       // Only reset the transition flag AFTER loading is complete (or failed).
       // Resetting it too early allows _listenForPlaybackProgress to trigger AGAIN
@@ -543,7 +569,8 @@ class AudioProvider with ChangeNotifier {
       unawaited(_audioCacheService.performCacheCleanup(maxFiles: dynamicLimit));
 
       unawaited(
-          _audioCacheService.preloadSource(source, startIndex: initialIndex));
+        _audioCacheService.preloadSource(source, startIndex: initialIndex),
+      );
     }
   }
 
@@ -568,7 +595,8 @@ class AudioProvider with ChangeNotifier {
     final pos = data.position;
 
     logger.i(
-        'Clipboard Playback: Extracted SHNID: "$shnid", Track: "$trackName", Position: $pos');
+      'Clipboard Playback: Extracted SHNID: "$shnid", Track: "$trackName", Position: $pos',
+    );
 
     try {
       Show? targetShow;
@@ -607,15 +635,22 @@ class AudioProvider with ChangeNotifier {
       }
 
       logger.i(
-          'Clipboard Playback: Playing ${targetSource.id}, track $trackIndex');
+        'Clipboard Playback: Playing ${targetSource.id}, track $trackIndex',
+      );
 
-      await playSource(targetShow, targetSource,
-          initialIndex: trackIndex, initialPosition: pos);
+      await playSource(
+        targetShow,
+        targetSource,
+        initialIndex: trackIndex,
+        initialPosition: pos,
+      );
 
       // Ensure UI parity: Trigger the scroll and expand notifications
       _pendingRandomShowRequest = (show: targetShow, source: targetSource);
-      _randomShowRequestController
-          .add((show: targetShow, source: targetSource));
+      _randomShowRequestController.add((
+        show: targetShow,
+        source: targetSource,
+      ));
 
       return true;
     } catch (e) {
@@ -684,7 +719,8 @@ class AudioProvider with ChangeNotifier {
       // If this fails (e.g. native Shuffle Order bug), we just log it and abort pre-queueing.
       // The app will fall back to "Load on End" behavior naturally when the current track finishes.
       logger.w(
-          'Failed to pre-queue next show (addAudioSources failed). Will load normally on track end. Error: $e');
+        'Failed to pre-queue next show (addAudioSources failed). Will load normally on track end. Error: $e',
+      );
       _isTransitioning = false;
     }
   }
@@ -725,7 +761,8 @@ class AudioProvider with ChangeNotifier {
 
     if (foundShow != null && foundSource != null) {
       logger.i(
-          'Deep Sleep Transition: Detected track change to ${foundShow.date} (${foundSource.id}). Updating UI.');
+        'Deep Sleep Transition: Detected track change to ${foundShow.date} (${foundSource.id}). Updating UI.',
+      );
       _currentShow = foundShow;
       _currentSource = foundSource;
       _showListProvider?.setPlayingShow(foundShow.name, foundSource.id);
@@ -756,10 +793,14 @@ class AudioProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> _loadAndPlayAudio(Source source,
-      {int initialIndex = 0, Duration? initialPosition}) async {
+  Future<void> _loadAndPlayAudio(
+    Source source, {
+    int initialIndex = 0,
+    Duration? initialPosition,
+  }) async {
     logger.i(
-        'Loading show: ${_currentShow!.name}, source: ${source.id}, starting at index: $initialIndex');
+      'Loading show: ${_currentShow!.name}, source: ${source.id}, starting at index: $initialIndex',
+    );
     logger.i('AudioProvider: Playing with engine: ${_audioPlayer.engineName}');
     Uri? artUri;
     try {
@@ -826,7 +867,8 @@ class AudioProvider with ChangeNotifier {
         unawaited(stopAndClear());
       } else {
         logger.w(
-            'Ignoring error from superseded playback request (Source: ${source.id}): $e');
+          'Ignoring error from superseded playback request (Source: ${source.id}): $e',
+        );
       }
     }
   }
@@ -883,7 +925,8 @@ class AudioProvider with ChangeNotifier {
     }
 
     logger.i(
-        'retryCurrentSource: Retrying ${_currentShow!.name} at local index $localIndex');
+      'retryCurrentSource: Retrying ${_currentShow!.name} at local index $localIndex',
+    );
     await playSource(_currentShow!, _currentSource!, initialIndex: localIndex);
   }
 
@@ -893,14 +936,16 @@ class AudioProvider with ChangeNotifier {
     // If the player is stuck loading or buffering and has no sequence yet,
     // we should re-trigger playSource to "force" a fresh start at the new index.
     final playerState = _audioPlayer.processingState;
-    final isStuck = playerState == ProcessingState.loading ||
+    final isStuck =
+        playerState == ProcessingState.loading ||
         playerState == ProcessingState.buffering;
     final sequence = _audioPlayer.sequence;
 
     if (isStuck &&
         (sequence.isEmpty || _audioPlayer.currentIndex != localIndex)) {
       logger.i(
-          'seekToTrack: Player is stuck/loading. Re-triggering playSource at index $localIndex');
+        'seekToTrack: Player is stuck/loading. Re-triggering playSource at index $localIndex',
+      );
       if (_currentShow != null) {
         playSource(_currentShow!, _currentSource!, initialIndex: localIndex);
         return;

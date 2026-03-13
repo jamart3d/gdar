@@ -5,8 +5,9 @@ import 'package:flutter/services.dart';
 import 'package:hive_ce_flutter/hive_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shakedown/utils/logger.dart';
-import '../models/show.dart';
-import '../models/rating.dart';
+import 'package:shakedown_core/models/show.dart';
+import 'package:shakedown_core/models/rating.dart';
+import 'package:shakedown_core/utils/asset_constants.dart';
 
 enum CatalogLoadingStrategy {
   inMemory, // Default (JSON loaded)
@@ -84,7 +85,7 @@ class CatalogService {
   Future<void> _loadShowsFromJson() async {
     try {
       final String jsonString =
-          await rootBundle.loadString('assets/data/output.optimized_src.json');
+          await rootBundle.loadString(AssetConstants.optimizedCatalogJson);
 
       // Use compute for JSON parsing to avoid blocking UI on native platforms.
       // On Wasm, isolates/compute are not available, so we use Future.microtask

@@ -4,8 +4,8 @@ import 'package:flutter/material.dart';
 
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
-import 'package:shakedown/models/track.dart';
-import 'package:shakedown/models/show.dart';
+import 'package:shakedown_core/models/track.dart';
+import 'package:shakedown_core/models/show.dart';
 import 'package:shakedown/providers/audio_provider.dart';
 import 'package:shakedown/ui/widgets/playback/fruit_now_playing_card.dart';
 import 'package:shakedown/services/device_service.dart';

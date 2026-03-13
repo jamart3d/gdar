@@ -9,8 +9,9 @@ import 'package:shakedown/utils/logger.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:just_audio_background/just_audio_background.dart';
 import 'package:http/http.dart' as http;
-import 'package:shakedown/models/source.dart';
-import 'package:shakedown/models/track.dart';
+import 'package:shakedown_core/models/source.dart';
+import 'package:shakedown_core/models/track.dart';
+import 'package:shakedown_core/utils/asset_constants.dart';
 
 /// Service responsible for managing audio file caching using just_audio's
 /// LockCachingAudioSource. Handles file counting, cleanup, and monitoring.
@@ -311,7 +312,7 @@ class AudioCacheService with ChangeNotifier {
       final file = File('${docsDir.path}/album_art.png');
 
       if (!await file.exists()) {
-        final byteData = await rootBundle.load('assets/images/t_steal.webp');
+        final byteData = await rootBundle.load(AssetConstants.albumArtFallback);
         await file.writeAsBytes(byteData.buffer.asUint8List(
           byteData.offsetInBytes,
           byteData.lengthInBytes,

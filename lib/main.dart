@@ -18,7 +18,6 @@ import 'package:shakedown/utils/app_themes.dart';
 import 'package:shakedown/utils/logger.dart';
 import 'package:shakedown/utils/utils.dart';
 import 'package:just_audio_background/just_audio_background.dart';
-import 'package:app_links/app_links.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shakedown/ui/widgets/rgb_clock_wrapper.dart';
@@ -29,7 +28,9 @@ import 'package:shakedown/services/device_service.dart';
 import 'package:shakedown/services/wakelock_service.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shakedown/ui/widgets/tv/tv_dual_pane_layout.dart';
-import 'package:shakedown/services/inactivity_service.dart';
+import 'package:shakedown_core/services/inactivity_service.dart';
+import 'package:shakedown_core/services/deep_link_service.dart';
+import 'package:shakedown_core/utils/asset_constants.dart';
 import 'package:shakedown/ui/screens/screensaver_screen.dart';
 import 'package:shakedown/utils/web_error_logger.dart';
 
@@ -101,7 +102,7 @@ Future<void> main() async {
         androidNotificationChannelId: 'com.jamart3d.shakedown.channel.audio',
         androidNotificationChannelName: 'Audio Playback',
         androidNotificationOngoing: true,
-        androidNotificationIcon: 'mipmap/ic_launcher',
+        androidNotificationIcon: AssetConstants.defaultAndroidNotificationIcon,
       );
     }
 
@@ -134,7 +135,7 @@ class GdarApp extends StatefulWidget {
 class _GdarAppState extends State<GdarApp> {
   late final ShowListProvider _showListProvider;
   late final SettingsProvider _settingsProvider;
-  late final AppLinks _appLinks;
+  late final DeepLinkService _deepLinkService;
   StreamSubscription? _linkSubscription;
   final GlobalKey<NavigatorState> _navigatorKey = GlobalKey<NavigatorState>();
   final String _sessionId =
@@ -202,6 +203,7 @@ class _GdarAppState extends State<GdarApp> {
   @override
   void dispose() {
     _linkSubscription?.cancel();
+    _deepLinkService.dispose();
     // InactivityService.dispose() calls stop() which cancels the timer.
     // WakelockService is managed by ScreensaverScreen via enable()/disable()
     // in didChangeDependencies/dispose — OS cleans up wakelocks on process death
@@ -211,18 +213,11 @@ class _GdarAppState extends State<GdarApp> {
   }
 
   void _initDeepLinks() {
-    _appLinks = AppLinks();
+    _deepLinkService = DeepLinkService();
+    _deepLinkService.init();
 
-    _appLinks.getInitialLink().then((uri) {
-      if (uri != null) {
-        logger
-            .i('Main: [Session #$_sessionId] Handling INITIAL deep link: $uri');
-        _handleDeepLink(uri);
-      }
-    });
-
-    _linkSubscription = _appLinks.uriLinkStream.listen((uri) {
-      logger.i('Main: [Session #$_sessionId] Handling STREAM deep link: $uri');
+    _linkSubscription = _deepLinkService.uriStream.listen((uri) {
+      logger.i('Main: [Session #$_sessionId] Handling deep link: $uri');
       _handleDeepLink(uri);
     });
   }

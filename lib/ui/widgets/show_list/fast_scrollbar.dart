@@ -4,7 +4,7 @@ import 'package:flutter/scheduler.dart';
 import 'package:shakedown/services/device_service.dart';
 import 'package:shakedown/utils/app_haptics.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
-import 'package:shakedown/models/show.dart';
+import 'package:shakedown_core/models/show.dart';
 import 'package:provider/provider.dart';
 
 /// A Material 3 expressive fast scrollbar with:

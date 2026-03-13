@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:shakedown/models/show.dart';
-import 'package:shakedown/models/source.dart';
+import 'package:shakedown_core/models/show.dart';
+import 'package:shakedown_core/models/source.dart';
 import 'package:shakedown/providers/audio_provider.dart';
 import 'package:shakedown/providers/show_list_provider.dart';
 import 'package:shakedown/providers/settings_provider.dart';
