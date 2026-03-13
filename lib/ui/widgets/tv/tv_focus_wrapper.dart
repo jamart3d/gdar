@@ -115,7 +115,7 @@ class _TvFocusWrapperState extends State<TvFocusWrapper> {
     // Only the actively focused item can be premium
     final isPremium =
         (widget.overridePremiumHighlight ?? sp.oilTvPremiumHighlight) &&
-            _isFocused;
+        _isFocused;
     final showPremium = isPremium;
 
     // The playing track gets an RGB border.
@@ -129,31 +129,31 @@ class _TvFocusWrapperState extends State<TvFocusWrapper> {
         color: _isFocused ? widget.focusBackgroundColor : null,
         borderRadius: radius,
         border: Border.all(
-          color: (showPremium ||
+          color:
+              (showPremium ||
                   (widget.useRgbBorder && _isFocused) ||
                   showPlayingRgb)
               ? Colors.transparent
               : _isFocused
-                  ? (widget.focusColor ?? colorScheme.primary)
-                      .withValues(alpha: 0.6)
-                  : Colors.transparent,
+              ? (widget.focusColor ?? colorScheme.primary).withValues(
+                  alpha: 0.6,
+                )
+              : Colors.transparent,
           width: sp.isTv ? 4.0 : 3.0,
         ),
         boxShadow: (widget.showGlow && _isFocused && !isWasmSafeMode())
             ? [
                 BoxShadow(
-                  color: (widget.focusColor ?? colorScheme.primary)
-                      .withValues(alpha: 0.2),
+                  color: (widget.focusColor ?? colorScheme.primary).withValues(
+                    alpha: 0.2,
+                  ),
                   blurRadius: 15,
                   spreadRadius: 3,
                 ),
               ]
             : [],
       ),
-      child: ClipRRect(
-        borderRadius: radius,
-        child: widget.child,
-      ),
+      child: ClipRRect(borderRadius: radius, child: widget.child),
     );
 
     // Unified logic for the decorative border.
@@ -189,7 +189,8 @@ class _TvFocusWrapperState extends State<TvFocusWrapper> {
     // dimensions of the TvFocusWrapper never change, preventing list flow jumping.
     // However, if the feature is globally OFF, we don't want to inject extra
     // empty space into the UI.
-    final bool isFeaturePossible = sp.oilTvPremiumHighlight ||
+    final bool isFeaturePossible =
+        sp.oilTvPremiumHighlight ||
         sp.highlightPlayingWithRgb ||
         widget.useRgbBorder;
 
@@ -235,7 +236,7 @@ class _TvFocusWrapperState extends State<TvFocusWrapper> {
 
         if (!_isActionKey(event.logicalKey)) return KeyEventResult.ignored;
 
-        if (event is KeyDownEvent) {
+        if (event.runtimeType == KeyDownEvent) {
           _isActionKeyPressed = true;
           if (_longPressTimer == null && !_longPressHandled) {
             _longPressTimer = Timer(const Duration(milliseconds: 600), () {
@@ -247,9 +248,14 @@ class _TvFocusWrapperState extends State<TvFocusWrapper> {
             });
           }
           return KeyEventResult.handled;
-        } else if (event is KeyRepeatEvent) {
+        }
+
+        if (event.runtimeType == KeyRepeatEvent) {
+          _isActionKeyPressed = true;
           return KeyEventResult.handled;
-        } else if (event is KeyUpEvent) {
+        }
+
+        if (event.runtimeType == KeyUpEvent) {
           final wasLongPress = _longPressHandled;
           final wasPressed = _isActionKeyPressed;
           _cancelLongPressTimer();
@@ -260,6 +266,7 @@ class _TvFocusWrapperState extends State<TvFocusWrapper> {
           }
           return KeyEventResult.handled;
         }
+
         return KeyEventResult.ignored;
       },
       child: GestureDetector(
