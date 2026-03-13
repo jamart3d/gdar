@@ -6,6 +6,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.68+168] - 2026-03-12
+
+### Fixed
+- Resolved `MissingStubError` in `playback_alignment_test.dart` by stubbing `fruit` theme settings (`fruitStickyNowPlaying`, `fruitDenseList`, `fruitEnableLiquidGlass`) and `AudioProvider` streams.
+- Fixed track title alignment stability test for Material 3.
+
+
 ## [1.1.67+167] - 2026-03-12
 
 ### Added

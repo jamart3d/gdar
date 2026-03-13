@@ -1,3 +1,9 @@
+What's new in v1.1.68+168
+• Resolved MissingStubError in playback_alignment_test.dart by stubbing Fruit theme settings and AudioProvider streams.
+• Fixed track title alignment stability test for Material 3.
+
+---
+
 What's new in v1.1.67+167
 • UI/UX (HUD): Implemented interactive popup menus for developer HUD chips on Web.
 • UI/UX (HUD): Added a STB chip to the HUD for session preset control.

@@ -1,7 +1,7 @@
 name: shakedown
 description: gapless playback of select grateful dead shows from archive.org
 publish_to: 'none'
-version: 1.1.67+167
+version: 1.1.68+168
 
 environment:
   sdk: '>=3.4.0 <4.0.0'
@@ -11,16 +11,16 @@ dependencies:
     sdk: flutter
 
   scrollable_positioned_list: ^0.3.8
-  sliding_up_panel: ^2.0.0+1
+  sliding_up_panel2: ^3.3.0+1
   marquee: ^2.2.3
 
   # For Audio Playback
   just_audio: ^0.10.5
-  just_audio_background: ^0.0.1-beta.11
-  audio_session: ^0.1.21
+  just_audio_background: ^0.0.1-beta.17
+  audio_session: ^0.2.2
 
   # For Deep Linking / App Actions
-  app_links: ^6.3.2
+  app_links: ^7.0.0
 
   # For State Management (Theme)
   provider: ^6.1.1
@@ -44,30 +44,30 @@ dependencies:
   url_launcher: ^6.2.5
   flutter_rating_bar: ^4.0.1
   path_provider: ^2.1.5
-  hive: ^2.2.3
-  hive_flutter: ^1.1.0
+  hive_ce: ^2.19.3
+  hive_ce_flutter: ^2.3.4
   package_info_plus: ^9.0.0
   crypto: ^3.0.3
   connectivity_plus: ^7.0.0
   in_app_update: ^4.2.5
-  device_info_plus: ^11.3.0
-  wakelock_plus: ^1.4.0
+  device_info_plus: ^12.3.0
+  wakelock_plus: ^1.5.0
 
   # For screensaver visualizer game loop
-  flame: ^1.22.0
+  flame: ^1.36.0
   web: ^1.1.1
   lucide_icons: ^0.257.0
-  google_fonts: ^6.2.1
-  permission_handler: 11.3.1
+  google_fonts: ^8.0.2
+  permission_handler: ^12.0.1
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^5.0.0
+  flutter_lints: ^6.0.0
   mockito: ^5.4.4
   mocktail: ^1.0.4
   build_runner: ^2.4.8
-  hive_generator: ^2.0.1
+  hive_ce_generator: ^1.11.1
 
 flutter:
   uses-material-design: true

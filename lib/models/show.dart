@@ -1,4 +1,4 @@
-import 'package:hive/hive.dart';
+import 'package:hive_ce/hive.dart';
 import 'package:shakedown/utils/app_date_utils.dart';
 import 'source.dart';
 

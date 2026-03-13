@@ -20,7 +20,7 @@ import 'package:shakedown/services/catalog_service.dart';
 import 'package:shakedown/services/device_service.dart';
 
 import 'package:flutter/foundation.dart';
-import 'package:hive/hive.dart';
+import 'package:hive_ce/hive.dart';
 import 'package:shakedown/models/rating.dart';
 
 import 'playback_screen_test.mocks.dart';

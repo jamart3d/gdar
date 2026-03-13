@@ -11,7 +11,7 @@ import 'package:shakedown/providers/theme_provider.dart';
 import 'package:shakedown/services/device_service.dart';
 import 'package:shakedown/ui/widgets/playback/playback_panel.dart';
 import 'package:shakedown/services/catalog_service.dart';
-import 'package:hive/hive.dart';
+import 'package:hive_ce/hive.dart';
 import 'package:shakedown/models/rating.dart';
 import 'package:flutter/foundation.dart';
 import 'package:just_audio/just_audio.dart';

@@ -17,7 +17,7 @@ import 'package:shakedown/services/gapless_player/gapless_player.dart';
 import 'package:shakedown/services/catalog_service.dart';
 import 'package:shakedown/services/audio_cache_service.dart';
 import 'package:shakedown/models/rating.dart';
-import 'package:hive/hive.dart';
+import 'package:hive_ce/hive.dart';
 import 'package:flutter/foundation.dart';
 
 // Manual Mock definitions to avoid code generation dependency for this quick test

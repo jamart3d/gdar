@@ -8,7 +8,7 @@ part of 'rating.dart';
 
 class RatingAdapter extends TypeAdapter<Rating> {
   @override
-  final int typeId = 0;
+  final typeId = 0;
 
   @override
   Rating read(BinaryReader reader) {
@@ -18,7 +18,7 @@ class RatingAdapter extends TypeAdapter<Rating> {
     };
     return Rating(
       sourceId: fields[0] as String,
-      rating: fields[1] as int,
+      rating: (fields[1] as num).toInt(),
       timestamp: fields[2] as DateTime,
     );
   }

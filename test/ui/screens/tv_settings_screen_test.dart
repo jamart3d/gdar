@@ -9,7 +9,7 @@ import 'package:shakedown/providers/show_list_provider.dart';
 import 'package:shakedown/ui/screens/tv_settings_screen.dart';
 import 'package:shakedown/ui/screens/about_screen.dart';
 import 'package:shakedown/services/catalog_service.dart';
-import 'package:hive_flutter/hive_flutter.dart';
+import 'package:hive_ce_flutter/hive_flutter.dart';
 import 'package:shakedown/models/rating.dart';
 import 'package:shakedown/models/show.dart';
 import 'package:shakedown/models/source.dart';

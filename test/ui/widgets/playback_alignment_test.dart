@@ -10,7 +10,7 @@ import 'package:shakedown/models/track.dart';
 import 'package:shakedown/providers/audio_provider.dart';
 import 'package:shakedown/providers/settings_provider.dart';
 import 'package:shakedown/ui/screens/playback_screen.dart';
-import 'package:hive/hive.dart';
+import 'package:hive_ce/hive.dart';
 import 'package:shakedown/models/rating.dart';
 import 'package:shakedown/services/catalog_service.dart';
 import 'package:shakedown/services/device_service.dart';
@@ -81,6 +81,16 @@ void main() {
         .thenAnswer((_) => Stream.value(Duration.zero));
     when(mockAudioProvider.playerStateStream).thenAnswer(
         (_) => Stream.value(PlayerState(false, ProcessingState.ready)));
+    when(mockAudioProvider.bufferAgentNotificationStream)
+        .thenAnswer((_) => const Stream.empty());
+    when(mockAudioProvider.notificationStream)
+        .thenAnswer((_) => const Stream.empty());
+    when(mockAudioProvider.nextTrackBufferedStream)
+        .thenAnswer((_) => const Stream.empty());
+    when(mockAudioPlayer.engineStateStringStream)
+        .thenAnswer((_) => const Stream.empty());
+    when(mockAudioPlayer.engineContextStateStream)
+        .thenAnswer((_) => const Stream.empty());
     when(mockAudioPlayer.sequenceStateStream)
         .thenAnswer((_) => const Stream.empty());
     when(mockAudioPlayer.bufferedPosition).thenReturn(Duration.zero);
@@ -110,6 +120,9 @@ void main() {
     when(mockSettingsProvider.showSingleShnid).thenReturn(false);
     when(mockSettingsProvider.showPlaybackMessages).thenReturn(false);
     when(mockSettingsProvider.useNeumorphism).thenReturn(false);
+    when(mockSettingsProvider.fruitEnableLiquidGlass).thenReturn(false);
+    when(mockSettingsProvider.fruitDenseList).thenReturn(false);
+    when(mockSettingsProvider.fruitStickyNowPlaying).thenReturn(false);
     when(mockAudioProvider.isPlaying).thenReturn(false);
   });
 

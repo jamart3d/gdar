@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:hive/hive.dart';
+import 'package:hive_ce/hive.dart';
 import 'package:shakedown/models/rating.dart';
 import 'package:shakedown/services/catalog_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';

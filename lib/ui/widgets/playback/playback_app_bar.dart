@@ -11,7 +11,7 @@ import 'package:shakedown/ui/screens/settings_screen.dart';
 import 'package:shakedown/ui/widgets/theme/fruit_icon_button.dart';
 import 'package:shakedown/ui/styles/app_typography.dart';
 import 'package:shakedown/utils/app_date_utils.dart';
-import 'package:hive_flutter/hive_flutter.dart';
+import 'package:hive_ce_flutter/hive_flutter.dart';
 import 'package:shakedown/models/rating.dart';
 import 'package:shakedown/services/catalog_service.dart';
 import 'package:shakedown/ui/widgets/rating_control.dart';

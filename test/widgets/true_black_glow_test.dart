@@ -11,7 +11,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shakedown/services/catalog_service.dart';
 import 'package:mockito/mockito.dart';
 import 'package:shakedown/models/rating.dart';
-import 'package:hive_flutter/hive_flutter.dart';
+import 'package:hive_ce_flutter/hive_flutter.dart';
 import 'package:flutter/foundation.dart';
 import 'package:shakedown/services/device_service.dart';
 import 'package:shakedown/providers/audio_provider.dart';

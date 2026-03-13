@@ -13,7 +13,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shakedown/services/catalog_service.dart';
 import 'package:shakedown/models/rating.dart';
-import 'package:hive/hive.dart';
+import 'package:hive_ce/hive.dart';
 
 class MockAudioProvider extends Mock implements AudioProvider {}
 

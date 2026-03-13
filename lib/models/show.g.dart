@@ -8,7 +8,7 @@ part of 'show.dart';
 
 class ShowAdapter extends TypeAdapter<Show> {
   @override
-  final int typeId = 1;
+  final typeId = 1;
 
   @override
   Show read(BinaryReader reader) {
@@ -21,9 +21,9 @@ class ShowAdapter extends TypeAdapter<Show> {
       artist: fields[1] as String,
       date: fields[2] as String,
       venue: fields[3] as String,
-      location: fields[4] as String,
+      location: fields[4] == null ? '' : fields[4] as String,
       sources: (fields[5] as List).cast<Source>(),
-      hasFeaturedTrack: fields[6] as bool,
+      hasFeaturedTrack: fields[6] == null ? false : fields[6] as bool,
     );
   }
 

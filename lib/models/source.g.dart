@@ -8,7 +8,7 @@ part of 'source.dart';
 
 class SourceAdapter extends TypeAdapter<Source> {
   @override
-  final int typeId = 2;
+  final typeId = 2;
 
   @override
   Source read(BinaryReader reader) {

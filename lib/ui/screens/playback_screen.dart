@@ -4,7 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 
 import 'package:provider/provider.dart';
-import 'package:sliding_up_panel/sliding_up_panel.dart';
+import 'package:sliding_up_panel2/sliding_up_panel2.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:shakedown/providers/audio_provider.dart';
 import 'package:shakedown/providers/settings_provider.dart';
@@ -28,7 +28,7 @@ import 'package:shakedown/models/track.dart';
 import 'package:shakedown/models/source.dart';
 import 'package:shakedown/models/rating.dart';
 import 'package:shakedown/services/catalog_service.dart';
-import 'package:hive_flutter/hive_flutter.dart';
+import 'package:hive_ce_flutter/hive_flutter.dart';
 import 'dart:async';
 import 'package:shakedown/utils/utils.dart';
 import 'package:shakedown/services/device_service.dart';
@@ -1212,7 +1212,7 @@ class PlaybackScreenState extends State<PlaybackScreen>
             onPanelOpened: () {
               _scrollToCurrentTrack(true, maxVisibleY: 0.4);
             },
-            panel: PlaybackPanel(
+            panelBuilder: () => PlaybackPanel(
                 currentShow: currentShow,
                 currentSource: currentSource,
                 minHeight: minPanelHeight,

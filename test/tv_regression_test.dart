@@ -27,7 +27,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shakedown/services/catalog_service.dart';
 import 'package:shakedown/services/audio_cache_service.dart';
 import 'package:just_audio/just_audio.dart';
-import 'package:hive/hive.dart';
+import 'package:hive_ce/hive.dart';
 
 // Manual mocks to avoid dependency on generated files in this regression test
 class MockAudioProvider extends ChangeNotifier implements ap.AudioProvider {
