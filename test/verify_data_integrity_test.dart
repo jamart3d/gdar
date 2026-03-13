@@ -7,9 +7,9 @@ import 'package:flutter/foundation.dart';
 
 void main() {
   test('Verify output.optimized_src.json integrity and parsing', () async {
-    final file = File('assets/data/output.optimized_src.json');
+    final file = File('packages/shakedown_core/assets/data/output.optimized_src.json');
     if (!await file.exists()) {
-      fail('assets/data/output.optimized_src.json not found');
+      fail('packages/shakedown_core/assets/data/output.optimized_src.json not found');
     }
 
     final jsonString = await file.readAsString();
