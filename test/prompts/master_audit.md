@@ -37,7 +37,7 @@
     - Enable **Screensaver**.
     - **Audit**: Verify the Logo bounces correctly.
     - **Stress**: Change Logo Velocity/Speed Settings. If "Dynamic Trails" is ON, verify the number of trail slices increases/decreases dynamically based on logo speed.
-3.  **App Version**: Verify `Version 1.1.54+154` is visible in Settings.
+3.  **App Version**: Verify `Version 1.1.68+168` is visible in Settings.
 
 ### Phase 6: Edge Cases & Known Issues (Regression)
 1.  **Background Longevity**: 
