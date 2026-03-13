@@ -24,4 +24,8 @@ decoration: BoxDecoration(
   color: isSimple ? baseColor : baseColor.withValues(alpha: 0.8),
   boxShadow: isSimple ? null : [defaultShadow],
 ),
-```
+### 5. Initialization & State Resets
+When transitioning between themes (e.g., Material 3 to Fruit), certain secondary flags (like `glowMode`) may need strict resets to preserve brand integrity.
+- **Constraint:** Do NOT gate theme initialization logic or state resets behind `performanceMode`. 
+- **Example:** In `ThemeProvider`, the initial reset of `glowMode` when switching to Fruit theme MUST happen regardless of whether `performanceMode` is active. Failing to do so can lead to "Glow Mode" sticking in the Fruit theme when it should be disabled for that look.
+- **Testing:** Ensure theme activation tests verify state resets with both `performanceMode` enabled and disabled.
