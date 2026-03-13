@@ -5,8 +5,8 @@ import 'package:flutter/services.dart';
 import 'package:hive_ce_flutter/hive_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shakedown/utils/logger.dart';
-import '../models/show.dart';
-import '../models/rating.dart';
+import 'package:shakedown_core/models/show.dart';
+import 'package:shakedown_core/models/rating.dart';
 
 enum CatalogLoadingStrategy {
   inMemory, // Default (JSON loaded)

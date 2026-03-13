@@ -1,5 +1,5 @@
 import 'package:hive_ce/hive.dart';
-import 'package:shakedown/utils/app_date_utils.dart';
+import 'package:shakedown_core/utils/app_date_utils.dart';
 import 'source.dart';
 
 part 'show.g.dart';
@@ -41,7 +41,7 @@ class Show extends HiveObject {
     this.hasFeaturedTrack = false, // Default to false
   });
 
-  String get formattedDate => AppDateUtils.formatDate(date);
+  String get formattedDate => AppDateUtils.formatMonthDayYear(date);
 
   String get formattedDateYearFirst => AppDateUtils.formatDateYearFirst(date);
 

@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:shakedown/models/show.dart';
+import 'package:shakedown_core/models/show.dart';
 
 import 'package:flutter/foundation.dart';
 

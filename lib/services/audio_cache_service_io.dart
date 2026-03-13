@@ -9,8 +9,8 @@ import 'package:shakedown/utils/logger.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:just_audio_background/just_audio_background.dart';
 import 'package:http/http.dart' as http;
-import 'package:shakedown/models/source.dart';
-import 'package:shakedown/models/track.dart';
+import 'package:shakedown_core/models/source.dart';
+import 'package:shakedown_core/models/track.dart';
 
 /// Service responsible for managing audio file caching using just_audio's
 /// LockCachingAudioSource. Handles file counting, cleanup, and monitoring.

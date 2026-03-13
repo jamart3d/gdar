@@ -3,9 +3,9 @@ import 'dart:math';
 import 'package:shakedown/services/wakelock_service.dart';
 
 import 'package:flutter/foundation.dart';
-import 'package:shakedown/models/show.dart';
-import 'package:shakedown/models/source.dart';
-import 'package:shakedown/models/track.dart';
+import 'package:shakedown_core/models/show.dart';
+import 'package:shakedown_core/models/source.dart';
+import 'package:shakedown_core/models/track.dart';
 import 'package:shakedown/providers/settings_provider.dart';
 import 'package:shakedown/providers/show_list_provider.dart';
 import 'package:shakedown/services/catalog_service.dart';

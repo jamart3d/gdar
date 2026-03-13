@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shakedown/utils/app_date_utils.dart';
-import 'package:shakedown/models/show.dart';
-import 'package:shakedown/models/source.dart';
+import 'package:shakedown_core/models/show.dart';
+import 'package:shakedown_core/models/source.dart';
 import 'package:shakedown/providers/settings_provider.dart';
 import 'package:shakedown/utils/color_generator.dart';
 import 'package:shakedown/utils/font_layout_config.dart';
