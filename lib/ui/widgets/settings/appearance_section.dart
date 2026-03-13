@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:shakedown/providers/settings_provider.dart';
 import 'package:shakedown/providers/theme_provider.dart';
@@ -13,6 +12,7 @@ import 'package:shakedown/ui/widgets/tv/tv_switch_list_tile.dart';
 import 'package:shakedown/ui/widgets/tv/tv_list_tile.dart';
 import 'package:shakedown/ui/widgets/tv/tv_focus_wrapper.dart';
 import 'package:shakedown/ui/widgets/settings/rainbow_color_picker.dart';
+import 'package:shakedown/ui/widgets/tv/tv_stepper_row.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 import 'package:shakedown/ui/widgets/theme/fruit_segmented_control.dart';
@@ -708,92 +708,19 @@ class _AppearanceSectionState extends State<AppearanceSection> {
             Padding(
               padding:
                   const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-              child: Row(
-                children: [
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Row(
-                      children: [
-                        Text(
-                          'Intensity',
-                          style: Theme.of(context)
-                              .textTheme
-                              .bodySmall
-                              ?.copyWith(fontSize: 12.0 * widget.scaleFactor),
-                        ),
-                        Expanded(
-                          child: TvFocusWrapper(
-                            onKeyEvent: (node, event) {
-                              if (event is KeyDownEvent) {
-                                if (event.logicalKey ==
-                                    LogicalKeyboardKey.arrowLeft) {
-                                  final newVal = (settingsProvider.glowMode - 5)
-                                      .clamp(10, 100);
-                                  if (newVal != settingsProvider.glowMode) {
-                                    AppHaptics.selectionClick(
-                                        context.read<DeviceService>());
-                                    context
-                                        .read<SettingsProvider>()
-                                        .setGlowMode(newVal);
-                                  }
-                                  return KeyEventResult.handled;
-                                } else if (event.logicalKey ==
-                                    LogicalKeyboardKey.arrowRight) {
-                                  final newVal = (settingsProvider.glowMode + 5)
-                                      .clamp(10, 100);
-                                  if (newVal != settingsProvider.glowMode) {
-                                    AppHaptics.selectionClick(
-                                        context.read<DeviceService>());
-                                    context
-                                        .read<SettingsProvider>()
-                                        .setGlowMode(newVal);
-                                  }
-                                  return KeyEventResult.handled;
-                                }
-                              }
-                              return KeyEventResult.ignored;
-                            },
-                            child: Slider(
-                              onChangeStart: (_) => AppHaptics.lightImpact(
-                                  context.read<DeviceService>()),
-                              value: settingsProvider.glowMode.toDouble(),
-                              min: 10,
-                              max: 100,
-                              divisions: 18, // 5% steps
-                              label: '${settingsProvider.glowMode}%',
-                              onChanged: (value) {
-                                if (value.round() !=
-                                    settingsProvider.glowMode) {
-                                  AppHaptics.selectionClick(
-                                      context.read<DeviceService>());
-                                }
-                                context
-                                    .read<SettingsProvider>()
-                                    .setGlowMode(value.round());
-                              },
-                            ),
-                          ),
-                        ),
-                        SizedBox(
-                          width: 40 * widget.scaleFactor,
-                          child: Text(
-                            '${settingsProvider.glowMode}%',
-                            style: Theme.of(context)
-                                .textTheme
-                                .labelLarge
-                                ?.copyWith(
-                                    fontSize: 12.0 * widget.scaleFactor,
-                                    fontWeight: FontWeight.bold,
-                                    color:
-                                        Theme.of(context).colorScheme.primary),
-                            textAlign: TextAlign.end,
-                          ),
-                        ),
-                        const SizedBox(width: 16), // Balance spacing
-                      ],
-                    ),
-                  ),
-                ],
+              child: TvStepperRow(
+                label: 'Glow Intensity',
+                value: settingsProvider.glowMode.toDouble(),
+                min: 10.0,
+                max: 100.0,
+                step: 5.0,
+                valueFormatter: (v) => '${v.round()}%',
+                onChanged: (v) {
+                  if (v.round() != settingsProvider.glowMode) {
+                    AppHaptics.selectionClick(context.read<DeviceService>());
+                  }
+                  context.read<SettingsProvider>().setGlowMode(v.round());
+                },
               ),
             ),
         ],

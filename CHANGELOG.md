@@ -6,7 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [1.1.69+169] - 2026-03-12
+## [1.1.70+170] - 2026-03-13
 
 ### Added
 - Updated `device_info_plus` to v12.3.0 and `app_links` to v7.0.0.

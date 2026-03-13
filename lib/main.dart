@@ -34,9 +34,8 @@ import 'package:shakedown/ui/screens/screensaver_screen.dart';
 import 'package:shakedown/utils/web_error_logger.dart';
 
 Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
   await runZonedGuarded(() async {
-    WidgetsFlutterBinding.ensureInitialized();
-
     // Force local font assets for all environments (prevents network fetching
     // errors in audits/tests).
     GoogleFonts.config.allowRuntimeFetching = false;

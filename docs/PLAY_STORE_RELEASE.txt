@@ -1,3 +1,13 @@
+What's new in v1.1.70+170
+• Updated device_info_plus and app_links dependencies.
+• Migrated to hive_ce for improved Dart 3.7+ support.
+• Updated flame to v1.36.0 for Game Jam compatibility.
+• Updated sliding_up_panel for better stability.
+• Fixed Fruit theme activation and glowMode reset issues.
+• Resolved Android compilation errors after dependency upgrades.
+
+---
+
 What's new in v1.1.69+169
 • Updated device_info_plus and app_links.
 • Migrated to hive_ce for improve Dart 3.7+ support.
