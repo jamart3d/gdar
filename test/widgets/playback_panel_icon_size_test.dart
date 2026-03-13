@@ -241,6 +241,9 @@ class MockThemeProvider extends Mock implements ThemeProvider {
         returnValue: ThemeStyle.android,
         returnValueForMissingStub: ThemeStyle.android,
       );
+
+  @override
+  bool get isFruit => themeStyle == ThemeStyle.fruit;
 }
 
 class MockDeviceService extends Mock implements DeviceService {

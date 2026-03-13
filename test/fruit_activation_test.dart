@@ -59,7 +59,8 @@ void main() {
       expect(settingsProvider.glowMode, 0,
           reason: 'Glow should be reset on first Fruit activation');
 
-      // 3. Set glow back to 3
+      // 3. Disable performance mode so we can set glow (resetFruitFirstTimeSettings sets it to true)
+      settingsProvider.togglePerformanceMode();
       settingsProvider.setGlowMode(3);
       expect(settingsProvider.glowMode, 3);
 

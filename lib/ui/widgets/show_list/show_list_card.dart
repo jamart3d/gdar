@@ -71,7 +71,7 @@ class _ShowListCardState extends State<ShowListCard> {
     final deviceService = context.watch<DeviceService>();
     final isTv = deviceService.isTv;
     final themeProvider = context.watch<ThemeProvider>();
-    final isFruit = themeProvider.themeStyle == ThemeStyle.fruit;
+    final isFruit = themeProvider.isFruit;
 
     final style = CardStyle.compute(
       context: context,
@@ -258,8 +258,7 @@ class _ShowListCardState extends State<ShowListCard> {
     required bool isTv,
   }) {
     const bool isWeb = kIsWeb;
-    final bool isFruit =
-        context.read<ThemeProvider>().themeStyle == ThemeStyle.fruit;
+    final bool isFruit = context.read<ThemeProvider>().isFruit;
     final double screenWidth = MediaQuery.of(context).size.width;
     final deviceService = context.watch<DeviceService>();
     final bool useMobileLayout = isWeb &&
@@ -513,8 +512,7 @@ class _ShowListCardState extends State<ShowListCard> {
       BuildContext context, Show show, double effectiveScale, bool isTv) {
     final colorScheme = Theme.of(context).colorScheme;
     final settingsProvider = context.read<SettingsProvider>();
-    final bool isFruit =
-        context.read<ThemeProvider>().themeStyle == ThemeStyle.fruit;
+    final bool isFruit = context.read<ThemeProvider>().isFruit;
 
     final String badgeText;
     if (settingsProvider.showSingleShnid && show.sources.length == 1) {
@@ -630,7 +628,7 @@ class _ShowListCardState extends State<ShowListCard> {
           valueListenable: CatalogService().historyListenable,
           builder: (context, __, ___) {
             final themeProvider = context.read<ThemeProvider>();
-            final bool isFruit = themeProvider.themeStyle == ThemeStyle.fruit;
+            final bool isFruit = themeProvider.isFruit;
             final double screenWidth = MediaQuery.of(context).size.width;
             final deviceService = context.watch<DeviceService>();
             final bool useMobileLayout = (screenWidth < 850 ||

@@ -42,7 +42,7 @@ class PlaybackAppBar extends StatelessWidget {
     final settingsProvider = context.watch<SettingsProvider>();
     final themeProvider = context.watch<ThemeProvider>();
     final isTv = context.watch<DeviceService>().isTv;
-    final isFruit = themeProvider.themeStyle == ThemeStyle.fruit;
+    final isFruit = themeProvider.isFruit;
     final useNeumorphic = settingsProvider.useNeumorphism &&
         isFruit &&
         !settingsProvider.useTrueBlack;

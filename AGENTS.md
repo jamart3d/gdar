@@ -34,10 +34,8 @@ pair programmer and mentor.
 * **Android Phone/Tablet:** Material 3 Expressive is allowed and expected.
 * **Google TV / Android TV:** TV-focused Material Dark patterns only.
 * **Web / PWA (Fruit):** Apple Liquid Glass only.
-* **Fruit hard rule:** No Material 3 widgets, visuals, ripples, FAB patterns,
-  or M3 interaction language in Fruit screens.
-* **Fallback rule:** If Fruit effects are disabled (performance or settings),
-  keep Fruit structure and controls; do not swap to M3 components.
+* **Fruit hard rule:** No Material 3 widgets, visuals, ripples, FAB patterns, or M3 interaction language in Fruit screens.
+* **Fallback rule:** If Fruit effects are disabled (performance or settings), keep Fruit structure and controls; do not swap to M3 components.
 
 ## Key Packages
 * `just_audio`, `just_audio_background`, `provider`
@@ -46,8 +44,15 @@ pair programmer and mentor.
 * `lucide_icons`, `wakelock_plus`
 
 ## Coding Standards
-* Use latest stable Dart with sound null safety.
-* Strictly follow official Dart style guide, `flutter format`, line length 80.
-* Use `const` constructors everywhere possible.
-* Provide widget and unit tests for generated code.
-* If unsure about something, ask for clarification rather than guessing.
+* **Imports:** Always use package-relative imports (e.g., `import 'package:shakedown/...'`). Do not use relative imports for library files.
+* **Modern Dart:** Use latest stable Dart with sound null safety.
+* **Formatting:** Strictly follow official Dart style guide, `flutter format`, line length 80.
+* **Efficiency:** Use `const` constructors everywhere possible.
+* **Testing:** Provide widget and unit tests for generated code.
+* **Communication:** If unsure about architectural intent, ask for clarification.
+
+## Data Handling (Crucial)
+* **Large File Optimization:** The file `assets/data/output.optimized_src.json` is 8MB. 
+* **Threading:** Do NOT attempt to read this file synchronously on the main thread.
+* **Performance:** Always use `compute()` or `Isolates` to parse this data to avoid UI jank.
+* **Schema Integrity:** If adding/modifying data, maintain the exact schema to avoid breaking Hive serialization.

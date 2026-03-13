@@ -70,6 +70,9 @@
 - [x] **UI Technical Debt Cleanup**: Continue the pattern from `PlaybackPanel` refactor to strip "ghost" theme logic (`isFruit`, `isTv`) from components that are only ever reached by a single platform/theme path.
   - [x] Audit `MiniPlayer` for leaked Fruit UI logic in the Material path.
   - [x] Audit `PlaybackControls` and `PlaybackProgressBar` for similar platform-specific gates that should be moved up to the screen level.
+  - [ ] **Fruit Theme Gating Audit**: Verify `ElevatedButton` and `InkWell` in `playback_screen.dart` and `mini_player.dart` are correctly gated for Fruit theme. [v168]
+  - [x] **Asset Optimization**: Build successfully tree-shook icons, reducing asset size. [v168]
+
 
 
 ---

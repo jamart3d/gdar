@@ -302,9 +302,7 @@ class _GdarAppState extends State<GdarApp> {
         } else if (uri.host == 'navigate') {
           if (kReleaseMode) return;
           final screen = uri.queryParameters['screen']?.toLowerCase();
-          final isFruit =
-              Provider.of<ThemeProvider>(context, listen: false).themeStyle ==
-                  ThemeStyle.fruit;
+          final isFruit = context.read<ThemeProvider>().isFruit;
           final isTv = context.read<DeviceService>().isTv;
           logger.i('Main: [Session #$_sessionId] Navigating to: $screen');
 

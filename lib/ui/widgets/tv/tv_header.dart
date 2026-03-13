@@ -131,7 +131,7 @@ class TvHeader extends StatelessWidget {
                     colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
               ),
               child: Icon(
-                context.watch<ThemeProvider>().themeStyle == ThemeStyle.fruit
+                context.watch<ThemeProvider>().isFruit
                     ? LucideIcons.settings
                     : Icons.settings_rounded,
                 size: 24 * scaleFactor,

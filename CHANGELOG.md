@@ -6,6 +6,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.69+169] - 2026-03-12
+
+### Added
+- Updated `device_info_plus` to v12.3.0 and `app_links` to v7.0.0.
+- Migrated to `hive_ce` (Community Edition) for improved Dart 3.7+ support.
+- Updated `flame` to v1.36.0 for 2026 Game Jam compatibility.
+
+### Changed
+- Updated `sliding_up_panel` to `sliding_up_panel2` for better stability.
+
+### Fixed
+- Fixed Fruit theme activation regression where `glowMode` wasn't resetting correctly during the first-time switch due to `performanceMode` guard interference in tests.
+- Resolved Android compilation error by regenerating `GeneratedPluginRegistrant.java` after dependency upgrades.
+
+
 ## [1.1.68+168] - 2026-03-12
 
 ### Fixed

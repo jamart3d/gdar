@@ -56,6 +56,10 @@ class ThemeProvider with ChangeNotifier {
     return _themeStyleIndex == 1 ? ThemeStyle.fruit : ThemeStyle.android;
   }
 
+  /// Convenience getter to check if the active theme is Fruit (Apple Liquid Glass).
+  /// This automatically respects the platform gates (Web only, non-TV).
+  bool get isFruit => themeStyle == ThemeStyle.fruit;
+
   FruitColorOption get fruitColorOption =>
       FruitColorOption.values[_fruitColorOptionIndex];
 

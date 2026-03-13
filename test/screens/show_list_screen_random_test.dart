@@ -130,6 +130,9 @@ class MockDeviceService extends ChangeNotifier implements DeviceService {
 class MockThemeProvider extends ChangeNotifier implements ThemeProvider {
   @override
   ThemeStyle themeStyle = ThemeStyle.android;
+
+  @override
+  bool get isFruit => themeStyle == ThemeStyle.fruit;
   @override
   FruitColorOption get fruitColorOption => FruitColorOption.sophisticate;
   @override

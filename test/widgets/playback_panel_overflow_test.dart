@@ -142,6 +142,9 @@ class MockThemeProvider extends Mock implements ThemeProvider {
   ThemeStyle get themeStyle => ThemeStyle.android;
 
   @override
+  bool get isFruit => themeStyle == ThemeStyle.fruit;
+
+  @override
   dynamic noSuchMethod(Invocation invocation,
           {Object? returnValue, Object? returnValueForMissingStub}) =>
       super.noSuchMethod(invocation,

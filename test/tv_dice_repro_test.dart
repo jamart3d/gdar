@@ -121,6 +121,10 @@ class MockAudioProvider extends ChangeNotifier implements AudioProvider {
   late final GaplessPlayer audioPlayer = GaplessPlayer();
 
   @override
+  Stream<({String message, VoidCallback? retryAction})>
+      get bufferAgentNotificationStream => const Stream.empty();
+
+  @override
   void update(
       ShowListProvider slp, SettingsProvider sp, AudioCacheService acs) {}
 
@@ -139,6 +143,10 @@ class MockSettingsProvider extends ChangeNotifier implements SettingsProvider {
   bool get uiScale => false;
   @override
   bool get isTv => true;
+  @override
+  bool get fruitStickyNowPlaying => false;
+  @override
+  bool get showDevAudioHud => false;
   @override
   String get appFont => 'Roboto';
   @override
@@ -284,6 +292,10 @@ class MockThemeProvider extends ChangeNotifier implements ThemeProvider {
 
   @override
   ThemeStyle get themeStyle => ThemeStyle.android;
+  @override
+  bool get isFruit => themeStyle == ThemeStyle.fruit;
+  @override
+  bool get isFruitAllowed => false;
   @override
   FruitColorOption get fruitColorOption => FruitColorOption.sophisticate;
   @override

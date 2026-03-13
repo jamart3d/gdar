@@ -40,6 +40,9 @@ class MockThemeProvider extends ChangeNotifier implements ThemeProvider {
   ThemeStyle get themeStyle => _themeStyle;
 
   @override
+  bool get isFruit => _themeStyle == ThemeStyle.fruit;
+
+  @override
   void setThemeStyle(ThemeStyle style) {
     _themeStyle = style;
     notifyListeners();

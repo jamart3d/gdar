@@ -46,13 +46,13 @@ class ShowListAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
-    final themeStyle = context.watch<ThemeProvider>().themeStyle;
-    final isFruit = themeStyle == ThemeStyle.fruit;
+    final themeProvider = context.watch<ThemeProvider>();
+    final isFruit = themeProvider.isFruit;
     final settingsProvider = context.watch<SettingsProvider>();
     final isLiquidGlassOff =
         isFruit && !settingsProvider.fruitEnableLiquidGlass;
-    final isDarkMode = themeStyle == ThemeStyle.fruit &&
-        Theme.of(context).brightness == Brightness.dark;
+    final isDarkMode =
+        isFruit && Theme.of(context).brightness == Brightness.dark;
 
     final Color? appBarBg = isLiquidGlassOff
         ? (isDarkMode
