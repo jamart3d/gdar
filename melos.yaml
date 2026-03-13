@@ -1,9 +1,8 @@
 name: gdar_workspace
 
 packages:
-  - "packages/*"
-  - "apps/*"
-  - "." # Root app
+  - packages/*
+  - apps/*
 
 command:
   bootstrap:
