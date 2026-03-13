@@ -4,7 +4,13 @@ publish_to: 'none'
 version: 1.1.69+169
 
 environment:
-  sdk: '>=3.4.0 <4.0.0'
+  sdk: '^3.11.0'
+
+workspace:
+  - packages/shakedown_core
+  - apps/gdar_mobile
+  - apps/gdar_tv
+  - apps/gdar_fruit
 
 dependencies:
   shakedown_core:
@@ -77,7 +83,7 @@ flutter:
   uses-material-design: true
 
   assets:
-    - assets/data/output.optimized_src.json
+    - packages/shakedown_core/assets/data/output.optimized_src.json
     - assets/images/
 
   shaders:
