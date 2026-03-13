@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:just_audio_background/just_audio_background.dart';
-import 'package:shakedown/models/source.dart';
+import 'package:shakedown_core/models/source.dart';
 
 class AudioCacheService with ChangeNotifier {
   int get cachedTrackCount => 0;

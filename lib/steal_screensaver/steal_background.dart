@@ -6,6 +6,7 @@ import 'package:flutter/material.dart' show Color, HSLColor;
 import 'package:flutter/services.dart';
 import 'package:shakedown/steal_screensaver/steal_config.dart';
 import 'package:shakedown/steal_screensaver/steal_game.dart';
+import 'package:shakedown_core/utils/asset_constants.dart';
 
 class StealBackground extends PositionComponent
     with HasGameReference<StealGame> {
@@ -86,7 +87,7 @@ class StealBackground extends PositionComponent
     final program = await ui.FragmentProgram.fromAsset('shaders/steal.frag');
     _shader = program.fragmentShader();
 
-    final data = await rootBundle.load('assets/images/t_steal_ss.png');
+    final data = await rootBundle.load(AssetConstants.stealScreensaverImage);
     final codec = await ui.instantiateImageCodec(data.buffer.asUint8List());
     final frame = await codec.getNextFrame();
     _logoTexture = frame.image;

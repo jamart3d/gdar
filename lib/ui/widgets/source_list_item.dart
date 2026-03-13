@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:shakedown/models/source.dart';
+import 'package:shakedown_core/models/source.dart';
 import 'package:shakedown/ui/widgets/animated_gradient_border.dart';
 import 'package:shakedown/providers/settings_provider.dart';
 import 'package:shakedown/ui/widgets/rating_control.dart';

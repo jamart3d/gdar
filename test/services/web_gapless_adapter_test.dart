@@ -10,9 +10,9 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:mockito/mockito.dart';
-import 'package:shakedown/models/show.dart';
-import 'package:shakedown/models/source.dart';
-import 'package:shakedown/models/track.dart';
+import 'package:shakedown_core/models/show.dart';
+import 'package:shakedown_core/models/source.dart';
+import 'package:shakedown_core/models/track.dart';
 import 'package:shakedown/providers/audio_provider.dart';
 
 import '../providers/audio_provider_test.mocks.dart';

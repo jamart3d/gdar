@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:shakedown/models/show.dart';
-import 'package:shakedown/models/source.dart';
+import 'package:shakedown_core/models/show.dart';
+import 'package:shakedown_core/models/source.dart';
 import 'package:shakedown/providers/audio_provider.dart';
 import 'package:shakedown/providers/settings_provider.dart';
 import 'package:shakedown/ui/widgets/rating_control.dart';
@@ -11,7 +11,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shakedown/providers/show_list_provider.dart';
 import 'package:shakedown/providers/theme_provider.dart';
 import 'package:shakedown/services/catalog_service.dart';
-import 'package:shakedown/models/rating.dart';
+import 'package:shakedown_core/models/rating.dart';
 import 'package:hive_ce_flutter/hive_flutter.dart';
 import 'package:flutter/foundation.dart';
 import 'package:mockito/mockito.dart';

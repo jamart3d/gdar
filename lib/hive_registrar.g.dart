@@ -3,10 +3,10 @@
 // Check in to version control
 
 import 'package:hive_ce/hive_ce.dart';
-import 'package:shakedown/models/rating.dart';
-import 'package:shakedown/models/show.dart';
-import 'package:shakedown/models/source.dart';
-import 'package:shakedown/models/track.dart';
+import 'package:shakedown_core/models/rating.dart';
+import 'package:shakedown_core/models/show.dart';
+import 'package:shakedown_core/models/source.dart';
+import 'package:shakedown_core/models/track.dart';
 
 extension HiveRegistrar on HiveInterface {
   void registerAdapters() {

@@ -2,9 +2,9 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:shakedown/models/show.dart';
-import 'package:shakedown/models/source.dart';
-import 'package:shakedown/models/track.dart';
+import 'package:shakedown_core/models/show.dart';
+import 'package:shakedown_core/models/source.dart';
+import 'package:shakedown_core/models/track.dart';
 import 'package:shakedown/providers/audio_provider.dart';
 import 'package:shakedown/providers/settings_provider.dart';
 import 'package:shakedown/providers/theme_provider.dart';
@@ -21,7 +21,7 @@ import 'package:shakedown/services/device_service.dart';
 
 import 'package:flutter/foundation.dart';
 import 'package:hive_ce/hive.dart';
-import 'package:shakedown/models/rating.dart';
+import 'package:shakedown_core/models/rating.dart';
 
 import 'playback_screen_test.mocks.dart';
 
@@ -229,6 +229,12 @@ class MockSettingsProvider extends Mock implements SettingsProvider {
   bool get useNeumorphism => false;
   @override
   bool get performanceMode => false;
+  @override
+  bool get fruitDenseList => false;
+  @override
+  bool get fruitEnableLiquidGlass => false;
+  @override
+  bool get fruitStickyNowPlaying => false;
 }
 
 class MockCatalogService extends Mock implements CatalogService {

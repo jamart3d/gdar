@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
-import 'package:shakedown/models/show.dart';
+import 'package:shakedown_core/models/show.dart';
 import 'package:flutter/material.dart';
 import 'package:shakedown/providers/audio_provider.dart';
 import 'package:shakedown/providers/settings_provider.dart';
@@ -12,7 +12,7 @@ import 'package:shakedown/ui/widgets/tv/tv_focus_wrapper.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shakedown/services/catalog_service.dart';
-import 'package:shakedown/models/rating.dart';
+import 'package:shakedown_core/models/rating.dart';
 import 'package:hive_ce/hive.dart';
 
 class MockAudioProvider extends Mock implements AudioProvider {}

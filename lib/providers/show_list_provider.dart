@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:shakedown/services/catalog_service.dart';
-import 'package:shakedown/models/show.dart';
-import 'package:shakedown/models/source.dart';
+import 'package:shakedown_core/models/show.dart';
+import 'package:shakedown_core/models/source.dart';
 import 'package:shakedown/providers/settings_provider.dart';
 import 'package:shakedown/utils/logger.dart';
 import 'package:http/http.dart' as http;
