@@ -11,7 +11,7 @@ import 'package:shakedown_core/utils/app_haptics.dart';
 import 'package:shakedown_core/utils/utils.dart';
 
 import 'package:gdar_mobile/ui/widgets/source_list_item.dart';
-import 'package:gdar_mobile/ui/widgets/swipe_action_background.dart';
+import 'package:shakedown_core/ui/widgets/swipe_action_background.dart';
 import 'package:shakedown_core/ui/widgets/tv/tv_focus_wrapper.dart';
 import 'package:provider/provider.dart';
 

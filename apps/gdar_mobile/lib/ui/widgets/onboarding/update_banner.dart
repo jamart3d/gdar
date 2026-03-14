@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:in_app_update/in_app_update.dart';
-import 'package:gdar_mobile/ui/styles/app_typography.dart';
+import 'package:shakedown_core/ui/styles/app_typography.dart';
 
 /// A Material 3 banner that notifies the user of an available update.
 class UpdateBanner extends StatelessWidget {

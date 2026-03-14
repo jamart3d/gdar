@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:shakedown_core/models/source.dart';
-import 'package:gdar_tv/ui/widgets/animated_gradient_border.dart';
+import 'package:shakedown_core/ui/widgets/animated_gradient_border.dart';
 import 'package:shakedown_core/providers/settings_provider.dart';
-import 'package:gdar_tv/ui/widgets/rating_control.dart';
-import 'package:gdar_tv/ui/widgets/src_badge.dart';
+import 'package:shakedown_core/ui/widgets/rating_control.dart';
+import 'package:shakedown_core/ui/widgets/src_badge.dart';
 import 'package:shakedown_core/services/catalog_service.dart';
 import 'package:shakedown_core/services/device_service.dart';
 import 'package:provider/provider.dart';

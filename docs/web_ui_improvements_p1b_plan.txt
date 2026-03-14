@@ -1,0 +1,39 @@
+# P1 Implementation: Proactive Recovery & Observability
+
+## Phase Goal
+[cite_start]Transition from reactive "Escape Hatches" to proactive stability and high-resolution observability for background PWA playback.
+
+---
+
+## Arlo Execution Guidelines (Surgical)
+- [cite_start]**Scope**: Restrict work to `apps/gdar_fruit/lib/audio/web_audio_engine.dart` and `packages/shakedown_core/lib/services/audio/gdar_audio_interface.dart`[cite: 38].
+- [cite_start]**Analysis**: Ignore project-wide errors; ensure the audio package remains 100% "Green" locally[cite: 38, 39].
+- [cite_start]**Compliance**: Adhere to Jules's "Fruit" rules: no Material 3 and use monotonic clocks for all drift calculations.
+
+---
+
+## 1. High-Fidelity Diagnostics (Observability)
+[cite_start]**Task**: Expand the `telemetryStream` to provide diagnostic data for the Jules HUD[cite: 40].
+
+- [ ] [cite_start]**MDFT (Max Observed Drift)**: Capture peak delta between 250ms worker-tick and actual execution time using `web.window.performance.now()`[cite: 41].
+- [ ] [cite_start]**CTX (Context State)**: Pipe raw `AudioContext.state` (Running, Suspended, Closed) to the telemetry stream[cite: 42].
+- [ ] [cite_start]**V-DUR (Visibility Duration)**: Track and format visibility duration (e.g., `V:HID(12m)`)[cite: 43].
+- [ ] [cite_start]**RVC (Recovery Count)**: Increment a counter for every "5s Stall Recovery" or "Forced Suspension Handoff"[cite: 44].
+
+---
+
+## 2. Proactive Stability (The Boundary Sentinel)
+[cite_start]**Task**: Implement "T-Minus" pre-warming to guarantee gapless transitions[cite: 45].
+
+- [ ] [cite_start]**Sentinel Logic**: At **T-10s** before a track ends, initiate the pre-warm sequence for the next show[cite: 46].
+- [ ] [cite_start]**Adaptive Prefetch**: If `Visibility == Hidden`, increase the prefetch buffer budget[cite: 47].
+- [ ] [cite_start]**Memory Safety**: Implement `_evictOldBuffers` to limit uncompressed cache to `Current + 1` tracks[cite: 48].
+
+---
+
+## 3. Verification & Mock Proof
+[cite_start]**Task**: Update `apps/gdar_fruit/test/audio_engine_proof_test.dart` to verify P1 logic[cite: 49].
+
+- [ ] [cite_start]**Verification**: Prove the Boundary Sentinel fires precisely at T-10s[cite: 50].
+- [ ] [cite_start]**Verification**: Prove MDFT correctly captures a simulated 2.5s drift event[cite: 51].
+- [ ] [cite_start]**Verification**: Prove RVC increments correctly after a simulated context suspension[cite: 52].

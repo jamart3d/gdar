@@ -5,7 +5,7 @@ import 'package:shakedown_core/utils/app_haptics.dart';
 import 'package:shakedown_core/services/device_service.dart';
 import 'package:provider/provider.dart';
 import 'package:shakedown_core/providers/settings_provider.dart';
-import 'package:gdar_tv/ui/widgets/animated_gradient_border.dart';
+import 'package:shakedown_core/ui/widgets/animated_gradient_border.dart';
 import 'package:shakedown_core/utils/web_runtime.dart';
 
 /// A wrapper widget that handles TV focus states with premium animations.

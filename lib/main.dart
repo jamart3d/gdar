@@ -11,7 +11,7 @@ import 'package:shakedown_core/ui/screens/onboarding_screen.dart';
 import 'package:shakedown_core/ui/screens/playback_screen.dart';
 import 'package:shakedown_core/ui/screens/settings_screen.dart';
 import 'package:shakedown_core/ui/screens/show_list_screen.dart';
-import 'package:gdar_fruit/fruit_tab_host_screen.dart';
+import 'package:shakedown_core/ui/screens/fruit_tab_host_screen.dart';
 import 'package:shakedown_core/ui/screens/splash_screen.dart';
 import 'package:shakedown_core/ui/screens/track_list_screen.dart';
 import 'package:shakedown_core/utils/app_themes.dart';
@@ -32,7 +32,7 @@ import 'package:shakedown_core/services/inactivity_service.dart';
 import 'package:shakedown_core/services/deep_link_service.dart';
 import 'package:shakedown_core/utils/asset_constants.dart';
 import 'package:shakedown_core/ui/screens/screensaver_screen.dart';
-import 'package:gdar_fruit/web_error_logger.dart';
+import 'package:shakedown_core/utils/web_error_logger.dart';
 
 Future<void> main() async {
   await runZonedGuarded(() async {

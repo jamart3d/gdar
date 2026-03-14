@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:gdar_fruit/ui/widgets/animated_gradient_border.dart';
+import 'package:shakedown_core/ui/widgets/animated_gradient_border.dart';
 import 'package:shakedown_core/models/show.dart';
 import 'package:shakedown_core/models/source.dart';
 import 'package:shakedown_core/utils/app_haptics.dart';
@@ -8,17 +8,17 @@ import 'package:shakedown_core/providers/settings_provider.dart';
 import 'package:shakedown_core/providers/theme_provider.dart';
 import 'package:provider/provider.dart';
 
-import 'package:gdar_fruit/ui/widgets/rating_control.dart';
-import 'package:gdar_fruit/ui/widgets/shnid_badge.dart';
-import 'package:gdar_fruit/ui/widgets/src_badge.dart';
+import 'package:shakedown_core/ui/widgets/rating_control.dart';
+import 'package:shakedown_core/ui/widgets/shnid_badge.dart';
+import 'package:shakedown_core/ui/widgets/src_badge.dart';
 import 'package:shakedown_core/services/catalog_service.dart';
 import 'package:shakedown_core/services/device_service.dart';
-import 'package:gdar_fruit/ui/widgets/show_list/embedded_mini_player.dart';
-import 'package:gdar_fruit/ui/widgets/conditional_marquee.dart';
-import 'package:gdar_fruit/ui/widgets/show_list/card_style_utils.dart';
+import 'package:shakedown_core/ui/widgets/show_list/embedded_mini_player.dart';
+import 'package:shakedown_core/ui/widgets/conditional_marquee.dart';
+import 'package:shakedown_core/ui/widgets/show_list/card_style_utils.dart';
 import 'package:gdar_fruit/ui/widgets/theme/liquid_glass_wrapper.dart';
 import 'package:shakedown_core/ui/widgets/tv/tv_focus_wrapper.dart';
-import 'package:gdar_fruit/ui/widgets/theme/neumorphic_wrapper.dart';
+import 'package:shakedown_core/ui/widgets/theme/neumorphic_wrapper.dart';
 
 /// A card displaying summary information for a [Show].
 class ShowListCard extends StatefulWidget {

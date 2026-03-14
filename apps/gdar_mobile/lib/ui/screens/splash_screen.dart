@@ -7,10 +7,10 @@ import 'package:shakedown_core/providers/show_list_provider.dart';
 import 'package:shakedown_core/providers/settings_provider.dart';
 import 'package:gdar_mobile/ui/screens/show_list_screen.dart';
 
-import 'package:gdar_mobile/ui/widgets/shakedown_title.dart';
+import 'package:shakedown_core/ui/widgets/shakedown_title.dart';
 import 'package:shakedown_core/services/device_service.dart';
 import 'package:shakedown_core/ui/widgets/tv/tv_dual_pane_layout.dart';
-import 'package:gdar_mobile/ui/styles/app_typography.dart';
+import 'package:shakedown_core/ui/styles/app_typography.dart';
 import 'package:shakedown_core/utils/font_layout_config.dart';
 
 class SplashScreen extends StatefulWidget {

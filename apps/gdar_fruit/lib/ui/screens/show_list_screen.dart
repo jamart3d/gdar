@@ -17,7 +17,7 @@ import 'package:shakedown_core/utils/utils.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:provider/provider.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
-import 'package:gdar_fruit/ui/screens/show_list/show_list_logic_mixin.dart';
+import 'package:shakedown_core/ui/screens/show_list/show_list_logic_mixin.dart';
 import 'package:gdar_fruit/ui/widgets/show_list/show_list_shell.dart';
 import 'package:gdar_fruit/ui/widgets/show_list/show_list_body.dart';
 import 'package:shakedown_core/providers/theme_provider.dart';

@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:gdar_tv/ui/widgets/settings/about_section.dart';
-import 'package:gdar_tv/ui/widgets/settings/appearance_section.dart';
-import 'package:gdar_tv/ui/widgets/settings/collection_statistics.dart';
-import 'package:gdar_tv/ui/widgets/settings/data_section.dart';
-import 'package:gdar_tv/ui/widgets/settings/interface_section.dart';
-import 'package:gdar_tv/ui/widgets/settings/playback_section.dart';
-import 'package:gdar_tv/ui/widgets/settings/source_filter_settings.dart';
-import 'package:gdar_tv/ui/widgets/settings/usage_instructions_section.dart';
-import 'package:gdar_tv/ui/widgets/settings/tv_screensaver_section.dart';
+import 'package:shakedown_core/ui/widgets/settings/about_section.dart';
+import 'package:shakedown_core/ui/widgets/settings/appearance_section.dart';
+import 'package:shakedown_core/ui/widgets/settings/collection_statistics.dart';
+import 'package:shakedown_core/ui/widgets/settings/data_section.dart';
+import 'package:shakedown_core/ui/widgets/settings/interface_section.dart';
+import 'package:shakedown_core/ui/widgets/settings/playback_section.dart';
+import 'package:shakedown_core/ui/widgets/settings/source_filter_settings.dart';
+import 'package:shakedown_core/ui/widgets/settings/usage_instructions_section.dart';
+import 'package:shakedown_core/ui/widgets/settings/tv_screensaver_section.dart';
 import 'package:gdar_tv/ui/widgets/tv/tv_focus_wrapper.dart';
-import 'package:gdar_tv/ui/screens/rated_shows_screen.dart';
+import 'package:shakedown_core/ui/screens/rated_shows_screen.dart';
 import 'package:gdar_tv/ui/screens/about_screen.dart';
 
 class TvSettingsScreen extends StatefulWidget {

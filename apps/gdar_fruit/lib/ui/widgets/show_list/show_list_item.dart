@@ -13,7 +13,7 @@ import 'package:shakedown_core/utils/app_haptics.dart';
 import 'package:shakedown_core/utils/utils.dart';
 import 'package:gdar_fruit/ui/widgets/show_list/show_list_card.dart';
 import 'package:gdar_fruit/ui/widgets/show_list_item_details.dart';
-import 'package:gdar_fruit/ui/widgets/swipe_action_background.dart';
+import 'package:shakedown_core/ui/widgets/swipe_action_background.dart';
 
 class ShowListItem extends StatelessWidget {
   final Show show;

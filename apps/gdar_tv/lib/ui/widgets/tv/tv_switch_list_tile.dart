@@ -5,7 +5,7 @@ import 'package:shakedown_core/providers/settings_provider.dart';
 import 'package:shakedown_core/providers/theme_provider.dart';
 import 'package:shakedown_core/utils/app_haptics.dart';
 import 'package:gdar_tv/ui/widgets/tv/tv_focus_wrapper.dart';
-import 'package:gdar_tv/ui/widgets/theme/neumorphic_wrapper.dart';
+import 'package:shakedown_core/ui/widgets/theme/neumorphic_wrapper.dart';
 
 import 'package:shakedown_core/ui/widgets/theme/fruit_switch.dart';
 

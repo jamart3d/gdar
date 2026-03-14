@@ -6,7 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:shakedown_core/models/track.dart';
 import 'package:shakedown_core/models/show.dart';
 import 'package:shakedown_core/providers/audio_provider.dart';
-import 'package:gdar_fruit/ui/widgets/theme/neumorphic_wrapper.dart';
+import 'package:shakedown_core/ui/widgets/theme/neumorphic_wrapper.dart';
 import 'package:gdar_fruit/ui/widgets/theme/liquid_glass_wrapper.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:gdar_fruit/ui/widgets/theme/fruit_icon_button.dart';
@@ -14,7 +14,7 @@ import 'package:shakedown_core/providers/settings_provider.dart';
 import 'package:shakedown_core/utils/utils.dart';
 import 'package:shakedown_core/services/device_service.dart';
 import 'package:shakedown_core/utils/app_haptics.dart';
-import 'package:gdar_fruit/ui/widgets/playback/playback_messages.dart';
+import 'package:shakedown_core/ui/widgets/playback/playback_messages.dart';
 import 'package:just_audio/just_audio.dart';
 
 class FruitNowPlayingCard extends StatelessWidget {

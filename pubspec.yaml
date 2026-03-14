@@ -10,7 +10,6 @@ workspace:
   - apps/gdar_tv
   - apps/gdar_fruit
 
-
 dev_dependencies:
   shakedown_core:
     path: ./packages/shakedown_core
@@ -21,7 +20,7 @@ dev_dependencies:
   mocktail: ^1.0.4
   build_runner: ^2.4.8
   hive_ce_generator: ^1.11.1
-  provider: ^6.1.5+1
+
 flutter:
   uses-material-design: true
 

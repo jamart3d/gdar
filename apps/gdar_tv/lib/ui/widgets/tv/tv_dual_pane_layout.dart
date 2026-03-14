@@ -9,7 +9,7 @@ import 'package:gdar_tv/ui/widgets/tv/tv_exit_dialog.dart';
 import 'package:provider/provider.dart';
 
 import 'package:shakedown_core/providers/audio_provider.dart';
-import 'package:gdar_tv/ui/widgets/playback/playback_messages.dart';
+import 'package:shakedown_core/ui/widgets/playback/playback_messages.dart';
 
 // TV Remote Control Intents
 class TvPlayPauseIntent extends Intent {

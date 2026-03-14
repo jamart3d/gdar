@@ -9,7 +9,7 @@ import 'package:shakedown_core/providers/audio_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:shakedown_core/utils/color_generator.dart';
 import 'package:shakedown_core/utils/utils.dart';
-import 'package:gdar_fruit/ui/widgets/pulsing_heart_icon.dart';
+import 'package:shakedown_core/ui/widgets/pulsing_heart_icon.dart';
 import 'package:shakedown_core/providers/theme_provider.dart';
 
 class AboutScreen extends StatelessWidget {
