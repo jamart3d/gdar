@@ -1,0 +1,32 @@
+import 'package:flutter/foundation.dart';
+import 'package:shakedown_core/services/device_service.dart';
+
+class MockDeviceService extends ChangeNotifier implements DeviceService {
+  bool _isTv = false;
+
+  @override
+  bool get isTv => _isTv;
+
+  set isTv(bool value) {
+    _isTv = value;
+    notifyListeners();
+  }
+
+  @override
+  bool get isMobile => false;
+
+  @override
+  bool get isDesktop => true;
+
+  @override
+  bool get isSafari => false;
+
+  @override
+  bool get isPwa => false;
+
+  @override
+  String? get deviceName => 'Mock Device';
+
+  @override
+  Future<void> refresh() async {}
+}

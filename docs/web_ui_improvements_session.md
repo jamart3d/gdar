@@ -8,12 +8,21 @@ This document tracks the technical enhancements made to the Web UI audio engines
 Implemented real-time monitoring of browser throttling to diagnose background playback stalls.
 
 *   **Logic:** Added a high-resolution drift monitor that calculates the delta between expected update intervals (250ms/4Hz) and actual execution time.
+<<<<<<< HEAD
 *   **Key Files:** 
     *   `lib/services/gapless_player/gapless_player_web.dart`: Added `_driftController` and `driftStream`.
     *   `lib/ui/widgets/playback/dev_audio_hud.dart`: 
         *   Added `V` (Visibility: VIS/HID) and `DFT` (Drift in seconds) telemetry chips.
         *   Wrapped HUD build in a `StreamBuilder` for the `driftStream`.
 *   **Metric Interpretation:** 
+=======
+*   **Key Files:**
+    *   `lib/services/gapless_player/gapless_player_web.dart`: Added `_driftController` and `driftStream`.
+    *   `lib/ui/widgets/playback/dev_audio_hud.dart`:
+        *   Added `V` (Visibility: VIS/HID) and `DFT` (Drift in seconds) telemetry chips.
+        *   Wrapped HUD build in a `StreamBuilder` for the `driftStream`.
+*   **Metric Interpretation:**
+>>>>>>> 43d4233a680677cfb9796265fadaea9bfd605ad3
     *   `DFT: 0.25s` = Healthy (4Hz updates).
     *   `DFT: 1.00s+` = Throttled (1Hz background clamp).
 
@@ -42,7 +51,11 @@ Created and updated project specifications to enforce background stability stand
 ### 1. Passive Engine (`passive_audio_engine.js`)
 The standalone Passive engine requires three specific changes to reach parity with the Hybrid/Standard stability.
 
+<<<<<<< HEAD
 *   **Survival Triggers:** 
+=======
+*   **Survival Triggers:**
+>>>>>>> 43d4233a680677cfb9796265fadaea9bfd605ad3
     *   Inject `window._gdarHeartbeat.startAudioHeartbeat()` into the engine's `play()` method.
     *   Inject `window._gdarHeartbeat.stopHeartbeat()` into the `pause()` method.
 *   **MediaSession State Sync:**
@@ -55,10 +68,17 @@ The standalone Passive engine requires three specific changes to reach parity wi
 ### 2. HUD Diagnostic Upgrades (PWA Recovery)
 To better diagnose "why" playback stops during PWA background/foreground transitions.
 
+<<<<<<< HEAD
 *   **`MDFT` (Max Observed Drift):** 
     *   Implement persistent `_maxDrift` tracking in `GaplessPlayerWeb`.
     *   Captures the "peak" drift (e.g., 8.0s) encountered while backgrounded, even after returning to foreground.
 *   **`CTX` (Audio Context State):** 
+=======
+*   **`MDFT` (Max Observed Drift):**
+    *   Implement persistent `_maxDrift` tracking in `GaplessPlayerWeb`.
+    *   Captures the "peak" drift (e.g., 8.0s) encountered while backgrounded, even after returning to foreground.
+*   **`CTX` (Audio Context State):**
+>>>>>>> 43d4233a680677cfb9796265fadaea9bfd605ad3
     *   Expose the raw `AudioContext.state` string (Running, Suspended, Closed).
     *   Critical for identifying "Silent Audio" caused by OS-level resource suspension.
 *   **`V-DUR` (Visibility Duration):**

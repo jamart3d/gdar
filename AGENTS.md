@@ -44,7 +44,7 @@ pair programmer and mentor.
 * `lucide_icons`, `wakelock_plus`
 
 ## Coding Standards
-* **Imports:** Always use package-relative imports (e.g., `import 'package:shakedown/...'`). Do not use relative imports for library files.
+* **Imports:** Always use package-relative imports (e.g., `import 'package:shakedown_core/...'`). Do not use relative imports for library files.
 * **Modern Dart:** Use latest stable Dart with sound null safety.
 * **Formatting:** Strictly follow official Dart style guide, `flutter format`, line length 80.
 * **Efficiency:** Use `const` constructors everywhere possible.

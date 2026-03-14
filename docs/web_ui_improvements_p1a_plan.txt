@@ -11,7 +11,11 @@ Transition to proactive stability and high-resolution observability for backgrou
 **Task**: Implement the following into the `WebAudioEngine` class:
 - [cite_start]**MDFT (Max Observed Drift)**: Capture peak delta between 250ms worker-tick and actual execution time using `web.window.performance.now()`. [cite: 2, 15]
 - **5s Stall Recovery**: Start a 5s `Timer` on `play()`. [cite_start]If `AudioContext.state != 'running'` at expiry, swap to HTML5. [cite: 3, 4]
+<<<<<<< HEAD
 - [cite_start]**Boundary Sentinel (T-10s)**: At `remainingTime <= 10.0`, trigger `_preWarmNextTrack()` for the next show. 
+=======
+- [cite_start]**Boundary Sentinel (T-10s)**: At `remainingTime <= 10.0`, trigger `_preWarmNextTrack()` for the next show.
+>>>>>>> 43d4233a680677cfb9796265fadaea9bfd605ad3
 - [cite_start]**Adaptive Prefetch**: If `Visibility == Hidden`, increase the prefetch buffer budget. [cite: 21]
 - [cite_start]**Memory Safety**: Implement `_evictOldBuffers` to limit cache to `Current + 1` tracks. [cite: 22]
 - [cite_start]**Telemetry**: Emit `MDFT`, `CTX`, `V-DUR`, and `RVC` (Recovery Count) via the `telemetryStream`. [cite: 6, 18]
@@ -30,7 +34,11 @@ import 'dart:async';
 void main() {
   test('P1 Proof: 5s Stall Recovery triggers H5 fallback', () async {
     bool fallbackTriggered = false;
+<<<<<<< HEAD
     String contextState = 'suspended'; 
+=======
+    String contextState = 'suspended';
+>>>>>>> 43d4233a680677cfb9796265fadaea9bfd605ad3
 
     Timer(const Duration(seconds: 5), () {
       if (contextState != 'running') fallbackTriggered = true;

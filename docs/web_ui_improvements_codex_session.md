@@ -8,12 +8,21 @@ This document plans the technical enhancements to the Web UI audio engines and d
 Planned to implement real-time monitoring of browser throttling to diagnose background playback stalls.
 
 *   NOT DONE: **Logic:** Planned to add a high-resolution drift monitor that calculates the delta between expected update intervals (250ms/4Hz) and actual execution time.
+<<<<<<< HEAD
 *   NOT DONE: **Key Files:** 
     *   NOT DONE: `lib/services/gapless_player/gapless_player_web.dart`: Planned to add `_driftController` and `driftStream`.
     *   NOT DONE: `lib/ui/widgets/playback/dev_audio_hud.dart`: 
         *   NOT DONE: Planned to add `V` (Visibility: VIS/HID) and `DFT` (Drift in seconds) telemetry chips.
         *   NOT DONE: Planned to wrap HUD build in a `StreamBuilder` for the `driftStream`.
 *   NOT DONE: **Metric Interpretation:** 
+=======
+*   NOT DONE: **Key Files:**
+    *   NOT DONE: `lib/services/gapless_player/gapless_player_web.dart`: Planned to add `_driftController` and `driftStream`.
+    *   NOT DONE: `lib/ui/widgets/playback/dev_audio_hud.dart`:
+        *   NOT DONE: Planned to add `V` (Visibility: VIS/HID) and `DFT` (Drift in seconds) telemetry chips.
+        *   NOT DONE: Planned to wrap HUD build in a `StreamBuilder` for the `driftStream`.
+*   NOT DONE: **Metric Interpretation:**
+>>>>>>> 43d4233a680677cfb9796265fadaea9bfd605ad3
     *   NOT DONE: `DFT: 0.25s` = Healthy (4Hz updates).
     *   NOT DONE: `DFT: 1.00s+` = Throttled (1Hz background clamp).
 
@@ -42,7 +51,11 @@ Planned to create and update project specifications to enforce background stabil
 ### 1. Passive Engine (`passive_audio_engine.js`)
 Planned: The standalone Passive engine requires three specific changes to reach parity with the Hybrid/Standard stability.
 
+<<<<<<< HEAD
 *   NOT DONE: **Survival Triggers:** 
+=======
+*   NOT DONE: **Survival Triggers:**
+>>>>>>> 43d4233a680677cfb9796265fadaea9bfd605ad3
     *   NOT DONE: Inject `window._gdarHeartbeat.startAudioHeartbeat()` into the engine's `play()` method.
     *   NOT DONE: Inject `window._gdarHeartbeat.stopHeartbeat()` into the `pause()` method.
 *   NOT DONE: **MediaSession State Sync:**
@@ -55,10 +68,17 @@ Planned: The standalone Passive engine requires three specific changes to reach 
 ### 2. HUD Diagnostic Upgrades (PWA Recovery)
 Planned: To better diagnose "why" playback stops during PWA background/foreground transitions.
 
+<<<<<<< HEAD
 *   NOT DONE: **`MDFT` (Max Observed Drift):** 
     *   NOT DONE: Implement persistent `_maxDrift` tracking in `GaplessPlayerWeb`.
     *   NOT DONE: Captures the "peak" drift (e.g., 8.0s) encountered while backgrounded, even after returning to foreground.
 *   NOT DONE: **`CTX` (Audio Context State):** 
+=======
+*   NOT DONE: **`MDFT` (Max Observed Drift):**
+    *   NOT DONE: Implement persistent `_maxDrift` tracking in `GaplessPlayerWeb`.
+    *   NOT DONE: Captures the "peak" drift (e.g., 8.0s) encountered while backgrounded, even after returning to foreground.
+*   NOT DONE: **`CTX` (Audio Context State):**
+>>>>>>> 43d4233a680677cfb9796265fadaea9bfd605ad3
     *   NOT DONE: Expose the raw `AudioContext.state` string (Running, Suspended, Closed).
     *   NOT DONE: Critical for identifying "Silent Audio" caused by OS-level resource suspension.
 *   NOT DONE: **`V-DUR` (Visibility Duration):**

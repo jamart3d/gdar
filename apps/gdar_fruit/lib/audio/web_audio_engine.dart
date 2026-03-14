@@ -7,13 +7,14 @@ import 'package:gdar_fruit/audio/web_interop.dart';
 class WebAudioEngine implements GdarAudioInterface {
   final _telemetryController = StreamController<GdarHudSnapshot>.broadcast();
   Timer? _stallTimer;
+
   bool _isSurvivalMode = false;
-  
+
   // Internal state
   String? _currentUrl;
   String _activeEngine = 'WA'; // WA (Web Audio) or H5 (HTML5)
   String _contextState = 'suspended';
-  
+
   // High-Fidelity Diagnostics (Observability)
   double _maxObservedDrift = 0.0;
   double _lastTickTime = 0.0;
@@ -23,7 +24,7 @@ class WebAudioEngine implements GdarAudioInterface {
   String _visibilityDuration = 'V:VIS';
   double? _trackDuration; // Duration of current track in seconds
   double? _trackPosition; // Position of current track in seconds
-  
+
   // Memory Safety
   final List<String> _prefetchBuffer = [];
   static const int _maxBufferSize = 3;
@@ -43,7 +44,7 @@ class WebAudioEngine implements GdarAudioInterface {
       _checkBoundarySentinel();
       _emitTelemetry();
     });
-    
+
     _emitTelemetry();
   }
 
@@ -52,12 +53,12 @@ class WebAudioEngine implements GdarAudioInterface {
     _currentUrl = url;
     _activeEngine = 'WA';
     _contextState = 'suspended';
-    _trackPosition = 0.0; 
+    _trackPosition = 0.0;
     _trackDuration = 180.0; // Mocking a 3m track
-    
+
     _prefetchBuffer.add(url);
     _evictOldBuffers();
-    
+
     _emitTelemetry();
     _checkContextState();
 
@@ -71,7 +72,7 @@ class WebAudioEngine implements GdarAudioInterface {
 
     // Sync MediaSession state immediately for OS controls
     WebInterop.syncMediaSession(true);
-    
+
     // Simulate engine startup
     if (!simulateStall) {
       _checkContextState();
@@ -87,7 +88,7 @@ class WebAudioEngine implements GdarAudioInterface {
   @override
   void updateVisibility(bool isVisible) {
     if (_isVisible == isVisible) return;
-    
+
     _isVisible = isVisible;
     if (!isVisible) {
       _hiddenAt = DateTime.now();
@@ -138,19 +139,19 @@ class WebAudioEngine implements GdarAudioInterface {
 
   void _checkBoundarySentinel() {
     if (_trackDuration == null || _trackPosition == null) return;
-    
+
     // Simulate position update
-    _trackPosition = _trackPosition! + 0.25; 
+    _trackPosition = _trackPosition! + 0.25;
 
     final remaining = _trackDuration! - _trackPosition!;
-    
+
     // Adaptive Prefetching: If hidden, trigger earlier or more aggressively
     final threshold = _isVisible ? 10.0 : 15.0;
 
     if (remaining <= threshold && remaining > (threshold - 0.25)) {
       _triggerPrewarm();
     }
-    
+
     // Soft Stitching at T-0.5s
     if (remaining <= 0.5 && remaining > 0.25) {
       if (_maxObservedDrift > 50.0) { // Threshold for glue
@@ -168,14 +169,15 @@ class WebAudioEngine implements GdarAudioInterface {
     // In real impl: Seamlessly transition to next buffered segment
     // We update MediaSession metadata for the new show segment
     _emitTelemetry(log: 'Soft Stitching: Syncing MediaSession for next show segment');
-    
+
     // Simulate continuity bridge
-    _trackPosition = 0.0; 
+    _trackPosition = 0.0;
     _emitTelemetry(log: 'Transitioned to next show segment (0ms gap)');
   }
 
   void _triggerPrewarm() {
-    _recoveryCount++; 
+    _recoveryCount++;
+
     // In real impl: Initiate pre-warming of next track
     _emitTelemetry();
   }
