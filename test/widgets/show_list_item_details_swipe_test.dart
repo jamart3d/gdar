@@ -2,19 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shakedown_core/models/show.dart';
 import 'package:shakedown_core/models/source.dart';
-import 'package:shakedown/providers/audio_provider.dart';
-import 'package:shakedown/providers/settings_provider.dart';
-import 'package:shakedown/providers/show_list_provider.dart'; // Add import
-import 'package:shakedown/ui/widgets/show_list_item_details.dart';
+import 'package:shakedown_core/providers/audio_provider.dart';
+import 'package:shakedown_core/providers/settings_provider.dart';
+import 'package:shakedown_core/providers/show_list_provider.dart'; // Add import
+import 'package:shakedown_core/ui/widgets/show_list_item_details.dart';
 
 import 'package:mockito/mockito.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../helpers/test_helpers.dart';
 import '../mocks/fake_catalog_service.dart';
-import 'package:shakedown/services/catalog_service.dart';
-import 'package:shakedown/services/device_service.dart';
-import 'package:shakedown/providers/theme_provider.dart';
+import 'package:shakedown_core/services/catalog_service.dart';
+import 'package:shakedown_core/services/device_service.dart';
+import 'package:shakedown_core/providers/theme_provider.dart';
 
 // Mock AudioProvider since it's used in onDismissed
 class MockAudioProvider extends Mock

@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
-import 'package:shakedown/ui/widgets/tv/tv_focus_wrapper.dart';
-import 'package:shakedown/providers/settings_provider.dart';
-import 'package:shakedown/providers/audio_provider.dart';
-import 'package:shakedown/services/device_service.dart';
+import 'package:shakedown_core/ui/widgets/tv/tv_focus_wrapper.dart';
+import 'package:shakedown_core/providers/settings_provider.dart';
+import 'package:shakedown_core/providers/audio_provider.dart';
+import 'package:shakedown_core/services/device_service.dart';
 import 'package:mockito/mockito.dart';
-import 'package:shakedown/ui/widgets/animated_gradient_border.dart';
+import 'package:shakedown_core/ui/widgets/animated_gradient_border.dart';
 
 class MockSettingsProvider extends Mock implements SettingsProvider {
   @override

@@ -10,14 +10,14 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shakedown_core/models/rating.dart';
 import 'package:shakedown_core/models/show.dart';
 import 'package:shakedown_core/models/source.dart';
-import 'package:shakedown/providers/audio_provider.dart';
-import 'package:shakedown/providers/settings_provider.dart';
-import 'package:shakedown/providers/show_list_provider.dart';
-import 'package:shakedown/providers/theme_provider.dart';
-import 'package:shakedown/services/catalog_service.dart';
-import 'package:shakedown/ui/screens/show_list_screen.dart';
+import 'package:shakedown_core/providers/audio_provider.dart';
+import 'package:shakedown_core/providers/settings_provider.dart';
+import 'package:shakedown_core/providers/show_list_provider.dart';
+import 'package:shakedown_core/providers/theme_provider.dart';
+import 'package:shakedown_core/services/catalog_service.dart';
+import 'package:shakedown_core/ui/screens/show_list_screen.dart';
 import 'package:just_audio/just_audio.dart';
-import 'package:shakedown/services/device_service.dart';
+import 'package:shakedown_core/services/device_service.dart';
 
 // Manual Mocks for simplicity
 class MockAudioProvider extends Mock implements AudioProvider {

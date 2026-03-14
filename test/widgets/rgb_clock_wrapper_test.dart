@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
-import 'package:shakedown/ui/widgets/rgb_clock_wrapper.dart';
+import 'package:shakedown_core/ui/widgets/rgb_clock_wrapper.dart';
 
 void main() {
   testWidgets('RgbClockWrapper provides Animation<double> without error',

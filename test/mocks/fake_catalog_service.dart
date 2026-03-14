@@ -2,7 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hive_ce/hive.dart';
 import 'package:shakedown_core/models/rating.dart';
-import 'package:shakedown/services/catalog_service.dart';
+import 'package:shakedown_core/services/catalog_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 // Fake CatalogService to bypass Hive operations in widget tests

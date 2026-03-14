@@ -5,17 +5,17 @@ import 'package:provider/provider.dart';
 import 'package:shakedown_core/models/show.dart';
 import 'package:shakedown_core/models/source.dart';
 import 'package:shakedown_core/models/track.dart';
-import 'package:shakedown/providers/audio_provider.dart';
-import 'package:shakedown/providers/settings_provider.dart';
-import 'package:shakedown/providers/theme_provider.dart';
-import 'package:shakedown/services/device_service.dart';
-import 'package:shakedown/ui/widgets/playback/playback_panel.dart';
-import 'package:shakedown/services/catalog_service.dart';
+import 'package:shakedown_core/providers/audio_provider.dart';
+import 'package:shakedown_core/providers/settings_provider.dart';
+import 'package:shakedown_core/providers/theme_provider.dart';
+import 'package:shakedown_core/services/device_service.dart';
+import 'package:shakedown_core/ui/widgets/playback/playback_panel.dart';
+import 'package:shakedown_core/services/catalog_service.dart';
 import 'package:hive_ce/hive.dart';
 import 'package:shakedown_core/models/rating.dart';
 import 'package:flutter/foundation.dart';
 import 'package:just_audio/just_audio.dart';
-import 'package:shakedown/services/gapless_player/gapless_player.dart';
+import 'package:shakedown_core/services/gapless_player/gapless_player.dart';
 
 // Reuse mock classes from playback_panel_icon_size_test.dart
 // Since we are in the same project, we can just define them briefly or import if possible.

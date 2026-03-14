@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
 import 'package:provider/provider.dart';
-import 'package:shakedown/providers/settings_provider.dart';
-import 'package:shakedown/services/device_service.dart';
-import 'package:shakedown/ui/widgets/shakedown_title.dart';
+import 'package:shakedown_core/providers/settings_provider.dart';
+import 'package:shakedown_core/services/device_service.dart';
+import 'package:shakedown_core/ui/widgets/shakedown_title.dart';
 
 class MockSettingsProvider extends Mock implements SettingsProvider {
   @override

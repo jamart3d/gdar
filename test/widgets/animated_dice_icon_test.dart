@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
-import 'package:shakedown/providers/settings_provider.dart';
-import 'package:shakedown/providers/theme_provider.dart';
-import 'package:shakedown/ui/widgets/show_list/animated_dice_icon.dart';
+import 'package:shakedown_core/providers/settings_provider.dart';
+import 'package:shakedown_core/providers/theme_provider.dart';
+import 'package:shakedown_core/ui/widgets/show_list/animated_dice_icon.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {

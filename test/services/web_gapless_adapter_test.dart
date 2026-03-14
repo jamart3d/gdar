@@ -13,7 +13,7 @@ import 'package:mockito/mockito.dart';
 import 'package:shakedown_core/models/show.dart';
 import 'package:shakedown_core/models/source.dart';
 import 'package:shakedown_core/models/track.dart';
-import 'package:shakedown/providers/audio_provider.dart';
+import 'package:shakedown_core/providers/audio_provider.dart';
 
 import '../providers/audio_provider_test.mocks.dart';
 

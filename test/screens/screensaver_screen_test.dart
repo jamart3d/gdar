@@ -3,13 +3,13 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:provider/provider.dart';
-import 'package:shakedown/providers/audio_provider.dart';
-import 'package:shakedown/providers/settings_provider.dart';
-import 'package:shakedown/services/device_service.dart';
-import 'package:shakedown/services/wakelock_service.dart';
-import 'package:shakedown/ui/screens/screensaver_screen.dart';
-import 'package:shakedown/steal_screensaver/steal_visualizer.dart';
-import 'package:shakedown/services/gapless_player/gapless_player.dart';
+import 'package:shakedown_core/providers/audio_provider.dart';
+import 'package:shakedown_core/providers/settings_provider.dart';
+import 'package:shakedown_core/services/device_service.dart';
+import 'package:shakedown_core/services/wakelock_service.dart';
+import 'package:shakedown_core/ui/screens/screensaver_screen.dart';
+import 'package:shakedown_core/steal_screensaver/steal_visualizer.dart';
+import 'package:shakedown_core/services/gapless_player/gapless_player.dart';
 
 import 'screensaver_screen_test.mocks.dart';
 

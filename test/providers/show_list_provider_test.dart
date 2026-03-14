@@ -1,16 +1,16 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter/foundation.dart';
-import 'package:shakedown/services/catalog_service.dart';
+import 'package:shakedown_core/services/catalog_service.dart';
 import 'package:shakedown_core/models/show.dart';
 import 'package:shakedown_core/models/source.dart';
 import 'package:shakedown_core/models/rating.dart';
 import 'package:hive_ce/hive.dart';
-import 'package:shakedown/providers/show_list_provider.dart';
+import 'package:shakedown_core/providers/show_list_provider.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:shakedown/providers/settings_provider.dart';
+import 'package:shakedown_core/providers/settings_provider.dart';
 
 import 'show_list_provider_test.mocks.dart';
 

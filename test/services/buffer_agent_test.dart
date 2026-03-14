@@ -4,8 +4,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
-import 'package:shakedown/services/buffer_agent.dart';
-import 'package:shakedown/services/gapless_player/gapless_player.dart';
+import 'package:shakedown_core/services/buffer_agent.dart';
+import 'package:shakedown_core/services/gapless_player/gapless_player.dart';
 import 'package:flutter/services.dart';
 
 import 'buffer_agent_test.mocks.dart';

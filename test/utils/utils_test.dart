@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:shakedown/utils/utils.dart';
+import 'package:shakedown_core/utils/utils.dart';
 
 void main() {
   group('transformArchiveUrl', () {

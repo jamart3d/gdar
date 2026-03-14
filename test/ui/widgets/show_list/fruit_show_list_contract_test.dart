@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
-import 'package:shakedown/providers/settings_provider.dart';
-import 'package:shakedown/providers/show_list_provider.dart';
-import 'package:shakedown/providers/theme_provider.dart';
-import 'package:shakedown/services/device_service.dart';
-import 'package:shakedown/ui/widgets/show_list/show_list_app_bar.dart';
-import 'package:shakedown/ui/widgets/show_list/show_list_search_bar.dart';
-import 'package:shakedown/ui/widgets/theme/fruit_ui.dart';
+import 'package:shakedown_core/providers/settings_provider.dart';
+import 'package:shakedown_core/providers/show_list_provider.dart';
+import 'package:shakedown_core/providers/theme_provider.dart';
+import 'package:shakedown_core/services/device_service.dart';
+import 'package:shakedown_core/ui/widgets/show_list/show_list_app_bar.dart';
+import 'package:shakedown_core/ui/widgets/show_list/show_list_search_bar.dart';
+import 'package:shakedown_core/ui/widgets/theme/fruit_ui.dart';
 
 class _FakeThemeProvider extends ChangeNotifier implements ThemeProvider {
   final ThemeStyle _themeStyle = ThemeStyle.fruit;

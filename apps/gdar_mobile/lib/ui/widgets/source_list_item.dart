@@ -1,0 +1,287 @@
+import 'package:flutter/material.dart';
+import 'package:shakedown_core/models/source.dart';
+import 'package:gdar_mobile/ui/widgets/animated_gradient_border.dart';
+import 'package:shakedown_core/providers/settings_provider.dart';
+import 'package:gdar_mobile/ui/widgets/rating_control.dart';
+import 'package:gdar_mobile/ui/widgets/src_badge.dart';
+import 'package:shakedown_core/services/catalog_service.dart';
+import 'package:shakedown_core/services/device_service.dart';
+import 'package:provider/provider.dart';
+
+class SourceListItem extends StatelessWidget {
+  final Source source;
+  final bool isSourcePlaying;
+  final double scaleFactor;
+  final double borderRadius;
+  final bool showBorder;
+  final VoidCallback onTap;
+  final VoidCallback onLongPress;
+  final bool alwaysShowRatingInteraction;
+
+  const SourceListItem({
+    super.key,
+    required this.source,
+    required this.isSourcePlaying,
+    this.scaleFactor = 1.0,
+    this.borderRadius = 16.0,
+    this.showBorder = true,
+    required this.onTap,
+    required this.onLongPress,
+    this.alwaysShowRatingInteraction = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final settingsProvider = context.watch<SettingsProvider>();
+
+    // Check for True Black mode
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final isTrueBlackMode = isDarkMode && settingsProvider.useTrueBlack;
+
+    Color itemBackgroundColor;
+    if (isTrueBlackMode) {
+      // In True Black mode, background is always black
+      itemBackgroundColor = Colors.black;
+    } else {
+      // Standard behavior
+      itemBackgroundColor = isSourcePlaying
+          ? colorScheme.tertiaryContainer
+          : colorScheme.secondaryContainer;
+    }
+
+    // Glow Logic
+    bool showGlow = settingsProvider.glowMode > 0;
+    bool useRgb = false;
+
+    if (settingsProvider.highlightPlayingWithRgb && isSourcePlaying) {
+      useRgb = true;
+    }
+
+    // Strict Black Mode Check
+    if (isDarkMode && !settingsProvider.useDynamicColor && !isSourcePlaying) {
+      showGlow = false;
+    }
+
+    // Shadow Visibility
+    bool showShadow = !(isTrueBlackMode && !isSourcePlaying);
+
+    double glowOpacity =
+        (isSourcePlaying ? 1.0 : 0.25) * (settingsProvider.glowMode / 100.0);
+
+    Widget buildContent({double? radiusOverride}) {
+      final effectiveRadius = radiusOverride ?? borderRadius;
+      return Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(effectiveRadius),
+          color: itemBackgroundColor,
+          border: (!showGlow &&
+                  !useRgb &&
+                  showBorder &&
+                  (isSourcePlaying || isTrueBlackMode))
+              ? Border.all(
+                  color: isSourcePlaying
+                      ? colorScheme.tertiary
+                      : colorScheme.outlineVariant,
+                  width: isSourcePlaying ? 2 : 1)
+              : null,
+          boxShadow: (!showGlow && !useRgb && showShadow)
+              ? [
+                  BoxShadow(
+                    color: colorScheme.shadow.withValues(alpha: 0.1),
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  )
+                ]
+              : [],
+        ),
+        child: Stack(
+          children: [
+            Positioned.fill(
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  canRequestFocus: !context.read<DeviceService>().isTv,
+                  borderRadius: BorderRadius.circular(effectiveRadius),
+                  onTap: onTap,
+                  onLongPress: onLongPress,
+                ),
+              ),
+            ),
+            Padding(
+              padding: EdgeInsets.symmetric(
+                  horizontal: 16, vertical: 12 * scaleFactor),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: IgnorePointer(
+                      child: Text(
+                        source.id,
+                        style: Theme.of(context)
+                            .textTheme
+                            .titleSmall
+                            ?.apply(fontSizeFactor: scaleFactor)
+                            .copyWith(
+                              color: isSourcePlaying
+                                  ? colorScheme.onTertiaryContainer
+                                  : colorScheme.onSecondaryContainer,
+                              fontWeight: isSourcePlaying
+                                  ? FontWeight.w700
+                                  : FontWeight.w600,
+                              letterSpacing: 0.1,
+                            ),
+                      ),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                    child: Container(
+                      color: Colors.transparent,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (source.src != null) ...[
+                            SrcBadge(
+                              src: source.src!,
+                              isPlaying: isSourcePlaying,
+                              fontSize: 10.0,
+                            ),
+                            const SizedBox(width: 8),
+                          ],
+                          ValueListenableBuilder(
+                            valueListenable: CatalogService().ratingsListenable,
+                            builder: (context, _, __) {
+                              final catalog = CatalogService();
+                              final rating = catalog.getRating(source.id);
+                              final isPlayed = catalog.isPlayed(source.id);
+
+                              return RatingControl(
+                                rating: rating,
+                                size: 18,
+                                isPlayed: isPlayed,
+                                onTap: (isSourcePlaying ||
+                                        alwaysShowRatingInteraction)
+                                    ? () async {
+                                        await showDialog(
+                                          context: context,
+                                          builder: (context) => RatingDialog(
+                                            initialRating: rating,
+                                            sourceId: source.id,
+                                            sourceUrl: source.tracks.isNotEmpty
+                                                ? source.tracks.first.url
+                                                : null,
+                                            isPlayed: isPlayed,
+                                            onRatingChanged: (newRating) {
+                                              catalog.setRating(
+                                                  source.id, newRating);
+                                            },
+                                            onPlayedChanged:
+                                                (bool newIsPlayed) {
+                                              if (newIsPlayed !=
+                                                  catalog.isPlayed(source.id)) {
+                                                catalog.togglePlayed(source.id);
+                                              }
+                                            },
+                                          ),
+                                        );
+                                      }
+                                    : null,
+                              );
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  if (!settingsProvider.hideTrackCountInSourceList)
+                    IgnorePointer(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: isSourcePlaying
+                              ? colorScheme.tertiary.withValues(alpha: 0.1)
+                              : colorScheme.secondary.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          '${source.tracks.length}',
+                          style:
+                              Theme.of(context).textTheme.labelSmall?.copyWith(
+                                    color: isSourcePlaying
+                                        ? colorScheme.onTertiaryContainer
+                                        : colorScheme.onSecondaryContainer,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (showGlow || useRgb) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 2),
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(borderRadius),
+            boxShadow: showShadow
+                ? [
+                    BoxShadow(
+                      color: (useRgb ? Colors.red : colorScheme.primary)
+                          .withValues(
+                              alpha: (useRgb ? 0.4 : 0.2) * glowOpacity),
+                      blurRadius: 8,
+                      spreadRadius: 1,
+                    ),
+                  ]
+                : [],
+          ),
+          child: AnimatedGradientBorder(
+            borderRadius: borderRadius,
+            borderWidth: useRgb ? 3 : 2,
+            colors: useRgb
+                ? const [
+                    Colors.red,
+                    Colors.yellow,
+                    Colors.green,
+                    Colors.cyan,
+                    Colors.blue,
+                    Colors.purple,
+                    Colors.red,
+                  ]
+                : [
+                    colorScheme.primary,
+                    colorScheme.tertiary,
+                    colorScheme.secondary,
+                    colorScheme.primary,
+                  ],
+            showGlow: true,
+            showShadow: !context.read<DeviceService>().isTv && showShadow,
+            glowOpacity: 0.5 * glowOpacity,
+            animationSpeed: settingsProvider.rgbAnimationSpeed,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(
+                  borderRadius - (useRgb ? 3 : 2)), // Subtract border width
+              child:
+                  buildContent(radiusOverride: borderRadius - (useRgb ? 3 : 2)),
+            ),
+          ),
+        ),
+      );
+    }
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 2),
+      child: Material(
+        color: Colors.transparent,
+        child: buildContent(),
+      ),
+    );
+  }
+}

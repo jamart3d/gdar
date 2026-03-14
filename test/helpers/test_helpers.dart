@@ -1,5 +1,5 @@
 import 'package:flutter/foundation.dart';
-import 'package:shakedown/services/device_service.dart';
+import 'package:shakedown_core/services/device_service.dart';
 
 class MockDeviceService extends ChangeNotifier implements DeviceService {
   bool _isTv = false;

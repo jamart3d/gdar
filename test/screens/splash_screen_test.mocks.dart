@@ -11,13 +11,13 @@ import 'package:mockito/mockito.dart' as _i1;
 import 'package:mockito/src/dummies.dart' as _i5;
 import 'package:shakedown_core/models/show.dart' as _i6;
 import 'package:shakedown_core/models/source.dart' as _i9;
-import 'package:shakedown/providers/audio_provider.dart' as _i12;
-import 'package:shakedown/providers/settings_provider.dart' as _i8;
-import 'package:shakedown/providers/show_list_provider.dart' as _i3;
-import 'package:shakedown/providers/theme_provider.dart' as _i11;
-import 'package:shakedown/providers/update_provider.dart' as _i15;
-import 'package:shakedown/services/audio_cache_service.dart' as _i14;
-import 'package:shakedown/services/gapless_player/gapless_player.dart' as _i2;
+import 'package:shakedown_core/providers/audio_provider.dart' as _i12;
+import 'package:shakedown_core/providers/settings_provider.dart' as _i8;
+import 'package:shakedown_core/providers/show_list_provider.dart' as _i3;
+import 'package:shakedown_core/providers/theme_provider.dart' as _i11;
+import 'package:shakedown_core/providers/update_provider.dart' as _i15;
+import 'package:shakedown_core/services/audio_cache_service.dart' as _i14;
+import 'package:shakedown_core/services/gapless_player/gapless_player.dart' as _i2;
 import 'package:shared_preferences/shared_preferences.dart' as _i7;
 
 // ignore_for_file: type=lint

@@ -6,12 +6,12 @@ import 'package:just_audio/just_audio.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:provider/provider.dart';
-import 'package:shakedown/providers/audio_provider.dart';
-import 'package:shakedown/providers/settings_provider.dart';
-import 'package:shakedown/services/device_service.dart';
-import 'package:shakedown/services/gapless_player/gapless_player.dart';
-import 'package:shakedown/ui/widgets/playback/playback_messages.dart';
-import 'package:shakedown/providers/theme_provider.dart';
+import 'package:shakedown_core/providers/audio_provider.dart';
+import 'package:shakedown_core/providers/settings_provider.dart';
+import 'package:shakedown_core/services/device_service.dart';
+import 'package:shakedown_core/services/gapless_player/gapless_player.dart';
+import 'package:shakedown_core/ui/widgets/playback/playback_messages.dart';
+import 'package:shakedown_core/providers/theme_provider.dart';
 
 import 'playback_messages_test.mocks.dart';
 

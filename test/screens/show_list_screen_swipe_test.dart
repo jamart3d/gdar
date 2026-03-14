@@ -5,18 +5,18 @@ import 'package:shakedown_core/models/source.dart';
 import 'package:shakedown_core/models/track.dart';
 import 'package:shakedown_core/models/rating.dart';
 import 'package:flutter/foundation.dart';
-import 'package:shakedown/providers/audio_provider.dart';
-import 'package:shakedown/providers/settings_provider.dart';
-import 'package:shakedown/providers/show_list_provider.dart';
-import 'package:shakedown/providers/theme_provider.dart';
-import 'package:shakedown/services/catalog_service.dart';
-import 'package:shakedown/ui/screens/show_list_screen.dart';
+import 'package:shakedown_core/providers/audio_provider.dart';
+import 'package:shakedown_core/providers/settings_provider.dart';
+import 'package:shakedown_core/providers/show_list_provider.dart';
+import 'package:shakedown_core/providers/theme_provider.dart';
+import 'package:shakedown_core/services/catalog_service.dart';
+import 'package:shakedown_core/ui/screens/show_list_screen.dart';
 import 'package:mockito/mockito.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:hive_ce/hive.dart';
-import 'package:shakedown/services/device_service.dart';
+import 'package:shakedown_core/services/device_service.dart';
 
 // Mocks
 class MockAudioProvider extends Mock

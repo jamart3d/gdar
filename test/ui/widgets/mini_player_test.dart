@@ -7,14 +7,14 @@ import 'package:just_audio/just_audio.dart';
 import 'package:shakedown_core/models/show.dart';
 import 'package:shakedown_core/models/source.dart';
 import 'package:shakedown_core/models/track.dart';
-import 'package:shakedown/providers/audio_provider.dart';
-import 'package:shakedown/providers/settings_provider.dart';
-import 'package:shakedown/ui/widgets/mini_player.dart';
-import 'package:shakedown/ui/widgets/conditional_marquee.dart';
+import 'package:shakedown_core/providers/audio_provider.dart';
+import 'package:shakedown_core/providers/settings_provider.dart';
+import 'package:shakedown_core/ui/widgets/mini_player.dart';
+import 'package:shakedown_core/ui/widgets/conditional_marquee.dart';
 import '../../helpers/test_helpers.dart';
-import 'package:shakedown/services/device_service.dart';
-import 'package:shakedown/providers/theme_provider.dart';
-import 'package:shakedown/services/gapless_player/gapless_player.dart';
+import 'package:shakedown_core/services/device_service.dart';
+import 'package:shakedown_core/providers/theme_provider.dart';
+import 'package:shakedown_core/services/gapless_player/gapless_player.dart';
 
 // Generate mocks
 @GenerateMocks([AudioProvider, SettingsProvider, GaplessPlayer])

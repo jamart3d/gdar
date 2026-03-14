@@ -3,17 +3,17 @@ import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shakedown_core/models/show.dart';
 import 'package:shakedown_core/models/source.dart';
-import 'package:shakedown/providers/settings_provider.dart';
-import 'package:shakedown/providers/theme_provider.dart';
-import 'package:shakedown/providers/audio_provider.dart';
-import 'package:shakedown/ui/widgets/rating_control.dart';
-import 'package:shakedown/ui/widgets/show_list/show_list_card.dart';
+import 'package:shakedown_core/providers/settings_provider.dart';
+import 'package:shakedown_core/providers/theme_provider.dart';
+import 'package:shakedown_core/providers/audio_provider.dart';
+import 'package:shakedown_core/ui/widgets/rating_control.dart';
+import 'package:shakedown_core/ui/widgets/show_list/show_list_card.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:just_audio/just_audio.dart';
 
-import 'package:shakedown/services/catalog_service.dart';
-import 'package:shakedown/services/device_service.dart';
+import 'package:shakedown_core/services/catalog_service.dart';
+import 'package:shakedown_core/services/device_service.dart';
 import '../mocks/fake_catalog_service.dart';
 import '../helpers/test_helpers.dart';
 

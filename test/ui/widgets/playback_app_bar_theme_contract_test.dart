@@ -5,12 +5,12 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shakedown_core/models/show.dart';
 import 'package:shakedown_core/models/source.dart';
 import 'package:shakedown_core/models/track.dart';
-import 'package:shakedown/providers/settings_provider.dart';
-import 'package:shakedown/providers/theme_provider.dart';
-import 'package:shakedown/services/catalog_service.dart';
-import 'package:shakedown/services/device_service.dart';
-import 'package:shakedown/ui/widgets/playback/playback_app_bar.dart';
-import 'package:shakedown/ui/widgets/theme/fruit_icon_button.dart';
+import 'package:shakedown_core/providers/settings_provider.dart';
+import 'package:shakedown_core/providers/theme_provider.dart';
+import 'package:shakedown_core/services/catalog_service.dart';
+import 'package:shakedown_core/services/device_service.dart';
+import 'package:shakedown_core/ui/widgets/playback/playback_app_bar.dart';
+import 'package:shakedown_core/ui/widgets/theme/fruit_icon_button.dart';
 
 import '../../helpers/test_helpers.dart';
 import '../../mocks/fake_catalog_service.dart';

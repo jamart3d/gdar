@@ -1,9 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:shakedown/main.dart';
-import 'package:shakedown/ui/screens/onboarding_screen.dart';
-import 'package:shakedown/ui/widgets/tv/tv_dual_pane_layout.dart';
+import 'package:shakedown_core/main.dart';
+import 'package:shakedown_core/ui/screens/onboarding_screen.dart';
+import 'package:shakedown_core/ui/widgets/tv/tv_dual_pane_layout.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:shakedown/providers/show_list_provider.dart';
+import 'package:shakedown_core/providers/show_list_provider.dart';
 
 void main() {
   group('Onboarding Skip Logic', () {

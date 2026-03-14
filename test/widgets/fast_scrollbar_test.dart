@@ -3,8 +3,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:shakedown_core/models/show.dart';
-import 'package:shakedown/ui/widgets/show_list/fast_scrollbar.dart';
-import 'package:shakedown/services/device_service.dart';
+import 'package:shakedown_core/ui/widgets/show_list/fast_scrollbar.dart';
+import 'package:shakedown_core/services/device_service.dart';
 
 class MockDeviceService extends ChangeNotifier implements DeviceService {
   @override

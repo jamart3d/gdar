@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
-import 'package:shakedown/ui/widgets/animated_gradient_border.dart';
-import 'package:shakedown/providers/settings_provider.dart';
-import 'package:shakedown/providers/audio_provider.dart';
+import 'package:shakedown_core/ui/widgets/animated_gradient_border.dart';
+import 'package:shakedown_core/providers/settings_provider.dart';
+import 'package:shakedown_core/providers/audio_provider.dart';
 import 'package:mockito/mockito.dart';
 
 import 'screens/splash_screen_test.mocks.dart';

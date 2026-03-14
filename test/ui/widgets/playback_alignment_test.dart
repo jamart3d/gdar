@@ -7,14 +7,14 @@ import 'package:just_audio/just_audio.dart';
 import 'package:shakedown_core/models/show.dart';
 import 'package:shakedown_core/models/source.dart';
 import 'package:shakedown_core/models/track.dart';
-import 'package:shakedown/providers/audio_provider.dart';
-import 'package:shakedown/providers/settings_provider.dart';
-import 'package:shakedown/ui/screens/playback_screen.dart';
+import 'package:shakedown_core/providers/audio_provider.dart';
+import 'package:shakedown_core/providers/settings_provider.dart';
+import 'package:shakedown_core/ui/screens/playback_screen.dart';
 import 'package:hive_ce/hive.dart';
 import 'package:shakedown_core/models/rating.dart';
-import 'package:shakedown/services/catalog_service.dart';
-import 'package:shakedown/services/device_service.dart';
-import 'package:shakedown/providers/theme_provider.dart';
+import 'package:shakedown_core/services/catalog_service.dart';
+import 'package:shakedown_core/services/device_service.dart';
+import 'package:shakedown_core/providers/theme_provider.dart';
 import '../../helpers/test_helpers.dart';
 
 import 'mini_player_test.mocks.dart'; // Reuse mocks

@@ -2,12 +2,12 @@ import 'dart:ui' show Tristate;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
-import 'package:shakedown/providers/settings_provider.dart';
-import 'package:shakedown/providers/theme_provider.dart';
-import 'package:shakedown/ui/widgets/theme/fruit_icon_button.dart';
-import 'package:shakedown/ui/widgets/theme/fruit_segmented_control.dart';
-import 'package:shakedown/ui/widgets/theme/fruit_switch.dart';
-import 'package:shakedown/ui/widgets/theme/fruit_ui.dart';
+import 'package:shakedown_core/providers/settings_provider.dart';
+import 'package:shakedown_core/providers/theme_provider.dart';
+import 'package:shakedown_core/ui/widgets/theme/fruit_icon_button.dart';
+import 'package:shakedown_core/ui/widgets/theme/fruit_segmented_control.dart';
+import 'package:shakedown_core/ui/widgets/theme/fruit_switch.dart';
+import 'package:shakedown_core/ui/widgets/theme/fruit_ui.dart';
 
 class _FakeThemeProvider extends ChangeNotifier implements ThemeProvider {
   @override

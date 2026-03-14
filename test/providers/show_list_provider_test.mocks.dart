@@ -12,10 +12,10 @@ import 'package:mockito/mockito.dart' as _i1;
 import 'package:mockito/src/dummies.dart' as _i10;
 import 'package:shakedown_core/models/rating.dart' as _i6;
 import 'package:shakedown_core/models/show.dart' as _i4;
-import 'package:shakedown/providers/settings_provider.dart' as _i9;
-import 'package:shakedown/providers/theme_provider.dart' as _i11;
-import 'package:shakedown/services/catalog_service.dart' as _i3;
-import 'package:shakedown/services/gapless_player/gapless_player.dart' as _i12;
+import 'package:shakedown_core/providers/settings_provider.dart' as _i9;
+import 'package:shakedown_core/providers/theme_provider.dart' as _i11;
+import 'package:shakedown_core/services/catalog_service.dart' as _i3;
+import 'package:shakedown_core/services/gapless_player/gapless_player.dart' as _i12;
 import 'package:shared_preferences/shared_preferences.dart' as _i8;
 
 // ignore_for_file: type=lint
