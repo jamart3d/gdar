@@ -1,5 +1,5 @@
 import 'package:intl/intl.dart';
-import 'package:shakedown/providers/settings_provider.dart';
+import 'package:shakedown_core/providers/settings_provider.dart';
 
 /// A utility class for handling consistent date formatting across the application.
 class AppDateUtils {

@@ -10,9 +10,6 @@ workspace:
   - apps/gdar_tv
   - apps/gdar_fruit
 
-workspace:
-  - packages/shakedown_core
-
 dev_dependencies:
   shakedown_core:
     path: ./packages/shakedown_core
