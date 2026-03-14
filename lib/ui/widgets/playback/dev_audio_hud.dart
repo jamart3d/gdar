@@ -568,14 +568,18 @@ class _DevAudioHudState extends State<DevAudioHud> {
           ),
         );
       } else {
-        valueWidget = Text(
-          value,
-          style: TextStyle(
-            color: baseTextColor,
-            fontWeight: FontWeight.w700,
-            fontSize: labelsFontSize * 0.84,
-            fontFamily: fontFamily ?? 'RobotoMono',
-            fontFeatures: const [FontFeature.tabularFigures()],
+        valueWidget = SizedBox(
+          width: 80, // Fixed-width for stabilization
+          child: Text(
+            value,
+            style: TextStyle(
+              color: baseTextColor,
+              fontWeight: FontWeight.w700,
+              fontSize: labelsFontSize * 0.84,
+              fontFamily: fontFamily ?? 'RobotoMono',
+              fontFeatures: const [FontFeature.tabularFigures()],
+            ),
+            overflow: TextOverflow.ellipsis,
           ),
         );
       }
