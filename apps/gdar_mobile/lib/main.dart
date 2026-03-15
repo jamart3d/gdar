@@ -182,18 +182,32 @@ class _GdarMobileAppState extends State<GdarMobileApp> {
               navigatorKey: _navigatorKey,
               title: 'GDAR',
               debugShowCheckedModeBanner: false,
-              theme: AppThemes.lightTheme(
-                settingsProvider.appFont,
-                useMaterial3: settingsProvider.useMaterial3,
-                uiScale: settingsProvider.uiScale,
-                style: ThemeStyle.android,
-              ),
-              darkTheme: AppThemes.darkTheme(
-                settingsProvider.appFont,
-                useMaterial3: settingsProvider.useMaterial3,
-                uiScale: settingsProvider.uiScale,
-                style: ThemeStyle.android,
-              ),
+              theme: settingsProvider.useTrueBlack && widget.isTv
+                  ? AppThemes.applyTrueBlack(AppThemes.lightTheme(
+                      settingsProvider.activeAppFont,
+                      useMaterial3: settingsProvider.useMaterial3,
+                      uiScale: settingsProvider.uiScale,
+                      style: ThemeStyle.android,
+                    ))
+                  : AppThemes.lightTheme(
+                      settingsProvider.activeAppFont,
+                      useMaterial3: settingsProvider.useMaterial3,
+                      uiScale: settingsProvider.uiScale,
+                      style: ThemeStyle.android,
+                    ),
+              darkTheme: settingsProvider.useTrueBlack && widget.isTv
+                  ? AppThemes.applyTrueBlack(AppThemes.darkTheme(
+                      settingsProvider.activeAppFont,
+                      useMaterial3: settingsProvider.useMaterial3,
+                      uiScale: settingsProvider.uiScale,
+                      style: ThemeStyle.android,
+                    ))
+                  : AppThemes.darkTheme(
+                      settingsProvider.activeAppFont,
+                      useMaterial3: settingsProvider.useMaterial3,
+                      uiScale: settingsProvider.uiScale,
+                      style: ThemeStyle.android,
+                    ),
               themeMode: themeProvider.currentThemeMode,
               home: const SplashScreen(),
             ),

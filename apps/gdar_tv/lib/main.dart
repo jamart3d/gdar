@@ -12,7 +12,6 @@ import 'package:shakedown_core/services/catalog_service.dart';
 import 'package:shakedown_core/services/device_service.dart';
 import 'package:shakedown_core/services/wakelock_service.dart';
 import 'package:shakedown_core/services/deep_link_service.dart';
-import 'package:shakedown_core/ui/screens/splash_screen.dart';
 import 'package:shakedown_core/ui/widgets/rgb_clock_wrapper.dart';
 import 'package:shakedown_core/utils/app_themes.dart';
 import 'package:shakedown_core/utils/logger.dart';
@@ -20,6 +19,7 @@ import 'package:shakedown_core/utils/asset_constants.dart';
 import 'package:just_audio_background/just_audio_background.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:shakedown_core/ui/widgets/tv/tv_dual_pane_layout.dart';
 
 Future<void> main() async {
   await runZonedGuarded(
@@ -158,20 +158,30 @@ class _GdarTvAppState extends State<GdarTvApp> {
       ],
       child: Consumer2<ThemeProvider, SettingsProvider>(
         builder: (context, themeProvider, settingsProvider, child) {
+          final theme = AppThemes.darkTheme(
+            settingsProvider.activeAppFont,
+            useMaterial3: settingsProvider.useMaterial3,
+            uiScale: settingsProvider.uiScale,
+            style: ThemeStyle.android,
+          );
+
+          final finalTheme =
+              settingsProvider.useTrueBlack
+                  ? AppThemes.applyTrueBlack(theme)
+                  : theme;
+
           return RgbClockWrapper(
             animationSpeed: settingsProvider.rgbAnimationSpeed,
-            child: MaterialApp(
-              navigatorKey: _navigatorKey,
-              title: 'GDAR TV',
-              debugShowCheckedModeBanner: false,
-              theme: AppThemes.darkTheme(
-                settingsProvider.appFont,
-                useMaterial3: settingsProvider.useMaterial3,
-                uiScale: settingsProvider.uiScale,
-                style: ThemeStyle.android,
+            child: Material(
+              color: finalTheme.scaffoldBackgroundColor,
+              child: MaterialApp(
+                navigatorKey: _navigatorKey,
+                title: 'GDAR TV',
+                debugShowCheckedModeBanner: false,
+                theme: finalTheme,
+                themeMode: ThemeMode.dark, // TV is always dark mode
+                home: const TvDualPaneLayout(),
               ),
-              themeMode: ThemeMode.dark, // TV is always dark mode
-              home: const SplashScreen(),
             ),
           );
         },

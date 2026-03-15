@@ -89,7 +89,7 @@ class StealBackground extends PositionComponent
 
   Future<void> _loadResources() async {
     final program = await ui.FragmentProgram.fromAsset(
-      'packages/gdar_fruit/shaders/steal.frag',
+      'packages/shakedown_core/assets/shaders/steal.frag',
     );
     _shader = program.fragmentShader();
 

@@ -1,3 +1,12 @@
+What's new in v1.2.1+201
+• Resolved launch failure where the app would hang at the onboarding screen.
+• Restored consistent 'Rock Salt' branding on TV across all screens and widgets.
+• Fixed scrollbar year chip positioning on Web for accurate navigation.
+• Defaulted onboarding to "completed" for Web apps to skip unnecessary steps.
+• Relocated core analysis scripts to synchronize with monorepo structure.
+
+---
+
 What's new in v1.2.0+200
 • Architecture: Migrated to a Dart workspace monorepo with independent app targets (Mobile, TV, Web) and shared core packages.
 • Versioning reset to +200 to mark the new monorepo era.

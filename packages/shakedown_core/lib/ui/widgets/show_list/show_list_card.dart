@@ -570,15 +570,15 @@ class _ShowListCardState extends State<ShowListCard> {
     final TextStyle style = Theme.of(context).textTheme.labelSmall!.copyWith(
       color: colorScheme.onSecondaryContainer,
       fontWeight: FontWeight.w600,
-      fontSize: (settingsProvider.appFont == 'rock_salt')
+      fontSize: (settingsProvider.activeAppFont == 'rock_salt')
           ? (isFruit ? 7.5 : (isTv ? 3.5 : 4.5)) * effectiveScale
           : (isFruit ? 9.5 : (isTv ? 5.5 : 7.0)) * effectiveScale,
       height: isTv
           ? 1.0
-          : (settingsProvider.appFont == 'rock_salt' ? 2.0 : 1.5),
+          : (settingsProvider.activeAppFont == 'rock_salt' ? 2.0 : 1.5),
       letterSpacing:
-          (settingsProvider.appFont == 'rock_salt' ||
-              settingsProvider.appFont == 'permanent_marker')
+          (settingsProvider.activeAppFont == 'rock_salt' ||
+              settingsProvider.activeAppFont == 'permanent_marker')
           ? 1.5
           : 0.0,
     );

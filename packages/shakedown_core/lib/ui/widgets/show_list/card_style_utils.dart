@@ -123,8 +123,8 @@ class CardStyle {
         );
 
     // Font Sizing Logic
-    final bool isRockSalt = settings.appFont == 'rock_salt';
-    final bool isCaveat = settings.appFont == 'caveat';
+    final bool isRockSalt = settings.activeAppFont == 'rock_salt';
+    final bool isCaveat = settings.activeAppFont == 'caveat';
     final bool dateFirst = settings.dateFirstInShowCard;
 
     double topSize = (themeProvider.themeStyle == ThemeStyle.fruit)

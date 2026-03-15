@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
 import 'package:shakedown_core/services/device_service.dart';
 import 'package:shakedown_core/utils/app_haptics.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
@@ -49,7 +48,6 @@ class _FastScrollbarState extends State<FastScrollbar>
   Offset _lastChipOffset = Offset.zero;
   double _lastTrackHeight = 0.0;
   Offset _lastTrackGlobal = Offset.zero;
-  bool _pendingTrackMetrics = false;
   Timer? _hideTimer;
 
   // Fade: controls thumb + track visibility (auto-hide)
@@ -167,13 +165,13 @@ class _FastScrollbarState extends State<FastScrollbar>
     _isDragging = true;
     _showThumb();
     _scaleController.forward(from: 0);
-    final fraction = _fractionFromGlobal(details.globalPosition.dy);
+    final fraction = _fractionFromGlobal(details.globalPosition);
     _updateFromFraction(fraction);
     _showOverlay();
   }
 
   void _onDragUpdate(DragUpdateDetails details) {
-    final fraction = _fractionFromGlobal(details.globalPosition.dy);
+    final fraction = _fractionFromGlobal(details.globalPosition);
     _updateFromFraction(fraction);
     _overlayEntry?.markNeedsBuild();
   }
@@ -186,19 +184,16 @@ class _FastScrollbarState extends State<FastScrollbar>
     _scheduleHide();
   }
 
-  double _fractionFromGlobal(double globalY) {
-    final phase = SchedulerBinding.instance.schedulerPhase;
-    if (phase == SchedulerPhase.persistentCallbacks ||
-        phase == SchedulerPhase.midFrameMicrotasks) {
-      _scheduleTrackMetricsUpdate();
-      return _thumbFraction;
-    }
+  double _fractionFromGlobal(Offset globalOffset) {
     final renderBox =
         _trackKey.currentContext?.findRenderObject() as RenderBox?;
     if (renderBox == null) return _thumbFraction;
+
     _lastTrackGlobal = renderBox.localToGlobal(Offset.zero);
     _lastTrackHeight = renderBox.size.height;
-    final localY = renderBox.globalToLocal(Offset(0, globalY)).dy;
+    
+    final localPosition = renderBox.globalToLocal(globalOffset);
+    final localY = localPosition.dy;
     final trackH = _lastTrackHeight;
     final usable = trackH - widget.thumbHeight;
     if (usable <= 0) return 0;
@@ -224,23 +219,7 @@ class _FastScrollbarState extends State<FastScrollbar>
 
   // ── Overlay ────────────────────────────────────────────────────────
 
-  void _scheduleTrackMetricsUpdate() {
-    if (_pendingTrackMetrics) return;
-    _pendingTrackMetrics = true;
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _pendingTrackMetrics = false;
-      if (!mounted) return;
-      _updateTrackMetrics();
-    });
-  }
 
-  void _updateTrackMetrics() {
-    final renderBox =
-        _trackKey.currentContext?.findRenderObject() as RenderBox?;
-    if (renderBox == null) return;
-    _lastTrackGlobal = renderBox.localToGlobal(Offset.zero);
-    _lastTrackHeight = renderBox.size.height;
-  }
 
   void _showOverlay() {
     _removeOverlay();
@@ -257,12 +236,6 @@ class _FastScrollbarState extends State<FastScrollbar>
   }
 
   Offset _chipPosition() {
-    final phase = SchedulerBinding.instance.schedulerPhase;
-    if (phase == SchedulerPhase.persistentCallbacks ||
-        phase == SchedulerPhase.midFrameMicrotasks) {
-      _scheduleTrackMetricsUpdate();
-      return _lastChipOffset;
-    }
     final renderBox =
         _trackKey.currentContext?.findRenderObject() as RenderBox?;
     if (renderBox == null) return _lastChipOffset;

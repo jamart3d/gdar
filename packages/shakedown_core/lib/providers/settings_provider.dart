@@ -61,6 +61,11 @@ class SettingsProvider with ChangeNotifier {
   static const String _performanceModeKey = 'performance_mode';
   String _appFont = 'default';
   String get appFont => _appFont;
+  
+  /// Returns the actual font being used, respecting TV-specific overrides.
+  /// On TV, we force 'rock_salt' for the "10-foot" look (v1.1.70 parity).
+  String get activeAppFont => isTv ? 'rock_salt' : _appFont;
+
   void setAppFont(String font) =>
       _updateStringPreference(_appFontKey, _appFont = font);
 
@@ -755,8 +760,8 @@ class SettingsProvider with ChangeNotifier {
       _prefs.setBool('first_run_check_done', true);
     }
 
-    _onboardingCompletedVersion =
-        _prefs.getInt(_onboardingCompletedVersionKey) ?? 0;
+    _onboardingCompletedVersion = _prefs.getInt(_onboardingCompletedVersionKey) ??
+        (kIsWeb ? kCurrentOnboardingVersion : 0);
     _showTrackNumbers =
         _prefs.getBool(_trackNumberKey) ?? DefaultSettings.showTrackNumbers;
     _hideTrackDuration =

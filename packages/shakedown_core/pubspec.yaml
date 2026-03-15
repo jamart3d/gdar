@@ -53,6 +53,9 @@ flutter:
     - assets/data/output.optimized_src.json
     - assets/images/
 
+  shaders:
+    - assets/shaders/steal.frag
+
   fonts:
     - family: RockSalt
       fonts:

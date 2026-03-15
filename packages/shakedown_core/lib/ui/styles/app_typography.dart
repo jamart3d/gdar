@@ -31,7 +31,7 @@ class AppTypography {
     // Caveat is naturally small/thin, so we boost it for readability.
     // If UI Scale is on, we slightly tame the boost to prevent it feeling "too large".
     double fontMultiplier = 1.0;
-    switch (settingsProvider.appFont) {
+    switch (settingsProvider.activeAppFont) {
       case 'caveat':
         fontMultiplier = settingsProvider.uiScale ? 1.3 : 1.4;
         break;

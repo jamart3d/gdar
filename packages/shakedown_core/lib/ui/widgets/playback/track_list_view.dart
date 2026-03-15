@@ -13,6 +13,7 @@ import 'package:shakedown_core/ui/widgets/theme/liquid_glass_wrapper.dart';
 import 'package:shakedown_core/ui/widgets/theme/neumorphic_wrapper.dart';
 import 'package:shakedown_core/ui/widgets/conditional_marquee.dart';
 import 'package:shakedown_core/ui/widgets/tv/tv_focus_wrapper.dart';
+import 'package:shakedown_core/ui/styles/font_config.dart';
 import 'package:shakedown_core/utils/font_layout_config.dart';
 import 'package:shakedown_core/utils/app_haptics.dart';
 import 'package:shakedown_core/utils/utils.dart';
@@ -357,7 +358,7 @@ class TrackListView extends StatelessWidget {
           letterSpacing: isFruit ? 0.3 : null,
           fontFeatures: const [FontFeature.tabularFigures()],
         )
-        .merge(const TextStyle(fontFamily: 'Roboto'));
+        .merge(TextStyle(fontFamily: FontConfig.resolve('Roboto')));
   }
 
   Widget _buildTrackListTile(

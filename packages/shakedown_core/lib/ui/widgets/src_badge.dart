@@ -82,15 +82,15 @@ class SrcBadge extends StatelessWidget {
           height: matchShnidLook ? 1.4 : 1.0, // Reduced from 1.5
           fontSize:
               (matchShnidLook
-                  ? (settingsProvider.appFont == 'rock_salt'
+                  ? (settingsProvider.activeAppFont == 'rock_salt'
                         ? 6.5 *
                               effectiveScale // Reduced from 7.5
                         : 8.0 * effectiveScale) // Reduced from 9.0
                   : fontSize *
-                        (settingsProvider.appFont == 'rock_salt' ? 0.7 : 1.0) *
+                        (settingsProvider.activeAppFont == 'rock_salt' ? 0.7 : 1.0) *
                         effectiveScale) *
               scaleFactor,
-          letterSpacing: settingsProvider.appFont == 'rock_salt' ? 0.0 : 0.5,
+          letterSpacing: settingsProvider.activeAppFont == 'rock_salt' ? 0.0 : 0.5,
         ),
         textAlign: TextAlign.center,
       ),

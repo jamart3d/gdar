@@ -34,6 +34,7 @@ import 'package:shakedown_core/utils/utils.dart';
 import 'package:shakedown_core/services/device_service.dart';
 import 'package:shakedown_core/ui/widgets/tv/tv_scrollbar.dart';
 import 'package:shakedown_core/ui/widgets/theme/neumorphic_wrapper.dart';
+import 'package:shakedown_core/ui/styles/font_config.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 // ── Small private widgets ─────────────────────────────────────────────────────
@@ -868,7 +869,7 @@ class PlaybackScreenState extends State<PlaybackScreen>
                           Text(
                             currentShow.formattedDate,
                             style: TextStyle(
-                              fontFamily: 'RockSalt',
+                              fontFamily: FontConfig.resolve('RockSalt'),
                               fontSize: 17,
                               fontWeight: FontWeight.w500,
                               color: colorScheme.onSurface.withValues(
@@ -930,7 +931,7 @@ class PlaybackScreenState extends State<PlaybackScreen>
                             Text(
                               currentShow.venue,
                               style: TextStyle(
-                                fontFamily: 'RockSalt',
+                                fontFamily: FontConfig.resolve('RockSalt'),
                                 fontSize: 15,
                                 fontWeight: FontWeight.bold,
                                 color: colorScheme.primary,
@@ -951,7 +952,7 @@ class PlaybackScreenState extends State<PlaybackScreen>
                               Text(
                                 currentSource.location!,
                                 style: TextStyle(
-                                  fontFamily: 'RockSalt',
+                                  fontFamily: FontConfig.resolve('RockSalt'),
                                   fontSize: 14,
                                   fontWeight: FontWeight.w500,
                                   color: colorScheme.onSurfaceVariant,

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:shakedown_core/ui/styles/font_config.dart';
 import 'package:shakedown_core/providers/theme_provider.dart';
 
@@ -126,6 +127,28 @@ class AppThemes {
         selectionColor: primaryColor.withValues(alpha: 0.3),
         selectionHandleColor: primaryColor,
       ),
+    );
+  }
+
+  static ThemeData applyTrueBlack(ThemeData theme) {
+    return theme.copyWith(
+      scaffoldBackgroundColor: Colors.black,
+      colorScheme: theme.colorScheme.copyWith(
+        surface: Colors.black,
+        onSurface: Colors.white,
+        surfaceContainerLowest: Colors.black,
+        surfaceContainerLow: Colors.black,
+        surfaceContainer: Colors.black,
+        surfaceContainerHigh: Colors.black,
+        surfaceContainerHighest: Colors.black,
+        outline: Colors.white.withValues(alpha: 0.2),
+        outlineVariant: Colors.white.withValues(alpha: 0.1),
+      ),
+      appBarTheme: theme.appBarTheme.copyWith(
+        backgroundColor: Colors.black,
+        systemOverlayStyle: SystemUiOverlayStyle.light,
+      ),
+      dividerColor: Colors.white.withValues(alpha: 0.12),
     );
   }
 }

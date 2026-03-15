@@ -6,8 +6,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.1+201] - 2026-03-15
+
 ### Changed
 - **Infrastructure**: Relocated `verify.dart` from `tool/` to `scripts/` and synchronized its default analysis targets with the new monorepo structure (`apps/`, `packages/`, `scripts/`).
+
+### Fixed
+- **TV UI**: Resolved launch failure where the app would hang at the onboarding screen; unified navigation directly to `TvDualPaneLayout` when in TV mode.
+- **TV Fonts**: Restored consistent 'Rock Salt' branding on TV by enforcing the TV-specific font override across all screens and widgets.
+- **Web UI**: Fixed FastScrollbar year chip positioning on Web by hardening coordinate mapping and removing stale frame scheduling logic.
+- **Web UI**: Defaulted onboarding to "completed" for Web apps to ensure a direct-to-list experience consistent with previous versions.
 
 ## [1.2.0+200] - 2026-03-14
 

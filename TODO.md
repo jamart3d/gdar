@@ -41,6 +41,9 @@
     - **UX:** Added "Undo/History" capability: allow users to jump back to a previous track/position if they accidentally block a show or skip a favorite track.
     - **Persistence:** The list survives app restarts, allowing for multi-day session continuity via `SharedPreferences`.
 
+### Monorepo Transition Cleanup
+- [ ] **Prune Shadowed UI Components**: Audit `apps/gdar_tv/lib/ui/` for duplicate widgets and screens (e.g., `OnboardingScreen`, `SettingsScreen`, `SplashScreen`) that now reside in `packages/shakedown_core/`. Ensure the app target uses the core package versions to avoid architectural drift.
+
 ---
 
 ## 🌐 Web / PWA

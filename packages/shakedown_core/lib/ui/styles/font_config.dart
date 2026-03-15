@@ -23,12 +23,12 @@ class FontConfig {
   /// All fonts scaled larger for better visibility
   static const Map<String, FontConfig> _registry = {
     'default': FontConfig(
-      fontFamily: 'Roboto',
-      scaleFactor: 1.0, // Reduced from 1.05
+      fontFamily: 'packages/shakedown_core/Inter',
+      scaleFactor: 1.0,
       lineHeight: 1.3,
       weightAdjustment: 0,
       letterSpacing: 0.0,
-      displayName: 'Default (Roboto)',
+      displayName: 'Inter',
     ),
     'caveat': FontConfig(
       fontFamily: 'packages/shakedown_core/Caveat',

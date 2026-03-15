@@ -64,10 +64,14 @@ class _GdarWebAppState extends State<GdarWebApp> {
   bool get _isAndroidStyle =>
       Uri.base.queryParameters['ui']?.toLowerCase() == 'android';
 
+  bool get _isTv =>
+      Uri.base.queryParameters['force_tv']?.toLowerCase() == 'true';
+
   @override
   void initState() {
     super.initState();
-    _settingsProvider = SettingsProvider(widget.prefs, isTv: false);
+    final bool isTv = _isTv;
+    _settingsProvider = SettingsProvider(widget.prefs, isTv: isTv);
     _showListProvider = ShowListProvider();
 
     // Link providers for theme-specific settings resets
@@ -114,7 +118,7 @@ class _GdarWebAppState extends State<GdarWebApp> {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => ThemeProvider(isTv: false)),
+        ChangeNotifierProvider(create: (_) => ThemeProvider(isTv: _isTv)),
         Provider<CatalogService>(create: (_) => CatalogService()),
         Provider<WakelockService>(create: (_) => WakelockService()),
         ChangeNotifierProvider.value(value: _settingsProvider),
@@ -143,7 +147,7 @@ class _GdarWebAppState extends State<GdarWebApp> {
         ),
         ChangeNotifierProvider(create: (_) => UpdateProvider()),
         ChangeNotifierProvider(
-          create: (_) => DeviceService(initialIsTv: false),
+          create: (_) => DeviceService(initialIsTv: _isTv),
         ),
       ],
       child: Consumer2<ThemeProvider, SettingsProvider>(
@@ -152,7 +156,7 @@ class _GdarWebAppState extends State<GdarWebApp> {
 
           final lightTheme = isAndroid
               ? GDARAndroidTheme.light(
-                  appFont: settingsProvider.appFont,
+                  appFont: settingsProvider.activeAppFont,
                   uiScale: settingsProvider.uiScale,
                 )
               : GDARFruitTheme.light(
@@ -162,7 +166,7 @@ class _GdarWebAppState extends State<GdarWebApp> {
 
           final darkTheme = isAndroid
               ? GDARAndroidTheme.dark(
-                  appFont: settingsProvider.appFont,
+                  appFont: settingsProvider.activeAppFont,
                   uiScale: settingsProvider.uiScale,
                 )
               : GDARFruitTheme.dark(

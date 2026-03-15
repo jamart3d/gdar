@@ -40,6 +40,13 @@ class DeviceService extends ChangeNotifier {
   }
 
   Future<void> _init() async {
+    // 1. Initial detection (including environment and URL on web)
+    if (kIsWeb) {
+      if (Uri.base.queryParameters['force_tv'] == 'true') {
+        _isTv = true;
+      }
+    }
+
     try {
       final prefs = await SharedPreferences.getInstance();
       if (prefs.getBool('force_tv') == true ||

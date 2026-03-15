@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:shakedown_core/providers/audio_provider.dart';
 import 'package:shakedown_core/ui/widgets/tv/tv_focus_wrapper.dart';
+import 'package:shakedown_core/ui/styles/font_config.dart';
 
 class TvPlaybackBar extends StatefulWidget {
   final VoidCallback? onDown;
@@ -94,7 +95,7 @@ class _TvPlaybackBarState extends State<TvPlaybackBar> {
               return Text(
                 _formatDuration(position),
                 style: TextStyle(
-                  fontFamily: 'Roboto', // Monospaced-ish for time
+                  fontFamily: FontConfig.resolve('Roboto'), // Monospaced-ish for time
                   fontSize: 14,
                   color: colorScheme.onSurfaceVariant,
                   fontFeatures: const [FontFeature.tabularFigures()],
@@ -208,7 +209,7 @@ class _TvPlaybackBarState extends State<TvPlaybackBar> {
               return Text(
                 _formatDuration(duration),
                 style: TextStyle(
-                  fontFamily: 'Roboto',
+                  fontFamily: FontConfig.resolve('Roboto'),
                   fontSize: 14,
                   color: colorScheme.onSurfaceVariant,
                   fontFeatures: const [FontFeature.tabularFigures()],

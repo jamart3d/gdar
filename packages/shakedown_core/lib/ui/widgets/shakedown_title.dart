@@ -2,7 +2,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shakedown_core/providers/settings_provider.dart';
-import 'package:shakedown_core/services/device_service.dart';
 import 'package:shakedown_core/utils/font_layout_config.dart';
 import 'package:shakedown_core/ui/styles/font_config.dart';
 
@@ -109,8 +108,7 @@ class _ShakedownTitleState extends State<ShakedownTitle>
       settingsProvider,
     );
 
-    final isTv = context.watch<DeviceService>().isTv;
-    final String activeFont = isTv ? 'rock_salt' : settingsProvider.appFont;
+    final String activeFont = settingsProvider.activeAppFont;
 
     final textStyle = theme.textTheme.displayLarge?.copyWith(
       fontSize: widget.fontSize * scaleFactor,

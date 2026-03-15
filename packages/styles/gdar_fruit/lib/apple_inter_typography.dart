@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:shakedown_core/ui/styles/font_config.dart';
 import 'package:shakedown_core/utils/web_runtime.dart';
 
 /// Builds a custom Flutter TextTheme using GoogleFonts.inter()
 /// specifically tailored for a "Liquid Glass" UI following Apple's aesthetics.
 TextTheme buildAppleInterTextTheme(bool isDark, {double scaleFactor = 1.0}) {
+  final String? interFont = FontConfig.resolve('Inter');
+  
   final Color primaryColor = isDark
       ? Colors.white.withValues(alpha: 0.9)
       : Colors.black.withValues(alpha: 0.9);
@@ -23,28 +26,28 @@ TextTheme buildAppleInterTextTheme(bool isDark, {double scaleFactor = 1.0}) {
 
   return TextTheme(
     displayLarge: TextStyle(
-      fontFamily: 'Inter',
+      fontFamily: interFont,
       fontSize: 57 * scaleFactor,
       fontWeight: FontWeight.w800,
       letterSpacing: safeLs(-1.2),
       color: primaryColor,
     ),
     displayMedium: TextStyle(
-      fontFamily: 'Inter',
+      fontFamily: interFont,
       fontSize: 45 * scaleFactor,
       fontWeight: FontWeight.w800,
       letterSpacing: safeLs(-1.0),
       color: primaryColor,
     ),
     displaySmall: TextStyle(
-      fontFamily: 'Inter',
+      fontFamily: interFont,
       fontSize: 36 * scaleFactor,
       fontWeight: FontWeight.w700,
       letterSpacing: safeLs(-0.5),
       color: primaryColor,
     ),
     headlineLarge: TextStyle(
-      fontFamily: 'Inter',
+      fontFamily: interFont,
       fontSize: 32 * scaleFactor,
       fontWeight: FontWeight.w700,
       letterSpacing: safeLs(-0.2),

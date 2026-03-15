@@ -4,7 +4,6 @@ import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 import 'package:shakedown_core/providers/settings_provider.dart';
 import 'package:shakedown_core/ui/screens/show_list_screen.dart';
-import 'package:shakedown_core/ui/screens/splash_screen.dart';
 import 'package:shakedown_core/utils/font_layout_config.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shakedown_core/ui/widgets/shakedown_title.dart';
@@ -96,9 +95,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     }
 
     final isTv = context.read<DeviceService>().isTv;
-    final nextScreen = settingsProvider.showSplashScreen
-        ? const SplashScreen()
-        : (isTv ? const TvDualPaneLayout() : const ShowListScreen());
+    final nextScreen = isTv ? const TvDualPaneLayout() : const ShowListScreen();
 
     Navigator.of(context).pushReplacement(
       PageRouteBuilder(

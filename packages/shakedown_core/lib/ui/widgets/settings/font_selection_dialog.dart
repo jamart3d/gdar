@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:shakedown_core/providers/settings_provider.dart';
 import 'package:shakedown_core/utils/font_layout_config.dart';
 import 'package:shakedown_core/ui/widgets/tv/tv_radio_list_tile.dart';
+import 'package:shakedown_core/ui/styles/font_config.dart';
 
 class FontSelectionDialog extends StatelessWidget {
   const FontSelectionDialog({super.key});
@@ -19,11 +20,11 @@ class FontSelectionDialog extends StatelessWidget {
 
     // Map of internal value to display name and TextStyle
     final Map<String, TextStyle?> fonts = {
-      'default': const TextStyle(fontFamily: 'Roboto'), // Enforce Roboto
-      'inter': const TextStyle(fontFamily: 'Inter'),
-      'caveat': const TextStyle(fontFamily: 'Caveat'),
-      'permanent_marker': const TextStyle(fontFamily: 'Permanent Marker'),
-      'rock_salt': const TextStyle(fontFamily: 'RockSalt'),
+      'default': TextStyle(fontFamily: FontConfig.resolve('Roboto')),
+      'inter': TextStyle(fontFamily: FontConfig.resolve('Inter')),
+      'caveat': TextStyle(fontFamily: FontConfig.resolve('Caveat')),
+      'permanent_marker': TextStyle(fontFamily: FontConfig.resolve('Permanent Marker')),
+      'rock_salt': TextStyle(fontFamily: FontConfig.resolve('RockSalt')),
     };
 
     final Map<String, String> displayNames = {

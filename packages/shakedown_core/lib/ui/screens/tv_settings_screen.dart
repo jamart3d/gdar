@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:shakedown_core/ui/widgets/settings/about_section.dart';
 import 'package:shakedown_core/ui/widgets/settings/appearance_section.dart';
 import 'package:shakedown_core/ui/widgets/settings/collection_statistics.dart';
-import 'package:shakedown_core/ui/widgets/settings/data_section.dart';
 import 'package:shakedown_core/ui/widgets/settings/interface_section.dart';
 import 'package:shakedown_core/ui/widgets/settings/playback_section.dart';
 import 'package:shakedown_core/ui/widgets/settings/source_filter_settings.dart';
@@ -56,10 +55,10 @@ class _TvSettingsScreenState extends State<TvSettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    Widget activeSection;
     const scaleFactor = 1.0;
     const initiallyExpanded = true;
 
+    Widget activeSection;
     switch (_selectedIndex) {
       case 0:
         activeSection = PlaybackSection(
@@ -102,7 +101,9 @@ class _TvSettingsScreenState extends State<TvSettingsScreen> {
         activeSection = const SourceFilterSettings();
         break;
       case 6:
-        activeSection = const DataSection(scaleFactor: scaleFactor);
+        activeSection = const RatedShowsBody(
+          key: ValueKey('rated_shows_section'),
+        );
         break;
       case 7:
         activeSection = const UsageInstructionsSection(
