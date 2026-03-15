@@ -42,7 +42,7 @@ class DeviceService extends ChangeNotifier {
   Future<void> _init() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      if (prefs.getBool('force_tv') == true) {
+      if (prefs.getBool('force_tv') == true || const bool.fromEnvironment('FORCE_TV', defaultValue: false)) {
         _isTv = true;
       }
     } catch (e) {
@@ -74,7 +74,7 @@ class DeviceService extends ChangeNotifier {
         // Check for manual override
         try {
           final prefs = await SharedPreferences.getInstance();
-          if (prefs.getBool('force_tv') == true) {
+          if (prefs.getBool('force_tv') == true || const bool.fromEnvironment('FORCE_TV', defaultValue: false)) {
             _isTv = true;
           }
         } catch (e) {

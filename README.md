@@ -177,7 +177,14 @@ adb shell am start -W -a android.intent.action.VIEW -d "shakedown://player?actio
 adb shell am start -W -a android.intent.action.VIEW -d "shakedown://ui-scale?enabled=true" com.jamart3d.shakedown
 ```
 
+#### **Forcing TV Mode in Android Studio (Emulator)**
+When testing the TV dual-pane layout on a standard Android Tablet emulator, the native OS will report as a mobile device. To bypass this and force the TV UI to boot, you must inject the `FORCE_TV` compilation flag. 
 
+1. In Android Studio, click the run configuration dropdown (next to the Play button) and select **Edit Configurations...**
+2. Select your `gdar_mobile` run target and click the **Copy Configuration** button.
+3. Rename the copy to: `GDAR Mobile (TV Override)`
+4. In the **Additional run args** field, add: `--dart-define=FORCE_TV=true`
+5. Click **Apply** and **OK**. Launching this profile will now hard-boot into the TV experience.
 ## Background Playback Audit (Jan 2026)
 
 The application is **correctly configured** for standard background audio playback on Android 14+.

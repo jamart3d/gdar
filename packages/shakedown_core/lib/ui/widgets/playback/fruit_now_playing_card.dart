@@ -14,6 +14,7 @@ import 'package:shakedown_core/providers/settings_provider.dart';
 import 'package:shakedown_core/utils/utils.dart';
 import 'package:shakedown_core/services/device_service.dart';
 import 'package:shakedown_core/utils/app_haptics.dart';
+import 'package:shakedown_core/ui/styles/font_config.dart';
 import 'package:shakedown_core/ui/widgets/playback/playback_messages.dart';
 import 'package:just_audio/just_audio.dart';
 
@@ -76,7 +77,7 @@ class FruitNowPlayingCard extends StatelessWidget {
                           child: Text(
                             track.title,
                             style: TextStyle(
-                              fontFamily: 'Inter',
+                              fontFamily: FontConfig.resolve('Inter'),
                               fontSize: 15 * scaleFactor,
                               fontWeight: FontWeight.w700,
                               color: colorScheme.onSurface,

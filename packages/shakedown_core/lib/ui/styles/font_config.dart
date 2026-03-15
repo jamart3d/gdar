@@ -31,7 +31,7 @@ class FontConfig {
       displayName: 'Default (Roboto)',
     ),
     'caveat': FontConfig(
-      fontFamily: 'Caveat',
+      fontFamily: 'packages/shakedown_core/Caveat',
       scaleFactor: 1.2, // Reduced from 1.23 for smaller scaled appearance
       lineHeight: 1.3,
       weightAdjustment: 0,
@@ -39,7 +39,7 @@ class FontConfig {
       displayName: 'Caveat',
     ),
     'rock_salt': FontConfig(
-      fontFamily: 'RockSalt',
+      fontFamily: 'packages/shakedown_core/RockSalt',
       scaleFactor: 1.3, // Increased from 1.25
       lineHeight: 1.3,
       weightAdjustment: 0,
@@ -47,7 +47,7 @@ class FontConfig {
       displayName: 'Rock Salt',
     ),
     'permanent_marker': FontConfig(
-      fontFamily: 'Permanent Marker',
+      fontFamily: 'packages/shakedown_core/Permanent Marker',
       scaleFactor: 1.3, // Increased from 1.25
       lineHeight: 1.3,
       weightAdjustment: 0,
@@ -55,7 +55,7 @@ class FontConfig {
       displayName: 'Permanent Marker',
     ),
     'inter': FontConfig(
-      fontFamily: 'Inter',
+      fontFamily: 'packages/shakedown_core/Inter',
       scaleFactor: 1.0,
       lineHeight: 1.2,
       weightAdjustment: 0,
@@ -67,6 +67,32 @@ class FontConfig {
   /// Retrieves configuration for a given font key.
   static FontConfig get(String fontKey) {
     return _registry[fontKey] ?? _registry['default']!;
+  }
+
+  /// Ensures a font family name correctly includes the package prefix
+  /// if it's one of the known bundled fonts.
+  static String? resolve(String? fontFamily) {
+    if (fontFamily == null) return null;
+    
+    // If it already has the prefix, it's fine.
+    if (fontFamily.startsWith('packages/shakedown_core/')) {
+      return fontFamily;
+    }
+
+    // Attempt to match raw name to a known font configuration.
+    // 'rock_salt', 'RockSalt', 'Rock Salt' -> all should resolve to the correct path if possible.
+    final normalized = fontFamily.toLowerCase().replaceAll(' ', '').replaceAll('_', '');
+    
+    for (final entry in _registry.values) {
+       final configNormalized = entry.fontFamily.split('/').last.toLowerCase().replaceAll(' ', '');
+       final keyNormalized = entry.displayName.toLowerCase().replaceAll(' ', '');
+       
+       if (normalized == configNormalized || normalized == keyNormalized) {
+         return entry.fontFamily;
+       }
+    }
+    
+    return fontFamily; // Fallback to whatever was provided
   }
 
   /// Calculates the adjusted font weight based on configuration.

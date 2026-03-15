@@ -3,7 +3,7 @@ import 'package:shakedown_core/ui/styles/font_config.dart';
 
 /// Android Material 3 Expressive theme for GDAR.
 class GDARAndroidTheme {
-  static ThemeData light({bool uiScale = false}) {
+  static ThemeData light({required String appFont, bool uiScale = false}) {
     final themeData = ThemeData(
       useMaterial3: true,
       brightness: Brightness.light,
@@ -14,11 +14,11 @@ class GDARAndroidTheme {
     );
 
     return themeData.copyWith(
-      textTheme: _buildTextTheme(themeData.textTheme, uiScale: uiScale),
+      textTheme: _buildTextTheme(themeData.textTheme, appFont: appFont, uiScale: uiScale),
     );
   }
 
-  static ThemeData dark({bool uiScale = false}) {
+  static ThemeData dark({required String appFont, bool uiScale = false}) {
     final themeData = ThemeData(
       useMaterial3: true,
       brightness: Brightness.dark,
@@ -29,20 +29,19 @@ class GDARAndroidTheme {
     );
 
     return themeData.copyWith(
-      textTheme: _buildTextTheme(themeData.textTheme, uiScale: uiScale),
+      textTheme: _buildTextTheme(themeData.textTheme, appFont: appFont, uiScale: uiScale),
     );
   }
 
-  static TextTheme _buildTextTheme(TextTheme base, {required bool uiScale}) {
-    // Roboto is the required font for Android style per specs.
-    final config = FontConfig.get('roboto');
+  static TextTheme _buildTextTheme(TextTheme base, {required String appFont, required bool uiScale}) {
+    final config = FontConfig.get(appFont);
     final double scale = uiScale ? 1.35 : 1.0;
     final double totalScale = config.scaleFactor * scale;
 
     TextStyle? normalize(TextStyle? style) {
       if (style == null) return null;
       return style.copyWith(
-        fontFamily: 'Roboto',
+        fontFamily: config.fontFamily,
         fontSize: style.fontSize != null ? style.fontSize! * totalScale : null,
         height: config.lineHeight,
         letterSpacing: (style.letterSpacing ?? 0.0) + config.letterSpacing,

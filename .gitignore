@@ -31,7 +31,7 @@ screenshots/
 .flutter-plugins-dependencies
 .pub-cache/
 .pub/
-/build/
+**/build/
 /coverage/
 
 # Symbolication related
@@ -72,3 +72,10 @@ user_history.lock
 # Local Data Storage
 /data/
 AUDIT_REPORT.md
+
+# gdar_web is web-only — prevent native platform dirs from regenerating
+apps/gdar_web/android/
+apps/gdar_web/ios/
+apps/gdar_web/windows/
+apps/gdar_web/macos/
+apps/gdar_web/linux/

@@ -100,11 +100,11 @@ class DefaultSettings {
   static const double oilAudioPeakDecay = 0.992;
   static const bool oilShowInfoBanner = true;
   static const double oilTranslationSmoothing =
-      0.85; // Updated default for smoother feel
-  static const String oilBannerDisplayMode = 'flat';
-  static const String oilBannerFont = 'RockSalt';
-  static const double oilFlatTextProximity = 0.7;
-  static const String oilFlatTextPlacement = 'above';
+      0.85; // ── Steal Screensaver Flat/Rings ──────────────────────────────────────────
+  static const String oilBannerDisplayMode = 'flat'; // 'flat' or 'rings'
+  static const String oilBannerFont = 'rock_salt'; // Primary font
+  static const double oilFlatTextProximity = 0.50; // Middle proximity
+  static const String oilFlatTextPlacement = 'below'; // below the logo
   static const double oilBannerResolution = 2.0;
   static const bool oilBannerPixelSnap = false;
 

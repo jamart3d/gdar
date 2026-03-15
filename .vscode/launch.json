@@ -2,41 +2,29 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Fruit Web",
+            "name": "GDAR Universal Web (Fruit/Android)",
             "request": "launch",
             "type": "dart",
-            "program": "apps/gdar_fruit/lib/main.dart",
-            "args": ["-d", "chrome"]
+            "program": "apps/gdar_web/lib/main.dart"
         },
         {
-            "name": "GDAR Mobile",
+            "name": "GDAR Mobile (Android/iOS)",
             "request": "launch",
             "type": "dart",
             "program": "apps/gdar_mobile/lib/main.dart"
+        },
+        {
+            "name": "GDAR TV",
+            "request": "launch",
+            "type": "dart",
+            "program": "apps/gdar_tv/lib/main.dart"
         },
         {
             "name": "GDAR Mobile (TV Override)",
             "request": "launch",
             "type": "dart",
             "program": "apps/gdar_mobile/lib/main.dart",
-            "args": ["--dart-define=FORCE_TV=true"]
-        },
-        {
-            "name": "gdar (Legacy)",
-            "request": "launch",
-            "type": "dart"
-        },
-        {
-            "name": "gdar (profile mode)",
-            "request": "launch",
-            "type": "dart",
-            "flutterMode": "profile"
-        },
-        {
-            "name": "gdar (release mode)",
-            "request": "launch",
-            "type": "dart",
-            "flutterMode": "release"
+            "toolArgs": ["--dart-define=FORCE_TV=true"]
         }
     ]
 }

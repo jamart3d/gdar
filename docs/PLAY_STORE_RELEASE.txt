@@ -1,3 +1,9 @@
+What's new in v1.2.0+200
+• Architecture: Migrated to a Dart workspace monorepo with independent app targets (Mobile, TV, Web) and shared core packages.
+• Versioning reset to +200 to mark the new monorepo era.
+
+---
+
 What's new in v1.1.69+169
 • Updated device_info_plus and app_links.
 • Migrated to hive_ce for improve Dart 3.7+ support.

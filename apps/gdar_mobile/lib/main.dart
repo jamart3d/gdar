@@ -39,7 +39,7 @@ Future<void> main() async {
       debugPrint('Error detecting TV in main: $e');
     }
 
-    if (prefs.getBool('force_tv') == true) {
+    if (prefs.getBool('force_tv') == true || const bool.fromEnvironment('FORCE_TV', defaultValue: false)) {
       isTv = true;
     }
 
@@ -110,8 +110,23 @@ class _GdarMobileAppState extends State<GdarMobileApp> {
     _deepLinkService = DeepLinkService();
     _deepLinkService.init();
 
-    _linkSubscription = _deepLinkService.uriStream.listen((uri) {
-      // Deep link handling
+    _linkSubscription = _deepLinkService.uriStream.listen((uri) async {
+      if (uri.scheme == 'shakedown' && uri.host == 'settings') {
+        final key = uri.queryParameters['key'];
+        final value = uri.queryParameters['value'];
+        
+        if (key != null && value != null) {
+          if (value == 'true' || value == 'false') {
+            await widget.prefs.setBool(key, value == 'true');
+            if (key == 'force_tv') {
+              // We need to restart or refresh the device service
+              if (mounted) {
+                await Provider.of<DeviceService>(context, listen: false).refresh();
+              }
+            }
+          }
+        }
+      }
     });
   }
 

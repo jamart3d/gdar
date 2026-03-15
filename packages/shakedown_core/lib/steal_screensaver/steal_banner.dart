@@ -6,6 +6,7 @@ import 'package:shakedown_core/utils/web_runtime.dart';
 import 'package:shakedown_core/utils/app_date_utils.dart';
 import 'package:shakedown_core/steal_screensaver/steal_config.dart';
 import 'package:shakedown_core/steal_screensaver/steal_game.dart';
+import 'package:shakedown_core/ui/styles/font_config.dart';
 
 /// Renders track info in one of two modes:
 ///
@@ -899,7 +900,7 @@ class StealBanner extends Component with HasGameReference<StealGame> {
       text: TextSpan(
         text: char,
         style: TextStyle(
-          fontFamily: config.bannerFont,
+          fontFamily: FontConfig.resolve(config.bannerFont),
           fontSize: fontSize,
           fontWeight: FontWeight.w600,
           color: Colors.white,

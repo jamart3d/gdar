@@ -139,14 +139,14 @@ class _GdarWebAppState extends State<GdarWebApp> {
           final isAndroid = themeProvider.themeStyle == ThemeStyle.android;
 
           final lightTheme = isAndroid
-              ? GDARAndroidTheme.light(uiScale: settingsProvider.uiScale)
+              ? GDARAndroidTheme.light(appFont: settingsProvider.appFont, uiScale: settingsProvider.uiScale)
               : GDARFruitTheme.light(
                   uiScale: settingsProvider.uiScale,
                   colorOption: themeProvider.fruitColorOption,
                 );
 
           final darkTheme = isAndroid
-              ? GDARAndroidTheme.dark(uiScale: settingsProvider.uiScale)
+              ? GDARAndroidTheme.dark(appFont: settingsProvider.appFont, uiScale: settingsProvider.uiScale)
               : GDARFruitTheme.dark(
                   uiScale: settingsProvider.uiScale,
                   colorOption: themeProvider.fruitColorOption,

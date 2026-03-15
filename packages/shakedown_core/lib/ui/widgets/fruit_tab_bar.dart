@@ -12,6 +12,7 @@ import 'package:shakedown_core/ui/widgets/theme/liquid_glass_wrapper.dart';
 import 'package:shakedown_core/providers/theme_provider.dart';
 import 'package:shakedown_core/services/device_service.dart';
 import 'package:shakedown_core/utils/app_haptics.dart';
+import 'package:shakedown_core/ui/styles/font_config.dart';
 
 class FruitTabBar extends StatelessWidget {
   final int selectedIndex;
@@ -287,7 +288,7 @@ class _FruitTabItemState extends State<_FruitTabItem> {
         Text(
           widget.label.toUpperCase(),
           style: TextStyle(
-            fontFamily: 'Inter',
+            fontFamily: FontConfig.resolve('Inter'),
             fontSize: 9 * widget.scaleFactor, // text-[9px]
             fontWeight: FontWeight.w700, // font-bold
             letterSpacing: 2.0, // tracking-widest

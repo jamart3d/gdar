@@ -6,6 +6,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.0+200] - 2026-03-14
+
+### Changed
+- **Architecture**: Migrated to a Dart workspace monorepo. The single-package `shakedown` root is now `gdar_root` with independent app targets (`gdar_mobile`, `gdar_tv`, `gdar_web`) and shared packages (`shakedown_core`, `gdar_android`, `gdar_fruit`).
+- **Versioning**: Reset build number to `+200` to mark the new monorepo era. Previous single-app lineage ended at `1.1.70+170`.
+
 ## [1.1.69+169] - 2026-03-12
 
 ### Added

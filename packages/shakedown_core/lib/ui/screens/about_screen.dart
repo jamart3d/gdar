@@ -11,6 +11,7 @@ import 'package:shakedown_core/utils/color_generator.dart';
 import 'package:shakedown_core/utils/utils.dart';
 import 'package:shakedown_core/ui/widgets/pulsing_heart_icon.dart';
 import 'package:shakedown_core/providers/theme_provider.dart';
+import 'package:shakedown_core/ui/styles/font_config.dart';
 
 class AboutScreen extends StatelessWidget {
   const AboutScreen({super.key});
@@ -105,7 +106,7 @@ class AboutBody extends StatelessWidget {
             'Shakedown',
             style: textTheme.displayMedium?.copyWith(
               fontFamily:
-                  context.read<DeviceService>().isTv ? 'RockSalt' : null,
+                  context.read<DeviceService>().isTv ? FontConfig.resolve('RockSalt') : null,
               fontWeight: FontWeight.bold,
               color: colorScheme.primary,
             ),

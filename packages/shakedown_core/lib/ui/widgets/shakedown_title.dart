@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:shakedown_core/providers/settings_provider.dart';
 import 'package:shakedown_core/services/device_service.dart';
 import 'package:shakedown_core/utils/font_layout_config.dart';
+import 'package:shakedown_core/ui/styles/font_config.dart';
 
 /// A reusable widget for the app title "Shakedown" that handles
 /// consistent styling, Hero animations, and flight transitions.
@@ -97,12 +98,12 @@ class _ShakedownTitleState extends State<ShakedownTitle>
     final textStyle = theme.textTheme.displayLarge?.copyWith(
       fontSize: widget.fontSize * scaleFactor,
       fontFamily: activeFont == 'default'
-          ? 'Roboto'
+          ? FontConfig.resolve('Inter') // Assuming 'Inter' for default
           : (activeFont == 'rock_salt'
-              ? 'RockSalt'
+              ? FontConfig.resolve('RockSalt')
               : (activeFont == 'permanent_marker'
-                  ? 'Permanent Marker'
-                  : 'Caveat')),
+                  ? FontConfig.resolve('Permanent Marker')
+                  : FontConfig.resolve('Caveat'))),
       fontWeight: FontWeight.bold,
       color: theme.colorScheme.primary,
       letterSpacing: 1.2,
