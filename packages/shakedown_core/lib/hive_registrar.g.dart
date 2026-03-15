@@ -4,6 +4,7 @@
 
 import 'package:hive_ce/hive_ce.dart';
 import 'package:shakedown_core/models/rating.dart';
+import 'package:shakedown_core/models/session_entry.dart';
 import 'package:shakedown_core/models/show.dart';
 import 'package:shakedown_core/models/source.dart';
 import 'package:shakedown_core/models/track.dart';
@@ -11,6 +12,7 @@ import 'package:shakedown_core/models/track.dart';
 extension HiveRegistrar on HiveInterface {
   void registerAdapters() {
     registerAdapter(RatingAdapter());
+    registerAdapter(SessionEntryAdapter());
     registerAdapter(ShowAdapter());
     registerAdapter(SourceAdapter());
     registerAdapter(TrackAdapter());
@@ -20,6 +22,7 @@ extension HiveRegistrar on HiveInterface {
 extension IsolatedHiveRegistrar on IsolatedHiveInterface {
   void registerAdapters() {
     registerAdapter(RatingAdapter());
+    registerAdapter(SessionEntryAdapter());
     registerAdapter(ShowAdapter());
     registerAdapter(SourceAdapter());
     registerAdapter(TrackAdapter());

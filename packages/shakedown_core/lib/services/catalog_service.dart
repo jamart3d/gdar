@@ -7,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shakedown_core/utils/logger.dart';
 import 'package:shakedown_core/models/show.dart';
 import 'package:shakedown_core/models/rating.dart';
+import 'package:shakedown_core/models/session_entry.dart';
 import 'package:shakedown_core/utils/asset_constants.dart';
 
 enum CatalogLoadingStrategy {
@@ -32,11 +33,13 @@ class CatalogService {
   Box<Rating>? _ratingsBox;
   Box<int>? _playCountsBox;
   Box<bool>? _historyBox;
+  Box<SessionEntry>? _sessionBox;
 
   // In-memory fallbacks for web/Wasm (Hive v2 is not Wasm-compatible)
   final Map<String, Rating> _webRatings = {};
   final Map<String, int> _webPlayCounts = {};
   final Map<String, bool> _webHistory = {};
+  final List<SessionEntry> _webSessionHistory = [];
 
   // Stores played status (Source ID -> true)
   List<Show>? _showsCache;
@@ -58,12 +61,18 @@ class CatalogService {
       await Hive.initFlutter('data');
       // Register Adapters if not already registered (check ID 0 for Rating)
       if (!Hive.isAdapterRegistered(0)) Hive.registerAdapter(RatingAdapter());
+      if (!Hive.isAdapterRegistered(1)) {
+        Hive.registerAdapter(SessionEntryAdapter());
+      }
 
       // Open Boxes
       _ratingsBox = await Hive.openBox<Rating>('ratings');
       _playCountsBox = await Hive.openBox<int>('play_counts');
       _historyBox = await Hive.openBox<bool>('user_history');
-      logger.i('Hive Boxes (Ratings, PlayCounts, History) opened.');
+      _sessionBox = await Hive.openBox<SessionEntry>('session_history');
+      logger.i(
+        'Hive Boxes (Ratings, PlayCounts, History, Sessions) opened.',
+      );
 
       // 1b. Migrate from SharedPreferences if needed
       await _migrateFromPreferences(prefs);
@@ -251,6 +260,39 @@ class CatalogService {
     }
   }
 
+  // Session History Methods
+  Future<void> recordSession(
+    String sourceId, {
+    required String showDate,
+  }) async {
+    if (!_isInitialized) return;
+
+    final entry = SessionEntry(
+      sourceId: sourceId,
+      timestamp: DateTime.now(),
+      showDate: showDate,
+    );
+
+    if (kIsWeb) {
+      _webSessionHistory.add(entry);
+      if (_webSessionHistory.length > 50) _webSessionHistory.removeAt(0);
+      return;
+    }
+
+    await _sessionBox!.add(entry);
+
+    // Keep only last 50 entries to prevent box bloat
+    if (_sessionBox!.length > 50) {
+      await _sessionBox!.deleteAt(0);
+    }
+  }
+
+  List<SessionEntry> getSessionHistory() {
+    if (!_isInitialized) return [];
+    if (kIsWeb) return List.unmodifiable(_webSessionHistory);
+    return _sessionBox!.values.toList();
+  }
+
   Future<void> togglePlayed(String sourceId) async {
     if (!_isInitialized) return;
     if (kIsWeb) {
@@ -291,6 +333,7 @@ class CatalogService {
       await _ratingsBox!.close();
       await _playCountsBox!.close();
       await _historyBox!.close();
+      await _sessionBox!.close();
     }
   }
 

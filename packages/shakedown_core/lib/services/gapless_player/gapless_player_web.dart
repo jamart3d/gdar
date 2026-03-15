@@ -21,6 +21,12 @@ external JSString? get _reasonVal;
 String? get _strategy => _strategyVal?.toDart;
 String? get _reason => _reasonVal?.toDart;
 
+@JS('document.visibilityState')
+external JSString get _visibilityState;
+
+@JS('document.addEventListener')
+external void _addEventListener(JSString type, JSFunction listener);
+
 /// JavaScript engine API surface.
 @JS()
 @anonymous
@@ -164,6 +170,8 @@ class GaplessPlayer {
   final _nextTrackTotalController = StreamController<Duration?>.broadcast();
   final _heartbeatActiveController = StreamController<bool>.broadcast();
   final _heartbeatNeededController = StreamController<bool>.broadcast();
+  final _driftController = StreamController<double>.broadcast();
+  final _visibilityController = StreamController<String>.broadcast();
 
   bool _playing = false;
   int? _currentIndex;
@@ -174,9 +182,14 @@ class GaplessPlayer {
   double _nextTrackTotalSec = 0;
   bool _heartbeatActive = false;
   bool _heartbeatNeeded = true;
+  DateTime? _lastTickAt;
+  double _lastDrift = 0;
+  DateTime _visibilityStartTime = DateTime.now();
+  bool _isVisible = true;
   ProcessingState _processingState = ProcessingState.idle;
   List<IndexedAudioSource> _sequence = [];
   String? _lastContextState;
+  String? _lastJsState;
 
   final bool _useJsEngine;
   final AudioPlayer? _fallbackPlayer;
@@ -202,11 +215,37 @@ class GaplessPlayer {
 
     if (_useJsEngine) {
       _initJsEngine();
+      _setupVisibilityListener();
       if (hybridHandoffMode != null) {
         setHybridHandoffMode(hybridHandoffMode);
       }
       // Note: background mode is typically set later via settings provider
     }
+  }
+
+  void _setupVisibilityListener() {
+    _visibilityStartTime = DateTime.now();
+    try {
+      _addEventListener(
+        'visibilitychange'.toJS,
+        ((JSAny? event) {
+          final state = _visibilityState.toDart;
+          _isVisible = state == 'visible';
+          _visibilityStartTime = DateTime.now();
+          _visibilityController.add(_visibilityStatus);
+        }).toJS,
+      );
+    } catch (e) {
+      logger.w('GaplessPlayerWeb: Failed to setup visibility listener: $e');
+    }
+  }
+
+  String get _visibilityStatus {
+    final now = DateTime.now();
+    final diff = now.difference(_visibilityStartTime);
+    final minutes = diff.inMinutes;
+    final status = _isVisible ? 'VIS' : 'HID';
+    return '$status(${minutes}m)';
   }
 
   void _initJsEngine() {
@@ -309,6 +348,17 @@ class GaplessPlayer {
   }
 
   void _onJsStateChange(_GdarState s) {
+    final now = DateTime.now();
+    if (_lastTickAt != null) {
+      final diff = now.difference(_lastTickAt!).inMilliseconds / 1000.0;
+      _lastDrift = diff;
+      _driftController.add(diff);
+    }
+    _lastTickAt = now;
+
+    // Periodically update visibility status (on every state tick)
+    _visibilityController.add(_visibilityStatus);
+
     final wasPlaying = _playing;
     final wasDuration = _durationSec;
     final wasIndex = _currentIndex;
@@ -331,6 +381,7 @@ class GaplessPlayer {
       _currentIndex = (idx != null && idx >= 0) ? idx : null;
 
       final ps = s.processingState;
+      _lastJsState = ps;
       _processingState = _mapProcessingState(ps ?? 'idle');
       _processingStateController.add(_processingState);
       _engineStateStringController.add(ps ?? 'idle');
@@ -477,6 +528,20 @@ class GaplessPlayer {
       ? PlayerState(_playing, _processingState)
       : _fallbackPlayer!.playerState;
 
+  double get drift => _useJsEngine ? _lastDrift : 0.0;
+
+  String get visibility => _useJsEngine ? _visibilityStatus : 'VIS';
+
+  String get engineStateString =>
+      _useJsEngine ? (_lastJsState ?? 'idle') : 'native';
+
+  String get engineContextState =>
+      _useJsEngine ? (_lastContextState ?? 'none') : 'native';
+
+  bool get heartbeatActive => _useJsEngine ? _heartbeatActive : false;
+
+  bool get heartbeatNeeded => _useJsEngine ? _heartbeatNeeded : false;
+
   /// Returns the name of the active audio engine.
   String get engineName {
     if (!_useJsEngine) return 'Standard Engine (just_audio)';
@@ -558,6 +623,14 @@ class GaplessPlayer {
 
   Stream<bool> get heartbeatNeededStream =>
       _useJsEngine ? _heartbeatNeededController.stream : Stream.value(true);
+
+  /// Stream of JS engine tick drift.
+  Stream<double> get driftStream =>
+      _useJsEngine ? _driftController.stream : const Stream.empty();
+
+  /// Stream of JS engine visibility status.
+  Stream<String> get visibilityStream =>
+      _useJsEngine ? _visibilityController.stream : const Stream.empty();
 
   /// Emits the raw string processing state from the JS engine (e.g. 'handoff_countdown')
   Stream<String> get engineStateStringStream =>
@@ -801,6 +874,8 @@ class GaplessPlayer {
     await _nextTrackTotalController.close();
     await _heartbeatActiveController.close();
     await _heartbeatNeededController.close();
+    await _driftController.close();
+    await _visibilityController.close();
   }
 
   /// Reloads the web page.

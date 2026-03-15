@@ -6,6 +6,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.1+202] - 2026-03-15
+
+### Added
+- **HUD**: Unified Diagnostics HUD with real-time `HudSnapshot` streaming for transparent audio engine telemetry.
+
+### Changed
+- **Architecture**: Refactored `PlaybackMessages` and `DevAudioHud` to use stream-based updates, improving UI responsiveness and architectural clarity.
+- **Provider**: Consolidated `AudioProvider` cleanup logic and unified the diagnostics snapshot generation process.
+
+### Fixed
+- **UI**: Resolved a bug where playback status text was visible even when "Show Playback Messages" was disabled in Settings.
+- **Maintenance**: Fixed a duplicate `dispose()` method conflict in `AudioProvider`.
+
 ## [1.2.1+201] - 2026-03-15
 
 ### Changed

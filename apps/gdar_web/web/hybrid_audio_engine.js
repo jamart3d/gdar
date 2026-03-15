@@ -73,25 +73,13 @@
     let _instantHandoffIndex = -1;
     let _handoffInProgress = false;
     let _lastStateForwardMs = 0;
+    let _fenceHandoffPending = false;
 
-    // Web Worker for background timing
-    let _schedulerWorker = null;
+    // Web Worker for background timing - now managed centrally via audio_scheduler.js
+    // let _schedulerWorker = null;
 
     function _initWorker() {
-        if (_schedulerWorker) return;
-        try {
-            _schedulerWorker = new Worker('audio_scheduler.worker.js');
-            _schedulerWorker.onmessage = (e) => {
-                if (e.data === 'tick') {
-                    // Global heartbeat tick - can be used for any background polling
-                    window.dispatchEvent(new CustomEvent('gdar-worker-tick'));
-                }
-            };
-            _schedulerWorker.postMessage('start');
-            _log.log('[hybrid] Background scheduler worker started');
-        } catch (err) {
-            _log.error('[hybrid] Failed to spawn worker:', err.message);
-        }
+        // Now handled by window._gdarScheduler.
     }
 
     // Callbacks registered by Dart
@@ -157,6 +145,12 @@
         // Critical Fix: Do not let the Web Audio API overwrite the UI with "buffering" events
         // while the HTML5 engine is successfully driving playback during an Instant Start.
         if (sourceEngine !== _activeEngine) return;
+
+        // Sync central MediaSession Anchor
+        if (window._gdarMediaSession) {
+            window._gdarMediaSession.updatePlaybackState(state.playing);
+            window._gdarMediaSession.updatePositionState(state);
+        }
         if (_handoffInProgress) {
             const now = performance.now();
             if (now - _lastStateForwardMs < 250) return;
@@ -222,10 +216,13 @@
     function _forwardTrack(event, sourceEngine) {
         if (!_onTrackChange) return;
         if (sourceEngine !== _activeEngine) return;
-        if (_handoffInProgress) {
-            const now = performance.now();
-            if (now - _lastStateForwardMs < 250) return;
-            _lastStateForwardMs = now;
+
+        // Sync central MediaSession Anchor Metadata
+        const state = sourceEngine.getState();
+        if (window._gdarMediaSession && state.index !== -1) {
+            // Metadata is already updated by the engines themselves, 
+            // but we ensure the playback state is synced here too.
+            window._gdarMediaSession.updatePlaybackState(state.playing);
         }
 
         // Invalidate any background restoration loops for the old track
@@ -247,6 +244,10 @@
             } else {
                 _log.log('[hybrid] Track Boundary: Staying in Background (HTML5) while tab is hidden.');
             }
+        } else if (_fenceHandoffPending && _activeEngine === _fgEngine && _playing) {
+            _log.log('[hybrid] Track Boundary: Fence triggered. Swapping to background engine now.');
+            _fenceHandoffPending = false;
+            _attemptHandoff(_currentIndex, true);
         } else {
             // Already in foreground, just ensure background is dead
             _bgEngine.stop();
@@ -291,12 +292,27 @@
             _applyHiddenSurvivalStrategy();
 
             if (_activeEngine === _fgEngine && _playing && !_allowHiddenWebAudio) {
-                _log.log('[hybrid] Background Handoff: Tab hidden while playing in foreground. Pre-emptively swapping to HTML5.');
-                _instantHandoffPending = true;
-                _attemptHandoff(_currentIndex, true);
+                const isMobile = (function () {
+                    const ua = navigator.userAgent || '';
+                    if (/Windows/i.test(ua) || (/Macintosh/i.test(ua) && navigator.maxTouchPoints === 0)) return false;
+                    const isAndroid = /Android/i.test(ua);
+                    const isIOS = /iPhone|iPad|iPod/i.test(ua);
+                    const isMacPad = navigator.maxTouchPoints > 0 && /Macintosh/.test(ua);
+                    return isAndroid || isIOS || isMacPad;
+                })();
+
+                if (isMobile) {
+                    _log.log('[hybrid] Background Handoff: Mobile detected. Pre-emptively swapping to HTML5.');
+                    _instantHandoffPending = true;
+                    _attemptHandoff(_currentIndex, true);
+                } else {
+                    _log.log('[hybrid] Background Handoff: Desktop detected. Fence enabled: waiting for track boundary.');
+                    _fenceHandoffPending = true;
+                }
             }
         } else {
             _log.log('[hybrid] Tab visible. Ensuring survival tricks are off.');
+            _fenceHandoffPending = false;
             if (window._gdarHeartbeat) window._gdarHeartbeat.stopHeartbeat();
 
             // Note: Spec 5 says NOT to auto-restore on foreground return.
@@ -507,11 +523,24 @@
 
     // --- Public API -----------------------------------------------------------
 
+    function _setupMediaSession() {
+        if (window._gdarMediaSession) {
+            window._gdarMediaSession.setActionHandlers({
+                onPlay: () => api.play(),
+                onPause: () => api.pause(),
+                onNext: () => api.seekToIndex(_fgEngine.getState().index + 1),
+                onPrevious: () => api.seekToIndex(_fgEngine.getState().index - 1),
+                onSeekTo: (e) => api.seek(e.seekTime)
+            });
+        }
+    }
+
     const api = {
         init: function () {
             _fgEngine.init();
             _bgEngine.init();
-            _initWorker();
+            if (window._gdarScheduler) window._gdarScheduler.start();
+            _setupMediaSession();
         },
 
         syncState: function (index, position, shouldPlay) {

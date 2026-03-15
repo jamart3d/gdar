@@ -96,6 +96,10 @@
   <!-- Global Web Error Log (gdarDumpErrors / gdarClearErrors) -->
   <script src="web_error_logger.js"></script>  <!-- 0. Master Logging Registry (Control debug output) -->
   <script src="audio_logger.js"></script>
+  <!-- 0.1 Background Timing Workhorse (Web Worker Dispatcher) -->
+  <script src="audio_scheduler.js"></script>
+  <!-- 0.2 Persistent MediaSession Anchor -->
+  <script src="audio_mediasession.js"></script>
   <script>
     // Splash Screen Management: Removes splash only when Flutter app element appears  
     (function() {

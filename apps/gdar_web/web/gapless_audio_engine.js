@@ -45,8 +45,10 @@
   let _prefetchTimer = null;
   let _decodeTimer = null;
 
-  // Position polling.
-  let _positionTimer = null;
+  // Position polling (DEPRECATED: Now uses worker ticks)
+  // let _positionTimer = null;
+  let _workerTickCount = 0;
+  const _failedTracks = new Set(); // Static Sentinel: indices that failed to fetch/decode
 
   // Real-time progress of track buffering (seconds).
   let _currentTrackBufferedSeconds = 0;
@@ -102,22 +104,24 @@
       }
     }, { capture: true, passive: true });
 
-    document.addEventListener('visibilitychange', function () {
-      if (document.visibilityState !== 'visible') return;
-      if (_ctx && _ctx.state === 'suspended' && _playing) {
-        _ctx.resume().catch(() => { });
+    window.addEventListener('gdar-worker-tick', _onWorkerTick);
+
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'hidden' && _playing) {
+        _log.log('[gdar engine] Tab hidden. Recalculating prefetch budget.');
+        _schedulePrefetch();
       }
-      _checkWatchdog();
     });
 
     window._gdarListenersRegistered = true;
-    _log.log('[gdar engine] Global listeners registered');
+    _log.log('[gdar engine] Global listeners registered (including worker ticks)');
   }
 
   // --- Playlist Management --------------------------------------------------
 
   function _setPlaylist(tracks, startIndex) {
     _log.log('[gdar engine] setPlaylist', tracks?.length, startIndex);
+    _failedTracks.clear();
     _stopCurrentSource();
     _cancelPrefetch();
     _clearScheduled();
@@ -237,6 +241,9 @@
         if (index === _currentIndex) _currentTrackBufferedSeconds = 0;
         if (index === _currentIndex + 1) _nextTrackBufferedSeconds = 0;
         if (err.name === 'AbortError') return Promise.reject(new Error('Aborted'));
+        
+        _log.error('[gdar engine] Fetch failed for index', index, err.message);
+        _failedTracks.add(index);
         throw err;
       });
   }
@@ -261,9 +268,14 @@
       // Clean up compressed data after successful decode to save memory
       delete _compressed[index];
       return audioBuf;
-    }).catch(err => {
+    });
+
+    p.catch(err => {
       delete _decodingPromises[index];
-      _log.error('[gdar engine] Decode failed for index', index, err);
+      if (err.message !== 'Aborted') {
+        _log.error('[gdar engine] Decode failed for index', index, err);
+        _failedTracks.add(index);
+      }
       throw err;
     });
 
@@ -273,6 +285,8 @@
 
   function _evictOldBuffers() {
     const start = performance.now();
+    // In background, be even more aggressive: only keep current and next.
+    // (Already doing that, but we can ensure everything else is purged immediately)
     const keep = new Set([_currentIndex, _currentIndex + 1]);
     let count = 0;
     Object.keys(_decoded).forEach(k => {
@@ -349,8 +363,8 @@
 
     _currentSource = src;
     _playing = true;
-    _startPositionTimer();
-    _startWatchdog();
+    // _startPositionTimer(); // Now handled by global worker tick
+    // _startWatchdog();      // Now handled by global worker tick
     _schedulePrefetch();
     _emitState();
     _updateMediaSession();
@@ -360,11 +374,11 @@
     if (_currentSource) {
       _currentSource.onended = null;
       try { _currentSource.stop(); } catch (_) { }
-      _currentSource = null;
+    _currentSource = null;
     }
     _startedIndex = -1;
-    _stopPositionTimer();
-    _stopWatchdog();
+    // _stopPositionTimer(); // Now handled by global worker tick
+    // _stopWatchdog();      // Now handled by global worker tick
     _expectedEndContextTime = 0;
     // DO NOT clear _decoded here anymore, it breaks instantaneous seeking.
     // Cache is managed via _evictOldBuffers and _setPlaylist.
@@ -415,8 +429,8 @@
       };
 
       _playing = true;
-      _startPositionTimer();
-      _startWatchdog();
+      // _startPositionTimer();
+      // _startWatchdog();
       _schedulePrefetch();
       _evictOldBuffers();
       _emitTrackChange(wasIndex, _currentIndex);
@@ -449,12 +463,19 @@
     _cancelPrefetch();
     const nextIndex = _currentIndex + 1;
     if (nextIndex >= _playlist.length) return;
+    if (_failedTracks.has(nextIndex)) {
+      _log.warn('[gdar engine] Sentinel: Skipping prefetch for known failed track:', nextIndex);
+      return;
+    }
 
     const remaining = _getRemainingSeconds();
     if (remaining <= 0) return;
 
-    const fetchIn = Math.max(0, (remaining - (_prefetchSeconds + 2)) * 1000);
-    const decodeIn = Math.max(0, (remaining - _prefetchSeconds) * 1000);
+    // Use adaptive depth: 30s for foreground, 90s for background
+    const depth = document.visibilityState === 'hidden' ? 90 : _prefetchSeconds;
+
+    const fetchIn = Math.max(0, (remaining - (depth + 2)) * 1000);
+    const decodeIn = Math.max(0, (remaining - depth) * 1000);
 
     const timeSinceStart = performance.now() - _lastStartTrackTime;
     const settleDelay = Math.max(0, 2000 - timeSinceStart);
@@ -524,22 +545,43 @@
     return Math.max(0, _currentTrackDuration - _getCurrentPositionSeconds());
   }
 
+  function _onWorkerTick() {
+    if (!_playing) return;
+
+    // Boundary Sentinel: If we are close to the end (T-15s) and NOTHING is scheduled,
+    // force a prefetch check. This handles cases where initial timers were clamped or missed.
+    const remaining = _getRemainingSeconds();
+    if (remaining < 15 && remaining > 0 && !_scheduledSource && !_isPrefetching && _loadingState !== 'loading' && (_currentIndex + 1 < _playlist.length)) {
+      if (!_failedTracks.has(_currentIndex + 1)) {
+        _log.warn('[gdar engine] Boundary Sentinel: Next track NOT scheduled at T-15s. Forcing prefetch.');
+        _schedulePrefetch();
+      }
+    }
+
+    // 4Hz tick - Position update
+    _emitState();
+
+    // 2Hz (every 2 ticks) - Watchdog
+    _workerTickCount++;
+    if (_workerTickCount % 2 === 0) {
+      _checkWatchdog();
+    }
+  }
+
   function _startPositionTimer() {
-    _stopPositionTimer();
-    _positionTimer = setInterval(() => _emitState(), 250);
+    // Deprecated in favor of _onWorkerTick
   }
 
   function _stopPositionTimer() {
-    if (_positionTimer) { clearInterval(_positionTimer); _positionTimer = null; }
+    // Deprecated in favor of _onWorkerTick
   }
 
   function _startWatchdog() {
-    _stopWatchdog();
-    _watchdogTimer = setInterval(_checkWatchdog, 500);
+    // Deprecated in favor of _onWorkerTick
   }
 
   function _stopWatchdog() {
-    if (_watchdogTimer) { clearInterval(_watchdogTimer); _watchdogTimer = null; }
+    // Deprecated in favor of _onWorkerTick
   }
 
   function _checkWatchdog() {
@@ -626,6 +668,15 @@
              return base + (hbNeeded ? ' [HBN]' : ' [HBO]') + ' v1.1.hb';
           })(),
         });
+
+        // Update MediaSession Position State
+        if (window._gdarMediaSession) {
+          window._gdarMediaSession.updatePositionState({
+            duration: _currentTrackDuration,
+            position: currentPos,
+            playing: _playing
+          });
+        }
       } catch (_) { }
     }
   }
@@ -648,18 +699,36 @@
   }
 
   function _updateMediaSession() {
-    if (!('mediaSession' in navigator)) return;
-    const track = _playlist[_currentIndex];
-    if (!track) return;
-    navigator.mediaSession.metadata = new MediaMetadata({
-      title: track.title || '',
-      artist: track.artist || '',
-      album: track.album || '',
-    });
-    navigator.mediaSession.setActionHandler('play', () => api.play());
-    navigator.mediaSession.setActionHandler('pause', () => api.pause());
-    navigator.mediaSession.setActionHandler('nexttrack', () => api.seekToIndex(_currentIndex + 1));
-    navigator.mediaSession.setActionHandler('previoustrack', () => api.seekToIndex(_currentIndex - 1));
+    if (window._gdarMediaSession) {
+      const track = _playlist[_currentIndex];
+      if (track) {
+        window._gdarMediaSession.updateMetadata({
+          title: track.title,
+          artist: track.artist,
+          album: track.album
+        });
+      }
+      window._gdarMediaSession.updatePlaybackState(_playing);
+      window._gdarMediaSession.setActionHandlers({
+        onPlay: () => api.play(),
+        onPause: () => api.pause(),
+        onNext: () => api.seekToIndex(_currentIndex + 1),
+        onPrevious: () => api.seekToIndex(_currentIndex - 1),
+        onSeekTo: (e) => api.seek(e.seekTime)
+      });
+    } else if ('mediaSession' in navigator) {
+      const track = _playlist[_currentIndex];
+      if (!track) return;
+      navigator.mediaSession.metadata = new MediaMetadata({
+        title: track.title || '',
+        artist: track.artist || '',
+        album: track.album || '',
+      });
+      navigator.mediaSession.setActionHandler('play', () => api.play());
+      navigator.mediaSession.setActionHandler('pause', () => api.pause());
+      navigator.mediaSession.setActionHandler('nexttrack', () => api.seekToIndex(_currentIndex + 1));
+      navigator.mediaSession.setActionHandler('previoustrack', () => api.seekToIndex(_currentIndex - 1));
+    }
   }
 
   const api = {
@@ -782,6 +851,7 @@
         delete _abortControllers[k];
       });
       _emitState();
+      _updateMediaSession();
     },
 
     seek: function (seconds) {

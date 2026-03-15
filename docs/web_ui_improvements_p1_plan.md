@@ -1,4 +1,4 @@
-# Web UI Improvements — P1 Plan (Jules)
+# Web UI Improvements — P1 Plan 
 
 ## Phase Goal
 Improve recovery and observability for background/PWA playback.
@@ -8,7 +8,7 @@ Improve recovery and observability for background/PWA playback.
 - Prefetch and recovery logic prioritize stability under background throttling.
 
 
-## Jules Expectations
+## Expectations
 
 - Follow Clean Architecture: UI (Widgets), Logic (Provider/State), Data (Repository).
 - State management via Provider (`ChangeNotifier` / `ProxyProvider`).
@@ -23,11 +23,12 @@ Improve recovery and observability for background/PWA playback.
 
 
 ## P1 Checklist
-- [ ] Use a monotonic clock for drift calculations to avoid wall-clock jumps.
-- [ ] Propagate settings changes to JS engines live (background/handoff/forceHtml5) without reload.
-- [ ] Define a minimal QA matrix (foreground/background, PWA vs tab, iOS Safari vs Chrome Android, low-power mode).
-- [ ] Boundary Sentinel: pre-warm next track at T-10s to guarantee gapless transition.
-- [ ] Adaptive Prefetch Budget: increase next-track buffer when hidden, cap memory for older tracks.
-- [ ] Time-boxed Recovery: auto-handoff to HTML5 if WebAudio stalls > X seconds.
-- [ ] Session History can seed a “boundary sentinel” prefetch of the *next show* when current show ends.
-- [ ] Use SessionEntry timestamps to prioritize which upcoming show gets background prefetch budget.
+- [x] Use a monotonic clock for drift calculations to avoid wall-clock jumps.
+- [x] Propagate settings changes to JS engines live (background/handoff/forceHtml5) without reload.
+- [x] Define a minimal QA matrix (foreground/background, PWA vs tab, iOS Safari vs Chrome Android, low-power mode).
+- [x] Boundary Sentinel: pre-warm next track at T-10s to guarantee gapless transition.
+- [x] Adaptive Prefetch Budget: increase next-track buffer when hidden (90s) vs foreground (30s).
+- [x] Time-boxed Recovery: auto-handoff to HTML5 if WebAudio stalls > X seconds.
+- [x] Session History can seed a “boundary sentinel” prefetch of the *next show* when current show ends.
+- [x] Use SessionEntry timestamps to prioritize which upcoming show gets background prefetch budget.
+- [x] Add Setting toggle for Run Detection (def off)

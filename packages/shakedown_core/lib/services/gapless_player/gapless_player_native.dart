@@ -67,6 +67,24 @@ class GaplessPlayer {
   /// Android audio session ID, if available.
   int? get androidAudioSessionId => _player.androidAudioSessionId;
 
+  /// JS engine tick drift (not applicable natively).
+  double get drift => 0.0;
+
+  /// JS engine visibility status (not applicable natively).
+  String get visibility => 'N/A';
+
+  /// Raw JS engine state string (not applicable natively).
+  String get engineStateString => 'native';
+
+  /// Raw JS context state (not applicable natively).
+  String get engineContextState => 'native';
+
+  /// Heartbeat active state (not applicable natively).
+  bool get heartbeatActive => false;
+
+  /// Heartbeat needed state (not applicable natively).
+  bool get heartbeatNeeded => false;
+
   // ─── Passthrough streams ─────────────────────────────────────────────────
 
   /// Stream of [PlayerState] changes.
@@ -110,6 +128,12 @@ class GaplessPlayer {
 
   /// Stream of the raw JS contextState (e.g. 'hybrid_foreground').
   Stream<String> get engineContextStateStream => const Stream.empty();
+
+  /// Stream of JS engine tick drift.
+  Stream<double> get driftStream => const Stream.empty();
+
+  /// Stream of JS engine visibility status.
+  Stream<String> get visibilityStream => const Stream.empty();
 
   /// Stream of current index changes.
   Stream<int?> get currentIndexStream => _player.currentIndexStream;

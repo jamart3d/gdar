@@ -448,6 +448,37 @@ class PlaybackSection extends StatelessWidget {
             isFruit ? LucideIcons.history : Icons.history_toggle_off_rounded,
           ),
         ),
+        TvSwitchListTile(
+          dense: true,
+          visualDensity: VisualDensity.compact,
+          title: FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Text(
+              'Sequence Run Detection',
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(fontSize: 16 * scaleFactor),
+            ),
+          ),
+          subtitle: FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Text(
+              'Predict next show based on chronological patterns',
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall?.copyWith(fontSize: 12 * scaleFactor),
+            ),
+          ),
+          value: settingsProvider.enableRunDetection,
+          onChanged: (value) {
+            context.read<SettingsProvider>().toggleEnableRunDetection();
+          },
+          secondary: Icon(
+            isFruit ? LucideIcons.trendingUp : Icons.timeline_rounded,
+          ),
+        ),
         RandomProbabilityCard(scaleFactor: scaleFactor),
       ],
     );

@@ -11,6 +11,8 @@ import 'package:shakedown_core/providers/settings_provider.dart';
 import 'package:shakedown_core/services/gapless_player/gapless_player.dart';
 import 'package:shakedown_core/providers/show_list_provider.dart';
 import 'package:shakedown_core/providers/update_provider.dart';
+import 'package:shakedown_core/models/dng_snapshot.dart';
+import 'package:shakedown_core/models/hud_snapshot.dart';
 import 'package:shakedown_core/services/device_service.dart';
 import 'package:shakedown_core/ui/widgets/tv/tv_dual_pane_layout.dart';
 import 'package:shakedown_core/ui/screens/show_list_screen.dart';
@@ -65,6 +67,10 @@ class MockAudioProvider extends ChangeNotifier implements ap.AudioProvider {
   Stream<String> get engineStateStringStream => const Stream.empty();
   @override
   Stream<String> get engineContextStateStream => const Stream.empty();
+  @override
+  Stream<double> get driftStream => const Stream.empty();
+  @override
+  Stream<String> get visibilityStream => const Stream.empty();
   @override
   Stream<String> get playbackErrorStream => const Stream.empty();
   @override
@@ -133,6 +139,14 @@ class MockAudioProvider extends ChangeNotifier implements ap.AudioProvider {
   @override
   void seekToTrack(int localIndex) {}
   @override
+  Stream<DngSnapshot> get diagnosticsStream => const Stream.empty();
+  @override
+  Stream<HudSnapshot> get hudSnapshotStream => const Stream.empty();
+  @override
+  HudSnapshot get currentHudSnapshot => HudSnapshot.empty();
+  @override
+  void clearLastIssue() {}
+  @override
   bool get hasListeners => super.hasListeners;
 }
 
@@ -163,6 +177,10 @@ class MockGaplessPlayer extends Mock implements GaplessPlayer {
   Stream<String> get engineStateStringStream => const Stream.empty();
   @override
   Stream<String> get engineContextStateStream => const Stream.empty();
+  @override
+  Stream<double> get driftStream => const Stream.empty();
+  @override
+  Stream<String> get visibilityStream => const Stream.empty();
   @override
   Stream<SequenceState?> get sequenceStateStream => const Stream.empty();
 }

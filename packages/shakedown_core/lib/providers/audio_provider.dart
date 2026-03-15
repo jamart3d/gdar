@@ -18,6 +18,9 @@ import 'package:just_audio_background/just_audio_background.dart';
 import 'package:shakedown_core/services/buffer_agent.dart';
 import 'package:shakedown_core/services/random_show_selector.dart';
 import 'package:shakedown_core/services/audio_cache_service.dart';
+import 'package:shakedown_core/models/dng_snapshot.dart';
+import 'package:shakedown_core/models/hud_snapshot.dart';
+import 'package:shakedown_core/utils/utils.dart';
 
 class AudioProvider with ChangeNotifier {
   late final GaplessPlayer _audioPlayer;
@@ -58,6 +61,22 @@ class AudioProvider with ChangeNotifier {
 
   void clearPendingRandomShowRequest() {
     _pendingRandomShowRequest = null;
+    notifyListeners();
+  }
+
+  // Diagnostics HUD state
+  String? _lastAgentMessage;
+  String? _lastNotificationMessage;
+  String? _lastIssueMessage;
+  DateTime? _lastIssueAt;
+  Timer? _notificationTimeoutTimer;
+  StreamController<DngSnapshot>? _diagnosticsController;
+  Timer? _diagnosticsTimer;
+  StreamController<HudSnapshot>? _hudSnapshotController;
+
+  void clearLastIssue() {
+    _lastIssueMessage = null;
+    _lastIssueAt = null;
     notifyListeners();
   }
 
@@ -122,6 +141,8 @@ class AudioProvider with ChangeNotifier {
       _audioPlayer.engineStateStringStream;
   Stream<String> get engineContextStateStream =>
       _audioPlayer.engineContextStateStream;
+  Stream<double> get driftStream => _audioPlayer.driftStream;
+  Stream<String> get visibilityStream => _audioPlayer.visibilityStream;
   Stream<String> get playbackErrorStream => _errorController.stream;
   Stream<({Show show, Source source})> get randomShowRequestStream =>
       _randomShowRequestController.stream;
@@ -131,6 +152,24 @@ class AudioProvider with ChangeNotifier {
   Stream<String> get notificationStream => _notificationController.stream;
   Stream<void> get playbackFocusRequestStream =>
       _playbackFocusRequestController.stream;
+
+  Stream<DngSnapshot> get diagnosticsStream {
+    _diagnosticsController ??= StreamController<DngSnapshot>.broadcast(
+      onListen: _startDiagnosticsTimer,
+      onCancel: _stopDiagnosticsTimer,
+    );
+    return _diagnosticsController!.stream;
+  }
+
+  Stream<HudSnapshot> get hudSnapshotStream {
+    _hudSnapshotController ??= StreamController<HudSnapshot>.broadcast(
+      onListen: _startDiagnosticsTimer,
+      onCancel: _stopDiagnosticsTimer,
+    );
+    return _hudSnapshotController!.stream;
+  }
+
+  HudSnapshot get currentHudSnapshot => _createHudSnapshot();
 
   /// Proxy for cached track count from [AudioCacheService]
   int get cachedTrackCount => _audioCacheService.cachedTrackCount;
@@ -184,12 +223,256 @@ class AudioProvider with ChangeNotifier {
     // Listen to raw engine states (for suspension notifications)
     _audioPlayer.engineStateStringStream.listen((state) {
       if (state == 'suspended_by_os') {
-        _bufferAgentNotificationController.add((
-          message: 'Playback suspended by system. Tap play to resume.',
-          retryAction: () => play(),
-        ));
+        _setAgentMessage('Playback suspended by system. Tap play to resume.');
       }
     });
+
+    // Capture messages for HUD snapshot
+    _bufferAgentNotificationController.stream.listen((event) {
+      _setAgentMessage(event.message);
+    });
+
+    _notificationController.stream.listen((msg) {
+      _setNotificationMessage(msg);
+    });
+  }
+
+  void _setAgentMessage(String msg) {
+    _lastAgentMessage = msg;
+    _lastIssueMessage = msg;
+    _lastIssueAt = DateTime.now();
+    notifyListeners();
+  }
+
+  void _setNotificationMessage(String msg) {
+    _lastNotificationMessage = msg;
+    _lastIssueMessage = msg;
+    _lastIssueAt = DateTime.now();
+    _notificationTimeoutTimer?.cancel();
+    _notificationTimeoutTimer = Timer(const Duration(seconds: 4), () {
+      _lastNotificationMessage = null;
+      notifyListeners();
+    });
+    notifyListeners();
+  }
+
+  void _startDiagnosticsTimer() {
+    _diagnosticsTimer?.cancel();
+    _diagnosticsTimer = Timer.periodic(const Duration(milliseconds: 250), (_) {
+      if (_diagnosticsController != null &&
+          _diagnosticsController!.hasListener) {
+        _diagnosticsController!.add(_createSnapshot());
+      }
+      if (_hudSnapshotController != null &&
+          _hudSnapshotController!.hasListener) {
+        _hudSnapshotController!.add(_createHudSnapshot());
+      }
+    });
+  }
+
+  void _stopDiagnosticsTimer() {
+    _diagnosticsTimer?.cancel();
+    _diagnosticsTimer = null;
+  }
+
+  DngSnapshot _createSnapshot() {
+    return DngSnapshot(
+      position: _audioPlayer.position,
+      buffered: _audioPlayer.bufferedPosition,
+      nextBuffered: _audioPlayer.nextTrackBuffered ?? Duration.zero,
+      drift: _audioPlayer.drift,
+      visibility: _audioPlayer.visibility,
+      playerState: _audioPlayer.playerState,
+      engineState: _audioPlayer.engineStateString,
+      engineContextState: _audioPlayer.engineContextState,
+      hbActive: _audioPlayer.heartbeatActive,
+      hbNeeded: _audioPlayer.heartbeatNeeded,
+      agentMessage: _lastAgentMessage,
+      notificationMessage: _lastNotificationMessage,
+      lastIssueMessage: _lastIssueMessage,
+      lastIssueAt: _lastIssueAt,
+      error: (error != null && error!.isNotEmpty) ? 'ERR' : 'OK',
+    );
+  }
+
+  HudSnapshot _createHudSnapshot() {
+    final dng = _createSnapshot();
+    final sp = _settingsProvider;
+    if (sp == null) return HudSnapshot.empty();
+
+    final isPlaying = dng.playerState?.playing ?? false;
+    final headroom = dng.buffered - dng.position;
+    final headroomSec = headroom.inSeconds;
+    final headroomText = '${headroomSec >= 0 ? '+' : ''}${headroomSec}s';
+
+    // Priority: Last Issue > Notification > Agent Message
+    final signal =
+        (dng.lastIssueMessage != null && dng.lastIssueMessage!.isNotEmpty)
+            ? 'ISS'
+            : (dng.notificationMessage != null &&
+                dng.notificationMessage!.trim().isNotEmpty)
+            ? 'NTF'
+            : (dng.agentMessage != null && dng.agentMessage!.trim().isNotEmpty)
+            ? 'AGT'
+            : '--';
+
+    var rawMsg = '--';
+    if (dng.lastIssueMessage != null && dng.lastIssueMessage!.isNotEmpty) {
+      rawMsg = dng.lastIssueMessage!.trim();
+    } else if (dng.notificationMessage != null &&
+        dng.notificationMessage!.trim().isNotEmpty) {
+      rawMsg = dng.notificationMessage!.trim();
+    } else if (dng.agentMessage != null &&
+        dng.agentMessage!.trim().isNotEmpty) {
+      rawMsg = dng.agentMessage!.trim();
+    } else if (dng.engineState == 'handoff_countdown') {
+      final diff = (dng.buffered - dng.position).inSeconds;
+      final countdown = diff - 5;
+      if (countdown > 0) {
+        rawMsg = 'Handoff in ${countdown}s...';
+      } else {
+        rawMsg = 'Handing off to WebAudio...';
+      }
+    }
+
+    final msg = rawMsg == '--' ? rawMsg : _compactMessage(rawMsg);
+
+    final effectiveMode =
+        sp.audioEngineMode == AudioEngineMode.auto
+            ? _audioPlayer.activeMode
+            : sp.audioEngineMode;
+
+    return HudSnapshot(
+      engine: _shortMode(effectiveMode),
+      transition: _shortTransition(sp.trackTransitionMode),
+      handoff: _shortHandoff(sp.hybridHandoffMode),
+      background: _shortBackground(sp.hybridBackgroundMode),
+      preset: sp.hiddenSessionPreset == HiddenSessionPreset.stability
+          ? 'STB'
+          : sp.hiddenSessionPreset == HiddenSessionPreset.balanced
+              ? 'BAL'
+              : 'MAX',
+      activeEngine: _shortActiveEngine(dng.engineContextState, effectiveMode),
+      heartbeat: dng.hbActive ? 'ON' : (dng.hbNeeded ? 'ND' : 'OFF'),
+      visibility: dng.visibility,
+      drift: dng.drift == 0.0 ? '--' : '${dng.drift.toStringAsFixed(2)}s',
+      prefetch: sp.webPrefetchSeconds < 0 ? 'G' : '${sp.webPrefetchSeconds}s',
+      processing: _shortProcessing(dng.playerState?.processingState),
+      buffered: formatDuration(dng.buffered),
+      headroom: headroomText,
+      nextBuffered: formatDuration(dng.nextBuffered),
+      error: dng.error ?? '--',
+      engineState: _shortEngineState(dng.engineState),
+      signal: signal,
+      message: msg,
+      hbActive: dng.hbActive,
+      hbNeeded: dng.hbNeeded,
+      heartbeatEnabledBySettings:
+          sp.hybridBackgroundMode == HybridBackgroundMode.heartbeat,
+      isPlaying: isPlaying,
+      isHandoffCountdown: dng.engineState == 'handoff_countdown',
+    );
+  }
+
+  String _compactMessage(String value) {
+    final cleaned = value
+        .replaceAll('\n', ' ')
+        .replaceAll('•', '-')
+        .replaceAll(RegExp(r'\s+'), ' ')
+        .trim();
+    if (cleaned.length <= 100) return cleaned;
+    return '${cleaned.substring(0, 97)}…';
+  }
+
+  String _shortMode(AudioEngineMode mode) {
+    switch (mode) {
+      case AudioEngineMode.webAudio:
+        return 'WBA';
+      case AudioEngineMode.html5:
+        return 'H5';
+      case AudioEngineMode.standard:
+        return 'STD';
+      case AudioEngineMode.passive:
+        return 'PAS';
+      case AudioEngineMode.hybrid:
+        return 'HYB';
+      case AudioEngineMode.auto:
+        return 'AUT';
+    }
+  }
+
+  String _shortTransition(String mode) {
+    if (mode == 'crossfade') return 'XFD';
+    if (mode == 'gapless') return 'GLS';
+    return 'GAP';
+  }
+
+  String _shortHandoff(HybridHandoffMode mode) {
+    switch (mode) {
+      case HybridHandoffMode.immediate:
+        return 'IMM';
+      case HybridHandoffMode.none:
+        return 'OFF';
+      case HybridHandoffMode.buffered:
+        return 'BUF';
+    }
+  }
+
+  String _shortBackground(HybridBackgroundMode mode) {
+    switch (mode) {
+      case HybridBackgroundMode.video:
+        return 'VID';
+      case HybridBackgroundMode.heartbeat:
+        return 'HBT';
+      case HybridBackgroundMode.none:
+        return 'OFF';
+      case HybridBackgroundMode.html5:
+        return 'H5';
+    }
+  }
+
+  String _shortActiveEngine(String? contextState, AudioEngineMode mode) {
+    if (contextState == null || contextState.isEmpty) return '?';
+    String tech = '?';
+    if (contextState.contains('(WA)')) {
+      tech = 'WA';
+    } else if (contextState.contains('(H5)')) {
+      tech = 'H5';
+    } else if (contextState.contains('(VI)')) {
+      tech = 'VI';
+    } else if (contextState.contains('(HBT)')) {
+      tech = 'HBT';
+    } else if (contextState.contains('hybrid_background')) {
+      tech = 'BG';
+    } else if (contextState.contains('hybrid_foreground')) {
+      tech = 'FG';
+    }
+
+    if (contextState.contains('[HBN]')) tech += '-N';
+    if (contextState.contains('[HBO]')) tech += '-O';
+
+    // Add version marker if present (e.g. .hb)
+    if (contextState.contains('.hb')) {
+      tech += '*';
+    }
+
+    if (mode != AudioEngineMode.hybrid && tech == '?') return '--';
+    return tech;
+  }
+
+  String _shortProcessing(ProcessingState? processing) {
+    if (processing == ProcessingState.loading) return 'LD';
+    if (processing == ProcessingState.buffering) return 'BUF';
+    if (processing == ProcessingState.ready) return 'RDY';
+    if (processing == ProcessingState.completed) return 'END';
+    return 'IDL';
+  }
+
+  String _shortEngineState(String? state) {
+    if (state == null || state.isEmpty) return 'IDLE';
+    if (state == 'handoff_countdown') return 'HFDN';
+    if (state == 'suspended_by_os') return 'SUSP';
+    return state.length > 4 ? state.substring(0, 4).toUpperCase() : state;
   }
 
   void _listenForProcessingState() {
@@ -420,8 +703,12 @@ class AudioProvider with ChangeNotifier {
     _errorController.close();
     _randomShowRequestController.close();
     _bufferAgentNotificationController.close();
+    _notificationController.close();
     _playbackFocusRequestController.close();
-    _bufferAgent?.dispose();
+    _diagnosticsTimer?.cancel();
+    _diagnosticsController?.close();
+    _hudSnapshotController?.close();
+    _notificationTimeoutTimer?.cancel();
     _audioPlayer.dispose();
     _wakelockService.disable(); // Ensure we don't leave it on
     super.dispose();
@@ -686,6 +973,13 @@ class AudioProvider with ChangeNotifier {
       artUri = await _audioCacheService.getAlbumArtUri();
     } catch (_) {}
 
+    // If we are in the background, we might want to prioritize budget.
+    // For now, GDAR web logic prefetches everything in the JS engine playlist.
+    // We can limit the number of tracks we append if we wanted a "budget",
+    // but typically users want the whole show ready.
+    // 
+    // Boundary Sentinel Improvement: If we are close to end of show, 
+    // we use a specific metadata tag to signify this is a "Look Ahead" prefetch.
     final nextSources = source.tracks.asMap().entries.map((entry) {
       int index = entry.key;
       Track track = entry.value;
@@ -699,7 +993,11 @@ class AudioProvider with ChangeNotifier {
           artist: show.artist,
           duration: Duration(seconds: track.duration),
           artUri: artUri,
-          extras: {'source_id': source.id, 'track_index': index},
+          extras: {
+            'source_id': source.id,
+            'track_index': index,
+            'is_prequeued_show': true,
+          },
         ),
       );
     }).toList();
@@ -768,6 +1066,10 @@ class AudioProvider with ChangeNotifier {
       _showListProvider?.setPlayingShow(foundShow.name, foundSource.id);
       _hasMarkedAsPlayed = false; // Reset for the new show
       _isTransitioning = false; // Ready for the NEXT transition
+      
+      // Record in Session History
+      _catalogService.recordSession(foundSource.id, showDate: foundShow.date);
+
       notifyListeners();
 
       // Notify Random Request Stream (For UI Parity causing scroll/expand)
@@ -986,6 +1288,7 @@ class AudioProvider with ChangeNotifier {
       }
     }
   }
+
 
   AudioSource _createAudioSource(Uri uri, MediaItem tag) {
     return _audioCacheService.createAudioSource(

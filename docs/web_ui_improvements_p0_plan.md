@@ -1,4 +1,4 @@
-# Web UI Improvements — P0 Plan (Jules)
+# Web UI Improvements — P0 Plan 
 
 ## Phase Goal
 Stabilize background playback (prevent OS reclaim and timer clamp failures).
@@ -9,7 +9,7 @@ Stabilize background playback (prevent OS reclaim and timer clamp failures).
 - Worker-tick timing drives background polling where applicable.
 
 
-## Jules Expectations
+## Expectations
 
 - Follow Clean Architecture: UI (Widgets), Logic (Provider/State), Data (Repository).
 - State management via Provider (`ChangeNotifier` / `ProxyProvider`).
@@ -24,9 +24,15 @@ Stabilize background playback (prevent OS reclaim and timer clamp failures).
 
 
 ## P0 Checklist
-- [ ] Prefer worker-tick driven timers where available; minimize mixed `setInterval`/RAF timing.
-- [ ] Ensure MediaSession `playbackState` is updated on play/pause/stop and during track transitions.
-- [ ] Centralize heartbeat-needed detection and expose it consistently across engines and HUD.
-- [ ] Persistent MediaSession Anchor: keep `playbackState` and metadata stable across src swaps.
-- [ ] Hybrid Fence: force engine swaps only at boundaries when backgrounded.
-- [ ] If a show is blocked or offline, the sentinel should skip or downgrade prefetch for that entry.
+### Diagnostics & Visibility
+- [x] High-resolution drift monitor in `GaplessPlayerWeb` (measure timer clamping).
+- [x] HUD Diagnostic Chips: `V` (Visibility Status) and `DFT` (Drift Timer).
+- [x] Visibility change listener to track VIS/HID duration.
+
+### Core Stability
+- [x] Prefer worker-tick driven timers where available (minimizes Mixed timing clamping).
+- [x] Ensure MediaSession `playbackState` is updated on play/pause/stop and during track transitions.
+- [x] Centralize heartbeat-needed detection and expose it consistently across engines and HUD.
+- [x] Persistent MediaSession Anchor: keep `playbackState` and metadata stable across src swaps.
+- [x] Hybrid Fence: force engine swaps only at boundaries when backgrounded (Desktop optimal).
+- [x] Static Sentinel: skip or downgrade prefetch for dead/blocked tracks to prevent engine spinning.

@@ -105,6 +105,7 @@ class SettingsProvider with ChangeNotifier {
   static const String _simpleRandomIconKey = 'simple_random_icon';
   static const String _fruitDenseListKey = 'fruit_dense_list';
   static const String _fruitStickyNowPlayingKey = 'fruit_sticky_now_playing';
+  static const String _enableRunDetectionKey = 'enable_run_detection';
 
   // Screensaver (steal)
   static const String _useOilScreensaverKey = 'use_oil_screensaver';
@@ -256,6 +257,7 @@ class SettingsProvider with ChangeNotifier {
   late bool _forceTv;
   late bool _enableHaptics;
   late bool _fruitStickyNowPlaying;
+  late bool _enableRunDetection;
 
   // Web Gapless Engine
   late AudioEngineMode _audioEngineMode;
@@ -392,6 +394,7 @@ class SettingsProvider with ChangeNotifier {
       isWasmSafeMode() ? false : _fruitEnableLiquidGlass;
   bool get fruitStickyNowPlaying => _fruitStickyNowPlaying;
   bool get enableHaptics => _enableHaptics;
+  bool get enableRunDetection => _enableRunDetection;
 
   void toggleUseNeumorphism() {
     _useNeumorphism = !_useNeumorphism;
@@ -413,6 +416,11 @@ class SettingsProvider with ChangeNotifier {
   void toggleFruitStickyNowPlaying() {
     _fruitStickyNowPlaying = !_fruitStickyNowPlaying;
     _updatePreference(_fruitStickyNowPlayingKey, _fruitStickyNowPlaying);
+  }
+
+  void toggleEnableRunDetection() {
+    _enableRunDetection = !_enableRunDetection;
+    _updatePreference(_enableRunDetectionKey, _enableRunDetection);
   }
 
   NeumorphicStyle get neumorphicStyle => _neumorphicStyle;
@@ -793,6 +801,8 @@ class SettingsProvider with ChangeNotifier {
     _enableHaptics = _prefs.getBool(_enableHapticsKey) ?? true;
     _fruitDenseList = _prefs.getBool(_fruitDenseListKey) ?? false;
     _fruitStickyNowPlaying = _prefs.getBool(_fruitStickyNowPlayingKey) ?? false;
+    _enableRunDetection = _prefs.getBool(_enableRunDetectionKey) ??
+        DefaultSettings.enableRunDetection;
 
     // Screensaver Migration
     final defaultScreensaver = _dBool(

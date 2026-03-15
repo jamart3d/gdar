@@ -4,18 +4,20 @@
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'dart:async' as _i5;
-import 'dart:ui' as _i8;
+import 'dart:ui' as _i9;
 
-import 'package:just_audio/just_audio.dart' as _i3;
+import 'package:just_audio/just_audio.dart' as _i6;
 import 'package:mockito/mockito.dart' as _i1;
-import 'package:mockito/src/dummies.dart' as _i12;
-import 'package:shakedown_core/models/show.dart' as _i6;
-import 'package:shakedown_core/models/source.dart' as _i7;
+import 'package:mockito/src/dummies.dart' as _i14;
+import 'package:shakedown_core/models/dng_snapshot.dart' as _i10;
+import 'package:shakedown_core/models/hud_snapshot.dart' as _i3;
+import 'package:shakedown_core/models/show.dart' as _i7;
+import 'package:shakedown_core/models/source.dart' as _i8;
 import 'package:shakedown_core/providers/audio_provider.dart' as _i4;
-import 'package:shakedown_core/providers/settings_provider.dart' as _i10;
-import 'package:shakedown_core/providers/show_list_provider.dart' as _i9;
-import 'package:shakedown_core/providers/theme_provider.dart' as _i13;
-import 'package:shakedown_core/services/audio_cache_service.dart' as _i11;
+import 'package:shakedown_core/providers/settings_provider.dart' as _i12;
+import 'package:shakedown_core/providers/show_list_provider.dart' as _i11;
+import 'package:shakedown_core/providers/theme_provider.dart' as _i15;
+import 'package:shakedown_core/services/audio_cache_service.dart' as _i13;
 import 'package:shakedown_core/services/gapless_player/gapless_player.dart'
     as _i2;
 
@@ -39,13 +41,8 @@ class _FakeGaplessPlayer_0 extends _i1.SmartFake implements _i2.GaplessPlayer {
     : super(parent, parentInvocation);
 }
 
-class _FakeDuration_1 extends _i1.SmartFake implements Duration {
-  _FakeDuration_1(Object parent, Invocation parentInvocation)
-    : super(parent, parentInvocation);
-}
-
-class _FakePlayerState_2 extends _i1.SmartFake implements _i3.PlayerState {
-  _FakePlayerState_2(Object parent, Invocation parentInvocation)
+class _FakeHudSnapshot_1 extends _i1.SmartFake implements _i3.HudSnapshot {
+  _FakeHudSnapshot_1(Object parent, Invocation parentInvocation)
     : super(parent, parentInvocation);
 }
 
@@ -53,6 +50,10 @@ class _FakePlayerState_2 extends _i1.SmartFake implements _i3.PlayerState {
 ///
 /// See the documentation for Mockito's code generation for more information.
 class MockAudioProvider extends _i1.Mock implements _i4.AudioProvider {
+  MockAudioProvider() {
+    _i1.throwOnMissingStub(this);
+  }
+
   @override
   _i2.GaplessPlayer get audioPlayer =>
       (super.noSuchMethod(
@@ -61,37 +62,27 @@ class MockAudioProvider extends _i1.Mock implements _i4.AudioProvider {
               this,
               Invocation.getter(#audioPlayer),
             ),
-            returnValueForMissingStub: _FakeGaplessPlayer_0(
-              this,
-              Invocation.getter(#audioPlayer),
-            ),
           )
           as _i2.GaplessPlayer);
 
   @override
   bool get isPlaying =>
-      (super.noSuchMethod(
-            Invocation.getter(#isPlaying),
-            returnValue: false,
-            returnValueForMissingStub: false,
-          )
+      (super.noSuchMethod(Invocation.getter(#isPlaying), returnValue: false)
           as bool);
 
   @override
-  _i5.Stream<_i3.PlayerState> get playerStateStream =>
+  _i5.Stream<_i6.PlayerState> get playerStateStream =>
       (super.noSuchMethod(
             Invocation.getter(#playerStateStream),
-            returnValue: _i5.Stream<_i3.PlayerState>.empty(),
-            returnValueForMissingStub: _i5.Stream<_i3.PlayerState>.empty(),
+            returnValue: _i5.Stream<_i6.PlayerState>.empty(),
           )
-          as _i5.Stream<_i3.PlayerState>);
+          as _i5.Stream<_i6.PlayerState>);
 
   @override
   _i5.Stream<int?> get currentIndexStream =>
       (super.noSuchMethod(
             Invocation.getter(#currentIndexStream),
             returnValue: _i5.Stream<int?>.empty(),
-            returnValueForMissingStub: _i5.Stream<int?>.empty(),
           )
           as _i5.Stream<int?>);
 
@@ -100,7 +91,6 @@ class MockAudioProvider extends _i1.Mock implements _i4.AudioProvider {
       (super.noSuchMethod(
             Invocation.getter(#durationStream),
             returnValue: _i5.Stream<Duration?>.empty(),
-            returnValueForMissingStub: _i5.Stream<Duration?>.empty(),
           )
           as _i5.Stream<Duration?>);
 
@@ -109,7 +99,6 @@ class MockAudioProvider extends _i1.Mock implements _i4.AudioProvider {
       (super.noSuchMethod(
             Invocation.getter(#positionStream),
             returnValue: _i5.Stream<Duration>.empty(),
-            returnValueForMissingStub: _i5.Stream<Duration>.empty(),
           )
           as _i5.Stream<Duration>);
 
@@ -118,7 +107,6 @@ class MockAudioProvider extends _i1.Mock implements _i4.AudioProvider {
       (super.noSuchMethod(
             Invocation.getter(#bufferedPositionStream),
             returnValue: _i5.Stream<Duration>.empty(),
-            returnValueForMissingStub: _i5.Stream<Duration>.empty(),
           )
           as _i5.Stream<Duration>);
 
@@ -127,7 +115,6 @@ class MockAudioProvider extends _i1.Mock implements _i4.AudioProvider {
       (super.noSuchMethod(
             Invocation.getter(#nextTrackBufferedStream),
             returnValue: _i5.Stream<Duration?>.empty(),
-            returnValueForMissingStub: _i5.Stream<Duration?>.empty(),
           )
           as _i5.Stream<Duration?>);
 
@@ -136,7 +123,6 @@ class MockAudioProvider extends _i1.Mock implements _i4.AudioProvider {
       (super.noSuchMethod(
             Invocation.getter(#nextTrackTotalStream),
             returnValue: _i5.Stream<Duration?>.empty(),
-            returnValueForMissingStub: _i5.Stream<Duration?>.empty(),
           )
           as _i5.Stream<Duration?>);
 
@@ -145,7 +131,6 @@ class MockAudioProvider extends _i1.Mock implements _i4.AudioProvider {
       (super.noSuchMethod(
             Invocation.getter(#heartbeatActiveStream),
             returnValue: _i5.Stream<bool>.empty(),
-            returnValueForMissingStub: _i5.Stream<bool>.empty(),
           )
           as _i5.Stream<bool>);
 
@@ -154,7 +139,6 @@ class MockAudioProvider extends _i1.Mock implements _i4.AudioProvider {
       (super.noSuchMethod(
             Invocation.getter(#heartbeatNeededStream),
             returnValue: _i5.Stream<bool>.empty(),
-            returnValueForMissingStub: _i5.Stream<bool>.empty(),
           )
           as _i5.Stream<bool>);
 
@@ -163,7 +147,6 @@ class MockAudioProvider extends _i1.Mock implements _i4.AudioProvider {
       (super.noSuchMethod(
             Invocation.getter(#engineStateStringStream),
             returnValue: _i5.Stream<String>.empty(),
-            returnValueForMissingStub: _i5.Stream<String>.empty(),
           )
           as _i5.Stream<String>);
 
@@ -172,7 +155,22 @@ class MockAudioProvider extends _i1.Mock implements _i4.AudioProvider {
       (super.noSuchMethod(
             Invocation.getter(#engineContextStateStream),
             returnValue: _i5.Stream<String>.empty(),
-            returnValueForMissingStub: _i5.Stream<String>.empty(),
+          )
+          as _i5.Stream<String>);
+
+  @override
+  _i5.Stream<double> get driftStream =>
+      (super.noSuchMethod(
+            Invocation.getter(#driftStream),
+            returnValue: _i5.Stream<double>.empty(),
+          )
+          as _i5.Stream<double>);
+
+  @override
+  _i5.Stream<String> get visibilityStream =>
+      (super.noSuchMethod(
+            Invocation.getter(#visibilityStream),
+            returnValue: _i5.Stream<String>.empty(),
           )
           as _i5.Stream<String>);
 
@@ -181,44 +179,36 @@ class MockAudioProvider extends _i1.Mock implements _i4.AudioProvider {
       (super.noSuchMethod(
             Invocation.getter(#playbackErrorStream),
             returnValue: _i5.Stream<String>.empty(),
-            returnValueForMissingStub: _i5.Stream<String>.empty(),
           )
           as _i5.Stream<String>);
 
   @override
-  _i5.Stream<({_i6.Show show, _i7.Source source})>
+  _i5.Stream<({_i7.Show show, _i8.Source source})>
   get randomShowRequestStream =>
       (super.noSuchMethod(
             Invocation.getter(#randomShowRequestStream),
             returnValue:
-                _i5.Stream<({_i6.Show show, _i7.Source source})>.empty(),
-            returnValueForMissingStub:
-                _i5.Stream<({_i6.Show show, _i7.Source source})>.empty(),
+                _i5.Stream<({_i7.Show show, _i8.Source source})>.empty(),
           )
-          as _i5.Stream<({_i6.Show show, _i7.Source source})>);
+          as _i5.Stream<({_i7.Show show, _i8.Source source})>);
 
   @override
-  _i5.Stream<({String message, _i8.VoidCallback? retryAction})>
+  _i5.Stream<({String message, _i9.VoidCallback? retryAction})>
   get bufferAgentNotificationStream =>
       (super.noSuchMethod(
             Invocation.getter(#bufferAgentNotificationStream),
             returnValue:
                 _i5.Stream<
-                  ({String message, _i8.VoidCallback? retryAction})
-                >.empty(),
-            returnValueForMissingStub:
-                _i5.Stream<
-                  ({String message, _i8.VoidCallback? retryAction})
+                  ({String message, _i9.VoidCallback? retryAction})
                 >.empty(),
           )
-          as _i5.Stream<({String message, _i8.VoidCallback? retryAction})>);
+          as _i5.Stream<({String message, _i9.VoidCallback? retryAction})>);
 
   @override
   _i5.Stream<String> get notificationStream =>
       (super.noSuchMethod(
             Invocation.getter(#notificationStream),
             returnValue: _i5.Stream<String>.empty(),
-            returnValueForMissingStub: _i5.Stream<String>.empty(),
           )
           as _i5.Stream<String>);
 
@@ -227,26 +217,44 @@ class MockAudioProvider extends _i1.Mock implements _i4.AudioProvider {
       (super.noSuchMethod(
             Invocation.getter(#playbackFocusRequestStream),
             returnValue: _i5.Stream<void>.empty(),
-            returnValueForMissingStub: _i5.Stream<void>.empty(),
           )
           as _i5.Stream<void>);
 
   @override
-  int get cachedTrackCount =>
+  _i5.Stream<_i10.DngSnapshot> get diagnosticsStream =>
       (super.noSuchMethod(
-            Invocation.getter(#cachedTrackCount),
-            returnValue: 0,
-            returnValueForMissingStub: 0,
+            Invocation.getter(#diagnosticsStream),
+            returnValue: _i5.Stream<_i10.DngSnapshot>.empty(),
           )
+          as _i5.Stream<_i10.DngSnapshot>);
+
+  @override
+  _i5.Stream<_i3.HudSnapshot> get hudSnapshotStream =>
+      (super.noSuchMethod(
+            Invocation.getter(#hudSnapshotStream),
+            returnValue: _i5.Stream<_i3.HudSnapshot>.empty(),
+          )
+          as _i5.Stream<_i3.HudSnapshot>);
+
+  @override
+  _i3.HudSnapshot get currentHudSnapshot =>
+      (super.noSuchMethod(
+            Invocation.getter(#currentHudSnapshot),
+            returnValue: _FakeHudSnapshot_1(
+              this,
+              Invocation.getter(#currentHudSnapshot),
+            ),
+          )
+          as _i3.HudSnapshot);
+
+  @override
+  int get cachedTrackCount =>
+      (super.noSuchMethod(Invocation.getter(#cachedTrackCount), returnValue: 0)
           as int);
 
   @override
   bool get hasListeners =>
-      (super.noSuchMethod(
-            Invocation.getter(#hasListeners),
-            returnValue: false,
-            returnValueForMissingStub: false,
-          )
+      (super.noSuchMethod(Invocation.getter(#hasListeners), returnValue: false)
           as bool);
 
   @override
@@ -256,10 +264,16 @@ class MockAudioProvider extends _i1.Mock implements _i4.AudioProvider {
   );
 
   @override
+  void clearLastIssue() => super.noSuchMethod(
+    Invocation.method(#clearLastIssue, []),
+    returnValueForMissingStub: null,
+  );
+
+  @override
   void update(
-    _i9.ShowListProvider? showListProvider,
-    _i10.SettingsProvider? settingsProvider,
-    _i11.AudioCacheService? audioCacheService,
+    _i11.ShowListProvider? showListProvider,
+    _i12.SettingsProvider? settingsProvider,
+    _i13.AudioCacheService? audioCacheService,
   ) => super.noSuchMethod(
     Invocation.method(#update, [
       showListProvider,
@@ -276,19 +290,18 @@ class MockAudioProvider extends _i1.Mock implements _i4.AudioProvider {
   );
 
   @override
-  ({_i6.Show show, _i7.Source source})? pickRandomShow({
+  ({_i7.Show show, _i8.Source source})? pickRandomShow({
     bool? filterBySearch = true,
   }) =>
       (super.noSuchMethod(
             Invocation.method(#pickRandomShow, [], {
               #filterBySearch: filterBySearch,
             }),
-            returnValueForMissingStub: null,
           )
-          as ({_i6.Show show, _i7.Source source})?);
+          as ({_i7.Show show, _i8.Source source})?);
 
   @override
-  _i5.Future<_i6.Show?> playRandomShow({
+  _i5.Future<_i7.Show?> playRandomShow({
     bool? filterBySearch = true,
     bool? animationOnly = false,
     bool? delayPlayback = false,
@@ -299,10 +312,9 @@ class MockAudioProvider extends _i1.Mock implements _i4.AudioProvider {
               #animationOnly: animationOnly,
               #delayPlayback: delayPlayback,
             }),
-            returnValue: _i5.Future<_i6.Show?>.value(),
-            returnValueForMissingStub: _i5.Future<_i6.Show?>.value(),
+            returnValue: _i5.Future<_i7.Show?>.value(),
           )
-          as _i5.Future<_i6.Show?>);
+          as _i5.Future<_i7.Show?>);
 
   @override
   _i5.Future<void> playPendingSelection() =>
@@ -315,8 +327,8 @@ class MockAudioProvider extends _i1.Mock implements _i4.AudioProvider {
 
   @override
   _i5.Future<void> playSource(
-    _i6.Show? show,
-    _i7.Source? source, {
+    _i7.Show? show,
+    _i8.Source? source, {
     int? initialIndex = 0,
     Duration? initialPosition,
   }) =>
@@ -336,7 +348,6 @@ class MockAudioProvider extends _i1.Mock implements _i4.AudioProvider {
       (super.noSuchMethod(
             Invocation.method(#playFromShareString, [shareString]),
             returnValue: _i5.Future<bool>.value(false),
-            returnValueForMissingStub: _i5.Future<bool>.value(false),
           )
           as _i5.Future<bool>);
 
@@ -455,13 +466,13 @@ class MockAudioProvider extends _i1.Mock implements _i4.AudioProvider {
   );
 
   @override
-  void addListener(_i8.VoidCallback? listener) => super.noSuchMethod(
+  void addListener(_i9.VoidCallback? listener) => super.noSuchMethod(
     Invocation.method(#addListener, [listener]),
     returnValueForMissingStub: null,
   );
 
   @override
-  void removeListener(_i8.VoidCallback? listener) => super.noSuchMethod(
+  void removeListener(_i9.VoidCallback? listener) => super.noSuchMethod(
     Invocation.method(#removeListener, [listener]),
     returnValueForMissingStub: null,
   );
@@ -476,27 +487,34 @@ class MockAudioProvider extends _i1.Mock implements _i4.AudioProvider {
 /// A class which mocks [SettingsProvider].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
+class MockSettingsProvider extends _i1.Mock implements _i12.SettingsProvider {
+  MockSettingsProvider() {
+    _i1.throwOnMissingStub(this);
+  }
+
   @override
   bool get isTv =>
-      (super.noSuchMethod(
-            Invocation.getter(#isTv),
-            returnValue: false,
-            returnValueForMissingStub: false,
-          )
+      (super.noSuchMethod(Invocation.getter(#isTv), returnValue: false)
           as bool);
 
   @override
   String get appFont =>
       (super.noSuchMethod(
             Invocation.getter(#appFont),
-            returnValue: _i12.dummyValue<String>(
+            returnValue: _i14.dummyValue<String>(
               this,
               Invocation.getter(#appFont),
             ),
-            returnValueForMissingStub: _i12.dummyValue<String>(
+          )
+          as String);
+
+  @override
+  String get activeAppFont =>
+      (super.noSuchMethod(
+            Invocation.getter(#activeAppFont),
+            returnValue: _i14.dummyValue<String>(
               this,
-              Invocation.getter(#appFont),
+              Invocation.getter(#activeAppFont),
             ),
           )
           as String);
@@ -506,17 +524,12 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
       (super.noSuchMethod(
             Invocation.getter(#showSplashScreen),
             returnValue: false,
-            returnValueForMissingStub: false,
           )
           as bool);
 
   @override
   bool get isFirstRun =>
-      (super.noSuchMethod(
-            Invocation.getter(#isFirstRun),
-            returnValue: false,
-            returnValueForMissingStub: false,
-          )
+      (super.noSuchMethod(Invocation.getter(#isFirstRun), returnValue: false)
           as bool);
 
   @override
@@ -524,7 +537,6 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
       (super.noSuchMethod(
             Invocation.getter(#showOnboarding),
             returnValue: false,
-            returnValueForMissingStub: false,
           )
           as bool);
 
@@ -533,7 +545,6 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
       (super.noSuchMethod(
             Invocation.getter(#showExpandIcon),
             returnValue: false,
-            returnValueForMissingStub: false,
           )
           as bool);
 
@@ -542,7 +553,6 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
       (super.noSuchMethod(
             Invocation.getter(#showTrackNumbers),
             returnValue: false,
-            returnValueForMissingStub: false,
           )
           as bool);
 
@@ -551,17 +561,12 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
       (super.noSuchMethod(
             Invocation.getter(#hideTrackDuration),
             returnValue: false,
-            returnValueForMissingStub: false,
           )
           as bool);
 
   @override
   bool get playOnTap =>
-      (super.noSuchMethod(
-            Invocation.getter(#playOnTap),
-            returnValue: false,
-            returnValueForMissingStub: false,
-          )
+      (super.noSuchMethod(Invocation.getter(#playOnTap), returnValue: false)
           as bool);
 
   @override
@@ -569,7 +574,6 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
       (super.noSuchMethod(
             Invocation.getter(#showSingleShnid),
             returnValue: false,
-            returnValueForMissingStub: false,
           )
           as bool);
 
@@ -578,7 +582,6 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
       (super.noSuchMethod(
             Invocation.getter(#hideTrackCountInSourceList),
             returnValue: false,
-            returnValueForMissingStub: false,
           )
           as bool);
 
@@ -587,17 +590,12 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
       (super.noSuchMethod(
             Invocation.getter(#playRandomOnCompletion),
             returnValue: false,
-            returnValueForMissingStub: false,
           )
           as bool);
 
   @override
   bool get nonRandom =>
-      (super.noSuchMethod(
-            Invocation.getter(#nonRandom),
-            returnValue: false,
-            returnValueForMissingStub: false,
-          )
+      (super.noSuchMethod(Invocation.getter(#nonRandom), returnValue: false)
           as bool);
 
   @override
@@ -605,7 +603,6 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
       (super.noSuchMethod(
             Invocation.getter(#playRandomOnStartup),
             returnValue: false,
-            returnValueForMissingStub: false,
           )
           as bool);
 
@@ -614,7 +611,6 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
       (super.noSuchMethod(
             Invocation.getter(#dateFirstInShowCard),
             returnValue: false,
-            returnValueForMissingStub: false,
           )
           as bool);
 
@@ -623,17 +619,12 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
       (super.noSuchMethod(
             Invocation.getter(#useDynamicColor),
             returnValue: false,
-            returnValueForMissingStub: false,
           )
           as bool);
 
   @override
   bool get useTrueBlack =>
-      (super.noSuchMethod(
-            Invocation.getter(#useTrueBlack),
-            returnValue: false,
-            returnValueForMissingStub: false,
-          )
+      (super.noSuchMethod(Invocation.getter(#useTrueBlack), returnValue: false)
           as bool);
 
   @override
@@ -641,7 +632,6 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
       (super.noSuchMethod(
             Invocation.getter(#useSliverAppBar),
             returnValue: false,
-            returnValueForMissingStub: false,
           )
           as bool);
 
@@ -650,34 +640,23 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
       (super.noSuchMethod(
             Invocation.getter(#useSharedAxisTransition),
             returnValue: false,
-            returnValueForMissingStub: false,
           )
           as bool);
 
   @override
   bool get uiScale =>
-      (super.noSuchMethod(
-            Invocation.getter(#uiScale),
-            returnValue: false,
-            returnValueForMissingStub: false,
-          )
+      (super.noSuchMethod(Invocation.getter(#uiScale), returnValue: false)
           as bool);
 
   @override
   int get glowMode =>
-      (super.noSuchMethod(
-            Invocation.getter(#glowMode),
-            returnValue: 0,
-            returnValueForMissingStub: 0,
-          )
-          as int);
+      (super.noSuchMethod(Invocation.getter(#glowMode), returnValue: 0) as int);
 
   @override
   bool get highlightPlayingWithRgb =>
       (super.noSuchMethod(
             Invocation.getter(#highlightPlayingWithRgb),
             returnValue: false,
-            returnValueForMissingStub: false,
           )
           as bool);
 
@@ -686,7 +665,6 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
       (super.noSuchMethod(
             Invocation.getter(#showPlaybackMessages),
             returnValue: false,
-            returnValueForMissingStub: false,
           )
           as bool);
 
@@ -695,7 +673,6 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
       (super.noSuchMethod(
             Invocation.getter(#showDevAudioHud),
             returnValue: false,
-            returnValueForMissingStub: false,
           )
           as bool);
 
@@ -703,11 +680,7 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
   String get devAudioHudSnapshot =>
       (super.noSuchMethod(
             Invocation.getter(#devAudioHudSnapshot),
-            returnValue: _i12.dummyValue<String>(
-              this,
-              Invocation.getter(#devAudioHudSnapshot),
-            ),
-            returnValueForMissingStub: _i12.dummyValue<String>(
+            returnValue: _i14.dummyValue<String>(
               this,
               Invocation.getter(#devAudioHudSnapshot),
             ),
@@ -719,7 +692,6 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
       (super.noSuchMethod(
             Invocation.getter(#sortOldestFirst),
             returnValue: false,
-            returnValueForMissingStub: false,
           )
           as bool);
 
@@ -728,7 +700,6 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
       (super.noSuchMethod(
             Invocation.getter(#useStrictSrcCategorization),
             returnValue: false,
-            returnValueForMissingStub: false,
           )
           as bool);
 
@@ -737,7 +708,6 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
       (super.noSuchMethod(
             Invocation.getter(#offlineBuffering),
             returnValue: false,
-            returnValueForMissingStub: false,
           )
           as bool);
 
@@ -746,17 +716,12 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
       (super.noSuchMethod(
             Invocation.getter(#enableBufferAgent),
             returnValue: false,
-            returnValueForMissingStub: false,
           )
           as bool);
 
   @override
   bool get preventSleep =>
-      (super.noSuchMethod(
-            Invocation.getter(#preventSleep),
-            returnValue: false,
-            returnValueForMissingStub: false,
-          )
+      (super.noSuchMethod(Invocation.getter(#preventSleep), returnValue: false)
           as bool);
 
   @override
@@ -764,26 +729,17 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
       (super.noSuchMethod(
             Invocation.getter(#highlightCurrentShowCard),
             returnValue: false,
-            returnValueForMissingStub: false,
           )
           as bool);
 
   @override
   bool get useMaterial3 =>
-      (super.noSuchMethod(
-            Invocation.getter(#useMaterial3),
-            returnValue: false,
-            returnValueForMissingStub: false,
-          )
+      (super.noSuchMethod(Invocation.getter(#useMaterial3), returnValue: false)
           as bool);
 
   @override
   bool get showDayOfWeek =>
-      (super.noSuchMethod(
-            Invocation.getter(#showDayOfWeek),
-            returnValue: false,
-            returnValueForMissingStub: false,
-          )
+      (super.noSuchMethod(Invocation.getter(#showDayOfWeek), returnValue: false)
           as bool);
 
   @override
@@ -791,7 +747,6 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
       (super.noSuchMethod(
             Invocation.getter(#abbreviateDayOfWeek),
             returnValue: false,
-            returnValueForMissingStub: false,
           )
           as bool);
 
@@ -800,7 +755,6 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
       (super.noSuchMethod(
             Invocation.getter(#abbreviateMonth),
             returnValue: false,
-            returnValueForMissingStub: false,
           )
           as bool);
 
@@ -809,7 +763,6 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
       (super.noSuchMethod(
             Invocation.getter(#simpleRandomIcon),
             returnValue: false,
-            returnValueForMissingStub: false,
           )
           as bool);
 
@@ -818,7 +771,6 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
       (super.noSuchMethod(
             Invocation.getter(#fruitDenseList),
             returnValue: false,
-            returnValueForMissingStub: false,
           )
           as bool);
 
@@ -827,7 +779,6 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
       (super.noSuchMethod(
             Invocation.getter(#marqueeEnabled),
             returnValue: false,
-            returnValueForMissingStub: false,
           )
           as bool);
 
@@ -836,7 +787,6 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
       (super.noSuchMethod(
             Invocation.getter(#enableSwipeToBlock),
             returnValue: false,
-            returnValueForMissingStub: false,
           )
           as bool);
 
@@ -845,7 +795,6 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
       (super.noSuchMethod(
             Invocation.getter(#omitHttpPathInCopy),
             returnValue: false,
-            returnValueForMissingStub: false,
           )
           as bool);
 
@@ -854,7 +803,6 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
       (super.noSuchMethod(
             Invocation.getter(#useNeumorphism),
             returnValue: false,
-            returnValueForMissingStub: false,
           )
           as bool);
 
@@ -863,7 +811,6 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
       (super.noSuchMethod(
             Invocation.getter(#fruitEnableLiquidGlass),
             returnValue: false,
-            returnValueForMissingStub: false,
           )
           as bool);
 
@@ -872,44 +819,41 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
       (super.noSuchMethod(
             Invocation.getter(#fruitStickyNowPlaying),
             returnValue: false,
-            returnValueForMissingStub: false,
           )
           as bool);
 
   @override
   bool get enableHaptics =>
+      (super.noSuchMethod(Invocation.getter(#enableHaptics), returnValue: false)
+          as bool);
+
+  @override
+  bool get enableRunDetection =>
       (super.noSuchMethod(
-            Invocation.getter(#enableHaptics),
+            Invocation.getter(#enableRunDetection),
             returnValue: false,
-            returnValueForMissingStub: false,
           )
           as bool);
 
   @override
-  _i13.NeumorphicStyle get neumorphicStyle =>
+  _i15.NeumorphicStyle get neumorphicStyle =>
       (super.noSuchMethod(
             Invocation.getter(#neumorphicStyle),
-            returnValue: _i13.NeumorphicStyle.convex,
-            returnValueForMissingStub: _i13.NeumorphicStyle.convex,
+            returnValue: _i15.NeumorphicStyle.convex,
           )
-          as _i13.NeumorphicStyle);
+          as _i15.NeumorphicStyle);
 
   @override
   bool get performanceMode =>
       (super.noSuchMethod(
             Invocation.getter(#performanceMode),
             returnValue: false,
-            returnValueForMissingStub: false,
           )
           as bool);
 
   @override
   bool get forceTv =>
-      (super.noSuchMethod(
-            Invocation.getter(#forceTv),
-            returnValue: false,
-            returnValueForMissingStub: false,
-          )
+      (super.noSuchMethod(Invocation.getter(#forceTv), returnValue: false)
           as bool);
 
   @override
@@ -917,7 +861,6 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
       (super.noSuchMethod(
             Invocation.getter(#audioEngineMode),
             returnValue: _i2.AudioEngineMode.auto,
-            returnValueForMissingStub: _i2.AudioEngineMode.auto,
           )
           as _i2.AudioEngineMode);
 
@@ -926,7 +869,6 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
       (super.noSuchMethod(
             Invocation.getter(#webGaplessEngine),
             returnValue: false,
-            returnValueForMissingStub: false,
           )
           as bool);
 
@@ -935,7 +877,6 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
       (super.noSuchMethod(
             Invocation.getter(#webPrefetchSeconds),
             returnValue: 0,
-            returnValueForMissingStub: 0,
           )
           as int);
 
@@ -943,11 +884,7 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
   String get trackTransitionMode =>
       (super.noSuchMethod(
             Invocation.getter(#trackTransitionMode),
-            returnValue: _i12.dummyValue<String>(
-              this,
-              Invocation.getter(#trackTransitionMode),
-            ),
-            returnValueForMissingStub: _i12.dummyValue<String>(
+            returnValue: _i14.dummyValue<String>(
               this,
               Invocation.getter(#trackTransitionMode),
             ),
@@ -959,7 +896,6 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
       (super.noSuchMethod(
             Invocation.getter(#crossfadeDurationSeconds),
             returnValue: 0.0,
-            returnValueForMissingStub: 0.0,
           )
           as double);
 
@@ -968,7 +904,6 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
       (super.noSuchMethod(
             Invocation.getter(#hybridHandoffMode),
             returnValue: _i2.HybridHandoffMode.buffered,
-            returnValueForMissingStub: _i2.HybridHandoffMode.buffered,
           )
           as _i2.HybridHandoffMode);
 
@@ -977,7 +912,6 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
       (super.noSuchMethod(
             Invocation.getter(#hybridBackgroundMode),
             returnValue: _i2.HybridBackgroundMode.html5,
-            returnValueForMissingStub: _i2.HybridBackgroundMode.html5,
           )
           as _i2.HybridBackgroundMode);
 
@@ -986,7 +920,6 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
       (super.noSuchMethod(
             Invocation.getter(#allowHiddenWebAudio),
             returnValue: false,
-            returnValueForMissingStub: false,
           )
           as bool);
 
@@ -995,7 +928,6 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
       (super.noSuchMethod(
             Invocation.getter(#handoffCrossfadeMs),
             returnValue: 0,
-            returnValueForMissingStub: 0,
           )
           as int);
 
@@ -1004,7 +936,6 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
       (super.noSuchMethod(
             Invocation.getter(#hybridForceHtml5Start),
             returnValue: false,
-            returnValueForMissingStub: false,
           )
           as bool);
 
@@ -1013,25 +944,22 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
       (super.noSuchMethod(
             Invocation.getter(#hiddenSessionPreset),
             returnValue: _i2.HiddenSessionPreset.stability,
-            returnValueForMissingStub: _i2.HiddenSessionPreset.stability,
           )
           as _i2.HiddenSessionPreset);
 
   @override
-  _i10.WebEngineProfile get webEngineProfile =>
+  _i12.WebEngineProfile get webEngineProfile =>
       (super.noSuchMethod(
             Invocation.getter(#webEngineProfile),
-            returnValue: _i10.WebEngineProfile.modern,
-            returnValueForMissingStub: _i10.WebEngineProfile.modern,
+            returnValue: _i12.WebEngineProfile.modern,
           )
-          as _i10.WebEngineProfile);
+          as _i12.WebEngineProfile);
 
   @override
   bool get useOilScreensaver =>
       (super.noSuchMethod(
             Invocation.getter(#useOilScreensaver),
             returnValue: false,
-            returnValueForMissingStub: false,
           )
           as bool);
 
@@ -1039,11 +967,7 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
   String get oilScreensaverMode =>
       (super.noSuchMethod(
             Invocation.getter(#oilScreensaverMode),
-            returnValue: _i12.dummyValue<String>(
-              this,
-              Invocation.getter(#oilScreensaverMode),
-            ),
-            returnValueForMissingStub: _i12.dummyValue<String>(
+            returnValue: _i14.dummyValue<String>(
               this,
               Invocation.getter(#oilScreensaverMode),
             ),
@@ -1055,17 +979,12 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
       (super.noSuchMethod(
             Invocation.getter(#oilScreensaverInactivityMinutes),
             returnValue: 0,
-            returnValueForMissingStub: 0,
           )
           as int);
 
   @override
   double get oilFlowSpeed =>
-      (super.noSuchMethod(
-            Invocation.getter(#oilFlowSpeed),
-            returnValue: 0.0,
-            returnValueForMissingStub: 0.0,
-          )
+      (super.noSuchMethod(Invocation.getter(#oilFlowSpeed), returnValue: 0.0)
           as double);
 
   @override
@@ -1073,7 +992,6 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
       (super.noSuchMethod(
             Invocation.getter(#oilPulseIntensity),
             returnValue: 0.0,
-            returnValueForMissingStub: 0.0,
           )
           as double);
 
@@ -1081,11 +999,7 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
   String get oilPalette =>
       (super.noSuchMethod(
             Invocation.getter(#oilPalette),
-            returnValue: _i12.dummyValue<String>(
-              this,
-              Invocation.getter(#oilPalette),
-            ),
-            returnValueForMissingStub: _i12.dummyValue<String>(
+            returnValue: _i14.dummyValue<String>(
               this,
               Invocation.getter(#oilPalette),
             ),
@@ -1094,20 +1008,12 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
 
   @override
   double get oilFilmGrain =>
-      (super.noSuchMethod(
-            Invocation.getter(#oilFilmGrain),
-            returnValue: 0.0,
-            returnValueForMissingStub: 0.0,
-          )
+      (super.noSuchMethod(Invocation.getter(#oilFilmGrain), returnValue: 0.0)
           as double);
 
   @override
   double get oilHeatDrift =>
-      (super.noSuchMethod(
-            Invocation.getter(#oilHeatDrift),
-            returnValue: 0.0,
-            returnValueForMissingStub: 0.0,
-          )
+      (super.noSuchMethod(Invocation.getter(#oilHeatDrift), returnValue: 0.0)
           as double);
 
   @override
@@ -1115,7 +1021,6 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
       (super.noSuchMethod(
             Invocation.getter(#oilEnableAudioReactivity),
             returnValue: false,
-            returnValueForMissingStub: false,
           )
           as bool);
 
@@ -1124,7 +1029,6 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
       (super.noSuchMethod(
             Invocation.getter(#oilPerformanceLevel),
             returnValue: 0,
-            returnValueForMissingStub: 0,
           )
           as int);
 
@@ -1133,7 +1037,6 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
       (super.noSuchMethod(
             Invocation.getter(#oilPaletteCycle),
             returnValue: false,
-            returnValueForMissingStub: false,
           )
           as bool);
 
@@ -1142,7 +1045,6 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
       (super.noSuchMethod(
             Invocation.getter(#oilPaletteTransitionSpeed),
             returnValue: 0.0,
-            returnValueForMissingStub: 0.0,
           )
           as double);
 
@@ -1150,11 +1052,7 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
   String get oilBannerDisplayMode =>
       (super.noSuchMethod(
             Invocation.getter(#oilBannerDisplayMode),
-            returnValue: _i12.dummyValue<String>(
-              this,
-              Invocation.getter(#oilBannerDisplayMode),
-            ),
-            returnValueForMissingStub: _i12.dummyValue<String>(
+            returnValue: _i14.dummyValue<String>(
               this,
               Invocation.getter(#oilBannerDisplayMode),
             ),
@@ -1165,11 +1063,7 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
   String get oilBannerFont =>
       (super.noSuchMethod(
             Invocation.getter(#oilBannerFont),
-            returnValue: _i12.dummyValue<String>(
-              this,
-              Invocation.getter(#oilBannerFont),
-            ),
-            returnValueForMissingStub: _i12.dummyValue<String>(
+            returnValue: _i14.dummyValue<String>(
               this,
               Invocation.getter(#oilBannerFont),
             ),
@@ -1181,7 +1075,6 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
       (super.noSuchMethod(
             Invocation.getter(#oilFlatTextProximity),
             returnValue: 0.0,
-            returnValueForMissingStub: 0.0,
           )
           as double);
 
@@ -1189,11 +1082,7 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
   String get oilFlatTextPlacement =>
       (super.noSuchMethod(
             Invocation.getter(#oilFlatTextPlacement),
-            returnValue: _i12.dummyValue<String>(
-              this,
-              Invocation.getter(#oilFlatTextPlacement),
-            ),
-            returnValueForMissingStub: _i12.dummyValue<String>(
+            returnValue: _i14.dummyValue<String>(
               this,
               Invocation.getter(#oilFlatTextPlacement),
             ),
@@ -1205,7 +1094,6 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
       (super.noSuchMethod(
             Invocation.getter(#oilBannerResolution),
             returnValue: 0.0,
-            returnValueForMissingStub: 0.0,
           )
           as double);
 
@@ -1214,7 +1102,6 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
       (super.noSuchMethod(
             Invocation.getter(#oilBannerPixelSnap),
             returnValue: false,
-            returnValueForMissingStub: false,
           )
           as bool);
 
@@ -1223,7 +1110,6 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
       (super.noSuchMethod(
             Invocation.getter(#oilBannerLetterSpacing),
             returnValue: 0.0,
-            returnValueForMissingStub: 0.0,
           )
           as double);
 
@@ -1232,7 +1118,6 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
       (super.noSuchMethod(
             Invocation.getter(#oilBannerWordSpacing),
             returnValue: 0.0,
-            returnValueForMissingStub: 0.0,
           )
           as double);
 
@@ -1241,7 +1126,6 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
       (super.noSuchMethod(
             Invocation.getter(#oilTrackLetterSpacing),
             returnValue: 0.0,
-            returnValueForMissingStub: 0.0,
           )
           as double);
 
@@ -1250,7 +1134,6 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
       (super.noSuchMethod(
             Invocation.getter(#oilTrackWordSpacing),
             returnValue: 0.0,
-            returnValueForMissingStub: 0.0,
           )
           as double);
 
@@ -1259,7 +1142,6 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
       (super.noSuchMethod(
             Invocation.getter(#oilFlatLineSpacing),
             returnValue: 0.0,
-            returnValueForMissingStub: 0.0,
           )
           as double);
 
@@ -1268,7 +1150,6 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
       (super.noSuchMethod(
             Invocation.getter(#oilLogoTrailIntensity),
             returnValue: 0.0,
-            returnValueForMissingStub: 0.0,
           )
           as double);
 
@@ -1277,7 +1158,6 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
       (super.noSuchMethod(
             Invocation.getter(#oilLogoTrailSlices),
             returnValue: 0,
-            returnValueForMissingStub: 0,
           )
           as int);
 
@@ -1286,7 +1166,6 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
       (super.noSuchMethod(
             Invocation.getter(#oilLogoTrailDynamic),
             returnValue: false,
-            returnValueForMissingStub: false,
           )
           as bool);
 
@@ -1295,7 +1174,6 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
       (super.noSuchMethod(
             Invocation.getter(#oilLogoTrailLength),
             returnValue: 0.0,
-            returnValueForMissingStub: 0.0,
           )
           as double);
 
@@ -1304,7 +1182,6 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
       (super.noSuchMethod(
             Invocation.getter(#oilLogoTrailScale),
             returnValue: 0.0,
-            returnValueForMissingStub: 0.0,
           )
           as double);
 
@@ -1313,7 +1190,6 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
       (super.noSuchMethod(
             Invocation.getter(#oilLogoTrailInitialScale),
             returnValue: 0.0,
-            returnValueForMissingStub: 0.0,
           )
           as double);
 
@@ -1322,7 +1198,6 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
       (super.noSuchMethod(
             Invocation.getter(#oilAudioPeakDecay),
             returnValue: 0.0,
-            returnValueForMissingStub: 0.0,
           )
           as double);
 
@@ -1331,7 +1206,6 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
       (super.noSuchMethod(
             Invocation.getter(#oilAudioBassBoost),
             returnValue: 0.0,
-            returnValueForMissingStub: 0.0,
           )
           as double);
 
@@ -1340,7 +1214,6 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
       (super.noSuchMethod(
             Invocation.getter(#oilAudioReactivityStrength),
             returnValue: 0.0,
-            returnValueForMissingStub: 0.0,
           )
           as double);
 
@@ -1348,11 +1221,7 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
   String get oilAudioGraphMode =>
       (super.noSuchMethod(
             Invocation.getter(#oilAudioGraphMode),
-            returnValue: _i12.dummyValue<String>(
-              this,
-              Invocation.getter(#oilAudioGraphMode),
-            ),
-            returnValueForMissingStub: _i12.dummyValue<String>(
+            returnValue: _i14.dummyValue<String>(
               this,
               Invocation.getter(#oilAudioGraphMode),
             ),
@@ -1361,29 +1230,17 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
 
   @override
   double get oilEkgRadius =>
-      (super.noSuchMethod(
-            Invocation.getter(#oilEkgRadius),
-            returnValue: 0.0,
-            returnValueForMissingStub: 0.0,
-          )
+      (super.noSuchMethod(Invocation.getter(#oilEkgRadius), returnValue: 0.0)
           as double);
 
   @override
   int get oilEkgReplication =>
-      (super.noSuchMethod(
-            Invocation.getter(#oilEkgReplication),
-            returnValue: 0,
-            returnValueForMissingStub: 0,
-          )
+      (super.noSuchMethod(Invocation.getter(#oilEkgReplication), returnValue: 0)
           as int);
 
   @override
   double get oilEkgSpread =>
-      (super.noSuchMethod(
-            Invocation.getter(#oilEkgSpread),
-            returnValue: 0.0,
-            returnValueForMissingStub: 0.0,
-          )
+      (super.noSuchMethod(Invocation.getter(#oilEkgSpread), returnValue: 0.0)
           as double);
 
   @override
@@ -1391,17 +1248,12 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
       (super.noSuchMethod(
             Invocation.getter(#oilBeatSensitivity),
             returnValue: 0.0,
-            returnValueForMissingStub: 0.0,
           )
           as double);
 
   @override
   double get oilBeatImpact =>
-      (super.noSuchMethod(
-            Invocation.getter(#oilBeatImpact),
-            returnValue: 0.0,
-            returnValueForMissingStub: 0.0,
-          )
+      (super.noSuchMethod(Invocation.getter(#oilBeatImpact), returnValue: 0.0)
           as double);
 
   @override
@@ -1409,17 +1261,12 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
       (super.noSuchMethod(
             Invocation.getter(#oilShowInfoBanner),
             returnValue: false,
-            returnValueForMissingStub: false,
           )
           as bool);
 
   @override
   double get oilLogoScale =>
-      (super.noSuchMethod(
-            Invocation.getter(#oilLogoScale),
-            returnValue: 0.0,
-            returnValueForMissingStub: 0.0,
-          )
+      (super.noSuchMethod(Invocation.getter(#oilLogoScale), returnValue: 0.0)
           as double);
 
   @override
@@ -1427,35 +1274,22 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
       (super.noSuchMethod(
             Invocation.getter(#oilTranslationSmoothing),
             returnValue: 0.0,
-            returnValueForMissingStub: 0.0,
           )
           as double);
 
   @override
   double get oilBlurAmount =>
-      (super.noSuchMethod(
-            Invocation.getter(#oilBlurAmount),
-            returnValue: 0.0,
-            returnValueForMissingStub: 0.0,
-          )
+      (super.noSuchMethod(Invocation.getter(#oilBlurAmount), returnValue: 0.0)
           as double);
 
   @override
   bool get oilFlatColor =>
-      (super.noSuchMethod(
-            Invocation.getter(#oilFlatColor),
-            returnValue: false,
-            returnValueForMissingStub: false,
-          )
+      (super.noSuchMethod(Invocation.getter(#oilFlatColor), returnValue: false)
           as bool);
 
   @override
   bool get oilBannerGlow =>
-      (super.noSuchMethod(
-            Invocation.getter(#oilBannerGlow),
-            returnValue: false,
-            returnValueForMissingStub: false,
-          )
+      (super.noSuchMethod(Invocation.getter(#oilBannerGlow), returnValue: false)
           as bool);
 
   @override
@@ -1463,7 +1297,6 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
       (super.noSuchMethod(
             Invocation.getter(#oilBannerFlicker),
             returnValue: 0.0,
-            returnValueForMissingStub: 0.0,
           )
           as double);
 
@@ -1472,7 +1305,6 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
       (super.noSuchMethod(
             Invocation.getter(#oilBannerGlowBlur),
             returnValue: 0.0,
-            returnValueForMissingStub: 0.0,
           )
           as double);
 
@@ -1481,7 +1313,6 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
       (super.noSuchMethod(
             Invocation.getter(#oilLogoAntiAlias),
             returnValue: false,
-            returnValueForMissingStub: false,
           )
           as bool);
 
@@ -1490,7 +1321,6 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
       (super.noSuchMethod(
             Invocation.getter(#oilInnerRingScale),
             returnValue: 0.0,
-            returnValueForMissingStub: 0.0,
           )
           as double);
 
@@ -1499,7 +1329,6 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
       (super.noSuchMethod(
             Invocation.getter(#oilInnerToMiddleGap),
             returnValue: 0.0,
-            returnValueForMissingStub: 0.0,
           )
           as double);
 
@@ -1508,17 +1337,12 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
       (super.noSuchMethod(
             Invocation.getter(#oilMiddleToOuterGap),
             returnValue: 0.0,
-            returnValueForMissingStub: 0.0,
           )
           as double);
 
   @override
   double get oilOrbitDrift =>
-      (super.noSuchMethod(
-            Invocation.getter(#oilOrbitDrift),
-            returnValue: 0.0,
-            returnValueForMissingStub: 0.0,
-          )
+      (super.noSuchMethod(Invocation.getter(#oilOrbitDrift), returnValue: 0.0)
           as double);
 
   @override
@@ -1526,7 +1350,6 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
       (super.noSuchMethod(
             Invocation.getter(#oilInnerRingFontScale),
             returnValue: 0.0,
-            returnValueForMissingStub: 0.0,
           )
           as double);
 
@@ -1535,7 +1358,6 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
       (super.noSuchMethod(
             Invocation.getter(#oilInnerRingSpacingMultiplier),
             returnValue: 0.0,
-            returnValueForMissingStub: 0.0,
           )
           as double);
 
@@ -1544,7 +1366,6 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
       (super.noSuchMethod(
             Invocation.getter(#oilScreensaver4kSupport),
             returnValue: false,
-            returnValueForMissingStub: false,
           )
           as bool);
 
@@ -1553,17 +1374,12 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
       (super.noSuchMethod(
             Invocation.getter(#oilTvPremiumHighlight),
             returnValue: false,
-            returnValueForMissingStub: false,
           )
           as bool);
 
   @override
   int get oilScaleSource =>
-      (super.noSuchMethod(
-            Invocation.getter(#oilScaleSource),
-            returnValue: 0,
-            returnValueForMissingStub: 0,
-          )
+      (super.noSuchMethod(Invocation.getter(#oilScaleSource), returnValue: 0)
           as int);
 
   @override
@@ -1571,17 +1387,12 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
       (super.noSuchMethod(
             Invocation.getter(#oilScaleMultiplier),
             returnValue: 0.0,
-            returnValueForMissingStub: 0.0,
           )
           as double);
 
   @override
   int get oilColorSource =>
-      (super.noSuchMethod(
-            Invocation.getter(#oilColorSource),
-            returnValue: 0,
-            returnValueForMissingStub: 0,
-          )
+      (super.noSuchMethod(Invocation.getter(#oilColorSource), returnValue: 0)
           as int);
 
   @override
@@ -1589,7 +1400,6 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
       (super.noSuchMethod(
             Invocation.getter(#oilColorMultiplier),
             returnValue: 0.0,
-            returnValueForMissingStub: 0.0,
           )
           as double);
 
@@ -1598,7 +1408,6 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
       (super.noSuchMethod(
             Invocation.getter(#oilWoodstockEveryHour),
             returnValue: false,
-            returnValueForMissingStub: false,
           )
           as bool);
 
@@ -1607,7 +1416,6 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
       (super.noSuchMethod(
             Invocation.getter(#oilScaleSineEnabled),
             returnValue: false,
-            returnValueForMissingStub: false,
           )
           as bool);
 
@@ -1616,17 +1424,12 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
       (super.noSuchMethod(
             Invocation.getter(#oilScaleSineFreq),
             returnValue: 0.0,
-            returnValueForMissingStub: 0.0,
           )
           as double);
 
   @override
   double get oilScaleSineAmp =>
-      (super.noSuchMethod(
-            Invocation.getter(#oilScaleSineAmp),
-            returnValue: 0.0,
-            returnValueForMissingStub: 0.0,
-          )
+      (super.noSuchMethod(Invocation.getter(#oilScaleSineAmp), returnValue: 0.0)
           as double);
 
   @override
@@ -1634,7 +1437,6 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
       (super.noSuchMethod(
             Invocation.getter(#randomOnlyUnplayed),
             returnValue: false,
-            returnValueForMissingStub: false,
           )
           as bool);
 
@@ -1643,7 +1445,6 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
       (super.noSuchMethod(
             Invocation.getter(#randomOnlyHighRated),
             returnValue: false,
-            returnValueForMissingStub: false,
           )
           as bool);
 
@@ -1652,7 +1453,6 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
       (super.noSuchMethod(
             Invocation.getter(#randomExcludePlayed),
             returnValue: false,
-            returnValueForMissingStub: false,
           )
           as bool);
 
@@ -1661,7 +1461,6 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
       (super.noSuchMethod(
             Invocation.getter(#showGlobalAlbumArt),
             returnValue: false,
-            returnValueForMissingStub: false,
           )
           as bool);
 
@@ -1670,7 +1469,6 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
       (super.noSuchMethod(
             Invocation.getter(#hasShownAdvancedCacheSuggestion),
             returnValue: false,
-            returnValueForMissingStub: false,
           )
           as bool);
 
@@ -1679,7 +1477,6 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
       (super.noSuchMethod(
             Invocation.getter(#showDebugLayout),
             returnValue: false,
-            returnValueForMissingStub: false,
           )
           as bool);
 
@@ -1688,25 +1485,22 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
       (super.noSuchMethod(
             Invocation.getter(#enableShakedownTween),
             returnValue: false,
-            returnValueForMissingStub: false,
           )
           as bool);
 
   @override
-  _i10.DevHudMode get devHudMode =>
+  _i12.DevHudMode get devHudMode =>
       (super.noSuchMethod(
             Invocation.getter(#devHudMode),
-            returnValue: _i10.DevHudMode.full,
-            returnValueForMissingStub: _i10.DevHudMode.full,
+            returnValue: _i12.DevHudMode.full,
           )
-          as _i10.DevHudMode);
+          as _i12.DevHudMode);
 
   @override
   double get rgbAnimationSpeed =>
       (super.noSuchMethod(
             Invocation.getter(#rgbAnimationSpeed),
             returnValue: 0.0,
-            returnValueForMissingStub: 0.0,
           )
           as double);
 
@@ -1715,7 +1509,6 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
       (super.noSuchMethod(
             Invocation.getter(#filterHighestShnid),
             returnValue: false,
-            returnValueForMissingStub: false,
           )
           as bool);
 
@@ -1724,7 +1517,6 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
       (super.noSuchMethod(
             Invocation.getter(#sourceCategoryFilters),
             returnValue: <String, bool>{},
-            returnValueForMissingStub: <String, bool>{},
           )
           as Map<String, bool>);
 
@@ -1736,11 +1528,7 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
 
   @override
   bool get hasListeners =>
-      (super.noSuchMethod(
-            Invocation.getter(#hasListeners),
-            returnValue: false,
-            returnValueForMissingStub: false,
-          )
+      (super.noSuchMethod(Invocation.getter(#hasListeners), returnValue: false)
           as bool);
 
   @override
@@ -1785,6 +1573,12 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
   @override
   void toggleFruitStickyNowPlaying() => super.noSuchMethod(
     Invocation.method(#toggleFruitStickyNowPlaying, []),
+    returnValueForMissingStub: null,
+  );
+
+  @override
+  void toggleEnableRunDetection() => super.noSuchMethod(
+    Invocation.method(#toggleEnableRunDetection, []),
     returnValueForMissingStub: null,
   );
 
@@ -1845,7 +1639,7 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
       );
 
   @override
-  void setWebEngineProfile(_i10.WebEngineProfile? profile) =>
+  void setWebEngineProfile(_i12.WebEngineProfile? profile) =>
       super.noSuchMethod(
         Invocation.method(#setWebEngineProfile, [profile]),
         returnValueForMissingStub: null,
@@ -1996,7 +1790,7 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
   );
 
   @override
-  void setDevHudMode(_i10.DevHudMode? mode) => super.noSuchMethod(
+  void setDevHudMode(_i12.DevHudMode? mode) => super.noSuchMethod(
     Invocation.method(#setDevHudMode, [mode]),
     returnValueForMissingStub: null,
   );
@@ -2101,7 +1895,7 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
   );
 
   @override
-  void setNeumorphicStyle(_i13.NeumorphicStyle? value, {bool? notify}) =>
+  void setNeumorphicStyle(_i15.NeumorphicStyle? value, {bool? notify}) =>
       super.noSuchMethod(
         Invocation.method(#setNeumorphicStyle, [value], {#notify: notify}),
         returnValueForMissingStub: null,
@@ -2129,7 +1923,7 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
   );
 
   @override
-  _i5.Future<void> setSeedColor(_i8.Color? color) =>
+  _i5.Future<void> setSeedColor(_i9.Color? color) =>
       (super.noSuchMethod(
             Invocation.method(#setSeedColor, [color]),
             returnValue: _i5.Future<void>.value(),
@@ -2714,13 +2508,13 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
           as _i5.Future<void>);
 
   @override
-  void addListener(_i8.VoidCallback? listener) => super.noSuchMethod(
+  void addListener(_i9.VoidCallback? listener) => super.noSuchMethod(
     Invocation.method(#addListener, [listener]),
     returnValueForMissingStub: null,
   );
 
   @override
-  void removeListener(_i8.VoidCallback? listener) => super.noSuchMethod(
+  void removeListener(_i9.VoidCallback? listener) => super.noSuchMethod(
     Invocation.method(#removeListener, [listener]),
     returnValueForMissingStub: null,
   );
@@ -2734,402 +2528,6 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
   @override
   void notifyListeners() => super.noSuchMethod(
     Invocation.method(#notifyListeners, []),
-    returnValueForMissingStub: null,
-  );
-}
-
-/// A class which mocks [GaplessPlayer].
-///
-/// See the documentation for Mockito's code generation for more information.
-class MockGaplessPlayer extends _i1.Mock implements _i2.GaplessPlayer {
-  @override
-  bool get playing =>
-      (super.noSuchMethod(
-            Invocation.getter(#playing),
-            returnValue: false,
-            returnValueForMissingStub: false,
-          )
-          as bool);
-
-  @override
-  Duration get position =>
-      (super.noSuchMethod(
-            Invocation.getter(#position),
-            returnValue: _FakeDuration_1(this, Invocation.getter(#position)),
-            returnValueForMissingStub: _FakeDuration_1(
-              this,
-              Invocation.getter(#position),
-            ),
-          )
-          as Duration);
-
-  @override
-  Duration get bufferedPosition =>
-      (super.noSuchMethod(
-            Invocation.getter(#bufferedPosition),
-            returnValue: _FakeDuration_1(
-              this,
-              Invocation.getter(#bufferedPosition),
-            ),
-            returnValueForMissingStub: _FakeDuration_1(
-              this,
-              Invocation.getter(#bufferedPosition),
-            ),
-          )
-          as Duration);
-
-  @override
-  List<_i3.IndexedAudioSource> get sequence =>
-      (super.noSuchMethod(
-            Invocation.getter(#sequence),
-            returnValue: <_i3.IndexedAudioSource>[],
-            returnValueForMissingStub: <_i3.IndexedAudioSource>[],
-          )
-          as List<_i3.IndexedAudioSource>);
-
-  @override
-  _i3.ProcessingState get processingState =>
-      (super.noSuchMethod(
-            Invocation.getter(#processingState),
-            returnValue: _i3.ProcessingState.idle,
-            returnValueForMissingStub: _i3.ProcessingState.idle,
-          )
-          as _i3.ProcessingState);
-
-  @override
-  _i3.PlayerState get playerState =>
-      (super.noSuchMethod(
-            Invocation.getter(#playerState),
-            returnValue: _FakePlayerState_2(
-              this,
-              Invocation.getter(#playerState),
-            ),
-            returnValueForMissingStub: _FakePlayerState_2(
-              this,
-              Invocation.getter(#playerState),
-            ),
-          )
-          as _i3.PlayerState);
-
-  @override
-  String get engineName =>
-      (super.noSuchMethod(
-            Invocation.getter(#engineName),
-            returnValue: _i12.dummyValue<String>(
-              this,
-              Invocation.getter(#engineName),
-            ),
-            returnValueForMissingStub: _i12.dummyValue<String>(
-              this,
-              Invocation.getter(#engineName),
-            ),
-          )
-          as String);
-
-  @override
-  String get selectionReason =>
-      (super.noSuchMethod(
-            Invocation.getter(#selectionReason),
-            returnValue: _i12.dummyValue<String>(
-              this,
-              Invocation.getter(#selectionReason),
-            ),
-            returnValueForMissingStub: _i12.dummyValue<String>(
-              this,
-              Invocation.getter(#selectionReason),
-            ),
-          )
-          as String);
-
-  @override
-  _i2.AudioEngineMode get activeMode =>
-      (super.noSuchMethod(
-            Invocation.getter(#activeMode),
-            returnValue: _i2.AudioEngineMode.auto,
-            returnValueForMissingStub: _i2.AudioEngineMode.auto,
-          )
-          as _i2.AudioEngineMode);
-
-  @override
-  _i5.Stream<_i3.PlayerState> get playerStateStream =>
-      (super.noSuchMethod(
-            Invocation.getter(#playerStateStream),
-            returnValue: _i5.Stream<_i3.PlayerState>.empty(),
-            returnValueForMissingStub: _i5.Stream<_i3.PlayerState>.empty(),
-          )
-          as _i5.Stream<_i3.PlayerState>);
-
-  @override
-  _i5.Stream<_i3.PlaybackEvent> get playbackEventStream =>
-      (super.noSuchMethod(
-            Invocation.getter(#playbackEventStream),
-            returnValue: _i5.Stream<_i3.PlaybackEvent>.empty(),
-            returnValueForMissingStub: _i5.Stream<_i3.PlaybackEvent>.empty(),
-          )
-          as _i5.Stream<_i3.PlaybackEvent>);
-
-  @override
-  _i5.Stream<bool> get playingStream =>
-      (super.noSuchMethod(
-            Invocation.getter(#playingStream),
-            returnValue: _i5.Stream<bool>.empty(),
-            returnValueForMissingStub: _i5.Stream<bool>.empty(),
-          )
-          as _i5.Stream<bool>);
-
-  @override
-  _i5.Stream<_i3.ProcessingState> get processingStateStream =>
-      (super.noSuchMethod(
-            Invocation.getter(#processingStateStream),
-            returnValue: _i5.Stream<_i3.ProcessingState>.empty(),
-            returnValueForMissingStub: _i5.Stream<_i3.ProcessingState>.empty(),
-          )
-          as _i5.Stream<_i3.ProcessingState>);
-
-  @override
-  _i5.Stream<Duration> get bufferedPositionStream =>
-      (super.noSuchMethod(
-            Invocation.getter(#bufferedPositionStream),
-            returnValue: _i5.Stream<Duration>.empty(),
-            returnValueForMissingStub: _i5.Stream<Duration>.empty(),
-          )
-          as _i5.Stream<Duration>);
-
-  @override
-  _i5.Stream<Duration> get positionStream =>
-      (super.noSuchMethod(
-            Invocation.getter(#positionStream),
-            returnValue: _i5.Stream<Duration>.empty(),
-            returnValueForMissingStub: _i5.Stream<Duration>.empty(),
-          )
-          as _i5.Stream<Duration>);
-
-  @override
-  _i5.Stream<Duration?> get durationStream =>
-      (super.noSuchMethod(
-            Invocation.getter(#durationStream),
-            returnValue: _i5.Stream<Duration?>.empty(),
-            returnValueForMissingStub: _i5.Stream<Duration?>.empty(),
-          )
-          as _i5.Stream<Duration?>);
-
-  @override
-  _i5.Stream<Duration?> get nextTrackBufferedStream =>
-      (super.noSuchMethod(
-            Invocation.getter(#nextTrackBufferedStream),
-            returnValue: _i5.Stream<Duration?>.empty(),
-            returnValueForMissingStub: _i5.Stream<Duration?>.empty(),
-          )
-          as _i5.Stream<Duration?>);
-
-  @override
-  _i5.Stream<Duration?> get nextTrackTotalStream =>
-      (super.noSuchMethod(
-            Invocation.getter(#nextTrackTotalStream),
-            returnValue: _i5.Stream<Duration?>.empty(),
-            returnValueForMissingStub: _i5.Stream<Duration?>.empty(),
-          )
-          as _i5.Stream<Duration?>);
-
-  @override
-  _i5.Stream<bool> get heartbeatActiveStream =>
-      (super.noSuchMethod(
-            Invocation.getter(#heartbeatActiveStream),
-            returnValue: _i5.Stream<bool>.empty(),
-            returnValueForMissingStub: _i5.Stream<bool>.empty(),
-          )
-          as _i5.Stream<bool>);
-
-  @override
-  _i5.Stream<bool> get heartbeatNeededStream =>
-      (super.noSuchMethod(
-            Invocation.getter(#heartbeatNeededStream),
-            returnValue: _i5.Stream<bool>.empty(),
-            returnValueForMissingStub: _i5.Stream<bool>.empty(),
-          )
-          as _i5.Stream<bool>);
-
-  @override
-  _i5.Stream<String> get engineStateStringStream =>
-      (super.noSuchMethod(
-            Invocation.getter(#engineStateStringStream),
-            returnValue: _i5.Stream<String>.empty(),
-            returnValueForMissingStub: _i5.Stream<String>.empty(),
-          )
-          as _i5.Stream<String>);
-
-  @override
-  _i5.Stream<String> get engineContextStateStream =>
-      (super.noSuchMethod(
-            Invocation.getter(#engineContextStateStream),
-            returnValue: _i5.Stream<String>.empty(),
-            returnValueForMissingStub: _i5.Stream<String>.empty(),
-          )
-          as _i5.Stream<String>);
-
-  @override
-  _i5.Stream<int?> get currentIndexStream =>
-      (super.noSuchMethod(
-            Invocation.getter(#currentIndexStream),
-            returnValue: _i5.Stream<int?>.empty(),
-            returnValueForMissingStub: _i5.Stream<int?>.empty(),
-          )
-          as _i5.Stream<int?>);
-
-  @override
-  _i5.Stream<_i3.SequenceState?> get sequenceStateStream =>
-      (super.noSuchMethod(
-            Invocation.getter(#sequenceStateStream),
-            returnValue: _i5.Stream<_i3.SequenceState?>.empty(),
-            returnValueForMissingStub: _i5.Stream<_i3.SequenceState?>.empty(),
-          )
-          as _i5.Stream<_i3.SequenceState?>);
-
-  @override
-  void reload() => super.noSuchMethod(
-    Invocation.method(#reload, []),
-    returnValueForMissingStub: null,
-  );
-
-  @override
-  _i5.Future<Duration?> setAudioSources(
-    List<_i3.AudioSource>? children, {
-    int? initialIndex = 0,
-    Duration? initialPosition = Duration.zero,
-    bool? preload = true,
-  }) =>
-      (super.noSuchMethod(
-            Invocation.method(
-              #setAudioSources,
-              [children],
-              {
-                #initialIndex: initialIndex,
-                #initialPosition: initialPosition,
-                #preload: preload,
-              },
-            ),
-            returnValue: _i5.Future<Duration?>.value(),
-            returnValueForMissingStub: _i5.Future<Duration?>.value(),
-          )
-          as _i5.Future<Duration?>);
-
-  @override
-  _i5.Future<void> addAudioSources(List<_i3.AudioSource>? sources) =>
-      (super.noSuchMethod(
-            Invocation.method(#addAudioSources, [sources]),
-            returnValue: _i5.Future<void>.value(),
-            returnValueForMissingStub: _i5.Future<void>.value(),
-          )
-          as _i5.Future<void>);
-
-  @override
-  _i5.Future<void> play() =>
-      (super.noSuchMethod(
-            Invocation.method(#play, []),
-            returnValue: _i5.Future<void>.value(),
-            returnValueForMissingStub: _i5.Future<void>.value(),
-          )
-          as _i5.Future<void>);
-
-  @override
-  _i5.Future<void> pause() =>
-      (super.noSuchMethod(
-            Invocation.method(#pause, []),
-            returnValue: _i5.Future<void>.value(),
-            returnValueForMissingStub: _i5.Future<void>.value(),
-          )
-          as _i5.Future<void>);
-
-  @override
-  void setHybridHandoffMode(String? mode) => super.noSuchMethod(
-    Invocation.method(#setHybridHandoffMode, [mode]),
-    returnValueForMissingStub: null,
-  );
-
-  @override
-  void setHybridBackgroundMode(String? mode) => super.noSuchMethod(
-    Invocation.method(#setHybridBackgroundMode, [mode]),
-    returnValueForMissingStub: null,
-  );
-
-  @override
-  void setHybridAllowHiddenWebAudio(bool? enabled) => super.noSuchMethod(
-    Invocation.method(#setHybridAllowHiddenWebAudio, [enabled]),
-    returnValueForMissingStub: null,
-  );
-
-  @override
-  void setHandoffCrossfadeMs(int? ms) => super.noSuchMethod(
-    Invocation.method(#setHandoffCrossfadeMs, [ms]),
-    returnValueForMissingStub: null,
-  );
-
-  @override
-  void setHybridForceHtml5Start(bool? enabled) => super.noSuchMethod(
-    Invocation.method(#setHybridForceHtml5Start, [enabled]),
-    returnValueForMissingStub: null,
-  );
-
-  @override
-  void setTrackTransitionMode(String? mode) => super.noSuchMethod(
-    Invocation.method(#setTrackTransitionMode, [mode]),
-    returnValueForMissingStub: null,
-  );
-
-  @override
-  _i5.Future<void> stop() =>
-      (super.noSuchMethod(
-            Invocation.method(#stop, []),
-            returnValue: _i5.Future<void>.value(),
-            returnValueForMissingStub: _i5.Future<void>.value(),
-          )
-          as _i5.Future<void>);
-
-  @override
-  _i5.Future<void> seek(Duration? position, {int? index}) =>
-      (super.noSuchMethod(
-            Invocation.method(#seek, [position], {#index: index}),
-            returnValue: _i5.Future<void>.value(),
-            returnValueForMissingStub: _i5.Future<void>.value(),
-          )
-          as _i5.Future<void>);
-
-  @override
-  void setPrefetchSeconds(int? seconds) => super.noSuchMethod(
-    Invocation.method(#setPrefetchSeconds, [seconds]),
-    returnValueForMissingStub: null,
-  );
-
-  @override
-  _i5.Future<void> seekToNext() =>
-      (super.noSuchMethod(
-            Invocation.method(#seekToNext, []),
-            returnValue: _i5.Future<void>.value(),
-            returnValueForMissingStub: _i5.Future<void>.value(),
-          )
-          as _i5.Future<void>);
-
-  @override
-  _i5.Future<void> seekToPrevious() =>
-      (super.noSuchMethod(
-            Invocation.method(#seekToPrevious, []),
-            returnValue: _i5.Future<void>.value(),
-            returnValueForMissingStub: _i5.Future<void>.value(),
-          )
-          as _i5.Future<void>);
-
-  @override
-  _i5.Future<void> dispose() =>
-      (super.noSuchMethod(
-            Invocation.method(#dispose, []),
-            returnValue: _i5.Future<void>.value(),
-            returnValueForMissingStub: _i5.Future<void>.value(),
-          )
-          as _i5.Future<void>);
-
-  @override
-  void setWebPrefetchSeconds(int? seconds) => super.noSuchMethod(
-    Invocation.method(#setWebPrefetchSeconds, [seconds]),
     returnValueForMissingStub: null,
   );
 }

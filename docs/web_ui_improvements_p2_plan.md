@@ -1,4 +1,4 @@
-# Web UI Improvements — P2 Plan (Jules)
+# Web UI Improvements — P2 Plan 
 
 ## Phase Goal
 Polish diagnostics and optional advanced behaviors.
@@ -8,7 +8,7 @@ Polish diagnostics and optional advanced behaviors.
 - Advanced diagnostics and optional continuity features are available.
 
 
-## Jules Expectations
+## Expectations
 
 - Follow Clean Architecture: UI (Widgets), Logic (Provider/State), Data (Repository).
 - State management via Provider (`ChangeNotifier` / `ProxyProvider`).

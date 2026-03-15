@@ -638,6 +638,7 @@
             window.addEventListener('gdar-worker-tick', () => {
                 if (_queue && _queue.currentTrack) {
                     _queue.currentTrack.onProgress(true); // Call as tick
+                    _updateMediaSession();
                 }
             });
         },
@@ -718,6 +719,31 @@
         onError: function (cb) { _onError = cb; },
         engineType: 'html5'
     };
+
+    function _updateMediaSession() {
+        if (!window._gdarMediaSession || !_queue) return;
+        const track = _queue.currentTrack;
+        if (track) {
+            window._gdarMediaSession.updateMetadata({
+                title: track.metadata?.title || 'Unknown',
+                artist: track.metadata?.artist || 'Unknown',
+                album: track.metadata?.album || 'Unknown'
+            });
+            window._gdarMediaSession.updatePlaybackState(!track.isPaused);
+            window._gdarMediaSession.updatePositionState({
+                duration: track.duration,
+                position: track.currentTime,
+                playing: !track.isPaused
+            });
+            window._gdarMediaSession.setActionHandlers({
+                onPlay: () => api.play(),
+                onPause: () => api.pause(),
+                onNext: () => api.playNext(),
+                onPrevious: () => api.playPrevious(),
+                onSeekTo: (e) => api.seek(e.seekTime)
+            });
+        }
+    }
 
     window._html5Audio = api;
 

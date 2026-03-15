@@ -126,6 +126,60 @@ class MockGaplessPlayer extends _i1.Mock implements _i3.GaplessPlayer {
           as _i3.AudioEngineMode);
 
   @override
+  double get drift =>
+      (super.noSuchMethod(Invocation.getter(#drift), returnValue: 0.0)
+          as double);
+
+  @override
+  String get visibility =>
+      (super.noSuchMethod(
+            Invocation.getter(#visibility),
+            returnValue: _i4.dummyValue<String>(
+              this,
+              Invocation.getter(#visibility),
+            ),
+          )
+          as String);
+
+  @override
+  String get engineStateString =>
+      (super.noSuchMethod(
+            Invocation.getter(#engineStateString),
+            returnValue: _i4.dummyValue<String>(
+              this,
+              Invocation.getter(#engineStateString),
+            ),
+          )
+          as String);
+
+  @override
+  String get engineContextState =>
+      (super.noSuchMethod(
+            Invocation.getter(#engineContextState),
+            returnValue: _i4.dummyValue<String>(
+              this,
+              Invocation.getter(#engineContextState),
+            ),
+          )
+          as String);
+
+  @override
+  bool get heartbeatActive =>
+      (super.noSuchMethod(
+            Invocation.getter(#heartbeatActive),
+            returnValue: false,
+          )
+          as bool);
+
+  @override
+  bool get heartbeatNeeded =>
+      (super.noSuchMethod(
+            Invocation.getter(#heartbeatNeeded),
+            returnValue: false,
+          )
+          as bool);
+
+  @override
   _i5.Stream<_i2.PlayerState> get playerStateStream =>
       (super.noSuchMethod(
             Invocation.getter(#playerStateStream),
@@ -225,6 +279,22 @@ class MockGaplessPlayer extends _i1.Mock implements _i3.GaplessPlayer {
   _i5.Stream<String> get engineContextStateStream =>
       (super.noSuchMethod(
             Invocation.getter(#engineContextStateStream),
+            returnValue: _i5.Stream<String>.empty(),
+          )
+          as _i5.Stream<String>);
+
+  @override
+  _i5.Stream<double> get driftStream =>
+      (super.noSuchMethod(
+            Invocation.getter(#driftStream),
+            returnValue: _i5.Stream<double>.empty(),
+          )
+          as _i5.Stream<double>);
+
+  @override
+  _i5.Stream<String> get visibilityStream =>
+      (super.noSuchMethod(
+            Invocation.getter(#visibilityStream),
             returnValue: _i5.Stream<String>.empty(),
           )
           as _i5.Stream<String>);

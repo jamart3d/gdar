@@ -9,20 +9,21 @@ import 'dart:ui' as _i12;
 import 'package:flutter/foundation.dart' as _i3;
 import 'package:hive_ce_flutter/hive_flutter.dart' as _i15;
 import 'package:just_audio/just_audio.dart' as _i2;
-import 'package:just_audio_background/just_audio_background.dart' as _i18;
+import 'package:just_audio_background/just_audio_background.dart' as _i19;
 import 'package:mockito/mockito.dart' as _i1;
 import 'package:mockito/src/dummies.dart' as _i5;
 import 'package:shakedown_core/models/rating.dart' as _i16;
+import 'package:shakedown_core/models/session_entry.dart' as _i17;
 import 'package:shakedown_core/models/show.dart' as _i8;
 import 'package:shakedown_core/models/source.dart' as _i11;
 import 'package:shakedown_core/providers/settings_provider.dart' as _i10;
 import 'package:shakedown_core/providers/show_list_provider.dart' as _i7;
 import 'package:shakedown_core/providers/theme_provider.dart' as _i13;
-import 'package:shakedown_core/services/audio_cache_service_io.dart' as _i17;
+import 'package:shakedown_core/services/audio_cache_service_io.dart' as _i18;
 import 'package:shakedown_core/services/catalog_service.dart' as _i14;
 import 'package:shakedown_core/services/gapless_player/gapless_player.dart'
     as _i4;
-import 'package:shakedown_core/services/wakelock_service.dart' as _i19;
+import 'package:shakedown_core/services/wakelock_service.dart' as _i20;
 import 'package:shared_preferences/shared_preferences.dart' as _i9;
 
 // ignore_for_file: type=lint
@@ -174,6 +175,78 @@ class MockAudioPlayerRelaxed extends _i1.Mock implements _i4.GaplessPlayer {
           as _i4.AudioEngineMode);
 
   @override
+  double get drift =>
+      (super.noSuchMethod(
+            Invocation.getter(#drift),
+            returnValue: 0.0,
+            returnValueForMissingStub: 0.0,
+          )
+          as double);
+
+  @override
+  String get visibility =>
+      (super.noSuchMethod(
+            Invocation.getter(#visibility),
+            returnValue: _i5.dummyValue<String>(
+              this,
+              Invocation.getter(#visibility),
+            ),
+            returnValueForMissingStub: _i5.dummyValue<String>(
+              this,
+              Invocation.getter(#visibility),
+            ),
+          )
+          as String);
+
+  @override
+  String get engineStateString =>
+      (super.noSuchMethod(
+            Invocation.getter(#engineStateString),
+            returnValue: _i5.dummyValue<String>(
+              this,
+              Invocation.getter(#engineStateString),
+            ),
+            returnValueForMissingStub: _i5.dummyValue<String>(
+              this,
+              Invocation.getter(#engineStateString),
+            ),
+          )
+          as String);
+
+  @override
+  String get engineContextState =>
+      (super.noSuchMethod(
+            Invocation.getter(#engineContextState),
+            returnValue: _i5.dummyValue<String>(
+              this,
+              Invocation.getter(#engineContextState),
+            ),
+            returnValueForMissingStub: _i5.dummyValue<String>(
+              this,
+              Invocation.getter(#engineContextState),
+            ),
+          )
+          as String);
+
+  @override
+  bool get heartbeatActive =>
+      (super.noSuchMethod(
+            Invocation.getter(#heartbeatActive),
+            returnValue: false,
+            returnValueForMissingStub: false,
+          )
+          as bool);
+
+  @override
+  bool get heartbeatNeeded =>
+      (super.noSuchMethod(
+            Invocation.getter(#heartbeatNeeded),
+            returnValue: false,
+            returnValueForMissingStub: false,
+          )
+          as bool);
+
+  @override
   _i6.Stream<_i2.PlayerState> get playerStateStream =>
       (super.noSuchMethod(
             Invocation.getter(#playerStateStream),
@@ -285,6 +358,24 @@ class MockAudioPlayerRelaxed extends _i1.Mock implements _i4.GaplessPlayer {
   _i6.Stream<String> get engineContextStateStream =>
       (super.noSuchMethod(
             Invocation.getter(#engineContextStateStream),
+            returnValue: _i6.Stream<String>.empty(),
+            returnValueForMissingStub: _i6.Stream<String>.empty(),
+          )
+          as _i6.Stream<String>);
+
+  @override
+  _i6.Stream<double> get driftStream =>
+      (super.noSuchMethod(
+            Invocation.getter(#driftStream),
+            returnValue: _i6.Stream<double>.empty(),
+            returnValueForMissingStub: _i6.Stream<double>.empty(),
+          )
+          as _i6.Stream<double>);
+
+  @override
+  _i6.Stream<String> get visibilityStream =>
+      (super.noSuchMethod(
+            Invocation.getter(#visibilityStream),
             returnValue: _i6.Stream<String>.empty(),
             returnValueForMissingStub: _i6.Stream<String>.empty(),
           )
@@ -808,6 +899,21 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
           as String);
 
   @override
+  String get activeAppFont =>
+      (super.noSuchMethod(
+            Invocation.getter(#activeAppFont),
+            returnValue: _i5.dummyValue<String>(
+              this,
+              Invocation.getter(#activeAppFont),
+            ),
+            returnValueForMissingStub: _i5.dummyValue<String>(
+              this,
+              Invocation.getter(#activeAppFont),
+            ),
+          )
+          as String);
+
+  @override
   bool get showSplashScreen =>
       (super.noSuchMethod(
             Invocation.getter(#showSplashScreen),
@@ -1186,6 +1292,15 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
   bool get enableHaptics =>
       (super.noSuchMethod(
             Invocation.getter(#enableHaptics),
+            returnValue: false,
+            returnValueForMissingStub: false,
+          )
+          as bool);
+
+  @override
+  bool get enableRunDetection =>
+      (super.noSuchMethod(
+            Invocation.getter(#enableRunDetection),
             returnValue: false,
             returnValueForMissingStub: false,
           )
@@ -2091,6 +2206,12 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
   @override
   void toggleFruitStickyNowPlaying() => super.noSuchMethod(
     Invocation.method(#toggleFruitStickyNowPlaying, []),
+    returnValueForMissingStub: null,
+  );
+
+  @override
+  void toggleEnableRunDetection() => super.noSuchMethod(
+    Invocation.method(#toggleEnableRunDetection, []),
     returnValueForMissingStub: null,
   );
 
@@ -3192,6 +3313,31 @@ class MockCatalogService extends _i1.Mock implements _i14.CatalogService {
           as _i6.Future<void>);
 
   @override
+  _i6.Future<void> recordSession(
+    String? sourceId, {
+    required String? showDate,
+  }) =>
+      (super.noSuchMethod(
+            Invocation.method(
+              #recordSession,
+              [sourceId],
+              {#showDate: showDate},
+            ),
+            returnValue: _i6.Future<void>.value(),
+            returnValueForMissingStub: _i6.Future<void>.value(),
+          )
+          as _i6.Future<void>);
+
+  @override
+  List<_i17.SessionEntry> getSessionHistory() =>
+      (super.noSuchMethod(
+            Invocation.method(#getSessionHistory, []),
+            returnValue: <_i17.SessionEntry>[],
+            returnValueForMissingStub: <_i17.SessionEntry>[],
+          )
+          as List<_i17.SessionEntry>);
+
+  @override
   _i6.Future<void> togglePlayed(String? sourceId) =>
       (super.noSuchMethod(
             Invocation.method(#togglePlayed, [sourceId]),
@@ -3231,7 +3377,7 @@ class MockCatalogService extends _i1.Mock implements _i14.CatalogService {
 /// A class which mocks [AudioCacheService].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockAudioCacheService extends _i1.Mock implements _i17.AudioCacheService {
+class MockAudioCacheService extends _i1.Mock implements _i18.AudioCacheService {
   @override
   int get cachedTrackCount =>
       (super.noSuchMethod(
@@ -3268,7 +3414,7 @@ class MockAudioCacheService extends _i1.Mock implements _i17.AudioCacheService {
   @override
   _i2.AudioSource createAudioSource({
     required Uri? uri,
-    required _i18.MediaItem? tag,
+    required _i19.MediaItem? tag,
     required bool? useCache,
   }) =>
       (super.noSuchMethod(
@@ -3373,7 +3519,7 @@ class MockAudioCacheService extends _i1.Mock implements _i17.AudioCacheService {
 /// A class which mocks [WakelockService].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockWakelockService extends _i1.Mock implements _i19.WakelockService {
+class MockWakelockService extends _i1.Mock implements _i20.WakelockService {
   @override
   _i6.Future<bool> get enabled =>
       (super.noSuchMethod(

@@ -2,23 +2,21 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:just_audio/just_audio.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:provider/provider.dart';
 import 'package:shakedown_core/providers/audio_provider.dart';
 import 'package:shakedown_core/providers/settings_provider.dart';
 import 'package:shakedown_core/services/device_service.dart';
-import 'package:shakedown_core/services/gapless_player/gapless_player.dart';
 import 'package:shakedown_core/ui/widgets/playback/playback_messages.dart';
 import 'package:shakedown_core/providers/theme_provider.dart';
+import 'package:shakedown_core/models/hud_snapshot.dart';
 
 import 'playback_messages_test.mocks.dart';
 
-@GenerateNiceMocks([
-  MockSpec<AudioProvider>(),
-  MockSpec<SettingsProvider>(),
-  MockSpec<GaplessPlayer>(),
+@GenerateMocks([
+  AudioProvider,
+  SettingsProvider,
 ])
 class MockDeviceService extends ChangeNotifier implements DeviceService {
   @override
@@ -40,61 +38,31 @@ class MockDeviceService extends ChangeNotifier implements DeviceService {
 void main() {
   late MockAudioProvider mockAudioProvider;
   late MockSettingsProvider mockSettingsProvider;
-  late MockGaplessPlayer mockAudioPlayer;
   late MockDeviceService mockDeviceService;
 
   // Stream Controllers
-  late StreamController<PlayerState> playerStateController;
-  late StreamController<Duration> bufferedPositionController;
-  late StreamController<({String message, VoidCallback? retryAction})>
-      bufferAgentController;
+  late StreamController<HudSnapshot> hudSnapshotController;
 
   setUp(() {
     mockAudioProvider = MockAudioProvider();
     mockSettingsProvider = MockSettingsProvider();
-    mockAudioPlayer = MockGaplessPlayer();
     mockDeviceService = MockDeviceService();
 
-    // Initialize controllers
-    playerStateController = StreamController<PlayerState>.broadcast();
-    bufferedPositionController = StreamController<Duration>.broadcast();
-    bufferAgentController = StreamController<
-        ({String message, VoidCallback? retryAction})>.broadcast();
-
-    // Stub AudioProvider.audioPlayer FIRST so it doesn't return null
-    when(mockAudioProvider.audioPlayer).thenReturn(mockAudioPlayer);
-
-    // Setup AudioPlayer stub
-    when(mockAudioPlayer.playerState)
-        .thenReturn(PlayerState(false, ProcessingState.idle));
-    when(mockAudioPlayer.bufferedPosition).thenReturn(Duration.zero);
+    hudSnapshotController = StreamController<HudSnapshot>.broadcast();
 
     // Setup AudioProvider streams
-    when(mockAudioProvider.playerStateStream)
-        .thenAnswer((_) => playerStateController.stream);
-    when(mockAudioProvider.bufferedPositionStream)
-        .thenAnswer((_) => bufferedPositionController.stream);
-    when(mockAudioProvider.bufferAgentNotificationStream)
-        .thenAnswer((_) => bufferAgentController.stream);
+    when(mockAudioProvider.hudSnapshotStream)
+        .thenAnswer((_) => hudSnapshotController.stream);
+    when(mockAudioProvider.currentHudSnapshot).thenReturn(HudSnapshot.empty());
 
     // Setup SettingsProvider
     when(mockSettingsProvider.showPlaybackMessages).thenReturn(true);
     when(mockSettingsProvider.appFont).thenReturn('Roboto');
     when(mockSettingsProvider.uiScale).thenReturn(false);
-
-    // Add missing stream and property stubs required by PlaybackMessages
-    when(mockAudioPlayer.engineStateStringStream)
-        .thenAnswer((_) => const Stream<String>.empty());
-    when(mockAudioProvider.nextTrackBufferedStream)
-        .thenAnswer((_) => const Stream<Duration?>.empty());
-    when(mockAudioPlayer.nextTrackBuffered).thenReturn(null);
-    when(mockAudioPlayer.position).thenReturn(Duration.zero);
   });
 
   tearDown(() {
-    playerStateController.close();
-    bufferedPositionController.close();
-    bufferAgentController.close();
+    hudSnapshotController.close();
   });
 
   Widget createWidgetUnderTest() {
@@ -104,7 +72,6 @@ void main() {
         ChangeNotifierProvider<SettingsProvider>.value(
             value: mockSettingsProvider),
         ChangeNotifierProvider<DeviceService>.value(value: mockDeviceService),
-        // Add a stub ThemeProvider so the widget can resolve it
         ChangeNotifierProvider<ThemeProvider>(
           create: (_) => ThemeProvider(isTv: false),
         ),
@@ -125,92 +92,88 @@ void main() {
       expect(find.byType(Text), findsNothing);
     });
 
-    testWidgets('Displays "Loading..." when loading', (tester) async {
-      when(mockAudioPlayer.playerState)
-          .thenReturn(PlayerState(false, ProcessingState.loading));
+    testWidgets('Displays "Loading..." when loading (HudSnapshot LD)',
+        (tester) async {
+      when(mockAudioProvider.currentHudSnapshot).thenReturn(
+        HudSnapshot.empty().copyWith(processing: 'LD'),
+      );
       await tester.pumpWidget(createWidgetUnderTest());
       expect(find.text('Loading...'), findsOneWidget);
     });
 
-    testWidgets('Displays "Buffering..." when buffering', (tester) async {
-      when(mockAudioPlayer.playerState)
-          .thenReturn(PlayerState(true, ProcessingState.buffering));
+    testWidgets('Displays "Buffering..." when buffering (HudSnapshot BUF)',
+        (tester) async {
+      when(mockAudioProvider.currentHudSnapshot).thenReturn(
+        HudSnapshot.empty().copyWith(processing: 'BUF'),
+      );
       await tester.pumpWidget(createWidgetUnderTest());
       expect(find.text('Buffering...'), findsOneWidget);
     });
 
-    testWidgets(
-        'Keeps playback status visible when showPlaybackMessages is false',
-        (tester) async {
-      when(mockSettingsProvider.showPlaybackMessages).thenReturn(false);
-      when(mockAudioPlayer.playerState)
-          .thenReturn(PlayerState(true, ProcessingState.buffering));
-
+    testWidgets('Displays message from signal when present', (tester) async {
+      when(mockAudioProvider.currentHudSnapshot).thenReturn(
+        HudSnapshot.empty().copyWith(
+          signal: 'AGT',
+          message: 'Network issue detected',
+          processing: 'BUF',
+        ),
+      );
       await tester.pumpWidget(createWidgetUnderTest());
-      expect(find.text('Buffering...'), findsOneWidget);
-    });
-
-    testWidgets('Displays Agent Message when notification received',
-        (tester) async {
-      // 1. Start with normal buffering
-      when(mockAudioPlayer.playerState)
-          .thenReturn(PlayerState(true, ProcessingState.buffering));
-      await tester.pumpWidget(createWidgetUnderTest());
-      expect(find.text('Buffering...'), findsOneWidget);
-
-      // 2. Emit Agent Notification
-      bufferAgentController.add(
-          (message: 'Network issue detected. Retrying...', retryAction: null));
-      await tester.pumpAndSettle();
-
-      // 3. Verify Message
-      expect(find.text('Network issue detected. Retrying...'), findsOneWidget);
-      // Ensure "Buffering..." is gone (replaced)
+      expect(find.text('Network issue detected'), findsOneWidget);
       expect(find.text('Buffering...'), findsNothing);
     });
 
-    testWidgets('Clears Agent Message when playback resumes (Ready + Playing)',
+    testWidgets('Clears message and shows Playing (HudSnapshot RDY + isPlaying)',
         (tester) async {
-      // 1. Setup Agent Message state
-      when(mockAudioPlayer.playerState)
-          .thenReturn(PlayerState(true, ProcessingState.buffering));
+      // 1. Initial message state
+      when(mockAudioProvider.currentHudSnapshot).thenReturn(
+        HudSnapshot.empty().copyWith(
+          signal: 'AGT',
+          message: 'Retrying...',
+          processing: 'BUF',
+        ),
+      );
       await tester.pumpWidget(createWidgetUnderTest());
-
-      bufferAgentController.add((message: 'Retrying...', retryAction: null));
-      await tester.pumpAndSettle();
       expect(find.text('Retrying...'), findsOneWidget);
 
-      // 2. Emit Playing State
-      playerStateController.add(PlayerState(true, ProcessingState.ready));
-      await tester.pumpAndSettle();
+      // 2. Emit RDY + Playing
+      hudSnapshotController.add(
+        HudSnapshot.empty().copyWith(
+          signal: '--',
+          message: '--',
+          processing: 'RDY',
+          isPlaying: true,
+        ),
+      );
+      await tester.pump(); // No settle needed for simple Text change usually
 
-      // 3. Verify Message Cleared and showing "Playing"
       expect(find.text('Retrying...'), findsNothing);
       expect(find.text('Playing'), findsOneWidget);
     });
 
-    testWidgets('Does NOT clear Agent Message if paused (Ready + Not Playing)',
-        (tester) async {
-      // Logic: If we pause while it was retrying (maybe user pause?), we might want to keep the message?
-      // Actually the code says: if (state.playing && state.processingState == ProcessingState.ready && _agentMessage != null)
-      // So if it's NOT playing, it won't clear.
-
-      // 1. Setup Agent Message state
-      when(mockAudioPlayer.playerState)
-          .thenReturn(PlayerState(true, ProcessingState.buffering));
+    testWidgets('Shows Paused when RDY and not playing', (tester) async {
+      when(mockAudioProvider.currentHudSnapshot).thenReturn(
+        HudSnapshot.empty().copyWith(
+          processing: 'RDY',
+          isPlaying: false,
+        ),
+      );
       await tester.pumpWidget(createWidgetUnderTest());
+      expect(find.text('Paused'), findsOneWidget);
+    });
 
-      bufferAgentController.add((message: 'Retrying...', retryAction: null));
-      await tester.pumpAndSettle();
-
-      // 2. Emit Paused State (Ready but not playing)
-      playerStateController.add(PlayerState(false, ProcessingState.ready));
-      await tester.pumpAndSettle();
-
-      // 3. Verify Message Persists (because we strictly check logic)
-      expect(find.text('Retrying...'), findsOneWidget);
-      // "Paused" should NOT be shown if message is present
-      expect(find.text('Paused'), findsNothing);
+    testWidgets('Prioritizes Handoff Countdown message', (tester) async {
+      when(mockAudioProvider.currentHudSnapshot).thenReturn(
+        HudSnapshot.empty().copyWith(
+          isHandoffCountdown: true,
+          message: 'Handoff in 5s...',
+          processing: 'RDY',
+          isPlaying: true,
+        ),
+      );
+      await tester.pumpWidget(createWidgetUnderTest());
+      expect(find.text('Handoff in 5s...'), findsOneWidget);
+      expect(find.text('Playing'), findsNothing);
     });
   });
 }

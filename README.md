@@ -64,6 +64,7 @@ A Flutter application for browsing and playing concert recordings of the Gratefu
   - **JS-Interoperability (Web)**: Custom integration bridge between Flutter and a high-performance JavaScript audio scheduler for the Web.
   - **Haptic Feedback**: Premium tactile feedback on all interactive elements for enhanced touch experience.
   - **Material 3 Transitions**: Expressive navigation animations with scale + fade effects for a polished, premium feel.
+- **Unified Diagnostics HUD**: A high-performance, real-time telemetry system that pipes engine state, buffer levels, and transition countdowns into a single `HudSnapshot` stream for instant debugging and transparency.
 
 ## Usage Guide
 

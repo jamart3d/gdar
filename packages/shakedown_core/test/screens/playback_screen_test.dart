@@ -440,6 +440,8 @@ void main() {
         .thenAnswer((_) => Stream.value('idle'));
     when(mockAudioProvider.playbackFocusRequestStream)
         .thenAnswer((_) => const Stream.empty());
+    when(mockAudioProvider.hudSnapshotStream)
+        .thenAnswer((_) => const Stream.empty());
 
     // Also stub missing audioPlayer streams used by widgets
     when(mockAudioPlayer.engineStateStringStream)
