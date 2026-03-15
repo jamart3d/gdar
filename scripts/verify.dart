@@ -61,13 +61,22 @@ Future<void> main(List<String> args) async {
       arguments: ['analyze', ...effectiveTargets],
       label: 'Analyzing',
     );
-    if (analyzeExit != 0) {
+    if (analyzeAnalyzeResult(analyzeExit)) {
       exitCode = analyzeExit;
       return;
     }
   }
 
-  stdout.writeln('Verify complete.');
+  stdout.writeln('\nVerify complete.');
+}
+
+bool analyzeAnalyzeResult(int code) {
+  if (code != 0) {
+    stdout.writeln('\n[TIP] If you see JSAny/JSObject errors, ensure you are analyzing for the web platform.');
+    stdout.writeln('Try running tests with: flutter test --platform chrome');
+    return true;
+  }
+  return false;
 }
 
 Future<int> _runCommand({
@@ -102,6 +111,7 @@ void _printUsage() {
   stdout.writeln('');
   stdout.writeln('Examples:');
   stdout.writeln('  dart run scripts/verify.dart');
-  stdout.writeln('  dart run scripts/verify.dart apps packages');
-  stdout.writeln('  dart run scripts/verify.dart --no-format apps');
+  stdout.writeln('  dart run scripts/verify.dart apps/gdar_mobile');
+  stdout.writeln('  # For web testing:');
+  stdout.writeln('  cd apps/gdar_web && flutter test --platform chrome');
 }

@@ -6,8 +6,7 @@ environment:
 
 workspace:
   - packages/shakedown_core
-  - packages/styles/gdar_android
-  - packages/styles/gdar_fruit
+  - packages/styles/*
   - apps/gdar_mobile
   - apps/gdar_tv
   - apps/gdar_web

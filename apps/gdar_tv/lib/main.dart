@@ -58,8 +58,21 @@ Future<void> main() async {
 class GdarTvApp extends StatefulWidget {
   final SharedPreferences prefs;
   final bool isTv;
+  final ShowListProvider? showListProvider;
+  final AudioProvider? audioProvider;
+  final AudioCacheService? audioCacheService;
 
-  const GdarTvApp({super.key, required this.prefs, required this.isTv});
+  const GdarTvApp({
+    super.key,
+    required this.prefs,
+    required this.isTv,
+    this.showListProvider,
+    this.audioProvider,
+    this.audioCacheService,
+  });
+
+
+
 
   @override
   State<GdarTvApp> createState() => _GdarTvAppState();
@@ -76,13 +89,16 @@ class _GdarTvAppState extends State<GdarTvApp> {
   void initState() {
     super.initState();
     _settingsProvider = SettingsProvider(widget.prefs, isTv: widget.isTv);
-    _showListProvider = ShowListProvider();
+    _showListProvider = widget.showListProvider ?? ShowListProvider();
 
     ThemeProvider.getInstance?.setSettingsProvider(_settingsProvider);
 
-    _showListProvider.init(widget.prefs);
+    if (widget.showListProvider == null) {
+      _showListProvider.init(widget.prefs);
+    }
     _initDeepLinks();
   }
+
 
   @override
   void dispose() {
@@ -108,7 +124,10 @@ class _GdarTvAppState extends State<GdarTvApp> {
         Provider<CatalogService>(create: (_) => CatalogService()),
         Provider<WakelockService>(create: (_) => WakelockService()),
         ChangeNotifierProvider.value(value: _settingsProvider),
-        ChangeNotifierProvider(create: (_) => AudioCacheService()..init()),
+        ChangeNotifierProvider(
+          create: (_) => widget.audioCacheService ?? (AudioCacheService()..init()),
+        ),
+
         ChangeNotifierProxyProvider<SettingsProvider, ShowListProvider>(
           create: (_) => _showListProvider,
           update: (_, settingsProvider, showListProvider) =>
@@ -120,7 +139,7 @@ class _GdarTvAppState extends State<GdarTvApp> {
           AudioCacheService,
           AudioProvider
         >(
-          create: (_) => AudioProvider(),
+          create: (_) => widget.audioProvider ?? AudioProvider(),
           update:
               (
                 _,
@@ -131,6 +150,7 @@ class _GdarTvAppState extends State<GdarTvApp> {
               ) => audioProvider!
                 ..update(showListProvider, settingsProvider, audioCacheService),
         ),
+
         ChangeNotifierProvider(create: (_) => UpdateProvider()),
         ChangeNotifierProvider(
           create: (_) => DeviceService(initialIsTv: widget.isTv),
