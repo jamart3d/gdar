@@ -1,4 +1,4 @@
-# Shakedown
+# Shakedown (v1.2.1+201)
 
 A Flutter application for browsing and playing concert recordings of the Grateful Dead from archives.
 
@@ -236,13 +236,13 @@ For maximum productivity, this repository is optimized for the following high-pe
 Detailed setup instructions for both Windows and Linux can be found in [ANTIGRAVITY_SETUP.md](docs/ANTIGRAVITY_SETUP.md).
 
 ## Repository Auditing (Jules)
-This repository is optimized for high-performance auditing via **Jules** (`jules.google.com`). These cloud-based audits are exploratory and visual, complementing our local deterministic tests. Specialized audit prompts are located in `test/prompts/`.
+This repository is optimized for high-performance auditing via **Jules** (`jules.google.com`). These cloud-based audits are exploratory and visual, complementing our local deterministic tests. Specialized audit prompts are located in `.agent/prompts/`.
 
 ### **How to Run Audits**
 Direct Jules to the following file for a 100% comprehensive system check:
 
 1. **Universal Master Audit (Single Run)**:
-   > "Perform the **Master Release Audit** located in `test/prompts/master_audit.md` and provide a detailed PASS/FAIL report."
+   > "Perform the **Master Release Audit** located in `.agent/prompts/master_audit.md` and provide a detailed PASS/FAIL report."
 
 ---
 *Legacy/Specialized Audits (Available if needed for isolated debugging):*

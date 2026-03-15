@@ -22,6 +22,7 @@
 - [ ] **TV Safe Area**: Global setting to adjust margins for rare older panels with overscan/edge-cropping issues.
 - [ ] **Screensaver Settings Polish**: Introduce an "Advanced Options" toggle in TV Settings to hide deep-tweak knobs and clean up D-pad navigation.
 - [x] **Screensaver Text "Crawl" Investigation**: Individual letters in the show info text appear to crawl/jitter independently as they translate around with the logo. Investigate the cause (likely precision/rendering issue) and add a toggle to disable this behavior if desired.
+- [x] **Web Scroll Alignment Fix**: Hardened coordinate mapping in `FastScrollbar` to ensure year chip follows the thumb under CPU stress.
 - [ ] **Audio-Responsive Trails**: Tie Trail Intensity and Trail Blur directly to real-time audio `energy.overall` or `beatPulse` in the screensaver.
 - [ ] **Audio-Driven Shader "Boiling"**: Tie `uOverall` to the `heatDrift`/`flowSpeed` uniforms in `steal.frag` so background dynamics match song intensity.
 - [ ] **Screensaver Auto-Transition Delay**: Add a setting to control the elapsed time before automatically playing the next show when the screensaver is active.
@@ -88,7 +89,7 @@
  
  ## 🧪 Testing & Auditing
  
- - [x] **Consolidate Jules Audits**: Created [master_audit.md](file:///c:/Users/jeff/StudioProjects/gdar/test/prompts/master_audit.md) as the 100% comprehensive (Phases 1-7) pre-release standard.
+ - [x] **Consolidate Jules Audits**: Created [master_audit.md](file:///c:/Users/jeff/StudioProjects/gdar/.agent/prompts/master_audit.md) as the 100% comprehensive (Phases 1-7) pre-release standard.
  - [ ] **Port Widget Tests**: Convert remaining flakey unit tests into Jules E2E observation phases for 100% reliable coverage.
 - [ ] **Politeness Policy**: Ensure all automated tests (Jules/Arlo) consistently use local mocks and never hit `archive.org` directly. Verify this isolation as part of the CI/CD pipeline.
 - [ ] **TV Show List Widget Tests**: Verify TV cards always show stars + source badge and remain stable with multi-source shows. How: add a widget test in `test/ui/show_list/tv_show_list_card_test.dart` that pumps `ShowListCard` with `DeviceService(isTv: true)` and asserts `RatingControl` and `SrcBadge` render for single- and multi-source shows.

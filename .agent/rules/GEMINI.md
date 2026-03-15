@@ -19,6 +19,7 @@ trigger: always_on
 * **Design System:** Use strict platform separation.
   * **Android Phone/Tablet:** Material 3 (Expressive) is the foundation.
   * **Google TV / Android TV:** TV-focused Material Dark + D-Pad UX.
+    * **Action:** Always utilize `settingsProvider.activeAppFont` for text styling in new widgets to ensure "Rock Salt" branding on TV isn't diluted.
   * **Web/PWA Fruit:** Apple Liquid Glass only.
   * **Hard rule for Fruit:** No Material 3 widgets, ripples, FAB patterns,
     or M3 interaction language on Fruit screens.
