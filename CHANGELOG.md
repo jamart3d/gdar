@@ -6,7 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [1.2.1+202] - 2026-03-15
+## [1.2.2+202] - 2026-03-15
 
 ### Added
 - **HUD**: Unified Diagnostics HUD with real-time `HudSnapshot` streaming for transparent audio engine telemetry.

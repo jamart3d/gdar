@@ -61,8 +61,11 @@ GDAR is a Dart workspace monorepo. Build targets live under `apps/`:
    - `apps/gdar_mobile/pubspec.yaml`
    - `apps/gdar_tv/pubspec.yaml`
    - `apps/gdar_web/pubspec.yaml`
-2. Increment build number (e.g., `1.2.0+200` → `1.2.0+201`).
-3. If the user specified a version type (major/minor/patch), bump accordingly.
+2. Evaluate the scope of work to decide on the bump:
+   - **Patch**: For bug fixes and small tweaks (e.g., `1.2.1` -> `1.2.2`).
+   - **Minor**: For new features (e.g., `1.2.1` -> `1.3.0`).
+   - **Build Number**: Always increment the `+N` part for every release (e.g., `+201` -> `+202`).
+3. If the user specified a version type (major/minor/patch), bump accordingly. Defaults to a patch bump for routine releases.
 4. Bump ALL app targets to the same version.
 
 ### 2. Finalize Changelog
