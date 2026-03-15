@@ -1,6 +1,6 @@
 ---
 name: shipit
-description: Autonomous production release pipeline for GDAR.
+description: Autonomous production release pipeline for GDAR (monorepo).
 ---
 
 # Shipit Skill: GDAR Production Release
@@ -12,6 +12,26 @@ through all steps without asking for confirmation (per the Autonomous
 Exception in `gemini.md` rules).
 
 // turbo-all
+
+## Monorepo Layout
+
+GDAR is a Dart workspace monorepo. Build targets live under `apps/`:
+
+| Target | Path | Build Command |
+|---|---|---|
+| Android (Phone/Tablet) | `apps/gdar_mobile` | `flutter build appbundle --release` |
+| Google TV | `apps/gdar_tv` | `flutter build appbundle --release` |
+| Web/PWA | `apps/gdar_web` | `flutter build web` |
+
+- **Version** lives in each app target's `pubspec.yaml` — bump ALL of them.
+- **Firebase** config is at the project root. The `public` path is
+  `apps/gdar_web/build/web`.
+- **Root `pubspec.yaml`** (`gdar_root`) is the workspace coordinator and
+  has NO `version:` field.
+
+> **IMPORTANT — Sequential Builds**: Run builds ONE AT A TIME, never in
+> parallel. Parallel builds cause git index lock collisions during the
+> Git Sync step because both terminals share the same `.git/` directory.
 
 
 ## PowerShell Rules (Windows 10)
@@ -26,17 +46,24 @@ Exception in `gemini.md` rules).
 - `CHANGELOG.md` has an `[Unreleased]` section with pending entries.
 - `.agent/notes/pending_release.md` has staged notes (optional — will
   be merged into CHANGELOG if present).
+- All app target `pubspec.yaml` files have `publish_to: none`.
 
 ## Steps
 
 ### 0. Check for Problems ← DO THIS FIRST
-1. Run `dart run tool/verify.dart` (or `mcp_dart-mcp-server_analyze_files` and `mcp_dart-mcp-server_run_tests`).
-2. **CRITICAL**: If any errors are found, **ABORT** the release immediately. Do not bump versions or start builds if the codebase is unstable.
+1. Run `mcp_dart-mcp-server_analyze_files` on the workspace root.
+2. **CRITICAL**: If any **errors** (severity 1) are found, **ABORT** immediately.
+   Severity 2 warnings (e.g., `invalid_dependency`) are acceptable if
+   `publish_to: none` is already set.
 
 ### 1. Version Bump
-1. Read current `version` from `pubspec.yaml`.
-2. Increment build number (e.g., `1.0.3+3` → `1.0.3+4`).
+1. Read current `version` from each app target's `pubspec.yaml`:
+   - `apps/gdar_mobile/pubspec.yaml`
+   - `apps/gdar_tv/pubspec.yaml`
+   - `apps/gdar_web/pubspec.yaml`
+2. Increment build number (e.g., `1.2.0+200` → `1.2.0+201`).
 3. If the user specified a version type (major/minor/patch), bump accordingly.
+4. Bump ALL app targets to the same version.
 
 ### 2. Finalize Changelog
 1. Read `.agent/notes/pending_release.md`.
@@ -65,12 +92,18 @@ Exception in `gemini.md` rules).
    ```
 7. **Display the contents now** so the user can review while builds run.
 
-### 4. Build
-1. Run `flutter build appbundle --release` (Android).
-2. Run `flutter build web` (Web).
+### 4. Build ← SEQUENTIAL, NOT PARALLEL
+1. `cd apps/gdar_mobile` → `flutter build appbundle --release` (Android).
+2. Wait for completion.
+3. `cd apps/gdar_web` → `flutter build web` (Web).
+4. Wait for completion.
+
+> Do NOT run these in parallel — they share the same `.git/` directory
+> and parallel git operations will cause index lock failures.
 
 ### 5. Deploy Web
-1. Run `firebase deploy --only hosting`.
+1. Run `firebase deploy --only hosting` from the **project root** (not from `apps/gdar_web`).
+   - The root `firebase.json` has `"public": "apps/gdar_web/build/web"`.
 
 ### 6. Git Sync
 1. `git add .`
