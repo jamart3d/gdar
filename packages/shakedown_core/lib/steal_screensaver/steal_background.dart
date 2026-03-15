@@ -84,7 +84,7 @@ class StealBackground extends PositionComponent
   }
 
   Future<void> _loadResources() async {
-    final program = await ui.FragmentProgram.fromAsset('shaders/steal.frag');
+    final program = await ui.FragmentProgram.fromAsset('assets/shaders/steal.frag');
     _shader = program.fragmentShader();
 
     final data = await rootBundle.load(AssetConstants.stealScreensaverImage);

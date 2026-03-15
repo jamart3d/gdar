@@ -6,9 +6,11 @@ environment:
 
 workspace:
   - packages/shakedown_core
+  - packages/styles/gdar_android
+  - packages/styles/gdar_fruit
   - apps/gdar_mobile
   - apps/gdar_tv
-  - apps/gdar_fruit
+  - apps/gdar_web
 
 dev_dependencies:
   shakedown_core:

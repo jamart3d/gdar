@@ -60,10 +60,10 @@ class VisualizerAudioReactor implements AudioReactor {
   }) {
     if (!_isRunning || _isDisposed) return;
     unawaited(_methodChannel.invokeMethod('updateConfig', {
-      if (peakDecay != null) 'peakDecay': peakDecay,
-      if (bassBoost != null) 'bassBoost': bassBoost,
-      if (reactivityStrength != null) 'reactivityStrength': reactivityStrength,
-      if (beatSensitivity != null) 'beatSensitivity': beatSensitivity,
+      'peakDecay': ?peakDecay,
+      'bassBoost': ?bassBoost,
+      'reactivityStrength': ?reactivityStrength,
+      'beatSensitivity': ?beatSensitivity,
     }));
   }
 

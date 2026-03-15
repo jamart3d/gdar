@@ -1,0 +1,20 @@
+name: gdar_android
+description: Android Material 3 styles for GDAR.
+version: 1.0.0
+publish_to: 'none'
+resolution: workspace
+
+environment:
+  sdk: '^3.11.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  shakedown_core:
+    path: ../../shakedown_core
+  provider: ^6.1.5
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0

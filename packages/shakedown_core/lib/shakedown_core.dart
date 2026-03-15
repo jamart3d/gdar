@@ -1,4 +1,4 @@
-library shakedown_core;
+library;
 
 export 'models/rating.dart';
 export 'models/show.dart';

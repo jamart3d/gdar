@@ -10,6 +10,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flame: ^1.16.0
   hive_ce: ^2.19.3
   hive_ce_flutter: ^2.3.4
   crypto: ^3.0.3
@@ -20,12 +21,23 @@ dependencies:
   just_audio: ^0.10.5
   just_audio_background: ^0.0.1-beta.17
   logger: ^2.4.0
+  connectivity_plus: ^6.1.1
+  in_app_update: ^4.2.1
+  permission_handler: ^11.3.0
+  marquee: ^2.2.3
+  flutter_rating_bar: ^4.0.1
+  flutter_colorpicker: ^1.1.0
+  device_info_plus: ^11.2.2
+  package_info_plus: ^8.3.1
   shared_preferences: ^2.3.2
   wakelock_plus: ^1.2.8
   scrollable_positioned_list: ^0.3.8
-  sliding_up_panel: ^2.0.0+1
   path_provider: ^2.1.5
   path: ^1.9.0
+  url_launcher: ^6.3.1
+  http: ^1.2.1
+  web: ^1.1.0
+  sliding_up_panel2: ^3.3.0+1
 
 dev_dependencies:
   flutter_test:

@@ -1,11 +1,28 @@
 {
-    // Use IntelliSense to learn about possible attributes.
-    // Hover to view descriptions of existing attributes.
-    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "gdar",
+            "name": "Fruit Web",
+            "request": "launch",
+            "type": "dart",
+            "program": "apps/gdar_fruit/lib/main.dart",
+            "args": ["-d", "chrome"]
+        },
+        {
+            "name": "GDAR Mobile",
+            "request": "launch",
+            "type": "dart",
+            "program": "apps/gdar_mobile/lib/main.dart"
+        },
+        {
+            "name": "GDAR Mobile (TV Override)",
+            "request": "launch",
+            "type": "dart",
+            "program": "apps/gdar_mobile/lib/main.dart",
+            "args": ["--dart-define=FORCE_TV=true"]
+        },
+        {
+            "name": "gdar (Legacy)",
             "request": "launch",
             "type": "dart"
         },

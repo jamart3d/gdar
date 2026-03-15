@@ -53,4 +53,22 @@ class AppDateUtils {
       return rawDate;
     }
   }
+
+  /// Specialized format for show headers: "MMMM d, yyyy"
+  static String formatMonthDayYear(String rawDate) {
+    if (rawDate.isEmpty) return rawDate;
+    try {
+      final dateTime = DateTime.parse(normalizeDate(rawDate));
+      return DateFormat('MMMM d, yyyy').format(dateTime);
+    } catch (_) {
+      return rawDate;
+    }
+  }
+
+  static String normalizeDate(String rawDate) {
+    if (rawDate.length == 8 && !rawDate.contains('-')) {
+      return '${rawDate.substring(0, 4)}-${rawDate.substring(4, 6)}-${rawDate.substring(6, 8)}';
+    }
+    return rawDate;
+  }
 }

@@ -8,7 +8,7 @@ import 'package:shakedown_core/providers/settings_provider.dart';
 import 'package:shakedown_core/providers/show_list_provider.dart';
 import 'package:shakedown_core/services/device_service.dart';
 import 'package:shakedown_core/ui/widgets/show_list/fast_scrollbar.dart';
-import 'package:gdar_tv/ui/widgets/show_list/show_list_item.dart';
+import 'package:shakedown_core/ui/widgets/show_list/show_list_item.dart';
 import 'package:shakedown_core/ui/widgets/tv/tv_scrollbar.dart';
 import 'package:shakedown_core/providers/theme_provider.dart';
 

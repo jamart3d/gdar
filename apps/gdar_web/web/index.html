@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <!--
+    If you are serving your web app in a path other than the root, change the
+    href value below to reflect the base path you are serving from.
+
+    The path provided below has to start and end with a slash "/" in order for
+    it to work correctly.
+
+    For more details:
+    * https://developer.mozilla.org/en-US/docs/Web/HTML/Element/base
+
+    This is a placeholder for base href that will be replaced by the value of
+    the `--base-href` argument provided to `flutter build`.
+  -->
+  <base href="$FLUTTER_BASE_HREF">
+
+  <meta charset="UTF-8">
+  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="play grateful dead archive org mp3">
+
+  <!-- iOS meta tags & icons -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="Shakedown">
+  <link rel="apple-touch-icon" href="icons/Icon-192.png">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="favicon.png" />
+
+  <title>Shakedown</title>
+  <link rel="manifest" href="manifest.json">
+  <style>
+    body {
+      background-color: #000000;
+      margin: 0;
+      padding: 0;
+    }
+    :root {
+      --splash-bg: #080808;
+      --splash-text: #333;
+    }
+    @media (prefers-color-scheme: light) {
+      :root {
+        --splash-bg: #f5f5f5;
+        --splash-text: #888;
+      }
+    }
+    #loading-splash {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      background-color: var(--splash-bg);
+      z-index: 9999;
+      transition: opacity 0.6s ease-out;
+    }
+    #loading-splash img {
+      width: 160px;
+      height: 160px;
+      margin-bottom: 24px;
+      animation: pulse 2s infinite ease-in-out;
+    }
+    #loading-text {
+      color: var(--splash-text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;  
+      font-size: 10px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+    }
+    @keyframes pulse {
+      0% { transform: scale(0.95); opacity: 0.8; }
+      50% { transform: scale(1.0); opacity: 1; }
+      100% { transform: scale(0.95); opacity: 0.8; }
+    }
+    /* Prevent white flash during Flutter initialization */
+    flt-glass-pane {
+      background-color: var(--splash-bg) !important;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="loading-splash">
+    <img src="icons/Icon-512.png" alt="Shakedown" />
+    <div id="loading-text">Loading Shakedown</div>
+  </div>
+  <!-- Global Web Error Log (gdarDumpErrors / gdarClearErrors) -->
+  <script src="web_error_logger.js"></script>  <!-- 0. Master Logging Registry (Control debug output) -->
+  <script src="audio_logger.js"></script>
+  <script>
+    // Splash Screen Management: Removes splash only when Flutter app element appears  
+    (function() {
+      const splash = document.getElementById('loading-splash');
+      if (!splash) return;
+
+      const hideSplash = () => {
+        console.log('[Splash] Flutter pane detected, fading out splash...');
+        splash.style.opacity = '0';
+        splash.style.pointerEvents = 'none';
+        setTimeout(() => { if (splash.parentNode) splash.remove(); }, 600);
+      };
+
+      // 1. Observe body for flt-glass-pane (Flutter's root element)
+      const observer = new MutationObserver((mutations, obs) => {
+        if (document.querySelector('flt-glass-pane')) {
+          // Tiny delay ensures the glass pane has a moment to paint its first frame   
+          setTimeout(hideSplash, 100);
+          obs.disconnect();
+        }
+      });
+      observer.observe(document.body, { childList: true, subtree: true });
+
+      // 2. Watchdog: Safety backup (app crashed or took > 20s)
+      setTimeout(() => {
+        if (document.getElementById('loading-splash')) {
+          console.warn('[Splash] Watchdog triggered after 20s.');
+          hideSplash();
+        }
+      }, 20000);
+    })();
+  </script>
+  <script>
+    // Global Engine Tracker (Diagnostic)
+    (function() {
+      let _currentEngine = null;
+      Object.defineProperty(window, '_gdarAudio', {
+        get: function() { return _currentEngine; },
+        set: function(val) {
+          console.log('%c[Engine Tracker] window._gdarAudio being set to:', 'color: #ff00ff; font-weight: bold;', val?.engineType || 'Unknown');
+          if (val && !val.engineType) console.trace();
+          _currentEngine = val;
+        },
+        configurable: true
+      });
+
+      // PWA Branding Sync
+      window.updateThemeBranding = function(themeColor, bgColor) {
+        console.log('[Branding Sync] Updating to:', themeColor, bgColor);
+        let themeMeta = document.querySelector('meta[name="theme-color"]');
+        if (!themeMeta) {
+          themeMeta = document.createElement('meta');
+          themeMeta.name = 'theme-color';
+          document.head.appendChild(themeMeta);
+        }
+        themeMeta.setAttribute('content', themeColor);
+
+        // Update iOS status bar
+        let appleMeta = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
+        if (appleMeta) {
+          appleMeta.setAttribute('content', (themeColor === '#000000' || themeColor === 'black') ? 'black' : 'default');
+        }
+
+        // Apply background color to body to prevent flashes
+        document.body.style.backgroundColor = bgColor;
+      };
+    })();
+  </script>
+  <!-- 1. Mobile HTML5 streaming engine (pure) -->
+  <script src="html5_audio_engine.js"></script>
+  <!-- 1.1 Orchestrated HTML5 engine (Hybrid background) -->
+  <script src="hybrid_html5_engine.js"></script>
+  <!-- 2. Desktop GDAR Web Audio API engine (AudioBufferSourceNode, 0ms gapless) -->
+  <script src="gapless_audio_engine.js"></script>
+  <!-- 3. Passive HTML5 Audio engine (background persistence) -->
+  <script src="passive_audio_engine.js"></script>
+  <!-- 4. Hybrid Web Audio engine (foreground gapless + background passive) -->
+  <script src="hybrid_audio_engine.js"></script>
+  <!-- 5. Audio Heartbeat (Lock Web Audio into background memory on iOS/Android) -->
+  <script src="audio_heartbeat.js"></script>
+  <!-- 6. Hybrid dispatcher: auto-selects strategy and assigns window._gdarAudio -->
+  <script src="hybrid_init.js"></script>
+  <!-- Firebase Config (Gitignored) -->
+  <script src="firebase-config.js"></script>
+  <!-- Firebase SDKs -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js";
+
+    // Initialize Firebase
+    if (typeof firebaseConfig !== 'undefined') {
+      const app = initializeApp(firebaseConfig);
+      const analytics = getAnalytics(app);
+    } else {
+      console.warn("Firebase config not found. Analytics disabled.");
+    }
+  </script>
+
+  <script src="flutter_bootstrap.js" async></script>
+</body>
+
+</html>
+

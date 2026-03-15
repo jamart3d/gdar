@@ -623,10 +623,10 @@ class _ShowListCardState extends State<ShowListCard> {
 
     return ValueListenableBuilder(
       valueListenable: CatalogService().ratingsListenable,
-      builder: (context, _, __) {
+      builder: (context, _, _) {
         return ValueListenableBuilder(
           valueListenable: CatalogService().historyListenable,
-          builder: (context, __, ___) {
+          builder: (context, _, _) {
             final themeProvider = context.read<ThemeProvider>();
             final bool isFruit = themeProvider.isFruit;
             final double screenWidth = MediaQuery.of(context).size.width;
@@ -816,7 +816,7 @@ class _ShowListCardState extends State<ShowListCard> {
                         mainAxisSize: MainAxisSize.min,
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
-                          if (ratingWidget != null) ratingWidget,
+                          ?ratingWidget,
                           if (ratingWidget != null &&
                               badgeRowChildren.isNotEmpty)
                             SizedBox(height: 4 * effectiveScale),
@@ -866,7 +866,7 @@ class _ShowListCardState extends State<ShowListCard> {
                                       crossAxisAlignment:
                                           CrossAxisAlignment.center,
                                       children: [
-                                        if (ratingWidget != null) ratingWidget,
+                                        ?ratingWidget,
                                         if (ratingWidget != null &&
                                             badges.isNotEmpty)
                                           SizedBox(height: usePremium ? 4 : 6),
@@ -1049,7 +1049,7 @@ class _ShowListCardState extends State<ShowListCard> {
 
     return ValueListenableBuilder(
       valueListenable: CatalogService().ratingsListenable,
-      builder: (context, _, __) {
+      builder: (context, _, _) {
         final int rating =
             ratingKey != null ? CatalogService().getRating(ratingKey) : 0;
         final bool isPlayed =

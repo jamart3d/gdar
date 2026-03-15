@@ -393,7 +393,7 @@ class PlaybackPanel extends StatelessWidget {
 
     return ValueListenableBuilder(
       valueListenable: CatalogService().ratingsListenable,
-      builder: (context, _, __) {
+      builder: (context, _, _) {
         final catalog = CatalogService();
         final rating = catalog.getRating(ratingKey);
         final isPlayed = catalog.isPlayed(ratingKey);
