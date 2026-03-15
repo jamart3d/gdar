@@ -114,17 +114,19 @@ class _PlaybackProgressBarState extends State<PlaybackProgressBar>
                                 stateSnapshot.data?.processingState;
                             final isBuffering =
                                 processingState == ProcessingState.buffering ||
-                                    processingState == ProcessingState.loading;
-                            final bufferingPercentage = (hasKnownDuration
-                                    ? bufferedPosition.inSeconds /
-                                        totalDuration.inSeconds
-                                    : 0.0)
-                                .clamp(0.0, 1.0);
-                            final positionPercentage = (hasKnownDuration
-                                    ? position.inSeconds /
-                                        totalDuration.inSeconds
-                                    : 0.0)
-                                .clamp(0.0, 1.0);
+                                processingState == ProcessingState.loading;
+                            final bufferingPercentage =
+                                (hasKnownDuration
+                                        ? bufferedPosition.inSeconds /
+                                              totalDuration.inSeconds
+                                        : 0.0)
+                                    .clamp(0.0, 1.0);
+                            final positionPercentage =
+                                (hasKnownDuration
+                                        ? position.inSeconds /
+                                              totalDuration.inSeconds
+                                        : 0.0)
+                                    .clamp(0.0, 1.0);
 
                             return Stack(
                               alignment: Alignment.center,
@@ -135,16 +137,19 @@ class _PlaybackProgressBarState extends State<PlaybackProgressBar>
                                   decoration: BoxDecoration(
                                     color: isTrueBlackMode
                                         ? Colors.white12
-                                        : colorScheme.onSurface
-                                            .withValues(alpha: 0.2),
-                                    borderRadius:
-                                        BorderRadius.circular(6 * scaleFactor),
+                                        : colorScheme.onSurface.withValues(
+                                            alpha: 0.2,
+                                          ),
+                                    borderRadius: BorderRadius.circular(
+                                      6 * scaleFactor,
+                                    ),
                                   ),
                                 ),
                                 if (!hasKnownDuration && isBuffering)
                                   ClipRRect(
-                                    borderRadius:
-                                        BorderRadius.circular(6 * scaleFactor),
+                                    borderRadius: BorderRadius.circular(
+                                      6 * scaleFactor,
+                                    ),
                                     child: SizedBox(
                                       height: 12 * scaleFactor,
                                       child: LinearProgressIndicator(
@@ -152,9 +157,10 @@ class _PlaybackProgressBarState extends State<PlaybackProgressBar>
                                         backgroundColor: Colors.transparent,
                                         valueColor:
                                             AlwaysStoppedAnimation<Color>(
-                                          colorScheme.tertiary
-                                              .withValues(alpha: 0.45),
-                                        ),
+                                              colorScheme.tertiary.withValues(
+                                                alpha: 0.45,
+                                              ),
+                                            ),
                                       ),
                                     ),
                                   ),
@@ -166,10 +172,12 @@ class _PlaybackProgressBarState extends State<PlaybackProgressBar>
                                     child: Container(
                                       height: 12 * scaleFactor,
                                       decoration: BoxDecoration(
-                                        color: colorScheme.tertiary
-                                            .withValues(alpha: 0.35),
+                                        color: colorScheme.tertiary.withValues(
+                                          alpha: 0.35,
+                                        ),
                                         borderRadius: BorderRadius.circular(
-                                            6 * scaleFactor),
+                                          6 * scaleFactor,
+                                        ),
                                       ),
                                     ),
                                   ),
@@ -191,36 +199,44 @@ class _PlaybackProgressBarState extends State<PlaybackProgressBar>
                                               ],
                                             ),
                                             borderRadius: BorderRadius.circular(
-                                                6 * scaleFactor),
+                                              6 * scaleFactor,
+                                            ),
                                           ),
                                         ),
                                         if (isBuffering)
                                           TweenAnimationBuilder<double>(
                                             tween: Tween(begin: 0.0, end: 1.0),
                                             duration: const Duration(
-                                                milliseconds: 1500),
+                                              milliseconds: 1500,
+                                            ),
                                             builder: (context, value, child) {
                                               return Container(
                                                 height: 12 * scaleFactor,
                                                 decoration: BoxDecoration(
                                                   borderRadius:
                                                       BorderRadius.circular(
-                                                          6 * scaleFactor),
+                                                        6 * scaleFactor,
+                                                      ),
                                                   gradient: LinearGradient(
                                                     begin: Alignment.centerLeft,
                                                     end: Alignment.centerRight,
                                                     stops: [
-                                                      (value - 0.2)
-                                                          .clamp(0.0, 1.0),
+                                                      (value - 0.2).clamp(
+                                                        0.0,
+                                                        1.0,
+                                                      ),
                                                       value,
-                                                      (value + 0.2)
-                                                          .clamp(0.0, 1.0),
+                                                      (value + 0.2).clamp(
+                                                        0.0,
+                                                        1.0,
+                                                      ),
                                                     ],
                                                     colors: [
                                                       Colors.transparent,
                                                       colorScheme.onPrimary
                                                           .withValues(
-                                                              alpha: 0.4),
+                                                            alpha: 0.4,
+                                                          ),
                                                       Colors.transparent,
                                                     ],
                                                   ),
@@ -247,11 +263,13 @@ class _PlaybackProgressBarState extends State<PlaybackProgressBar>
                                       data: SliderTheme.of(context).copyWith(
                                         trackHeight: 12 * scaleFactor,
                                         thumbShape: RoundSliderThumbShape(
-                                            enabledThumbRadius:
-                                                _thumbRadiusAnimation.value *
-                                                    scaleFactor),
+                                          enabledThumbRadius:
+                                              _thumbRadiusAnimation.value *
+                                              scaleFactor,
+                                        ),
                                         overlayShape: RoundSliderOverlayShape(
-                                            overlayRadius: 22 * scaleFactor),
+                                          overlayRadius: 22 * scaleFactor,
+                                        ),
                                         activeTrackColor: Colors.transparent,
                                         inactiveTrackColor: Colors.transparent,
                                         thumbColor: colorScheme.primary,
@@ -266,18 +284,21 @@ class _PlaybackProgressBarState extends State<PlaybackProgressBar>
                                         value: position.inSeconds
                                             .toDouble()
                                             .clamp(
-                                                0.0,
-                                                (hasKnownDuration
-                                                        ? totalDuration
-                                                            .inSeconds
-                                                        : 1)
-                                                    .toDouble()),
+                                              0.0,
+                                              (hasKnownDuration
+                                                      ? totalDuration.inSeconds
+                                                      : 1)
+                                                  .toDouble(),
+                                            ),
                                         onChangeStart: (_) =>
                                             _updateInteractionState(true),
                                         onChanged: hasKnownDuration
                                             ? (value) {
-                                                audioProvider.seek(Duration(
-                                                    seconds: value.round()));
+                                                audioProvider.seek(
+                                                  Duration(
+                                                    seconds: value.round(),
+                                                  ),
+                                                );
                                               }
                                             : null,
                                         onChangeEnd: (_) =>
@@ -303,7 +324,8 @@ class _PlaybackProgressBarState extends State<PlaybackProgressBar>
                       return _buildTimeBadge(
                         context: context,
                         text: formatDuration(
-                            hasKnownDuration ? totalDuration : buffered),
+                          hasKnownDuration ? totalDuration : buffered,
+                        ),
                         scaleFactor: scaleFactor,
                         alignRight: true,
                         isSimple: isSimple,
@@ -333,13 +355,13 @@ class _PlaybackProgressBarState extends State<PlaybackProgressBar>
     final badgeColor = isSimple
         ? scheme.onSurface.withValues(alpha: 0.06)
         : (isElapsed
-            ? scheme.primary.withValues(alpha: 0.14)
-            : scheme.onSurface.withValues(alpha: 0.08));
+              ? scheme.primary.withValues(alpha: 0.14)
+              : scheme.onSurface.withValues(alpha: 0.08));
     final textColor = isSimple
         ? (isElapsed ? scheme.onSurface : scheme.onSurfaceVariant)
         : (isElapsed
-            ? scheme.primary
-            : scheme.onSurface.withValues(alpha: 0.92));
+              ? scheme.primary
+              : scheme.onSurface.withValues(alpha: 0.92));
     return Container(
       padding: EdgeInsets.symmetric(
         horizontal: 6 * scaleFactor,

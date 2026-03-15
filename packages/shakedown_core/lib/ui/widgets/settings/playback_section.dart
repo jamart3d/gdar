@@ -43,7 +43,8 @@ class PlaybackSection extends StatelessWidget {
 
     return SectionCard(
       key: ValueKey(
-          'playback_${initiallyExpanded || isHighlightSettingMatching}'),
+        'playback_${initiallyExpanded || isHighlightSettingMatching}',
+      ),
       scaleFactor: scaleFactor,
       title: 'Playback',
       icon: Icons.play_circle_outline_rounded,
@@ -52,73 +53,88 @@ class PlaybackSection extends StatelessWidget {
       children: [
         if (kIsWeb)
           ..._buildWebGaplessSection(
-              context, settingsProvider, scaleFactor, isFruit),
-        // Screensaver settings moved to Screensaver section for Google TV
+            context,
+            settingsProvider,
+            scaleFactor,
+            isFruit,
+          ),
 
+        // Screensaver settings moved to Screensaver section for Google TV
         HighlightableSetting(
           key: ValueKey(
-              'play_on_tap_${highlightTriggerCount}_${activeHighlightKey == 'play_on_tap'}'),
+            'play_on_tap_${highlightTriggerCount}_${activeHighlightKey == 'play_on_tap'}',
+          ),
           startWithHighlight: activeHighlightKey == 'play_on_tap',
           settingKey: settingKeys['play_on_tap'],
           child: TvSwitchListTile(
             dense: true,
             visualDensity: VisualDensity.compact,
             title: FittedBox(
-                fit: BoxFit.scaleDown,
-                alignment: Alignment.centerLeft,
-                child: Text('Play on Tap',
-                    style: Theme.of(context)
-                        .textTheme
-                        .titleMedium
-                        ?.copyWith(fontSize: 16 * scaleFactor))),
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerLeft,
+              child: Text(
+                'Play on Tap',
+                style: Theme.of(
+                  context,
+                ).textTheme.titleMedium?.copyWith(fontSize: 16 * scaleFactor),
+              ),
+            ),
             subtitle: FittedBox(
-                fit: BoxFit.scaleDown,
-                alignment: Alignment.centerLeft,
-                child: Text('Tap track in inactive source to play',
-                    style: Theme.of(context)
-                        .textTheme
-                        .bodySmall
-                        ?.copyWith(fontSize: 12 * scaleFactor))),
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerLeft,
+              child: Text(
+                'Tap track in inactive source to play',
+                style: Theme.of(
+                  context,
+                ).textTheme.bodySmall?.copyWith(fontSize: 12 * scaleFactor),
+              ),
+            ),
             value: settingsProvider.playOnTap,
             onChanged: (value) {
               AppHaptics.lightImpact(context.read<DeviceService>());
               context.read<SettingsProvider>().togglePlayOnTap();
             },
-            secondary:
-                Icon(isFruit ? LucideIcons.pointer : Icons.touch_app_rounded),
+            secondary: Icon(
+              isFruit ? LucideIcons.pointer : Icons.touch_app_rounded,
+            ),
           ),
         ),
         HighlightableSetting(
           key: ValueKey(
-              'playback_messages_${highlightTriggerCount}_${activeHighlightKey == 'playback_messages'}'),
+            'playback_messages_${highlightTriggerCount}_${activeHighlightKey == 'playback_messages'}',
+          ),
           startWithHighlight: activeHighlightKey == 'playback_messages',
           settingKey: settingKeys['playback_messages'],
           child: TvSwitchListTile(
             dense: true,
             visualDensity: VisualDensity.compact,
             title: FittedBox(
-                fit: BoxFit.scaleDown,
-                alignment: Alignment.centerLeft,
-                child: Text('Show Playback Messages',
-                    style: Theme.of(context)
-                        .textTheme
-                        .titleMedium
-                        ?.copyWith(fontSize: 16 * scaleFactor))),
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerLeft,
+              child: Text(
+                'Show Playback Messages',
+                style: Theme.of(
+                  context,
+                ).textTheme.titleMedium?.copyWith(fontSize: 16 * scaleFactor),
+              ),
+            ),
             subtitle: FittedBox(
-                fit: BoxFit.scaleDown,
-                alignment: Alignment.centerLeft,
-                child: Text(
-                    'Display detailed status, buffered time, and errors',
-                    style: Theme.of(context)
-                        .textTheme
-                        .bodySmall
-                        ?.copyWith(fontSize: 12 * scaleFactor))),
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerLeft,
+              child: Text(
+                'Display detailed status, buffered time, and errors',
+                style: Theme.of(
+                  context,
+                ).textTheme.bodySmall?.copyWith(fontSize: 12 * scaleFactor),
+              ),
+            ),
             value: settingsProvider.showPlaybackMessages,
             onChanged: (value) {
               context.read<SettingsProvider>().toggleShowPlaybackMessages();
             },
             secondary: Icon(
-                isFruit ? LucideIcons.messageSquare : Icons.message_rounded),
+              isFruit ? LucideIcons.messageSquare : Icons.message_rounded,
+            ),
           ),
         ),
         if (kIsWeb)
@@ -126,123 +142,139 @@ class PlaybackSection extends StatelessWidget {
             dense: true,
             visualDensity: VisualDensity.compact,
             title: FittedBox(
-                fit: BoxFit.scaleDown,
-                alignment: Alignment.centerLeft,
-                child: Text('Show Dev Audio HUD',
-                    style: Theme.of(context)
-                        .textTheme
-                        .titleMedium
-                        ?.copyWith(fontSize: 16 * scaleFactor))),
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerLeft,
+              child: Text(
+                'Show Dev Audio HUD',
+                style: Theme.of(
+                  context,
+                ).textTheme.titleMedium?.copyWith(fontSize: 16 * scaleFactor),
+              ),
+            ),
             subtitle: FittedBox(
-                fit: BoxFit.scaleDown,
-                alignment: Alignment.centerLeft,
-                child: Text('Persistent engine + playback keychart (dev)',
-                    style: Theme.of(context)
-                        .textTheme
-                        .bodySmall
-                        ?.copyWith(fontSize: 12 * scaleFactor))),
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerLeft,
+              child: Text(
+                'Persistent engine + playback keychart (dev)',
+                style: Theme.of(
+                  context,
+                ).textTheme.bodySmall?.copyWith(fontSize: 12 * scaleFactor),
+              ),
+            ),
             value: settingsProvider.showDevAudioHud,
             onChanged: (value) {
               context.read<SettingsProvider>().toggleShowDevAudioHud();
             },
-            secondary:
-                Icon(isFruit ? LucideIcons.badgeInfo : Icons.developer_mode),
+            secondary: Icon(
+              isFruit ? LucideIcons.badgeInfo : Icons.developer_mode,
+            ),
           ),
         if (kIsWeb && settingsProvider.showDevAudioHud)
           _buildDevHudAbbreviationLegend(context, scaleFactor),
         if (!isTv && !kIsWeb)
           HighlightableSetting(
             key: ValueKey(
-                'offline_buffering_${highlightTriggerCount}_${activeHighlightKey == 'offline_buffering'}'),
+              'offline_buffering_${highlightTriggerCount}_${activeHighlightKey == 'offline_buffering'}',
+            ),
             startWithHighlight: activeHighlightKey == 'offline_buffering',
             settingKey: settingKeys['offline_buffering'],
             child: TvSwitchListTile(
               dense: true,
               visualDensity: VisualDensity.compact,
               title: FittedBox(
-                  fit: BoxFit.scaleDown,
-                  alignment: Alignment.centerLeft,
-                  child: Text('Advanced Cache',
-                      style: Theme.of(context)
-                          .textTheme
-                          .titleMedium
-                          ?.copyWith(fontSize: 16 * scaleFactor))),
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  'Advanced Cache',
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleMedium?.copyWith(fontSize: 16 * scaleFactor),
+                ),
+              ),
               subtitle: Consumer<AudioProvider>(
                 builder: (context, ap, _) => FittedBox(
-                    fit: BoxFit.scaleDown,
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      settingsProvider.offlineBuffering
-                          ? 'Cached ${ap.cachedTrackCount} of (${ap.currentSource?.tracks.length ?? 0} + 5) tracks'
-                          : 'Cache current show tracks to disk',
-                      style: Theme.of(context)
-                          .textTheme
-                          .bodySmall
-                          ?.copyWith(fontSize: 12 * scaleFactor),
-                    )),
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    settingsProvider.offlineBuffering
+                        ? 'Cached ${ap.cachedTrackCount} of (${ap.currentSource?.tracks.length ?? 0} + 5) tracks'
+                        : 'Cache current show tracks to disk',
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodySmall?.copyWith(fontSize: 12 * scaleFactor),
+                  ),
+                ),
               ),
               value: settingsProvider.offlineBuffering,
               onChanged: (value) {
                 AppHaptics.lightImpact(context.read<DeviceService>());
                 context.read<SettingsProvider>().toggleOfflineBuffering();
               },
-              secondary: Icon(isFruit
-                  ? LucideIcons.download
-                  : Icons.download_for_offline_rounded),
+              secondary: Icon(
+                isFruit
+                    ? LucideIcons.download
+                    : Icons.download_for_offline_rounded,
+              ),
             ),
           ),
         if (!kIsWeb)
           HighlightableSetting(
             key: ValueKey(
-                'enable_buffer_agent_${highlightTriggerCount}_${activeHighlightKey == 'enable_buffer_agent'}'),
+              'enable_buffer_agent_${highlightTriggerCount}_${activeHighlightKey == 'enable_buffer_agent'}',
+            ),
             startWithHighlight: activeHighlightKey == 'enable_buffer_agent',
             settingKey: settingKeys['enable_buffer_agent'],
             child: TvSwitchListTile(
               dense: true,
               visualDensity: VisualDensity.compact,
               title: FittedBox(
-                  fit: BoxFit.scaleDown,
-                  alignment: Alignment.centerLeft,
-                  child: Text('Buffer Agent',
-                      style: Theme.of(context)
-                          .textTheme
-                          .titleMedium
-                          ?.copyWith(fontSize: 16 * scaleFactor))),
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  'Buffer Agent',
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleMedium?.copyWith(fontSize: 16 * scaleFactor),
+                ),
+              ),
               subtitle: FittedBox(
-                  fit: BoxFit.scaleDown,
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    'Auto-fix network and buffer issues',
-                    style: Theme.of(context)
-                        .textTheme
-                        .bodySmall
-                        ?.copyWith(fontSize: 12 * scaleFactor),
-                  )),
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  'Auto-fix network and buffer issues',
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodySmall?.copyWith(fontSize: 12 * scaleFactor),
+                ),
+              ),
               value: settingsProvider.enableBufferAgent,
               onChanged: (value) {
                 AppHaptics.lightImpact(context.read<DeviceService>());
                 context.read<SettingsProvider>().toggleEnableBufferAgent();
               },
-              secondary:
-                  Icon(isFruit ? LucideIcons.activity : Icons.healing_rounded),
+              secondary: Icon(
+                isFruit ? LucideIcons.activity : Icons.healing_rounded,
+              ),
             ),
           ),
         TvSwitchListTile(
           dense: true,
           visualDensity: VisualDensity.compact,
           title: FittedBox(
-              fit: BoxFit.scaleDown,
-              alignment: Alignment.centerLeft,
-              child: Text('Random',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontSize: 16 * scaleFactor,
-                        color: !settingsProvider.nonRandom
-                            ? null
-                            : Theme.of(context)
-                                .colorScheme
-                                .onSurface
-                                .withValues(alpha: 0.5),
-                      ))),
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Text(
+              'Random',
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                fontSize: 16 * scaleFactor,
+                color: !settingsProvider.nonRandom
+                    ? null
+                    : Theme.of(
+                        context,
+                      ).colorScheme.onSurface.withValues(alpha: 0.5),
+              ),
+            ),
+          ),
           value: !settingsProvider.nonRandom,
           onChanged: (value) {
             context.read<SettingsProvider>().toggleNonRandom();
@@ -251,38 +283,38 @@ class PlaybackSection extends StatelessWidget {
             isFruit ? LucideIcons.shuffle : Icons.shuffle_rounded,
             color: !settingsProvider.nonRandom
                 ? null
-                : Theme.of(context)
-                    .colorScheme
-                    .onSurface
-                    .withValues(alpha: 0.5),
+                : Theme.of(
+                    context,
+                  ).colorScheme.onSurface.withValues(alpha: 0.5),
           ),
         ),
         TvSwitchListTile(
           dense: true,
           visualDensity: VisualDensity.compact,
           title: FittedBox(
-              fit: BoxFit.scaleDown,
-              alignment: Alignment.centerLeft,
-              child: Text(
-                  settingsProvider.nonRandom
-                      ? 'Play Next Show on Completion'
-                      : 'Play Random Show on Completion',
-                  style: Theme.of(context)
-                      .textTheme
-                      .titleMedium
-                      ?.copyWith(fontSize: 16 * scaleFactor))),
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Text(
+              settingsProvider.nonRandom
+                  ? 'Play Next Show on Completion'
+                  : 'Play Random Show on Completion',
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(fontSize: 16 * scaleFactor),
+            ),
+          ),
           subtitle: FittedBox(
-              fit: BoxFit.scaleDown,
-              alignment: Alignment.centerLeft,
-              child: Text(
-                settingsProvider.nonRandom
-                    ? 'When a show ends, play the next show in the list'
-                    : 'When a show ends, play another one randomly',
-                style: Theme.of(context)
-                    .textTheme
-                    .bodySmall
-                    ?.copyWith(fontSize: 12 * scaleFactor),
-              )),
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Text(
+              settingsProvider.nonRandom
+                  ? 'When a show ends, play the next show in the list'
+                  : 'When a show ends, play another one randomly',
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall?.copyWith(fontSize: 12 * scaleFactor),
+            ),
+          ),
           value: settingsProvider.playRandomOnCompletion,
           onChanged: (value) {
             context.read<SettingsProvider>().togglePlayRandomOnCompletion();
@@ -296,27 +328,29 @@ class PlaybackSection extends StatelessWidget {
           dense: true,
           visualDensity: VisualDensity.compact,
           title: FittedBox(
-              fit: BoxFit.scaleDown,
-              alignment: Alignment.centerLeft,
-              child: Text(
-                  settingsProvider.nonRandom
-                      ? 'Play Next Show on Startup'
-                      : 'Play Random Show on Startup',
-                  style: Theme.of(context)
-                      .textTheme
-                      .titleMedium
-                      ?.copyWith(fontSize: 16 * scaleFactor))),
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Text(
+              settingsProvider.nonRandom
+                  ? 'Play Next Show on Startup'
+                  : 'Play Random Show on Startup',
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(fontSize: 16 * scaleFactor),
+            ),
+          ),
           subtitle: FittedBox(
-              fit: BoxFit.scaleDown,
-              alignment: Alignment.centerLeft,
-              child: Text(
-                  settingsProvider.nonRandom
-                      ? 'Start playing the next show when the app opens'
-                      : 'Start playing a random show when the app opens',
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodySmall
-                      ?.copyWith(fontSize: 12 * scaleFactor))),
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Text(
+              settingsProvider.nonRandom
+                  ? 'Start playing the next show when the app opens'
+                  : 'Start playing a random show when the app opens',
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall?.copyWith(fontSize: 12 * scaleFactor),
+            ),
+          ),
           value: settingsProvider.playRandomOnStartup,
           onChanged: (value) {
             context.read<SettingsProvider>().togglePlayRandomOnStartup();
@@ -327,47 +361,56 @@ class PlaybackSection extends StatelessWidget {
           dense: true,
           visualDensity: VisualDensity.compact,
           title: FittedBox(
-              fit: BoxFit.scaleDown,
-              alignment: Alignment.centerLeft,
-              child: Text('Only Select Unplayed Shows',
-                  style: Theme.of(context)
-                      .textTheme
-                      .titleMedium
-                      ?.copyWith(fontSize: 16 * scaleFactor))),
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Text(
+              'Only Select Unplayed Shows',
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(fontSize: 16 * scaleFactor),
+            ),
+          ),
           subtitle: FittedBox(
-              fit: BoxFit.scaleDown,
-              alignment: Alignment.centerLeft,
-              child: Text('Random playback will prefer unplayed shows',
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodySmall
-                      ?.copyWith(fontSize: 12 * scaleFactor))),
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Text(
+              'Random playback will prefer unplayed shows',
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall?.copyWith(fontSize: 12 * scaleFactor),
+            ),
+          ),
           value: settingsProvider.randomOnlyUnplayed,
           onChanged: (value) {
             context.read<SettingsProvider>().toggleRandomOnlyUnplayed();
           },
-          secondary:
-              Icon(isFruit ? LucideIcons.star : Icons.new_releases_rounded),
+          secondary: Icon(
+            isFruit ? LucideIcons.star : Icons.new_releases_rounded,
+          ),
         ),
         TvSwitchListTile(
           dense: true,
           visualDensity: VisualDensity.compact,
           title: FittedBox(
-              fit: BoxFit.scaleDown,
-              alignment: Alignment.centerLeft,
-              child: Text('Only Select High Rated Shows',
-                  style: Theme.of(context)
-                      .textTheme
-                      .titleMedium
-                      ?.copyWith(fontSize: 16 * scaleFactor))),
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Text(
+              'Only Select High Rated Shows',
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(fontSize: 16 * scaleFactor),
+            ),
+          ),
           subtitle: FittedBox(
-              fit: BoxFit.scaleDown,
-              alignment: Alignment.centerLeft,
-              child: Text('Random playback will prefer shows rated 2+ stars',
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodySmall
-                      ?.copyWith(fontSize: 12 * scaleFactor))),
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Text(
+              'Random playback will prefer shows rated 2+ stars',
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall?.copyWith(fontSize: 12 * scaleFactor),
+            ),
+          ),
           value: settingsProvider.randomOnlyHighRated,
           onChanged: (value) {
             context.read<SettingsProvider>().toggleRandomOnlyHighRated();
@@ -378,28 +421,32 @@ class PlaybackSection extends StatelessWidget {
           dense: true,
           visualDensity: VisualDensity.compact,
           title: FittedBox(
-              fit: BoxFit.scaleDown,
-              alignment: Alignment.centerLeft,
-              child: Text('Exclude Already Played Shows',
-                  style: Theme.of(context)
-                      .textTheme
-                      .titleMedium
-                      ?.copyWith(fontSize: 16 * scaleFactor))),
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Text(
+              'Exclude Already Played Shows',
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(fontSize: 16 * scaleFactor),
+            ),
+          ),
           subtitle: FittedBox(
-              fit: BoxFit.scaleDown,
-              alignment: Alignment.centerLeft,
-              child: Text(
-                  'Random playback will never select shows you have played',
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodySmall
-                      ?.copyWith(fontSize: 12 * scaleFactor))),
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Text(
+              'Random playback will never select shows you have played',
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall?.copyWith(fontSize: 12 * scaleFactor),
+            ),
+          ),
           value: settingsProvider.randomExcludePlayed,
           onChanged: (value) {
             context.read<SettingsProvider>().toggleRandomExcludePlayed();
           },
           secondary: Icon(
-              isFruit ? LucideIcons.history : Icons.history_toggle_off_rounded),
+            isFruit ? LucideIcons.history : Icons.history_toggle_off_rounded,
+          ),
         ),
         RandomProbabilityCard(scaleFactor: scaleFactor),
       ],
@@ -444,9 +491,9 @@ class PlaybackSection extends StatelessWidget {
                   child: Text(
                     'Web Audio Engine',
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontSize: 16 * scaleFactor,
-                          fontWeight: FontWeight.bold,
-                        ),
+                      fontSize: 16 * scaleFactor,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
               ],
@@ -454,12 +501,13 @@ class PlaybackSection extends StatelessWidget {
             const SizedBox(height: 8),
             Padding(
               padding: EdgeInsets.only(
-                  left: 40.0 * scaleFactor), // Align with text below title
+                left: 40.0 * scaleFactor,
+              ), // Align with text below title
               child: Text(
                 'Select the low-level processing engine for gapless playback.',
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      fontSize: 12 * scaleFactor,
-                    ),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodySmall?.copyWith(fontSize: 12 * scaleFactor),
               ),
             ),
             const SizedBox(height: 6),
@@ -468,12 +516,9 @@ class PlaybackSection extends StatelessWidget {
               child: Text(
                 'Engine changes apply after relaunch (or browser refresh).',
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      fontSize: 12 * scaleFactor,
-                      color: Theme.of(context)
-                          .colorScheme
-                          .onSurface
-                          .withAlpha(160),
-                    ),
+                  fontSize: 12 * scaleFactor,
+                  color: Theme.of(context).colorScheme.onSurface.withAlpha(160),
+                ),
               ),
             ),
             const SizedBox(height: 16),
@@ -532,8 +577,10 @@ class PlaybackSection extends StatelessWidget {
                   onSelectionChanged: (AudioEngineMode mode) {
                     AppHaptics.lightImpact(context.read<DeviceService>());
                     sp.setAudioEngineMode(mode);
-                    showRestartMessage(context,
-                        'Relaunch required for engine change to take effect.');
+                    showRestartMessage(
+                      context,
+                      'Relaunch required for engine change to take effect.',
+                    );
                   },
                 ),
               ),
@@ -558,10 +605,9 @@ class PlaybackSection extends StatelessWidget {
                           .withValues(alpha: 0.25),
                       borderRadius: BorderRadius.circular(10 * scaleFactor),
                       border: Border.all(
-                        color: Theme.of(context)
-                            .colorScheme
-                            .onSurface
-                            .withValues(alpha: 0.08),
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.onSurface.withValues(alpha: 0.08),
                       ),
                     ),
                     child: Column(
@@ -569,18 +615,14 @@ class PlaybackSection extends StatelessWidget {
                       children: [
                         Text(
                           'Active Engine: ${audioProvider.audioPlayer.engineName}',
-                          style:
-                              Theme.of(context).textTheme.bodySmall?.copyWith(
-                                    fontSize: 12 * scaleFactor,
-                                  ),
+                          style: Theme.of(context).textTheme.bodySmall
+                              ?.copyWith(fontSize: 12 * scaleFactor),
                         ),
                         SizedBox(height: 4 * scaleFactor),
                         Text(
                           'Context: $contextState',
-                          style:
-                              Theme.of(context).textTheme.bodySmall?.copyWith(
-                                    fontSize: 12 * scaleFactor,
-                                  ),
+                          style: Theme.of(context).textTheme.bodySmall
+                              ?.copyWith(fontSize: 12 * scaleFactor),
                         ),
                       ],
                     ),
@@ -594,9 +636,9 @@ class PlaybackSection extends StatelessWidget {
               child: Text(
                 'Hidden Session Preset',
                 style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      fontSize: 14 * scaleFactor,
-                      fontWeight: FontWeight.bold,
-                    ),
+                  fontSize: 14 * scaleFactor,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
             const SizedBox(height: 8),
@@ -649,9 +691,9 @@ class PlaybackSection extends StatelessWidget {
                 child: Text(
                   'Track Transition Mode',
                   style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                        fontSize: 14 * scaleFactor,
-                        fontWeight: FontWeight.bold,
-                      ),
+                    fontSize: 14 * scaleFactor,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
               const SizedBox(height: 8),
@@ -693,9 +735,9 @@ class PlaybackSection extends StatelessWidget {
                   child: Text(
                     'Hybrid Handoff Mode',
                     style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                          fontSize: 14 * scaleFactor,
-                          fontWeight: FontWeight.bold,
-                        ),
+                      fontSize: 14 * scaleFactor,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -736,7 +778,9 @@ class PlaybackSection extends StatelessWidget {
                         AppHaptics.lightImpact(context.read<DeviceService>());
                         sp.setHybridHandoffMode(mode);
                         showRestartMessage(
-                            context, 'Handoff mode change requires relaunch.');
+                          context,
+                          'Handoff mode change requires relaunch.',
+                        );
                       },
                     ),
                   ),
@@ -747,9 +791,9 @@ class PlaybackSection extends StatelessWidget {
                   child: Text(
                     'Background Survival Strategy',
                     style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                          fontSize: 14 * scaleFactor,
-                          fontWeight: FontWeight.bold,
-                        ),
+                      fontSize: 14 * scaleFactor,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -798,8 +842,10 @@ class PlaybackSection extends StatelessWidget {
                       onSelectionChanged: (HybridBackgroundMode mode) {
                         AppHaptics.lightImpact(context.read<DeviceService>());
                         sp.setHybridBackgroundMode(mode);
-                        showRestartMessage(context,
-                            'Survival strategy change requires relaunch.');
+                        showRestartMessage(
+                          context,
+                          'Survival strategy change requires relaunch.',
+                        );
                       },
                     ),
                   ),
@@ -812,23 +858,25 @@ class PlaybackSection extends StatelessWidget {
                     title: Text(
                       'Allow Web Audio while hidden',
                       style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                            fontSize: 13 * scaleFactor,
-                            fontWeight: FontWeight.w600,
-                          ),
+                        fontSize: 13 * scaleFactor,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                     subtitle: Text(
                       'Keeps Web Audio active in background. '
                       'May stop sooner on mobile.',
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            fontSize: 12 * scaleFactor,
-                          ),
+                        fontSize: 12 * scaleFactor,
+                      ),
                     ),
                     value: sp.allowHiddenWebAudio,
                     onChanged: (value) {
                       AppHaptics.lightImpact(context.read<DeviceService>());
                       sp.setAllowHiddenWebAudio(value);
-                      showRestartMessage(context,
-                          'Relaunch required to apply hidden session logic.');
+                      showRestartMessage(
+                        context,
+                        'Relaunch required to apply hidden session logic.',
+                      );
                     },
                   ),
                 ),
@@ -840,22 +888,24 @@ class PlaybackSection extends StatelessWidget {
                     title: Text(
                       'Force HTML5 start',
                       style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                            fontSize: 13 * scaleFactor,
-                            fontWeight: FontWeight.w600,
-                          ),
+                        fontSize: 13 * scaleFactor,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                     subtitle: Text(
                       'Always start via HTML5 before handing off.',
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            fontSize: 12 * scaleFactor,
-                          ),
+                        fontSize: 12 * scaleFactor,
+                      ),
                     ),
                     value: sp.hybridForceHtml5Start,
                     onChanged: (value) {
                       AppHaptics.lightImpact(context.read<DeviceService>());
                       sp.setHybridForceHtml5Start(value);
-                      showRestartMessage(context,
-                          'Relaunch required to apply boot logic changes.');
+                      showRestartMessage(
+                        context,
+                        'Relaunch required to apply boot logic changes.',
+                      );
                     },
                   ),
                 ),
@@ -868,9 +918,9 @@ class PlaybackSection extends StatelessWidget {
                       Text(
                         'Handoff Crossfade',
                         style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                              fontSize: 13 * scaleFactor,
-                              fontWeight: FontWeight.w600,
-                            ),
+                          fontSize: 13 * scaleFactor,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                       const SizedBox(height: 6),
                       Row(
@@ -889,9 +939,7 @@ class PlaybackSection extends StatelessWidget {
                           SizedBox(width: 8 * scaleFactor),
                           Text(
                             '${sp.handoffCrossfadeMs}ms',
-                            style: Theme.of(context)
-                                .textTheme
-                                .bodySmall
+                            style: Theme.of(context).textTheme.bodySmall
                                 ?.copyWith(fontSize: 12 * scaleFactor),
                           ),
                         ],
@@ -907,21 +955,20 @@ class PlaybackSection extends StatelessWidget {
       TvSwitchListTile(
         dense: true,
         visualDensity: VisualDensity.compact,
-        secondary:
-            Icon(isFruit ? LucideIcons.monitor : Icons.sensor_window_rounded),
+        secondary: Icon(
+          isFruit ? LucideIcons.monitor : Icons.sensor_window_rounded,
+        ),
         title: Text(
           'Keep Screen On',
-          style: Theme.of(context)
-              .textTheme
-              .titleMedium
-              ?.copyWith(fontSize: 16 * scaleFactor),
+          style: Theme.of(
+            context,
+          ).textTheme.titleMedium?.copyWith(fontSize: 16 * scaleFactor),
         ),
         subtitle: Text(
           'Prevents the device from sleeping during playback.',
-          style: Theme.of(context)
-              .textTheme
-              .bodySmall
-              ?.copyWith(fontSize: 12 * scaleFactor),
+          style: Theme.of(
+            context,
+          ).textTheme.bodySmall?.copyWith(fontSize: 12 * scaleFactor),
         ),
         value: sp.preventSleep,
         onChanged: (_) {
@@ -960,8 +1007,9 @@ class PlaybackSection extends StatelessWidget {
           vertical: 10 * scaleFactor,
         ),
         decoration: BoxDecoration(
-          color:
-              theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.35),
+          color: theme.colorScheme.surfaceContainerHighest.withValues(
+            alpha: 0.35,
+          ),
           borderRadius: BorderRadius.circular(12 * scaleFactor),
           border: Border.all(
             color: theme.colorScheme.onSurface.withValues(alpha: 0.08),
@@ -1064,8 +1112,9 @@ class _SegmentedWrap<T> extends StatelessWidget {
                         color: isSelected
                             ? theme.colorScheme.onPrimaryContainer
                             : theme.colorScheme.onSurfaceVariant,
-                        fontWeight:
-                            isSelected ? FontWeight.bold : FontWeight.w500,
+                        fontWeight: isSelected
+                            ? FontWeight.bold
+                            : FontWeight.w500,
                       ),
                     ),
                   ],

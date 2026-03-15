@@ -12,10 +12,7 @@ import 'package:shakedown_core/ui/widgets/pulsing_heart_icon.dart';
 class SupportSection extends StatelessWidget {
   final double scaleFactor;
 
-  const SupportSection({
-    super.key,
-    required this.scaleFactor,
-  });
+  const SupportSection({super.key, required this.scaleFactor});
 
   @override
   Widget build(BuildContext context) {
@@ -36,16 +33,23 @@ class SupportSection extends StatelessWidget {
           'Consider donating to The Internet Archive',
           'https://archive.org/donate/',
           scaleFactor,
-          customIcon:
-              PulsingHeartIcon(scaleFactor: scaleFactor, isFruit: isFruit),
+          customIcon: PulsingHeartIcon(
+            scaleFactor: scaleFactor,
+            isFruit: isFruit,
+          ),
         ),
       ],
     );
   }
 
   Widget _buildClickableLink(
-      BuildContext context, String text, String url, double scaleFactor,
-      {IconData? icon, Widget? customIcon}) {
+    BuildContext context,
+    String text,
+    String url,
+    double scaleFactor, {
+    IconData? icon,
+    Widget? customIcon,
+  }) {
     final isFruit =
         context.read<ThemeProvider>().themeStyle == ThemeStyle.fruit;
     return TvFocusWrapper(
@@ -66,15 +70,17 @@ class SupportSection extends StatelessWidget {
               child: Text(
                 text,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Theme.of(context).colorScheme.primary,
-                      decoration: TextDecoration.underline,
-                      fontSize: 14 * scaleFactor,
-                    ),
+                  color: Theme.of(context).colorScheme.primary,
+                  decoration: TextDecoration.underline,
+                  fontSize: 14 * scaleFactor,
+                ),
               ),
             ),
-            Icon(isFruit ? LucideIcons.externalLink : Icons.open_in_new,
-                size: 16 * scaleFactor,
-                color: Theme.of(context).colorScheme.primary),
+            Icon(
+              isFruit ? LucideIcons.externalLink : Icons.open_in_new,
+              size: 16 * scaleFactor,
+              color: Theme.of(context).colorScheme.primary,
+            ),
           ],
         ),
       ),
@@ -98,10 +104,7 @@ class SupportSection extends StatelessWidget {
 class AboutSection extends StatelessWidget {
   final double scaleFactor;
 
-  const AboutSection({
-    super.key,
-    required this.scaleFactor,
-  });
+  const AboutSection({super.key, required this.scaleFactor});
 
   @override
   Widget build(BuildContext context) {

@@ -58,22 +58,26 @@ class CardStyle {
     final textTheme = Theme.of(context).textTheme;
     final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
 
-    final colorScheme =
-        Theme.of(context).colorScheme; // Define colorScheme here
+    final colorScheme = Theme.of(
+      context,
+    ).colorScheme; // Define colorScheme here
 
     final cardBorderColor = isPlaying
         ? colorScheme.primary
         : show.hasFeaturedTrack
-            ? colorScheme.tertiary
-            : colorScheme.outlineVariant;
+        ? colorScheme.tertiary
+        : colorScheme.outlineVariant;
 
-    final bool shouldShowBadge = !isExpanded &&
+    final bool shouldShowBadge =
+        !isExpanded &&
         (show.sources.length > 1 ||
             (show.sources.length == 1 && settings.showSingleShnid));
 
     final config = FontLayoutConfig.getConfig(settings.appFont);
-    double effectiveScale =
-        FontLayoutConfig.getEffectiveScale(context, settings);
+    double effectiveScale = FontLayoutConfig.getEffectiveScale(
+      context,
+      settings,
+    );
 
     // Apply the same TV multiplier used in AppTypography (1.2x)
     final deviceService = Provider.of<DeviceService>(context, listen: false);
@@ -82,35 +86,41 @@ class CardStyle {
     }
 
     // Venue Style
-    final baseVenueStyle = textTheme.bodyLarge?.copyWith(fontSize: 15.0) ??
+    final baseVenueStyle =
+        textTheme.bodyLarge?.copyWith(fontSize: 15.0) ??
         const TextStyle(fontSize: 15.0);
     final bool isFruit = themeProvider.themeStyle == ThemeStyle.fruit;
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
 
-    final venueStyle =
-        baseVenueStyle.apply(fontSizeFactor: effectiveScale).copyWith(
-              color: isFruit
-                  ? (isDark
-                      ? Colors.white.withValues(alpha: 0.9)
-                      : Colors.black.withValues(alpha: 0.9))
-                  : colorScheme.onSurface,
-            );
+    final venueStyle = baseVenueStyle
+        .apply(fontSizeFactor: effectiveScale)
+        .copyWith(
+          color: isFruit
+              ? (isDark
+                    ? Colors.white.withValues(alpha: 0.9)
+                    : Colors.black.withValues(alpha: 0.9))
+              : colorScheme.onSurface,
+        );
 
-    final String formattedDate =
-        AppDateUtils.formatDate(show.date, settings: settings);
+    final String formattedDate = AppDateUtils.formatDate(
+      show.date,
+      settings: settings,
+    );
 
     // Date Style
-    final baseDateStyle = textTheme.bodySmall?.copyWith(fontSize: 9.5) ??
+    final baseDateStyle =
+        textTheme.bodySmall?.copyWith(fontSize: 9.5) ??
         const TextStyle(fontSize: 9.5);
-    final dateStyle =
-        baseDateStyle.apply(fontSizeFactor: effectiveScale).copyWith(
-              color: isFruit
-                  ? (isDark
-                      ? Colors.white.withValues(alpha: 0.6)
-                      : Colors.black.withValues(alpha: 0.6))
-                  : colorScheme.onSurfaceVariant,
-              letterSpacing: 0.15,
-            );
+    final dateStyle = baseDateStyle
+        .apply(fontSizeFactor: effectiveScale)
+        .copyWith(
+          color: isFruit
+              ? (isDark
+                    ? Colors.white.withValues(alpha: 0.6)
+                    : Colors.black.withValues(alpha: 0.6))
+              : colorScheme.onSurfaceVariant,
+          letterSpacing: 0.15,
+        );
 
     // Font Sizing Logic
     final bool isRockSalt = settings.appFont == 'rock_salt';
@@ -209,19 +219,23 @@ class CardStyle {
       if (playingSource != null) {
         seed = playingSource.id;
       }
-      backgroundColor = ColorGenerator.getColor(seed,
-          brightness: isDarkMode ? Brightness.dark : Brightness.light);
+      backgroundColor = ColorGenerator.getColor(
+        seed,
+        brightness: isDarkMode ? Brightness.dark : Brightness.light,
+      );
     }
 
     // Glow and Shadow Logic
     bool suppressOuterGlow = isExpanded && show.sources.length > 1;
     bool showGlow = settings.glowMode > 0;
 
-    final isFruitHighlight = themeProvider.themeStyle == ThemeStyle.fruit &&
+    final isFruitHighlight =
+        themeProvider.themeStyle == ThemeStyle.fruit &&
         isPlaying &&
         settings.highlightCurrentShowCard;
 
-    bool useRgb = !settings.performanceMode &&
+    bool useRgb =
+        !settings.performanceMode &&
         settings.highlightPlayingWithRgb &&
         isPlaying;
     if (isFruitHighlight) {
@@ -239,8 +253,9 @@ class CardStyle {
     double cardBorderWidth = deviceService.isTv ? 4.0 : 3.0;
     if (themeProvider.themeStyle == ThemeStyle.fruit) {
       if (!isExpanded && !isPlaying) {
-        cardBorderWidth =
-            deviceService.isTv ? 1.0 : 0.5; // Hairline is thicker on TV
+        cardBorderWidth = deviceService.isTv
+            ? 1.0
+            : 0.5; // Hairline is thicker on TV
       }
     }
 

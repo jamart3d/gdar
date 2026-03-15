@@ -19,8 +19,10 @@ class AppTypography {
   static double responsiveFontSize(BuildContext context, double baseSize) {
     final settingsProvider = context.watch<SettingsProvider>();
     final deviceService = context.watch<DeviceService>();
-    final scaleFactor =
-        FontLayoutConfig.getEffectiveScale(context, settingsProvider);
+    final scaleFactor = FontLayoutConfig.getEffectiveScale(
+      context,
+      settingsProvider,
+    );
 
     // Additional boost for TV "10-foot" UI
     final double tvMultiplier = deviceService.isTv ? 1.2 : 1.0;
@@ -69,7 +71,8 @@ class AppTypography {
 
   /// Returns (height, letterSpacing) for header text based on the active font.
   static ({double height, double letterSpacing}) getHeaderMetrics(
-      String fontName) {
+    String fontName,
+  ) {
     switch (fontName) {
       case 'rock_salt':
         return (height: 1.4, letterSpacing: 1.5);

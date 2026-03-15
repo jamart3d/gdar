@@ -62,8 +62,9 @@ class _PlaybackMessagesState extends State<PlaybackMessages>
     _notificationSubscription?.cancel();
     _playerStateSubscription?.cancel();
 
-    _agentSubscription =
-        audioProvider.bufferAgentNotificationStream.listen((event) {
+    _agentSubscription = audioProvider.bufferAgentNotificationStream.listen((
+      event,
+    ) {
       if (mounted) {
         setState(() {
           _agentMessage = event.message;
@@ -106,25 +107,26 @@ class _PlaybackMessagesState extends State<PlaybackMessages>
     });
 
     _engineStateSubscription?.cancel();
-    _engineStateSubscription =
-        audioProvider.audioPlayer.engineStateStringStream.listen((stateStr) {
-      if (mounted) {
-        setState(() {
-          _engineStateString = stateStr;
+    _engineStateSubscription = audioProvider.audioPlayer.engineStateStringStream
+        .listen((stateStr) {
+          if (mounted) {
+            setState(() {
+              _engineStateString = stateStr;
+            });
+          }
         });
-      }
-    });
 
     _engineContextSubscription?.cancel();
     _engineContextSubscription = audioProvider
-        .audioPlayer.engineContextStateStream
+        .audioPlayer
+        .engineContextStateStream
         .listen((contextState) {
-      if (mounted) {
-        setState(() {
-          _engineContextState = contextState;
+          if (mounted) {
+            setState(() {
+              _engineContextState = contextState;
+            });
+          }
         });
-      }
-    });
   }
 
   @override
@@ -143,7 +145,8 @@ class _PlaybackMessagesState extends State<PlaybackMessages>
   void didChangeAppLifecycleState(AppLifecycleState state) {
     // On web/desktop, a window can remain visible while unfocused ("inactive").
     // Treat that state as visible so the HUD does not collapse unexpectedly.
-    _isAppVisible = state == AppLifecycleState.resumed ||
+    _isAppVisible =
+        state == AppLifecycleState.resumed ||
         state == AppLifecycleState.inactive;
     if (mounted) {
       setState(() {});
@@ -161,8 +164,10 @@ class _PlaybackMessagesState extends State<PlaybackMessages>
     final isWebUi = kIsWeb && !isTv;
     final showDevHud =
         isWebUi && settingsProvider.showDevAudioHud && widget.showDevHudInline;
-    final double scaleFactor =
-        FontLayoutConfig.getEffectiveScale(context, settingsProvider);
+    final double scaleFactor = FontLayoutConfig.getEffectiveScale(
+      context,
+      settingsProvider,
+    );
     final double labelsFontSize = 12.0 * scaleFactor;
     final String? fontFamily = isFruitTheme ? null : 'Roboto';
 
@@ -332,15 +337,15 @@ class _PlaybackMessagesState extends State<PlaybackMessages>
               alignment: widget.textAlign == TextAlign.center
                   ? Alignment.center
                   : widget.textAlign == TextAlign.right
-                      ? Alignment.centerRight
-                      : Alignment.centerLeft,
+                  ? Alignment.centerRight
+                  : Alignment.centerLeft,
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 mainAxisAlignment: widget.textAlign == TextAlign.center
                     ? MainAxisAlignment.center
                     : widget.textAlign == TextAlign.right
-                        ? MainAxisAlignment.end
-                        : MainAxisAlignment.start,
+                    ? MainAxisAlignment.end
+                    : MainAxisAlignment.start,
                 children: [...children, ...otherChildren],
               ),
             ),
@@ -351,30 +356,32 @@ class _PlaybackMessagesState extends State<PlaybackMessages>
           if (rows.isNotEmpty) {
             rows.add(const SizedBox(height: 4));
           }
-          rows.add(DevAudioHud(
-            audioProvider: audioProvider,
-            settingsProvider: settingsProvider,
-            playerState: playerState,
-            labelsFontSize: labelsFontSize,
-            colorScheme: colorScheme,
-            fontFamily: fontFamily,
-            compact: widget.compactDevHud,
-            isAppVisible: _isAppVisible,
-            engineStateString: _engineStateString,
-            engineContextState: _engineContextState,
-            agentMessage: _agentMessage,
-            notificationMessage: _notificationMessage,
-            lastIssueMessage: _lastIssueMessage,
-            lastIssueAt: _lastIssueAt,
-            onClearIssue: () {
-              if (mounted) {
-                setState(() {
-                  _lastIssueMessage = null;
-                  _lastIssueAt = null;
-                });
-              }
-            },
-          ));
+          rows.add(
+            DevAudioHud(
+              audioProvider: audioProvider,
+              settingsProvider: settingsProvider,
+              playerState: playerState,
+              labelsFontSize: labelsFontSize,
+              colorScheme: colorScheme,
+              fontFamily: fontFamily,
+              compact: widget.compactDevHud,
+              isAppVisible: _isAppVisible,
+              engineStateString: _engineStateString,
+              engineContextState: _engineContextState,
+              agentMessage: _agentMessage,
+              notificationMessage: _notificationMessage,
+              lastIssueMessage: _lastIssueMessage,
+              lastIssueAt: _lastIssueAt,
+              onClearIssue: () {
+                if (mounted) {
+                  setState(() {
+                    _lastIssueMessage = null;
+                    _lastIssueAt = null;
+                  });
+                }
+              },
+            ),
+          );
         }
 
         if (rows.isEmpty) return const SizedBox.shrink();
@@ -384,8 +391,8 @@ class _PlaybackMessagesState extends State<PlaybackMessages>
           crossAxisAlignment: widget.textAlign == TextAlign.right
               ? CrossAxisAlignment.end
               : (widget.textAlign == TextAlign.left
-                  ? CrossAxisAlignment.start
-                  : CrossAxisAlignment.center),
+                    ? CrossAxisAlignment.start
+                    : CrossAxisAlignment.center),
           children: rows,
         );
       },

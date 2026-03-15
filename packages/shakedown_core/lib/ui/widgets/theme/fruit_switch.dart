@@ -23,7 +23,8 @@ class FruitSwitch extends StatelessWidget {
     final theme = Theme.of(context);
     final effectiveActiveColor =
         activeColor ?? const Color(0xFF34C759); // iOS Green
-    final effectiveInactiveColor = inactiveColor ??
+    final effectiveInactiveColor =
+        inactiveColor ??
         theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.5);
     final isEnabled = onChanged != null;
 
@@ -41,8 +42,9 @@ class FruitSwitch extends StatelessWidget {
       child: ExcludeSemantics(
         child: FocusableActionDetector(
           enabled: isEnabled,
-          mouseCursor:
-              isEnabled ? SystemMouseCursors.click : SystemMouseCursors.basic,
+          mouseCursor: isEnabled
+              ? SystemMouseCursors.click
+              : SystemMouseCursors.basic,
           shortcuts: const <ShortcutActivator, Intent>{
             SingleActivator(LogicalKeyboardKey.enter): ActivateIntent(),
             SingleActivator(LogicalKeyboardKey.space): ActivateIntent(),

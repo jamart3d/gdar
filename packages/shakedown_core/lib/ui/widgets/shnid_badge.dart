@@ -32,8 +32,10 @@ class ShnidBadge extends StatelessWidget {
 
     final colorScheme = Theme.of(context).colorScheme;
     final settingsProvider = context.watch<SettingsProvider>();
-    final double effectiveScale =
-        FontLayoutConfig.getEffectiveScale(context, settingsProvider);
+    final double effectiveScale = FontLayoutConfig.getEffectiveScale(
+      context,
+      settingsProvider,
+    );
 
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     final isTrueBlackMode = isDarkMode && settingsProvider.useTrueBlack;
@@ -50,17 +52,20 @@ class ShnidBadge extends StatelessWidget {
     Widget content = Text(
       text,
       style: Theme.of(context).textTheme.labelSmall?.copyWith(
-          color: textColor,
-          fontWeight: FontWeight.w600,
-          fontSize: ((settingsProvider.appFont == 'rock_salt')
-                  ? 7.5 * effectiveScale
-                  : 9.0 * effectiveScale) *
-              scaleFactor,
-          height: (settingsProvider.appFont == 'rock_salt') ? 2.0 : 1.5,
-          letterSpacing: (settingsProvider.appFont == 'rock_salt' ||
-                  settingsProvider.appFont == 'permanent_marker')
-              ? 1.5 * scaleFactor
-              : 0.0),
+        color: textColor,
+        fontWeight: FontWeight.w600,
+        fontSize:
+            ((settingsProvider.appFont == 'rock_salt')
+                ? 7.5 * effectiveScale
+                : 9.0 * effectiveScale) *
+            scaleFactor,
+        height: (settingsProvider.appFont == 'rock_salt') ? 2.0 : 1.5,
+        letterSpacing:
+            (settingsProvider.appFont == 'rock_salt' ||
+                settingsProvider.appFont == 'permanent_marker')
+            ? 1.5 * scaleFactor
+            : 0.0,
+      ),
       overflow: TextOverflow.ellipsis,
       maxLines: 1,
       textAlign: TextAlign.center,
@@ -83,7 +88,9 @@ class ShnidBadge extends StatelessWidget {
 
     Widget badge = Container(
       padding: EdgeInsets.symmetric(
-          horizontal: 6 * scaleFactor, vertical: 1.0 * scaleFactor),
+        horizontal: 6 * scaleFactor,
+        vertical: 1.0 * scaleFactor,
+      ),
       constraints: const BoxConstraints(maxWidth: 100),
       decoration: BoxDecoration(
         gradient: LinearGradient(
@@ -94,9 +101,10 @@ class ShnidBadge extends StatelessWidget {
         borderRadius: BorderRadius.circular(8),
         boxShadow: [
           BoxShadow(
-              color: colorScheme.shadow.withValues(alpha: 0.05),
-              blurRadius: 2,
-              offset: const Offset(0, 1))
+            color: colorScheme.shadow.withValues(alpha: 0.05),
+            blurRadius: 2,
+            offset: const Offset(0, 1),
+          ),
         ],
       ),
       child: content,
@@ -122,7 +130,11 @@ class ShnidBadge extends StatelessWidget {
   }
 
   Widget _wrapWithFocus(
-      BuildContext context, Widget child, VoidCallback onTap, String label) {
+    BuildContext context,
+    Widget child,
+    VoidCallback onTap,
+    String label,
+  ) {
     return Semantics(
       button: true,
       label: label,

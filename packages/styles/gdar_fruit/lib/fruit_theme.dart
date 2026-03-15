@@ -34,7 +34,8 @@ class GDARFruitTheme {
     }
 
     final themeData = ThemeData(
-      useMaterial3: false, // Fruit style strictly avoids M3 ripples/interactions
+      useMaterial3:
+          false, // Fruit style strictly avoids M3 ripples/interactions
       brightness: Brightness.light,
       scaffoldBackgroundColor: scaffoldBg,
       colorScheme: ColorScheme.fromSeed(

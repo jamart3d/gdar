@@ -13,7 +13,7 @@ This document defines the specialized terminology and cognitive patterns used by
 
 ### 2. Architectural Drift
 **Definition**: The gradual divergence of a project's implementation or documentation from the established platform standards (Antigravity v1.20.3).
-**Detection**: Automated via `env_doctor.py` or the `/audit` workflow.
+**Detection**: Automated via the `/audit` workflow.
 
 ### 3. Dependency Ripple
 **Definition**: A cascading series of breakages caused by modifying a core "Source" (e.g., `SettingsProvider` or `AudioRepository`).

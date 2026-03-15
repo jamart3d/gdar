@@ -2,12 +2,15 @@
 description: Ensure all experimental/premium settings are disabled before a release.
 ---
 
-# Workflow: Verify Settings Defaults
+# Workflow: Verify Settings Defaults (Monorepo)
 
 This workflow ensures the application's initial state remains clean and un-opinionated for new installations.
 
+> [!NOTE]
+> **MONOREPO**: Settings provider lives in `packages/shakedown_core/`.
+
 1. **Verify `DefaultSettings`**:
-   Compare `lib/ui/providers/settings_provider.dart` (or the corresponding defaults file) against the requirement that experimental features must be `false` by default.
+   Compare `packages/shakedown_core/lib/providers/settings_provider.dart` (or the corresponding defaults file) against the requirement that experimental features must be `false` by default.
 
 2. **Check list**:
    * `oilTvPremiumHighlight` -> `false`

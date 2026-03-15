@@ -35,7 +35,7 @@ class TrackListView extends StatelessWidget {
   final VoidCallback? onFocusRight;
   final ValueChanged<int>? onTrackFocused;
   final void Function(int, {bool shouldScroll})?
-      onWrapAround; // Added for robust wrap-around
+  onWrapAround; // Added for robust wrap-around
   final int? initialScrollIndex;
   final double initialScrollAlignment;
 
@@ -90,7 +90,7 @@ class TrackListView extends StatelessWidget {
     final int firstTrackListIndex = trackToListItemIndex[0] ?? 1;
     final int lastTrackListIndex =
         trackToListItemIndex[source.tracks.length - 1] ??
-            (listItems.length - 1);
+        (listItems.length - 1);
 
     int resolvedInitialIndex = initialScrollIndex ?? 0;
     if (initialScrollIndex == null && audioProvider.currentTrack != null) {
@@ -144,10 +144,10 @@ class TrackListView extends StatelessWidget {
       child: Text(
         setName,
         style: Theme.of(context).textTheme.titleSmall?.copyWith(
-              fontSize: AppTypography.responsiveFontSize(context, 14.0),
-              color: Theme.of(context).colorScheme.primary,
-              fontWeight: FontWeight.bold,
-            ),
+          fontSize: AppTypography.responsiveFontSize(context, 14.0),
+          color: Theme.of(context).colorScheme.primary,
+          fontWeight: FontWeight.bold,
+        ),
       ),
     );
   }
@@ -176,8 +176,10 @@ class TrackListView extends StatelessWidget {
         final currentIdx = snapshot.data;
         // Use direct index comparison for maximum stability and reactivity
         final isPlaying = currentIdx == trackIndex;
-        final double scaleFactor =
-            FontLayoutConfig.getEffectiveScale(context, settingsProvider);
+        final double scaleFactor = FontLayoutConfig.getEffectiveScale(
+          context,
+          settingsProvider,
+        );
 
         final themeProvider = context.watch<ThemeProvider>();
         final bool isFruit = themeProvider.themeStyle == ThemeStyle.fruit;
@@ -197,10 +199,10 @@ class TrackListView extends StatelessWidget {
             color: showMobilePlayingBorder
                 ? Colors.transparent
                 : (isPlaying && !isFruit && !isTv)
-                    ? (isTrueBlackMode
-                        ? Colors.black
-                        : colorScheme.primaryContainer)
-                    : Colors.transparent,
+                ? (isTrueBlackMode
+                      ? Colors.black
+                      : colorScheme.primaryContainer)
+                : Colors.transparent,
             borderRadius: BorderRadius.circular(isFruit ? 14 : 12),
           ),
           child: showMobilePlayingBorder
@@ -233,21 +235,42 @@ class TrackListView extends StatelessWidget {
                           : colorScheme.primaryContainer,
                       borderRadius: BorderRadius.circular(8),
                       clipBehavior: Clip.antiAlias,
-                      child: _buildTrackListTile(context, audioProvider, track,
-                          trackIndex, isPlaying, scaleFactor, false),
+                      child: _buildTrackListTile(
+                        context,
+                        audioProvider,
+                        track,
+                        trackIndex,
+                        isPlaying,
+                        scaleFactor,
+                        false,
+                      ),
                     ),
                   ),
                 )
               : Padding(
                   padding: EdgeInsets.all(isFruit ? 6.0 : 8.0),
-                  child: _buildTrackListTile(context, audioProvider, track,
-                      trackIndex, isPlaying, scaleFactor, false),
+                  child: _buildTrackListTile(
+                    context,
+                    audioProvider,
+                    track,
+                    trackIndex,
+                    isPlaying,
+                    scaleFactor,
+                    false,
+                  ),
                 ),
         );
 
         if (isTv) {
-          Widget content = _buildTrackListTile(context, audioProvider, track,
-              trackIndex, isPlaying, scaleFactor, true);
+          Widget content = _buildTrackListTile(
+            context,
+            audioProvider,
+            track,
+            trackIndex,
+            isPlaying,
+            scaleFactor,
+            true,
+          );
 
           trackItem = TvFocusWrapper(
             focusNode: trackFocusNodes?[listIndex],
@@ -312,29 +335,40 @@ class TrackListView extends StatelessWidget {
   }
 
   TextStyle _durationTextStyle(
-      TextTheme textTheme, ColorScheme colorScheme, double scaleFactor,
-      [bool isFruit = false, bool isDarkMode = true]) {
+    TextTheme textTheme,
+    ColorScheme colorScheme,
+    double scaleFactor, [
+    bool isFruit = false,
+    bool isDarkMode = true,
+  ]) {
     final Color textColor = isFruit
         ? (isDarkMode
-            ? Colors.white.withValues(alpha: 0.6)
-            : Colors.black.withValues(alpha: 0.6))
+              ? Colors.white.withValues(alpha: 0.6)
+              : Colors.black.withValues(alpha: 0.6))
         : colorScheme.onSurfaceVariant;
 
     return (textTheme.bodyMedium ?? const TextStyle())
         .apply(fontSizeFactor: scaleFactor)
         .copyWith(
-      fontFamily: null, // clear inherited app font
-      package: null,
-      color: textColor,
-      fontWeight: isFruit ? FontWeight.w500 : FontWeight.w500,
-      letterSpacing: isFruit ? 0.3 : null,
-      fontFeatures: const [FontFeature.tabularFigures()],
-    ).merge(const TextStyle(fontFamily: 'Roboto'));
+          fontFamily: null, // clear inherited app font
+          package: null,
+          color: textColor,
+          fontWeight: isFruit ? FontWeight.w500 : FontWeight.w500,
+          letterSpacing: isFruit ? 0.3 : null,
+          fontFeatures: const [FontFeature.tabularFigures()],
+        )
+        .merge(const TextStyle(fontFamily: 'Roboto'));
   }
 
-  Widget _buildTrackListTile(BuildContext context, AudioProvider audioProvider,
-      Track track, int trackIndex, bool isPlaying, double scaleFactor,
-      [bool isTvFocus = false]) {
+  Widget _buildTrackListTile(
+    BuildContext context,
+    AudioProvider audioProvider,
+    Track track,
+    int trackIndex,
+    bool isPlaying,
+    double scaleFactor, [
+    bool isTvFocus = false,
+  ]) {
     final settingsProvider = context.watch<SettingsProvider>();
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
@@ -346,12 +380,14 @@ class TrackListView extends StatelessWidget {
         textTheme.bodyLarge ?? const TextStyle(fontSize: 16.0);
 
     final double titleFontSize = AppTypography.responsiveFontSize(
-        context, context.read<DeviceService>().isTv ? 14.0 : 16.0);
+      context,
+      context.read<DeviceService>().isTv ? 14.0 : 16.0,
+    );
 
     final Color titleColor = isFruit
         ? (isDarkMode
-            ? Colors.white.withValues(alpha: isPlaying ? 1.0 : 0.9)
-            : Colors.black.withValues(alpha: isPlaying ? 1.0 : 0.9))
+              ? Colors.white.withValues(alpha: isPlaying ? 1.0 : 0.9)
+              : Colors.black.withValues(alpha: isPlaying ? 1.0 : 0.9))
         : (isPlaying ? colorScheme.primary : colorScheme.onSurface);
 
     final titleStyle = baseTitleStyle.copyWith(
@@ -380,10 +416,7 @@ class TrackListView extends StatelessWidget {
                 height: isFruit ? 32 : 24,
                 child: Center(
                   child: isFruit
-                      ? FruitActivityIndicator(
-                          radius: 10,
-                          color: titleColor,
-                        )
+                      ? FruitActivityIndicator(radius: 10, color: titleColor)
                       : SizedBox(
                           width: 16,
                           height: 16,
@@ -457,7 +490,12 @@ class TrackListView extends StatelessWidget {
     }
 
     final durationStyle = _durationTextStyle(
-        textTheme, colorScheme, scaleFactor, isFruit, isDarkMode);
+      textTheme,
+      colorScheme,
+      scaleFactor,
+      isFruit,
+      isDarkMode,
+    );
 
     final Widget listTile = isFruit
         ? _FruitTrackTile(
@@ -469,20 +507,20 @@ class TrackListView extends StatelessWidget {
             trailing: settingsProvider.hideTrackDuration
                 ? null
                 : (isPlaying && isTv
-                    ? StreamBuilder<Duration>(
-                        stream: audioProvider.positionStream,
-                        builder: (context, snapshot) {
-                          final position = snapshot.data ?? Duration.zero;
-                          return Text(
-                            '${formatDuration(position)} / ${formatDuration(Duration(seconds: track.duration))}',
-                            style: durationStyle,
-                          );
-                        },
-                      )
-                    : Text(
-                        formatDuration(Duration(seconds: track.duration)),
-                        style: durationStyle,
-                      )),
+                      ? StreamBuilder<Duration>(
+                          stream: audioProvider.positionStream,
+                          builder: (context, snapshot) {
+                            final position = snapshot.data ?? Duration.zero;
+                            return Text(
+                              '${formatDuration(position)} / ${formatDuration(Duration(seconds: track.duration))}',
+                              style: durationStyle,
+                            );
+                          },
+                        )
+                      : Text(
+                          formatDuration(Duration(seconds: track.duration)),
+                          style: durationStyle,
+                        )),
             isPlaying: isPlaying,
             onTap: isTv
                 ? null
@@ -509,7 +547,8 @@ class TrackListView extends StatelessWidget {
                 ? const EdgeInsets.symmetric(horizontal: 12, vertical: 0)
                 : const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
             title: SizedBox(
-              height: titleStyle.fontSize! *
+              height:
+                  titleStyle.fontSize! *
                   (settingsProvider.appFont == 'rock_salt' ? 2.0 : 1.6),
               child: ConditionalMarquee(
                 text: settingsProvider.showTrackNumbers
@@ -524,20 +563,20 @@ class TrackListView extends StatelessWidget {
             trailing: settingsProvider.hideTrackDuration
                 ? null
                 : (isPlaying && isTv
-                    ? StreamBuilder<Duration>(
-                        stream: audioProvider.positionStream,
-                        builder: (context, snapshot) {
-                          final position = snapshot.data ?? Duration.zero;
-                          return Text(
-                            '${formatDuration(position)} / ${formatDuration(Duration(seconds: track.duration))}',
-                            style: durationStyle,
-                          );
-                        },
-                      )
-                    : Text(
-                        formatDuration(Duration(seconds: track.duration)),
-                        style: durationStyle,
-                      )),
+                      ? StreamBuilder<Duration>(
+                          stream: audioProvider.positionStream,
+                          builder: (context, snapshot) {
+                            final position = snapshot.data ?? Duration.zero;
+                            return Text(
+                              '${formatDuration(position)} / ${formatDuration(Duration(seconds: track.duration))}',
+                              style: durationStyle,
+                            );
+                          },
+                        )
+                      : Text(
+                          formatDuration(Duration(seconds: track.duration)),
+                          style: durationStyle,
+                        )),
             onTap: isTv
                 ? null
                 : () {
@@ -581,13 +620,16 @@ class TrackListView extends StatelessWidget {
                         return Stack(
                           children: [
                             Container(
-                                color: colorScheme.onSurface
-                                    .withValues(alpha: 0.1)),
+                              color: colorScheme.onSurface.withValues(
+                                alpha: 0.1,
+                              ),
+                            ),
                             FractionallySizedBox(
                               widthFactor: bufferedProgress.clamp(0.0, 1.0),
                               child: Container(
-                                color: colorScheme.tertiary
-                                    .withValues(alpha: 0.25),
+                                color: colorScheme.tertiary.withValues(
+                                  alpha: 0.25,
+                                ),
                               ),
                             ),
                             FractionallySizedBox(
@@ -621,9 +663,13 @@ class TrackListView extends StatelessWidget {
   }
 
   void _handleLongPress(
-      BuildContext context, AudioProvider audioProvider, Track track) {
+    BuildContext context,
+    AudioProvider audioProvider,
+    Track track,
+  ) {
     final playerState = audioProvider.audioPlayer.processingState;
-    final isStuck = playerState == ProcessingState.loading ||
+    final isStuck =
+        playerState == ProcessingState.loading ||
         playerState == ProcessingState.buffering;
 
     final isTv = context.read<DeviceService>().isTv;
@@ -631,7 +677,8 @@ class TrackListView extends StatelessWidget {
         context.read<ThemeProvider>().themeStyle == ThemeStyle.fruit;
 
     final currentTrack = audioProvider.currentTrack;
-    final isThisTrack = currentTrack != null &&
+    final isThisTrack =
+        currentTrack != null &&
         currentTrack.title == track.title &&
         currentTrack.trackNumber == track.trackNumber;
 
@@ -673,7 +720,8 @@ class TrackListView extends StatelessWidget {
                 const SizedBox(height: 16),
                 ListTile(
                   leading: Icon(
-                      isFruit ? LucideIcons.refreshCw : Icons.refresh_rounded),
+                    isFruit ? LucideIcons.refreshCw : Icons.refresh_rounded,
+                  ),
                   title: const Text('Reload Current Show'),
                   onTap: () {
                     Navigator.pop(context);
@@ -687,8 +735,10 @@ class TrackListView extends StatelessWidget {
                         : Icons.stop_circle_rounded,
                     color: colorScheme.error,
                   ),
-                  title: Text('Emergency Reset',
-                      style: TextStyle(color: colorScheme.error)),
+                  title: Text(
+                    'Emergency Reset',
+                    style: TextStyle(color: colorScheme.error),
+                  ),
                   subtitle: const Text('Clears playlist and stops all audio'),
                   onTap: () {
                     Navigator.pop(context);
@@ -746,8 +796,9 @@ class _FruitTrackTileState extends State<_FruitTrackTile> {
     return GestureDetector(
       onTapDown: widget.isTv ? null : (_) => setState(() => _isPressed = true),
       onTapUp: widget.isTv ? null : (_) => setState(() => _isPressed = false),
-      onTapCancel:
-          widget.isTv ? null : () => setState(() => _isPressed = false),
+      onTapCancel: widget.isTv
+          ? null
+          : () => setState(() => _isPressed = false),
       onTap: widget.onTap,
       onLongPress: widget.onLongPress,
       child: AnimatedOpacity(
@@ -769,7 +820,8 @@ class _FruitTrackTileState extends State<_FruitTrackTile> {
               ],
               Expanded(
                 child: SizedBox(
-                  height: widget.titleStyle.fontSize! *
+                  height:
+                      widget.titleStyle.fontSize! *
                       (widget.settingsProvider.appFont == 'rock_salt'
                           ? 2.0
                           : 1.6),

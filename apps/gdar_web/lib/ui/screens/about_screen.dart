@@ -33,8 +33,10 @@ class AboutScreen extends StatelessWidget {
           audioProvider.currentSource != null) {
         seed = audioProvider.currentSource!.id;
       }
-      backgroundColor = ColorGenerator.getColor(seed,
-          brightness: Theme.of(context).brightness);
+      backgroundColor = ColorGenerator.getColor(
+        seed,
+        brightness: Theme.of(context).brightness,
+      );
     }
 
     final baseTheme = Theme.of(context);
@@ -60,12 +62,8 @@ class AboutScreen extends StatelessWidget {
               : const TextScaler.linear(1.0),
         ),
         child: Scaffold(
-          appBar: AppBar(
-            title: const Text('About Shakedown'),
-          ),
-          body: const SingleChildScrollView(
-            child: AboutBody(),
-          ),
+          appBar: AppBar(title: const Text('About Shakedown')),
+          body: const SingleChildScrollView(child: AboutBody()),
         ),
       ),
     );
@@ -104,8 +102,9 @@ class AboutBody extends StatelessWidget {
           Text(
             'Shakedown',
             style: textTheme.displayMedium?.copyWith(
-              fontFamily:
-                  context.read<DeviceService>().isTv ? 'RockSalt' : null,
+              fontFamily: context.read<DeviceService>().isTv
+                  ? 'RockSalt'
+                  : null,
               fontWeight: FontWeight.bold,
               color: colorScheme.primary,
             ),
@@ -177,11 +176,17 @@ class AboutBody extends StatelessWidget {
     }
   }
 
-  Widget _buildClickableLink(BuildContext context, String text, String url,
-      {IconData? icon, Widget? customIcon}) {
+  Widget _buildClickableLink(
+    BuildContext context,
+    String text,
+    String url, {
+    IconData? icon,
+    Widget? customIcon,
+  }) {
     final colorScheme = Theme.of(context).colorScheme;
     return TvListTile(
-      leading: customIcon ??
+      leading:
+          customIcon ??
           (icon != null ? Icon(icon, color: colorScheme.primary) : null),
       title: Text(
         text,

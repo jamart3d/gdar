@@ -193,10 +193,10 @@ class GaplessPlayer {
     double? crossfadeDurationSeconds,
     AudioEngineMode? audioEngineMode,
     String? hybridHandoffMode,
-  })  : _useJsEngine = useWebGaplessEngine ?? (_strategy != 'standard'),
-        _fallbackPlayer = (useWebGaplessEngine ?? (_strategy != 'standard'))
-            ? null
-            : (audioPlayer ?? AudioPlayer()) {
+  }) : _useJsEngine = useWebGaplessEngine ?? (_strategy != 'standard'),
+       _fallbackPlayer = (useWebGaplessEngine ?? (_strategy != 'standard'))
+           ? null
+           : (audioPlayer ?? AudioPlayer()) {
     logger.i('GaplessPlayer: Detected Engine: $engineName');
     logger.i('GaplessPlayer: Selection Reason: $selectionReason');
 
@@ -213,7 +213,8 @@ class GaplessPlayer {
     final engine = _engine;
     if (engine == null) {
       logger.e(
-          'FATAL: Gapless Audio Engine (window._gdarAudio) not found. Web Audio initialization aborted.');
+        'FATAL: Gapless Audio Engine (window._gdarAudio) not found. Web Audio initialization aborted.',
+      );
       return;
     }
 
@@ -337,8 +338,9 @@ class GaplessPlayer {
       // Explicitly notify on duration or index changes to keep sliding panel in sync
       if (wasIndex != _currentIndex || wasDuration != _durationSec) {
         _indexController.add(_currentIndex);
-        _durationController
-            .add(Duration(milliseconds: (_durationSec * 1000).round()));
+        _durationController.add(
+          Duration(milliseconds: (_durationSec * 1000).round()),
+        );
       }
 
       _playing = s.playing ?? false;
@@ -366,8 +368,9 @@ class GaplessPlayer {
     final posMs = (_positionSec * 1000).round();
     _positionController.add(Duration(milliseconds: posMs));
 
-    _bufferedPositionController
-        .add(Duration(milliseconds: (_currentTrackBufferedSec * 1000).round()));
+    _bufferedPositionController.add(
+      Duration(milliseconds: (_currentTrackBufferedSec * 1000).round()),
+    );
 
     if (_durationSec != wasDuration) {
       final durMs = (_durationSec * 1000).round();
@@ -375,12 +378,14 @@ class GaplessPlayer {
     }
 
     final ntbMs = (_nextTrackBufferedSec * 1000).round();
-    _nextTrackBufferedController
-        .add(ntbMs > 0 ? Duration(milliseconds: ntbMs) : null);
+    _nextTrackBufferedController.add(
+      ntbMs > 0 ? Duration(milliseconds: ntbMs) : null,
+    );
 
     final nttMs = (_nextTrackTotalSec * 1000).round();
-    _nextTrackTotalController
-        .add(nttMs > 0 ? Duration(milliseconds: nttMs) : null);
+    _nextTrackTotalController.add(
+      nttMs > 0 ? Duration(milliseconds: nttMs) : null,
+    );
 
     final currentContext = s.contextState;
     final contextChanged = _lastContextState != currentContext;
@@ -399,14 +404,16 @@ class GaplessPlayer {
     // Emit a synthetic PlaybackEvent so widgets listening to
     // playbackEventStream (progress bars, track metadata, etc.)
     // receive updates on the Web platform.
-    _playbackEventController.add(PlaybackEvent(
-      processingState: _processingState,
-      updatePosition: Duration(milliseconds: (_positionSec * 1000).round()),
-      duration: _durationSec > 0
-          ? Duration(milliseconds: (_durationSec * 1000).round())
-          : null,
-      currentIndex: _currentIndex,
-    ));
+    _playbackEventController.add(
+      PlaybackEvent(
+        processingState: _processingState,
+        updatePosition: Duration(milliseconds: (_positionSec * 1000).round()),
+        duration: _durationSec > 0
+            ? Duration(milliseconds: (_durationSec * 1000).round())
+            : null,
+        currentIndex: _currentIndex,
+      ),
+    );
   }
 
   void _emitPlayerState() {
@@ -416,13 +423,15 @@ class GaplessPlayer {
   void _emitSequenceState() {
     if (_sequence.isEmpty) return;
     final idx = (_currentIndex ?? 0).clamp(0, _sequence.length - 1);
-    _sequenceStateController.add(SequenceState(
-      sequence: _sequence,
-      currentIndex: idx,
-      shuffleIndices: List.generate(_sequence.length, (i) => i),
-      shuffleModeEnabled: false,
-      loopMode: LoopMode.off,
-    ));
+    _sequenceStateController.add(
+      SequenceState(
+        sequence: _sequence,
+        currentIndex: idx,
+        shuffleIndices: List.generate(_sequence.length, (i) => i),
+        shuffleModeEnabled: false,
+        loopMode: LoopMode.off,
+      ),
+    );
   }
 
   // ─── Getters ──────────────────────────────────────────────────────────────
@@ -439,20 +448,20 @@ class GaplessPlayer {
 
   Duration? get duration => _useJsEngine
       ? (_durationSec > 0
-          ? Duration(milliseconds: (_durationSec * 1000).round())
-          : null)
+            ? Duration(milliseconds: (_durationSec * 1000).round())
+            : null)
       : _fallbackPlayer!.duration;
 
   Duration? get nextTrackBuffered => _useJsEngine
       ? (_nextTrackBufferedSec > 0
-          ? Duration(milliseconds: (_nextTrackBufferedSec * 1000).round())
-          : null)
+            ? Duration(milliseconds: (_nextTrackBufferedSec * 1000).round())
+            : null)
       : null;
 
   Duration? get nextTrackTotal => _useJsEngine
       ? (_nextTrackTotalSec > 0
-          ? Duration(milliseconds: (_nextTrackTotalSec * 1000).round())
-          : null)
+            ? Duration(milliseconds: (_nextTrackTotalSec * 1000).round())
+            : null)
       : null;
 
   int? get currentIndex =>

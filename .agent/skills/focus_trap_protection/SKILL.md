@@ -15,9 +15,9 @@ TV UIs are prone to "focus traps" (where the user cannot navigate away from a se
 4. **Keyed Nodes**: Lists of focusable items should use `ValueKey` to prevent focus "ghosting" when the list reorders or filters.
 
 ### Helper Script: `scripts/audit_focus_disposal.ps1`
-Use this to find potentially leaked focus nodes:
+Use this to find potentially leaked focus nodes across core and TV apps:
 ```powershell
-Get-ChildItem -Path "lib/ui/widgets/tv/*.dart" -Recurse | Select-String -Pattern "FocusNode" -AllMatches | ForEach-Object {
+Get-ChildItem -Path "packages/shakedown_core/lib/ui/widgets/tv/*.dart", "apps/gdar_tv/lib/**/*.dart" -Recurse | Select-String -Pattern "FocusNode" -AllMatches | ForEach-Object {
     $file = $_.Path
     $content = Get-Content $file -Raw
     if ($content -match "FocusNode" -and $content -notmatch "\.dispose\(\)") {

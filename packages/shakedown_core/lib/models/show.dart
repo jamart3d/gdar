@@ -50,8 +50,10 @@ class Show extends HiveObject {
     final String? showLocation = json['l']; // Extract show-level location
 
     final List<Source> sources = (json['sources'] as List<dynamic>? ?? [])
-        .map((sourceJson) =>
-            Source.fromJson(sourceJson, src: src, showLocation: showLocation))
+        .map(
+          (sourceJson) =>
+              Source.fromJson(sourceJson, src: src, showLocation: showLocation),
+        )
         .toList();
 
     final String showName = json['name'] ?? 'Unknown Show';

@@ -7,10 +7,7 @@ import 'package:shakedown_core/utils/web_runtime.dart';
 class RainbowColorPicker extends StatelessWidget {
   final double scaleFactor;
 
-  const RainbowColorPicker({
-    super.key,
-    required this.scaleFactor,
-  });
+  const RainbowColorPicker({super.key, required this.scaleFactor});
 
   static const List<Color> rainbowColors = [
     Colors.red,
@@ -47,9 +44,9 @@ class RainbowColorPicker extends StatelessWidget {
           child: Text(
             'Theme Color',
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontSize: 16 * scaleFactor,
-                  fontWeight: FontWeight.w500,
-                ),
+              fontSize: 16 * scaleFactor,
+              fontWeight: FontWeight.w500,
+            ),
           ),
         ),
         SizedBox(
@@ -61,22 +58,12 @@ class RainbowColorPicker extends StatelessWidget {
             itemBuilder: (context, index) {
               if (index == 0) {
                 final isSelected = currentColor == null;
-                return _buildColorItem(
-                  context,
-                  null,
-                  isSelected,
-                  'DEF',
-                );
+                return _buildColorItem(context, null, isSelected, 'DEF');
               }
 
               final color = rainbowColors[index - 1];
               final isSelected = currentColor?.toARGB32() == color.toARGB32();
-              return _buildColorItem(
-                context,
-                color,
-                isSelected,
-                null,
-              );
+              return _buildColorItem(context, color, isSelected, null);
             },
           ),
         ),
@@ -86,7 +73,11 @@ class RainbowColorPicker extends StatelessWidget {
   }
 
   Widget _buildColorItem(
-      BuildContext context, Color? color, bool isSelected, String? label) {
+    BuildContext context,
+    Color? color,
+    bool isSelected,
+    String? label,
+  ) {
     final colorScheme = Theme.of(context).colorScheme;
 
     return Padding(
@@ -114,7 +105,7 @@ class RainbowColorPicker extends StatelessWidget {
                       color: colorScheme.primary.withValues(alpha: 0.4),
                       blurRadius: 10,
                       spreadRadius: 2,
-                    )
+                    ),
                   ]
                 : null,
           ),
@@ -132,17 +123,18 @@ class RainbowColorPicker extends StatelessWidget {
                   ),
                 )
               : isSelected
-                  ? Center(
-                      child: Icon(
-                        Icons.check,
-                        color: ThemeData.estimateBrightnessForColor(color!) ==
-                                Brightness.dark
-                            ? Colors.white
-                            : Colors.black,
-                        size: 24 * scaleFactor,
-                      ),
-                    )
-                  : null,
+              ? Center(
+                  child: Icon(
+                    Icons.check,
+                    color:
+                        ThemeData.estimateBrightnessForColor(color!) ==
+                            Brightness.dark
+                        ? Colors.white
+                        : Colors.black,
+                    size: 24 * scaleFactor,
+                  ),
+                )
+              : null,
         ),
       ),
     );

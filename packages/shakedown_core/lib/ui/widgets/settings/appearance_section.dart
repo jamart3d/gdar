@@ -80,54 +80,60 @@ class _AppearanceSectionState extends State<AppearanceSection> {
                 dense: true,
                 visualDensity: VisualDensity.compact,
                 title: FittedBox(
-                    fit: BoxFit.scaleDown,
-                    alignment: Alignment.centerLeft,
-                    child: Text('Dark',
-                        style: Theme.of(context)
-                            .textTheme
-                            .titleMedium
-                            ?.copyWith(fontSize: 16 * widget.scaleFactor))),
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    'Dark',
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontSize: 16 * widget.scaleFactor,
+                    ),
+                  ),
+                ),
                 value: themeProvider.isDarkMode,
                 onChanged: (value) {
                   AppHaptics.lightImpact(context.read<DeviceService>());
-                  context
-                      .read<ThemeProvider>()
-                      .setThemeMode(value ? ThemeMode.dark : ThemeMode.light);
+                  context.read<ThemeProvider>().setThemeMode(
+                    value ? ThemeMode.dark : ThemeMode.light,
+                  );
                 },
                 secondary: Icon(
                   themeProvider.themeStyle == ThemeStyle.fruit
                       ? (themeProvider.isDarkMode
-                          ? LucideIcons.moon
-                          : LucideIcons.sun)
+                            ? LucideIcons.moon
+                            : LucideIcons.sun)
                       : (themeProvider.isDarkMode
-                          ? Icons.dark_mode_rounded
-                          : Icons.light_mode_rounded),
+                            ? Icons.dark_mode_rounded
+                            : Icons.light_mode_rounded),
                 ),
               )
             : Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16.0,
+                  vertical: 8.0,
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       'Theme',
-                      style: Theme.of(context)
-                          .textTheme
-                          .bodyMedium
-                          ?.copyWith(fontSize: 16.0 * widget.scaleFactor),
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        fontSize: 16.0 * widget.scaleFactor,
+                      ),
                     ),
                     const SizedBox(height: 8),
                     LayoutBuilder(
                       builder: (context, constraints) {
                         return TvFocusWrapper(
-                          borderRadius:
-                              BorderRadius.circular(isFruit ? 28 : 24),
+                          borderRadius: BorderRadius.circular(
+                            isFruit ? 28 : 24,
+                          ),
                           child: SingleChildScrollView(
-                            key:
-                                const PageStorageKey('appearance_theme_scroll'),
-                            controller:
-                                ScrollController(keepScrollOffset: false),
+                            key: const PageStorageKey(
+                              'appearance_theme_scroll',
+                            ),
+                            controller: ScrollController(
+                              keepScrollOffset: false,
+                            ),
                             scrollDirection: Axis.horizontal,
                             child: themeProvider.themeStyle == ThemeStyle.fruit
                                 ? FruitSegmentedControl<ThemeMode>(
@@ -136,17 +142,19 @@ class _AppearanceSectionState extends State<AppearanceSection> {
                                         themeProvider.selectedThemeMode,
                                     onSelectionChanged: (newMode) {
                                       AppHaptics.lightImpact(
-                                          context.read<DeviceService>());
+                                        context.read<DeviceService>(),
+                                      );
                                       context
                                           .read<ThemeProvider>()
                                           .setThemeMode(newMode);
-                                      final sp =
-                                          context.read<SettingsProvider>();
-                                      final isLightMode = newMode ==
-                                              ThemeMode.light ||
+                                      final sp = context
+                                          .read<SettingsProvider>();
+                                      final isLightMode =
+                                          newMode == ThemeMode.light ||
                                           (newMode == ThemeMode.system &&
                                               MediaQuery.platformBrightnessOf(
-                                                      context) ==
+                                                    context,
+                                                  ) ==
                                                   Brightness.light);
                                       if (isLightMode && sp.useTrueBlack) {
                                         sp.toggleUseTrueBlack();
@@ -172,44 +180,51 @@ class _AppearanceSectionState extends State<AppearanceSection> {
                                     segments: [
                                       ButtonSegment(
                                         value: ThemeMode.system,
-                                        icon: Icon(themeProvider.themeStyle ==
-                                                ThemeStyle.fruit
-                                            ? LucideIcons.monitor
-                                            : Icons.brightness_auto_rounded),
+                                        icon: Icon(
+                                          themeProvider.themeStyle ==
+                                                  ThemeStyle.fruit
+                                              ? LucideIcons.monitor
+                                              : Icons.brightness_auto_rounded,
+                                        ),
                                       ),
                                       ButtonSegment(
                                         value: ThemeMode.light,
-                                        icon: Icon(themeProvider.themeStyle ==
-                                                ThemeStyle.fruit
-                                            ? LucideIcons.sun
-                                            : Icons.light_mode_rounded),
+                                        icon: Icon(
+                                          themeProvider.themeStyle ==
+                                                  ThemeStyle.fruit
+                                              ? LucideIcons.sun
+                                              : Icons.light_mode_rounded,
+                                        ),
                                       ),
                                       ButtonSegment(
                                         value: ThemeMode.dark,
-                                        icon: Icon(themeProvider.themeStyle ==
-                                                ThemeStyle.fruit
-                                            ? LucideIcons.moon
-                                            : Icons.dark_mode_rounded),
+                                        icon: Icon(
+                                          themeProvider.themeStyle ==
+                                                  ThemeStyle.fruit
+                                              ? LucideIcons.moon
+                                              : Icons.dark_mode_rounded,
+                                        ),
                                       ),
                                     ],
                                     selected: {themeProvider.selectedThemeMode},
-                                    onSelectionChanged:
-                                        (Set<ThemeMode> newSelection) {
+                                    onSelectionChanged: (Set<ThemeMode> newSelection) {
                                       AppHaptics.lightImpact(
-                                          context.read<DeviceService>());
+                                        context.read<DeviceService>(),
+                                      );
                                       final newMode = newSelection.first;
                                       context
                                           .read<ThemeProvider>()
                                           .setThemeMode(newMode);
                                       // Auto-disable True Black in light mode
                                       // so Glow Border toggle becomes available.
-                                      final sp =
-                                          context.read<SettingsProvider>();
-                                      final isLightMode = newMode ==
-                                              ThemeMode.light ||
+                                      final sp = context
+                                          .read<SettingsProvider>();
+                                      final isLightMode =
+                                          newMode == ThemeMode.light ||
                                           (newMode == ThemeMode.system &&
                                               MediaQuery.platformBrightnessOf(
-                                                      context) ==
+                                                    context,
+                                                  ) ==
                                                   Brightness.light);
                                       if (isLightMode && sp.useTrueBlack) {
                                         sp.toggleUseTrueBlack();
@@ -219,8 +234,10 @@ class _AppearanceSectionState extends State<AppearanceSection> {
                                     style: ButtonStyle(
                                       shape: WidgetStateProperty.all(
                                         RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(
-                                                isFruit ? 28 : 24)),
+                                          borderRadius: BorderRadius.circular(
+                                            isFruit ? 28 : 24,
+                                          ),
+                                        ),
                                       ),
                                     ),
                                   ),
@@ -233,17 +250,18 @@ class _AppearanceSectionState extends State<AppearanceSection> {
               ),
         if (themeProvider.isFruitAllowed) ...[
           Padding(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+            padding: const EdgeInsets.symmetric(
+              horizontal: 16.0,
+              vertical: 8.0,
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   'Style',
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodyMedium
-                      ?.copyWith(fontSize: 16.0 * widget.scaleFactor),
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    fontSize: 16.0 * widget.scaleFactor,
+                  ),
                 ),
                 const SizedBox(height: 8),
                 LayoutBuilder(
@@ -262,10 +280,11 @@ class _AppearanceSectionState extends State<AppearanceSection> {
                                 selectedValue: themeProvider.themeStyle,
                                 onSelectionChanged: (style) {
                                   AppHaptics.lightImpact(
-                                      context.read<DeviceService>());
-                                  context
-                                      .read<ThemeProvider>()
-                                      .setThemeStyle(style);
+                                    context.read<DeviceService>(),
+                                  );
+                                  context.read<ThemeProvider>().setThemeStyle(
+                                    style,
+                                  );
 
                                   // Theme-specific constraints
                                   final sp = context.read<SettingsProvider>();
@@ -295,13 +314,15 @@ class _AppearanceSectionState extends State<AppearanceSection> {
                                   IconData icon;
                                   switch (style) {
                                     case ThemeStyle.android:
-                                      icon = themeProvider.themeStyle ==
+                                      icon =
+                                          themeProvider.themeStyle ==
                                               ThemeStyle.fruit
                                           ? LucideIcons.bot
                                           : Icons.smart_toy_rounded;
                                       break;
                                     case ThemeStyle.fruit:
-                                      icon = themeProvider.themeStyle ==
+                                      icon =
+                                          themeProvider.themeStyle ==
                                               ThemeStyle.fruit
                                           ? LucideIcons.apple
                                           : Icons.apple_rounded;
@@ -314,28 +335,32 @@ class _AppearanceSectionState extends State<AppearanceSection> {
                                 segments: [
                                   ButtonSegment(
                                     value: ThemeStyle.android,
-                                    icon: Icon(themeProvider.themeStyle ==
-                                            ThemeStyle.fruit
-                                        ? LucideIcons.bot
-                                        : Icons.smart_toy_rounded),
+                                    icon: Icon(
+                                      themeProvider.themeStyle ==
+                                              ThemeStyle.fruit
+                                          ? LucideIcons.bot
+                                          : Icons.smart_toy_rounded,
+                                    ),
                                   ),
                                   ButtonSegment(
                                     value: ThemeStyle.fruit,
-                                    icon: Icon(themeProvider.themeStyle ==
-                                            ThemeStyle.fruit
-                                        ? LucideIcons.apple
-                                        : Icons.apple_rounded),
+                                    icon: Icon(
+                                      themeProvider.themeStyle ==
+                                              ThemeStyle.fruit
+                                          ? LucideIcons.apple
+                                          : Icons.apple_rounded,
+                                    ),
                                   ),
                                 ],
                                 selected: {themeProvider.themeStyle},
-                                onSelectionChanged:
-                                    (Set<ThemeStyle> newSelection) {
+                                onSelectionChanged: (Set<ThemeStyle> newSelection) {
                                   final style = newSelection.first;
                                   AppHaptics.lightImpact(
-                                      context.read<DeviceService>());
-                                  context
-                                      .read<ThemeProvider>()
-                                      .setThemeStyle(style);
+                                    context.read<DeviceService>(),
+                                  );
+                                  context.read<ThemeProvider>().setThemeStyle(
+                                    style,
+                                  );
 
                                   // Theme-specific constraints
                                   final sp = context.read<SettingsProvider>();
@@ -368,8 +393,10 @@ class _AppearanceSectionState extends State<AppearanceSection> {
                                 style: ButtonStyle(
                                   shape: WidgetStateProperty.all(
                                     RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(
-                                            isFruit ? 28 : 24)),
+                                      borderRadius: BorderRadius.circular(
+                                        isFruit ? 28 : 24,
+                                      ),
+                                    ),
                                   ),
                                 ),
                               ),
@@ -401,17 +428,18 @@ class _AppearanceSectionState extends State<AppearanceSection> {
                     children: [
                       Padding(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 16.0, vertical: 8.0),
+                          horizontal: 16.0,
+                          vertical: 8.0,
+                        ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
                               'Accent Color',
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .bodyMedium
+                              style: Theme.of(context).textTheme.bodyMedium
                                   ?.copyWith(
-                                      fontSize: 16.0 * widget.scaleFactor),
+                                    fontSize: 16.0 * widget.scaleFactor,
+                                  ),
                             ),
                             const SizedBox(height: 8),
                             FruitSegmentedControl<FruitColorOption>(
@@ -419,7 +447,8 @@ class _AppearanceSectionState extends State<AppearanceSection> {
                               selectedValue: themeProvider.fruitColorOption,
                               onSelectionChanged: (option) {
                                 AppHaptics.lightImpact(
-                                    context.read<DeviceService>());
+                                  context.read<DeviceService>(),
+                                );
                                 themeProvider.setFruitColorOption(option);
                               },
                               labelBuilder: (option) {
@@ -445,24 +474,23 @@ class _AppearanceSectionState extends State<AppearanceSection> {
                         dense: true,
                         visualDensity: VisualDensity.compact,
                         title: FittedBox(
-                            fit: BoxFit.scaleDown,
-                            alignment: Alignment.centerLeft,
-                            child: Text('Dense Show List',
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .titleMedium
-                                    ?.copyWith(
-                                        fontSize: 16 * widget.scaleFactor))),
+                          fit: BoxFit.scaleDown,
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            'Dense Show List',
+                            style: Theme.of(context).textTheme.titleMedium
+                                ?.copyWith(fontSize: 16 * widget.scaleFactor),
+                          ),
+                        ),
                         subtitle: FittedBox(
-                            fit: BoxFit.scaleDown,
-                            alignment: Alignment.centerLeft,
-                            child: Text(
-                                'Shows more items on screen with tighter spacing',
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .bodySmall
-                                    ?.copyWith(
-                                        fontSize: 12 * widget.scaleFactor))),
+                          fit: BoxFit.scaleDown,
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            'Shows more items on screen with tighter spacing',
+                            style: Theme.of(context).textTheme.bodySmall
+                                ?.copyWith(fontSize: 12 * widget.scaleFactor),
+                          ),
+                        ),
                         value: settingsProvider.fruitDenseList,
                         onChanged: (value) {
                           AppHaptics.lightImpact(context.read<DeviceService>());
@@ -480,45 +508,52 @@ class _AppearanceSectionState extends State<AppearanceSection> {
                           dense: true,
                           visualDensity: VisualDensity.compact,
                           title: FittedBox(
-                              fit: BoxFit.scaleDown,
-                              alignment: Alignment.centerLeft,
-                              child: Text('Enable Liquid Glass',
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .titleMedium
-                                      ?.copyWith(
-                                          fontSize: 16 * widget.scaleFactor,
-                                          color: isGated
-                                              ? colorScheme.onSurface
-                                                  .withValues(alpha: 0.5)
-                                              : null))),
+                            fit: BoxFit.scaleDown,
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                              'Enable Liquid Glass',
+                              style: Theme.of(context).textTheme.titleMedium
+                                  ?.copyWith(
+                                    fontSize: 16 * widget.scaleFactor,
+                                    color: isGated
+                                        ? colorScheme.onSurface.withValues(
+                                            alpha: 0.5,
+                                          )
+                                        : null,
+                                  ),
+                            ),
+                          ),
                           subtitle: isGated
-                              ? Text(reason,
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .bodySmall
+                              ? Text(
+                                  reason,
+                                  style: Theme.of(context).textTheme.bodySmall
                                       ?.copyWith(
-                                          fontSize: 12 * widget.scaleFactor,
-                                          color: colorScheme.secondary
-                                              .withValues(alpha: 0.7)))
+                                        fontSize: 12 * widget.scaleFactor,
+                                        color: colorScheme.secondary.withValues(
+                                          alpha: 0.7,
+                                        ),
+                                      ),
+                                )
                               : FittedBox(
                                   fit: BoxFit.scaleDown,
                                   alignment: Alignment.centerLeft,
                                   child: Text(
-                                      'Apply translucent blur over background elements',
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .bodySmall
-                                          ?.copyWith(
-                                              fontSize:
-                                                  12 * widget.scaleFactor))),
-                          value: !isGated &&
+                                    'Apply translucent blur over background elements',
+                                    style: Theme.of(context).textTheme.bodySmall
+                                        ?.copyWith(
+                                          fontSize: 12 * widget.scaleFactor,
+                                        ),
+                                  ),
+                                ),
+                          value:
+                              !isGated &&
                               settingsProvider.fruitEnableLiquidGlass,
                           onChanged: isGated
                               ? null
                               : (value) {
                                   AppHaptics.lightImpact(
-                                      context.read<DeviceService>());
+                                    context.read<DeviceService>(),
+                                  );
                                   context
                                       .read<SettingsProvider>()
                                       .toggleFruitEnableLiquidGlass();
@@ -539,22 +574,25 @@ class _AppearanceSectionState extends State<AppearanceSection> {
             dense: true,
             visualDensity: VisualDensity.compact,
             title: FittedBox(
-                fit: BoxFit.scaleDown,
-                alignment: Alignment.centerLeft,
-                child: Text('Performance Mode (Simple Theme)',
-                    style: Theme.of(context)
-                        .textTheme
-                        .titleMedium
-                        ?.copyWith(fontSize: 16 * widget.scaleFactor))),
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerLeft,
+              child: Text(
+                'Performance Mode (Simple Theme)',
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  fontSize: 16 * widget.scaleFactor,
+                ),
+              ),
+            ),
             subtitle: FittedBox(
-                fit: BoxFit.scaleDown,
-                alignment: Alignment.centerLeft,
-                child: Text(
-                    'Optimizes UI for older phones (removes blurs, shadows, and complex animations)',
-                    style: Theme.of(context)
-                        .textTheme
-                        .bodySmall
-                        ?.copyWith(fontSize: 12 * widget.scaleFactor))),
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerLeft,
+              child: Text(
+                'Optimizes UI for older phones (removes blurs, shadows, and complex animations)',
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  fontSize: 12 * widget.scaleFactor,
+                ),
+              ),
+            ),
             value: settingsProvider.performanceMode,
             onChanged: (value) {
               AppHaptics.lightImpact(context.read<DeviceService>());
@@ -568,29 +606,35 @@ class _AppearanceSectionState extends State<AppearanceSection> {
             dense: true,
             visualDensity: VisualDensity.compact,
             title: FittedBox(
-                fit: BoxFit.scaleDown,
-                alignment: Alignment.centerLeft,
-                child: Text('Dynamic Color',
-                    style: Theme.of(context)
-                        .textTheme
-                        .titleMedium
-                        ?.copyWith(fontSize: 16 * widget.scaleFactor))),
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerLeft,
+              child: Text(
+                'Dynamic Color',
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  fontSize: 16 * widget.scaleFactor,
+                ),
+              ),
+            ),
             subtitle: FittedBox(
-                fit: BoxFit.scaleDown,
-                alignment: Alignment.centerLeft,
-                child: Text('Theme from wallpaper',
-                    style: Theme.of(context)
-                        .textTheme
-                        .bodySmall
-                        ?.copyWith(fontSize: 12 * widget.scaleFactor))),
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerLeft,
+              child: Text(
+                'Theme from wallpaper',
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  fontSize: 12 * widget.scaleFactor,
+                ),
+              ),
+            ),
             value: settingsProvider.useDynamicColor,
             onChanged: (value) {
               AppHaptics.lightImpact(context.read<DeviceService>());
               context.read<SettingsProvider>().toggleUseDynamicColor();
             },
-            secondary: Icon(themeProvider.themeStyle == ThemeStyle.fruit
-                ? LucideIcons.palette
-                : Icons.color_lens_rounded),
+            secondary: Icon(
+              themeProvider.themeStyle == ThemeStyle.fruit
+                  ? LucideIcons.palette
+                  : Icons.color_lens_rounded,
+            ),
           ),
         // True Black Mode (only in Dark Mode)
         if (isDarkMode && themeProvider.themeStyle != ThemeStyle.fruit)
@@ -598,29 +642,35 @@ class _AppearanceSectionState extends State<AppearanceSection> {
             dense: true,
             visualDensity: VisualDensity.compact,
             title: FittedBox(
-                fit: BoxFit.scaleDown,
-                alignment: Alignment.centerLeft,
-                child: Text('True Black',
-                    style: Theme.of(context)
-                        .textTheme
-                        .titleMedium
-                        ?.copyWith(fontSize: 16 * widget.scaleFactor))),
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerLeft,
+              child: Text(
+                'True Black',
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  fontSize: 16 * widget.scaleFactor,
+                ),
+              ),
+            ),
             subtitle: FittedBox(
-                fit: BoxFit.scaleDown,
-                alignment: Alignment.centerLeft,
-                child: Text('Shadows and blur disabled',
-                    style: Theme.of(context)
-                        .textTheme
-                        .bodySmall
-                        ?.copyWith(fontSize: 12 * widget.scaleFactor))),
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerLeft,
+              child: Text(
+                'Shadows and blur disabled',
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  fontSize: 12 * widget.scaleFactor,
+                ),
+              ),
+            ),
             value: settingsProvider.useTrueBlack,
             onChanged: (value) {
               AppHaptics.lightImpact(context.read<DeviceService>());
               context.read<SettingsProvider>().toggleUseTrueBlack();
             },
-            secondary: Icon(themeProvider.themeStyle == ThemeStyle.fruit
-                ? LucideIcons.circle
-                : Icons.brightness_1_rounded),
+            secondary: Icon(
+              themeProvider.themeStyle == ThemeStyle.fruit
+                  ? LucideIcons.circle
+                  : Icons.brightness_1_rounded,
+            ),
           ),
         if (themeProvider.themeStyle != ThemeStyle.fruit &&
             !settingsProvider.useDynamicColor)
@@ -629,25 +679,31 @@ class _AppearanceSectionState extends State<AppearanceSection> {
               : TvListTile(
                   dense: true,
                   visualDensity: VisualDensity.compact,
-                  leading: Icon(themeProvider.themeStyle == ThemeStyle.fruit
-                      ? LucideIcons.palette
-                      : Icons.palette_rounded),
+                  leading: Icon(
+                    themeProvider.themeStyle == ThemeStyle.fruit
+                        ? LucideIcons.palette
+                        : Icons.palette_rounded,
+                  ),
                   title: FittedBox(
-                      fit: BoxFit.scaleDown,
-                      alignment: Alignment.centerLeft,
-                      child: Text('Custom Theme Color',
-                          style: Theme.of(context)
-                              .textTheme
-                              .titleMedium
-                              ?.copyWith(fontSize: 16 * widget.scaleFactor))),
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      'Custom Theme Color',
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontSize: 16 * widget.scaleFactor,
+                      ),
+                    ),
+                  ),
                   subtitle: FittedBox(
-                      fit: BoxFit.scaleDown,
-                      alignment: Alignment.centerLeft,
-                      child: Text('Overrides the default theme color',
-                          style: Theme.of(context)
-                              .textTheme
-                              .bodySmall
-                              ?.copyWith(fontSize: 12 * widget.scaleFactor))),
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      'Overrides the default theme color',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        fontSize: 12 * widget.scaleFactor,
+                      ),
+                    ),
+                  ),
                   onTap: () => ColorPickerDialog.show(context),
                   trailing: Container(
                     width: 18,
@@ -671,27 +727,34 @@ class _AppearanceSectionState extends State<AppearanceSection> {
               dense: true,
               visualDensity: VisualDensity.compact,
               title: FittedBox(
-                  fit: BoxFit.scaleDown,
-                  alignment: Alignment.centerLeft,
-                  child: Text('Glow Border',
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontSize: 16 * widget.scaleFactor,
-                          color: isGated
-                              ? colorScheme.onSurface.withValues(alpha: 0.5)
-                              : null))),
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  'Glow Border',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontSize: 16 * widget.scaleFactor,
+                    color: isGated
+                        ? colorScheme.onSurface.withValues(alpha: 0.5)
+                        : null,
+                  ),
+                ),
+              ),
               subtitle: isGated
-                  ? Text(reason,
+                  ? Text(
+                      reason,
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          fontSize: 12 * widget.scaleFactor,
-                          color: colorScheme.secondary.withValues(alpha: 0.7)))
+                        fontSize: 12 * widget.scaleFactor,
+                        color: colorScheme.secondary.withValues(alpha: 0.7),
+                      ),
+                    )
                   : null,
               value: !isGated && settingsProvider.glowMode > 0,
               onChanged: isGated
                   ? null
                   : (value) {
-                      context
-                          .read<SettingsProvider>()
-                          .setGlowMode(value ? 65 : 0); // 65% or Off
+                      context.read<SettingsProvider>().setGlowMode(
+                        value ? 65 : 0,
+                      ); // 65% or Off
                     },
               secondary: Icon(
                 themeProvider.themeStyle == ThemeStyle.fruit
@@ -706,8 +769,10 @@ class _AppearanceSectionState extends State<AppearanceSection> {
           if (settingsProvider.glowMode > 0 &&
               !settingsProvider.performanceMode)
             Padding(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 16.0,
+                vertical: 8.0,
+              ),
               child: Row(
                 children: [
                   const SizedBox(width: 16),
@@ -716,9 +781,7 @@ class _AppearanceSectionState extends State<AppearanceSection> {
                       children: [
                         Text(
                           'Intensity',
-                          style: Theme.of(context)
-                              .textTheme
-                              .bodySmall
+                          style: Theme.of(context).textTheme.bodySmall
                               ?.copyWith(fontSize: 12.0 * widget.scaleFactor),
                         ),
                         Expanded(
@@ -731,7 +794,8 @@ class _AppearanceSectionState extends State<AppearanceSection> {
                                       .clamp(10, 100);
                                   if (newVal != settingsProvider.glowMode) {
                                     AppHaptics.selectionClick(
-                                        context.read<DeviceService>());
+                                      context.read<DeviceService>(),
+                                    );
                                     context
                                         .read<SettingsProvider>()
                                         .setGlowMode(newVal);
@@ -743,7 +807,8 @@ class _AppearanceSectionState extends State<AppearanceSection> {
                                       .clamp(10, 100);
                                   if (newVal != settingsProvider.glowMode) {
                                     AppHaptics.selectionClick(
-                                        context.read<DeviceService>());
+                                      context.read<DeviceService>(),
+                                    );
                                     context
                                         .read<SettingsProvider>()
                                         .setGlowMode(newVal);
@@ -755,7 +820,8 @@ class _AppearanceSectionState extends State<AppearanceSection> {
                             },
                             child: Slider(
                               onChangeStart: (_) => AppHaptics.lightImpact(
-                                  context.read<DeviceService>()),
+                                context.read<DeviceService>(),
+                              ),
                               value: settingsProvider.glowMode.toDouble(),
                               min: 10,
                               max: 100,
@@ -765,11 +831,12 @@ class _AppearanceSectionState extends State<AppearanceSection> {
                                 if (value.round() !=
                                     settingsProvider.glowMode) {
                                   AppHaptics.selectionClick(
-                                      context.read<DeviceService>());
+                                    context.read<DeviceService>(),
+                                  );
                                 }
-                                context
-                                    .read<SettingsProvider>()
-                                    .setGlowMode(value.round());
+                                context.read<SettingsProvider>().setGlowMode(
+                                  value.round(),
+                                );
                               },
                             ),
                           ),
@@ -778,14 +845,12 @@ class _AppearanceSectionState extends State<AppearanceSection> {
                           width: 40 * widget.scaleFactor,
                           child: Text(
                             '${settingsProvider.glowMode}%',
-                            style: Theme.of(context)
-                                .textTheme
-                                .labelLarge
+                            style: Theme.of(context).textTheme.labelLarge
                                 ?.copyWith(
-                                    fontSize: 12.0 * widget.scaleFactor,
-                                    fontWeight: FontWeight.bold,
-                                    color:
-                                        Theme.of(context).colorScheme.primary),
+                                  fontSize: 12.0 * widget.scaleFactor,
+                                  fontWeight: FontWeight.bold,
+                                  color: Theme.of(context).colorScheme.primary,
+                                ),
                             textAlign: TextAlign.end,
                           ),
                         ),
@@ -806,27 +871,36 @@ class _AppearanceSectionState extends State<AppearanceSection> {
               dense: true,
               visualDensity: VisualDensity.compact,
               title: FittedBox(
-                  fit: BoxFit.scaleDown,
-                  alignment: Alignment.centerLeft,
-                  child: Text('Highlight Playing with RGB',
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontSize: 16 * widget.scaleFactor,
-                          color: isGated
-                              ? colorScheme.onSurface.withValues(alpha: 0.5)
-                              : null))),
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  'Highlight Playing with RGB',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontSize: 16 * widget.scaleFactor,
+                    color: isGated
+                        ? colorScheme.onSurface.withValues(alpha: 0.5)
+                        : null,
+                  ),
+                ),
+              ),
               subtitle: isGated
-                  ? Text(reason,
+                  ? Text(
+                      reason,
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          fontSize: 12 * widget.scaleFactor,
-                          color: colorScheme.secondary.withValues(alpha: 0.7)))
+                        fontSize: 12 * widget.scaleFactor,
+                        color: colorScheme.secondary.withValues(alpha: 0.7),
+                      ),
+                    )
                   : FittedBox(
                       fit: BoxFit.scaleDown,
                       alignment: Alignment.centerLeft,
-                      child: Text('Animate border with RGB colors',
-                          style: Theme.of(context)
-                              .textTheme
-                              .bodySmall
-                              ?.copyWith(fontSize: 12 * widget.scaleFactor))),
+                      child: Text(
+                        'Animate border with RGB colors',
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          fontSize: 12 * widget.scaleFactor,
+                        ),
+                      ),
+                    ),
               value: !isGated && settingsProvider.highlightPlayingWithRgb,
               onChanged: isGated
                   ? null
@@ -851,17 +925,18 @@ class _AppearanceSectionState extends State<AppearanceSection> {
         if (!settingsProvider.performanceMode &&
             settingsProvider.highlightPlayingWithRgb)
           Padding(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+            padding: const EdgeInsets.symmetric(
+              horizontal: 16.0,
+              vertical: 8.0,
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   'RGB Animation Speed',
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodyMedium
-                      ?.copyWith(fontSize: 12.0 * widget.scaleFactor),
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    fontSize: 12.0 * widget.scaleFactor,
+                  ),
                 ),
                 const SizedBox(height: 8),
                 AnimatedGradientBorder(
@@ -890,8 +965,9 @@ class _AppearanceSectionState extends State<AppearanceSection> {
                   backgroundColor: null,
                   child: TvFocusWrapper(
                     showGlow: true,
-                    borderRadius:
-                        BorderRadius.circular(21), // MATCH INNER RADIUS (24-3)
+                    borderRadius: BorderRadius.circular(
+                      21,
+                    ), // MATCH INNER RADIUS (24-3)
                     child: SingleChildScrollView(
                       key: const PageStorageKey('rgb_speed_scroll'),
                       controller: ScrollController(keepScrollOffset: false),
@@ -902,7 +978,8 @@ class _AppearanceSectionState extends State<AppearanceSection> {
                               selectedValue: settingsProvider.rgbAnimationSpeed,
                               onSelectionChanged: (value) {
                                 AppHaptics.lightImpact(
-                                    context.read<DeviceService>());
+                                  context.read<DeviceService>(),
+                                );
                                 context
                                     .read<SettingsProvider>()
                                     .setRgbAnimationSpeed(value);
@@ -917,7 +994,8 @@ class _AppearanceSectionState extends State<AppearanceSection> {
                                       Text(
                                         'Fast',
                                         style: TextStyle(
-                                            fontSize: 12 * widget.scaleFactor),
+                                          fontSize: 12 * widget.scaleFactor,
+                                        ),
                                       ),
                                     ],
                                   );
@@ -926,20 +1004,23 @@ class _AppearanceSectionState extends State<AppearanceSection> {
                                   return Text(
                                     'Med',
                                     style: TextStyle(
-                                        fontSize: 12 * widget.scaleFactor),
+                                      fontSize: 12 * widget.scaleFactor,
+                                    ),
                                   );
                                 }
                                 if (value == 0.25) {
                                   return Text(
                                     'Slow',
                                     style: TextStyle(
-                                        fontSize: 12 * widget.scaleFactor),
+                                      fontSize: 12 * widget.scaleFactor,
+                                    ),
                                   );
                                 }
                                 return Text(
                                   'Off',
                                   style: TextStyle(
-                                      fontSize: 12 * widget.scaleFactor),
+                                    fontSize: 12 * widget.scaleFactor,
+                                  ),
                                 );
                               },
                               borderRadius: BorderRadius.circular(21),
@@ -949,10 +1030,11 @@ class _AppearanceSectionState extends State<AppearanceSection> {
                                 ButtonSegment(
                                   value: 1.0,
                                   label: const Text('Fast'),
-                                  icon: Icon(themeProvider.themeStyle ==
-                                          ThemeStyle.fruit
-                                      ? LucideIcons.zap
-                                      : Icons.speed),
+                                  icon: Icon(
+                                    themeProvider.themeStyle == ThemeStyle.fruit
+                                        ? LucideIcons.zap
+                                        : Icons.speed,
+                                  ),
                                 ),
                                 const ButtonSegment(
                                   value: 0.5,
@@ -970,7 +1052,8 @@ class _AppearanceSectionState extends State<AppearanceSection> {
                               selected: {settingsProvider.rgbAnimationSpeed},
                               onSelectionChanged: (Set<double> newSelection) {
                                 AppHaptics.lightImpact(
-                                    context.read<DeviceService>());
+                                  context.read<DeviceService>(),
+                                );
                                 context
                                     .read<SettingsProvider>()
                                     .setRgbAnimationSpeed(newSelection.first);
@@ -980,43 +1063,52 @@ class _AppearanceSectionState extends State<AppearanceSection> {
                                 // Match proper inner radius (24 - 3 = 21)
                                 shape: WidgetStateProperty.all(
                                   RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(21)),
+                                    borderRadius: BorderRadius.circular(21),
+                                  ),
                                 ),
                                 // Make border transparent to let gradient show.
-                                side: WidgetStateProperty.all(const BorderSide(
-                                    color: Colors.transparent, width: 0)),
+                                side: WidgetStateProperty.all(
+                                  const BorderSide(
+                                    color: Colors.transparent,
+                                    width: 0,
+                                  ),
+                                ),
                                 backgroundColor:
-                                    WidgetStateProperty.resolveWith<Color>(
-                                  (states) {
-                                    if (states.contains(WidgetState.selected)) {
+                                    WidgetStateProperty.resolveWith<Color>((
+                                      states,
+                                    ) {
+                                      if (states.contains(
+                                        WidgetState.selected,
+                                      )) {
+                                        return Theme.of(context)
+                                            .colorScheme
+                                            .onSurface
+                                            .withValues(alpha: 0.12);
+                                      }
+                                      return Colors.transparent;
+                                    }),
+                                foregroundColor:
+                                    WidgetStateProperty.resolveWith<Color>((
+                                      states,
+                                    ) {
+                                      if (states.contains(
+                                        WidgetState.selected,
+                                      )) {
+                                        return Theme.of(
+                                          context,
+                                        ).colorScheme.onSurface;
+                                      }
                                       return Theme.of(context)
                                           .colorScheme
                                           .onSurface
-                                          .withValues(alpha: 0.12);
-                                    }
-                                    return Colors.transparent;
-                                  },
-                                ),
-                                foregroundColor:
-                                    WidgetStateProperty.resolveWith<Color>(
-                                  (states) {
-                                    if (states.contains(WidgetState.selected)) {
-                                      return Theme.of(context)
-                                          .colorScheme
-                                          .onSurface;
-                                    }
-                                    return Theme.of(context)
-                                        .colorScheme
-                                        .onSurface
-                                        .withValues(alpha: 0.7);
-                                  },
-                                ),
+                                          .withValues(alpha: 0.7);
+                                    }),
                                 textStyle:
                                     WidgetStateProperty.resolveWith<TextStyle?>(
-                                  (states) {
-                                    return null;
-                                  },
-                                ),
+                                      (states) {
+                                        return null;
+                                      },
+                                    ),
                               ),
                             ),
                     ),
@@ -1032,21 +1124,25 @@ class _AppearanceSectionState extends State<AppearanceSection> {
             visualDensity: VisualDensity.compact,
             leading: const Icon(Icons.text_format_rounded),
             title: FittedBox(
-                fit: BoxFit.scaleDown,
-                alignment: Alignment.centerLeft,
-                child: Text('App Font',
-                    style: Theme.of(context)
-                        .textTheme
-                        .titleMedium
-                        ?.copyWith(fontSize: 16 * widget.scaleFactor))),
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerLeft,
+              child: Text(
+                'App Font',
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  fontSize: 16 * widget.scaleFactor,
+                ),
+              ),
+            ),
             subtitle: FittedBox(
-                fit: BoxFit.scaleDown,
-                alignment: Alignment.centerLeft,
-                child: Text(_getFontDisplayName(settingsProvider.appFont),
-                    style: Theme.of(context)
-                        .textTheme
-                        .bodySmall
-                        ?.copyWith(fontSize: 12 * widget.scaleFactor))),
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerLeft,
+              child: Text(
+                _getFontDisplayName(settingsProvider.appFont),
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  fontSize: 12 * widget.scaleFactor,
+                ),
+              ),
+            ),
             onTap: () {
               AppHaptics.lightImpact(context.read<DeviceService>());
               FontSelectionDialog.show(context);

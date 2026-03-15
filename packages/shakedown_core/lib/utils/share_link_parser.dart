@@ -6,11 +6,7 @@ class ShareLinkData {
   final String? trackName;
   final Duration? position;
 
-  ShareLinkData({
-    required this.shnid,
-    this.trackName,
-    this.position,
-  });
+  ShareLinkData({required this.shnid, this.trackName, this.position});
 
   @override
   String toString() {
@@ -116,8 +112,9 @@ class ShareLinkParser {
       final lowerShare = cleanShare.toLowerCase();
       final posIndex = lowerShare.indexOf('position:');
       if (posIndex != -1) {
-        final posPart =
-            lowerShare.substring(posIndex + 'position:'.length).trim();
+        final posPart = lowerShare
+            .substring(posIndex + 'position:'.length)
+            .trim();
         final timeStr = posPart.split(' ').first.split('\n').first;
         pos = parseDuration(timeStr);
       }

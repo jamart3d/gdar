@@ -35,11 +35,7 @@ class TrackListScreen extends StatefulWidget {
   final Show show;
   final Source source;
 
-  const TrackListScreen({
-    super.key,
-    required this.show,
-    required this.source,
-  });
+  const TrackListScreen({super.key, required this.show, required this.source});
 
   @override
   State<TrackListScreen> createState() => _TrackListScreenState();
@@ -94,10 +90,14 @@ class _TrackListScreenState extends State<TrackListScreen> {
           const begin = Offset(0.0, 1.0);
           const end = Offset.zero;
           const curve = Curves.easeInOut;
-          var tween =
-              Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+          var tween = Tween(
+            begin: begin,
+            end: end,
+          ).chain(CurveTween(curve: curve));
           return SlideTransition(
-              position: animation.drive(tween), child: child);
+            position: animation.drive(tween),
+            child: child,
+          );
         },
       ),
     );
@@ -148,28 +148,32 @@ class _TrackListScreenState extends State<TrackListScreen> {
                               isPlayed: isPlayed,
                               compact: true,
                               onTap: () async {
-                                unawaited(showDialog(
-                                  context: context,
-                                  builder: (context) => RatingDialog(
-                                    initialRating: catalog.getRating(ratingKey),
-                                    sourceId: widget.source.id,
-                                    sourceUrl: widget.source.tracks.isNotEmpty
-                                        ? widget.source.tracks.first.url
-                                        : null,
-                                    isPlayed: catalog.isPlayed(ratingKey),
-                                    onRatingChanged: (newRating) {
-                                      catalog.setRating(ratingKey, newRating);
-                                    },
-                                    onPlayedChanged: (bool newIsPlayed) {
-                                      // Direct toggle since we don't have explicit setPlayed(bool) yet
-                                      // or just use togglePlayed if it matches logic
-                                      if (newIsPlayed !=
-                                          catalog.isPlayed(ratingKey)) {
-                                        catalog.togglePlayed(ratingKey);
-                                      }
-                                    },
+                                unawaited(
+                                  showDialog(
+                                    context: context,
+                                    builder: (context) => RatingDialog(
+                                      initialRating: catalog.getRating(
+                                        ratingKey,
+                                      ),
+                                      sourceId: widget.source.id,
+                                      sourceUrl: widget.source.tracks.isNotEmpty
+                                          ? widget.source.tracks.first.url
+                                          : null,
+                                      isPlayed: catalog.isPlayed(ratingKey),
+                                      onRatingChanged: (newRating) {
+                                        catalog.setRating(ratingKey, newRating);
+                                      },
+                                      onPlayedChanged: (bool newIsPlayed) {
+                                        // Direct toggle since we don't have explicit setPlayed(bool) yet
+                                        // or just use togglePlayed if it matches logic
+                                        if (newIsPlayed !=
+                                            catalog.isPlayed(ratingKey)) {
+                                          catalog.togglePlayed(ratingKey);
+                                        }
+                                      },
+                                    ),
                                   ),
-                                ));
+                                );
                               },
                             );
                           },
@@ -189,10 +193,14 @@ class _TrackListScreenState extends State<TrackListScreen> {
                               onTap: () {
                                 if (widget.source.tracks.isNotEmpty) {
                                   launchArchivePage(
-                                      widget.source.tracks.first.url, context);
+                                    widget.source.tracks.first.url,
+                                    context,
+                                  );
                                 } else {
                                   launchArchiveDetails(
-                                      widget.source.id, context);
+                                    widget.source.id,
+                                    context,
+                                  );
                                 }
                               },
                             ),
@@ -202,73 +210,81 @@ class _TrackListScreenState extends State<TrackListScreen> {
                     ),
                   ),
                 ),
-                Builder(builder: (context) {
-                  final themeProvider = context.watch<ThemeProvider>();
-                  final settingsProvider = context.watch<SettingsProvider>();
-                  final isFruit = themeProvider.themeStyle == ThemeStyle.fruit;
-                  final useNeumorphic = settingsProvider.useNeumorphism &&
-                      isFruit &&
-                      !settingsProvider.useTrueBlack;
+                Builder(
+                  builder: (context) {
+                    final themeProvider = context.watch<ThemeProvider>();
+                    final settingsProvider = context.watch<SettingsProvider>();
+                    final isFruit =
+                        themeProvider.themeStyle == ThemeStyle.fruit;
+                    final useNeumorphic =
+                        settingsProvider.useNeumorphism &&
+                        isFruit &&
+                        !settingsProvider.useTrueBlack;
 
-                  final Widget btn = IconButton(
-                    icon: Icon(isFruit
-                        ? LucideIcons.settings
-                        : Icons.settings_rounded),
-                    iconSize: 24.0,
-                    onPressed: () async {
-                      // Pause global clock
-                      try {
-                        context.read<AnimationController>().stop();
-                      } catch (_) {}
-
-                      unawaited(Navigator.of(context).push(
-                        PageRouteBuilder(
-                          pageBuilder:
-                              (context, animation, secondaryAnimation) =>
-                                  const SettingsScreen(),
-                          transitionDuration: Duration.zero,
-                        ),
-                      ));
-
-                      // Resume clock
-                      if (context.mounted) {
+                    final Widget btn = IconButton(
+                      icon: Icon(
+                        isFruit ? LucideIcons.settings : Icons.settings_rounded,
+                      ),
+                      iconSize: 24.0,
+                      onPressed: () async {
+                        // Pause global clock
                         try {
-                          final controller =
-                              context.read<AnimationController>();
-                          if (!controller.isAnimating) {
-                            unawaited(controller.repeat());
-                          }
+                          context.read<AnimationController>().stop();
                         } catch (_) {}
-                      }
-                    },
-                  );
 
-                  if (useNeumorphic && !isTv) {
+                        unawaited(
+                          Navigator.of(context).push(
+                            PageRouteBuilder(
+                              pageBuilder:
+                                  (context, animation, secondaryAnimation) =>
+                                      const SettingsScreen(),
+                              transitionDuration: Duration.zero,
+                            ),
+                          ),
+                        );
+
+                        // Resume clock
+                        if (context.mounted) {
+                          try {
+                            final controller = context
+                                .read<AnimationController>();
+                            if (!controller.isAnimating) {
+                              unawaited(controller.repeat());
+                            }
+                          } catch (_) {}
+                        }
+                      },
+                    );
+
+                    if (useNeumorphic && !isTv) {
+                      return Padding(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: kIsWeb ? (isFruit ? 16.0 : 8.0) : 8.0,
+                        ),
+                        child: NeumorphicWrapper(
+                          isCircle: false, // Map to rounded square
+                          borderRadius: 12.0,
+                          intensity: 1.2,
+                          color: Colors.transparent,
+                          child: LiquidGlassWrapper(
+                            enabled: !isTv,
+                            borderRadius: BorderRadius.circular(12.0),
+                            opacity: 0.08,
+                            blur: 5.0,
+                            child: btn,
+                          ),
+                        ),
+                      );
+                    }
+
                     return Padding(
                       padding: EdgeInsets.symmetric(
-                          horizontal: kIsWeb ? (isFruit ? 16.0 : 8.0) : 8.0),
-                      child: NeumorphicWrapper(
-                        isCircle: false, // Map to rounded square
-                        borderRadius: 12.0,
-                        intensity: 1.2,
-                        color: Colors.transparent,
-                        child: LiquidGlassWrapper(
-                          enabled: !isTv,
-                          borderRadius: BorderRadius.circular(12.0),
-                          opacity: 0.08,
-                          blur: 5.0,
-                          child: btn,
-                        ),
+                        horizontal: kIsWeb ? (isFruit ? 16.0 : 8.0) : 8.0,
                       ),
+                      child: btn,
                     );
-                  }
-
-                  return Padding(
-                    padding: EdgeInsets.symmetric(
-                        horizontal: kIsWeb ? (isFruit ? 16.0 : 8.0) : 8.0),
-                    child: btn,
-                  );
-                }),
+                  },
+                ),
               ],
             ),
       body: Stack(
@@ -303,24 +319,23 @@ class _TrackListScreenState extends State<TrackListScreen> {
                   showListProvider.setIsChoosingRandomShow(true);
                   final resetMs =
                       context.read<SettingsProvider>().performanceMode
-                          ? 600
-                          : 2400;
-                  unawaited(Future<void>.delayed(
-                    Duration(milliseconds: resetMs),
-                    () {
+                      ? 600
+                      : 2400;
+                  unawaited(
+                    Future<void>.delayed(Duration(milliseconds: resetMs), () {
                       if (showListProvider.isChoosingRandomShow) {
                         showListProvider.setIsChoosingRandomShow(false);
                       }
-                    },
-                  ));
+                    }),
+                  );
                   if (mounted) {
                     Navigator.of(context).pushAndRemoveUntil(
                       PageRouteBuilder(
                         pageBuilder: (context, animation, secondaryAnimation) =>
                             const FruitTabHostScreen(
-                          initialTab: 1,
-                          triggerRandomOnStart: true,
-                        ),
+                              initialTab: 1,
+                              triggerRandomOnStart: true,
+                            ),
                         transitionDuration: Duration.zero,
                       ),
                       (route) => false,
@@ -346,7 +361,8 @@ class _TrackListScreenState extends State<TrackListScreen> {
     final audioProvider = context.watch<AudioProvider>();
     final themeProvider = context.watch<ThemeProvider>();
     final isFruit = themeProvider.themeStyle == ThemeStyle.fruit;
-    final isDifferentShowPlaying = audioProvider.currentShow != null &&
+    final isDifferentShowPlaying =
+        audioProvider.currentShow != null &&
         audioProvider.currentShow!.name != widget.show.name;
 
     final bottomPadding = isFruit
@@ -399,12 +415,17 @@ class _TrackListScreenState extends State<TrackListScreen> {
   }
 
   Widget _buildFruitBody(
-      BuildContext context, List<dynamic> listItems, double bottomPadding) {
+    BuildContext context,
+    List<dynamic> listItems,
+    double bottomPadding,
+  ) {
     final settingsProvider = context.watch<SettingsProvider>();
     final usePremium =
         settingsProvider.useNeumorphism && !settingsProvider.useTrueBlack;
-    final double scaleFactor =
-        FontLayoutConfig.getEffectiveScale(context, settingsProvider);
+    final double scaleFactor = FontLayoutConfig.getEffectiveScale(
+      context,
+      settingsProvider,
+    );
 
     return ListView(
       padding: EdgeInsets.fromLTRB(
@@ -414,51 +435,52 @@ class _TrackListScreenState extends State<TrackListScreen> {
         bottomPadding,
       ),
       children: [
-        Builder(builder: (context) {
-          final List<Widget> tracksAndSets = [];
-          for (int i = 0; i < listItems.length; i++) {
-            final item = listItems[i];
-            if (item == 'SHOW_HEADER') continue;
-            if (item is String) {
-              tracksAndSets.add(_buildSetHeader(context, item));
-            } else if (item is Track) {
-              final trackIndex = widget.source.tracks.indexOf(item);
-              tracksAndSets.add(
-                  _buildTrackItem(context, item, widget.source, trackIndex));
+        Builder(
+          builder: (context) {
+            final List<Widget> tracksAndSets = [];
+            for (int i = 0; i < listItems.length; i++) {
+              final item = listItems[i];
+              if (item == 'SHOW_HEADER') continue;
+              if (item is String) {
+                tracksAndSets.add(_buildSetHeader(context, item));
+              } else if (item is Track) {
+                final trackIndex = widget.source.tracks.indexOf(item);
+                tracksAndSets.add(
+                  _buildTrackItem(context, item, widget.source, trackIndex),
+                );
+              }
             }
-          }
 
-          Widget card = Container(
-            decoration: BoxDecoration(
-              color: usePremium
-                  ? Colors.transparent
-                  : Theme.of(context).colorScheme.surfaceContainerHigh,
-              borderRadius: BorderRadius.circular(28),
-            ),
-            child: Column(
-              children: tracksAndSets,
-            ),
-          );
-
-          final isTv = context.read<DeviceService>().isTv;
-
-          if (usePremium && !isTv) {
-            card = NeumorphicWrapper(
-              borderRadius: 28,
-              intensity: 1.0,
-              color: Colors.transparent,
-              child: LiquidGlassWrapper(
-                enabled: !isTv,
+            Widget card = Container(
+              decoration: BoxDecoration(
+                color: usePremium
+                    ? Colors.transparent
+                    : Theme.of(context).colorScheme.surfaceContainerHigh,
                 borderRadius: BorderRadius.circular(28),
-                opacity: 0.08,
-                blur: 15.0,
-                child: card,
               ),
+              child: Column(children: tracksAndSets),
             );
-          }
 
-          return card;
-        }),
+            final isTv = context.read<DeviceService>().isTv;
+
+            if (usePremium && !isTv) {
+              card = NeumorphicWrapper(
+                borderRadius: 28,
+                intensity: 1.0,
+                color: Colors.transparent,
+                child: LiquidGlassWrapper(
+                  enabled: !isTv,
+                  borderRadius: BorderRadius.circular(28),
+                  opacity: 0.08,
+                  blur: 15.0,
+                  child: card,
+                ),
+              );
+            }
+
+            return card;
+          },
+        ),
       ],
     );
   }
@@ -466,12 +488,16 @@ class _TrackListScreenState extends State<TrackListScreen> {
   Widget _buildShowHeader(BuildContext context) {
     final settingsProvider = context.watch<SettingsProvider>();
     // USE CENTRALIZED SCALING
-    final scaleFactor =
-        FontLayoutConfig.getEffectiveScale(context, settingsProvider);
+    final scaleFactor = FontLayoutConfig.getEffectiveScale(
+      context,
+      settingsProvider,
+    );
     final colorScheme = Theme.of(context).colorScheme;
 
-    String dateText =
-        AppDateUtils.formatDate(widget.show.date, settings: settingsProvider);
+    String dateText = AppDateUtils.formatDate(
+      widget.show.date,
+      settings: settingsProvider,
+    );
 
     // USE CENTRALIZED METRICS
     final metrics = AppTypography.getHeaderMetrics(settingsProvider.appFont);
@@ -488,9 +514,7 @@ class _TrackListScreenState extends State<TrackListScreen> {
                 Text(
                   dateText,
                   textAlign: TextAlign.center,
-                  style: Theme.of(context)
-                      .textTheme
-                      .headlineMedium
+                  style: Theme.of(context).textTheme.headlineMedium
                       ?.copyWith(
                         fontWeight: FontWeight.w800,
                         height: metrics.height,
@@ -504,26 +528,27 @@ class _TrackListScreenState extends State<TrackListScreen> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    Icon(Icons.stadium_rounded,
-                        size: 20 * scaleFactor, color: colorScheme.primary),
+                    Icon(
+                      Icons.stadium_rounded,
+                      size: 20 * scaleFactor,
+                      color: colorScheme.primary,
+                    ),
                     const SizedBox(width: 8),
                     Flexible(
                       child: Text(
                         widget.show.venue,
                         textAlign: TextAlign.center,
-                        style: Theme.of(context)
-                            .textTheme
-                            .titleMedium
+                        style: Theme.of(context).textTheme.titleMedium
                             ?.copyWith(
                               color: colorScheme.primary,
                               fontWeight: FontWeight.bold,
                               letterSpacing:
                                   settingsProvider.appFont == 'rock_salt'
-                                      ? 1.0
-                                      : (settingsProvider.appFont ==
-                                              'permanent_marker'
-                                          ? 0.5
-                                          : 0.0),
+                                  ? 1.0
+                                  : (settingsProvider.appFont ==
+                                            'permanent_marker'
+                                        ? 0.5
+                                        : 0.0),
                             )
                             .apply(fontSizeFactor: scaleFactor),
                       ),
@@ -536,20 +561,18 @@ class _TrackListScreenState extends State<TrackListScreen> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      Icon(Icons.place_outlined,
-                          size: 20 * scaleFactor,
-                          color: colorScheme.onSurfaceVariant),
+                      Icon(
+                        Icons.place_outlined,
+                        size: 20 * scaleFactor,
+                        color: colorScheme.onSurfaceVariant,
+                      ),
                       const SizedBox(width: 8),
                       Flexible(
                         child: Text(
                           widget.show.location,
                           textAlign: TextAlign.center,
-                          style: Theme.of(context)
-                              .textTheme
-                              .bodyLarge
-                              ?.copyWith(
-                                color: colorScheme.onSurfaceVariant,
-                              )
+                          style: Theme.of(context).textTheme.bodyLarge
+                              ?.copyWith(color: colorScheme.onSurfaceVariant)
                               .apply(fontSizeFactor: scaleFactor),
                         ),
                       ),
@@ -562,124 +585,131 @@ class _TrackListScreenState extends State<TrackListScreen> {
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 16.0, top: 8.0),
-      child: Builder(builder: (context) {
-        final tp = context.watch<ThemeProvider>();
-        final isFruit = tp.themeStyle == ThemeStyle.fruit;
-        final usePremium = settingsProvider.useNeumorphism &&
-            isFruit &&
-            !settingsProvider.useTrueBlack;
+      child: Builder(
+        builder: (context) {
+          final tp = context.watch<ThemeProvider>();
+          final isFruit = tp.themeStyle == ThemeStyle.fruit;
+          final usePremium =
+              settingsProvider.useNeumorphism &&
+              isFruit &&
+              !settingsProvider.useTrueBlack;
 
-        Future<void> executePlayAndNavigate() async {
-          unawaited(context
-              .read<AudioProvider>()
-              .playSource(widget.show, widget.source));
+          Future<void> executePlayAndNavigate() async {
+            unawaited(
+              context.read<AudioProvider>().playSource(
+                widget.show,
+                widget.source,
+              ),
+            );
 
-          // No full-screen player transitions on TV. Instead, return to main and focus player.
-          if (context.read<DeviceService>().isTv) {
-            Navigator.of(context).pop();
-            context.read<AudioProvider>().requestPlaybackFocus();
-            return;
-          }
+            // No full-screen player transitions on TV. Instead, return to main and focus player.
+            if (context.read<DeviceService>().isTv) {
+              Navigator.of(context).pop();
+              context.read<AudioProvider>().requestPlaybackFocus();
+              return;
+            }
 
-          if (isFruit) {
-            if (!mounted) return;
-            await Navigator.of(context).pushAndRemoveUntil(
+            if (isFruit) {
+              if (!mounted) return;
+              await Navigator.of(context).pushAndRemoveUntil(
+                PageRouteBuilder(
+                  pageBuilder: (context, animation, secondaryAnimation) =>
+                      const FruitTabHostScreen(initialTab: 0),
+                  transitionDuration: Duration.zero,
+                ),
+                (route) => false,
+              );
+              return;
+            }
+
+            try {
+              context.read<AnimationController>().stop();
+            } catch (_) {}
+
+            await Navigator.of(context).push(
               PageRouteBuilder(
                 pageBuilder: (context, animation, secondaryAnimation) =>
-                    const FruitTabHostScreen(initialTab: 0),
-                transitionDuration: Duration.zero,
+                    const PlaybackScreen(),
+                transitionDuration: const Duration(milliseconds: 300),
+                transitionsBuilder:
+                    (context, animation, secondaryAnimation, child) {
+                      const begin = Offset(0.0, 1.0);
+                      const end = Offset.zero;
+                      const curve = Curves.easeInOut;
+                      var tween = Tween(
+                        begin: begin,
+                        end: end,
+                      ).chain(CurveTween(curve: curve));
+                      return SlideTransition(
+                        position: animation.drive(tween),
+                        child: child,
+                      );
+                    },
               ),
-              (route) => false,
             );
-            return;
+
+            if (context.mounted) {
+              try {
+                final controller = context.read<AnimationController>();
+                unawaited(controller.repeat());
+              } catch (_) {}
+            }
           }
 
-          try {
-            context.read<AnimationController>().stop();
-          } catch (_) {}
+          Widget cardChild;
 
-          await Navigator.of(context).push(
-            PageRouteBuilder(
-              pageBuilder: (context, animation, secondaryAnimation) =>
-                  const PlaybackScreen(),
-              transitionDuration: const Duration(milliseconds: 300),
-              transitionsBuilder:
-                  (context, animation, secondaryAnimation, child) {
-                const begin = Offset(0.0, 1.0);
-                const end = Offset.zero;
-                const curve = Curves.easeInOut;
-                var tween = Tween(begin: begin, end: end)
-                    .chain(CurveTween(curve: curve));
-                return SlideTransition(
-                    position: animation.drive(tween), child: child);
-              },
-            ),
-          );
+          final isTv = context.read<DeviceService>().isTv;
 
-          if (context.mounted) {
-            try {
-              final controller = context.read<AnimationController>();
-              unawaited(controller.repeat());
-            } catch (_) {}
-          }
-        }
+          Widget content = Column(children: [headerContent]);
 
-        Widget cardChild;
+          cardChild = content;
 
-        final isTv = context.read<DeviceService>().isTv;
-
-        Widget content = Column(
-          children: [
-            headerContent,
-          ],
-        );
-
-        cardChild = content;
-
-        Widget card = Card(
-          elevation: 0,
-          color: usePremium
-              ? Colors.transparent
-              : colorScheme.surfaceContainerHigh,
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-          clipBehavior: Clip.antiAlias,
-          child: cardChild,
-        );
-
-        if (usePremium && !isTv) {
-          card = NeumorphicWrapper(
-            borderRadius: 24,
-            intensity: 1.0,
-            color: Colors.transparent,
-            child: LiquidGlassWrapper(
-              enabled: !isTv,
+          Widget card = Card(
+            elevation: 0,
+            color: usePremium
+                ? Colors.transparent
+                : colorScheme.surfaceContainerHigh,
+            shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(24),
-              opacity: 0.08,
-              blur: 15.0,
-              child: card,
             ),
+            clipBehavior: Clip.antiAlias,
+            child: cardChild,
           );
-        }
 
-        if (context.read<DeviceService>().isTv) {
-          final ap = context.watch<AudioProvider>();
-          return TvFocusWrapper(
-            autofocus: true,
-            onTap: () async {
-              if (ap.currentShow != null &&
-                  ap.currentShow!.name != widget.show.name) {
-                await ap.stopAndClear();
-              }
-              await executePlayAndNavigate();
-            },
-            borderRadius: BorderRadius.circular(24),
-            child: card,
-          );
-        }
+          if (usePremium && !isTv) {
+            card = NeumorphicWrapper(
+              borderRadius: 24,
+              intensity: 1.0,
+              color: Colors.transparent,
+              child: LiquidGlassWrapper(
+                enabled: !isTv,
+                borderRadius: BorderRadius.circular(24),
+                opacity: 0.08,
+                blur: 15.0,
+                child: card,
+              ),
+            );
+          }
 
-        return card;
-      }),
+          if (context.read<DeviceService>().isTv) {
+            final ap = context.watch<AudioProvider>();
+            return TvFocusWrapper(
+              autofocus: true,
+              onTap: () async {
+                if (ap.currentShow != null &&
+                    ap.currentShow!.name != widget.show.name) {
+                  await ap.stopAndClear();
+                }
+                await executePlayAndNavigate();
+              },
+              borderRadius: BorderRadius.circular(24),
+              child: card,
+            );
+          }
+
+          return card;
+        },
+      ),
     );
   }
 
@@ -693,83 +723,93 @@ class _TrackListScreenState extends State<TrackListScreen> {
       return Container(
         width: double.infinity,
         padding: const EdgeInsets.fromLTRB(16, 20, 16, 12),
-        color:
-            colorScheme.onSurfaceVariant.withValues(alpha: 0.04), // Subtle tint
+        color: colorScheme.onSurfaceVariant.withValues(
+          alpha: 0.04,
+        ), // Subtle tint
         child: Text(
           setName.toUpperCase(),
           style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                color: colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
-                fontWeight: FontWeight.w800,
-                letterSpacing: 1.5,
-              ),
+            color: colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
+            fontWeight: FontWeight.w800,
+            letterSpacing: 1.5,
+          ),
         ),
       );
     }
 
     // USE CENTRALIZED SCALING
-    final scaleFactor =
-        FontLayoutConfig.getEffectiveScale(context, settingsProvider);
+    final scaleFactor = FontLayoutConfig.getEffectiveScale(
+      context,
+      settingsProvider,
+    );
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(8, 24, 8, 8),
       child: Align(
         alignment: Alignment.centerLeft,
-        child: Builder(builder: (context) {
-          final tp = context.watch<ThemeProvider>();
-          final isFruit = tp.themeStyle == ThemeStyle.fruit;
-          final usePremium = settingsProvider.useNeumorphism &&
-              isFruit &&
-              !settingsProvider.useTrueBlack;
+        child: Builder(
+          builder: (context) {
+            final tp = context.watch<ThemeProvider>();
+            final isFruit = tp.themeStyle == ThemeStyle.fruit;
+            final usePremium =
+                settingsProvider.useNeumorphism &&
+                isFruit &&
+                !settingsProvider.useTrueBlack;
 
-          final Widget pill = Container(
-            padding: EdgeInsets.symmetric(
-                horizontal: 16 * scaleFactor, vertical: 6 * scaleFactor),
-            decoration: BoxDecoration(
-              color: usePremium
-                  ? colorScheme.secondaryContainer.withValues(alpha: 0.3)
-                  : colorScheme.secondaryContainer,
-              borderRadius: BorderRadius.circular(50),
-            ),
-            child: Text(
-              setName.toUpperCase(),
-              style: Theme.of(context)
-                  .textTheme
-                  .labelLarge
-                  ?.copyWith(
-                    color: colorScheme.onSecondaryContainer,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 1.0,
-                  )
-                  .apply(fontSizeFactor: scaleFactor),
-            ),
-          );
-
-          final isTv = context.read<DeviceService>().isTv;
-
-          if (usePremium && !isTv) {
-            return NeumorphicWrapper(
-              borderRadius: 50,
-              intensity: 0.8,
-              isPressed: true,
-              color: Colors.transparent,
-              child: LiquidGlassWrapper(
-                enabled: !isTv,
+            final Widget pill = Container(
+              padding: EdgeInsets.symmetric(
+                horizontal: 16 * scaleFactor,
+                vertical: 6 * scaleFactor,
+              ),
+              decoration: BoxDecoration(
+                color: usePremium
+                    ? colorScheme.secondaryContainer.withValues(alpha: 0.3)
+                    : colorScheme.secondaryContainer,
                 borderRadius: BorderRadius.circular(50),
-                opacity: 0.05,
-                blur: 5.0,
-                child: pill,
+              ),
+              child: Text(
+                setName.toUpperCase(),
+                style: Theme.of(context).textTheme.labelLarge
+                    ?.copyWith(
+                      color: colorScheme.onSecondaryContainer,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 1.0,
+                    )
+                    .apply(fontSizeFactor: scaleFactor),
               ),
             );
-          }
 
-          return pill;
-        }),
+            final isTv = context.read<DeviceService>().isTv;
+
+            if (usePremium && !isTv) {
+              return NeumorphicWrapper(
+                borderRadius: 50,
+                intensity: 0.8,
+                isPressed: true,
+                color: Colors.transparent,
+                child: LiquidGlassWrapper(
+                  enabled: !isTv,
+                  borderRadius: BorderRadius.circular(50),
+                  opacity: 0.05,
+                  blur: 5.0,
+                  child: pill,
+                ),
+              );
+            }
+
+            return pill;
+          },
+        ),
       ),
     );
   }
 
   Widget _buildTrackItem(
-      BuildContext context, Track track, Source source, int index) {
+    BuildContext context,
+    Track track,
+    Source source,
+    int index,
+  ) {
     final settingsProvider = context.watch<SettingsProvider>();
     final colorScheme = Theme.of(context).colorScheme;
     final tp = context.watch<ThemeProvider>();
@@ -793,25 +833,22 @@ class _TrackListScreenState extends State<TrackListScreen> {
               child: Text(
                 track.title,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      fontWeight: FontWeight.w700,
-                      fontFamily: 'Inter',
-                      color: colorScheme.onSurface.withValues(alpha: 0.9),
-                    ),
+                  fontWeight: FontWeight.w700,
+                  fontFamily: 'Inter',
+                  color: colorScheme.onSurface.withValues(alpha: 0.9),
+                ),
               ),
             ),
             const SizedBox(width: 12),
             Text(
-              Duration(seconds: track.duration)
-                  .toString()
-                  .split('.')
-                  .first
-                  .padLeft(8, '0')
-                  .substring(3),
+              Duration(
+                seconds: track.duration,
+              ).toString().split('.').first.padLeft(8, '0').substring(3),
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: colorScheme.onSurfaceVariant.withValues(alpha: 0.3),
-                    fontWeight: FontWeight.w700,
-                    fontFamily: 'Inter',
-                  ),
+                color: colorScheme.onSurfaceVariant.withValues(alpha: 0.3),
+                fontWeight: FontWeight.w700,
+                fontFamily: 'Inter',
+              ),
             ),
           ],
         ),
@@ -836,110 +873,120 @@ class _TrackListScreenState extends State<TrackListScreen> {
         ? '${track.trackNumber}. ${track.title}'
         : track.title;
 
-    final scaleFactor =
-        FontLayoutConfig.getEffectiveScale(context, settingsProvider);
+    final scaleFactor = FontLayoutConfig.getEffectiveScale(
+      context,
+      settingsProvider,
+    );
 
-    return Builder(builder: (context) {
-      final audioProvider = context.watch<AudioProvider>();
-      final themeProvider = context.watch<ThemeProvider>();
-      final isFruit = themeProvider.themeStyle == ThemeStyle.fruit;
-      final usePremium = settingsProvider.useNeumorphism &&
-          isFruit &&
-          !settingsProvider.useTrueBlack;
+    return Builder(
+      builder: (context) {
+        final audioProvider = context.watch<AudioProvider>();
+        final themeProvider = context.watch<ThemeProvider>();
+        final isFruit = themeProvider.themeStyle == ThemeStyle.fruit;
+        final usePremium =
+            settingsProvider.useNeumorphism &&
+            isFruit &&
+            !settingsProvider.useTrueBlack;
 
-      final isCurrentTrack = audioProvider.currentTrack != null &&
-          audioProvider.currentTrack!.title == track.title &&
-          audioProvider.currentSource?.id == source.id;
+        final isCurrentTrack =
+            audioProvider.currentTrack != null &&
+            audioProvider.currentTrack!.title == track.title &&
+            audioProvider.currentSource?.id == source.id;
 
-      Widget itemContent = Padding(
-        padding:
-            EdgeInsets.symmetric(horizontal: 20, vertical: 12 * scaleFactor),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.baseline,
-          textBaseline: TextBaseline.alphabetic,
-          children: [
-            Expanded(
-              child: Text(
-                titleText,
-                style: titleStyle.copyWith(
-                  fontWeight: isCurrentTrack ? FontWeight.w900 : null,
-                  color: isCurrentTrack ? colorScheme.primary : null,
+        Widget itemContent = Padding(
+          padding: EdgeInsets.symmetric(
+            horizontal: 20,
+            vertical: 12 * scaleFactor,
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.baseline,
+            textBaseline: TextBaseline.alphabetic,
+            children: [
+              Expanded(
+                child: Text(
+                  titleText,
+                  style: titleStyle.copyWith(
+                    fontWeight: isCurrentTrack ? FontWeight.w900 : null,
+                    color: isCurrentTrack ? colorScheme.primary : null,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: settingsProvider.hideTrackDuration
+                      ? TextAlign.center
+                      : TextAlign.left,
                 ),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                textAlign: settingsProvider.hideTrackDuration
-                    ? TextAlign.center
-                    : TextAlign.left,
               ),
-            ),
-            if (!settingsProvider.hideTrackDuration) ...[
-              const SizedBox(width: 16),
-              Text(
-                formatDuration(Duration(seconds: track.duration)),
-                style: durationStyle,
-              ),
+              if (!settingsProvider.hideTrackDuration) ...[
+                const SizedBox(width: 16),
+                Text(
+                  formatDuration(Duration(seconds: track.duration)),
+                  style: durationStyle,
+                ),
+              ],
             ],
-          ],
-        ),
-      );
-
-      if (context.read<DeviceService>().isTv) {
-        return Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-          child: TvFocusWrapper(
-            onTap: null, // Restrict playback to the play icon
-            borderRadius: BorderRadius.circular(16),
-            child: itemContent,
           ),
         );
-      }
 
-      final Widget item = Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: itemContent,
-      );
+        if (context.read<DeviceService>().isTv) {
+          return Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+            child: TvFocusWrapper(
+              onTap: null, // Restrict playback to the play icon
+              borderRadius: BorderRadius.circular(16),
+              child: itemContent,
+            ),
+          );
+        }
 
-      final isTv = context.read<DeviceService>().isTv;
+        final Widget item = Container(
+          decoration: BoxDecoration(borderRadius: BorderRadius.circular(16)),
+          child: itemContent,
+        );
 
-      if (usePremium && isCurrentTrack && !isTv) {
+        final isTv = context.read<DeviceService>().isTv;
+
+        if (usePremium && isCurrentTrack && !isTv) {
+          return Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+            child: NeumorphicWrapper(
+              borderRadius: 16,
+              intensity: 1.0,
+              color: Colors.transparent,
+              child: LiquidGlassWrapper(
+                enabled: !isTv,
+                borderRadius: BorderRadius.circular(16),
+                opacity: 0.08,
+                blur: 10.0,
+                child: item,
+              ),
+            ),
+          );
+        }
+
         return Padding(
           padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-          child: NeumorphicWrapper(
-            borderRadius: 16,
-            intensity: 1.0,
-            color: Colors.transparent,
-            child: LiquidGlassWrapper(
-              enabled: !isTv,
-              borderRadius: BorderRadius.circular(16),
-              opacity: 0.08,
-              blur: 10.0,
-              child: item,
-            ),
-          ),
+          child: item,
         );
-      }
-
-      return Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-        child: item,
-      );
-    });
+      },
+    );
   }
 
   Widget _buildFruitHeader(BuildContext context) {
     final settingsProvider = context.watch<SettingsProvider>();
     final colorScheme = Theme.of(context).colorScheme;
-    final double scaleFactor =
-        FontLayoutConfig.getEffectiveScale(context, settingsProvider);
+    final double scaleFactor = FontLayoutConfig.getEffectiveScale(
+      context,
+      settingsProvider,
+    );
     String dateText = '';
     try {
       final dateTime = DateTime.parse(widget.show.date);
       dateText = DateFormat('EEEE, MMMM d, y').format(dateTime);
     } catch (_) {
-      dateText =
-          AppDateUtils.formatDate(widget.show.date, settings: settingsProvider);
+      dateText = AppDateUtils.formatDate(
+        widget.show.date,
+        settings: settingsProvider,
+      );
     }
 
     final bool usePremium =
@@ -1032,8 +1079,9 @@ class _TrackListScreenState extends State<TrackListScreen> {
                             fontSize: 9.5 * scaleFactor,
                             fontWeight: FontWeight.w800,
                             letterSpacing: 1.25,
-                            color: colorScheme.onSurfaceVariant
-                                .withValues(alpha: 0.58),
+                            color: colorScheme.onSurfaceVariant.withValues(
+                              alpha: 0.58,
+                            ),
                           ),
                         ),
                       ],
@@ -1058,7 +1106,8 @@ class _TrackListScreenState extends State<TrackListScreen> {
                 icon: LucideIcons.play,
                 onPressed: () async {
                   unawaited(
-                      AppHaptics.selectionClick(context.read<DeviceService>()));
+                    AppHaptics.selectionClick(context.read<DeviceService>()),
+                  );
                   final ap = context.read<AudioProvider>();
                   if (ap.currentShow != null &&
                       ap.currentShow!.name != widget.show.name) {
@@ -1090,25 +1139,27 @@ class _TrackListScreenState extends State<TrackListScreen> {
                     size: 22.0 * scaleFactor,
                     enforceMinTapTarget: true,
                     onTap: () async {
-                      unawaited(showDialog(
-                        context: context,
-                        builder: (context) => RatingDialog(
-                          initialRating: rating,
-                          sourceId: widget.source.id,
-                          sourceUrl: widget.source.tracks.isNotEmpty
-                              ? widget.source.tracks.first.url
-                              : null,
-                          isPlayed: isPlayed,
-                          onRatingChanged: (newRating) {
-                            catalog.setRating(ratingKey, newRating);
-                          },
-                          onPlayedChanged: (bool newIsPlayed) {
-                            if (newIsPlayed != isPlayed) {
-                              catalog.togglePlayed(ratingKey);
-                            }
-                          },
+                      unawaited(
+                        showDialog(
+                          context: context,
+                          builder: (context) => RatingDialog(
+                            initialRating: rating,
+                            sourceId: widget.source.id,
+                            sourceUrl: widget.source.tracks.isNotEmpty
+                                ? widget.source.tracks.first.url
+                                : null,
+                            isPlayed: isPlayed,
+                            onRatingChanged: (newRating) {
+                              catalog.setRating(ratingKey, newRating);
+                            },
+                            onPlayedChanged: (bool newIsPlayed) {
+                              if (newIsPlayed != isPlayed) {
+                                catalog.togglePlayed(ratingKey);
+                              }
+                            },
+                          ),
                         ),
-                      ));
+                      );
                     },
                   ),
                   SizedBox(width: 8.0 * scaleFactor),
@@ -1133,8 +1184,10 @@ class _TrackListScreenState extends State<TrackListScreen> {
     );
   }
 
-  Widget _buildFruitThemeButton(BuildContext context,
-      {required VoidCallback onPressed}) {
+  Widget _buildFruitThemeButton(
+    BuildContext context, {
+    required VoidCallback onPressed,
+  }) {
     return FruitActionButton(
       icon: Theme.of(context).brightness == Brightness.dark
           ? Icons.light_mode_outlined
@@ -1143,8 +1196,11 @@ class _TrackListScreenState extends State<TrackListScreen> {
     );
   }
 
-  Widget _buildFruitNavButton(BuildContext context,
-      {required IconData icon, required VoidCallback onPressed}) {
+  Widget _buildFruitNavButton(
+    BuildContext context, {
+    required IconData icon,
+    required VoidCallback onPressed,
+  }) {
     final settingsProvider = context.watch<SettingsProvider>();
     final isTv = context.watch<DeviceService>().isTv;
     final useNeumorphic =
@@ -1161,17 +1217,11 @@ class _TrackListScreenState extends State<TrackListScreen> {
           borderRadius: BorderRadius.circular(100),
           opacity: 0.12,
           blur: 8,
-          child: FruitIconButton(
-            icon: Icon(icon),
-            onPressed: onPressed,
-          ),
+          child: FruitIconButton(icon: Icon(icon), onPressed: onPressed),
         ),
       );
     }
 
-    return FruitIconButton(
-      icon: Icon(icon),
-      onPressed: onPressed,
-    );
+    return FruitIconButton(icon: Icon(icon), onPressed: onPressed);
   }
 }

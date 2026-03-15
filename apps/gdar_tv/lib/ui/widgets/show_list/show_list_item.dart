@@ -54,8 +54,9 @@ class ShowListItem extends StatelessWidget {
 
     final isPlaying = audioProvider.currentShow == show;
     final playingSource = audioProvider.currentSource;
-    final isLoading =
-        showListProvider.isShowLoading(showListProvider.getShowKey(show));
+    final isLoading = showListProvider.isShowLoading(
+      showListProvider.getShowKey(show),
+    );
 
     final deviceService = context.watch<DeviceService>();
     final isTv = deviceService.isTv;
@@ -91,8 +92,9 @@ class ShowListItem extends StatelessWidget {
               } else if (event.logicalKey == LogicalKeyboardKey.arrowUp) {
                 if (index == 0) {
                   if (event is KeyDownEvent) {
-                    final shows =
-                        context.read<ShowListProvider>().filteredShows;
+                    final shows = context
+                        .read<ShowListProvider>()
+                        .filteredShows;
                     onWrapAround?.call(shows.length - 1);
                   }
                   return KeyEventResult.handled; // Anchor
@@ -114,15 +116,15 @@ class ShowListItem extends StatelessWidget {
             direction: settingsProvider.enableSwipeToBlock
                 ? DismissDirection.endToStart
                 : DismissDirection.none,
-            dismissThresholds: const {
-              DismissDirection.endToStart: 0.6,
-            },
-            background: const SwipeActionBackground(
-              borderRadius: 12.0,
-            ),
+            dismissThresholds: const {DismissDirection.endToStart: 0.6},
+            background: const SwipeActionBackground(borderRadius: 12.0),
             confirmDismiss: (direction) async {
               return await _showBlockConfirmation(
-                  context, show, audioProvider, settingsProvider);
+                context,
+                show,
+                audioProvider,
+                settingsProvider,
+              );
             },
             onDismissed: (direction) {
               context.read<ShowListProvider>().dismissShow(show);
@@ -136,8 +138,11 @@ class ShowListItem extends StatelessWidget {
               ? ShowListItemDetails(
                   show: show,
                   playingSourceId: playingSource?.id,
-                  height:
-                      _calculateExpandedHeight(context, show, settingsProvider),
+                  height: _calculateExpandedHeight(
+                    context,
+                    show,
+                    settingsProvider,
+                  ),
                   onSourceTapped: onSourceTap,
                   onSourceLongPress: onSourceLongPress,
                 )
@@ -147,8 +152,12 @@ class ShowListItem extends StatelessWidget {
     );
   }
 
-  Future<bool> _showBlockConfirmation(BuildContext context, Show show,
-      AudioProvider audioProvider, SettingsProvider settingsProvider) async {
+  Future<bool> _showBlockConfirmation(
+    BuildContext context,
+    Show show,
+    AudioProvider audioProvider,
+    SettingsProvider settingsProvider,
+  ) async {
     // Haptic Feedback
     unawaited(AppHaptics.selectionClick(context.read<DeviceService>()));
 
@@ -160,7 +169,8 @@ class ShowListItem extends StatelessWidget {
 
     // Mark ONLY the representative source as Blocked (Red Star / -1)
     unawaited(
-        context.read<CatalogService>().setRating(show.sources.first.id, -1));
+      context.read<CatalogService>().setRating(show.sources.first.id, -1),
+    );
 
     showMessage(
       context,
@@ -172,7 +182,10 @@ class ShowListItem extends StatelessWidget {
   }
 
   double _calculateExpandedHeight(
-      BuildContext context, Show show, SettingsProvider settingsProvider) {
+    BuildContext context,
+    Show show,
+    SettingsProvider settingsProvider,
+  ) {
     if (show.sources.length <= 1) return 0.0;
     final double scaleFactor = settingsProvider.uiScale ? 1.25 : 1.0;
     const double baseSourceHeaderHeight = 59.0;

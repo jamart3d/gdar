@@ -11,10 +11,9 @@ Workspace: C:\Users\jeff\StudioProjects\gdar
   - Project instructions (`AGENTS.md`, `.agent/rules/...`).
 
 ## Directory conventions
-- Prefer `tool/` for Dart runnable utility scripts (ecosystem convention).
-- Keep `tools/` for non-Dart helpers/scripts if needed.
+- Prefer `scripts/` for Dart runnable utility scripts (workspace convention).
 - Current project policy:
-  - `tool/` = Dart CLI helpers (for example `tool/verify.dart`).
+  - `scripts/` = Dart CLI helpers (for example `scripts/verify.dart`).
   - `tools/` = other utility artifacts.
 
 ## Start-of-session checklist
@@ -39,7 +38,7 @@ Workspace: C:\Users\jeff\StudioProjects\gdar
 ## Validation defaults
 - Prefer targeted checks for speed while iterating.
 - Before handoff/review, run broader verification when practical:
-  - `dart run tool/verify.dart`
+  - `dart run scripts/verify.dart`
 - User may run full test/build pipeline manually.
 
 ## Environment caveat (Codex sandbox)

@@ -36,10 +36,9 @@ class ClipboardFeedbackOverlay extends StatelessWidget {
               const SizedBox(height: 16),
               Text(
                 'Found Shared Show...',
-                style: Theme.of(context)
-                    .textTheme
-                    .titleMedium
-                    ?.copyWith(fontWeight: FontWeight.bold),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 4),
               Text(

@@ -30,8 +30,9 @@ Future<void> main(List<String> args) async {
     return;
   }
 
-  final effectiveTargets =
-      targets.isEmpty ? <String>['lib', 'test', 'tool'] : targets;
+  final effectiveTargets = targets.isEmpty
+      ? <String>['apps', 'packages', 'scripts']
+      : targets;
 
   for (final target in effectiveTargets) {
     final type = FileSystemEntity.typeSync(target);
@@ -74,7 +75,7 @@ Future<int> _runCommand({
   required List<String> arguments,
   required String label,
 }) async {
-  stdout.writeln('\\n$label: $executable ${arguments.join(' ')}');
+  stdout.writeln('\n$label: $executable ${arguments.join(' ')}');
 
   final process = await Process.start(
     executable,
@@ -90,17 +91,17 @@ Future<int> _runCommand({
 }
 
 void _printUsage() {
-  stdout.writeln('''Usage:
-  dart run tool/verify.dart [options] [targets...]
-
-Options:
-  --no-format   Skip dart format
-  --no-analyze  Skip dart analyze
-  -h, --help    Show this help
-
-Examples:
-  dart run tool/verify.dart
-  dart run tool/verify.dart lib test
-  dart run tool/verify.dart --no-format lib
-''');
+  stdout.writeln('Usage:');
+  stdout.writeln('  dart run scripts/verify.dart [options] [targets...]');
+  stdout.writeln('');
+  stdout.writeln('Options:');
+  stdout.writeln('  --no-format   Skip formatting check');
+  stdout.writeln('  --no-analyze  Skip static analysis check');
+  stdout.writeln('  -v, --verbose Show detailed output');
+  stdout.writeln('  -h, --help    Show this help message');
+  stdout.writeln('');
+  stdout.writeln('Examples:');
+  stdout.writeln('  dart run scripts/verify.dart');
+  stdout.writeln('  dart run scripts/verify.dart apps packages');
+  stdout.writeln('  dart run scripts/verify.dart --no-format apps');
 }

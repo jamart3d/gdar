@@ -10,10 +10,7 @@ import 'package:shakedown_core/services/device_service.dart';
 class PlaybackControls extends StatefulWidget {
   final double panelPosition;
 
-  const PlaybackControls({
-    super.key,
-    this.panelPosition = 0.0,
-  });
+  const PlaybackControls({super.key, this.panelPosition = 0.0});
 
   @override
   State<PlaybackControls> createState() => _PlaybackControlsState();
@@ -56,8 +53,10 @@ class _PlaybackControlsState extends State<PlaybackControls>
       return const SizedBox.shrink();
     }
 
-    final double scaleFactor =
-        FontLayoutConfig.getEffectiveScale(context, settingsProvider);
+    final double scaleFactor = FontLayoutConfig.getEffectiveScale(
+      context,
+      settingsProvider,
+    );
 
     // Standard Material 3 sizes
     final double iconSize = 32.0 * scaleFactor;
@@ -90,8 +89,10 @@ class _PlaybackControlsState extends State<PlaybackControls>
             } else {
               if (_breathingController.isAnimating) {
                 _breathingController.stop();
-                _breathingController.animateTo(0,
-                    duration: const Duration(milliseconds: 300));
+                _breathingController.animateTo(
+                  0,
+                  duration: const Duration(milliseconds: 300),
+                );
               }
             }
 
@@ -113,7 +114,8 @@ class _PlaybackControlsState extends State<PlaybackControls>
                           ? null
                           : () {
                               AppHaptics.selectionClick(
-                                  context.read<DeviceService>());
+                                context.read<DeviceService>(),
+                              );
                               audioProvider.seekToPrevious();
                             },
                       tooltip: 'Skip Previous',
@@ -141,7 +143,8 @@ class _PlaybackControlsState extends State<PlaybackControls>
                           color: colorScheme.primary,
                           shape: BoxShape.circle,
                         ),
-                        child: (processingState == ProcessingState.loading ||
+                        child:
+                            (processingState == ProcessingState.loading ||
                                 processingState == ProcessingState.buffering)
                             ? Padding(
                                 padding: const EdgeInsets.all(18.0),
@@ -155,7 +158,8 @@ class _PlaybackControlsState extends State<PlaybackControls>
                                 iconSize: playIconSize,
                                 onPressed: () {
                                   AppHaptics.selectionClick(
-                                      context.read<DeviceService>());
+                                    context.read<DeviceService>(),
+                                  );
                                   if (playing) {
                                     audioProvider.pause();
                                   } else {
@@ -190,7 +194,8 @@ class _PlaybackControlsState extends State<PlaybackControls>
                           ? null
                           : () {
                               AppHaptics.selectionClick(
-                                  context.read<DeviceService>());
+                                context.read<DeviceService>(),
+                              );
                               audioProvider.seekToNext();
                             },
                       tooltip: 'Skip Next',

@@ -12,27 +12,34 @@ class TipsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(builder: (context, constraints) {
-      return SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 24.0),
-        child: ConstrainedBox(
-          constraints: BoxConstraints(minHeight: constraints.maxHeight),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              const SizedBox(height: 20),
-              OnboardingComponents.buildSectionHeader(
-                  context, 'Quick Tips', scaleFactor),
-              const SizedBox(height: 20),
-              OnboardingComponents.buildTipRow(
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 24.0),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minHeight: constraints.maxHeight),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                const SizedBox(height: 20),
+                OnboardingComponents.buildSectionHeader(
+                  context,
+                  'Quick Tips',
+                  scaleFactor,
+                ),
+                const SizedBox(height: 20),
+                OnboardingComponents.buildTipRow(
                   context,
                   OnboardingComponents.buildIconBubble(
-                      context, Icons.touch_app_rounded),
+                    context,
+                    Icons.touch_app_rounded,
+                  ),
                   'Long press a show card for playing, single tap track play is off by default',
-                  scaleFactor),
-              const SizedBox(height: 16),
-              OnboardingComponents.buildTipRow(
+                  scaleFactor,
+                ),
+                const SizedBox(height: 16),
+                OnboardingComponents.buildTipRow(
                   context,
                   SizedBox(
                     width: 28 * scaleFactor,
@@ -46,44 +53,57 @@ class TipsPage extends StatelessWidget {
                     ),
                   ),
                   'Tap to randomly select and discover a show you may not have heard',
-                  scaleFactor),
-              const SizedBox(height: 16),
-              OnboardingComponents.buildTipRow(
+                  scaleFactor,
+                ),
+                const SizedBox(height: 16),
+                OnboardingComponents.buildTipRow(
                   context,
                   OnboardingComponents.buildIconBubble(
-                      context, Icons.star_rate_rounded),
+                    context,
+                    Icons.star_rate_rounded,
+                  ),
                   'Rate shows for random selection to use',
-                  scaleFactor),
-              const SizedBox(height: 16),
-              OnboardingComponents.buildTipRow(
+                  scaleFactor,
+                ),
+                const SizedBox(height: 16),
+                OnboardingComponents.buildTipRow(
                   context,
                   OnboardingComponents.buildIconBubble(
-                      context,
-                      context.watch<ThemeProvider>().themeStyle ==
-                              ThemeStyle.fruit
-                          ? LucideIcons.settings
-                          : Icons.settings_rounded),
+                    context,
+                    context.watch<ThemeProvider>().themeStyle ==
+                            ThemeStyle.fruit
+                        ? LucideIcons.settings
+                        : Icons.settings_rounded,
+                  ),
                   'Check out the settings for more options and usage instructions',
-                  scaleFactor),
-              const SizedBox(height: 16),
-              OnboardingComponents.buildTipRow(
+                  scaleFactor,
+                ),
+                const SizedBox(height: 16),
+                OnboardingComponents.buildTipRow(
                   context,
                   OnboardingComponents.buildIconBubble(
-                      context, Icons.info_rounded),
+                    context,
+                    Icons.info_rounded,
+                  ),
                   'Enable playback, play show on startup, next time opening shakedown, it will start and play a random show!',
-                  scaleFactor),
-              const SizedBox(height: 16),
-              OnboardingComponents.buildTipRow(
+                  scaleFactor,
+                ),
+                const SizedBox(height: 16),
+                OnboardingComponents.buildTipRow(
                   context,
                   OnboardingComponents.buildIconBubble(
-                      context, Icons.settings_voice_rounded),
+                    context,
+                    Icons.settings_voice_rounded,
+                  ),
                   'Gemini Assistant can open shakedown and play a random show',
-                  scaleFactor),
-              const SizedBox(height: 40),
-            ],
+                  scaleFactor,
+                ),
+                const SizedBox(height: 40),
+              ],
+            ),
           ),
-        ),
-      );
-    });
+        );
+      },
+    );
   }
 }

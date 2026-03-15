@@ -87,13 +87,18 @@ class TvInteractionModal extends StatelessWidget {
                 onPlay();
               },
               child: Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 12,
+                ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.play_circle_filled_rounded,
-                        color: colorScheme.primary, size: 28),
+                    Icon(
+                      Icons.play_circle_filled_rounded,
+                      color: colorScheme.primary,
+                      size: 28,
+                    ),
                     const SizedBox(width: 16),
                     Text(
                       'Play Now',
@@ -114,13 +119,18 @@ class TvInteractionModal extends StatelessWidget {
                 onRate();
               },
               child: Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 12,
+                ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.star_rounded,
-                        color: colorScheme.secondary, size: 28),
+                    Icon(
+                      Icons.star_rounded,
+                      color: colorScheme.secondary,
+                      size: 28,
+                    ),
                     const SizedBox(width: 16),
                     Text(
                       'Rate / Details',

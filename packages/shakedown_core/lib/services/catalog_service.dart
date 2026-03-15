@@ -47,10 +47,10 @@ class CatalogService {
   /// Initializes the service.
   /// 1. Opens Hive Box for Ratings.
   /// 2. Loads JSON catalog (background isolate).
-  Future<void> initialize(
-      {required SharedPreferences prefs,
-      CatalogLoadingStrategy strategy =
-          CatalogLoadingStrategy.inMemory}) async {
+  Future<void> initialize({
+    required SharedPreferences prefs,
+    CatalogLoadingStrategy strategy = CatalogLoadingStrategy.inMemory,
+  }) async {
     if (_isInitialized) return;
 
     // 1. Init Hive (native only — Hive v2 is not Wasm-compatible)
@@ -84,8 +84,9 @@ class CatalogService {
 
   Future<void> _loadShowsFromJson() async {
     try {
-      final String jsonString =
-          await rootBundle.loadString(AssetConstants.optimizedCatalogJson);
+      final String jsonString = await rootBundle.loadString(
+        AssetConstants.optimizedCatalogJson,
+      );
 
       // Use compute for JSON parsing to avoid blocking UI on native platforms.
       // On Wasm, isolates/compute are not available, so we use Future.microtask
@@ -109,8 +110,9 @@ class CatalogService {
   @visibleForTesting
   static List<Show> parseShows(String jsonString) {
     final List<dynamic> jsonList = json.decode(jsonString);
-    final List<Show> loadedShows =
-        jsonList.map((j) => Show.fromJson(j)).toList();
+    final List<Show> loadedShows = jsonList
+        .map((j) => Show.fromJson(j))
+        .toList();
 
     // Post-processing (Unify Venues, Merge Dates, Sort)
     // Mirrors logic from legacy ShowService
@@ -138,13 +140,14 @@ class CatalogService {
       } else {
         // Create fresh object with copied list
         mergedShows[show.date] = Show(
-            name: show.name,
-            artist: show.artist,
-            date: show.date,
-            venue: show.venue, // Unified venue
-            location: show.location,
-            sources: List.from(show.sources),
-            hasFeaturedTrack: show.hasFeaturedTrack);
+          name: show.name,
+          artist: show.artist,
+          date: show.date,
+          venue: show.venue, // Unified venue
+          location: show.location,
+          sources: List.from(show.sources),
+          hasFeaturedTrack: show.hasFeaturedTrack,
+        );
       }
     }
 
@@ -155,8 +158,11 @@ class CatalogService {
 
     // Final touch-ups
     for (final show in finalShows) {
-      show.hasFeaturedTrack = show.sources.any((source) => source.tracks
-          .any((track) => track.title.toLowerCase().startsWith('gd')));
+      show.hasFeaturedTrack = show.sources.any(
+        (source) => source.tracks.any(
+          (track) => track.title.toLowerCase().startsWith('gd'),
+        ),
+      );
       show.sources.sort((a, b) => a.id.compareTo(b.id));
     }
 
@@ -175,7 +181,10 @@ class CatalogService {
         _webRatings.remove(sourceId);
       } else {
         _webRatings[sourceId] = Rating(
-            sourceId: sourceId, rating: ratingValue, timestamp: DateTime.now());
+          sourceId: sourceId,
+          rating: ratingValue,
+          timestamp: DateTime.now(),
+        );
       }
       return;
     }

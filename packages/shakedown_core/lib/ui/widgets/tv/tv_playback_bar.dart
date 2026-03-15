@@ -31,8 +31,9 @@ class _TvPlaybackBarState extends State<TvPlaybackBar> {
     final colorScheme = Theme.of(context).colorScheme;
 
     // Use a translucent "Glass" color for the capsule
-    final capsuleColor =
-        colorScheme.surfaceContainerHighest.withValues(alpha: 0.6);
+    final capsuleColor = colorScheme.surfaceContainerHighest.withValues(
+      alpha: 0.6,
+    );
 
     return Container(
       height: 64,
@@ -111,15 +112,25 @@ class _TvPlaybackBarState extends State<TvPlaybackBar> {
               onKeyEvent: (node, event) {
                 if (event is KeyDownEvent) {
                   if (event.logicalKey == LogicalKeyboardKey.arrowLeft) {
-                    player.seek(Duration(
-                        seconds: (player.position.inSeconds - 10)
-                            .clamp(0, player.duration?.inSeconds ?? 0)));
+                    player.seek(
+                      Duration(
+                        seconds: (player.position.inSeconds - 10).clamp(
+                          0,
+                          player.duration?.inSeconds ?? 0,
+                        ),
+                      ),
+                    );
                     return KeyEventResult.handled;
                   } else if (event.logicalKey ==
                       LogicalKeyboardKey.arrowRight) {
-                    player.seek(Duration(
-                        seconds: (player.position.inSeconds + 10)
-                            .clamp(0, player.duration?.inSeconds ?? 0)));
+                    player.seek(
+                      Duration(
+                        seconds: (player.position.inSeconds + 10).clamp(
+                          0,
+                          player.duration?.inSeconds ?? 0,
+                        ),
+                      ),
+                    );
                     return KeyEventResult.handled;
                   } else if (event.logicalKey == LogicalKeyboardKey.arrowDown) {
                     if (widget.onDown != null) {
@@ -145,23 +156,27 @@ class _TvPlaybackBarState extends State<TvPlaybackBar> {
                       builder: (context, durationSnapshot) {
                         final total = durationSnapshot.data ?? Duration.zero;
                         final maxSeconds = total.inSeconds.toDouble();
-                        final value = position.inSeconds
-                            .toDouble()
-                            .clamp(0.0, maxSeconds > 0 ? maxSeconds : 1.0);
+                        final value = position.inSeconds.toDouble().clamp(
+                          0.0,
+                          maxSeconds > 0 ? maxSeconds : 1.0,
+                        );
 
                         return SliderTheme(
                           data: SliderTheme.of(context).copyWith(
                             trackHeight: 4,
                             thumbShape: const RoundSliderThumbShape(
-                                enabledThumbRadius: 6),
+                              enabledThumbRadius: 6,
+                            ),
                             overlayShape: const RoundSliderOverlayShape(
-                                overlayRadius: 12),
+                              overlayRadius: 12,
+                            ),
                             activeTrackColor: colorScheme.primary,
-                            inactiveTrackColor:
-                                colorScheme.onSurface.withValues(alpha: 0.2),
+                            inactiveTrackColor: colorScheme.onSurface
+                                .withValues(alpha: 0.2),
                             thumbColor: colorScheme.primary,
-                            overlayColor:
-                                colorScheme.primary.withValues(alpha: 0.2),
+                            overlayColor: colorScheme.primary.withValues(
+                              alpha: 0.2,
+                            ),
                           ),
                           child: ExcludeFocus(
                             child: Slider(
@@ -169,8 +184,9 @@ class _TvPlaybackBarState extends State<TvPlaybackBar> {
                               max: maxSeconds > 0 ? maxSeconds : 1.0,
                               value: value,
                               onChanged: (newValue) {
-                                player
-                                    .seek(Duration(seconds: newValue.round()));
+                                player.seek(
+                                  Duration(seconds: newValue.round()),
+                                );
                               },
                             ),
                           ),

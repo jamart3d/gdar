@@ -74,9 +74,9 @@ class ThemeProvider with ChangeNotifier {
   }
 
   ThemeProvider({this.isTv = false})
-      : _themeModeIndex = isTv ? 2 : 0,
-        _themeStyleIndex = 0, // Default to Android on all platforms
-        _fruitColorOptionIndex = 0 {
+    : _themeModeIndex = isTv ? 2 : 0,
+      _themeStyleIndex = 0, // Default to Android on all platforms
+      _fruitColorOptionIndex = 0 {
     _instance = this;
     unawaited(_loadThemePreference());
   }

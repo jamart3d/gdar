@@ -134,14 +134,15 @@ class _TvSettingsScreenState extends State<TvSettingsScreen> {
                     padding: const EdgeInsets.all(32.0),
                     child: Row(
                       children: [
-                        Icon(Icons.settings_rounded,
-                            size: 32, color: colorScheme.primary),
+                        Icon(
+                          Icons.settings_rounded,
+                          size: 32,
+                          color: colorScheme.primary,
+                        ),
                         const SizedBox(width: 16),
                         Text(
                           'Settings',
-                          style: Theme.of(context)
-                              .textTheme
-                              .headlineSmall
+                          style: Theme.of(context).textTheme.headlineSmall
                               ?.copyWith(
                                 fontWeight: FontWeight.bold,
                                 color: colorScheme.onSurface,
@@ -157,13 +158,17 @@ class _TvSettingsScreenState extends State<TvSettingsScreen> {
                         final isSelected = _selectedIndex == index;
                         return Padding(
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 16, vertical: 4),
+                            horizontal: 16,
+                            vertical: 4,
+                          ),
                           child: TvFocusWrapper(
                             onTap: () => setState(() => _selectedIndex = index),
                             borderRadius: BorderRadius.circular(12),
                             child: Container(
                               padding: const EdgeInsets.symmetric(
-                                  horizontal: 24, vertical: 16),
+                                horizontal: 24,
+                                vertical: 16,
+                              ),
                               decoration: BoxDecoration(
                                 color: isSelected
                                     ? colorScheme.primaryContainer
@@ -220,16 +225,16 @@ class _TvSettingsScreenState extends State<TvSettingsScreen> {
               child: _selectedIndex == 6
                   ? const RatedShowsBody(key: ValueKey(6))
                   : _selectedIndex == 8
-                      ? const SingleChildScrollView(
-                          key: ValueKey(8),
-                          padding: EdgeInsets.all(32),
-                          child: AboutBody(),
-                        )
-                      : SingleChildScrollView(
-                          key: ValueKey(_selectedIndex),
-                          padding: const EdgeInsets.all(32),
-                          child: activeSection,
-                        ),
+                  ? const SingleChildScrollView(
+                      key: ValueKey(8),
+                      padding: EdgeInsets.all(32),
+                      child: AboutBody(),
+                    )
+                  : SingleChildScrollView(
+                      key: ValueKey(_selectedIndex),
+                      padding: const EdgeInsets.all(32),
+                      child: activeSection,
+                    ),
             ),
           ),
         ],

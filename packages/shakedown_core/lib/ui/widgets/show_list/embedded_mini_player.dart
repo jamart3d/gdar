@@ -46,7 +46,9 @@ class EmbeddedMiniPlayer extends StatelessWidget {
 
     return Container(
       padding: EdgeInsets.symmetric(
-          horizontal: horizontalPad, vertical: verticalPad),
+        horizontal: horizontalPad,
+        vertical: verticalPad,
+      ),
       decoration: BoxDecoration(
         color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
         borderRadius: BorderRadius.circular(16),
@@ -61,7 +63,8 @@ class EmbeddedMiniPlayer extends StatelessWidget {
               final processingState = playerState?.processingState;
               final playing = playerState?.playing;
 
-              bool isLoading = processingState == ProcessingState.loading ||
+              bool isLoading =
+                  processingState == ProcessingState.loading ||
                   processingState == ProcessingState.buffering;
               final bool isPlaying = playing == true;
 
@@ -113,7 +116,8 @@ class EmbeddedMiniPlayer extends StatelessWidget {
                                   child: CircularProgressIndicator(
                                     strokeWidth: 2,
                                     valueColor: AlwaysStoppedAnimation<Color>(
-                                        colorScheme.onPrimary),
+                                      colorScheme.onPrimary,
+                                    ),
                                   ),
                                 )
                               : Icon(
@@ -172,10 +176,11 @@ class EmbeddedMiniPlayer extends StatelessWidget {
                                 fontFamily: 'Roboto',
                                 fontSize: timeSize,
                                 fontWeight: FontWeight.w400,
-                                color: colorScheme.onSurface
-                                    .withValues(alpha: 0.5),
+                                color: colorScheme.onSurface.withValues(
+                                  alpha: 0.5,
+                                ),
                                 fontFeatures: const [
-                                  FontFeature.tabularFigures()
+                                  FontFeature.tabularFigures(),
                                 ],
                               ),
                             );
@@ -198,8 +203,10 @@ class EmbeddedMiniPlayer extends StatelessWidget {
                       builder: (context, durSnap) {
                         final dur = durSnap.data ?? Duration.zero;
                         final double progress = dur.inMilliseconds > 0
-                            ? (pos.inMilliseconds / dur.inMilliseconds)
-                                .clamp(0.0, 1.0)
+                            ? (pos.inMilliseconds / dur.inMilliseconds).clamp(
+                                0.0,
+                                1.0,
+                              )
                             : 0.0;
 
                         return Stack(
@@ -208,8 +215,9 @@ class EmbeddedMiniPlayer extends StatelessWidget {
                               height: 2,
                               width: double.infinity,
                               decoration: BoxDecoration(
-                                color: colorScheme.onSurface
-                                    .withValues(alpha: 0.1),
+                                color: colorScheme.onSurface.withValues(
+                                  alpha: 0.1,
+                                ),
                                 borderRadius: BorderRadius.circular(1),
                               ),
                             ),

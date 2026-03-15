@@ -50,7 +50,8 @@ class LiquidGlassWrapper extends StatelessWidget {
         ? blur.clamp(4.0, 8.0)
         : (kIsWeb ? blur.clamp(6.0, 12.0) : blur);
 
-    final baseColor = color ??
+    final baseColor =
+        color ??
         (Theme.of(context).brightness == Brightness.dark
             ? Colors.black
             : Colors.white);
@@ -58,7 +59,8 @@ class LiquidGlassWrapper extends StatelessWidget {
     // Bypasses the expensive graphical blur pass if in simple performance mode
     // OR if we are on a platform that shouldn't have high-end liquid glass effects
     // OR if the Fruit theme is active and the user explicitly disabled the Liquid Glass setting.
-    final bool shouldBypassBlur = settingsMode ||
+    final bool shouldBypassBlur =
+        settingsMode ||
         !isAllowedPlatform ||
         isWasmSafeMode() ||
         (isFruitTheme && !isFruitGlassEnabled);
@@ -68,18 +70,19 @@ class LiquidGlassWrapper extends StatelessWidget {
       // for small elements (icons/badges), we keep the subtle translucency but without blur.
       final double effectiveOpacity =
           (isFruitTheme && !isFruitGlassEnabled && opacity > 0.5)
-              ? 1.0
-              : opacity;
+          ? 1.0
+          : opacity;
 
       return ClipRRect(
         borderRadius: borderRadius ?? BorderRadius.zero,
         child: Container(
           decoration: BoxDecoration(
             color: baseColor.withValues(
-                alpha: !isAllowedPlatform && !shouldBypassBlur
-                    ? (effectiveOpacity > 0.5 ? 1.0 : effectiveOpacity * 2.0)
+              alpha: !isAllowedPlatform && !shouldBypassBlur
+                  ? (effectiveOpacity > 0.5 ? 1.0 : effectiveOpacity * 2.0)
                         .clamp(0.0, 1.0)
-                    : effectiveOpacity),
+                  : effectiveOpacity,
+            ),
             borderRadius: borderRadius,
             border: (isFruitTheme && !isFruitGlassEnabled) || !showBorder
                 ? null

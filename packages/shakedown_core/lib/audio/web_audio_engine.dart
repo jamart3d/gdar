@@ -154,7 +154,8 @@ class WebAudioEngine implements GdarAudioInterface {
 
     // Soft Stitching at T-0.5s
     if (remaining <= 0.5 && remaining > 0.25) {
-      if (_maxObservedDrift > 50.0) { // Threshold for glue
+      if (_maxObservedDrift > 50.0) {
+        // Threshold for glue
         _injectFallbackGlue();
       }
       _handleSoftStitch();
@@ -162,13 +163,18 @@ class WebAudioEngine implements GdarAudioInterface {
   }
 
   void _injectFallbackGlue() {
-    _emitTelemetry(log: 'Stability low (Drift: ${_maxObservedDrift}ms). Injecting 100ms silent glue.');
+    _emitTelemetry(
+      log:
+          'Stability low (Drift: ${_maxObservedDrift}ms). Injecting 100ms silent glue.',
+    );
   }
 
   void _handleSoftStitch() {
     // In real impl: Seamlessly transition to next buffered segment
     // We update MediaSession metadata for the new show segment
-    _emitTelemetry(log: 'Soft Stitching: Syncing MediaSession for next show segment');
+    _emitTelemetry(
+      log: 'Soft Stitching: Syncing MediaSession for next show segment',
+    );
 
     // Simulate continuity bridge
     _trackPosition = 0.0;

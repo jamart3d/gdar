@@ -26,8 +26,10 @@ class RatedShowsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     // Only watch ShowListProvider, not SettingsProvider (at least for data)
     final settingsProvider = context.watch<SettingsProvider>();
-    final scaleFactor =
-        FontLayoutConfig.getEffectiveScale(context, settingsProvider);
+    final scaleFactor = FontLayoutConfig.getEffectiveScale(
+      context,
+      settingsProvider,
+    );
     final textTheme = Theme.of(context).textTheme;
 
     final appBarTitleStyle = textTheme.titleLarge?.copyWith(
@@ -49,8 +51,10 @@ class RatedShowsScreen extends StatelessWidget {
           audioProvider.currentSource != null) {
         seed = audioProvider.currentSource!.id;
       }
-      backgroundColor = ColorGenerator.getColor(seed,
-          brightness: Theme.of(context).brightness);
+      backgroundColor = ColorGenerator.getColor(
+        seed,
+        brightness: Theme.of(context).brightness,
+      );
     }
 
     final baseTheme = Theme.of(context);
@@ -71,10 +75,7 @@ class RatedShowsScreen extends StatelessWidget {
       curve: Curves.easeInOut,
       child: Scaffold(
         appBar: AppBar(
-          title: Text(
-            'Rated Shows Library',
-            style: appBarTitleStyle,
-          ),
+          title: Text('Rated Shows Library', style: appBarTitleStyle),
           elevation: 0,
         ),
         body: const RatedShowsBody(),
@@ -98,7 +99,7 @@ class _RatedShowsBodyState extends State<RatedShowsBody>
     3,
     2,
     1,
-    -1
+    -1,
   ]; // Played, 3 Stars, 2 Stars, 1 Star, Blocked
 
   @override
@@ -182,8 +183,10 @@ class _RatedShowsBodyState extends State<RatedShowsBody>
   Widget build(BuildContext context) {
     final showListProvider = context.watch<ShowListProvider>();
     final settingsProvider = context.watch<SettingsProvider>();
-    final scaleFactor =
-        FontLayoutConfig.getEffectiveScale(context, settingsProvider);
+    final scaleFactor = FontLayoutConfig.getEffectiveScale(
+      context,
+      settingsProvider,
+    );
     final textTheme = Theme.of(context).textTheme;
     final tabLabelStyle = textTheme.labelLarge?.copyWith(
       fontSize: 9.0 * scaleFactor,
@@ -195,19 +198,20 @@ class _RatedShowsBodyState extends State<RatedShowsBody>
           valueListenable: CatalogService().historyListenable,
           builder: (context, historyBox, _) {
             return ValueListenableBuilder<Box<Rating>>(
-                valueListenable: CatalogService().ratingsListenable,
-                builder: (context, ratingsBox, _) {
-                  return TabBar(
-                    controller: _tabController,
-                    isScrollable: true,
-                    labelStyle: tabLabelStyle,
-                    unselectedLabelStyle: tabLabelStyle,
-                    tabs: _tabs.map((r) {
-                      final count = _getShowCount(r, showListProvider);
-                      return Tab(text: _getTabLabel(r, count));
-                    }).toList(),
-                  );
-                });
+              valueListenable: CatalogService().ratingsListenable,
+              builder: (context, ratingsBox, _) {
+                return TabBar(
+                  controller: _tabController,
+                  isScrollable: true,
+                  labelStyle: tabLabelStyle,
+                  unselectedLabelStyle: tabLabelStyle,
+                  tabs: _tabs.map((r) {
+                    final count = _getShowCount(r, showListProvider);
+                    return Tab(text: _getTabLabel(r, count));
+                  }).toList(),
+                );
+              },
+            );
           },
         ),
         Expanded(
@@ -249,8 +253,10 @@ class _RatedShowListState extends State<_RatedShowList> {
     final settingsProvider = context.watch<SettingsProvider>();
     final audioProvider = context.watch<AudioProvider>();
     final catalog = CatalogService();
-    final scaleFactor =
-        FontLayoutConfig.getEffectiveScale(context, settingsProvider);
+    final scaleFactor = FontLayoutConfig.getEffectiveScale(
+      context,
+      settingsProvider,
+    );
 
     // 1. Get all shows
     final allShows = showListProvider.allShows;
@@ -264,8 +270,9 @@ class _RatedShowListState extends State<_RatedShowList> {
       // Special handling for "Played" tab to avoid duplicates
       if (widget.rating == -2) {
         // 1. Find sources explicitly marked as played
-        final explicitlyPlayedSources =
-            show.sources.where((s) => catalog.isPlayed(s.id)).toList();
+        final explicitlyPlayedSources = show.sources
+            .where((s) => catalog.isPlayed(s.id))
+            .toList();
 
         for (var source in explicitlyPlayedSources) {
           flatSources.add((show: show, source: source));
@@ -311,11 +318,11 @@ class _RatedShowListState extends State<_RatedShowList> {
     if (flatSources.isEmpty) {
       return Center(
         child: Text(
-            'No shows found with rating: ${_getTabLabel(widget.rating)}',
-            style: Theme.of(context)
-                .textTheme
-                .bodyMedium
-                ?.copyWith(fontSize: 9.0 * scaleFactor)),
+          'No shows found with rating: ${_getTabLabel(widget.rating)}',
+          style: Theme.of(
+            context,
+          ).textTheme.bodyMedium?.copyWith(fontSize: 9.0 * scaleFactor),
+        ),
       );
     }
 
@@ -348,16 +355,19 @@ class _RatedShowListState extends State<_RatedShowList> {
   }
 
   Widget _buildRatedSourceItem(
-      BuildContext context,
-      Show show,
-      Source source,
-      bool isPlaying,
-      int rating,
-      SettingsProvider settingsProvider,
-      AudioProvider audioProvider) {
+    BuildContext context,
+    Show show,
+    Source source,
+    bool isPlaying,
+    int rating,
+    SettingsProvider settingsProvider,
+    AudioProvider audioProvider,
+  ) {
     final catalog = CatalogService();
-    final scaleFactor =
-        FontLayoutConfig.getEffectiveScale(context, settingsProvider);
+    final scaleFactor = FontLayoutConfig.getEffectiveScale(
+      context,
+      settingsProvider,
+    );
     final colorScheme = Theme.of(context).colorScheme;
 
     // Use SourceListItem logic but wrapped with Show info
@@ -375,7 +385,8 @@ class _RatedShowListState extends State<_RatedShowList> {
             if (isPlaying) {
               if (isTv) {
                 unawaited(
-                    AppHaptics.selectionClick(context.read<DeviceService>()));
+                  AppHaptics.selectionClick(context.read<DeviceService>()),
+                );
                 context.read<AudioProvider>().requestPlaybackFocus();
                 return;
               }
@@ -384,23 +395,29 @@ class _RatedShowListState extends State<_RatedShowList> {
                 context.read<AnimationController>().stop();
               } catch (_) {}
 
-              unawaited(Navigator.of(context).push(
-                PageRouteBuilder(
-                  pageBuilder: (context, animation, secondaryAnimation) =>
-                      const PlaybackScreen(),
-                  transitionDuration: const Duration(milliseconds: 300),
-                  transitionsBuilder:
-                      (context, animation, secondaryAnimation, child) {
-                    const begin = Offset(0.0, 1.0);
-                    const end = Offset.zero;
-                    const curve = Curves.easeInOut;
-                    var tween = Tween(begin: begin, end: end)
-                        .chain(CurveTween(curve: curve));
-                    return SlideTransition(
-                        position: animation.drive(tween), child: child);
-                  },
+              unawaited(
+                Navigator.of(context).push(
+                  PageRouteBuilder(
+                    pageBuilder: (context, animation, secondaryAnimation) =>
+                        const PlaybackScreen(),
+                    transitionDuration: const Duration(milliseconds: 300),
+                    transitionsBuilder:
+                        (context, animation, secondaryAnimation, child) {
+                          const begin = Offset(0.0, 1.0);
+                          const end = Offset.zero;
+                          const curve = Curves.easeInOut;
+                          var tween = Tween(
+                            begin: begin,
+                            end: end,
+                          ).chain(CurveTween(curve: curve));
+                          return SlideTransition(
+                            position: animation.drive(tween),
+                            child: child,
+                          );
+                        },
+                  ),
                 ),
-              ));
+              );
 
               // Resume clock
               if (context.mounted) {
@@ -417,15 +434,18 @@ class _RatedShowListState extends State<_RatedShowList> {
                 context.read<AnimationController>().stop();
               } catch (_) {}
 
-              unawaited(Navigator.of(context).push(
-                PageRouteBuilder(
-                  pageBuilder: (context, animation, secondaryAnimation) =>
-                      TrackListScreen(
+              unawaited(
+                Navigator.of(context).push(
+                  PageRouteBuilder(
+                    pageBuilder: (context, animation, secondaryAnimation) =>
+                        TrackListScreen(
                           show: singleSourceShow,
-                          source: singleSourceShow.sources.first),
-                  transitionDuration: isTv ? Duration.zero : Duration.zero,
+                          source: singleSourceShow.sources.first,
+                        ),
+                    transitionDuration: isTv ? Duration.zero : Duration.zero,
+                  ),
                 ),
-              ));
+              );
 
               // Resume clock
               if (context.mounted) {
@@ -476,9 +496,7 @@ class _RatedShowListState extends State<_RatedShowList> {
                 Expanded(
                   child: Text(
                     show.formattedDateYearFirst,
-                    style: Theme.of(context)
-                        .textTheme
-                        .titleMedium
+                    style: Theme.of(context).textTheme.titleMedium
                         ?.copyWith(
                           fontSize: 9.5,
                           fontWeight: FontWeight.bold,
@@ -501,14 +519,12 @@ class _RatedShowListState extends State<_RatedShowList> {
                         padding: const EdgeInsets.only(right: 8.0),
                         child: Text(
                           '${count}x played',
-                          style: Theme.of(context)
-                              .textTheme
-                              .bodySmall
+                          style: Theme.of(context).textTheme.bodySmall
                               ?.copyWith(
                                 fontSize: 7.0,
                                 color: isPlaying
                                     ? colorScheme.onTertiaryContainer
-                                        .withValues(alpha: 0.7)
+                                          .withValues(alpha: 0.7)
                                     : colorScheme.onSurfaceVariant,
                               )
                               .apply(fontSizeFactor: scaleFactor),

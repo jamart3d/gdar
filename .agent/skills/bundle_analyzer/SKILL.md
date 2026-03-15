@@ -11,7 +11,8 @@ This skill analyzes the Flutter project's build artifacts to identify large asse
 
 1. **Analyze Web Bundle**:
    - Run `flutter build web --source-maps --release`
-   - Use `npx source-map-explorer build/web/main.dart.js` (if available) or manually audit `build/web/assets/`.
+   - Run `source-map-explorer apps/gdar_web/build/web/main.dart.js.map` to find bloated dependencies.
+   - Manually audit `build/web/assets/`.
 
 2. **Analyze Android Bundle**:
    - Run `flutter build appbundle --release`

@@ -73,7 +73,7 @@ class FontConfig {
   /// if it's one of the known bundled fonts.
   static String? resolve(String? fontFamily) {
     if (fontFamily == null) return null;
-    
+
     // If it already has the prefix, it's fine.
     if (fontFamily.startsWith('packages/shakedown_core/')) {
       return fontFamily;
@@ -81,17 +81,24 @@ class FontConfig {
 
     // Attempt to match raw name to a known font configuration.
     // 'rock_salt', 'RockSalt', 'Rock Salt' -> all should resolve to the correct path if possible.
-    final normalized = fontFamily.toLowerCase().replaceAll(' ', '').replaceAll('_', '');
-    
+    final normalized = fontFamily
+        .toLowerCase()
+        .replaceAll(' ', '')
+        .replaceAll('_', '');
+
     for (final entry in _registry.values) {
-       final configNormalized = entry.fontFamily.split('/').last.toLowerCase().replaceAll(' ', '');
-       final keyNormalized = entry.displayName.toLowerCase().replaceAll(' ', '');
-       
-       if (normalized == configNormalized || normalized == keyNormalized) {
-         return entry.fontFamily;
-       }
+      final configNormalized = entry.fontFamily
+          .split('/')
+          .last
+          .toLowerCase()
+          .replaceAll(' ', '');
+      final keyNormalized = entry.displayName.toLowerCase().replaceAll(' ', '');
+
+      if (normalized == configNormalized || normalized == keyNormalized) {
+        return entry.fontFamily;
+      }
     }
-    
+
     return fontFamily; // Fallback to whatever was provided
   }
 

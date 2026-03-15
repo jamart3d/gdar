@@ -56,8 +56,8 @@ class ShowListAppBar extends StatelessWidget implements PreferredSizeWidget {
 
     final Color? appBarBg = isLiquidGlassOff
         ? (isDarkMode
-            ? Theme.of(context).colorScheme.surface
-            : Theme.of(context).scaffoldBackgroundColor)
+              ? Theme.of(context).colorScheme.surface
+              : Theme.of(context).scaffoldBackgroundColor)
         : backgroundColor;
 
     if (isFruit) {
@@ -86,8 +86,12 @@ class ShowListAppBar extends StatelessWidget implements PreferredSizeWidget {
 
     final isTv = context.watch<DeviceService>().isTv;
 
-    Widget wrap(Widget child,
-        {VoidCallback? onTap, BorderRadius? radius, bool isCircle = false}) {
+    Widget wrap(
+      Widget child, {
+      VoidCallback? onTap,
+      BorderRadius? radius,
+      bool isCircle = false,
+    }) {
       final Widget wrapped = Padding(
         padding: const EdgeInsets.symmetric(horizontal: 8.0),
         child: isTv
@@ -191,13 +195,15 @@ class ShowListAppBar extends StatelessWidget implements PreferredSizeWidget {
               context.read<AnimationController>().stop();
             } catch (_) {}
 
-            unawaited(Navigator.of(context).push(
-              PageRouteBuilder(
-                pageBuilder: (context, animation, secondaryAnimation) =>
-                    const SettingsScreen(),
-                transitionDuration: Duration.zero,
+            unawaited(
+              Navigator.of(context).push(
+                PageRouteBuilder(
+                  pageBuilder: (context, animation, secondaryAnimation) =>
+                      const SettingsScreen(),
+                  transitionDuration: Duration.zero,
+                ),
               ),
-            ));
+            );
 
             // Resume clock on return
             if (context.mounted) {
@@ -217,13 +223,15 @@ class ShowListAppBar extends StatelessWidget implements PreferredSizeWidget {
             context.read<AnimationController>().stop();
           } catch (_) {}
 
-          unawaited(Navigator.of(context).push(
-            PageRouteBuilder(
-              pageBuilder: (context, animation, secondaryAnimation) =>
-                  const SettingsScreen(),
-              transitionDuration: Duration.zero,
+          unawaited(
+            Navigator.of(context).push(
+              PageRouteBuilder(
+                pageBuilder: (context, animation, secondaryAnimation) =>
+                    const SettingsScreen(),
+                transitionDuration: Duration.zero,
+              ),
             ),
-          ));
+          );
 
           if (context.mounted) {
             try {
@@ -246,7 +254,8 @@ class ShowListAppBar extends StatelessWidget implements PreferredSizeWidget {
           children: [
             // Left/Center Area: Title or Search
             Expanded(
-              child: showListProvider.isSearchVisible &&
+              child:
+                  showListProvider.isSearchVisible &&
                       searchController != null &&
                       searchFocusNode != null
                   ? Row(
@@ -301,11 +310,11 @@ class ShowListAppBar extends StatelessWidget implements PreferredSizeWidget {
     );
   }
 
-  Widget _buildFruitHeaderButton(BuildContext context,
-      {required IconData icon, required VoidCallback onPressed}) {
-    return FruitActionButton(
-      icon: icon,
-      onPressed: onPressed,
-    );
+  Widget _buildFruitHeaderButton(
+    BuildContext context, {
+    required IconData icon,
+    required VoidCallback onPressed,
+  }) {
+    return FruitActionButton(icon: icon, onPressed: onPressed);
   }
 }

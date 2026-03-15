@@ -1,34 +1,30 @@
----
-trigger: when_modifying_tests
----
+# Testing Stubs & Helpers
 
-# GDAR Testing & Mocking Requirements
+### 1. Mandatory Stubs
+When creating widget tests, you MUST provide mock stubs for these core provider methods. Failing to do so will result in `MissingStubError`.
 
-To prevent regression failures and "ProviderNotFoundException" errors, you MUST ensure that all mock providers used in widget tests implement the core set of properties required by the UI components.
+* **MockSettingsProvider**:
+  * `useNeumorphism` (bool)
+  * `performanceMode` (bool)
+  * `useTrueBlack` (bool)
+* **MockAudioProvider**:
+  * `isPlaying` (bool)
+  * `playbackState` (Stream) - Required for progress bar updates.
 
-### 1. SettingsProvider Stubs
-Any `MockSettingsProvider` or `FakeSettingsProvider` MUST stub the following getters, as they are watched by high-level wrappers like `TvFocusWrapper` and `AnimatedGradientBorder`:
-* `useNeumorphism` (bool)
-* `performanceMode` (bool)
-* `glowMode` (int)
-* `rgbAnimationSpeed` (double)
-
-### 2. AudioProvider Stubs
-Any `MockAudioProvider` MUST stub:
-* `isPlaying` (bool) - Used by the `MiniPlayer` and `PlaybackAppBar`.
-* `playbackState` (Stream) - Required for progress bar updates.
-
-### 3. Setup Pattern
-Always use the `createTestableWidget` helper from `test_helpers.dart` when setting up widget tests. This ensures a consistent `MultiProvider` tree.
+### 2. Setup Pattern
+Always use the `createTestableWidget` helper from your package's `test/helpers/` directory or the shared `packages/shakedown_core/test/helpers.dart`. This ensures a consistent `MultiProvider` tree.
 
 ```dart
 // Example: Correct test setup
-await tester.pumpWidget(
-  createTestableWidget(
-    child: MyWidget(),
-    settingsProvider: mockSettings,
-    audioProvider: mockAudio,
-    deviceService: mockDevice,
-  ),
-);
+testWidgets('Renders Playback Controls', (tester) async {
+  await tester.pumpWidget(createTestableWidget(
+    child: const PlaybackControls(),
+    settingsProvider: mockSettingsProvider,
+  ));
+});
 ```
+
+### 3. Mock Regeneration
+If the mock classes (e.g., `MockSettingsProvider`) are missing methods, run:
+`dart run build_runner build --delete-conflicting-outputs`
+from the package root where the mocks are defined.

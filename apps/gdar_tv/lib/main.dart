@@ -22,33 +22,37 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 Future<void> main() async {
-  await runZonedGuarded(() async {
-    WidgetsFlutterBinding.ensureInitialized();
-    initLogger();
+  await runZonedGuarded(
+    () async {
+      WidgetsFlutterBinding.ensureInitialized();
+      initLogger();
 
-    final prefs = await SharedPreferences.getInstance();
+      final prefs = await SharedPreferences.getInstance();
 
-    // Force TV mode for this application host
-    const bool isTv = true;
+      // Force TV mode for this application host
+      const bool isTv = true;
 
-    if (!kIsWeb) {
-      await SystemChrome.setPreferredOrientations([
-        DeviceOrientation.landscapeLeft,
-        DeviceOrientation.landscapeRight,
-      ]);
+      if (!kIsWeb) {
+        await SystemChrome.setPreferredOrientations([
+          DeviceOrientation.landscapeLeft,
+          DeviceOrientation.landscapeRight,
+        ]);
 
-      await JustAudioBackground.init(
-        androidNotificationChannelId: 'com.jamart3d.shakedown.channel.audio',
-        androidNotificationChannelName: 'Audio Playback',
-        androidNotificationOngoing: true,
-        androidNotificationIcon: AssetConstants.defaultAndroidNotificationIcon,
-      );
-    }
+        await JustAudioBackground.init(
+          androidNotificationChannelId: 'com.jamart3d.shakedown.channel.audio',
+          androidNotificationChannelName: 'Audio Playback',
+          androidNotificationOngoing: true,
+          androidNotificationIcon:
+              AssetConstants.defaultAndroidNotificationIcon,
+        );
+      }
 
-    runApp(GdarTvApp(prefs: prefs, isTv: isTv));
-  }, (error, stack) {
-    debugPrint('Fatal error: $error\n$stack');
-  });
+      runApp(GdarTvApp(prefs: prefs, isTv: isTv));
+    },
+    (error, stack) {
+      debugPrint('Fatal error: $error\n$stack');
+    },
+  );
 }
 
 class GdarTvApp extends StatefulWidget {
@@ -75,7 +79,7 @@ class _GdarTvAppState extends State<GdarTvApp> {
     _showListProvider = ShowListProvider();
 
     ThemeProvider.getInstance?.setSettingsProvider(_settingsProvider);
-    
+
     _showListProvider.init(widget.prefs);
     _initDeepLinks();
   }
@@ -110,21 +114,27 @@ class _GdarTvAppState extends State<GdarTvApp> {
           update: (_, settingsProvider, showListProvider) =>
               showListProvider!..update(settingsProvider),
         ),
-        ChangeNotifierProxyProvider3<ShowListProvider, SettingsProvider,
-            AudioCacheService, AudioProvider>(
+        ChangeNotifierProxyProvider3<
+          ShowListProvider,
+          SettingsProvider,
+          AudioCacheService,
+          AudioProvider
+        >(
           create: (_) => AudioProvider(),
-          update: (_, showListProvider, settingsProvider, audioCacheService,
-                  audioProvider) =>
-              audioProvider!
-                ..update(
-                  showListProvider,
-                  settingsProvider,
-                  audioCacheService,
-                ),
+          update:
+              (
+                _,
+                showListProvider,
+                settingsProvider,
+                audioCacheService,
+                audioProvider,
+              ) => audioProvider!
+                ..update(showListProvider, settingsProvider, audioCacheService),
         ),
         ChangeNotifierProvider(create: (_) => UpdateProvider()),
         ChangeNotifierProvider(
-            create: (_) => DeviceService(initialIsTv: widget.isTv)),
+          create: (_) => DeviceService(initialIsTv: widget.isTv),
+        ),
       ],
       child: Consumer2<ThemeProvider, SettingsProvider>(
         builder: (context, themeProvider, settingsProvider, child) {

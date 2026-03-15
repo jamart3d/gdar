@@ -62,8 +62,10 @@ String? transformArchiveUrl(String url) {
   return newUrl;
 }
 
-Future<void> launchArchivePage(String firstTrackUrl,
-    [BuildContext? context]) async {
+Future<void> launchArchivePage(
+  String firstTrackUrl, [
+  BuildContext? context,
+]) async {
   // Example URL: "https://archive.org/download/gd1990-10-13.141088.UltraMatrix.sbd.miller.flac1644/07BirdSong.mp3"
   // Target URL: "https://archive.org/details/gd1990-10-13.141088.UltraMatrix.sbd.miller.flac1644/"
 
@@ -91,7 +93,8 @@ void showMessage(BuildContext context, String message) {
     context.read<AudioProvider>().showNotification(message);
   } else {
     final now = DateTime.now();
-    final isRapidDuplicate = _lastSnackMessage == message &&
+    final isRapidDuplicate =
+        _lastSnackMessage == message &&
         _lastSnackTime != null &&
         now.difference(_lastSnackTime!) < const Duration(milliseconds: 1500);
     if (isRapidDuplicate) return;
@@ -179,10 +182,7 @@ void _showMaterialSnackBar(BuildContext context, String message) {
   final messenger = ScaffoldMessenger.of(context);
   messenger.clearSnackBars();
   messenger.showSnackBar(
-    SnackBar(
-      content: Text(message),
-      duration: const Duration(seconds: 3),
-    ),
+    SnackBar(content: Text(message), duration: const Duration(seconds: 3)),
   );
 }
 
@@ -259,90 +259,96 @@ void _showFruitMessageOverlay(BuildContext context, String message) {
                   constraints: const BoxConstraints(maxWidth: 560),
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(18),
-                    child: Builder(builder: (context) {
-                      final messageContent = Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 18,
-                          vertical: 14,
-                        ),
-                        child: Semantics(
-                          liveRegion: true,
-                          label: message,
-                          child: Text(
-                            message,
-                            textAlign: TextAlign.center,
-                            maxLines: 3,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              fontFamily: 'Inter',
-                              fontWeight: FontWeight.w600,
-                              fontSize: 13,
-                              letterSpacing: 0.1,
-                              color: isDark
-                                  ? colorScheme.onSurface
-                                  : colorScheme.onSurface,
+                    child: Builder(
+                      builder: (context) {
+                        final messageContent = Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 18,
+                            vertical: 14,
+                          ),
+                          child: Semantics(
+                            liveRegion: true,
+                            label: message,
+                            child: Text(
+                              message,
+                              textAlign: TextAlign.center,
+                              maxLines: 3,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontFamily: 'Inter',
+                                fontWeight: FontWeight.w600,
+                                fontSize: 13,
+                                letterSpacing: 0.1,
+                                color: isDark
+                                    ? colorScheme.onSurface
+                                    : colorScheme.onSurface,
+                              ),
                             ),
                           ),
-                        ),
-                      );
+                        );
 
-                      return useLiquidGlass
-                          ? BackdropFilter(
-                              filter: ImageFilter.blur(
-                                sigmaX: 14,
-                                sigmaY: 14,
-                              ),
-                              child: DecoratedBox(
+                        return useLiquidGlass
+                            ? BackdropFilter(
+                                filter: ImageFilter.blur(
+                                  sigmaX: 14,
+                                  sigmaY: 14,
+                                ),
+                                child: DecoratedBox(
+                                  decoration: BoxDecoration(
+                                    color: isDark
+                                        ? Colors.black.withValues(alpha: 0.45)
+                                        : Colors.white.withValues(alpha: 0.58),
+                                    borderRadius: BorderRadius.circular(18),
+                                    border: Border.all(
+                                      color: isDark
+                                          ? Colors.white.withValues(alpha: 0.18)
+                                          : Colors.white.withValues(
+                                              alpha: 0.65,
+                                            ),
+                                      width: 0.8,
+                                    ),
+                                    boxShadow: isWasmSafeMode()
+                                        ? null
+                                        : [
+                                            BoxShadow(
+                                              color: Colors.black.withValues(
+                                                alpha: 0.14,
+                                              ),
+                                              blurRadius: 22,
+                                              offset: const Offset(0, 8),
+                                            ),
+                                          ],
+                                  ),
+                                  child: messageContent,
+                                ),
+                              )
+                            : DecoratedBox(
                                 decoration: BoxDecoration(
                                   color: isDark
-                                      ? Colors.black.withValues(alpha: 0.45)
-                                      : Colors.white.withValues(alpha: 0.58),
+                                      ? colorScheme.surfaceContainerHigh
+                                      : colorScheme.surface,
                                   borderRadius: BorderRadius.circular(18),
                                   border: Border.all(
-                                    color: isDark
-                                        ? Colors.white.withValues(alpha: 0.18)
-                                        : Colors.white.withValues(alpha: 0.65),
+                                    color: colorScheme.outlineVariant
+                                        .withValues(alpha: isDark ? 0.7 : 0.9),
                                     width: 0.8,
                                   ),
                                   boxShadow: isWasmSafeMode()
                                       ? null
                                       : [
                                           BoxShadow(
-                                            color: Colors.black
-                                                .withValues(alpha: 0.14),
-                                            blurRadius: 22,
-                                            offset: const Offset(0, 8),
+                                            color: Colors.black.withValues(
+                                              alpha: 0.2,
+                                            ),
+                                            blurRadius: 12,
+                                            offset: const Offset(0, 6),
                                           ),
                                         ],
                                 ),
                                 child: messageContent,
-                              ),
-                            )
-                          : DecoratedBox(
-                              decoration: BoxDecoration(
-                                color: isDark
-                                    ? colorScheme.surfaceContainerHigh
-                                    : colorScheme.surface,
-                                borderRadius: BorderRadius.circular(18),
-                                border: Border.all(
-                                  color: colorScheme.outlineVariant
-                                      .withValues(alpha: isDark ? 0.7 : 0.9),
-                                  width: 0.8,
-                                ),
-                                boxShadow: isWasmSafeMode()
-                                    ? null
-                                    : [
-                                        BoxShadow(
-                                          color: Colors.black
-                                              .withValues(alpha: 0.2),
-                                          blurRadius: 12,
-                                          offset: const Offset(0, 6),
-                                        ),
-                                      ],
-                              ),
-                              child: messageContent,
-                            );
-                    }),
+                              );
+                      },
+                    ),
                   ),
                 ),
               ),
@@ -405,148 +411,152 @@ void _showFruitIssueOverlay(
                 constraints: const BoxConstraints(maxWidth: 560),
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(18),
-                  child: Builder(builder: (context) {
-                    final messageContent = Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 18,
-                        vertical: 14,
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Expanded(
-                            child: Text(
-                              message,
-                              textAlign: TextAlign.center,
-                              maxLines: 3,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                fontFamily: 'Inter',
-                                fontWeight: FontWeight.w600,
-                                fontSize: 13,
-                                letterSpacing: 0.1,
-                                color: isDark
-                                    ? colorScheme.onSurface
-                                    : colorScheme.onSurface,
+                  child: Builder(
+                    builder: (context) {
+                      final messageContent = Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 18,
+                          vertical: 14,
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Expanded(
+                              child: Text(
+                                message,
+                                textAlign: TextAlign.center,
+                                maxLines: 3,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  fontFamily: 'Inter',
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 13,
+                                  letterSpacing: 0.1,
+                                  color: isDark
+                                      ? colorScheme.onSurface
+                                      : colorScheme.onSurface,
+                                ),
                               ),
                             ),
-                          ),
-                          if (onAction != null && actionLabel != null) ...[
-                            const SizedBox(width: 12),
-                            GestureDetector(
-                              onTap: () {
-                                onAction();
-                                _removeFruitMessageOverlay();
-                              },
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 10,
-                                  vertical: 6,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: colorScheme.primary
-                                      .withValues(alpha: 0.18),
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: Text(
-                                  actionLabel,
-                                  style: TextStyle(
-                                    color: colorScheme.primary,
-                                    fontWeight: FontWeight.w700,
-                                    fontSize: 12,
+                            if (onAction != null && actionLabel != null) ...[
+                              const SizedBox(width: 12),
+                              GestureDetector(
+                                onTap: () {
+                                  onAction();
+                                  _removeFruitMessageOverlay();
+                                },
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 10,
+                                    vertical: 6,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: colorScheme.primary.withValues(
+                                      alpha: 0.18,
+                                    ),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Text(
+                                    actionLabel,
+                                    style: TextStyle(
+                                      color: colorScheme.primary,
+                                      fontWeight: FontWeight.w700,
+                                      fontSize: 12,
+                                    ),
                                   ),
                                 ),
                               ),
-                            ),
-                          ] else if (onClear != null) ...[
-                            const SizedBox(width: 12),
-                            GestureDetector(
-                              onTap: () {
-                                onClear();
-                                _removeFruitMessageOverlay();
-                              },
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 10,
-                                  vertical: 6,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: colorScheme.primary
-                                      .withValues(alpha: 0.18),
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: Text(
-                                  'Clear',
-                                  style: TextStyle(
-                                    color: colorScheme.primary,
-                                    fontWeight: FontWeight.w700,
-                                    fontSize: 12,
+                            ] else if (onClear != null) ...[
+                              const SizedBox(width: 12),
+                              GestureDetector(
+                                onTap: () {
+                                  onClear();
+                                  _removeFruitMessageOverlay();
+                                },
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 10,
+                                    vertical: 6,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: colorScheme.primary.withValues(
+                                      alpha: 0.18,
+                                    ),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Text(
+                                    'Clear',
+                                    style: TextStyle(
+                                      color: colorScheme.primary,
+                                      fontWeight: FontWeight.w700,
+                                      fontSize: 12,
+                                    ),
                                   ),
                                 ),
                               ),
-                            ),
+                            ],
                           ],
-                        ],
-                      ),
-                    );
+                        ),
+                      );
 
-                    return useLiquidGlass
-                        ? BackdropFilter(
-                            filter: ImageFilter.blur(
-                              sigmaX: 14,
-                              sigmaY: 14,
-                            ),
-                            child: DecoratedBox(
+                      return useLiquidGlass
+                          ? BackdropFilter(
+                              filter: ImageFilter.blur(sigmaX: 14, sigmaY: 14),
+                              child: DecoratedBox(
+                                decoration: BoxDecoration(
+                                  color: isDark
+                                      ? Colors.black.withValues(alpha: 0.45)
+                                      : Colors.white.withValues(alpha: 0.58),
+                                  borderRadius: BorderRadius.circular(18),
+                                  border: Border.all(
+                                    color: isDark
+                                        ? Colors.white.withValues(alpha: 0.18)
+                                        : Colors.white.withValues(alpha: 0.65),
+                                    width: 0.8,
+                                  ),
+                                  boxShadow: isWasmSafeMode()
+                                      ? null
+                                      : [
+                                          BoxShadow(
+                                            color: Colors.black.withValues(
+                                              alpha: 0.14,
+                                            ),
+                                            blurRadius: 22,
+                                            offset: const Offset(0, 8),
+                                          ),
+                                        ],
+                                ),
+                                child: messageContent,
+                              ),
+                            )
+                          : DecoratedBox(
                               decoration: BoxDecoration(
                                 color: isDark
-                                    ? Colors.black.withValues(alpha: 0.45)
-                                    : Colors.white.withValues(alpha: 0.58),
+                                    ? colorScheme.surfaceContainerHigh
+                                    : colorScheme.surface,
                                 borderRadius: BorderRadius.circular(18),
                                 border: Border.all(
-                                  color: isDark
-                                      ? Colors.white.withValues(alpha: 0.18)
-                                      : Colors.white.withValues(alpha: 0.65),
+                                  color: colorScheme.outlineVariant.withValues(
+                                    alpha: isDark ? 0.7 : 0.9,
+                                  ),
                                   width: 0.8,
                                 ),
                                 boxShadow: isWasmSafeMode()
                                     ? null
                                     : [
                                         BoxShadow(
-                                          color: Colors.black
-                                              .withValues(alpha: 0.14),
-                                          blurRadius: 22,
-                                          offset: const Offset(0, 8),
+                                          color: Colors.black.withValues(
+                                            alpha: 0.2,
+                                          ),
+                                          blurRadius: 12,
+                                          offset: const Offset(0, 6),
                                         ),
                                       ],
                               ),
                               child: messageContent,
-                            ),
-                          )
-                        : DecoratedBox(
-                            decoration: BoxDecoration(
-                              color: isDark
-                                  ? colorScheme.surfaceContainerHigh
-                                  : colorScheme.surface,
-                              borderRadius: BorderRadius.circular(18),
-                              border: Border.all(
-                                color: colorScheme.outlineVariant
-                                    .withValues(alpha: isDark ? 0.7 : 0.9),
-                                width: 0.8,
-                              ),
-                              boxShadow: isWasmSafeMode()
-                                  ? null
-                                  : [
-                                      BoxShadow(
-                                        color:
-                                            Colors.black.withValues(alpha: 0.2),
-                                        blurRadius: 12,
-                                        offset: const Offset(0, 6),
-                                      ),
-                                    ],
-                            ),
-                            child: messageContent,
-                          );
-                  }),
+                            );
+                    },
+                  ),
                 ),
               ),
             ),
@@ -574,8 +584,10 @@ bool _shouldUseFruitLiquidGlass(BuildContext context) {
   }
 }
 
-Future<void> launchArchiveDetails(String identifier,
-    [BuildContext? context]) async {
+Future<void> launchArchiveDetails(
+  String identifier, [
+  BuildContext? context,
+]) async {
   final detailsUrl = 'https://archive.org/details/$identifier';
   final detailsUri = Uri.parse(detailsUrl);
 

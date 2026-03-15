@@ -50,8 +50,10 @@ class TvSwitchListTile extends StatelessWidget {
             dense: dense,
             visualDensity: visualDensity,
             // Remove internal padding/margins if needed for TV wrapper
-            contentPadding:
-                const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 4,
+            ),
           ),
         ),
       );
@@ -69,10 +71,7 @@ class TvSwitchListTile extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         child: Row(
           children: [
-            if (secondary != null) ...[
-              secondary!,
-              const SizedBox(width: 16),
-            ],
+            if (secondary != null) ...[secondary!, const SizedBox(width: 16)],
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -83,11 +82,10 @@ class TvSwitchListTile extends StatelessWidget {
                     const SizedBox(height: 2),
                     DefaultTextStyle(
                       style: Theme.of(context).textTheme.bodySmall!.copyWith(
-                            color: Theme.of(context)
-                                .colorScheme
-                                .onSurface
-                                .withValues(alpha: 0.6),
-                          ),
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.onSurface.withValues(alpha: 0.6),
+                      ),
                       child: subtitle!,
                     ),
                   ],
@@ -95,10 +93,7 @@ class TvSwitchListTile extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 8),
-            FruitSwitch(
-              value: value,
-              onChanged: onChanged,
-            ),
+            FruitSwitch(value: value, onChanged: onChanged),
           ],
         ),
       );

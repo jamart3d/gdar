@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:js_interop';
 import 'package:web/web.dart' as web;
 
-
 /// Utility class for JS Interop and Web-specific background stability.
 class WebInterop {
   /// Sets the MediaSession playback state to 'playing' or 'paused'.

@@ -127,7 +127,8 @@ class StealBanner extends Component with HasGameReference<StealGame> {
     String date = '',
   }) {
     _color = color;
-    _visible = showBanner &&
+    _visible =
+        showBanner &&
         (trackTitle.isNotEmpty || venue.isNotEmpty || date.isNotEmpty);
 
     if (_currentColor == Colors.white && _opacity == 0.0) {
@@ -247,39 +248,69 @@ class StealBanner extends Component with HasGameReference<StealGame> {
       _opacity = (_opacity - _fadeSpeed * clampedDt).clamp(0.0, 1.0);
     }
 
-    _tickFade(clampedDt, _outerFadingOut, _outerOpacity, _outerPending, (v) {
-      _outerOpacity = v;
-    }, (v) {
-      _outerCurrent = v;
-    }, (v) {
-      _outerPending = v;
-    }, (v) {
-      _outerFadingOut = v;
-    }, (v) {
-      _outerWords = v;
-    });
-    _tickFade(clampedDt, _middleFadingOut, _middleOpacity, _middlePending, (v) {
-      _middleOpacity = v;
-    }, (v) {
-      _middleCurrent = v;
-    }, (v) {
-      _middlePending = v;
-    }, (v) {
-      _middleFadingOut = v;
-    }, (v) {
-      _middleWords = v;
-    });
-    _tickFade(clampedDt, _innerFadingOut, _innerOpacity, _innerPending, (v) {
-      _innerOpacity = v;
-    }, (v) {
-      _innerCurrent = v;
-    }, (v) {
-      _innerPending = v;
-    }, (v) {
-      _innerFadingOut = v;
-    }, (v) {
-      _innerWords = v;
-    });
+    _tickFade(
+      clampedDt,
+      _outerFadingOut,
+      _outerOpacity,
+      _outerPending,
+      (v) {
+        _outerOpacity = v;
+      },
+      (v) {
+        _outerCurrent = v;
+      },
+      (v) {
+        _outerPending = v;
+      },
+      (v) {
+        _outerFadingOut = v;
+      },
+      (v) {
+        _outerWords = v;
+      },
+    );
+    _tickFade(
+      clampedDt,
+      _middleFadingOut,
+      _middleOpacity,
+      _middlePending,
+      (v) {
+        _middleOpacity = v;
+      },
+      (v) {
+        _middleCurrent = v;
+      },
+      (v) {
+        _middlePending = v;
+      },
+      (v) {
+        _middleFadingOut = v;
+      },
+      (v) {
+        _middleWords = v;
+      },
+    );
+    _tickFade(
+      clampedDt,
+      _innerFadingOut,
+      _innerOpacity,
+      _innerPending,
+      (v) {
+        _innerOpacity = v;
+      },
+      (v) {
+        _innerCurrent = v;
+      },
+      (v) {
+        _innerPending = v;
+      },
+      (v) {
+        _innerFadingOut = v;
+      },
+      (v) {
+        _innerWords = v;
+      },
+    );
 
     if (config.bannerGlow && config.bannerFlicker > 0.0) {
       final strength = config.bannerFlicker.clamp(0.0, 1.0);
@@ -361,15 +392,17 @@ class StealBanner extends Component with HasGameReference<StealGame> {
       case _FlickerPhase.buzz:
         final osc = sin(word.buzzFreq * 2 * pi * (1.0 - word.eventTimer));
         // Sine envelope fades buzz in/out — no hard start or end
-        final buzzProgress =
-            (1.0 - (word.eventTimer / (word.buzzAmp * 4.0))).clamp(0.0, 1.0);
+        final buzzProgress = (1.0 - (word.eventTimer / (word.buzzAmp * 4.0)))
+            .clamp(0.0, 1.0);
         final envelope = sin(buzzProgress * pi).clamp(0.0, 1.0);
-        word.brightness =
-            (1.0 + osc * word.buzzAmp * envelope).clamp(0.82, 1.0);
+        word.brightness = (1.0 + osc * word.buzzAmp * envelope).clamp(
+          0.82,
+          1.0,
+        );
         if (word.eventTimer <= 0.0) {
           // Ease back rather than snap
-          word.brightness =
-              (word.brightness + (1.0 - word.brightness) * 0.4).clamp(0.9, 1.0);
+          word.brightness = (word.brightness + (1.0 - word.brightness) * 0.4)
+              .clamp(0.9, 1.0);
           word.phase = _FlickerPhase.idle;
           word.eventTimer = _nextIdleTime(strength);
         }
@@ -414,22 +447,34 @@ class StealBanner extends Component with HasGameReference<StealGame> {
   double _logoScaleFactor(StealConfig config) =>
       config.logoScale.clamp(0.1, 1.0) / 0.5; // 1.0 at default logoScale=0.5
 
-  double _innerRadius(double minDim, StealConfig config, double beatPulse,
-          double pulseScale) =>
+  double _innerRadius(
+    double minDim,
+    StealConfig config,
+    double beatPulse,
+    double pulseScale,
+  ) =>
       minDim *
       _baseInnerRadiusRatio *
       config.innerRingScale.clamp(0.1, 2.0) *
       _logoScaleFactor(config);
 
   double _middleRadius(
-      double minDim, StealConfig config, double innerR, double pulseScale) {
+    double minDim,
+    StealConfig config,
+    double innerR,
+    double pulseScale,
+  ) {
     final gap = config.innerToMiddleGap.clamp(0.0, 1.0);
     return innerR +
         minDim * (_minRingClearance + gap * 0.08) * _logoScaleFactor(config);
   }
 
   double _outerRadius(
-      double minDim, StealConfig config, double middleR, double pulseScale) {
+    double minDim,
+    StealConfig config,
+    double middleR,
+    double pulseScale,
+  ) {
     final gap = config.middleToOuterGap.clamp(0.0, 1.0);
     return middleR +
         minDim * (_minRingClearance + gap * 0.08) * _logoScaleFactor(config);
@@ -464,11 +509,25 @@ class StealBanner extends Component with HasGameReference<StealGame> {
     const pulseScale = 1.0;
 
     if (isFlat) {
-      _renderFlat(canvas, center, minDim, glowEnabled, config,
-          beatPulse: beatPulse, pulseScale: pulseScale);
+      _renderFlat(
+        canvas,
+        center,
+        minDim,
+        glowEnabled,
+        config,
+        beatPulse: beatPulse,
+        pulseScale: pulseScale,
+      );
     } else {
-      _renderRings(canvas, center, minDim, glowEnabled, config,
-          beatPulse: beatPulse, pulseScale: pulseScale);
+      _renderRings(
+        canvas,
+        center,
+        minDim,
+        glowEnabled,
+        config,
+        beatPulse: beatPulse,
+        pulseScale: pulseScale,
+      );
     }
   }
 
@@ -491,8 +550,9 @@ class StealBanner extends Component with HasGameReference<StealGame> {
     ];
 
     final isAbove = config.flatTextPlacement == 'above';
-    final visibleCount =
-        lines.where((l) => l.$1.isNotEmpty && l.$3 > 0.01).length;
+    final visibleCount = lines
+        .where((l) => l.$1.isNotEmpty && l.$3 > 0.01)
+        .length;
     final lineHeight = _flatLineHeight * config.flatLineSpacing;
     final blockHeight = visibleCount * lineHeight;
 
@@ -553,10 +613,7 @@ class StealBanner extends Component with HasGameReference<StealGame> {
 
       final effectiveOpacity = _opacity * lineOpacity;
 
-      final lineCenter = Offset(
-        center.dx,
-        startY + visibleIndex * lineHeight,
-      );
+      final lineCenter = Offset(center.dx, startY + visibleIndex * lineHeight);
 
       _drawFlatLine(
         canvas,
@@ -566,10 +623,12 @@ class StealBanner extends Component with HasGameReference<StealGame> {
         effectiveOpacity,
         glowEnabled,
         config,
-        letterSpacing:
-            (i == 0) ? config.trackLetterSpacing : config.bannerLetterSpacing,
-        wordSpacing:
-            (i == 0) ? config.trackWordSpacing : config.bannerWordSpacing,
+        letterSpacing: (i == 0)
+            ? config.trackLetterSpacing
+            : config.bannerLetterSpacing,
+        wordSpacing: (i == 0)
+            ? config.trackWordSpacing
+            : config.bannerWordSpacing,
       );
       visibleIndex++;
     }
@@ -591,10 +650,10 @@ class StealBanner extends Component with HasGameReference<StealGame> {
     final wordList = words.isNotEmpty
         ? words
         : text
-            .split(' ')
-            .where((w) => w.isNotEmpty)
-            .map(_NeonWord.new)
-            .toList();
+              .split(' ')
+              .where((w) => w.isNotEmpty)
+              .map(_NeonWord.new)
+              .toList();
 
     final lSpace = letterSpacing ?? config.bannerLetterSpacing;
     final wSpace = wordSpacing ?? config.bannerWordSpacing;
@@ -691,8 +750,17 @@ class StealBanner extends Component with HasGameReference<StealGame> {
     final outerR = _outerRadius(minDim, config, middleR, pulseScale);
 
     if (_outerCurrent.isNotEmpty && _outerOpacity > 0.01) {
-      _drawRing(canvas, _outerCurrent, _outerWords, center, outerR, _outerAngle,
-          _opacity * _outerOpacity, glowEnabled, config);
+      _drawRing(
+        canvas,
+        _outerCurrent,
+        _outerWords,
+        center,
+        outerR,
+        _outerAngle,
+        _opacity * _outerOpacity,
+        glowEnabled,
+        config,
+      );
     }
     if (_middleCurrent.isNotEmpty && _middleOpacity > 0.01) {
       _drawRing(
@@ -752,10 +820,10 @@ class StealBanner extends Component with HasGameReference<StealGame> {
     final wordList = words.isNotEmpty
         ? words
         : text
-            .split(' ')
-            .where((w) => w.isNotEmpty)
-            .map(_NeonWord.new)
-            .toList();
+              .split(' ')
+              .where((w) => w.isNotEmpty)
+              .map(_NeonWord.new)
+              .toList();
 
     // 1. Calculate the raw span required with current settings
     double calcRawSpan(double lSpace, double wSpace) {
@@ -860,12 +928,16 @@ class StealBanner extends Component with HasGameReference<StealGame> {
       _lastResolution = resolution;
     }
 
-    final glyph =
-        _glyphCache.putIfAbsent(char, () => _rasterizeChar(char, config));
+    final glyph = _glyphCache.putIfAbsent(
+      char,
+      () => _rasterizeChar(char, config),
+    );
 
     final paint = Paint()
-      ..colorFilter =
-          ColorFilter.mode(color.withValues(alpha: opacity), BlendMode.modulate)
+      ..colorFilter = ColorFilter.mode(
+        color.withValues(alpha: opacity),
+        BlendMode.modulate,
+      )
       ..filterQuality = ui.FilterQuality.medium
       ..isAntiAlias = true;
 

@@ -17,15 +17,13 @@ class Source {
   @HiveField(3)
   final String? location;
 
-  Source({
-    required this.id,
-    this.src,
-    required this.tracks,
-    this.location,
-  });
+  Source({required this.id, this.src, required this.tracks, this.location});
 
-  factory Source.fromJson(Map<String, dynamic> json,
-      {String? src, String? showLocation}) {
+  factory Source.fromJson(
+    Map<String, dynamic> json, {
+    String? src,
+    String? showLocation,
+  }) {
     String? baseDir = json['_d'];
     String? baseUrl;
     if (baseDir != null) {
@@ -42,7 +40,8 @@ class Source {
         final List<dynamic> tracksJson = setJson['t'] as List<dynamic>? ?? [];
         for (final trackJson in tracksJson) {
           tracks.add(
-              Track.fromJson(trackJson, baseUrl: baseUrl, setName: setName));
+            Track.fromJson(trackJson, baseUrl: baseUrl, setName: setName),
+          );
         }
       }
     } else {

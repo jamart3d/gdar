@@ -76,18 +76,18 @@ class _SplashScreenState extends State<SplashScreen>
       setState(() {
         _shnidCountAnimation =
             IntTween(begin: 0, end: _showListProvider.totalShnids).animate(
-          CurvedAnimation(
-            parent: _countController,
-            curve: const Interval(0.0, 0.7, curve: Curves.easeOut),
-          ),
-        );
+              CurvedAnimation(
+                parent: _countController,
+                curve: const Interval(0.0, 0.7, curve: Curves.easeOut),
+              ),
+            );
         _showCountAnimation =
             IntTween(begin: 0, end: _showListProvider.allShows.length).animate(
-          CurvedAnimation(
-            parent: _countController,
-            curve: const Interval(0.2, 1.0, curve: Curves.easeOut),
-          ),
-        );
+              CurvedAnimation(
+                parent: _countController,
+                curve: const Interval(0.2, 1.0, curve: Curves.easeOut),
+              ),
+            );
       });
       _countController.forward().then((_) {
         if (mounted) _checkNavigation();
@@ -135,8 +135,9 @@ class _SplashScreenState extends State<SplashScreen>
         final isTv = context.read<DeviceService>().isTv;
         final settingsProvider = context.read<SettingsProvider>();
         final useSimpleTransition = settingsProvider.performanceMode;
-        final nextScreen =
-            isTv ? const TvDualPaneLayout() : const ShowListScreen();
+        final nextScreen = isTv
+            ? const TvDualPaneLayout()
+            : const ShowListScreen();
 
         Navigator.of(context).pushReplacement(
           PageRouteBuilder(
@@ -149,7 +150,9 @@ class _SplashScreenState extends State<SplashScreen>
                       curve: Curves.easeInOutCubic,
                     );
                     return FadeTransition(
-                        opacity: curvedAnimation, child: child);
+                      opacity: curvedAnimation,
+                      child: child,
+                    );
                   },
             transitionDuration: useSimpleTransition
                 ? Duration.zero
@@ -164,55 +167,56 @@ class _SplashScreenState extends State<SplashScreen>
   Widget build(BuildContext context) {
     final showListProvider = context.watch<ShowListProvider>();
     final settingsProvider = context.watch<SettingsProvider>();
-    final effectiveScale =
-        FontLayoutConfig.getEffectiveScale(context, settingsProvider);
+    final effectiveScale = FontLayoutConfig.getEffectiveScale(
+      context,
+      settingsProvider,
+    );
 
     return Scaffold(
-        body: SafeArea(
-      child: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            const Center(
-              child: ShakedownTitle(fontSize: 24),
-            ),
-            const SizedBox(height: 40),
-            AnimatedOpacity(
-              opacity: _isNavigating ? 0.0 : 1.0,
-              duration: const Duration(milliseconds: 200),
-              child: ConstrainedBox(
-                constraints: BoxConstraints(
-                  maxWidth: MediaQuery.of(context).size.width * 0.8,
-                ),
-                child: FittedBox(
-                  fit: BoxFit.scaleDown,
-                  child: SizedBox(
-                    width: 280,
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        if (settingsProvider.isFirstRun)
-                          _buildChecklistItem(
-                            label: 'Hey Now!',
-                            isDone: true,
-                            scaleFactor: effectiveScale,
-                          )
-                        else
-                          _buildChecklistItem(
-                            label: 'settings: ready',
-                            isDone: true,
-                            scaleFactor: effectiveScale,
-                          ),
-                        const SizedBox(height: 12),
+      body: SafeArea(
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              const Center(child: ShakedownTitle(fontSize: 24)),
+              const SizedBox(height: 40),
+              AnimatedOpacity(
+                opacity: _isNavigating ? 0.0 : 1.0,
+                duration: const Duration(milliseconds: 200),
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    maxWidth: MediaQuery.of(context).size.width * 0.8,
+                  ),
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: SizedBox(
+                      width: 280,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          if (settingsProvider.isFirstRun)
+                            _buildChecklistItem(
+                              label: 'Hey Now!',
+                              isDone: true,
+                              scaleFactor: effectiveScale,
+                            )
+                          else
+                            _buildChecklistItem(
+                              label: 'settings: ready',
+                              isDone: true,
+                              scaleFactor: effectiveScale,
+                            ),
+                          const SizedBox(height: 12),
 
-                        // 1. Shnids Count
-                        AnimatedBuilder(
+                          // 1. Shnids Count
+                          AnimatedBuilder(
                             animation: _countController,
                             builder: (context, child) {
                               int count = _shnidCountAnimation.value;
-                              bool isDone = _countController.status ==
+                              bool isDone =
+                                  _countController.status ==
                                   AnimationStatus.completed;
                               bool isLoading = showListProvider.isLoading;
 
@@ -228,16 +232,18 @@ class _SplashScreenState extends State<SplashScreen>
                                 isDone: isDone,
                                 scaleFactor: effectiveScale,
                               );
-                            }),
+                            },
+                          ),
 
-                        const SizedBox(height: 12),
+                          const SizedBox(height: 12),
 
-                        // 2. Shows Count
-                        AnimatedBuilder(
+                          // 2. Shows Count
+                          AnimatedBuilder(
                             animation: _countController,
                             builder: (context, child) {
                               int count = _showCountAnimation.value;
-                              bool isDone = _countController.status ==
+                              bool isDone =
+                                  _countController.status ==
                                   AnimationStatus.completed;
                               bool isLoading = showListProvider.isLoading;
 
@@ -253,41 +259,43 @@ class _SplashScreenState extends State<SplashScreen>
                                 isDone: isDone,
                                 scaleFactor: effectiveScale,
                               );
-                            }),
-
-                        const SizedBox(height: 12),
-
-                        // 3. Archive Check
-                        if (!kIsWeb)
-                          _buildChecklistItem(
-                            label:
-                                'archive.org: ${showListProvider.hasCheckedArchive ? (showListProvider.isArchiveReachable ? 'reachable' : 'offline') : 'checking...'}',
-                            isDone: showListProvider.hasCheckedArchive,
-                            isSuccess: showListProvider.hasCheckedArchive
-                                ? showListProvider.isArchiveReachable
-                                : true, // Default to true while loading
-                            scaleFactor: effectiveScale,
+                            },
                           ),
 
-                        // 4. Random Play (Conditional)
-                        if (settingsProvider.playRandomOnStartup) ...[
                           const SizedBox(height: 12),
-                          _buildChecklistItem(
-                            label: 'Play random show...',
-                            isDone: true,
-                            scaleFactor: effectiveScale,
-                          ),
-                        ]
-                      ],
+
+                          // 3. Archive Check
+                          if (!kIsWeb)
+                            _buildChecklistItem(
+                              label:
+                                  'archive.org: ${showListProvider.hasCheckedArchive ? (showListProvider.isArchiveReachable ? 'reachable' : 'offline') : 'checking...'}',
+                              isDone: showListProvider.hasCheckedArchive,
+                              isSuccess: showListProvider.hasCheckedArchive
+                                  ? showListProvider.isArchiveReachable
+                                  : true, // Default to true while loading
+                              scaleFactor: effectiveScale,
+                            ),
+
+                          // 4. Random Play (Conditional)
+                          if (settingsProvider.playRandomOnStartup) ...[
+                            const SizedBox(height: 12),
+                            _buildChecklistItem(
+                              label: 'Play random show...',
+                              isDone: true,
+                              scaleFactor: effectiveScale,
+                            ),
+                          ],
+                        ],
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
-    ));
+    );
   }
 
   Widget _buildChecklistItem({
@@ -320,12 +328,15 @@ class _SplashScreenState extends State<SplashScreen>
                     color: isSuccess
                         ? colorScheme.primary
                         : colorScheme.error, // Red for error
-                    size: AppTypography.responsiveFontSize(context, 20.0))
+                    size: AppTypography.responsiveFontSize(context, 20.0),
+                  )
                 : SizedBox(
                     width: 14 * scaleFactor,
                     height: 14 * scaleFactor,
                     child: const CircularProgressIndicator(
-                        strokeWidth: 2, key: ValueKey('loading')),
+                      strokeWidth: 2,
+                      key: ValueKey('loading'),
+                    ),
                   ),
           ),
         ),

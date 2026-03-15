@@ -91,8 +91,9 @@ class _FastScrollbarState extends State<FastScrollbar>
       curve: Curves.elasticOut, // M3 spring feel
     );
 
-    widget.itemPositionsListener.itemPositions
-        .addListener(_onItemPositionsChanged);
+    widget.itemPositionsListener.itemPositions.addListener(
+      _onItemPositionsChanged,
+    );
   }
 
   @override
@@ -105,8 +106,9 @@ class _FastScrollbarState extends State<FastScrollbar>
 
   @override
   void dispose() {
-    widget.itemPositionsListener.itemPositions
-        .removeListener(_onItemPositionsChanged);
+    widget.itemPositionsListener.itemPositions.removeListener(
+      _onItemPositionsChanged,
+    );
     _removeOverlay();
     _hideTimer?.cancel();
     _fadeController.dispose();
@@ -207,9 +209,10 @@ class _FastScrollbarState extends State<FastScrollbar>
     if (!mounted) return;
     setState(() => _thumbFraction = fraction);
 
-    final index = (fraction * (widget.shows.length - 1))
-        .round()
-        .clamp(0, widget.shows.length - 1);
+    final index = (fraction * (widget.shows.length - 1)).round().clamp(
+      0,
+      widget.shows.length - 1,
+    );
     widget.itemScrollController.jumpTo(index: index);
 
     final year = index < _yearByIndex.length ? _yearByIndex[index] : 0;
@@ -242,10 +245,8 @@ class _FastScrollbarState extends State<FastScrollbar>
   void _showOverlay() {
     _removeOverlay();
     _overlayEntry = OverlayEntry(
-      builder: (_) => _YearChipOverlay(
-        getPosition: _chipPosition,
-        getYear: _currentYear,
-      ),
+      builder: (_) =>
+          _YearChipOverlay(getPosition: _chipPosition, getYear: _currentYear),
     );
     Overlay.of(context).insert(_overlayEntry!);
   }
@@ -276,18 +277,16 @@ class _FastScrollbarState extends State<FastScrollbar>
     final thumbCenterY = thumbTop + widget.thumbHeight / 2;
 
     // Chip sits to the left of the thumb track, vertically centered on thumb
-    _lastChipOffset = Offset(
-      trackGlobal.dx - 76,
-      thumbCenterY - 20,
-    );
+    _lastChipOffset = Offset(trackGlobal.dx - 76, thumbCenterY - 20);
     return _lastChipOffset;
   }
 
   String _currentYear() {
     if (widget.shows.isEmpty) return '';
-    final index = (_thumbFraction * (widget.shows.length - 1))
-        .round()
-        .clamp(0, widget.shows.length - 1);
+    final index = (_thumbFraction * (widget.shows.length - 1)).round().clamp(
+      0,
+      widget.shows.length - 1,
+    );
     final year = index < _yearByIndex.length ? _yearByIndex[index] : 0;
     return year > 0 ? '$year' : '';
   }
@@ -338,8 +337,10 @@ class _FastScrollbarState extends State<FastScrollbar>
                     final firstIdx = _yearByIndex.indexOf(year);
                     if (firstIdx < 0) return const SizedBox.shrink();
                     final f = firstIdx / (_yearByIndex.length - 1);
-                    final top = (f * usable + widget.thumbHeight / 2)
-                        .clamp(0.0, trackH);
+                    final top = (f * usable + widget.thumbHeight / 2).clamp(
+                      0.0,
+                      trackH,
+                    );
                     return Positioned(
                       right: widget.trackWidth / 2 + 2,
                       top: top - 1,
@@ -360,8 +361,10 @@ class _FastScrollbarState extends State<FastScrollbar>
                     top: thumbTop,
                     child: ScaleTransition(
                       key: const Key('fast_scrollbar_scale'),
-                      scale: Tween<double>(begin: 1.0, end: 1.4)
-                          .animate(_scaleAnimation),
+                      scale: Tween<double>(
+                        begin: 1.0,
+                        end: 1.4,
+                      ).animate(_scaleAnimation),
                       child: AnimatedContainer(
                         duration: const Duration(milliseconds: 200),
                         curve: Curves.easeOutCubic,
@@ -371,18 +374,21 @@ class _FastScrollbarState extends State<FastScrollbar>
                           // M3: use primary for active, surfaceVariant for rest
                           color: _isDragging
                               ? colorScheme.primary
-                              : colorScheme.onSurfaceVariant
-                                  .withValues(alpha: 0.6),
-                          borderRadius:
-                              BorderRadius.circular(_isDragging ? 4 : 2),
+                              : colorScheme.onSurfaceVariant.withValues(
+                                  alpha: 0.6,
+                                ),
+                          borderRadius: BorderRadius.circular(
+                            _isDragging ? 4 : 2,
+                          ),
                           boxShadow: _isDragging
                               ? [
                                   BoxShadow(
-                                    color: colorScheme.primary
-                                        .withValues(alpha: 0.4),
+                                    color: colorScheme.primary.withValues(
+                                      alpha: 0.4,
+                                    ),
                                     blurRadius: 8,
                                     spreadRadius: 1,
-                                  )
+                                  ),
                                 ]
                               : null,
                         ),
@@ -405,10 +411,7 @@ class _YearChipOverlay extends StatelessWidget {
   final Offset Function() getPosition;
   final String Function() getYear;
 
-  const _YearChipOverlay({
-    required this.getPosition,
-    required this.getYear,
-  });
+  const _YearChipOverlay({required this.getPosition, required this.getYear});
 
   @override
   Widget build(BuildContext context) {
@@ -430,8 +433,9 @@ class _YearChipOverlay extends StatelessWidget {
             // M3: secondary container for the chip — tonally distinct,
             // works in both light and dark without being too heavy
             color: colorScheme.secondaryContainer,
-            borderRadius:
-                BorderRadius.circular(28), // full pill — M3 expressive
+            borderRadius: BorderRadius.circular(
+              28,
+            ), // full pill — M3 expressive
             boxShadow: [
               BoxShadow(
                 color: colorScheme.shadow.withValues(alpha: 0.15),

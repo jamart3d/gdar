@@ -28,8 +28,10 @@ class SrcBadge extends StatelessWidget {
 
     final colorScheme = Theme.of(context).colorScheme;
     final settingsProvider = context.watch<SettingsProvider>();
-    final double effectiveScale =
-        FontLayoutConfig.getEffectiveScale(context, settingsProvider);
+    final double effectiveScale = FontLayoutConfig.getEffectiveScale(
+      context,
+      settingsProvider,
+    );
 
     // When playing, the parent card uses tertiaryContainer background.
     // To ensure visibility and an "expressive" look, we invert the badge colors.
@@ -44,11 +46,13 @@ class SrcBadge extends StatelessWidget {
         : colorScheme.onTertiaryContainer;
 
     final borderColor = isPlaying
-        ? Colors.transparent // No border needed for high contrast pill
+        ? Colors
+              .transparent // No border needed for high contrast pill
         : colorScheme.onTertiaryContainer.withValues(alpha: 0.1);
 
     return Container(
-      padding: padding ??
+      padding:
+          padding ??
           EdgeInsets.symmetric(
             horizontal: 4 * scaleFactor, // Reduced from 6
             vertical: 1.0 * scaleFactor,
@@ -59,38 +63,35 @@ class SrcBadge extends StatelessWidget {
         borderRadius: BorderRadius.circular(matchShnidLook ? 8 : 12),
         border: matchShnidLook
             ? null
-            : Border.all(
-                color: borderColor,
-                width: 0.5,
-              ),
+            : Border.all(color: borderColor, width: 0.5),
         boxShadow: matchShnidLook
             ? [
                 BoxShadow(
-                    color: colorScheme.shadow.withValues(alpha: 0.05),
-                    blurRadius: 2,
-                    offset: const Offset(0, 1))
+                  color: colorScheme.shadow.withValues(alpha: 0.05),
+                  blurRadius: 2,
+                  offset: const Offset(0, 1),
+                ),
               ]
             : null,
       ),
       child: Text(
         src.toUpperCase(),
         style: Theme.of(context).textTheme.labelSmall?.copyWith(
-              color: textColor,
-              fontWeight: FontWeight.bold,
-              height: matchShnidLook ? 1.4 : 1.0, // Reduced from 1.5
-              fontSize: (matchShnidLook
-                      ? (settingsProvider.appFont == 'rock_salt'
-                          ? 6.5 * effectiveScale // Reduced from 7.5
-                          : 8.0 * effectiveScale) // Reduced from 9.0
-                      : fontSize *
-                          (settingsProvider.appFont == 'rock_salt'
-                              ? 0.7
-                              : 1.0) *
-                          effectiveScale) *
-                  scaleFactor,
-              letterSpacing:
-                  settingsProvider.appFont == 'rock_salt' ? 0.0 : 0.5,
-            ),
+          color: textColor,
+          fontWeight: FontWeight.bold,
+          height: matchShnidLook ? 1.4 : 1.0, // Reduced from 1.5
+          fontSize:
+              (matchShnidLook
+                  ? (settingsProvider.appFont == 'rock_salt'
+                        ? 6.5 *
+                              effectiveScale // Reduced from 7.5
+                        : 8.0 * effectiveScale) // Reduced from 9.0
+                  : fontSize *
+                        (settingsProvider.appFont == 'rock_salt' ? 0.7 : 1.0) *
+                        effectiveScale) *
+              scaleFactor,
+          letterSpacing: settingsProvider.appFont == 'rock_salt' ? 0.0 : 0.5,
+        ),
         textAlign: TextAlign.center,
       ),
     );

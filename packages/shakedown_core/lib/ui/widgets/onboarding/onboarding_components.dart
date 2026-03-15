@@ -7,7 +7,10 @@ import 'package:shakedown_core/ui/styles/font_config.dart';
 /// Common helper widgets used across onboarding screens.
 class OnboardingComponents {
   static Widget buildBulletPoint(
-      BuildContext context, String text, double scaleFactor) {
+    BuildContext context,
+    String text,
+    double scaleFactor,
+  ) {
     final colorScheme = Theme.of(context).colorScheme;
     final settings = context.read<SettingsProvider>();
 
@@ -29,14 +32,15 @@ class OnboardingComponents {
             child: Text(
               text,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: colorScheme.onSurfaceVariant,
-                    height: 1.3,
-                    fontSize: AppTypography.responsiveFontSize(
-                        context,
-                        (settings.uiScale && settings.appFont == 'caveat')
-                            ? 12.5
-                            : 14.0),
-                  ),
+                color: colorScheme.onSurfaceVariant,
+                height: 1.3,
+                fontSize: AppTypography.responsiveFontSize(
+                  context,
+                  (settings.uiScale && settings.appFont == 'caveat')
+                      ? 12.5
+                      : 14.0,
+                ),
+              ),
             ),
           ),
         ],
@@ -45,7 +49,11 @@ class OnboardingComponents {
   }
 
   static Widget buildTipRow(
-      BuildContext context, Widget leading, String text, double scaleFactor) {
+    BuildContext context,
+    Widget leading,
+    String text,
+    double scaleFactor,
+  ) {
     final colorScheme = Theme.of(context).colorScheme;
     final settings = context.read<SettingsProvider>();
 
@@ -57,14 +65,15 @@ class OnboardingComponents {
           child: Text(
             text,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: colorScheme.onSurfaceVariant,
-                  height: 1.2,
-                  fontSize: AppTypography.responsiveFontSize(
-                      context,
-                      (settings.uiScale && settings.appFont == 'caveat')
-                          ? 12.5
-                          : 14.0),
-                ),
+              color: colorScheme.onSurfaceVariant,
+              height: 1.2,
+              fontSize: AppTypography.responsiveFontSize(
+                context,
+                (settings.uiScale && settings.appFont == 'caveat')
+                    ? 12.5
+                    : 14.0,
+              ),
+            ),
           ),
         ),
       ],
@@ -79,30 +88,36 @@ class OnboardingComponents {
         color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
         shape: BoxShape.circle,
       ),
-      child: Icon(icon,
-          size: AppTypography.responsiveFontSize(context, 20.0),
-          color: colorScheme.primary),
+      child: Icon(
+        icon,
+        size: AppTypography.responsiveFontSize(context, 20.0),
+        color: colorScheme.primary,
+      ),
     );
   }
 
   static Widget buildSectionHeader(
-      BuildContext context, String title, double scaleFactor) {
+    BuildContext context,
+    String title,
+    double scaleFactor,
+  ) {
     final settings = context.read<SettingsProvider>();
     final fontConfig = FontConfig.get(settings.appFont);
     final mediaQuery = MediaQuery.of(context);
 
     // Base size 21px, divided by font's scaleFactor to normalize visual size
-    final normalizedFontSize = (21.0 / fontConfig.scaleFactor) *
+    final normalizedFontSize =
+        (21.0 / fontConfig.scaleFactor) *
         scaleFactor *
         mediaQuery.textScaler.scale(1.0);
 
     return Text(
       title,
       style: Theme.of(context).textTheme.titleMedium?.copyWith(
-            color: Theme.of(context).colorScheme.primary,
-            fontWeight: FontWeight.bold,
-            fontSize: normalizedFontSize,
-          ),
+        color: Theme.of(context).colorScheme.primary,
+        fontWeight: FontWeight.bold,
+        fontSize: normalizedFontSize,
+      ),
     );
   }
 }

@@ -50,7 +50,7 @@ class StealGraph extends Component with HasGameReference<StealGame> {
     'PRES',
     'BRIL',
     'AIR',
-    'BEAT'
+    'BEAT',
   ];
 
   // Circular graph layout.
@@ -88,8 +88,9 @@ class StealGraph extends Component with HasGameReference<StealGame> {
   // Short-lived beat flash factor for HUD accent.
   double _beatFlash = 0.0;
 
-  final TextPainter _textPainter =
-      TextPainter(textDirection: TextDirection.ltr);
+  final TextPainter _textPainter = TextPainter(
+    textDirection: TextDirection.ltr,
+  );
 
   static const List<Color> _bandColors = [
     Color(0xFF34E7FF),
@@ -119,8 +120,8 @@ class StealGraph extends Component with HasGameReference<StealGame> {
     final amp = _isFast
         ? 0.7
         : _isBalanced
-            ? 1.1
-            : 1.6;
+        ? 1.1
+        : 1.6;
 
     final nx = (sin(t * 0.031) + sin(t * 0.017 + 1.3) * 0.35 + 1.35) / 2.7;
     final ny =
@@ -213,7 +214,8 @@ class StealGraph extends Component with HasGameReference<StealGame> {
   void _updateCircularHeights(double dt) {
     final bands = energy.bands;
     for (int i = 0; i < _bandCount; i++) {
-      final target = (i < bands.length ? bands[i] : 0.0).clamp(0.0, 1.0) *
+      final target =
+          (i < bands.length ? bands[i] : 0.0).clamp(0.0, 1.0) *
           _circMaxBarHeight;
       final current = _circularHeights[i];
       if (target > current) {
@@ -269,8 +271,9 @@ class StealGraph extends Component with HasGameReference<StealGame> {
     final startX = _leftPadding + drift.dx;
     final availableWidth = w - (_leftPadding * 2);
 
-    final color =
-        const Color(0xFF34E7FF).withValues(alpha: 0.8); // Phosphor Blue
+    final color = const Color(
+      0xFF34E7FF,
+    ).withValues(alpha: 0.8); // Phosphor Blue
 
     final replication = game.config.ekgReplication.clamp(1, 10);
     final spread = game.config.ekgSpread;
@@ -290,8 +293,9 @@ class StealGraph extends Component with HasGameReference<StealGame> {
 
       if (r == 0 && _glowSigma > 0.0) {
         final glowPaint = Paint()
-          ..color =
-              color.withValues(alpha: (0.15 + (_beatFlash * 0.1)) * opacity)
+          ..color = color.withValues(
+            alpha: (0.15 + (_beatFlash * 0.1)) * opacity,
+          )
           ..style = PaintingStyle.stroke
           ..strokeWidth = 3.5 + beatThick
           ..strokeCap = StrokeCap.round
@@ -302,8 +306,9 @@ class StealGraph extends Component with HasGameReference<StealGame> {
       }
 
       final corePaint = Paint()
-        ..color =
-            color.withValues(alpha: (0.85 + (_beatFlash * 0.15)) * opacity)
+        ..color = color.withValues(
+          alpha: (0.85 + (_beatFlash * 0.15)) * opacity,
+        )
         ..style = PaintingStyle.stroke
         ..strokeWidth = 2.0 + (r == 0 ? beatThick : 0.0)
         ..strokeCap = StrokeCap.round;
@@ -337,13 +342,17 @@ class StealGraph extends Component with HasGameReference<StealGame> {
 
     final minDim = min(game.size.x, game.size.y);
     final baseRadius =
-        (game.config.logoScale * minDim * 0.52 * game.config.ekgRadius)
-            .clamp(20.0, 600.0);
+        (game.config.logoScale * minDim * 0.52 * game.config.ekgRadius).clamp(
+          20.0,
+          600.0,
+        );
 
-    final paletteColors = StealConfig.palettes[game.config.palette] ??
+    final paletteColors =
+        StealConfig.palettes[game.config.palette] ??
         StealConfig.palettes.values.first;
-    final rawColor =
-        paletteColors.isNotEmpty ? paletteColors.first : Colors.white;
+    final rawColor = paletteColors.isNotEmpty
+        ? paletteColors.first
+        : Colors.white;
     final hsl = HSLColor.fromColor(rawColor);
     final color = hsl
         .withSaturation((hsl.saturation * 0.4).clamp(0.0, 1.0))
@@ -372,8 +381,9 @@ class StealGraph extends Component with HasGameReference<StealGame> {
 
       if (r == 0 && _glowSigma > 0.0) {
         final glowPaint = Paint()
-          ..color =
-              color.withValues(alpha: (0.15 + (_beatFlash * 0.1)) * opacity)
+          ..color = color.withValues(
+            alpha: (0.15 + (_beatFlash * 0.1)) * opacity,
+          )
           ..style = PaintingStyle.stroke
           ..strokeWidth = 3.5 + beatThick
           ..strokeCap = StrokeCap.round
@@ -384,8 +394,9 @@ class StealGraph extends Component with HasGameReference<StealGame> {
       }
 
       final corePaint = Paint()
-        ..color =
-            color.withValues(alpha: (0.85 + (_beatFlash * 0.15)) * opacity)
+        ..color = color.withValues(
+          alpha: (0.85 + (_beatFlash * 0.15)) * opacity,
+        )
         ..style = PaintingStyle.stroke
         ..strokeWidth = 2.0 + (r == 0 ? beatThick : 0.0)
         ..strokeCap = StrokeCap.round;
@@ -426,14 +437,11 @@ class StealGraph extends Component with HasGameReference<StealGame> {
       }
 
       final corePaint = Paint()
-        ..shader = Gradient.linear(
-          Offset(barLeft, startY),
-          Offset(barLeft, barTop),
-          [
-            color.withValues(alpha: 0.24),
-            color.withValues(alpha: i == _bandCount ? 0.98 : 0.88),
-          ],
-        )
+        ..shader =
+            Gradient.linear(Offset(barLeft, startY), Offset(barLeft, barTop), [
+              color.withValues(alpha: 0.24),
+              color.withValues(alpha: i == _bandCount ? 0.98 : 0.88),
+            ])
         ..style = PaintingStyle.fill;
       canvas.drawRRect(rect, corePaint);
 
@@ -528,8 +536,10 @@ class StealGraph extends Component with HasGameReference<StealGame> {
     final cy = logoUV.dy * game.size.y + (drift.dy * 0.4);
 
     final minDim = min(game.size.x, game.size.y);
-    final dynamicRadius =
-        (game.config.logoScale * minDim * 0.45).clamp(40.0, 300.0);
+    final dynamicRadius = (game.config.logoScale * minDim * 0.45).clamp(
+      40.0,
+      300.0,
+    );
 
     for (int i = 0; i < _bandCount; i++) {
       final angle = (i / _bandCount) * 2 * pi - (pi / 2);
@@ -547,14 +557,22 @@ class StealGraph extends Component with HasGameReference<StealGame> {
       const halfW = _circBarWidth / 2;
 
       final path = Path()
-        ..moveTo(cx + dirX * innerR + perpX * halfW,
-            cy + dirY * innerR + perpY * halfW)
-        ..lineTo(cx + dirX * innerR - perpX * halfW,
-            cy + dirY * innerR - perpY * halfW)
-        ..lineTo(cx + dirX * outerR - perpX * halfW,
-            cy + dirY * outerR - perpY * halfW)
-        ..lineTo(cx + dirX * outerR + perpX * halfW,
-            cy + dirY * outerR + perpY * halfW)
+        ..moveTo(
+          cx + dirX * innerR + perpX * halfW,
+          cy + dirY * innerR + perpY * halfW,
+        )
+        ..lineTo(
+          cx + dirX * innerR - perpX * halfW,
+          cy + dirY * innerR - perpY * halfW,
+        )
+        ..lineTo(
+          cx + dirX * outerR - perpX * halfW,
+          cy + dirY * outerR - perpY * halfW,
+        )
+        ..lineTo(
+          cx + dirX * outerR + perpX * halfW,
+          cy + dirY * outerR + perpY * halfW,
+        )
         ..close();
 
       if (_glowSigma > 0.0) {
@@ -571,10 +589,7 @@ class StealGraph extends Component with HasGameReference<StealGame> {
         ..shader = Gradient.linear(
           Offset(cx + dirX * innerR, cy + dirY * innerR),
           Offset(cx + dirX * outerR, cy + dirY * outerR),
-          [
-            color.withValues(alpha: 0.26),
-            color.withValues(alpha: 0.9),
-          ],
+          [color.withValues(alpha: 0.26), color.withValues(alpha: 0.9)],
         )
         ..style = PaintingStyle.fill;
       canvas.drawPath(path, corePaint);

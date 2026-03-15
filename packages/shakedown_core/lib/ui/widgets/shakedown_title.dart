@@ -44,25 +44,40 @@ class _ShakedownTitleState extends State<ShakedownTitle>
     // 0 -> - -> + -> - -> 0 (decaying)
     _shakeAnimation = TweenSequence<double>([
       TweenSequenceItem(
-          tween: Tween(begin: 0.0, end: -0.05)
-              .chain(CurveTween(curve: Curves.easeOut)),
-          weight: 15),
+        tween: Tween(
+          begin: 0.0,
+          end: -0.05,
+        ).chain(CurveTween(curve: Curves.easeOut)),
+        weight: 15,
+      ),
       TweenSequenceItem(
-          tween: Tween(begin: -0.05, end: 0.05)
-              .chain(CurveTween(curve: Curves.easeInOut)),
-          weight: 20),
+        tween: Tween(
+          begin: -0.05,
+          end: 0.05,
+        ).chain(CurveTween(curve: Curves.easeInOut)),
+        weight: 20,
+      ),
       TweenSequenceItem(
-          tween: Tween(begin: 0.05, end: -0.03)
-              .chain(CurveTween(curve: Curves.easeInOut)),
-          weight: 20),
+        tween: Tween(
+          begin: 0.05,
+          end: -0.03,
+        ).chain(CurveTween(curve: Curves.easeInOut)),
+        weight: 20,
+      ),
       TweenSequenceItem(
-          tween: Tween(begin: -0.03, end: 0.015)
-              .chain(CurveTween(curve: Curves.easeInOut)),
-          weight: 20),
+        tween: Tween(
+          begin: -0.03,
+          end: 0.015,
+        ).chain(CurveTween(curve: Curves.easeInOut)),
+        weight: 20,
+      ),
       TweenSequenceItem(
-          tween: Tween(begin: 0.015, end: 0.0)
-              .chain(CurveTween(curve: Curves.elasticOut)), // Settle
-          weight: 25),
+        tween: Tween(
+          begin: 0.015,
+          end: 0.0,
+        ).chain(CurveTween(curve: Curves.elasticOut)), // Settle
+        weight: 25,
+      ),
     ]).animate(_shakeController);
 
     if (widget.animateOnStart) {
@@ -89,8 +104,10 @@ class _ShakedownTitleState extends State<ShakedownTitle>
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final settingsProvider = context.watch<SettingsProvider>();
-    final scaleFactor =
-        FontLayoutConfig.getEffectiveScale(context, settingsProvider);
+    final scaleFactor = FontLayoutConfig.getEffectiveScale(
+      context,
+      settingsProvider,
+    );
 
     final isTv = context.watch<DeviceService>().isTv;
     final String activeFont = isTv ? 'rock_salt' : settingsProvider.appFont;
@@ -100,10 +117,10 @@ class _ShakedownTitleState extends State<ShakedownTitle>
       fontFamily: activeFont == 'default'
           ? FontConfig.resolve('Inter') // Assuming 'Inter' for default
           : (activeFont == 'rock_salt'
-              ? FontConfig.resolve('RockSalt')
-              : (activeFont == 'permanent_marker'
-                  ? FontConfig.resolve('Permanent Marker')
-                  : FontConfig.resolve('Caveat'))),
+                ? FontConfig.resolve('RockSalt')
+                : (activeFont == 'permanent_marker'
+                      ? FontConfig.resolve('Permanent Marker')
+                      : FontConfig.resolve('Caveat'))),
       fontWeight: FontWeight.bold,
       color: theme.colorScheme.primary,
       letterSpacing: 1.2,
@@ -115,16 +132,9 @@ class _ShakedownTitleState extends State<ShakedownTitle>
     final animWidget = AnimatedBuilder(
       animation: _shakeAnimation,
       builder: (context, child) {
-        return Transform.rotate(
-          angle: _shakeAnimation.value,
-          child: child,
-        );
+        return Transform.rotate(angle: _shakeAnimation.value, child: child);
       },
-      child: Text(
-        'Shakedown',
-        style: textStyle,
-        textAlign: TextAlign.center,
-      ),
+      child: Text('Shakedown', style: textStyle, textAlign: TextAlign.center),
     );
 
     if (!widget.enableHero || !settingsProvider.enableShakedownTween) {
@@ -137,22 +147,20 @@ class _ShakedownTitleState extends State<ShakedownTitle>
         return GravityRectTween(begin: begin, end: end);
       },
       // Custom flight shuttle to smooth out text style interpolation
-      flightShuttleBuilder: (
-        BuildContext flightContext,
-        Animation<double> animation,
-        HeroFlightDirection flightDirection,
-        BuildContext fromHeroContext,
-        BuildContext toHeroContext,
-      ) {
-        return DefaultTextStyle(
-          style: DefaultTextStyle.of(toHeroContext).style,
-          child: toHeroContext.widget,
-        );
-      },
-      child: Material(
-        type: MaterialType.transparency,
-        child: animWidget,
-      ),
+      flightShuttleBuilder:
+          (
+            BuildContext flightContext,
+            Animation<double> animation,
+            HeroFlightDirection flightDirection,
+            BuildContext fromHeroContext,
+            BuildContext toHeroContext,
+          ) {
+            return DefaultTextStyle(
+              style: DefaultTextStyle.of(toHeroContext).style,
+              child: toHeroContext.widget,
+            );
+          },
+      child: Material(type: MaterialType.transparency, child: animWidget),
     );
   }
 }

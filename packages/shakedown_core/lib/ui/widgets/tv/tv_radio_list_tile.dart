@@ -39,8 +39,10 @@ class TvRadioListTile<T> extends StatelessWidget {
             value: value,
             dense: dense,
             secondary: secondary,
-            contentPadding:
-                const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 4,
+            ),
           ),
         ),
       );

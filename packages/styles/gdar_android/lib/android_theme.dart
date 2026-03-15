@@ -14,7 +14,11 @@ class GDARAndroidTheme {
     );
 
     return themeData.copyWith(
-      textTheme: _buildTextTheme(themeData.textTheme, appFont: appFont, uiScale: uiScale),
+      textTheme: _buildTextTheme(
+        themeData.textTheme,
+        appFont: appFont,
+        uiScale: uiScale,
+      ),
     );
   }
 
@@ -29,11 +33,19 @@ class GDARAndroidTheme {
     );
 
     return themeData.copyWith(
-      textTheme: _buildTextTheme(themeData.textTheme, appFont: appFont, uiScale: uiScale),
+      textTheme: _buildTextTheme(
+        themeData.textTheme,
+        appFont: appFont,
+        uiScale: uiScale,
+      ),
     );
   }
 
-  static TextTheme _buildTextTheme(TextTheme base, {required String appFont, required bool uiScale}) {
+  static TextTheme _buildTextTheme(
+    TextTheme base, {
+    required String appFont,
+    required bool uiScale,
+  }) {
     final config = FontConfig.get(appFont);
     final double scale = uiScale ? 1.35 : 1.0;
     final double totalScale = config.scaleFactor * scale;

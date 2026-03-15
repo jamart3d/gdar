@@ -29,8 +29,9 @@ class UpdateProvider with ChangeNotifier {
 
     // Safety check for debug mode unless specifically asked (simulateUpdate handles debug)
     if (kDebugMode && !_isSimulated) {
-      logger
-          .d('UpdateProvider: Skipping automatic update check in Debug mode.');
+      logger.d(
+        'UpdateProvider: Skipping automatic update check in Debug mode.',
+      );
       return;
     }
 
@@ -39,7 +40,8 @@ class UpdateProvider with ChangeNotifier {
 
     if (info?.updateAvailability == UpdateAvailability.updateAvailable) {
       logger.i(
-          'UpdateProvider: New update available: ${info?.availableVersionCode}');
+        'UpdateProvider: New update available: ${info?.availableVersionCode}',
+      );
     }
 
     notifyListeners();

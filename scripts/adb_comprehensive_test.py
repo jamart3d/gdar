@@ -10,10 +10,10 @@ Tests ShowListCard spacing across ALL combinations:
 Total: 40 screenshots
 
 Usage:
-    python3 tool/adb_comprehensive_test.py
+    python3 scripts/adb_comprehensive_test.py
     
     # Or test specific font only:
-    python3 tool/adb_comprehensive_test.py --font rock_salt
+    python3 scripts/adb_comprehensive_test.py --font rock_salt
 
 Requirements:
     - ADB installed and in PATH

@@ -37,18 +37,18 @@ class SwipeActionBackground extends StatelessWidget {
             Text(
               label,
               style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                    color: colorScheme.onError,
-                    fontWeight: FontWeight.bold,
-                  ),
+                color: colorScheme.onError,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ],
           if (alignment == Alignment.centerRight) ...[
             Text(
               label,
               style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                    color: colorScheme.onError,
-                    fontWeight: FontWeight.bold,
-                  ),
+                color: colorScheme.onError,
+                fontWeight: FontWeight.bold,
+              ),
             ),
             const SizedBox(width: 8),
             Icon(icon, color: colorScheme.onError),

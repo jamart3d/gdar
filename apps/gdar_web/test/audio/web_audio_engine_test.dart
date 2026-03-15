@@ -17,7 +17,11 @@ void main() {
       // Wait for more than 5 seconds
       await Future.delayed(const Duration(seconds: 6));
 
-      expect(states.contains('H5'), isTrue, reason: 'Engine should switch to H5 after 5s stall');
+      expect(
+        states.contains('H5'),
+        isTrue,
+        reason: 'Engine should switch to H5 after 5s stall',
+      );
       await subscription.cancel();
     });
 

@@ -20,10 +20,10 @@ Activate this skill **proactively** whenever any of the following are true:
    single code edit in a non-test file.
 3. **Fan-out detected**: A change to one of these "high-risk" core files
    is in scope:
-   - Any file in `lib/providers/`
-   - Any file in `lib/services/`
-   - Any file in `lib/models/`
-   - `lib/main.dart`
+   - Any file in `packages/shakedown_core/lib/providers/`
+   - Any file in `packages/shakedown_core/lib/services/`
+   - Any file in `packages/shakedown_core/lib/models/`
+   - `apps/*/lib/main.dart`
    - `pubspec.yaml`
 4. **User signals**: The user uses language like "everything broke", "cascade",
    "ripple", or "it's spreading".
@@ -37,7 +37,7 @@ Activate this skill **proactively** whenever any of the following are true:
 Run the Python diagnostic tool to gather a structured snapshot:
 
 ```powershell
-python tools/ripple_scan.py
+python scripts/ripple_scan.py
 ```
 
 This script will:
@@ -131,11 +131,11 @@ the source will create dependency loops.
 
 ### Tier 3 — Layer-by-Layer Repair
 Work in this order to respect the dependency graph:
-1. **Models** (`lib/models/`)
-2. **Services** (`lib/services/`)
-3. **Providers** (`lib/providers/`)
-4. **Widgets** (`lib/widgets/`, `lib/screens/`)
-5. **Tests** (`test/`)
+1. **Models** (`packages/shakedown_core/lib/models/`)
+2. **Services** (`packages/shakedown_core/lib/services/`)
+3. **Providers** (`packages/shakedown_core/lib/providers/`)
+4. **Widgets** (`packages/shakedown_core/lib/ui/`, `apps/*/lib/`)
+5. **Tests** (`test/`, `apps/*/test/`)
 
 ### Tier 4 — Stabilize with a Stub
 If the epicenter is too complex to fix immediately, add a **temporary stub**

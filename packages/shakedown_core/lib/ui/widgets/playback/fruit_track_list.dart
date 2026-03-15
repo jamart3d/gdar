@@ -165,8 +165,9 @@ class _FruitTrackListState extends State<FruitTrackList> {
                   opacity: (_isOffScreenTop || _isOffScreenBottom) ? 0.0 : 1.0,
                   child: Padding(
                     key: _nowPlayingKey,
-                    padding:
-                        EdgeInsets.symmetric(vertical: 20 * widget.scaleFactor),
+                    padding: EdgeInsets.symmetric(
+                      vertical: 20 * widget.scaleFactor,
+                    ),
                     child: FruitNowPlayingCard(
                       trackShow: widget.trackShow,
                       track: audioProvider.currentTrack!,
@@ -225,16 +226,14 @@ class _FruitTrackListState extends State<FruitTrackList> {
                           20 * widget.scaleFactor,
                         ),
                         decoration: BoxDecoration(
-                          color: Theme.of(context)
-                              .colorScheme
-                              .surface
-                              .withValues(alpha: 0.1),
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.surface.withValues(alpha: 0.1),
                           border: Border(
                             bottom: BorderSide(
-                              color: Theme.of(context)
-                                  .colorScheme
-                                  .onSurface
-                                  .withValues(alpha: 0.05),
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.onSurface.withValues(alpha: 0.05),
                             ),
                           ),
                         ),
@@ -274,16 +273,14 @@ class _FruitTrackListState extends State<FruitTrackList> {
                           20 * widget.scaleFactor,
                         ),
                         decoration: BoxDecoration(
-                          color: Theme.of(context)
-                              .colorScheme
-                              .surface
-                              .withValues(alpha: 0.1),
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.surface.withValues(alpha: 0.1),
                           border: Border(
                             top: BorderSide(
-                              color: Theme.of(context)
-                                  .colorScheme
-                                  .onSurface
-                                  .withValues(alpha: 0.05),
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.onSurface.withValues(alpha: 0.05),
                             ),
                           ),
                         ),
@@ -385,7 +382,8 @@ class _FruitTrackRowState extends State<_FruitTrackRow> {
               child: Container(
                 padding: EdgeInsets.symmetric(
                   horizontal: 8.0 * widget.scaleFactor, // px-2
-                  vertical: (settingsProvider.fruitDenseList ? 8.0 : 16.0) *
+                  vertical:
+                      (settingsProvider.fruitDenseList ? 8.0 : 16.0) *
                       widget.scaleFactor, // RESPECT DENSE TOGGLE
                 ),
                 decoration: BoxDecoration(
@@ -412,8 +410,9 @@ class _FruitTrackRowState extends State<_FruitTrackRow> {
                             fontFamily: 'Inter',
                             fontSize: 10 * widget.scaleFactor, // text-[10px]
                             fontWeight: FontWeight.w800, // font-bold
-                            color: colorScheme.onSurfaceVariant
-                                .withValues(alpha: 0.4),
+                            color: colorScheme.onSurfaceVariant.withValues(
+                              alpha: 0.4,
+                            ),
                           ),
                         ),
                       ),
@@ -445,8 +444,9 @@ class _FruitTrackRowState extends State<_FruitTrackRow> {
                                     : FontWeight.w600,
                                 color: widget.isActive
                                     ? colorScheme.primary
-                                    : colorScheme.onSurface
-                                        .withValues(alpha: 0.8),
+                                    : colorScheme.onSurface.withValues(
+                                        alpha: 0.8,
+                                      ),
                               ),
                             ),
                           ),
@@ -460,8 +460,9 @@ class _FruitTrackRowState extends State<_FruitTrackRow> {
                           fontFamily: 'Roboto',
                           fontSize: 10 * widget.scaleFactor, // text-[10px]
                           fontWeight: FontWeight.w500, // font-medium
-                          color: colorScheme.onSurfaceVariant
-                              .withValues(alpha: 0.4),
+                          color: colorScheme.onSurfaceVariant.withValues(
+                            alpha: 0.4,
+                          ),
                           fontFeatures: const [FontFeature.tabularFigures()],
                         ),
                       ),

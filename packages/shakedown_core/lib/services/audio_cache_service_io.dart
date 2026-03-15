@@ -45,7 +45,8 @@ class AudioCacheService with ChangeNotifier {
       final baseDir = Directory.systemTemp;
       _cacheDir = Directory('${baseDir.path}/shakedown_audio_cache');
       logger.i(
-          'AudioCacheService: Using dedicated cache directory: ${_cacheDir!.path}');
+        'AudioCacheService: Using dedicated cache directory: ${_cacheDir!.path}',
+      );
     }
 
     if (!await _cacheDir!.exists()) {
@@ -139,8 +140,9 @@ class AudioCacheService with ChangeNotifier {
         }
       } on FileSystemException catch (e) {
         // Directory might have been deleted during iteration (happens in tests)
-        logger
-            .d('refreshCacheCount: Directory disappeared during iteration: $e');
+        logger.d(
+          'refreshCacheCount: Directory disappeared during iteration: $e',
+        );
         if (await dir.exists()) {
           rethrow; // If it still exists, something else is wrong
         }
@@ -221,7 +223,8 @@ class AudioCacheService with ChangeNotifier {
 
       if (deletedCount > 0) {
         logger.i(
-            'Cache Cleanup: Removed $deletedCount old files. Remaining: $maxFiles');
+          'Cache Cleanup: Removed $deletedCount old files. Remaining: $maxFiles',
+        );
         await refreshCacheCount();
       }
     } catch (e) {
@@ -297,7 +300,8 @@ class AudioCacheService with ChangeNotifier {
         await refreshCacheCount();
       } else {
         logger.w(
-            'Smart Pre-Load: Failed to download ${track.title} (HTTP ${response.statusCode})');
+          'Smart Pre-Load: Failed to download ${track.title} (HTTP ${response.statusCode})',
+        );
       }
     } catch (e) {
       logger.w('Smart Pre-Load: Error downloading ${track.title}: $e');
@@ -313,10 +317,12 @@ class AudioCacheService with ChangeNotifier {
 
       if (!await file.exists()) {
         final byteData = await rootBundle.load(AssetConstants.albumArtFallback);
-        await file.writeAsBytes(byteData.buffer.asUint8List(
-          byteData.offsetInBytes,
-          byteData.lengthInBytes,
-        ));
+        await file.writeAsBytes(
+          byteData.buffer.asUint8List(
+            byteData.offsetInBytes,
+            byteData.lengthInBytes,
+          ),
+        );
       }
 
       return Uri.file(file.path);

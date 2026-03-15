@@ -5,8 +5,10 @@ class ColorGenerator {
   /// Generates a deterministic color based on the provided seed string.
   /// Uses Material 3 dynamic color generation to ensure the color fits
   /// the system's tonal palette logic and respects brightness.
-  static Color getColor(String seed,
-      {Brightness brightness = Brightness.dark}) {
+  static Color getColor(
+    String seed, {
+    Brightness brightness = Brightness.dark,
+  }) {
     final int hash = seed.hashCode;
     final Random random = Random(hash);
 
@@ -16,8 +18,12 @@ class ColorGenerator {
     const double saturation = 0.8; // High saturation for the seed
     const double lightness = 0.5; // Mid lightness for the seed
 
-    final Color keyColor =
-        HSLColor.fromAHSL(1.0, hue, saturation, lightness).toColor();
+    final Color keyColor = HSLColor.fromAHSL(
+      1.0,
+      hue,
+      saturation,
+      lightness,
+    ).toColor();
 
     // Generate a full ColorScheme from this seed
     final ColorScheme scheme = ColorScheme.fromSeed(

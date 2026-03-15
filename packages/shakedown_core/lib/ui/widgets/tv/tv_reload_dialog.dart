@@ -5,11 +5,7 @@ class TvReloadDialog extends StatelessWidget {
   final VoidCallback onReload;
   final VoidCallback? onHardReset;
 
-  const TvReloadDialog({
-    super.key,
-    required this.onReload,
-    this.onHardReset,
-  });
+  const TvReloadDialog({super.key, required this.onReload, this.onHardReset});
 
   @override
   Widget build(BuildContext context) {
@@ -105,10 +101,8 @@ class TvReloadDialog extends StatelessWidget {
     return showDialog(
       context: context,
       barrierColor: Colors.black.withValues(alpha: 0.8),
-      builder: (context) => TvReloadDialog(
-        onReload: onReload,
-        onHardReset: onHardReset,
-      ),
+      builder: (context) =>
+          TvReloadDialog(onReload: onReload, onHardReset: onHardReset),
     );
   }
 }
@@ -147,11 +141,7 @@ class _DialogButton extends StatelessWidget {
                 color: colorScheme.primary.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
-              child: Icon(
-                icon,
-                color: colorScheme.primary,
-                size: 24,
-              ),
+              child: Icon(icon, color: colorScheme.primary, size: 24),
             ),
             const SizedBox(width: 16),
             Expanded(

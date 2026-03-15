@@ -26,12 +26,12 @@ class AudioEnergy {
 
   /// Create an AudioEnergy with all values set to zero (silence)
   const AudioEnergy.zero()
-      : bass = 0.0,
-        mid = 0.0,
-        treble = 0.0,
-        overall = 0.0,
-        isBeat = false,
-        bands = const [0, 0, 0, 0, 0, 0, 0, 0];
+    : bass = 0.0,
+      mid = 0.0,
+      treble = 0.0,
+      overall = 0.0,
+      isBeat = false,
+      bands = const [0, 0, 0, 0, 0, 0, 0, 0];
 
   @override
   String toString() {

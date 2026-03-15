@@ -46,8 +46,11 @@ class _TvScreensaverSectionState extends State<TvScreensaverSection> {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _lastFocusNode.requestFocus();
         try {
-          Scrollable.ensureVisible(_lastFocusNode.context!,
-              alignment: 1.0, duration: const Duration(milliseconds: 150));
+          Scrollable.ensureVisible(
+            _lastFocusNode.context!,
+            alignment: 1.0,
+            duration: const Duration(milliseconds: 150),
+          );
         } catch (_) {}
       });
       return KeyEventResult.handled;
@@ -133,8 +136,9 @@ class _TvScreensaverSectionState extends State<TvScreensaverSection> {
                     children: [
                       Text(
                         'Inactivity Timeout',
-                        style: textTheme.bodySmall
-                            ?.copyWith(color: colorScheme.onSurfaceVariant),
+                        style: textTheme.bodySmall?.copyWith(
+                          color: colorScheme.onSurfaceVariant,
+                        ),
                       ),
                       const SizedBox(height: 8),
                       TvFocusWrapper(
@@ -159,8 +163,9 @@ class _TvScreensaverSectionState extends State<TvScreensaverSection> {
                               }
                             }
                             if (newVal != null && newVal != current) {
-                              settings
-                                  .setOilScreensaverInactivityMinutes(newVal);
+                              settings.setOilScreensaverInactivityMinutes(
+                                newVal,
+                              );
                               return KeyEventResult.handled;
                             }
                           }
@@ -187,13 +192,16 @@ class _TvScreensaverSectionState extends State<TvScreensaverSection> {
                 TvListTile(
                   dense: true,
                   visualDensity: VisualDensity.compact,
-                  leading: Icon(isFruit
-                      ? LucideIcons.playCircle
-                      : Icons.play_circle_outline_rounded),
+                  leading: Icon(
+                    isFruit
+                        ? LucideIcons.playCircle
+                        : Icons.play_circle_outline_rounded,
+                  ),
                   title: Text(
                     'Start Screen Saver',
-                    style: textTheme.bodyLarge
-                        ?.copyWith(color: colorScheme.onSurface),
+                    style: textTheme.bodyLarge?.copyWith(
+                      color: colorScheme.onSurface,
+                    ),
                   ),
                   onTap: () => ScreensaverScreen.show(context),
                 ),
@@ -206,8 +214,9 @@ class _TvScreensaverSectionState extends State<TvScreensaverSection> {
 
                 Text(
                   'Color Palette',
-                  style: textTheme.bodySmall
-                      ?.copyWith(color: colorScheme.onSurfaceVariant),
+                  style: textTheme.bodySmall?.copyWith(
+                    color: colorScheme.onSurfaceVariant,
+                  ),
                 ),
                 const SizedBox(height: 8),
                 _PaletteSegmentedButton(
@@ -441,8 +450,9 @@ class _TvScreensaverSectionState extends State<TvScreensaverSection> {
                       children: [
                         Text(
                           'Display Style',
-                          style: textTheme.bodySmall
-                              ?.copyWith(color: colorScheme.onSurfaceVariant),
+                          style: textTheme.bodySmall?.copyWith(
+                            color: colorScheme.onSurfaceVariant,
+                          ),
                         ),
                         const SizedBox(height: 8),
                         TvFocusWrapper(
@@ -483,8 +493,9 @@ class _TvScreensaverSectionState extends State<TvScreensaverSection> {
                       children: [
                         Text(
                           'Banner Font',
-                          style: textTheme.bodySmall
-                              ?.copyWith(color: colorScheme.onSurfaceVariant),
+                          style: textTheme.bodySmall?.copyWith(
+                            color: colorScheme.onSurfaceVariant,
+                          ),
                         ),
                         const SizedBox(height: 8),
                         TvFocusWrapper(
@@ -505,9 +516,13 @@ class _TvScreensaverSectionState extends State<TvScreensaverSection> {
                           child: SegmentedButton<String>(
                             segments: const [
                               ButtonSegment(
-                                  value: 'RockSalt', label: Text('Rock Salt')),
+                                value: 'RockSalt',
+                                label: Text('Rock Salt'),
+                              ),
                               ButtonSegment(
-                                  value: 'Roboto', label: Text('Roboto')),
+                                value: 'Roboto',
+                                label: Text('Roboto'),
+                              ),
                             ],
                             selected: {settings.oilBannerFont},
                             onSelectionChanged: (Set<String> s) =>
@@ -668,8 +683,9 @@ class _TvScreensaverSectionState extends State<TvScreensaverSection> {
                         children: [
                           Text(
                             'Text Placement',
-                            style: textTheme.bodySmall
-                                ?.copyWith(color: colorScheme.onSurfaceVariant),
+                            style: textTheme.bodySmall?.copyWith(
+                              color: colorScheme.onSurfaceVariant,
+                            ),
                           ),
                           const SizedBox(height: 8),
                           TvFocusWrapper(
@@ -690,9 +706,13 @@ class _TvScreensaverSectionState extends State<TvScreensaverSection> {
                             child: SegmentedButton<String>(
                               segments: const [
                                 ButtonSegment(
-                                    value: 'below', label: Text('Below')),
+                                  value: 'below',
+                                  label: Text('Below'),
+                                ),
                                 ButtonSegment(
-                                    value: 'above', label: Text('Above')),
+                                  value: 'above',
+                                  label: Text('Above'),
+                                ),
                               ],
                               selected: {settings.oilFlatTextPlacement},
                               onSelectionChanged: (Set<String> s) =>
@@ -772,7 +792,9 @@ class _TvScreensaverSectionState extends State<TvScreensaverSection> {
 
                 // ── Audio Reactivity ─────────────────────────────────────────
                 _SectionHeader(
-                    title: 'Audio Reactivity', colorScheme: colorScheme),
+                  title: 'Audio Reactivity',
+                  colorScheme: colorScheme,
+                ),
                 const SizedBox(height: 8),
 
                 _ToggleRow(
@@ -827,8 +849,9 @@ class _TvScreensaverSectionState extends State<TvScreensaverSection> {
                       'Peak Decay controls how quickly the visualizer adapts to changes '
                       'in volume. Slow adapt keeps loud moments pumping longer; Fast '
                       'adapt stays fresh with quiet passages.',
-                      style: textTheme.bodySmall
-                          ?.copyWith(color: colorScheme.onSurfaceVariant),
+                      style: textTheme.bodySmall?.copyWith(
+                        color: colorScheme.onSurfaceVariant,
+                      ),
                     ),
                   ),
                 ],
@@ -866,8 +889,9 @@ class _TvScreensaverSectionState extends State<TvScreensaverSection> {
                       children: [
                         Text(
                           'Audio Graph',
-                          style: textTheme.bodySmall
-                              ?.copyWith(color: colorScheme.onSurfaceVariant),
+                          style: textTheme.bodySmall?.copyWith(
+                            color: colorScheme.onSurfaceVariant,
+                          ),
                         ),
                         const SizedBox(height: 8),
                         TvFocusWrapper(
@@ -879,10 +903,11 @@ class _TvScreensaverSectionState extends State<TvScreensaverSection> {
                                 'corner_only',
                                 'circular',
                                 'ekg',
-                                'circular_ekg'
+                                'circular_ekg',
                               ];
-                              final idx =
-                                  modes.indexOf(settings.oilAudioGraphMode);
+                              final idx = modes.indexOf(
+                                settings.oilAudioGraphMode,
+                              );
                               if (event.logicalKey ==
                                       LogicalKeyboardKey.arrowLeft &&
                                   idx > 0) {
@@ -901,16 +926,22 @@ class _TvScreensaverSectionState extends State<TvScreensaverSection> {
                             segments: const [
                               ButtonSegment(value: 'off', label: Text('Off')),
                               ButtonSegment(
-                                  value: 'corner', label: Text('Corner')),
+                                value: 'corner',
+                                label: Text('Corner'),
+                              ),
                               ButtonSegment(
-                                  value: 'corner_only',
-                                  label: Text('Corner Only')),
+                                value: 'corner_only',
+                                label: Text('Corner Only'),
+                              ),
                               ButtonSegment(
-                                  value: 'circular', label: Text('Circular')),
+                                value: 'circular',
+                                label: Text('Circular'),
+                              ),
                               ButtonSegment(value: 'ekg', label: Text('EKG')),
                               ButtonSegment(
-                                  value: 'circular_ekg',
-                                  label: Text('Circ EKG')),
+                                value: 'circular_ekg',
+                                label: Text('Circ EKG'),
+                              ),
                             ],
                             selected: {settings.oilAudioGraphMode},
                             onSelectionChanged: (Set<String> s) =>
@@ -933,8 +964,8 @@ class _TvScreensaverSectionState extends State<TvScreensaverSection> {
                                       Text(
                                         'EKG Radius',
                                         style: textTheme.bodySmall?.copyWith(
-                                            color:
-                                                colorScheme.onSurfaceVariant),
+                                          color: colorScheme.onSurfaceVariant,
+                                        ),
                                       ),
                                       const SizedBox(height: 8),
                                       TvFocusWrapper(
@@ -944,14 +975,16 @@ class _TvScreensaverSectionState extends State<TvScreensaverSection> {
                                             if (event.logicalKey ==
                                                 LogicalKeyboardKey.arrowLeft) {
                                               settings.setOilEkgRadius(
-                                                  (settings.oilEkgRadius - 0.1)
-                                                      .clamp(0.1, 2.0));
+                                                (settings.oilEkgRadius - 0.1)
+                                                    .clamp(0.1, 2.0),
+                                              );
                                               return KeyEventResult.handled;
                                             } else if (event.logicalKey ==
                                                 LogicalKeyboardKey.arrowRight) {
                                               settings.setOilEkgRadius(
-                                                  (settings.oilEkgRadius + 0.1)
-                                                      .clamp(0.1, 2.0));
+                                                (settings.oilEkgRadius + 0.1)
+                                                    .clamp(0.1, 2.0),
+                                              );
                                               return KeyEventResult.handled;
                                             }
                                           }
@@ -978,7 +1011,8 @@ class _TvScreensaverSectionState extends State<TvScreensaverSection> {
                                     Text(
                                       'Line Replication',
                                       style: textTheme.bodySmall?.copyWith(
-                                          color: colorScheme.onSurfaceVariant),
+                                        color: colorScheme.onSurfaceVariant,
+                                      ),
                                     ),
                                     const SizedBox(height: 8),
                                     TvFocusWrapper(
@@ -988,14 +1022,16 @@ class _TvScreensaverSectionState extends State<TvScreensaverSection> {
                                           if (event.logicalKey ==
                                               LogicalKeyboardKey.arrowLeft) {
                                             settings.setOilEkgReplication(
-                                                (settings.oilEkgReplication - 1)
-                                                    .clamp(1, 10));
+                                              (settings.oilEkgReplication - 1)
+                                                  .clamp(1, 10),
+                                            );
                                             return KeyEventResult.handled;
                                           } else if (event.logicalKey ==
                                               LogicalKeyboardKey.arrowRight) {
                                             settings.setOilEkgReplication(
-                                                (settings.oilEkgReplication + 1)
-                                                    .clamp(1, 10));
+                                              (settings.oilEkgReplication + 1)
+                                                  .clamp(1, 10),
+                                            );
                                             return KeyEventResult.handled;
                                           }
                                         }
@@ -1026,7 +1062,8 @@ class _TvScreensaverSectionState extends State<TvScreensaverSection> {
                                     Text(
                                       'Line Spread',
                                       style: textTheme.bodySmall?.copyWith(
-                                          color: colorScheme.onSurfaceVariant),
+                                        color: colorScheme.onSurfaceVariant,
+                                      ),
                                     ),
                                     const SizedBox(height: 8),
                                     TvFocusWrapper(
@@ -1036,14 +1073,16 @@ class _TvScreensaverSectionState extends State<TvScreensaverSection> {
                                           if (event.logicalKey ==
                                               LogicalKeyboardKey.arrowLeft) {
                                             settings.setOilEkgSpread(
-                                                (settings.oilEkgSpread - 0.5)
-                                                    .clamp(0.0, 20.0));
+                                              (settings.oilEkgSpread - 0.5)
+                                                  .clamp(0.0, 20.0),
+                                            );
                                             return KeyEventResult.handled;
                                           } else if (event.logicalKey ==
                                               LogicalKeyboardKey.arrowRight) {
                                             settings.setOilEkgSpread(
-                                                (settings.oilEkgSpread + 0.5)
-                                                    .clamp(0.0, 20.0));
+                                              (settings.oilEkgSpread + 0.5)
+                                                  .clamp(0.0, 20.0),
+                                            );
                                             return KeyEventResult.handled;
                                           }
                                         }
@@ -1076,13 +1115,16 @@ class _TvScreensaverSectionState extends State<TvScreensaverSection> {
 
                 // ── Frequency Isolation ─────────────────────────────────────
                 _SectionHeader(
-                    title: 'Frequency Isolation', colorScheme: colorScheme),
+                  title: 'Frequency Isolation',
+                  colorScheme: colorScheme,
+                ),
                 const SizedBox(height: 8),
 
                 Text(
                   'Logo Scale Source',
-                  style: textTheme.bodySmall
-                      ?.copyWith(color: colorScheme.onSurfaceVariant),
+                  style: textTheme.bodySmall?.copyWith(
+                    color: colorScheme.onSurfaceVariant,
+                  ),
                 ),
                 const SizedBox(height: 8),
                 FittedBox(
@@ -1151,8 +1193,9 @@ class _TvScreensaverSectionState extends State<TvScreensaverSection> {
 
                 Text(
                   'Logo Color Source',
-                  style: textTheme.bodySmall
-                      ?.copyWith(color: colorScheme.onSurfaceVariant),
+                  style: textTheme.bodySmall?.copyWith(
+                    color: colorScheme.onSurfaceVariant,
+                  ),
                 ),
                 const SizedBox(height: 8),
                 FittedBox(
@@ -1190,8 +1233,9 @@ class _TvScreensaverSectionState extends State<TvScreensaverSection> {
                     children: [
                       Text(
                         'Rendering Quality',
-                        style: textTheme.bodySmall
-                            ?.copyWith(color: colorScheme.onSurfaceVariant),
+                        style: textTheme.bodySmall?.copyWith(
+                          color: colorScheme.onSurfaceVariant,
+                        ),
                       ),
                       const SizedBox(height: 8),
                       _QualitySegmentedButton(
@@ -1205,11 +1249,12 @@ class _TvScreensaverSectionState extends State<TvScreensaverSection> {
                         settings.oilPerformanceLevel == 0
                             ? 'High (Spectral chromatic aberration + ghost blur)'
                             : settings.oilPerformanceLevel == 1
-                                ? 'Balanced (Standard box blur, smooth movement)'
-                                : 'Fast (Sharp edges, 1-sample minimal GPU load)',
+                            ? 'Balanced (Standard box blur, smooth movement)'
+                            : 'Fast (Sharp edges, 1-sample minimal GPU load)',
                         style: textTheme.bodySmall?.copyWith(
-                          color: colorScheme.onSurfaceVariant
-                              .withValues(alpha: 0.7),
+                          color: colorScheme.onSurfaceVariant.withValues(
+                            alpha: 0.7,
+                          ),
                           fontSize: 10,
                         ),
                       ),
@@ -1368,8 +1413,11 @@ class _AnimatedPaletteSegmentState extends State<_AnimatedPaletteSegment>
             ),
           ),
           child: isSelected
-              ? Icon(isFruit ? LucideIcons.check : Icons.check_rounded,
-                  color: Colors.white.withValues(alpha: 0.9), size: 18)
+              ? Icon(
+                  isFruit ? LucideIcons.check : Icons.check_rounded,
+                  color: Colors.white.withValues(alpha: 0.9),
+                  size: 18,
+                )
               : const SizedBox.shrink(),
         );
       },
@@ -1455,8 +1503,12 @@ class _QualitySegmentedButton extends StatelessWidget {
     );
   }
 
-  Widget _buildSegment(String label, int level,
-      {bool isFirst = false, bool isLast = false}) {
+  Widget _buildSegment(
+    String label,
+    int level, {
+    bool isFirst = false,
+    bool isLast = false,
+  }) {
     final isSelected = selectedLevel == level;
     return Expanded(
       child: TvFocusWrapper(
@@ -1566,13 +1618,19 @@ class _ToggleRow extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(label,
-                      style: textTheme.bodyLarge
-                          ?.copyWith(color: colorScheme.onSurface)),
+                  Text(
+                    label,
+                    style: textTheme.bodyLarge?.copyWith(
+                      color: colorScheme.onSurface,
+                    ),
+                  ),
                   const SizedBox(height: 2),
-                  Text(subtitle,
-                      style: textTheme.bodySmall
-                          ?.copyWith(color: colorScheme.onSurfaceVariant)),
+                  Text(
+                    subtitle,
+                    style: textTheme.bodySmall?.copyWith(
+                      color: colorScheme.onSurfaceVariant,
+                    ),
+                  ),
                 ],
               ),
             ),

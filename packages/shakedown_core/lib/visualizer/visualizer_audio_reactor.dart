@@ -8,10 +8,12 @@ import 'package:shakedown_core/visualizer/audio_reactor.dart';
 /// Tuning knobs (peakDecay, bassBoost, reactivityStrength, beatSensitivity)
 /// can be updated live via [updateConfig] without restarting the visualizer.
 class VisualizerAudioReactor implements AudioReactor {
-  static const MethodChannel _methodChannel =
-      MethodChannel('shakedown/visualizer');
-  static const EventChannel _eventChannel =
-      EventChannel('shakedown/visualizer_events');
+  static const MethodChannel _methodChannel = MethodChannel(
+    'shakedown/visualizer',
+  );
+  static const EventChannel _eventChannel = EventChannel(
+    'shakedown/visualizer_events',
+  );
 
   final StreamController<AudioEnergy> _energyController =
       StreamController<AudioEnergy>.broadcast();
@@ -38,9 +40,10 @@ class VisualizerAudioReactor implements AudioReactor {
       if (result == true) {
         _isRunning = true;
 
-        _eventSubscription = _eventChannel
-            .receiveBroadcastStream()
-            .listen(_handleVisualizerData, onError: _handleError);
+        _eventSubscription = _eventChannel.receiveBroadcastStream().listen(
+          _handleVisualizerData,
+          onError: _handleError,
+        );
 
         await _methodChannel.invokeMethod('start');
       }
@@ -59,12 +62,14 @@ class VisualizerAudioReactor implements AudioReactor {
     double? beatSensitivity,
   }) {
     if (!_isRunning || _isDisposed) return;
-    unawaited(_methodChannel.invokeMethod('updateConfig', {
-      'peakDecay': ?peakDecay,
-      'bassBoost': ?bassBoost,
-      'reactivityStrength': ?reactivityStrength,
-      'beatSensitivity': ?beatSensitivity,
-    }));
+    unawaited(
+      _methodChannel.invokeMethod('updateConfig', {
+        'peakDecay': ?peakDecay,
+        'bassBoost': ?bassBoost,
+        'reactivityStrength': ?reactivityStrength,
+        'beatSensitivity': ?beatSensitivity,
+      }),
+    );
   }
 
   @override
@@ -90,11 +95,13 @@ class VisualizerAudioReactor implements AudioReactor {
   void dispose() {
     if (_isDisposed) return;
     _isDisposed = true;
-    unawaited(stop().whenComplete(() {
-      if (!_energyController.isClosed) {
-        unawaited(_energyController.close());
-      }
-    }));
+    unawaited(
+      stop().whenComplete(() {
+        if (!_energyController.isClosed) {
+          unawaited(_energyController.close());
+        }
+      }),
+    );
   }
 
   void _safeAdd(AudioEnergy energy) {
@@ -131,14 +138,16 @@ class VisualizerAudioReactor implements AudioReactor {
         ];
       }
 
-      _safeAdd(AudioEnergy(
-        bass: bass.clamp(0.0, 1.0),
-        mid: mid.clamp(0.0, 1.0),
-        treble: treble.clamp(0.0, 1.0),
-        overall: overall.clamp(0.0, 1.0),
-        isBeat: isBeat,
-        bands: bands,
-      ));
+      _safeAdd(
+        AudioEnergy(
+          bass: bass.clamp(0.0, 1.0),
+          mid: mid.clamp(0.0, 1.0),
+          treble: treble.clamp(0.0, 1.0),
+          overall: overall.clamp(0.0, 1.0),
+          isBeat: isBeat,
+          bands: bands,
+        ),
+      );
     }
   }
 

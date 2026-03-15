@@ -23,23 +23,26 @@ import 'package:gdar_android/android_theme.dart';
 import 'package:gdar_fruit/fruit_theme.dart';
 
 Future<void> main() async {
-  await runZonedGuarded(() async {
-    WidgetsFlutterBinding.ensureInitialized();
+  await runZonedGuarded(
+    () async {
+      WidgetsFlutterBinding.ensureInitialized();
 
-    // Web-specific initialization
-    initLogger();
-    if (kIsWeb) {
-      initWebErrorLogger();
-    }
+      // Web-specific initialization
+      initLogger();
+      if (kIsWeb) {
+        initWebErrorLogger();
+      }
 
-    final prefs = await SharedPreferences.getInstance();
+      final prefs = await SharedPreferences.getInstance();
 
-    runApp(GdarWebApp(prefs: prefs));
-  }, (error, stack) {
-    if (kIsWeb) {
-      recordWebError(error, stack, context: 'Zone');
-    }
-  });
+      runApp(GdarWebApp(prefs: prefs));
+    },
+    (error, stack) {
+      if (kIsWeb) {
+        recordWebError(error, stack, context: 'Zone');
+      }
+    },
+  );
 }
 
 class GdarWebApp extends StatefulWidget {
@@ -74,7 +77,9 @@ class _GdarWebAppState extends State<GdarWebApp> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final themeProvider = _navigatorKey.currentContext?.read<ThemeProvider>();
       if (themeProvider != null) {
-        final targetStyle = _isAndroidStyle ? ThemeStyle.android : ThemeStyle.fruit;
+        final targetStyle = _isAndroidStyle
+            ? ThemeStyle.android
+            : ThemeStyle.fruit;
         if (themeProvider.themeStyle != targetStyle) {
           themeProvider.setThemeStyle(targetStyle);
         }
@@ -119,34 +124,47 @@ class _GdarWebAppState extends State<GdarWebApp> {
           update: (_, settingsProvider, showListProvider) =>
               showListProvider!..update(settingsProvider),
         ),
-        ChangeNotifierProxyProvider3<ShowListProvider, SettingsProvider,
-            AudioCacheService, AudioProvider>(
+        ChangeNotifierProxyProvider3<
+          ShowListProvider,
+          SettingsProvider,
+          AudioCacheService,
+          AudioProvider
+        >(
           create: (_) => AudioProvider(),
-          update: (_, showListProvider, settingsProvider, audioCacheService,
-                  audioProvider) =>
-              audioProvider!
-                ..update(
-                  showListProvider,
-                  settingsProvider,
-                  audioCacheService,
-                ),
+          update:
+              (
+                _,
+                showListProvider,
+                settingsProvider,
+                audioCacheService,
+                audioProvider,
+              ) => audioProvider!
+                ..update(showListProvider, settingsProvider, audioCacheService),
         ),
         ChangeNotifierProvider(create: (_) => UpdateProvider()),
-        ChangeNotifierProvider(create: (_) => DeviceService(initialIsTv: false)),
+        ChangeNotifierProvider(
+          create: (_) => DeviceService(initialIsTv: false),
+        ),
       ],
       child: Consumer2<ThemeProvider, SettingsProvider>(
         builder: (context, themeProvider, settingsProvider, child) {
           final isAndroid = themeProvider.themeStyle == ThemeStyle.android;
 
           final lightTheme = isAndroid
-              ? GDARAndroidTheme.light(appFont: settingsProvider.appFont, uiScale: settingsProvider.uiScale)
+              ? GDARAndroidTheme.light(
+                  appFont: settingsProvider.appFont,
+                  uiScale: settingsProvider.uiScale,
+                )
               : GDARFruitTheme.light(
                   uiScale: settingsProvider.uiScale,
                   colorOption: themeProvider.fruitColorOption,
                 );
 
           final darkTheme = isAndroid
-              ? GDARAndroidTheme.dark(appFont: settingsProvider.appFont, uiScale: settingsProvider.uiScale)
+              ? GDARAndroidTheme.dark(
+                  appFont: settingsProvider.appFont,
+                  uiScale: settingsProvider.uiScale,
+                )
               : GDARFruitTheme.dark(
                   uiScale: settingsProvider.uiScale,
                   colorOption: themeProvider.fruitColorOption,
@@ -164,8 +182,8 @@ class _GdarWebAppState extends State<GdarWebApp> {
               home: settingsProvider.showSplashScreen
                   ? const SplashScreen()
                   : (isAndroid
-                      ? const ShowListScreen()
-                      : const FruitTabHostScreen()),
+                        ? const ShowListScreen()
+                        : const FruitTabHostScreen()),
             ),
           );
         },

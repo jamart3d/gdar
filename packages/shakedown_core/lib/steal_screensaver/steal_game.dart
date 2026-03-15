@@ -71,8 +71,9 @@ class StealGame extends FlameGame {
 
       final idx1 =
           ((_trailHead - k) % _trailBufferCapacity + _trailBufferCapacity) %
-              _trailBufferCapacity;
-      final idx2 = ((_trailHead - (k + 1)) % _trailBufferCapacity +
+          _trailBufferCapacity;
+      final idx2 =
+          ((_trailHead - (k + 1)) % _trailBufferCapacity +
               _trailBufferCapacity) %
           _trailBufferCapacity;
 
@@ -210,8 +211,10 @@ class StealGame extends FlameGame {
     final range = _scaledHoldMax - _scaledHoldMin;
     final variance = range * _holdVariance;
     final base = _scaledHoldMin + _rng.nextDouble() * range;
-    _holdDuration = (base + (_rng.nextDouble() * 2 - 1) * variance)
-        .clamp(_scaledHoldMin * 0.5, _scaledHoldMax * 2.0);
+    _holdDuration = (base + (_rng.nextDouble() * 2 - 1) * variance).clamp(
+      _scaledHoldMin * 0.5,
+      _scaledHoldMax * 2.0,
+    );
     _cycleTimer = 0.0;
     _cycling = false;
   }
@@ -304,7 +307,8 @@ class StealGame extends FlameGame {
   }
 
   void _restoreNormalPalette() {
-    final paletteColors = StealConfig.palettes[config.palette] ??
+    final paletteColors =
+        StealConfig.palettes[config.palette] ??
         StealConfig.palettes.values.first;
     final lerpSpeed = _lerpSpeedFromFadeDuration(_woodstockFadeDuration * 2);
     _background?.overrideTargetColors(paletteColors, lerpSpeed);
@@ -324,19 +328,22 @@ class StealGame extends FlameGame {
   void _applyGraphConfig(StealConfig cfg) {
     _graph?.isVisible =
         cfg.audioGraphMode != 'off' && cfg.enableAudioReactivity;
-    _graph?.graphMode =
-        cfg.audioGraphMode == 'corner_only' ? 'corner' : cfg.audioGraphMode;
+    _graph?.graphMode = cfg.audioGraphMode == 'corner_only'
+        ? 'corner'
+        : cfg.audioGraphMode;
   }
 
   void _applyBannerConfig(StealConfig cfg) {
     if (_banner == null) return;
     final paletteColors =
         StealConfig.palettes[cfg.palette] ?? StealConfig.palettes.values.first;
-    final rawColor =
-        paletteColors.isNotEmpty ? paletteColors.first : Colors.white;
+    final rawColor = paletteColors.isNotEmpty
+        ? paletteColors.first
+        : Colors.white;
 
-    final bannerColor =
-        rawColor.computeLuminance() > 0.85 ? const Color(0xFFFFD700) : rawColor;
+    final bannerColor = rawColor.computeLuminance() > 0.85
+        ? const Color(0xFFFFD700)
+        : rawColor;
 
     _banner!.updateBanner(
       cfg.bannerText,

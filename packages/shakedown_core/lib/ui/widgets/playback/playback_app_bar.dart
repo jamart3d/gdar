@@ -43,12 +43,15 @@ class PlaybackAppBar extends StatelessWidget {
     final themeProvider = context.watch<ThemeProvider>();
     final isTv = context.watch<DeviceService>().isTv;
     final isFruit = themeProvider.isFruit;
-    final useNeumorphic = settingsProvider.useNeumorphism &&
+    final useNeumorphic =
+        settingsProvider.useNeumorphism &&
         isFruit &&
         !settingsProvider.useTrueBlack;
 
-    final String formattedDate =
-        AppDateUtils.formatDate(currentShow.date, settings: settingsProvider);
+    final String formattedDate = AppDateUtils.formatDate(
+      currentShow.date,
+      settings: settingsProvider,
+    );
 
     final double actionPadding = kIsWeb ? (isFruit ? 16.0 : 8.0) : 8.0;
 
@@ -57,41 +60,43 @@ class PlaybackAppBar extends StatelessWidget {
       elevation: 0,
       scrolledUnderElevation: 0,
       leading: kIsWeb
-          ? Builder(builder: (context) {
-              final Widget menuBtn = isFruit
-                  ? FruitIconButton(
-                      icon: const Icon(LucideIcons.chevronLeft),
-                      onPressed: () => Navigator.of(context).pop(),
-                      tooltip: 'Back to Show List',
-                      padding: 0,
-                    )
-                  : IconButton(
-                      icon: const Icon(Icons.chevron_left_rounded),
-                      onPressed: () => Navigator.of(context).pop(),
-                      tooltip: 'Back to Show List',
-                    );
+          ? Builder(
+              builder: (context) {
+                final Widget menuBtn = isFruit
+                    ? FruitIconButton(
+                        icon: const Icon(LucideIcons.chevronLeft),
+                        onPressed: () => Navigator.of(context).pop(),
+                        tooltip: 'Back to Show List',
+                        padding: 0,
+                      )
+                    : IconButton(
+                        icon: const Icon(Icons.chevron_left_rounded),
+                        onPressed: () => Navigator.of(context).pop(),
+                        tooltip: 'Back to Show List',
+                      );
 
-              if (useNeumorphic && !isTv) {
-                return Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: NeumorphicWrapper(
-                    isCircle: false,
-                    borderRadius: 12.0,
-                    intensity: 1.2,
-                    color: Colors.transparent,
-                    child: LiquidGlassWrapper(
-                      enabled: !isTv,
-                      borderRadius: BorderRadius.circular(12.0),
-                      opacity: 0.08,
-                      blur: 5.0,
-                      child: menuBtn,
+                if (useNeumorphic && !isTv) {
+                  return Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: NeumorphicWrapper(
+                      isCircle: false,
+                      borderRadius: 12.0,
+                      intensity: 1.2,
+                      color: Colors.transparent,
+                      child: LiquidGlassWrapper(
+                        enabled: !isTv,
+                        borderRadius: BorderRadius.circular(12.0),
+                        opacity: 0.08,
+                        blur: 5.0,
+                        child: menuBtn,
+                      ),
                     ),
-                  ),
-                );
-              }
+                  );
+                }
 
-              return menuBtn;
-            })
+                return menuBtn;
+              },
+            )
           : null, // Let Flutter provide the back button on mobile.
       titleSpacing: kIsWeb ? 0 : 4,
       title: Opacity(
@@ -153,15 +158,18 @@ class PlaybackAppBar extends StatelessWidget {
                                       isPlayed:
                                           historyBox.get(ratingKey) ?? false,
                                       onRatingChanged: (newRating) {
-                                        CatalogService()
-                                            .setRating(ratingKey, newRating);
+                                        CatalogService().setRating(
+                                          ratingKey,
+                                          newRating,
+                                        );
                                       },
                                       onPlayedChanged: (bool newIsPlayed) {
                                         if (newIsPlayed !=
                                             (historyBox.get(ratingKey) ??
                                                 false)) {
-                                          CatalogService()
-                                              .togglePlayed(ratingKey);
+                                          CatalogService().togglePlayed(
+                                            ratingKey,
+                                          );
                                         }
                                       },
                                     ),
@@ -178,17 +186,16 @@ class PlaybackAppBar extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     if (currentSource.src != null)
-                      SrcBadge(
-                        src: currentSource.src!,
-                        matchShnidLook: true,
-                      ),
+                      SrcBadge(src: currentSource.src!, matchShnidLook: true),
                     const SizedBox(height: 2),
                     ShnidBadge(
                       text: currentSource.id,
                       onTap: () {
                         if (currentSource.tracks.isNotEmpty) {
                           launchArchivePage(
-                              currentSource.tracks.first.url, context);
+                            currentSource.tracks.first.url,
+                            context,
+                          );
                         } else {
                           launchArchiveDetails(currentSource.id, context);
                         }
@@ -200,64 +207,68 @@ class PlaybackAppBar extends StatelessWidget {
             ),
           ),
         ),
-        Builder(builder: (context) {
-          Future<void> onSettingsPressed() async {
-            try {
-              context.read<AnimationController>().stop();
-            } catch (_) {}
-
-            unawaited(Navigator.of(context).push(
-              PageRouteBuilder(
-                pageBuilder: (context, animation, secondaryAnimation) =>
-                    const SettingsScreen(),
-                transitionDuration: Duration.zero,
-              ),
-            ));
-
-            if (context.mounted) {
+        Builder(
+          builder: (context) {
+            Future<void> onSettingsPressed() async {
               try {
-                final controller = context.read<AnimationController>();
-                if (!controller.isAnimating) {
-                  unawaited(controller.repeat());
-                }
+                context.read<AnimationController>().stop();
               } catch (_) {}
+
+              unawaited(
+                Navigator.of(context).push(
+                  PageRouteBuilder(
+                    pageBuilder: (context, animation, secondaryAnimation) =>
+                        const SettingsScreen(),
+                    transitionDuration: Duration.zero,
+                  ),
+                ),
+              );
+
+              if (context.mounted) {
+                try {
+                  final controller = context.read<AnimationController>();
+                  if (!controller.isAnimating) {
+                    unawaited(controller.repeat());
+                  }
+                } catch (_) {}
+              }
             }
-          }
 
-          final Widget btn = isFruit
-              ? FruitIconButton(
-                  icon: const Icon(LucideIcons.settings),
-                  size: 24.0,
-                  padding: 0,
-                  onPressed: onSettingsPressed,
-                  tooltip: 'Settings',
-                )
-              : IconButton(
-                  icon: const Icon(Icons.settings_rounded),
-                  iconSize: 24.0,
-                  onPressed: onSettingsPressed,
-                  tooltip: 'Settings',
-                );
-
-          return Padding(
-            padding: EdgeInsets.symmetric(horizontal: actionPadding),
-            child: (useNeumorphic && !isTv)
-                ? NeumorphicWrapper(
-                    isCircle: false,
-                    borderRadius: 12.0,
-                    intensity: 1.2,
-                    color: Colors.transparent,
-                    child: LiquidGlassWrapper(
-                      enabled: !isTv,
-                      borderRadius: BorderRadius.circular(12.0),
-                      opacity: 0.08,
-                      blur: 5.0,
-                      child: btn,
-                    ),
+            final Widget btn = isFruit
+                ? FruitIconButton(
+                    icon: const Icon(LucideIcons.settings),
+                    size: 24.0,
+                    padding: 0,
+                    onPressed: onSettingsPressed,
+                    tooltip: 'Settings',
                   )
-                : btn,
-          );
-        }),
+                : IconButton(
+                    icon: const Icon(Icons.settings_rounded),
+                    iconSize: 24.0,
+                    onPressed: onSettingsPressed,
+                    tooltip: 'Settings',
+                  );
+
+            return Padding(
+              padding: EdgeInsets.symmetric(horizontal: actionPadding),
+              child: (useNeumorphic && !isTv)
+                  ? NeumorphicWrapper(
+                      isCircle: false,
+                      borderRadius: 12.0,
+                      intensity: 1.2,
+                      color: Colors.transparent,
+                      child: LiquidGlassWrapper(
+                        enabled: !isTv,
+                        borderRadius: BorderRadius.circular(12.0),
+                        opacity: 0.08,
+                        blur: 5.0,
+                        child: btn,
+                      ),
+                    )
+                  : btn,
+            );
+          },
+        ),
       ],
     );
   }

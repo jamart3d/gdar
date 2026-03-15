@@ -42,12 +42,18 @@ class TvHeader extends StatelessWidget {
     final settingsProvider = context.watch<SettingsProvider>();
     final isChoosingRandomShow = showListProvider.isChoosingRandomShow;
 
-    final double scaleFactor =
-        FontLayoutConfig.getEffectiveScale(context, settingsProvider);
+    final double scaleFactor = FontLayoutConfig.getEffectiveScale(
+      context,
+      settingsProvider,
+    );
 
     return Padding(
-      padding: EdgeInsets.fromLTRB(20 * scaleFactor, 16 * scaleFactor,
-          20 * scaleFactor, 8 * scaleFactor),
+      padding: EdgeInsets.fromLTRB(
+        20 * scaleFactor,
+        16 * scaleFactor,
+        20 * scaleFactor,
+        8 * scaleFactor,
+      ),
       child: Row(
         children: [
           // 1. Dice Icon (Large)
@@ -127,8 +133,9 @@ class TvHeader extends StatelessWidget {
               padding: EdgeInsets.all(10 * scaleFactor),
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color:
-                    colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+                color: colorScheme.surfaceContainerHighest.withValues(
+                  alpha: 0.5,
+                ),
               ),
               child: Icon(
                 context.watch<ThemeProvider>().isFruit

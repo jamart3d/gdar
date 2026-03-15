@@ -168,8 +168,10 @@ class _SettingsScreenState extends State<SettingsScreen>
     final audioProvider = context.watch<AudioProvider>();
     final themeProvider = context.watch<ThemeProvider>();
     final isFruit = themeProvider.themeStyle == ThemeStyle.fruit;
-    final scaleFactor =
-        FontLayoutConfig.getEffectiveScale(context, settingsProvider);
+    final scaleFactor = FontLayoutConfig.getEffectiveScale(
+      context,
+      settingsProvider,
+    );
 
     final updateProvider = context.watch<UpdateProvider>();
 
@@ -186,8 +188,10 @@ class _SettingsScreenState extends State<SettingsScreen>
           audioProvider.currentSource != null) {
         seed = audioProvider.currentSource!.id;
       }
-      backgroundColor = ColorGenerator.getColor(seed,
-          brightness: Theme.of(context).brightness);
+      backgroundColor = ColorGenerator.getColor(
+        seed,
+        brightness: Theme.of(context).brightness,
+      );
     }
 
     final baseTheme = Theme.of(context);
@@ -244,7 +248,8 @@ class _SettingsScreenState extends State<SettingsScreen>
           const SourceFilterSettings(key: ValueKey('source_filter_section')),
           PlaybackSection(
             scaleFactor: scaleFactor,
-            initiallyExpanded: _playbackExpanded ||
+            initiallyExpanded:
+                _playbackExpanded ||
                 widget.highlightSetting == 'play_on_tap' ||
                 widget.highlightSetting == 'playback_messages' ||
                 widget.highlightSetting == 'offline_buffering' ||
@@ -257,19 +262,22 @@ class _SettingsScreenState extends State<SettingsScreen>
             onScrollToSetting: _scrollToSetting,
             isHighlightSettingMatching: widget.highlightSetting == 'playback',
           ),
-          Builder(builder: (context) {
-            if (!_settingKeys.containsKey('collection_statistics')) {
-              _settingKeys['collection_statistics'] =
-                  GlobalKey(debugLabel: 'collection_statistics');
-            }
-            return Container(
-              key: _settingKeys['collection_statistics'],
-              child: CollectionStatistics(
-                initiallyExpanded:
-                    widget.highlightSetting == 'collection_statistics',
-              ),
-            );
-          }),
+          Builder(
+            builder: (context) {
+              if (!_settingKeys.containsKey('collection_statistics')) {
+                _settingKeys['collection_statistics'] = GlobalKey(
+                  debugLabel: 'collection_statistics',
+                );
+              }
+              return Container(
+                key: _settingKeys['collection_statistics'],
+                child: CollectionStatistics(
+                  initiallyExpanded:
+                      widget.highlightSetting == 'collection_statistics',
+                ),
+              );
+            },
+          ),
           DataSection(scaleFactor: scaleFactor),
           AboutSection(scaleFactor: scaleFactor),
           const SizedBox(height: 50),
@@ -285,7 +293,8 @@ class _SettingsScreenState extends State<SettingsScreen>
         data: MediaQuery.of(context).copyWith(
           textScaler: settingsProvider.uiScale
               ? TextScaler.linear(
-                  settingsProvider.appFont == 'rock_salt' ? 1.0 : 1.2)
+                  settingsProvider.appFont == 'rock_salt' ? 1.0 : 1.2,
+                )
               : const TextScaler.linear(1.0),
         ),
         child: Scaffold(
@@ -322,25 +331,27 @@ class _SettingsScreenState extends State<SettingsScreen>
                       showListProvider.setIsChoosingRandomShow(true);
                       final resetMs =
                           context.read<SettingsProvider>().performanceMode
-                              ? 600
-                              : 2400;
-                      unawaited(Future<void>.delayed(
-                        Duration(milliseconds: resetMs),
-                        () {
-                          if (showListProvider.isChoosingRandomShow) {
-                            showListProvider.setIsChoosingRandomShow(false);
-                          }
-                        },
-                      ));
+                          ? 600
+                          : 2400;
+                      unawaited(
+                        Future<void>.delayed(
+                          Duration(milliseconds: resetMs),
+                          () {
+                            if (showListProvider.isChoosingRandomShow) {
+                              showListProvider.setIsChoosingRandomShow(false);
+                            }
+                          },
+                        ),
+                      );
                       if (mounted) {
                         Navigator.of(context).pushAndRemoveUntil(
                           PageRouteBuilder(
                             pageBuilder:
                                 (context, animation, secondaryAnimation) =>
                                     const FruitTabHostScreen(
-                              initialTab: 1,
-                              triggerRandomOnStart: true,
-                            ),
+                                      initialTab: 1,
+                                      triggerRandomOnStart: true,
+                                    ),
                             transitionDuration: Duration.zero,
                           ),
                           (route) => false,
@@ -405,10 +416,9 @@ class _SettingsScreenState extends State<SettingsScreen>
           color: baseColor.withValues(alpha: 0.9),
           border: Border(
             bottom: BorderSide(
-              color: Theme.of(context)
-                  .colorScheme
-                  .onSurface
-                  .withValues(alpha: 0.1),
+              color: Theme.of(
+                context,
+              ).colorScheme.onSurface.withValues(alpha: 0.1),
               width: 1.0,
             ),
           ),
@@ -428,7 +438,8 @@ class _SettingsScreenState extends State<SettingsScreen>
       },
       blendMode: BlendMode.dstIn,
       child: LiquidGlassWrapper(
-        enabled: themeProvider.themeStyle == ThemeStyle.fruit &&
+        enabled:
+            themeProvider.themeStyle == ThemeStyle.fruit &&
             settingsProvider.fruitEnableLiquidGlass,
         showBorder: false,
         blur: 25,
@@ -439,8 +450,11 @@ class _SettingsScreenState extends State<SettingsScreen>
     );
   }
 
-  Widget _buildFruitHeaderButton(BuildContext context,
-      {required IconData icon, required VoidCallback onPressed}) {
+  Widget _buildFruitHeaderButton(
+    BuildContext context, {
+    required IconData icon,
+    required VoidCallback onPressed,
+  }) {
     final settingsProvider = context.watch<SettingsProvider>();
     final useNeumorphic =
         settingsProvider.useNeumorphism && !settingsProvider.useTrueBlack;

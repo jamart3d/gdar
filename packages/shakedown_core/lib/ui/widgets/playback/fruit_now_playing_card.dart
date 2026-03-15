@@ -165,8 +165,11 @@ class FruitNowPlayingCard extends StatelessWidget {
     );
   }
 
-  Widget _buildCompactPlayButton(BuildContext context,
-      AudioProvider audioProvider, ColorScheme colorScheme) {
+  Widget _buildCompactPlayButton(
+    BuildContext context,
+    AudioProvider audioProvider,
+    ColorScheme colorScheme,
+  ) {
     void activate() {
       AppHaptics.lightImpact(context.read<DeviceService>());
       if (audioProvider.isPlaying) {
@@ -298,10 +301,12 @@ class FruitNowPlayingCard extends StatelessWidget {
   }) {
     final duration = audioProvider.audioPlayer.duration?.inMilliseconds ?? 0;
     final position = audioProvider.audioPlayer.position.inMilliseconds;
-    final double progress =
-        (duration > 0) ? (position / duration).clamp(0.0, 1.0) : 0.0;
-    final double bufferedProgress =
-        (duration > 0) ? (bufferedPositionMs / duration).clamp(0.0, 1.0) : 0.0;
+    final double progress = (duration > 0)
+        ? (position / duration).clamp(0.0, 1.0)
+        : 0.0;
+    final double bufferedProgress = (duration > 0)
+        ? (bufferedPositionMs / duration).clamp(0.0, 1.0)
+        : 0.0;
     final bool hasKnownDuration = duration > 0;
     final bool showLoadingPulse = (isLoading || isBuffering) && !isSimple;
 

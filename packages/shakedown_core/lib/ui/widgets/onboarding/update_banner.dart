@@ -19,7 +19,8 @@ class UpdateBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    bool hasUpdate = isSimulated ||
+    bool hasUpdate =
+        isSimulated ||
         (updateInfo != null &&
             updateInfo!.updateAvailability ==
                 UpdateAvailability.updateAvailable);
@@ -39,9 +40,7 @@ class UpdateBanner extends StatelessWidget {
       child: Card(
         elevation: 0,
         color: colorScheme.primaryContainer,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         child: InkWell(
           onTap: onUpdateSelected,
           borderRadius: BorderRadius.circular(16),
@@ -64,17 +63,22 @@ class UpdateBanner extends StatelessWidget {
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           color: colorScheme.onPrimaryContainer,
-                          fontSize:
-                              AppTypography.responsiveFontSize(context, 14.0),
+                          fontSize: AppTypography.responsiveFontSize(
+                            context,
+                            14.0,
+                          ),
                         ),
                       ),
                       Text(
                         'A new version is ready to install.',
                         style: TextStyle(
-                          color: colorScheme.onPrimaryContainer
-                              .withValues(alpha: 0.8),
-                          fontSize:
-                              AppTypography.responsiveFontSize(context, 12.0),
+                          color: colorScheme.onPrimaryContainer.withValues(
+                            alpha: 0.8,
+                          ),
+                          fontSize: AppTypography.responsiveFontSize(
+                            context,
+                            12.0,
+                          ),
                         ),
                       ),
                     ],

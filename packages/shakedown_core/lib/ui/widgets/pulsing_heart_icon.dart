@@ -24,7 +24,9 @@ class _PulsingHeartIconState extends State<PulsingHeartIcon>
   void initState() {
     super.initState();
     _controller = AnimationController(
-        vsync: this, duration: const Duration(milliseconds: 1500));
+      vsync: this,
+      duration: const Duration(milliseconds: 1500),
+    );
 
     _scaleAnimation = TweenSequence<double>([
       TweenSequenceItem(tween: Tween(begin: 1.0, end: 1.2), weight: 1),
@@ -46,10 +48,7 @@ class _PulsingHeartIconState extends State<PulsingHeartIcon>
     return AnimatedBuilder(
       animation: _controller,
       builder: (context, child) {
-        return Transform.scale(
-          scale: _scaleAnimation.value,
-          child: child,
-        );
+        return Transform.scale(scale: _scaleAnimation.value, child: child);
       },
       child: Icon(
         widget.isFruit ? LucideIcons.heart : Icons.favorite,

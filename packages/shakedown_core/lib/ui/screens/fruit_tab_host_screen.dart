@@ -41,8 +41,9 @@ class _FruitTabHostScreenState extends State<FruitTabHostScreen> {
   @override
   void initState() {
     super.initState();
-    final safeInitialTab =
-        _tabToPage.containsKey(widget.initialTab) ? widget.initialTab : 1;
+    final safeInitialTab = _tabToPage.containsKey(widget.initialTab)
+        ? widget.initialTab
+        : 1;
     _selectedTab = safeInitialTab;
     _pageController = PageController(initialPage: _tabToPage[_selectedTab]!);
 
@@ -79,14 +80,17 @@ class _FruitTabHostScreenState extends State<FruitTabHostScreen> {
   }
 
   void _scheduleRandomReset(ShowListProvider showListProvider) {
-    final resetMs =
-        context.read<SettingsProvider>().performanceMode ? 600 : 2400;
-    unawaited(Future<void>.delayed(Duration(milliseconds: resetMs), () {
-      if (!mounted) return;
-      if (showListProvider.isChoosingRandomShow) {
-        showListProvider.setIsChoosingRandomShow(false);
-      }
-    }));
+    final resetMs = context.read<SettingsProvider>().performanceMode
+        ? 600
+        : 2400;
+    unawaited(
+      Future<void>.delayed(Duration(milliseconds: resetMs), () {
+        if (!mounted) return;
+        if (showListProvider.isChoosingRandomShow) {
+          showListProvider.setIsChoosingRandomShow(false);
+        }
+      }),
+    );
   }
 
   void _jumpToPlayTabImmediate() {
@@ -130,7 +134,8 @@ class _FruitTabHostScreenState extends State<FruitTabHostScreen> {
 
         if (picked == null) {
           debugPrint(
-              'Dice: No show was picked (list might be empty or filtered).');
+            'Dice: No show was picked (list might be empty or filtered).',
+          );
         }
 
         // 4. TRANSITION: Jump to Playback even if picked is null (to show error/empty state)
@@ -183,10 +188,11 @@ class _FruitTabHostScreenState extends State<FruitTabHostScreen> {
       await _scrollLibraryToCurrentShow();
       // Older devices may attach/build list slightly later; retry once.
       unawaited(
-          Future<void>.delayed(const Duration(milliseconds: 250), () async {
-        if (!mounted || _selectedTab != 1) return;
-        await _scrollLibraryToCurrentShow();
-      }));
+        Future<void>.delayed(const Duration(milliseconds: 250), () async {
+          if (!mounted || _selectedTab != 1) return;
+          await _scrollLibraryToCurrentShow();
+        }),
+      );
     }
   }
 
@@ -209,9 +215,9 @@ class _FruitTabHostScreenState extends State<FruitTabHostScreen> {
           } else {
             target = const ShowListScreen(showFruitTabBar: false);
           }
-          Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (_) => target),
-          );
+          Navigator.of(
+            context,
+          ).pushReplacement(MaterialPageRoute(builder: (_) => target));
         });
       }
 

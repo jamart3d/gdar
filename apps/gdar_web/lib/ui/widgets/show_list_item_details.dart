@@ -91,37 +91,37 @@ class _ShowListItemDetailsState extends State<ShowListItemDetails> {
         }
 
         if (isPlaying && settingsProvider.highlightPlayingWithRgb) {
-          return Builder(builder: (context) {
-            return Dismissible(
-              key: ValueKey(source.id),
-              direction: settingsProvider.enableSwipeToBlock
-                  ? DismissDirection.endToStart
-                  : DismissDirection.none,
-              dismissThresholds: const {
-                DismissDirection.endToStart: 0.6,
-              },
-              background: Container(
-                alignment: Alignment.centerRight,
-                padding: const EdgeInsets.only(right: 16.0),
-                decoration: BoxDecoration(
-                  color: Colors.red,
-                  borderRadius: BorderRadius.circular(20),
+          return Builder(
+            builder: (context) {
+              return Dismissible(
+                key: ValueKey(source.id),
+                direction: settingsProvider.enableSwipeToBlock
+                    ? DismissDirection.endToStart
+                    : DismissDirection.none,
+                dismissThresholds: const {DismissDirection.endToStart: 0.6},
+                background: Container(
+                  alignment: Alignment.centerRight,
+                  padding: const EdgeInsets.only(right: 16.0),
+                  decoration: BoxDecoration(
+                    color: Colors.red,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: const Icon(Icons.block, color: Colors.white, size: 24),
                 ),
-                child: const Icon(Icons.block, color: Colors.white, size: 24),
-              ),
-              confirmDismiss: (direction) => handleConfirmDismiss(),
-              onDismissed: (direction) => handleOnDismissed(),
-              child: SourceListItem(
-                source: source,
-                isSourcePlaying: isPlaying,
-                scaleFactor: scaleFactor,
-                borderRadius: 20, // Match the Dismissible background radius
-                showBorder: false,
-                onTap: () => widget.onSourceTapped(source),
-                onLongPress: () => widget.onSourceLongPress(source),
-              ),
-            );
-          });
+                confirmDismiss: (direction) => handleConfirmDismiss(),
+                onDismissed: (direction) => handleOnDismissed(),
+                child: SourceListItem(
+                  source: source,
+                  isSourcePlaying: isPlaying,
+                  scaleFactor: scaleFactor,
+                  borderRadius: 20, // Match the Dismissible background radius
+                  showBorder: false,
+                  onTap: () => widget.onSourceTapped(source),
+                  onLongPress: () => widget.onSourceLongPress(source),
+                ),
+              );
+            },
+          );
         }
 
         Widget item = SourceListItem(
@@ -145,21 +145,21 @@ class _ShowListItemDetailsState extends State<ShowListItemDetails> {
         // Standard Item
         return Padding(
           padding: const EdgeInsets.symmetric(vertical: 1),
-          child: Builder(builder: (context) {
-            return Dismissible(
-              key: ValueKey(source.id),
-              direction: settingsProvider.enableSwipeToBlock
-                  ? DismissDirection.endToStart
-                  : DismissDirection.none,
-              dismissThresholds: const {
-                DismissDirection.endToStart: 0.6,
-              },
-              background: const SwipeActionBackground(borderRadius: 20),
-              confirmDismiss: (direction) => handleConfirmDismiss(),
-              onDismissed: (direction) => handleOnDismissed(),
-              child: item,
-            );
-          }),
+          child: Builder(
+            builder: (context) {
+              return Dismissible(
+                key: ValueKey(source.id),
+                direction: settingsProvider.enableSwipeToBlock
+                    ? DismissDirection.endToStart
+                    : DismissDirection.none,
+                dismissThresholds: const {DismissDirection.endToStart: 0.6},
+                background: const SwipeActionBackground(borderRadius: 20),
+                confirmDismiss: (direction) => handleConfirmDismiss(),
+                onDismissed: (direction) => handleOnDismissed(),
+                child: item,
+              );
+            },
+          ),
         );
       },
     );

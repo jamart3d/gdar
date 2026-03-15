@@ -7,16 +7,17 @@ const int _maxEntries = 200;
 
 void initWebErrorLogger() {
   web.window.addEventListener(
-      'error',
-      ((web.Event event) {
-        if (event.isA<web.ErrorEvent>()) {
-          final e = event as web.ErrorEvent;
-          final Object error = e.error?.dartify() ?? e.message;
-          recordWebError(error, null, context: 'window.onerror');
-        } else {
-          recordWebError('Unknown error', null, context: 'window.onerror');
-        }
-      }).toJS);
+    'error',
+    ((web.Event event) {
+      if (event.isA<web.ErrorEvent>()) {
+        final e = event as web.ErrorEvent;
+        final Object error = e.error?.dartify() ?? e.message;
+        recordWebError(error, null, context: 'window.onerror');
+      } else {
+        recordWebError('Unknown error', null, context: 'window.onerror');
+      }
+    }).toJS,
+  );
 }
 
 void recordWebError(Object error, StackTrace? stack, {String? context}) {

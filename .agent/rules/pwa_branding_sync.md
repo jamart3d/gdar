@@ -13,4 +13,4 @@
 - **Settings Listeners**: `ThemeProvider` must listen to `SettingsProvider` changes (specifically `useTrueBlack` and `themeStyle`) to trigger an immediate `_syncPwaBranding` update. This ensures the browser UI responds without a page reload.
 
 ### 4. Manifest Parity
-- While dynamic updates happen via JS, the static `web/manifest.json` should reflect the most common "Brand Dark" color to ensure a consistent experience during initial load/splash.
+- While dynamic updates happen via JS, the static `apps/gdar_web/web/manifest.json` should reflect the most common "Brand Dark" color to ensure a consistent experience during initial load/splash.

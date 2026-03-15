@@ -21,7 +21,8 @@ class UpdateService {
     } catch (e) {
       if (e.toString().contains('-10')) {
         _logger.i(
-            'UpdateService: App not owned by Play Store user (side-loaded). Skipping check.');
+          'UpdateService: App not owned by Play Store user (side-loaded). Skipping check.',
+        );
       } else {
         _logger.e('UpdateService: Error checking for update: $e');
       }
@@ -36,7 +37,8 @@ class UpdateService {
       final packageName = packageInfo.packageName;
       final url = Uri.parse('market://details?id=$packageName');
       final webUrl = Uri.parse(
-          'https://play.google.com/store/apps/details?id=$packageName');
+        'https://play.google.com/store/apps/details?id=$packageName',
+      );
 
       if (await canLaunchUrl(url)) {
         await launchUrl(url);

@@ -75,7 +75,8 @@ class SourceListItem extends StatelessWidget {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(effectiveRadius),
           color: itemBackgroundColor,
-          border: (!showGlow &&
+          border:
+              (!showGlow &&
                   !useRgb &&
                   showBorder &&
                   (isSourcePlaying || isTrueBlackMode))
@@ -83,7 +84,8 @@ class SourceListItem extends StatelessWidget {
                   color: isSourcePlaying
                       ? colorScheme.tertiary
                       : colorScheme.outlineVariant,
-                  width: isSourcePlaying ? 2 : 1)
+                  width: isSourcePlaying ? 2 : 1,
+                )
               : null,
           boxShadow: (!showGlow && !useRgb && showShadow)
               ? [
@@ -91,7 +93,7 @@ class SourceListItem extends StatelessWidget {
                     color: colorScheme.shadow.withValues(alpha: 0.1),
                     blurRadius: 4,
                     offset: const Offset(0, 2),
-                  )
+                  ),
                 ]
               : [],
         ),
@@ -110,16 +112,16 @@ class SourceListItem extends StatelessWidget {
             ),
             Padding(
               padding: EdgeInsets.symmetric(
-                  horizontal: 16, vertical: 12 * scaleFactor),
+                horizontal: 16,
+                vertical: 12 * scaleFactor,
+              ),
               child: Row(
                 children: [
                   Expanded(
                     child: IgnorePointer(
                       child: Text(
                         source.id,
-                        style: Theme.of(context)
-                            .textTheme
-                            .titleSmall
+                        style: Theme.of(context).textTheme.titleSmall
                             ?.apply(fontSizeFactor: scaleFactor)
                             .copyWith(
                               color: isSourcePlaying
@@ -159,7 +161,8 @@ class SourceListItem extends StatelessWidget {
                                 rating: rating,
                                 size: 18,
                                 isPlayed: isPlayed,
-                                onTap: (isSourcePlaying ||
+                                onTap:
+                                    (isSourcePlaying ||
                                         alwaysShowRatingInteraction)
                                     ? () async {
                                         await showDialog(
@@ -173,15 +176,21 @@ class SourceListItem extends StatelessWidget {
                                             isPlayed: isPlayed,
                                             onRatingChanged: (newRating) {
                                               catalog.setRating(
-                                                  source.id, newRating);
+                                                source.id,
+                                                newRating,
+                                              );
                                             },
                                             onPlayedChanged:
                                                 (bool newIsPlayed) {
-                                              if (newIsPlayed !=
-                                                  catalog.isPlayed(source.id)) {
-                                                catalog.togglePlayed(source.id);
-                                              }
-                                            },
+                                                  if (newIsPlayed !=
+                                                      catalog.isPlayed(
+                                                        source.id,
+                                                      )) {
+                                                    catalog.togglePlayed(
+                                                      source.id,
+                                                    );
+                                                  }
+                                                },
                                           ),
                                         );
                                       }
@@ -197,7 +206,9 @@ class SourceListItem extends StatelessWidget {
                     IgnorePointer(
                       child: Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 10, vertical: 6),
+                          horizontal: 10,
+                          vertical: 6,
+                        ),
                         decoration: BoxDecoration(
                           color: isSourcePlaying
                               ? colorScheme.tertiary.withValues(alpha: 0.1)
@@ -206,13 +217,13 @@ class SourceListItem extends StatelessWidget {
                         ),
                         child: Text(
                           '${source.tracks.length}',
-                          style:
-                              Theme.of(context).textTheme.labelSmall?.copyWith(
-                                    color: isSourcePlaying
-                                        ? colorScheme.onTertiaryContainer
-                                        : colorScheme.onSecondaryContainer,
-                                    fontWeight: FontWeight.w600,
-                                  ),
+                          style: Theme.of(context).textTheme.labelSmall
+                              ?.copyWith(
+                                color: isSourcePlaying
+                                    ? colorScheme.onTertiaryContainer
+                                    : colorScheme.onSecondaryContainer,
+                                fontWeight: FontWeight.w600,
+                              ),
                         ),
                       ),
                     ),
@@ -235,7 +246,8 @@ class SourceListItem extends StatelessWidget {
                     BoxShadow(
                       color: (useRgb ? Colors.red : colorScheme.primary)
                           .withValues(
-                              alpha: (useRgb ? 0.4 : 0.2) * glowOpacity),
+                            alpha: (useRgb ? 0.4 : 0.2) * glowOpacity,
+                          ),
                       blurRadius: 8,
                       spreadRadius: 1,
                     ),
@@ -267,9 +279,11 @@ class SourceListItem extends StatelessWidget {
             animationSpeed: settingsProvider.rgbAnimationSpeed,
             child: ClipRRect(
               borderRadius: BorderRadius.circular(
-                  borderRadius - (useRgb ? 3 : 2)), // Subtract border width
-              child:
-                  buildContent(radiusOverride: borderRadius - (useRgb ? 3 : 2)),
+                borderRadius - (useRgb ? 3 : 2),
+              ), // Subtract border width
+              child: buildContent(
+                radiusOverride: borderRadius - (useRgb ? 3 : 2),
+              ),
             ),
           ),
         ),
@@ -278,10 +292,7 @@ class SourceListItem extends StatelessWidget {
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 2),
-      child: Material(
-        color: Colors.transparent,
-        child: buildContent(),
-      ),
+      child: Material(color: Colors.transparent, child: buildContent()),
     );
   }
 }

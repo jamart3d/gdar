@@ -28,10 +28,7 @@ class ScreensaverScreen extends StatefulWidget {
             const ScreensaverScreen(),
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
           return FadeTransition(
-            opacity: CurvedAnimation(
-              parent: animation,
-              curve: Curves.easeIn,
-            ),
+            opacity: CurvedAnimation(parent: animation, curve: Curves.easeIn),
             child: child,
           );
         },
@@ -84,7 +81,8 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
     final reactivityStrength = settings.oilAudioReactivityStrength;
     final beatSensitivity = settings.oilBeatSensitivity;
 
-    final unchanged = _lastPushedPeakDecay == peakDecay &&
+    final unchanged =
+        _lastPushedPeakDecay == peakDecay &&
         _lastPushedBassBoost == bassBoost &&
         _lastPushedReactivityStrength == reactivityStrength &&
         _lastPushedBeatSensitivity == beatSensitivity;
@@ -131,7 +129,8 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
           final result = await Permission.microphone.request();
           if (!result.isGranted) {
             debugPrint(
-                'Screensaver: Audio permission denied. Reactivity disabled.');
+              'Screensaver: Audio permission denied. Reactivity disabled.',
+            );
             return;
           }
         }
@@ -141,8 +140,10 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
       if (!mounted) return;
       int? sessionId;
       if (defaultTargetPlatform == TargetPlatform.android) {
-        final audioProvider =
-            Provider.of<AudioProvider>(context, listen: false);
+        final audioProvider = Provider.of<AudioProvider>(
+          context,
+          listen: false,
+        );
         sessionId = audioProvider.audioPlayer.androidAudioSessionId;
       }
 
@@ -294,21 +295,14 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
     if (limit4k) {
       visualizer = FittedBox(
         fit: BoxFit.fill,
-        child: SizedBox(
-          width: 1920,
-          height: 1080,
-          child: visualizer,
-        ),
+        child: SizedBox(width: 1920, height: 1080, child: visualizer),
       );
     }
 
     return PopScope(
       canPop: true,
       onPopInvokedWithResult: (didPop, result) {},
-      child: Scaffold(
-        backgroundColor: Colors.black,
-        body: visualizer,
-      ),
+      child: Scaffold(backgroundColor: Colors.black, body: visualizer),
     );
   }
 }

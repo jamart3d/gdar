@@ -33,8 +33,10 @@ class FruitTabBar extends StatelessWidget {
     final themeProvider = context.watch<ThemeProvider>();
     final showListProvider = context.watch<ShowListProvider>();
 
-    final double scaleFactor =
-        FontLayoutConfig.getEffectiveScale(context, settingsProvider);
+    final double scaleFactor = FontLayoutConfig.getEffectiveScale(
+      context,
+      settingsProvider,
+    );
 
     final isDarkMode = theme.brightness == Brightness.dark;
     final isTrueBlackMode = isDarkMode && settingsProvider.useTrueBlack;
@@ -46,12 +48,10 @@ class FruitTabBar extends StatelessWidget {
     final backgroundColor = isTrueBlackMode
         ? Colors.black.withValues(alpha: 0.85)
         : isLiquidGlassEnabled
-            ? Colors.transparent
-            : isLiquidGlassOff
-                ? (isDarkMode
-                    ? colorScheme.surface
-                    : theme.scaffoldBackgroundColor)
-                : Colors.white.withValues(alpha: 0.4); // Matches liquid glass
+        ? Colors.transparent
+        : isLiquidGlassOff
+        ? (isDarkMode ? colorScheme.surface : theme.scaffoldBackgroundColor)
+        : Colors.white.withValues(alpha: 0.4); // Matches liquid glass
 
     final content = Container(
       padding: EdgeInsets.fromLTRB(
@@ -60,9 +60,7 @@ class FruitTabBar extends StatelessWidget {
         32.0 * scaleFactor, // px-8
         16.0 * scaleFactor + MediaQuery.paddingOf(context).bottom, // pb-8
       ),
-      decoration: BoxDecoration(
-        color: backgroundColor,
-      ),
+      decoration: BoxDecoration(color: backgroundColor),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -101,7 +99,8 @@ class FruitTabBar extends StatelessWidget {
               isActive: selectedIndex == 2,
               isLoading: showListProvider.isChoosingRandomShow,
               enableHaptics: settingsProvider.enableHaptics,
-              useAnimatedRandomIcon: !settingsProvider.nonRandom &&
+              useAnimatedRandomIcon:
+                  !settingsProvider.nonRandom &&
                   !settingsProvider.simpleRandomIcon,
               scaleFactor: scaleFactor,
               onTap: () {

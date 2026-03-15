@@ -63,7 +63,8 @@ class ShowListBody extends StatelessWidget {
     }
     if (showListProvider.filteredShows.isEmpty) {
       return const Center(
-          child: Text('No shows match your search or filters.'));
+        child: Text('No shows match your search or filters.'),
+      );
     }
 
     final isTv = context.watch<DeviceService>().isTv;
@@ -115,8 +116,8 @@ class ShowListBody extends StatelessWidget {
     // content total:  86px  + device bottom safe area
     final miniPlayerHeight =
         (audioProvider.currentTrack != null && !isFruit && !isTv)
-            ? 86.0 + bottomSafeArea
-            : 0.0;
+        ? 86.0 + bottomSafeArea
+        : 0.0;
 
     return Stack(
       children: [

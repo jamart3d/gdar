@@ -32,14 +32,16 @@ class _TvScrollbarState extends State<TvScrollbar> {
   @override
   void initState() {
     super.initState();
-    widget.itemPositionsListener.itemPositions
-        .addListener(_updateScrollPosition);
+    widget.itemPositionsListener.itemPositions.addListener(
+      _updateScrollPosition,
+    );
   }
 
   @override
   void dispose() {
-    widget.itemPositionsListener.itemPositions
-        .removeListener(_updateScrollPosition);
+    widget.itemPositionsListener.itemPositions.removeListener(
+      _updateScrollPosition,
+    );
     super.dispose();
   }
 
@@ -143,7 +145,9 @@ class _TvScrollbarState extends State<TvScrollbar> {
               final trackHeight = constraints.maxHeight;
               // Thumb height based on list size approximation (min 40)
               final thumbHeight = math.max(
-                  40.0, trackHeight * (10 / math.max(10, widget.itemCount)));
+                40.0,
+                trackHeight * (10 / math.max(10, widget.itemCount)),
+              );
               final availableRun = trackHeight - thumbHeight;
               final topOffset = availableRun * _scrollProgress;
 
@@ -155,8 +159,9 @@ class _TvScrollbarState extends State<TvScrollbar> {
                       width: 12,
                       height: thumbHeight,
                       decoration: BoxDecoration(
-                        color:
-                            colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
+                        color: colorScheme.onSurfaceVariant.withValues(
+                          alpha: 0.6,
+                        ),
                         borderRadius: BorderRadius.circular(6),
                       ),
                     ),

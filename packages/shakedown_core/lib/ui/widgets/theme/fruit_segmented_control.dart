@@ -114,8 +114,9 @@ class FruitSegmentedControl<T> extends StatelessWidget {
                                     : FontWeight.normal,
                                 color: isSelected
                                     ? theme.colorScheme.onSurface
-                                    : theme.colorScheme.onSurface
-                                        .withValues(alpha: 0.6),
+                                    : theme.colorScheme.onSurface.withValues(
+                                        alpha: 0.6,
+                                      ),
                                 fontSize: 12,
                               ),
                               child: labelBuilder(value),

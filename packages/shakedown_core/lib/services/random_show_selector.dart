@@ -55,7 +55,8 @@ class RandomShowSelector {
     if (currentShow != null) {
       // We use indexWhere because object identity might differ if show objects are recreated
       currentIndex = candidates.indexWhere(
-          (s) => s.date == currentShow.date && s.venue == currentShow.venue);
+        (s) => s.date == currentShow.date && s.venue == currentShow.venue,
+      );
     }
 
     int nextIndex = (currentIndex + 1) % candidates.length;
@@ -75,7 +76,8 @@ class RandomShowSelector {
 
       if (validSources.isNotEmpty) {
         logger.i(
-            'Sequential Playback: Selected next show ${candidate.date} (Index $nextIndex)');
+          'Sequential Playback: Selected next show ${candidate.date} (Index $nextIndex)',
+        );
         return (show: candidate, source: validSources.first);
       }
 
@@ -145,8 +147,9 @@ class RandomShowSelector {
       } else if (rating == 1) {
         weight = 40; // Rated shows
       } else if (rating == 0) {
-        weight =
-            isPlayed ? 10 : 60; // Unplayed is preferred over general played
+        weight = isPlayed
+            ? 10
+            : 60; // Unplayed is preferred over general played
       }
 
       if (weight > 0) {
@@ -171,7 +174,8 @@ class RandomShowSelector {
       }
 
       logger.w(
-          'Random Selection: $msg (Filtered: $totalCount, Blocked: $blockedCount, Unplayed: $unplayedFilterCount, HighRated: $highRatedFilterCount)');
+        'Random Selection: $msg (Filtered: $totalCount, Blocked: $blockedCount, Unplayed: $unplayedFilterCount, HighRated: $highRatedFilterCount)',
+      );
       return null;
     }
 
@@ -184,7 +188,8 @@ class RandomShowSelector {
       final w = weights[show];
       if (w == null) {
         logger.e(
-            'BUG: Show in playCandidates but missing in weights! Show: ${show.date} ${show.venue}');
+          'BUG: Show in playCandidates but missing in weights! Show: ${show.date} ${show.venue}',
+        );
         continue;
       }
       currentWeight += w;
@@ -198,7 +203,8 @@ class RandomShowSelector {
     final sourceToPlay = selectedSourceMap[selectedShow]!;
 
     logger.i(
-        'Weighted selection: ${selectedShow.date} (Weight: ${weights[selectedShow]}/$totalWeight) - Sources: ${selectedShow.sources.length}');
+      'Weighted selection: ${selectedShow.date} (Weight: ${weights[selectedShow]}/$totalWeight) - Sources: ${selectedShow.sources.length}',
+    );
 
     return (show: selectedShow, source: sourceToPlay);
   }

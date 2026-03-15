@@ -17,11 +17,7 @@ class MiniPlayer extends StatefulWidget {
   final VoidCallback onTap;
   final bool hideControls;
 
-  const MiniPlayer({
-    super.key,
-    required this.onTap,
-    this.hideControls = false,
-  });
+  const MiniPlayer({super.key, required this.onTap, this.hideControls = false});
 
   @override
   State<MiniPlayer> createState() => _MiniPlayerState();
@@ -47,8 +43,10 @@ class _MiniPlayerState extends State<MiniPlayer> {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
-    final double scaleFactor =
-        FontLayoutConfig.getEffectiveScale(context, settingsProvider);
+    final double scaleFactor = FontLayoutConfig.getEffectiveScale(
+      context,
+      settingsProvider,
+    );
 
     Color backgroundColor = colorScheme.surfaceContainerHigh;
 
@@ -61,8 +59,10 @@ class _MiniPlayerState extends State<MiniPlayer> {
       if (currentShow.sources.length > 1) {
         seed = currentSource.id;
       }
-      backgroundColor = ColorGenerator.getColor(seed,
-          brightness: Theme.of(context).brightness);
+      backgroundColor = ColorGenerator.getColor(
+        seed,
+        brightness: Theme.of(context).brightness,
+      );
     }
 
     Widget miniPlayerContent = Stack(
@@ -106,7 +106,7 @@ class _MiniPlayerState extends State<MiniPlayer> {
                               bufferedSnapshot.data ?? Duration.zero;
                           final bufferedProgress = duration.inMilliseconds > 0
                               ? bufferedPosition.inMilliseconds /
-                                  duration.inMilliseconds
+                                    duration.inMilliseconds
                               : 0.0;
                           return StreamBuilder<PlayerState>(
                             stream: audioProvider.playerStateStream,
@@ -114,7 +114,8 @@ class _MiniPlayerState extends State<MiniPlayer> {
                             builder: (context, stateSnapshot) {
                               final processingState =
                                   stateSnapshot.data?.processingState;
-                              final isBuffering = processingState ==
+                              final isBuffering =
+                                  processingState ==
                                       ProcessingState.buffering ||
                                   processingState == ProcessingState.loading;
                               return SizedBox(
@@ -126,20 +127,24 @@ class _MiniPlayerState extends State<MiniPlayer> {
                                         color: isTrueBlackMode
                                             ? Colors.white24
                                             : colorScheme
-                                                .surfaceContainerHighest,
+                                                  .surfaceContainerHighest,
                                       ),
                                     ),
                                     FractionallySizedBox(
-                                      widthFactor:
-                                          bufferedProgress.clamp(0.0, 1.0),
+                                      widthFactor: bufferedProgress.clamp(
+                                        0.0,
+                                        1.0,
+                                      ),
                                       child: Container(
                                         decoration: BoxDecoration(
                                           gradient: LinearGradient(
                                             colors: [
-                                              colorScheme.tertiary
-                                                  .withValues(alpha: 0.3),
-                                              colorScheme.tertiary
-                                                  .withValues(alpha: 0.5),
+                                              colorScheme.tertiary.withValues(
+                                                alpha: 0.3,
+                                              ),
+                                              colorScheme.tertiary.withValues(
+                                                alpha: 0.5,
+                                              ),
                                             ],
                                           ),
                                         ),
@@ -152,8 +157,9 @@ class _MiniPlayerState extends State<MiniPlayer> {
                                           gradient: LinearGradient(
                                             colors: [
                                               colorScheme.primary,
-                                              colorScheme.primary
-                                                  .withValues(alpha: 0.8),
+                                              colorScheme.primary.withValues(
+                                                alpha: 0.8,
+                                              ),
                                             ],
                                           ),
                                         ),
@@ -166,8 +172,8 @@ class _MiniPlayerState extends State<MiniPlayer> {
                                           backgroundColor: Colors.transparent,
                                           valueColor:
                                               AlwaysStoppedAnimation<Color>(
-                                            colorScheme.primary,
-                                          ),
+                                                colorScheme.primary,
+                                              ),
                                         ),
                                       ),
                                   ],
@@ -197,12 +203,16 @@ class _MiniPlayerState extends State<MiniPlayer> {
                           stream: audioProvider.audioPlayer.sequenceStateStream,
                           builder: (context, snapshot) {
                             final currentTrack = audioProvider.currentTrack;
-                            final baseTitleStyle = textTheme.titleMedium
-                                    ?.copyWith(fontSize: 19.0) ??
+                            final baseTitleStyle =
+                                textTheme.titleMedium?.copyWith(
+                                  fontSize: 19.0,
+                                ) ??
                                 const TextStyle(fontSize: 19.0);
                             final titleStyle = baseTitleStyle.copyWith(
                               fontSize: AppTypography.responsiveFontSize(
-                                  context, 19.0),
+                                context,
+                                19.0,
+                              ),
                               fontWeight: FontWeight.w600,
                               letterSpacing: 0.1,
                               color: colorScheme.onSurface,
@@ -220,22 +230,27 @@ class _MiniPlayerState extends State<MiniPlayer> {
                                   height: fixedTitleHeight,
                                   child: Padding(
                                     padding: const EdgeInsets.symmetric(
-                                        horizontal: 2.0),
+                                      horizontal: 2.0,
+                                    ),
                                     child: Material(
                                       type: MaterialType.transparency,
                                       child: AnimatedSwitcher(
-                                        duration:
-                                            const Duration(milliseconds: 300),
+                                        duration: const Duration(
+                                          milliseconds: 300,
+                                        ),
                                         child: currentTrack == null
                                             ? SizedBox(
                                                 key: const ValueKey(
-                                                    'loading_placeholder'),
-                                                height: fixedTitleHeight)
+                                                  'loading_placeholder',
+                                                ),
+                                                height: fixedTitleHeight,
+                                              )
                                             : ConditionalMarquee(
                                                 key: ValueKey(currentTrack.url),
                                                 text: currentTrack.title,
                                                 style: titleStyle.copyWith(
-                                                    height: 1.2),
+                                                  height: 1.2,
+                                                ),
                                                 textAlign: TextAlign.center,
                                               ),
                                       ),
@@ -267,15 +282,17 @@ class _MiniPlayerState extends State<MiniPlayer> {
                                   height: 40.0 * scaleFactor,
                                   child: IconButton(
                                     padding: EdgeInsets.zero,
-                                    icon:
-                                        const Icon(Icons.skip_previous_rounded),
+                                    icon: const Icon(
+                                      Icons.skip_previous_rounded,
+                                    ),
                                     iconSize: 28.0 * scaleFactor,
                                     color: colorScheme.onSurface,
                                     onPressed: isFirstTrack
                                         ? null
                                         : () {
                                             AppHaptics.selectionClick(
-                                                context.read<DeviceService>());
+                                              context.read<DeviceService>(),
+                                            );
                                             audioProvider.seekToPrevious();
                                           },
                                   ),
@@ -294,15 +311,16 @@ class _MiniPlayerState extends State<MiniPlayer> {
                                         processingState ==
                                             ProcessingState.buffering) {
                                       return Container(
-                                        margin:
-                                            EdgeInsets.all(8.0 * scaleFactor),
+                                        margin: EdgeInsets.all(
+                                          8.0 * scaleFactor,
+                                        ),
                                         width: 38.0 * scaleFactor,
                                         height: 38.0 * scaleFactor,
                                         child: CircularProgressIndicator(
                                           valueColor:
                                               AlwaysStoppedAnimation<Color>(
-                                            colorScheme.onSurface,
-                                          ),
+                                                colorScheme.onSurface,
+                                              ),
                                         ),
                                       );
                                     }
@@ -311,19 +329,22 @@ class _MiniPlayerState extends State<MiniPlayer> {
                                     VoidCallback? onPressed;
 
                                     if (playing != true) {
-                                      playIcon =
-                                          const Icon(Icons.play_arrow_rounded);
+                                      playIcon = const Icon(
+                                        Icons.play_arrow_rounded,
+                                      );
                                       onPressed =
                                           audioProvider.audioPlayer.play;
                                     } else if (processingState !=
                                         ProcessingState.completed) {
-                                      playIcon =
-                                          const Icon(Icons.pause_rounded);
+                                      playIcon = const Icon(
+                                        Icons.pause_rounded,
+                                      );
                                       onPressed =
                                           audioProvider.audioPlayer.pause;
                                     } else {
-                                      playIcon =
-                                          const Icon(Icons.replay_rounded);
+                                      playIcon = const Icon(
+                                        Icons.replay_rounded,
+                                      );
                                       onPressed = () => audioProvider
                                           .audioPlayer
                                           .seek(Duration.zero);
@@ -350,7 +371,8 @@ class _MiniPlayerState extends State<MiniPlayer> {
                                         ? null
                                         : () {
                                             AppHaptics.selectionClick(
-                                                context.read<DeviceService>());
+                                              context.read<DeviceService>(),
+                                            );
                                             audioProvider.seekToNext();
                                           },
                                   ),

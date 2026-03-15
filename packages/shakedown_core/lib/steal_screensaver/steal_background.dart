@@ -19,8 +19,10 @@ class StealBackground extends PositionComponent
   // Shorter palettes pad with their last color.
   static const int _colorCount = 4;
 
-  List<Color> _currentColors =
-      List.filled(_colorCount, const Color(0xFF000000));
+  List<Color> _currentColors = List.filled(
+    _colorCount,
+    const Color(0xFF000000),
+  );
   List<Color> _targetColors = List.filled(_colorCount, const Color(0xFF000000));
 
   double _colorLerpSpeed = 0.025;
@@ -73,10 +75,12 @@ class StealBackground extends PositionComponent
       // is truly random across the entire 0-2pi range regardless of flow speed.
       final t = (0.0 * config.flowSpeed.clamp(0.0, 2.0) * 0.5) + _phaseOffset;
       final drift = config.orbitDrift.clamp(0.0, 2.0);
-      final startX = 0.5 +
+      final startX =
+          0.5 +
           0.25 * drift * math.sin(t * _freqNudgeX1) +
           0.1 * drift * math.sin(t * _freqNudgeX2);
-      final startY = 0.5 +
+      final startY =
+          0.5 +
           0.25 * drift * math.cos(t * _freqNudgeY1) +
           0.1 * drift * math.cos(t * _freqNudgeY2);
       _smoothedPos = ui.Offset(startX, startY);
@@ -84,7 +88,9 @@ class StealBackground extends PositionComponent
   }
 
   Future<void> _loadResources() async {
-    final program = await ui.FragmentProgram.fromAsset('packages/gdar_fruit/shaders/steal.frag');
+    final program = await ui.FragmentProgram.fromAsset(
+      'packages/gdar_fruit/shaders/steal.frag',
+    );
     _shader = program.fragmentShader();
 
     final data = await rootBundle.load(AssetConstants.stealScreensaverImage);
@@ -315,8 +321,8 @@ class StealBackground extends PositionComponent
         )
         ..filterQuality =
             (config.performanceLevel >= 2 && !config.logoAntiAlias)
-                ? ui.FilterQuality.medium
-                : ui.FilterQuality.high;
+            ? ui.FilterQuality.medium
+            : ui.FilterQuality.high;
 
       // Only blur the 2 newest slices
       final shouldBlur = i <= 2 && config.blurAmount > 0.0;
@@ -371,7 +377,9 @@ class StealBackground extends PositionComponent
     _shader!.setFloat(idx++, config.flatColor ? 1.0 : 0.0);
     _shader!.setFloat(idx++, config.logoAntiAlias ? 1.0 : 0.0); // uAntiAlias
     _shader!.setFloat(
-        idx++, config.performanceLevel.toDouble()); // uPerformanceLevel
+      idx++,
+      config.performanceLevel.toDouble(),
+    ); // uPerformanceLevel
     _shader!.setFloat(idx++, _smoothedPos.dx); // uLogoPosX
     _shader!.setFloat(idx++, _smoothedPos.dy); // uLogoPosY
 

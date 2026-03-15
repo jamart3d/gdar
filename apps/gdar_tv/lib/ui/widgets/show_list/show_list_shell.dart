@@ -58,12 +58,8 @@ class ShowListShell extends StatelessWidget {
   Widget _buildFruitHeader(BuildContext context) {
     return Container(
       height: MediaQuery.paddingOf(context).top + 80,
-      padding: EdgeInsets.only(
-        top: MediaQuery.paddingOf(context).top,
-      ),
-      decoration: const BoxDecoration(
-        border: null,
-      ),
+      padding: EdgeInsets.only(top: MediaQuery.paddingOf(context).top),
+      decoration: const BoxDecoration(border: null),
       alignment: Alignment.topCenter,
       child: SizedBox(
         height: 80,
@@ -88,8 +84,8 @@ class ShowListShell extends StatelessWidget {
   Widget build(BuildContext context) {
     final audioProvider = context.watch<AudioProvider>();
     final themeProvider = context.watch<ThemeProvider>();
-    final settingsProvider =
-        context.watch<SettingsProvider>(); // Defined settingsProvider
+    final settingsProvider = context
+        .watch<SettingsProvider>(); // Defined settingsProvider
     final bool isFruit = themeProvider.themeStyle == ThemeStyle.fruit;
     final bool disableShader = kIsWeb && isWasmRuntime();
 
@@ -97,7 +93,8 @@ class ShowListShell extends StatelessWidget {
     // - Always show in Android style if a track is loaded.
     // - Hide in Fruit style because FruitTabBar provides a dedicated Play tab.
     // - Always hide on TV as it has a dedicated layout.
-    final bool shouldShowMiniPlayer = !settingsProvider.isTv &&
+    final bool shouldShowMiniPlayer =
+        !settingsProvider.isTv &&
         !isFruit &&
         audioProvider.currentTrack != null;
 
@@ -156,9 +153,7 @@ class ShowListShell extends StatelessWidget {
           child: AnimatedOpacity(
             duration: const Duration(milliseconds: 400),
             opacity: shouldShowMiniPlayer ? 1.0 : 0.0,
-            child: MiniPlayer(
-              onTap: onOpenPlaybackScreen,
-            ),
+            child: MiniPlayer(onTap: onOpenPlaybackScreen),
           ),
         ),
         ClipboardFeedbackOverlay(isVisible: showPasteFeedback),

@@ -56,8 +56,10 @@ class ShowListSearchBar extends StatelessWidget {
                 ),
               ),
               child: Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
                 child: Row(
                   children: [
                     Icon(
@@ -65,10 +67,9 @@ class ShowListSearchBar extends StatelessWidget {
                       size: 18,
                       color: hasFocus
                           ? primaryColor
-                          : Theme.of(context)
-                              .colorScheme
-                              .onSurface
-                              .withValues(alpha: 0.7),
+                          : Theme.of(
+                              context,
+                            ).colorScheme.onSurface.withValues(alpha: 0.7),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
@@ -76,10 +77,9 @@ class ShowListSearchBar extends StatelessWidget {
                         controller: controller,
                         focusNode: focusNode,
                         onSubmitted: onSubmitted,
-                        style: Theme.of(context)
-                            .textTheme
-                            .bodyLarge
-                            ?.copyWith(fontSize: 16),
+                        style: Theme.of(
+                          context,
+                        ).textTheme.bodyLarge?.copyWith(fontSize: 16),
                         decoration: const InputDecoration(
                           hintText: 'Search venue, date, location...',
                           hintStyle: TextStyle(
@@ -114,8 +114,9 @@ class ShowListSearchBar extends StatelessWidget {
         trailing: controller.text.isNotEmpty
             ? [
                 IconButton(
-                    icon: const Icon(Icons.clear_rounded),
-                    onPressed: () => controller.clear())
+                  icon: const Icon(Icons.clear_rounded),
+                  onPressed: () => controller.clear(),
+                ),
               ]
             : [
                 Padding(
@@ -123,19 +124,20 @@ class ShowListSearchBar extends StatelessWidget {
                   child: Icon(
                     Icons.content_paste_rounded,
                     size: 20,
-                    color: Theme.of(context)
-                        .colorScheme
-                        .onSurfaceVariant
-                        .withValues(alpha: 0.5),
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
                   ),
                 ),
               ],
         onSubmitted: onSubmitted,
         elevation: const WidgetStatePropertyAll(0),
-        shape: WidgetStatePropertyAll(RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(28),
-          side: BorderSide(color: Theme.of(context).colorScheme.outline),
-        )),
+        shape: WidgetStatePropertyAll(
+          RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(28),
+            side: BorderSide(color: Theme.of(context).colorScheme.outline),
+          ),
+        ),
       );
     }
 

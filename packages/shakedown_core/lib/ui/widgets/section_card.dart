@@ -39,21 +39,25 @@ class SectionCard extends StatelessWidget {
         children: [
           if (showHeader)
             Padding(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 16.0, vertical: 24.0),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 16.0,
+                vertical: 24.0,
+              ),
               child: Row(
                 children: [
-                  Icon(icon,
-                      color: Theme.of(context).colorScheme.primary,
-                      size: 28 * scaleFactor),
+                  Icon(
+                    icon,
+                    color: Theme.of(context).colorScheme.primary,
+                    size: 28 * scaleFactor,
+                  ),
                   const SizedBox(width: 16),
                   Text(
                     title,
                     style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                          color: Theme.of(context).colorScheme.onSurface,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 28 * scaleFactor,
-                        ),
+                      color: Theme.of(context).colorScheme.onSurface,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 28 * scaleFactor,
+                    ),
                   ),
                 ],
               ),
@@ -82,103 +86,113 @@ class SectionCard extends StatelessWidget {
           ? ListTile(
               onTap: onTap,
               shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(28)),
-              leading: Icon(activeIcon,
-                  color: colorScheme.primary, size: 24 * scaleFactor),
+                borderRadius: BorderRadius.circular(28),
+              ),
+              leading: Icon(
+                activeIcon,
+                color: colorScheme.primary,
+                size: 24 * scaleFactor,
+              ),
               title: FittedBox(
                 fit: BoxFit.scaleDown,
                 alignment: Alignment.centerLeft,
                 child: Text(
                   title,
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        color: colorScheme.primary,
-                        fontWeight: FontWeight.bold,
-                        fontSize:
-                            (Theme.of(context).textTheme.titleLarge?.fontSize ??
-                                    22.0) *
-                                scaleFactor,
-                      ),
+                    color: colorScheme.primary,
+                    fontWeight: FontWeight.bold,
+                    fontSize:
+                        (Theme.of(context).textTheme.titleLarge?.fontSize ??
+                            22.0) *
+                        scaleFactor,
+                  ),
                 ),
               ),
               trailing: Icon(
-                  isFruit ? LucideIcons.chevronRight : Icons.chevron_right,
-                  color: colorScheme.primary,
-                  size: 24 * scaleFactor),
+                isFruit ? LucideIcons.chevronRight : Icons.chevron_right,
+                color: colorScheme.primary,
+                size: 24 * scaleFactor,
+              ),
             )
           : collapsible
-              ? ExpansionTile(
-                  key: PageStorageKey('section_expansion_$title'),
-                  initiallyExpanded: initiallyExpanded,
-                  maintainState: true,
-                  dense: true,
-                  visualDensity: VisualDensity.compact,
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(28)),
-                  collapsedShape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(28)),
-                  leading: Icon(activeIcon,
-                      color: colorScheme.primary, size: 24 * scaleFactor),
-                  title: FittedBox(
-                    fit: BoxFit.scaleDown,
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      title,
-                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                            color: colorScheme.primary,
-                            fontWeight: FontWeight.bold,
-                            fontSize: (Theme.of(context)
-                                        .textTheme
-                                        .titleLarge
-                                        ?.fontSize ??
-                                    22.0) *
-                                scaleFactor,
+          ? ExpansionTile(
+              key: PageStorageKey('section_expansion_$title'),
+              initiallyExpanded: initiallyExpanded,
+              maintainState: true,
+              dense: true,
+              visualDensity: VisualDensity.compact,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(28),
+              ),
+              collapsedShape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(28),
+              ),
+              leading: Icon(
+                activeIcon,
+                color: colorScheme.primary,
+                size: 24 * scaleFactor,
+              ),
+              title: FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  title,
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    color: colorScheme.primary,
+                    fontWeight: FontWeight.bold,
+                    fontSize:
+                        (Theme.of(context).textTheme.titleLarge?.fontSize ??
+                            22.0) *
+                        scaleFactor,
+                  ),
+                ),
+              ),
+              children: children,
+            )
+          : Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (showHeader)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16.0,
+                      vertical: 12.0,
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          activeIcon,
+                          color: colorScheme.primary,
+                          size: 24 * scaleFactor,
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                              title,
+                              style: Theme.of(context).textTheme.titleLarge
+                                  ?.copyWith(
+                                    color: colorScheme.primary,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize:
+                                        (Theme.of(
+                                              context,
+                                            ).textTheme.titleLarge?.fontSize ??
+                                            22.0) *
+                                        scaleFactor,
+                                  ),
+                            ),
                           ),
+                        ),
+                      ],
                     ),
                   ),
-                  children: children,
-                )
-              : Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    if (showHeader)
-                      Padding(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 16.0, vertical: 12.0),
-                        child: Row(
-                          children: [
-                            Icon(activeIcon,
-                                color: colorScheme.primary,
-                                size: 24 * scaleFactor),
-                            const SizedBox(width: 16),
-                            Expanded(
-                              child: FittedBox(
-                                fit: BoxFit.scaleDown,
-                                alignment: Alignment.centerLeft,
-                                child: Text(
-                                  title,
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .titleLarge
-                                      ?.copyWith(
-                                        color: colorScheme.primary,
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: (Theme.of(context)
-                                                    .textTheme
-                                                    .titleLarge
-                                                    ?.fontSize ??
-                                                22.0) *
-                                            scaleFactor,
-                                      ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ...children,
-                    const SizedBox(height: 8.0),
-                  ],
-                ),
+                ...children,
+                const SizedBox(height: 8.0),
+              ],
+            ),
     );
 
     final isTv = context.watch<DeviceService>().isTv;
@@ -213,9 +227,12 @@ class SectionCard extends StatelessWidget {
                   : colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
               borderRadius: BorderRadius.circular(28),
               border: (useTrueBlack && isDark)
-                  ? Border.fromBorderSide(BorderSide(
-                      color: colorScheme.outline.withValues(alpha: 0.2),
-                      width: 0.5))
+                  ? Border.fromBorderSide(
+                      BorderSide(
+                        color: colorScheme.outline.withValues(alpha: 0.2),
+                        width: 0.5,
+                      ),
+                    )
                   : null,
             ),
             child: content,
@@ -234,7 +251,9 @@ class SectionCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(28),
         side: (useTrueBlack && isDark)
             ? BorderSide(
-                color: colorScheme.outline.withValues(alpha: 0.2), width: 0.5)
+                color: colorScheme.outline.withValues(alpha: 0.2),
+                width: 0.5,
+              )
             : BorderSide.none,
       ),
       child: content,

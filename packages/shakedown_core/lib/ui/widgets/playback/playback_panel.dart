@@ -46,17 +46,22 @@ class PlaybackPanel extends StatelessWidget {
     final audioProvider = context.watch<AudioProvider>();
     final settingsProvider = context.watch<SettingsProvider>();
 
-    final scaleFactor =
-        FontLayoutConfig.getEffectiveScale(context, settingsProvider);
+    final scaleFactor = FontLayoutConfig.getEffectiveScale(
+      context,
+      settingsProvider,
+    );
 
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     final isTrueBlackMode = isDarkMode && settingsProvider.useTrueBlack;
 
-    final String formattedDate =
-        AppDateUtils.formatDate(currentShow.date, settings: settingsProvider);
+    final String formattedDate = AppDateUtils.formatDate(
+      currentShow.date,
+      settings: settingsProvider,
+    );
 
-    final panelColor =
-        isTrueBlackMode ? Colors.black : colorScheme.surfaceContainer;
+    final panelColor = isTrueBlackMode
+        ? Colors.black
+        : colorScheme.surfaceContainer;
 
     return Container(
       decoration: BoxDecoration(
@@ -85,8 +90,9 @@ class PlaybackPanel extends StatelessWidget {
                       width: 32,
                       height: 4,
                       decoration: BoxDecoration(
-                        color:
-                            colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
+                        color: colorScheme.onSurfaceVariant.withValues(
+                          alpha: 0.4,
+                        ),
                         borderRadius: BorderRadius.circular(2),
                       ),
                     ),
@@ -117,13 +123,15 @@ class PlaybackPanel extends StatelessWidget {
                         child: SizedBox(
                           height:
                               AppTypography.responsiveFontSize(context, 22.0) *
-                                  2.4,
+                              2.4,
                           width: double.infinity,
                           child: ConditionalMarquee(
                             text: currentShow.venue,
                             style: textTheme.headlineSmall?.copyWith(
                               fontSize: AppTypography.responsiveFontSize(
-                                  context, 22.0),
+                                context,
+                                22.0,
+                              ),
                               color: colorScheme.onSurface,
                             ),
                             blankSpace: 60.0,
@@ -151,7 +159,7 @@ class PlaybackPanel extends StatelessWidget {
                 const double startOffset = 80.0;
                 final double yOffset =
                     (startOffset + (restingOffset - startOffset) * value) *
-                        scaleFactor;
+                    scaleFactor;
 
                 return Transform.translate(
                   offset: Offset(0, yOffset),
@@ -159,19 +167,16 @@ class PlaybackPanel extends StatelessWidget {
                     physics: const ClampingScrollPhysics(),
                     child: Container(
                       width: double.infinity,
-                      padding: EdgeInsets.fromLTRB(
-                        12,
-                        0,
-                        12,
-                        12 * scaleFactor,
-                      ),
+                      padding: EdgeInsets.fromLTRB(12, 0, 12, 12 * scaleFactor),
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           // ── METADATA BOX (Location, Date, ID) ──
                           Padding(
                             padding: const EdgeInsets.symmetric(
-                                horizontal: 8.0, vertical: 4.0),
+                              horizontal: 8.0,
+                              vertical: 4.0,
+                            ),
                             child: Row(
                               crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
@@ -185,13 +190,13 @@ class PlaybackPanel extends StatelessWidget {
                                       () {
                                         final double locScore =
                                             (currentSource.location?.length ??
-                                                    0) *
-                                                18.0;
+                                                0) *
+                                            18.0;
                                         final double dateScore =
                                             formattedDate.length * 14.0;
                                         final bool isLocShorter =
                                             currentSource.location != null &&
-                                                locScore < dateScore;
+                                            locScore < dateScore;
 
                                         return Row(
                                           mainAxisSize: MainAxisSize.min,
@@ -199,18 +204,23 @@ class PlaybackPanel extends StatelessWidget {
                                             Flexible(
                                               child: Padding(
                                                 padding: const EdgeInsets.only(
-                                                    left: 2.0, right: 2.0),
+                                                  left: 2.0,
+                                                  right: 2.0,
+                                                ),
                                                 child: Text(
                                                   currentSource.location ?? '',
                                                   style: textTheme.titleSmall
                                                       ?.copyWith(
-                                                    fontSize: AppTypography
-                                                        .responsiveFontSize(
-                                                            context, 18.0),
-                                                    color:
-                                                        colorScheme.secondary,
-                                                    fontWeight: FontWeight.w500,
-                                                  ),
+                                                        fontSize:
+                                                            AppTypography.responsiveFontSize(
+                                                              context,
+                                                              18.0,
+                                                            ),
+                                                        color: colorScheme
+                                                            .secondary,
+                                                        fontWeight:
+                                                            FontWeight.w500,
+                                                      ),
                                                   maxLines: 1,
                                                   overflow:
                                                       TextOverflow.ellipsis,
@@ -219,7 +229,8 @@ class PlaybackPanel extends StatelessWidget {
                                             ),
                                             if (isLocShorter) ...[
                                               const SizedBox(
-                                                  width: kIsWeb ? 13 : 8),
+                                                width: kIsWeb ? 13 : 8,
+                                              ),
                                               _buildCopyButton(
                                                 context,
                                                 audioProvider,
@@ -239,13 +250,13 @@ class PlaybackPanel extends StatelessWidget {
                                       () {
                                         final double locScore =
                                             (currentSource.location?.length ??
-                                                    0) *
-                                                18.0;
+                                                0) *
+                                            18.0;
                                         final double dateScore =
                                             formattedDate.length * 14.0;
                                         final bool isDateShorter =
                                             currentSource.location == null ||
-                                                locScore >= dateScore;
+                                            locScore >= dateScore;
 
                                         return Row(
                                           mainAxisSize: MainAxisSize.min,
@@ -254,28 +265,32 @@ class PlaybackPanel extends StatelessWidget {
                                               child: Transform.translate(
                                                 offset: const Offset(0, 2),
                                                 child: SizedBox(
-                                                  height: AppTypography
-                                                          .responsiveFontSize(
-                                                              context, 14.0) *
+                                                  height:
+                                                      AppTypography.responsiveFontSize(
+                                                        context,
+                                                        14.0,
+                                                      ) *
                                                       2.8,
                                                   child: Padding(
                                                     padding:
                                                         const EdgeInsets.only(
-                                                      left: 4.0,
-                                                      right: 4.0,
-                                                    ),
+                                                          left: 4.0,
+                                                          right: 4.0,
+                                                        ),
                                                     child: ConditionalMarquee(
                                                       text: formattedDate,
                                                       style: textTheme
                                                           .titleMedium
                                                           ?.copyWith(
-                                                        fontSize: AppTypography
-                                                            .responsiveFontSize(
-                                                                context, 14.0),
-                                                        color: colorScheme
-                                                            .onSurfaceVariant,
-                                                        height: 1.2,
-                                                      ),
+                                                            fontSize:
+                                                                AppTypography.responsiveFontSize(
+                                                                  context,
+                                                                  14.0,
+                                                                ),
+                                                            color: colorScheme
+                                                                .onSurfaceVariant,
+                                                            height: 1.2,
+                                                          ),
                                                     ),
                                                   ),
                                                 ),
@@ -303,10 +318,12 @@ class PlaybackPanel extends StatelessWidget {
                                 SizedBox(
                                   height: 48,
                                   child: VerticalDivider(
-                                      width: 16,
-                                      thickness: 1,
-                                      color: colorScheme.onSurface
-                                          .withValues(alpha: 0.1)),
+                                    width: 16,
+                                    thickness: 1,
+                                    color: colorScheme.onSurface.withValues(
+                                      alpha: 0.1,
+                                    ),
+                                  ),
                                 ),
                                 Column(
                                   crossAxisAlignment: CrossAxisAlignment.end,
@@ -330,8 +347,9 @@ class PlaybackPanel extends StatelessWidget {
                                       onTap: () {
                                         if (currentSource.tracks.isNotEmpty) {
                                           launchArchivePage(
-                                              currentSource.tracks.first.url,
-                                              context);
+                                            currentSource.tracks.first.url,
+                                            context,
+                                          );
                                         }
                                       },
                                       child: ShnidBadge(
@@ -340,7 +358,7 @@ class PlaybackPanel extends StatelessWidget {
                                         scaleFactor: scaleFactor,
                                         interactive: false,
                                       ),
-                                    )
+                                    ),
                                   ],
                                 ),
                               ],
@@ -409,8 +427,9 @@ class PlaybackPanel extends StatelessWidget {
               builder: (context) => RatingDialog(
                 initialRating: rating,
                 sourceId: source.id,
-                sourceUrl:
-                    source.tracks.isNotEmpty ? source.tracks.first.url : null,
+                sourceUrl: source.tracks.isNotEmpty
+                    ? source.tracks.first.url
+                    : null,
                 isPlayed: isPlayed,
                 onRatingChanged: (newRating) {
                   catalog.setRating(ratingKey, newRating);

@@ -32,6 +32,7 @@ If you want to test the *compiled* Wasm output (`flutter build web --wasm`) and 
 ```bat
 @echo off
 echo Building Wasm release...
+cd apps\gdar_web
 call flutter build web --wasm
 
 echo Serving Wasm build with headers...

@@ -63,7 +63,8 @@ class ShowListBody extends StatelessWidget {
     }
     if (showListProvider.filteredShows.isEmpty) {
       return const Center(
-          child: Text('No shows match your search or filters.'));
+        child: Text('No shows match your search or filters.'),
+      );
     }
 
     final isTv = context.watch<DeviceService>().isTv;
@@ -121,9 +122,11 @@ class ShowListBody extends StatelessWidget {
 
                 // 1. Prioritize currently expanded show IF it is visible
                 if (showListProvider.expandedShowKey != null) {
-                  final index = showListProvider.filteredShows.indexWhere((s) =>
-                      showListProvider.getShowKey(s) ==
-                      showListProvider.expandedShowKey);
+                  final index = showListProvider.filteredShows.indexWhere(
+                    (s) =>
+                        showListProvider.getShowKey(s) ==
+                        showListProvider.expandedShowKey,
+                  );
                   if (index != -1 && visibleIndices.contains(index)) {
                     onFocusShow?.call(index, shouldScroll: false);
                     return;
@@ -150,16 +153,19 @@ class ShowListBody extends StatelessWidget {
                   final show = showListProvider.filteredShows[targetIndex];
                   if (showListProvider.expandedShowKey !=
                       showListProvider.getShowKey(show)) {
-                    showListProvider
-                        .expandShow(showListProvider.getShowKey(show));
+                    showListProvider.expandShow(
+                      showListProvider.getShowKey(show),
+                    );
                   }
                   onFocusShow?.call(targetIndex, shouldScroll: false);
                 }
               },
-              onRight: onFocusRight ??
+              onRight:
+                  onFocusRight ??
                   () {
-                    FocusScope.of(context)
-                        .focusInDirection(TraversalDirection.right);
+                    FocusScope.of(
+                      context,
+                    ).focusInDirection(TraversalDirection.right);
                   },
             ),
           ],
@@ -180,8 +186,8 @@ class ShowListBody extends StatelessWidget {
     // content total:  86px  + device bottom safe area
     final miniPlayerHeight =
         (audioProvider.currentTrack != null && !isFruit && !isTv)
-            ? 86.0 + bottomSafeArea
-            : 0.0;
+        ? 86.0 + bottomSafeArea
+        : 0.0;
 
     return Stack(
       children: [

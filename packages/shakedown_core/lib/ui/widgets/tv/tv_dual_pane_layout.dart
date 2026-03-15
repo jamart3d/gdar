@@ -49,12 +49,14 @@ class _TvDualPaneLayoutState extends State<TvDualPaneLayout> {
     super.didChangeDependencies();
     if (_randomSubscription == null) {
       final audioProvider = context.read<AudioProvider>();
-      _randomSubscription =
-          audioProvider.randomShowRequestStream.listen((event) {
+      _randomSubscription = audioProvider.randomShowRequestStream.listen((
+        event,
+      ) {
         debugPrint('TvDualPaneLayout: Random show request received!');
         if (_isProcessingRandomRequest) {
           debugPrint(
-              'TvDualPaneLayout: Ignoring duplicate random show request.');
+            'TvDualPaneLayout: Ignoring duplicate random show request.',
+          );
           return;
         }
 
@@ -88,7 +90,8 @@ class _TvDualPaneLayoutState extends State<TvDualPaneLayout> {
               // Stage 4: Wait 2000ms after track list gets focus before starting playback
               Future.delayed(const Duration(milliseconds: 2000), () {
                 debugPrint(
-                    'TvDualPaneLayout: Stage 3 complete (2000ms), checking if playback needed');
+                  'TvDualPaneLayout: Stage 3 complete (2000ms), checking if playback needed',
+                );
                 if (mounted) {
                   // Check if we are ALREADY playing the requested show/source
                   // This prevents double-playback if focus/tap triggered it early
@@ -97,7 +100,8 @@ class _TvDualPaneLayoutState extends State<TvDualPaneLayout> {
                   final currentSource = audioProvider.currentSource;
                   final isPlaying = audioProvider.isPlaying;
 
-                  bool alreadyPlayingRequest = isPlaying &&
+                  bool alreadyPlayingRequest =
+                      isPlaying &&
                       pending != null &&
                       audioProvider.currentTrack !=
                           null && // Ensures we are actually playing THIS show, not the prev one during transitions.
@@ -106,10 +110,12 @@ class _TvDualPaneLayoutState extends State<TvDualPaneLayout> {
 
                   if (alreadyPlayingRequest) {
                     debugPrint(
-                        'TvDualPaneLayout: Requested show is already playing. Skipping explicit playPendingSelection.');
+                      'TvDualPaneLayout: Requested show is already playing. Skipping explicit playPendingSelection.',
+                    );
                   } else {
                     debugPrint(
-                        'TvDualPaneLayout: Calling playPendingSelection.');
+                      'TvDualPaneLayout: Calling playPendingSelection.',
+                    );
                     audioProvider.playPendingSelection();
                   }
 

@@ -25,7 +25,9 @@ class _HighlightableSettingState extends State<HighlightableSetting>
   void initState() {
     super.initState();
     _controller = AnimationController(
-        vsync: this, duration: const Duration(milliseconds: 1000));
+      vsync: this,
+      duration: const Duration(milliseconds: 1000),
+    );
   }
 
   @override
@@ -35,16 +37,19 @@ class _HighlightableSettingState extends State<HighlightableSetting>
     _colorAnimation = ColorTween(
       begin: Colors.transparent,
       end: colorScheme.tertiaryContainer.withValues(alpha: 0.6),
-    ).animate(CurvedAnimation(
-      parent: _controller,
-      curve: Curves.easeInOut,
-    ));
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
 
     if (widget.startWithHighlight) {
       // Pulse 3 times
-      _controller.forward().then((_) => _controller.reverse().then((_) =>
-          _controller.forward().then((_) => _controller.reverse().then((_) =>
-              _controller.forward().then((_) => _controller.reverse())))));
+      _controller.forward().then(
+        (_) => _controller.reverse().then(
+          (_) => _controller.forward().then(
+            (_) => _controller.reverse().then(
+              (_) => _controller.forward().then((_) => _controller.reverse()),
+            ),
+          ),
+        ),
+      );
     }
   }
 

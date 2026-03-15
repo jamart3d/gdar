@@ -15,10 +15,8 @@ class GaplessPlayer {
   ///
   /// An existing [AudioPlayer] can be injected for testing.
   /// [useWebGaplessEngine] is ignored natively but kept for API parity.
-  GaplessPlayer({
-    AudioPlayer? audioPlayer,
-    bool? useWebGaplessEngine,
-  }) : _player = audioPlayer ?? AudioPlayer();
+  GaplessPlayer({AudioPlayer? audioPlayer, bool? useWebGaplessEngine})
+    : _player = audioPlayer ?? AudioPlayer();
 
   // ─── Passthrough getters ─────────────────────────────────────────────────
 
@@ -127,13 +125,12 @@ class GaplessPlayer {
     int initialIndex = 0,
     Duration initialPosition = Duration.zero,
     bool preload = true,
-  }) =>
-      _player.setAudioSources(
-        children,
-        initialIndex: initialIndex,
-        initialPosition: initialPosition,
-        preload: preload,
-      );
+  }) => _player.setAudioSources(
+    children,
+    initialIndex: initialIndex,
+    initialPosition: initialPosition,
+    preload: preload,
+  );
 
   /// Appends additional audio sources to the existing playlist.
   Future<void> addAudioSources(List<AudioSource> sources) =>

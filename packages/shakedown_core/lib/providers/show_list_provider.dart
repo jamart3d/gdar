@@ -88,13 +88,10 @@ class ShowListProvider with ChangeNotifier {
 
   // Constructor
   ShowListProvider({CatalogService? catalogService})
-      : _catalogService = catalogService ?? CatalogService();
+    : _catalogService = catalogService ?? CatalogService();
 
   Future<void> init(SharedPreferences prefs) async {
-    await Future.wait([
-      fetchShows(prefs),
-      checkArchiveStatus(),
-    ]);
+    await Future.wait([fetchShows(prefs), checkArchiveStatus()]);
   }
 
   bool _filterHighestShnid = false;
@@ -183,8 +180,9 @@ class ShowListProvider with ChangeNotifier {
     // For brevity, using simplified logic or assuming method exists
     final Set<String> categories = {};
     final srcType = source.src?.toLowerCase() ?? '';
-    final url =
-        source.tracks.isNotEmpty ? source.tracks.first.url.toLowerCase() : '';
+    final url = source.tracks.isNotEmpty
+        ? source.tracks.first.url.toLowerCase()
+        : '';
 
     if (_useStrictSrcCategorization) {
       if (srcType == 'sbd') categories.add('sbd');
@@ -268,8 +266,9 @@ class ShowListProvider with ChangeNotifier {
           // B. Highest SHNID Filtering
           if (_filterHighestShnid && validSources.length > 1) {
             // If playing source is present, prioritize it
-            final playingSourceIndex =
-                validSources.indexWhere((s) => s.id == _playingSourceId);
+            final playingSourceIndex = validSources.indexWhere(
+              (s) => s.id == _playingSourceId,
+            );
             if (playingSourceIndex != -1) {
               validSources = [validSources[playingSourceIndex]];
             } else {
@@ -343,21 +342,25 @@ class ShowListProvider with ChangeNotifier {
     bool isArchiveDown = false;
     for (int i = 0; i < maxRetries; i++) {
       try {
-        logger
-            .i('Checking archive.org status (Attempt ${i + 1}/$maxRetries)...');
-        final response = await http.head(
-          Uri.parse('https://archive.org'),
-          headers: {
-            'User-Agent': 'GDAR/1.0.0 (shakedown_app@googlegroups.com)'
-          },
-        ).timeout(timeout);
+        logger.i(
+          'Checking archive.org status (Attempt ${i + 1}/$maxRetries)...',
+        );
+        final response = await http
+            .head(
+              Uri.parse('https://archive.org'),
+              headers: {
+                'User-Agent': 'GDAR/1.0.0 (shakedown_app@googlegroups.com)',
+              },
+            )
+            .timeout(timeout);
         if (response.statusCode >= 200 && response.statusCode < 400) {
           logger.i('archive.org is reachable.');
           isArchiveDown = false;
           break; // Exit loop on success
         } else {
           logger.w(
-              'archive.org returned status code: ${response.statusCode} (Attempt ${i + 1}/$maxRetries)');
+            'archive.org returned status code: ${response.statusCode} (Attempt ${i + 1}/$maxRetries)',
+          );
           isArchiveDown = true;
         }
       } on TimeoutException {
@@ -365,11 +368,13 @@ class ShowListProvider with ChangeNotifier {
         isArchiveDown = true;
       } on Exception catch (e) {
         logger.e(
-            'Failed to connect to archive.org: $e (Attempt ${i + 1}/$maxRetries)');
+          'Failed to connect to archive.org: $e (Attempt ${i + 1}/$maxRetries)',
+        );
         isArchiveDown = true;
       } catch (e) {
         logger.e(
-            'An unexpected error occurred while checking archive.org: $e (Attempt ${i + 1}/$maxRetries)');
+          'An unexpected error occurred while checking archive.org: $e (Attempt ${i + 1}/$maxRetries)',
+        );
         isArchiveDown = true;
       }
 
@@ -435,8 +440,9 @@ class ShowListProvider with ChangeNotifier {
     // Find the show in the cache
     final index = _filteredShowsCache.indexOf(show);
     if (index != -1) {
-      final updatedSources =
-          show.sources.where((s) => s.id != sourceId).toList();
+      final updatedSources = show.sources
+          .where((s) => s.id != sourceId)
+          .toList();
 
       // If no sources left, remove the show entirely
       if (updatedSources.isEmpty) {

@@ -200,12 +200,16 @@ class SettingsProvider with ChangeNotifier {
   Future<void> completeOnboarding() async {
     _onboardingCompletedVersion = kCurrentOnboardingVersion;
     await _prefs.setInt(
-        _onboardingCompletedVersionKey, _onboardingCompletedVersion);
+      _onboardingCompletedVersionKey,
+      _onboardingCompletedVersion,
+    );
     notifyListeners();
   }
 
   void toggleShowSplashScreen() => _updatePreference(
-      _showSplashScreenKey, _showSplashScreen = !_showSplashScreen);
+    _showSplashScreenKey,
+    _showSplashScreen = !_showSplashScreen,
+  );
 
   bool showExpandIcon = false;
 
@@ -647,16 +651,21 @@ class SettingsProvider with ChangeNotifier {
   late bool _showDebugLayout;
   bool get showDebugLayout => _showDebugLayout;
   void toggleShowDebugLayout() => _updatePreference(
-      _showDebugLayoutKey, _showDebugLayout = !_showDebugLayout);
+    _showDebugLayoutKey,
+    _showDebugLayout = !_showDebugLayout,
+  );
 
   static const String _enableShakedownTweenKey = 'enable_shakedown_tween';
   late bool _enableShakedownTween;
   bool get enableShakedownTween => _enableShakedownTween;
   void toggleEnableShakedownTween() => _updatePreference(
-      _enableShakedownTweenKey, _enableShakedownTween = !_enableShakedownTween);
+    _enableShakedownTweenKey,
+    _enableShakedownTween = !_enableShakedownTween,
+  );
 
-  static const MethodChannel _uiScaleChannel =
-      MethodChannel('com.jamart3d.shakedown/ui_scale');
+  static const MethodChannel _uiScaleChannel = MethodChannel(
+    'com.jamart3d.shakedown/ui_scale',
+  );
 
   void resetFruitFirstTimeSettings() {
     // Disable dense list for Fruit
@@ -750,23 +759,28 @@ class SettingsProvider with ChangeNotifier {
         _prefs.getInt(_onboardingCompletedVersionKey) ?? 0;
     _showTrackNumbers =
         _prefs.getBool(_trackNumberKey) ?? DefaultSettings.showTrackNumbers;
-    _hideTrackDuration = _prefs.getBool(_hideTrackDurationKey) ??
+    _hideTrackDuration =
+        _prefs.getBool(_hideTrackDurationKey) ??
         DefaultSettings.hideTrackDuration;
     _playOnTap = _prefs.getBool(_playOnTapKey) ?? DefaultSettings.playOnTap;
     _showSingleShnid =
         _prefs.getBool(_showSingleShnidKey) ?? DefaultSettings.showSingleShnid;
-    _playRandomOnCompletion = _prefs.getBool(_playRandomOnCompletionKey) ??
+    _playRandomOnCompletion =
+        _prefs.getBool(_playRandomOnCompletionKey) ??
         DefaultSettings.playRandomOnCompletion;
     _nonRandom = _prefs.getBool(_nonRandomKey) ?? DefaultSettings.nonRandom;
-    _playRandomOnStartup = _prefs.getBool(_playRandomOnStartupKey) ??
+    _playRandomOnStartup =
+        _prefs.getBool(_playRandomOnStartupKey) ??
         DefaultSettings.playRandomOnStartup;
-    _dateFirstInShowCard = _prefs.getBool(_dateFirstInShowCardKey) ??
+    _dateFirstInShowCard =
+        _prefs.getBool(_dateFirstInShowCardKey) ??
         DefaultSettings.dateFirstInShowCard;
     _useDynamicColor =
         _prefs.getBool(_useDynamicColorKey) ?? DefaultSettings.useDynamicColor;
     _showDayOfWeek =
         _prefs.getBool(_showDayOfWeekKey) ?? DefaultSettings.showDayOfWeek;
-    _abbreviateDayOfWeek = _prefs.getBool(_abbreviateDayOfWeekKey) ??
+    _abbreviateDayOfWeek =
+        _prefs.getBool(_abbreviateDayOfWeekKey) ??
         DefaultSettings.abbreviateDayOfWeek;
     _abbreviateMonth =
         _prefs.getBool(_abbreviateMonthKey) ?? DefaultSettings.abbreviateMonth;
@@ -776,8 +790,11 @@ class SettingsProvider with ChangeNotifier {
     _fruitStickyNowPlaying = _prefs.getBool(_fruitStickyNowPlayingKey) ?? false;
 
     // Screensaver Migration
-    final defaultScreensaver = _dBool(WebDefaults.useOilScreensaver,
-        DefaultSettings.useOilScreensaver, DefaultSettings.useOilScreensaver);
+    final defaultScreensaver = _dBool(
+      WebDefaults.useOilScreensaver,
+      DefaultSettings.useOilScreensaver,
+      DefaultSettings.useOilScreensaver,
+    );
     if (_prefs.containsKey('use_screensaver')) {
       bool oldEnabled = _prefs.getBool('use_screensaver') ?? true;
       _useOilScreensaver = defaultScreensaver ? oldEnabled : false;
@@ -818,8 +835,8 @@ class SettingsProvider with ChangeNotifier {
       _glowMode = oldHalf
           ? 50
           : oldShow
-              ? 100
-              : DefaultSettings.glowMode;
+          ? 100
+          : DefaultSettings.glowMode;
       _prefs.setInt(_glowModeKey, _glowMode);
     }
 
@@ -828,33 +845,47 @@ class SettingsProvider with ChangeNotifier {
       _useTrueBlack = true;
       _prefs.setBool(_useTrueBlackKey, true);
     } else {
-      _useTrueBlack = _prefs.getBool(_useTrueBlackKey) ??
-          _dBool(WebDefaults.useTrueBlack, DefaultSettings.useTrueBlack,
-              DefaultSettings.useTrueBlack);
+      _useTrueBlack =
+          _prefs.getBool(_useTrueBlackKey) ??
+          _dBool(
+            WebDefaults.useTrueBlack,
+            DefaultSettings.useTrueBlack,
+            DefaultSettings.useTrueBlack,
+          );
     }
 
-    _highlightPlayingWithRgb = _prefs.getBool(_highlightPlayingWithRgbKey) ??
+    _highlightPlayingWithRgb =
+        _prefs.getBool(_highlightPlayingWithRgbKey) ??
         DefaultSettings.highlightPlayingWithRgb;
-    _rgbAnimationSpeed = _prefs.getDouble(_rgbAnimationSpeedKey) ??
+    _rgbAnimationSpeed =
+        _prefs.getDouble(_rgbAnimationSpeedKey) ??
         DefaultSettings.rgbAnimationSpeed;
-    _showSplashScreen = _prefs.getBool(_showSplashScreenKey) ??
-        _dBool(kIsWeb ? _isFirstRun : WebDefaults.showSplashScreen,
-            DefaultSettings.showSplashScreen, DefaultSettings.showSplashScreen);
-    _showPlaybackMessages = _prefs.getBool(_showPlaybackMessagesKey) ??
+    _showSplashScreen =
+        _prefs.getBool(_showSplashScreenKey) ??
+        _dBool(
+          kIsWeb ? _isFirstRun : WebDefaults.showSplashScreen,
+          DefaultSettings.showSplashScreen,
+          DefaultSettings.showSplashScreen,
+        );
+    _showPlaybackMessages =
+        _prefs.getBool(_showPlaybackMessagesKey) ??
         DefaultSettings.showPlaybackMessages;
     _showDevAudioHud =
         _prefs.getBool(_showDevAudioHudKey) ?? DefaultSettings.showDevAudioHud;
     _devHudMode = DevHudMode.fromString(
-        _prefs.getString(_devHudModeKey) ?? DefaultSettings.devHudMode);
+      _prefs.getString(_devHudModeKey) ?? DefaultSettings.devHudMode,
+    );
     _devAudioHudSnapshot = _prefs.getString(_devAudioHudSnapshotKey) ?? '';
     _sortOldestFirst =
         _prefs.getBool(_sortOldestFirstKey) ?? DefaultSettings.sortOldestFirst;
     _useStrictSrcCategorization =
         _prefs.getBool(_useStrictSrcCategorizationKey) ??
-            DefaultSettings.useStrictSrcCategorization;
-    _offlineBuffering = _prefs.getBool(_offlineBufferingKey) ??
+        DefaultSettings.useStrictSrcCategorization;
+    _offlineBuffering =
+        _prefs.getBool(_offlineBufferingKey) ??
         DefaultSettings.offlineBuffering;
-    _enableBufferAgent = _prefs.getBool(_enableBufferAgentKey) ??
+    _enableBufferAgent =
+        _prefs.getBool(_enableBufferAgentKey) ??
         DefaultSettings.enableBufferAgent;
 
     // Prevent Sleep Migration
@@ -865,31 +896,45 @@ class SettingsProvider with ChangeNotifier {
       _prefs.setBool(_preventSleepKey, _preventSleep);
       _prefs.remove('prevent_screensaver');
     } else {
-      _preventSleep = _prefs.getBool(_preventSleepKey) ??
-          _dBool(DefaultSettings.preventSleep, TvDefaults.preventSleep,
-              PhoneDefaults.preventSleep);
+      _preventSleep =
+          _prefs.getBool(_preventSleepKey) ??
+          _dBool(
+            DefaultSettings.preventSleep,
+            TvDefaults.preventSleep,
+            PhoneDefaults.preventSleep,
+          );
     }
 
     _marqueeEnabled = _prefs.getBool(_marqueeEnabledKey) ?? true;
-    _enableSwipeToBlock = _prefs.getBool(_enableSwipeToBlockKey) ??
+    _enableSwipeToBlock =
+        _prefs.getBool(_enableSwipeToBlockKey) ??
         DefaultSettings.enableSwipeToBlock;
-    _omitHttpPathInCopy = _prefs.getBool(_omitHttpPathInCopyKey) ??
+    _omitHttpPathInCopy =
+        _prefs.getBool(_omitHttpPathInCopyKey) ??
         DefaultSettings.omitHttpPathInCopy;
     _showDebugLayout =
         _prefs.getBool(_showDebugLayoutKey) ?? DefaultSettings.showDebugLayout;
     _enableShakedownTween = _prefs.getBool(_enableShakedownTweenKey) ?? true;
-    _useNeumorphism = _prefs.getBool(_useNeumorphismKey) ??
-        _dBool(WebDefaults.useNeumorphism, DefaultSettings.useNeumorphism,
-            PhoneDefaults.useNeumorphism);
+    _useNeumorphism =
+        _prefs.getBool(_useNeumorphismKey) ??
+        _dBool(
+          WebDefaults.useNeumorphism,
+          DefaultSettings.useNeumorphism,
+          PhoneDefaults.useNeumorphism,
+        );
     _fruitEnableLiquidGlass =
         _prefs.getBool(_fruitEnableLiquidGlassKey) ?? false;
-    _neumorphicStyle = NeumorphicStyle.values[
-        _prefs.getInt(_neumorphicStyleKey) ??
+    _neumorphicStyle =
+        NeumorphicStyle.values[_prefs.getInt(_neumorphicStyleKey) ??
             DefaultSettings.neumorphicStyle.index];
     final hasPerformancePreference = _prefs.containsKey(_performanceModeKey);
-    _performanceMode = _prefs.getBool(_performanceModeKey) ??
-        _dBool(WebDefaults.performanceMode, TvDefaults.performanceMode,
-            PhoneDefaults.performanceMode);
+    _performanceMode =
+        _prefs.getBool(_performanceModeKey) ??
+        _dBool(
+          WebDefaults.performanceMode,
+          TvDefaults.performanceMode,
+          PhoneDefaults.performanceMode,
+        );
 
     if (!hasPerformancePreference &&
         kIsWeb &&
@@ -898,7 +943,8 @@ class SettingsProvider with ChangeNotifier {
       _performanceMode = true;
       _prefs.setBool(_performanceModeKey, true);
       logger.i(
-          'SettingsProvider: Auto-enabled performance mode for low-power web mobile device.');
+        'SettingsProvider: Auto-enabled performance mode for low-power web mobile device.',
+      );
     }
 
     if (_performanceMode) {
@@ -911,15 +957,20 @@ class SettingsProvider with ChangeNotifier {
     // Web Gapless Engine Migration
     if (_prefs.containsKey('web_gapless_engine')) {
       bool oldEnabled = _prefs.getBool('web_gapless_engine') ?? true;
-      _audioEngineMode =
-          oldEnabled ? AudioEngineMode.auto : AudioEngineMode.standard;
+      _audioEngineMode = oldEnabled
+          ? AudioEngineMode.auto
+          : AudioEngineMode.standard;
       _prefs.remove('web_gapless_engine');
       _prefs.setString(_audioEngineModeKey, _audioEngineMode.name);
     } else {
       _audioEngineMode = AudioEngineMode.fromString(
-          _prefs.getString(_audioEngineModeKey) ??
-              _dStr(WebDefaults.audioEngineMode, PhoneDefaults.audioEngineMode,
-                  PhoneDefaults.audioEngineMode));
+        _prefs.getString(_audioEngineModeKey) ??
+            _dStr(
+              WebDefaults.audioEngineMode,
+              PhoneDefaults.audioEngineMode,
+              PhoneDefaults.audioEngineMode,
+            ),
+      );
     }
     _webEngineProfile = WebEngineProfile.fromString(
       _prefs.getString(_webEngineProfileChoiceKey),
@@ -929,7 +980,7 @@ class SettingsProvider with ChangeNotifier {
         _prefs.getBool(_webEngineProfileInitKey) ?? false;
     final bool hasExplicitEngineOverride =
         _prefs.containsKey(_audioEngineModeKey) &&
-            _audioEngineMode != AudioEngineMode.auto;
+        _audioEngineMode != AudioEngineMode.auto;
     if (kIsWeb && !hasAdaptiveProfileInit && !hasExplicitEngineOverride) {
       _webEngineProfile = isLikelyLowPowerWebDevice()
           ? WebEngineProfile.legacy
@@ -938,7 +989,8 @@ class SettingsProvider with ChangeNotifier {
       _prefs.setBool(_webEngineProfileInitKey, true);
       _prefs.setString(_webEngineProfileChoiceKey, _webEngineProfile.name);
       logger.i(
-          'SettingsProvider: Adaptive web engine profile applied: ${_webEngineProfile.name}');
+        'SettingsProvider: Adaptive web engine profile applied: ${_webEngineProfile.name}',
+      );
     }
     // Greedy prefetch (-1) if in Web Audio mode, otherwise use fixed 30s
     _webPrefetchSeconds = (_audioEngineMode == AudioEngineMode.webAudio)
@@ -952,7 +1004,8 @@ class SettingsProvider with ChangeNotifier {
 
     _forceTv = _prefs.getBool(_forceTvKey) ?? false;
 
-    _trackTransitionMode = _prefs.getString(_trackTransitionModeKey) ??
+    _trackTransitionMode =
+        _prefs.getString(_trackTransitionModeKey) ??
         DefaultSettings.trackTransitionMode;
     if (_trackTransitionMode == 'crossfade') {
       _trackTransitionMode = 'gapless';
@@ -960,30 +1013,38 @@ class SettingsProvider with ChangeNotifier {
     }
     _crossfadeDurationSeconds =
         _prefs.getDouble(_crossfadeDurationSecondsKey) ??
-            DefaultSettings.crossfadeDurationSeconds;
+        DefaultSettings.crossfadeDurationSeconds;
     _hybridHandoffMode = HybridHandoffMode.fromString(
-        _prefs.getString(_hybridHandoffModeKey) ?? 'buffered');
+      _prefs.getString(_hybridHandoffModeKey) ?? 'buffered',
+    );
     _hybridBackgroundMode = HybridBackgroundMode.fromString(
-        _prefs.getString(_hybridBackgroundModeKey) ?? 'html5');
+      _prefs.getString(_hybridBackgroundModeKey) ?? 'html5',
+    );
     _hiddenSessionPreset = HiddenSessionPreset.fromString(
-        _prefs.getString(_hiddenSessionPresetKey) ?? 'balanced');
+      _prefs.getString(_hiddenSessionPresetKey) ?? 'balanced',
+    );
     _allowHiddenWebAudio = _prefs.getBool(_allowHiddenWebAudioKey) ?? false;
-    _handoffCrossfadeMs = _prefs.getInt(_handoffCrossfadeMsKey) ??
+    _handoffCrossfadeMs =
+        _prefs.getInt(_handoffCrossfadeMsKey) ??
         DefaultSettings.handoffCrossfadeMs;
-    _hybridForceHtml5Start = _prefs.getBool(_hybridForceHtml5StartKey) ??
+    _hybridForceHtml5Start =
+        _prefs.getBool(_hybridForceHtml5StartKey) ??
         DefaultSettings.hybridForceHtml5Start;
 
     // Screensaver
-    _useOilScreensaver = _prefs.getBool(_useOilScreensaverKey) ??
+    _useOilScreensaver =
+        _prefs.getBool(_useOilScreensaverKey) ??
         DefaultSettings.useOilScreensaver;
-    _oilScreensaverMode = _prefs.getString(_oilScreensaverModeKey) ??
+    _oilScreensaverMode =
+        _prefs.getString(_oilScreensaverModeKey) ??
         DefaultSettings.oilScreensaverMode;
     _oilScreensaverInactivityMinutes =
         _prefs.getInt(_oilScreensaverInactivityMinutesKey) ??
-            DefaultSettings.oilScreensaverInactivityMinutes;
+        DefaultSettings.oilScreensaverInactivityMinutes;
     _oilFlowSpeed =
         _prefs.getDouble(_oilFlowSpeedKey) ?? DefaultSettings.oilFlowSpeed;
-    _oilPulseIntensity = _prefs.getDouble(_oilPulseIntensityKey) ??
+    _oilPulseIntensity =
+        _prefs.getDouble(_oilPulseIntensityKey) ??
         DefaultSettings.oilPulseIntensity;
     _oilPalette =
         _prefs.getString(_oilPaletteKey) ?? DefaultSettings.oilPalette;
@@ -991,79 +1052,105 @@ class SettingsProvider with ChangeNotifier {
         _prefs.getDouble(_oilFilmGrainKey) ?? DefaultSettings.oilFilmGrain;
     _oilHeatDrift =
         _prefs.getDouble(_oilHeatDriftKey) ?? DefaultSettings.oilHeatDrift;
-    _oilEnableAudioReactivity = _prefs.getBool(_oilEnableAudioReactivityKey) ??
+    _oilEnableAudioReactivity =
+        _prefs.getBool(_oilEnableAudioReactivityKey) ??
         DefaultSettings.oilEnableAudioReactivity;
-    _oilPerformanceLevel = _prefs.getInt(_oilPerformanceLevelKey) ??
+    _oilPerformanceLevel =
+        _prefs.getInt(_oilPerformanceLevelKey) ??
         (_prefs.getBool('oil_performance_mode') == true ? 2 : 0);
     // Ensure accurate platform defaults if no preference exists
     if (!_prefs.containsKey(_oilPerformanceLevelKey) &&
         !_prefs.containsKey('oil_performance_mode')) {
-      _oilPerformanceLevel = _dInt(DefaultSettings.oilPerformanceLevel,
-          TvDefaults.oilPerformanceLevel, DefaultSettings.oilPerformanceLevel);
+      _oilPerformanceLevel = _dInt(
+        DefaultSettings.oilPerformanceLevel,
+        TvDefaults.oilPerformanceLevel,
+        DefaultSettings.oilPerformanceLevel,
+      );
     }
     _oilPaletteCycle =
         _prefs.getBool(_oilPaletteCycleKey) ?? DefaultSettings.oilPaletteCycle;
     _oilPaletteTransitionSpeed =
         _prefs.getDouble(_oilPaletteTransitionSpeedKey) ??
-            DefaultSettings.oilPaletteTransitionSpeed;
-    _oilBannerDisplayMode = _prefs.getString(_oilBannerDisplayModeKey) ??
+        DefaultSettings.oilPaletteTransitionSpeed;
+    _oilBannerDisplayMode =
+        _prefs.getString(_oilBannerDisplayModeKey) ??
         DefaultSettings.oilBannerDisplayMode;
     _oilBannerFont =
         _prefs.getString(_oilBannerFontKey) ?? DefaultSettings.oilBannerFont;
-    _oilFlatTextProximity = _prefs.getDouble(_oilFlatTextProximityKey) ??
+    _oilFlatTextProximity =
+        _prefs.getDouble(_oilFlatTextProximityKey) ??
         DefaultSettings.oilFlatTextProximity;
-    _oilFlatTextPlacement = _prefs.getString(_oilFlatTextPlacementKey) ??
+    _oilFlatTextPlacement =
+        _prefs.getString(_oilFlatTextPlacementKey) ??
         DefaultSettings.oilFlatTextPlacement;
-    _oilBannerResolution = _prefs.getDouble(_oilBannerResolutionKey) ??
+    _oilBannerResolution =
+        _prefs.getDouble(_oilBannerResolutionKey) ??
         DefaultSettings.oilBannerResolution;
-    _oilBannerPixelSnap = _prefs.getBool(_oilBannerPixelSnapKey) ??
+    _oilBannerPixelSnap =
+        _prefs.getBool(_oilBannerPixelSnapKey) ??
         DefaultSettings.oilBannerPixelSnap;
-    _oilBannerLetterSpacing = _prefs.getDouble(_oilBannerLetterSpacingKey) ??
+    _oilBannerLetterSpacing =
+        _prefs.getDouble(_oilBannerLetterSpacingKey) ??
         DefaultSettings.oilBannerLetterSpacing;
-    _oilBannerWordSpacing = _prefs.getDouble(_oilBannerWordSpacingKey) ??
+    _oilBannerWordSpacing =
+        _prefs.getDouble(_oilBannerWordSpacingKey) ??
         DefaultSettings.oilBannerWordSpacing;
-    _oilTrackLetterSpacing = _prefs.getDouble(_oilTrackLetterSpacingKey) ??
+    _oilTrackLetterSpacing =
+        _prefs.getDouble(_oilTrackLetterSpacingKey) ??
         DefaultSettings.oilTrackLetterSpacing;
-    _oilTrackWordSpacing = _prefs.getDouble(_oilTrackWordSpacingKey) ??
+    _oilTrackWordSpacing =
+        _prefs.getDouble(_oilTrackWordSpacingKey) ??
         DefaultSettings.oilTrackWordSpacing;
-    _oilFlatLineSpacing = _prefs.getDouble(_oilFlatLineSpacingKey) ??
+    _oilFlatLineSpacing =
+        _prefs.getDouble(_oilFlatLineSpacingKey) ??
         DefaultSettings.oilFlatLineSpacing;
 
-    _oilLogoTrailIntensity = _prefs.getDouble(_oilLogoTrailIntensityKey) ??
+    _oilLogoTrailIntensity =
+        _prefs.getDouble(_oilLogoTrailIntensityKey) ??
         DefaultSettings.oilLogoTrailIntensity;
-    _oilLogoTrailSlices = _prefs.getInt(_oilLogoTrailSlicesKey) ??
+    _oilLogoTrailSlices =
+        _prefs.getInt(_oilLogoTrailSlicesKey) ??
         DefaultSettings.oilLogoTrailSlices;
-    _oilLogoTrailDynamic = _prefs.getBool(_oilLogoTrailDynamicKey) ??
+    _oilLogoTrailDynamic =
+        _prefs.getBool(_oilLogoTrailDynamicKey) ??
         DefaultSettings.oilLogoTrailDynamic;
-    _oilLogoTrailLength = _prefs.getDouble(_oilLogoTrailLengthKey) ??
+    _oilLogoTrailLength =
+        _prefs.getDouble(_oilLogoTrailLengthKey) ??
         DefaultSettings.oilLogoTrailLength;
-    _oilLogoTrailScale = _prefs.getDouble(_oilLogoTrailScaleKey) ??
+    _oilLogoTrailScale =
+        _prefs.getDouble(_oilLogoTrailScaleKey) ??
         DefaultSettings.oilLogoTrailScale;
     _oilLogoTrailInitialScale =
         _prefs.getDouble(_oilLogoTrailInitialScaleKey) ??
-            DefaultSettings.oilLogoTrailInitialScale;
+        DefaultSettings.oilLogoTrailInitialScale;
 
     // Audio Reactivity
-    _oilAudioPeakDecay = _prefs.getDouble(_oilAudioPeakDecayKey) ??
+    _oilAudioPeakDecay =
+        _prefs.getDouble(_oilAudioPeakDecayKey) ??
         DefaultSettings.oilAudioPeakDecay;
-    _oilAudioBassBoost = _prefs.getDouble(_oilAudioBassBoostKey) ??
+    _oilAudioBassBoost =
+        _prefs.getDouble(_oilAudioBassBoostKey) ??
         DefaultSettings.oilAudioBassBoost;
     _oilAudioReactivityStrength =
         _prefs.getDouble(_oilAudioReactivityStrengthKey) ??
-            DefaultSettings.oilAudioReactivityStrength;
-    _oilAudioGraphMode = _prefs.getString(_oilAudioGraphModeKey) ??
+        DefaultSettings.oilAudioReactivityStrength;
+    _oilAudioGraphMode =
+        _prefs.getString(_oilAudioGraphModeKey) ??
         DefaultSettings.oilAudioGraphMode;
-    _oilBeatSensitivity = _prefs.getDouble(_oilBeatSensitivityKey) ??
+    _oilBeatSensitivity =
+        _prefs.getDouble(_oilBeatSensitivityKey) ??
         DefaultSettings.oilBeatSensitivity;
     _oilBeatImpact =
         _prefs.getDouble(_oilBeatImpactKey) ?? DefaultSettings.oilBeatImpact;
 
     // Banner & visual
-    _oilShowInfoBanner = _prefs.getBool(_oilShowInfoBannerKey) ??
+    _oilShowInfoBanner =
+        _prefs.getBool(_oilShowInfoBannerKey) ??
         DefaultSettings.oilShowInfoBanner;
     _oilLogoScale =
         _prefs.getDouble(_oilLogoScaleKey) ?? DefaultSettings.oilLogoScale;
-    _oilTranslationSmoothing = _prefs.getDouble(_oilTranslationSmoothingKey) ??
+    _oilTranslationSmoothing =
+        _prefs.getDouble(_oilTranslationSmoothingKey) ??
         DefaultSettings.oilTranslationSmoothing;
     _oilBlurAmount =
         _prefs.getDouble(_oilBlurAmountKey) ?? DefaultSettings.oilBlurAmount;
@@ -1071,54 +1158,69 @@ class SettingsProvider with ChangeNotifier {
         _prefs.getBool(_oilFlatColorKey) ?? DefaultSettings.oilFlatColor;
     _oilBannerGlow =
         _prefs.getBool(_oilBannerGlowKey) ?? DefaultSettings.oilBannerGlow;
-    _oilBannerFlicker = _prefs.getDouble(_oilBannerFlickerKey) ??
+    _oilBannerFlicker =
+        _prefs.getDouble(_oilBannerFlickerKey) ??
         DefaultSettings.oilBannerFlicker;
-    _oilBannerGlowBlur = _prefs.getDouble(_oilBannerGlowBlurKey) ??
+    _oilBannerGlowBlur =
+        _prefs.getDouble(_oilBannerGlowBlurKey) ??
         DefaultSettings.oilBannerGlowBlur;
-    _oilLogoAntiAlias = _prefs.getBool(_oilLogoAntiAliasKey) ??
+    _oilLogoAntiAlias =
+        _prefs.getBool(_oilLogoAntiAliasKey) ??
         DefaultSettings.oilLogoAntiAlias;
 
     // Ring controls
-    _oilInnerRingScale = _prefs.getDouble(_oilInnerRingScaleKey) ??
+    _oilInnerRingScale =
+        _prefs.getDouble(_oilInnerRingScaleKey) ??
         DefaultSettings.oilInnerRingScale;
-    _oilInnerToMiddleGap = _prefs.getDouble(_oilInnerToMiddleGapKey) ??
+    _oilInnerToMiddleGap =
+        _prefs.getDouble(_oilInnerToMiddleGapKey) ??
         DefaultSettings.oilInnerToMiddleGap;
-    _oilMiddleToOuterGap = _prefs.getDouble(_oilMiddleToOuterGapKey) ??
+    _oilMiddleToOuterGap =
+        _prefs.getDouble(_oilMiddleToOuterGapKey) ??
         DefaultSettings.oilMiddleToOuterGap;
     _oilOrbitDrift =
         _prefs.getDouble(_oilOrbitDriftKey) ?? DefaultSettings.oilOrbitDrift;
-    _oilInnerRingFontScale = _prefs.getDouble(_oilInnerRingFontScaleKey) ??
+    _oilInnerRingFontScale =
+        _prefs.getDouble(_oilInnerRingFontScaleKey) ??
         DefaultSettings.oilInnerRingFontScale;
     _oilInnerRingSpacingMultiplier =
         _prefs.getDouble(_oilInnerRingSpacingMultiplierKey) ??
-            DefaultSettings.oilInnerRingSpacingMultiplier;
+        DefaultSettings.oilInnerRingSpacingMultiplier;
     _oilScreensaver4kSupport =
         _prefs.getBool(_oilScreensaver4kSupportKey) ?? false;
-    _oilTvPremiumHighlight = _prefs.getBool(_oilTvPremiumHighlightKey) ??
+    _oilTvPremiumHighlight =
+        _prefs.getBool(_oilTvPremiumHighlightKey) ??
         DefaultSettings.oilTvPremiumHighlight;
 
     // Reactivity isolation
     _oilScaleSource =
         _prefs.getInt(_oilScaleSourceKey) ?? DefaultSettings.oilScaleSource;
-    _oilScaleMultiplier = _prefs.getDouble(_oilScaleMultiplierKey) ??
+    _oilScaleMultiplier =
+        _prefs.getDouble(_oilScaleMultiplierKey) ??
         DefaultSettings.oilScaleMultiplier;
     _oilColorSource =
         _prefs.getInt(_oilColorSourceKey) ?? DefaultSettings.oilColorSource;
-    _oilColorMultiplier = _prefs.getDouble(_oilColorMultiplierKey) ??
+    _oilColorMultiplier =
+        _prefs.getDouble(_oilColorMultiplierKey) ??
         DefaultSettings.oilColorMultiplier;
-    _oilWoodstockEveryHour = _prefs.getBool(_oilWoodstockEveryHourKey) ??
+    _oilWoodstockEveryHour =
+        _prefs.getBool(_oilWoodstockEveryHourKey) ??
         DefaultSettings.oilWoodstockEveryHour;
     _oilEkgRadius =
         _prefs.getDouble(_oilEkgRadiusKey) ?? DefaultSettings.oilEkgRadius;
-    _oilEkgReplication = _prefs.getInt(_oilEkgReplicationKey) ??
+    _oilEkgReplication =
+        _prefs.getInt(_oilEkgReplicationKey) ??
         DefaultSettings.oilEkgReplication;
     _oilEkgSpread =
         _prefs.getDouble(_oilEkgSpreadKey) ?? DefaultSettings.oilEkgSpread;
-    _oilScaleSineEnabled = _prefs.getBool(_oilScaleSineEnabledKey) ??
+    _oilScaleSineEnabled =
+        _prefs.getBool(_oilScaleSineEnabledKey) ??
         DefaultSettings.oilScaleSineEnabled;
-    _oilScaleSineFreq = _prefs.getDouble(_oilScaleSineFreqKey) ??
+    _oilScaleSineFreq =
+        _prefs.getDouble(_oilScaleSineFreqKey) ??
         DefaultSettings.oilScaleSineFreq;
-    _oilScaleSineAmp = _prefs.getDouble(_oilScaleSineAmpKey) ??
+    _oilScaleSineAmp =
+        _prefs.getDouble(_oilScaleSineAmpKey) ??
         DefaultSettings.oilScaleSineAmp;
 
     // TV screensaver mode override — use TvDefaults as the canonical source.
@@ -1131,11 +1233,14 @@ class SettingsProvider with ChangeNotifier {
   }
 
   void _initSourceFilters() {
-    _randomOnlyUnplayed = _prefs.getBool(_randomOnlyUnplayedKey) ??
+    _randomOnlyUnplayed =
+        _prefs.getBool(_randomOnlyUnplayedKey) ??
         DefaultSettings.randomOnlyUnplayed;
-    _randomOnlyHighRated = _prefs.getBool(_randomOnlyHighRatedKey) ??
+    _randomOnlyHighRated =
+        _prefs.getBool(_randomOnlyHighRatedKey) ??
         DefaultSettings.randomOnlyHighRated;
-    _randomExcludePlayed = _prefs.getBool(_randomExcludePlayedKey) ??
+    _randomExcludePlayed =
+        _prefs.getBool(_randomExcludePlayedKey) ??
         DefaultSettings.randomExcludePlayed;
     _filterHighestShnid = _prefs.getBool(_filterHighestShnidKey) ?? true;
 
@@ -1172,34 +1277,53 @@ class SettingsProvider with ChangeNotifier {
 
   // Toggle methods
   void toggleShowTrackNumbers() => _updatePreference(
-      _trackNumberKey, _showTrackNumbers = !_showTrackNumbers);
+    _trackNumberKey,
+    _showTrackNumbers = !_showTrackNumbers,
+  );
   void toggleHideTrackDuration() => _updatePreference(
-      _hideTrackDurationKey, _hideTrackDuration = !_hideTrackDuration);
+    _hideTrackDurationKey,
+    _hideTrackDuration = !_hideTrackDuration,
+  );
   void togglePlayOnTap() =>
       _updatePreference(_playOnTapKey, _playOnTap = !_playOnTap);
   void toggleShowSingleShnid() => _updatePreference(
-      _showSingleShnidKey, _showSingleShnid = !_showSingleShnid);
+    _showSingleShnidKey,
+    _showSingleShnid = !_showSingleShnid,
+  );
   void togglePlayRandomOnCompletion() => _updatePreference(
-      _playRandomOnCompletionKey,
-      _playRandomOnCompletion = !_playRandomOnCompletion);
+    _playRandomOnCompletionKey,
+    _playRandomOnCompletion = !_playRandomOnCompletion,
+  );
   void toggleNonRandom() =>
       _updatePreference(_nonRandomKey, _nonRandom = !_nonRandom);
   void togglePlayRandomOnStartup() => _updatePreference(
-      _playRandomOnStartupKey, _playRandomOnStartup = !_playRandomOnStartup);
+    _playRandomOnStartupKey,
+    _playRandomOnStartup = !_playRandomOnStartup,
+  );
   void toggleDateFirstInShowCard() => _updatePreference(
-      _dateFirstInShowCardKey, _dateFirstInShowCard = !_dateFirstInShowCard);
+    _dateFirstInShowCardKey,
+    _dateFirstInShowCard = !_dateFirstInShowCard,
+  );
   void toggleUseDynamicColor() => _updatePreference(
-      _useDynamicColorKey, _useDynamicColor = !_useDynamicColor);
+    _useDynamicColorKey,
+    _useDynamicColor = !_useDynamicColor,
+  );
   void toggleUseTrueBlack() =>
       _updatePreference(_useTrueBlackKey, _useTrueBlack = !_useTrueBlack);
   void toggleShowDayOfWeek() =>
       _updatePreference(_showDayOfWeekKey, _showDayOfWeek = !_showDayOfWeek);
   void toggleAbbreviateDayOfWeek() => _updatePreference(
-      _abbreviateDayOfWeekKey, _abbreviateDayOfWeek = !_abbreviateDayOfWeek);
+    _abbreviateDayOfWeekKey,
+    _abbreviateDayOfWeek = !_abbreviateDayOfWeek,
+  );
   void toggleAbbreviateMonth() => _updatePreference(
-      _abbreviateMonthKey, _abbreviateMonth = !_abbreviateMonth);
+    _abbreviateMonthKey,
+    _abbreviateMonth = !_abbreviateMonth,
+  );
   void toggleSimpleRandomIcon() => _updatePreference(
-      _simpleRandomIconKey, _simpleRandomIcon = !_simpleRandomIcon);
+    _simpleRandomIconKey,
+    _simpleRandomIcon = !_simpleRandomIcon,
+  );
   void toggleUiScale() {
     _uiScale = !_uiScale;
     _prefs.setBool(_uiScaleKey, _uiScale);
@@ -1217,8 +1341,10 @@ class SettingsProvider with ChangeNotifier {
 
   void toggleHighlightPlayingWithRgb() {
     if (_performanceMode) return;
-    _updatePreference(_highlightPlayingWithRgbKey,
-        _highlightPlayingWithRgb = !_highlightPlayingWithRgb);
+    _updatePreference(
+      _highlightPlayingWithRgbKey,
+      _highlightPlayingWithRgb = !_highlightPlayingWithRgb,
+    );
   }
 
   void setHighlightPlayingWithRgb(bool value) {
@@ -1230,9 +1356,13 @@ class SettingsProvider with ChangeNotifier {
   }
 
   void toggleShowPlaybackMessages() => _updatePreference(
-      _showPlaybackMessagesKey, _showPlaybackMessages = !_showPlaybackMessages);
+    _showPlaybackMessagesKey,
+    _showPlaybackMessages = !_showPlaybackMessages,
+  );
   void toggleShowDevAudioHud() => _updatePreference(
-      _showDevAudioHudKey, _showDevAudioHud = !_showDevAudioHud);
+    _showDevAudioHudKey,
+    _showDevAudioHud = !_showDevAudioHud,
+  );
 
   DevHudMode get devHudMode => _devHudMode;
 
@@ -1252,21 +1382,32 @@ class SettingsProvider with ChangeNotifier {
   }
 
   void toggleSortOldestFirst() => _updatePreference(
-      _sortOldestFirstKey, _sortOldestFirst = !_sortOldestFirst);
+    _sortOldestFirstKey,
+    _sortOldestFirst = !_sortOldestFirst,
+  );
   void toggleUseStrictSrcCategorization() => _updatePreference(
-      _useStrictSrcCategorizationKey,
-      _useStrictSrcCategorization = !_useStrictSrcCategorization);
+    _useStrictSrcCategorizationKey,
+    _useStrictSrcCategorization = !_useStrictSrcCategorization,
+  );
   void toggleOfflineBuffering() => _updatePreference(
-      _offlineBufferingKey, _offlineBuffering = !_offlineBuffering);
+    _offlineBufferingKey,
+    _offlineBuffering = !_offlineBuffering,
+  );
   void toggleEnableBufferAgent() => _updatePreference(
-      _enableBufferAgentKey, _enableBufferAgent = !_enableBufferAgent);
+    _enableBufferAgentKey,
+    _enableBufferAgent = !_enableBufferAgent,
+  );
   void togglePreventSleep() =>
       _updatePreference(_preventSleepKey, _preventSleep = !_preventSleep);
   void toggleEnableSwipeToBlock() => _updatePreference(
-      _enableSwipeToBlockKey, _enableSwipeToBlock = !_enableSwipeToBlock);
+    _enableSwipeToBlockKey,
+    _enableSwipeToBlock = !_enableSwipeToBlock,
+  );
   void toggleOmitHttpPathInCopy() => _updatePreference(
-      _omitHttpPathInCopyKey, _omitHttpPathInCopy = !_omitHttpPathInCopy);
-//
+    _omitHttpPathInCopyKey,
+    _omitHttpPathInCopy = !_omitHttpPathInCopy,
+  );
+  //
   void setUseNeumorphism(bool value) =>
       _updatePreference(_useNeumorphismKey, _useNeumorphism = value);
   void togglePerformanceMode() {
@@ -1293,8 +1434,9 @@ class SettingsProvider with ChangeNotifier {
       _updatePreference(_fruitDenseListKey, _fruitDenseList = !_fruitDenseList);
 
   void toggleOilTvPremiumHighlight() => _updatePreference(
-      _oilTvPremiumHighlightKey,
-      _oilTvPremiumHighlight = !_oilTvPremiumHighlight);
+    _oilTvPremiumHighlightKey,
+    _oilTvPremiumHighlight = !_oilTvPremiumHighlight,
+  );
 
   void setNeumorphicStyle(NeumorphicStyle value, {bool? notify}) {
     if (_neumorphicStyle != value) {
@@ -1307,7 +1449,8 @@ class SettingsProvider with ChangeNotifier {
   /// Toggles the custom gapless Web Audio engine on or off (web-only).
   void toggleWebGaplessEngine() {
     setAudioEngineMode(
-        webGaplessEngine ? AudioEngineMode.standard : AudioEngineMode.auto);
+      webGaplessEngine ? AudioEngineMode.standard : AudioEngineMode.auto,
+    );
   }
 
   /// Prefetch-ahead duration is now fixed at 30s (hidden from UI).
@@ -1319,7 +1462,9 @@ class SettingsProvider with ChangeNotifier {
   double _rgbAnimationSpeed = 1.0;
   double get rgbAnimationSpeed => _rgbAnimationSpeed;
   void setRgbAnimationSpeed(double speed) => _updateDoublePreference(
-      _rgbAnimationSpeedKey, _rgbAnimationSpeed = speed);
+    _rgbAnimationSpeedKey,
+    _rgbAnimationSpeed = speed,
+  );
 
   Future<void> setSeedColor(Color? color) async {
     _seedColor = color;
@@ -1332,27 +1477,41 @@ class SettingsProvider with ChangeNotifier {
   }
 
   void toggleRandomOnlyUnplayed() => _updatePreference(
-      _randomOnlyUnplayedKey, _randomOnlyUnplayed = !_randomOnlyUnplayed);
+    _randomOnlyUnplayedKey,
+    _randomOnlyUnplayed = !_randomOnlyUnplayed,
+  );
   void toggleRandomOnlyHighRated() => _updatePreference(
-      _randomOnlyHighRatedKey, _randomOnlyHighRated = !_randomOnlyHighRated);
+    _randomOnlyHighRatedKey,
+    _randomOnlyHighRated = !_randomOnlyHighRated,
+  );
   void toggleRandomExcludePlayed() => _updatePreference(
-      _randomExcludePlayedKey, _randomExcludePlayed = !_randomExcludePlayed);
+    _randomExcludePlayedKey,
+    _randomExcludePlayed = !_randomExcludePlayed,
+  );
 
   // Screensaver setters
   void toggleUseOilScreensaver() => _updatePreference(
-      _useOilScreensaverKey, _useOilScreensaver = !_useOilScreensaver);
+    _useOilScreensaverKey,
+    _useOilScreensaver = !_useOilScreensaver,
+  );
   void setOilScreensaverMode(String mode) => _updateStringPreference(
-      _oilScreensaverModeKey, _oilScreensaverMode = mode);
+    _oilScreensaverModeKey,
+    _oilScreensaverMode = mode,
+  );
   void setOilScreensaverInactivityMinutes(int minutes) {
     final enforced = [1, 5, 15].contains(minutes) ? minutes : 5;
-    _updateIntPreference(_oilScreensaverInactivityMinutesKey,
-        _oilScreensaverInactivityMinutes = enforced);
+    _updateIntPreference(
+      _oilScreensaverInactivityMinutesKey,
+      _oilScreensaverInactivityMinutes = enforced,
+    );
   }
 
   Future<void> setOilFlowSpeed(double value) =>
       _updateDoublePreference(_oilFlowSpeedKey, _oilFlowSpeed = value);
   Future<void> setOilPulseIntensity(double value) => _updateDoublePreference(
-      _oilPulseIntensityKey, _oilPulseIntensity = value);
+    _oilPulseIntensityKey,
+    _oilPulseIntensity = value,
+  );
   Future<void> setOilPalette(String palette) =>
       _updateStringPreference(_oilPaletteKey, _oilPalette = palette);
   Future<void> setOilFilmGrain(double value) =>
@@ -1369,73 +1528,121 @@ class SettingsProvider with ChangeNotifier {
     }
 
     await _updatePreference(
-        _oilEnableAudioReactivityKey, _oilEnableAudioReactivity);
+      _oilEnableAudioReactivityKey,
+      _oilEnableAudioReactivity,
+    );
   }
 
   Future<void> setOilPerformanceLevel(int level) => _updateIntPreference(
-      _oilPerformanceLevelKey, _oilPerformanceLevel = level);
+    _oilPerformanceLevelKey,
+    _oilPerformanceLevel = level,
+  );
   Future<void> toggleOilLogoAntiAlias() => _updatePreference(
-      _oilLogoAntiAliasKey, _oilLogoAntiAlias = !_oilLogoAntiAlias);
+    _oilLogoAntiAliasKey,
+    _oilLogoAntiAlias = !_oilLogoAntiAlias,
+  );
   Future<void> toggleOilPaletteCycle() => _updatePreference(
-      _oilPaletteCycleKey, _oilPaletteCycle = !_oilPaletteCycle);
+    _oilPaletteCycleKey,
+    _oilPaletteCycle = !_oilPaletteCycle,
+  );
   void setOilPaletteTransitionSpeed(double seconds) => _updateDoublePreference(
-      _oilPaletteTransitionSpeedKey, _oilPaletteTransitionSpeed = seconds);
+    _oilPaletteTransitionSpeedKey,
+    _oilPaletteTransitionSpeed = seconds,
+  );
   Future<void> setOilBannerDisplayMode(String mode) => _updateStringPreference(
-      _oilBannerDisplayModeKey, _oilBannerDisplayMode = mode);
+    _oilBannerDisplayModeKey,
+    _oilBannerDisplayMode = mode,
+  );
   Future<void> setOilBannerFont(String font) =>
       _updateStringPreference(_oilBannerFontKey, _oilBannerFont = font);
   Future<void> setOilFlatTextProximity(double value) => _updateDoublePreference(
-      _oilFlatTextProximityKey, _oilFlatTextProximity = value.clamp(0.0, 1.0));
+    _oilFlatTextProximityKey,
+    _oilFlatTextProximity = value.clamp(0.0, 1.0),
+  );
   Future<void> setOilFlatTextPlacement(String placement) =>
       _updateStringPreference(
-          _oilFlatTextPlacementKey, _oilFlatTextPlacement = placement);
+        _oilFlatTextPlacementKey,
+        _oilFlatTextPlacement = placement,
+      );
 
   Future<void> setOilBannerLetterSpacing(double value) =>
-      _updateDoublePreference(_oilBannerLetterSpacingKey,
-          _oilBannerLetterSpacing = value.clamp(0.5, 2.0));
+      _updateDoublePreference(
+        _oilBannerLetterSpacingKey,
+        _oilBannerLetterSpacing = value.clamp(0.5, 2.0),
+      );
 
   Future<void> setOilBannerWordSpacing(double value) => _updateDoublePreference(
-      _oilBannerWordSpacingKey, _oilBannerWordSpacing = value.clamp(0.0, 5.0));
+    _oilBannerWordSpacingKey,
+    _oilBannerWordSpacing = value.clamp(0.0, 5.0),
+  );
 
   Future<void> setOilFlatLineSpacing(double value) => _updateDoublePreference(
-      _oilFlatLineSpacingKey, _oilFlatLineSpacing = value.clamp(0.1, 5.0));
+    _oilFlatLineSpacingKey,
+    _oilFlatLineSpacing = value.clamp(0.1, 5.0),
+  );
 
   Future<void> setOilLogoTrailIntensity(double value) =>
-      _updateDoublePreference(_oilLogoTrailIntensityKey,
-          _oilLogoTrailIntensity = value.clamp(0.0, 1.0));
+      _updateDoublePreference(
+        _oilLogoTrailIntensityKey,
+        _oilLogoTrailIntensity = value.clamp(0.0, 1.0),
+      );
   Future<void> setOilLogoTrailSlices(int value) => _updateIntPreference(
-      _oilLogoTrailSlicesKey, _oilLogoTrailSlices = value.clamp(2, 16));
+    _oilLogoTrailSlicesKey,
+    _oilLogoTrailSlices = value.clamp(2, 16),
+  );
   void toggleOilLogoTrailDynamic() => _updatePreference(
-      _oilLogoTrailDynamicKey, _oilLogoTrailDynamic = !_oilLogoTrailDynamic);
+    _oilLogoTrailDynamicKey,
+    _oilLogoTrailDynamic = !_oilLogoTrailDynamic,
+  );
   Future<void> setOilLogoTrailLength(double value) => _updateDoublePreference(
-      _oilLogoTrailLengthKey, _oilLogoTrailLength = value.clamp(0.0, 1.0));
+    _oilLogoTrailLengthKey,
+    _oilLogoTrailLength = value.clamp(0.0, 1.0),
+  );
   Future<void> setOilLogoTrailScale(double value) => _updateDoublePreference(
-      _oilLogoTrailScaleKey, _oilLogoTrailScale = value.clamp(0.0, 1.0));
+    _oilLogoTrailScaleKey,
+    _oilLogoTrailScale = value.clamp(0.0, 1.0),
+  );
   Future<void> setOilLogoTrailInitialScale(double value) =>
-      _updateDoublePreference(_oilLogoTrailInitialScaleKey,
-          _oilLogoTrailInitialScale = value.clamp(0.5, 2.0));
+      _updateDoublePreference(
+        _oilLogoTrailInitialScaleKey,
+        _oilLogoTrailInitialScale = value.clamp(0.5, 2.0),
+      );
 
   // Audio Reactivity setters
   Future<void> setOilAudioPeakDecay(double value) => _updateDoublePreference(
-      _oilAudioPeakDecayKey, _oilAudioPeakDecay = value.clamp(0.990, 0.999));
+    _oilAudioPeakDecayKey,
+    _oilAudioPeakDecay = value.clamp(0.990, 0.999),
+  );
   Future<void> setOilAudioBassBoost(double value) => _updateDoublePreference(
-      _oilAudioBassBoostKey, _oilAudioBassBoost = value.clamp(1.0, 3.0));
+    _oilAudioBassBoostKey,
+    _oilAudioBassBoost = value.clamp(1.0, 3.0),
+  );
   Future<void> setOilAudioReactivityStrength(double value) =>
-      _updateDoublePreference(_oilAudioReactivityStrengthKey,
-          _oilAudioReactivityStrength = value.clamp(0.5, 2.0));
+      _updateDoublePreference(
+        _oilAudioReactivityStrengthKey,
+        _oilAudioReactivityStrength = value.clamp(0.5, 2.0),
+      );
   void setOilAudioGraphMode(String mode) =>
       _updateStringPreference(_oilAudioGraphModeKey, _oilAudioGraphMode = mode);
   Future<void> setOilBeatSensitivity(double value) => _updateDoublePreference(
-      _oilBeatSensitivityKey, _oilBeatSensitivity = value.clamp(0.0, 1.0));
+    _oilBeatSensitivityKey,
+    _oilBeatSensitivity = value.clamp(0.0, 1.0),
+  );
   Future<void> setOilBeatImpact(double value) => _updateDoublePreference(
-      _oilBeatImpactKey, _oilBeatImpact = value.clamp(0.0, 1.0));
+    _oilBeatImpactKey,
+    _oilBeatImpact = value.clamp(0.0, 1.0),
+  );
   void toggleOilShowInfoBanner() => _updatePreference(
-      _oilShowInfoBannerKey, _oilShowInfoBanner = !_oilShowInfoBanner);
+    _oilShowInfoBannerKey,
+    _oilShowInfoBanner = !_oilShowInfoBanner,
+  );
   Future<void> setOilLogoScale(double value) =>
       _updateDoublePreference(_oilLogoScaleKey, _oilLogoScale = value);
   Future<void> setOilTranslationSmoothing(double value) =>
       _updateDoublePreference(
-          _oilTranslationSmoothingKey, _oilTranslationSmoothing = value);
+        _oilTranslationSmoothingKey,
+        _oilTranslationSmoothing = value,
+      );
   Future<void> setOilBlurAmount(double value) =>
       _updateDoublePreference(_oilBlurAmountKey, _oilBlurAmount = value);
   void toggleOilFlatColor() =>
@@ -1445,29 +1652,47 @@ class SettingsProvider with ChangeNotifier {
   Future<void> setOilBannerFlicker(double value) =>
       _updateDoublePreference(_oilBannerFlickerKey, _oilBannerFlicker = value);
   Future<void> setOilBannerGlowBlur(double value) => _updateDoublePreference(
-      _oilBannerGlowBlurKey, _oilBannerGlowBlur = value);
+    _oilBannerGlowBlurKey,
+    _oilBannerGlowBlur = value,
+  );
 
   Future<void> setOilBannerResolution(double value) => _updateDoublePreference(
-      _oilBannerResolutionKey, _oilBannerResolution = value.clamp(1.0, 4.0));
+    _oilBannerResolutionKey,
+    _oilBannerResolution = value.clamp(1.0, 4.0),
+  );
 
   Future<void> toggleOilBannerPixelSnap() => _updatePreference(
-      _oilBannerPixelSnapKey, _oilBannerPixelSnap = !_oilBannerPixelSnap);
+    _oilBannerPixelSnapKey,
+    _oilBannerPixelSnap = !_oilBannerPixelSnap,
+  );
 
   // Ring control setters
   Future<void> setOilInnerRingScale(double value) => _updateDoublePreference(
-      _oilInnerRingScaleKey, _oilInnerRingScale = value.clamp(0.1, 1.0));
+    _oilInnerRingScaleKey,
+    _oilInnerRingScale = value.clamp(0.1, 1.0),
+  );
   Future<void> setOilInnerToMiddleGap(double value) => _updateDoublePreference(
-      _oilInnerToMiddleGapKey, _oilInnerToMiddleGap = value.clamp(0.0, 1.0));
+    _oilInnerToMiddleGapKey,
+    _oilInnerToMiddleGap = value.clamp(0.0, 1.0),
+  );
   Future<void> setOilMiddleToOuterGap(double value) => _updateDoublePreference(
-      _oilMiddleToOuterGapKey, _oilMiddleToOuterGap = value.clamp(0.0, 1.0));
+    _oilMiddleToOuterGapKey,
+    _oilMiddleToOuterGap = value.clamp(0.0, 1.0),
+  );
   Future<void> setOilOrbitDrift(double value) => _updateDoublePreference(
-      _oilOrbitDriftKey, _oilOrbitDrift = value.clamp(0.0, 2.0));
+    _oilOrbitDriftKey,
+    _oilOrbitDrift = value.clamp(0.0, 2.0),
+  );
   Future<void> setOilInnerRingFontScale(double value) =>
-      _updateDoublePreference(_oilInnerRingFontScaleKey,
-          _oilInnerRingFontScale = value.clamp(0.3, 1.0));
+      _updateDoublePreference(
+        _oilInnerRingFontScaleKey,
+        _oilInnerRingFontScale = value.clamp(0.3, 1.0),
+      );
   Future<void> setOilInnerRingSpacingMultiplier(double value) =>
-      _updateDoublePreference(_oilInnerRingSpacingMultiplierKey,
-          _oilInnerRingSpacingMultiplier = value.clamp(0.3, 1.0));
+      _updateDoublePreference(
+        _oilInnerRingSpacingMultiplierKey,
+        _oilInnerRingSpacingMultiplier = value.clamp(0.3, 1.0),
+      );
 
   Future<void> setOilScaleSource(int value) async {
     _oilScaleSource = value;
@@ -1476,7 +1701,9 @@ class SettingsProvider with ChangeNotifier {
   }
 
   Future<void> setOilScaleMultiplier(double value) => _updateDoublePreference(
-      _oilScaleMultiplierKey, _oilScaleMultiplier = value.clamp(0.1, 2.0));
+    _oilScaleMultiplierKey,
+    _oilScaleMultiplier = value.clamp(0.1, 2.0),
+  );
 
   Future<void> setOilColorSource(int value) async {
     _oilColorSource = value;
@@ -1485,28 +1712,44 @@ class SettingsProvider with ChangeNotifier {
   }
 
   Future<void> setOilColorMultiplier(double value) => _updateDoublePreference(
-      _oilColorMultiplierKey, _oilColorMultiplier = value.clamp(0.0, 2.0));
+    _oilColorMultiplierKey,
+    _oilColorMultiplier = value.clamp(0.0, 2.0),
+  );
 
   void toggleOilScaleSineEnabled() => _updatePreference(
-      _oilScaleSineEnabledKey, _oilScaleSineEnabled = !_oilScaleSineEnabled);
+    _oilScaleSineEnabledKey,
+    _oilScaleSineEnabled = !_oilScaleSineEnabled,
+  );
 
   Future<void> setOilScaleSineFreq(double value) => _updateDoublePreference(
-      _oilScaleSineFreqKey, _oilScaleSineFreq = value.clamp(0.01, 10.0));
+    _oilScaleSineFreqKey,
+    _oilScaleSineFreq = value.clamp(0.01, 10.0),
+  );
 
   Future<void> setOilScaleSineAmp(double value) => _updateDoublePreference(
-      _oilScaleSineAmpKey, _oilScaleSineAmp = value.clamp(0.0, 1.0));
+    _oilScaleSineAmpKey,
+    _oilScaleSineAmp = value.clamp(0.0, 1.0),
+  );
 
   void setOilWoodstockEveryHour(bool value) => _updatePreference(
-      _oilWoodstockEveryHourKey, _oilWoodstockEveryHour = value);
+    _oilWoodstockEveryHourKey,
+    _oilWoodstockEveryHour = value,
+  );
 
   Future<void> setOilEkgRadius(double value) => _updateDoublePreference(
-      _oilEkgRadiusKey, _oilEkgRadius = value.clamp(0.1, 2.0));
+    _oilEkgRadiusKey,
+    _oilEkgRadius = value.clamp(0.1, 2.0),
+  );
 
   Future<void> setOilEkgReplication(int value) => _updateIntPreference(
-      _oilEkgReplicationKey, _oilEkgReplication = value.clamp(1, 10));
+    _oilEkgReplicationKey,
+    _oilEkgReplication = value.clamp(1, 10),
+  );
 
   Future<void> setOilEkgSpread(double value) => _updateDoublePreference(
-      _oilEkgSpreadKey, _oilEkgSpread = value.clamp(0.0, 20.0));
+    _oilEkgSpreadKey,
+    _oilEkgSpread = value.clamp(0.0, 20.0),
+  );
 
   // Source Filtering
   static const String _filterHighestShnidKey = 'filter_highest_shnid';
@@ -1524,7 +1767,9 @@ class SettingsProvider with ChangeNotifier {
   bool get filterHighestShnid => _filterHighestShnid;
   Map<String, bool> get sourceCategoryFilters => _sourceCategoryFilters;
   void toggleFilterHighestShnid() => _updatePreference(
-      _filterHighestShnidKey, _filterHighestShnid = !_filterHighestShnid);
+    _filterHighestShnidKey,
+    _filterHighestShnid = !_filterHighestShnid,
+  );
 
   Future<void> setSourceCategoryFilter(String category, bool isActive) async {
     _sourceCategoryFilters[category] = isActive;
@@ -1545,7 +1790,9 @@ class SettingsProvider with ChangeNotifier {
 
   Future<void> _saveSourceCategoryFilters() async {
     await _prefs.setString(
-        _sourceCategoryFiltersKey, json.encode(_sourceCategoryFilters));
+      _sourceCategoryFiltersKey,
+      json.encode(_sourceCategoryFilters),
+    );
   }
 
   Future<void> enableAllSourceCategories() async {
@@ -1578,9 +1825,13 @@ class SettingsProvider with ChangeNotifier {
   }
 
   Future<void> setOilTrackLetterSpacing(double val) => _updateDoublePreference(
-      _oilTrackLetterSpacingKey, _oilTrackLetterSpacing = val);
+    _oilTrackLetterSpacingKey,
+    _oilTrackLetterSpacing = val,
+  );
   Future<void> setOilTrackWordSpacing(double val) => _updateDoublePreference(
-      _oilTrackWordSpacingKey, _oilTrackWordSpacing = val);
+    _oilTrackWordSpacingKey,
+    _oilTrackWordSpacing = val,
+  );
 
   Future<void> resetToDefaults() async {
     await _prefs.clear();

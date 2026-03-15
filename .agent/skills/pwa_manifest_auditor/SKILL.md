@@ -7,19 +7,19 @@ description: Specialized tools for auditing PWA Branding and Manifest sync.
 This skill provides a structured process for ensuring the PWA's static configuration matches the dynamic theme logic.
 
 ## Audit Targets
-1.  **`web/manifest.json`**:
+1.  **`apps/gdar_web/web/manifest.json`**:
     - Check `theme_color` and `background_color`.
     - Ensure they match the "Default Dark" state of the app.
-2.  **`web/index.html`**:
+2.  **`apps/gdar_web/web/index.html`**:
     - Check the `<meta name="theme-color">` tag.
     - Verify the `updateThemeBranding` JavaScript function exists and matches the Dart `PwaThemeSync` calls.
-3.  **`lib/providers/theme_provider.dart`**:
+3.  **`packages/shakedown_core/lib/providers/theme_provider.dart`**:
     - Verify `_syncPwaBranding` logic follows the rules in `.agent/rules/pwa_branding_sync.md`.
 
 ## Verification Steps
 1.  **Read Manifest**:
     ```bash
-    cat web/manifest.json
+    cat apps/gdar_web/web/manifest.json
     ```
 2.  **Read Branding Logic**:
     ```bash

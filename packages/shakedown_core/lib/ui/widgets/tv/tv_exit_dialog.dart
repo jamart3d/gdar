@@ -100,10 +100,8 @@ class TvExitDialog extends StatelessWidget {
     return showDialog(
       context: context,
       barrierColor: Colors.black.withValues(alpha: 0.8),
-      builder: (context) => TvExitDialog(
-        onBackground: onBackground,
-        onQuit: onQuit,
-      ),
+      builder: (context) =>
+          TvExitDialog(onBackground: onBackground, onQuit: onQuit),
     );
   }
 }

@@ -8,8 +8,7 @@ This workflow performs a dynamic check of the project's health against the **lat
 ## Steps
 
 1. **Local Review:**
-   - Note the `SPEC_VERSION` reported in recent `env_doctor.py` logs or ask the user to provide a fresh check result.
-   - (Note: Agents do not execute `env_doctor.py` directly).
+   - Note the `SPEC_VERSION` from the latest rules in `.agent/rules/` or ask the user for the current environment version.
 
 2. **Live Intelligence:**
    - Use `search_web` to look for "Google Antigravity Release Notes" or "Jules AGENTS.md requirements" published after the current `SPEC_VERSION` date (March 2026).
@@ -18,8 +17,7 @@ This workflow performs a dynamic check of the project's health against the **lat
 3. **Drift Reporting:**
    - Generate a **"Spec Drift Report"** as an artifact.
    - **DO NOT** modify files automatically.
-   - Highlight any NEW expected files (e.g., `.agent/rules/NEW_SPEC.md`) that the local `env_doctor.py` doesn't know about yet.
+   - Highlight any NEW expected files or rules that appear to be missing compared to latest live standards.
 
-// turbo
 4. **Manual Check (User Only)**:
-If drift is high, the user should run `python tools/env_doctor.py --check` manually.
+If drift is high, the user should be notified to manually verify environment parity.

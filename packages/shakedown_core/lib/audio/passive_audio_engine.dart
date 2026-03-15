@@ -163,22 +163,30 @@ class PassiveAudioEngine {
 
     _processingState = _mapProcessingState(s.processingState);
 
-    _positionController
-        .add(Duration(milliseconds: (_positionSec * 1000).round()));
-    _bufferedPositionController
-        .add(Duration(milliseconds: (_currentTrackBufferedSec * 1000).round()));
+    _positionController.add(
+      Duration(milliseconds: (_positionSec * 1000).round()),
+    );
+    _bufferedPositionController.add(
+      Duration(milliseconds: (_currentTrackBufferedSec * 1000).round()),
+    );
 
     if (_durationSec != wasDuration) {
-      _durationController.add(_durationSec > 0
-          ? Duration(milliseconds: (_durationSec * 1000).round())
-          : null);
+      _durationController.add(
+        _durationSec > 0
+            ? Duration(milliseconds: (_durationSec * 1000).round())
+            : null,
+      );
     }
-    _nextTrackBufferedController.add(_nextTrackBufferedSec > 0
-        ? Duration(milliseconds: (_nextTrackBufferedSec * 1000).round())
-        : null);
-    _nextTrackTotalController.add(_nextTrackTotalSec > 0
-        ? Duration(milliseconds: (_nextTrackTotalSec * 1000).round())
-        : null);
+    _nextTrackBufferedController.add(
+      _nextTrackBufferedSec > 0
+          ? Duration(milliseconds: (_nextTrackBufferedSec * 1000).round())
+          : null,
+    );
+    _nextTrackTotalController.add(
+      _nextTrackTotalSec > 0
+          ? Duration(milliseconds: (_nextTrackTotalSec * 1000).round())
+          : null,
+    );
     if (_playing != wasPlaying) {
       _playingController.add(_playing);
     }
@@ -192,14 +200,16 @@ class PassiveAudioEngine {
     // Emit a synthetic PlaybackEvent so widgets listening to
     // playbackEventStream (progress bars, track metadata, etc.)
     // receive updates on the Web platform.
-    _playbackEventController.add(PlaybackEvent(
-      processingState: _processingState,
-      updatePosition: Duration(milliseconds: (_positionSec * 1000).round()),
-      duration: _durationSec > 0
-          ? Duration(milliseconds: (_durationSec * 1000).round())
-          : null,
-      currentIndex: _currentIndex,
-    ));
+    _playbackEventController.add(
+      PlaybackEvent(
+        processingState: _processingState,
+        updatePosition: Duration(milliseconds: (_positionSec * 1000).round()),
+        duration: _durationSec > 0
+            ? Duration(milliseconds: (_durationSec * 1000).round())
+            : null,
+        currentIndex: _currentIndex,
+      ),
+    );
   }
 
   void _emitPlayerState() {
@@ -209,13 +219,15 @@ class PassiveAudioEngine {
   void _emitSequenceState() {
     if (_sequence.isEmpty) return;
     final idx = (_currentIndex ?? 0).clamp(0, _sequence.length - 1);
-    _sequenceStateController.add(SequenceState(
-      sequence: _sequence,
-      currentIndex: idx,
-      shuffleIndices: List.generate(_sequence.length, (i) => i),
-      shuffleModeEnabled: false,
-      loopMode: LoopMode.off,
-    ));
+    _sequenceStateController.add(
+      SequenceState(
+        sequence: _sequence,
+        currentIndex: idx,
+        shuffleIndices: List.generate(_sequence.length, (i) => i),
+        shuffleModeEnabled: false,
+        loopMode: LoopMode.off,
+      ),
+    );
   }
 
   // ─── Getters ──────────────────────────────────────────────────────────────

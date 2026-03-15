@@ -62,9 +62,12 @@ class TvStepperRow extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(label,
-                    style: textTheme.bodyLarge
-                        ?.copyWith(color: colorScheme.onSurface)),
+                Text(
+                  label,
+                  style: textTheme.bodyLarge?.copyWith(
+                    color: colorScheme.onSurface,
+                  ),
+                ),
                 Text(
                   valueFormatter?.call(value) ?? value.toStringAsFixed(2),
                   style: textTheme.bodyMedium?.copyWith(
@@ -105,13 +108,19 @@ class TvStepperRow extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   if (leftLabel != null)
-                    Text(leftLabel!,
-                        style: textTheme.labelSmall
-                            ?.copyWith(color: colorScheme.onSurfaceVariant)),
+                    Text(
+                      leftLabel!,
+                      style: textTheme.labelSmall?.copyWith(
+                        color: colorScheme.onSurfaceVariant,
+                      ),
+                    ),
                   if (rightLabel != null)
-                    Text(rightLabel!,
-                        style: textTheme.labelSmall
-                            ?.copyWith(color: colorScheme.onSurfaceVariant)),
+                    Text(
+                      rightLabel!,
+                      style: textTheme.labelSmall?.copyWith(
+                        color: colorScheme.onSurfaceVariant,
+                      ),
+                    ),
                 ],
               ),
             ],

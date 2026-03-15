@@ -102,8 +102,9 @@ class _AnimatedGradientBorderState extends State<AnimatedGradientBorder>
     super.didUpdateWidget(oldWidget);
     if (widget.animationSpeed != oldWidget.animationSpeed &&
         _localController != null) {
-      _localController!.duration =
-          Duration(milliseconds: (3000 / widget.animationSpeed).round());
+      _localController!.duration = Duration(
+        milliseconds: (3000 / widget.animationSpeed).round(),
+      );
       if (_localController!.isAnimating) {
         _localController!.repeat();
       }
@@ -146,7 +147,8 @@ class _AnimatedGradientBorderState extends State<AnimatedGradientBorder>
 
     final animation = _animationSource ?? _ensureLocalController().view;
 
-    final colors = widget.colors ??
+    final colors =
+        widget.colors ??
         [
           Theme.of(context).colorScheme.primary,
           Theme.of(context).colorScheme.tertiary,
@@ -158,7 +160,8 @@ class _AnimatedGradientBorderState extends State<AnimatedGradientBorder>
     // even if disabled or showGlow is false. We simply pass 0.0 values to the painter and padding.
     // This prevents structural widget tree changes that break TV focus nodes.
 
-    final bool isEffectActive = widget.enabled &&
+    final bool isEffectActive =
+        widget.enabled &&
         (widget.showGlow || widget.borderWidth > 0) &&
         !disableGlow;
 
@@ -166,13 +169,15 @@ class _AnimatedGradientBorderState extends State<AnimatedGradientBorder>
       animation: animation,
       child: widget.child,
       builder: (context, child) {
-        final double spreadPadding =
-            (isEffectActive && widget.showGlow) ? 18.0 : 0.0;
+        final double spreadPadding = (isEffectActive && widget.showGlow)
+            ? 18.0
+            : 0.0;
 
         final innerContent = widget.usePadding
             ? Padding(
-                padding:
-                    EdgeInsets.all(isEffectActive ? widget.borderWidth : 0.0),
+                padding: EdgeInsets.all(
+                  isEffectActive ? widget.borderWidth : 0.0,
+                ),
                 child: Container(
                   decoration: BoxDecoration(
                     color:
@@ -200,7 +205,8 @@ class _AnimatedGradientBorderState extends State<AnimatedGradientBorder>
                     borderRadius: widget.borderRadius,
                     borderWidth: isEffectActive ? widget.borderWidth : 0.0,
                     rotation: animation.value * 2 * 3.14159,
-                    showShadow: isEffectActive &&
+                    showShadow:
+                        isEffectActive &&
                             !performanceMode &&
                             !isWebPlayback &&
                             !disableGlow
@@ -243,15 +249,20 @@ class _GradientBorderPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     if (borderWidth <= 0) return;
 
-    final rect = Rect.fromLTWH(spreadPadding, spreadPadding,
-        size.width - spreadPadding * 2, size.height - spreadPadding * 2);
+    final rect = Rect.fromLTWH(
+      spreadPadding,
+      spreadPadding,
+      size.width - spreadPadding * 2,
+      size.height - spreadPadding * 2,
+    );
 
     // 1. Draw RGB Shadow
     if (showShadow) {
       // Create a gradient that rotates internally
       final gradient = SweepGradient(
-        colors:
-            colors.map((c) => c.withValues(alpha: c.a * glowOpacity)).toList(),
+        colors: colors
+            .map((c) => c.withValues(alpha: c.a * glowOpacity))
+            .toList(),
         transform: GradientRotation(rotation),
       );
 
@@ -264,7 +275,9 @@ class _GradientBorderPainter extends CustomPainter {
 
       // We draw the shadow slightly larger to ensure it peeks out
       final shadowRRect = RRect.fromRectAndRadius(
-          rect.inflate(2.0), Radius.circular(borderRadius + 2.0));
+        rect.inflate(2.0),
+        Radius.circular(borderRadius + 2.0),
+      );
 
       canvas.drawRRect(shadowRRect, shadowPaint);
     }
@@ -281,7 +294,9 @@ class _GradientBorderPainter extends CustomPainter {
     // Deflate the rect by half the border width so the stroke sits inside the bounds
     final strokeRect = rect.deflate(borderWidth / 2);
     final strokeRRect = RRect.fromRectAndRadius(
-        strokeRect, Radius.circular(borderRadius - borderWidth / 2));
+      strokeRect,
+      Radius.circular(borderRadius - borderWidth / 2),
+    );
 
     canvas.drawRRect(strokeRRect, borderPaint);
   }

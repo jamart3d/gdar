@@ -5,10 +5,7 @@ import 'package:shakedown_core/ui/widgets/section_card.dart';
 class DataSection extends StatelessWidget {
   final double scaleFactor;
 
-  const DataSection({
-    super.key,
-    required this.scaleFactor,
-  });
+  const DataSection({super.key, required this.scaleFactor});
 
   @override
   Widget build(BuildContext context) {

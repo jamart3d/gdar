@@ -373,6 +373,5 @@ You can automate complex UI verification (like font rendering or static screen g
 ## 📅 Maintenance
 The agent environment is self-documenting. Use `@[/session_debrief]` at the end of a workday or after a significant milestone to have Arlo analyze the day's progress and suggest updates to the rules or skills based on new patterns discovered. Note that **session_debrief** is a mandatory post-completion step for the **shipit** workflow to ensure all release-related knowledge is captured.
 
-> [!NOTE]
-> If you need to re-verify the structure of the `.agent/` directories or ensure static configs like `.editorconfig` are present, you can run the Python script `tools/env_doctor.py --check`. This is a read-only script that verifies the presence of required agent specs, skills, and documentation.
+
 

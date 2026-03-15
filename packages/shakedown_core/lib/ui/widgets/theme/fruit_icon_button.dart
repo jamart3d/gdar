@@ -44,10 +44,7 @@ class _FruitIconButtonState extends State<FruitIconButton> {
     Widget content = Padding(
       padding: EdgeInsets.all(widget.padding),
       child: IconTheme(
-        data: IconThemeData(
-          color: effectiveColor,
-          size: widget.size,
-        ),
+        data: IconThemeData(color: effectiveColor, size: widget.size),
         child: widget.icon,
       ),
     );
@@ -56,23 +53,18 @@ class _FruitIconButtonState extends State<FruitIconButton> {
       final isFruit =
           context.watch<ThemeProvider>().themeStyle == ThemeStyle.fruit;
       if (isFruit) {
-        content = FruitTooltip(
-          message: widget.tooltip!,
-          child: content,
-        );
+        content = FruitTooltip(message: widget.tooltip!, child: content);
       } else {
-        content = Tooltip(
-          message: widget.tooltip!,
-          child: content,
-        );
+        content = Tooltip(message: widget.tooltip!, child: content);
       }
     }
 
     final isEnabled = widget.onPressed != null;
     final interactive = FocusableActionDetector(
       enabled: isEnabled,
-      mouseCursor:
-          isEnabled ? SystemMouseCursors.click : SystemMouseCursors.basic,
+      mouseCursor: isEnabled
+          ? SystemMouseCursors.click
+          : SystemMouseCursors.basic,
       onShowFocusHighlight: (value) {
         setState(() => _isFocused = value);
       },
@@ -91,8 +83,9 @@ class _FruitIconButtonState extends State<FruitIconButton> {
       child: GestureDetector(
         onTapDown: isEnabled ? (_) => setState(() => _isPressed = true) : null,
         onTapUp: isEnabled ? (_) => setState(() => _isPressed = false) : null,
-        onTapCancel:
-            isEnabled ? () => setState(() => _isPressed = false) : null,
+        onTapCancel: isEnabled
+            ? () => setState(() => _isPressed = false)
+            : null,
         onTap: isEnabled ? _activate : null,
         behavior: HitTestBehavior.opaque,
         child: AnimatedOpacity(

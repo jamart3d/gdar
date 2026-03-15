@@ -22,52 +22,57 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 Future<void> main() async {
-  await runZonedGuarded(() async {
-    WidgetsFlutterBinding.ensureInitialized();
-    initLogger();
+  await runZonedGuarded(
+    () async {
+      WidgetsFlutterBinding.ensureInitialized();
+      initLogger();
 
-    final prefs = await SharedPreferences.getInstance();
+      final prefs = await SharedPreferences.getInstance();
 
-    bool isTv = false;
-    try {
-      if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
-        const deviceChannel = MethodChannel('com.jamart3d.shakedown/device');
-        final bool? result = await deviceChannel.invokeMethod<bool>('isTv');
-        isTv = result ?? false;
+      bool isTv = false;
+      try {
+        if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
+          const deviceChannel = MethodChannel('com.jamart3d.shakedown/device');
+          final bool? result = await deviceChannel.invokeMethod<bool>('isTv');
+          isTv = result ?? false;
+        }
+      } catch (e) {
+        debugPrint('Error detecting TV in main: $e');
       }
-    } catch (e) {
-      debugPrint('Error detecting TV in main: $e');
-    }
 
-    if (prefs.getBool('force_tv') == true || const bool.fromEnvironment('FORCE_TV', defaultValue: false)) {
-      isTv = true;
-    }
-
-    if (!kIsWeb) {
-      if (!isTv) {
-        await SystemChrome.setPreferredOrientations([
-          DeviceOrientation.portraitUp,
-          DeviceOrientation.portraitDown,
-        ]);
-      } else {
-        await SystemChrome.setPreferredOrientations([
-          DeviceOrientation.landscapeLeft,
-          DeviceOrientation.landscapeRight,
-        ]);
+      if (prefs.getBool('force_tv') == true ||
+          const bool.fromEnvironment('FORCE_TV', defaultValue: false)) {
+        isTv = true;
       }
-      
-      await JustAudioBackground.init(
-        androidNotificationChannelId: 'com.jamart3d.shakedown.channel.audio',
-        androidNotificationChannelName: 'Audio Playback',
-        androidNotificationOngoing: true,
-        androidNotificationIcon: AssetConstants.defaultAndroidNotificationIcon,
-      );
-    }
 
-    runApp(GdarMobileApp(prefs: prefs, isTv: isTv));
-  }, (error, stack) {
-    debugPrint('Fatal error: $error\n$stack');
-  });
+      if (!kIsWeb) {
+        if (!isTv) {
+          await SystemChrome.setPreferredOrientations([
+            DeviceOrientation.portraitUp,
+            DeviceOrientation.portraitDown,
+          ]);
+        } else {
+          await SystemChrome.setPreferredOrientations([
+            DeviceOrientation.landscapeLeft,
+            DeviceOrientation.landscapeRight,
+          ]);
+        }
+
+        await JustAudioBackground.init(
+          androidNotificationChannelId: 'com.jamart3d.shakedown.channel.audio',
+          androidNotificationChannelName: 'Audio Playback',
+          androidNotificationOngoing: true,
+          androidNotificationIcon:
+              AssetConstants.defaultAndroidNotificationIcon,
+        );
+      }
+
+      runApp(GdarMobileApp(prefs: prefs, isTv: isTv));
+    },
+    (error, stack) {
+      debugPrint('Fatal error: $error\n$stack');
+    },
+  );
 }
 
 class GdarMobileApp extends StatefulWidget {
@@ -94,7 +99,7 @@ class _GdarMobileAppState extends State<GdarMobileApp> {
     _showListProvider = ShowListProvider();
 
     ThemeProvider.getInstance?.setSettingsProvider(_settingsProvider);
-    
+
     _showListProvider.init(widget.prefs);
     _initDeepLinks();
   }
@@ -114,14 +119,17 @@ class _GdarMobileAppState extends State<GdarMobileApp> {
       if (uri.scheme == 'shakedown' && uri.host == 'settings') {
         final key = uri.queryParameters['key'];
         final value = uri.queryParameters['value'];
-        
+
         if (key != null && value != null) {
           if (value == 'true' || value == 'false') {
             await widget.prefs.setBool(key, value == 'true');
             if (key == 'force_tv') {
               // We need to restart or refresh the device service
               if (mounted) {
-                await Provider.of<DeviceService>(context, listen: false).refresh();
+                await Provider.of<DeviceService>(
+                  context,
+                  listen: false,
+                ).refresh();
               }
             }
           }
@@ -144,21 +152,27 @@ class _GdarMobileAppState extends State<GdarMobileApp> {
           update: (_, settingsProvider, showListProvider) =>
               showListProvider!..update(settingsProvider),
         ),
-        ChangeNotifierProxyProvider3<ShowListProvider, SettingsProvider,
-            AudioCacheService, AudioProvider>(
+        ChangeNotifierProxyProvider3<
+          ShowListProvider,
+          SettingsProvider,
+          AudioCacheService,
+          AudioProvider
+        >(
           create: (_) => AudioProvider(),
-          update: (_, showListProvider, settingsProvider, audioCacheService,
-                  audioProvider) =>
-              audioProvider!
-                ..update(
-                  showListProvider,
-                  settingsProvider,
-                  audioCacheService,
-                ),
+          update:
+              (
+                _,
+                showListProvider,
+                settingsProvider,
+                audioCacheService,
+                audioProvider,
+              ) => audioProvider!
+                ..update(showListProvider, settingsProvider, audioCacheService),
         ),
         ChangeNotifierProvider(create: (_) => UpdateProvider()),
         ChangeNotifierProvider(
-            create: (_) => DeviceService(initialIsTv: widget.isTv)),
+          create: (_) => DeviceService(initialIsTv: widget.isTv),
+        ),
       ],
       child: Consumer2<ThemeProvider, SettingsProvider>(
         builder: (context, themeProvider, settingsProvider, child) {

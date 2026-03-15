@@ -49,7 +49,8 @@ class TvListTile extends StatelessWidget {
             onTap: onTap,
             dense: dense,
             visualDensity: visualDensity,
-            contentPadding: contentPadding ??
+            contentPadding:
+                contentPadding ??
                 const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
           ),
         ),

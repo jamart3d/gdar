@@ -40,9 +40,7 @@ class FontLayoutConfig {
           0.85, // Slightly reduced to match visual weight of Rock Salt
       verticalPaddingMultiplier: 1.1,
     ),
-    'default': FontLayoutConfig(
-      baseControlZoneWidth: 68.0,
-    ),
+    'default': FontLayoutConfig(baseControlZoneWidth: 68.0),
   };
 
   static FontLayoutConfig getConfig(String fontKey) {
@@ -54,7 +52,9 @@ class FontLayoutConfig {
   /// 2. User preference (UI Scale toggle)
   /// 3. Font-specific intrinsic scaling (textScaleBoost)
   static double getEffectiveScale(
-      BuildContext context, SettingsProvider settingsProvider) {
+    BuildContext context,
+    SettingsProvider settingsProvider,
+  ) {
     final config = getConfig(settingsProvider.appFont);
 
     // System text scale
@@ -65,7 +65,7 @@ class FontLayoutConfig {
     // - If UI Scale is ON: Apply 1.35x boost for noticeable size increase.
     final double effectiveScale = settingsProvider.uiScale
         ? (textScale * 1.35) // Changed from 1.4 to match app_themes
-            .clamp(config.textScaleClampMin, config.textScaleClampMax)
+              .clamp(config.textScaleClampMin, config.textScaleClampMax)
         : textScale.clamp(config.textScaleClampMin, config.textScaleClampMax);
 
     return effectiveScale;

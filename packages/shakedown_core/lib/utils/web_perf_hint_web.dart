@@ -3,7 +3,8 @@ import 'package:web/web.dart' as web;
 bool isLikelyLowPowerWebDevice() {
   try {
     final ua = web.window.navigator.userAgent.toLowerCase();
-    final isMobileUa = ua.contains('mobi') ||
+    final isMobileUa =
+        ua.contains('mobi') ||
         ua.contains('android') ||
         ua.contains('iphone') ||
         ua.contains('ipad');

@@ -27,7 +27,7 @@ flutter build apk --analyze-size --target-platform android-arm64
 ### 3. Cleanup & Pruning
 - Remove unused Google Fonts.
 - Trim high-res assets that don't display on 1080p/4K TVs.
-- Use `lib/config/app_size_baseline.json` (if it exists) to track growth over time.
+- Use `packages/shakedown_core/lib/config/app_size_baseline.json` (if it exists) to track growth over time.
 
 ## Critical Thresholds
 | Asset Type | Max Single File | Total Budget |

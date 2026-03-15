@@ -83,7 +83,8 @@ class _DevAudioHudState extends State<DevAudioHud> {
           initialData: audioProvider.audioPlayer.nextTrackBuffered,
           builder: (context, nextSnapshot) {
             final nextBuffered = nextSnapshot.data ?? Duration.zero;
-            final hasLiveSignal = widget.isAppVisible &&
+            final hasLiveSignal =
+                widget.isAppVisible &&
                 (widget.playerState != null ||
                     buffered > Duration.zero ||
                     nextBuffered > Duration.zero ||
@@ -120,7 +121,7 @@ class _DevAudioHudState extends State<DevAudioHud> {
                     // AND reporting active from the engine.
                     final heartbeatEnabledBySettings =
                         settingsProvider.hybridBackgroundMode ==
-                            HybridBackgroundMode.heartbeat;
+                        HybridBackgroundMode.heartbeat;
 
                     final isPlaying = widget.playerState?.playing ?? false;
 
@@ -152,14 +153,12 @@ class _DevAudioHudState extends State<DevAudioHud> {
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
                               color: widget.colorScheme.onSurfaceVariant
-                                  .withValues(
-                                alpha: 0.9,
-                              ),
+                                  .withValues(alpha: 0.9),
                               fontWeight: FontWeight.w600,
                               fontSize: labelsFontSize * 0.92,
                               fontFamily: widget.fontFamily ?? 'RobotoMono',
                               fontFeatures: const [
-                                FontFeature.tabularFigures()
+                                FontFeature.tabularFigures(),
                               ],
                             ),
                           );
@@ -168,7 +167,7 @@ class _DevAudioHudState extends State<DevAudioHud> {
                         final fields = _snapshotFields(snapshot);
                         final isFruitMode =
                             context.read<ThemeProvider?>()?.themeStyle ==
-                                ThemeStyle.fruit;
+                            ThemeStyle.fruit;
 
                         final isHandoffCountdown =
                             engineState == 'handoff_countdown';
@@ -176,16 +175,15 @@ class _DevAudioHudState extends State<DevAudioHud> {
                         return Container(
                           key: const ValueKey('hud_always_expanded'),
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 4),
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
                           decoration: BoxDecoration(
                             color: isHandoffCountdown
                                 ? Colors.orange.withValues(alpha: 0.95)
-                                : Theme.of(context)
-                                    .colorScheme
-                                    .surface
-                                    .withValues(
-                                      alpha: 0.78,
-                                    ),
+                                : Theme.of(
+                                    context,
+                                  ).colorScheme.surface.withValues(alpha: 0.78),
                             borderRadius: BorderRadius.circular(10),
                           ),
                           child: LayoutBuilder(
@@ -291,8 +289,9 @@ class _DevAudioHudState extends State<DevAudioHud> {
             child: Text(
               'TX: GAPLESS',
               style: TextStyle(
-                fontWeight:
-                    current == 'gapless' ? FontWeight.bold : FontWeight.normal,
+                fontWeight: current == 'gapless'
+                    ? FontWeight.bold
+                    : FontWeight.normal,
                 color: current == 'gapless' ? widget.colorScheme.primary : null,
               ),
             ),
@@ -302,8 +301,9 @@ class _DevAudioHudState extends State<DevAudioHud> {
             child: Text(
               'TX: GAP',
               style: TextStyle(
-                fontWeight:
-                    current == 'gap' ? FontWeight.bold : FontWeight.normal,
+                fontWeight: current == 'gap'
+                    ? FontWeight.bold
+                    : FontWeight.normal,
                 color: current == 'gap' ? widget.colorScheme.primary : null,
               ),
             ),
@@ -388,7 +388,9 @@ class _DevAudioHudState extends State<DevAudioHud> {
       sp.setHybridBackgroundMode(result);
       if (context.mounted) {
         showRestartMessage(
-            context, 'Background mode change requires relaunch.');
+          context,
+          'Background mode change requires relaunch.',
+        );
       }
     } else if (result is HiddenSessionPreset) {
       sp.setHiddenSessionPreset(result);
@@ -398,11 +400,14 @@ class _DevAudioHudState extends State<DevAudioHud> {
     }
   }
 
-  Widget _buildHeartbeatDot(double labelsFontSize, ColorScheme colorScheme,
-      {required bool active,
-      required bool needed,
-      required bool enabledBySettings,
-      required bool isPlaying}) {
+  Widget _buildHeartbeatDot(
+    double labelsFontSize,
+    ColorScheme colorScheme, {
+    required bool active,
+    required bool needed,
+    required bool enabledBySettings,
+    required bool isPlaying,
+  }) {
     if (!enabledBySettings) return const SizedBox.shrink();
 
     final size = labelsFontSize * 0.52;
@@ -477,8 +482,9 @@ class _DevAudioHudState extends State<DevAudioHud> {
 
     if (_heartbeatPulseTimer != null) return;
     _heartbeatPulseOn = true;
-    _heartbeatPulseTimer =
-        Timer.periodic(const Duration(milliseconds: 900), (_) {
+    _heartbeatPulseTimer = Timer.periodic(const Duration(milliseconds: 900), (
+      _,
+    ) {
       if (!mounted || !widget.isAppVisible) return;
       _safeSetState(() => _heartbeatPulseOn = !_heartbeatPulseOn);
     });
@@ -609,10 +615,7 @@ class _DevAudioHudState extends State<DevAudioHud> {
 
       // Wrap MSG chip in GestureDetector for clearing issues
       if (key == 'MSG') {
-        chip = GestureDetector(
-          onTap: widget.onClearIssue,
-          child: chip,
-        );
+        chip = GestureDetector(onTap: widget.onClearIssue, child: chip);
       }
 
       // Wrap interactive chips in GestureDetector for popup menus
@@ -625,20 +628,14 @@ class _DevAudioHudState extends State<DevAudioHud> {
             key: key,
             sp: widget.settingsProvider,
           ),
-          child: MouseRegion(
-            cursor: SystemMouseCursors.click,
-            child: chip,
-          ),
+          child: MouseRegion(cursor: SystemMouseCursors.click, child: chip),
         );
       }
 
       if (isFruit) {
         final tooltip = _hudFieldTooltip(key, value);
         if (tooltip.isNotEmpty) {
-          chip = FruitTooltip(
-            message: tooltip,
-            child: chip,
-          );
+          chip = FruitTooltip(message: tooltip, child: chip);
         }
       }
       chips.add(chip);
@@ -646,11 +643,7 @@ class _DevAudioHudState extends State<DevAudioHud> {
 
     if (chips.isEmpty) return const SizedBox.shrink();
 
-    return Wrap(
-      spacing: 6,
-      runSpacing: 6,
-      children: chips,
-    );
+    return Wrap(spacing: 6, runSpacing: 6, children: chips);
   }
 
   String _composeDevHudSnapshot(
@@ -673,23 +666,23 @@ class _DevAudioHudState extends State<DevAudioHud> {
         : 'OK';
 
     // Priority: Last Issue > Notification > Agent Message
-    final signal = (widget.lastIssueMessage != null &&
-            widget.lastIssueMessage!.isNotEmpty)
+    final signal =
+        (widget.lastIssueMessage != null && widget.lastIssueMessage!.isNotEmpty)
         ? 'ISS'
         : (notificationMessage != null && notificationMessage.trim().isNotEmpty)
-            ? 'NTF'
-            : (agentMessage != null && agentMessage.trim().isNotEmpty)
-                ? 'AGT'
-                : '--';
+        ? 'NTF'
+        : (agentMessage != null && agentMessage.trim().isNotEmpty)
+        ? 'AGT'
+        : '--';
 
-    final rawMsg = (widget.lastIssueMessage != null &&
-            widget.lastIssueMessage!.isNotEmpty)
+    final rawMsg =
+        (widget.lastIssueMessage != null && widget.lastIssueMessage!.isNotEmpty)
         ? widget.lastIssueMessage!.trim()
         : (notificationMessage != null && notificationMessage.trim().isNotEmpty)
-            ? notificationMessage.trim()
-            : (agentMessage != null && agentMessage.trim().isNotEmpty)
-                ? agentMessage.trim()
-                : '--';
+        ? notificationMessage.trim()
+        : (agentMessage != null && agentMessage.trim().isNotEmpty)
+        ? agentMessage.trim()
+        : '--';
 
     final msg = rawMsg == '--' ? rawMsg : _compactMessage(rawMsg);
 
@@ -701,8 +694,9 @@ class _DevAudioHudState extends State<DevAudioHud> {
     final handoff = _shortHandoff(sp.hybridHandoffMode);
     final background = _shortBackground(sp.hybridBackgroundMode);
     final activeEngine = _shortActiveEngine(engineContextState, effectiveMode);
-    final prefetch =
-        sp.webPrefetchSeconds < 0 ? 'G' : '${sp.webPrefetchSeconds}s';
+    final prefetch = sp.webPrefetchSeconds < 0
+        ? 'G'
+        : '${sp.webPrefetchSeconds}s';
     final processing = _shortProcessing(playerState?.processingState);
     final engineState = _shortEngineState(engineStateString);
 
@@ -710,8 +704,8 @@ class _DevAudioHudState extends State<DevAudioHud> {
     final presetShort = preset == HiddenSessionPreset.stability
         ? 'STB'
         : preset == HiddenSessionPreset.balanced
-            ? 'BAL'
-            : 'MAX';
+        ? 'BAL'
+        : 'MAX';
 
     return 'ENG:$mode • TX:$transition • HF:$handoff • BG:$background • '
         'STB:$presetShort • '

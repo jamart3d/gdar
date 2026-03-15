@@ -14,10 +14,8 @@ class EasterEggDetector {
   bool _everyHour;
   Timer? _timer;
 
-  EasterEggDetector({
-    required this.onEasterEggTriggered,
-    bool everyHour = true,
-  }) : _everyHour = everyHour {
+  EasterEggDetector({required this.onEasterEggTriggered, bool everyHour = true})
+    : _everyHour = everyHour {
     _scheduleNextTrigger();
   }
 

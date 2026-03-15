@@ -50,7 +50,8 @@ mixin ShowListLogicMixin<T extends StatefulWidget>
     if (state == AppLifecycleState.resumed &&
         _pendingBackgroundSelection != null) {
       logger.i(
-          'ShowListScreen: App resumed, handling pending random show selection.');
+        'ShowListScreen: App resumed, handling pending random show selection.',
+      );
       final selection = _pendingBackgroundSelection!;
       _pendingBackgroundSelection = null;
       handleRandomShowSelection(selection);
@@ -63,8 +64,10 @@ mixin ShowListLogicMixin<T extends StatefulWidget>
     context.read<ShowListProvider>().toggleSearchVisible();
   }
 
-  Future<void> reliablyScrollToShow(Show show,
-      {Duration duration = const Duration(milliseconds: 300)}) async {
+  Future<void> reliablyScrollToShow(
+    Show show, {
+    Duration duration = const Duration(milliseconds: 300),
+  }) async {
     final showListProvider = context.read<ShowListProvider>();
     final targetIndex = showListProvider.filteredShows.indexOf(show);
     logger.i('Attempting to scroll to "${show.name}" at index $targetIndex.');
@@ -198,12 +201,16 @@ mixin ShowListLogicMixin<T extends StatefulWidget>
         // v135 style: Single click a non-playing source flows to the full-screen TrackListScreen.
         await navigateTo(
           TrackListScreen(
-              show: singleSourceShow, source: singleSourceShow.sources.first),
+            show: singleSourceShow,
+            source: singleSourceShow.sources.first,
+          ),
         );
       } else {
         final shouldOpenPlayer = await navigateTo(
           TrackListScreen(
-              show: singleSourceShow, source: singleSourceShow.sources.first),
+            show: singleSourceShow,
+            source: singleSourceShow.sources.first,
+          ),
         );
         if (shouldOpenPlayer == true && mounted) {
           // Guard: No full-screen player on TV.
@@ -233,34 +240,38 @@ mixin ShowListLogicMixin<T extends StatefulWidget>
     }
 
     if (context.read<DeviceService>().isTv) {
-      unawaited(TvInteractionModal.show(
-        context,
-        title: show.venue,
-        subtitle: AppDateUtils.formatDate(show.date,
-            settings: context.read<SettingsProvider>()),
-        onPlay: () => _playSource(show, sourceToPlay),
-        onRate: () {
-          showDialog(
-            context: context,
-            builder: (context) => RatingDialog(
-              initialRating: catalog.getRating(sourceToPlay.id),
-              sourceId: sourceToPlay.id,
-              sourceUrl: sourceToPlay.tracks.isNotEmpty
-                  ? sourceToPlay.tracks.first.url
-                  : null,
-              isPlayed: catalog.isPlayed(sourceToPlay.id),
-              onRatingChanged: (newRating) {
-                catalog.setRating(sourceToPlay.id, newRating);
-              },
-              onPlayedChanged: (bool newIsPlayed) {
-                if (newIsPlayed != catalog.isPlayed(sourceToPlay.id)) {
-                  catalog.togglePlayed(sourceToPlay.id);
-                }
-              },
-            ),
-          );
-        },
-      ));
+      unawaited(
+        TvInteractionModal.show(
+          context,
+          title: show.venue,
+          subtitle: AppDateUtils.formatDate(
+            show.date,
+            settings: context.read<SettingsProvider>(),
+          ),
+          onPlay: () => _playSource(show, sourceToPlay),
+          onRate: () {
+            showDialog(
+              context: context,
+              builder: (context) => RatingDialog(
+                initialRating: catalog.getRating(sourceToPlay.id),
+                sourceId: sourceToPlay.id,
+                sourceUrl: sourceToPlay.tracks.isNotEmpty
+                    ? sourceToPlay.tracks.first.url
+                    : null,
+                isPlayed: catalog.isPlayed(sourceToPlay.id),
+                onRatingChanged: (newRating) {
+                  catalog.setRating(sourceToPlay.id, newRating);
+                },
+                onPlayedChanged: (bool newIsPlayed) {
+                  if (newIsPlayed != catalog.isPlayed(sourceToPlay.id)) {
+                    catalog.togglePlayed(sourceToPlay.id);
+                  }
+                },
+              ),
+            );
+          },
+        ),
+      );
       return;
     }
 
@@ -271,36 +282,41 @@ mixin ShowListLogicMixin<T extends StatefulWidget>
   void onSourceLongPressed(Show show, Source source) {
     if (context.read<DeviceService>().isTv) {
       final catalog = context.read<CatalogService>();
-      unawaited(TvInteractionModal.show(
-        context,
-        title: show.venue,
-        subtitle: AppDateUtils.formatDate(show.date,
-            settings: context.read<SettingsProvider>()),
-        onPlay: () => _playSource(show, source),
-        onRate: () async {
-          await showDialog(
-            context: context,
-            builder: (context) => RatingDialog(
-              initialRating: catalog.getRating(source.id),
-              sourceId: source.id,
-              sourceUrl:
-                  source.tracks.isNotEmpty ? source.tracks.first.url : null,
-              isPlayed: catalog.isPlayed(source.id),
-              onRatingChanged: (newRating) {
-                catalog.setRating(source.id, newRating);
-              },
-              onPlayedChanged: (bool newIsPlayed) {
-                if (newIsPlayed != catalog.isPlayed(source.id)) {
-                  catalog.togglePlayed(source.id);
-                }
-              },
-            ),
-          );
-          if (context.mounted) {
-            onSourceLongPressed(show, source);
-          }
-        },
-      ));
+      unawaited(
+        TvInteractionModal.show(
+          context,
+          title: show.venue,
+          subtitle: AppDateUtils.formatDate(
+            show.date,
+            settings: context.read<SettingsProvider>(),
+          ),
+          onPlay: () => _playSource(show, source),
+          onRate: () async {
+            await showDialog(
+              context: context,
+              builder: (context) => RatingDialog(
+                initialRating: catalog.getRating(source.id),
+                sourceId: source.id,
+                sourceUrl: source.tracks.isNotEmpty
+                    ? source.tracks.first.url
+                    : null,
+                isPlayed: catalog.isPlayed(source.id),
+                onRatingChanged: (newRating) {
+                  catalog.setRating(source.id, newRating);
+                },
+                onPlayedChanged: (bool newIsPlayed) {
+                  if (newIsPlayed != catalog.isPlayed(source.id)) {
+                    catalog.togglePlayed(source.id);
+                  }
+                },
+              ),
+            );
+            if (context.mounted) {
+              onSourceLongPressed(show, source);
+            }
+          },
+        ),
+      );
       return;
     }
     _playSource(show, source);
@@ -342,10 +358,14 @@ mixin ShowListLogicMixin<T extends StatefulWidget>
                 const begin = Offset(0.0, 1.0);
                 const end = Offset.zero;
                 const curve = Curves.easeInOut;
-                var tween = Tween(begin: begin, end: end)
-                    .chain(CurveTween(curve: curve));
+                var tween = Tween(
+                  begin: begin,
+                  end: end,
+                ).chain(CurveTween(curve: curve));
                 return SlideTransition(
-                    position: animation.drive(tween), child: child);
+                  position: animation.drive(tween),
+                  child: child,
+                );
               },
       ),
     );
@@ -416,7 +436,8 @@ mixin ShowListLogicMixin<T extends StatefulWidget>
     if (AppLifecycleState.paused == WidgetsBinding.instance.lifecycleState ||
         AppLifecycleState.inactive == WidgetsBinding.instance.lifecycleState) {
       logger.i(
-          'ShowListScreen: App in background. Deferring random show selection.');
+        'ShowListScreen: App in background. Deferring random show selection.',
+      );
       setState(() => _pendingBackgroundSelection = selection);
       return;
     }
@@ -479,7 +500,8 @@ mixin ShowListLogicMixin<T extends StatefulWidget>
     }
 
     logger.d(
-        'ShowListScreen: handlePlayRandomShow() - Triggering random show roll.');
+      'ShowListScreen: handlePlayRandomShow() - Triggering random show roll.',
+    );
     showListProvider.setIsChoosingRandomShow(true);
     setState(() {
       lastRollStartTime = DateTime.now();
@@ -490,11 +512,15 @@ mixin ShowListLogicMixin<T extends StatefulWidget>
 
     final isTv = context.read<DeviceService>().isTv;
     await audioProvider.playRandomShow(
-        filterBySearch: true, delayPlayback: isTv);
+      filterBySearch: true,
+      delayPlayback: isTv,
+    );
   }
 
-  Future<bool> handleClipboardPlayback(String text,
-      {required VoidCallback onSuccess}) async {
+  Future<bool> handleClipboardPlayback(
+    String text, {
+    required VoidCallback onSuccess,
+  }) async {
     setState(() => showPasteFeedback = true);
     final audioProvider = context.read<AudioProvider>();
     final success = await audioProvider.playFromShareString(text);

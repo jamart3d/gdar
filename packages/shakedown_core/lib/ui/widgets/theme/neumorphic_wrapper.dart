@@ -47,16 +47,18 @@ class NeumorphicWrapper extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     final Color lightShadowColor = isDark
-        ? Colors.white
-            .withValues(alpha: 0.05 * intensity) // Subtle edge highlight
+        ? Colors.white.withValues(
+            alpha: 0.05 * intensity,
+          ) // Subtle edge highlight
         : Colors.white.withValues(alpha: 0.95 * intensity);
 
     final Color darkShadowColor = isDark
-        ? Colors.black
-            .withValues(alpha: 0.5 * intensity) // Pure black shadow cast
+        ? Colors.black.withValues(
+            alpha: 0.5 * intensity,
+          ) // Pure black shadow cast
         : const Color(0xFFA3B1C6).withValues(
-            alpha:
-                1.0 * intensity); // Light mode custom drop shadow matching mock
+            alpha: 1.0 * intensity,
+          ); // Light mode custom drop shadow matching mock
 
     if (isPressed) {
       return [
@@ -148,19 +150,14 @@ class NeumorphicWrapper extends StatelessWidget {
     final rimColor = isLiquidGlassOff
         ? Colors.transparent
         : (isDark
-            ? Colors.white.withValues(alpha: 0.08)
-            : Colors.white.withValues(alpha: 0.6));
+              ? Colors.white.withValues(alpha: 0.08)
+              : Colors.white.withValues(alpha: 0.6));
 
     final decoration = BoxDecoration(
       color: baseColor,
       shape: isCircle ? BoxShape.circle : BoxShape.rectangle,
       borderRadius: isCircle ? null : BorderRadius.circular(borderRadius),
-      border: isLiquidGlassOff
-          ? null
-          : Border.all(
-              color: rimColor,
-              width: 0.6,
-            ),
+      border: isLiquidGlassOff ? null : Border.all(color: rimColor, width: 0.6),
       gradient: isPressed
           ? null
           : LinearGradient(

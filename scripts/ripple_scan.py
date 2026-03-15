@@ -32,21 +32,22 @@ SEVERITY_THRESHOLDS = {
 
 # High-risk core files whose changes most commonly cause ripples
 HIGH_RISK_PATHS = [
-    "lib/providers/",
-    "lib/services/",
-    "lib/models/",
-    "lib/main.dart",
+    "packages/shakedown_core/lib/providers/",
+    "packages/shakedown_core/lib/services/",
+    "packages/shakedown_core/lib/models/",
+    "apps/gdar_web/lib/main.dart",
+    "apps/gdar_mobile/lib/main.dart",
 ]
 
 # Layer order for grouping the scope map
 LAYER_PATTERNS = [
-    ("Models",    r"lib[/\\]models[/\\]"),
-    ("Services",  r"lib[/\\]services[/\\]"),
-    ("Providers", r"lib[/\\]providers[/\\]"),
-    ("Widgets",   r"lib[/\\]widgets[/\\]"),
-    ("Screens",   r"lib[/\\]screens[/\\]"),
-    ("Tests",     r"test[/\\]"),
-    ("Other",     r".*"),
+    ("Core Models",    r"packages[/\\]shakedown_core[/\\]lib[/\\]models[/\\]"),
+    ("Core Services",  r"packages[/\\]shakedown_core[/\\]lib[/\\]services[/\\]"),
+    ("Core Providers", r"packages[/\\]shakedown_core[/\\]lib[/\\]providers[/\\]"),
+    ("App Logic",      r"apps[/\\][^/\\]+[/\\]lib[/\\]"),
+    ("Packages",       r"packages[/\\][^/\\]+[/\\]lib[/\\]"),
+    ("Tests",          r"test[/\\]|.*_test\.dart"),
+    ("Other",          r".*"),
 ]
 
 # ---------------------------------------------------------------------------
@@ -57,7 +58,8 @@ def run_dart_analyze() -> list[str]:
     print("⏳ Running dart analyze...", file=sys.stderr)
     try:
         result = subprocess.run(
-            ["dart", "analyze", "--format=machine"],
+            "dart analyze --format=machine",
+            shell=True,
             capture_output=True,
             text=True,
             cwd=os.path.dirname(os.path.dirname(os.path.abspath(__file__))),

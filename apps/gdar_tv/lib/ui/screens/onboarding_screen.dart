@@ -66,10 +66,14 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   Future<void> _checkArchiveReachability() async {
     try {
-      await http.head(
-        Uri.parse('https://archive.org'),
-        headers: {'User-Agent': 'GDAR/1.0.0 (shakedown_app@googlegroups.com)'},
-      ).timeout(const Duration(seconds: 3));
+      await http
+          .head(
+            Uri.parse('https://archive.org'),
+            headers: {
+              'User-Agent': 'GDAR/1.0.0 (shakedown_app@googlegroups.com)',
+            },
+          )
+          .timeout(const Duration(seconds: 3));
       if (mounted) {
         setState(() {
           _archiveReachable = true;
@@ -112,10 +116,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   }
 
   void _nextPage() {
-    unawaited(_pageController.nextPage(
-      duration: const Duration(milliseconds: 400),
-      curve: Curves.easeInOut,
-    ));
+    unawaited(
+      _pageController.nextPage(
+        duration: const Duration(milliseconds: 400),
+        curve: Curves.easeInOut,
+      ),
+    );
   }
 
   @override
@@ -237,8 +243,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     );
   }
 
-  Widget _buildBottomNav(BuildContext context, double scaleFactor,
-      {bool hideIndicators = false}) {
+  Widget _buildBottomNav(
+    BuildContext context,
+    double scaleFactor, {
+    bool hideIndicators = false,
+  }) {
     final isLastPage = _currentPage == 2;
 
     return Padding(
@@ -260,8 +269,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     child: Text(
                       'Next',
                       style: TextStyle(
-                        fontSize:
-                            AppTypography.responsiveFontSize(context, 16.0),
+                        fontSize: AppTypography.responsiveFontSize(
+                          context,
+                          16.0,
+                        ),
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -341,7 +352,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     style: theme.textTheme.titleMedium?.copyWith(
                       fontSize:
                           AppTypography.responsiveFontSize(context, 12.0) *
-                              animatedScale,
+                          animatedScale,
                       color: colorScheme.onSurfaceVariant,
                     ),
                   ),

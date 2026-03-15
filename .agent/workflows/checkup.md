@@ -1,7 +1,7 @@
 ---
 description: Rapid health check with automated fixes for linting, formatting, and tests.
 ---
-# Checkup Workflow (Optimized)
+# Checkup Workflow (Monorepo)
 
 **TRIGGERS:** checkup, health, quick-audit, lint-fix
 
@@ -10,22 +10,26 @@ This workflow is optimized for speed and developer productivity. It prioritizes 
 > [!NOTE]
 > **FAST MODE DEFAULT**: This workflow is designed to be lean and fast. If significant architectural failures are found, consider upgrading to `/audit` or `/issue_report`.
 
+> [!IMPORTANT]
+> **MONOREPO**: This is a Dart workspace. Run analysis/format/fix from the **workspace root** — the Dart tools will recurse into `apps/` and `packages/` automatically.
+
 ## 1. Automated Code Hygiene (MCP Optimized)
 // turbo
-1. Run `mcp_dart-mcp-server_dart_fix` on the project root to resolve automated lints.
+1. Run `mcp_dart-mcp-server_dart_fix` on the workspace root.
 // turbo
-2. Run `mcp_dart-mcp-server_dart_format` on the project root to ensure consistent styling.
+2. Run `mcp_dart-mcp-server_dart_format` on the workspace root.
 
 ## 2. Parallel Static Analysis
 // turbo
-1. Run `mcp_dart-mcp-server_analyze_files` on the `lib/` directory.
+1. Run `mcp_dart-mcp-server_analyze_files` on the workspace root.
+   - The analyzer will cover `apps/gdar_mobile`, `apps/gdar_tv`, `apps/gdar_web`,
+     `packages/shakedown_core`, `packages/gdar_android`, `packages/gdar_fruit`.
 2. If errors are found, summarize the top 3 critical issues immediately.
 
 ## 3. Intelligent Testing
 // turbo
 1. **Targeted Run**: Run `mcp_dart-mcp-server_run_tests` on specific test files related to current changes (detected via `git status`). Limit to < 5 files.
-2. **Jules Handoff**: If a full test suite is requested or needed, Arlo should suggest: `"Run all tests via Jules (jules new 'Run all tests') to save tokens."`
-
+2. **Jules Handoff**: If a full test suite is requested or needed, suggest: `"Run all tests via Jules (jules new 'Run all tests') to save tokens."`
 
 ## 4. Visual/Design Check (Micro)
 1. Scan current working file for `withOpacity()` (deprecated preference) and suggest `.withValues(alpha: ...)`.

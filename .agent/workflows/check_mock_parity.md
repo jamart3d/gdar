@@ -2,12 +2,18 @@
 description: Ensure SettingsProvider keys match FakeSettingsProvider / MockSettingsProvider tests.
 ---
 
-# Check Mock Parity Workflow
+# Check Mock Parity Workflow (Monorepo)
 
 **When to use:** Use this immediately whenever a new property, toggle, or configuration key is added to `SettingsProvider` or `DefaultSettings` to prevent cascading failures in the widget and unit testing suite.
 
-1. **Search Context**: Use the `view_file` or `grep_search` tool to isolate the newly added `oil*` setting in `lib/providers/settings_provider.dart`. You should note its type, name, and related setter function.
-2. **Review Target Mocks**: Check `test/tv_regression_test.dart` and `test/screens/playback_screen_tv_test.dart` (or any other tests holding `FakeSettingsProvider` or `MockSettingsProvider`).
+> [!NOTE]
+> **MONOREPO**: Provider source lives in `packages/shakedown_core/`. Tests may live in each app target's `test/` directory.
+
+1. **Search Context**: Use `view_file` or `grep_search` to isolate the newly added setting in `packages/shakedown_core/lib/providers/settings_provider.dart`. Note its type, name, and related setter function.
+2. **Review Target Mocks**: Check test files across app targets for `FakeSettingsProvider` or `MockSettingsProvider`:
+   - `apps/gdar_mobile/test/`
+   - `apps/gdar_tv/test/`
+   - `packages/shakedown_core/test/`
 3. **Parity Check**: Ensure that for every property/getter (e.g., `bool get oilShowNewFeature`) and setter function (e.g., `Future<void> toggleOilShowNewFeature() async {}`) in the main settings provider, there is a stubbed `@override` version inside the fake blocks.
 4. **Resolution**: Modify the testing mock definitions to adhere perfectly to the provider's signature using `replace_file_content`.
 

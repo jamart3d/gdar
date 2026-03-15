@@ -105,42 +105,54 @@ Access settings via the gear icon in the top app bar.
 - **Non-Random (Chronological)**: Toggle this in Settings to play shows in sequential order (based on list sort) instead of randomly. Great for listening through a tour or year.
 - **Exclusions**: Blocked shows (Red Star) are **never** selected.
 
-## Project Structure
+## Monorepo Project Structure
 
-The project's code and documentation are organized as follows:
+This project is organized as a **Dart Workspace Monorepo**. The root directory acts as the workspace coordinator, while the application code and shared logic are split into specialized modules.
 
-- **`lib/`**: Contains the core Dart application code.
-  - **`models/`**: Defines the data structures for shows, sources, tracks, and ratings.
-  - **`providers/`**: Manages the application's state (e.g., audio playback, show lists, settings).
-  - **`services/`**: Core data services, including the **Hybrid Catalog Service** (JSON parsing + Hive storage).
-  - **`ui/`**: Contains the user interface code, separated into `screens/` and `widgets/`.
-  - **`utils/`**: Includes utility functions, theme definitions, and other shared resources.
-- **`.agent/specs/`**: Contains detailed architectural and design specifications. **Note:** UI specifications are organized by feature (e.g., Player, Browse Flow) rather than platform to maintain consistency across Web, Phone, and TV. The "Fruit" theme overrides (`fruit_theme_spec.md`) serve as the single source of truth for Liquid Glass styling.
-- **`todo.md`**: Centralized task tracking for upcoming refactors and spec consolidations.
+### **Applications (`apps/`)**
+Standalone application targets with their own platform directories (`android/`, `web/`, etc.):
+- **`gdar_mobile`**: The primary Android/iOS mobile application.
+- **`gdar_tv`**: Optimized interface for Google TV and Android TV.
+- **`gdar_web`**: The PWA/Web version featuring the Fruit theme.
+
+### **Packages (`packages/`)**
+Shared business logic and design tokens used by all applications:
+- **`shakedown_core`**: The central foundation. Contains models, services (including `CatalogService`), and global assets (JSON catalog, fonts, shaders).
+- **`styles/`**:
+  - **`gdar_android`**: Material 3 Expressive theme definitions.
+  - **`gdar_fruit`**: Apple Liquid Glass and Neumorphic design tokens.
+
+## Monorepo Management
+
+We use **Melos** to manage the multi-package workspace.
+
+- **Bootstrap**: Run `melos bootstrap` (or `flutter pub get` at the root) to link all local packages and fetch external dependencies.
+- **Cleaning**: `melos clean` removes all build artifacts and `.dart_tool` folders across the workspace.
+- **Testing**: `melos run test` executes tests in all packages and apps.
 
 ## Technical Architecture
 
 **Hybrid Data & Persistence**
-To balance app size with performance and robust user data storage, Shakedown utilizes a hybrid approach:
+Shakedown utilizes a hybrid approach, centralized in the `shakedown_core` package:
 
-- **Show Catalog (JSON)**: The concert database is loaded from stored compressed JSON (`assets/data/output.optimized_src.json`) into memory at startup. This avoids the overhead of a large pre-built database file, keeping the APK/AAB size small (~15MB). Background isolates (`compute()`) prevent UI jank during this loading process.
-- **User Data (Hive)**: User-generated content like **Ratings**, **Blocked Shows/Sources**, and **Played Status** is stored in a dedicated **Hive** box (`ratings`). This ensures fast, persistent, and efficient local storage for your personal collection data without modifying the read-only catalog.
-- **Service Layer**: A unified `CatalogService` orchestrates this split, providing synchronous access to the in-memory show list while managing asynchronous Hive operations for user state.
+- **Show Catalog (JSON)**: The concert database (`packages/shakedown_core/assets/data/output.optimized_src.json`) is loaded into memory via background isolates (`compute()`) in `CatalogService`.
+- **User Data (Hive)**: Ratings and personal data are stored in Hive, managed by the core infrastructure.
+- **State Management**: Uses `Provider` with a strict separation between UI (Widgets), Logic (Providers), and Data (Repositories).
 
 ## Building & Release
 
-To build a release-ready Android App Bundle (AAB) for the Google Play Store, use the following commands:
+Builds must be triggered from the specific application target directory within `apps/`.
 
 ```bash
-# 1. Clean the project
+# Example: Building the Mobile App Bundle
+cd apps/gdar_mobile
 flutter clean
-
-# 2. Build the signed App Bundle
 flutter build appbundle --release
 ```
 
-The output file will be located at:  
-`build/app/outputs/bundle/release/app-release.aab`
+**Output Paths:**
+- **Mobile**: `apps/gdar_mobile/build/app/outputs/bundle/release/app-release.aab`
+- **Web**: `apps/gdar_web/build/web`
 
 ## Testing & Debugging
 

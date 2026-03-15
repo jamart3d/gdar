@@ -202,15 +202,19 @@ class PlaybackScreenState extends State<PlaybackScreen>
         bool skipScroll = false;
         if (positions.isNotEmpty) {
           if (force) {
-            final isAligned = positions.any((position) =>
-                position.index == targetIndex &&
-                (position.itemLeadingEdge - alignment).abs() < 0.05);
+            final isAligned = positions.any(
+              (position) =>
+                  position.index == targetIndex &&
+                  (position.itemLeadingEdge - alignment).abs() < 0.05,
+            );
             if (isAligned) skipScroll = true;
           } else {
-            final isVisible = positions.any((position) =>
-                position.index == targetIndex &&
-                position.itemLeadingEdge >= 0 &&
-                position.itemTrailingEdge <= maxVisibleY);
+            final isVisible = positions.any(
+              (position) =>
+                  position.index == targetIndex &&
+                  position.itemLeadingEdge >= 0 &&
+                  position.itemTrailingEdge <= maxVisibleY,
+            );
             if (isVisible) skipScroll = true;
           }
         }
@@ -317,9 +321,11 @@ class PlaybackScreenState extends State<PlaybackScreen>
     }
 
     final keysToRemove = _trackFocusNodes.keys
-        .where((k) =>
-            (k - index).abs() > 20 &&
-            !(_trackFocusNodes[k]?.hasPrimaryFocus ?? false))
+        .where(
+          (k) =>
+              (k - index).abs() > 20 &&
+              !(_trackFocusNodes[k]?.hasPrimaryFocus ?? false),
+        )
         .toList();
     for (final k in keysToRemove) {
       _trackFocusNodes[k]?.dispose();
@@ -514,10 +520,9 @@ class PlaybackScreenState extends State<PlaybackScreen>
                     fontSize: 10 * scaleFactor, // text-[10px]
                     fontWeight: FontWeight.bold, // font-bold
                     letterSpacing: 1.5, // tracking-widest
-                    color: Theme.of(context)
-                        .colorScheme
-                        .onSurfaceVariant
-                        .withValues(alpha: 0.6),
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
                   ),
                 ),
                 SizedBox(height: 6 * scaleFactor),
@@ -558,13 +563,15 @@ class PlaybackScreenState extends State<PlaybackScreen>
                           if (currentSource == null) return null;
                           if (currentSource.tracks.isNotEmpty) {
                             final transformed = transformArchiveUrl(
-                                currentSource.tracks.first.url);
+                              currentSource.tracks.first.url,
+                            );
                             if (transformed != null && transformed.isNotEmpty) {
                               return Uri.parse(transformed);
                             }
                           }
                           return Uri.parse(
-                              'https://archive.org/details/${currentSource.id}');
+                            'https://archive.org/details/${currentSource.id}',
+                          );
                         }(),
                       ),
                     ],
@@ -592,17 +599,15 @@ class PlaybackScreenState extends State<PlaybackScreen>
                 elevation: settingsProvider.performanceMode ? 4 : 0,
                 color: settingsProvider.performanceMode
                     ? Theme.of(context).colorScheme.surface
-                    : Theme.of(context)
-                        .colorScheme
-                        .surface
-                        .withValues(alpha: 0.85),
+                    : Theme.of(
+                        context,
+                      ).colorScheme.surface.withValues(alpha: 0.85),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(24 * scaleFactor),
                   side: BorderSide(
-                    color: Theme.of(context)
-                        .colorScheme
-                        .onSurface
-                        .withValues(alpha: 0.1),
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.onSurface.withValues(alpha: 0.1),
                     width: 1.0,
                   ),
                 ),
@@ -695,8 +700,10 @@ class PlaybackScreenState extends State<PlaybackScreen>
 
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    final double scaleFactor =
-        FontLayoutConfig.getEffectiveScale(context, settingsProvider);
+    final double scaleFactor = FontLayoutConfig.getEffectiveScale(
+      context,
+      settingsProvider,
+    );
 
     final currentShow = audioProvider.currentShow;
     final currentSource = audioProvider.currentSource;
@@ -713,8 +720,10 @@ class PlaybackScreenState extends State<PlaybackScreen>
         if (currentShow.sources.length > 1) {
           seed = currentSource.id;
         }
-        backgroundColor =
-            ColorGenerator.getColor(seed, brightness: theme.brightness);
+        backgroundColor = ColorGenerator.getColor(
+          seed,
+          brightness: theme.brightness,
+        );
       }
     }
 
@@ -863,8 +872,9 @@ class PlaybackScreenState extends State<PlaybackScreen>
                               fontFamily: 'RockSalt',
                               fontSize: 17,
                               fontWeight: FontWeight.w500,
-                              color:
-                                  colorScheme.onSurface.withValues(alpha: 0.70),
+                              color: colorScheme.onSurface.withValues(
+                                alpha: 0.70,
+                              ),
                             ),
                           ),
                           const Spacer(),
@@ -879,8 +889,9 @@ class PlaybackScreenState extends State<PlaybackScreen>
                                   valueListenable:
                                       CatalogService().ratingsListenable,
                                   builder: (context, _, _) {
-                                    final r = CatalogService()
-                                        .getRating(currentSource.id);
+                                    final r = CatalogService().getRating(
+                                      currentSource.id,
+                                    );
                                     return _RatingStars(
                                       rating: r,
                                       color: Colors.amber,
@@ -972,8 +983,11 @@ class PlaybackScreenState extends State<PlaybackScreen>
                         onFocusLeft: () {
                           // Keep constant alignment at 0.3 instead of 0.5 to prevent "bounce"
                           // when re-entering the pane.
-                          _scrollToCurrentTrack(true,
-                              force: true, alignment: 0.3);
+                          _scrollToCurrentTrack(
+                            true,
+                            force: true,
+                            alignment: 0.3,
+                          );
                           widget.onTrackListLeft?.call();
                         },
                         onFocusRight: widget.onTrackListRight,
@@ -994,8 +1008,10 @@ class PlaybackScreenState extends State<PlaybackScreen>
                           // We use a 1-item buffer to keep things smooth.
                           if (index <= firstVisible + 1 ||
                               index >= lastVisible - 1) {
-                            _scrollToCurrentTrack(true,
-                                forceTargetIndex: index);
+                            _scrollToCurrentTrack(
+                              true,
+                              forceTargetIndex: index,
+                            );
                           }
                         },
                         onWrapAround: _focusTrack,
@@ -1017,7 +1033,8 @@ class PlaybackScreenState extends State<PlaybackScreen>
           );
         }
 
-        final double dynamicBottomPadding = minPanelHeight +
+        final double dynamicBottomPadding =
+            minPanelHeight +
             60.0 +
             ((maxPanelHeight - minPanelHeight) * panelPosition);
 
@@ -1038,9 +1055,7 @@ class PlaybackScreenState extends State<PlaybackScreen>
               height: immersiveTopPadding,
               child: Opacity(
                 opacity: (1.0 - (panelPosition * 5.0)).clamp(0.0, 1.0),
-                child: Container(
-                  color: backgroundColor,
-                ),
+                child: Container(color: backgroundColor),
               ),
             ),
           ],
@@ -1088,7 +1103,8 @@ class PlaybackScreenState extends State<PlaybackScreen>
                 left: 0,
                 right: 0,
                 child: LiquidGlassWrapper(
-                  enabled: isFruit &&
+                  enabled:
+                      isFruit &&
                       settingsProvider.fruitEnableLiquidGlass &&
                       !settingsProvider.performanceMode,
                   blur: 20,
@@ -1105,10 +1121,9 @@ class PlaybackScreenState extends State<PlaybackScreen>
                           : null,
                       border: Border(
                         bottom: BorderSide(
-                          color: Theme.of(context)
-                              .colorScheme
-                              .onSurface
-                              .withValues(alpha: 0.05),
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.onSurface.withValues(alpha: 0.05),
                           width: 1.0,
                         ),
                       ),
@@ -1138,25 +1153,24 @@ class PlaybackScreenState extends State<PlaybackScreen>
                     showListProvider.setIsChoosingRandomShow(true);
                     final resetMs =
                         context.read<SettingsProvider>().performanceMode
-                            ? 600
-                            : 2400;
-                    unawaited(Future<void>.delayed(
-                      Duration(milliseconds: resetMs),
-                      () {
+                        ? 600
+                        : 2400;
+                    unawaited(
+                      Future<void>.delayed(Duration(milliseconds: resetMs), () {
                         if (showListProvider.isChoosingRandomShow) {
                           showListProvider.setIsChoosingRandomShow(false);
                         }
-                      },
-                    ));
+                      }),
+                    );
                     if (mounted) {
                       Navigator.of(context).pushAndRemoveUntil(
                         PageRouteBuilder(
                           pageBuilder:
                               (context, animation, secondaryAnimation) =>
                                   const FruitTabHostScreen(
-                            initialTab: 1,
-                            triggerRandomOnStart: true,
-                          ),
+                                    initialTab: 1,
+                                    triggerRandomOnStart: true,
+                                  ),
                           transitionDuration: Duration.zero,
                         ),
                         (route) => false,
@@ -1187,23 +1201,24 @@ class PlaybackScreenState extends State<PlaybackScreen>
           SlidingUpPanel(
             controller: _panelController,
             color: Colors.transparent,
-            borderRadius:
-                const BorderRadius.vertical(top: Radius.circular(24.0)),
+            borderRadius: const BorderRadius.vertical(
+              top: Radius.circular(24.0),
+            ),
             boxShadow: isTrueBlackMode || isTv
                 ? []
                 : (settingsProvider.useNeumorphism)
-                    ? NeumorphicWrapper.getShadows(
-                        context: context,
-                        offset: const Offset(0, -8),
-                        blur: 24,
-                        intensity: 1.1,
-                      )
-                    : [
-                        BoxShadow(
-                          blurRadius: 20.0,
-                          color: Colors.black.withValues(alpha: 0.2),
-                        )
-                      ],
+                ? NeumorphicWrapper.getShadows(
+                    context: context,
+                    offset: const Offset(0, -8),
+                    blur: 24,
+                    intensity: 1.1,
+                  )
+                : [
+                    BoxShadow(
+                      blurRadius: 20.0,
+                      color: Colors.black.withValues(alpha: 0.2),
+                    ),
+                  ],
             minHeight: minPanelHeight,
             maxHeight: maxPanelHeight,
             margin: EdgeInsets.zero,
@@ -1214,19 +1229,20 @@ class PlaybackScreenState extends State<PlaybackScreen>
               _scrollToCurrentTrack(true, maxVisibleY: 0.4);
             },
             panelBuilder: () => PlaybackPanel(
-                currentShow: currentShow,
-                currentSource: currentSource,
-                minHeight: minPanelHeight,
-                bottomPadding: bottomPadding,
-                panelPositionNotifier: _panelPositionNotifier,
-                onVenueTap: () {
-                  _scrollToCurrentTrack(true, force: true);
-                  if (_panelController.isAttached) {
-                    if (_panelController.isPanelClosed) {
-                      _panelController.open();
-                    }
+              currentShow: currentShow,
+              currentSource: currentSource,
+              minHeight: minPanelHeight,
+              bottomPadding: bottomPadding,
+              panelPositionNotifier: _panelPositionNotifier,
+              onVenueTap: () {
+                _scrollToCurrentTrack(true, force: true);
+                if (_panelController.isAttached) {
+                  if (_panelController.isPanelClosed) {
+                    _panelController.open();
                   }
-                }),
+                }
+              },
+            ),
             body: playbackContent,
           ),
           ValueListenableBuilder<double>(
@@ -1238,10 +1254,11 @@ class PlaybackScreenState extends State<PlaybackScreen>
                 left: 0,
                 right: 0,
                 child: PlaybackAppBar(
-                    currentShow: currentShow,
-                    currentSource: currentSource,
-                    backgroundColor: backgroundColor,
-                    panelPosition: panelPosition),
+                  currentShow: currentShow,
+                  currentSource: currentSource,
+                  backgroundColor: backgroundColor,
+                  panelPosition: panelPosition,
+                ),
               );
             },
           ),

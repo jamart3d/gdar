@@ -69,7 +69,10 @@ class _FruitTooltipState extends State<FruitTooltip> {
   }
 
   Widget _buildTooltipBubble(
-      bool useGlass, bool isDark, ColorScheme colorScheme) {
+    bool useGlass,
+    bool isDark,
+    ColorScheme colorScheme,
+  ) {
     final bool disableBlur = kIsWeb && isWasmRuntime();
     final bool effectiveGlass = useGlass && !disableBlur;
 
@@ -87,8 +90,8 @@ class _FruitTooltipState extends State<FruitTooltip> {
     final decoration = BoxDecoration(
       color: effectiveGlass
           ? (isDark
-              ? Colors.black.withValues(alpha: 0.48)
-              : Colors.white.withValues(alpha: 0.9))
+                ? Colors.black.withValues(alpha: 0.48)
+                : Colors.white.withValues(alpha: 0.9))
           : (isDark ? Colors.black87 : Colors.white),
       borderRadius: BorderRadius.circular(12),
       border: Border.all(
@@ -116,23 +119,14 @@ class _FruitTooltipState extends State<FruitTooltip> {
     );
 
     if (!effectiveGlass) {
-      return Container(
-        decoration: decoration,
-        child: child,
-      );
+      return Container(decoration: decoration, child: child);
     }
 
     return ClipRRect(
       borderRadius: BorderRadius.circular(12),
       child: BackdropFilter(
-        filter: ImageFilter.blur(
-          sigmaX: 14,
-          sigmaY: 14,
-        ),
-        child: Container(
-          decoration: decoration,
-          child: child,
-        ),
+        filter: ImageFilter.blur(sigmaX: 14, sigmaY: 14),
+        child: Container(decoration: decoration, child: child),
       ),
     );
   }

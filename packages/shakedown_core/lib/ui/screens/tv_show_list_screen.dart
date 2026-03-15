@@ -162,10 +162,7 @@ class ShowListScreenState extends State<ShowListScreen>
       duration: const Duration(milliseconds: 1200),
     );
     _searchPulseAnimation = Tween<double>(begin: 1.0, end: 1.15).animate(
-      CurvedAnimation(
-        parent: _searchPulseController,
-        curve: Curves.easeInOut,
-      ),
+      CurvedAnimation(parent: _searchPulseController, curve: Curves.easeInOut),
     );
 
     // Random button pulse animation (Material 3 style)
@@ -194,8 +191,9 @@ class ShowListScreenState extends State<ShowListScreen>
 
     // Subscribe to random show requests from AudioProvider (unified logic)
     _audioProvider = context.read<AudioProvider>();
-    _randomShowSubscription =
-        _audioProvider.randomShowRequestStream.listen((selection) {
+    _randomShowSubscription = _audioProvider.randomShowRequestStream.listen((
+      selection,
+    ) {
       if (mounted) {
         handleRandomShowSelection(selection);
       }
@@ -225,8 +223,9 @@ class ShowListScreenState extends State<ShowListScreen>
 
     _searchController.addListener(() {
       final text = _searchController.text;
-      final isPastePattern =
-          RegExp(r'(19[6-9]\d|20[0-2]\d).*?-\s*\d+').hasMatch(text);
+      final isPastePattern = RegExp(
+        r'(19[6-9]\d|20[0-2]\d).*?-\s*\d+',
+      ).hasMatch(text);
       final hasArchiveUrl = text.contains('archive.org/details/gd');
 
       if (isPastePattern || hasArchiveUrl) {
@@ -247,7 +246,9 @@ class ShowListScreenState extends State<ShowListScreen>
 
   // Refactored helper to handling startup play to keep init clean
   void _handleStartupRandomPlay(
-      ShowListProvider showListProvider, AudioProvider audioProvider) {
+    ShowListProvider showListProvider,
+    AudioProvider audioProvider,
+  ) {
     void playRandomShowAndRemoveListener() {
       if (!_randomShowPlayed &&
           !showListProvider.isLoading &&
@@ -288,7 +289,8 @@ class ShowListScreenState extends State<ShowListScreen>
       final isTv = context.read<DeviceService>().isTv;
       if (isTv && audioProvider.pendingRandomShowRequest == null) {
         logger.i(
-            'ShowListScreen: Resetting dice for TV (Delayed Selection Complete)');
+          'ShowListScreen: Resetting dice for TV (Delayed Selection Complete)',
+        );
         _resetDiceAnimation();
       }
     }
@@ -474,8 +476,10 @@ class ShowListScreenState extends State<ShowListScreen>
           audioProvider.currentSource != null) {
         seed = audioProvider.currentSource!.id;
       }
-      backgroundColor = ColorGenerator.getColor(seed,
-          brightness: Theme.of(context).brightness);
+      backgroundColor = ColorGenerator.getColor(
+        seed,
+        brightness: Theme.of(context).brightness,
+      );
     }
 
     return ShowListShell(
@@ -496,7 +500,8 @@ class ShowListScreenState extends State<ShowListScreen>
       onOpenPlaybackScreen:
           widget.onOpenPlaybackRequested ?? openPlaybackScreen,
       showPasteFeedback: showPasteFeedback,
-      onTitleTap: widget.onSettingsRequested ??
+      onTitleTap:
+          widget.onSettingsRequested ??
           () => navigateTo(const SettingsScreen()),
       scrollbarFocusNode: widget.scrollbarFocusNode,
       showFruitTabBar: widget.showFruitTabBar,

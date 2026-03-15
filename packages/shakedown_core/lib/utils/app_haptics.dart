@@ -16,8 +16,10 @@ class AppHaptics {
   }
 
   /// Triggers a selection click haptic.
-  static Future<void> selectionClick(DeviceService deviceService,
-      {bool enabled = true}) async {
+  static Future<void> selectionClick(
+    DeviceService deviceService, {
+    bool enabled = true,
+  }) async {
     if (!enabled || _shouldSkip(deviceService)) return;
 
     if (kIsWeb) {
@@ -28,8 +30,10 @@ class AppHaptics {
   }
 
   /// Triggers a light impact haptic.
-  static Future<void> lightImpact(DeviceService deviceService,
-      {bool enabled = true}) async {
+  static Future<void> lightImpact(
+    DeviceService deviceService, {
+    bool enabled = true,
+  }) async {
     if (!enabled || _shouldSkip(deviceService)) return;
 
     if (kIsWeb) {
@@ -40,8 +44,10 @@ class AppHaptics {
   }
 
   /// Triggers a medium impact haptic.
-  static Future<void> mediumImpact(DeviceService deviceService,
-      {bool enabled = true}) async {
+  static Future<void> mediumImpact(
+    DeviceService deviceService, {
+    bool enabled = true,
+  }) async {
     if (!enabled || _shouldSkip(deviceService)) return;
 
     if (kIsWeb) {
@@ -52,8 +58,10 @@ class AppHaptics {
   }
 
   /// Triggers a heavy impact haptic.
-  static Future<void> heavyImpact(DeviceService deviceService,
-      {bool enabled = true}) async {
+  static Future<void> heavyImpact(
+    DeviceService deviceService, {
+    bool enabled = true,
+  }) async {
     if (!enabled || _shouldSkip(deviceService)) return;
 
     if (kIsWeb) {
@@ -64,8 +72,10 @@ class AppHaptics {
   }
 
   /// Triggers a vibrate haptic.
-  static Future<void> vibrate(DeviceService deviceService,
-      {bool enabled = true}) async {
+  static Future<void> vibrate(
+    DeviceService deviceService, {
+    bool enabled = true,
+  }) async {
     if (!enabled || _shouldSkip(deviceService)) return;
 
     if (kIsWeb) {

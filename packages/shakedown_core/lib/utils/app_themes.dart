@@ -12,16 +12,15 @@ class AppThemes {
     final double scaleMultiplier = uiScale ? 1.35 : 1.0;
     final double totalScale = config.scaleFactor * scaleMultiplier;
 
-    final appliedTheme = baseTextTheme.apply(
-      fontFamily: config.fontFamily,
-    );
+    final appliedTheme = baseTextTheme.apply(fontFamily: config.fontFamily);
 
     TextStyle? normalize(TextStyle? style) {
       if (style == null) return null;
 
       final baseFontSize = style.fontSize;
-      final scaledFontSize =
-          baseFontSize != null ? baseFontSize * totalScale : null;
+      final scaledFontSize = baseFontSize != null
+          ? baseFontSize * totalScale
+          : null;
 
       return style.copyWith(
         fontSize: scaledFontSize,
@@ -58,8 +57,11 @@ class AppThemes {
   }) {
     // Note: ThemeStyle.fruit logic has been migrated to package:gdar_fruit
     final baseTextTheme = ThemeData.light().textTheme;
-    final TextTheme textTheme =
-        buildTextTheme(appFont, baseTextTheme, uiScale: uiScale);
+    final TextTheme textTheme = buildTextTheme(
+      appFont,
+      baseTextTheme,
+      uiScale: uiScale,
+    );
 
     const Color scaffoldBg = Color(0xFFF5F5F5);
     const Color primaryColor = Colors.blue;
@@ -95,8 +97,11 @@ class AppThemes {
   }) {
     // Note: ThemeStyle.fruit logic has been migrated to package:gdar_fruit
     final baseTextTheme = ThemeData.dark().textTheme;
-    final TextTheme textTheme =
-        buildTextTheme(appFont, baseTextTheme, uiScale: uiScale);
+    final TextTheme textTheme = buildTextTheme(
+      appFont,
+      baseTextTheme,
+      uiScale: uiScale,
+    );
 
     const Color scaffoldBg = Colors.black;
     const Color primaryColor = Colors.blue;
@@ -124,4 +129,3 @@ class AppThemes {
     );
   }
 }
-

@@ -121,7 +121,8 @@ class _AnimatedDiceIconState extends State<AnimatedDiceIcon>
     super.didUpdateWidget(oldWidget);
     if (widget.isLoading && !oldWidget.isLoading) {
       logger.d(
-          'AnimatedDiceIcon: Roll STARTED (isLoading=true, enableHaptics=${widget.enableHaptics})');
+        'AnimatedDiceIcon: Roll STARTED (isLoading=true, enableHaptics=${widget.enableHaptics})',
+      );
       _syncRollDuration();
       _rollLeft = !_rollLeft;
       _hapticsEnabledForCurrentRoll = widget.enableHaptics;
@@ -162,7 +163,8 @@ class _AnimatedDiceIconState extends State<AnimatedDiceIcon>
         final isTv = context.read<DeviceService>().isTv;
         if (!isTv) {
           logger.t(
-              'AnimatedDiceIcon: Face Change Haptic -> $face (t: ${t.toStringAsFixed(2)})');
+            'AnimatedDiceIcon: Face Change Haptic -> $face (t: ${t.toStringAsFixed(2)})',
+          );
           AppHaptics.lightImpact(context.read<DeviceService>());
         }
       }
@@ -182,8 +184,10 @@ class _AnimatedDiceIconState extends State<AnimatedDiceIcon>
     final colorScheme = Theme.of(context).colorScheme;
     final iconColor = widget.iconColor ?? colorScheme.primary;
     final settingsProvider = context.watch<SettingsProvider>();
-    final effectiveScale =
-        FontLayoutConfig.getEffectiveScale(context, settingsProvider);
+    final effectiveScale = FontLayoutConfig.getEffectiveScale(
+      context,
+      settingsProvider,
+    );
     final scaledIconSize = 32.0 * effectiveScale;
 
     final Widget iconContent = AnimatedBuilder(
@@ -236,7 +240,8 @@ class _AnimatedDiceIconState extends State<AnimatedDiceIcon>
         } else {
           if (_enableIdleRotation) {
             final directionMultiplier = _rollLeft ? -1.0 : 1.0;
-            angle = _staticAngle +
+            angle =
+                _staticAngle +
                 (_idleController.value * 2 * math.pi * directionMultiplier);
           } else {
             angle = _staticAngle;
@@ -288,19 +293,13 @@ class _AnimatedDiceIconState extends State<AnimatedDiceIcon>
     );
 
     if (isFruit && widget.tooltip != null && widget.tooltip!.isNotEmpty) {
-      button = FruitTooltip(
-        message: widget.tooltip!,
-        child: button,
-      );
+      button = FruitTooltip(message: widget.tooltip!, child: button);
     }
 
     return SizedBox(
       width: 56.0 * effectiveScale,
       height: 48.0 * effectiveScale,
-      child: FittedBox(
-        fit: BoxFit.scaleDown,
-        child: button,
-      ),
+      child: FittedBox(fit: BoxFit.scaleDown, child: button),
     );
   }
 

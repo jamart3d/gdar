@@ -43,7 +43,8 @@ class RatingControl extends StatelessWidget {
 
     final isFruit = themeProvider.themeStyle == ThemeStyle.fruit;
     final isTv = context.watch<DeviceService>().isTv;
-    final isFruitNeumorphic = isFruit &&
+    final isFruitNeumorphic =
+        isFruit &&
         settingsProvider.useNeumorphism &&
         !settingsProvider.useTrueBlack &&
         !isTv;
@@ -51,8 +52,9 @@ class RatingControl extends StatelessWidget {
     Widget content;
 
     if (isFruitNeumorphic) {
-      final Color starColor =
-          isFruit ? colorScheme.primary : Colors.orangeAccent;
+      final Color starColor = isFruit
+          ? colorScheme.primary
+          : Colors.orangeAccent;
       final Brightness brightness = Theme.of(context).brightness;
       // In light mode, the alpha needs to be slightly higher to be visible against frosted glass
       final Color emptyColor = brightness == Brightness.light
@@ -69,27 +71,33 @@ class RatingControl extends StatelessWidget {
               ),
             )
           : RatingBar(
-              initialRating:
-                  (rating == 0 && isPlayed) ? 1.0 : rating.toDouble(),
+              initialRating: (rating == 0 && isPlayed)
+                  ? 1.0
+                  : rating.toDouble(),
               minRating: 1,
               direction: Axis.horizontal,
               allowHalfRating: false,
               itemCount: 3,
               itemPadding: EdgeInsets.symmetric(
-                  horizontal:
-                      isFruit ? 1.0 : 0.0), // 2px gap to match HTML space-x-0.5
+                horizontal: isFruit ? 1.0 : 0.0,
+              ), // 2px gap to match HTML space-x-0.5
               itemSize: scaledSize * 1.0, // Increased size from 0.9 to 1.0
               ignoreGestures: true,
               ratingWidget: RatingWidget(
-                full: Icon(isFruit ? Icons.star_rate_rounded : LucideIcons.star,
-                    color: (rating == 0 && isPlayed)
-                        ? colorScheme.outline.withValues(alpha: 0.5)
-                        : starColor),
-                half: Icon(isFruit ? Icons.star_rate_rounded : LucideIcons.star,
-                    color: starColor),
+                full: Icon(
+                  isFruit ? Icons.star_rate_rounded : LucideIcons.star,
+                  color: (rating == 0 && isPlayed)
+                      ? colorScheme.outline.withValues(alpha: 0.5)
+                      : starColor,
+                ),
+                half: Icon(
+                  isFruit ? Icons.star_rate_rounded : LucideIcons.star,
+                  color: starColor,
+                ),
                 empty: Icon(
-                    isFruit ? Icons.star_rate_rounded : LucideIcons.star,
-                    color: emptyColor),
+                  isFruit ? Icons.star_rate_rounded : LucideIcons.star,
+                  color: emptyColor,
+                ),
               ),
               onRatingUpdate: (_) {},
             );
@@ -175,20 +183,26 @@ class RatingControl extends StatelessWidget {
       child: compact
           ? content // No wrapping/padding for compact layouts
           : (enforceMinTapTarget
-              ? ConstrainedBox(
-                  constraints: BoxConstraints(
-                    minWidth:
-                        ((scaledSize * 1.35).clamp(40.0, 48.0)).toDouble(),
-                    minHeight:
-                        ((scaledSize * 1.35).clamp(40.0, 48.0)).toDouble(),
-                  ),
-                  child: Center(child: content),
-                )
-              : ConstrainedBox(
-                  constraints:
-                      const BoxConstraints(minWidth: 48, minHeight: 48),
-                  child: Center(child: content),
-                )),
+                ? ConstrainedBox(
+                    constraints: BoxConstraints(
+                      minWidth: ((scaledSize * 1.35).clamp(
+                        40.0,
+                        48.0,
+                      )).toDouble(),
+                      minHeight: ((scaledSize * 1.35).clamp(
+                        40.0,
+                        48.0,
+                      )).toDouble(),
+                    ),
+                    child: Center(child: content),
+                  )
+                : ConstrainedBox(
+                    constraints: const BoxConstraints(
+                      minWidth: 48,
+                      minHeight: 48,
+                    ),
+                    child: Center(child: content),
+                  )),
     );
   }
 }
@@ -234,7 +248,8 @@ class _RatingDialogState extends State<RatingDialog> {
     final settingsProvider = context.watch<SettingsProvider>();
     final isFruit = themeProvider.themeStyle == ThemeStyle.fruit;
     final isTv = context.read<DeviceService>().isTv;
-    final isFruitNeumorphic = isFruit &&
+    final isFruitNeumorphic =
+        isFruit &&
         settingsProvider.useNeumorphism &&
         !settingsProvider.useTrueBlack &&
         !isTv; // Spec: STICKLY AVOID LiquidGlassWrapper on TV
@@ -257,41 +272,89 @@ class _RatingDialogState extends State<RatingDialog> {
               ),
               if (widget.sourceId != null && widget.sourceId!.isNotEmpty) ...[
                 const SizedBox(width: 16),
-                Builder(builder: (context) {
-                  final pill = Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: isFruitNeumorphic
-                          ? colorScheme.tertiaryContainer
-                              .withValues(alpha: 0.25)
-                          : colorScheme.tertiaryContainer
-                              .withValues(alpha: 0.7),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Container(
-                      padding: const EdgeInsets.only(bottom: 1.5),
+                Builder(
+                  builder: (context) {
+                    final pill = Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
                       decoration: BoxDecoration(
-                        border: Border(
-                          bottom: BorderSide(
-                            color: colorScheme.onTertiaryContainer
-                                .withValues(alpha: 0.6),
-                            width: 1.2,
+                        color: isFruitNeumorphic
+                            ? colorScheme.tertiaryContainer.withValues(
+                                alpha: 0.25,
+                              )
+                            : colorScheme.tertiaryContainer.withValues(
+                                alpha: 0.7,
+                              ),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Container(
+                        padding: const EdgeInsets.only(bottom: 1.5),
+                        decoration: BoxDecoration(
+                          border: Border(
+                            bottom: BorderSide(
+                              color: colorScheme.onTertiaryContainer.withValues(
+                                alpha: 0.6,
+                              ),
+                              width: 1.2,
+                            ),
+                          ),
+                        ),
+                        child: Text(
+                          widget.sourceId!,
+                          style: textTheme.titleMedium?.copyWith(
+                            color: colorScheme.onTertiaryContainer,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
                       ),
-                      child: Text(
-                        widget.sourceId!,
-                        style: textTheme.titleMedium?.copyWith(
-                          color: colorScheme.onTertiaryContainer,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  );
+                    );
 
-                  if (isTv) {
-                    return TvFocusWrapper(
+                    if (isTv) {
+                      return TvFocusWrapper(
+                        onTap: () {
+                          if (widget.sourceUrl != null &&
+                              widget.sourceUrl!.isNotEmpty) {
+                            launchArchivePage(widget.sourceUrl!, context);
+                          } else {
+                            launchArchiveDetails(widget.sourceId!, context);
+                          }
+                        },
+                        borderRadius: BorderRadius.circular(8),
+                        child: pill,
+                      );
+                    }
+
+                    if (isFruitNeumorphic) {
+                      return NeumorphicWrapper(
+                        borderRadius: 8,
+                        intensity: 0.9,
+                        enabled: !settingsProvider.performanceMode,
+                        color: settingsProvider.performanceMode
+                            ? colorScheme.tertiaryContainer
+                            : Colors.transparent,
+                        child: LiquidGlassWrapper(
+                          enabled: !settingsProvider.performanceMode,
+                          showBorder: false,
+                          borderRadius: BorderRadius.circular(8),
+                          opacity: 0.12,
+                          blur: 10.0,
+                          child: GestureDetector(
+                            onTap: () {
+                              if (widget.sourceUrl != null &&
+                                  widget.sourceUrl!.isNotEmpty) {
+                                launchArchivePage(widget.sourceUrl!, context);
+                              } else {
+                                launchArchiveDetails(widget.sourceId!, context);
+                              }
+                            },
+                            child: pill,
+                          ),
+                        ),
+                      );
+                    }
+                    return GestureDetector(
                       onTap: () {
                         if (widget.sourceUrl != null &&
                             widget.sourceUrl!.isNotEmpty) {
@@ -300,51 +363,10 @@ class _RatingDialogState extends State<RatingDialog> {
                           launchArchiveDetails(widget.sourceId!, context);
                         }
                       },
-                      borderRadius: BorderRadius.circular(8),
                       child: pill,
                     );
-                  }
-
-                  if (isFruitNeumorphic) {
-                    return NeumorphicWrapper(
-                      borderRadius: 8,
-                      intensity: 0.9,
-                      enabled: !settingsProvider.performanceMode,
-                      color: settingsProvider.performanceMode
-                          ? colorScheme.tertiaryContainer
-                          : Colors.transparent,
-                      child: LiquidGlassWrapper(
-                        enabled: !settingsProvider.performanceMode,
-                        showBorder: false,
-                        borderRadius: BorderRadius.circular(8),
-                        opacity: 0.12,
-                        blur: 10.0,
-                        child: GestureDetector(
-                          onTap: () {
-                            if (widget.sourceUrl != null &&
-                                widget.sourceUrl!.isNotEmpty) {
-                              launchArchivePage(widget.sourceUrl!, context);
-                            } else {
-                              launchArchiveDetails(widget.sourceId!, context);
-                            }
-                          },
-                          child: pill,
-                        ),
-                      ),
-                    );
-                  }
-                  return GestureDetector(
-                    onTap: () {
-                      if (widget.sourceUrl != null &&
-                          widget.sourceUrl!.isNotEmpty) {
-                        launchArchivePage(widget.sourceUrl!, context);
-                      } else {
-                        launchArchiveDetails(widget.sourceId!, context);
-                      }
-                    },
-                    child: pill,
-                  );
-                }),
+                  },
+                ),
               ],
             ],
           ),
@@ -367,11 +389,14 @@ class _RatingDialogState extends State<RatingDialog> {
                             if (event is KeyDownEvent) {
                               if (event.logicalKey ==
                                   LogicalKeyboardKey.arrowLeft) {
-                                final newRating =
-                                    (_currentRating - 1).clamp(1, 3);
+                                final newRating = (_currentRating - 1).clamp(
+                                  1,
+                                  3,
+                                );
                                 if (newRating != _currentRating) {
                                   AppHaptics.selectionClick(
-                                      context.read<DeviceService>());
+                                    context.read<DeviceService>(),
+                                  );
                                   setState(() {
                                     _currentRating = newRating;
                                   });
@@ -380,11 +405,14 @@ class _RatingDialogState extends State<RatingDialog> {
                                 return KeyEventResult.handled;
                               } else if (event.logicalKey ==
                                   LogicalKeyboardKey.arrowRight) {
-                                final newRating =
-                                    (_currentRating + 1).clamp(1, 3);
+                                final newRating = (_currentRating + 1).clamp(
+                                  1,
+                                  3,
+                                );
                                 if (newRating != _currentRating) {
                                   AppHaptics.selectionClick(
-                                      context.read<DeviceService>());
+                                    context.read<DeviceService>(),
+                                  );
                                   setState(() {
                                     _currentRating = newRating;
                                   });
@@ -397,31 +425,34 @@ class _RatingDialogState extends State<RatingDialog> {
                           },
                           child: Builder(
                             builder: (context) {
-                              final settingsProvider =
-                                  context.watch<SettingsProvider>();
-                              final themeProvider =
-                                  context.watch<ThemeProvider>();
+                              final settingsProvider = context
+                                  .watch<SettingsProvider>();
+                              final themeProvider = context
+                                  .watch<ThemeProvider>();
                               final isFruitNeumorphic =
                                   themeProvider.themeStyle ==
-                                          ThemeStyle.fruit &&
-                                      settingsProvider.useNeumorphism &&
-                                      !settingsProvider.useTrueBlack;
+                                      ThemeStyle.fruit &&
+                                  settingsProvider.useNeumorphism &&
+                                  !settingsProvider.useTrueBlack;
 
                               Widget ratingBar = RatingBar(
                                 initialRating:
                                     (_currentRating == 0 && _isPlayed)
-                                        ? 1.0
-                                        : (_currentRating > 0
-                                            ? _currentRating.toDouble()
-                                            : 0.0),
+                                    ? 1.0
+                                    : (_currentRating > 0
+                                          ? _currentRating.toDouble()
+                                          : 0.0),
                                 minRating: 1,
                                 direction: Axis.horizontal,
                                 allowHalfRating: false,
                                 itemCount: 3,
                                 itemSize: AppTypography.responsiveFontSize(
-                                    context, 40.0),
-                                itemPadding:
-                                    const EdgeInsets.symmetric(horizontal: 4.0),
+                                  context,
+                                  40.0,
+                                ),
+                                itemPadding: const EdgeInsets.symmetric(
+                                  horizontal: 4.0,
+                                ),
                                 ratingWidget: RatingWidget(
                                   full: Icon(
                                     isFruit
@@ -430,8 +461,8 @@ class _RatingDialogState extends State<RatingDialog> {
                                     color: (_currentRating == 0 && _isPlayed)
                                         ? Colors.blueGrey.withValues(alpha: 0.4)
                                         : (isFruit
-                                            ? colorScheme.primary
-                                            : Colors.orangeAccent),
+                                              ? colorScheme.primary
+                                              : Colors.orangeAccent),
                                   ),
                                   half: Icon(
                                     isFruit
@@ -446,15 +477,18 @@ class _RatingDialogState extends State<RatingDialog> {
                                         ? Icons.star_rate_rounded
                                         : Icons.star_rounded,
                                     color: isFruit
-                                        ? colorScheme.onSurface
-                                            .withValues(alpha: 0.1)
-                                        : Colors.blueGrey
-                                            .withValues(alpha: 0.3),
+                                        ? colorScheme.onSurface.withValues(
+                                            alpha: 0.1,
+                                          )
+                                        : Colors.blueGrey.withValues(
+                                            alpha: 0.3,
+                                          ),
                                   ),
                                 ),
                                 onRatingUpdate: (rating) {
                                   AppHaptics.selectionClick(
-                                      context.read<DeviceService>());
+                                    context.read<DeviceService>(),
+                                  );
                                   setState(() {
                                     _currentRating = rating.toInt();
                                   });
@@ -464,7 +498,8 @@ class _RatingDialogState extends State<RatingDialog> {
 
                               if (isFruitNeumorphic) {
                                 return NeumorphicWrapper(
-                                  enabled: !isTv &&
+                                  enabled:
+                                      !isTv &&
                                       !settingsProvider.performanceMode,
                                   isPressed: true,
                                   borderRadius: 16,
@@ -473,7 +508,8 @@ class _RatingDialogState extends State<RatingDialog> {
                                       ? colorScheme.surfaceContainerHighest
                                       : Colors.transparent,
                                   child: LiquidGlassWrapper(
-                                    enabled: !isTv &&
+                                    enabled:
+                                        !isTv &&
                                         !settingsProvider.performanceMode,
                                     showBorder: false,
                                     borderRadius: BorderRadius.circular(16),
@@ -481,7 +517,9 @@ class _RatingDialogState extends State<RatingDialog> {
                                     blur: 18.0,
                                     child: Padding(
                                       padding: const EdgeInsets.symmetric(
-                                          horizontal: 16, vertical: 12),
+                                        horizontal: 16,
+                                        vertical: 12,
+                                      ),
                                       child: ratingBar,
                                     ),
                                   ),
@@ -504,24 +542,26 @@ class _RatingDialogState extends State<RatingDialog> {
                       if (count > 0) {
                         final chip = Container(
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 10, vertical: 3),
+                            horizontal: 10,
+                            vertical: 3,
+                          ),
                           decoration: BoxDecoration(
                             color: isFruitNeumorphic
-                                ? colorScheme.secondaryContainer
-                                    .withValues(alpha: 0.2)
-                                : colorScheme.secondaryContainer
-                                    .withValues(alpha: 0.5),
+                                ? colorScheme.secondaryContainer.withValues(
+                                    alpha: 0.2,
+                                  )
+                                : colorScheme.secondaryContainer.withValues(
+                                    alpha: 0.5,
+                                  ),
                             borderRadius: BorderRadius.circular(20),
                           ),
                           child: Text(
                             'Played ${count}x',
-                            style: Theme.of(context)
-                                .textTheme
-                                .labelMedium
+                            style: Theme.of(context).textTheme.labelMedium
                                 ?.copyWith(
-                                  color: Theme.of(context)
-                                      .colorScheme
-                                      .onSecondaryContainer,
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.onSecondaryContainer,
                                   fontWeight: FontWeight.w600,
                                 ),
                           ),
@@ -558,17 +598,18 @@ class _RatingDialogState extends State<RatingDialog> {
         ),
         if (widget.onPlayedChanged != null) ...[
           Divider(
-              height: 1,
-              color: isFruitNeumorphic
-                  ? colorScheme.outline.withValues(alpha: 0.12)
-                  : null),
+            height: 1,
+            color: isFruitNeumorphic
+                ? colorScheme.outline.withValues(alpha: 0.12)
+                : null,
+          ),
           TvSwitchListTile(
             title: const Text('Mark as Played'),
             secondary: Icon(
               _isPlayed
                   ? (isFruit
-                      ? LucideIcons.checkCircle
-                      : Icons.check_circle_rounded)
+                        ? LucideIcons.checkCircle
+                        : Icons.check_circle_rounded)
                   : (isFruit ? LucideIcons.circle : Icons.circle_outlined),
               color: _isPlayed ? colorScheme.primary : colorScheme.outline,
             ),
@@ -576,8 +617,9 @@ class _RatingDialogState extends State<RatingDialog> {
                 ? Text(
                     'MARK AS PLAYED',
                     style: textTheme.labelSmall?.copyWith(
-                      color:
-                          colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+                      color: colorScheme.onSurfaceVariant.withValues(
+                        alpha: 0.5,
+                      ),
                       fontWeight: FontWeight.w800,
                       letterSpacing: 1.2,
                     ),
@@ -605,10 +647,11 @@ class _RatingDialogState extends State<RatingDialog> {
           ),
         ],
         Divider(
-            height: 1,
-            color: isFruitNeumorphic
-                ? colorScheme.outline.withValues(alpha: 0.12)
-                : null),
+          height: 1,
+          color: isFruitNeumorphic
+              ? colorScheme.outline.withValues(alpha: 0.12)
+              : null,
+        ),
         _buildActionOption(
           context,
           'Block (Red Star)',
@@ -620,10 +663,11 @@ class _RatingDialogState extends State<RatingDialog> {
           isTv,
         ),
         Divider(
-            height: 1,
-            color: isFruitNeumorphic
-                ? colorScheme.outline.withValues(alpha: 0.12)
-                : null),
+          height: 1,
+          color: isFruitNeumorphic
+              ? colorScheme.outline.withValues(alpha: 0.12)
+              : null,
+        ),
         _buildActionOption(
           context,
           'Clear Rating',
@@ -683,9 +727,7 @@ class _RatingDialogState extends State<RatingDialog> {
     return Dialog(
       elevation: (isFruitNeumorphic || isTv) ? 0 : null,
       backgroundColor: (isFruitNeumorphic || isTv) ? Colors.transparent : null,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: (isFruitNeumorphic || isTv)
           ? content
           : ConstrainedBox(
@@ -695,8 +737,14 @@ class _RatingDialogState extends State<RatingDialog> {
     );
   }
 
-  Widget _buildActionOption(BuildContext context, String text, IconData icon,
-      Color color, int rating, bool isTv) {
+  Widget _buildActionOption(
+    BuildContext context,
+    String text,
+    IconData icon,
+    Color color,
+    int rating,
+    bool isTv,
+  ) {
     final isFruit =
         context.read<ThemeProvider>().themeStyle == ThemeStyle.fruit;
     return TvListTile(
@@ -737,14 +785,19 @@ class _RatingDialogState extends State<RatingDialog> {
   }
 
   Future<bool?> _showScaledConfirmationDialog(
-      BuildContext context, String title, String content, bool isTv) {
+    BuildContext context,
+    String title,
+    String content,
+    bool isTv,
+  ) {
     final settingsProvider = context.read<SettingsProvider>();
     final double scaleFactor = settingsProvider.uiScale ? 1.5 : 1.0;
 
     final colorScheme = Theme.of(context).colorScheme;
     final isFruit =
         context.read<ThemeProvider>().themeStyle == ThemeStyle.fruit;
-    final isFruitNeumorphic = isFruit &&
+    final isFruitNeumorphic =
+        isFruit &&
         settingsProvider.useNeumorphism &&
         !settingsProvider.useTrueBlack &&
         !isTv;
@@ -752,9 +805,9 @@ class _RatingDialogState extends State<RatingDialog> {
     return showDialog<bool>(
       context: context,
       builder: (context) => MediaQuery(
-        data: MediaQuery.of(context).copyWith(
-          textScaler: TextScaler.linear(scaleFactor),
-        ),
+        data: MediaQuery.of(
+          context,
+        ).copyWith(textScaler: TextScaler.linear(scaleFactor)),
         child: isFruitNeumorphic
             ? Dialog(
                 backgroundColor: Colors.transparent,
@@ -775,31 +828,36 @@ class _RatingDialogState extends State<RatingDialog> {
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Text(title,
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .titleLarge
-                                  ?.copyWith(
-                                      fontWeight: FontWeight.bold,
-                                      fontFamily: 'Inter')),
+                          Text(
+                            title,
+                            style: Theme.of(context).textTheme.titleLarge
+                                ?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  fontFamily: 'Inter',
+                                ),
+                          ),
                           const SizedBox(height: 16),
-                          Text(content,
-                              textAlign: TextAlign.center,
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .bodyMedium
-                                  ?.copyWith(fontFamily: 'Inter')),
+                          Text(
+                            content,
+                            textAlign: TextAlign.center,
+                            style: Theme.of(context).textTheme.bodyMedium
+                                ?.copyWith(fontFamily: 'Inter'),
+                          ),
                           const SizedBox(height: 24),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.end,
                             children: [
                               TextButton(
                                 onPressed: () => Navigator.pop(context, false),
-                                child: Text('Cancel',
-                                    style: TextStyle(
-                                        color: colorScheme.onSurface
-                                            .withValues(alpha: 0.6),
-                                        fontWeight: FontWeight.bold)),
+                                child: Text(
+                                  'Cancel',
+                                  style: TextStyle(
+                                    color: colorScheme.onSurface.withValues(
+                                      alpha: 0.6,
+                                    ),
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
                               ),
                               const SizedBox(width: 8),
                               ElevatedButton(
@@ -809,11 +867,13 @@ class _RatingDialogState extends State<RatingDialog> {
                                   foregroundColor: colorScheme.onPrimary,
                                   elevation: 0,
                                   shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(12)),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
                                 ),
-                                child: const Text('Confirm',
-                                    style:
-                                        TextStyle(fontWeight: FontWeight.bold)),
+                                child: const Text(
+                                  'Confirm',
+                                  style: TextStyle(fontWeight: FontWeight.bold),
+                                ),
                               ),
                             ],
                           ),

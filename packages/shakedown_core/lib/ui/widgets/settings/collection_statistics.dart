@@ -38,7 +38,8 @@ class CollectionStatistics extends StatelessWidget {
 
     final colorScheme = Theme.of(context).colorScheme;
     final allShows = showListProvider.allShows;
-    final hasActiveFilters = settingsProvider.filterHighestShnid ||
+    final hasActiveFilters =
+        settingsProvider.filterHighestShnid ||
         settingsProvider.sourceCategoryFilters.values.any((v) => v);
 
     int totalShows = allShows.length;
@@ -152,17 +153,17 @@ class CollectionStatistics extends StatelessWidget {
             Text(
               label,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    fontSize: 10 * scaleFactor,
-                    color: colorScheme.onSurfaceVariant,
-                  ),
+                fontSize: 10 * scaleFactor,
+                color: colorScheme.onSurfaceVariant,
+              ),
             ),
             const Spacer(),
             Text(
               '$showCount Shows / $sourceCount Sources',
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    fontSize: 8.5 * scaleFactor,
-                    color: colorScheme.onSurfaceVariant,
-                  ),
+                fontSize: 8.5 * scaleFactor,
+                color: colorScheme.onSurfaceVariant,
+              ),
             ),
           ],
         ),
@@ -197,40 +198,44 @@ class CollectionStatistics extends StatelessWidget {
             child: Text(
               'Displaying total and (filtered) collection stats.',
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    fontStyle: FontStyle.italic,
-                    color: colorScheme.primary,
-                  ),
+                fontStyle: FontStyle.italic,
+                color: colorScheme.primary,
+              ),
             ),
           ),
         ListTile(
           dense: true,
           visualDensity: VisualDensity.compact,
-          leading: Icon(isFruit ? LucideIcons.library : Icons.library_music,
-              size: 24 * scaleFactor, color: colorScheme.primary),
+          leading: Icon(
+            isFruit ? LucideIcons.library : Icons.library_music,
+            size: 24 * scaleFactor,
+            color: colorScheme.primary,
+          ),
           title: FittedBox(
             fit: BoxFit.scaleDown,
             alignment: Alignment.centerLeft,
             child: Text(
               showsText,
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontSize: 16 * scaleFactor,
-                    fontWeight: FontWeight.w500,
-                  ),
+                fontSize: 16 * scaleFactor,
+                fontWeight: FontWeight.w500,
+              ),
             ),
           ),
           subtitle: Padding(
             padding: EdgeInsets.only(
-                top: settingsProvider.appFont == 'rock_salt'
-                    ? 4.0 * scaleFactor
-                    : 0),
+              top: settingsProvider.appFont == 'rock_salt'
+                  ? 4.0 * scaleFactor
+                  : 0,
+            ),
             child: FittedBox(
               fit: BoxFit.scaleDown,
               alignment: Alignment.centerLeft,
               child: Text(
                 sourcesText,
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      fontSize: 12 * scaleFactor,
-                    ),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodySmall?.copyWith(fontSize: 12 * scaleFactor),
               ),
             ),
           ),
@@ -238,32 +243,36 @@ class CollectionStatistics extends StatelessWidget {
         ListTile(
           dense: true,
           visualDensity: VisualDensity.compact,
-          leading: Icon(isFruit ? LucideIcons.clock : Icons.timer,
-              size: 24 * scaleFactor, color: colorScheme.primary),
+          leading: Icon(
+            isFruit ? LucideIcons.clock : Icons.timer,
+            size: 24 * scaleFactor,
+            color: colorScheme.primary,
+          ),
           title: FittedBox(
             fit: BoxFit.scaleDown,
             alignment: Alignment.centerLeft,
             child: Text(
               runtimeText,
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontSize: 16 * scaleFactor,
-                    fontWeight: FontWeight.w500,
-                  ),
+                fontSize: 16 * scaleFactor,
+                fontWeight: FontWeight.w500,
+              ),
             ),
           ),
           subtitle: Padding(
             padding: EdgeInsets.only(
-                top: settingsProvider.appFont == 'rock_salt'
-                    ? 4.0 * scaleFactor
-                    : 0),
+              top: settingsProvider.appFont == 'rock_salt'
+                  ? 4.0 * scaleFactor
+                  : 0,
+            ),
             child: FittedBox(
               fit: BoxFit.scaleDown,
               alignment: Alignment.centerLeft,
               child: Text(
                 songsText,
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      fontSize: 12 * scaleFactor,
-                    ),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodySmall?.copyWith(fontSize: 12 * scaleFactor),
               ),
             ),
           ),
@@ -282,176 +291,184 @@ class CollectionStatistics extends StatelessWidget {
             title: Text(
               'Source Categories Details',
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontSize: (isFruit ? 16 : 14) * scaleFactor,
-                    fontWeight: FontWeight.w500,
-                  ),
+                fontSize: (isFruit ? 16 : 14) * scaleFactor,
+                fontWeight: FontWeight.w500,
+              ),
             ),
-            leading: Icon(isFruit ? LucideIcons.list : Icons.list_alt,
-                size: 20 * scaleFactor),
+            leading: Icon(
+              isFruit ? LucideIcons.list : Icons.list_alt,
+              size: 20 * scaleFactor,
+            ),
             shape: const Border(),
             children: [
               if (catBettySources > 0)
                 ListTile(
-                    dense: true,
-                    visualDensity:
-                        const VisualDensity(horizontal: 0, vertical: -4),
-                    title: FittedBox(
-                      fit: BoxFit.scaleDown,
-                      alignment: Alignment.centerLeft,
-                      child: Text('Betty Boards',
-                          style: Theme.of(context)
-                              .textTheme
-                              .bodyMedium
-                              ?.copyWith(
-                                  fontSize: (isFruit ? 12 : 10) * scaleFactor)),
+                  dense: true,
+                  visualDensity: const VisualDensity(
+                    horizontal: 0,
+                    vertical: -4,
+                  ),
+                  title: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      'Betty Boards',
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        fontSize: (isFruit ? 12 : 10) * scaleFactor,
+                      ),
                     ),
-                    trailing: FittedBox(
-                      fit: BoxFit.scaleDown,
-                      alignment: Alignment.centerRight,
-                      child: Text(
-                          '${catBettyShows.length} Shows / $catBettySources Sources',
-                          style: Theme.of(context)
-                              .textTheme
-                              .bodySmall
-                              ?.copyWith(
-                                  fontSize:
-                                      (isFruit ? 10.5 : 8.5) * scaleFactor)),
-                    )),
+                  ),
+                  trailing: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerRight,
+                    child: Text(
+                      '${catBettyShows.length} Shows / $catBettySources Sources',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        fontSize: (isFruit ? 10.5 : 8.5) * scaleFactor,
+                      ),
+                    ),
+                  ),
+                ),
               if (catUltraSources > 0)
                 ListTile(
-                    dense: true,
-                    visualDensity:
-                        const VisualDensity(horizontal: 0, vertical: -4),
-                    title: FittedBox(
-                      fit: BoxFit.scaleDown,
-                      alignment: Alignment.centerLeft,
-                      child: Text('Ultra Matrix',
-                          style: Theme.of(context)
-                              .textTheme
-                              .bodyMedium
-                              ?.copyWith(
-                                  fontSize: (isFruit ? 12 : 10) * scaleFactor)),
+                  dense: true,
+                  visualDensity: const VisualDensity(
+                    horizontal: 0,
+                    vertical: -4,
+                  ),
+                  title: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      'Ultra Matrix',
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        fontSize: (isFruit ? 12 : 10) * scaleFactor,
+                      ),
                     ),
-                    trailing: FittedBox(
-                      fit: BoxFit.scaleDown,
-                      alignment: Alignment.centerRight,
-                      child: Text(
-                          '${catUltraShows.length} Shows / $catUltraSources Sources',
-                          style: Theme.of(context)
-                              .textTheme
-                              .bodySmall
-                              ?.copyWith(
-                                  fontSize:
-                                      (isFruit ? 10.5 : 8.5) * scaleFactor)),
-                    )),
+                  ),
+                  trailing: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerRight,
+                    child: Text(
+                      '${catUltraShows.length} Shows / $catUltraSources Sources',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        fontSize: (isFruit ? 10.5 : 8.5) * scaleFactor,
+                      ),
+                    ),
+                  ),
+                ),
               if (catMatrixSources > 0)
                 ListTile(
-                    dense: true,
-                    visualDensity:
-                        const VisualDensity(horizontal: 0, vertical: -4),
-                    title: FittedBox(
-                      fit: BoxFit.scaleDown,
-                      alignment: Alignment.centerLeft,
-                      child: Text('Matrix',
-                          style: Theme.of(context)
-                              .textTheme
-                              .bodyMedium
-                              ?.copyWith(
-                                  fontSize: (isFruit ? 12 : 10) * scaleFactor)),
+                  dense: true,
+                  visualDensity: const VisualDensity(
+                    horizontal: 0,
+                    vertical: -4,
+                  ),
+                  title: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      'Matrix',
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        fontSize: (isFruit ? 12 : 10) * scaleFactor,
+                      ),
                     ),
-                    trailing: FittedBox(
-                      fit: BoxFit.scaleDown,
-                      alignment: Alignment.centerRight,
-                      child: Text(
-                          '${catMatrixShows.length} Shows / $catMatrixSources Sources',
-                          style: Theme.of(context)
-                              .textTheme
-                              .bodySmall
-                              ?.copyWith(
-                                  fontSize:
-                                      (isFruit ? 10.5 : 8.5) * scaleFactor)),
-                    )),
+                  ),
+                  trailing: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerRight,
+                    child: Text(
+                      '${catMatrixShows.length} Shows / $catMatrixSources Sources',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        fontSize: (isFruit ? 10.5 : 8.5) * scaleFactor,
+                      ),
+                    ),
+                  ),
+                ),
               if (catDsbdSources > 0)
                 ListTile(
-                    dense: true,
-                    visualDensity:
-                        const VisualDensity(horizontal: 0, vertical: -4),
-                    title: FittedBox(
-                      fit: BoxFit.scaleDown,
-                      alignment: Alignment.centerLeft,
-                      child: Text('Digital SBD',
-                          style: Theme.of(context)
-                              .textTheme
-                              .bodyMedium
-                              ?.copyWith(
-                                  fontSize: (isFruit ? 12 : 10) * scaleFactor)),
+                  dense: true,
+                  visualDensity: const VisualDensity(
+                    horizontal: 0,
+                    vertical: -4,
+                  ),
+                  title: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      'Digital SBD',
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        fontSize: (isFruit ? 12 : 10) * scaleFactor,
+                      ),
                     ),
-                    trailing: FittedBox(
-                      fit: BoxFit.scaleDown,
-                      alignment: Alignment.centerRight,
-                      child: Text(
-                          '${catDsbdShows.length} Shows / $catDsbdSources Sources',
-                          style: Theme.of(context)
-                              .textTheme
-                              .bodySmall
-                              ?.copyWith(
-                                  fontSize:
-                                      (isFruit ? 10.5 : 8.5) * scaleFactor)),
-                    )),
+                  ),
+                  trailing: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerRight,
+                    child: Text(
+                      '${catDsbdShows.length} Shows / $catDsbdSources Sources',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        fontSize: (isFruit ? 10.5 : 8.5) * scaleFactor,
+                      ),
+                    ),
+                  ),
+                ),
               if (catFmSources > 0)
                 ListTile(
-                    dense: true,
-                    visualDensity:
-                        const VisualDensity(horizontal: 0, vertical: -4),
-                    title: FittedBox(
-                      fit: BoxFit.scaleDown,
-                      alignment: Alignment.centerLeft,
-                      child: Text('FM Broadcast',
-                          style: Theme.of(context)
-                              .textTheme
-                              .bodyMedium
-                              ?.copyWith(
-                                  fontSize: (isFruit ? 12 : 10) * scaleFactor)),
+                  dense: true,
+                  visualDensity: const VisualDensity(
+                    horizontal: 0,
+                    vertical: -4,
+                  ),
+                  title: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      'FM Broadcast',
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        fontSize: (isFruit ? 12 : 10) * scaleFactor,
+                      ),
                     ),
-                    trailing: FittedBox(
-                      fit: BoxFit.scaleDown,
-                      alignment: Alignment.centerRight,
-                      child: Text(
-                          '${catFmShows.length} Shows / $catFmSources Sources',
-                          style: Theme.of(context)
-                              .textTheme
-                              .bodySmall
-                              ?.copyWith(
-                                  fontSize:
-                                      (isFruit ? 10.5 : 8.5) * scaleFactor)),
-                    )),
+                  ),
+                  trailing: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerRight,
+                    child: Text(
+                      '${catFmShows.length} Shows / $catFmSources Sources',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        fontSize: (isFruit ? 10.5 : 8.5) * scaleFactor,
+                      ),
+                    ),
+                  ),
+                ),
               if (catSbdSources > 0)
                 ListTile(
-                    dense: true,
-                    visualDensity:
-                        const VisualDensity(horizontal: 0, vertical: -4),
-                    title: FittedBox(
-                      fit: BoxFit.scaleDown,
-                      alignment: Alignment.centerLeft,
-                      child: Text('Soundboard',
-                          style: Theme.of(context)
-                              .textTheme
-                              .bodyMedium
-                              ?.copyWith(
-                                  fontSize: (isFruit ? 12 : 10) * scaleFactor)),
+                  dense: true,
+                  visualDensity: const VisualDensity(
+                    horizontal: 0,
+                    vertical: -4,
+                  ),
+                  title: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      'Soundboard',
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        fontSize: (isFruit ? 12 : 10) * scaleFactor,
+                      ),
                     ),
-                    trailing: FittedBox(
-                      fit: BoxFit.scaleDown,
-                      alignment: Alignment.centerRight,
-                      child: Text(
-                          '${catSbdShows.length} Shows / $catSbdSources Sources',
-                          style: Theme.of(context)
-                              .textTheme
-                              .bodySmall
-                              ?.copyWith(
-                                  fontSize:
-                                      (isFruit ? 10.5 : 8.5) * scaleFactor)),
-                    )),
+                  ),
+                  trailing: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerRight,
+                    child: Text(
+                      '${catSbdShows.length} Shows / $catSbdSources Sources',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        fontSize: (isFruit ? 10.5 : 8.5) * scaleFactor,
+                      ),
+                    ),
+                  ),
+                ),
             ],
           ),
       ],

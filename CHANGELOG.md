@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- **Infrastructure**: Relocated `verify.dart` from `tool/` to `scripts/` and synchronized its default analysis targets with the new monorepo structure (`apps/`, `packages/`, `scripts/`).
+
 ## [1.2.0+200] - 2026-03-14
 
 ### Changed

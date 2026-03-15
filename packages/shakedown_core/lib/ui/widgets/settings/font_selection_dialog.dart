@@ -12,8 +12,10 @@ class FontSelectionDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final settingsProvider = context.watch<SettingsProvider>();
-    final scaleFactor =
-        FontLayoutConfig.getEffectiveScale(context, settingsProvider);
+    final scaleFactor = FontLayoutConfig.getEffectiveScale(
+      context,
+      settingsProvider,
+    );
 
     // Map of internal value to display name and TextStyle
     final Map<String, TextStyle?> fonts = {
@@ -50,9 +52,7 @@ class FontSelectionDialog extends StatelessWidget {
               return TvRadioListTile<String>(
                 title: Text(
                   displayNames[entry.key]!,
-                  style: entry.value?.copyWith(
-                    fontSize: 18 * scaleFactor,
-                  ),
+                  style: entry.value?.copyWith(fontSize: 18 * scaleFactor),
                 ),
                 value: entry.key,
               );
