@@ -1,4 +1,4 @@
-What's new in v1.2.2+202
+What's new in v1.2.3+203
 • Unified Diagnostics HUD with real-time streaming for transparent audio engine telemetry.
 • Refactored Playback Messages for improved UI responsiveness and performance.
 • Fixed visibility of playback status text when disabled in Settings.
