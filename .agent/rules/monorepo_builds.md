@@ -5,8 +5,11 @@ trigger: always_on
 # Monorepo Build Safety
 
 ### Parallel Builds Are Safe — Parallel Git Is Not
-- `flutter build` from separate app targets (`apps/gdar_mobile`, `apps/gdar_tv`,
-  `apps/gdar_web`) can run in parallel safely — they have independent `build/` dirs.
+- **Default**: `flutter build` from separate app targets (`apps/gdar_mobile`,
+  `apps/gdar_tv`, `apps/gdar_web`) can run in parallel safely — they have
+  independent `build/` dirs.
+- **Chromebook Exception**: On Chromebook/Crostini, do **NOT** run parallel
+  builds. Always build targets sequentially to avoid VM memory pressure.
 - **Git operations MUST be serialized.** The `.git/` directory is shared across the
   entire workspace. Running `git add`, `git commit`, or `git push` from two terminals
   simultaneously will cause `index.lock` failures.

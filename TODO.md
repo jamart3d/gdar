@@ -115,3 +115,4 @@
 - [ ] **Review Report**: 2026-03-12 web audio engines issue report saved to `reports/2026-03-12_web_audio_engines_issue_report.md`.
 - [ ] **Decision**: Confirm default web/PWA engine profile (HTML5 vs Hybrid Balanced) based on long background sessions priority.
 - [ ] **Validation**: Run long background soak tests across `stability`, `balanced`, and `maxGapless` presets.
+- Add in-app performance overlay toggle to compare web renderers during Chromebook testing.

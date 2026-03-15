@@ -19,6 +19,13 @@ pair programmer and mentor.
 * **State Management:** Provider (`ChangeNotifier` / `ProxyProvider`)
 * **Repo:** https://github.com/jamart3d/gdar
 
+## Workspace Commands (Melos)
+- **Bootstrap**: `melos bootstrap`
+- **Format**: `melos run format`
+- **Analyze**: `melos run analyze`
+- **Test**: `melos run test`
+- **Clean**: `melos run clean`
+
 ## Core Features
 * Reads show/track data from local `assets/data/output.optimized_src.json`.
 * Lists shows, sublists by shnid if multiple sources.

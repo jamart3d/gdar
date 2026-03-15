@@ -56,6 +56,12 @@ GDAR is a Dart workspace monorepo. Build targets live under `apps/`:
    Severity 2 warnings (e.g., `invalid_dependency`) are acceptable if
    `publish_to: none` is already set.
 
+### 0.5. Quality Gate (Melos)
+1. Run `melos run format`.
+2. Run `melos run analyze`.
+3. Run `melos run test`.
+4. If any step fails, **ABORT** and report the failure.
+
 ### 1. Version Bump
 1. Read current `version` from each app target's `pubspec.yaml`:
    - `apps/gdar_mobile/pubspec.yaml`

@@ -18,17 +18,20 @@ This workflow is optimized for speed and developer productivity. It prioritizes 
 1. Run `mcp_dart-mcp-server_dart_fix` on the workspace root.
 // turbo
 2. Run `mcp_dart-mcp-server_dart_format` on the workspace root.
+   - **Fallback (no MCP tools)**: Run `melos run format`.
 
 ## 2. Parallel Static Analysis
 // turbo
 1. Run `mcp_dart-mcp-server_analyze_files` on the workspace root.
    - The analyzer will cover `apps/gdar_mobile`, `apps/gdar_tv`, `apps/gdar_web`,
      `packages/shakedown_core`, `packages/gdar_android`, `packages/gdar_fruit`.
+   - **Fallback (no MCP tools)**: Run `melos run analyze`.
 2. If errors are found, summarize the top 3 critical issues immediately.
 
 ## 3. Intelligent Testing
 // turbo
 1. **Targeted Run**: Run `mcp_dart-mcp-server_run_tests` on specific test files related to current changes (detected via `git status`). Limit to < 5 files.
+   - **Fallback (no MCP tools)**: Run `melos run test` or targeted `flutter test` on the changed files.
 2. **Jules Handoff**: If a full test suite is requested or needed, suggest: `"Run all tests via Jules (jules new 'Run all tests') to save tokens."`
 
 ## 4. Visual/Design Check (Micro)

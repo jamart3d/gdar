@@ -131,6 +131,9 @@ We use **Melos** to manage the multi-package workspace.
 - **Cleaning**: `melos clean` removes all build artifacts and `.dart_tool` folders across the workspace.
 - **Testing**: `melos run test` executes tests in all packages and apps.
 
+**Monorepo Rules**: See `docs/MONOREPO_RULES.md` for CI and workspace
+conventions.
+
 ## Technical Architecture
 
 **Hybrid Data & Persistence**
@@ -266,4 +269,3 @@ Direct Jules to the following file for a 100% comprehensive system check:
 
 **To trigger a Full High-Volume Test (Large Tasks):**
 > "Run all tests via Jules (jules new 'Run all tests')."
-
