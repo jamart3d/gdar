@@ -32,23 +32,30 @@ void main() {
 
     // Setup default mock behaviors
     when(mockAudioProvider.audioPlayer).thenReturn(mockAudioPlayer);
-    when(mockAudioProvider.positionStream)
-        .thenAnswer((_) => Stream.value(Duration.zero));
-    when(mockAudioProvider.durationStream)
-        .thenAnswer((_) => Stream.value(const Duration(minutes: 5)));
-    when(mockAudioProvider.currentIndexStream)
-        .thenAnswer((_) => Stream.value(0));
-    when(mockAudioProvider.bufferedPositionStream)
-        .thenAnswer((_) => Stream.value(Duration.zero));
+    when(
+      mockAudioProvider.positionStream,
+    ).thenAnswer((_) => Stream.value(Duration.zero));
+    when(
+      mockAudioProvider.durationStream,
+    ).thenAnswer((_) => Stream.value(const Duration(minutes: 5)));
+    when(
+      mockAudioProvider.currentIndexStream,
+    ).thenAnswer((_) => Stream.value(0));
+    when(
+      mockAudioProvider.bufferedPositionStream,
+    ).thenAnswer((_) => Stream.value(Duration.zero));
     when(mockAudioProvider.playerStateStream).thenAnswer(
-        (_) => Stream.value(PlayerState(false, ProcessingState.ready)));
+      (_) => Stream.value(PlayerState(false, ProcessingState.ready)),
+    );
     when(mockAudioPlayer.position).thenReturn(Duration.zero);
     when(mockAudioPlayer.duration).thenReturn(const Duration(minutes: 5));
     when(mockAudioPlayer.bufferedPosition).thenReturn(Duration.zero);
-    when(mockAudioPlayer.playerState)
-        .thenReturn(PlayerState(false, ProcessingState.ready));
-    when(mockAudioPlayer.sequenceStateStream)
-        .thenAnswer((_) => const Stream.empty());
+    when(
+      mockAudioPlayer.playerState,
+    ).thenReturn(PlayerState(false, ProcessingState.ready));
+    when(
+      mockAudioPlayer.sequenceStateStream,
+    ).thenAnswer((_) => const Stream.empty());
     when(mockAudioPlayer.currentIndex).thenReturn(0);
     when(mockAudioPlayer.sequence).thenReturn([]);
 
@@ -66,8 +73,9 @@ void main() {
     when(mockSettingsProvider.performanceMode).thenReturn(false);
   });
 
-  testWidgets('MiniPlayer renders correctly with track info',
-      (WidgetTester tester) async {
+  testWidgets('MiniPlayer renders correctly with track info', (
+    WidgetTester tester,
+  ) async {
     // Setup specific test data
     final show = Show(
       name: 'Test Show',
@@ -85,11 +93,7 @@ void main() {
       setName: 'Set 1',
     );
 
-    final source = Source(
-      id: 'source1',
-      src: 'SBD',
-      tracks: [track],
-    );
+    final source = Source(id: 'source1', src: 'SBD', tracks: [track]);
 
     // Update show with sources
     show.sources.add(source);
@@ -103,15 +107,15 @@ void main() {
         providers: [
           ChangeNotifierProvider<AudioProvider>.value(value: mockAudioProvider),
           ChangeNotifierProvider<SettingsProvider>.value(
-              value: mockSettingsProvider),
+            value: mockSettingsProvider,
+          ),
           ChangeNotifierProvider<DeviceService>(
-              create: (_) => MockDeviceService()),
+            create: (_) => MockDeviceService(),
+          ),
           ChangeNotifierProvider<ThemeProvider>(create: (_) => ThemeProvider()),
         ],
         child: MaterialApp(
-          home: Scaffold(
-            body: MiniPlayer(onTap: () {}),
-          ),
+          home: Scaffold(body: MiniPlayer(onTap: () {})),
         ),
       ),
     );
@@ -129,8 +133,9 @@ void main() {
     expect(find.byIcon(Icons.skip_next_rounded), findsOneWidget);
   });
 
-  testWidgets('ConditionalMarquee renders Text when short',
-      (WidgetTester tester) async {
+  testWidgets('ConditionalMarquee renders Text when short', (
+    WidgetTester tester,
+  ) async {
     await tester.pumpWidget(
       const MaterialApp(
         home: Scaffold(
@@ -155,8 +160,9 @@ void main() {
     expect(find.text('Short Text'), findsOneWidget);
   });
 
-  testWidgets('ConditionalMarquee renders Marquee when long',
-      (WidgetTester tester) async {
+  testWidgets('ConditionalMarquee renders Marquee when long', (
+    WidgetTester tester,
+  ) async {
     await tester.pumpWidget(
       const MaterialApp(
         home: Scaffold(

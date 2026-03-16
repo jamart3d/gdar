@@ -308,13 +308,13 @@ class AudioProvider with ChangeNotifier {
     // Priority: Last Issue > Notification > Agent Message
     final signal =
         (dng.lastIssueMessage != null && dng.lastIssueMessage!.isNotEmpty)
-            ? 'ISS'
-            : (dng.notificationMessage != null &&
-                dng.notificationMessage!.trim().isNotEmpty)
-            ? 'NTF'
-            : (dng.agentMessage != null && dng.agentMessage!.trim().isNotEmpty)
-            ? 'AGT'
-            : '--';
+        ? 'ISS'
+        : (dng.notificationMessage != null &&
+              dng.notificationMessage!.trim().isNotEmpty)
+        ? 'NTF'
+        : (dng.agentMessage != null && dng.agentMessage!.trim().isNotEmpty)
+        ? 'AGT'
+        : '--';
 
     var rawMsg = '--';
     if (dng.lastIssueMessage != null && dng.lastIssueMessage!.isNotEmpty) {
@@ -337,10 +337,9 @@ class AudioProvider with ChangeNotifier {
 
     final msg = rawMsg == '--' ? rawMsg : _compactMessage(rawMsg);
 
-    final effectiveMode =
-        sp.audioEngineMode == AudioEngineMode.auto
-            ? _audioPlayer.activeMode
-            : sp.audioEngineMode;
+    final effectiveMode = sp.audioEngineMode == AudioEngineMode.auto
+        ? _audioPlayer.activeMode
+        : sp.audioEngineMode;
 
     return HudSnapshot(
       engine: _shortMode(effectiveMode),
@@ -350,8 +349,8 @@ class AudioProvider with ChangeNotifier {
       preset: sp.hiddenSessionPreset == HiddenSessionPreset.stability
           ? 'STB'
           : sp.hiddenSessionPreset == HiddenSessionPreset.balanced
-              ? 'BAL'
-              : 'MAX',
+          ? 'BAL'
+          : 'MAX',
       activeEngine: _shortActiveEngine(dng.engineContextState, effectiveMode),
       heartbeat: dng.hbActive ? 'ON' : (dng.hbNeeded ? 'ND' : 'OFF'),
       visibility: dng.visibility,
@@ -977,8 +976,8 @@ class AudioProvider with ChangeNotifier {
     // For now, GDAR web logic prefetches everything in the JS engine playlist.
     // We can limit the number of tracks we append if we wanted a "budget",
     // but typically users want the whole show ready.
-    // 
-    // Boundary Sentinel Improvement: If we are close to end of show, 
+    //
+    // Boundary Sentinel Improvement: If we are close to end of show,
     // we use a specific metadata tag to signify this is a "Look Ahead" prefetch.
     final nextSources = source.tracks.asMap().entries.map((entry) {
       int index = entry.key;
@@ -1066,7 +1065,7 @@ class AudioProvider with ChangeNotifier {
       _showListProvider?.setPlayingShow(foundShow.name, foundSource.id);
       _hasMarkedAsPlayed = false; // Reset for the new show
       _isTransitioning = false; // Ready for the NEXT transition
-      
+
       // Record in Session History
       _catalogService.recordSession(foundSource.id, showDate: foundShow.date);
 
@@ -1288,7 +1287,6 @@ class AudioProvider with ChangeNotifier {
       }
     }
   }
-
 
   AudioSource _createAudioSource(Uri uri, MediaItem tag) {
     return _audioCacheService.createAudioSource(

@@ -70,9 +70,11 @@ void main() {
         ChangeNotifierProvider.value(value: settingsProvider),
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
         ChangeNotifierProvider<DeviceService>(
-            create: (_) => MockDeviceService()),
+          create: (_) => MockDeviceService(),
+        ),
         ChangeNotifierProvider<AudioProvider>(
-            create: (_) => audioProvider ?? MockAudioProvider()),
+          create: (_) => audioProvider ?? MockAudioProvider(),
+        ),
       ],
       child: MaterialApp(
         // Force Dark Mode to test True Black logic
@@ -91,8 +93,9 @@ void main() {
     );
   }
 
-  testWidgets('True Black & Half Glow forces shadow ON and reduces opacity',
-      (WidgetTester tester) async {
+  testWidgets('True Black & Half Glow forces shadow ON and reduces opacity', (
+    WidgetTester tester,
+  ) async {
     final settingsProvider = SettingsProvider(prefs);
     final mockAudio = MockAudioProvider();
 
@@ -112,11 +115,13 @@ void main() {
 
     expect(settingsProvider.glowMode, equals(2));
 
-    await tester.pumpWidget(createTestableWidget(
-      show: createDummyShow('Test Venue', '2025-01-01'),
-      settingsProvider: settingsProvider,
-      audioProvider: mockAudio,
-    ));
+    await tester.pumpWidget(
+      createTestableWidget(
+        show: createDummyShow('Test Venue', '2025-01-01'),
+        settingsProvider: settingsProvider,
+        audioProvider: mockAudio,
+      ),
+    );
 
     // Find the AnimatedGradientBorder widget
     final borderFinder = find.byType(AnimatedGradientBorder);
@@ -125,18 +130,25 @@ void main() {
     final borderWidget = tester.widget<AnimatedGradientBorder>(borderFinder);
 
     // ASCERTION 1: Shadow should be TRUE (Mode 2 has shadow)
-    expect(borderWidget.showShadow, isTrue,
-        reason: 'Shadow should be forced ON when Half Glow is active (Mode 2)');
+    expect(
+      borderWidget.showShadow,
+      isTrue,
+      reason: 'Shadow should be forced ON when Half Glow is active (Mode 2)',
+    );
 
     // glow Mode 2 = 2% intensity
     // Not playing: 0.02 * 0.25 (not-playing multiplier) * 0.2 (non-RGB multiplier) = 0.001
-    expect(borderWidget.glowOpacity, closeTo(0.001, 0.0001),
-        reason:
-            'Opacity should be 0.001 (2% mode * 0.25 not-playing * 0.2 non-RGB)');
+    expect(
+      borderWidget.glowOpacity,
+      closeTo(0.001, 0.0001),
+      reason:
+          'Opacity should be 0.001 (2% mode * 0.25 not-playing * 0.2 non-RGB)',
+    );
   });
 
-  testWidgets('True Black & Half Glow reduces opacity for Playing Card',
-      (WidgetTester tester) async {
+  testWidgets('True Black & Half Glow reduces opacity for Playing Card', (
+    WidgetTester tester,
+  ) async {
     final settingsProvider = SettingsProvider(prefs);
     if (!settingsProvider.useDynamicColor) {
       settingsProvider.toggleUseDynamicColor();
@@ -150,38 +162,44 @@ void main() {
 
     final show = createDummyShow('Test Venue', '2025-01-01');
 
-    await tester.pumpWidget(MultiProvider(
-      providers: [
-        ChangeNotifierProvider.value(value: settingsProvider),
-        ChangeNotifierProvider(create: (_) => ThemeProvider()),
-        ChangeNotifierProvider<DeviceService>(
-            create: (_) => MockDeviceService()),
-        ChangeNotifierProvider<AudioProvider>(
-            create: (_) => MockAudioProvider()),
-      ],
-      child: MaterialApp(
-        theme: ThemeData.dark(),
-        home: Scaffold(
-          body: ShowListCard(
-            show: show,
-            isPlaying: true, // Playing = glowing
-            isExpanded: false,
-            isLoading: false,
-            onTap: () {},
-            onLongPress: () {},
+    await tester.pumpWidget(
+      MultiProvider(
+        providers: [
+          ChangeNotifierProvider.value(value: settingsProvider),
+          ChangeNotifierProvider(create: (_) => ThemeProvider()),
+          ChangeNotifierProvider<DeviceService>(
+            create: (_) => MockDeviceService(),
+          ),
+          ChangeNotifierProvider<AudioProvider>(
+            create: (_) => MockAudioProvider(),
+          ),
+        ],
+        child: MaterialApp(
+          theme: ThemeData.dark(),
+          home: Scaffold(
+            body: ShowListCard(
+              show: show,
+              isPlaying: true, // Playing = glowing
+              isExpanded: false,
+              isLoading: false,
+              onTap: () {},
+              onLongPress: () {},
+            ),
           ),
         ),
       ),
-    ));
+    );
 
-    final borderWidget = tester
-        .widget<AnimatedGradientBorder>(find.byType(AnimatedGradientBorder));
+    final borderWidget = tester.widget<AnimatedGradientBorder>(
+      find.byType(AnimatedGradientBorder),
+    );
 
     // Glow Mode 2 = 2% intensity
     // Playing: 0.02 * 1.0 (playing multiplier) * 0.2 (non-RGB multiplier) = 0.004
     if ((borderWidget.glowOpacity - 0.004).abs() > 0.0001) {
       fail(
-          'Opacity mismatch! Expected 0.004 but got ${borderWidget.glowOpacity}. (Show shadow: ${borderWidget.showShadow})');
+        'Opacity mismatch! Expected 0.004 but got ${borderWidget.glowOpacity}. (Show shadow: ${borderWidget.showShadow})',
+      );
     }
   });
 }

@@ -39,39 +39,47 @@ void main() {
       expect(settingsProvider.performanceMode, true);
     });
 
-    test('ThemeProvider triggers reset exactly once when switching to Fruit',
-        () async {
-      // 1. Manually set some settings to true/glow
-      settingsProvider.setGlowMode(3);
-      expect(settingsProvider.glowMode, 3);
+    test(
+      'ThemeProvider triggers reset exactly once when switching to Fruit',
+      () async {
+        // 1. Manually set some settings to true/glow
+        settingsProvider.setGlowMode(3);
+        expect(settingsProvider.glowMode, 3);
 
-      // 2. Switch to Fruit
-      themeProvider.setThemeStyle(ThemeStyle.fruit);
+        // 2. Switch to Fruit
+        themeProvider.setThemeStyle(ThemeStyle.fruit);
 
-      // Allow for unawaited/async calls if any (though providers use notifyListeners)
-      // The reset is triggered via _checkAndResetFruitSettings()
+        // Allow for unawaited/async calls if any (though providers use notifyListeners)
+        // The reset is triggered via _checkAndResetFruitSettings()
 
-      // Since _checkAndResetFruitSettings is async and internal, we might need a small delay
-      // or to await the result if it were public.
-      // However, we can check the prefs directly or wait.
-      await Future.delayed(Duration.zero);
+        // Since _checkAndResetFruitSettings is async and internal, we might need a small delay
+        // or to await the result if it were public.
+        // However, we can check the prefs directly or wait.
+        await Future.delayed(Duration.zero);
 
-      expect(settingsProvider.glowMode, 0,
-          reason: 'Glow should be reset on first Fruit activation');
+        expect(
+          settingsProvider.glowMode,
+          0,
+          reason: 'Glow should be reset on first Fruit activation',
+        );
 
-      // 3. Disable performance mode so we can set glow (resetFruitFirstTimeSettings sets it to true)
-      settingsProvider.togglePerformanceMode();
-      settingsProvider.setGlowMode(3);
-      expect(settingsProvider.glowMode, 3);
+        // 3. Disable performance mode so we can set glow (resetFruitFirstTimeSettings sets it to true)
+        settingsProvider.togglePerformanceMode();
+        settingsProvider.setGlowMode(3);
+        expect(settingsProvider.glowMode, 3);
 
-      // 4. Toggle away and back to Fruit
-      themeProvider.setThemeStyle(ThemeStyle.android);
-      themeProvider.setThemeStyle(ThemeStyle.fruit);
+        // 4. Toggle away and back to Fruit
+        themeProvider.setThemeStyle(ThemeStyle.android);
+        themeProvider.setThemeStyle(ThemeStyle.fruit);
 
-      await Future.delayed(Duration.zero);
+        await Future.delayed(Duration.zero);
 
-      expect(settingsProvider.glowMode, 3,
-          reason: 'Glow should NOT be reset on subsequent Fruit activations');
-    });
+        expect(
+          settingsProvider.glowMode,
+          3,
+          reason: 'Glow should NOT be reset on subsequent Fruit activations',
+        );
+      },
+    );
   });
 }

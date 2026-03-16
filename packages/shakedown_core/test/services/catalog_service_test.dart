@@ -16,10 +16,10 @@ void main() {
               'id': '1',
               'src': 'sbd',
               'tracks': [
-                {'t': 'Minglewood', 'd': 300, 'u': 'url1'}
-              ]
-            }
-          ]
+                {'t': 'Minglewood', 'd': 300, 'u': 'url1'},
+              ],
+            },
+          ],
         },
         {
           'date': '1977-05-08',
@@ -30,11 +30,11 @@ void main() {
               'id': '2',
               'src': 'aud',
               'tracks': [
-                {'t': 'Minglewood', 'd': 305, 'u': 'url2'}
-              ]
-            }
-          ]
-        }
+                {'t': 'Minglewood', 'd': 305, 'u': 'url2'},
+              ],
+            },
+          ],
+        },
       ]);
 
       final results = CatalogService.parseShows(jsonInput);
@@ -65,10 +65,10 @@ void main() {
               'id': '1',
               'src': 'sbd',
               'tracks': [
-                {'t': 'GDTRFB', 'd': 300, 'u': 'url1'} // Starts with GD
-              ]
-            }
-          ]
+                {'t': 'GDTRFB', 'd': 300, 'u': 'url1'}, // Starts with GD
+              ],
+            },
+          ],
         },
         {
           'date': '1980-01-02',
@@ -78,11 +78,11 @@ void main() {
               'id': '2',
               'src': 'sbd',
               'tracks': [
-                {'t': 'Not Featured', 'd': 300, 'u': 'url1'}
-              ]
-            }
-          ]
-        }
+                {'t': 'Not Featured', 'd': 300, 'u': 'url1'},
+              ],
+            },
+          ],
+        },
       ]);
 
       final results = CatalogService.parseShows(jsonInput);
@@ -119,24 +119,27 @@ void main() {
           'date': '1977-05-08',
           'name': 'Cornell',
           'sources': [
-            {'id': '1', 'src': 'sbd', 'tracks': []}
-          ]
+            {'id': '1', 'src': 'sbd', 'tracks': []},
+          ],
         },
         {
           'date': '1977-05-08',
           'name': 'Cornell',
           'sources': [
-            {'id': '1', 'src': 'sbd', 'tracks': []} // Duplicate ID
-          ]
-        }
+            {'id': '1', 'src': 'sbd', 'tracks': []}, // Duplicate ID
+          ],
+        },
       ]);
 
       final results = CatalogService.parseShows(jsonInput);
       final show = results.first;
 
       // Should handle duplicates by checking ID existence
-      expect(show.sources.length, 1,
-          reason: 'Should not add duplicate source IDs');
+      expect(
+        show.sources.length,
+        1,
+        reason: 'Should not add duplicate source IDs',
+      );
     });
   });
 }

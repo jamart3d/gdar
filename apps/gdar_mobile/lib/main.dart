@@ -183,12 +183,14 @@ class _GdarMobileAppState extends State<GdarMobileApp> {
               title: 'GDAR',
               debugShowCheckedModeBanner: false,
               theme: settingsProvider.useTrueBlack && widget.isTv
-                  ? AppThemes.applyTrueBlack(AppThemes.lightTheme(
-                      settingsProvider.activeAppFont,
-                      useMaterial3: settingsProvider.useMaterial3,
-                      uiScale: settingsProvider.uiScale,
-                      style: ThemeStyle.android,
-                    ))
+                  ? AppThemes.applyTrueBlack(
+                      AppThemes.lightTheme(
+                        settingsProvider.activeAppFont,
+                        useMaterial3: settingsProvider.useMaterial3,
+                        uiScale: settingsProvider.uiScale,
+                        style: ThemeStyle.android,
+                      ),
+                    )
                   : AppThemes.lightTheme(
                       settingsProvider.activeAppFont,
                       useMaterial3: settingsProvider.useMaterial3,
@@ -196,12 +198,14 @@ class _GdarMobileAppState extends State<GdarMobileApp> {
                       style: ThemeStyle.android,
                     ),
               darkTheme: settingsProvider.useTrueBlack && widget.isTv
-                  ? AppThemes.applyTrueBlack(AppThemes.darkTheme(
-                      settingsProvider.activeAppFont,
-                      useMaterial3: settingsProvider.useMaterial3,
-                      uiScale: settingsProvider.uiScale,
-                      style: ThemeStyle.android,
-                    ))
+                  ? AppThemes.applyTrueBlack(
+                      AppThemes.darkTheme(
+                        settingsProvider.activeAppFont,
+                        useMaterial3: settingsProvider.useMaterial3,
+                        uiScale: settingsProvider.uiScale,
+                        style: ThemeStyle.android,
+                      ),
+                    )
                   : AppThemes.darkTheme(
                       settingsProvider.activeAppFont,
                       useMaterial3: settingsProvider.useMaterial3,

@@ -111,10 +111,10 @@ class MockCatalogService extends Mock implements CatalogService {
 
   @override
   int getRating(covariant String? sourceId) => super.noSuchMethod(
-        Invocation.method(#getRating, [sourceId]),
-        returnValue: 0,
-        returnValueForMissingStub: 0,
-      );
+    Invocation.method(#getRating, [sourceId]),
+    returnValue: 0,
+    returnValueForMissingStub: 0,
+  );
 
   @override
   Future<void> setRating(covariant String? sourceId, covariant int? rating) =>
@@ -170,8 +170,10 @@ class MockShowListProvider extends ChangeNotifier implements ShowListProvider {
   Future<void> checkArchiveStatus() async {}
 
   @override
-  Future<void> fetchShows(SharedPreferences prefs,
-      {bool forceRefresh = false}) async {}
+  Future<void> fetchShows(
+    SharedPreferences prefs, {
+    bool forceRefresh = false,
+  }) async {}
 
   @override
   Future<void> init(SharedPreferences prefs) async {}
@@ -304,92 +306,96 @@ void main() {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider<SettingsProvider>.value(
-            value: mockSettingsProvider),
+          value: mockSettingsProvider,
+        ),
         ChangeNotifierProvider<AudioProvider>.value(value: mockAudioProvider),
         ChangeNotifierProvider<ShowListProvider>.value(
-            value: mockShowListProvider),
+          value: mockShowListProvider,
+        ),
         ChangeNotifierProvider<DeviceService>.value(value: mockDeviceService),
         ChangeNotifierProvider<ThemeProvider>(create: (_) => ThemeProvider()),
         Provider<CatalogService>.value(value: mockCatalogService),
       ],
-      child: const MaterialApp(
-        home: ShowListScreen(),
-      ),
+      child: const MaterialApp(home: ShowListScreen()),
     );
   }
 
   testWidgets(
-      'Dismissing a single-source show removes it from the list without crash',
-      (WidgetTester tester) async {
-    // Setup a single source show
-    final source = Source(id: 'source1', tracks: []);
-    final show = Show(
+    'Dismissing a single-source show removes it from the list without crash',
+    (WidgetTester tester) async {
+      // Setup a single source show
+      final source = Source(id: 'source1', tracks: []);
+      final show = Show(
         name: 'Test Show',
         date: '2025-01-01',
         venue: 'Venue',
         artist: 'Grateful Dead',
         sources: [source],
-        hasFeaturedTrack: false);
+        hasFeaturedTrack: false,
+      );
 
-    mockShowListProvider.setShows([show]);
+      mockShowListProvider.setShows([show]);
 
-    await tester.pumpWidget(createWidgetUnderTest());
-    await tester.pump(const Duration(seconds: 1));
+      await tester.pumpWidget(createWidgetUnderTest());
+      await tester.pump(const Duration(seconds: 1));
 
-    expect(find.text('Venue'), findsOneWidget);
+      expect(find.text('Venue'), findsOneWidget);
 
-    final dismissibleFinder = find.byType(Dismissible);
-    expect(dismissibleFinder, findsOneWidget);
+      final dismissibleFinder = find.byType(Dismissible);
+      expect(dismissibleFinder, findsOneWidget);
 
-    await tester.fling(dismissibleFinder, const Offset(-800.0, 0.0), 2000);
-    await tester.pump();
-    await tester.pump(const Duration(seconds: 1));
-    await tester.pump(const Duration(seconds: 1));
+      await tester.fling(dismissibleFinder, const Offset(-800.0, 0.0), 2000);
+      await tester.pump();
+      await tester.pump(const Duration(seconds: 1));
+      await tester.pump(const Duration(seconds: 1));
 
-    // Verification:
-    // 1. Check if setRating(-1) was called on CatalogService
-    verify(mockCatalogService.setRating(any, any)).called(1);
+      // Verification:
+      // 1. Check if setRating(-1) was called on CatalogService
+      verify(mockCatalogService.setRating(any, any)).called(1);
 
-    // 2. The item should be GONE now.
-    expect(find.text('Venue'), findsNothing);
-  });
+      // 2. The item should be GONE now.
+      expect(find.text('Venue'), findsNothing);
+    },
+  );
 
   testWidgets(
-      'Dismissing a multi-source show blocks all sources and removes it from list',
-      (WidgetTester tester) async {
-    // Setup a multi-source show
-    final source1 = Source(id: 'source1', tracks: []);
-    final source2 = Source(id: 'source2', tracks: []);
-    final show = Show(
+    'Dismissing a multi-source show blocks all sources and removes it from list',
+    (WidgetTester tester) async {
+      // Setup a multi-source show
+      final source1 = Source(id: 'source1', tracks: []);
+      final source2 = Source(id: 'source2', tracks: []);
+      final show = Show(
         name: 'Multi Show',
         date: '2025-01-02',
         venue: 'Big Venue',
         artist: 'Grateful Dead',
         sources: [source1, source2],
-        hasFeaturedTrack: false);
+        hasFeaturedTrack: false,
+      );
 
-    mockShowListProvider.setShows([show]);
+      mockShowListProvider.setShows([show]);
 
-    await tester.pumpWidget(createWidgetUnderTest());
-    await tester.pump(const Duration(seconds: 1));
+      await tester.pumpWidget(createWidgetUnderTest());
+      await tester.pump(const Duration(seconds: 1));
 
-    expect(find.text('Big Venue'), findsOneWidget);
+      expect(find.text('Big Venue'), findsOneWidget);
 
-    final dismissibleFinder = find.byType(Dismissible);
-    expect(dismissibleFinder, findsOneWidget);
+      final dismissibleFinder = find.byType(Dismissible);
+      expect(dismissibleFinder, findsOneWidget);
 
-    // Swipe to dismiss
-    await tester.fling(dismissibleFinder, const Offset(-800.0, 0.0), 2000);
-    await tester.pump();
-    await tester.pump(const Duration(seconds: 1));
-    await tester.pump(const Duration(seconds: 1));
+      // Swipe to dismiss
+      await tester.fling(dismissibleFinder, const Offset(-800.0, 0.0), 2000);
+      await tester.pump();
+      await tester.pump(const Duration(seconds: 1));
+      await tester.pump(const Duration(seconds: 1));
 
-    // Verification:
-    // 1. Only the representative source should be blocked
-    verify(mockCatalogService.setRating('source1', -1)).called(1);
-    verifyNever(mockCatalogService.setRating('source2', -1));
+      // Verification:
+      // 1. Only the representative source should be blocked
+      verify(mockCatalogService.setRating('source1', -1)).called(1);
+      verifyNever(mockCatalogService.setRating('source2', -1));
 
-    // 2. The item should be removed
-    expect(find.text('Big Venue'), findsNothing);
-  });
+      // 2. The item should be removed
+      expect(find.text('Big Venue'), findsNothing);
+    },
+  );
 }

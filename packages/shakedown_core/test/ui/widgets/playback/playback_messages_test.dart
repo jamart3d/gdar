@@ -14,10 +14,7 @@ import 'package:shakedown_core/models/hud_snapshot.dart';
 
 import 'playback_messages_test.mocks.dart';
 
-@GenerateMocks([
-  AudioProvider,
-  SettingsProvider,
-])
+@GenerateMocks([AudioProvider, SettingsProvider])
 class MockDeviceService extends ChangeNotifier implements DeviceService {
   @override
   bool get isTv => false;
@@ -51,8 +48,9 @@ void main() {
     hudSnapshotController = StreamController<HudSnapshot>.broadcast();
 
     // Setup AudioProvider streams
-    when(mockAudioProvider.hudSnapshotStream)
-        .thenAnswer((_) => hudSnapshotController.stream);
+    when(
+      mockAudioProvider.hudSnapshotStream,
+    ).thenAnswer((_) => hudSnapshotController.stream);
     when(mockAudioProvider.currentHudSnapshot).thenReturn(HudSnapshot.empty());
 
     // Setup SettingsProvider
@@ -70,42 +68,42 @@ void main() {
       providers: [
         ChangeNotifierProvider<AudioProvider>.value(value: mockAudioProvider),
         ChangeNotifierProvider<SettingsProvider>.value(
-            value: mockSettingsProvider),
+          value: mockSettingsProvider,
+        ),
         ChangeNotifierProvider<DeviceService>.value(value: mockDeviceService),
         ChangeNotifierProvider<ThemeProvider>(
           create: (_) => ThemeProvider(isTv: false),
         ),
       ],
-      child: const MaterialApp(
-        home: Scaffold(
-          body: PlaybackMessages(),
-        ),
-      ),
+      child: const MaterialApp(home: Scaffold(body: PlaybackMessages())),
     );
   }
 
   group('PlaybackMessages', () {
-    testWidgets('Displays nothing when showPlaybackMessages is false',
-        (tester) async {
+    testWidgets('Displays nothing when showPlaybackMessages is false', (
+      tester,
+    ) async {
       when(mockSettingsProvider.showPlaybackMessages).thenReturn(false);
       await tester.pumpWidget(createWidgetUnderTest());
       expect(find.byType(Text), findsNothing);
     });
 
-    testWidgets('Displays "Loading..." when loading (HudSnapshot LD)',
-        (tester) async {
-      when(mockAudioProvider.currentHudSnapshot).thenReturn(
-        HudSnapshot.empty().copyWith(processing: 'LD'),
-      );
+    testWidgets('Displays "Loading..." when loading (HudSnapshot LD)', (
+      tester,
+    ) async {
+      when(
+        mockAudioProvider.currentHudSnapshot,
+      ).thenReturn(HudSnapshot.empty().copyWith(processing: 'LD'));
       await tester.pumpWidget(createWidgetUnderTest());
       expect(find.text('Loading...'), findsOneWidget);
     });
 
-    testWidgets('Displays "Buffering..." when buffering (HudSnapshot BUF)',
-        (tester) async {
-      when(mockAudioProvider.currentHudSnapshot).thenReturn(
-        HudSnapshot.empty().copyWith(processing: 'BUF'),
-      );
+    testWidgets('Displays "Buffering..." when buffering (HudSnapshot BUF)', (
+      tester,
+    ) async {
+      when(
+        mockAudioProvider.currentHudSnapshot,
+      ).thenReturn(HudSnapshot.empty().copyWith(processing: 'BUF'));
       await tester.pumpWidget(createWidgetUnderTest());
       expect(find.text('Buffering...'), findsOneWidget);
     });
@@ -123,40 +121,39 @@ void main() {
       expect(find.text('Buffering...'), findsNothing);
     });
 
-    testWidgets('Clears message and shows Playing (HudSnapshot RDY + isPlaying)',
-        (tester) async {
-      // 1. Initial message state
-      when(mockAudioProvider.currentHudSnapshot).thenReturn(
-        HudSnapshot.empty().copyWith(
-          signal: 'AGT',
-          message: 'Retrying...',
-          processing: 'BUF',
-        ),
-      );
-      await tester.pumpWidget(createWidgetUnderTest());
-      expect(find.text('Retrying...'), findsOneWidget);
+    testWidgets(
+      'Clears message and shows Playing (HudSnapshot RDY + isPlaying)',
+      (tester) async {
+        // 1. Initial message state
+        when(mockAudioProvider.currentHudSnapshot).thenReturn(
+          HudSnapshot.empty().copyWith(
+            signal: 'AGT',
+            message: 'Retrying...',
+            processing: 'BUF',
+          ),
+        );
+        await tester.pumpWidget(createWidgetUnderTest());
+        expect(find.text('Retrying...'), findsOneWidget);
 
-      // 2. Emit RDY + Playing
-      hudSnapshotController.add(
-        HudSnapshot.empty().copyWith(
-          signal: '--',
-          message: '--',
-          processing: 'RDY',
-          isPlaying: true,
-        ),
-      );
-      await tester.pump(); // No settle needed for simple Text change usually
+        // 2. Emit RDY + Playing
+        hudSnapshotController.add(
+          HudSnapshot.empty().copyWith(
+            signal: '--',
+            message: '--',
+            processing: 'RDY',
+            isPlaying: true,
+          ),
+        );
+        await tester.pump(); // No settle needed for simple Text change usually
 
-      expect(find.text('Retrying...'), findsNothing);
-      expect(find.text('Playing'), findsOneWidget);
-    });
+        expect(find.text('Retrying...'), findsNothing);
+        expect(find.text('Playing'), findsOneWidget);
+      },
+    );
 
     testWidgets('Shows Paused when RDY and not playing', (tester) async {
       when(mockAudioProvider.currentHudSnapshot).thenReturn(
-        HudSnapshot.empty().copyWith(
-          processing: 'RDY',
-          isPlaying: false,
-        ),
+        HudSnapshot.empty().copyWith(processing: 'RDY', isPlaying: false),
       );
       await tester.pumpWidget(createWidgetUnderTest());
       expect(find.text('Paused'), findsOneWidget);

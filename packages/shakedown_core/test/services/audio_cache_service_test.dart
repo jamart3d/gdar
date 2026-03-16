@@ -31,37 +31,39 @@ void main() {
     });
 
     test(
-        'createAudioSource returns LockCachingAudioSource when cache is enabled',
-        () async {
-      final uri = Uri.parse('https://example.com/audio.mp3');
-      const tag = MediaItem(id: '1', title: 'Test');
+      'createAudioSource returns LockCachingAudioSource when cache is enabled',
+      () async {
+        final uri = Uri.parse('https://example.com/audio.mp3');
+        const tag = MediaItem(id: '1', title: 'Test');
 
-      final source = service.createAudioSource(
-        uri: uri,
-        tag: tag,
-        useCache: true,
-      );
+        final source = service.createAudioSource(
+          uri: uri,
+          tag: tag,
+          useCache: true,
+        );
 
-      expect(source, isA<LockCachingAudioSource>());
-      final lockSource = source as LockCachingAudioSource;
-      expect((await lockSource.cacheFile).parent.path, tempDir.path);
-    });
+        expect(source, isA<LockCachingAudioSource>());
+        final lockSource = source as LockCachingAudioSource;
+        expect((await lockSource.cacheFile).parent.path, tempDir.path);
+      },
+    );
 
     test(
-        'createAudioSource returns standard AudioSource when cache is disabled',
-        () {
-      final uri = Uri.parse('https://example.com/audio.mp3');
-      const tag = MediaItem(id: '1', title: 'Test');
+      'createAudioSource returns standard AudioSource when cache is disabled',
+      () {
+        final uri = Uri.parse('https://example.com/audio.mp3');
+        const tag = MediaItem(id: '1', title: 'Test');
 
-      final source = service.createAudioSource(
-        uri: uri,
-        tag: tag,
-        useCache: false,
-      );
+        final source = service.createAudioSource(
+          uri: uri,
+          tag: tag,
+          useCache: false,
+        );
 
-      expect(source, isNot(isA<LockCachingAudioSource>()));
-      expect(source, isA<AudioSource>());
-    });
+        expect(source, isNot(isA<LockCachingAudioSource>()));
+        expect(source, isA<AudioSource>());
+      },
+    );
 
     test('refreshCacheCount counts valid cache files', () async {
       // Create a dummy file with 64-char name (simulating SHA256)
@@ -79,8 +81,7 @@ void main() {
       expect(service.cachedTrackCount, 1);
     });
 
-    test('performCacheCleanup removes oldest files when limit exceeded',
-        () async {
+    test('performCacheCleanup removes oldest files when limit exceeded', () async {
       // Create 5 files with specific modification times
       // Note: File system timestamp resolution can be coarse, so delays or explicit setting might be needed.
       // We'll try explicit setLastModified.
@@ -100,55 +101,66 @@ void main() {
       await service.performCacheCleanup(maxFiles: 3);
 
       expect(await files[0].exists(), true, reason: 'Newest file should exist');
-      expect(await files[1].exists(), true,
-          reason: '2nd newest file should exist');
-      expect(await files[2].exists(), true,
-          reason: '3rd newest file should exist');
-      expect(await files[3].exists(), false,
-          reason: 'Old file should be deleted');
-      expect(await files[4].exists(), false,
-          reason: 'Oldest file should be deleted');
+      expect(
+        await files[1].exists(),
+        true,
+        reason: '2nd newest file should exist',
+      );
+      expect(
+        await files[2].exists(),
+        true,
+        reason: '3rd newest file should exist',
+      );
+      expect(
+        await files[3].exists(),
+        false,
+        reason: 'Old file should be deleted',
+      );
+      expect(
+        await files[4].exists(),
+        false,
+        reason: 'Oldest file should be deleted',
+      );
 
       expect(service.cachedTrackCount, 3);
     });
 
-    test('preloadSource downloads tracks sequentially and can be cancelled',
-        () async {
-      // Create a mock source
-      final track1 = Track(
-        trackNumber: 1,
-        title: 'Track 1',
-        url: 'https://archive.org/t1.mp3',
-        duration: 300,
-        setName: 'Set 1',
-      );
-      final track2 = Track(
-        trackNumber: 2,
-        title: 'Track 2',
-        url: 'https://archive.org/t2.mp3',
-        duration: 300,
-        setName: 'Set 1',
-      );
-      final source = Source(
-        id: 'source_test',
-        tracks: [track1, track2],
-      );
+    test(
+      'preloadSource downloads tracks sequentially and can be cancelled',
+      () async {
+        // Create a mock source
+        final track1 = Track(
+          trackNumber: 1,
+          title: 'Track 1',
+          url: 'https://archive.org/t1.mp3',
+          duration: 300,
+          setName: 'Set 1',
+        );
+        final track2 = Track(
+          trackNumber: 2,
+          title: 'Track 2',
+          url: 'https://archive.org/t2.mp3',
+          duration: 300,
+          setName: 'Set 1',
+        );
+        final source = Source(id: 'source_test', tracks: [track1, track2]);
 
-      // Note: testing actual HTTP downloads in unit tests is tricky without mocks.
-      // But we can check if the files eventually exist or if logic flows.
-      // Since we use http.Client, we might need to mock it if we wanted strict verify.
-      // For now, let's verify it starts and we can call cancel.
+        // Note: testing actual HTTP downloads in unit tests is tricky without mocks.
+        // But we can check if the files eventually exist or if logic flows.
+        // Since we use http.Client, we might need to mock it if we wanted strict verify.
+        // For now, let's verify it starts and we can call cancel.
 
-      // Trigger preload
-      final preloadFuture = service.preloadSource(source);
+        // Trigger preload
+        final preloadFuture = service.preloadSource(source);
 
-      // Cancel immediately
-      service.monitorCache(false); // This calls _cancelPreload()
+        // Cancel immediately
+        service.monitorCache(false); // This calls _cancelPreload()
 
-      await preloadFuture;
+        await preloadFuture;
 
-      // Check if it finished gracefully
-      expect(true, true);
-    });
+        // Check if it finished gracefully
+        expect(true, true);
+      },
+    );
   });
 }

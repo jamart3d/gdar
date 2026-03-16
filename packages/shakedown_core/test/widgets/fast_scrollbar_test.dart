@@ -55,10 +55,8 @@ void main() {
             children: [
               ScrollablePositionedList.builder(
                 itemCount: mockShows.length,
-                itemBuilder: (context, index) => SizedBox(
-                  height: 100,
-                  child: Text('Item $index'),
-                ),
+                itemBuilder: (context, index) =>
+                    SizedBox(height: 100, child: Text('Item $index')),
                 itemScrollController: itemScrollController,
                 itemPositionsListener: itemPositionsListener,
               ),
@@ -74,8 +72,9 @@ void main() {
     );
   }
 
-  testWidgets('FastScrollbar handles large content with proportional handle',
-      (WidgetTester tester) async {
+  testWidgets('FastScrollbar handles large content with proportional handle', (
+    WidgetTester tester,
+  ) async {
     await tester.pumpWidget(createWidget());
 
     // Initially at top

@@ -20,16 +20,16 @@ void main() {
 
       TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
           .setMockMethodCallHandler(
-        const MethodChannel('plugins.flutter.io/url_launcher'),
-        (MethodCall methodCall) async {
-          if (methodCall.method == 'canLaunch') {
-            return true;
-          } else if (methodCall.method == 'launch') {
-            return true;
-          }
-          return null;
-        },
-      );
+            const MethodChannel('plugins.flutter.io/url_launcher'),
+            (MethodCall methodCall) async {
+              if (methodCall.method == 'canLaunch') {
+                return true;
+              } else if (methodCall.method == 'launch') {
+                return true;
+              }
+              return null;
+            },
+          );
 
       updateProvider = UpdateProvider();
     });

@@ -73,43 +73,46 @@ void main() {
   }
 
   testWidgets(
-      'Android style does not render FruitIconButton in playback app bar action',
-      (tester) async {
-    SharedPreferences.setMockInitialValues({
-      'theme_style_preference': 0,
-    });
-    final prefs = await SharedPreferences.getInstance();
-    final settingsProvider = SettingsProvider(prefs);
-    final themeProvider = ThemeProvider();
-    themeProvider.setThemeStyle(ThemeStyle.android);
+    'Android style does not render FruitIconButton in playback app bar action',
+    (tester) async {
+      SharedPreferences.setMockInitialValues({'theme_style_preference': 0});
+      final prefs = await SharedPreferences.getInstance();
+      final settingsProvider = SettingsProvider(prefs);
+      final themeProvider = ThemeProvider();
+      themeProvider.setThemeStyle(ThemeStyle.android);
 
-    await tester.pumpWidget(await buildHarness(
-      themeProvider: themeProvider,
-      settingsProvider: settingsProvider,
-    ));
-    await tester.pump();
+      await tester.pumpWidget(
+        await buildHarness(
+          themeProvider: themeProvider,
+          settingsProvider: settingsProvider,
+        ),
+      );
+      await tester.pump();
 
-    expect(find.byType(FruitIconButton), findsNothing);
-    expect(find.byIcon(Icons.settings_rounded), findsOneWidget);
-  });
+      expect(find.byType(FruitIconButton), findsNothing);
+      expect(find.byIcon(Icons.settings_rounded), findsOneWidget);
+    },
+  );
 
-  testWidgets('Fruit style renders FruitIconButton in playback app bar action',
-      (tester) async {
-    SharedPreferences.setMockInitialValues({
-      'theme_style_preference': 1,
-    });
-    final prefs = await SharedPreferences.getInstance();
-    final settingsProvider = SettingsProvider(prefs);
-    final themeProvider = ThemeProvider();
-    themeProvider.testOnlyOverrideFruitAllowed = true;
-    themeProvider.setThemeStyle(ThemeStyle.fruit);
+  testWidgets(
+    'Fruit style renders FruitIconButton in playback app bar action',
+    (tester) async {
+      SharedPreferences.setMockInitialValues({'theme_style_preference': 1});
+      final prefs = await SharedPreferences.getInstance();
+      final settingsProvider = SettingsProvider(prefs);
+      final themeProvider = ThemeProvider();
+      themeProvider.testOnlyOverrideFruitAllowed = true;
+      themeProvider.setThemeStyle(ThemeStyle.fruit);
 
-    await tester.pumpWidget(await buildHarness(
-      themeProvider: themeProvider,
-      settingsProvider: settingsProvider,
-    ));
-    await tester.pump();
+      await tester.pumpWidget(
+        await buildHarness(
+          themeProvider: themeProvider,
+          settingsProvider: settingsProvider,
+        ),
+      );
+      await tester.pump();
 
-    expect(find.byType(FruitIconButton), findsOneWidget);
-  });
+      expect(find.byType(FruitIconButton), findsOneWidget);
+    },
+  );
 }

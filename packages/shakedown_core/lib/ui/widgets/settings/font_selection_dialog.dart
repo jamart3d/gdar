@@ -23,7 +23,9 @@ class FontSelectionDialog extends StatelessWidget {
       'default': TextStyle(fontFamily: FontConfig.resolve('Roboto')),
       'inter': TextStyle(fontFamily: FontConfig.resolve('Inter')),
       'caveat': TextStyle(fontFamily: FontConfig.resolve('Caveat')),
-      'permanent_marker': TextStyle(fontFamily: FontConfig.resolve('Permanent Marker')),
+      'permanent_marker': TextStyle(
+        fontFamily: FontConfig.resolve('Permanent Marker'),
+      ),
       'rock_salt': TextStyle(fontFamily: FontConfig.resolve('RockSalt')),
     };
 

@@ -61,7 +61,7 @@ class SettingsProvider with ChangeNotifier {
   static const String _performanceModeKey = 'performance_mode';
   String _appFont = 'default';
   String get appFont => _appFont;
-  
+
   /// Returns the actual font being used, respecting TV-specific overrides.
   /// On TV, we force 'rock_salt' for the "10-foot" look (v1.1.70 parity).
   String get activeAppFont => isTv ? 'rock_salt' : _appFont;
@@ -768,7 +768,8 @@ class SettingsProvider with ChangeNotifier {
       _prefs.setBool('first_run_check_done', true);
     }
 
-    _onboardingCompletedVersion = _prefs.getInt(_onboardingCompletedVersionKey) ??
+    _onboardingCompletedVersion =
+        _prefs.getInt(_onboardingCompletedVersionKey) ??
         (kIsWeb ? kCurrentOnboardingVersion : 0);
     _showTrackNumbers =
         _prefs.getBool(_trackNumberKey) ?? DefaultSettings.showTrackNumbers;
@@ -801,7 +802,8 @@ class SettingsProvider with ChangeNotifier {
     _enableHaptics = _prefs.getBool(_enableHapticsKey) ?? true;
     _fruitDenseList = _prefs.getBool(_fruitDenseListKey) ?? false;
     _fruitStickyNowPlaying = _prefs.getBool(_fruitStickyNowPlayingKey) ?? false;
-    _enableRunDetection = _prefs.getBool(_enableRunDetectionKey) ??
+    _enableRunDetection =
+        _prefs.getBool(_enableRunDetectionKey) ??
         DefaultSettings.enableRunDetection;
 
     // Screensaver Migration
@@ -826,8 +828,13 @@ class SettingsProvider with ChangeNotifier {
       _appFont = oldHandwriting ? 'caveat' : 'default';
       if (oldHandwriting) _prefs.setString(_appFontKey, 'caveat');
       _prefs.remove('use_handwriting_font');
-    } else {
-      _appFont = _prefs.getString(_appFontKey) ?? DefaultSettings.appFont;
+      _appFont =
+          _prefs.getString(_appFontKey) ??
+          _dStr(
+            WebDefaults.appFont,
+            DefaultSettings.appFont,
+            DefaultSettings.appFont,
+          );
     }
     logger.i('SettingsProvider: Active App Font = $_appFont');
 
@@ -884,7 +891,11 @@ class SettingsProvider with ChangeNotifier {
         );
     _showPlaybackMessages =
         _prefs.getBool(_showPlaybackMessagesKey) ??
-        DefaultSettings.showPlaybackMessages;
+        _dBool(
+          DefaultSettings.showPlaybackMessages,
+          TvDefaults.showPlaybackMessages,
+          DefaultSettings.showPlaybackMessages,
+        );
     _showDevAudioHud =
         _prefs.getBool(_showDevAudioHudKey) ?? DefaultSettings.showDevAudioHud;
     _devHudMode = DevHudMode.fromString(
@@ -1049,10 +1060,18 @@ class SettingsProvider with ChangeNotifier {
     // Screensaver
     _useOilScreensaver =
         _prefs.getBool(_useOilScreensaverKey) ??
-        DefaultSettings.useOilScreensaver;
+        _dBool(
+          WebDefaults.useOilScreensaver,
+          DefaultSettings.useOilScreensaver,
+          DefaultSettings.useOilScreensaver,
+        );
     _oilScreensaverMode =
         _prefs.getString(_oilScreensaverModeKey) ??
-        DefaultSettings.oilScreensaverMode;
+        _dStr(
+          DefaultSettings.oilScreensaverMode,
+          TvDefaults.oilScreensaverMode,
+          DefaultSettings.oilScreensaverMode,
+        );
     _oilScreensaverInactivityMinutes =
         _prefs.getInt(_oilScreensaverInactivityMinutesKey) ??
         DefaultSettings.oilScreensaverInactivityMinutes;

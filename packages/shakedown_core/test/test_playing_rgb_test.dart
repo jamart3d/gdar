@@ -34,17 +34,20 @@ void main() {
     final mockCatalog = MockCatalogService();
     final mockRatingsBox = MockBoxRating();
     final mockHistoryBox = MockBoxBool();
-    when(() => mockCatalog.ratingsListenable)
-        .thenReturn(ValueNotifier(mockRatingsBox));
-    when(() => mockCatalog.historyListenable)
-        .thenReturn(ValueNotifier(mockHistoryBox));
+    when(
+      () => mockCatalog.ratingsListenable,
+    ).thenReturn(ValueNotifier(mockRatingsBox));
+    when(
+      () => mockCatalog.historyListenable,
+    ).thenReturn(ValueNotifier(mockHistoryBox));
     when(() => mockCatalog.isInitialized).thenReturn(true);
     when(() => mockCatalog.getRating(any())).thenReturn(0);
     when(() => mockCatalog.isPlayed(any())).thenReturn(false);
     CatalogService.setMock(mockCatalog);
   });
-  testWidgets('ShowListItem isPlaying passes correctly to TvFocusWrapper',
-      (WidgetTester tester) async {
+  testWidgets('ShowListItem isPlaying passes correctly to TvFocusWrapper', (
+    WidgetTester tester,
+  ) async {
     SharedPreferences.setMockInitialValues({});
     final prefs = await SharedPreferences.getInstance();
     final settingsProvider = SettingsProvider(prefs, isTv: true);
@@ -74,7 +77,8 @@ void main() {
       MultiProvider(
         providers: [
           ChangeNotifierProvider<SettingsProvider>.value(
-              value: settingsProvider),
+            value: settingsProvider,
+          ),
           ChangeNotifierProvider<ThemeProvider>.value(value: themeProvider),
           ChangeNotifierProvider<DeviceService>.value(value: deviceService),
           Provider<AudioProvider>.value(value: audioProvider),
@@ -103,8 +107,10 @@ void main() {
     expect(tvFocusFinder, findsOneWidget);
 
     final tvFocusWrapper = tester.widget<TvFocusWrapper>(tvFocusFinder);
-    expect(tvFocusWrapper.isPlaying, isTrue,
-        reason:
-            'isPlaying should be true when audioProvider.currentShow == show');
+    expect(
+      tvFocusWrapper.isPlaying,
+      isTrue,
+      reason: 'isPlaying should be true when audioProvider.currentShow == show',
+    );
   });
 }

@@ -11,8 +11,9 @@ void main() {
     SharedPreferences.setMockInitialValues({});
   });
 
-  testWidgets('AnimatedDiceIcon renders and respects loading state',
-      (WidgetTester tester) async {
+  testWidgets('AnimatedDiceIcon renders and respects loading state', (
+    WidgetTester tester,
+  ) async {
     final prefs = await SharedPreferences.getInstance();
     final settingsProvider = SettingsProvider(prefs);
     final themeProvider = ThemeProvider();
@@ -25,10 +26,7 @@ void main() {
         ],
         child: MaterialApp(
           home: Scaffold(
-            body: AnimatedDiceIcon(
-              onPressed: () {},
-              isLoading: loading,
-            ),
+            body: AnimatedDiceIcon(onPressed: () {}, isLoading: loading),
           ),
         ),
       );

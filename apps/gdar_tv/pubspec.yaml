@@ -1,6 +1,6 @@
 name: gdar_tv
 publish_to: none
-version: 1.2.3+203
+version: 1.2.4+204
 environment:
   sdk: '^3.11.0'
 resolution: workspace
@@ -28,6 +28,14 @@ dev_dependencies:
     sdk: flutter
   mockito: ^5.4.4
   build_runner: ^2.4.8
+  flutter_launcher_icons: ^0.13.1
+
+flutter_launcher_icons:
+  android: true
+  ios: false
+  image_path: "../../packages/shakedown_core/assets/images/gdar_icon.png"
+  adaptive_icon_background: "#000000"
+  adaptive_icon_foreground: "../../packages/shakedown_core/assets/images/gdar_icon_forground.png"
 
 flutter:
   uses-material-design: true

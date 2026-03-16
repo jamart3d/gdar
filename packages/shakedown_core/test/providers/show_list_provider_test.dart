@@ -26,8 +26,11 @@ void main() {
   late MockSharedPreferences mockPrefs;
 
   // Helper function to create a dummy show
-  Show createDummyShow(String name, String date,
-      {bool hasFeaturedTrack = false}) {
+  Show createDummyShow(
+    String name,
+    String date, {
+    bool hasFeaturedTrack = false,
+  }) {
     return Show(
       name: name,
       artist: 'Grateful Dead',
@@ -36,7 +39,8 @@ void main() {
       sources: [
         Source(
           id: 'source1',
-          tracks: [], // Empty tracks for now, as provider doesn't strictly check them for list filtering
+          tracks:
+              [], // Empty tracks for now, as provider doesn't strictly check them for list filtering
         ),
       ],
       hasFeaturedTrack: hasFeaturedTrack,
@@ -46,8 +50,11 @@ void main() {
   final dummyShows = [
     createDummyShow('Venue A on 2025-01-15', '2025-01-15'),
     createDummyShow('Venue B on 2025-02-20', '2025-02-20'),
-    createDummyShow('Venue C on 2025-03-25', '2025-03-25',
-        hasFeaturedTrack: true),
+    createDummyShow(
+      'Venue C on 2025-03-25',
+      '2025-03-25',
+      hasFeaturedTrack: true,
+    ),
   ];
 
   setUp(() {
@@ -57,8 +64,9 @@ void main() {
 
     // Stub default ValueListenables
     final mockRatingBox = MockRatingBox();
-    when(mockCatalogService.ratingsListenable)
-        .thenReturn(ValueNotifier<Box<Rating>>(mockRatingBox));
+    when(
+      mockCatalogService.ratingsListenable,
+    ).thenReturn(ValueNotifier<Box<Rating>>(mockRatingBox));
   });
 
   group('ShowListProvider Tests', () {
@@ -70,9 +78,12 @@ void main() {
     });
 
     test('fetchShows successfully loads shows', () async {
-      when(mockCatalogService.initialize(
-              prefs: anyNamed('prefs'), strategy: anyNamed('strategy')))
-          .thenAnswer((_) async {});
+      when(
+        mockCatalogService.initialize(
+          prefs: anyNamed('prefs'),
+          strategy: anyNamed('strategy'),
+        ),
+      ).thenAnswer((_) async {});
       when(mockCatalogService.allShows).thenReturn(dummyShows);
       await showListProvider.fetchShows(mockPrefs);
 
@@ -85,9 +96,12 @@ void main() {
     });
 
     test('fetchShows handles errors', () async {
-      when(mockCatalogService.initialize(
-              prefs: anyNamed('prefs'), strategy: anyNamed('strategy')))
-          .thenThrow(Exception('Failed to load'));
+      when(
+        mockCatalogService.initialize(
+          prefs: anyNamed('prefs'),
+          strategy: anyNamed('strategy'),
+        ),
+      ).thenThrow(Exception('Failed to load'));
 
       await showListProvider.fetchShows(mockPrefs);
 
@@ -109,27 +123,37 @@ void main() {
     });
 
     test('filteredShows returns correct shows based on search query', () async {
-      when(mockCatalogService.initialize(
-              prefs: anyNamed('prefs'), strategy: anyNamed('strategy')))
-          .thenAnswer((_) async {});
+      when(
+        mockCatalogService.initialize(
+          prefs: anyNamed('prefs'),
+          strategy: anyNamed('strategy'),
+        ),
+      ).thenAnswer((_) async {});
       when(mockCatalogService.allShows).thenReturn(dummyShows);
       await showListProvider.fetchShows(mockPrefs);
 
       showListProvider.setSearchQuery('Venue A');
       expect(showListProvider.filteredShows.length, 1);
       expect(
-          showListProvider.filteredShows.first.name, 'Venue A on 2025-01-15');
+        showListProvider.filteredShows.first.name,
+        'Venue A on 2025-01-15',
+      );
 
       showListProvider.setSearchQuery('2025-02-20');
       expect(showListProvider.filteredShows.length, 1);
       expect(
-          showListProvider.filteredShows.first.name, 'Venue B on 2025-02-20');
+        showListProvider.filteredShows.first.name,
+        'Venue B on 2025-02-20',
+      );
     });
 
     test('filteredShows hides featured tracks', () async {
-      when(mockCatalogService.initialize(
-              prefs: anyNamed('prefs'), strategy: anyNamed('strategy')))
-          .thenAnswer((_) async {});
+      when(
+        mockCatalogService.initialize(
+          prefs: anyNamed('prefs'),
+          strategy: anyNamed('strategy'),
+        ),
+      ).thenAnswer((_) async {});
       when(mockCatalogService.allShows).thenReturn(dummyShows);
       await showListProvider.fetchShows(mockPrefs);
 
@@ -137,22 +161,27 @@ void main() {
       expect(showListProvider.filteredShows.length, 3);
     });
 
-    test('toggleShowExpansion (prev onShowTap) expands and collapses a show',
-        () async {
-      when(mockCatalogService.initialize(
-              prefs: anyNamed('prefs'), strategy: anyNamed('strategy')))
-          .thenAnswer((_) async {});
-      when(mockCatalogService.allShows).thenReturn(dummyShows);
-      await showListProvider.fetchShows(mockPrefs);
-      final show = showListProvider.filteredShows.first;
-      final key = showListProvider.getShowKey(show);
+    test(
+      'toggleShowExpansion (prev onShowTap) expands and collapses a show',
+      () async {
+        when(
+          mockCatalogService.initialize(
+            prefs: anyNamed('prefs'),
+            strategy: anyNamed('strategy'),
+          ),
+        ).thenAnswer((_) async {});
+        when(mockCatalogService.allShows).thenReturn(dummyShows);
+        await showListProvider.fetchShows(mockPrefs);
+        final show = showListProvider.filteredShows.first;
+        final key = showListProvider.getShowKey(show);
 
-      showListProvider.toggleShowExpansion(key);
-      expect(showListProvider.expandedShowKey, key);
+        showListProvider.toggleShowExpansion(key);
+        expect(showListProvider.expandedShowKey, key);
 
-      showListProvider.toggleShowExpansion(key);
-      expect(showListProvider.expandedShowKey, isNull);
-    });
+        showListProvider.toggleShowExpansion(key);
+        expect(showListProvider.expandedShowKey, isNull);
+      },
+    );
 
     test('setLoadingShow updates the loading show name', () {
       final show = dummyShows.first;
@@ -162,9 +191,12 @@ void main() {
     });
 
     test('expandShow expands the given show', () async {
-      when(mockCatalogService.initialize(
-              prefs: anyNamed('prefs'), strategy: anyNamed('strategy')))
-          .thenAnswer((_) async {});
+      when(
+        mockCatalogService.initialize(
+          prefs: anyNamed('prefs'),
+          strategy: anyNamed('strategy'),
+        ),
+      ).thenAnswer((_) async {});
       when(mockCatalogService.allShows).thenReturn(dummyShows);
       await showListProvider.fetchShows(mockPrefs);
       final show = showListProvider.filteredShows.first;
@@ -174,9 +206,12 @@ void main() {
     });
 
     test('collapseCurrentShow collapses the current show', () async {
-      when(mockCatalogService.initialize(
-              prefs: anyNamed('prefs'), strategy: anyNamed('strategy')))
-          .thenAnswer((_) async {});
+      when(
+        mockCatalogService.initialize(
+          prefs: anyNamed('prefs'),
+          strategy: anyNamed('strategy'),
+        ),
+      ).thenAnswer((_) async {});
       when(mockCatalogService.allShows).thenReturn(dummyShows);
       await showListProvider.fetchShows(mockPrefs);
       final show = showListProvider.filteredShows.first;

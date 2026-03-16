@@ -95,7 +95,9 @@ class _TvPlaybackBarState extends State<TvPlaybackBar> {
               return Text(
                 _formatDuration(position),
                 style: TextStyle(
-                  fontFamily: FontConfig.resolve('Roboto'), // Monospaced-ish for time
+                  fontFamily: FontConfig.resolve(
+                    'Roboto',
+                  ), // Monospaced-ish for time
                   fontSize: 14,
                   color: colorScheme.onSurfaceVariant,
                   fontFeatures: const [FontFeature.tabularFigures()],

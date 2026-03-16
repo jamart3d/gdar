@@ -6,6 +6,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.4+204] - 2026-03-16
+
+### Added
+- **Icons**: Branded launcher icons for Android, iOS, and Web platforms.
+- **Melos**: New `melos run icons` script for unified launcher icon regeneration across the workspace.
+
 ## [1.2.3+203] - 2026-03-15
 
 ### Added

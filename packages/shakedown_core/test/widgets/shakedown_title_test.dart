@@ -41,7 +41,8 @@ void main() {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider<SettingsProvider>.value(
-            value: mockSettingsProvider),
+          value: mockSettingsProvider,
+        ),
         ChangeNotifierProvider<DeviceService>.value(value: MockDeviceService()),
       ],
       child: MaterialApp(
@@ -64,8 +65,9 @@ void main() {
 
   testWidgets('respects shakeDelay and animates', (WidgetTester tester) async {
     const delay = Duration(seconds: 1);
-    await tester
-        .pumpWidget(createWidget(animateOnStart: true, shakeDelay: delay));
+    await tester.pumpWidget(
+      createWidget(animateOnStart: true, shakeDelay: delay),
+    );
 
     // Initially (0ms), it should be at 0 rotation (implied, hard to check exactly without finder match on Transform, but we can check it exists)
     // The rotation wrapper is always there now, but value is 0.

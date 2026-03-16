@@ -188,20 +188,18 @@ class _PlaybackMessagesState extends State<PlaybackMessages>
           rows.add(
             FittedBox(
               fit: BoxFit.scaleDown,
-              alignment:
-                  widget.textAlign == TextAlign.center
-                      ? Alignment.center
-                      : widget.textAlign == TextAlign.right
-                      ? Alignment.centerRight
-                      : Alignment.centerLeft,
+              alignment: widget.textAlign == TextAlign.center
+                  ? Alignment.center
+                  : widget.textAlign == TextAlign.right
+                  ? Alignment.centerRight
+                  : Alignment.centerLeft,
               child: Row(
                 mainAxisSize: MainAxisSize.min,
-                mainAxisAlignment:
-                    widget.textAlign == TextAlign.center
-                        ? MainAxisAlignment.center
-                        : widget.textAlign == TextAlign.right
-                        ? MainAxisAlignment.end
-                        : MainAxisAlignment.start,
+                mainAxisAlignment: widget.textAlign == TextAlign.center
+                    ? MainAxisAlignment.center
+                    : widget.textAlign == TextAlign.right
+                    ? MainAxisAlignment.end
+                    : MainAxisAlignment.start,
                 children: [...children, ...otherChildren],
               ),
             ),
@@ -229,12 +227,11 @@ class _PlaybackMessagesState extends State<PlaybackMessages>
 
         return Column(
           mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment:
-              widget.textAlign == TextAlign.right
-                  ? CrossAxisAlignment.end
-                  : (widget.textAlign == TextAlign.left
-                      ? CrossAxisAlignment.start
-                      : CrossAxisAlignment.center),
+          crossAxisAlignment: widget.textAlign == TextAlign.right
+              ? CrossAxisAlignment.end
+              : (widget.textAlign == TextAlign.left
+                    ? CrossAxisAlignment.start
+                    : CrossAxisAlignment.center),
           children: rows,
         );
       },

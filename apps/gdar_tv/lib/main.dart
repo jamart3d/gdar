@@ -71,9 +71,6 @@ class GdarTvApp extends StatefulWidget {
     this.audioCacheService,
   });
 
-
-
-
   @override
   State<GdarTvApp> createState() => _GdarTvAppState();
 }
@@ -98,7 +95,6 @@ class _GdarTvAppState extends State<GdarTvApp> {
     }
     _initDeepLinks();
   }
-
 
   @override
   void dispose() {
@@ -125,7 +121,8 @@ class _GdarTvAppState extends State<GdarTvApp> {
         Provider<WakelockService>(create: (_) => WakelockService()),
         ChangeNotifierProvider.value(value: _settingsProvider),
         ChangeNotifierProvider(
-          create: (_) => widget.audioCacheService ?? (AudioCacheService()..init()),
+          create: (_) =>
+              widget.audioCacheService ?? (AudioCacheService()..init()),
         ),
 
         ChangeNotifierProxyProvider<SettingsProvider, ShowListProvider>(
@@ -165,10 +162,9 @@ class _GdarTvAppState extends State<GdarTvApp> {
             style: ThemeStyle.android,
           );
 
-          final finalTheme =
-              settingsProvider.useTrueBlack
-                  ? AppThemes.applyTrueBlack(theme)
-                  : theme;
+          final finalTheme = settingsProvider.useTrueBlack
+              ? AppThemes.applyTrueBlack(theme)
+              : theme;
 
           return RgbClockWrapper(
             animationSpeed: settingsProvider.rgbAnimationSpeed,

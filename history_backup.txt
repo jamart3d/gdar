@@ -1,0 +1,174 @@
+﻿What's new in v1.2.3+203
+ΓÇó Unified Diagnostics HUD with real-time streaming for transparent audio engine telemetry.
+ΓÇó Refactored Playback Messages for improved UI responsiveness and performance.
+ΓÇó Fixed visibility of playback status text when disabled in Settings.
+ΓÇó Resolved duplicate dispose logic and consolidated engine diagnostics.
+
+---
+
+What's new in v1.2.1+201
+ΓÇó Resolved launch failure where the app would hang at the onboarding screen.
+ΓÇó Restored consistent 'Rock Salt' branding on TV across all screens and widgets.
+ΓÇó Fixed scrollbar year chip positioning on Web for accurate navigation.
+ΓÇó Defaulted onboarding to "completed" for Web apps to skip unnecessary steps.
+ΓÇó Relocated core analysis scripts to synchronize with monorepo structure.
+
+---
+
+What's new in v1.2.0+200
+ΓÇó Architecture: Migrated to a Dart workspace monorepo with independent app targets (Mobile, TV, Web) and shared core packages.
+ΓÇó Versioning reset to +200 to mark the new monorepo era.
+
+---
+
+What's new in v1.1.69+169
+ΓÇó Updated device_info_plus and app_links.
+ΓÇó Migrated to hive_ce for improve Dart 3.7+ support.
+ΓÇó Updated flame to v1.36.0 for Game Jam compatibility.
+ΓÇó Updated sliding_up_panel for better stability.
+ΓÇó Fixed Fruit theme activation and glowMode reset.
+ΓÇó Resolved Android compilation errors.
+
+---
+
+What's new in v1.1.68+168
+ΓÇó Resolved MissingStubError in playback_alignment_test.dart by stubbing Fruit theme settings and AudioProvider streams.
+ΓÇó Fixed track title alignment stability test for Material 3.
+
+---
+
+What's new in v1.1.67+167
+ΓÇó UI/UX (HUD): Implemented interactive popup menus for developer HUD chips on Web.
+ΓÇó UI/UX (HUD): Added a STB chip to the HUD for session preset control.
+ΓÇó UI/UX (HUD): Optimized long message display with animated Marquee text.
+ΓÇó UI/UX (Settings): Added automated Relaunch Required notifications for critical settings.
+ΓÇó Deep Links: Added force_tv=true parameter for cross-platform TV UI testing.
+ΓÇó Fixed layout overflow in PlaybackPanel and refined PlaybackProgressBar visuals.
+ΓÇó Resolved regression test failures and NoSuchMethodErrors in TV suite.
+
+---
+
+What's new in v1.1.66+166
+ΓÇó Implemented Smart Coloring for the debug layout, applying distinct functional colors to major sections to improve developer scannability.
+ΓÇó Added granular debug outlines to internal components for high-precision layout inspection.
+ΓÇó Refined the heartbeat dot in the developer HUDΓÇörelocated it and enforced strict hidden state to reduce visual clutter.
+ΓÇó Verified project health and enforced strict formatting/analysis standards via scripts/verify.dart.
+
+---
+
+What's new in v1.1.65+165
+ΓÇó Added custom JavaScript error logger to capture and dump unhandled WebAssembly errors for easier debugging on mobile.
+ΓÇó Removed --wasm requirement from the production deployment pipeline to bypass Skwasm crashes on certain devices.
+
+---
+
+What's new in v1.1.64+164
+ΓÇó Screensaver: Implemented Advanced Audio Reactivity with 8-band frequency isolation.
+ΓÇó UI/UX (TV): Resolved playback message overflow and refined focus highlight aesthetics.
+ΓÇó UI/UX (TV): Improved Show List card layout with larger stars and unified badges.
+ΓÇó Screensaver: Added hidden "Woodstock Every Hour" easter egg functionality.
+ΓÇó Infrastructure: Integrated Puppeteer stress tests for Wasm stability verification.
+
+---
+
+What's new in v1.1.63+163
+ΓÇó Testing: Enhanced tv_settings_screen_test.dart with robust MockAudioProvider and stabilized AboutSection tests.
+ΓÇó UI/UX (TV): Hidden Haptic Feedback and Swipe to Block settings from the TV interface, adhering to platform interaction rules (tv_rules.md).
+
+---
+
+What's new in v1.1.62+162
+ΓÇó Fixed stale UI state in show transitions by ensuring metadata syncs correctly.
+
+---
+
+What's new in v1.1.61+161
+ΓÇó Overhauled ShnidBadge for consistent HTML-style link behavior.
+ΓÇó Fixed missing sourceUrl in RatingDialog from show list view.
+ΓÇó Refined hit-testing for badge links in Fruit-style cards.
+ΓÇó Stabilized track list header layout for better accessibility.
+ΓÇó Reverted experimental Fruit style global mini-player.
+
+---
+
+What's new in v1.1.60+160
+ΓÇó Added cross-platform verify tool and TV hint cards.
+ΓÇó Refined Now Playing card and Track List header.
+ΓÇó Decoupled screensaver track motion for better translation.
+ΓÇó Optimized graph visuals and audio reactivity defaults.
+ΓÇó Hardened screensaver initialization and disposal cycles.
+ΓÇó Fixed native Android beat detection accuracy.
+ΓÇó Reduced Web UI rebuild costs and scroll churn.
+
+---
+
+What's new in v1.1.59+159
+ΓÇó Synchronized browser theme color with PWA background.
+ΓÇó Restored bottom navigation to the Web Track List screen.
+ΓÇó Fixed non-functional navigation in the Fruit Settings header.
+ΓÇó Optimized Web layout by removing redundant players and blurs.
+ΓÇó Updated setup guide with the optimal web-server run command.
+
+---
+
+What's new in v1.1.58+158
+ΓÇó Refined "Text Pixel Snapping" to fix individual letter crawling.
+
+---
+
+What's new in v1.1.57+157
+ΓÇó Added "Text Pixel Snapping" to eliminate sub-pixel text jitter.
+ΓÇó Resolved critical test regressions in playback and screensaver screens.
+ΓÇó Fixed timer leaks in screensaver initialization for stable performance.
+ΓÇó Enforced strict "Default Off" policy for Fruit theme premium features.
+ΓÇó Regenerated all platform mocks to synchronize with latest Provider APIs.
+ΓÇó Updated agent efficiency rules with explicit testing thresholds.
+
+---
+
+What's new in v1.1.56
+ΓÇó Fixed infinite-width crash in segmented controls.
+ΓÇó Upgraded Settings screen header with premium "Liquid Glass" translucency.
+ΓÇó Integrated FruitTabBar bottom navigation directly into the Settings screen.
+ΓÇó Addressed PowerShell pipe compatibility in agent TODOs.
+
+---
+
+What's new in v1.1.55
+ΓÇó Added "Consider Donating to the Internet Archive" link with heartbeat icon.
+ΓÇó Implemented TV "Switch Pane" shortcut and Back-to-master navigation.
+ΓÇó Gated "Fruit" Liquid Glass theme to Web/PWA platforms only.
+ΓÇó Eliminated TV "bounce scroll" glitches via synchronized list keying.
+ΓÇó Added high-pressure CPU stress testing to the automated audio audit.
+ΓÇó Initialized "Size Guard" for ongoing app size and asset optimization.
+ΓÇó Dimmed inactive panes in TV dual-layout for clearer focus.
+
+---
+
+What's new in v1.1.54
+ΓÇó Implemented TV "Switch Pane" shortcut and Back-to-master navigation.
+ΓÇó Gated "Fruit" Liquid Glass theme to Web/PWA platforms only.
+ΓÇó Eliminated TV "bounce scroll" glitches via synchronized list keying.
+ΓÇó Added high-pressure CPU stress testing to the automated audio audit.
+ΓÇó Initialized "Size Guard" for ongoing app size and asset optimization.
+ΓÇó Dimmed inactive panes in TV dual-layout for clearer focus.
+
+---
+
+What's new in v1.1.53
+ΓÇó Implemented "Surgical Stabilization" for Premium Highlights to prevent focus loops.
+ΓÇó Added "Safe-Zone Scrolling" to the track list to minimize UI jumping.
+ΓÇó Resolved "leftover highlights" by explicitly clearing focus on every move.
+ΓÇó Fixed layout shifting by ensuring the RGB border widget stays mounted.
+ΓÇó Optimized RGB border performance with a zero-cost short-circuit.
+
+---
+
+What's new in v1.1.52
+ΓÇó Implemented auto-scrolling for the left panel Show List.
+ΓÇó Updated "Premium Highlight" and playing track borders to the RGB rainbow spectrum.
+ΓÇó Refined playing track border to be a crisp line without glow.
+ΓÇó Changed playback header rating stars to filled yellow for better visibility.
+ΓÇó Fixed several focus and navigation issues on Google TV.
+
+---

@@ -40,8 +40,9 @@ void main() {
     );
   }
 
-  testWidgets('TvFocusWrapper does NOT trigger onTap on focus gain',
-      (WidgetTester tester) async {
+  testWidgets('TvFocusWrapper does NOT trigger onTap on focus gain', (
+    WidgetTester tester,
+  ) async {
     bool tapped = false;
     final focusNode = FocusNode();
 
@@ -64,12 +65,16 @@ void main() {
     await tester.pump();
 
     expect(focusNode.hasFocus, isTrue);
-    expect(tapped, isFalse,
-        reason: 'onTap should not be called when focus is gained');
+    expect(
+      tapped,
+      isFalse,
+      reason: 'onTap should not be called when focus is gained',
+    );
   });
 
-  testWidgets('TvFocusWrapper triggers onTap on Select key up',
-      (WidgetTester tester) async {
+  testWidgets('TvFocusWrapper triggers onTap on Select key up', (
+    WidgetTester tester,
+  ) async {
     bool tapped = false;
     final focusNode = FocusNode();
 

@@ -57,11 +57,15 @@ class MockGaplessPlayer extends Mock implements GaplessPlayer {
   String get selectionReason => 'Testing';
 
   @override
-  dynamic noSuchMethod(Invocation invocation,
-          {Object? returnValue, Object? returnValueForMissingStub}) =>
-      super.noSuchMethod(invocation,
-          returnValue: returnValue,
-          returnValueForMissingStub: returnValueForMissingStub);
+  dynamic noSuchMethod(
+    Invocation invocation, {
+    Object? returnValue,
+    Object? returnValueForMissingStub,
+  }) => super.noSuchMethod(
+    invocation,
+    returnValue: returnValue,
+    returnValueForMissingStub: returnValueForMissingStub,
+  );
 }
 
 class MockAudioProvider extends Mock implements AudioProvider {
@@ -81,7 +85,7 @@ class MockAudioProvider extends Mock implements AudioProvider {
   Stream<String> get playbackErrorStream => const Stream.empty();
   @override
   Stream<({String message, VoidCallback? retryAction})>
-      get bufferAgentNotificationStream => const Stream.empty();
+  get bufferAgentNotificationStream => const Stream.empty();
   @override
   Stream<String> get notificationStream => const Stream.empty();
 
@@ -92,11 +96,15 @@ class MockAudioProvider extends Mock implements AudioProvider {
   GaplessPlayer get audioPlayer => _mockPlayer;
 
   @override
-  dynamic noSuchMethod(Invocation invocation,
-          {Object? returnValue, Object? returnValueForMissingStub}) =>
-      super.noSuchMethod(invocation,
-          returnValue: returnValue,
-          returnValueForMissingStub: returnValueForMissingStub);
+  dynamic noSuchMethod(
+    Invocation invocation, {
+    Object? returnValue,
+    Object? returnValueForMissingStub,
+  }) => super.noSuchMethod(
+    invocation,
+    returnValue: returnValue,
+    returnValueForMissingStub: returnValueForMissingStub,
+  );
 }
 
 class MockSettingsProvider extends Mock implements SettingsProvider {
@@ -130,11 +138,15 @@ class MockSettingsProvider extends Mock implements SettingsProvider {
   int get glowMode => 0;
 
   @override
-  dynamic noSuchMethod(Invocation invocation,
-          {Object? returnValue, Object? returnValueForMissingStub}) =>
-      super.noSuchMethod(invocation,
-          returnValue: returnValue,
-          returnValueForMissingStub: returnValueForMissingStub);
+  dynamic noSuchMethod(
+    Invocation invocation, {
+    Object? returnValue,
+    Object? returnValueForMissingStub,
+  }) => super.noSuchMethod(
+    invocation,
+    returnValue: returnValue,
+    returnValueForMissingStub: returnValueForMissingStub,
+  );
 }
 
 class MockThemeProvider extends Mock implements ThemeProvider {
@@ -145,11 +157,15 @@ class MockThemeProvider extends Mock implements ThemeProvider {
   bool get isFruit => themeStyle == ThemeStyle.fruit;
 
   @override
-  dynamic noSuchMethod(Invocation invocation,
-          {Object? returnValue, Object? returnValueForMissingStub}) =>
-      super.noSuchMethod(invocation,
-          returnValue: returnValue,
-          returnValueForMissingStub: returnValueForMissingStub);
+  dynamic noSuchMethod(
+    Invocation invocation, {
+    Object? returnValue,
+    Object? returnValueForMissingStub,
+  }) => super.noSuchMethod(
+    invocation,
+    returnValue: returnValue,
+    returnValueForMissingStub: returnValueForMissingStub,
+  );
 }
 
 class MockDeviceService extends Mock implements DeviceService {
@@ -157,11 +173,15 @@ class MockDeviceService extends Mock implements DeviceService {
   bool get isTv => false;
 
   @override
-  dynamic noSuchMethod(Invocation invocation,
-          {Object? returnValue, Object? returnValueForMissingStub}) =>
-      super.noSuchMethod(invocation,
-          returnValue: returnValue,
-          returnValueForMissingStub: returnValueForMissingStub);
+  dynamic noSuchMethod(
+    Invocation invocation, {
+    Object? returnValue,
+    Object? returnValueForMissingStub,
+  }) => super.noSuchMethod(
+    invocation,
+    returnValue: returnValue,
+    returnValueForMissingStub: returnValueForMissingStub,
+  );
 }
 
 class MockCatalogService extends Mock implements CatalogService {
@@ -174,20 +194,28 @@ class MockCatalogService extends Mock implements CatalogService {
   bool isPlayed(String key) => false;
 
   @override
-  dynamic noSuchMethod(Invocation invocation,
-          {Object? returnValue, Object? returnValueForMissingStub}) =>
-      super.noSuchMethod(invocation,
-          returnValue: returnValue,
-          returnValueForMissingStub: returnValueForMissingStub);
+  dynamic noSuchMethod(
+    Invocation invocation, {
+    Object? returnValue,
+    Object? returnValueForMissingStub,
+  }) => super.noSuchMethod(
+    invocation,
+    returnValue: returnValue,
+    returnValueForMissingStub: returnValueForMissingStub,
+  );
 }
 
 class MockBox<T> extends Mock implements Box<T> {
   @override
-  dynamic noSuchMethod(Invocation invocation,
-          {Object? returnValue, Object? returnValueForMissingStub}) =>
-      super.noSuchMethod(invocation,
-          returnValue: returnValue,
-          returnValueForMissingStub: returnValueForMissingStub);
+  dynamic noSuchMethod(
+    Invocation invocation, {
+    Object? returnValue,
+    Object? returnValueForMissingStub,
+  }) => super.noSuchMethod(
+    invocation,
+    returnValue: returnValue,
+    returnValueForMissingStub: returnValueForMissingStub,
+  );
 }
 
 void main() {
@@ -207,20 +235,22 @@ void main() {
     CatalogService.setMock(mockCatalogService);
   });
 
-  testWidgets(
-      'PlaybackPanel does not overflow when constrained to small height',
-      (WidgetTester tester) async {
+  testWidgets('PlaybackPanel does not overflow when constrained to small height', (
+    WidgetTester tester,
+  ) async {
     final dummyTrack = Track(
-        trackNumber: 1,
-        title: 'Track 1',
-        duration: 100,
-        url: 'url',
-        setName: 'Set 1');
+      trackNumber: 1,
+      title: 'Track 1',
+      duration: 100,
+      url: 'url',
+      setName: 'Set 1',
+    );
     final dummySource = Source(
-        id: 'source1',
-        tracks: [dummyTrack],
-        location: 'Test Location',
-        src: 'SBD');
+      id: 'source1',
+      tracks: [dummyTrack],
+      location: 'Test Location',
+      src: 'SBD',
+    );
     final dummyShow = Show(
       name: 'Show',
       artist: 'Artist',
@@ -241,7 +271,8 @@ void main() {
         providers: [
           ChangeNotifierProvider<AudioProvider>.value(value: mockAudioProvider),
           ChangeNotifierProvider<SettingsProvider>.value(
-              value: mockSettingsProvider),
+            value: mockSettingsProvider,
+          ),
           ChangeNotifierProvider<DeviceService>.value(value: mockDeviceService),
           ChangeNotifierProvider<ThemeProvider>.value(value: mockThemeProvider),
         ],

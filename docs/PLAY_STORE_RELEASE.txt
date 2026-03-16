@@ -1,3 +1,9 @@
+What's new in v1.2.4+204
+• Branded launcher icons for Android, iOS, and Web platforms.
+• Improved App Icon generation workflow with unified melos script.
+
+---
+
 What's new in v1.2.3+203
 • Unified Diagnostics HUD with real-time streaming for transparent audio engine telemetry.
 • Refactored Playback Messages for improved UI responsiveness and performance.

@@ -72,7 +72,9 @@ Future<void> main(List<String> args) async {
 
 bool analyzeAnalyzeResult(int code) {
   if (code != 0) {
-    stdout.writeln('\n[TIP] If you see JSAny/JSObject errors, ensure you are analyzing for the web platform.');
+    stdout.writeln(
+      '\n[TIP] If you see JSAny/JSObject errors, ensure you are analyzing for the web platform.',
+    );
     stdout.writeln('Try running tests with: flutter test --platform chrome');
     return true;
   }

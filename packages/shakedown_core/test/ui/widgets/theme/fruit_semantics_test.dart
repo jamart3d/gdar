@@ -4,7 +4,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 import 'package:shakedown_core/providers/settings_provider.dart';
 import 'package:shakedown_core/providers/theme_provider.dart';
-import 'package:shakedown_core/ui/widgets/theme/fruit_icon_button.dart';
 import 'package:shakedown_core/ui/widgets/theme/fruit_segmented_control.dart';
 import 'package:shakedown_core/ui/widgets/theme/fruit_switch.dart';
 import 'package:shakedown_core/ui/widgets/theme/fruit_ui.dart';
@@ -16,6 +15,10 @@ class _FakeThemeProvider extends ChangeNotifier implements ThemeProvider {
   bool get isDarkMode => false;
   @override
   bool get isFruitAllowed => true;
+
+  @override
+  Future<void> get initializationComplete => Future.value();
+
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
@@ -36,16 +39,19 @@ void main() {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider<ThemeProvider>.value(
-            value: _FakeThemeProvider()),
+          value: _FakeThemeProvider(),
+        ),
         ChangeNotifierProvider<SettingsProvider>.value(
-            value: _FakeSettingsProvider()),
+          value: _FakeSettingsProvider(),
+        ),
       ],
       child: MaterialApp(home: Scaffold(body: child)),
     );
   }
 
-  testWidgets('FruitIconButton exposes button semantics and label',
-      (tester) async {
+  testWidgets('FruitIconButton exposes button semantics and label', (
+    tester,
+  ) async {
     await tester.pumpWidget(
       wrapWithProviders(
         FruitIconButton(
@@ -83,14 +89,12 @@ void main() {
     expect(semantics.flagsCollection.isToggled == Tristate.isTrue, isTrue);
   });
 
-  testWidgets('FruitTextAction exposes button semantics and label',
-      (tester) async {
+  testWidgets('FruitTextAction exposes button semantics and label', (
+    tester,
+  ) async {
     await tester.pumpWidget(
       wrapWithProviders(
-        const FruitTextAction(
-          label: 'Cancel',
-          onPressed: _noop,
-        ),
+        const FruitTextAction(label: 'Cancel', onPressed: _noop),
       ),
     );
 
@@ -100,8 +104,9 @@ void main() {
     expect(semantics.flagsCollection.isButton, isTrue);
   });
 
-  testWidgets('FruitSegmentedControl exposes segment button semantics',
-      (tester) async {
+  testWidgets('FruitSegmentedControl exposes segment button semantics', (
+    tester,
+  ) async {
     await tester.pumpWidget(
       wrapWithProviders(
         FruitSegmentedControl<String>(
@@ -125,11 +130,15 @@ void main() {
     );
 
     expect(selectedSemantics.flagsCollection.isButton, isTrue);
-    expect(selectedSemantics.flagsCollection.isSelected == Tristate.isTrue,
-        isTrue);
+    expect(
+      selectedSemantics.flagsCollection.isSelected == Tristate.isTrue,
+      isTrue,
+    );
     expect(unselectedSemantics.flagsCollection.isButton, isTrue);
-    expect(unselectedSemantics.flagsCollection.isSelected == Tristate.isFalse,
-        isTrue);
+    expect(
+      unselectedSemantics.flagsCollection.isSelected == Tristate.isFalse,
+      isTrue,
+    );
   });
 }
 

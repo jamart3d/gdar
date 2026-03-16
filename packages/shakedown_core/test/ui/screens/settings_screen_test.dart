@@ -67,13 +67,14 @@ void main() {
   setUp(() async {
     // Basic setup similar to show_list_card_test.dart
     await CatalogService().reset();
-    final tempDir =
-        await Directory.systemTemp.createTemp('hive_test_settings_');
+    final tempDir = await Directory.systemTemp.createTemp(
+      'hive_test_settings_',
+    );
     const channel = MethodChannel('plugins.flutter.io/path_provider');
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(channel, (MethodCall methodCall) async {
-      return tempDir.path;
-    });
+          return tempDir.path;
+        });
 
     SharedPreferences.setMockInitialValues({
       'non_random': false, // Start with false
@@ -97,29 +98,32 @@ void main() {
         ChangeNotifierProvider(create: (_) => settingsProvider),
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
         ChangeNotifierProvider<AudioProvider>(
-            create: (_) => MockAudioProvider()),
+          create: (_) => MockAudioProvider(),
+        ),
         ChangeNotifierProvider<ShowListProvider>(
-            create: (_) => MockShowListProvider()),
+          create: (_) => MockShowListProvider(),
+        ),
         ChangeNotifierProvider<UpdateProvider>(
-            create: (_) => MockUpdateProvider()),
+          create: (_) => MockUpdateProvider(),
+        ),
         ChangeNotifierProvider<DeviceService>(
-            create: (_) => MockDeviceService()),
+          create: (_) => MockDeviceService(),
+        ),
       ],
-      child: const MaterialApp(
-        home: SettingsScreen(),
-      ),
+      child: const MaterialApp(home: SettingsScreen()),
     );
   }
 
-  testWidgets('Random switch toggles text in other Random settings',
-      (WidgetTester tester) async {
+  testWidgets('Random switch toggles text in other Random settings', (
+    WidgetTester tester,
+  ) async {
     final settingsProvider = SettingsProvider(prefs);
 
     // Pump widget
     await tester.pumpWidget(createTestableWidget(settingsProvider));
-    await tester.pump(const Duration(
-        seconds:
-            2)); // Wait for animations (pumpAndSettle might timeout due to infinite animations)
+    await tester.pump(
+      const Duration(seconds: 2),
+    ); // Wait for animations (pumpAndSettle might timeout due to infinite animations)
 
     // 1. Open "Playback" section if not open
     final playbackTitle = find.text('Playback');
@@ -133,12 +137,14 @@ void main() {
     // 2. Verify initial state (Random is ON, because non_random is false)
     expect(find.text('Random'), findsOneWidget);
     // Switch should be ON (true)
-    final switchFinder = find.byWidgetPredicate((widget) =>
-        widget is SwitchListTile &&
-        widget.title is FittedBox &&
-        (widget.title as FittedBox).child is Text &&
-        ((widget.title as FittedBox).child as Text).data == 'Random' &&
-        widget.value == true);
+    final switchFinder = find.byWidgetPredicate(
+      (widget) =>
+          widget is SwitchListTile &&
+          widget.title is FittedBox &&
+          (widget.title as FittedBox).child is Text &&
+          ((widget.title as FittedBox).child as Text).data == 'Random' &&
+          widget.value == true,
+    );
     expect(switchFinder, findsOneWidget);
 
     // Verify dynamic text says "Play Random Show..."
@@ -153,8 +159,11 @@ void main() {
     await tester.pump(const Duration(milliseconds: 500));
 
     final randomFinder = find.text('Random');
-    await tester.scrollUntilVisible(randomFinder, 100,
-        scrollable: find.byType(Scrollable));
+    await tester.scrollUntilVisible(
+      randomFinder,
+      100,
+      scrollable: find.byType(Scrollable),
+    );
     await tester.pump(const Duration(milliseconds: 500));
 
     await tester.tap(randomFinder);
@@ -174,8 +183,9 @@ void main() {
     expect(find.text('Play Random Show on Startup'), findsNothing);
   });
 
-  testWidgets('Verifies CollectionStatistics and DataSection are present',
-      (WidgetTester tester) async {
+  testWidgets('Verifies CollectionStatistics and DataSection are present', (
+    WidgetTester tester,
+  ) async {
     final settingsProvider = SettingsProvider(prefs);
 
     await tester.pumpWidget(createTestableWidget(settingsProvider));
@@ -183,8 +193,11 @@ void main() {
 
     // Scroll until CollectionStatistics is visible
     final statsFinder = find.byType(CollectionStatistics);
-    await tester.scrollUntilVisible(statsFinder, 500,
-        scrollable: find.byType(Scrollable));
+    await tester.scrollUntilVisible(
+      statsFinder,
+      500,
+      scrollable: find.byType(Scrollable),
+    );
     await tester.pump(const Duration(milliseconds: 500));
 
     // Verify Collection Statistics is present
@@ -193,8 +206,11 @@ void main() {
 
     // Verify DataSection (Manage Rated Shows Library) is present
     final dataFinder = find.byType(DataSection);
-    await tester.scrollUntilVisible(dataFinder, 500,
-        scrollable: find.byType(Scrollable));
+    await tester.scrollUntilVisible(
+      dataFinder,
+      500,
+      scrollable: find.byType(Scrollable),
+    );
     await tester.pump(const Duration(milliseconds: 500));
     expect(dataFinder, findsOneWidget);
 

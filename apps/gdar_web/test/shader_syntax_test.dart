@@ -42,7 +42,8 @@ void main() {
 
               if (declaredUniforms.contains(name)) {
                 fail(
-                    'Duplicate uniform "$name" found in ${file.uri.pathSegments.last} at line ${i + 1}');
+                  'Duplicate uniform "$name" found in ${file.uri.pathSegments.last} at line ${i + 1}',
+                );
               }
               declaredUniforms.add(name);
             }

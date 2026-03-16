@@ -70,9 +70,7 @@ class CatalogService {
       _playCountsBox = await Hive.openBox<int>('play_counts');
       _historyBox = await Hive.openBox<bool>('user_history');
       _sessionBox = await Hive.openBox<SessionEntry>('session_history');
-      logger.i(
-        'Hive Boxes (Ratings, PlayCounts, History, Sessions) opened.',
-      );
+      logger.i('Hive Boxes (Ratings, PlayCounts, History, Sessions) opened.');
 
       // 1b. Migrate from SharedPreferences if needed
       await _migrateFromPreferences(prefs);

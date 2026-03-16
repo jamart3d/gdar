@@ -196,8 +196,10 @@ class MockShowListProvider extends ChangeNotifier implements ShowListProvider {
   @override
   Future<void> checkArchiveStatus() async {}
   @override
-  Future<void> fetchShows(SharedPreferences prefs,
-      {bool forceRefresh = false}) async {}
+  Future<void> fetchShows(
+    SharedPreferences prefs, {
+    bool forceRefresh = false,
+  }) async {}
   @override
   Future<void> init(SharedPreferences prefs) async {}
   @override
@@ -286,23 +288,24 @@ void main() {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider<SettingsProvider>.value(
-            value: mockSettingsProvider),
+          value: mockSettingsProvider,
+        ),
         ChangeNotifierProvider<AudioProvider>.value(value: mockAudioProvider),
         ChangeNotifierProvider<ShowListProvider>.value(
-            value: mockShowListProvider),
+          value: mockShowListProvider,
+        ),
         ChangeNotifierProvider<DeviceService>.value(value: mockDeviceService),
         Provider<CatalogService>.value(value: mockCatalogService),
         ChangeNotifierProvider<ThemeProvider>.value(value: mockThemeProvider),
       ],
-      child: const MaterialApp(
-        home: ShowListScreen(),
-      ),
+      child: const MaterialApp(home: ShowListScreen()),
     );
   }
 
   group('ShowListScreen Random Button Animation', () {
-    testWidgets('Random button pulses when not used previously',
-        (WidgetTester tester) async {
+    testWidgets('Random button pulses when not used previously', (
+      WidgetTester tester,
+    ) async {
       mockShowListProvider.setHasUsedRandomButton(false);
 
       await tester.pumpWidget(createWidgetUnderTest());
@@ -311,9 +314,10 @@ void main() {
       // Find the specific ScaleTransition for the random button
       // We can look for the question mark icon and then its ancestor ScaleTransition
       final iconFinder = find.byIcon(
-          mockThemeProvider.themeStyle == ThemeStyle.fruit
-              ? LucideIcons.helpCircle
-              : Icons.question_mark_rounded);
+        mockThemeProvider.themeStyle == ThemeStyle.fruit
+            ? LucideIcons.helpCircle
+            : Icons.question_mark_rounded,
+      );
       expect(iconFinder, findsOneWidget);
 
       final scaleTransitionFinder = find.ancestor(
@@ -322,26 +326,31 @@ void main() {
       );
       expect(scaleTransitionFinder, findsOneWidget);
 
-      final ScaleTransition scaleTransition =
-          tester.widget(scaleTransitionFinder);
+      final ScaleTransition scaleTransition = tester.widget(
+        scaleTransitionFinder,
+      );
       final animation = scaleTransition.scale;
 
       // It should be animating (status forward or reverse depending on timing)
-      expect(animation.status,
-          anyOf(AnimationStatus.forward, AnimationStatus.reverse));
+      expect(
+        animation.status,
+        anyOf(AnimationStatus.forward, AnimationStatus.reverse),
+      );
     });
 
-    testWidgets('Random button does NOT pulse when already used',
-        (WidgetTester tester) async {
+    testWidgets('Random button does NOT pulse when already used', (
+      WidgetTester tester,
+    ) async {
       mockShowListProvider.setHasUsedRandomButton(true);
 
       await tester.pumpWidget(createWidgetUnderTest());
       await tester.pump();
 
       final iconFinder = find.byIcon(
-          mockThemeProvider.themeStyle == ThemeStyle.fruit
-              ? LucideIcons.helpCircle
-              : Icons.question_mark_rounded);
+        mockThemeProvider.themeStyle == ThemeStyle.fruit
+            ? LucideIcons.helpCircle
+            : Icons.question_mark_rounded,
+      );
       expect(iconFinder, findsOneWidget);
 
       final scaleTransitionFinder = find.ancestor(
@@ -355,8 +364,9 @@ void main() {
       // Actually, if we stopped it, checking `isAnimating` or status would be better.
       expect(scaleTransitionFinder, findsOneWidget); // Still there
 
-      final ScaleTransition scaleTransition =
-          tester.widget(scaleTransitionFinder);
+      final ScaleTransition scaleTransition = tester.widget(
+        scaleTransitionFinder,
+      );
       final animation = scaleTransition.scale;
 
       // If already used, we expect it NOT to be animating loop
@@ -372,8 +382,9 @@ void main() {
       expect(animation.status, AnimationStatus.dismissed);
     });
 
-    testWidgets('Tapping random button stops animation and marks as used',
-        (WidgetTester tester) async {
+    testWidgets('Tapping random button stops animation and marks as used', (
+      WidgetTester tester,
+    ) async {
       mockShowListProvider.setHasUsedRandomButton(false);
 
       await tester.pumpWidget(createWidgetUnderTest());
@@ -383,10 +394,13 @@ void main() {
       expect(mockShowListProvider.hasUsedRandomButton, isFalse);
 
       // Tap the button
-      await tester.tap(find.byIcon(
+      await tester.tap(
+        find.byIcon(
           mockThemeProvider.themeStyle == ThemeStyle.fruit
               ? LucideIcons.helpCircle
-              : Icons.question_mark_rounded));
+              : Icons.question_mark_rounded,
+        ),
+      );
 
       // Pump to trigger the onPressed handler
       await tester.pump();
@@ -398,19 +412,21 @@ void main() {
       // Use explicit pumps instead of pumpAndSettle to avoid timeouts if infinite animations (like progress indicator) are momentarily active
       await tester
           .pump(); // Allow async playRandomShow to complete and setState(loading=false)
-      await tester.pump(const Duration(
-          milliseconds:
-              500)); // Allow pulse animation to visually stop/fade if needed
+      await tester.pump(
+        const Duration(milliseconds: 500),
+      ); // Allow pulse animation to visually stop/fade if needed
     });
   });
 
   group('ShowListScreen Non-Random Mode', () {
-    testWidgets('Displays sequential icon and disables pulse animation',
-        (WidgetTester tester) async {
+    testWidgets('Displays sequential icon and disables pulse animation', (
+      WidgetTester tester,
+    ) async {
       // Enable Non-Random mode
       mockSettingsProvider.setNonRandom(true);
-      mockShowListProvider
-          .setHasUsedRandomButton(false); // Should pulse if it were random
+      mockShowListProvider.setHasUsedRandomButton(
+        false,
+      ); // Should pulse if it were random
 
       await tester.pumpWidget(createWidgetUnderTest());
       await tester.pump();

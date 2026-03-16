@@ -134,8 +134,10 @@ void main() {
       await tester.sendKeyEvent(LogicalKeyboardKey.arrowRight);
       await tester.pumpAndSettle();
 
-      expect(updatedValue,
-          isNull); // onChanged shouldn't be called if value doesn't change
+      expect(
+        updatedValue,
+        isNull,
+      ); // onChanged shouldn't be called if value doesn't change
     });
 
     testWidgets('uses custom valueFormatter if provided', (tester) async {

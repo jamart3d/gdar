@@ -42,15 +42,18 @@ class MockAudioProvider extends ChangeNotifier implements AudioProvider {
     name: 'Cornell 77',
     artist: 'Grateful Dead',
     sources: [
-      Source(id: '123', tracks: [
-        Track(
-          trackNumber: 1,
-          title: 'Track 1',
-          duration: 180,
-          url: 'http://example.com/track.mp3',
-          setName: 'Set 1',
-        )
-      ])
+      Source(
+        id: '123',
+        tracks: [
+          Track(
+            trackNumber: 1,
+            title: 'Track 1',
+            duration: 180,
+            url: 'http://example.com/track.mp3',
+            setName: 'Set 1',
+          ),
+        ],
+      ),
     ],
   );
 
@@ -76,8 +79,10 @@ class MockAudioProvider extends ChangeNotifier implements AudioProvider {
     playRandomShowCallCount++;
     if (delayPlayback) {
       _pendingRequest = (show: currentShow!, source: currentSource!);
-      _randomShowRequestController
-          .add((show: currentShow!, source: currentSource!));
+      _randomShowRequestController.add((
+        show: currentShow!,
+        source: currentSource!,
+      ));
     }
     notifyListeners();
     return currentShow;
@@ -93,8 +98,12 @@ class MockAudioProvider extends ChangeNotifier implements AudioProvider {
   }
 
   @override
-  Future<void> playSource(Show show, Source source,
-      {int initialIndex = 0, Duration? initialPosition}) async {
+  Future<void> playSource(
+    Show show,
+    Source source, {
+    int initialIndex = 0,
+    Duration? initialPosition,
+  }) async {
     playSourceCallCount++;
     _isPlaying = true;
     _currentShow = show;
@@ -122,11 +131,14 @@ class MockAudioProvider extends ChangeNotifier implements AudioProvider {
 
   @override
   Stream<({String message, VoidCallback? retryAction})>
-      get bufferAgentNotificationStream => const Stream.empty();
+  get bufferAgentNotificationStream => const Stream.empty();
 
   @override
   void update(
-      ShowListProvider slp, SettingsProvider sp, AudioCacheService acs) {}
+    ShowListProvider slp,
+    SettingsProvider sp,
+    AudioCacheService acs,
+  ) {}
 
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
@@ -324,83 +336,96 @@ class MockBox<T> extends ChangeNotifier implements Box<T> {
 
 void main() {
   testWidgets(
-      'TvDualPaneLayout debouncing fails to prevent double playback if playback starts early',
-      (WidgetTester tester) async {
-    // Set TV size
-    tester.view.physicalSize = const Size(1920, 1080);
-    tester.view.devicePixelRatio = 1.0;
-    addTearDown(tester.view.resetPhysicalSize);
-    addTearDown(tester.view.resetDevicePixelRatio);
+    'TvDualPaneLayout debouncing fails to prevent double playback if playback starts early',
+    (WidgetTester tester) async {
+      // Set TV size
+      tester.view.physicalSize = const Size(1920, 1080);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
 
-    final mockCatalogService = MockCatalogService();
-    CatalogService.setMock(mockCatalogService);
+      final mockCatalogService = MockCatalogService();
+      CatalogService.setMock(mockCatalogService);
 
-    final mockAudioProvider = MockAudioProvider();
-    final mockSettingsProvider = MockSettingsProvider();
-    final mockShowListProvider = MockShowListProvider();
-    final mockDeviceService = MockDeviceService();
-    final mockThemeProvider = MockThemeProvider();
+      final mockAudioProvider = MockAudioProvider();
+      final mockSettingsProvider = MockSettingsProvider();
+      final mockShowListProvider = MockShowListProvider();
+      final mockDeviceService = MockDeviceService();
+      final mockThemeProvider = MockThemeProvider();
 
-    // Set TV size to avoid layout overflow
-    tester.view.physicalSize = const Size(1920, 1080);
-    tester.view.devicePixelRatio = 1.0;
-    addTearDown(tester.view.resetPhysicalSize);
-    addTearDown(tester.view.resetDevicePixelRatio);
+      // Set TV size to avoid layout overflow
+      tester.view.physicalSize = const Size(1920, 1080);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
 
-    await tester.pumpWidget(
-      MultiProvider(
-        providers: [
-          Provider<CatalogService>.value(value: mockCatalogService),
-          ChangeNotifierProvider<AudioCacheService>.value(
-              value: MockAudioCacheService()),
-          ChangeNotifierProvider<AudioProvider>.value(value: mockAudioProvider),
-          ChangeNotifierProvider<SettingsProvider>.value(
-              value: mockSettingsProvider),
-          ChangeNotifierProvider<ShowListProvider>.value(
-              value: mockShowListProvider),
-          ChangeNotifierProvider<DeviceService>.value(value: mockDeviceService),
-          ChangeNotifierProvider<ThemeProvider>.value(value: mockThemeProvider),
-        ],
-        child: const MaterialApp(
-          home: TvDualPaneLayout(),
+      await tester.pumpWidget(
+        MultiProvider(
+          providers: [
+            Provider<CatalogService>.value(value: mockCatalogService),
+            ChangeNotifierProvider<AudioCacheService>.value(
+              value: MockAudioCacheService(),
+            ),
+            ChangeNotifierProvider<AudioProvider>.value(
+              value: mockAudioProvider,
+            ),
+            ChangeNotifierProvider<SettingsProvider>.value(
+              value: mockSettingsProvider,
+            ),
+            ChangeNotifierProvider<ShowListProvider>.value(
+              value: mockShowListProvider,
+            ),
+            ChangeNotifierProvider<DeviceService>.value(
+              value: mockDeviceService,
+            ),
+            ChangeNotifierProvider<ThemeProvider>.value(
+              value: mockThemeProvider,
+            ),
+          ],
+          child: const MaterialApp(home: TvDualPaneLayout()),
         ),
-      ),
-    );
+      );
 
-    // Initial state
-    expect(mockAudioProvider.playRandomShowCallCount, 0);
-    expect(mockAudioProvider.playSourceCallCount, 0);
+      // Initial state
+      expect(mockAudioProvider.playRandomShowCallCount, 0);
+      expect(mockAudioProvider.playSourceCallCount, 0);
 
-    // Trigger the callback directly to ensure logic is tested
-    // UI hit-testing in TV layouts can be finicky in tests
-    final tvHeader = tester.widget<TvHeader>(find.byType(TvHeader));
-    tvHeader.onRandomPlay();
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 100));
+      // Trigger the callback directly to ensure logic is tested
+      // UI hit-testing in TV layouts can be finicky in tests
+      final tvHeader = tester.widget<TvHeader>(find.byType(TvHeader));
+      tvHeader.onRandomPlay();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
 
-    expect(mockAudioProvider.playRandomShowCallCount, 1);
+      expect(mockAudioProvider.playRandomShowCallCount, 1);
 
-    // 1.2s delay for Show List
-    await tester.pump(const Duration(milliseconds: 1200));
+      // 1.2s delay for Show List
+      await tester.pump(const Duration(milliseconds: 1200));
 
-    // 2.0s delay for Pane Switch (Track List Focus)
-    await tester.pump(const Duration(milliseconds: 2000));
+      // 2.0s delay for Pane Switch (Track List Focus)
+      await tester.pump(const Duration(milliseconds: 2000));
 
-    // SIMULATE PREMATURE PLAYBACK (e.g. from accidental focus trigger)
-    // We manually call playSource as if the system triggered it.
-    await mockAudioProvider.playSource(
-        mockAudioProvider.currentShow!, mockAudioProvider.currentSource!);
-    expect(mockAudioProvider.playSourceCallCount, 1);
+      // SIMULATE PREMATURE PLAYBACK (e.g. from accidental focus trigger)
+      // We manually call playSource as if the system triggered it.
+      await mockAudioProvider.playSource(
+        mockAudioProvider.currentShow!,
+        mockAudioProvider.currentSource!,
+      );
+      expect(mockAudioProvider.playSourceCallCount, 1);
 
-    // 2.0s delay for Playback Start (Timer finishes)
-    await tester.pump(const Duration(milliseconds: 2000));
+      // 2.0s delay for Playback Start (Timer finishes)
+      await tester.pump(const Duration(milliseconds: 2000));
 
-    // Clear the 500ms safety buffer timer
-    await tester.pump(const Duration(milliseconds: 500));
+      // Clear the 500ms safety buffer timer
+      await tester.pump(const Duration(milliseconds: 500));
 
-    // Check call count. If 2, then the bug exists (it tried to play again).
-    // The bug we want to fix is that it SHOULD be 1 (TvDualPaneLayout should catch it).
-    expect(mockAudioProvider.playSourceCallCount, 1,
-        reason: 'Double playback prevented!');
-  });
+      // Check call count. If 2, then the bug exists (it tried to play again).
+      // The bug we want to fix is that it SHOULD be 1 (TvDualPaneLayout should catch it).
+      expect(
+        mockAudioProvider.playSourceCallCount,
+        1,
+        reason: 'Double playback prevented!',
+      );
+    },
+  );
 }

@@ -3,7 +3,7 @@ import 'package:just_audio/just_audio.dart';
 
 class HybridAudioEngine {
   HybridAudioEngine();
-  
+
   bool get playing => false;
   Duration get position => Duration.zero;
   Duration get bufferedPosition => Duration.zero;
@@ -32,7 +32,12 @@ class HybridAudioEngine {
   Stream<SequenceState?> get sequenceStateStream => const Stream.empty();
   Stream<String> get contextStateStream => const Stream.empty();
 
-  Future<Duration?> setAudioSources(List<AudioSource> children, {int initialIndex = 0, Duration initialPosition = Duration.zero, bool preload = true}) async => null;
+  Future<Duration?> setAudioSources(
+    List<AudioSource> children, {
+    int initialIndex = 0,
+    Duration initialPosition = Duration.zero,
+    bool preload = true,
+  }) async => null;
   Future<void> addAudioSources(List<AudioSource> sources) async {}
   Future<void> play() async {}
   Future<void> pause() async {}

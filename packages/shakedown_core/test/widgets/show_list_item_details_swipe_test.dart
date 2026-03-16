@@ -61,8 +61,9 @@ class MockShowListProvider extends ChangeNotifier implements ShowListProvider {
   @override
   void dismissSource(Show show, String sourceId) {
     if (_currentShow != null) {
-      final updatedSources =
-          _currentShow!.sources.where((s) => s.id != sourceId).toList();
+      final updatedSources = _currentShow!.sources
+          .where((s) => s.id != sourceId)
+          .toList();
       _currentShow = _currentShow!.copyWith(sources: updatedSources);
       notifyListeners();
     }
@@ -100,29 +101,31 @@ void main() {
       artist: 'Grateful Dead',
       date: '2025-01-01',
       venue: 'Venue',
-      sources:
-          List.generate(sourceCount, (i) => Source(id: 'source$i', tracks: [])),
+      sources: List.generate(
+        sourceCount,
+        (i) => Source(id: 'source$i', tracks: []),
+      ),
       hasFeaturedTrack: false,
     );
   }
 
-  Widget createTestableWidget({
-    required Show show,
-    String? playingSourceId,
-  }) {
+  Widget createTestableWidget({required Show show, String? playingSourceId}) {
     // Initialize mock with show
     mockShowListProvider.setShow(show);
 
     return MultiProvider(
       providers: [
         ChangeNotifierProvider<SettingsProvider>.value(
-            value: mockSettingsProvider),
+          value: mockSettingsProvider,
+        ),
         ChangeNotifierProvider<AudioProvider>.value(value: mockAudioProvider),
         ChangeNotifierProvider<ShowListProvider>.value(
-            value: mockShowListProvider),
+          value: mockShowListProvider,
+        ),
         Provider<CatalogService>.value(value: CatalogService()),
         ChangeNotifierProvider<DeviceService>(
-            create: (_) => MockDeviceService()),
+          create: (_) => MockDeviceService(),
+        ),
         ChangeNotifierProvider<ThemeProvider>(create: (_) => ThemeProvider()),
       ],
       child: MaterialApp(
@@ -153,8 +156,9 @@ void main() {
     );
   }
 
-  testWidgets('Swipe to block removes item and triggers block logic',
-      (WidgetTester tester) async {
+  testWidgets('Swipe to block removes item and triggers block logic', (
+    WidgetTester tester,
+  ) async {
     final show = createDummyShow('Show Swipe', sourceCount: 3);
 
     await tester.pumpWidget(createTestableWidget(show: show));

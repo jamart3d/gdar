@@ -41,8 +41,9 @@ class MockDeviceService extends Mock implements DeviceService {
 
 void main() {
   Provider.debugCheckInvalidValueType = null;
-  testWidgets('TvFocusWrapper should sync focus state when recycled in a list',
-      (WidgetTester tester) async {
+  testWidgets('TvFocusWrapper should sync focus state when recycled in a list', (
+    WidgetTester tester,
+  ) async {
     final List<FocusNode> nodes = List.generate(20, (index) => FocusNode());
     final settingsProvider = MockSettingsProvider();
     final deviceService = MockDeviceService();
@@ -83,14 +84,18 @@ void main() {
     // Verify item 0 is focused and has the premium highlight (AnimatedGradientBorder with non-zero width)
     expect(find.text('Item 0'), findsOneWidget);
     expect(
-        find.byWidgetPredicate((widget) =>
-            widget is AnimatedGradientBorder && widget.borderWidth > 0),
-        findsOneWidget);
+      find.byWidgetPredicate(
+        (widget) => widget is AnimatedGradientBorder && widget.borderWidth > 0,
+      ),
+      findsOneWidget,
+    );
 
     // 2. Scroll down so Item 0 is off-screen
     final scrollable = find.byType(Scrollable);
     await tester.drag(
-        scrollable, const Offset(0, -1000)); // Scroll way down (10 items)
+      scrollable,
+      const Offset(0, -1000),
+    ); // Scroll way down (10 items)
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 500));
 
@@ -100,10 +105,12 @@ void main() {
     // There should be NO AnimatedGradientBorder with a non-zero border width visible
     // because none of the visible items are focused.
     expect(
-        find.byWidgetPredicate((widget) =>
-            widget is AnimatedGradientBorder && widget.borderWidth > 0),
-        findsNothing,
-        reason:
-            'Recycled items should not retain highlight if their current node is not focused');
+      find.byWidgetPredicate(
+        (widget) => widget is AnimatedGradientBorder && widget.borderWidth > 0,
+      ),
+      findsNothing,
+      reason:
+          'Recycled items should not retain highlight if their current node is not focused',
+    );
   });
 }

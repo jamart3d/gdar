@@ -19,3 +19,6 @@ scripts:
   clean:
     description: Clean all package/app build artifacts.
     run: melos exec -c 1 -- flutter clean
+  icons:
+    description: Regenerate launcher icons for all apps.
+    run: melos exec -c 1 -- "flutter pub run flutter_launcher_icons:main"

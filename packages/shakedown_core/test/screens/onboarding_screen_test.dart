@@ -62,7 +62,7 @@ class MockThemeProvider extends ChangeNotifier implements ThemeProvider {
   }
 
   @override
-  void toggleTheme() {
+  void toggleTheme({Brightness? currentBrightness}) {
     _isDarkMode = !_isDarkMode;
     notifyListeners();
   }
@@ -76,6 +76,9 @@ class MockThemeProvider extends ChangeNotifier implements ThemeProvider {
     }
     notifyListeners();
   }
+
+  @override
+  Future<void> get initializationComplete => Future.value();
 }
 
 class MockDeviceService extends ChangeNotifier implements DeviceService {
@@ -116,17 +119,17 @@ void main() {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider<SettingsProvider>.value(
-            value: mockSettingsProvider),
+          value: mockSettingsProvider,
+        ),
         ChangeNotifierProvider<ShowListProvider>.value(
-            value: mockShowListProvider),
+          value: mockShowListProvider,
+        ),
         ChangeNotifierProvider<AudioProvider>.value(value: mockAudioProvider),
         ChangeNotifierProvider<ThemeProvider>.value(value: mockThemeProvider),
         ChangeNotifierProvider<UpdateProvider>.value(value: mockUpdateProvider),
         ChangeNotifierProvider<DeviceService>.value(value: mockDeviceService),
       ],
-      child: const MaterialApp(
-        home: OnboardingScreen(),
-      ),
+      child: const MaterialApp(home: OnboardingScreen()),
     );
   }
 
@@ -139,16 +142,19 @@ void main() {
       when(mockSettingsProvider.showSplashScreen).thenReturn(true);
       when(mockSettingsProvider.showOnboarding).thenReturn(true);
       when(mockSettingsProvider.seedColor).thenReturn(null);
-      when(mockSettingsProvider.enableShakedownTween)
-          .thenReturn(false); // Added missing stub
-      when(mockSettingsProvider.marqueeEnabled)
-          .thenReturn(false); // Disable marquee
+      when(
+        mockSettingsProvider.enableShakedownTween,
+      ).thenReturn(false); // Added missing stub
+      when(
+        mockSettingsProvider.marqueeEnabled,
+      ).thenReturn(false); // Disable marquee
       when(mockUpdateProvider.updateInfo).thenReturn(null);
       when(mockUpdateProvider.isSimulated).thenReturn(false);
     });
 
-    testWidgets('renders key UI elements correctly',
-        (WidgetTester tester) async {
+    testWidgets('renders key UI elements correctly', (
+      WidgetTester tester,
+    ) async {
       tester.view.physicalSize = const Size(1080, 2400);
       addTearDown(tester.view.resetPhysicalSize);
 
@@ -175,8 +181,9 @@ void main() {
       expect(find.text('Dark Mode'), findsOneWidget);
     });
 
-    testWidgets('Get Started button triggers completion',
-        (WidgetTester tester) async {
+    testWidgets('Get Started button triggers completion', (
+      WidgetTester tester,
+    ) async {
       tester.view.physicalSize = const Size(1080, 2400);
       addTearDown(tester.view.resetPhysicalSize);
 
@@ -201,15 +208,17 @@ void main() {
 
       await tester.ensureVisible(getStartedBtn);
       await tester.tap(getStartedBtn);
-      await tester
-          .pump(const Duration(milliseconds: 500)); // Handle tap and navigation
+      await tester.pump(
+        const Duration(milliseconds: 500),
+      ); // Handle tap and navigation
 
       // Verify completion was called
       verify(mockSettingsProvider.completeOnboarding()).called(1);
     });
 
-    testWidgets('UI Scale chip updates SettingsProvider',
-        (WidgetTester tester) async {
+    testWidgets('UI Scale chip updates SettingsProvider', (
+      WidgetTester tester,
+    ) async {
       tester.view.physicalSize = const Size(1080, 2400);
       addTearDown(tester.view.resetPhysicalSize);
 
@@ -235,8 +244,9 @@ void main() {
       verify(mockSettingsProvider.toggleUiScale()).called(1);
     });
 
-    testWidgets('Dark Mode chip toggles ThemeProvider',
-        (WidgetTester tester) async {
+    testWidgets('Dark Mode chip toggles ThemeProvider', (
+      WidgetTester tester,
+    ) async {
       tester.view.physicalSize = const Size(1080, 2400);
       addTearDown(tester.view.resetPhysicalSize);
 
@@ -264,8 +274,9 @@ void main() {
       expect(mockThemeProvider.isDarkMode, false);
     });
 
-    testWidgets('shows UpdateBanner when update is simulated',
-        (WidgetTester tester) async {
+    testWidgets('shows UpdateBanner when update is simulated', (
+      WidgetTester tester,
+    ) async {
       when(mockUpdateProvider.isSimulated).thenReturn(true);
       when(mockUpdateProvider.updateInfo).thenReturn(null);
 

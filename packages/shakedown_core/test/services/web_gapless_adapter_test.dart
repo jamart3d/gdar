@@ -47,9 +47,9 @@ void main() {
     // Mock path_provider
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(
-      const MethodChannel('plugins.flutter.io/path_provider'),
-      (MethodCall methodCall) async => '.',
-    );
+          const MethodChannel('plugins.flutter.io/path_provider'),
+          (MethodCall methodCall) async => '.',
+        );
 
     processingStateController = StreamController<ProcessingState>.broadcast();
     playingController = StreamController<bool>.broadcast();
@@ -61,22 +61,29 @@ void main() {
     bufferedPositionController = StreamController<Duration>.broadcast();
 
     // Stub streams — mirrors what gapless_player_web.dart emits
-    when(mockPlayer.processingStateStream)
-        .thenAnswer((_) => processingStateController.stream);
+    when(
+      mockPlayer.processingStateStream,
+    ).thenAnswer((_) => processingStateController.stream);
     when(mockPlayer.playingStream).thenAnswer((_) => playingController.stream);
-    when(mockPlayer.positionStream)
-        .thenAnswer((_) => positionController.stream);
-    when(mockPlayer.currentIndexStream)
-        .thenAnswer((_) => currentIndexController.stream);
-    when(mockPlayer.sequenceStateStream)
-        .thenAnswer((_) => sequenceController.stream.cast<SequenceState?>());
-    when(mockPlayer.playbackEventStream)
-        .thenAnswer((_) => playbackEventController.stream);
-    when(mockPlayer.playerStateStream)
-        .thenAnswer((_) => playerStateController.stream);
+    when(
+      mockPlayer.positionStream,
+    ).thenAnswer((_) => positionController.stream);
+    when(
+      mockPlayer.currentIndexStream,
+    ).thenAnswer((_) => currentIndexController.stream);
+    when(
+      mockPlayer.sequenceStateStream,
+    ).thenAnswer((_) => sequenceController.stream.cast<SequenceState?>());
+    when(
+      mockPlayer.playbackEventStream,
+    ).thenAnswer((_) => playbackEventController.stream);
+    when(
+      mockPlayer.playerStateStream,
+    ).thenAnswer((_) => playerStateController.stream);
     when(mockPlayer.durationStream).thenAnswer((_) => const Stream.empty());
-    when(mockPlayer.bufferedPositionStream)
-        .thenAnswer((_) => bufferedPositionController.stream);
+    when(
+      mockPlayer.bufferedPositionStream,
+    ).thenAnswer((_) => bufferedPositionController.stream);
 
     // Default property stubs
     when(mockPlayer.duration).thenReturn(const Duration(seconds: 100));
@@ -85,10 +92,13 @@ void main() {
     when(mockPlayer.playing).thenReturn(false);
     when(mockPlayer.play()).thenAnswer((_) async {});
     when(mockPlayer.stop()).thenAnswer((_) async {});
-    when(mockPlayer.setAudioSources(any,
-            initialIndex: anyNamed('initialIndex'),
-            preload: anyNamed('preload')))
-        .thenAnswer((_) async => const Duration(seconds: 100));
+    when(
+      mockPlayer.setAudioSources(
+        any,
+        initialIndex: anyNamed('initialIndex'),
+        preload: anyNamed('preload'),
+      ),
+    ).thenAnswer((_) async => const Duration(seconds: 100));
 
     // Stub SettingsProvider
     when(mockSettingsProvider.randomOnlyUnplayed).thenReturn(false);
@@ -125,7 +135,10 @@ void main() {
       wakelockService: mockWakelockService,
     );
     audioProvider.update(
-        mockShowListProvider, mockSettingsProvider, mockAudioCacheService);
+      mockShowListProvider,
+      mockSettingsProvider,
+      mockAudioCacheService,
+    );
   });
 
   tearDown(() {
@@ -165,23 +178,28 @@ void main() {
   }
 
   group('Web Adapter Stream Contract', () {
-    testWidgets('PlaybackEvent emission triggers error listener without crash',
-        (WidgetTester tester) async {
-      await tester.runAsync(() async {
-        // Simulate the web adapter emitting a PlaybackEvent (our fix)
-        playbackEventController.add(PlaybackEvent(
-          processingState: ProcessingState.ready,
-          updatePosition: const Duration(seconds: 5),
-          duration: const Duration(seconds: 300),
-          currentIndex: 0,
-        ));
-        await Future.delayed(const Duration(milliseconds: 50));
-        // No crash = success. The stream is consumed.
-      });
-    });
+    testWidgets(
+      'PlaybackEvent emission triggers error listener without crash',
+      (WidgetTester tester) async {
+        await tester.runAsync(() async {
+          // Simulate the web adapter emitting a PlaybackEvent (our fix)
+          playbackEventController.add(
+            PlaybackEvent(
+              processingState: ProcessingState.ready,
+              updatePosition: const Duration(seconds: 5),
+              duration: const Duration(seconds: 300),
+              currentIndex: 0,
+            ),
+          );
+          await Future.delayed(const Duration(milliseconds: 50));
+          // No crash = success. The stream is consumed.
+        });
+      },
+    );
 
-    testWidgets('Index change on currentIndexStream triggers notifyListeners',
-        (WidgetTester tester) async {
+    testWidgets('Index change on currentIndexStream triggers notifyListeners', (
+      WidgetTester tester,
+    ) async {
       await tester.runAsync(() async {
         int notifyCount = 0;
         audioProvider.addListener(() => notifyCount++);
@@ -199,13 +217,17 @@ void main() {
         currentIndexController.add(1);
         await Future.delayed(const Duration(milliseconds: 50));
 
-        expect(notifyCount, greaterThan(0),
-            reason: 'AudioProvider should notify listeners on track change');
+        expect(
+          notifyCount,
+          greaterThan(0),
+          reason: 'AudioProvider should notify listeners on track change',
+        );
       });
     });
 
-    testWidgets('Rapid index changes do not cause skipped notifications',
-        (WidgetTester tester) async {
+    testWidgets('Rapid index changes do not cause skipped notifications', (
+      WidgetTester tester,
+    ) async {
       await tester.runAsync(() async {
         int notifyCount = 0;
         audioProvider.addListener(() => notifyCount++);
@@ -223,50 +245,64 @@ void main() {
         }
         await Future.delayed(const Duration(milliseconds: 100));
 
-        expect(notifyCount, greaterThanOrEqualTo(5),
-            reason: 'Each index change should trigger a notification');
-      });
-    });
-
-    testWidgets('Processing state "completed" triggers random show if enabled',
-        (WidgetTester tester) async {
-      await tester.runAsync(() async {
-        when(mockSettingsProvider.playRandomOnCompletion).thenReturn(true);
-
-        final show = createDummyShow(1);
-        when(mockShowListProvider.filteredShows).thenReturn([show]);
-        when(mockShowListProvider.allShows).thenReturn([show]);
-        when(mockCatalogService.allShows).thenReturn([show]);
-
-        // Simulate the web adapter emitting "completed" state
-        processingStateController.add(ProcessingState.completed);
-        await Future.delayed(const Duration(milliseconds: 100));
-
-        // Should trigger setAudioSources (new random show load)
-        verify(mockPlayer.setAudioSources(any,
-                initialIndex: anyNamed('initialIndex'),
-                preload: anyNamed('preload')))
-            .called(1);
+        expect(
+          notifyCount,
+          greaterThanOrEqualTo(5),
+          reason: 'Each index change should trigger a notification',
+        );
       });
     });
 
     testWidgets(
-        'Processing state "completed" does NOT trigger random show if disabled',
-        (WidgetTester tester) async {
-      await tester.runAsync(() async {
-        when(mockSettingsProvider.playRandomOnCompletion).thenReturn(false);
+      'Processing state "completed" triggers random show if enabled',
+      (WidgetTester tester) async {
+        await tester.runAsync(() async {
+          when(mockSettingsProvider.playRandomOnCompletion).thenReturn(true);
 
-        processingStateController.add(ProcessingState.completed);
-        await Future.delayed(const Duration(milliseconds: 100));
+          final show = createDummyShow(1);
+          when(mockShowListProvider.filteredShows).thenReturn([show]);
+          when(mockShowListProvider.allShows).thenReturn([show]);
+          when(mockCatalogService.allShows).thenReturn([show]);
 
-        verifyNever(mockPlayer.setAudioSources(any,
-            initialIndex: anyNamed('initialIndex'),
-            preload: anyNamed('preload')));
-      });
-    });
+          // Simulate the web adapter emitting "completed" state
+          processingStateController.add(ProcessingState.completed);
+          await Future.delayed(const Duration(milliseconds: 100));
 
-    testWidgets('Wakelock enabled when playing starts',
-        (WidgetTester tester) async {
+          // Should trigger setAudioSources (new random show load)
+          verify(
+            mockPlayer.setAudioSources(
+              any,
+              initialIndex: anyNamed('initialIndex'),
+              preload: anyNamed('preload'),
+            ),
+          ).called(1);
+        });
+      },
+    );
+
+    testWidgets(
+      'Processing state "completed" does NOT trigger random show if disabled',
+      (WidgetTester tester) async {
+        await tester.runAsync(() async {
+          when(mockSettingsProvider.playRandomOnCompletion).thenReturn(false);
+
+          processingStateController.add(ProcessingState.completed);
+          await Future.delayed(const Duration(milliseconds: 100));
+
+          verifyNever(
+            mockPlayer.setAudioSources(
+              any,
+              initialIndex: anyNamed('initialIndex'),
+              preload: anyNamed('preload'),
+            ),
+          );
+        });
+      },
+    );
+
+    testWidgets('Wakelock enabled when playing starts', (
+      WidgetTester tester,
+    ) async {
       await tester.runAsync(() async {
         when(mockPlayer.playing).thenReturn(true);
         when(mockSettingsProvider.preventSleep).thenReturn(true);
@@ -278,8 +314,9 @@ void main() {
       });
     });
 
-    testWidgets('Wakelock disabled when playing stops',
-        (WidgetTester tester) async {
+    testWidgets('Wakelock disabled when playing stops', (
+      WidgetTester tester,
+    ) async {
       await tester.runAsync(() async {
         // First enable wakelock
         when(mockPlayer.playing).thenReturn(true);
@@ -298,8 +335,9 @@ void main() {
       });
     });
 
-    testWidgets('Wakelock NOT enabled when preventSleep is false',
-        (WidgetTester tester) async {
+    testWidgets('Wakelock NOT enabled when preventSleep is false', (
+      WidgetTester tester,
+    ) async {
       await tester.runAsync(() async {
         when(mockPlayer.playing).thenReturn(true);
         when(mockSettingsProvider.preventSleep).thenReturn(false);
@@ -312,28 +350,36 @@ void main() {
     });
 
     testWidgets(
-        'Buffer Reporting: currentTrackBuffered updates trigger notifications',
-        (WidgetTester tester) async {
-      await tester.runAsync(() async {
-        int notifyCount = 0;
-        audioProvider.addListener(() => notifyCount++);
+      'Buffer Reporting: currentTrackBuffered updates trigger notifications',
+      (WidgetTester tester) async {
+        await tester.runAsync(() async {
+          int notifyCount = 0;
+          audioProvider.addListener(() => notifyCount++);
 
-        // Emit buffer stream
-        bufferedPositionController.add(const Duration(seconds: 45));
-        // Also stub the getter since mock might be checked directly
-        when(mockPlayer.bufferedPosition)
-            .thenReturn(const Duration(seconds: 45));
+          // Emit buffer stream
+          bufferedPositionController.add(const Duration(seconds: 45));
+          // Also stub the getter since mock might be checked directly
+          when(
+            mockPlayer.bufferedPosition,
+          ).thenReturn(const Duration(seconds: 45));
 
-        await Future.delayed(const Duration(milliseconds: 50));
-        expect(notifyCount, greaterThan(0),
-            reason: 'AudioProvider should notify on buffer updates');
-        expect(audioProvider.audioPlayer.bufferedPosition,
-            const Duration(seconds: 45));
-      });
-    });
+          await Future.delayed(const Duration(milliseconds: 50));
+          expect(
+            notifyCount,
+            greaterThan(0),
+            reason: 'AudioProvider should notify on buffer updates',
+          );
+          expect(
+            audioProvider.audioPlayer.bufferedPosition,
+            const Duration(seconds: 45),
+          );
+        });
+      },
+    );
 
-    testWidgets('Transition Safety: currentIndex sync during gapless handoff',
-        (WidgetTester tester) async {
+    testWidgets('Transition Safety: currentIndex sync during gapless handoff', (
+      WidgetTester tester,
+    ) async {
       await tester.runAsync(() async {
         // Setup sequence
         final sequence = [
@@ -353,28 +399,34 @@ void main() {
         currentIndexController.add(1);
 
         await Future.delayed(const Duration(milliseconds: 50));
-        expect(audioProvider.audioPlayer.currentIndex, 1,
-            reason:
-                'AudioProvider must reflect the internal JS engine index promotion');
+        expect(
+          audioProvider.audioPlayer.currentIndex,
+          1,
+          reason:
+              'AudioProvider must reflect the internal JS engine index promotion',
+        );
       });
     });
 
     testWidgets(
-        'Engine Isolation: Verify playback events are consumed without error',
-        (WidgetTester tester) async {
-      await tester.runAsync(() async {
-        // This test ensures that the adapter contract (which uses PlaybackEvent)
-        // doesn't cause errors when non-standard processing states (like 'handoff_countdown')
-        // are eventually mapped (this is handled in the real adapter, but we mock the contract here).
-        playbackEventController.add(PlaybackEvent(
-          processingState: ProcessingState.ready,
-          updatePosition: const Duration(seconds: 10),
-          currentIndex: 0,
-        ));
+      'Engine Isolation: Verify playback events are consumed without error',
+      (WidgetTester tester) async {
+        await tester.runAsync(() async {
+          // This test ensures that the adapter contract (which uses PlaybackEvent)
+          // doesn't cause errors when non-standard processing states (like 'handoff_countdown')
+          // are eventually mapped (this is handled in the real adapter, but we mock the contract here).
+          playbackEventController.add(
+            PlaybackEvent(
+              processingState: ProcessingState.ready,
+              updatePosition: const Duration(seconds: 10),
+              currentIndex: 0,
+            ),
+          );
 
-        await Future.delayed(const Duration(milliseconds: 50));
-        // Success if no exception thrown
-      });
-    });
+          await Future.delayed(const Duration(milliseconds: 50));
+          // Success if no exception thrown
+        });
+      },
+    );
   });
 }

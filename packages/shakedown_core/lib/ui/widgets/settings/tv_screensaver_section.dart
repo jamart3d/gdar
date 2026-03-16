@@ -952,8 +952,7 @@ class _TvScreensaverSectionState extends State<TvScreensaverSection> {
                         if (settings.oilAudioGraphMode == 'ekg' ||
                             settings.oilAudioGraphMode == 'circular_ekg') ...[
                           const SizedBox(height: 16),
-                          if (settings.oilAudioGraphMode ==
-                              'circular_ekg') ...[
+                          if (settings.oilAudioGraphMode == 'circular_ekg') ...[
                             TvStepperRow(
                               label: 'EKG Radius',
                               value: settings.oilEkgRadius,

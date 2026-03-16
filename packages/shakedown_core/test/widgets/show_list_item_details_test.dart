@@ -63,8 +63,10 @@ void main() {
       artist: 'Grateful Dead',
       date: '2025-01-01',
       venue: 'Venue',
-      sources:
-          List.generate(sourceCount, (i) => Source(id: 'source$i', tracks: [])),
+      sources: List.generate(
+        sourceCount,
+        (i) => Source(id: 'source$i', tracks: []),
+      ),
       hasFeaturedTrack: false,
     );
   }
@@ -78,11 +80,14 @@ void main() {
       providers: [
         ChangeNotifierProvider<AudioProvider>.value(value: mockAudioProvider),
         ChangeNotifierProvider(
-            create: (_) => settingsProvider ?? SettingsProvider(prefs)),
+          create: (_) => settingsProvider ?? SettingsProvider(prefs),
+        ),
         ChangeNotifierProvider<ShowListProvider>.value(
-            value: MockShowListProvider()),
+          value: MockShowListProvider(),
+        ),
         ChangeNotifierProvider<DeviceService>(
-            create: (_) => MockDeviceService()),
+          create: (_) => MockDeviceService(),
+        ),
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
       ],
       child: MaterialApp(
@@ -99,8 +104,9 @@ void main() {
     );
   }
 
-  testWidgets('ShowListItemDetails displays rating control for each source',
-      (WidgetTester tester) async {
+  testWidgets('ShowListItemDetails displays rating control for each source', (
+    WidgetTester tester,
+  ) async {
     final show = createDummyShow('Show A', sourceCount: 2);
     await tester.pumpWidget(createTestableWidget(show: show));
 
@@ -110,8 +116,9 @@ void main() {
     expect(find.byIcon(Icons.star_border), findsWidgets);
   });
 
-  testWidgets('ShowListItemDetails displays source IDs',
-      (WidgetTester tester) async {
+  testWidgets('ShowListItemDetails displays source IDs', (
+    WidgetTester tester,
+  ) async {
     final show = createDummyShow('Show B', sourceCount: 2);
     await tester.pumpWidget(createTestableWidget(show: show));
 
@@ -119,11 +126,13 @@ void main() {
     expect(find.text('source1'), findsOneWidget);
   });
 
-  testWidgets('Tapping rating control in details opens dialog when playing',
-      (WidgetTester tester) async {
+  testWidgets('Tapping rating control in details opens dialog when playing', (
+    WidgetTester tester,
+  ) async {
     final show = createDummyShow('Show C', sourceCount: 2);
     await tester.pumpWidget(
-        createTestableWidget(show: show, playingSourceId: 'source0'));
+      createTestableWidget(show: show, playingSourceId: 'source0'),
+    );
 
     // Find the rating control
     final ratingControl = find.byType(RatingControl).first;
@@ -138,30 +147,34 @@ void main() {
   });
 
   testWidgets(
-      'Tapping rating control in details does NOT open dialog when NOT playing',
-      (WidgetTester tester) async {
-    final show = createDummyShow('Show C', sourceCount: 2);
-    await tester.pumpWidget(
-        createTestableWidget(show: show, playingSourceId: 'other_source'));
+    'Tapping rating control in details does NOT open dialog when NOT playing',
+    (WidgetTester tester) async {
+      final show = createDummyShow('Show C', sourceCount: 2);
+      await tester.pumpWidget(
+        createTestableWidget(show: show, playingSourceId: 'other_source'),
+      );
 
-    // Find the rating control
-    final ratingControl = find.byType(RatingControl).first;
-    expect(ratingControl, findsOneWidget);
+      // Find the rating control
+      final ratingControl = find.byType(RatingControl).first;
+      expect(ratingControl, findsOneWidget);
 
-    // Tap it
-    await tester.tap(ratingControl);
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 500));
+      // Tap it
+      await tester.tap(ratingControl);
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
 
-    // Verify dialog is NOT open
-    expect(find.text('Rate Show'), findsNothing);
-  });
+      // Verify dialog is NOT open
+      expect(find.text('Rate Show'), findsNothing);
+    },
+  );
 
-  testWidgets('Rating dialog displays source ID badge',
-      (WidgetTester tester) async {
+  testWidgets('Rating dialog displays source ID badge', (
+    WidgetTester tester,
+  ) async {
     final show = createDummyShow('Show D', sourceCount: 2);
     await tester.pumpWidget(
-        createTestableWidget(show: show, playingSourceId: 'source0'));
+      createTestableWidget(show: show, playingSourceId: 'source0'),
+    );
 
     // Find the rating control for source0
     final ratingControl = find.byType(RatingControl).first;
@@ -171,8 +184,8 @@ void main() {
 
     // Verify dialog title contains source ID
     expect(
-        find.descendant(
-            of: find.byType(Dialog), matching: find.text('source0')),
-        findsOneWidget);
+      find.descendant(of: find.byType(Dialog), matching: find.text('source0')),
+      findsOneWidget,
+    );
   });
 }

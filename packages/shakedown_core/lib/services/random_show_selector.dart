@@ -170,7 +170,8 @@ class RandomShowSelector {
         // Boost weight if this is the "Run Suggestion"
         if (runSuggestion != null && show.date == runSuggestion.date) {
           logger.i('History Run: Boosting weight for ${show.date}');
-          weight *= 10; // Make it extremely likely but still allow random "breaks"
+          weight *=
+              10; // Make it extremely likely but still allow random "breaks"
         }
 
         playCandidates.add(show);

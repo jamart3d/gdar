@@ -64,7 +64,11 @@ class _DevAudioHudState extends State<DevAudioHud> {
         _syncHeartbeatPulse(hud.isPlaying);
 
         if (!widget.compact) {
-          final summary = hud.toMap().entries.map((e) => '${e.key}:${e.value}').join(' • ');
+          final summary = hud
+              .toMap()
+              .entries
+              .map((e) => '${e.key}:${e.value}')
+              .join(' • ');
           return Text(
             summary,
             maxLines: 2,
@@ -89,53 +93,50 @@ class _DevAudioHudState extends State<DevAudioHud> {
           decoration: BoxDecoration(
             color: hud.isHandoffCountdown
                 ? Colors.orange.withValues(alpha: 0.95)
-                : Theme.of(
-                  context,
-                ).colorScheme.surface.withValues(alpha: 0.78),
+                : Theme.of(context).colorScheme.surface.withValues(alpha: 0.78),
             borderRadius: BorderRadius.circular(10),
           ),
           child: LayoutBuilder(
             builder: (context, constraints) {
               final narrow = constraints.maxWidth < 360;
-              final keys =
-                  narrow
-                      ? const [
-                        'ENG',
-                        'TX',
-                        'HF',
-                        'BG',
-                        'STB',
-                        'AE',
-                        'V',
-                        'DFT',
-                        'PF',
-                        'PS',
-                        'BUF',
-                        'HD',
-                        'E',
-                        'ST',
-                        'SIG',
-                        'MSG',
-                      ]
-                      : const [
-                        'ENG',
-                        'TX',
-                        'HF',
-                        'BG',
-                        'STB',
-                        'AE',
-                        'V',
-                        'DFT',
-                        'PF',
-                        'PS',
-                        'BUF',
-                        'HD',
-                        'NX',
-                        'E',
-                        'ST',
-                        'SIG',
-                        'MSG',
-                      ];
+              final keys = narrow
+                  ? const [
+                      'ENG',
+                      'TX',
+                      'HF',
+                      'BG',
+                      'STB',
+                      'AE',
+                      'V',
+                      'DFT',
+                      'PF',
+                      'PS',
+                      'BUF',
+                      'HD',
+                      'E',
+                      'ST',
+                      'SIG',
+                      'MSG',
+                    ]
+                  : const [
+                      'ENG',
+                      'TX',
+                      'HF',
+                      'BG',
+                      'STB',
+                      'AE',
+                      'V',
+                      'DFT',
+                      'PF',
+                      'PS',
+                      'BUF',
+                      'HD',
+                      'NX',
+                      'E',
+                      'ST',
+                      'SIG',
+                      'MSG',
+                    ];
 
               return _buildHudFieldWrap(
                 fields: fields,
@@ -329,10 +330,9 @@ class _DevAudioHudState extends State<DevAudioHud> {
         finalColor = activeColor.withValues(alpha: 0.12);
       } else if (isCurrentlyActive) {
         if (shouldFlash) {
-          finalColor =
-              _heartbeatPulseOn
-                  ? activeColor
-                  : activeColor.withValues(alpha: 0.35);
+          finalColor = _heartbeatPulseOn
+              ? activeColor
+              : activeColor.withValues(alpha: 0.35);
         } else {
           finalColor = activeColor;
         }

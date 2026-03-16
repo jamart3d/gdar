@@ -74,7 +74,8 @@ Position: 05:30''';
 
     test('returns null for garbage string', () {
       final result = ShareLinkParser.parse(
-          'This is just some random text without any date or id');
+        'This is just some random text without any date or id',
+      );
       expect(result, isNull);
     });
   });

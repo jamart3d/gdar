@@ -80,7 +80,7 @@ class MockAudioProvider extends ChangeNotifier implements ap.AudioProvider {
       const Stream.empty();
   @override
   Stream<({String message, VoidCallback? retryAction})>
-      get bufferAgentNotificationStream => const Stream.empty();
+  get bufferAgentNotificationStream => const Stream.empty();
   @override
   Stream<void> get playbackFocusRequestStream => const Stream.empty();
   @override
@@ -92,22 +92,29 @@ class MockAudioProvider extends ChangeNotifier implements ap.AudioProvider {
   void clearPendingRandomShowRequest() {}
   @override
   void update(
-      ShowListProvider slp, SettingsProvider sp, AudioCacheService acs) {}
+    ShowListProvider slp,
+    SettingsProvider sp,
+    AudioCacheService acs,
+  ) {}
 
   @override
   ({Show show, Source source})? pickRandomShow({bool filterBySearch = true}) =>
       null;
   @override
-  Future<Show?> playRandomShow(
-          {bool filterBySearch = true,
-          bool animationOnly = false,
-          bool delayPlayback = false}) async =>
-      null;
+  Future<Show?> playRandomShow({
+    bool filterBySearch = true,
+    bool animationOnly = false,
+    bool delayPlayback = false,
+  }) async => null;
   @override
   Future<void> playPendingSelection() async {}
   @override
-  Future<void> playSource(Show show, Source source,
-      {int initialIndex = 0, Duration? initialPosition}) async {}
+  Future<void> playSource(
+    Show show,
+    Source source, {
+    int initialIndex = 0,
+    Duration? initialPosition,
+  }) async {}
   @override
   Future<bool> playFromShareString(String shareString) async => false;
   @override
@@ -832,14 +839,14 @@ void main() {
     // Mock path_provider channel
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(
-      const MethodChannel('plugins.flutter.io/path_provider'),
-      (MethodCall methodCall) async {
-        if (methodCall.method == 'getApplicationDocumentsDirectory') {
-          return '.';
-        }
-        return null;
-      },
-    );
+          const MethodChannel('plugins.flutter.io/path_provider'),
+          (MethodCall methodCall) async {
+            if (methodCall.method == 'getApplicationDocumentsDirectory') {
+              return '.';
+            }
+            return null;
+          },
+        );
 
     SharedPreferences.setMockInitialValues({});
     final prefs = await SharedPreferences.getInstance();
@@ -859,26 +866,30 @@ void main() {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider<ap.AudioProvider>.value(
-            value: mockAudioProvider),
+          value: mockAudioProvider,
+        ),
         ChangeNotifierProvider<SettingsProvider>.value(
-            value: mockSettingsProvider),
+          value: mockSettingsProvider,
+        ),
         ChangeNotifierProvider<DeviceService>.value(value: mockTvDeviceService),
         ChangeNotifierProvider<ShowListProvider>.value(
-            value: mockShowListProvider),
+          value: mockShowListProvider,
+        ),
         ChangeNotifierProvider<UpdateProvider>(create: (_) => UpdateProvider()),
         ChangeNotifierProvider<ThemeProvider>(
-            create: (_) => ThemeProvider(isTv: true)),
+          create: (_) => ThemeProvider(isTv: true),
+        ),
       ],
-      child: MaterialApp(
-        home: child,
-      ),
+      child: MaterialApp(home: child),
     );
   }
 
-  testWidgets('TV Dual Pane Layout displays ShowList and Playback panes',
-      (WidgetTester tester) async {
-    await tester
-        .pumpWidget(createTestableWidget(child: const TvDualPaneLayout()));
+  testWidgets('TV Dual Pane Layout displays ShowList and Playback panes', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(
+      createTestableWidget(child: const TvDualPaneLayout()),
+    );
 
     // Verify both screens are present
     expect(find.byType(ShowListScreen), findsOneWidget);
@@ -888,10 +899,12 @@ void main() {
     expect(find.byType(AnimatedDiceIcon), findsOneWidget);
   });
 
-  testWidgets('Navigation between panes in TV Dual Pane Layout',
-      (WidgetTester tester) async {
-    await tester
-        .pumpWidget(createTestableWidget(child: const TvDualPaneLayout()));
+  testWidgets('Navigation between panes in TV Dual Pane Layout', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(
+      createTestableWidget(child: const TvDualPaneLayout()),
+    );
 
     // Initially ShowList should have something focusable if it was populated
 
@@ -902,53 +915,62 @@ void main() {
     expect(find.byType(AnimatedDiceIcon), findsOneWidget);
   });
 
-  testWidgets('TV Settings UI displays new components',
-      (WidgetTester tester) async {
+  testWidgets('TV Settings UI displays new components', (
+    WidgetTester tester,
+  ) async {
     // We'll test the sections directly since DualPane hides them in sub-screens
-    await tester.pumpWidget(createTestableWidget(
+    await tester.pumpWidget(
+      createTestableWidget(
         child: Material(
-      child: SingleChildScrollView(
-        child: Column(
-          children: [
-            const TvScreensaverSection(
-              scaleFactor: 1.0,
-              initiallyExpanded: true,
+          child: SingleChildScrollView(
+            child: Column(
+              children: [
+                const TvScreensaverSection(
+                  scaleFactor: 1.0,
+                  initiallyExpanded: true,
+                ),
+                PlaybackSection(
+                  scaleFactor: 1.0,
+                  initiallyExpanded: true,
+                  activeHighlightKey: null,
+                  highlightTriggerCount: 0,
+                  settingKeys: {},
+                  onScrollToSetting: (_) {},
+                  isHighlightSettingMatching: false,
+                ),
+              ],
             ),
-            PlaybackSection(
-              scaleFactor: 1.0,
-              initiallyExpanded: true,
-              activeHighlightKey: null,
-              highlightTriggerCount: 0,
-              settingKeys: {},
-              onScrollToSetting: (_) {},
-              isHighlightSettingMatching: false,
-            ),
-          ],
+          ),
         ),
       ),
-    )));
+    );
 
     // Verify TvStepperRow is used for Flow Speed
     await tester.pump(const Duration(seconds: 1));
     expect(find.text('Flow Speed'), findsOneWidget);
-    expect(find.byType(TvStepperRow),
-        findsAtLeastNWidgets(1)); // Should find several
+    expect(
+      find.byType(TvStepperRow),
+      findsAtLeastNWidgets(1),
+    ); // Should find several
 
     // Verify Show Track Info toggle is present
     expect(find.text('Show Track Info'), findsOneWidget);
   });
 
-  testWidgets('Glow and RGB settings are visible on TV',
-      (WidgetTester tester) async {
-    await tester.pumpWidget(createTestableWidget(
-      child: const Material(
-        child: AppearanceSection(
-          scaleFactor: 1.0,
-          initiallyExpanded: true,
-          showFontSelection: false,
+  testWidgets('Glow and RGB settings are visible on TV', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(
+      createTestableWidget(
+        child: const Material(
+          child: AppearanceSection(
+            scaleFactor: 1.0,
+            initiallyExpanded: true,
+            showFontSelection: false,
+          ),
         ),
       ),
-    ));
+    );
 
     // Verify Glow is hidden on TV, but RGB is visible
     expect(find.text('Glow Border'), findsNothing);

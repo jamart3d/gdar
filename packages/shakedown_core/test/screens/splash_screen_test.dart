@@ -72,8 +72,9 @@ void main() {
     when(mockShowListProvider.isSourceAllowed(any)).thenReturn(true);
 
     // Stub AudioProvider streams and properties
-    when(mockAudioProvider.playerStateStream)
-        .thenAnswer((_) => const Stream.empty());
+    when(
+      mockAudioProvider.playerStateStream,
+    ).thenAnswer((_) => const Stream.empty());
     when(mockAudioProvider.currentShow).thenReturn(null);
     when(mockAudioProvider.currentSource).thenReturn(null);
     when(mockAudioProvider.error).thenReturn(null);
@@ -83,28 +84,31 @@ void main() {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider<ShowListProvider>.value(
-            value: mockShowListProvider),
+          value: mockShowListProvider,
+        ),
         ChangeNotifierProvider<SettingsProvider>.value(
-            value: mockSettingsProvider),
+          value: mockSettingsProvider,
+        ),
         ChangeNotifierProvider<AudioProvider>.value(value: mockAudioProvider),
         ChangeNotifierProvider<DeviceService>.value(value: mockDeviceService),
         ChangeNotifierProvider<ThemeProvider>(create: (_) => ThemeProvider()),
       ],
-      child: const MaterialApp(
-        home: SplashScreen(),
-      ),
+      child: const MaterialApp(home: SplashScreen()),
     );
   }
 
-  testWidgets('SplashScreen navigates away even if archive is unreachable',
-      (WidgetTester tester) async {
+  testWidgets('SplashScreen navigates away even if archive is unreachable', (
+    WidgetTester tester,
+  ) async {
     await tester.pumpWidget(createWidgetUnderTest());
     await tester.pump(const Duration(seconds: 3)); // Wait for min timer (2s)
-    await tester
-        .pump(const Duration(seconds: 10)); // Wait plenty for transition (1.9s)
+    await tester.pump(
+      const Duration(seconds: 10),
+    ); // Wait plenty for transition (1.9s)
     for (int i = 0; i < 5; i++) {
-      await tester.pump(const Duration(
-          milliseconds: 100)); // Pump frames for Navigator cleanup
+      await tester.pump(
+        const Duration(milliseconds: 100),
+      ); // Pump frames for Navigator cleanup
     }
 
     // SplashScreen should be gone (navigated away)

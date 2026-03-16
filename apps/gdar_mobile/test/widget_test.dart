@@ -9,9 +9,7 @@ void main() {
     SharedPreferences.setMockInitialValues({});
     final prefs = await SharedPreferences.getInstance();
 
-    await tester.pumpWidget(
-      GdarMobileApp(prefs: prefs, isTv: false),
-    );
+    await tester.pumpWidget(GdarMobileApp(prefs: prefs, isTv: false));
 
     expect(find.text('Shakedown'), findsOneWidget);
   });

@@ -58,6 +58,11 @@ pair programmer and mentor.
 * **Testing:** Provide widget and unit tests for generated code.
 * **Communication:** If unsure about architectural intent, ask for clarification.
 
+## Platform Debugging & ADB
+* **Force TV Mode**: `adb shell am start -W -a android.intent.action.VIEW -d "shakedown://settings?key=force_tv&value=true" com.jamart3d.shakedown`
+* **UI Scaling**: `adb shell am start -W -a android.intent.action.VIEW -d "shakedown://ui-scale?enabled=true" com.jamart3d.shakedown`
+* **Deep Links**: Supported schemes: `shakedown://`. See [TV_DEBUGGING.md](file:///c:/Users/jeff/StudioProjects/gdar/docs/TV_DEBUGGING.md) for full intent syntax.
+
 ## Data Handling (Crucial)
 * **Large File Optimization:** The file `assets/data/output.optimized_src.json` is 8MB. 
 * **Threading:** Do NOT attempt to read this file synchronously on the main thread.

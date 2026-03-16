@@ -302,8 +302,8 @@ class ShowListAppBar extends StatelessWidget implements PreferredSizeWidget {
                   : LucideIcons.moon,
               onPressed: () {
                 context.read<ThemeProvider>().toggleTheme(
-                      currentBrightness: Theme.of(context).brightness,
-                    );
+                  currentBrightness: Theme.of(context).brightness,
+                );
               },
             ),
           ],

@@ -213,58 +213,62 @@ void main() {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider<SettingsProvider>.value(
-            value: mockSettingsProvider),
+          value: mockSettingsProvider,
+        ),
         ChangeNotifierProvider<AudioProvider>.value(value: mockAudioProvider),
         ChangeNotifierProvider<ShowListProvider>.value(
-            value: mockShowListProvider),
+          value: mockShowListProvider,
+        ),
         ChangeNotifierProvider<DeviceService>.value(value: mockDeviceService),
         ChangeNotifierProvider<ThemeProvider>(create: (_) => ThemeProvider()),
       ],
-      child: const MaterialApp(
-        home: ShowListScreen(),
-      ),
+      child: const MaterialApp(home: ShowListScreen()),
     );
   }
 
   testWidgets(
-      'Random Show Selection is DEFERRED when app is in BACKGROUND and EXECUTED when RESUMED',
-      (WidgetTester tester) async {
-    // 1. Setup Data
-    final source1 = Source(id: 's1', tracks: []);
-    final source2 =
-        Source(id: 's2', tracks: []); // 2 sources to enforce expansion
-    final show = Show(
+    'Random Show Selection is DEFERRED when app is in BACKGROUND and EXECUTED when RESUMED',
+    (WidgetTester tester) async {
+      // 1. Setup Data
+      final source1 = Source(id: 's1', tracks: []);
+      final source2 = Source(
+        id: 's2',
+        tracks: [],
+      ); // 2 sources to enforce expansion
+      final show = Show(
         name: 'Test Show',
         date: '2025-01-01',
         venue: 'Venue',
         artist: 'GD',
         sources: [source1, source2],
-        hasFeaturedTrack: false);
+        hasFeaturedTrack: false,
+      );
 
-    mockShowListProvider.setFilteredShows([show]);
+      mockShowListProvider.setFilteredShows([show]);
 
-    await tester.pumpWidget(createWidgetUnderTest());
-    await tester.pump(const Duration(milliseconds: 100));
+      await tester.pumpWidget(createWidgetUnderTest());
+      await tester.pump(const Duration(milliseconds: 100));
 
-    // 2. Simulate Background State
-    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
-    await tester.pump();
+      // 2. Simulate Background State
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
+      await tester.pump();
 
-    // 3. Trigger Random Show Event
-    mockAudioProvider.emitRandomShow((show: show, source: source1));
-    await tester.pump(); // Process stream event
+      // 3. Trigger Random Show Event
+      mockAudioProvider.emitRandomShow((show: show, source: source1));
+      await tester.pump(); // Process stream event
 
-    // 4. Verify NOT Expanded (Action Deferred)
-    // verifyNever(mockShowListProvider.expandShow(any)); // Mockito verification
-    // Since Mock implements, standard Verify works if we used spy/mock properly.
-    // Using simple mock here: verify(mockShowListProvider.expandShow(any)).called(0)
-    verifyNever(mockShowListProvider.expandShow('Test Show_2025-01-01'));
+      // 4. Verify NOT Expanded (Action Deferred)
+      // verifyNever(mockShowListProvider.expandShow(any)); // Mockito verification
+      // Since Mock implements, standard Verify works if we used spy/mock properly.
+      // Using simple mock here: verify(mockShowListProvider.expandShow(any)).called(0)
+      verifyNever(mockShowListProvider.expandShow('Test Show_2025-01-01'));
 
-    // 5. Simulate Resume
-    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
-    await tester.pump();
+      // 5. Simulate Resume
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+      await tester.pump();
 
-    // 6. Verify Expanded (Action Executed)
-    verify(mockShowListProvider.expandShow('Test Show_2025-01-01')).called(1);
-  });
+      // 6. Verify Expanded (Action Executed)
+      verify(mockShowListProvider.expandShow('Test Show_2025-01-01')).called(1);
+    },
+  );
 }

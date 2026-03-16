@@ -6,7 +6,7 @@ import 'package:shakedown_core/utils/web_runtime.dart';
 /// specifically tailored for a "Liquid Glass" UI following Apple's aesthetics.
 TextTheme buildAppleInterTextTheme(bool isDark, {double scaleFactor = 1.0}) {
   final String? interFont = FontConfig.resolve('Inter');
-  
+
   final Color primaryColor = isDark
       ? Colors.white.withValues(alpha: 0.9)
       : Colors.black.withValues(alpha: 0.9);

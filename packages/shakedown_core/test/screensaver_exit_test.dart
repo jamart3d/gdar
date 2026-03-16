@@ -12,10 +12,7 @@ import 'package:mockito/mockito.dart';
 import 'package:mockito/annotations.dart';
 import 'screensaver_exit_test.mocks.dart';
 
-@GenerateNiceMocks([
-  MockSpec<SettingsProvider>(),
-  MockSpec<AudioProvider>(),
-])
+@GenerateNiceMocks([MockSpec<SettingsProvider>(), MockSpec<AudioProvider>()])
 class MockWakelockService extends Fake implements WakelockService {
   @override
   Future<void> enable() async {}
@@ -95,14 +92,13 @@ void main() {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider<SettingsProvider>.value(
-            value: mockSettingsProvider),
+          value: mockSettingsProvider,
+        ),
         ChangeNotifierProvider<AudioProvider>.value(value: mockAudioProvider),
         Provider<WakelockService>.value(value: mockWakelockService),
         ChangeNotifierProvider<DeviceService>.value(value: mockDeviceService),
       ],
-      child: const MaterialApp(
-        home: ScreensaverScreen(),
-      ),
+      child: const MaterialApp(home: ScreensaverScreen()),
     );
   }
 
@@ -115,15 +111,17 @@ void main() {
     // Tap the visualizer
     await tester.tap(find.byType(StealVisualizer));
     await tester.pump(const Duration(milliseconds: 500));
-    await tester
-        .pump(const Duration(milliseconds: 500)); // Second pump for transition
+    await tester.pump(
+      const Duration(milliseconds: 500),
+    ); // Second pump for transition
 
     // Verify it popped
     expect(find.byType(ScreensaverScreen), findsNothing);
   });
 
-  testWidgets('Screensaver exits on Key Event (D-pad Center)',
-      (WidgetTester tester) async {
+  testWidgets('Screensaver exits on Key Event (D-pad Center)', (
+    WidgetTester tester,
+  ) async {
     await tester.pumpWidget(createWidgetUnderTest());
     await tester.pump(const Duration(milliseconds: 500));
 

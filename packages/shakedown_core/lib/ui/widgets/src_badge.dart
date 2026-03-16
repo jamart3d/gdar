@@ -87,10 +87,14 @@ class SrcBadge extends StatelessWidget {
                               effectiveScale // Reduced from 7.5
                         : 8.0 * effectiveScale) // Reduced from 9.0
                   : fontSize *
-                        (settingsProvider.activeAppFont == 'rock_salt' ? 0.7 : 1.0) *
+                        (settingsProvider.activeAppFont == 'rock_salt'
+                            ? 0.7
+                            : 1.0) *
                         effectiveScale) *
               scaleFactor,
-          letterSpacing: settingsProvider.activeAppFont == 'rock_salt' ? 0.0 : 0.5,
+          letterSpacing: settingsProvider.activeAppFont == 'rock_salt'
+              ? 0.0
+              : 0.5,
         ),
         textAlign: TextAlign.center,
       ),

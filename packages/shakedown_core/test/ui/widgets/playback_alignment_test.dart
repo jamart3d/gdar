@@ -24,8 +24,8 @@ class FakeCatalogService extends Fake implements CatalogService {
   final ValueNotifier<Box<Rating>> _ratings;
 
   FakeCatalogService(Box<bool> historyBox, Box<Rating> ratingsBox)
-      : _history = ValueNotifier(historyBox),
-        _ratings = ValueNotifier(ratingsBox);
+    : _history = ValueNotifier(historyBox),
+      _ratings = ValueNotifier(ratingsBox);
 
   @override
   ValueListenable<Box<bool>> get historyListenable => _history;
@@ -68,39 +68,53 @@ void main() {
 
     // Audio Provider setup
     when(mockAudioProvider.audioPlayer).thenReturn(mockAudioPlayer);
-    when(mockAudioProvider.playbackErrorStream)
-        .thenAnswer((_) => Stream.value(''));
-    when(mockAudioProvider.currentIndexStream)
-        .thenAnswer((_) => Stream.value(0));
+    when(
+      mockAudioProvider.playbackErrorStream,
+    ).thenAnswer((_) => Stream.value(''));
+    when(
+      mockAudioProvider.currentIndexStream,
+    ).thenAnswer((_) => Stream.value(0));
     when(mockAudioPlayer.currentIndex).thenReturn(0);
-    when(mockAudioProvider.positionStream)
-        .thenAnswer((_) => Stream.value(Duration.zero));
-    when(mockAudioProvider.durationStream)
-        .thenAnswer((_) => Stream.value(Duration.zero));
-    when(mockAudioProvider.bufferedPositionStream)
-        .thenAnswer((_) => Stream.value(Duration.zero));
+    when(
+      mockAudioProvider.positionStream,
+    ).thenAnswer((_) => Stream.value(Duration.zero));
+    when(
+      mockAudioProvider.durationStream,
+    ).thenAnswer((_) => Stream.value(Duration.zero));
+    when(
+      mockAudioProvider.bufferedPositionStream,
+    ).thenAnswer((_) => Stream.value(Duration.zero));
     when(mockAudioProvider.playerStateStream).thenAnswer(
-        (_) => Stream.value(PlayerState(false, ProcessingState.ready)));
-    when(mockAudioProvider.bufferAgentNotificationStream)
-        .thenAnswer((_) => const Stream.empty());
-    when(mockAudioProvider.notificationStream)
-        .thenAnswer((_) => const Stream.empty());
-    when(mockAudioProvider.nextTrackBufferedStream)
-        .thenAnswer((_) => const Stream.empty());
-    when(mockAudioPlayer.engineStateStringStream)
-        .thenAnswer((_) => const Stream.empty());
-    when(mockAudioPlayer.engineContextStateStream)
-        .thenAnswer((_) => const Stream.empty());
-    when(mockAudioPlayer.sequenceStateStream)
-        .thenAnswer((_) => const Stream.empty());
+      (_) => Stream.value(PlayerState(false, ProcessingState.ready)),
+    );
+    when(
+      mockAudioProvider.bufferAgentNotificationStream,
+    ).thenAnswer((_) => const Stream.empty());
+    when(
+      mockAudioProvider.notificationStream,
+    ).thenAnswer((_) => const Stream.empty());
+    when(
+      mockAudioProvider.nextTrackBufferedStream,
+    ).thenAnswer((_) => const Stream.empty());
+    when(
+      mockAudioPlayer.engineStateStringStream,
+    ).thenAnswer((_) => const Stream.empty());
+    when(
+      mockAudioPlayer.engineContextStateStream,
+    ).thenAnswer((_) => const Stream.empty());
+    when(
+      mockAudioPlayer.sequenceStateStream,
+    ).thenAnswer((_) => const Stream.empty());
     when(mockAudioPlayer.bufferedPosition).thenReturn(Duration.zero);
     when(mockAudioPlayer.position).thenReturn(Duration.zero);
     when(mockAudioPlayer.duration).thenReturn(Duration.zero);
-    when(mockAudioPlayer.playerState)
-        .thenReturn(PlayerState(false, ProcessingState.ready));
+    when(
+      mockAudioPlayer.playerState,
+    ).thenReturn(PlayerState(false, ProcessingState.ready));
     when(mockAudioPlayer.sequence).thenReturn([]);
-    when(mockAudioPlayer.sequenceStateStream)
-        .thenAnswer((_) => const Stream.empty());
+    when(
+      mockAudioPlayer.sequenceStateStream,
+    ).thenAnswer((_) => const Stream.empty());
 
     // Settings Provider setup
     when(mockSettingsProvider.useTrueBlack).thenReturn(false);
@@ -113,8 +127,9 @@ void main() {
     when(mockSettingsProvider.abbreviateMonth).thenReturn(true);
     when(mockSettingsProvider.showTrackNumbers).thenReturn(true);
     when(mockSettingsProvider.hideTrackDuration).thenReturn(false);
-    when(mockSettingsProvider.highlightPlayingWithRgb)
-        .thenReturn(true); // RGB ENABLED
+    when(
+      mockSettingsProvider.highlightPlayingWithRgb,
+    ).thenReturn(true); // RGB ENABLED
     when(mockSettingsProvider.glowMode).thenReturn(50);
     when(mockSettingsProvider.rgbAnimationSpeed).thenReturn(1.0);
     when(mockSettingsProvider.showSingleShnid).thenReturn(false);
@@ -127,84 +142,96 @@ void main() {
   });
 
   testWidgets(
-      'Track title vertical position stays stable when toggling play state',
-      (tester) async {
-    // Setup Data
-    final track1 = Track(
+    'Track title vertical position stays stable when toggling play state',
+    (tester) async {
+      // Setup Data
+      final track1 = Track(
         trackNumber: 1,
         title: 'Track One',
         duration: 300,
         url: 'u1',
-        setName: 'Set 1');
-    final track2 = Track(
+        setName: 'Set 1',
+      );
+      final track2 = Track(
         trackNumber: 2,
         title: 'Track Two',
         duration: 300,
         url: 'u2',
-        setName: 'Set 1');
-    final source = Source(id: 's1', src: 'SBD', tracks: [track1, track2]);
-    final show = Show(
+        setName: 'Set 1',
+      );
+      final source = Source(id: 's1', src: 'SBD', tracks: [track1, track2]);
+      final show = Show(
         name: 'Show 1',
         artist: 'Band',
         date: '2022-01-01',
         venue: 'Venue',
-        sources: [source]);
+        sources: [source],
+      );
 
-    when(mockAudioProvider.currentShow).thenReturn(show);
-    when(mockAudioProvider.currentSource).thenReturn(source);
+      when(mockAudioProvider.currentShow).thenReturn(show);
+      when(mockAudioProvider.currentSource).thenReturn(source);
 
-    // Scenario 1: Track 1 is PLAYING
-    when(mockAudioProvider.currentTrack).thenReturn(track1);
+      // Scenario 1: Track 1 is PLAYING
+      when(mockAudioProvider.currentTrack).thenReturn(track1);
 
-    await tester.pumpWidget(
-      MultiProvider(
-        providers: [
-          ChangeNotifierProvider<AudioProvider>.value(value: mockAudioProvider),
-          ChangeNotifierProvider<SettingsProvider>.value(
-              value: mockSettingsProvider),
-          ChangeNotifierProvider<DeviceService>(
-              create: (_) => MockDeviceService()),
-          ChangeNotifierProvider<ThemeProvider>(create: (_) => ThemeProvider()),
-        ],
-        child: const MaterialApp(
-          home: PlaybackScreen(),
+      await tester.pumpWidget(
+        MultiProvider(
+          providers: [
+            ChangeNotifierProvider<AudioProvider>.value(
+              value: mockAudioProvider,
+            ),
+            ChangeNotifierProvider<SettingsProvider>.value(
+              value: mockSettingsProvider,
+            ),
+            ChangeNotifierProvider<DeviceService>(
+              create: (_) => MockDeviceService(),
+            ),
+            ChangeNotifierProvider<ThemeProvider>(
+              create: (_) => ThemeProvider(),
+            ),
+          ],
+          child: const MaterialApp(home: PlaybackScreen()),
         ),
-      ),
-    );
-    // Allow animations to start but don't wait forever
-    await tester.pump(const Duration(milliseconds: 500));
+      );
+      // Allow animations to start but don't wait forever
+      await tester.pump(const Duration(milliseconds: 500));
 
-    // Find Track 1 Title Text Position
-    // Use a more generic finder if direct text match fails due to styling
-    final track1TitleFinder = find.textContaining('Track One');
-    expect(track1TitleFinder, findsOneWidget);
+      // Find Track 1 Title Text Position
+      // Use a more generic finder if direct text match fails due to styling
+      final track1TitleFinder = find.textContaining('Track One');
+      expect(track1TitleFinder, findsOneWidget);
 
-    final track1RectPlaying = tester.getRect(track1TitleFinder);
+      final track1RectPlaying = tester.getRect(track1TitleFinder);
 
-    // Scenario 2: Track 2 is PLAYING (Track 1 is NOT playing)
-    // We update the mock and rebuild
-    when(mockAudioProvider.currentTrack).thenReturn(track2);
-    // Trigger rebuild
-    mockAudioProvider.notifyListeners();
+      // Scenario 2: Track 2 is PLAYING (Track 1 is NOT playing)
+      // We update the mock and rebuild
+      when(mockAudioProvider.currentTrack).thenReturn(track2);
+      // Trigger rebuild
+      mockAudioProvider.notifyListeners();
 
-    // Trigger rebuild
-    mockAudioProvider.notifyListeners();
-    await tester.pump(const Duration(milliseconds: 500));
+      // Trigger rebuild
+      mockAudioProvider.notifyListeners();
+      await tester.pump(const Duration(milliseconds: 500));
 
-    final track1RectNotPlaying = tester.getRect(track1TitleFinder);
+      final track1RectNotPlaying = tester.getRect(track1TitleFinder);
 
-    // COMPARE POSITIONS
+      // COMPARE POSITIONS
 
-    // Assert Vertical Stability
-    expect(
-        (track1RectPlaying.top - track1RectNotPlaying.top).abs(), lessThan(3.0),
+      // Assert Vertical Stability
+      expect(
+        (track1RectPlaying.top - track1RectNotPlaying.top).abs(),
+        lessThan(3.0),
         reason:
-            'Vertical position shifted between playing/stopped (Diff: ${(track1RectPlaying.top - track1RectNotPlaying.top)})');
+            'Vertical position shifted between playing/stopped (Diff: ${(track1RectPlaying.top - track1RectNotPlaying.top)})',
+      );
 
-    // Assert Horizontal Stability (Left Alignment)
-    expect((track1RectPlaying.left - track1RectNotPlaying.left).abs(),
+      // Assert Horizontal Stability (Left Alignment)
+      expect(
+        (track1RectPlaying.left - track1RectNotPlaying.left).abs(),
         lessThan(1.0),
         reason:
-            'Horizontal position shifted between playing/stopped (Diff: ${(track1RectPlaying.left - track1RectNotPlaying.left)})');
-  });
+            'Horizontal position shifted between playing/stopped (Diff: ${(track1RectPlaying.left - track1RectNotPlaying.left)})',
+      );
+    },
+  );
 }

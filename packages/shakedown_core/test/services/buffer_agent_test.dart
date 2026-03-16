@@ -30,17 +30,21 @@ void main() {
       const channel = MethodChannel('dev.fluttercommunity.plus/connectivity');
       TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
           .setMockMethodCallHandler(channel, (MethodCall methodCall) async {
-        if (methodCall.method == 'check') {
-          return <String>['wifi']; // Return a list for connectivity_plus 6.0+
-        }
-        return null;
-      });
+            if (methodCall.method == 'check') {
+              return <String>[
+                'wifi',
+              ]; // Return a list for connectivity_plus 6.0+
+            }
+            return null;
+          });
 
       // Stub streams
-      when(mockAudioPlayer.playerStateStream)
-          .thenAnswer((_) => playerStateController.stream);
-      when(mockAudioPlayer.playbackEventStream)
-          .thenAnswer((_) => playbackEventController.stream);
+      when(
+        mockAudioPlayer.playerStateStream,
+      ).thenAnswer((_) => playerStateController.stream);
+      when(
+        mockAudioPlayer.playbackEventStream,
+      ).thenAnswer((_) => playbackEventController.stream);
       when(mockAudioPlayer.position).thenReturn(Duration.zero);
       when(mockAudioPlayer.seek(any)).thenAnswer((_) async => Future.value());
       when(mockAudioPlayer.play()).thenAnswer((_) async => Future.value());
@@ -62,10 +66,7 @@ void main() {
       final agent = BufferAgent(mockAudioPlayer);
 
       // Emit buffering state
-      playerStateController.add(PlayerState(
-        false,
-        ProcessingState.buffering,
-      ));
+      playerStateController.add(PlayerState(false, ProcessingState.buffering));
 
       await Future.delayed(const Duration(milliseconds: 100));
 
@@ -84,10 +85,7 @@ void main() {
       );
 
       // Start buffering
-      playerStateController.add(PlayerState(
-        false,
-        ProcessingState.buffering,
-      ));
+      playerStateController.add(PlayerState(false, ProcessingState.buffering));
 
       // Wait for detection threshold (20 seconds simulated by fast-forwarding)
       // Note: In real implementation, we use Timer.periodic with 5s intervals
@@ -178,18 +176,12 @@ void main() {
       final agent = BufferAgent(mockAudioPlayer);
 
       // Start buffering
-      playerStateController.add(PlayerState(
-        false,
-        ProcessingState.buffering,
-      ));
+      playerStateController.add(PlayerState(false, ProcessingState.buffering));
 
       await Future.delayed(const Duration(milliseconds: 100));
 
       // End buffering (resume playing)
-      playerStateController.add(PlayerState(
-        true,
-        ProcessingState.ready,
-      ));
+      playerStateController.add(PlayerState(true, ProcessingState.ready));
 
       await Future.delayed(const Duration(milliseconds: 100));
 

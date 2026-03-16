@@ -21,7 +21,9 @@ import 'audio_provider_test.mocks.dart';
 
 @GenerateNiceMocks([
   MockSpec<GaplessPlayer>(
-      as: #MockAudioPlayerRelaxed, onMissingStub: OnMissingStub.returnDefault),
+    as: #MockAudioPlayerRelaxed,
+    onMissingStub: OnMissingStub.returnDefault,
+  ),
   MockSpec<ShowListProvider>(),
   MockSpec<SettingsProvider>(),
   MockSpec<CatalogService>(),
@@ -51,11 +53,11 @@ void main() {
     // Mock path_provider
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(
-      const MethodChannel('plugins.flutter.io/path_provider'),
-      (MethodCall methodCall) async {
-        return '.';
-      },
-    );
+          const MethodChannel('plugins.flutter.io/path_provider'),
+          (MethodCall methodCall) async {
+            return '.';
+          },
+        );
     processingStateController = StreamController<ProcessingState>.broadcast();
     positionController = StreamController<Duration>.broadcast();
     currentIndexController = StreamController<int?>.broadcast();
@@ -71,34 +73,45 @@ void main() {
     when(mockCatalogService.getRating(any)).thenReturn(0);
     when(mockCatalogService.isPlayed(any)).thenReturn(false);
 
-    when(mockAudioPlayer.processingStateStream)
-        .thenAnswer((_) => processingStateController.stream);
-    when(mockAudioPlayer.playbackEventStream)
-        .thenAnswer((_) => const Stream.empty());
-    when(mockAudioPlayer.currentIndexStream)
-        .thenAnswer((_) => currentIndexController.stream);
-    when(mockAudioPlayer.durationStream)
-        .thenAnswer((_) => const Stream.empty());
-    when(mockAudioPlayer.positionStream)
-        .thenAnswer((_) => positionController.stream);
-    when(mockAudioPlayer.bufferedPositionStream)
-        .thenAnswer((_) => const Stream.empty());
+    when(
+      mockAudioPlayer.processingStateStream,
+    ).thenAnswer((_) => processingStateController.stream);
+    when(
+      mockAudioPlayer.playbackEventStream,
+    ).thenAnswer((_) => const Stream.empty());
+    when(
+      mockAudioPlayer.currentIndexStream,
+    ).thenAnswer((_) => currentIndexController.stream);
+    when(
+      mockAudioPlayer.durationStream,
+    ).thenAnswer((_) => const Stream.empty());
+    when(
+      mockAudioPlayer.positionStream,
+    ).thenAnswer((_) => positionController.stream);
+    when(
+      mockAudioPlayer.bufferedPositionStream,
+    ).thenAnswer((_) => const Stream.empty());
 
     when(mockAudioPlayer.play()).thenAnswer((_) async {});
     when(mockAudioPlayer.stop()).thenAnswer((_) async {});
-    when(mockAudioPlayer.setAudioSources(any,
-            initialIndex: anyNamed('initialIndex'),
-            preload: anyNamed('preload')))
-        .thenAnswer((_) async => const Duration(seconds: 100));
+    when(
+      mockAudioPlayer.setAudioSources(
+        any,
+        initialIndex: anyNamed('initialIndex'),
+        preload: anyNamed('preload'),
+      ),
+    ).thenAnswer((_) async => const Duration(seconds: 100));
     when(mockAudioPlayer.addAudioSources(any)).thenAnswer((_) async {});
 
     // Stub AudioCacheService
     when(mockAudioCacheService.getAlbumArtUri()).thenAnswer((_) async => null);
-    when(mockAudioCacheService.createAudioSource(
-      uri: anyNamed('uri'),
-      tag: anyNamed('tag'),
-      useCache: anyNamed('useCache'),
-    )).thenAnswer((invocation) {
+    when(
+      mockAudioCacheService.createAudioSource(
+        uri: anyNamed('uri'),
+        tag: anyNamed('tag'),
+        useCache: anyNamed('useCache'),
+      ),
+    ).thenAnswer((invocation) {
       final uri = invocation.namedArguments[#uri] as Uri;
       final tag = invocation.namedArguments[#tag];
       return AudioSource.uri(uri, tag: tag);
@@ -125,7 +138,10 @@ void main() {
       wakelockService: mockWakelockService,
     );
     audioProvider.update(
-        mockShowListProvider, mockSettingsProvider, mockAudioCacheService);
+      mockShowListProvider,
+      mockSettingsProvider,
+      mockAudioCacheService,
+    );
   });
 
   tearDown(() {
@@ -147,17 +163,19 @@ void main() {
           id: 'source$i',
           tracks: [
             Track(
-                trackNumber: 1,
-                title: 'Track 1',
-                url: 'http://track1.mp3',
-                duration: 100,
-                setName: 'Set 1'),
+              trackNumber: 1,
+              title: 'Track 1',
+              url: 'http://track1.mp3',
+              duration: 100,
+              setName: 'Set 1',
+            ),
             Track(
-                trackNumber: 2,
-                title: 'Track 2',
-                url: 'http://track2.mp3',
-                duration: 120,
-                setName: 'Set 1'),
+              trackNumber: 2,
+              title: 'Track 2',
+              url: 'http://track2.mp3',
+              duration: 120,
+              setName: 'Set 1',
+            ),
           ],
         ),
       ),
@@ -165,51 +183,62 @@ void main() {
   }
 
   group('AudioProvider Tests', () {
-    testWidgets('playRandomShow plays a random source when shows are available',
-        (WidgetTester tester) async {
-      await tester.runAsync(() async {
-        // Stub SettingsProvider methods
-        for (var i = 1; i <= 2; i++) {
-          // final name = 'Grateful Dead at Venue $i on 2025-11-15'; // Unused
-          final sourceId = 'source${i - 1}';
-          when(mockCatalogService.getRating(sourceId)).thenReturn(0);
-          when(mockCatalogService.isPlayed(sourceId)).thenReturn(false);
-          // Assuming source ID structure from createDummyShow source${index-1}
-        }
-        when(mockSettingsProvider.randomOnlyUnplayed).thenReturn(false);
-        when(mockSettingsProvider.randomOnlyHighRated).thenReturn(false);
+    testWidgets(
+      'playRandomShow plays a random source when shows are available',
+      (WidgetTester tester) async {
+        await tester.runAsync(() async {
+          // Stub SettingsProvider methods
+          for (var i = 1; i <= 2; i++) {
+            // final name = 'Grateful Dead at Venue $i on 2025-11-15'; // Unused
+            final sourceId = 'source${i - 1}';
+            when(mockCatalogService.getRating(sourceId)).thenReturn(0);
+            when(mockCatalogService.isPlayed(sourceId)).thenReturn(false);
+            // Assuming source ID structure from createDummyShow source${index-1}
+          }
+          when(mockSettingsProvider.randomOnlyUnplayed).thenReturn(false);
+          when(mockSettingsProvider.randomOnlyHighRated).thenReturn(false);
 
-        // Stub AudioPlayer methods
-        when(mockAudioPlayer.setAudioSources(any,
-                initialIndex: anyNamed('initialIndex'),
-                preload: anyNamed('preload')))
-            .thenAnswer((_) async => const Duration(seconds: 100));
-        when(mockAudioPlayer.play()).thenAnswer((_) async {});
+          // Stub AudioPlayer methods
+          when(
+            mockAudioPlayer.setAudioSources(
+              any,
+              initialIndex: anyNamed('initialIndex'),
+              preload: anyNamed('preload'),
+            ),
+          ).thenAnswer((_) async => const Duration(seconds: 100));
+          when(mockAudioPlayer.play()).thenAnswer((_) async {});
 
-        final shows = [createDummyShow(1), createDummyShow(2)];
-        when(mockShowListProvider.filteredShows).thenReturn(shows);
+          final shows = [createDummyShow(1), createDummyShow(2)];
+          when(mockShowListProvider.filteredShows).thenReturn(shows);
 
-        final playedShow = await audioProvider.playRandomShow();
+          final playedShow = await audioProvider.playRandomShow();
 
-        expect(playedShow, isNotNull);
-        expect(shows.contains(playedShow), isTrue);
+          expect(playedShow, isNotNull);
+          expect(shows.contains(playedShow), isTrue);
 
-        verify(mockAudioPlayer.setAudioSources(any,
-                initialIndex: 0, preload: false))
-            .called(1);
-        verify(mockAudioPlayer.play()).called(1);
+          verify(
+            mockAudioPlayer.setAudioSources(
+              any,
+              initialIndex: 0,
+              preload: false,
+            ),
+          ).called(1);
+          verify(mockAudioPlayer.play()).called(1);
 
-        expect(audioProvider.currentShow, isNotNull);
-        expect(audioProvider.currentSource, isNotNull);
-      });
-    });
+          expect(audioProvider.currentShow, isNotNull);
+          expect(audioProvider.currentSource, isNotNull);
+        });
+      },
+    );
 
-    testWidgets('playRandomShow does nothing when no shows are available',
-        (WidgetTester tester) async {
+    testWidgets('playRandomShow does nothing when no shows are available', (
+      WidgetTester tester,
+    ) async {
       await tester.runAsync(() async {
         when(mockShowListProvider.filteredShows).thenReturn([]);
-        when(mockShowListProvider.allShows)
-            .thenReturn([]); // Ensure allShows is also empty
+        when(
+          mockShowListProvider.allShows,
+        ).thenReturn([]); // Ensure allShows is also empty
 
         final playedShow = await audioProvider.playRandomShow();
 
@@ -220,55 +249,61 @@ void main() {
     });
 
     testWidgets(
-        'playRandomShow(filterBySearch: false) uses allShows and ignores search filter',
-        (WidgetTester tester) async {
-      await tester.runAsync(() async {
-        // Stub SettingsProvider
-        for (var i = 1; i <= 2; i++) {
-          // final name = 'Grateful Dead at Venue $i on 2025-11-15'; // Unused
-          final sourceId = 'source${i - 1}';
-          when(mockCatalogService.getRating(sourceId)).thenReturn(0);
-          when(mockCatalogService.isPlayed(sourceId)).thenReturn(false);
-        }
-        when(mockCatalogService.getRating('source0')).thenReturn(0);
-        when(mockSettingsProvider.randomOnlyUnplayed).thenReturn(false);
-        when(mockSettingsProvider.randomOnlyHighRated).thenReturn(false);
+      'playRandomShow(filterBySearch: false) uses allShows and ignores search filter',
+      (WidgetTester tester) async {
+        await tester.runAsync(() async {
+          // Stub SettingsProvider
+          for (var i = 1; i <= 2; i++) {
+            // final name = 'Grateful Dead at Venue $i on 2025-11-15'; // Unused
+            final sourceId = 'source${i - 1}';
+            when(mockCatalogService.getRating(sourceId)).thenReturn(0);
+            when(mockCatalogService.isPlayed(sourceId)).thenReturn(false);
+          }
+          when(mockCatalogService.getRating('source0')).thenReturn(0);
+          when(mockSettingsProvider.randomOnlyUnplayed).thenReturn(false);
+          when(mockSettingsProvider.randomOnlyHighRated).thenReturn(false);
 
-        // Stub AudioPlayer
-        when(mockAudioPlayer.setAudioSources(any,
-                initialIndex: anyNamed('initialIndex'),
-                preload: anyNamed('preload')))
-            .thenAnswer((_) async => const Duration(seconds: 100));
-        when(mockAudioPlayer.play()).thenAnswer((_) async {});
+          // Stub AudioPlayer
+          when(
+            mockAudioPlayer.setAudioSources(
+              any,
+              initialIndex: anyNamed('initialIndex'),
+              preload: anyNamed('preload'),
+            ),
+          ).thenAnswer((_) async => const Duration(seconds: 100));
+          when(mockAudioPlayer.play()).thenAnswer((_) async {});
 
-        final show1 = createDummyShow(1); // filtered show
-        final show2 = createDummyShow(2); // unfiltered show
+          final show1 = createDummyShow(1); // filtered show
+          final show2 = createDummyShow(2); // unfiltered show
 
-        // filterBySearch=true uses filteredShows
-        when(mockShowListProvider.filteredShows).thenReturn([show1]);
-        // filterBySearch=false uses allShows
-        when(mockShowListProvider.allShows).thenReturn([show1, show2]);
+          // filterBySearch=true uses filteredShows
+          when(mockShowListProvider.filteredShows).thenReturn([show1]);
+          // filterBySearch=false uses allShows
+          when(mockShowListProvider.allShows).thenReturn([show1, show2]);
 
-        // 1. Default (filterBySearch: true) should only pick show1
-        final playedShow1 = await audioProvider.playRandomShow();
-        expect(playedShow1, equals(show1));
+          // 1. Default (filterBySearch: true) should only pick show1
+          final playedShow1 = await audioProvider.playRandomShow();
+          expect(playedShow1, equals(show1));
 
-        // 2. filterBySearch: false should pick from allShows.
-        // To verify it CAN pick show2, we'll force filteredShows to be empty
-        // and allShows to have show2.
-        when(mockShowListProvider.filteredShows).thenReturn([]);
-        when(mockShowListProvider.allShows).thenReturn([show2]);
+          // 2. filterBySearch: false should pick from allShows.
+          // To verify it CAN pick show2, we'll force filteredShows to be empty
+          // and allShows to have show2.
+          when(mockShowListProvider.filteredShows).thenReturn([]);
+          when(mockShowListProvider.allShows).thenReturn([show2]);
 
-        final playedShow2 =
-            await audioProvider.playRandomShow(filterBySearch: false);
-        expect(playedShow2, equals(show2));
+          final playedShow2 = await audioProvider.playRandomShow(
+            filterBySearch: false,
+          );
+          expect(playedShow2, equals(show2));
 
-        verify(mockAudioPlayer.play()).called(2);
-      });
-    });
+          verify(mockAudioPlayer.play()).called(2);
+        });
+      },
+    );
 
-    testWidgets('playSource sets current show/source and plays audio',
-        (WidgetTester tester) async {
+    testWidgets('playSource sets current show/source and plays audio', (
+      WidgetTester tester,
+    ) async {
       await tester.runAsync(() async {
         final show = createDummyShow(1);
         final source = show.sources.first;
@@ -278,59 +313,63 @@ void main() {
         expect(audioProvider.currentShow, equals(show));
         expect(audioProvider.currentSource, equals(source));
 
-        verify(mockAudioPlayer.setAudioSources(any,
-                initialIndex: 0, preload: false))
-            .called(1);
+        verify(
+          mockAudioPlayer.setAudioSources(any, initialIndex: 0, preload: false),
+        ).called(1);
         verify(mockAudioPlayer.play()).called(1);
       });
     });
 
     testWidgets(
-        'currentTrack resolves correctly using MediaItem tag when global index differs',
-        (WidgetTester tester) async {
-      await tester.runAsync(() async {
-        final show = createDummyShow(1);
-        final source = show.sources.first; // 2 tracks
+      'currentTrack resolves correctly using MediaItem tag when global index differs',
+      (WidgetTester tester) async {
+        await tester.runAsync(() async {
+          final show = createDummyShow(1);
+          final source = show.sources.first; // 2 tracks
 
-        // Simulate that we are playing this source
-        unawaited(audioProvider.playSource(show, source));
+          // Simulate that we are playing this source
+          unawaited(audioProvider.playSource(show, source));
 
-        // Mock Sequence with an offset.
-        // items [0, 1, 2] are dummy (previous show).
-        // items [3, 4] are current show (tracks 0, 1).
-        final previousItems =
-            List.generate(3, (i) => AudioSource.uri(Uri.parse('prev/$i')));
-        final currentItems = source.tracks.asMap().entries.map((e) {
-          return AudioSource.uri(
-            Uri.parse(e.value.url),
-            tag: MediaItem(
+          // Mock Sequence with an offset.
+          // items [0, 1, 2] are dummy (previous show).
+          // items [3, 4] are current show (tracks 0, 1).
+          final previousItems = List.generate(
+            3,
+            (i) => AudioSource.uri(Uri.parse('prev/$i')),
+          );
+          final currentItems = source.tracks.asMap().entries.map((e) {
+            return AudioSource.uri(
+              Uri.parse(e.value.url),
+              tag: MediaItem(
                 id: 'id_${e.key}',
                 title: e.value.title,
-                extras: {'track_index': e.key} // Using the new extras key
-                ),
-          );
-        }).toList();
+                extras: {'track_index': e.key}, // Using the new extras key
+              ),
+            );
+          }).toList();
 
-        final fullSequence = [...previousItems, ...currentItems];
+          final fullSequence = [...previousItems, ...currentItems];
 
-        // Stub AudioPlayer state
-        when(mockAudioPlayer.sequence).thenReturn(fullSequence);
+          // Stub AudioPlayer state
+          when(mockAudioPlayer.sequence).thenReturn(fullSequence);
 
-        // Scenario 1: Playing global index 3 (Local index 0)
-        when(mockAudioPlayer.currentIndex).thenReturn(3);
+          // Scenario 1: Playing global index 3 (Local index 0)
+          when(mockAudioPlayer.currentIndex).thenReturn(3);
 
-        expect(audioProvider.currentTrack, equals(source.tracks[0]));
+          expect(audioProvider.currentTrack, equals(source.tracks[0]));
 
-        // Scenario 2: Playing global index 4 (Local index 1)
-        when(mockAudioPlayer.currentIndex).thenReturn(4);
+          // Scenario 2: Playing global index 4 (Local index 1)
+          when(mockAudioPlayer.currentIndex).thenReturn(4);
 
-        expect(audioProvider.currentTrack, equals(source.tracks[1]));
-        expect(audioProvider.currentTrack, equals(source.tracks[1]));
-      });
-    });
+          expect(audioProvider.currentTrack, equals(source.tracks[1]));
+          expect(audioProvider.currentTrack, equals(source.tracks[1]));
+        });
+      },
+    );
 
-    testWidgets('seekToTrack uses global index when available',
-        (WidgetTester tester) async {
+    testWidgets('seekToTrack uses global index when available', (
+      WidgetTester tester,
+    ) async {
       await tester.runAsync(() async {
         final show = createDummyShow(1);
         final source = show.sources.first; // 2 tracks
@@ -340,8 +379,10 @@ void main() {
 
         // Mock Sequence: [Previous Show (2 items), Current Show (2 items)]
         // Global Indices: 0, 1 are dummy. 2, 3 are current show.
-        final previousItems =
-            List.generate(2, (i) => AudioSource.uri(Uri.parse('prev/$i')));
+        final previousItems = List.generate(
+          2,
+          (i) => AudioSource.uri(Uri.parse('prev/$i')),
+        );
 
         final currentItems = source.tracks.asMap().entries.map((e) {
           return AudioSource.uri(
@@ -381,19 +422,23 @@ void main() {
     //   verify(audioProvider.playRandomShow()).called(1);
     // });
 
-    testWidgets('Pre-queues random show at start of last track',
-        (WidgetTester tester) async {
+    testWidgets('Pre-queues random show at start of last track', (
+      WidgetTester tester,
+    ) async {
       await tester.runAsync(() async {
         // Stub addAudioSources
         when(mockAudioPlayer.addAudioSources(any)).thenAnswer((_) async {});
 
         when(mockSettingsProvider.playRandomOnCompletion).thenReturn(true);
-        when(mockShowListProvider.allShows)
-            .thenReturn([createDummyShow(3)]); // A different show to queue
+        when(
+          mockShowListProvider.allShows,
+        ).thenReturn([createDummyShow(3)]); // A different show to queue
 
         // Setup Player State: playing show 1, last track.
-        when(mockAudioPlayer.sequence).thenReturn(
-            [AudioSource.uri(Uri.parse('1')), AudioSource.uri(Uri.parse('2'))]);
+        when(mockAudioPlayer.sequence).thenReturn([
+          AudioSource.uri(Uri.parse('1')),
+          AudioSource.uri(Uri.parse('2')),
+        ]);
 
         // Simulating the transition to the LAST track (index 1)
         when(mockAudioPlayer.currentIndex).thenReturn(1);
@@ -408,51 +453,58 @@ void main() {
       });
     });
 
-    testWidgets('Pre-queueing retries if first attempt fails (null selection)',
-        (WidgetTester tester) async {
-      await tester.runAsync(() async {
-        // Stub addAudioSources
-        when(mockAudioPlayer.addAudioSources(any)).thenAnswer((_) async {});
+    testWidgets(
+      'Pre-queueing retries if first attempt fails (null selection)',
+      (WidgetTester tester) async {
+        await tester.runAsync(() async {
+          // Stub addAudioSources
+          when(mockAudioPlayer.addAudioSources(any)).thenAnswer((_) async {});
 
-        when(mockSettingsProvider.playRandomOnCompletion).thenReturn(true);
-        // First attempt: Return null (no shows?)
-        // We simulate this by momentarily returning empty list for allShows
-        when(mockShowListProvider.allShows).thenReturn([]);
+          when(mockSettingsProvider.playRandomOnCompletion).thenReturn(true);
+          // First attempt: Return null (no shows?)
+          // We simulate this by momentarily returning empty list for allShows
+          when(mockShowListProvider.allShows).thenReturn([]);
 
-        // Setup Player State: playing show 1, last track.
-        when(mockAudioPlayer.sequence).thenReturn(
-            [AudioSource.uri(Uri.parse('1')), AudioSource.uri(Uri.parse('2'))]);
-        when(mockAudioPlayer.currentIndex).thenReturn(1);
+          // Setup Player State: playing show 1, last track.
+          when(mockAudioPlayer.sequence).thenReturn([
+            AudioSource.uri(Uri.parse('1')),
+            AudioSource.uri(Uri.parse('2')),
+          ]);
+          when(mockAudioPlayer.currentIndex).thenReturn(1);
 
-        // Trigger 1 (Fail)
-        currentIndexController.add(1);
-        await Future.delayed(const Duration(milliseconds: 50));
+          // Trigger 1 (Fail)
+          currentIndexController.add(1);
+          await Future.delayed(const Duration(milliseconds: 50));
 
-        // Verify NO addAudioSources called yet
-        verifyNever(mockAudioPlayer.addAudioSources(any));
+          // Verify NO addAudioSources called yet
+          verifyNever(mockAudioPlayer.addAudioSources(any));
 
-        // Second attempt: Return valid show
-        when(mockShowListProvider.allShows).thenReturn([createDummyShow(3)]);
+          // Second attempt: Return valid show
+          when(mockShowListProvider.allShows).thenReturn([createDummyShow(3)]);
 
-        // Trigger 2 (Retry)
-        // We need to re-emit the index to trigger the listener again
-        currentIndexController.add(1);
-        await Future.delayed(const Duration(milliseconds: 50));
+          // Trigger 2 (Retry)
+          // We need to re-emit the index to trigger the listener again
+          currentIndexController.add(1);
+          await Future.delayed(const Duration(milliseconds: 50));
 
-        // Verify addAudioSources called NOW
-        verify(mockAudioPlayer.addAudioSources(any)).called(1);
-      });
-    });
+          // Verify addAudioSources called NOW
+          verify(mockAudioPlayer.addAudioSources(any)).called(1);
+        });
+      },
+    );
 
-    testWidgets('Does NOT pre-queue if setting is disabled',
-        (WidgetTester tester) async {
+    testWidgets('Does NOT pre-queue if setting is disabled', (
+      WidgetTester tester,
+    ) async {
       await tester.runAsync(() async {
         when(mockSettingsProvider.playRandomOnCompletion).thenReturn(false);
         // Stub addAudioSources (verifyNever will be used later potentially or implicitly)
         when(mockAudioPlayer.addAudioSources(any)).thenAnswer((_) async {});
 
-        when(mockAudioPlayer.sequence).thenReturn(
-            [AudioSource.uri(Uri.parse('1')), AudioSource.uri(Uri.parse('2'))]);
+        when(mockAudioPlayer.sequence).thenReturn([
+          AudioSource.uri(Uri.parse('1')),
+          AudioSource.uri(Uri.parse('2')),
+        ]);
 
         // Last track transition
         when(mockAudioPlayer.currentIndex).thenReturn(1);
@@ -471,34 +523,43 @@ void main() {
     // with strict mocks. We will rely on the pre-queueing test for the main feature.
 
     testWidgets(
-        'Triggers fallback playRandomShow when processing state completes',
-        (WidgetTester tester) async {
-      await tester.runAsync(() async {
-        when(mockSettingsProvider.playRandomOnCompletion).thenReturn(true);
-        when(mockShowListProvider.allShows).thenReturn([createDummyShow(5)]);
-        when(mockShowListProvider.filteredShows)
-            .thenReturn([createDummyShow(5)]);
+      'Triggers fallback playRandomShow when processing state completes',
+      (WidgetTester tester) async {
+        await tester.runAsync(() async {
+          when(mockSettingsProvider.playRandomOnCompletion).thenReturn(true);
+          when(mockShowListProvider.allShows).thenReturn([createDummyShow(5)]);
+          when(
+            mockShowListProvider.filteredShows,
+          ).thenReturn([createDummyShow(5)]);
 
-        // Ensure playRandomShow works
-        when(mockAudioPlayer.setAudioSources(any,
-                initialIndex: anyNamed('initialIndex'),
-                preload: anyNamed('preload')))
-            .thenAnswer((_) async => const Duration(seconds: 10));
-        when(mockAudioPlayer.play()).thenAnswer((_) async {});
+          // Ensure playRandomShow works
+          when(
+            mockAudioPlayer.setAudioSources(
+              any,
+              initialIndex: anyNamed('initialIndex'),
+              preload: anyNamed('preload'),
+            ),
+          ).thenAnswer((_) async => const Duration(seconds: 10));
+          when(mockAudioPlayer.play()).thenAnswer((_) async {});
 
-        // Signal Completion
-        processingStateController.add(ProcessingState.completed);
-        await Future.delayed(const Duration(milliseconds: 200));
+          // Signal Completion
+          processingStateController.add(ProcessingState.completed);
+          await Future.delayed(const Duration(milliseconds: 200));
 
-        // Should call setAudioSources again (which implies playRandomShow was called)
-        verify(mockAudioPlayer.setAudioSources(any,
-                initialIndex: anyNamed('initialIndex'),
-                preload: anyNamed('preload')))
-            .called(1);
-      });
-    });
-    testWidgets('stopAndClear stops player and clears state',
-        (WidgetTester tester) async {
+          // Should call setAudioSources again (which implies playRandomShow was called)
+          verify(
+            mockAudioPlayer.setAudioSources(
+              any,
+              initialIndex: anyNamed('initialIndex'),
+              preload: anyNamed('preload'),
+            ),
+          ).called(1);
+        });
+      },
+    );
+    testWidgets('stopAndClear stops player and clears state', (
+      WidgetTester tester,
+    ) async {
       await tester.runAsync(() async {
         final show = createDummyShow(1);
         await audioProvider.playSource(show, show.sources.first);
@@ -510,24 +571,31 @@ void main() {
       });
     });
 
-    testWidgets('queueRandomShow handles PlatformException gracefully',
-        (WidgetTester tester) async {
+    testWidgets('queueRandomShow handles PlatformException gracefully', (
+      WidgetTester tester,
+    ) async {
       await tester.runAsync(() async {
         // Stub addAudioSources to throw PlatformException
-        when(mockAudioPlayer.addAudioSources(any)).thenThrow(PlatformException(
-          code: 'IllegalArgumentException',
-          message: 'Failed to set shuffle order',
-        ));
+        when(mockAudioPlayer.addAudioSources(any)).thenThrow(
+          PlatformException(
+            code: 'IllegalArgumentException',
+            message: 'Failed to set shuffle order',
+          ),
+        );
 
         when(mockSettingsProvider.playRandomOnCompletion).thenReturn(true);
-        when(mockShowListProvider.allShows)
-            .thenReturn([createDummyShow(3)]); // A show to queue
-        when(mockShowListProvider.filteredShows)
-            .thenReturn([createDummyShow(3)]);
+        when(
+          mockShowListProvider.allShows,
+        ).thenReturn([createDummyShow(3)]); // A show to queue
+        when(
+          mockShowListProvider.filteredShows,
+        ).thenReturn([createDummyShow(3)]);
 
         // Setup Player State
-        when(mockAudioPlayer.sequence).thenReturn(
-            [AudioSource.uri(Uri.parse('1')), AudioSource.uri(Uri.parse('2'))]);
+        when(mockAudioPlayer.sequence).thenReturn([
+          AudioSource.uri(Uri.parse('1')),
+          AudioSource.uri(Uri.parse('2')),
+        ]);
         when(mockAudioPlayer.currentIndex).thenReturn(1);
 
         try {

@@ -102,33 +102,36 @@ void main() {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider<SettingsProvider>.value(
-            value: mockSettingsProvider),
+          value: mockSettingsProvider,
+        ),
         ChangeNotifierProvider<AudioProvider>.value(value: mockAudioProvider),
         ChangeNotifierProvider<DeviceService>.value(value: mockDeviceService),
         Provider<WakelockService>.value(value: mockWakelockService),
       ],
-      child: MaterialApp(
-        home: child,
-      ),
+      child: MaterialApp(home: child),
     );
   }
 
   group('ScreensaverScreen', () {
     testWidgets('renders StealVisualizer', (WidgetTester tester) async {
-      await tester
-          .pumpWidget(createTestableWidget(child: const ScreensaverScreen()));
+      await tester.pumpWidget(
+        createTestableWidget(child: const ScreensaverScreen()),
+      );
       expect(find.byType(StealVisualizer), findsOneWidget);
       await tester.pumpWidget(Container());
       await tester.pump(const Duration(milliseconds: 600));
     });
 
-    testWidgets('passes correct configuration to StealVisualizer',
-        (WidgetTester tester) async {
-      await tester
-          .pumpWidget(createTestableWidget(child: const ScreensaverScreen()));
+    testWidgets('passes correct configuration to StealVisualizer', (
+      WidgetTester tester,
+    ) async {
+      await tester.pumpWidget(
+        createTestableWidget(child: const ScreensaverScreen()),
+      );
 
-      final StealVisualizer visualizer =
-          tester.widget(find.byType(StealVisualizer));
+      final StealVisualizer visualizer = tester.widget(
+        find.byType(StealVisualizer),
+      );
       expect(visualizer.config.palette, 'acid_green');
       expect(visualizer.config.flowSpeed, 0.5);
       await tester.pumpWidget(Container());
@@ -136,18 +139,21 @@ void main() {
     });
 
     testWidgets('exits when onExit is called', (WidgetTester tester) async {
-      await tester
-          .pumpWidget(createTestableWidget(child: const ScreensaverScreen()));
+      await tester.pumpWidget(
+        createTestableWidget(child: const ScreensaverScreen()),
+      );
 
-      final StealVisualizer visualizer =
-          tester.widget(find.byType(StealVisualizer));
+      final StealVisualizer visualizer = tester.widget(
+        find.byType(StealVisualizer),
+      );
       visualizer.onExit!();
       await tester.pumpAndSettle();
 
       expect(find.byType(ScreensaverScreen), findsNothing);
       await tester.pumpWidget(Container());
       await tester.pump(
-          const Duration(milliseconds: 600)); // Clear initState Future.delayed
+        const Duration(milliseconds: 600),
+      ); // Clear initState Future.delayed
     });
   });
 }

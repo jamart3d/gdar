@@ -358,17 +358,19 @@ void main() {
 
   // Dummy data
   final dummyTrack1 = Track(
-      trackNumber: 1,
-      title: 'Track 1',
-      duration: 100,
-      url: '',
-      setName: 'Set 1');
+    trackNumber: 1,
+    title: 'Track 1',
+    duration: 100,
+    url: '',
+    setName: 'Set 1',
+  );
   final dummyTrack2 = Track(
-      trackNumber: 2,
-      title: 'Track 2',
-      duration: 120,
-      url: '',
-      setName: 'Set 1');
+    trackNumber: 2,
+    title: 'Track 2',
+    duration: 120,
+    url: '',
+    setName: 'Set 1',
+  );
   final dummySource = Source(id: 'source1', tracks: [dummyTrack1, dummyTrack2]);
   final dummyShow = Show(
     name: 'Venue A on 2025-01-15',
@@ -382,8 +384,8 @@ void main() {
     const channel = MethodChannel('plugins.flutter.io/path_provider');
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(channel, (MethodCall methodCall) async {
-      return '.';
-    });
+          return '.';
+        });
 
     CatalogService.setMock(MockCatalogService());
 
@@ -399,58 +401,79 @@ void main() {
     when(mockAudioPlayer.position).thenReturn(Duration.zero);
     when(mockAudioPlayer.bufferedPosition).thenReturn(Duration.zero);
     when(mockAudioPlayer.duration).thenReturn(const Duration(seconds: 100));
-    when(mockAudioPlayer.playerState)
-        .thenReturn(PlayerState(false, ProcessingState.idle));
+    when(
+      mockAudioPlayer.playerState,
+    ).thenReturn(PlayerState(false, ProcessingState.idle));
 
     // Stub default return values for streams to avoid null errors
-    when(mockAudioProvider.playerStateStream).thenAnswer(
-        (_) => Stream.value(PlayerState(false, ProcessingState.idle)));
-    when(mockAudioProvider.currentIndexStream)
-        .thenAnswer((_) => Stream.value(0));
-    when(mockAudioProvider.durationStream)
-        .thenAnswer((_) => Stream.value(const Duration(seconds: 100)));
-    when(mockAudioProvider.positionStream)
-        .thenAnswer((_) => Stream.value(Duration.zero));
-    when(mockAudioProvider.bufferedPositionStream)
-        .thenAnswer((_) => Stream.value(Duration.zero));
-    when(mockAudioProvider.playbackErrorStream)
-        .thenAnswer((_) => Stream.value(''));
+    when(
+      mockAudioProvider.playerStateStream,
+    ).thenAnswer((_) => Stream.value(PlayerState(false, ProcessingState.idle)));
+    when(
+      mockAudioProvider.currentIndexStream,
+    ).thenAnswer((_) => Stream.value(0));
+    when(
+      mockAudioProvider.durationStream,
+    ).thenAnswer((_) => Stream.value(const Duration(seconds: 100)));
+    when(
+      mockAudioProvider.positionStream,
+    ).thenAnswer((_) => Stream.value(Duration.zero));
+    when(
+      mockAudioProvider.bufferedPositionStream,
+    ).thenAnswer((_) => Stream.value(Duration.zero));
+    when(
+      mockAudioProvider.playbackErrorStream,
+    ).thenAnswer((_) => Stream.value(''));
     when(mockAudioProvider.isPlaying).thenReturn(false);
     when(mockAudioPlayer.sequence).thenReturn([]);
-    when(mockAudioPlayer.sequenceStateStream)
-        .thenAnswer((_) => const Stream.empty());
+    when(
+      mockAudioPlayer.sequenceStateStream,
+    ).thenAnswer((_) => const Stream.empty());
     when(mockAudioProvider.currentTrack).thenReturn(null);
     when(mockAudioProvider.currentShow).thenReturn(null);
     when(mockAudioProvider.currentSource).thenReturn(null);
-    when(mockAudioProvider.bufferAgentNotificationStream)
-        .thenAnswer((_) => const Stream.empty());
-    when(mockAudioProvider.notificationStream)
-        .thenAnswer((_) => const Stream.empty());
-    when(mockAudioProvider.nextTrackBufferedStream)
-        .thenAnswer((_) => Stream.value(null));
-    when(mockAudioProvider.nextTrackTotalStream)
-        .thenAnswer((_) => Stream.value(null));
-    when(mockAudioProvider.heartbeatActiveStream)
-        .thenAnswer((_) => Stream.value(false));
-    when(mockAudioProvider.heartbeatNeededStream)
-        .thenAnswer((_) => Stream.value(false));
-    when(mockAudioProvider.engineStateStringStream)
-        .thenAnswer((_) => Stream.value('idle'));
-    when(mockAudioProvider.engineContextStateStream)
-        .thenAnswer((_) => Stream.value('idle'));
-    when(mockAudioProvider.playbackFocusRequestStream)
-        .thenAnswer((_) => const Stream.empty());
-    when(mockAudioProvider.hudSnapshotStream)
-        .thenAnswer((_) => const Stream.empty());
+    when(
+      mockAudioProvider.bufferAgentNotificationStream,
+    ).thenAnswer((_) => const Stream.empty());
+    when(
+      mockAudioProvider.notificationStream,
+    ).thenAnswer((_) => const Stream.empty());
+    when(
+      mockAudioProvider.nextTrackBufferedStream,
+    ).thenAnswer((_) => Stream.value(null));
+    when(
+      mockAudioProvider.nextTrackTotalStream,
+    ).thenAnswer((_) => Stream.value(null));
+    when(
+      mockAudioProvider.heartbeatActiveStream,
+    ).thenAnswer((_) => Stream.value(false));
+    when(
+      mockAudioProvider.heartbeatNeededStream,
+    ).thenAnswer((_) => Stream.value(false));
+    when(
+      mockAudioProvider.engineStateStringStream,
+    ).thenAnswer((_) => Stream.value('idle'));
+    when(
+      mockAudioProvider.engineContextStateStream,
+    ).thenAnswer((_) => Stream.value('idle'));
+    when(
+      mockAudioProvider.playbackFocusRequestStream,
+    ).thenAnswer((_) => const Stream.empty());
+    when(
+      mockAudioProvider.hudSnapshotStream,
+    ).thenAnswer((_) => const Stream.empty());
 
     // Also stub missing audioPlayer streams used by widgets
-    when(mockAudioPlayer.engineStateStringStream)
-        .thenAnswer((_) => Stream.value('idle'));
-    when(mockAudioPlayer.engineContextStateStream)
-        .thenAnswer((_) => Stream.value('idle'));
+    when(
+      mockAudioPlayer.engineStateStringStream,
+    ).thenAnswer((_) => Stream.value('idle'));
+    when(
+      mockAudioPlayer.engineContextStateStream,
+    ).thenAnswer((_) => Stream.value('idle'));
     when(mockAudioPlayer.playingStream).thenAnswer((_) => Stream.value(false));
-    when(mockAudioPlayer.nextTrackBufferedStream)
-        .thenAnswer((_) => Stream.value(null));
+    when(
+      mockAudioPlayer.nextTrackBufferedStream,
+    ).thenAnswer((_) => Stream.value(null));
   });
 
   Widget createTestableWidget({required Widget child}) {
@@ -458,38 +481,42 @@ void main() {
       providers: [
         ChangeNotifierProvider<AudioProvider>.value(value: mockAudioProvider),
         ChangeNotifierProvider<SettingsProvider>.value(
-            value: mockSettingsProvider),
+          value: mockSettingsProvider,
+        ),
         ChangeNotifierProvider<DeviceService>.value(value: mockDeviceService),
         ChangeNotifierProvider<ShowListProvider>.value(
-            value: mockShowListProvider),
+          value: mockShowListProvider,
+        ),
         ChangeNotifierProvider<ThemeProvider>(create: (_) => ThemeProvider()),
       ],
-      child: MaterialApp(
-        home: child,
-      ),
+      child: MaterialApp(home: child),
     );
   }
 
   testWidgets(
-      'PlaybackScreen shows "No show selected" when currentShow is null',
-      (WidgetTester tester) async {
-    when(mockAudioProvider.currentShow).thenReturn(null);
-    when(mockAudioProvider.currentSource).thenReturn(null);
+    'PlaybackScreen shows "No show selected" when currentShow is null',
+    (WidgetTester tester) async {
+      when(mockAudioProvider.currentShow).thenReturn(null);
+      when(mockAudioProvider.currentSource).thenReturn(null);
 
-    await tester
-        .pumpWidget(createTestableWidget(child: const PlaybackScreen()));
+      await tester.pumpWidget(
+        createTestableWidget(child: const PlaybackScreen()),
+      );
 
-    expect(find.text('No show selected.'), findsOneWidget);
-  });
+      expect(find.text('No show selected.'), findsOneWidget);
+    },
+  );
 
-  testWidgets('PlaybackScreen displays show and track information',
-      (WidgetTester tester) async {
+  testWidgets('PlaybackScreen displays show and track information', (
+    WidgetTester tester,
+  ) async {
     when(mockAudioProvider.currentShow).thenReturn(dummyShow);
     when(mockAudioProvider.currentSource).thenReturn(dummySource);
     when(mockAudioProvider.currentTrack).thenReturn(dummyTrack1);
 
-    await tester
-        .pumpWidget(createTestableWidget(child: const PlaybackScreen()));
+    await tester.pumpWidget(
+      createTestableWidget(child: const PlaybackScreen()),
+    );
 
     // Venue is displayed twice (at least): AppBar and Panel
     // Date is displayed twice (at least): AppBar and Panel
@@ -499,25 +526,32 @@ void main() {
 
     // The track title is displayed in the list and in the bottom controls
     expect(
-        find.byWidgetPredicate(
-            (widget) => widget is Text && widget.data == dummyTrack1.title),
-        findsAtLeastNWidgets(1));
+      find.byWidgetPredicate(
+        (widget) => widget is Text && widget.data == dummyTrack1.title,
+      ),
+      findsAtLeastNWidgets(1),
+    );
     expect(
-        find.byWidgetPredicate(
-            (widget) => widget is Text && widget.data == dummyTrack2.title),
-        findsAtLeastNWidgets(1));
+      find.byWidgetPredicate(
+        (widget) => widget is Text && widget.data == dummyTrack2.title,
+      ),
+      findsAtLeastNWidgets(1),
+    );
   });
 
-  testWidgets('Tapping a non-playing track seeks to it',
-      (WidgetTester tester) async {
+  testWidgets('Tapping a non-playing track seeks to it', (
+    WidgetTester tester,
+  ) async {
     when(mockAudioProvider.currentShow).thenReturn(dummyShow);
     when(mockAudioProvider.currentSource).thenReturn(dummySource);
-    when(mockAudioPlayer.currentIndex)
-        .thenReturn(0); // Currently playing the first track
+    when(
+      mockAudioPlayer.currentIndex,
+    ).thenReturn(0); // Currently playing the first track
     when(mockAudioProvider.currentTrack).thenReturn(dummyTrack1);
 
-    await tester
-        .pumpWidget(createTestableWidget(child: const PlaybackScreen()));
+    await tester.pumpWidget(
+      createTestableWidget(child: const PlaybackScreen()),
+    );
 
     await tester.ensureVisible(find.text(dummyTrack2.title));
     await tester.pump(const Duration(milliseconds: 500));
@@ -526,22 +560,30 @@ void main() {
     verify(mockAudioProvider.seekToTrack(1)).called(1);
   });
 
-  testWidgets('PlaybackScreen displays rating control',
-      (WidgetTester tester) async {
+  testWidgets('PlaybackScreen displays rating control', (
+    WidgetTester tester,
+  ) async {
     when(mockAudioProvider.currentShow).thenReturn(dummyShow);
     when(mockAudioProvider.currentSource).thenReturn(dummySource);
     when(mockAudioProvider.currentTrack).thenReturn(dummyTrack1);
 
-    await tester
-        .pumpWidget(createTestableWidget(child: const PlaybackScreen()));
+    await tester.pumpWidget(
+      createTestableWidget(child: const PlaybackScreen()),
+    );
 
     // Verify basic content is present (Date should be visible)
-    expect(find.textContaining('2025'), findsAtLeastNWidgets(1),
-        reason: 'Date should be visible');
+    expect(
+      find.textContaining('2025'),
+      findsAtLeastNWidgets(1),
+      reason: 'Date should be visible',
+    );
 
     // Verify RatingControl is present
-    expect(find.byType(RatingControl), findsAtLeastNWidgets(1),
-        reason: 'RatingControl widget should be present');
+    expect(
+      find.byType(RatingControl),
+      findsAtLeastNWidgets(1),
+      reason: 'RatingControl widget should be present',
+    );
 
     // Should find 3 star_rounded icons (RatingControl default is 0, appearing in AppBar)
     // Note: If finding icons fails but RatingControl is present, check flutter_rating_bar implementation

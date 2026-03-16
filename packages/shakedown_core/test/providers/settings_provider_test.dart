@@ -7,9 +7,7 @@ void main() {
 
   setUp(() async {
     TestWidgetsFlutterBinding.ensureInitialized();
-    SharedPreferences.setMockInitialValues({
-      'first_run_check_done': true,
-    });
+    SharedPreferences.setMockInitialValues({'first_run_check_done': true});
     final prefs = await SharedPreferences.getInstance();
     settingsProvider = SettingsProvider(prefs);
   });
@@ -108,10 +106,12 @@ void main() {
   });
 
   group('SettingsProvider Simple Random Legacy Icon', () {
-    test('initializes simpleRandomIcon to false by default (internal only)',
-        () {
-      expect(settingsProvider.simpleRandomIcon, false);
-    });
+    test(
+      'initializes simpleRandomIcon to false by default (internal only)',
+      () {
+        expect(settingsProvider.simpleRandomIcon, false);
+      },
+    );
 
     test('toggleSimpleRandomIcon toggles value and persists', () async {
       // Verify initial state
@@ -250,31 +250,32 @@ void main() {
     });
 
     test(
-        'sets and persists oil screensaver inactivity minutes (enforcing discrete values)',
-        () async {
-      // Test valid values
-      settingsProvider.setOilScreensaverInactivityMinutes(1);
-      expect(settingsProvider.oilScreensaverInactivityMinutes, 1);
+      'sets and persists oil screensaver inactivity minutes (enforcing discrete values)',
+      () async {
+        // Test valid values
+        settingsProvider.setOilScreensaverInactivityMinutes(1);
+        expect(settingsProvider.oilScreensaverInactivityMinutes, 1);
 
-      settingsProvider.setOilScreensaverInactivityMinutes(15);
-      expect(settingsProvider.oilScreensaverInactivityMinutes, 15);
+        settingsProvider.setOilScreensaverInactivityMinutes(15);
+        expect(settingsProvider.oilScreensaverInactivityMinutes, 15);
 
-      settingsProvider.setOilScreensaverInactivityMinutes(5);
-      expect(settingsProvider.oilScreensaverInactivityMinutes, 5);
+        settingsProvider.setOilScreensaverInactivityMinutes(5);
+        expect(settingsProvider.oilScreensaverInactivityMinutes, 5);
 
-      // Verify persistence of last valid value
-      final prefs = await SharedPreferences.getInstance();
-      expect(prefs.getInt('oil_screensaver_inactivity_minutes'), 5);
+        // Verify persistence of last valid value
+        final prefs = await SharedPreferences.getInstance();
+        expect(prefs.getInt('oil_screensaver_inactivity_minutes'), 5);
 
-      // Test invalid values (should default to 5)
-      settingsProvider.setOilScreensaverInactivityMinutes(10);
-      expect(settingsProvider.oilScreensaverInactivityMinutes, 5);
+        // Test invalid values (should default to 5)
+        settingsProvider.setOilScreensaverInactivityMinutes(10);
+        expect(settingsProvider.oilScreensaverInactivityMinutes, 5);
 
-      settingsProvider.setOilScreensaverInactivityMinutes(30);
-      expect(settingsProvider.oilScreensaverInactivityMinutes, 5);
+        settingsProvider.setOilScreensaverInactivityMinutes(30);
+        expect(settingsProvider.oilScreensaverInactivityMinutes, 5);
 
-      settingsProvider.setOilScreensaverInactivityMinutes(0);
-      expect(settingsProvider.oilScreensaverInactivityMinutes, 5);
-    });
+        settingsProvider.setOilScreensaverInactivityMinutes(0);
+        expect(settingsProvider.oilScreensaverInactivityMinutes, 5);
+      },
+    );
   });
 }

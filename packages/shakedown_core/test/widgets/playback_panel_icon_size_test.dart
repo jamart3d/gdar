@@ -22,76 +22,76 @@ import 'package:lucide_icons/lucide_icons.dart';
 class MockGaplessPlayer extends Mock implements GaplessPlayer {
   @override
   PlayerState get playerState => super.noSuchMethod(
-        Invocation.getter(#playerState),
-        returnValue: PlayerState(false, ProcessingState.idle),
-        returnValueForMissingStub: PlayerState(false, ProcessingState.idle),
-      );
+    Invocation.getter(#playerState),
+    returnValue: PlayerState(false, ProcessingState.idle),
+    returnValueForMissingStub: PlayerState(false, ProcessingState.idle),
+  );
   @override
   Stream<PlayerState> get playerStateStream => super.noSuchMethod(
-        Invocation.getter(#playerStateStream),
-        returnValue: const Stream<PlayerState>.empty(),
-        returnValueForMissingStub: const Stream<PlayerState>.empty(),
-      );
+    Invocation.getter(#playerStateStream),
+    returnValue: const Stream<PlayerState>.empty(),
+    returnValueForMissingStub: const Stream<PlayerState>.empty(),
+  );
   @override
   Stream<Duration> get positionStream => super.noSuchMethod(
-        Invocation.getter(#positionStream),
-        returnValue: const Stream<Duration>.empty(),
-        returnValueForMissingStub: const Stream<Duration>.empty(),
-      );
+    Invocation.getter(#positionStream),
+    returnValue: const Stream<Duration>.empty(),
+    returnValueForMissingStub: const Stream<Duration>.empty(),
+  );
   @override
   Stream<Duration?> get durationStream => super.noSuchMethod(
-        Invocation.getter(#durationStream),
-        returnValue: const Stream<Duration?>.empty(),
-        returnValueForMissingStub: const Stream<Duration?>.empty(),
-      );
+    Invocation.getter(#durationStream),
+    returnValue: const Stream<Duration?>.empty(),
+    returnValueForMissingStub: const Stream<Duration?>.empty(),
+  );
   @override
   Stream<Duration> get bufferedPositionStream => super.noSuchMethod(
-        Invocation.getter(#bufferedPositionStream),
-        returnValue: const Stream<Duration>.empty(),
-        returnValueForMissingStub: const Stream<Duration>.empty(),
-      );
+    Invocation.getter(#bufferedPositionStream),
+    returnValue: const Stream<Duration>.empty(),
+    returnValueForMissingStub: const Stream<Duration>.empty(),
+  );
   @override
   Stream<String> get engineStateStringStream => super.noSuchMethod(
-        Invocation.getter(#engineStateStringStream),
-        returnValue: const Stream<String>.empty(),
-        returnValueForMissingStub: const Stream<String>.empty(),
-      );
+    Invocation.getter(#engineStateStringStream),
+    returnValue: const Stream<String>.empty(),
+    returnValueForMissingStub: const Stream<String>.empty(),
+  );
   @override
   Stream<String> get engineContextStateStream => super.noSuchMethod(
-        Invocation.getter(#engineContextStateStream),
-        returnValue: const Stream<String>.empty(),
-        returnValueForMissingStub: const Stream<String>.empty(),
-      );
+    Invocation.getter(#engineContextStateStream),
+    returnValue: const Stream<String>.empty(),
+    returnValueForMissingStub: const Stream<String>.empty(),
+  );
   @override
   Stream<PlaybackEvent> get playbackEventStream => super.noSuchMethod(
-        Invocation.getter(#playbackEventStream),
-        returnValue: const Stream<PlaybackEvent>.empty(),
-        returnValueForMissingStub: const Stream<PlaybackEvent>.empty(),
-      );
+    Invocation.getter(#playbackEventStream),
+    returnValue: const Stream<PlaybackEvent>.empty(),
+    returnValueForMissingStub: const Stream<PlaybackEvent>.empty(),
+  );
   @override
   Duration get position => super.noSuchMethod(
-        Invocation.getter(#position),
-        returnValue: Duration.zero,
-        returnValueForMissingStub: Duration.zero,
-      );
+    Invocation.getter(#position),
+    returnValue: Duration.zero,
+    returnValueForMissingStub: Duration.zero,
+  );
   @override
   Duration get bufferedPosition => super.noSuchMethod(
-        Invocation.getter(#bufferedPosition),
-        returnValue: Duration.zero,
-        returnValueForMissingStub: Duration.zero,
-      );
+    Invocation.getter(#bufferedPosition),
+    returnValue: Duration.zero,
+    returnValueForMissingStub: Duration.zero,
+  );
   @override
   Duration? get duration => super.noSuchMethod(
-        Invocation.getter(#duration),
-        returnValue: null,
-        returnValueForMissingStub: null,
-      );
+    Invocation.getter(#duration),
+    returnValue: null,
+    returnValueForMissingStub: null,
+  );
   @override
   List<IndexedAudioSource> get sequence => super.noSuchMethod(
-        Invocation.getter(#sequence),
-        returnValue: <IndexedAudioSource>[],
-        returnValueForMissingStub: <IndexedAudioSource>[],
-      );
+    Invocation.getter(#sequence),
+    returnValue: <IndexedAudioSource>[],
+    returnValueForMissingStub: <IndexedAudioSource>[],
+  );
 }
 
 class FakeAudioProvider extends ChangeNotifier implements AudioProvider {
@@ -113,8 +113,10 @@ class FakeAudioProvider extends ChangeNotifier implements AudioProvider {
   final _indexController = StreamController<int?>.broadcast();
   final _errorController = StreamController<String>.broadcast();
   final _notificationController = StreamController<String>.broadcast();
-  final _agentController = StreamController<
-      ({String message, VoidCallback? retryAction})>.broadcast();
+  final _agentController =
+      StreamController<
+        ({String message, VoidCallback? retryAction})
+      >.broadcast();
   final _randomShowController =
       StreamController<({Show show, Source source})>.broadcast();
   final _focusController = StreamController<void>.broadcast();
@@ -136,7 +138,7 @@ class FakeAudioProvider extends ChangeNotifier implements AudioProvider {
   Stream<String> get notificationStream => _notificationController.stream;
   @override
   Stream<({String message, VoidCallback? retryAction})>
-      get bufferAgentNotificationStream => _agentController.stream;
+  get bufferAgentNotificationStream => _agentController.stream;
   @override
   Stream<({Show show, Source source})> get randomShowRequestStream =>
       _randomShowController.stream;
@@ -168,79 +170,79 @@ class FakeAudioProvider extends ChangeNotifier implements AudioProvider {
 class MockSettingsProvider extends Mock implements SettingsProvider {
   @override
   String get appFont => super.noSuchMethod(
-        Invocation.getter(#appFont),
-        returnValue: 'default',
-        returnValueForMissingStub: 'default',
-      );
+    Invocation.getter(#appFont),
+    returnValue: 'default',
+    returnValueForMissingStub: 'default',
+  );
   @override
   bool get useNeumorphism => super.noSuchMethod(
-        Invocation.getter(#useNeumorphism),
-        returnValue: false,
-        returnValueForMissingStub: false,
-      );
+    Invocation.getter(#useNeumorphism),
+    returnValue: false,
+    returnValueForMissingStub: false,
+  );
   @override
   bool get useTrueBlack => super.noSuchMethod(
-        Invocation.getter(#useTrueBlack),
-        returnValue: false,
-        returnValueForMissingStub: false,
-      );
+    Invocation.getter(#useTrueBlack),
+    returnValue: false,
+    returnValueForMissingStub: false,
+  );
   @override
   bool get uiScale => super.noSuchMethod(
-        Invocation.getter(#uiScale),
-        returnValue: false,
-        returnValueForMissingStub: false,
-      );
+    Invocation.getter(#uiScale),
+    returnValue: false,
+    returnValueForMissingStub: false,
+  );
   @override
   bool get marqueeEnabled => super.noSuchMethod(
-        Invocation.getter(#marqueeEnabled),
-        returnValue: true,
-        returnValueForMissingStub: true,
-      );
+    Invocation.getter(#marqueeEnabled),
+    returnValue: true,
+    returnValueForMissingStub: true,
+  );
   @override
   bool get performanceMode => super.noSuchMethod(
-        Invocation.getter(#performanceMode),
-        returnValue: false,
-        returnValueForMissingStub: false,
-      );
+    Invocation.getter(#performanceMode),
+    returnValue: false,
+    returnValueForMissingStub: false,
+  );
   @override
   bool get hideTrackDuration => super.noSuchMethod(
-        Invocation.getter(#hideTrackDuration),
-        returnValue: false,
-        returnValueForMissingStub: false,
-      );
+    Invocation.getter(#hideTrackDuration),
+    returnValue: false,
+    returnValueForMissingStub: false,
+  );
   @override
   bool get showDayOfWeek => super.noSuchMethod(
-        Invocation.getter(#showDayOfWeek),
-        returnValue: true,
-        returnValueForMissingStub: true,
-      );
+    Invocation.getter(#showDayOfWeek),
+    returnValue: true,
+    returnValueForMissingStub: true,
+  );
   @override
   bool get showDebugLayout => super.noSuchMethod(
-        Invocation.getter(#showDebugLayout),
-        returnValue: false,
-        returnValueForMissingStub: false,
-      );
+    Invocation.getter(#showDebugLayout),
+    returnValue: false,
+    returnValueForMissingStub: false,
+  );
   @override
   bool get showPlaybackMessages => super.noSuchMethod(
-        Invocation.getter(#showPlaybackMessages),
-        returnValue: false,
-        returnValueForMissingStub: false,
-      );
+    Invocation.getter(#showPlaybackMessages),
+    returnValue: false,
+    returnValueForMissingStub: false,
+  );
   @override
   bool get showDevAudioHud => super.noSuchMethod(
-        Invocation.getter(#showDevAudioHud),
-        returnValue: false,
-        returnValueForMissingStub: false,
-      );
+    Invocation.getter(#showDevAudioHud),
+    returnValue: false,
+    returnValueForMissingStub: false,
+  );
 }
 
 class MockThemeProvider extends Mock implements ThemeProvider {
   @override
   ThemeStyle get themeStyle => super.noSuchMethod(
-        Invocation.getter(#themeStyle),
-        returnValue: ThemeStyle.android,
-        returnValueForMissingStub: ThemeStyle.android,
-      );
+    Invocation.getter(#themeStyle),
+    returnValue: ThemeStyle.android,
+    returnValueForMissingStub: ThemeStyle.android,
+  );
 
   @override
   bool get isFruit => themeStyle == ThemeStyle.fruit;
@@ -249,31 +251,31 @@ class MockThemeProvider extends Mock implements ThemeProvider {
 class MockDeviceService extends Mock implements DeviceService {
   @override
   bool get isTv => super.noSuchMethod(
-        Invocation.getter(#isTv),
-        returnValue: false,
-        returnValueForMissingStub: false,
-      );
+    Invocation.getter(#isTv),
+    returnValue: false,
+    returnValueForMissingStub: false,
+  );
 }
 
 class MockCatalogService extends Mock implements CatalogService {
   @override
   ValueListenable<Box<Rating>> get ratingsListenable => super.noSuchMethod(
-        Invocation.getter(#ratingsListenable),
-        returnValue: ValueNotifier(MockBox<Rating>()),
-        returnValueForMissingStub: ValueNotifier(MockBox<Rating>()),
-      );
+    Invocation.getter(#ratingsListenable),
+    returnValue: ValueNotifier(MockBox<Rating>()),
+    returnValueForMissingStub: ValueNotifier(MockBox<Rating>()),
+  );
   @override
   int getRating(String sourceId) => super.noSuchMethod(
-        Invocation.method(#getRating, [sourceId]),
-        returnValue: 0,
-        returnValueForMissingStub: 0,
-      );
+    Invocation.method(#getRating, [sourceId]),
+    returnValue: 0,
+    returnValueForMissingStub: 0,
+  );
   @override
   bool isPlayed(String sourceId) => super.noSuchMethod(
-        Invocation.method(#isPlayed, [sourceId]),
-        returnValue: false,
-        returnValueForMissingStub: false,
-      );
+    Invocation.method(#isPlayed, [sourceId]),
+    returnValue: false,
+    returnValueForMissingStub: false,
+  );
 }
 
 class MockBox<T> extends Mock implements Box<T> {}
@@ -297,14 +299,16 @@ void main() {
     CatalogService.setMock(mockCatalogService);
   });
 
-  testWidgets('PlaybackPanel copy icon has size 20 but scaled by 2.0 visually',
-      (WidgetTester tester) async {
+  testWidgets('PlaybackPanel copy icon has size 20 but scaled by 2.0 visually', (
+    WidgetTester tester,
+  ) async {
     final dummyTrack = Track(
-        trackNumber: 1,
-        title: 'Track 1',
-        duration: 100,
-        url: 'url',
-        setName: 'Set 1');
+      trackNumber: 1,
+      title: 'Track 1',
+      duration: 100,
+      url: 'url',
+      setName: 'Set 1',
+    );
     final dummySource = Source(id: 'source1', tracks: [dummyTrack]);
     final dummyShow = Show(
       name: 'Show',
@@ -318,26 +322,33 @@ void main() {
     fakeAudioProvider.currentSource = dummySource;
     fakeAudioProvider.currentTrack = dummyTrack;
 
-    when(mockGaplessPlayer.playerState)
-        .thenReturn(PlayerState(false, ProcessingState.idle));
+    when(
+      mockGaplessPlayer.playerState,
+    ).thenReturn(PlayerState(false, ProcessingState.idle));
     when(mockGaplessPlayer.position).thenReturn(Duration.zero);
     when(mockGaplessPlayer.bufferedPosition).thenReturn(Duration.zero);
     when(mockGaplessPlayer.duration).thenReturn(Duration.zero);
-    when(mockGaplessPlayer.playerState)
-        .thenReturn(PlayerState(false, ProcessingState.idle));
+    when(
+      mockGaplessPlayer.playerState,
+    ).thenReturn(PlayerState(false, ProcessingState.idle));
     when(mockGaplessPlayer.position).thenReturn(Duration.zero);
     when(mockGaplessPlayer.bufferedPosition).thenReturn(Duration.zero);
     when(mockGaplessPlayer.duration).thenReturn(Duration.zero);
-    when(mockGaplessPlayer.playerStateStream)
-        .thenAnswer((_) => const Stream.empty());
-    when(mockGaplessPlayer.positionStream)
-        .thenAnswer((_) => const Stream.empty());
-    when(mockGaplessPlayer.durationStream)
-        .thenAnswer((_) => const Stream.empty());
-    when(mockGaplessPlayer.bufferedPositionStream)
-        .thenAnswer((_) => const Stream.empty());
-    when(mockGaplessPlayer.playbackEventStream)
-        .thenAnswer((_) => const Stream.empty());
+    when(
+      mockGaplessPlayer.playerStateStream,
+    ).thenAnswer((_) => const Stream.empty());
+    when(
+      mockGaplessPlayer.positionStream,
+    ).thenAnswer((_) => const Stream.empty());
+    when(
+      mockGaplessPlayer.durationStream,
+    ).thenAnswer((_) => const Stream.empty());
+    when(
+      mockGaplessPlayer.bufferedPositionStream,
+    ).thenAnswer((_) => const Stream.empty());
+    when(
+      mockGaplessPlayer.playbackEventStream,
+    ).thenAnswer((_) => const Stream.empty());
     when(mockGaplessPlayer.sequence).thenReturn(<IndexedAudioSource>[]);
 
     when(mockSettingsProvider.useNeumorphism).thenReturn(true);
@@ -352,29 +363,35 @@ void main() {
 
     when(mockDeviceService.isTv).thenReturn(false);
 
-    when(mockCatalogService.ratingsListenable)
-        .thenReturn(ValueNotifier(MockBox<Rating>()));
+    when(
+      mockCatalogService.ratingsListenable,
+    ).thenReturn(ValueNotifier(MockBox<Rating>()));
     when(mockCatalogService.getRating('source1')).thenReturn(0);
     when(mockCatalogService.isPlayed('source1')).thenReturn(false);
 
     final panelPositionNotifier = ValueNotifier<double>(1.0);
 
     debugPrint(
-        'DEBUG: fakeAudioProvider.playerStateStream = ${fakeAudioProvider.playerStateStream}');
+      'DEBUG: fakeAudioProvider.playerStateStream = ${fakeAudioProvider.playerStateStream}',
+    );
     debugPrint(
-        'DEBUG: fakeAudioProvider.playerStateStream type = ${fakeAudioProvider.playerStateStream.runtimeType}');
+      'DEBUG: fakeAudioProvider.playerStateStream type = ${fakeAudioProvider.playerStateStream.runtimeType}',
+    );
 
     debugPrint(
-        'DEBUG: fakeAudioProvider.audioPlayer.playerState = ${fakeAudioProvider.audioPlayer.playerState}');
+      'DEBUG: fakeAudioProvider.audioPlayer.playerState = ${fakeAudioProvider.audioPlayer.playerState}',
+    );
     debugPrint(
-        'DEBUG: fakeAudioProvider.audioPlayer.playerState type = ${fakeAudioProvider.audioPlayer.playerState.runtimeType}');
+      'DEBUG: fakeAudioProvider.audioPlayer.playerState type = ${fakeAudioProvider.audioPlayer.playerState.runtimeType}',
+    );
 
     await tester.pumpWidget(
       MultiProvider(
         providers: [
           ChangeNotifierProvider<AudioProvider>.value(value: fakeAudioProvider),
           ChangeNotifierProvider<SettingsProvider>.value(
-              value: mockSettingsProvider),
+            value: mockSettingsProvider,
+          ),
           ChangeNotifierProvider<DeviceService>.value(value: mockDeviceService),
           ChangeNotifierProvider<ThemeProvider>.value(value: mockThemeProvider),
         ],
@@ -393,24 +410,31 @@ void main() {
       ),
     );
 
-    final iconFinder = find.byWidgetPredicate((widget) =>
-        widget is Icon &&
-        (widget.icon == LucideIcons.copy || widget.icon == Icons.copy_rounded));
+    final iconFinder = find.byWidgetPredicate(
+      (widget) =>
+          widget is Icon &&
+          (widget.icon == LucideIcons.copy ||
+              widget.icon == Icons.copy_rounded),
+    );
     expect(iconFinder, findsOneWidget);
 
     final Icon icon = tester.widget(iconFinder);
     double? iconSize = icon.size;
 
     if (iconSize == null) {
-      final iconThemeFinder =
-          find.ancestor(of: iconFinder, matching: find.byType(IconTheme));
+      final iconThemeFinder = find.ancestor(
+        of: iconFinder,
+        matching: find.byType(IconTheme),
+      );
       final IconTheme iconTheme = tester.widget(iconThemeFinder.first);
       iconSize = iconTheme.data.size;
     }
     expect(iconSize, equals(20.0));
 
-    final transformFinder =
-        find.ancestor(of: iconFinder, matching: find.byType(Transform));
+    final transformFinder = find.ancestor(
+      of: iconFinder,
+      matching: find.byType(Transform),
+    );
     final Transform transform = tester.widget(transformFinder.first);
     final double scale = transform.transform.getMaxScaleOnAxis();
     expect(scale, closeTo(2.0, 0.001));

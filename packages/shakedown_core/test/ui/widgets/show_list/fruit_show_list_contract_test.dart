@@ -27,10 +27,13 @@ class _FakeThemeProvider extends ChangeNotifier implements ThemeProvider {
   bool get isFruitAllowed => true;
 
   @override
-  void toggleTheme() {
+  void toggleTheme({Brightness? currentBrightness}) {
     _darkMode = !_darkMode;
     notifyListeners();
   }
+
+  @override
+  Future<void> get initializationComplete => Future.value();
 
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
@@ -126,8 +129,9 @@ void main() {
     );
   }
 
-  testWidgets('Fruit search uses custom controls and no Material SearchBar',
-      (tester) async {
+  testWidgets('Fruit search uses custom controls and no Material SearchBar', (
+    tester,
+  ) async {
     final controller = TextEditingController(text: 'gd');
     final focusNode = FocusNode();
 
@@ -147,8 +151,9 @@ void main() {
     expect(find.byType(FruitActionButton), findsWidgets);
   });
 
-  testWidgets('Fruit app bar does not render M3 text/search widgets',
-      (tester) async {
+  testWidgets('Fruit app bar does not render M3 text/search widgets', (
+    tester,
+  ) async {
     final controller = TextEditingController();
     final focusNode = FocusNode();
 
@@ -157,9 +162,11 @@ void main() {
         providers: [
           ChangeNotifierProvider<ThemeProvider>.value(value: themeProvider),
           ChangeNotifierProvider<SettingsProvider>.value(
-              value: settingsProvider),
+            value: settingsProvider,
+          ),
           ChangeNotifierProvider<ShowListProvider>.value(
-              value: showListProvider),
+            value: showListProvider,
+          ),
           ChangeNotifierProvider<DeviceService>.value(value: deviceService),
         ],
         child: MaterialApp(

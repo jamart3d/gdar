@@ -590,11 +590,12 @@ void main() {
 
   // Dummy data
   final dummyTrack1 = Track(
-      trackNumber: 1,
-      title: 'Track 1',
-      duration: 100,
-      url: '',
-      setName: 'Set 1');
+    trackNumber: 1,
+    title: 'Track 1',
+    duration: 100,
+    url: '',
+    setName: 'Set 1',
+  );
   final dummySource = Source(id: 'source1', tracks: [dummyTrack1]);
   final dummyShow = Show(
     name: 'Venue A on 2025-01-15',
@@ -609,8 +610,8 @@ void main() {
     const channel = MethodChannel('plugins.flutter.io/path_provider');
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(channel, (MethodCall methodCall) async {
-      return tempDir.path;
-    });
+          return tempDir.path;
+        });
 
     SharedPreferences.setMockInitialValues({});
     final prefs = await SharedPreferences.getInstance();
@@ -622,32 +623,41 @@ void main() {
     mockTvDeviceService = MockTvDeviceService();
 
     when(mockAudioProvider.audioPlayer).thenReturn(mockAudioPlayer);
-    when(mockAudioProvider.playbackErrorStream)
-        .thenAnswer((_) => Stream.value(''));
+    when(
+      mockAudioProvider.playbackErrorStream,
+    ).thenAnswer((_) => Stream.value(''));
     when(mockAudioProvider.isPlaying).thenReturn(false);
     when(mockAudioPlayer.sequence).thenReturn([]);
     when(mockAudioPlayer.currentIndex).thenReturn(0);
     when(mockAudioPlayer.position).thenReturn(Duration.zero);
     when(mockAudioPlayer.bufferedPosition).thenReturn(Duration.zero);
     when(mockAudioPlayer.duration).thenReturn(const Duration(seconds: 100));
-    when(mockAudioPlayer.playerState)
-        .thenReturn(PlayerState(false, ProcessingState.idle));
+    when(
+      mockAudioPlayer.playerState,
+    ).thenReturn(PlayerState(false, ProcessingState.idle));
 
-    when(mockAudioProvider.playerStateStream).thenAnswer(
-        (_) => Stream.value(PlayerState(false, ProcessingState.idle)));
-    when(mockAudioProvider.currentIndexStream)
-        .thenAnswer((_) => Stream.value(0));
-    when(mockAudioProvider.durationStream)
-        .thenAnswer((_) => Stream.value(const Duration(seconds: 100)));
-    when(mockAudioProvider.positionStream)
-        .thenAnswer((_) => Stream.value(Duration.zero));
-    when(mockAudioProvider.bufferedPositionStream)
-        .thenAnswer((_) => Stream.value(Duration.zero));
-    when(mockAudioProvider.playbackErrorStream)
-        .thenAnswer((_) => Stream.value(''));
+    when(
+      mockAudioProvider.playerStateStream,
+    ).thenAnswer((_) => Stream.value(PlayerState(false, ProcessingState.idle)));
+    when(
+      mockAudioProvider.currentIndexStream,
+    ).thenAnswer((_) => Stream.value(0));
+    when(
+      mockAudioProvider.durationStream,
+    ).thenAnswer((_) => Stream.value(const Duration(seconds: 100)));
+    when(
+      mockAudioProvider.positionStream,
+    ).thenAnswer((_) => Stream.value(Duration.zero));
+    when(
+      mockAudioProvider.bufferedPositionStream,
+    ).thenAnswer((_) => Stream.value(Duration.zero));
+    when(
+      mockAudioProvider.playbackErrorStream,
+    ).thenAnswer((_) => Stream.value(''));
     when(mockAudioPlayer.sequence).thenReturn([]);
-    when(mockAudioPlayer.sequenceStateStream)
-        .thenAnswer((_) => const Stream.empty());
+    when(
+      mockAudioPlayer.sequenceStateStream,
+    ).thenAnswer((_) => const Stream.empty());
     when(mockAudioProvider.currentTrack).thenReturn(null);
   });
 
@@ -656,39 +666,43 @@ void main() {
       providers: [
         ChangeNotifierProvider<AudioProvider>.value(value: mockAudioProvider),
         ChangeNotifierProvider<SettingsProvider>.value(
-            value: mockSettingsProvider),
+          value: mockSettingsProvider,
+        ),
         ChangeNotifierProvider<DeviceService>.value(value: mockTvDeviceService),
         ChangeNotifierProvider<ThemeProvider>(create: (_) => ThemeProvider()),
         ChangeNotifierProvider<ShowListProvider>(
-            create: (_) => MockShowListProvider()),
+          create: (_) => MockShowListProvider(),
+        ),
       ],
-      child: MaterialApp(
-        home: Material(child: child),
-      ),
+      child: MaterialApp(home: Material(child: child)),
     );
   }
 
   testWidgets(
-      'PlaybackScreen on TV displays Show Date and Venue in header instead of TRACK LIST',
-      (WidgetTester tester) async {
-    when(mockAudioProvider.currentShow).thenReturn(dummyShow);
-    when(mockAudioProvider.currentSource).thenReturn(dummySource);
-    when(mockAudioProvider.currentTrack).thenReturn(dummyTrack1);
+    'PlaybackScreen on TV displays Show Date and Venue in header instead of TRACK LIST',
+    (WidgetTester tester) async {
+      when(mockAudioProvider.currentShow).thenReturn(dummyShow);
+      when(mockAudioProvider.currentSource).thenReturn(dummySource);
+      when(mockAudioProvider.currentTrack).thenReturn(dummyTrack1);
 
-    await tester.pumpWidget(createTestableWidget(
-        child: const PlaybackScreen(
-      isPane: true, // Simulate being in TV Dual Pane
-    )));
+      await tester.pumpWidget(
+        createTestableWidget(
+          child: const PlaybackScreen(
+            isPane: true, // Simulate being in TV Dual Pane
+          ),
+        ),
+      );
 
-    // Verify "TRACK LIST" is NOT present (using a robust check)
-    // We expect the Date and Venue to be there.
-    expect(find.text('TRACK LIST'), findsNothing);
+      // Verify "TRACK LIST" is NOT present (using a robust check)
+      // We expect the Date and Venue to be there.
+      expect(find.text('TRACK LIST'), findsNothing);
 
-    // Verify Date is displayed with Rock Salt font (implied by just finding text for now)
-    // formattedDate for 2025-01-15 depends on implementation, likely "Jan 15, 2025" or similar
-    // We can check fuzzy match or look at Show.formattedDate implementation if needed.
-    // Assuming "Jan 15, 2025" based on typical US locale
-    expect(find.textContaining('2025'), findsAtLeastNWidgets(1));
-    expect(find.text('Venue A'), findsOneWidget);
-  });
+      // Verify Date is displayed with Rock Salt font (implied by just finding text for now)
+      // formattedDate for 2025-01-15 depends on implementation, likely "Jan 15, 2025" or similar
+      // We can check fuzzy match or look at Show.formattedDate implementation if needed.
+      // Assuming "Jan 15, 2025" based on typical US locale
+      expect(find.textContaining('2025'), findsAtLeastNWidgets(1));
+      expect(find.text('Venue A'), findsOneWidget);
+    },
+  );
 }

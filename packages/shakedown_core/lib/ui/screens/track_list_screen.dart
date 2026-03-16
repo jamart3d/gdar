@@ -26,7 +26,6 @@ import 'package:lucide_icons/lucide_icons.dart';
 import 'package:shakedown_core/providers/theme_provider.dart';
 import 'package:shakedown_core/services/device_service.dart';
 import 'package:shakedown_core/ui/widgets/tv/tv_focus_wrapper.dart';
-import 'package:shakedown_core/ui/widgets/theme/fruit_icon_button.dart';
 import 'package:shakedown_core/ui/widgets/fruit_tab_bar.dart';
 import 'package:shakedown_core/ui/screens/fruit_tab_host_screen.dart';
 import 'package:shakedown_core/ui/widgets/theme/fruit_ui.dart';
@@ -1092,8 +1091,8 @@ class _TrackListScreenState extends State<TrackListScreen> {
                     context,
                     onPressed: () {
                       context.read<ThemeProvider>().toggleTheme(
-                            currentBrightness: Theme.of(context).brightness,
-                          );
+                        currentBrightness: Theme.of(context).brightness,
+                      );
                     },
                   ),
                 ],

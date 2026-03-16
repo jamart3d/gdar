@@ -73,7 +73,7 @@ class MockAudioProvider extends Mock implements AudioProvider {
   void removeListener(VoidCallback listener) {}
   @override
   void dispose() {}
-  
+
   @override
   Stream<PlayerState> get playerStateStream => const Stream.empty();
   @override
@@ -99,14 +99,16 @@ class MockAudioProvider extends Mock implements AudioProvider {
   @override
   Stream<String> get playbackErrorStream => const Stream.empty();
   @override
-  Stream<({Show show, Source source})> get randomShowRequestStream => const Stream.empty();
+  Stream<({Show show, Source source})> get randomShowRequestStream =>
+      const Stream.empty();
   @override
-  Stream<({String message, VoidCallback? retryAction})> get bufferAgentNotificationStream => const Stream.empty();
+  Stream<({String message, VoidCallback? retryAction})>
+  get bufferAgentNotificationStream => const Stream.empty();
   @override
   Stream<String> get notificationStream => const Stream.empty();
   @override
   Stream<void> get playbackFocusRequestStream => const Stream.empty();
-  
+
   @override
   bool get isPlaying => false;
 
@@ -139,9 +141,7 @@ class MockAudioProvider extends Mock implements AudioProvider {
     int initialIndex = 0,
     Duration? initialPosition,
   }) async {}
-
 }
-
 
 class MockShowListProvider extends Mock implements ShowListProvider {
   @override
@@ -201,8 +201,6 @@ class MockShowListProvider extends Mock implements ShowListProvider {
   String? get error => null;
 }
 
-
-
 void main() {
   group('Onboarding Skip Logic', () {
     late SharedPreferences prefs;
@@ -216,36 +214,42 @@ void main() {
       prefs = await SharedPreferences.getInstance();
     });
 
-    testWidgets('shows OnboardingScreen when isTv is false',
-        (WidgetTester tester) async {
+    testWidgets('shows OnboardingScreen when isTv is false', (
+      WidgetTester tester,
+    ) async {
       final mockShowListProvider = MockShowListProvider();
       final mockAudioProvider = MockAudioProvider();
       final mockAudioCacheService = MockAudioCacheService();
-      await tester.pumpWidget(GdarTvApp(
-        prefs: prefs,
-        isTv: false,
-        showListProvider: mockShowListProvider,
-        audioProvider: mockAudioProvider,
-        audioCacheService: mockAudioCacheService,
-      ));
+      await tester.pumpWidget(
+        GdarTvApp(
+          prefs: prefs,
+          isTv: false,
+          showListProvider: mockShowListProvider,
+          audioProvider: mockAudioProvider,
+          audioCacheService: mockAudioCacheService,
+        ),
+      );
 
       await tester.pump(const Duration(seconds: 3));
       await tester.pump(const Duration(milliseconds: 500)); // Settlement
       expect(find.byType(OnboardingScreen), findsOneWidget);
     });
 
-    testWidgets('skips OnboardingScreen when isTv is true',
-        (WidgetTester tester) async {
+    testWidgets('skips OnboardingScreen when isTv is true', (
+      WidgetTester tester,
+    ) async {
       final mockShowListProvider = MockShowListProvider();
       final mockAudioProvider = MockAudioProvider();
       final mockAudioCacheService = MockAudioCacheService();
-      await tester.pumpWidget(GdarTvApp(
-        prefs: prefs,
-        isTv: true,
-        showListProvider: mockShowListProvider,
-        audioProvider: mockAudioProvider,
-        audioCacheService: mockAudioCacheService,
-      ));
+      await tester.pumpWidget(
+        GdarTvApp(
+          prefs: prefs,
+          isTv: true,
+          showListProvider: mockShowListProvider,
+          audioProvider: mockAudioProvider,
+          audioCacheService: mockAudioCacheService,
+        ),
+      );
 
       await tester.pump(const Duration(seconds: 3));
       await tester.pump(const Duration(milliseconds: 500)); // Settlement
@@ -256,9 +260,5 @@ void main() {
       // Should show TV layout
       expect(find.byType(TvDualPaneLayout), findsOneWidget);
     });
-
-
-
-
   });
 }

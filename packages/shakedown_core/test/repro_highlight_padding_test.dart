@@ -30,8 +30,9 @@ void main() {
     );
   }
 
-  testWidgets('AnimatedGradientBorder preserves size when showGlow is toggled',
-      (WidgetTester tester) async {
+  testWidgets('AnimatedGradientBorder preserves size when showGlow is toggled', (
+    WidgetTester tester,
+  ) async {
     const double borderWidth = 4.0;
     const double childSize = 100.0;
 
@@ -72,8 +73,11 @@ void main() {
 
     final Size sizeWithoutGlow = tester.getSize(borderFinder);
 
-    expect(sizeWithoutGlow, sizeWithGlow,
-        reason:
-            'Size should not change when showGlow is toggled if usePadding is true');
+    expect(
+      sizeWithoutGlow,
+      sizeWithGlow,
+      reason:
+          'Size should not change when showGlow is toggled if usePadding is true',
+    );
   });
 }

@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:shakedown_core/providers/settings_provider.dart';
 import 'package:shakedown_core/providers/theme_provider.dart';
 import 'package:shakedown_core/ui/widgets/theme/fruit_icon_button.dart';
+export 'package:shakedown_core/ui/widgets/theme/fruit_icon_button.dart';
 import 'package:shakedown_core/ui/widgets/theme/liquid_glass_wrapper.dart';
 
 /// Central visual tokens for Fruit UI.

@@ -130,6 +130,7 @@ We use **Melos** to manage the multi-package workspace.
 - **Bootstrap**: Run `melos bootstrap` (or `flutter pub get` at the root) to link all local packages and fetch external dependencies.
 - **Cleaning**: `melos clean` removes all build artifacts and `.dart_tool` folders across the workspace.
 - **Testing**: `melos run test` executes tests in all packages and apps.
+- **Branding**: `melos run icons` regenerates launcher icons for all apps using core assets.
 
 **Monorepo Rules**: See `docs/MONOREPO_RULES.md` for CI and workspace
 conventions.
@@ -141,6 +142,7 @@ Shakedown utilizes a hybrid approach, centralized in the `shakedown_core` packag
 
 - **Show Catalog (JSON)**: The concert database (`packages/shakedown_core/assets/data/output.optimized_src.json`) is loaded into memory via background isolates (`compute()`) in `CatalogService`.
 - **User Data (Hive)**: Ratings and personal data are stored in Hive, managed by the core infrastructure.
+- **Tiered Defaults**: `SettingsProvider` implements platform-specific defaults (TV, Web, Mobile) via internal collectors (`_dBool`, `_dStr`, etc.) to ensure consistent behavior across architectures.
 - **State Management**: Uses `Provider` with a strict separation between UI (Widgets), Logic (Providers), and Data (Repositories).
 
 ## Building & Release

@@ -8,7 +8,6 @@ import 'package:shakedown_core/providers/settings_provider.dart';
 import 'package:shakedown_core/ui/screens/show_list_screen.dart';
 import 'package:shakedown_core/ui/screens/onboarding_screen.dart';
 
-
 import 'package:shakedown_core/ui/widgets/shakedown_title.dart';
 import 'package:shakedown_core/services/device_service.dart';
 import 'package:shakedown_core/ui/widgets/tv/tv_dual_pane_layout.dart';
@@ -140,9 +139,8 @@ class _SplashScreenState extends State<SplashScreen>
         final nextScreen = isTv
             ? const TvDualPaneLayout()
             : (settingsProvider.showOnboarding
-                ? const OnboardingScreen()
-                : const ShowListScreen());
-
+                  ? const OnboardingScreen()
+                  : const ShowListScreen());
 
         Navigator.of(context).pushReplacement(
           PageRouteBuilder(

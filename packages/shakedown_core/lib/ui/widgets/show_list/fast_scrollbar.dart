@@ -191,7 +191,7 @@ class _FastScrollbarState extends State<FastScrollbar>
 
     _lastTrackGlobal = renderBox.localToGlobal(Offset.zero);
     _lastTrackHeight = renderBox.size.height;
-    
+
     final localPosition = renderBox.globalToLocal(globalOffset);
     final localY = localPosition.dy;
     final trackH = _lastTrackHeight;
@@ -218,8 +218,6 @@ class _FastScrollbarState extends State<FastScrollbar>
   }
 
   // ── Overlay ────────────────────────────────────────────────────────
-
-
 
   void _showOverlay() {
     _removeOverlay();

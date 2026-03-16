@@ -6,7 +6,7 @@ part 'session_entry.g.dart';
 class SessionEntry {
   @HiveField(0)
   final String sourceId;
-  
+
   @HiveField(1)
   final DateTime timestamp;
 

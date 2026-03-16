@@ -29,8 +29,9 @@ void main() {
 
       // Stub ratingsListenable
       final mockRatingBox = MockRatingBox();
-      when(mockCatalogService.ratingsListenable)
-          .thenReturn(ValueNotifier(mockRatingBox));
+      when(
+        mockCatalogService.ratingsListenable,
+      ).thenReturn(ValueNotifier(mockRatingBox));
 
       provider.update(mockSettingsProvider);
     });
@@ -44,22 +45,32 @@ void main() {
           date: '1977-05-08',
           venue: 'Cornell',
           sources: [
-            Source(id: '1', src: 'sbd', tracks: [
-              Track(
+            Source(
+              id: '1',
+              src: 'sbd',
+              tracks: [
+                Track(
                   title: 't1',
                   url: 'http://foo/sbd/bar.mp3',
                   duration: 100,
                   trackNumber: 1,
-                  setName: 'Set 1')
-            ]),
-            Source(id: '2', src: 'mtx', tracks: [
-              Track(
+                  setName: 'Set 1',
+                ),
+              ],
+            ),
+            Source(
+              id: '2',
+              src: 'mtx',
+              tracks: [
+                Track(
                   title: 't2',
                   url: 'http://foo/mtx/bar.mp3',
                   duration: 100,
                   trackNumber: 1,
-                  setName: 'Set 1')
-            ]),
+                  setName: 'Set 1',
+                ),
+              ],
+            ),
           ],
         ),
         Show(
@@ -68,21 +79,29 @@ void main() {
           date: '1977-05-09',
           venue: 'Buffalo',
           sources: [
-            Source(id: '3', src: 'aud', tracks: [
-              Track(
+            Source(
+              id: '3',
+              src: 'aud',
+              tracks: [
+                Track(
                   title: 't3',
                   url: 'http://foo/betty/bar.mp3',
                   duration: 100,
                   trackNumber: 1,
-                  setName: 'Set 1')
-            ]), // Betty in URL
+                  setName: 'Set 1',
+                ),
+              ],
+            ), // Betty in URL
           ],
         ),
       ];
 
-      when(mockCatalogService.initialize(
-              prefs: anyNamed('prefs'), strategy: anyNamed('strategy')))
-          .thenAnswer((_) async {});
+      when(
+        mockCatalogService.initialize(
+          prefs: anyNamed('prefs'),
+          strategy: anyNamed('strategy'),
+        ),
+      ).thenAnswer((_) async {});
       when(mockCatalogService.allShows).thenReturn(shows);
 
       await provider.fetchShows(mockPrefs);

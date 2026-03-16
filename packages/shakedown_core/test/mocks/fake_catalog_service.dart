@@ -12,21 +12,24 @@ class FakeCatalogService extends CatalogService {
   final Map<String, int> _playCounts = {};
 
   // Mock Boxes
-  final ValueNotifier<Box<bool>> _historyNotifier =
-      ValueNotifier(BoxMock<bool>({}));
-  final ValueNotifier<Box<Rating>> _ratingsNotifier =
-      ValueNotifier(BoxMock<Rating>({}));
-  final ValueNotifier<Box<int>> _playCountsNotifier =
-      ValueNotifier(BoxMock<int>({}));
+  final ValueNotifier<Box<bool>> _historyNotifier = ValueNotifier(
+    BoxMock<bool>({}),
+  );
+  final ValueNotifier<Box<Rating>> _ratingsNotifier = ValueNotifier(
+    BoxMock<Rating>({}),
+  );
+  final ValueNotifier<Box<int>> _playCountsNotifier = ValueNotifier(
+    BoxMock<int>({}),
+  );
 
   FakeCatalogService()
-      : super.internal(); // Call internal constructor if accessible or use stub
+    : super.internal(); // Call internal constructor if accessible or use stub
 
   @override
-  Future<void> initialize(
-      {required SharedPreferences prefs,
-      CatalogLoadingStrategy strategy =
-          CatalogLoadingStrategy.inMemory}) async {
+  Future<void> initialize({
+    required SharedPreferences prefs,
+    CatalogLoadingStrategy strategy = CatalogLoadingStrategy.inMemory,
+  }) async {
     // No-op or just set initialized flag if needed, but we intercept accessors
   }
 

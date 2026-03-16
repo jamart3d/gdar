@@ -101,7 +101,7 @@ class DefaultSettings {
   static const double oilAudioPeakDecay = 0.992;
   static const bool oilShowInfoBanner = true;
   static const double oilTranslationSmoothing =
-      0.85; // ── Steal Screensaver Flat/Rings ──────────────────────────────────────────
+      0.85; // ── Steal Screensaver Flat/Rings ─────────────────────────
   static const String oilBannerDisplayMode = 'flat'; // 'flat' or 'rings'
   static const String oilBannerFont = 'rock_salt'; // Primary font
   static const double oilFlatTextProximity = 0.50; // Middle proximity

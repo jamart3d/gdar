@@ -62,13 +62,14 @@ void main() {
 
   setUp(() async {
     await CatalogService().reset();
-    final tempDir =
-        await Directory.systemTemp.createTemp('hive_test_tv_settings_');
+    final tempDir = await Directory.systemTemp.createTemp(
+      'hive_test_tv_settings_',
+    );
     const channel = MethodChannel('plugins.flutter.io/path_provider');
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(channel, (MethodCall methodCall) async {
-      return tempDir.path;
-    });
+          return tempDir.path;
+        });
 
     SharedPreferences.setMockInitialValues({});
     prefs = await SharedPreferences.getInstance();
@@ -89,22 +90,25 @@ void main() {
         ChangeNotifierProvider(create: (_) => settingsProvider),
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
         ChangeNotifierProvider<AudioProvider>(
-            create: (_) => MockAudioProvider()),
+          create: (_) => MockAudioProvider(),
+        ),
         ChangeNotifierProvider<ShowListProvider>(
-            create: (_) => MockShowListProvider()),
+          create: (_) => MockShowListProvider(),
+        ),
         ChangeNotifierProvider<UpdateProvider>(
-            create: (_) => MockUpdateProvider()),
+          create: (_) => MockUpdateProvider(),
+        ),
         ChangeNotifierProvider<DeviceService>(
-            create: (_) => MockDeviceService()..isTv = true),
+          create: (_) => MockDeviceService()..isTv = true,
+        ),
       ],
-      child: const MaterialApp(
-        home: TvSettingsScreen(),
-      ),
+      child: const MaterialApp(home: TvSettingsScreen()),
     );
   }
 
-  testWidgets('About section is present and accessible in TV Settings',
-      (WidgetTester tester) async {
+  testWidgets('About section is present and accessible in TV Settings', (
+    WidgetTester tester,
+  ) async {
     // Set screen size to TV dimensions to avoid overflows
     tester.view.physicalSize = const Size(1920, 1080);
     tester.view.devicePixelRatio = 1.0;
@@ -122,8 +126,11 @@ void main() {
     final scrollable = find.byType(Scrollable).first;
     expect(scrollable, findsOneWidget);
 
-    await tester.scrollUntilVisible(aboutCategoryFinder, 50,
-        scrollable: scrollable);
+    await tester.scrollUntilVisible(
+      aboutCategoryFinder,
+      50,
+      scrollable: scrollable,
+    );
     await tester.pump(const Duration(milliseconds: 500));
 
     expect(aboutCategoryFinder, findsOneWidget);
@@ -133,8 +140,9 @@ void main() {
 
     // Use pump with duration because AboutSection has an infinite pulsing animation
     // that causes pumpAndSettle to timeout.
-    await tester
-        .pump(const Duration(seconds: 1)); // Wait enough for transition/build
+    await tester.pump(
+      const Duration(seconds: 1),
+    ); // Wait enough for transition/build
 
     // Verify AboutBody is displayed (TV uses full body instead of just a section card)
     expect(find.byType(AboutBody), findsOneWidget);
@@ -143,28 +151,29 @@ void main() {
   });
 
   testWidgets(
-      'Haptic Feedback and Swipe to Block are hidden in TV Interface Settings',
-      (WidgetTester tester) async {
-    tester.view.physicalSize = const Size(1920, 1080);
-    tester.view.devicePixelRatio = 1.0;
-    addTearDown(tester.view.resetPhysicalSize);
+    'Haptic Feedback and Swipe to Block are hidden in TV Interface Settings',
+    (WidgetTester tester) async {
+      tester.view.physicalSize = const Size(1920, 1080);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
 
-    final settingsProvider = SettingsProvider(prefs);
+      final settingsProvider = SettingsProvider(prefs);
 
-    await tester.pumpWidget(createTestableWidget(settingsProvider));
-    await tester.pump(const Duration(milliseconds: 500));
+      await tester.pumpWidget(createTestableWidget(settingsProvider));
+      await tester.pump(const Duration(milliseconds: 500));
 
-    // Select Interface category
-    final interfaceCategoryFinder = find.text('Interface');
-    await tester.tap(interfaceCategoryFinder);
-    await tester.pump(const Duration(milliseconds: 500));
+      // Select Interface category
+      final interfaceCategoryFinder = find.text('Interface');
+      await tester.tap(interfaceCategoryFinder);
+      await tester.pump(const Duration(milliseconds: 500));
 
-    // Verify Haptic Feedback is NOT present
-    expect(find.text('Haptic Feedback'), findsNothing);
-    expect(find.text('Vibrate on interactions (PWA/Mobile)'), findsNothing);
+      // Verify Haptic Feedback is NOT present
+      expect(find.text('Haptic Feedback'), findsNothing);
+      expect(find.text('Vibrate on interactions (PWA/Mobile)'), findsNothing);
 
-    // Verify Swipe to Block is NOT present (using text segments to be safe)
-    expect(find.text('Enable Swipe to Block'), findsNothing);
-    expect(find.textContaining('swipe list items to block'), findsNothing);
-  });
+      // Verify Swipe to Block is NOT present (using text segments to be safe)
+      expect(find.text('Enable Swipe to Block'), findsNothing);
+      expect(find.textContaining('swipe list items to block'), findsNothing);
+    },
+  );
 }
