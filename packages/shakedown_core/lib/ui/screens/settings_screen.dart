@@ -22,6 +22,7 @@ import 'package:shakedown_core/services/device_service.dart';
 import 'package:shakedown_core/ui/screens/tv_settings_screen.dart';
 import 'package:shakedown_core/ui/widgets/fruit_tab_bar.dart';
 import 'package:shakedown_core/ui/widgets/theme/fruit_icon_button.dart';
+import 'package:shakedown_core/ui/widgets/theme/fruit_ui.dart';
 import 'package:shakedown_core/ui/widgets/theme/liquid_glass_wrapper.dart';
 import 'package:shakedown_core/ui/widgets/theme/neumorphic_wrapper.dart';
 import 'package:lucide_icons/lucide_icons.dart';
@@ -402,7 +403,9 @@ class _SettingsScreenState extends State<SettingsScreen>
               icon: Theme.of(context).brightness == Brightness.dark
                   ? LucideIcons.sun
                   : LucideIcons.moon,
-              onPressed: () => themeProvider.toggleTheme(),
+              onPressed: () => themeProvider.toggleTheme(
+                currentBrightness: Theme.of(context).brightness,
+              ),
             ),
           ],
         ),
@@ -455,36 +458,6 @@ class _SettingsScreenState extends State<SettingsScreen>
     required IconData icon,
     required VoidCallback onPressed,
   }) {
-    final settingsProvider = context.watch<SettingsProvider>();
-    final useNeumorphic =
-        settingsProvider.useNeumorphism && !settingsProvider.useTrueBlack;
-
-    if (useNeumorphic) {
-      return NeumorphicWrapper(
-        isCircle: true,
-        borderRadius: 100,
-        intensity: 0.8,
-        color: Colors.transparent,
-        child: LiquidGlassWrapper(
-          enabled: !kIsWeb,
-          borderRadius: BorderRadius.circular(100),
-          opacity: 0.12,
-          blur: 8,
-          child: FruitIconButton(
-            icon: Icon(icon),
-            onPressed: onPressed,
-            size: 20,
-            padding: 10,
-          ),
-        ),
-      );
-    }
-
-    return FruitIconButton(
-      icon: Icon(icon),
-      onPressed: onPressed,
-      size: 20,
-      padding: 10,
-    );
+    return FruitActionButton(icon: icon, onPressed: onPressed);
   }
 }

@@ -298,10 +298,12 @@ class ShowListAppBar extends StatelessWidget implements PreferredSizeWidget {
             _buildFruitHeaderButton(
               context,
               icon: Theme.of(context).brightness == Brightness.dark
-                  ? Icons.light_mode_outlined
-                  : Icons.dark_mode_outlined,
+                  ? LucideIcons.sun
+                  : LucideIcons.moon,
               onPressed: () {
-                context.read<ThemeProvider>().toggleTheme();
+                context.read<ThemeProvider>().toggleTheme(
+                      currentBrightness: Theme.of(context).brightness,
+                    );
               },
             ),
           ],

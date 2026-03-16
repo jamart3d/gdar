@@ -1091,7 +1091,9 @@ class _TrackListScreenState extends State<TrackListScreen> {
                   _buildFruitThemeButton(
                     context,
                     onPressed: () {
-                      context.read<ThemeProvider>().toggleTheme();
+                      context.read<ThemeProvider>().toggleTheme(
+                            currentBrightness: Theme.of(context).brightness,
+                          );
                     },
                   ),
                 ],
@@ -1190,8 +1192,8 @@ class _TrackListScreenState extends State<TrackListScreen> {
   }) {
     return FruitActionButton(
       icon: Theme.of(context).brightness == Brightness.dark
-          ? Icons.light_mode_outlined
-          : Icons.dark_mode_outlined,
+          ? LucideIcons.sun
+          : LucideIcons.moon,
       onPressed: onPressed,
     );
   }
@@ -1201,27 +1203,6 @@ class _TrackListScreenState extends State<TrackListScreen> {
     required IconData icon,
     required VoidCallback onPressed,
   }) {
-    final settingsProvider = context.watch<SettingsProvider>();
-    final isTv = context.watch<DeviceService>().isTv;
-    final useNeumorphic =
-        settingsProvider.useNeumorphism && !settingsProvider.useTrueBlack;
-
-    if (useNeumorphic && !isTv) {
-      return NeumorphicWrapper(
-        isCircle: true,
-        borderRadius: 100,
-        intensity: 0.8,
-        color: Colors.transparent,
-        child: LiquidGlassWrapper(
-          enabled: !isTv,
-          borderRadius: BorderRadius.circular(100),
-          opacity: 0.12,
-          blur: 8,
-          child: FruitIconButton(icon: Icon(icon), onPressed: onPressed),
-        ),
-      );
-    }
-
-    return FruitIconButton(icon: Icon(icon), onPressed: onPressed);
+    return FruitActionButton(icon: icon, onPressed: onPressed);
   }
 }

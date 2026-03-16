@@ -27,6 +27,10 @@ class ThemeProvider with ChangeNotifier {
   int _themeStyleIndex;
   // 0 = Sophisticate, 1 = Minimalist, 2 = Creative
   int _fruitColorOptionIndex;
+
+  final Completer<void> _initCompleter = Completer<void>();
+  Future<void> get initializationComplete => _initCompleter.future;
+
   final bool isTv;
 
   @visibleForTesting
@@ -78,7 +82,14 @@ class ThemeProvider with ChangeNotifier {
       _themeStyleIndex = 0, // Default to Android on all platforms
       _fruitColorOptionIndex = 0 {
     _instance = this;
-    unawaited(_loadThemePreference());
+    _init();
+  }
+
+  Future<void> _init() async {
+    await _loadThemePreference();
+    if (!_initCompleter.isCompleted) {
+      _initCompleter.complete();
+    }
   }
 
   void setThemeMode(ThemeMode mode) {
@@ -142,8 +153,12 @@ class ThemeProvider with ChangeNotifier {
   }
 
   // Backwards compatibility for the old toggle switch
-  void toggleTheme() {
-    setThemeMode(isDarkMode ? ThemeMode.light : ThemeMode.dark);
+  void toggleTheme({Brightness? currentBrightness}) {
+    bool currentlyDark = isDarkMode;
+    if (_themeModeIndex == 0 && currentBrightness != null) {
+      currentlyDark = currentBrightness == Brightness.dark;
+    }
+    setThemeMode(currentlyDark ? ThemeMode.light : ThemeMode.dark);
   }
 
   Future<void> _saveThemePreference() async {

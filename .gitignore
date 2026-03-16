@@ -79,3 +79,26 @@ apps/gdar_web/ios/
 apps/gdar_web/windows/
 apps/gdar_web/macos/
 apps/gdar_web/linux/
+
+
+# Catch all build IDs across web, ios, and packages
+**/.last_build_id
+
+**/GeneratedPluginRegistrant.swift
+
+
+# Ignore platform-specific generated files
+**/GeneratedPluginRegistrant.swift
+**/GeneratedPluginRegistrant.m
+
+
+# First, ignore everything in the core package that is usually junk
+packages/shakedown_core/.dart_tool/
+packages/shakedown_core/build/
+
+# Then, explicitly ensure the test directory is NOT ignored
+!packages/shakedown_core/test/
+!packages/shakedown_core/test/**
+
+
+
