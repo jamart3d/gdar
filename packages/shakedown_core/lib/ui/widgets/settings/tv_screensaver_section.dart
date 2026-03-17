@@ -84,6 +84,9 @@ class _TvScreensaverSectionState extends State<TvScreensaverSection> {
     final textTheme = Theme.of(context).textTheme;
 
     final isRingMode = settings.oilBannerDisplayMode == 'ring';
+    final autoSpacing = isRingMode
+        ? settings.oilAutoRingSpacing
+        : settings.oilAutoTextSpacing;
 
     return SectionCard(
       scaleFactor: widget.scaleFactor,
@@ -99,7 +102,7 @@ class _TvScreensaverSectionState extends State<TvScreensaverSection> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 16),
-              // ── System ─────────────────────────────────────────────────────
+              // -- System -----------------------------------------------------
               _SectionHeader(title: 'System', colorScheme: colorScheme),
               const SizedBox(height: 8),
 
@@ -115,8 +118,7 @@ class _TvScreensaverSectionState extends State<TvScreensaverSection> {
               ),
 
               const SizedBox(height: 16),
-
-              _ToggleRow(
+                    _ToggleRow(
                 focusNode: !settings.useOilScreensaver ? _lastFocusNode : null,
                 onKeyEvent: !settings.useOilScreensaver ? _handleLastKey : null,
                 label: 'Shakedown Screen Saver',
@@ -208,7 +210,7 @@ class _TvScreensaverSectionState extends State<TvScreensaverSection> {
 
                 const SizedBox(height: 32),
 
-                // ── Visual Settings ──────────────────────────────────────────
+                // -- Visual Settings ------------------------------------------
                 _SectionHeader(title: 'Visual', colorScheme: colorScheme),
                 const SizedBox(height: 8),
 
@@ -238,8 +240,7 @@ class _TvScreensaverSectionState extends State<TvScreensaverSection> {
                 ),
 
                 const SizedBox(height: 16),
-
-                _ToggleRow(
+                    _ToggleRow(
                   label: 'Auto Palette Cycle',
                   subtitle: 'Automatically rotate through palettes over time',
                   value: settings.oilPaletteCycle,
@@ -285,8 +286,7 @@ class _TvScreensaverSectionState extends State<TvScreensaverSection> {
                 ),
 
                 const SizedBox(height: 16),
-
-                _ToggleRow(
+                    _ToggleRow(
                   label: 'Dynamic Trails',
                   subtitle: 'Scale trail quality based on movement speed',
                   value: settings.oilLogoTrailDynamic,
@@ -429,7 +429,7 @@ class _TvScreensaverSectionState extends State<TvScreensaverSection> {
 
                 const SizedBox(height: 24),
 
-                // ── Track Info ───────────────────────────────────────────────
+                // -- Track Info -----------------------------------------------
                 _ToggleRow(
                   label: 'Show Track Info',
                   subtitle: 'Display venue, title, and date',
@@ -546,54 +546,46 @@ class _TvScreensaverSectionState extends State<TvScreensaverSection> {
                     onChanged: (v) => settings.setOilBannerResolution(v),
                   ),
                   const SizedBox(height: 16),
-                  TvStepperRow(
-                    label: 'Letter Spacing (General)',
-                    value: settings.oilBannerLetterSpacing,
-                    min: 0.5,
-                    max: 1.5,
-                    step: 0.01,
-                    leftLabel: 'Tight',
-                    rightLabel: 'Spaced',
-                    valueFormatter: (v) => v.toStringAsFixed(2),
-                    onChanged: (v) => settings.setOilBannerLetterSpacing(v),
-                  ),
-                  const SizedBox(height: 16),
-                  TvStepperRow(
-                    label: 'Word Spacing (General)',
-                    value: settings.oilBannerWordSpacing,
-                    min: 0.0,
-                    max: 2.0,
-                    step: 0.05,
-                    leftLabel: 'Tight',
-                    rightLabel: 'Spaced',
-                    valueFormatter: (v) => v.toStringAsFixed(2),
-                    onChanged: (v) => settings.setOilBannerWordSpacing(v),
-                  ),
-                  const SizedBox(height: 16),
-                  TvStepperRow(
-                    label: 'Track Letter Spacing',
-                    value: settings.oilTrackLetterSpacing,
-                    min: 0.5,
-                    max: 1.5,
-                    step: 0.01,
-                    leftLabel: 'Tight',
-                    rightLabel: 'Spaced',
-                    valueFormatter: (v) => v.toStringAsFixed(2),
-                    onChanged: (v) => settings.setOilTrackLetterSpacing(v),
-                  ),
-                  const SizedBox(height: 16),
-                  TvStepperRow(
-                    label: 'Track Word Spacing',
-                    value: settings.oilTrackWordSpacing,
-                    min: 0.0,
-                    max: 2.0,
-                    step: 0.05,
-                    leftLabel: 'Tight',
-                    rightLabel: 'Spaced',
-                    valueFormatter: (v) => v.toStringAsFixed(2),
-                    onChanged: (v) => settings.setOilTrackWordSpacing(v),
-                  ),
-                  const SizedBox(height: 16),
+                    _ToggleRow(
+                      label: isRingMode ? 'Auto Arc Spacing' : 'Auto Spacing',
+                      subtitle: isRingMode
+                          ? 'Auto-fit text to circular arcs'
+                          : 'Auto-fit letter, word, and line spacing',
+                      value: autoSpacing,
+                      onChanged: (value) => isRingMode
+                          ? settings.setOilAutoRingSpacing(value)
+                          : settings.setOilAutoTextSpacing(value),
+                      colorScheme: colorScheme,
+                      textTheme: textTheme,
+                    ),
+                    if (!autoSpacing) ...[
+                      const SizedBox(height: 16),
+                      TvStepperRow(
+                        label: 'Letter Spacing (General)',
+                        value: settings.oilBannerLetterSpacing,
+                        min: 0.5,
+                        max: 1.5,
+                        step: 0.01,
+                        leftLabel: 'Tight',
+                        rightLabel: 'Spaced',
+                        valueFormatter: (v) => v.toStringAsFixed(2),
+                        onChanged: (v) => settings.setOilBannerLetterSpacing(v),
+                      ),
+                      const SizedBox(height: 16),
+                      TvStepperRow(
+                        label: 'Word Spacing (General)',
+                        value: settings.oilBannerWordSpacing,
+                        min: 0.0,
+                        max: 2.0,
+                        step: 0.05,
+                        leftLabel: 'Tight',
+                        rightLabel: 'Spaced',
+                        valueFormatter: (v) => v.toStringAsFixed(2),
+                        onChanged: (v) => settings.setOilBannerWordSpacing(v),
+                      ),
+
+                    ],
+                    const SizedBox(height: 16),
 
                   // Ring-only settings
                   if (isRingMode) ...[
@@ -660,17 +652,93 @@ class _TvScreensaverSectionState extends State<TvScreensaverSection> {
                     ),
                     const SizedBox(height: 16),
                     TvStepperRow(
-                      label: 'Inner Ring Spacing',
-                      value: settings.oilInnerRingSpacingMultiplier,
+                      label: 'Track Ring Font Size',
+                      value: settings.oilMiddleRingFontScale,
                       min: 0.3,
                       max: 1.0,
                       step: 0.05,
-                      leftLabel: 'Tight',
-                      rightLabel: 'Normal',
+                      leftLabel: 'Small',
+                      rightLabel: 'Full',
                       valueFormatter: (v) => '${(v * 100).round()}%',
-                      onChanged: (v) =>
-                          settings.setOilInnerRingSpacingMultiplier(v),
+                      onChanged: (v) => settings.setOilMiddleRingFontScale(v),
                     ),
+                    const SizedBox(height: 16),
+                    TvStepperRow(
+                      label: 'Venue Ring Font Size',
+                      value: settings.oilOuterRingFontScale,
+                      min: 0.3,
+                      max: 1.0,
+                      step: 0.05,
+                      leftLabel: 'Small',
+                      rightLabel: 'Full',
+                      valueFormatter: (v) => '${(v * 100).round()}%',
+                      onChanged: (v) => settings.setOilOuterRingFontScale(v),
+                    ),
+                    if (!autoSpacing) ...[
+                      const SizedBox(height: 16),
+                      TvStepperRow(
+                        label: 'Inner Ring Spacing',
+                        value: settings.oilInnerRingSpacingMultiplier,
+                        min: 0.3,
+                        max: 3.0,
+                        step: 0.05,
+                        leftLabel: 'Tight',
+                        rightLabel: 'Airy',
+                        valueFormatter: (v) => '${(v * 100).round()}%',
+                        onChanged: (v) =>
+                            settings.setOilInnerRingSpacingMultiplier(v),
+                      ),
+                      const SizedBox(height: 16),
+                      TvStepperRow(
+                        label: 'Track Ring Spacing',
+                        value: settings.oilMiddleRingSpacingMultiplier,
+                        min: 0.3,
+                        max: 3.0,
+                        step: 0.05,
+                        leftLabel: 'Tight',
+                        rightLabel: 'Airy',
+                        valueFormatter: (v) => '${(v * 100).round()}%',
+                        onChanged: (v) =>
+                            settings.setOilMiddleRingSpacingMultiplier(v),
+                      ),
+                      const SizedBox(height: 16),
+                      TvStepperRow(
+                        label: 'Venue Ring Spacing',
+                        value: settings.oilOuterRingSpacingMultiplier,
+                        min: 0.3,
+                        max: 3.0,
+                        step: 0.05,
+                        leftLabel: 'Tight',
+                        rightLabel: 'Airy',
+                        valueFormatter: (v) => '${(v * 100).round()}%',
+                        onChanged: (v) =>
+                            settings.setOilOuterRingSpacingMultiplier(v),
+                      ),
+                      const SizedBox(height: 16),
+                      TvStepperRow(
+                        label: 'Track Letter Spacing',
+                        value: settings.oilTrackLetterSpacing,
+                        min: 0.5,
+                        max: 1.5,
+                        step: 0.01,
+                        leftLabel: 'Tight',
+                        rightLabel: 'Spaced',
+                        valueFormatter: (v) => v.toStringAsFixed(2),
+                        onChanged: (v) => settings.setOilTrackLetterSpacing(v),
+                      ),
+                      const SizedBox(height: 16),
+                      TvStepperRow(
+                        label: 'Track Word Spacing',
+                        value: settings.oilTrackWordSpacing,
+                        min: 0.0,
+                        max: 2.0,
+                        step: 0.05,
+                        leftLabel: 'Tight',
+                        rightLabel: 'Spaced',
+                        valueFormatter: (v) => v.toStringAsFixed(2),
+                        onChanged: (v) => settings.setOilTrackWordSpacing(v),
+                      ),
+                    ],
                   ],
 
                   // Flat-only settings
@@ -736,23 +804,25 @@ class _TvScreensaverSectionState extends State<TvScreensaverSection> {
                           v == 0.0 ? 'Default' : '${(v * 100).round()}%',
                       onChanged: (v) => settings.setOilFlatTextProximity(v),
                     ),
-                    const SizedBox(height: 16),
-                    TvStepperRow(
-                      label: 'Line Spacing',
-                      value: settings.oilFlatLineSpacing,
-                      min: 0.5,
-                      max: 2.5,
-                      step: 0.1,
-                      leftLabel: 'Tight',
-                      rightLabel: 'Spaced',
-                      valueFormatter: (v) => '${(v * 100).round()}%',
-                      onChanged: (v) => settings.setOilFlatLineSpacing(v),
-                    ),
+                    if (!autoSpacing) ...[
+                      const SizedBox(height: 16),
+                      TvStepperRow(
+                        label: 'Line Spacing',
+                        value: settings.oilFlatLineSpacing,
+                        min: 0.5,
+                        max: 2.5,
+                        step: 0.1,
+                        leftLabel: 'Tight',
+                        rightLabel: 'Spaced',
+                        valueFormatter: (v) => v.toStringAsFixed(1),
+                        onChanged: (v) => settings.setOilFlatLineSpacing(v),
+                      ),
+                    ],
                   ],
 
-                  // Glow & flicker — available in both modes
+                  // Glow & flicker � available in both modes
                   const SizedBox(height: 16),
-                  _ToggleRow(
+                    _ToggleRow(
                     label: 'Neon Glow',
                     subtitle: 'Multi-layer neon glow effect on text',
                     value: settings.oilBannerGlow,
@@ -790,7 +860,7 @@ class _TvScreensaverSectionState extends State<TvScreensaverSection> {
 
                 const SizedBox(height: 32),
 
-                // ── Audio Reactivity ─────────────────────────────────────────
+                // -- Audio Reactivity -----------------------------------------
                 _SectionHeader(
                   title: 'Audio Reactivity',
                   colorScheme: colorScheme,
@@ -992,7 +1062,7 @@ class _TvScreensaverSectionState extends State<TvScreensaverSection> {
 
                 const SizedBox(height: 24),
 
-                // ── Frequency Isolation ─────────────────────────────────────
+                // -- Frequency Isolation -------------------------------------
                 _SectionHeader(
                   title: 'Frequency Isolation',
                   colorScheme: colorScheme,
@@ -1101,7 +1171,7 @@ class _TvScreensaverSectionState extends State<TvScreensaverSection> {
 
                 const SizedBox(height: 32),
 
-                // ── Performance ──────────────────────────────────────────────
+                // -- Performance ----------------------------------------------
                 _SectionHeader(title: 'Performance', colorScheme: colorScheme),
                 const SizedBox(height: 8),
 
@@ -1165,7 +1235,7 @@ class _TvScreensaverSectionState extends State<TvScreensaverSection> {
   }
 }
 
-// ── Palette Segmented Button ───────────────────────────────────────────────
+// -- Palette Segmented Button -----------------------------------------------
 
 class _PaletteSegmentedButton extends StatelessWidget {
   final String selected;
@@ -1304,7 +1374,7 @@ class _AnimatedPaletteSegmentState extends State<_AnimatedPaletteSegment>
   }
 }
 
-// ── Shared helpers ─────────────────────────────────────────────────────────
+// -- Shared helpers ---------------------------------------------------------
 
 class _ReactiveHint extends StatelessWidget {
   final String message;
@@ -1584,3 +1654,10 @@ class _BandSegmentedButton extends StatelessWidget {
     );
   }
 }
+
+
+
+
+
+
+// end of file

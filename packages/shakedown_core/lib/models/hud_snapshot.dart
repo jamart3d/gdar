@@ -1,6 +1,7 @@
 /// A processed snapshot of audio engine state and configuration for the HUD.
 class HudSnapshot {
   final String engine; // ENG
+  final String detectedProfile; // DET
   final String transition; // TX
   final String handoff; // HF
   final String background; // BG
@@ -28,6 +29,7 @@ class HudSnapshot {
 
   const HudSnapshot({
     required this.engine,
+    required this.detectedProfile,
     required this.transition,
     required this.handoff,
     required this.background,
@@ -55,6 +57,7 @@ class HudSnapshot {
   /// Initial empty snapshot to avoid null checks in UI.
   factory HudSnapshot.empty() => const HudSnapshot(
     engine: '--',
+    detectedProfile: '--',
     transition: '--',
     handoff: '--',
     background: '--',
@@ -82,6 +85,7 @@ class HudSnapshot {
   Map<String, String> toMap() {
     return {
       'ENG': engine,
+      'DET': detectedProfile,
       'TX': transition,
       'HF': handoff,
       'BG': background,
@@ -104,6 +108,7 @@ class HudSnapshot {
 
   HudSnapshot copyWith({
     String? engine,
+    String? detectedProfile,
     String? transition,
     String? handoff,
     String? background,
@@ -129,6 +134,7 @@ class HudSnapshot {
   }) {
     return HudSnapshot(
       engine: engine ?? this.engine,
+      detectedProfile: detectedProfile ?? this.detectedProfile,
       transition: transition ?? this.transition,
       handoff: handoff ?? this.handoff,
       background: background ?? this.background,

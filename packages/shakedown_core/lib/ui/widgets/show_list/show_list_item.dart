@@ -24,6 +24,7 @@ class ShowListItem extends StatelessWidget {
   final Function(Source) onSourceTap;
   final Function(Source) onSourceLongPress;
   final VoidCallback? onFocusLeft;
+  final VoidCallback? onFocusRight;
   final ValueChanged<int>? onFocusChange;
   final void Function(int, {bool shouldScroll})? onWrapAround;
   final FocusNode? focusNode;
@@ -39,6 +40,7 @@ class ShowListItem extends StatelessWidget {
     required this.onSourceTap,
     required this.onSourceLongPress,
     this.onFocusLeft,
+    this.onFocusRight,
     this.onFocusChange,
     this.onWrapAround,
     this.focusNode,
@@ -99,6 +101,9 @@ class ShowListItem extends StatelessWidget {
                   }
                   return KeyEventResult.handled; // Anchor
                 }
+              } else if (event.logicalKey == LogicalKeyboardKey.arrowRight) {
+                if (event is KeyDownEvent) onFocusRight?.call();
+                return KeyEventResult.handled;
               }
               return KeyEventResult.ignored;
             }

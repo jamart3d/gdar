@@ -86,6 +86,7 @@ void main() {
     when(mockSettingsProvider.oilAudioGraphMode).thenReturn('off');
     when(mockSettingsProvider.oilBeatSensitivity).thenReturn(0.5);
     when(mockSettingsProvider.oilBannerPixelSnap).thenReturn(true);
+    when(mockSettingsProvider.oilAutoTextSpacing).thenReturn(false);
   });
 
   Widget createWidgetUnderTest() {

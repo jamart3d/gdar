@@ -178,7 +178,7 @@ class _GdarWebAppState extends State<GdarWebApp> {
             animationSpeed: settingsProvider.rgbAnimationSpeed,
             child: MaterialApp(
               navigatorKey: _navigatorKey,
-              title: isAndroid ? 'GDAR' : 'GDAR Fruit',
+              title: 'Shakedown.',
               debugShowCheckedModeBanner: false,
               theme: lightTheme,
               darkTheme: darkTheme,
@@ -195,3 +195,4 @@ class _GdarWebAppState extends State<GdarWebApp> {
     );
   }
 }
+

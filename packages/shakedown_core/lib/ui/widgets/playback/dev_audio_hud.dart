@@ -102,6 +102,7 @@ class _DevAudioHudState extends State<DevAudioHud> {
               final keys = narrow
                   ? const [
                       'ENG',
+                      'DET',
                       'TX',
                       'HF',
                       'BG',
@@ -120,6 +121,7 @@ class _DevAudioHudState extends State<DevAudioHud> {
                     ]
                   : const [
                       'ENG',
+                      'DET',
                       'TX',
                       'HF',
                       'BG',
@@ -172,7 +174,12 @@ class _DevAudioHudState extends State<DevAudioHud> {
 
     switch (key) {
       case 'ENG':
-        items = AudioEngineMode.values.map((mode) {
+        final modes = AudioEngineMode.values.where(
+          (mode) =>
+              mode != AudioEngineMode.standard &&
+              mode != AudioEngineMode.passive,
+        );
+        items = modes.map((mode) {
           final active = sp.audioEngineMode == mode;
           return PopupMenuItem(
             value: mode,
@@ -185,35 +192,6 @@ class _DevAudioHudState extends State<DevAudioHud> {
             ),
           );
         }).toList();
-        break;
-      case 'TX':
-        final current = sp.trackTransitionMode;
-        items = [
-          PopupMenuItem(
-            value: 'gapless',
-            child: Text(
-              'TX: GAPLESS',
-              style: TextStyle(
-                fontWeight: current == 'gapless'
-                    ? FontWeight.bold
-                    : FontWeight.normal,
-                color: current == 'gapless' ? widget.colorScheme.primary : null,
-              ),
-            ),
-          ),
-          PopupMenuItem(
-            value: 'gap',
-            child: Text(
-              'TX: GAP',
-              style: TextStyle(
-                fontWeight: current == 'gap'
-                    ? FontWeight.bold
-                    : FontWeight.normal,
-                color: current == 'gap' ? widget.colorScheme.primary : null,
-              ),
-            ),
-          ),
-        ];
         break;
       case 'HF':
         items = HybridHandoffMode.values.map((mode) {
@@ -276,14 +254,11 @@ class _DevAudioHudState extends State<DevAudioHud> {
     );
 
     if (result == null) return;
-
     if (result is AudioEngineMode) {
       sp.setAudioEngineMode(result);
       if (context.mounted) {
         showRestartMessage(context, 'Engine change requires relaunch.');
       }
-    } else if (result is String && key == 'TX') {
-      sp.setTrackTransitionMode(result);
     } else if (result is HybridHandoffMode) {
       sp.setHybridHandoffMode(result);
       if (context.mounted) {
@@ -533,7 +508,7 @@ class _DevAudioHudState extends State<DevAudioHud> {
       }
 
       // Wrap interactive chips in GestureDetector for popup menus
-      const interactiveKeys = ['ENG', 'TX', 'HF', 'BG', 'STB'];
+      const interactiveKeys = ['ENG', 'HF', 'BG', 'STB'];
       if (interactiveKeys.contains(key)) {
         chip = GestureDetector(
           onTapDown: (details) => _showHudMenu(
@@ -564,6 +539,8 @@ class _DevAudioHudState extends State<DevAudioHud> {
     switch (key) {
       case 'ENG':
         return 'Engine mode: $value';
+      case 'DET':
+        return 'Detected profile: $value';
       case 'TX':
         return 'Track transition: $value';
       case 'HF':
@@ -603,3 +580,15 @@ class _DevAudioHudState extends State<DevAudioHud> {
     }
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+

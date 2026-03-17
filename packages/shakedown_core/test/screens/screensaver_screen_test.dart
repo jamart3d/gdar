@@ -80,6 +80,7 @@ void main() {
     when(mockSettingsProvider.oilFlatTextPlacement).thenReturn('center');
     when(mockSettingsProvider.oilScreensaver4kSupport).thenReturn(false);
     when(mockSettingsProvider.oilBannerPixelSnap).thenReturn(true);
+    when(mockSettingsProvider.oilAutoTextSpacing).thenReturn(false);
     when(mockSettingsProvider.oilBeatImpact).thenReturn(0.25);
     when(mockSettingsProvider.oilScaleSource).thenReturn(-1);
     when(mockSettingsProvider.oilScaleMultiplier).thenReturn(1.0);

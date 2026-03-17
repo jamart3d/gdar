@@ -27,13 +27,13 @@ class StealBackground extends PositionComponent
 
   double _colorLerpSpeed = 0.025;
 
-  // Smoothed logo position in 0–1 UV space.
+  // Smoothed logo position in 0-1 UV space.
   // Lerped each frame toward the raw sin/cos target position.
   // Read by StealBanner via game.smoothedLogoPos to keep rings locked to logo.
   Offset _velocity = Offset.zero;
   Offset _smoothedPos = const Offset(0.5, 0.5);
 
-  /// Current smoothed logo position (0–1 UV space). Used by StealBanner.
+  /// Current smoothed logo position (0-1 UV space). Used by StealBanner.
   Offset get smoothedLogoPos => _smoothedPos;
 
   // Random phase offset applied to motion path so each session starts at a
@@ -42,7 +42,7 @@ class StealBackground extends PositionComponent
   late final double _phaseOffset;
 
   // Small random frequency nudges so the Lissajous curve shape itself varies
-  // slightly each session — prevents the path ever looking identical.
+  // slightly each session - prevents the path ever looking identical.
   late final double _freqNudgeX1;
   late final double _freqNudgeY1;
   late final double _freqNudgeX2;
@@ -133,7 +133,7 @@ class StealBackground extends PositionComponent
       if (_currentColors.isEmpty) {
         _currentColors = List.of(_targetColors);
       }
-      // Ensure current is also always length 4 — prevents lerp skip on mismatch
+      // Ensure current is also always length 4 - prevents lerp skip on mismatch
       if (_currentColors.length != _colorCount) {
         _currentColors = _expandColors(_currentColors);
       }
@@ -157,7 +157,7 @@ class StealBackground extends PositionComponent
   void update(double dt) {
     super.update(dt);
 
-    // Color lerp — time corrected for frame-rate independence
+    // Color lerp - time corrected for frame-rate independence
     // _colorLerpSpeed is based on 60fps frame factor
     final colorAlpha = 1.0 - math.pow(1.0 - _colorLerpSpeed, dt * 60);
 
@@ -236,7 +236,7 @@ class StealBackground extends PositionComponent
     canvas.drawRect(ui.Rect.fromLTWH(0, 0, size.x, size.y), paint);
 
     // Draw trail ghost slices AFTER the shader so they appear in front of
-    // the background but are then composited — ghosts sit between background
+    // the background but are then composited - ghosts sit between background
     // and the live logo which the shader draws on top.
     // Note: shader renders the logo itself, so ghosts drawn after will
     // appear in front. We use BlendMode.screen so they add light rather
@@ -246,7 +246,7 @@ class StealBackground extends PositionComponent
     }
   }
 
-  // ── Trail rendering ────────────────────────────────────────────────────────
+  // -- Trail rendering --------------------------------------------------------
 
   void _renderTrail(ui.Canvas canvas) {
     int slices = config.logoTrailSlices.clamp(2, 32);
@@ -275,7 +275,7 @@ class StealBackground extends PositionComponent
     final basePulse = game.beatPulse * 0.08;
     final logoRenderSize = (config.logoScale + basePulse) * 110.0;
 
-    // Use palette color desaturated — but keep it bright enough to see
+    // Use palette color desaturated - but keep it bright enough to see
     final baseColor = _currentColors.isNotEmpty
         ? _currentColors[0]
         : const ui.Color(0xFFFFFFFF);
@@ -287,13 +287,13 @@ class StealBackground extends PositionComponent
 
     final srcRect = ui.Rect.fromLTWH(0, 0, texW, texH);
 
-    // Start from i=1 — i=0 is the current frame position (live logo)
+    // Start from i=1 - i=0 is the current frame position (live logo)
     for (int i = 1; i <= slices; i++) {
       if (i >= positions.length) break;
 
       // t: 0.0 = newest ghost (i=1), 1.0 = oldest ghost (i=slices)
       final t = (i - 1) / (slices - 1).toDouble();
-      // Quadratic fade — strong at newest, invisible at oldest
+      // Quadratic fade - strong at newest, invisible at oldest
       final opacity = intensity * (1.0 - t) * (1.0 - t) * 0.75;
       if (opacity < 0.01) continue;
 
@@ -312,7 +312,7 @@ class StealBackground extends PositionComponent
         height: renderSize * (texH / texW),
       );
 
-      // Screen blend — adds light, works well on dark backgrounds
+      // Screen blend - adds light, works well on dark backgrounds
       final paint = ui.Paint()
         ..blendMode = ui.BlendMode.screen
         ..colorFilter = ui.ColorFilter.mode(
@@ -420,7 +420,7 @@ class StealBackground extends PositionComponent
     // Overall Energy (Slot 17)
     _shader!.setFloat(idx++, react ? energy.overall.clamp(0.0, 5.0) : 0.0);
 
-    // Always write exactly 4 colors — shader always expects uColor1–uColor4
+    // Always write exactly 4 colors - shader always expects uColor1-uColor4
     final colors = _currentColors.length == _colorCount
         ? _currentColors
         : _expandColors(_getPaletteColors(config.palette));
@@ -448,3 +448,4 @@ class StealBackground extends PositionComponent
     canvas.drawPaint(ui.Paint()..color = const ui.Color(0xFF000000));
   }
 }
+

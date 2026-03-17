@@ -61,10 +61,9 @@
 
     // Advanced Hybrid Settings
     let _backgroundMode = 'html5'; // html5 | heartbeat | video | none
-    let _handoffMode = 'buffered';    // buffered | immediate | none
+    let _handoffMode = 'buffered';    // buffered | immediate | boundary | none
     let _allowHiddenWebAudio = false;
     let _handoffCrossfadeMs = 0;
-    let _forceHtml5Start = false;
 
     // Mode state
     let _activeEngine = _fgEngine; // Default to Web Audio API
@@ -233,10 +232,12 @@
 
         _currentIndex = event.to;
 
-        // Selection: Ensure we transition to the Foreground (Web Audio) engine
-        // for subsequent tracks. HTML5 is only used for the very first "Instant Start".
+        // Selection: Transition to the Foreground (Web Audio) for subsequent tracks
+        // unless handoff is disabled or the tab is hidden.
         if (_activeEngine === _bgEngine) {
-            if (document.visibilityState !== 'hidden') {
+            if (_handoffMode === 'none') {
+                _log.log('[hybrid] Track Boundary: Staying in HTML5 (handoff disabled).');
+            } else if (document.visibilityState !== 'hidden') {
                 _log.log('[hybrid] Track Boundary: Attempting Foreground Restore for the next track.');
                 // We keep _bgEngine as the active engine (reporting 'ready')
                 // and use the restore loop to swap to Web Audio ONLY once it's decoded.
@@ -292,6 +293,7 @@
             _applyHiddenSurvivalStrategy();
 
             if (_activeEngine === _fgEngine && _playing && !_allowHiddenWebAudio) {
+                const allowHandoff = _handoffMode !== 'none';
                 const isMobile = (function () {
                     const ua = navigator.userAgent || '';
                     if (/Windows/i.test(ua) || (/Macintosh/i.test(ua) && navigator.maxTouchPoints === 0)) return false;
@@ -303,7 +305,7 @@
 
                 if (isMobile) {
                     _log.log('[hybrid] Background Handoff: Mobile detected. Pre-emptively swapping to HTML5.');
-                    _instantHandoffPending = true;
+                    _instantHandoffPending = allowHandoff;
                     _attemptHandoff(_currentIndex, true);
                 } else {
                     _log.log('[hybrid] Background Handoff: Desktop detected. Fence enabled: waiting for track boundary.');
@@ -407,24 +409,24 @@
 
         // --- Handoff Settings Filter ---
         if (_handoffMode === 'none') {
-            _log.log('[hybrid] Handoff disabled via handoffMode=none. Using WebAudio directly.');
-            _fgEngine.syncState(index, 0, true);
+            _log.log('[hybrid] Handoff disabled via handoffMode=none. Staying on HTML5.');
             _handoffInProgress = false;
-            _activeEngine = _fgEngine;
-            _bgEngine.stop();
+            _instantHandoffPending = false;
+            _activeEngine = _bgEngine;
+            _fgEngine.stop();
             return;
         }
 
         // --- Intensity Filter ---
-        // If the track is very short (< 15s), skip the hybrid HTML5 overhead and just use Web Audio.
+        // If the track is very short (< 15s), skip handoff and stay on HTML5.
         const isShortTrack = track.duration && track.duration < 15;
 
         if (isShortTrack) {
-            _log.log('[hybrid] Skipping HTML5 start for short track (' + track.duration + 's). Using WebAudio directly.');
-            _fgEngine.syncState(index, 0, true);
+            _log.log('[hybrid] Short track detected. Staying on HTML5 for instant start.');
             _handoffInProgress = false;
-            _activeEngine = _fgEngine;
-            _bgEngine.stop();
+            _instantHandoffPending = false;
+            _activeEngine = _bgEngine;
+            _fgEngine.stop();
             return;
         }
 
@@ -443,6 +445,18 @@
 
             const bgState = _bgEngine.getState();
             const duration = bgState.duration || 0;
+
+            if (_handoffMode === 'boundary') {
+                _log.log('[hybrid] Handoff Mode is boundary. Deferring swap to next track boundary.');
+                _instantHandoffPending = false;
+                _handoffInProgress = false;
+
+                if (index + 1 < _playlist.length) {
+                    _log.log(`[hybrid] Pre-preparing next track (${index + 1}) in Web Audio...`);
+                    _fgEngine.prepareToPlay(index + 1).catch(() => { });
+                }
+                return;
+            }
 
             // Strategy selection based on Handoff Mode
             if (_handoffMode === 'immediate') {
@@ -552,21 +566,12 @@
             }
 
             const pure = _isPureWebAudio();
-            const forceHtml5 = _forceHtml5Start === true;
-            
-            // OPTIMIZATION: Use HTML5 (Instant Start) if:
-            // 1. Force flag is set
-            // 2. We are not locked to pure WebAudio AND (hidden OR track is very long > 15m)
-            // Long tracks (900s) take too long to decode in WebAudio, so we play H5 first 
-            // and hand off to WebAudio once it's buffered/decoded in the background.
-            const track = _playlist[index];
-            const isLongTrack = track && track.duration > 900;
-            const isHidden = document.visibilityState === 'hidden';
+            const allowHandoff = _handoffMode !== 'none';
 
-            if (forceHtml5 || (!pure && (isHidden || isLongTrack))) {
-                _log.log(`[hybrid] syncState: Choosing HTML5 (Background) for Instant Start (reason: ${forceHtml5 ? 'forced' : isHidden ? 'hidden' : 'long_track'})`);
+            if (!pure) {
+                _log.log('[hybrid] syncState: Choosing HTML5 (Background) for Instant Start');
                 _activeEngine = _bgEngine;
-                _instantHandoffPending = shouldPlay;
+                _instantHandoffPending = shouldPlay && allowHandoff;
                 _instantHandoffIndex = index;
             } else {
                 _log.log('[hybrid] syncState: Choosing Web Audio (Foreground)');
@@ -596,13 +601,12 @@
             _fgEngine.setPlaylist(tracks, _currentIndex);
             _bgEngine.setPlaylist(tracks, _currentIndex);
 
-            // Optimization: We now allow "Instant-Start" using the HTML5 engine even when hidden
-            // rather than forcing the user to wait for _fgEngine (WebAudio) to download and decode.
             const pure = _isPureWebAudio();
-            const forceHtml5 = _forceHtml5Start === true;
-            if (!pure || forceHtml5) {
+            const allowHandoff = _handoffMode !== 'none';
+
+            if (!pure) {
                 _log.log('[hybrid] setPlaylist: Choosing HTML5 (Background) for Instant Start');
-                _instantHandoffPending = true;
+                _instantHandoffPending = allowHandoff;
                 _instantHandoffIndex = _currentIndex;
                 _activeEngine = _bgEngine;
             } else {
@@ -628,19 +632,23 @@
                 _applyHiddenSurvivalStrategy();
             }
 
+            const allowHandoff = _handoffMode !== 'none';
+
             // HYBRID CORE: Always prioritize HTML5 for "Instant Start" if Web Audio is not yet ready/playing
             const fgState = _fgEngine.getState();
             const fgReady = fgState.playing && fgState.processingState === 'ready';
 
             if (!fgReady && _activeEngine !== _bgEngine) {
                 _log.log('[hybrid] Startup: Web Audio not ready. Initiating HTML5 Instant Start.');
-                _instantHandoffPending = true;
+                _instantHandoffPending = allowHandoff;
                 _instantHandoffIndex = _currentIndex;
                 _activeEngine = _bgEngine;
 
                 // Sync HTML5 to current position and play
                 _bgEngine.syncState(_currentIndex, fgState.position || 0, true);
-                _attemptHandoff(_currentIndex, true);
+                if (allowHandoff) {
+                    _attemptHandoff(_currentIndex, true);
+                }
             } else {
                 _activeEngine.play();
 
@@ -690,6 +698,7 @@
             _currentIndex = index;
 
             const pure = _isPureWebAudio();
+            const allowHandoff = _handoffMode !== 'none';
             if (!pure) {
                 _log.log(`[hybrid engine] SeekToIndex(${index}) initializing Instant-Start.`);
 
@@ -697,14 +706,14 @@
                 // while HTML5 handles the "Instant Start".
                 _fgEngine.stop();
 
-                _instantHandoffPending = true;
+                _instantHandoffPending = allowHandoff;
                 _instantHandoffIndex = index;
                 _activeEngine = _bgEngine;
 
                 _bgEngine.seekToIndex(index);
                 _fgEngine.syncState(index, 0, false); // Prepare foreground silently
 
-                if (_playing) {
+                if (_playing && allowHandoff) {
                     _attemptHandoff(_instantHandoffIndex);
                 }
             } else {
@@ -740,7 +749,7 @@
         },
 
         setHybridHandoffMode: function (mode) {
-            if (['buffered', 'immediate', 'none'].includes(mode)) {
+            if (['buffered', 'immediate', 'boundary', 'none'].includes(mode)) {
                 _handoffMode = mode;
                 _syncHiddenAllowance();
                 _log.log('[hybrid engine] Handoff Mode set to:', mode);
@@ -759,10 +768,6 @@
             _log.log('[hybrid engine] Handoff crossfade ms:', next);
         },
 
-        setHybridForceHtml5Start: function (enabled) {
-            _forceHtml5Start = !!enabled;
-            _log.log('[hybrid engine] Force HTML5 start:', _forceHtml5Start);
-        },
 
         engineType: 'hybrid_orchestrator',
 
@@ -811,3 +816,24 @@
     window._hybridAudio = api;
 
 })();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

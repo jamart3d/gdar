@@ -1,0 +1,174 @@
+# Web UI, Audio Engine, Hybrid, and Defaults Review
+
+Date: 2026-03-17
+Scope: Web UI, web audio engine, hybrid orchestration, and default settings
+Workspace: `C:\Users\jeff\StudioProjects\gdar`
+
+## Summary
+
+This review focused on the Flutter web shell, the JavaScript audio engine
+selection/orchestration layer, and the shared settings/defaults that drive
+both. The main pattern across these areas is config drift: the app exposes a
+fairly rich set of hybrid controls and presets, but some of that state is not
+fully reflected in the JS engine behavior or in the web settings UI.
+
+## Findings
+
+### P1: Hybrid controls are hidden for the default desktop path
+
+Desktop web defaults to `auto`, and `auto` resolves to `hybrid` on desktop.
+However, the advanced hybrid controls only render when the stored setting is
+explicitly `AudioEngineMode.hybrid`.
+
+That means a default desktop user is often running the hybrid engine while the
+settings UI hides the handoff/background controls that actually affect current
+behavior.
+
+References:
+
+- `packages/shakedown_core/lib/config/default_settings.dart`
+- `apps/gdar_web/web/hybrid_init.js`
+- `packages/shakedown_core/lib/ui/widgets/settings/playback_section.dart`
+
+Recommended change:
+
+- Gate hybrid controls on the resolved active mode, not only the persisted
+  enum.
+- Surface both requested mode and resolved mode in the settings UI.
+
+### P1: `hybridForceHtml5Start` appears to be dead config
+
+`hybridForceHtml5Start` is:
+
+- defined in defaults
+- persisted by `SettingsProvider`
+- modified by hidden-session presets and adaptive web profiles
+- pushed through `AudioProvider`
+- exposed in the Dart JS interop layer
+
+But the JS hybrid bootstrap/orchestrator does not appear to implement or
+consume it.
+
+This creates a mismatch where presets imply startup behavior that may never be
+applied in the engine.
+
+References:
+
+- `packages/shakedown_core/lib/config/default_settings.dart`
+- `packages/shakedown_core/lib/providers/settings_provider.dart`
+- `packages/shakedown_core/lib/providers/audio_provider.dart`
+- `packages/shakedown_core/lib/services/gapless_player/gapless_player_web.dart`
+- `apps/gdar_web/web/hybrid_audio_engine.js`
+
+Recommended change:
+
+- Either wire `hybridForceHtml5Start` into the JS engine selection/startup path
+  or remove it from defaults, presets, and sync logic.
+
+### P2: Web defaults currently undercut the Fruit-first presentation
+
+The web app boots into the Fruit theme by default, but `WebDefaults` also sets
+`performanceMode = true`. In `SettingsProvider`, performance mode forces off
+expensive Fruit presentation features such as liquid glass.
+
+So the first-run web experience is Fruit structurally, but not really Fruit
+visually.
+
+References:
+
+- `apps/gdar_web/lib/main.dart`
+- `packages/shakedown_core/lib/config/default_settings.dart`
+- `packages/shakedown_core/lib/providers/settings_provider.dart`
+
+Recommended change:
+
+- If the product goal is Fruit-first, default web to normal presentation and
+  let heuristics opt low-power devices into performance mode.
+- If the product goal is survivability-first, rename the profile/default copy
+  to make that tradeoff explicit.
+
+### P2: `?flush=true` clears all localStorage for the origin
+
+The web bootstrap supports `?flush=true`, but it clears all `localStorage`,
+not just GDAR keys.
+
+On localhost/dev that can erase unrelated state and make debugging less
+predictable.
+
+Reference:
+
+- `apps/gdar_web/web/hybrid_init.js`
+
+Recommended change:
+
+- Restrict the flush to known prefixes such as `flutter.` and app-specific raw
+  keys used by GDAR.
+
+### P3: Web source-filter comments and behavior are out of sync
+
+The comments in source-filter initialization mention an “all categories ON”
+web override, but the actual logic now enables only `matrix` on first-run web.
+
+This is not a runtime bug, but it makes the intended web default-content story
+harder to reason about.
+
+Reference:
+
+- `packages/shakedown_core/lib/providers/settings_provider.dart`
+
+Recommended change:
+
+- Update the comments to match current behavior.
+- If the curated first-run is intentional, state that directly in code.
+
+## Additional Suggestions
+
+### 1. Centralize resolved web audio config
+
+Right now:
+
+- defaults live in Dart
+- engine selection lives in `hybrid_init.js`
+- runtime sync happens via `AudioProvider`
+
+That split works, but it is easy for them to drift apart. A single resolved
+web-audio config object would make the actual runtime contract clearer.
+
+### 2. Separate requested mode from resolved mode everywhere
+
+The app already partly does this in the web engine selector. Extend that model
+to:
+
+- hybrid-only settings visibility
+- HUD labeling
+- restart messaging
+
+That will make `auto` much easier to understand and debug.
+
+### 3. Reduce provider-wide rebuild pressure on web-heavy screens
+
+`ShowListScreen` watches broad provider state at build scope. Functionally it
+is fine, but on web it likely increases rebuild churn from search, playback,
+and random-selection updates.
+
+Reference:
+
+- `packages/shakedown_core/lib/ui/screens/show_list_screen.dart`
+
+Recommended change:
+
+- Split some of the screen into narrower `Selector` or smaller consumer
+  boundaries around the parts that actually change.
+
+### 4. Make the survivability vs presentation tradeoff explicit
+
+A lot of current defaults suggest the app is optimizing for safe long-session
+behavior more than maximum visual quality or maximum gapless purity.
+
+That is a valid direction, but the config and copy should say so explicitly.
+
+## Review Notes
+
+- This was a read-only review against the current workspace state.
+- No files were modified beyond saving this report.
+- Tests were not run as part of this review pass.

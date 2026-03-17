@@ -45,14 +45,14 @@ class _StealVisualizerState extends State<StealVisualizer> {
       },
     );
 
-    // Check immediately on launch — if it's already time when screensaver opens
+    // Check immediately on launch - if it's already time when screensaver opens
     if (EasterEggDetector.isWoodstockTime(widget.config.woodstockEveryHour)) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _game.triggerWoodstockMode();
       });
     }
 
-    // Push initial banner text — didUpdateWidget won't fire on first build
+    // Push initial banner text - didUpdateWidget won't fire on first build
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _game.updateBannerText(widget.config.bannerText);
     });
@@ -96,3 +96,4 @@ class _StealVisualizerState extends State<StealVisualizer> {
     );
   }
 }
+

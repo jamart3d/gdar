@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
@@ -19,6 +19,10 @@ class MockSettingsProvider extends ChangeNotifier implements SettingsProvider {
   bool get isTv => true;
   @override
   bool get highlightPlayingWithRgb => false;
+    @override
+    bool get oilAutoTextSpacing => false;
+    @override
+    Future<void> setOilAutoTextSpacing(bool value) async {}
   @override
   bool get highlightCurrentShowCard => false;
   @override
@@ -136,3 +140,5 @@ void main() {
     },
   );
 }
+
+

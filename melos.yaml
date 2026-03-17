@@ -1,7 +1,7 @@
-name: gdar_workspace
+﻿name: gdar_workspace
 packages:
-  - "packages/**"
-  - "apps/**"
+  - packages/**
+  - apps/**
 command:
   bootstrap:
     usePubspecOverrides: true

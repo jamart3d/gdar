@@ -269,6 +269,7 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
       logoTrailScale: settings.oilLogoTrailScale,
       bannerResolution: settings.oilBannerResolution,
       bannerPixelSnap: settings.oilBannerPixelSnap,
+      autoTextSpacing: settings.oilAutoTextSpacing,
       bannerLetterSpacing: settings.oilBannerLetterSpacing,
       bannerWordSpacing: settings.oilBannerWordSpacing,
       flatLineSpacing: settings.oilFlatLineSpacing,
@@ -306,3 +307,5 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
     );
   }
 }
+
+

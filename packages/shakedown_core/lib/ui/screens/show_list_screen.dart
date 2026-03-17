@@ -77,9 +77,11 @@ class ShowListScreenState extends State<ShowListScreen>
   void focusShow(int index, {bool shouldScroll = true}) {
     if (index < 0) return;
 
+    bool nodeCreated = false;
     // Ensure the focus node exists
     if (!_showFocusNodes.containsKey(index)) {
       _showFocusNodes[index] = FocusNode();
+      nodeCreated = true;
     }
 
     // Scroll to the show to ensure it's built and visible
@@ -87,10 +89,37 @@ class ShowListScreenState extends State<ShowListScreen>
       _itemScrollController.jumpTo(index: index, alignment: 0.3);
     }
 
+    if (nodeCreated) {
+      setState(() {});
+    }
+
     // Wait for a frame to ensure the Focus widget is mounted
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _showFocusNodes[index]?.requestFocus();
+      if (mounted) {
+        _showFocusNodes[index]?.requestFocus();
+      }
     });
+  }
+
+  void focusCurrentShow() {
+    if (!mounted) return;
+    final currentShow = _audioProvider.currentShow;
+    if (currentShow != null) {
+      final index = _showListProvider.filteredShows.indexOf(currentShow);
+      if (index != -1) {
+        focusShow(index);
+        return;
+      }
+    }
+    // Fallback: focus first visible show
+    final positions = _itemPositionsListener.itemPositions.value;
+    if (positions.isNotEmpty) {
+      final firstVisible = positions
+          .where((p) => p.itemTrailingEdge > 0)
+          .reduce((min, p) => p.index < min.index ? p : min)
+          .index;
+      focusShow(firstVisible, shouldScroll: false);
+    }
   }
 
   void focusShowByObject(Show show) {

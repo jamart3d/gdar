@@ -1,0 +1,1 @@
+bool isPwa() => false;

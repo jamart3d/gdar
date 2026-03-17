@@ -32,10 +32,10 @@ class StealConfig {
   final String bannerDisplayMode; // 'ring' or 'flat'
   final String bannerFont; // e.g. 'Rock Salt' or 'Roboto'
   final double logoTrailIntensity; // 0.0 = off, 1.0 = full
-  final int logoTrailSlices; // 2–16 ghost copies
-  final double logoTrailLength; // 0.0–1.0 spacing between snapshots
-  final double logoTrailScale; // 0.0–1.0 shrinkage per snapshot
-  final double logoTrailInitialScale; // 0.5–2.0 base scaling from logo
+  final int logoTrailSlices; // 2-16 ghost copies
+  final double logoTrailLength; // 0.0-1.0 spacing between snapshots
+  final double logoTrailScale; // 0.0-1.0 shrinkage per snapshot
+  final double logoTrailInitialScale; // 0.5-2.0 base scaling from logo
   /// Flat mode: 0.0 = default gap (text just below visual edge),
   /// 1.0 = text at logo center (fully overlapping).
   final double flatTextProximity;
@@ -44,6 +44,8 @@ class StealConfig {
   /// 1.0 = native, 2.0 = double resolution (sharper), etc.
   final double bannerResolution;
   final bool bannerPixelSnap;
+  final bool autoTextSpacing;
+  final bool autoRingSpacing;
 
   /// Spacing between letters in the banner.
   final double bannerLetterSpacing;
@@ -83,14 +85,21 @@ class StealConfig {
   /// Visual beat scale impact (0.0 = off, 1.0 = full).
   final double beatImpact;
 
-  /// Font size multiplier for the inner (date) ring.
-  /// 1.0 = same as other rings, <1.0 = smaller text to fit tighter arcs.
   final double innerRingFontScale;
 
-  /// Spacing multiplier for the inner (date) ring.
-  /// Applied on top of bannerLetterSpacing/bannerWordSpacing.
-  /// 1.0 = same as other rings, <1.0 = tighter spacing.
+  /// Font size multiplier for the middle (track) ring.
+  final double middleRingFontScale;
+
+  /// Font size multiplier for the outer (venue) ring.
+  final double outerRingFontScale;
+
   final double innerRingSpacingMultiplier;
+
+  /// Spacing multiplier for the middle (track) ring.
+  final double middleRingSpacingMultiplier;
+
+  /// Spacing multiplier for the outer (venue) ring.
+  final double outerRingSpacingMultiplier;
 
   /// Whether to apply fwidth-based anti-aliasing on the logo alpha edge.
   final bool logoAntiAlias;
@@ -186,7 +195,7 @@ class StealConfig {
     this.middleToOuterGap = 0.3,
     this.orbitDrift = 1.0,
     this.bannerDisplayMode = 'ring',
-    this.bannerFont = 'Rock Salt',
+    this.bannerFont = 'RockSalt',
     this.logoTrailIntensity = 0.0,
     this.logoTrailSlices = 6,
     this.logoTrailLength = 0.5,
@@ -196,6 +205,8 @@ class StealConfig {
     this.flatTextPlacement = 'below',
     this.bannerResolution = 2.0,
     this.bannerPixelSnap = true,
+    this.autoTextSpacing = false,
+    this.autoRingSpacing = true,
     this.bannerLetterSpacing = 1.02,
     this.bannerWordSpacing = 0.4,
     this.trackLetterSpacing = 1.02,
@@ -208,7 +219,11 @@ class StealConfig {
     this.beatSensitivity = 0.5,
     this.beatImpact = 0.4,
     this.innerRingFontScale = 1.0,
+    this.middleRingFontScale = 1.0,
+    this.outerRingFontScale = 1.0,
     this.innerRingSpacingMultiplier = 1.0,
+    this.middleRingSpacingMultiplier = 1.0,
+    this.outerRingSpacingMultiplier = 1.0,
     this.logoAntiAlias = false,
     this.scaleSource = -1,
     this.scaleMultiplier = 1.0,
@@ -264,6 +279,8 @@ class StealConfig {
       flatTextPlacement: map['flatTextPlacement'] as String? ?? 'below',
       bannerResolution: (map['bannerResolution'] as num?)?.toDouble() ?? 2.0,
       bannerPixelSnap: map['bannerPixelSnap'] as bool? ?? true,
+      autoTextSpacing: map['autoTextSpacing'] as bool? ?? false,
+      autoRingSpacing: map['autoRingSpacing'] as bool? ?? true,
       bannerLetterSpacing:
           (map['bannerLetterSpacing'] as num?)?.toDouble() ?? 1.02,
       bannerWordSpacing: (map['bannerWordSpacing'] as num?)?.toDouble() ?? 0.4,
@@ -279,8 +296,16 @@ class StealConfig {
       beatImpact: (map['beatImpact'] as num?)?.toDouble() ?? 0.4,
       innerRingFontScale:
           (map['innerRingFontScale'] as num?)?.toDouble() ?? 1.0,
+      middleRingFontScale:
+          (map['middleRingFontScale'] as num?)?.toDouble() ?? 1.0,
+      outerRingFontScale:
+          (map['outerRingFontScale'] as num?)?.toDouble() ?? 1.0,
       innerRingSpacingMultiplier:
           (map['innerRingSpacingMultiplier'] as num?)?.toDouble() ?? 1.0,
+      middleRingSpacingMultiplier:
+          (map['middleRingSpacingMultiplier'] as num?)?.toDouble() ?? 1.0,
+      outerRingSpacingMultiplier:
+          (map['outerRingSpacingMultiplier'] as num?)?.toDouble() ?? 1.0,
       logoAntiAlias: map['logoAntiAlias'] as bool? ?? false,
       scaleSource: map['scaleSource'] as int? ?? -1,
       scaleMultiplier: (map['scaleMultiplier'] as num?)?.toDouble() ?? 1.0,
@@ -331,6 +356,8 @@ class StealConfig {
       'flatTextPlacement': flatTextPlacement,
       'bannerResolution': bannerResolution,
       'bannerPixelSnap': bannerPixelSnap,
+      'autoTextSpacing': autoTextSpacing,
+      'autoRingSpacing': autoRingSpacing,
       'bannerLetterSpacing': bannerLetterSpacing,
       'bannerWordSpacing': bannerWordSpacing,
       'trackLetterSpacing': trackLetterSpacing,
@@ -342,7 +369,11 @@ class StealConfig {
       'beatSensitivity': beatSensitivity,
       'beatImpact': beatImpact,
       'innerRingFontScale': innerRingFontScale,
+      'middleRingFontScale': middleRingFontScale,
+      'outerRingFontScale': outerRingFontScale,
       'innerRingSpacingMultiplier': innerRingSpacingMultiplier,
+      'middleRingSpacingMultiplier': middleRingSpacingMultiplier,
+      'outerRingSpacingMultiplier': outerRingSpacingMultiplier,
       'logoAntiAlias': logoAntiAlias,
       'scaleSource': scaleSource,
       'scaleMultiplier': scaleMultiplier,
@@ -392,6 +423,8 @@ class StealConfig {
     String? flatTextPlacement,
     double? bannerResolution,
     bool? bannerPixelSnap,
+    bool? autoTextSpacing,
+    bool? autoRingSpacing,
     double? bannerLetterSpacing,
     double? bannerWordSpacing,
     double? trackLetterSpacing,
@@ -404,7 +437,11 @@ class StealConfig {
     double? beatSensitivity,
     double? beatImpact,
     double? innerRingFontScale,
+    double? middleRingFontScale,
+    double? outerRingFontScale,
     double? innerRingSpacingMultiplier,
+    double? middleRingSpacingMultiplier,
+    double? outerRingSpacingMultiplier,
     bool? logoAntiAlias,
     int? scaleSource,
     double? scaleMultiplier,
@@ -455,6 +492,8 @@ class StealConfig {
       flatTextPlacement: flatTextPlacement ?? this.flatTextPlacement,
       bannerResolution: bannerResolution ?? this.bannerResolution,
       bannerPixelSnap: bannerPixelSnap ?? this.bannerPixelSnap,
+      autoTextSpacing: autoTextSpacing ?? this.autoTextSpacing,
+      autoRingSpacing: autoRingSpacing ?? this.autoRingSpacing,
       bannerLetterSpacing: bannerLetterSpacing ?? this.bannerLetterSpacing,
       bannerWordSpacing: bannerWordSpacing ?? this.bannerWordSpacing,
       trackLetterSpacing: trackLetterSpacing ?? this.trackLetterSpacing,
@@ -467,8 +506,14 @@ class StealConfig {
       beatSensitivity: beatSensitivity ?? this.beatSensitivity,
       beatImpact: beatImpact ?? this.beatImpact,
       innerRingFontScale: innerRingFontScale ?? this.innerRingFontScale,
+      middleRingFontScale: middleRingFontScale ?? this.middleRingFontScale,
+      outerRingFontScale: outerRingFontScale ?? this.outerRingFontScale,
       innerRingSpacingMultiplier:
           innerRingSpacingMultiplier ?? this.innerRingSpacingMultiplier,
+      middleRingSpacingMultiplier:
+          middleRingSpacingMultiplier ?? this.middleRingSpacingMultiplier,
+      outerRingSpacingMultiplier:
+          outerRingSpacingMultiplier ?? this.outerRingSpacingMultiplier,
       logoAntiAlias: logoAntiAlias ?? this.logoAntiAlias,
       scaleSource: scaleSource ?? this.scaleSource,
       scaleMultiplier: scaleMultiplier ?? this.scaleMultiplier,
@@ -521,6 +566,8 @@ class StealConfig {
         flatTextPlacement == other.flatTextPlacement &&
         bannerResolution == other.bannerResolution &&
         bannerPixelSnap == other.bannerPixelSnap &&
+        autoTextSpacing == other.autoTextSpacing &&
+        autoRingSpacing == other.autoRingSpacing &&
         bannerLetterSpacing == other.bannerLetterSpacing &&
         bannerWordSpacing == other.bannerWordSpacing &&
         trackLetterSpacing == other.trackLetterSpacing &&
@@ -533,7 +580,11 @@ class StealConfig {
         beatSensitivity == other.beatSensitivity &&
         beatImpact == other.beatImpact &&
         innerRingFontScale == other.innerRingFontScale &&
+        middleRingFontScale == other.middleRingFontScale &&
+        outerRingFontScale == other.outerRingFontScale &&
         innerRingSpacingMultiplier == other.innerRingSpacingMultiplier &&
+        middleRingSpacingMultiplier == other.middleRingSpacingMultiplier &&
+        outerRingSpacingMultiplier == other.outerRingSpacingMultiplier &&
         logoAntiAlias == other.logoAntiAlias &&
         scaleSource == other.scaleSource &&
         scaleMultiplier == other.scaleMultiplier &&
@@ -583,6 +634,8 @@ class StealConfig {
     flatTextPlacement,
     bannerResolution,
     bannerPixelSnap,
+    autoTextSpacing,
+    autoRingSpacing,
     bannerLetterSpacing,
     bannerWordSpacing,
     trackLetterSpacing,
@@ -595,7 +648,11 @@ class StealConfig {
     beatSensitivity,
     beatImpact,
     innerRingFontScale,
+    middleRingFontScale,
+    outerRingFontScale,
     innerRingSpacingMultiplier,
+    middleRingSpacingMultiplier,
+    outerRingSpacingMultiplier,
     logoAntiAlias,
     scaleSource,
     scaleMultiplier,
@@ -607,3 +664,5 @@ class StealConfig {
     woodstockEveryHour,
   ]);
 }
+
+

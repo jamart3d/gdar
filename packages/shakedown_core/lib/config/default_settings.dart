@@ -37,7 +37,7 @@ class DefaultSettings {
 
   // Web Gapless Engine (web-only)
   static const String audioEngineMode =
-      'html5'; // auto, webAudio, html5, standard, passive, hybrid
+      'auto'; // auto, webAudio, html5, standard, passive, hybrid
   static const int webPrefetchSeconds = 30;
 
   // Track Transitions (hybrid/standard engines)
@@ -101,13 +101,15 @@ class DefaultSettings {
   static const double oilAudioPeakDecay = 0.992;
   static const bool oilShowInfoBanner = true;
   static const double oilTranslationSmoothing =
-      0.85; // ── Steal Screensaver Flat/Rings ─────────────────────────
+      0.85; // â”€â”€ Steal Screensaver Flat/Rings â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   static const String oilBannerDisplayMode = 'flat'; // 'flat' or 'rings'
-  static const String oilBannerFont = 'rock_salt'; // Primary font
-  static const double oilFlatTextProximity = 0.50; // Middle proximity
-  static const String oilFlatTextPlacement = 'below'; // below the logo
+  static const String oilBannerFont = 'RockSalt'; // Primary font
+  static const double oilFlatTextProximity = 0.75; // Middle proximity
+  static const String oilFlatTextPlacement = 'above'; // below the logo
   static const double oilBannerResolution = 2.0;
   static const bool oilBannerPixelSnap = false;
+  static const bool oilAutoTextSpacing = true;
+  static const bool oilAutoRingSpacing = true;
 
   // Trail effect
   static const double oilLogoTrailIntensity = 1.0;
@@ -118,8 +120,8 @@ class DefaultSettings {
   static const bool oilLogoTrailDynamic = false;
 
   // Ring controls (3-ring gap model)
-  static const double oilInnerRingScale = 0.2;
-  static const double oilInnerToMiddleGap = 0.2;
+  static const double oilInnerRingScale = 0.5;
+  static const double oilInnerToMiddleGap = 0.05;
   static const double oilMiddleToOuterGap = 0.05;
   static const double oilOrbitDrift = 1.0;
   static const double oilBannerLetterSpacing = 1.0;
@@ -128,7 +130,11 @@ class DefaultSettings {
   static const double oilTrackWordSpacing = 0.2;
   static const double oilFlatLineSpacing = 1.0;
   static const double oilInnerRingFontScale = 0.75;
-  static const double oilInnerRingSpacingMultiplier = 0.4;
+  static const double oilMiddleRingFontScale = 0.85;
+  static const double oilOuterRingFontScale = 1.0;
+  static const double oilInnerRingSpacingMultiplier = 1.5;
+  static const double oilMiddleRingSpacingMultiplier = 1.15;
+  static const double oilOuterRingSpacingMultiplier = 1.15;
 
   /// Logo anti-aliasing: fwidth smoothstep on alpha edge (TV-only setting).
   static const bool oilLogoAntiAlias = false;
@@ -164,12 +170,12 @@ class DefaultSettings {
   static const bool omitHttpPathInCopy = true;
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // Per-Platform Default Overrides
 //
 // Only list settings that DIFFER from the base DefaultSettings above.
 // SettingsProvider picks the right class at init time via _d.
-// ─────────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /// Defaults for the Web UI (browser tab, desktop).
 class WebDefaults extends DefaultSettings {
@@ -185,8 +191,8 @@ class WebDefaults extends DefaultSettings {
   // Splash only shown on first run (handled dynamically in provider)
   static const bool showSplashScreen = false;
 
-  // Audio: html5 engine is now the default for web compatibility
-  static const String audioEngineMode = 'html5';
+  // Audio: auto (hybrid-first) is the default on web\r
+  static const String audioEngineMode = 'auto';
 }
 
 /// Defaults for the Google TV UI.
@@ -197,17 +203,28 @@ class TvDefaults extends DefaultSettings {
   // Screensaver: steal mode looks great on TV
   static const String oilScreensaverMode = 'steal';
 
-  // Audio: TV is a native app — uses the same standard player as Phone
+  // Audio: TV is a native app â€” uses the same standard player as Phone
 
   // Screensaver performance mode ON by default (TV shader budget is limited)
-  // User can toggle this off in TV Settings → Screensaver → Performance Mode
+  // User can toggle this off in TV Settings â†’ Screensaver â†’ Performance Mode
   static const int oilPerformanceLevel = 1;
 
-  // Prevent screen sleep by default — TV is a lean-back device
+  // Auto spacing helps Rock Salt avoid crowding on TV.
+  static const bool oilAutoTextSpacing = true;
+  static const bool oilAutoRingSpacing = true;
+
+  // Prevent screen sleep by default â€” TV is a lean-back device
   static const bool preventSleep = true;
 
   // TV uses a clean UI; playback messages are off by default.
   static const bool showPlaybackMessages = false;
+
+  // Airy spacing by default on TV
+  static const double oilBannerLetterSpacing = 1.02;
+  static const double oilTrackLetterSpacing = 1.02;
+  static const double oilInnerRingSpacingMultiplier = 1.15;
+  static const double oilMiddleRingSpacingMultiplier = 1.15;
+  static const double oilOuterRingSpacingMultiplier = 1.15;
 }
 
 /// Defaults for the Phone / Android UI.
@@ -216,7 +233,7 @@ class PhoneDefaults extends DefaultSettings {
   static const bool useNeumorphism = false;
   static const bool performanceMode = false;
 
-  // Screen should turn off normally — music plays in background without keeping screen on
+  // Screen should turn off normally â€” music plays in background without keeping screen on
   static const bool preventSleep = false;
 
   // Audio: standard native player on Android

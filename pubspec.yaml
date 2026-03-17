@@ -6,6 +6,7 @@ environment:
 
 workspace:
   - packages/shakedown_core
+  - packages/screensaver_tv
   - packages/styles/*
   - apps/gdar_mobile
   - apps/gdar_tv

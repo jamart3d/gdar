@@ -12,6 +12,7 @@ import 'package:shakedown_core/ui/widgets/settings/random_probability_card.dart'
 import 'package:shakedown_core/ui/widgets/tv/tv_switch_list_tile.dart';
 import 'package:shakedown_core/providers/theme_provider.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:shakedown_core/utils/pwa_detection.dart';
 import 'package:shakedown_core/utils/utils.dart';
 
 class PlaybackSection extends StatelessWidget {
@@ -497,6 +498,7 @@ class PlaybackSection extends StatelessWidget {
     bool isFruit,
   ) {
     final audioProvider = context.watch<AudioProvider>();
+    final detectedProfile = detectedWebProfileLabel();
     return [
       Padding(
         padding: EdgeInsets.only(
@@ -578,22 +580,6 @@ class PlaybackSection extends StatelessWidget {
                           : Icons.smartphone_rounded,
                     ),
                     _Segment(
-                      value: AudioEngineMode.standard,
-                      label: 'Standard',
-                      tooltip: 'Native just_audio (Conservative)',
-                      icon: isFruit
-                          ? LucideIcons.settings
-                          : Icons.settings_input_component_rounded,
-                    ),
-                    _Segment(
-                      value: AudioEngineMode.passive,
-                      label: 'Passive',
-                      tooltip: 'Minimal HTML5 (Single element streaming)',
-                      icon: isFruit
-                          ? LucideIcons.battery
-                          : Icons.battery_saver_rounded,
-                    ),
-                    _Segment(
                       value: AudioEngineMode.hybrid,
                       label: 'Hybrid',
                       tooltip: 'Web Audio Foreground, HTML5 Background',
@@ -655,6 +641,12 @@ class PlaybackSection extends StatelessWidget {
                           style: Theme.of(context).textTheme.bodySmall
                               ?.copyWith(fontSize: 12 * scaleFactor),
                         ),
+                        SizedBox(height: 4 * scaleFactor),
+                        Text(
+                          'Detected Profile: $detectedProfile',
+                          style: Theme.of(context).textTheme.bodySmall
+                              ?.copyWith(fontSize: 12 * scaleFactor),
+                        ),
                       ],
                     ),
                   );
@@ -712,15 +704,12 @@ class PlaybackSection extends StatelessWidget {
                 ),
               ),
             ),
-            if (sp.audioEngineMode == AudioEngineMode.hybrid ||
-                sp.audioEngineMode == AudioEngineMode.webAudio ||
-                sp.audioEngineMode == AudioEngineMode.auto ||
-                sp.audioEngineMode == AudioEngineMode.standard) ...[
+            if (sp.audioEngineMode == AudioEngineMode.hybrid) ...[
               const SizedBox(height: 16),
               Padding(
                 padding: EdgeInsets.only(left: 40.0 * scaleFactor),
                 child: Text(
-                  'Track Transition Mode',
+                  'Hybrid Handoff Mode',
                   style: Theme.of(context).textTheme.titleSmall?.copyWith(
                     fontSize: 14 * scaleFactor,
                     fontWeight: FontWeight.bold,
@@ -732,253 +721,187 @@ class PlaybackSection extends StatelessWidget {
                 padding: EdgeInsets.only(left: 40.0 * scaleFactor),
                 child: Align(
                   alignment: Alignment.centerLeft,
-                  child: _SegmentedWrap<String>(
+                  child: _SegmentedWrap<HybridHandoffMode>(
                     isFruit: isFruit,
                     scaleFactor: scaleFactor,
                     segments: [
                       _Segment(
-                        value: 'gap',
-                        label: 'Gap',
+                        value: HybridHandoffMode.immediate,
+                        label: 'Immediate',
+                        tooltip: 'Swap as soon as loaded',
                         icon: isFruit
-                            ? LucideIcons.pause
-                            : Icons.pause_presentation_rounded,
+                            ? LucideIcons.zap
+                            : Icons.flash_on_rounded,
                       ),
                       _Segment(
-                        value: 'gapless',
-                        label: 'Gapless',
+                        value: HybridHandoffMode.buffered,
+                        label: 'End of Buffer',
+                        tooltip:
+                            'Wait until HTML5 buffer is exhausted before swap',
                         icon: isFruit
-                            ? LucideIcons.list
-                            : Icons.linear_scale_rounded,
+                            ? LucideIcons.check
+                            : Icons.download_done_rounded,
+                      ),
+                      _Segment(
+                        value: HybridHandoffMode.boundary,
+                        label: 'Boundary',
+                        tooltip: 'Swap at the next track boundary',
+                        icon: isFruit
+                            ? LucideIcons.skipForward
+                            : Icons.skip_next_rounded,
+                      ),
+                      _Segment(
+                        value: HybridHandoffMode.none,
+                        label: 'Disabled',
+                        tooltip: 'Stay on HTML5 (no Web Audio handoff)',
+                        icon: isFruit ? LucideIcons.ban : Icons.block_rounded,
                       ),
                     ],
-                    selectedValue: sp.trackTransitionMode,
-                    onSelectionChanged: (String mode) {
+                    selectedValue: sp.hybridHandoffMode,
+                    onSelectionChanged: (HybridHandoffMode mode) {
                       AppHaptics.lightImpact(context.read<DeviceService>());
-                      sp.setTrackTransitionMode(mode);
+                      sp.setHybridHandoffMode(mode);
+                      showRestartMessage(
+                        context,
+                        'Handoff mode change requires relaunch.',
+                      );
                     },
                   ),
                 ),
               ),
-              if (sp.audioEngineMode == AudioEngineMode.hybrid) ...[
-                const SizedBox(height: 16),
-                Padding(
-                  padding: EdgeInsets.only(left: 40.0 * scaleFactor),
-                  child: Text(
-                    'Hybrid Handoff Mode',
-                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      fontSize: 14 * scaleFactor,
-                      fontWeight: FontWeight.bold,
-                    ),
+              const SizedBox(height: 16),
+              Padding(
+                padding: EdgeInsets.only(left: 40.0 * scaleFactor),
+                child: Text(
+                  'Background Survival Strategy',
+                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                    fontSize: 14 * scaleFactor,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
-                const SizedBox(height: 8),
-                Padding(
-                  padding: EdgeInsets.only(left: 40.0 * scaleFactor),
-                  child: Align(
-                    alignment: Alignment.centerLeft,
-                    child: _SegmentedWrap<HybridHandoffMode>(
-                      isFruit: isFruit,
-                      scaleFactor: scaleFactor,
-                      segments: [
-                        _Segment(
-                          value: HybridHandoffMode.immediate,
-                          label: 'Immediate',
-                          tooltip: 'Swap as soon as loaded',
-                          icon: isFruit
-                              ? LucideIcons.zap
-                              : Icons.flash_on_rounded,
-                        ),
-                        _Segment(
-                          value: HybridHandoffMode.buffered,
-                          label: 'End of Buffer',
-                          tooltip:
-                              'Wait until HTML5 buffer is exhausted before swap',
-                          icon: isFruit
-                              ? LucideIcons.check
-                              : Icons.download_done_rounded,
-                        ),
-                        _Segment(
-                          value: HybridHandoffMode.none,
-                          label: 'Disabled',
-                          tooltip: 'Stay on Web Audio (Gapless) always',
-                          icon: isFruit ? LucideIcons.ban : Icons.block_rounded,
-                        ),
-                      ],
-                      selectedValue: sp.hybridHandoffMode,
-                      onSelectionChanged: (HybridHandoffMode mode) {
-                        AppHaptics.lightImpact(context.read<DeviceService>());
-                        sp.setHybridHandoffMode(mode);
-                        showRestartMessage(
-                          context,
-                          'Handoff mode change requires relaunch.',
-                        );
-                      },
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Padding(
-                  padding: EdgeInsets.only(left: 40.0 * scaleFactor),
-                  child: Text(
-                    'Background Survival Strategy',
-                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      fontSize: 14 * scaleFactor,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Padding(
-                  padding: EdgeInsets.only(left: 40.0 * scaleFactor),
-                  child: Align(
-                    alignment: Alignment.centerLeft,
-                    child: _SegmentedWrap<HybridBackgroundMode>(
-                      isFruit: isFruit,
-                      scaleFactor: scaleFactor,
-                      segments: [
-                        _Segment(
-                          value: HybridBackgroundMode.html5,
-                          label: 'HTML5',
-                          tooltip: 'Hand off to HTML5 for background',
-                          icon: isFruit
-                              ? LucideIcons.refreshCw
-                              : Icons.refresh_rounded,
-                        ),
-                        _Segment(
-                          value: HybridBackgroundMode.heartbeat,
-                          label: 'Heartbeat',
-                          tooltip: 'Silent Audio Clock (Web Audio)',
-                          icon: isFruit
-                              ? LucideIcons.heart
-                              : Icons.favorite_rounded,
-                        ),
-                        _Segment(
-                          value: HybridBackgroundMode.video,
-                          label: 'Video Trick',
-                          tooltip: 'Silent Video Hack (Web Audio)',
-                          icon: isFruit
-                              ? LucideIcons.video
-                              : Icons.videocam_rounded,
-                        ),
-                        _Segment(
-                          value: HybridBackgroundMode.none,
-                          label: 'None',
-                          tooltip: 'No survival tricks (May throttle)',
-                          icon: isFruit
-                              ? LucideIcons.power
-                              : Icons.power_off_rounded,
-                        ),
-                      ],
-                      selectedValue: sp.hybridBackgroundMode,
-                      onSelectionChanged: (HybridBackgroundMode mode) {
-                        AppHaptics.lightImpact(context.read<DeviceService>());
-                        sp.setHybridBackgroundMode(mode);
-                        showRestartMessage(
-                          context,
-                          'Survival strategy change requires relaunch.',
-                        );
-                      },
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Padding(
-                  padding: EdgeInsets.only(left: 40.0 * scaleFactor),
-                  child: SwitchListTile.adaptive(
-                    contentPadding: EdgeInsets.zero,
-                    title: Text(
-                      'Allow Web Audio while hidden',
-                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                        fontSize: 13 * scaleFactor,
-                        fontWeight: FontWeight.w600,
+              ),
+              const SizedBox(height: 8),
+              Padding(
+                padding: EdgeInsets.only(left: 40.0 * scaleFactor),
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: _SegmentedWrap<HybridBackgroundMode>(
+                    isFruit: isFruit,
+                    scaleFactor: scaleFactor,
+                    segments: [
+                      _Segment(
+                        value: HybridBackgroundMode.html5,
+                        label: 'HTML5',
+                        tooltip: 'Hand off to HTML5 for background',
+                        icon: isFruit
+                            ? LucideIcons.refreshCw
+                            : Icons.refresh_rounded,
                       ),
-                    ),
-                    subtitle: Text(
-                      'Keeps Web Audio active in background. '
-                      'May stop sooner on mobile.',
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        fontSize: 12 * scaleFactor,
+                      _Segment(
+                        value: HybridBackgroundMode.heartbeat,
+                        label: 'Heartbeat',
+                        tooltip: 'Silent Audio Clock (Web Audio)',
+                        icon: isFruit
+                            ? LucideIcons.heart
+                            : Icons.favorite_rounded,
                       ),
-                    ),
-                    value: sp.allowHiddenWebAudio,
-                    onChanged: (value) {
-                      AppHaptics.lightImpact(context.read<DeviceService>());
-                      sp.setAllowHiddenWebAudio(value);
-                      showRestartMessage(
-                        context,
-                        'Relaunch required to apply hidden session logic.',
-                      );
-                    },
-                  ),
-                ),
-                const SizedBox(height: 6),
-                Padding(
-                  padding: EdgeInsets.only(left: 40.0 * scaleFactor),
-                  child: SwitchListTile.adaptive(
-                    contentPadding: EdgeInsets.zero,
-                    title: Text(
-                      'Force HTML5 start',
-                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                        fontSize: 13 * scaleFactor,
-                        fontWeight: FontWeight.w600,
+                      _Segment(
+                        value: HybridBackgroundMode.video,
+                        label: 'Video Trick',
+                        tooltip: 'Silent Video Hack (Web Audio)',
+                        icon: isFruit
+                            ? LucideIcons.video
+                            : Icons.videocam_rounded,
                       ),
-                    ),
-                    subtitle: Text(
-                      'Always start via HTML5 before handing off.',
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        fontSize: 12 * scaleFactor,
-                      ),
-                    ),
-                    value: sp.hybridForceHtml5Start,
-                    onChanged: (value) {
-                      AppHaptics.lightImpact(context.read<DeviceService>());
-                      sp.setHybridForceHtml5Start(value);
-                      showRestartMessage(
-                        context,
-                        'Relaunch required to apply boot logic changes.',
-                      );
-                    },
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Padding(
-                  padding: EdgeInsets.only(left: 40.0 * scaleFactor),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Handoff Crossfade',
-                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                          fontSize: 13 * scaleFactor,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Slider(
-                              min: 0,
-                              max: 200,
-                              divisions: 20,
-                              value: sp.handoffCrossfadeMs.toDouble(),
-                              onChanged: (value) {
-                                sp.setHandoffCrossfadeMs(value.round());
-                              },
-                            ),
-                          ),
-                          SizedBox(width: 8 * scaleFactor),
-                          Text(
-                            '${sp.handoffCrossfadeMs}ms',
-                            style: Theme.of(context).textTheme.bodySmall
-                                ?.copyWith(fontSize: 12 * scaleFactor),
-                          ),
-                        ],
+                      _Segment(
+                        value: HybridBackgroundMode.none,
+                        label: 'None',
+                        tooltip: 'No survival tricks (May throttle)',
+                        icon: isFruit
+                            ? LucideIcons.power
+                            : Icons.power_off_rounded,
                       ),
                     ],
+                    selectedValue: sp.hybridBackgroundMode,
+                    onSelectionChanged: (HybridBackgroundMode mode) {
+                      AppHaptics.lightImpact(context.read<DeviceService>());
+                      sp.setHybridBackgroundMode(mode);
+                      showRestartMessage(
+                        context,
+                        'Survival strategy change requires relaunch.',
+                      );
+                    },
                   ),
                 ),
-              ],
+              ),
+              const SizedBox(height: 12),
+              Padding(
+                padding: EdgeInsets.only(left: 40.0 * scaleFactor),
+                child: SwitchListTile.adaptive(
+                  contentPadding: EdgeInsets.zero,
+                  title: Text(
+                    'Allow Web Audio while hidden',
+                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                      fontSize: 13 * scaleFactor,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  subtitle: Text(
+                    'Keeps Web Audio active in background. '
+                    'May stop sooner on mobile.',
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      fontSize: 12 * scaleFactor,
+                    ),
+                  ),
+                  value: sp.allowHiddenWebAudio,
+                  onChanged: (value) {
+                    AppHaptics.lightImpact(context.read<DeviceService>());
+                    sp.setAllowHiddenWebAudio(value);
+                    showRestartMessage(
+                      context,
+                      'Relaunch required to apply hidden session logic.',
+                    );
+                  },
+                ),
+              ),
+              const SizedBox(height: 12),
+              Padding(
+                padding: EdgeInsets.only(left: 40.0 * scaleFactor),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Handoff Crossfade',
+                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                        fontSize: 13 * scaleFactor,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Slider(
+                            min: 0,
+                            max: 200,
+                            divisions: 20,
+                            value: sp.handoffCrossfadeMs.toDouble(),
+                            onChanged: (value) {
+                              sp.setHandoffCrossfadeMs(value.round());
+                            },
+                          ),
+                        ),
+                        SizedBox(width: 8 * scaleFactor),
+                        Text(
+                          '${sp.handoffCrossfadeMs}ms',
+                          style: Theme.of(context).textTheme.bodySmall
+                              ?.copyWith(fontSize: 12 * scaleFactor),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
             ],
           ],
         ),
@@ -1052,19 +975,19 @@ class PlaybackSection extends StatelessWidget {
             Text('HUD Abbreviations', style: titleStyle),
             SizedBox(height: 6 * scaleFactor),
             Text(
-              'ENG engine  •  TX transition  •  HF handoff  •  BG background',
+              'ENG engine  -  DET profile  -  TX transition  -  HF handoff  -  BG background',
               style: bodyStyle,
             ),
             Text(
-              'PF prefetch  •  PS processing  •  ST engine state',
+              'PF prefetch  -  PS processing  -  ST engine state',
               style: bodyStyle,
             ),
             Text(
-              'POS position/duration  •  BUF buffered  •  HD headroom',
+              'POS position/duration  -  BUF buffered  -  HD headroom',
               style: bodyStyle,
             ),
             Text(
-              'NX next buffered  •  IDX track index  •  SIG signal  •  E error',
+              'NX next buffered  -  IDX track index  -  SIG signal  -  E error',
               style: bodyStyle,
             ),
           ],
@@ -1172,3 +1095,13 @@ class _Segment<T> {
     this.tooltip,
   });
 }
+
+
+
+
+
+
+
+
+
+

@@ -135,6 +135,8 @@ class SettingsProvider with ChangeNotifier {
   static const String _oilFlatTextPlacementKey = 'oil_flat_text_placement';
   static const String _oilBannerResolutionKey = 'oil_banner_resolution';
   static const String _oilBannerPixelSnapKey = 'oil_banner_pixel_snap';
+  static const String _oilAutoTextSpacingKey = 'oil_auto_text_spacing';
+  static const String _oilAutoRingSpacingKey = 'oil_auto_ring_spacing';
 
   // Trail effect
   static const String _oilLogoTrailIntensityKey = 'oil_logo_trail_intensity';
@@ -173,6 +175,12 @@ class SettingsProvider with ChangeNotifier {
   static const String _oilInnerRingFontScaleKey = 'oil_inner_ring_font_scale';
   static const String _oilInnerRingSpacingMultiplierKey =
       'oil_inner_ring_spacing_multiplier';
+  static const String _oilMiddleRingSpacingMultiplierKey =
+      'oil_middle_ring_spacing_multiplier';
+  static const String _oilOuterRingSpacingMultiplierKey =
+      'oil_outer_ring_spacing_multiplier';
+  static const String _oilMiddleRingFontScaleKey = 'oil_middle_ring_font_scale';
+  static const String _oilOuterRingFontScaleKey = 'oil_outer_ring_font_scale';
   static const String _oilScreensaver4kSupportKey =
       'oil_screensaver_4k_support';
   static const String _oilScaleSourceKey = 'oil_scale_source';
@@ -184,6 +192,7 @@ class SettingsProvider with ChangeNotifier {
   static const String _oilColorMultiplierKey = 'oil_color_multiplier';
   static const String _oilWoodstockEveryHourKey = 'oil_woodstock_every_hour';
   static const String _oilTvPremiumHighlightKey = 'oil_tv_premium_highlight';
+  static const String _hideTvScrollbarsKey = 'hide_tv_scrollbars';
 
   static const String _marqueeEnabledKey = 'marquee_enabled';
   static const String _enableSwipeToBlockKey = 'enable_swipe_to_block';
@@ -258,6 +267,7 @@ class SettingsProvider with ChangeNotifier {
   late bool _enableHaptics;
   late bool _fruitStickyNowPlaying;
   late bool _enableRunDetection;
+  late bool _hideTvScrollbars;
 
   // Web Gapless Engine
   late AudioEngineMode _audioEngineMode;
@@ -292,6 +302,8 @@ class SettingsProvider with ChangeNotifier {
   late String _oilFlatTextPlacement;
   late double _oilBannerResolution;
   late bool _oilBannerPixelSnap;
+  late bool _oilAutoTextSpacing;
+  late bool _oilAutoRingSpacing;
   late double _oilBannerLetterSpacing;
   late double _oilBannerWordSpacing;
   late double _oilTrackLetterSpacing;
@@ -329,7 +341,11 @@ class SettingsProvider with ChangeNotifier {
   late double _oilMiddleToOuterGap;
   late double _oilOrbitDrift;
   late double _oilInnerRingFontScale;
+  late double _oilMiddleRingFontScale;
+  late double _oilOuterRingFontScale;
   late double _oilInnerRingSpacingMultiplier;
+  late double _oilMiddleRingSpacingMultiplier;
+  late double _oilOuterRingSpacingMultiplier;
   late bool _oilScreensaver4kSupport;
   late bool _oilTvPremiumHighlight;
   late int _oilScaleSource;
@@ -426,6 +442,7 @@ class SettingsProvider with ChangeNotifier {
   NeumorphicStyle get neumorphicStyle => _neumorphicStyle;
   bool get performanceMode => isWasmSafeMode() ? true : _performanceMode;
   bool get forceTv => _forceTv;
+  bool get hideTvScrollbars => _hideTvScrollbars;
 
   /// Whether the custom gapless Web Audio engine is enabled (web-only).
   AudioEngineMode get audioEngineMode => _audioEngineMode;
@@ -593,6 +610,8 @@ class SettingsProvider with ChangeNotifier {
   String get oilFlatTextPlacement => _oilFlatTextPlacement;
   double get oilBannerResolution => _oilBannerResolution;
   bool get oilBannerPixelSnap => _oilBannerPixelSnap;
+  bool get oilAutoTextSpacing => _oilAutoTextSpacing;
+  bool get oilAutoRingSpacing => _oilAutoRingSpacing;
   double get oilBannerLetterSpacing => _oilBannerLetterSpacing;
   double get oilBannerWordSpacing => _oilBannerWordSpacing;
   double get oilTrackLetterSpacing => _oilTrackLetterSpacing;
@@ -633,7 +652,11 @@ class SettingsProvider with ChangeNotifier {
   double get oilMiddleToOuterGap => _oilMiddleToOuterGap;
   double get oilOrbitDrift => _oilOrbitDrift;
   double get oilInnerRingFontScale => _oilInnerRingFontScale;
+  double get oilMiddleRingFontScale => _oilMiddleRingFontScale;
+  double get oilOuterRingFontScale => _oilOuterRingFontScale;
   double get oilInnerRingSpacingMultiplier => _oilInnerRingSpacingMultiplier;
+  double get oilMiddleRingSpacingMultiplier => _oilMiddleRingSpacingMultiplier;
+  double get oilOuterRingSpacingMultiplier => _oilOuterRingSpacingMultiplier;
   bool get oilScreensaver4kSupport => _oilScreensaver4kSupport;
   bool get oilTvPremiumHighlight => _oilTvPremiumHighlight;
   int get oilScaleSource => _oilScaleSource;
@@ -1111,6 +1134,10 @@ class SettingsProvider with ChangeNotifier {
         DefaultSettings.oilBannerDisplayMode;
     _oilBannerFont =
         _prefs.getString(_oilBannerFontKey) ?? DefaultSettings.oilBannerFont;
+    if (_oilBannerFont == 'rock_salt') {
+      _oilBannerFont = 'RockSalt';
+      _prefs.setString(_oilBannerFontKey, _oilBannerFont);
+    }
     _oilFlatTextProximity =
         _prefs.getDouble(_oilFlatTextProximityKey) ??
         DefaultSettings.oilFlatTextProximity;
@@ -1123,6 +1150,20 @@ class SettingsProvider with ChangeNotifier {
     _oilBannerPixelSnap =
         _prefs.getBool(_oilBannerPixelSnapKey) ??
         DefaultSettings.oilBannerPixelSnap;
+      _oilAutoTextSpacing =
+          _prefs.getBool(_oilAutoTextSpacingKey) ??
+          _dBool(
+            DefaultSettings.oilAutoTextSpacing,
+            TvDefaults.oilAutoTextSpacing,
+            DefaultSettings.oilAutoTextSpacing,
+          );
+      _oilAutoRingSpacing =
+          _prefs.getBool(_oilAutoRingSpacingKey) ??
+          _dBool(
+            DefaultSettings.oilAutoRingSpacing,
+            TvDefaults.oilAutoRingSpacing,
+            DefaultSettings.oilAutoRingSpacing,
+          );
     _oilBannerLetterSpacing =
         _prefs.getDouble(_oilBannerLetterSpacingKey) ??
         DefaultSettings.oilBannerLetterSpacing;
@@ -1135,6 +1176,12 @@ class SettingsProvider with ChangeNotifier {
     _oilTrackWordSpacing =
         _prefs.getDouble(_oilTrackWordSpacingKey) ??
         DefaultSettings.oilTrackWordSpacing;
+    _oilInnerRingSpacingMultiplier =
+        _prefs.getDouble(_oilInnerRingSpacingMultiplierKey) ?? 1.0;
+    _oilMiddleRingSpacingMultiplier =
+        _prefs.getDouble(_oilMiddleRingSpacingMultiplierKey) ?? 1.0;
+    _oilOuterRingSpacingMultiplier =
+        _prefs.getDouble(_oilOuterRingSpacingMultiplierKey) ?? 1.0;
     _oilFlatLineSpacing =
         _prefs.getDouble(_oilFlatLineSpacingKey) ??
         DefaultSettings.oilFlatLineSpacing;
@@ -1217,6 +1264,12 @@ class SettingsProvider with ChangeNotifier {
     _oilInnerRingFontScale =
         _prefs.getDouble(_oilInnerRingFontScaleKey) ??
         DefaultSettings.oilInnerRingFontScale;
+    _oilMiddleRingFontScale =
+        _prefs.getDouble(_oilMiddleRingFontScaleKey) ??
+        DefaultSettings.oilMiddleRingFontScale;
+    _oilOuterRingFontScale =
+        _prefs.getDouble(_oilOuterRingFontScaleKey) ??
+        DefaultSettings.oilOuterRingFontScale;
     _oilInnerRingSpacingMultiplier =
         _prefs.getDouble(_oilInnerRingSpacingMultiplierKey) ??
         DefaultSettings.oilInnerRingSpacingMultiplier;
@@ -1225,6 +1278,7 @@ class SettingsProvider with ChangeNotifier {
     _oilTvPremiumHighlight =
         _prefs.getBool(_oilTvPremiumHighlightKey) ??
         DefaultSettings.oilTvPremiumHighlight;
+    _hideTvScrollbars = _prefs.getBool(_hideTvScrollbarsKey) ?? false;
 
     // Reactivity isolation
     _oilScaleSource =
@@ -1257,7 +1311,7 @@ class SettingsProvider with ChangeNotifier {
         _prefs.getDouble(_oilScaleSineAmpKey) ??
         DefaultSettings.oilScaleSineAmp;
 
-    // TV screensaver mode override — use TvDefaults as the canonical source.
+    // TV screensaver mode override â€” use TvDefaults as the canonical source.
     if (isTv) _oilScreensaverMode = TvDefaults.oilScreensaverMode;
 
     final seedColorValue = _prefs.getInt(_seedColorKey);
@@ -1367,6 +1421,11 @@ class SettingsProvider with ChangeNotifier {
     _prefs.setBool(_abbreviateMonthKey, _abbreviateMonth);
     notifyListeners();
   }
+
+  void toggleHideTvScrollbars() => _updatePreference(
+    _hideTvScrollbarsKey,
+    _hideTvScrollbars = !_hideTvScrollbars,
+  );
 
   void setGlowMode(int mode) {
     if (_performanceMode && mode > 0) return;
@@ -1615,6 +1674,18 @@ class SettingsProvider with ChangeNotifier {
     _oilFlatLineSpacing = value.clamp(0.1, 5.0),
   );
 
+  Future<void> setOilAutoTextSpacing(bool value) async {
+    _oilAutoTextSpacing = value;
+    await _prefs.setBool(_oilAutoTextSpacingKey, value);
+    notifyListeners();
+  }
+
+  Future<void> setOilAutoRingSpacing(bool value) async {
+    _oilAutoRingSpacing = value;
+    await _prefs.setBool(_oilAutoRingSpacingKey, value);
+    notifyListeners();
+  }
+
   Future<void> setOilLogoTrailIntensity(double value) =>
       _updateDoublePreference(
         _oilLogoTrailIntensityKey,
@@ -1700,11 +1771,32 @@ class SettingsProvider with ChangeNotifier {
     _oilBannerPixelSnap = !_oilBannerPixelSnap,
   );
 
+
+
   // Ring control setters
   Future<void> setOilInnerRingScale(double value) => _updateDoublePreference(
     _oilInnerRingScaleKey,
     _oilInnerRingScale = value.clamp(0.1, 1.0),
   );
+
+  Future<void> setOilInnerRingSpacingMultiplier(double value) =>
+      _updateDoublePreference(
+        _oilInnerRingSpacingMultiplierKey,
+        _oilInnerRingSpacingMultiplier = value.clamp(0.1, 5.0),
+      );
+
+  Future<void> setOilMiddleRingSpacingMultiplier(double value) =>
+      _updateDoublePreference(
+        _oilMiddleRingSpacingMultiplierKey,
+        _oilMiddleRingSpacingMultiplier = value.clamp(0.1, 5.0),
+      );
+
+  Future<void> setOilOuterRingSpacingMultiplier(double value) =>
+      _updateDoublePreference(
+        _oilOuterRingSpacingMultiplierKey,
+        _oilOuterRingSpacingMultiplier = value.clamp(0.1, 5.0),
+      );
+
   Future<void> setOilInnerToMiddleGap(double value) => _updateDoublePreference(
     _oilInnerToMiddleGapKey,
     _oilInnerToMiddleGap = value.clamp(0.0, 1.0),
@@ -1722,11 +1814,19 @@ class SettingsProvider with ChangeNotifier {
         _oilInnerRingFontScaleKey,
         _oilInnerRingFontScale = value.clamp(0.3, 1.0),
       );
-  Future<void> setOilInnerRingSpacingMultiplier(double value) =>
+
+  Future<void> setOilMiddleRingFontScale(double value) =>
       _updateDoublePreference(
-        _oilInnerRingSpacingMultiplierKey,
-        _oilInnerRingSpacingMultiplier = value.clamp(0.3, 1.0),
+        _oilMiddleRingFontScaleKey,
+        _oilMiddleRingFontScale = value.clamp(0.3, 1.0),
       );
+
+  Future<void> setOilOuterRingFontScale(double value) =>
+      _updateDoublePreference(
+        _oilOuterRingFontScaleKey,
+        _oilOuterRingFontScale = value.clamp(0.3, 1.0),
+      );
+
 
   Future<void> setOilScaleSource(int value) async {
     _oilScaleSource = value;
@@ -1873,3 +1973,4 @@ class SettingsProvider with ChangeNotifier {
     notifyListeners();
   }
 }
+

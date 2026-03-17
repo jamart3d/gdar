@@ -9,6 +9,7 @@ import 'package:shakedown_core/providers/show_list_provider.dart';
 import 'package:shakedown_core/services/device_service.dart';
 import 'package:shakedown_core/ui/widgets/show_list/fast_scrollbar.dart';
 import 'package:shakedown_core/ui/widgets/show_list/show_list_item.dart';
+import 'package:shakedown_core/ui/widgets/tv/tv_scrollbar.dart';
 import 'package:shakedown_core/ui/widgets/theme/fruit_activity_indicator.dart';
 import 'package:shakedown_core/providers/theme_provider.dart';
 
@@ -95,6 +96,13 @@ class ShowListBody extends StatelessWidget {
           onSourceTap: (source) => onSourceTapped(show, source),
           onSourceLongPress: (source) => onSourceLongPressed(show, source),
           onFocusLeft: onFocusLeft,
+                  onFocusRight: () {
+                    if (settingsProvider.hideTvScrollbars) {
+                      onFocusRight?.call();
+                    } else if (scrollbarFocusNode != null) {
+                      scrollbarFocusNode!.requestFocus();
+                    }
+                  },
           onFocusChange: onShowFocused,
           onWrapAround: onFocusShow,
           focusNode: showFocusNodes?[index],
@@ -121,13 +129,39 @@ class ShowListBody extends StatelessWidget {
 
     return Stack(
       children: [
-        list,
-        FastScrollbar(
-          shows: showListProvider.filteredShows,
-          itemScrollController: itemScrollController,
-          itemPositionsListener: itemPositionsListener,
-          bottomPadding: miniPlayerHeight,
-        ),
+        if (isTv)
+          Row(
+            children: [
+              Expanded(child: list),
+                if (context.read<DeviceService>().isTv && !settingsProvider.hideTvScrollbars)
+                  TvScrollbar(
+                    itemPositionsListener: itemPositionsListener,
+                    itemScrollController: itemScrollController,
+                    itemCount: showListProvider.filteredShows.length,
+                    focusNode: scrollbarFocusNode,
+                    onLeft: () {
+                      final positions = itemPositionsListener.itemPositions.value;
+                      if (positions.isNotEmpty) {
+                        final firstVisible = positions
+                            .where((p) => p.itemTrailingEdge > 0)
+                            .reduce((min, p) => p.index < min.index ? p : min)
+                            .index;
+                        onFocusShow?.call(firstVisible, shouldScroll: false);
+                      }
+                    },
+                    onRight: onFocusRight,
+                  ),
+            ],
+          )
+        else ...[
+          list,
+          FastScrollbar(
+            shows: showListProvider.filteredShows,
+            itemScrollController: itemScrollController,
+            itemPositionsListener: itemPositionsListener,
+            bottomPadding: miniPlayerHeight,
+          ),
+        ],
       ],
     );
   }

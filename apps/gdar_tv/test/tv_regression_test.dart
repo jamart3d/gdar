@@ -1,4 +1,4 @@
-import 'dart:async';
+﻿import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
@@ -438,6 +438,10 @@ class FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
   double get oilFlatLineSpacing => 1.0;
   @override
   Future<void> setOilFlatLineSpacing(double value) async {}
+    @override
+    bool get oilAutoTextSpacing => false;
+    @override
+    Future<void> setOilAutoTextSpacing(bool value) async {}
   @override
   String get oilAudioGraphMode => 'off';
   @override
@@ -978,3 +982,6 @@ void main() {
     expect(find.text('RGB Animation Speed'), findsOneWidget);
   });
 }
+
+
+

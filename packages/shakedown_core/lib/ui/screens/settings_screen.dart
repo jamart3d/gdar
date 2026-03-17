@@ -1,4 +1,4 @@
-import 'dart:async';
+﻿import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
@@ -19,13 +19,13 @@ import 'package:shakedown_core/utils/font_layout_config.dart';
 import 'package:shakedown_core/providers/update_provider.dart';
 import 'package:shakedown_core/ui/widgets/onboarding/update_banner.dart';
 import 'package:shakedown_core/services/device_service.dart';
-import 'package:shakedown_core/ui/screens/tv_settings_screen.dart';
 import 'package:shakedown_core/ui/widgets/fruit_tab_bar.dart';
 import 'package:shakedown_core/ui/widgets/theme/fruit_ui.dart';
 import 'package:shakedown_core/ui/widgets/theme/liquid_glass_wrapper.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:shakedown_core/ui/screens/fruit_tab_host_screen.dart';
 import 'package:shakedown_core/ui/screens/show_list_screen.dart';
+import 'package:shakedown_core/ui/screens/tv_settings_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   final String? highlightSetting;
@@ -459,3 +459,4 @@ class _SettingsScreenState extends State<SettingsScreen>
     return FruitActionButton(icon: icon, onPressed: onPressed);
   }
 }
+

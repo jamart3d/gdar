@@ -46,6 +46,7 @@ enum HybridBackgroundMode {
 enum HybridHandoffMode {
   buffered,
   immediate,
+  boundary,
   none;
 
   static HybridHandoffMode fromString(String? value) {
@@ -69,3 +70,4 @@ enum HiddenSessionPreset {
     );
   }
 }
+

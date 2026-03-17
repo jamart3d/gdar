@@ -9,6 +9,7 @@ import 'package:shakedown_core/ui/widgets/tv/tv_exit_dialog.dart';
 import 'package:provider/provider.dart';
 
 import 'package:shakedown_core/providers/audio_provider.dart';
+import 'package:shakedown_core/providers/settings_provider.dart';
 import 'package:shakedown_core/ui/widgets/playback/playback_messages.dart';
 
 // TV Remote Control Intents
@@ -319,6 +320,7 @@ class _TvDualPaneLayoutState extends State<TvDualPaneLayout> {
                                       _diceFocusNode.requestFocus();
                                     },
                                     onFocusPlayback: _focusRightPane,
+                                    onSettingsRequested: null,
                                   ),
                                 ),
                               ],
@@ -349,12 +351,23 @@ class _TvDualPaneLayoutState extends State<TvDualPaneLayout> {
                                 _diceFocusNode.requestFocus();
                               },
                               onTrackListLeft: () {
-                                // From Track List, go LEFT to the Show List scrollbar
-                                _showListScrollbarFocusNode.requestFocus();
+                                final settings = context
+                                    .read<SettingsProvider>();
+                                if (settings.hideTvScrollbars) {
+                                  _showListScreenKey.currentState
+                                      ?.focusCurrentShow();
+                                } else {
+                                  _showListScrollbarFocusNode.requestFocus();
+                                }
                               },
                               onTrackListRight: () {
-                                // From Track List, go RIGHT to the Track List scrollbar
-                                _rightScrollbarFocusNode.requestFocus();
+                                final settings = context
+                                    .read<SettingsProvider>();
+                                if (settings.hideTvScrollbars) {
+                                  _diceFocusNode.requestFocus();
+                                } else {
+                                  _rightScrollbarFocusNode.requestFocus();
+                                }
                               },
                             ),
                           ),

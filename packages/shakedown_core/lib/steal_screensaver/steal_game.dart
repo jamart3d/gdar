@@ -3,10 +3,10 @@ import 'dart:math';
 import 'dart:ui';
 import 'package:flame/game.dart';
 import 'package:flutter/material.dart' show Color, Colors;
-import 'package:shakedown_core/steal_screensaver/steal_banner.dart';
-import 'package:shakedown_core/steal_screensaver/steal_config.dart';
-import 'package:shakedown_core/steal_screensaver/steal_background.dart';
-import 'package:shakedown_core/steal_screensaver/steal_graph.dart';
+import 'steal_banner.dart';
+import 'steal_config.dart';
+import 'steal_background.dart';
+import 'steal_graph.dart';
 import 'package:shakedown_core/visualizer/audio_reactor.dart';
 import 'package:shakedown_core/services/device_service.dart';
 
@@ -14,16 +14,16 @@ class StealGame extends FlameGame {
   StealConfig config;
   final DeviceService deviceService;
 
-  AudioReactor? _audioReactor;
-  StreamSubscription<AudioEnergy>? _energySubscription;
-  StealBackground? _background;
-  StealBanner? _banner;
-  StealGraph? _graph;
   double _time = 0;
   AudioEnergy _currentEnergy = const AudioEnergy.zero();
+  AudioReactor? _audioReactor;
+  StreamSubscription? _energySubscription;
 
-  // ── Palette Cycling ────────────────────────────────────────────────────────
-  static const double _baseFadeDuration = 3.0;
+  StealBackground? _background;
+  StealGraph? _graph;
+  StealBanner? _banner;
+
+  // -- Palette Cycling --------------------------------------------------------
   static const double _baseHoldMin = 20.0;
   static const double _baseHoldMax = 40.0;
   static const double _holdVariance = 0.3;
@@ -35,7 +35,7 @@ class StealGame extends FlameGame {
   String _lastPalette = '';
   double _beatPulse = 0.0;
 
-  // ── Trail position ring buffer ─────────────────────────────────────────────
+  // -- Trail position ring buffer ---------------------------------------------
   // Stores recent smoothed logo positions for ghost slice rendering.
   // Store recent slices for ghost trails. Capacity currently 16.
   static const int _trailBufferCapacity = 16;
@@ -87,8 +87,8 @@ class StealGame extends FlameGame {
 
   StealGame({
     required this.config,
-    AudioReactor? audioReactor,
     required this.deviceService,
+    AudioReactor? audioReactor,
   }) : _audioReactor = audioReactor;
 
   @override
@@ -138,7 +138,6 @@ class StealGame extends FlameGame {
     if (newReactor == null) {
       _currentEnergy = const AudioEnergy.zero();
       _beatPulse = 0.0;
-      _graph?.energy = _currentEnergy;
     }
   }
 
@@ -161,7 +160,6 @@ class StealGame extends FlameGame {
       _tickCycle(dt);
     }
 
-    _graph?.energy = _currentEnergy;
 
     _tickWoodstock(dt);
     _tickTrailBuffer();
@@ -183,14 +181,14 @@ class StealGame extends FlameGame {
     }
   }
 
-  // ── Trail buffer ───────────────────────────────────────────────────────────
+  // -- Trail buffer -----------------------------------------------------------
 
   void _tickTrailBuffer() {
     // Keep buffer polling even if intensity is 0 so it's ready when toggled on
 
     // Sample interval: higher logoTrailLength = more frames between snapshots
     // = positions spread further apart = longer visible trail.
-    // At 0.0 → every frame. At 2.0 → every ~30 frames.
+    // At 0.0 - every frame. At 2.0 - every ~30 frames.
     final interval = (1 + (config.logoTrailLength * 14.5).round()).clamp(1, 30);
     _trailFrameCount++;
     if (_trailFrameCount >= interval) {
@@ -200,12 +198,11 @@ class StealGame extends FlameGame {
     }
   }
 
-  // ── Cycle logic ────────────────────────────────────────────────────────────
+  // -- Cycle logic ------------------------------------------------------------
 
   double get _speed => config.paletteTransitionSpeed.clamp(0.1, 20.0);
   double get _scaledHoldMin => _baseHoldMin / _speed;
   double get _scaledHoldMax => _baseHoldMax / _speed;
-  double get _scaledFadeDuration => _baseFadeDuration / _speed;
 
   void _resetHoldTimer() {
     final range = _scaledHoldMax - _scaledHoldMin;
@@ -241,19 +238,14 @@ class StealGame extends FlameGame {
     final newConfig = config.copyWith(palette: next);
     config = newConfig;
 
-    final lerpSpeed = _lerpSpeedFromFadeDuration(_scaledFadeDuration);
-    _background?.updateConfigWithLerpSpeed(newConfig, lerpSpeed);
+
     _applyBannerConfig(newConfig);
 
     _resetHoldTimer();
   }
 
-  double _lerpSpeedFromFadeDuration(double durationSeconds) {
-    final clamped = durationSeconds.clamp(0.1, 60.0);
-    return (1.0 - exp(-1.0 / (clamped * 60.0))).clamp(0.001, 1.0);
-  }
 
-  // ── Woodstock Mode ─────────────────────────────────────────────────────────
+  // -- Woodstock Mode ---------------------------------------------------------
   static const double _woodstockYellowDuration = 15.0;
   static const double _woodstockGreenDuration = 4 * 60 + 20.0;
   static const double _woodstockFadeDuration = 5.0;
@@ -295,23 +287,21 @@ class StealGame extends FlameGame {
   }
 
   void _applyWoodstockColors(List<Color> colors, double fadeDuration) {
-    final lerpSpeed = _lerpSpeedFromFadeDuration(fadeDuration);
-    _background?.overrideTargetColors(colors, lerpSpeed);
-    _banner?.updateBanner(
-      config.bannerText,
-      colors.first,
-      showBanner: config.showInfoBanner,
-      venue: config.venue,
-      date: config.date,
-    );
+    if (_banner != null) {
+      _banner!.updateBanner(
+        config.bannerText,
+        colors.first,
+        showBanner: config.showInfoBanner,
+        venue: config.venue,
+        date: config.date,
+      );
+    }
   }
 
   void _restoreNormalPalette() {
-    final paletteColors =
-        StealConfig.palettes[config.palette] ??
-        StealConfig.palettes.values.first;
-    final lerpSpeed = _lerpSpeedFromFadeDuration(_woodstockFadeDuration * 2);
-    _background?.overrideTargetColors(paletteColors, lerpSpeed);
+    final paletteColors = StealConfig.palettes[config.palette] ?? 
+        (StealConfig.palettes.isNotEmpty ? StealConfig.palettes.values.first : [Colors.white]);
+    _applyWoodstockColors(paletteColors, _woodstockFadeDuration * 2);
     _applyBannerConfig(config);
     _resetHoldTimer();
   }
@@ -320,29 +310,21 @@ class StealGame extends FlameGame {
 
   void updateConfig(StealConfig newConfig) {
     config = newConfig;
-    _background?.updateConfig(newConfig);
     _applyBannerConfig(newConfig);
     _applyGraphConfig(newConfig);
   }
 
   void _applyGraphConfig(StealConfig cfg) {
-    _graph?.isVisible =
-        cfg.audioGraphMode != 'off' && cfg.enableAudioReactivity;
-    _graph?.graphMode = cfg.audioGraphMode == 'corner_only'
-        ? 'corner'
-        : cfg.audioGraphMode;
+    if (_graph == null) return;
   }
 
   void _applyBannerConfig(StealConfig cfg) {
     if (_banner == null) return;
-    final paletteColors =
-        StealConfig.palettes[cfg.palette] ?? StealConfig.palettes.values.first;
-    final rawColor = paletteColors.isNotEmpty
-        ? paletteColors.first
-        : Colors.white;
+    final paletteColors = StealConfig.palettes[cfg.palette] ?? [Colors.white];
+    final rawColor = paletteColors.isNotEmpty ? paletteColors.first : Colors.white;
 
     final bannerColor = rawColor.computeLuminance() > 0.85
-        ? const Color(0xFFFFD700)
+        ? Colors.white
         : rawColor;
 
     _banner!.updateBanner(
@@ -354,16 +336,12 @@ class StealGame extends FlameGame {
     );
   }
 
-  @override
-  void onRemove() {
-    _energySubscription?.cancel();
-    super.onRemove();
-  }
+
 
   double get time => _time;
   AudioEnergy get currentEnergy => _currentEnergy;
 
-  /// Smoothed logo position in 0–1 UV space, driven by StealBackground.
+  /// Smoothed logo position in 0-1 UV space, driven by StealBackground.
   /// Used by StealBanner to keep rings locked to the logo center.
   Offset get smoothedLogoPos =>
       _background?.smoothedLogoPos ?? const Offset(0.5, 0.5);
@@ -380,7 +358,7 @@ class StealGame extends FlameGame {
     }
 
     final energy = config.scaleSource == -1
-        ? _currentEnergy.bass
+        ? (_currentEnergy.bands.isEmpty ? 0.0 : _currentEnergy.bands[0])
         : _currentEnergy.bands[config.scaleSource.clamp(0, 7)];
 
     return (1.0 +
@@ -389,3 +367,4 @@ class StealGame extends FlameGame {
 }
 
 enum _WoodstockPhase { idle, yellow, green }
+

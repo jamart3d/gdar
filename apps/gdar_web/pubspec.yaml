@@ -37,7 +37,7 @@ dev_dependencies:
 flutter_launcher_icons:
   android: true
   ios: false
-  image_path: "../../packages/shakedown_core/assets/images/gdar_icon.png"
+  image_path: "../../packages/shakedown_core/assets/images/gdar_icon_foregroup.png"
   web:
     generate: true
     background_color: "#000000"

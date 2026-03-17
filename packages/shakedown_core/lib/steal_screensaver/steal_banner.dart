@@ -24,7 +24,7 @@ import 'package:shakedown_core/ui/styles/font_config.dart';
 ///
 /// Both modes support neon glow and per-word flicker when bannerGlow is on.
 
-// ── Neon flicker per-word state ────────────────────────────────────────────
+// -- Neon flicker per-word state --------------------------------------------
 
 enum _FlickerPhase { idle, buzz, dropout, recover }
 
@@ -54,40 +54,40 @@ class _RasterGlyph {
   });
 }
 
-// ── Main component ─────────────────────────────────────────────────────────
+// -- Main component ---------------------------------------------------------
 
 class StealBanner extends Component with HasGameReference<StealGame> {
-  // ── Rotation ───────────────────────────────────────────────────────────────
+  // -- Rotation ---------------------------------------------------------------
   static const double _baseRotationSpeed = 0.0006;
 
-  // ── Base inner radius ──────────────────────────────────────────────────────
+  // -- Base inner radius ------------------------------------------------------
   static const double _baseInnerRadiusRatio = 0.110;
 
-  // ── Minimum ring clearance at gap=0 ───────────────────────────────────────
+  // -- Minimum ring clearance at gap=0 ---------------------------------------
   static const double _minRingClearance = 0.018;
 
-  // ── Ring mode: default base spacing ───────────────────────────────────────
+  // -- Ring mode: default base spacing ---------------------------------------
   static const double _defaultFontSize = 11.0;
 
-  // ── Flat mode layout ───────────────────────────────────────────────────────
+  // -- Flat mode layout -------------------------------------------------------
   // Line height in pixels. Gap is computed dynamically in _renderFlat.
   static const double _flatLineHeight = 16.0;
 
-  // ── Fade ───────────────────────────────────────────────────────────────────
+  // -- Fade -------------------------------------------------------------------
   static const double _fadeSpeed = 0.6;
   static const double _ringFadeSpeed = 1.2;
 
-  // ── Char width cache (static — shared across instances) ───────────────────
+  // -- Char width cache (static — shared across instances) -------------------
   static final Map<String, double> _charWidthCache = {};
 
-  // ── Rasterized glyph cache ─────────────────────────────────────────────────
+  // -- Rasterized glyph cache -------------------------------------------------
   static final Map<String, _RasterGlyph> _glyphCache = {};
   static double _lastGlowBlur = -1.0;
   static bool _lastGlowEnabled = false;
   static String? _lastFontFamily;
   static double _lastResolution = -1.0;
 
-  // ── Per-ring state ─────────────────────────────────────────────────────────
+  // -- Per-ring state ---------------------------------------------------------
   String _outerCurrent = '';
   String _outerPending = '';
   double _outerOpacity = 0.0;
@@ -109,7 +109,7 @@ class StealBanner extends Component with HasGameReference<StealGame> {
   double _innerAngle = 0.0;
   List<_NeonWord> _innerWords = [];
 
-  // ── Shared ─────────────────────────────────────────────────────────────────
+  // -- Shared -----------------------------------------------------------------
   Color _color = Colors.white;
   Color _currentColor = Colors.white;
   bool _visible = false;
@@ -117,7 +117,7 @@ class StealBanner extends Component with HasGameReference<StealGame> {
 
   final _rng = Random();
 
-  // ── Public API ─────────────────────────────────────────────────────────────
+  // -- Public API -------------------------------------------------------------
 
   void updateBanner(
     String trackTitle,
@@ -218,7 +218,7 @@ class StealBanner extends Component with HasGameReference<StealGame> {
     }).toList();
   }
 
-  // ── Flame update ───────────────────────────────────────────────────────────
+  // -- Flame update -----------------------------------------------------------
 
   @override
   void update(double dt) {
@@ -357,7 +357,7 @@ class StealBanner extends Component with HasGameReference<StealGame> {
     }
   }
 
-  // ── Per-word neon flicker phase machine ────────────────────────────────────
+  // -- Per-word neon flicker phase machine ------------------------------------
 
   void _tickWordFlicker(_NeonWord word, double dt, double strength) {
     word.eventTimer -= dt;
@@ -437,7 +437,7 @@ class StealBanner extends Component with HasGameReference<StealGame> {
     return minIdle + _rng.nextDouble() * (maxIdle - minIdle);
   }
 
-  // ── Radius helpers ─────────────────────────────────────────────────────────
+  // -- Radius helpers ---------------------------------------------------------
   //
   // Rings scale relative to logoScale so they always orbit proportionally
   // to the rendered logo size. logoScale=0.5 (the default) is the neutral
@@ -480,7 +480,7 @@ class StealBanner extends Component with HasGameReference<StealGame> {
         minDim * (_minRingClearance + gap * 0.08) * _logoScaleFactor(config);
   }
 
-  // ── Render ─────────────────────────────────────────────────────────────────
+  // -- Render -----------------------------------------------------------------
 
   @override
   void render(Canvas canvas) {
@@ -496,7 +496,7 @@ class StealBanner extends Component with HasGameReference<StealGame> {
     final glowEnabled = config.bannerGlow;
     final isFlat = config.bannerDisplayMode == 'flat';
 
-    // ── Unified Snapping & Pulse Scale ──────────────────────────────────────
+    // -- Unified Snapping & Pulse Scale --------------------------------------
     // Snap the logo center once for the entire block to prevent "crawling"
     // jitter between lines. We also fetch the unified pulse scale.
     Offset center = Offset(logoPos.dx * w, logoPos.dy * h);
@@ -531,7 +531,7 @@ class StealBanner extends Component with HasGameReference<StealGame> {
     }
   }
 
-  // ── Flat render ────────────────────────────────────────────────────────────
+  // -- Flat render ------------------------------------------------------------
 
   void _renderFlat(
     Canvas canvas,
@@ -553,8 +553,23 @@ class StealBanner extends Component with HasGameReference<StealGame> {
     final visibleCount = lines
         .where((l) => l.$1.isNotEmpty && l.$3 > 0.01)
         .length;
-    final lineHeight = _flatLineHeight * config.flatLineSpacing;
+        final baseLineHeight = _flatLineHeight * config.flatLineSpacing;
+    double lineHeight = baseLineHeight;
+    if (config.autoTextSpacing && visibleCount > 0) {
+      final baseBlockHeight = visibleCount * baseLineHeight;
+      final minBlockHeight = minDim * 0.14;
+      final maxBlockHeight = minDim * 0.30;
+      if (baseBlockHeight > maxBlockHeight) {
+        lineHeight = baseLineHeight *
+            (maxBlockHeight / baseBlockHeight).clamp(0.7, 1.0);
+      } else if (baseBlockHeight < minBlockHeight) {
+        lineHeight = baseLineHeight *
+            (minBlockHeight / baseBlockHeight).clamp(1.0, 1.25);
+      }
+    }
     final blockHeight = visibleCount * lineHeight;
+    final maxLineWidth = minDim * 0.88;
+    final minLineWidth = minDim * 0.38;
 
     // Proximity 0.0: Full gap (Away)
     // Proximity 0.5: No gap (Edge - resting on visual bounds)
@@ -629,11 +644,67 @@ class StealBanner extends Component with HasGameReference<StealGame> {
         wordSpacing: (i == 0)
             ? config.trackWordSpacing
             : config.bannerWordSpacing,
+        minLineWidth: minLineWidth,
+        maxLineWidth: maxLineWidth,
       );
       visibleIndex++;
     }
   }
 
+  double _autoScaleForWidth(
+    double width,
+    double minWidth,
+    double maxWidth,
+  ) {
+    if (width <= 0) return 1.0;
+    if (width < minWidth) {
+      return (minWidth / width).clamp(1.0, 1.25);
+    }
+    if (width > maxWidth) {
+      return (maxWidth / width).clamp(0.7, 1.0);
+    }
+    return 1.0;
+  }
+
+  double _autoScaleForSpan(
+    double span,
+    double minSpan,
+    double maxSpan,
+  ) {
+    if (span <= 0) return 1.0;
+    if (span < minSpan) {
+      return (minSpan / span).clamp(1.0, 1.25);
+    }
+    if (span > maxSpan) {
+      return (maxSpan / span).clamp(0.7, 1.0);
+    }
+    return 1.0;
+  }
+
+  double _measureWordListWidth(
+    List<_NeonWord> wordList,
+    double letterSpacing,
+    double wordSpacing,
+    StealConfig config,
+  ) {
+    double totalWidth = 0.0;
+    for (int wi = 0; wi < wordList.length; wi++) {
+      final text = wordList[wi].text;
+      for (final char in text.characters) {
+        totalWidth += _measureChar(char) * letterSpacing;
+      }
+      if (wi < wordList.length - 1) {
+        double currentWSpace = wordSpacing;
+        // Boost spacing if the next word starts with a digit (likely a day number or year)
+        if (config.bannerFont.toLowerCase().contains('rock') &&
+            RegExp(r'^\d').hasMatch(wordList[wi + 1].text)) {
+          currentWSpace *= 1.5;
+        }
+        totalWidth += _defaultFontSize * currentWSpace;
+      }
+    }
+    return totalWidth;
+  }
   void _drawFlatLine(
     Canvas canvas,
     String text,
@@ -644,6 +715,8 @@ class StealBanner extends Component with HasGameReference<StealGame> {
     StealConfig config, {
     double? letterSpacing,
     double? wordSpacing,
+    required double minLineWidth,
+    required double maxLineWidth,
   }) {
     if (text.isEmpty) return;
 
@@ -655,18 +728,28 @@ class StealBanner extends Component with HasGameReference<StealGame> {
               .map(_NeonWord.new)
               .toList();
 
-    final lSpace = letterSpacing ?? config.bannerLetterSpacing;
-    final wSpace = wordSpacing ?? config.bannerWordSpacing;
+    var lSpace = letterSpacing ?? config.bannerLetterSpacing;
+    var wSpace = wordSpacing ?? config.bannerWordSpacing;
 
-    // Measure total width including letter and word spacing
-    double totalWidth = 0.0;
-    for (int wi = 0; wi < wordList.length; wi++) {
-      final text = wordList[wi].text;
-      for (final char in text.characters) {
-        totalWidth += _measureChar(char) * lSpace;
-      }
-      if (wi < wordList.length - 1) {
-        totalWidth += _defaultFontSize * wSpace;
+    // Rock Salt is a script/handwritten font and tends to look crowded on TV.
+    // Give it an 8% baseline boost to letter spacing and 15% to word spacing to improve legibility.
+    if (config.bannerFont.toLowerCase().contains('rock')) {
+      lSpace *= 1.08;
+      wSpace *= 1.15;
+    }
+
+    double totalWidth = _measureWordListWidth(wordList, lSpace, wSpace, config);
+
+    if (config.autoTextSpacing) {
+      final scale = _autoScaleForWidth(
+        totalWidth,
+        minLineWidth,
+        maxLineWidth,
+      );
+      if (scale != 1.0) {
+        lSpace *= scale;
+        wSpace *= scale;
+        totalWidth = _measureWordListWidth(wordList, lSpace, wSpace, config);
       }
     }
 
@@ -710,12 +793,18 @@ class StealBanner extends Component with HasGameReference<StealGame> {
       }
 
       if (wi < wordList.length - 1) {
-        x += _defaultFontSize * wSpace;
+        double currentWSpace = wSpace;
+        // Boost spacing if the next word starts with a digit (likely a day number or year)
+        if (config.bannerFont.toLowerCase().contains('rock') &&
+            RegExp(r'^\d').hasMatch(wordList[wi + 1].text)) {
+          currentWSpace *= 1.5;
+        }
+        x += _defaultFontSize * currentWSpace;
       }
     }
   }
 
-  // ── Char width cache ───────────────────────────────────────────────────────
+  // -- Char width cache -------------------------------------------------------
 
   double _measureChar(String char) {
     return _charWidthCache.putIfAbsent(char, () {
@@ -734,7 +823,7 @@ class StealBanner extends Component with HasGameReference<StealGame> {
     });
   }
 
-  // ── Ring render ────────────────────────────────────────────────────────────
+  // -- Ring render ------------------------------------------------------------
 
   void _renderRings(
     Canvas canvas,
@@ -760,6 +849,9 @@ class StealBanner extends Component with HasGameReference<StealGame> {
         _opacity * _outerOpacity,
         glowEnabled,
         config,
+        fontScale: config.outerRingFontScale,
+        spacingMultiplier: config.outerRingSpacingMultiplier,
+        isInner: false,
       );
     }
     if (_middleCurrent.isNotEmpty && _middleOpacity > 0.01) {
@@ -775,6 +867,9 @@ class StealBanner extends Component with HasGameReference<StealGame> {
         config,
         letterSpacing: config.trackLetterSpacing,
         wordSpacing: config.trackWordSpacing,
+        fontScale: config.middleRingFontScale,
+        spacingMultiplier: config.middleRingSpacingMultiplier,
+        isInner: false,
       );
     }
     if (_innerCurrent.isNotEmpty && _innerOpacity > 0.01) {
@@ -790,6 +885,7 @@ class StealBanner extends Component with HasGameReference<StealGame> {
         config,
         fontScale: config.innerRingFontScale,
         spacingMultiplier: config.innerRingSpacingMultiplier,
+        isInner: true,
       );
     }
   }
@@ -808,6 +904,7 @@ class StealBanner extends Component with HasGameReference<StealGame> {
     double spacingMultiplier = 1.0,
     double? letterSpacing,
     double? wordSpacing,
+    bool isInner = false,
   }) {
     if (text.isEmpty) return;
 
@@ -816,6 +913,13 @@ class StealBanner extends Component with HasGameReference<StealGame> {
         (letterSpacing ?? config.bannerLetterSpacing) * spacingMultiplier;
     double wSpace =
         (wordSpacing ?? config.bannerWordSpacing) * spacingMultiplier;
+
+    // Rock Salt is a script/handwritten font and tends to look crowded on TV.
+    // Give it an 8% baseline boost to letter spacing and 15% to word spacing to improve legibility.
+    if (config.bannerFont.toLowerCase().contains('rock')) {
+      lSpace *= 1.08;
+      wSpace *= 1.15;
+    }
 
     final wordList = words.isNotEmpty
         ? words
@@ -833,13 +937,39 @@ class StealBanner extends Component with HasGameReference<StealGame> {
           span += (_measureChar(char) * fontScale * lSpace) / radius;
         }
         if (wi < wordList.length - 1) {
-          span += (_defaultFontSize * fontScale * wSpace) / radius;
+          double currentWSpace = wSpace;
+          // Boost spacing if the next word starts with a digit (likely a day number or year)
+          if (config.bannerFont.toLowerCase().contains('rock') &&
+              RegExp(r'^\d').hasMatch(wordList[wi + 1].text)) {
+            currentWSpace *= 1.5;
+          }
+          span += (_defaultFontSize * fontScale * currentWSpace) / radius;
         }
       }
       return span;
     }
 
-    double currentSpan = calcRawSpan(lSpace, wSpace);
+        double currentSpan = calcRawSpan(lSpace, wSpace);
+
+    if (config.autoRingSpacing) {
+      // Inner ring (date) uses narrower targets to reduce spread.
+      // Track and Venue use wider targets to increase spacing/legibility.
+      final double minAutoSpan =
+          isInner ? (110 / 180) * pi : (165 / 180) * pi;
+      final double maxAutoSpan =
+          isInner ? (260 / 180) * pi : (310 / 180) * pi;
+
+      final scale = _autoScaleForSpan(
+        currentSpan,
+        minAutoSpan,
+        maxAutoSpan,
+      );
+      if (scale != 1.0) {
+        lSpace *= scale;
+        wSpace *= scale;
+        currentSpan = calcRawSpan(lSpace, wSpace);
+      }
+    }
 
     // 2. Dynamic Compression ("Squish-to-fit")
     // If text exceeds ~320 degrees, we compress it to fit.
@@ -895,12 +1025,18 @@ class StealBanner extends Component with HasGameReference<StealGame> {
       }
 
       if (wi < wordList.length - 1) {
-        angle += (_defaultFontSize * fontScale * wSpace) / radius;
+        double currentWSpace = wSpace;
+        // Boost spacing if the next word starts with a digit (likely a day number or year)
+        if (config.bannerFont.toLowerCase().contains('rock') &&
+            RegExp(r'^\d').hasMatch(wordList[wi + 1].text)) {
+          currentWSpace *= 1.5;
+        }
+        angle += (_defaultFontSize * fontScale * currentWSpace) / radius;
       }
     }
   }
 
-  // ── Paint Char ─────────────────────────────────────────────────────────────
+  // -- Paint Char -------------------------------------------------------------
 
   void _paintChar(
     ui.Canvas canvas,
@@ -1031,3 +1167,8 @@ class StealBanner extends Component with HasGameReference<StealGame> {
     );
   }
 }
+
+
+
+
+// end of file

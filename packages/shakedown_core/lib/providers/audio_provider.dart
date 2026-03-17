@@ -20,6 +20,7 @@ import 'package:shakedown_core/services/random_show_selector.dart';
 import 'package:shakedown_core/services/audio_cache_service.dart';
 import 'package:shakedown_core/models/dng_snapshot.dart';
 import 'package:shakedown_core/models/hud_snapshot.dart';
+import 'package:shakedown_core/utils/pwa_detection.dart';
 import 'package:shakedown_core/utils/utils.dart';
 
 class AudioProvider with ChangeNotifier {
@@ -341,8 +342,11 @@ class AudioProvider with ChangeNotifier {
         ? _audioPlayer.activeMode
         : sp.audioEngineMode;
 
+    final detectedProfile = kIsWeb ? detectedWebProfileLabel() : '--';
+
     return HudSnapshot(
       engine: _shortMode(effectiveMode),
+      detectedProfile: detectedProfile,
       transition: _shortTransition(sp.trackTransitionMode),
       handoff: _shortHandoff(sp.hybridHandoffMode),
       background: _shortBackground(sp.hybridBackgroundMode),
@@ -410,6 +414,8 @@ class AudioProvider with ChangeNotifier {
     switch (mode) {
       case HybridHandoffMode.immediate:
         return 'IMM';
+      case HybridHandoffMode.boundary:
+        return 'BND';
       case HybridHandoffMode.none:
         return 'OFF';
       case HybridHandoffMode.buffered:
@@ -1304,3 +1310,7 @@ class AudioProvider with ChangeNotifier {
     service.dispose();
   }
 }
+
+
+
+

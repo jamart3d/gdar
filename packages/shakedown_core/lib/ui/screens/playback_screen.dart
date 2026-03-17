@@ -1017,7 +1017,7 @@ class PlaybackScreenState extends State<PlaybackScreen>
                         onWrapAround: _focusTrack,
                       ),
                     ),
-                    if (context.watch<DeviceService>().isTv)
+                    if (context.watch<DeviceService>().isTv && !settingsProvider.hideTvScrollbars)
                       TvScrollbar(
                         itemPositionsListener: _itemPositionsListener,
                         itemScrollController: _itemScrollController,

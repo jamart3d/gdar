@@ -1,0 +1,10 @@
+name: screensaver_tv
+description: TV screensaver UI and rendering for Shakedown.
+version: 1.0.0
+publish_to: 'none'
+resolution: workspace
+
+environment:
+  sdk: '^3.11.0'
+
+dependencies:
