@@ -103,21 +103,67 @@ Notes:
 The Audio HUD is driven by `AudioProvider.currentHudSnapshot`, which is built
 from both settings state and runtime JS engine state.
 
-HUD signals include:
+### Layout & Appearance
 
-- requested or effective engine mode
-- detected web profile label
-- transition mode
-- hybrid handoff mode
-- hybrid background mode
-- hidden-session preset
-- active engine context
-- heartbeat state
-- visibility state
-- drift between JS state ticks
-- buffered/headroom values
-- engine processing state and engine status
-- latest signal/message state
+The HUD uses an **"Ultra-High-Density"** layout optimized for professional
+diagnostics:
+
+- **Stable & Snug:** Each chip background "hugs" its content perfectly to
+  eliminate whitespace, but the chip itself is wrapped in a fixed-width "slot"
+  to ensure the rest of the layout doesn't "dance" as values fluctuate.
+- **Two-Row Structure:**
+  - **Top Row:** A high-density `Wrap` containing all standard telemetry chips.
+  - **Bottom Row:** A dedicated full-width `Row` for `SIG` and `MSG` chips.
+- **Theme Adaptation:**
+  - **Android:** Uses **Roboto** and **RobotoMono** for all telemetry.
+  - **Fruit:** Inherits the system font (**Inter**) for a native Apple feel.
+  - **Tooltips:** Uses `FruitTooltip` when the Fruit theme is active.
+
+### HUD Abbreviations
+
+Common diagnostic chips (Top Row):
+
+- `ENG`: effective engine mode (WBA, H5, HYB, STD)
+- `DET`: detected profile label (LOW, PWA, DESK, WEB)
+- `TX`: transition mode (gap, gapless)
+- `HF`: hybrid handoff mode (imm, buf, bnd, none)
+- `BG`: hybrid background mode (h5, hb, vid, none)
+- `STB`: hidden-session preset (STB, BAL, MAX)
+- `AE`: active engine/context (webAudio, html5)
+- `V`: visibility status and duration (VIS, HID)
+- `DFT`: state tick drift (seconds since last update)
+- `PF`: prefetch window (seconds or G for greedy)
+- `PS`: mapped processing state (LD, BUF, RDY)
+- `BUF`: current buffered amount (MB or 0B)
+- `HD`: headroom remaining (seconds)
+- `NX`: next-track buffered amount
+- `E`: error state flag
+- `ST`: raw engine status code
+
+Interactive chips (Top Row):
+Tapping these chips opens a popup menu to adjust settings:
+- `ENG`, `HF`, `BG`, `STB`
+
+### Messaging & Signals (Bottom Row)
+
+The bottom row is reserved for status signals and detailed messages:
+
+- `SIG`: **Signal Source** (Fixed-width slot)
+  - `ISS`: **Issue** - Active playback error or warning.
+  - `NTF`: **Notification** - System-level informational update.
+  - `AGT`: **Agent** - Engine or orchestrator status (e.g., handoff alerts).
+  - `--`: **Default** - No active signal.
+- `MSG`: **Message Content** (Expanded to fill row)
+  - Automatically displays as a scrolling **Marquee** if the text exceeds 30
+    characters.
+
+#### Message Clearing Logic
+
+- **Manual:** Tapping the `MSG` chip manually triggers
+  `AudioProvider.clearLastIssue()`.
+- **Automatic:** Notifications (`NTF`) clear after 5–8 seconds. Agent messages
+  (`AGT`) clear automatically when the engine state resolves.
+- **Stop:** All messages are cleared when playback is stopped.
 
 ### Effective Mode in HUD
 
@@ -129,38 +175,6 @@ The HUD uses this rule:
 
 That means the HUD is currently the clearest place to see what engine is really
 running when the stored preference is `auto`.
-
-### HUD Abbreviations
-
-Common chips:
-
-- `ENG`: effective engine mode
-- `DET`: detected profile label
-- `TX`: transition mode
-- `HF`: hybrid handoff mode
-- `BG`: hybrid background mode
-- `STB`: hidden-session preset
-- `AE`: active engine/context
-- `V`: visibility
-- `DFT`: state tick drift
-- `PF`: prefetch window
-- `PS`: mapped processing state
-- `BUF`: current buffered amount
-- `HD`: headroom
-- `NX`: next-track buffered amount
-- `E`: error state
-- `ST`: raw engine state
-- `SIG`: signal source
-- `MSG`: compacted message
-
-The HUD also exposes interactive chip menus for:
-
-- `ENG`
-- `HF`
-- `BG`
-- `STB`
-
-Those menus update settings and then show a relaunch/restart message.
 
 ## Hybrid Engine Runtime Behavior
 

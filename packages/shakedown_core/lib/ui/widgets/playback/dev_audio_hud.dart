@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:marquee/marquee.dart';
@@ -40,8 +41,13 @@ class DevAudioHud extends StatefulWidget {
 }
 
 class _DevAudioHudState extends State<DevAudioHud> {
+  static const int _driftHistoryMaxPoints = 120;
+  static const int _headroomHistoryMaxPoints = 180;
+
   Timer? _heartbeatPulseTimer;
   bool _heartbeatPulseOn = false;
+  final List<double> _driftHistory = <double>[];
+  final List<double> _headroomHistory = <double>[];
 
   @override
   void dispose() {
@@ -319,7 +325,7 @@ class _DevAudioHudState extends State<DevAudioHud> {
         duration: const Duration(milliseconds: 220),
         width: size,
         height: size,
-        margin: const EdgeInsets.symmetric(horizontal: 1.5),
+        margin: const EdgeInsets.symmetric(vertical: 0.8),
         decoration: BoxDecoration(
           shape: BoxShape.circle,
           color: finalColor,
@@ -336,13 +342,12 @@ class _DevAudioHudState extends State<DevAudioHud> {
     }
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-      margin: const EdgeInsets.only(right: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 2.5, vertical: 2),
       decoration: BoxDecoration(
         color: colorScheme.onSurface.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(size),
       ),
-      child: Row(
+      child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           buildDot(Colors.redAccent, needed && !active, true),
@@ -351,6 +356,41 @@ class _DevAudioHudState extends State<DevAudioHud> {
         ],
       ),
     );
+  }
+
+  double _heartbeatStackWidth(double labelsFontSize) {
+    final size = labelsFontSize * 0.44;
+    return size + 5;
+  }
+
+  double _heartbeatStackHeight(double labelsFontSize) {
+    final size = labelsFontSize * 0.44;
+    return (size * 3) + (0.8 * 2 * 3) + 4;
+  }
+
+  double? _parseDriftValue(String? raw) {
+    if (raw == null || raw.isEmpty) return null;
+    final match = RegExp(r'-?\d+(?:\.\d+)?').firstMatch(raw);
+    if (match == null) return null;
+    return double.tryParse(match.group(0)!);
+  }
+
+  void _appendDriftSample(String? rawValue) {
+    final sample = _parseDriftValue(rawValue);
+    if (sample == null) return;
+    _driftHistory.add(sample);
+    if (_driftHistory.length > _driftHistoryMaxPoints) {
+      _driftHistory.removeAt(0);
+    }
+  }
+
+  void _appendHeadroomSample(String? rawValue) {
+    final sample = _parseDriftValue(rawValue);
+    if (sample == null) return;
+    _headroomHistory.add(sample);
+    if (_headroomHistory.length > _headroomHistoryMaxPoints) {
+      _headroomHistory.removeAt(0);
+    }
   }
 
   void _safeSetState(VoidCallback fn) {
@@ -402,7 +442,19 @@ class _DevAudioHudState extends State<DevAudioHud> {
     required bool isPlaying,
     bool isHandoffCountdown = false,
   }) {
-    final chips = <Widget>[];
+    const chipSpacing = 8.0;
+    const sparklineChipWidth = 84.0;
+    _appendDriftSample(fields['DFT']);
+    _appendHeadroomSample(fields['HD']);
+
+    final telemetryChips = <Widget>[];
+    final sparklineValueChips = <Widget>[];
+    final trendChips = <Widget>[];
+    Widget? bgChip;
+    Widget? detChip;
+    Widget? errorChip;
+    Widget? sigChip;
+    Widget? msgChip;
 
     // High contrast overrides for handoff countdown
     final baseTextColor = isHandoffCountdown
@@ -415,69 +467,174 @@ class _DevAudioHudState extends State<DevAudioHud> {
         ? Colors.black.withValues(alpha: 0.1)
         : colorScheme.onSurface.withValues(alpha: 0.06);
 
+    final trendChipWidth = math.max(
+      _heartbeatStackWidth(labelsFontSize),
+      sparklineChipWidth,
+    );
+    final trendChipHeight = _heartbeatStackHeight(labelsFontSize);
+    trendChips.add(
+      Container(
+        width: trendChipWidth,
+        height: trendChipHeight,
+        decoration: BoxDecoration(
+          color: chipBgColor,
+          borderRadius: BorderRadius.circular(6),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 2),
+          child: CustomPaint(
+            painter: _HudSparklinePainter(
+              values: _driftHistory,
+              baseline: 0,
+              strokeColor: baseTextColor,
+              guideColor: keyTextColor.withValues(alpha: 0.45),
+            ),
+          ),
+        ),
+      ),
+    );
+    trendChips.add(
+      Container(
+        width: trendChipWidth,
+        height: trendChipHeight,
+        decoration: BoxDecoration(
+          color: chipBgColor,
+          borderRadius: BorderRadius.circular(6),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 2),
+          child: CustomPaint(
+            painter: _HudSparklinePainter(
+              values: _headroomHistory,
+              baseline: 0,
+              strokeColor: baseTextColor.withValues(alpha: 0.92),
+              guideColor: keyTextColor.withValues(alpha: 0.45),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    if (heartbeatEnabledBySettings) {
+      trendChips.add(
+        _buildTrafficLightHeartbeat(
+          labelsFontSize,
+          colorScheme,
+          active: heartbeatActive,
+          needed: heartbeatNeeded,
+          enabledBySettings: true,
+          isPlaying: isPlaying,
+        ),
+      );
+    }
+
     for (final key in orderedKeys) {
       final value = fields[key];
       if (value == null) continue;
 
-      // Insert heartbeat stack before BG chip if enabled by settings
-      if (key == 'BG' && heartbeatEnabledBySettings) {
-        chips.add(
-          _buildTrafficLightHeartbeat(
-            labelsFontSize,
-            colorScheme,
-            active: heartbeatActive,
-            needed: heartbeatNeeded,
-            enabledBySettings: true,
-            isPlaying: isPlaying,
-          ),
-        );
-      }
-
       Widget valueWidget;
+      final bool isDynamic = key == 'MSG';
+
       if (key == 'MSG' && value.length > 30) {
         // Implement Marquee for long messages
-        valueWidget = SizedBox(
-          width: 150,
-          height: labelsFontSize * 1.2,
-          child: Marquee(
-            text: value,
-            style: TextStyle(
-              color: baseTextColor,
-              fontWeight: FontWeight.w700,
-              fontSize: labelsFontSize * 0.84,
-              fontFamily: fontFamily ?? 'RobotoMono',
-              fontFeatures: const [FontFeature.tabularFigures()],
-            ),
-            scrollAxis: Axis.horizontal,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            blankSpace: 20.0,
-            velocity: 30.0,
-            pauseAfterRound: const Duration(seconds: 1),
-            accelerationDuration: const Duration(seconds: 1),
-            accelerationCurve: Curves.linear,
-            decelerationDuration: const Duration(milliseconds: 500),
-            decelerationCurve: Curves.easeOut,
+        valueWidget = LayoutBuilder(
+          builder: (context, constraints) {
+            return SizedBox(
+              width: constraints.maxWidth > 0 ? constraints.maxWidth : 200,
+              height: labelsFontSize * 1.2,
+              child: Marquee(
+                text: value,
+                style: TextStyle(
+                  color: baseTextColor,
+                  fontWeight: FontWeight.w700,
+                  fontSize: labelsFontSize * 0.84,
+                  fontFamily: fontFamily ?? 'RobotoMono',
+                  fontFeatures: const [FontFeature.tabularFigures()],
+                ),
+                scrollAxis: Axis.horizontal,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                blankSpace: 20.0,
+                velocity: 30.0,
+                pauseAfterRound: const Duration(seconds: 1),
+                accelerationDuration: const Duration(seconds: 1),
+                accelerationCurve: Curves.linear,
+                decelerationDuration: const Duration(milliseconds: 500),
+                decelerationCurve: Curves.easeOut,
+              ),
+            );
+          },
+        );
+      } else if (isDynamic) {
+        // Dynamic width for MSG (only) to allow content to dictate size
+        valueWidget = Text(
+          value,
+          style: TextStyle(
+            color: baseTextColor,
+            fontWeight: FontWeight.w700,
+            fontSize: labelsFontSize * 0.84,
+            fontFamily: fontFamily ?? 'RobotoMono',
+            fontFeatures: const [FontFeature.tabularFigures()],
           ),
         );
       } else {
-        valueWidget = SizedBox(
-          width: 80, // Fixed-width for stabilization
-          child: Text(
-            value,
-            style: TextStyle(
-              color: baseTextColor,
-              fontWeight: FontWeight.w700,
-              fontSize: labelsFontSize * 0.84,
-              fontFamily: fontFamily ?? 'RobotoMono',
-              fontFeatures: const [FontFeature.tabularFigures()],
-            ),
-            overflow: TextOverflow.ellipsis,
+        // Snug value widget (no fixed width here, the Container handles it)
+        valueWidget = Text(
+          value,
+          style: TextStyle(
+            color: baseTextColor,
+            fontWeight: FontWeight.w700,
+            fontSize: labelsFontSize * 0.84,
+            fontFamily: fontFamily ?? 'RobotoMono',
+            fontFeatures: const [FontFeature.tabularFigures()],
           ),
+          overflow: TextOverflow.ellipsis,
         );
       }
 
+      // Determine the fixed width for the chip background (Precision Safe Shave)
+      double? chipWidth;
+      if (!isDynamic) {
+        chipWidth = 48; // Default
+        switch (key) {
+          case 'BUF':
+          case 'NX':
+            chipWidth = key == 'BUF' ? 68 : 79;
+            break;
+          case 'DFT':
+            chipWidth = 66;
+            break;
+          case 'HD':
+            chipWidth = 59;
+            break;
+          case 'DET':
+            chipWidth = 42;
+            break;
+          case 'STB':
+          case 'ENG':
+          case 'SIG':
+            chipWidth = 52;
+            break;
+          case 'HF':
+          case 'TX':
+          case 'ST':
+          case 'PF':
+          case 'PS':
+            chipWidth = 45;
+            break;
+          case 'BG':
+          case 'V':
+          case 'AE':
+            chipWidth = 38;
+            break;
+          case 'E':
+            chipWidth = 25;
+            break;
+        }
+      }
+
       Widget chip = Container(
-        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+        width: chipWidth,
+        padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 2),
         decoration: BoxDecoration(
           color: chipBgColor,
           borderRadius: BorderRadius.circular(6),
@@ -492,9 +649,10 @@ class _DevAudioHudState extends State<DevAudioHud> {
                 fontWeight: FontWeight.w700,
                 fontSize: labelsFontSize * 0.84,
                 fontFamily: fontFamily ?? 'RobotoMono',
+                fontFeatures: const [FontFeature.tabularFigures()],
               ),
             ),
-            valueWidget,
+            if (key == 'MSG') Flexible(child: valueWidget) else valueWidget,
           ],
         ),
       );
@@ -527,12 +685,87 @@ class _DevAudioHudState extends State<DevAudioHud> {
           chip = FruitTooltip(message: tooltip, child: chip);
         }
       }
-      chips.add(chip);
+
+      if (key == 'V') {
+        chip = Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 4),
+          child: chip,
+        );
+      }
+
+      if (key == 'DET') {
+        detChip = chip;
+      } else if (key == 'E') {
+        errorChip = chip;
+      } else if (key == 'DFT' || key == 'HD') {
+        sparklineValueChips.add(chip);
+      } else if (key == 'BG') {
+        bgChip = chip;
+      } else if (key == 'SIG') {
+        sigChip = chip;
+      } else if (key == 'MSG') {
+        msgChip = chip;
+      } else {
+        telemetryChips.add(chip);
+      }
     }
 
-    if (chips.isEmpty) return const SizedBox.shrink();
+    final middleRowChips = <Widget>[];
+    middleRowChips.addAll(sparklineValueChips);
+    if (bgChip != null) {
+      middleRowChips.add(bgChip);
+    }
+    middleRowChips.addAll(telemetryChips);
 
-    return Wrap(spacing: 6, runSpacing: 6, children: chips);
+    final sigAndMsgChildren = <Widget>[];
+    if (detChip != null) {
+      sigAndMsgChildren.add(detChip);
+    }
+    if (detChip != null &&
+        (errorChip != null || sigChip != null || msgChip != null)) {
+      sigAndMsgChildren.add(const SizedBox(width: chipSpacing));
+    }
+    if (errorChip != null) {
+      sigAndMsgChildren.add(errorChip);
+    }
+    if (errorChip != null && (sigChip != null || msgChip != null)) {
+      sigAndMsgChildren.add(const SizedBox(width: chipSpacing));
+    }
+    if (sigChip != null) {
+      sigAndMsgChildren.add(sigChip);
+    }
+    if (sigChip != null && msgChip != null) {
+      sigAndMsgChildren.add(const SizedBox(width: chipSpacing));
+    }
+    if (msgChip != null) {
+      sigAndMsgChildren.add(Flexible(child: msgChip));
+    }
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Wrap(
+          spacing: chipSpacing,
+          runSpacing: chipSpacing,
+          children: trendChips,
+        ),
+        if (middleRowChips.isNotEmpty) const SizedBox(height: chipSpacing),
+        if (middleRowChips.isNotEmpty)
+          Wrap(
+            spacing: chipSpacing,
+            runSpacing: chipSpacing,
+            children: middleRowChips,
+          ),
+        if (sigAndMsgChildren.isNotEmpty) ...[
+          const SizedBox(height: chipSpacing),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: sigAndMsgChildren,
+          ),
+        ],
+      ],
+    );
   }
 
   String _hudFieldTooltip(String key, String value) {
@@ -581,14 +814,74 @@ class _DevAudioHudState extends State<DevAudioHud> {
   }
 }
 
+class _HudSparklinePainter extends CustomPainter {
+  final List<double> values;
+  final double baseline;
+  final Color strokeColor;
+  final Color guideColor;
 
+  const _HudSparklinePainter({
+    required this.values,
+    required this.baseline,
+    required this.strokeColor,
+    required this.guideColor,
+  });
 
+  @override
+  void paint(Canvas canvas, Size size) {
+    final guidePaint = Paint()
+      ..color = guideColor
+      ..strokeWidth = 1;
+    final centerY = size.height / 2;
+    canvas.drawLine(
+      Offset(0, centerY),
+      Offset(size.width, centerY),
+      guidePaint,
+    );
 
+    if (values.isEmpty || size.width <= 1 || size.height <= 1) {
+      return;
+    }
 
+    var minV = values.first;
+    var maxV = values.first;
+    for (final v in values) {
+      if (v < minV) minV = v;
+      if (v > maxV) maxV = v;
+    }
 
+    final lo = math.min(minV, baseline);
+    final hi = math.max(maxV, baseline);
+    final range = (hi - lo).abs() < 0.001 ? 1.0 : (hi - lo);
+    final sampleCount = values.length;
+    final xStep = sampleCount <= 1
+        ? size.width
+        : size.width / (sampleCount - 1);
 
+    final path = Path();
+    for (var i = 0; i < sampleCount; i++) {
+      final x = i * xStep;
+      final normalized = (values[i] - lo) / range;
+      final y = size.height - (normalized * size.height);
+      if (i == 0) {
+        path.moveTo(x, y);
+      } else {
+        path.lineTo(x, y);
+      }
+    }
 
+    final strokePaint = Paint()
+      ..color = strokeColor
+      ..strokeWidth = 1.2
+      ..style = PaintingStyle.stroke;
+    canvas.drawPath(path, strokePaint);
+  }
 
-
-
-
+  @override
+  bool shouldRepaint(covariant _HudSparklinePainter oldDelegate) {
+    return oldDelegate.values != values ||
+        oldDelegate.baseline != baseline ||
+        oldDelegate.strokeColor != strokeColor ||
+        oldDelegate.guideColor != guideColor;
+  }
+}

@@ -342,7 +342,7 @@ class AudioProvider with ChangeNotifier {
         ? _audioPlayer.activeMode
         : sp.audioEngineMode;
 
-    final detectedProfile = kIsWeb ? detectedWebProfileLabel() : '--';
+    final detectedProfile = kIsWeb ? _shortDetectedProfile() : '--';
 
     return HudSnapshot(
       engine: _shortMode(effectiveMode),
@@ -401,6 +401,19 @@ class AudioProvider with ChangeNotifier {
         return 'HYB';
       case AudioEngineMode.auto:
         return 'AUT';
+    }
+  }
+
+  String _shortDetectedProfile() {
+    switch (detectWebRuntimeProfile()) {
+      case WebRuntimeProfile.low:
+        return 'L';
+      case WebRuntimeProfile.pwa:
+        return 'P';
+      case WebRuntimeProfile.desk:
+        return 'D';
+      case WebRuntimeProfile.web:
+        return 'W';
     }
   }
 
@@ -1310,7 +1323,3 @@ class AudioProvider with ChangeNotifier {
     service.dispose();
   }
 }
-
-
-
-
