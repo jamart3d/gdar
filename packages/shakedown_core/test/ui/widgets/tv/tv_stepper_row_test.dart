@@ -74,11 +74,11 @@ void main() {
 
       // Focus the stepper
       await tester.sendKeyEvent(LogicalKeyboardKey.tab);
-      await tester.pumpAndSettle();
+      await tester.pump(const Duration(milliseconds: 250));
 
       // Press Right Arrow
       await tester.sendKeyEvent(LogicalKeyboardKey.arrowRight);
-      await tester.pumpAndSettle();
+      await tester.pump(const Duration(milliseconds: 250));
 
       expect(updatedValue, closeTo(1.6, 0.001));
     });
@@ -101,11 +101,11 @@ void main() {
 
       // Focus the stepper
       await tester.sendKeyEvent(LogicalKeyboardKey.tab);
-      await tester.pumpAndSettle();
+      await tester.pump(const Duration(milliseconds: 250));
 
       // Press Left Arrow
       await tester.sendKeyEvent(LogicalKeyboardKey.arrowLeft);
-      await tester.pumpAndSettle();
+      await tester.pump(const Duration(milliseconds: 250));
 
       expect(updatedValue, closeTo(1.4, 0.001));
     });
@@ -128,11 +128,11 @@ void main() {
 
       // Focus the stepper
       await tester.sendKeyEvent(LogicalKeyboardKey.tab);
-      await tester.pumpAndSettle();
+      await tester.pump(const Duration(milliseconds: 250));
 
       // Press Right Arrow (should not exceed max)
       await tester.sendKeyEvent(LogicalKeyboardKey.arrowRight);
-      await tester.pumpAndSettle();
+      await tester.pump(const Duration(milliseconds: 250));
 
       expect(
         updatedValue,
@@ -159,3 +159,4 @@ void main() {
     });
   });
 }
+

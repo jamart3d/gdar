@@ -64,6 +64,7 @@ void main() {
     when(mockSettingsProvider.performanceMode).thenReturn(false);
     // Mock getEffectiveScale logic dependencies
     when(mockSettingsProvider.appFont).thenReturn('default');
+    when(mockSettingsProvider.activeAppFont).thenReturn('default');
     when(mockSettingsProvider.uiScale).thenReturn(false);
     when(mockSettingsProvider.useNeumorphism).thenReturn(false);
     when(mockSettingsProvider.glowMode).thenReturn(0);
@@ -203,3 +204,4 @@ void main() {
     await tester.pump();
   });
 }
+

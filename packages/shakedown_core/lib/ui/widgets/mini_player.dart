@@ -48,11 +48,12 @@ class _MiniPlayerState extends State<MiniPlayer> {
       settingsProvider,
     );
 
-    Color backgroundColor = colorScheme.surfaceContainerHigh;
-
-    // Only apply custom background color if NOT in "True Black" mode.
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     final isTrueBlackMode = isDarkMode && settingsProvider.useTrueBlack;
+
+    Color backgroundColor = isTrueBlackMode
+        ? Colors.black
+        : colorScheme.surfaceContainerHigh;
 
     if (!isTrueBlackMode && settingsProvider.highlightCurrentShowCard) {
       String seed = currentShow.name;

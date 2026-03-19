@@ -21,10 +21,12 @@ void main() {
       engine.updateVisibility(false);
       // Wait a bit to simulate time passing
       await Future.delayed(const Duration(seconds: 1));
-
-      final telemetry = await engine.telemetryStream.firstWhere(
+      final future = engine.telemetryStream.firstWhere(
         (t) => t.vDur != 'V:VIS',
       );
+      engine.tick();
+
+      final telemetry = await future;
       expect(telemetry.vDur, contains('V:HID(0m1s)'));
     });
 

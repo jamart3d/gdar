@@ -14,6 +14,7 @@ description: Standardized Mockito test stub regeneration
     *   If using `build_runner`, ensure the `@GenerateMocks` annotation includes the modified class.
     *   Run `dart run build_runner build --delete-conflicting-outputs` from the package/app that owns the test.
 4.  **Inject Stubs:** Inject the required `when().thenReturn()` or `when().thenAnswer()` logic based on the new service signature.
-    *   *Reference:* Consult `.agent/skills/test_mocking_templates/SKILL.md` (if it exists) for standardized MultiProvider setups.
+    *   *Reference:* Consult `docs/TEST_MOCKING_TEMPLATES.md` (if it exists) for standardized MultiProvider setups.
 5.  **Verify:** Run the specific failing test file: `flutter test apps/gdar_mobile/test/path/to/file_test.dart`.
 6.  **Report:** Confirm pass rate.
+

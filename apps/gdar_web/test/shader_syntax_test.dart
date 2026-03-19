@@ -4,15 +4,34 @@ import 'package:flutter_test/flutter_test.dart';
 void main() {
   group('Shader Syntax Tests', () {
     test('No duplicate uniforms in .frag files', () {
-      final shaderDir = Directory('${Directory.current.path}/shaders');
-      if (!shaderDir.existsSync()) {
-        fail('Shaders directory not found at ${shaderDir.path}');
+      Directory root = Directory.current;
+      while (root.path != root.parent.path &&
+          !File('${root.path}/AGENTS.md').existsSync()) {
+        root = root.parent;
+      }
+      final rootPath = root.path;
+
+      final shaderPaths = [
+        '$rootPath/packages/shakedown_core/assets/shaders',
+        '$rootPath/packages/styles/gdar_fruit/shaders',
+      ];
+
+      final shaderFiles = <File>[];
+      for (final path in shaderPaths) {
+        final dir = Directory(path);
+        if (dir.existsSync()) {
+          shaderFiles.addAll(
+            dir
+                .listSync(recursive: true)
+                .whereType<File>()
+                .where((f) => f.path.endsWith('.frag')),
+          );
+        }
       }
 
-      final shaderFiles = shaderDir
-          .listSync(recursive: true)
-          .whereType<File>()
-          .where((f) => f.path.endsWith('.frag'));
+      if (shaderFiles.isEmpty) {
+        fail('No shader files found in expected paths: $shaderPaths');
+      }
 
       for (final file in shaderFiles) {
         final content = file.readAsStringSync();

@@ -1,16 +1,194 @@
-// test/widget_test.dart
-
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:gdar_mobile/main.dart';
+import 'package:just_audio/just_audio.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:shakedown_core/models/hud_snapshot.dart';
+import 'package:shakedown_core/models/show.dart';
+import 'package:shakedown_core/models/source.dart';
+import 'package:shakedown_core/providers/audio_provider.dart';
+import 'package:shakedown_core/providers/settings_provider.dart';
+import 'package:shakedown_core/providers/show_list_provider.dart';
+import 'package:shakedown_core/services/audio_cache_service.dart';
+import 'package:shakedown_core/services/device_service.dart';
+import 'package:shakedown_core/services/gapless_player/gapless_player.dart';
+
+class _FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+
+  @override
+  bool get showSplashScreen => false;
+
+  @override
+  bool get showOnboarding => false;
+
+  @override
+  double get rgbAnimationSpeed => 1.0;
+
+  @override
+  bool get useTrueBlack => false;
+
+  @override
+  bool get useMaterial3 => true;
+
+  @override
+  bool get uiScale => false;
+
+  @override
+  String get activeAppFont => 'default';
+
+  @override
+  String get appFont => 'default';
+
+  @override
+  bool get isFirstRun => false;
+
+  @override
+  bool get performanceMode => false;
+
+  @override
+  bool get playRandomOnStartup => false;
+
+  @override
+  bool get enableShakedownTween => false;
+
+  @override
+  bool get useNeumorphism => false;
+}
+
+class _FakeShowListProvider extends ChangeNotifier implements ShowListProvider {
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+
+  @override
+  bool get isLoading => false;
+
+  @override
+  bool get hasCheckedArchive => true;
+
+  @override
+  bool get isArchiveReachable => true;
+
+  @override
+  List<Show> get allShows => const [];
+
+  @override
+  int get totalShnids => 0;
+
+  @override
+  void update(SettingsProvider settingsProvider) {}
+}
+
+class _FakeAudioCacheService extends ChangeNotifier
+    implements AudioCacheService {
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+class _FakeAudioProvider extends ChangeNotifier implements AudioProvider {
+  final GaplessPlayer _player = GaplessPlayer();
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+
+  @override
+  GaplessPlayer get audioPlayer => _player;
+
+  @override
+  Stream<PlayerState> get playerStateStream => const Stream.empty();
+
+  @override
+  Stream<int?> get currentIndexStream => const Stream.empty();
+
+  @override
+  Stream<Duration?> get durationStream => const Stream.empty();
+
+  @override
+  Stream<Duration> get positionStream => const Stream.empty();
+
+  @override
+  Stream<Duration> get bufferedPositionStream => const Stream.empty();
+
+  @override
+  Stream<Duration?> get nextTrackBufferedStream => const Stream.empty();
+
+  @override
+  Stream<Duration?> get nextTrackTotalStream => const Stream.empty();
+
+  @override
+  Stream<bool> get heartbeatActiveStream => const Stream.empty();
+
+  @override
+  Stream<bool> get heartbeatNeededStream => const Stream.empty();
+
+  @override
+  Stream<String> get engineStateStringStream => const Stream.empty();
+
+  @override
+  Stream<String> get engineContextStateStream => const Stream.empty();
+
+  @override
+  Stream<String> get playbackErrorStream => const Stream.empty();
+
+  @override
+  Stream<HudSnapshot> get hudSnapshotStream => const Stream.empty();
+
+  @override
+  HudSnapshot get currentHudSnapshot => HudSnapshot.empty();
+
+  @override
+  Stream<({Show show, Source source})> get randomShowRequestStream =>
+      const Stream.empty();
+
+  @override
+  Stream<({String message, VoidCallback? retryAction})>
+  get bufferAgentNotificationStream => const Stream.empty();
+
+  @override
+  Stream<String> get notificationStream => const Stream.empty();
+
+  @override
+  Stream<void> get playbackFocusRequestStream => const Stream.empty();
+}
+
+class _FakeDeviceService extends ChangeNotifier implements DeviceService {
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+
+  @override
+  bool get isTv => false;
+}
 
 void main() {
-  testWidgets('App starts and shows a title', (WidgetTester tester) async {
+  testWidgets('App boots into a Material app shell', (
+    WidgetTester tester,
+  ) async {
     SharedPreferences.setMockInitialValues({});
     final prefs = await SharedPreferences.getInstance();
 
-    await tester.pumpWidget(GdarMobileApp(prefs: prefs, isTv: false));
+    tester.view.physicalSize = const Size(1440, 2560);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
 
-    expect(find.text('Shakedown'), findsOneWidget);
+    await tester.pumpWidget(
+      GdarMobileApp(
+        prefs: prefs,
+        isTv: false,
+        showListProvider: _FakeShowListProvider(),
+        audioProvider: _FakeAudioProvider(),
+        audioCacheService: _FakeAudioCacheService(),
+        settingsProvider: _FakeSettingsProvider(),
+        deviceService: _FakeDeviceService(),
+        enableDeepLinks: false,
+      ),
+    );
+    await tester.pump();
+
+    expect(find.byType(MaterialApp), findsOneWidget);
+
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pump();
   });
 }

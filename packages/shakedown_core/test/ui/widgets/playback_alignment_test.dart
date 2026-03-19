@@ -7,6 +7,7 @@ import 'package:just_audio/just_audio.dart';
 import 'package:shakedown_core/models/show.dart';
 import 'package:shakedown_core/models/source.dart';
 import 'package:shakedown_core/models/track.dart';
+import 'package:shakedown_core/models/hud_snapshot.dart';
 import 'package:shakedown_core/providers/audio_provider.dart';
 import 'package:shakedown_core/providers/settings_provider.dart';
 import 'package:shakedown_core/ui/screens/playback_screen.dart';
@@ -87,6 +88,8 @@ void main() {
     when(mockAudioProvider.playerStateStream).thenAnswer(
       (_) => Stream.value(PlayerState(false, ProcessingState.ready)),
     );
+    when(mockAudioProvider.hudSnapshotStream).thenAnswer((_) => const Stream.empty());
+    when(mockAudioProvider.currentHudSnapshot).thenReturn(HudSnapshot.empty());
     when(
       mockAudioProvider.bufferAgentNotificationStream,
     ).thenAnswer((_) => const Stream.empty());
@@ -121,6 +124,7 @@ void main() {
     when(mockSettingsProvider.highlightCurrentShowCard).thenReturn(true);
     when(mockSettingsProvider.performanceMode).thenReturn(false);
     when(mockSettingsProvider.appFont).thenReturn('roboto');
+    when(mockSettingsProvider.activeAppFont).thenReturn('roboto');
     when(mockSettingsProvider.uiScale).thenReturn(false);
     when(mockSettingsProvider.showDayOfWeek).thenReturn(true);
     when(mockSettingsProvider.abbreviateDayOfWeek).thenReturn(true);
@@ -235,3 +239,8 @@ void main() {
     },
   );
 }
+
+
+
+
+

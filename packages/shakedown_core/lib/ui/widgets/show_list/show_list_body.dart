@@ -77,9 +77,9 @@ class ShowListBody extends StatelessWidget {
       itemPositionsListener: itemPositionsListener,
       padding: EdgeInsets.only(
         top: topPadding,
-        left: isTv ? 6.0 : 0.0,
+        left: isTv ? 24.0 : 0.0,
         bottom: isTv ? 28 : (isFruit ? 180 : 160),
-        right: isTv ? 0 : 28, // reserve space for fast scrollbar thumb
+        right: isTv ? 24.0 : 28, // Give glow room on TV to avoid pane clipping
       ),
       itemCount: showListProvider.filteredShows.length,
       itemBuilder: (context, index) {
@@ -96,13 +96,13 @@ class ShowListBody extends StatelessWidget {
           onSourceTap: (source) => onSourceTapped(show, source),
           onSourceLongPress: (source) => onSourceLongPressed(show, source),
           onFocusLeft: onFocusLeft,
-                  onFocusRight: () {
-                    if (settingsProvider.hideTvScrollbars) {
-                      onFocusRight?.call();
-                    } else if (scrollbarFocusNode != null) {
-                      scrollbarFocusNode!.requestFocus();
-                    }
-                  },
+          onFocusRight: () {
+            if (settingsProvider.hideTvScrollbars) {
+              onFocusRight?.call();
+            } else if (scrollbarFocusNode != null) {
+              scrollbarFocusNode!.requestFocus();
+            }
+          },
           onFocusChange: onShowFocused,
           onWrapAround: onFocusShow,
           focusNode: showFocusNodes?[index],
@@ -133,24 +133,25 @@ class ShowListBody extends StatelessWidget {
           Row(
             children: [
               Expanded(child: list),
-                if (context.read<DeviceService>().isTv && !settingsProvider.hideTvScrollbars)
-                  TvScrollbar(
-                    itemPositionsListener: itemPositionsListener,
-                    itemScrollController: itemScrollController,
-                    itemCount: showListProvider.filteredShows.length,
-                    focusNode: scrollbarFocusNode,
-                    onLeft: () {
-                      final positions = itemPositionsListener.itemPositions.value;
-                      if (positions.isNotEmpty) {
-                        final firstVisible = positions
-                            .where((p) => p.itemTrailingEdge > 0)
-                            .reduce((min, p) => p.index < min.index ? p : min)
-                            .index;
-                        onFocusShow?.call(firstVisible, shouldScroll: false);
-                      }
-                    },
-                    onRight: onFocusRight,
-                  ),
+              if (context.read<DeviceService>().isTv &&
+                  !settingsProvider.hideTvScrollbars)
+                TvScrollbar(
+                  itemPositionsListener: itemPositionsListener,
+                  itemScrollController: itemScrollController,
+                  itemCount: showListProvider.filteredShows.length,
+                  focusNode: scrollbarFocusNode,
+                  onLeft: () {
+                    final positions = itemPositionsListener.itemPositions.value;
+                    if (positions.isNotEmpty) {
+                      final firstVisible = positions
+                          .where((p) => p.itemTrailingEdge > 0)
+                          .reduce((min, p) => p.index < min.index ? p : min)
+                          .index;
+                      onFocusShow?.call(firstVisible, shouldScroll: false);
+                    }
+                  },
+                  onRight: onFocusRight,
+                ),
             ],
           )
         else ...[

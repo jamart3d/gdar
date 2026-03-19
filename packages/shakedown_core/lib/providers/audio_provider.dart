@@ -466,12 +466,12 @@ class AudioProvider with ChangeNotifier {
       tech = 'FG';
     }
 
-    if (contextState.contains('[HBN]')) tech += '-N';
-    if (contextState.contains('[HBO]')) tech += '-O';
+    if (contextState.contains('[HBN]')) tech += '-New';
+    if (contextState.contains('[HBO]')) tech += '-Opt';
 
     // Add version marker if present (e.g. .hb)
     if (contextState.contains('.hb')) {
-      tech += '*';
+      tech += '+';
     }
 
     if (mode != AudioEngineMode.hybrid && tech == '?') return '--';

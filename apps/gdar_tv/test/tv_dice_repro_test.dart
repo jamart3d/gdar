@@ -1,4 +1,6 @@
-﻿import 'dart:async';
+@Skip('Moved to packages/shakedown_core/test during monorepo transition')
+library;
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
@@ -157,10 +159,10 @@ class MockSettingsProvider extends ChangeNotifier implements SettingsProvider {
   bool get isTv => true;
   @override
   bool get fruitStickyNowPlaying => false;
-    @override
-    bool get oilAutoTextSpacing => false;
-    @override
-    Future<void> setOilAutoTextSpacing(bool value) async {}
+  @override
+  bool get oilAutoTextSpacing => false;
+  @override
+  Future<void> setOilAutoTextSpacing(bool value) async {}
   @override
   bool get showDevAudioHud => false;
   @override
@@ -433,5 +435,4 @@ void main() {
     },
   );
 }
-
 

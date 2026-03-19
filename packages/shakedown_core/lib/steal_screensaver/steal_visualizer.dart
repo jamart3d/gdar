@@ -96,4 +96,3 @@ class _StealVisualizerState extends State<StealVisualizer> {
     );
   }
 }
-

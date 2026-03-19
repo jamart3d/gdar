@@ -307,5 +307,3 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
     );
   }
 }
-
-

@@ -69,7 +69,7 @@ They are read-only or strictly non-destructive and the user must never be prompt
 | `ls -la ...` | Directory listing |
 | `find ...` | File search |
 | `grep ...` | Text search in files |
-| `rg ...` | **ripgrep** (Fastsest search) |
+| `rg ...` | **ripgrep** (fastest search) |
 | `fd ...` / `fdfind ...` | **fd** (Fastest file find) |
 | `jq ...` | High-performance JSON processing |
 | `fzf ...` | Fuzzy find (read-only) |
@@ -81,10 +81,10 @@ They are read-only or strictly non-destructive and the user must never be prompt
 | `test -f` / `test -d` | Path existence check |
 
 ### Git Read-Only
-Same as Windows table above — all `git` read commands are identical cross-platform.
+Same as Windows table above - all `git` read commands are identical cross-platform.
 
 ### Flutter / Dart Read-Only
-Same as Windows table above — identical commands on ChromeOS.
+Same as Windows table above - identical commands on ChromeOS.
 
 ### General Inspection
 | Command | Notes |
@@ -97,11 +97,11 @@ Same as Windows table above — identical commands on ChromeOS.
 | `gh issue list`, `gh issue view` | Same as Windows above |
 | `gh run list`, `gh run view` | Same as Windows above |
 
-## 🟢 Skill-Specific Exceptions
-These commands are auto-approved ONLY when executed within the specific skill workflow:
+## Workflow-Specific Exceptions
+These commands are auto-approved only when executed within the specific release workflow:
 
 ### `shipit`
-- `git add .` (or individual files)
+- Stage only the intended release files after verifying `git status`.
 - `git commit -m "..."`
 - `git commit --amend`
 - `git push`
@@ -111,16 +111,16 @@ These commands are auto-approved ONLY when executed within the specific skill wo
 
 ---
 
-## ❌ NEVER Auto-Approve
+## NEVER Auto-Approve
 These mutate state and ALWAYS require user confirmation unless covered by the exceptions above:
 
 - `git add`, `git commit`, `git push`, `git reset`, `git checkout` (branch switch)
-- `rm`, `Remove-Item`, `del` — file deletion
-- `dart fix --apply`, `dart format` — modifies source files
-- `flutter build`, `flutter run` — long builds / launches app
-- `firebase deploy` — production deployment
-- `flutter pub add`, `flutter pub remove` — mutates `pubspec.yaml`
-- Any `Set-Content`, `Out-File`, `>`, `>>` — writes to files
+- `rm`, `Remove-Item`, `del` - file deletion
+- `dart fix --apply`, `dart format` - modifies source files
+- `flutter build`, `flutter run` - long builds / launches app
+- `firebase deploy` - production deployment
+- `flutter pub add`, `flutter pub remove` - mutates `pubspec.yaml`
+- Any `Set-Content`, `Out-File`, `>`, `>>` - writes to files
 
 ---
 
@@ -128,3 +128,6 @@ These mutate state and ALWAYS require user confirmation unless covered by the ex
 - **Windows only**: Use `;` between chained commands, never `&&` (bash-only).
 - **ChromeOS only**: `&&` is fine for chaining in bash.
 - When in doubt: read-only = auto. Write/mutate = ask.
+
+
+

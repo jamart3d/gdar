@@ -39,12 +39,18 @@ class WebAudioEngine implements GdarAudioInterface {
   Future<void> initialize() async {
     // Bind telemetry updates to Worker-Tick for background pulse & drift tracking
     WebInterop.onWorkerTick.listen((event) {
-      _calculateDrift();
-      _updateVisibilityDuration();
-      _checkBoundarySentinel();
-      _emitTelemetry();
+      tick();
     });
 
+    _emitTelemetry();
+  }
+
+  /// Manually triggers the background update cycle.
+  /// Primarily used for testing scenarios where the WebWorker tick is unavailable.
+  void tick() {
+    _calculateDrift();
+    _updateVisibilityDuration();
+    _checkBoundarySentinel();
     _emitTelemetry();
   }
 
@@ -60,7 +66,6 @@ class WebAudioEngine implements GdarAudioInterface {
     _evictOldBuffers();
 
     _emitTelemetry();
-    _checkContextState();
 
     // Start 5s Stall Recovery Timer (The "Escape Hatch")
     _stallTimer?.cancel();

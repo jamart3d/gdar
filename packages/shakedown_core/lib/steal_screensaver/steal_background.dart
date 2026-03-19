@@ -448,4 +448,3 @@ class StealBackground extends PositionComponent
     canvas.drawPaint(ui.Paint()..color = const ui.Color(0xFF000000));
   }
 }
-

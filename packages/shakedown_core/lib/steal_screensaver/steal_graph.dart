@@ -604,4 +604,3 @@ class StealGraph extends Component with HasGameReference<StealGame> {
     }
   }
 }
-

@@ -1,4 +1,6 @@
-﻿import 'package:flutter/material.dart';
+@Skip('Moved to packages/shakedown_core/test during monorepo transition')
+library;
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 import 'package:shakedown_core/ui/widgets/tv/tv_focus_wrapper.dart';
@@ -21,10 +23,10 @@ class MockSettingsProvider extends ChangeNotifier implements SettingsProvider {
   bool get highlightPlayingWithRgb => false;
   @override
   bool get highlightCurrentShowCard => false;
-    @override
-    bool get oilAutoTextSpacing => false;
-    @override
-    Future<void> setOilAutoTextSpacing(bool value) async {}
+  @override
+  bool get oilAutoTextSpacing => false;
+  @override
+  Future<void> setOilAutoTextSpacing(bool value) async {}
 
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
@@ -118,5 +120,4 @@ void main() {
     );
   });
 }
-
 

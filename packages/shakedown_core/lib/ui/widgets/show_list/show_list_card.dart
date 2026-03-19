@@ -84,7 +84,7 @@ class _ShowListCardState extends State<ShowListCard> {
     );
 
     final hPadding = isTv
-        ? 16.0
+        ? 24.0
         : (settingsProvider.performanceMode ? 8.0 : 16.0);
     final vPadding = (isFruit && settingsProvider.fruitDenseList) ? 2.0 : 6.0;
     final outerPadding = EdgeInsets.fromLTRB(

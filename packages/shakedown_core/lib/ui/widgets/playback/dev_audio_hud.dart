@@ -9,6 +9,7 @@ import 'package:shakedown_core/providers/audio_provider.dart';
 import 'package:shakedown_core/providers/settings_provider.dart';
 import 'package:shakedown_core/providers/theme_provider.dart';
 import 'package:shakedown_core/services/gapless_player/gapless_player.dart';
+import 'package:shakedown_core/ui/widgets/theme/liquid_glass_wrapper.dart';
 import 'package:shakedown_core/ui/widgets/theme/fruit_tooltip.dart';
 import 'package:shakedown_core/utils/utils.dart';
 
@@ -43,16 +44,45 @@ class DevAudioHud extends StatefulWidget {
 class _DevAudioHudState extends State<DevAudioHud> {
   static const int _driftHistoryMaxPoints = 120;
   static const int _headroomHistoryMaxPoints = 180;
+  static const int _bufferHistoryMaxPoints = 180;
 
   Timer? _heartbeatPulseTimer;
   bool _heartbeatPulseOn = false;
   final List<double> _driftHistory = <double>[];
   final List<double> _headroomHistory = <double>[];
+  final List<double> _bufferHistory = <double>[];
+  final List<double> _nxHistory = <double>[];
+
+  @override
+  void initState() {
+    super.initState();
+    // Ensure lists are ready for Web/JS runtime immediately
+  }
 
   @override
   void dispose() {
     _heartbeatPulseTimer?.cancel();
     super.dispose();
+  }
+
+  void _syncHeartbeatPulse(bool isPlaying) {
+    if (!isPlaying) {
+      if (_heartbeatPulseTimer != null) {
+        _heartbeatPulseTimer!.cancel();
+        _heartbeatPulseTimer = null;
+        _heartbeatPulseOn = false;
+      }
+      return;
+    }
+
+    _heartbeatPulseTimer ??= Timer.periodic(const Duration(milliseconds: 900), (
+      timer,
+    ) {
+      if (!mounted || !widget.isAppVisible) return;
+      _safeSetState(() {
+        _heartbeatPulseOn = !_heartbeatPulseOn;
+      });
+    });
   }
 
   @override
@@ -93,58 +123,55 @@ class _DevAudioHudState extends State<DevAudioHud> {
         final isFruitMode =
             context.read<ThemeProvider?>()?.themeStyle == ThemeStyle.fruit;
 
-        return Container(
+        final theme = Theme.of(context);
+        final isDarkMode = theme.brightness == Brightness.dark;
+        final isTrueBlack =
+            isDarkMode &&
+            (context.read<SettingsProvider?>()?.useTrueBlack ?? false);
+
+        Widget hudContent = Container(
           key: const ValueKey('hud_always_expanded'),
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
           decoration: BoxDecoration(
-            color: hud.isHandoffCountdown
-                ? Colors.orange.withValues(alpha: 0.95)
-                : Theme.of(context).colorScheme.surface.withValues(alpha: 0.78),
-            borderRadius: BorderRadius.circular(10),
+            color: isTrueBlack
+                ? Colors.black
+                : Theme.of(context).colorScheme.surface.withValues(
+                    alpha: isFruitMode ? 0.35 : 0.78,
+                  ),
+            borderRadius: BorderRadius.circular(isFruitMode ? 14 : 10),
+            border: isTrueBlack
+                ? Border.all(
+                    color: widget.colorScheme.onSurface.withValues(alpha: 0.2),
+                    width: 1.0,
+                  )
+                : (isFruitMode
+                      ? Border.all(
+                          color: Colors.white.withValues(alpha: 0.2),
+                          width: 0.5,
+                        )
+                      : null),
           ),
           child: LayoutBuilder(
             builder: (context, constraints) {
-              final narrow = constraints.maxWidth < 360;
-              final keys = narrow
-                  ? const [
-                      'ENG',
-                      'DET',
-                      'TX',
-                      'HF',
-                      'BG',
-                      'STB',
-                      'AE',
-                      'V',
-                      'DFT',
-                      'PF',
-                      'PS',
-                      'BUF',
-                      'HD',
-                      'E',
-                      'ST',
-                      'SIG',
-                      'MSG',
-                    ]
-                  : const [
-                      'ENG',
-                      'DET',
-                      'TX',
-                      'HF',
-                      'BG',
-                      'STB',
-                      'AE',
-                      'V',
-                      'DFT',
-                      'PF',
-                      'PS',
-                      'BUF',
-                      'HD',
-                      'NX',
-                      'E',
-                      'ST',
-                      'SIG',
-                      'MSG',
-                    ];
+              const keys = [
+                'DFT',
+                'HD',
+                'BUF',
+                'NX',
+                'PF',
+                'HF',
+                'DET',
+                'BG',
+                'STB',
+                'ENG',
+                'AE',
+                'V',
+                'E',
+                'ST',
+                'SIG',
+                'MSG',
+              ];
 
               return _buildHudFieldWrap(
                 fields: fields,
@@ -153,6 +180,7 @@ class _DevAudioHudState extends State<DevAudioHud> {
                 colorScheme: widget.colorScheme,
                 fontFamily: widget.fontFamily,
                 isFruit: isFruitMode,
+                isTrueBlack: isTrueBlack,
                 heartbeatActive: hud.hbActive,
                 heartbeatNeeded: hud.hbNeeded,
                 heartbeatEnabledBySettings: hud.heartbeatEnabledBySettings,
@@ -162,6 +190,18 @@ class _DevAudioHudState extends State<DevAudioHud> {
             },
           ),
         );
+
+        if (isFruitMode && !isTrueBlack) {
+          hudContent = Padding(
+            padding: const EdgeInsets.symmetric(vertical: 2.0),
+            child: LiquidGlassWrapper(
+              borderRadius: BorderRadius.circular(14),
+              child: hudContent,
+            ),
+          );
+        }
+
+        return hudContent;
       },
     );
   }
@@ -244,6 +284,21 @@ class _DevAudioHudState extends State<DevAudioHud> {
           );
         }).toList();
         break;
+      case 'PF':
+        items = [30, 60].map((val) {
+          final active = sp.webPrefetchSeconds == val;
+          return PopupMenuItem(
+            value: val,
+            child: Text(
+              'Prefetch: ${val}s',
+              style: TextStyle(
+                fontWeight: active ? FontWeight.bold : FontWeight.normal,
+                color: active ? widget.colorScheme.primary : null,
+              ),
+            ),
+          );
+        }).toList();
+        break;
     }
 
     if (items.isEmpty) return;
@@ -283,6 +338,11 @@ class _DevAudioHudState extends State<DevAudioHud> {
       if (context.mounted) {
         showRestartMessage(context, 'Preset change requires relaunch.');
       }
+    } else if (result is int && key == 'PF') {
+      sp.setWebPrefetchSeconds(result);
+      if (context.mounted) {
+        showRestartMessage(context, 'Prefetch window changed to ${result}s.');
+      }
     }
   }
 
@@ -293,6 +353,7 @@ class _DevAudioHudState extends State<DevAudioHud> {
     required bool needed,
     required bool enabledBySettings,
     required bool isPlaying,
+    bool horizontal = false,
   }) {
     if (!enabledBySettings) return const SizedBox.shrink();
 
@@ -325,7 +386,9 @@ class _DevAudioHudState extends State<DevAudioHud> {
         duration: const Duration(milliseconds: 220),
         width: size,
         height: size,
-        margin: const EdgeInsets.symmetric(vertical: 0.8),
+        margin: horizontal
+            ? const EdgeInsets.symmetric(horizontal: 1.2)
+            : const EdgeInsets.symmetric(vertical: 0.8),
         decoration: BoxDecoration(
           shape: BoxShape.circle,
           color: finalColor,
@@ -341,20 +404,23 @@ class _DevAudioHudState extends State<DevAudioHud> {
       );
     }
 
+    final dots = [
+      buildDot(Colors.redAccent, needed && !active, true),
+      buildDot(Colors.orange, !needed, false),
+      buildDot(Colors.greenAccent, active, true),
+    ];
+
+    if (horizontal) {
+      return Row(mainAxisSize: MainAxisSize.min, children: dots);
+    }
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 2.5, vertical: 2),
       decoration: BoxDecoration(
         color: colorScheme.onSurface.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(size),
       ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          buildDot(Colors.redAccent, needed && !active, true),
-          buildDot(Colors.orange, !needed, false),
-          buildDot(Colors.greenAccent, active, true),
-        ],
-      ),
+      child: Column(mainAxisSize: MainAxisSize.min, children: dots),
     );
   }
 
@@ -393,6 +459,39 @@ class _DevAudioHudState extends State<DevAudioHud> {
     }
   }
 
+  double? _parseDurationToSeconds(String? raw) {
+    if (raw == null || raw == '--' || raw == '00:00' || raw.isEmpty) {
+      return null;
+    }
+    final parts = raw.split(':');
+    if (parts.length < 2) return double.tryParse(raw);
+    try {
+      final mins = double.parse(parts[0]);
+      final secs = double.parse(parts[1]);
+      return (mins * 60) + secs;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  void _appendBufferSample(String? rawValue) {
+    final sample = _parseDurationToSeconds(rawValue);
+    if (sample == null) return;
+    _bufferHistory.add(sample);
+    if (_bufferHistory.length > _bufferHistoryMaxPoints) {
+      _bufferHistory.removeAt(0);
+    }
+  }
+
+  void _appendNxSample(String? rawValue) {
+    final sample = _parseDurationToSeconds(rawValue);
+    if (sample == null) return;
+    _nxHistory.add(sample);
+    if (_nxHistory.length > _bufferHistoryMaxPoints) {
+      _nxHistory.removeAt(0);
+    }
+  }
+
   void _safeSetState(VoidCallback fn) {
     if (!mounted) return;
     final phase = SchedulerBinding.instance.schedulerPhase;
@@ -407,28 +506,6 @@ class _DevAudioHudState extends State<DevAudioHud> {
     });
   }
 
-  void _syncHeartbeatPulse(bool active) {
-    if (!active) {
-      _heartbeatPulseTimer?.cancel();
-      _heartbeatPulseTimer = null;
-      if (_heartbeatPulseOn) {
-        _safeSetState(() {
-          _heartbeatPulseOn = false;
-        });
-      }
-      return;
-    }
-
-    if (_heartbeatPulseTimer != null) return;
-    _heartbeatPulseOn = true;
-    _heartbeatPulseTimer = Timer.periodic(const Duration(milliseconds: 900), (
-      _,
-    ) {
-      if (!mounted || !widget.isAppVisible) return;
-      _safeSetState(() => _heartbeatPulseOn = !_heartbeatPulseOn);
-    });
-  }
-
   Widget _buildHudFieldWrap({
     required Map<String, String> fields,
     required List<String> orderedKeys,
@@ -436,6 +513,7 @@ class _DevAudioHudState extends State<DevAudioHud> {
     required ColorScheme colorScheme,
     required String? fontFamily,
     required bool isFruit,
+    required bool isTrueBlack,
     required bool heartbeatActive,
     required bool heartbeatNeeded,
     required bool heartbeatEnabledBySettings,
@@ -446,6 +524,8 @@ class _DevAudioHudState extends State<DevAudioHud> {
     const sparklineChipWidth = 84.0;
     _appendDriftSample(fields['DFT']);
     _appendHeadroomSample(fields['HD']);
+    _appendBufferSample(fields['BUF']);
+    _appendNxSample(fields['NX']);
 
     final telemetryChips = <Widget>[];
     final sparklineValueChips = <Widget>[];
@@ -457,14 +537,10 @@ class _DevAudioHudState extends State<DevAudioHud> {
     Widget? msgChip;
 
     // High contrast overrides for handoff countdown
-    final baseTextColor = isHandoffCountdown
-        ? Colors.black
-        : colorScheme.onSurfaceVariant.withValues(alpha: 0.96);
-    final keyTextColor = isHandoffCountdown
-        ? Colors.black.withValues(alpha: 0.8)
-        : colorScheme.onSurfaceVariant.withValues(alpha: 0.7);
-    final chipBgColor = isHandoffCountdown
-        ? Colors.black.withValues(alpha: 0.1)
+    final baseTextColor = colorScheme.onSurfaceVariant.withValues(alpha: 0.96);
+    final keyTextColor = colorScheme.onSurfaceVariant.withValues(alpha: 0.7);
+    final chipBgColor = isTrueBlack
+        ? Colors.black.withValues(alpha: 0.0)
         : colorScheme.onSurface.withValues(alpha: 0.06);
 
     final trendChipWidth = math.max(
@@ -472,124 +548,68 @@ class _DevAudioHudState extends State<DevAudioHud> {
       sparklineChipWidth,
     );
     final trendChipHeight = _heartbeatStackHeight(labelsFontSize);
-    trendChips.add(
-      Container(
+    Widget buildTrendChip(
+      List<double> history,
+      String label,
+      Color strokeColor, {
+      double alpha = 0.92,
+    }) {
+      return Container(
         width: trendChipWidth,
         height: trendChipHeight,
         decoration: BoxDecoration(
           color: chipBgColor,
           borderRadius: BorderRadius.circular(6),
         ),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 2),
-          child: CustomPaint(
-            painter: _HudSparklinePainter(
-              values: _driftHistory,
-              baseline: 0,
-              strokeColor: baseTextColor,
-              guideColor: keyTextColor.withValues(alpha: 0.45),
+        child: Stack(
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 2),
+              child: CustomPaint(
+                size: Size(trendChipWidth, trendChipHeight),
+                painter: _HudSparklinePainter(
+                  values: history,
+                  baseline: 0,
+                  strokeColor: strokeColor.withValues(alpha: alpha),
+                  guideColor: keyTextColor.withValues(alpha: 0.45),
+                ),
+              ),
             ),
-          ),
-        ),
-      ),
-    );
-    trendChips.add(
-      Container(
-        width: trendChipWidth,
-        height: trendChipHeight,
-        decoration: BoxDecoration(
-          color: chipBgColor,
-          borderRadius: BorderRadius.circular(6),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 2),
-          child: CustomPaint(
-            painter: _HudSparklinePainter(
-              values: _headroomHistory,
-              baseline: 0,
-              strokeColor: baseTextColor.withValues(alpha: 0.92),
-              guideColor: keyTextColor.withValues(alpha: 0.45),
+            Positioned(
+              bottom: 1,
+              right: 2,
+              child: Text(
+                label,
+                style: TextStyle(
+                  color: keyTextColor.withValues(alpha: 0.6),
+                  fontSize: labelsFontSize * 0.65,
+                  fontWeight: FontWeight.w900,
+                  fontFamily: fontFamily ?? 'RobotoMono',
+                ),
+              ),
             ),
-          ),
-        ),
-      ),
-    );
-
-    if (heartbeatEnabledBySettings) {
-      trendChips.add(
-        _buildTrafficLightHeartbeat(
-          labelsFontSize,
-          colorScheme,
-          active: heartbeatActive,
-          needed: heartbeatNeeded,
-          enabledBySettings: true,
-          isPlaying: isPlaying,
+          ],
         ),
       );
     }
 
+    trendChips.add(
+      buildTrendChip(_driftHistory, 'DFT', baseTextColor, alpha: 1.0),
+    );
+    trendChips.add(buildTrendChip(_headroomHistory, 'HD', baseTextColor));
+    trendChips.add(
+      buildTrendChip(_bufferHistory, 'BUF', Colors.tealAccent, alpha: 0.8),
+    );
+    trendChips.add(
+      buildTrendChip(_nxHistory, 'NX', Colors.greenAccent, alpha: 0.8),
+    );
+
+    // Standalone heartbeat removed from top row, now integrated into SIG below.
+
     for (final key in orderedKeys) {
       final value = fields[key];
       if (value == null) continue;
-
-      Widget valueWidget;
       final bool isDynamic = key == 'MSG';
-
-      if (key == 'MSG' && value.length > 30) {
-        // Implement Marquee for long messages
-        valueWidget = LayoutBuilder(
-          builder: (context, constraints) {
-            return SizedBox(
-              width: constraints.maxWidth > 0 ? constraints.maxWidth : 200,
-              height: labelsFontSize * 1.2,
-              child: Marquee(
-                text: value,
-                style: TextStyle(
-                  color: baseTextColor,
-                  fontWeight: FontWeight.w700,
-                  fontSize: labelsFontSize * 0.84,
-                  fontFamily: fontFamily ?? 'RobotoMono',
-                  fontFeatures: const [FontFeature.tabularFigures()],
-                ),
-                scrollAxis: Axis.horizontal,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                blankSpace: 20.0,
-                velocity: 30.0,
-                pauseAfterRound: const Duration(seconds: 1),
-                accelerationDuration: const Duration(seconds: 1),
-                accelerationCurve: Curves.linear,
-                decelerationDuration: const Duration(milliseconds: 500),
-                decelerationCurve: Curves.easeOut,
-              ),
-            );
-          },
-        );
-      } else if (isDynamic) {
-        // Dynamic width for MSG (only) to allow content to dictate size
-        valueWidget = Text(
-          value,
-          style: TextStyle(
-            color: baseTextColor,
-            fontWeight: FontWeight.w700,
-            fontSize: labelsFontSize * 0.84,
-            fontFamily: fontFamily ?? 'RobotoMono',
-            fontFeatures: const [FontFeature.tabularFigures()],
-          ),
-        );
-      } else {
-        // Snug value widget (no fixed width here, the Container handles it)
-        valueWidget = Text(
-          value,
-          style: TextStyle(
-            color: baseTextColor,
-            fontWeight: FontWeight.w700,
-            fontSize: labelsFontSize * 0.84,
-            fontFamily: fontFamily ?? 'RobotoMono',
-            fontFeatures: const [FontFeature.tabularFigures()],
-          ),
-          overflow: TextOverflow.ellipsis,
-        );
-      }
 
       // Determine the fixed width for the chip background (Precision Safe Shave)
       double? chipWidth;
@@ -598,46 +618,133 @@ class _DevAudioHudState extends State<DevAudioHud> {
         switch (key) {
           case 'BUF':
           case 'NX':
-            chipWidth = key == 'BUF' ? 68 : 79;
-            break;
           case 'DFT':
-            chipWidth = 66;
-            break;
           case 'HD':
-            chipWidth = 59;
+            chipWidth = 76;
             break;
           case 'DET':
-            chipWidth = 42;
+            chipWidth = 38; // Slightly tighter as requested
             break;
-          case 'STB':
           case 'ENG':
+            chipWidth = 44;
+            break;
           case 'SIG':
-            chipWidth = 52;
+            chipWidth = 36;
+            break;
+          case 'BG':
+            chipWidth = 68; // Tightened for internal dots
             break;
           case 'HF':
-          case 'TX':
           case 'ST':
           case 'PF':
           case 'PS':
-            chipWidth = 45;
+            chipWidth = 54;
             break;
-          case 'BG':
           case 'V':
           case 'AE':
-            chipWidth = 38;
+            chipWidth = 48;
             break;
           case 'E':
-            chipWidth = 25;
+            chipWidth = 36;
             break;
         }
       }
 
+      // Centralized Dynamic Styling Logic
+      Color finalChipBgColor = chipBgColor;
+      Color finalBaseTextColor = baseTextColor;
+      Color finalKeyTextColor = keyTextColor;
+      bool hasClickableBorder = false;
+
+      // 1. Interactive Logic (Clickable Hints)
+      const interactiveKeys = ['ENG', 'HF', 'BG', 'STB', 'PF'];
+      if (interactiveKeys.contains(key)) {
+        hasClickableBorder = true;
+      }
+
+      // 2. State-Based Color Logic
+      if (key == 'E' && value != 'OK' && value != '--') {
+        finalChipBgColor = Colors.redAccent.withValues(alpha: 0.9);
+        finalBaseTextColor = Colors.white;
+        finalKeyTextColor = Colors.white.withValues(alpha: 0.8);
+      } else if (key == 'HD') {
+        final driftValue = _parseDriftValue(value) ?? 0.0;
+        if (driftValue < 0) {
+          finalChipBgColor = Colors.redAccent.withValues(alpha: 0.8);
+          finalBaseTextColor = Colors.white;
+        } else if (driftValue < 5) {
+          finalChipBgColor = Colors.orange.withValues(alpha: 0.8);
+          finalBaseTextColor = Colors.black;
+        } else if (driftValue > 20) {
+          finalBaseTextColor = Colors.greenAccent;
+        }
+      } else if (key == 'PS') {
+        if (value == 'BUF' || value == 'LD') {
+          finalChipBgColor = Colors.orange.withValues(alpha: 0.7);
+          finalBaseTextColor = Colors.black;
+        } else if (value == 'RDY') {
+          finalBaseTextColor = Colors.greenAccent;
+        }
+      } else if (key == 'AE') {
+        final isSurvival = value.contains('+');
+        if (value.startsWith('WA')) {
+          finalBaseTextColor = Colors.cyanAccent;
+        } else if (value.startsWith('H5')) {
+          finalBaseTextColor = Colors.lightBlueAccent;
+        }
+        if (isSurvival) {
+          finalChipBgColor = Colors.indigoAccent.withValues(alpha: 0.85);
+          finalBaseTextColor = Colors.white;
+          finalKeyTextColor = Colors.white.withValues(alpha: 0.82);
+        }
+      } else if (key == 'SIG') {
+        if (value == 'ISS') {
+          finalChipBgColor = Colors.redAccent.withValues(alpha: 0.9);
+          finalBaseTextColor = Colors.white;
+        } else if (value == 'NTF') {
+          finalChipBgColor = Colors.orange.withValues(alpha: 0.8);
+          finalBaseTextColor = Colors.black;
+        } else if (value == 'AGT') {
+          finalBaseTextColor = Colors.lightBlueAccent;
+        }
+      } else if (key == 'ST') {
+        if (isHandoffCountdown) {
+          finalChipBgColor = Colors.orange.withValues(alpha: 0.9);
+          finalBaseTextColor = Colors.black;
+          finalKeyTextColor = Colors.black.withValues(alpha: 0.8);
+        } else if (value == 'SUSP') {
+          finalChipBgColor = Colors.redAccent.withValues(alpha: 0.8);
+          finalBaseTextColor = Colors.white;
+        }
+      } else if (key == 'NX' && value != '00:00' && value != '--') {
+        finalBaseTextColor = Colors.greenAccent;
+      } else if (key == 'DFT') {
+        final drift = _parseDriftValue(value) ?? 0.0;
+        if (drift.abs() > 0.1) {
+          finalBaseTextColor = Colors.redAccent;
+        }
+      } else if (key == 'V' && value.startsWith('HID')) {
+        finalBaseTextColor = Colors.lightBlueAccent;
+      } else if (key == 'STB') {
+        if (value == 'STB') finalBaseTextColor = Colors.greenAccent;
+        if (value == 'BAL') finalBaseTextColor = Colors.lightBlueAccent;
+        if (value == 'MAX') finalBaseTextColor = Colors.orangeAccent;
+      }
+
       Widget chip = Container(
-        width: chipWidth,
-        padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 2),
+        constraints: chipWidth != null
+            ? BoxConstraints(minWidth: chipWidth)
+            : null,
+        padding: const EdgeInsets.symmetric(horizontal: 2.3, vertical: 2),
         decoration: BoxDecoration(
-          color: chipBgColor,
+          color: finalChipBgColor,
           borderRadius: BorderRadius.circular(6),
+          border: hasClickableBorder
+              ? Border.all(
+                  color: colorScheme.onSurface.withValues(alpha: 0.15),
+                  width: 0.5,
+                )
+              : null,
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -645,14 +752,111 @@ class _DevAudioHudState extends State<DevAudioHud> {
             Text(
               '$key:',
               style: TextStyle(
-                color: keyTextColor,
+                color: finalKeyTextColor,
                 fontWeight: FontWeight.w700,
                 fontSize: labelsFontSize * 0.84,
                 fontFamily: fontFamily ?? 'RobotoMono',
                 fontFeatures: const [FontFeature.tabularFigures()],
               ),
             ),
-            if (key == 'MSG') Flexible(child: valueWidget) else valueWidget,
+            if (key == 'MSG' && value.length > 30)
+              Flexible(
+                child: SizedBox(
+                  height: labelsFontSize * 1.2,
+                  child: Marquee(
+                    text: value,
+                    style: TextStyle(
+                      color: finalBaseTextColor,
+                      fontWeight: FontWeight.w700,
+                      fontSize: labelsFontSize * 0.84,
+                      fontFamily: fontFamily ?? 'RobotoMono',
+                      fontFeatures: const [FontFeature.tabularFigures()],
+                    ),
+                    scrollAxis: Axis.horizontal,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    blankSpace: 20.0,
+                    velocity: 30.0,
+                    pauseAfterRound: const Duration(seconds: 1),
+                    accelerationDuration: const Duration(seconds: 1),
+                    accelerationCurve: Curves.linear,
+                    decelerationDuration: const Duration(milliseconds: 500),
+                    decelerationCurve: Curves.easeOut,
+                  ),
+                ),
+              )
+            else if (key == 'MSG')
+              Flexible(
+                child: Text(
+                  value,
+                  style: TextStyle(
+                    color: finalBaseTextColor,
+                    fontWeight: FontWeight.w700,
+                    fontSize: labelsFontSize * 0.84,
+                    fontFamily: fontFamily ?? 'RobotoMono',
+                    fontFeatures: const [FontFeature.tabularFigures()],
+                  ),
+                ),
+              )
+            else if (key == 'AE' && value.contains('+'))
+              Flexible(
+                child: RichText(
+                  overflow: TextOverflow.ellipsis,
+                  text: TextSpan(
+                    style: TextStyle(
+                      color: finalBaseTextColor,
+                      fontWeight: FontWeight.w700,
+                      fontSize: labelsFontSize * 0.84,
+                      fontFamily: fontFamily ?? 'RobotoMono',
+                      fontFeatures: const [FontFeature.tabularFigures()],
+                    ),
+                    children: [
+                      TextSpan(text: value.replaceAll('+', '')),
+                      WidgetSpan(
+                        alignment: PlaceholderAlignment.middle,
+                        child: AnimatedOpacity(
+                          duration: const Duration(milliseconds: 220),
+                          opacity: _heartbeatPulseOn ? 1.0 : 0.4,
+                          child: Text(
+                            '+',
+                            style: TextStyle(
+                              color: finalBaseTextColor,
+                              fontWeight: FontWeight.w700,
+                              fontSize: labelsFontSize * 0.84,
+                              fontFamily: fontFamily ?? 'RobotoMono',
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              )
+            else
+              Flexible(
+                child: Text(
+                  value,
+                  style: TextStyle(
+                    color: finalBaseTextColor,
+                    fontWeight: FontWeight.w700,
+                    fontSize: labelsFontSize * 0.84,
+                    fontFamily: fontFamily ?? 'RobotoMono',
+                    fontFeatures: const [FontFeature.tabularFigures()],
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            if (key == 'BG' && heartbeatEnabledBySettings) ...[
+              const SizedBox(width: 4),
+              _buildTrafficLightHeartbeat(
+                labelsFontSize,
+                colorScheme,
+                active: heartbeatActive,
+                needed: heartbeatNeeded,
+                enabledBySettings: true,
+                isPlaying: isPlaying,
+                horizontal: true,
+              ),
+            ],
           ],
         ),
       );
@@ -666,7 +870,6 @@ class _DevAudioHudState extends State<DevAudioHud> {
       }
 
       // Wrap interactive chips in GestureDetector for popup menus
-      const interactiveKeys = ['ENG', 'HF', 'BG', 'STB'];
       if (interactiveKeys.contains(key)) {
         chip = GestureDetector(
           onTapDown: (details) => _showHudMenu(
@@ -679,10 +882,17 @@ class _DevAudioHudState extends State<DevAudioHud> {
         );
       }
 
-      if (isFruit) {
-        final tooltip = _hudFieldTooltip(key, value);
-        if (tooltip.isNotEmpty) {
+      final tooltip = _hudFieldTooltip(key, value);
+      if (tooltip.isNotEmpty) {
+        if (isFruit) {
           chip = FruitTooltip(message: tooltip, child: chip);
+        } else {
+          chip = Tooltip(
+            message: tooltip,
+            preferBelow: false,
+            verticalOffset: 20,
+            child: chip,
+          );
         }
       }
 
@@ -697,7 +907,7 @@ class _DevAudioHudState extends State<DevAudioHud> {
         detChip = chip;
       } else if (key == 'E') {
         errorChip = chip;
-      } else if (key == 'DFT' || key == 'HD') {
+      } else if (key == 'DFT' || key == 'HD' || key == 'BUF' || key == 'NX') {
         sparklineValueChips.add(chip);
       } else if (key == 'BG') {
         bgChip = chip;
@@ -721,24 +931,14 @@ class _DevAudioHudState extends State<DevAudioHud> {
     if (detChip != null) {
       sigAndMsgChildren.add(detChip);
     }
-    if (detChip != null &&
-        (errorChip != null || sigChip != null || msgChip != null)) {
-      sigAndMsgChildren.add(const SizedBox(width: chipSpacing));
-    }
     if (errorChip != null) {
       sigAndMsgChildren.add(errorChip);
-    }
-    if (errorChip != null && (sigChip != null || msgChip != null)) {
-      sigAndMsgChildren.add(const SizedBox(width: chipSpacing));
     }
     if (sigChip != null) {
       sigAndMsgChildren.add(sigChip);
     }
-    if (sigChip != null && msgChip != null) {
-      sigAndMsgChildren.add(const SizedBox(width: chipSpacing));
-    }
     if (msgChip != null) {
-      sigAndMsgChildren.add(Flexible(child: msgChip));
+      sigAndMsgChildren.add(msgChip);
     }
 
     return Column(
@@ -759,8 +959,10 @@ class _DevAudioHudState extends State<DevAudioHud> {
           ),
         if (sigAndMsgChildren.isNotEmpty) ...[
           const SizedBox(height: chipSpacing),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          Wrap(
+            spacing: chipSpacing,
+            runSpacing: chipSpacing,
+            crossAxisAlignment: WrapCrossAlignment.start,
             children: sigAndMsgChildren,
           ),
         ],
@@ -771,43 +973,80 @@ class _DevAudioHudState extends State<DevAudioHud> {
   String _hudFieldTooltip(String key, String value) {
     switch (key) {
       case 'ENG':
-        return 'Engine mode: $value';
+        String desc = 'Unknown';
+        if (value == 'WBA') desc = 'WebAudio';
+        if (value == 'H5') desc = 'HTML5';
+        if (value == 'STD') desc = 'Standard';
+        if (value == 'PAS') desc = 'Passive';
+        if (value == 'HYB') desc = 'Hybrid';
+        if (value == 'AUT') desc = 'Auto';
+        return 'Configured Engine Mode: $desc ($value)';
       case 'DET':
-        return 'Detected profile: $value';
-      case 'TX':
-        return 'Track transition: $value';
+        String profile = 'Unknown';
+        if (value == 'L') profile = 'Low Performance (Mobile/Old)';
+        if (value == 'P') profile = 'PWA (Installed App)';
+        if (value == 'D') profile = 'Desktop (High Performance)';
+        if (value == 'W') profile = 'Standard Web Browser';
+        return 'Detected Hardware Profile: $profile ($value)';
       case 'HF':
-        return 'Hybrid handoff mode: $value';
+        String desc = 'Unknown';
+        if (value == 'IMM') desc = 'Immediate';
+        if (value == 'BND') desc = 'Boundary';
+        if (value == 'OFF') desc = 'Off';
+        if (value == 'BUF') desc = 'Buffered';
+        return 'Hybrid Handoff Mode: $desc ($value)';
       case 'BG':
-        return 'Hybrid background mode: $value';
+        String desc = 'Unknown';
+        if (value == 'VID') desc = 'Video Overlay';
+        if (value == 'HBT') desc = 'Heartbeat (Silent)';
+        if (value == 'OFF') desc = 'Disabled';
+        if (value == 'H5') desc = 'HTML5 Keepalive';
+        return 'Hybrid Background Mode: $desc ($value)';
       case 'STB':
-        return 'Session stability preset: $value';
+        String desc = 'Unknown';
+        if (value == 'STB') desc = 'Stability (Safe)';
+        if (value == 'BAL') desc = 'Balanced';
+        if (value == 'MAX') desc = 'Maximum (Performance)';
+        return 'Session Stability Preset: $desc ($value)';
       case 'AE':
-        return 'Active audio engine: $value';
+        String desc = 'Unknown';
+        if (value.startsWith('WA')) desc = 'WebAudio';
+        if (value.startsWith('H5')) desc = 'HTML5';
+        if (value.startsWith('VI')) desc = 'Video Overlay';
+        if (value.startsWith('HBT')) desc = 'Heartbeat';
+        if (value.startsWith('BG')) desc = 'Generic Background';
+        if (value.startsWith('FG')) desc = 'Generic Foreground';
+        return 'Active Low-level Engine: $desc ($value)';
       case 'V':
-        return 'App visibility status (VIS/HID) and duration: $value';
+        return 'App Visibility Status (VIS: Visible, HID: Hidden) and duration: $value';
       case 'DFT':
-        return 'JS engine tick drift (seconds since last heartbeat): $value';
+        return 'JS Engine Tick Drift (seconds since last heartbeat): $value. Lower is better.';
       case 'PF':
-        return 'Prefetch window (seconds): $value';
+        return 'Prefetch Window (seconds to pre-load next track): $value';
       case 'PS':
-        return 'Processing state: $value';
+        String desc = 'Unknown';
+        if (value == 'LD') desc = 'Loading';
+        if (value == 'BUF') desc = 'Buffering';
+        if (value == 'RDY') desc = 'Ready';
+        if (value == 'END') desc = 'Completed';
+        if (value == 'IDL') desc = 'Idle';
+        return 'Player Processing State: $desc ($value)';
       case 'P':
-        return 'Player state: $value';
+        return 'Low-level Player State: $value';
       case 'BUF':
-        return 'Buffered amount: $value';
+        return 'Current Buffered amount: $value';
       case 'HD':
-        return 'Headroom: $value';
+        return 'Buffer Headroom (Buffered - Position): $value. Positive values prevent gaps.';
       case 'NX':
-        return 'Next buffered position: $value';
+        return 'Next Track Buffered Position: $value';
       case 'E':
-        return 'Error flag: $value';
+        return 'Error Flag: $value';
       case 'ST':
-        return 'Engine status: $value';
+        return 'Internal Engine Status: $value';
       case 'SIG':
-        return 'Signal source: $value';
+        return 'Signal Source (ISS: Issue, NTF: Notification, AGT: Agent): $value';
       case 'MSG':
-        return 'Message: $value';
+        return 'Detailed Status Message: $value';
       default:
         return '$key: $value';
     }

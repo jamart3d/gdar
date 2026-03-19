@@ -52,16 +52,19 @@ class ConditionalMarquee extends StatelessWidget {
         // Safety buffer prevents cases where TextPainter under-reports width slightly compared to render.
         // Reduced from 50.0 to 10.0 as we have tightened up the UI gaps.
         if (textPainter.width > constraints.maxWidth - 10.0) {
-          return ClipRect(
-            child: Marquee(
-              text: text,
-              style: style,
-              velocity: velocity,
-              startPadding: 0.0,
-              pauseAfterRound: pauseAfterRound,
-              blankSpace: blankSpace,
-              fadingEdgeStartFraction: fadingEdgeStartFraction,
-              fadingEdgeEndFraction: fadingEdgeEndFraction,
+          return SizedBox(
+            height: constraints.maxHeight,
+            child: ClipRect(
+              child: Marquee(
+                text: text,
+                style: style,
+                velocity: velocity,
+                startPadding: 0.0,
+                pauseAfterRound: pauseAfterRound,
+                blankSpace: blankSpace,
+                fadingEdgeStartFraction: fadingEdgeStartFraction,
+                fadingEdgeEndFraction: fadingEdgeEndFraction,
+              ),
             ),
           );
         } else {

@@ -30,21 +30,22 @@ This workflow verifies web performance, Simple Theme constraints, and detects UI
     ```powershell
     cd apps/gdar_web; flutter build web --wasm
     ```
-    - Serve `apps/gdar_web/build/web` using the local Wasm server in `.agent/stress_test/hybrid_stress.js`.
+    - Serve `apps/gdar_web/build/web` using the local Wasm server in `scripts/stress_test/hybrid_stress.js`.
     - **Verify**: App loads without console errors.
     - **Identify**: Specifically look for `Unsupported operation: _Namespace` or `dart:io` crashes during initialization.
 
 5.  **Wasm UI Freeze Stress Test**:
     - Run the Puppeteer test:
     ```bash
-    node .agent/stress_test/hybrid_stress.js
+    node scripts/stress_test/hybrid_stress.js
     ```
     - **Verify**: UI heartbeat remains active (no stalls > 1s).
     - **Verify**: No long tasks > 200ms appear during track transitions.
     - **Verify**: Track transitions do not freeze UI while audio continues.
-    - **Artifacts**: If a freeze is detected, the script captures a screenshot in `.agent/stress_test`.
+    - **Artifacts**: If a freeze is detected, the script captures a screenshot in `scripts/stress_test`.
 
 6.  **Reporting**:
     - If jank is detected (>16ms frames), identify the offending Widget (often nested `Stack` with `Opacity` or `BackdropFilter`).
     - If freezes occur, compare HTML5 vs WebAudio vs Hybrid using the stress test and capture logs.
     - Use the `/clean` workflow if build artifacts are stale.
+

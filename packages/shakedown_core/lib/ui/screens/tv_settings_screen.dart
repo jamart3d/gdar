@@ -243,4 +243,3 @@ class _TvSettingsScreenState extends State<TvSettingsScreen> {
     );
   }
 }
-

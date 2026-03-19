@@ -78,8 +78,26 @@ Future<void> main() async {
 class GdarMobileApp extends StatefulWidget {
   final SharedPreferences prefs;
   final bool isTv;
+  final ShowListProvider? showListProvider;
+  final AudioProvider? audioProvider;
+  final AudioCacheService? audioCacheService;
+  final SettingsProvider? settingsProvider;
+  final DeviceService? deviceService;
+  final DeepLinkService? deepLinkService;
+  final bool enableDeepLinks;
 
-  const GdarMobileApp({super.key, required this.prefs, required this.isTv});
+  const GdarMobileApp({
+    super.key,
+    required this.prefs,
+    required this.isTv,
+    this.showListProvider,
+    this.audioProvider,
+    this.audioCacheService,
+    this.settingsProvider,
+    this.deviceService,
+    this.deepLinkService,
+    this.enableDeepLinks = true,
+  });
 
   @override
   State<GdarMobileApp> createState() => _GdarMobileAppState();
@@ -88,34 +106,40 @@ class GdarMobileApp extends StatefulWidget {
 class _GdarMobileAppState extends State<GdarMobileApp> {
   late final ShowListProvider _showListProvider;
   late final SettingsProvider _settingsProvider;
-  late final DeepLinkService _deepLinkService;
+  DeepLinkService? _deepLinkService;
   StreamSubscription? _linkSubscription;
   final GlobalKey<NavigatorState> _navigatorKey = GlobalKey<NavigatorState>();
 
   @override
   void initState() {
     super.initState();
-    _settingsProvider = SettingsProvider(widget.prefs, isTv: widget.isTv);
-    _showListProvider = ShowListProvider();
+    _settingsProvider =
+        widget.settingsProvider ??
+        SettingsProvider(widget.prefs, isTv: widget.isTv);
+    _showListProvider = widget.showListProvider ?? ShowListProvider();
 
     ThemeProvider.getInstance?.setSettingsProvider(_settingsProvider);
 
-    _showListProvider.init(widget.prefs);
-    _initDeepLinks();
+    if (widget.showListProvider == null) {
+      _showListProvider.init(widget.prefs);
+    }
+    if (widget.enableDeepLinks) {
+      _initDeepLinks();
+    }
   }
 
   @override
   void dispose() {
     _linkSubscription?.cancel();
-    _deepLinkService.dispose();
+    _deepLinkService?.dispose();
     super.dispose();
   }
 
   void _initDeepLinks() {
-    _deepLinkService = DeepLinkService();
-    _deepLinkService.init();
+    _deepLinkService = widget.deepLinkService ?? DeepLinkService();
+    _deepLinkService!.init();
 
-    _linkSubscription = _deepLinkService.uriStream.listen((uri) async {
+    _linkSubscription = _deepLinkService!.uriStream.listen((uri) async {
       if (uri.scheme == 'shakedown' && uri.host == 'settings') {
         final key = uri.queryParameters['key'];
         final value = uri.queryParameters['value'];
@@ -124,7 +148,6 @@ class _GdarMobileAppState extends State<GdarMobileApp> {
           if (value == 'true' || value == 'false') {
             await widget.prefs.setBool(key, value == 'true');
             if (key == 'force_tv') {
-              // We need to restart or refresh the device service
               if (mounted) {
                 await Provider.of<DeviceService>(
                   context,
@@ -146,7 +169,10 @@ class _GdarMobileAppState extends State<GdarMobileApp> {
         Provider<CatalogService>(create: (_) => CatalogService()),
         Provider<WakelockService>(create: (_) => WakelockService()),
         ChangeNotifierProvider.value(value: _settingsProvider),
-        ChangeNotifierProvider(create: (_) => AudioCacheService()..init()),
+        ChangeNotifierProvider(
+          create: (_) =>
+              widget.audioCacheService ?? (AudioCacheService()..init()),
+        ),
         ChangeNotifierProxyProvider<SettingsProvider, ShowListProvider>(
           create: (_) => _showListProvider,
           update: (_, settingsProvider, showListProvider) =>
@@ -158,7 +184,7 @@ class _GdarMobileAppState extends State<GdarMobileApp> {
           AudioCacheService,
           AudioProvider
         >(
-          create: (_) => AudioProvider(),
+          create: (_) => widget.audioProvider ?? AudioProvider(),
           update:
               (
                 _,
@@ -171,7 +197,8 @@ class _GdarMobileAppState extends State<GdarMobileApp> {
         ),
         ChangeNotifierProvider(create: (_) => UpdateProvider()),
         ChangeNotifierProvider(
-          create: (_) => DeviceService(initialIsTv: widget.isTv),
+          create: (_) =>
+              widget.deviceService ?? DeviceService(initialIsTv: widget.isTv),
         ),
       ],
       child: Consumer2<ThemeProvider, SettingsProvider>(

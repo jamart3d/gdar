@@ -24,6 +24,7 @@ import 'package:shakedown_core/services/device_service.dart';
 import 'package:flutter/foundation.dart';
 import 'package:hive_ce/hive.dart';
 import 'package:shakedown_core/models/rating.dart';
+import 'package:shakedown_core/models/hud_snapshot.dart';
 
 import 'playback_screen_test.mocks.dart';
 
@@ -205,6 +206,8 @@ class MockSettingsProvider extends Mock implements SettingsProvider {
   void toggleUseDynamicColor() {}
   @override
   String get appFont => 'default';
+  @override
+  String get activeAppFont => 'default';
   @override
   void setAppFont(String font) {}
   @override
@@ -462,6 +465,7 @@ void main() {
     when(
       mockAudioProvider.hudSnapshotStream,
     ).thenAnswer((_) => const Stream.empty());
+    when(mockAudioProvider.currentHudSnapshot).thenReturn(HudSnapshot.empty());
 
     // Also stub missing audioPlayer streams used by widgets
     when(
@@ -590,3 +594,5 @@ void main() {
     expect(find.byIcon(Icons.star_rounded), findsAtLeastNWidgets(3));
   });
 }
+
+

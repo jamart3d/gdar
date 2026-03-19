@@ -31,8 +31,8 @@ Unless the user explicitly asks for "deep reasoning" or "architectural planning,
 A curated allow-list of safe commands lives in `.agent/rules/auto_approve.md`.
 * **Read-only commands** (file reads, `git status/log/diff`, `flutter analyze`, directory listings, path lookups) MUST always be run with `SafeToAutoRun: true`. Never prompt the user for these.
 * **Platform syntax**: Windows 10 uses PowerShell — chain commands with `;` not `&&`. ChromeOS uses bash — `&&` is fine.
-* Autonomous skills (`shipit`, etc.) are exempt from Rule 1 (Stop and Ask) for the commands explicitly listed in `auto_approve.md`. 
-* **URGENT GATING**: The `shipit` skill MUST NOT be triggered by the word "save". It requires explicit keywords: "shipit", "release", "deploy", or "prod".
+* The `shipit` release workflow may use the commands explicitly listed in `auto_approve.md`, but only during an explicit release run. 
+* **URGENT GATING**: The `shipit` workflow must not be triggered by the word "save". It requires explicit release intent such as "shipit", "release", "deploy", or "prod".
 * **Save vs. Ship Boundary**: Any request containing "save" must ONLY trigger the `/save` workflow. You are strictly forbidden from jumping to a release pipeline unless the user explicitly confirms a production deployment intent.
 * **Confirmation Requirement**: Even for "Autonomous" skills, you must provide a `notify_user` preview before starting the first command if that command is a long-running build or production deployment.
 
@@ -46,3 +46,4 @@ To prevent "Cognitive Compression" and information loss during file refactors:
 * **Constraint:** When refactoring, splitting, or migrating technical manuals (e.g., `docs/`, `.agent/specs/`), you are STRICTLY FORBIDDEN from summarizing, paraphrasing, or omiting technical blocks (shell commands, Bash/Python scripts, deep-link maps, architectural diagrams).
 * **Action:** Content must be moved ATOMICALLY. Every specific configuration detail from the source must exist in the destination before the source is modified or deleted.
 * **Verification:** After a documentation split, you must verify that "Anchor Content" (specific CLI strings or script paths) matches the original source exactly.
+

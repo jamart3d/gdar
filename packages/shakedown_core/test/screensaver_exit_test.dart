@@ -2,102 +2,94 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
+import 'package:shakedown_core/models/show.dart';
+import 'package:shakedown_core/models/source.dart';
+import 'package:shakedown_core/models/track.dart';
 import 'package:shakedown_core/providers/audio_provider.dart';
 import 'package:shakedown_core/providers/settings_provider.dart';
-import 'package:shakedown_core/ui/screens/screensaver_screen.dart';
-import 'package:shakedown_core/steal_screensaver/steal_visualizer.dart';
 import 'package:shakedown_core/services/device_service.dart';
 import 'package:shakedown_core/services/wakelock_service.dart';
-import 'package:mockito/mockito.dart';
-import 'package:mockito/annotations.dart';
-import 'screensaver_exit_test.mocks.dart';
+import 'package:shakedown_core/steal_screensaver/steal_visualizer.dart';
+import 'package:shakedown_core/ui/screens/screensaver_screen.dart';
+import 'helpers/fake_settings_provider.dart';
 
-@GenerateNiceMocks([MockSpec<SettingsProvider>(), MockSpec<AudioProvider>()])
-class MockWakelockService extends Fake implements WakelockService {
+class FakeWakelockService extends Fake implements WakelockService {
   @override
   Future<void> enable() async {}
+
   @override
   Future<void> disable() async {}
+
   @override
   Future<void> toggle({required bool enable}) async {}
 }
 
-class MockDeviceService extends ChangeNotifier implements DeviceService {
+class FakeDeviceService extends ChangeNotifier implements DeviceService {
   @override
   bool get isTv => true;
+
   @override
   bool get isMobile => false;
+
   @override
   bool get isDesktop => false;
+
   @override
   bool get isSafari => false;
+
   @override
   bool get isPwa => false;
+
   @override
   String? get deviceName => 'Android TV';
+
   @override
   Future<void> refresh() async {}
 }
 
+class FakeAudioProvider extends ChangeNotifier implements AudioProvider {
+  @override
+  Show? get currentShow => Show(
+    name: 'Show',
+    artist: 'Artist',
+    date: '2025-01-01',
+    venue: 'Venue',
+    sources: const <Source>[],
+  );
+
+  @override
+  Track? get currentTrack => Track(
+    trackNumber: 1,
+    title: 'Track',
+    duration: 60,
+    url: 'url',
+    setName: 'Set 1',
+  );
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
 void main() {
-  late MockSettingsProvider mockSettingsProvider;
-  late MockAudioProvider mockAudioProvider;
-  late MockWakelockService mockWakelockService;
-  late MockDeviceService mockDeviceService;
+  late FakeSettingsProvider settingsProvider;
+  late FakeAudioProvider audioProvider;
+  late FakeWakelockService wakelockService;
+  late FakeDeviceService deviceService;
 
   setUp(() {
-    mockSettingsProvider = MockSettingsProvider();
-    mockAudioProvider = MockAudioProvider();
-    mockWakelockService = MockWakelockService();
-    mockDeviceService = MockDeviceService();
-
-    when(mockSettingsProvider.oilEnableAudioReactivity).thenReturn(false);
-    when(mockSettingsProvider.oilFlowSpeed).thenReturn(0.5);
-    when(mockSettingsProvider.oilPalette).thenReturn('acid_green');
-
-    when(mockSettingsProvider.oilPulseIntensity).thenReturn(0.8);
-    when(mockSettingsProvider.oilHeatDrift).thenReturn(0.3);
-    when(mockSettingsProvider.oilScreensaverMode).thenReturn('standard');
-    when(mockSettingsProvider.oilPerformanceLevel).thenReturn(0);
-    when(mockSettingsProvider.oilShowInfoBanner).thenReturn(true);
-    when(mockSettingsProvider.oilFilmGrain).thenReturn(0.15);
-    when(mockSettingsProvider.oilInnerRingScale).thenReturn(1.0);
-    when(mockSettingsProvider.oilInnerToMiddleGap).thenReturn(0.3);
-    when(mockSettingsProvider.oilMiddleToOuterGap).thenReturn(0.3);
-    when(mockSettingsProvider.oilOrbitDrift).thenReturn(1.0);
-    when(mockSettingsProvider.oilPaletteCycle).thenReturn(false);
-    when(mockSettingsProvider.oilPaletteTransitionSpeed).thenReturn(5.0);
-    when(mockSettingsProvider.oilBlurAmount).thenReturn(0.0);
-    when(mockSettingsProvider.oilFlatColor).thenReturn(false);
-    when(mockSettingsProvider.oilBannerGlow).thenReturn(false);
-    when(mockSettingsProvider.oilBannerFlicker).thenReturn(0.0);
-    when(mockSettingsProvider.oilAudioPeakDecay).thenReturn(0.998);
-    when(mockSettingsProvider.oilAudioBassBoost).thenReturn(1.0);
-    when(mockSettingsProvider.oilAudioReactivityStrength).thenReturn(1.0);
-    when(mockSettingsProvider.oilTranslationSmoothing).thenReturn(0.1);
-    when(mockSettingsProvider.oilBannerDisplayMode).thenReturn('ring');
-    when(mockSettingsProvider.oilLogoScale).thenReturn(0.5);
-
-    // New trail properties
-    when(mockSettingsProvider.oilLogoTrailIntensity).thenReturn(0.0);
-    when(mockSettingsProvider.oilLogoTrailSlices).thenReturn(6);
-    when(mockSettingsProvider.oilLogoTrailLength).thenReturn(0.5);
-    when(mockSettingsProvider.enableSwipeToBlock).thenReturn(false);
-    when(mockSettingsProvider.oilAudioGraphMode).thenReturn('off');
-    when(mockSettingsProvider.oilBeatSensitivity).thenReturn(0.5);
-    when(mockSettingsProvider.oilBannerPixelSnap).thenReturn(true);
-    when(mockSettingsProvider.oilAutoTextSpacing).thenReturn(false);
+    settingsProvider = FakeSettingsProvider()..isTv = true;
+    audioProvider = FakeAudioProvider();
+    wakelockService = FakeWakelockService();
+    deviceService = FakeDeviceService();
   });
 
   Widget createWidgetUnderTest() {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider<SettingsProvider>.value(
-          value: mockSettingsProvider,
-        ),
-        ChangeNotifierProvider<AudioProvider>.value(value: mockAudioProvider),
-        Provider<WakelockService>.value(value: mockWakelockService),
-        ChangeNotifierProvider<DeviceService>.value(value: mockDeviceService),
+        ChangeNotifierProvider<SettingsProvider>.value(value: settingsProvider),
+        ChangeNotifierProvider<AudioProvider>.value(value: audioProvider),
+        Provider<WakelockService>.value(value: wakelockService),
+        ChangeNotifierProvider<DeviceService>.value(value: deviceService),
       ],
       child: const MaterialApp(home: ScreensaverScreen()),
     );
@@ -109,14 +101,10 @@ void main() {
 
     expect(find.byType(ScreensaverScreen), findsOneWidget);
 
-    // Tap the visualizer
     await tester.tap(find.byType(StealVisualizer));
     await tester.pump(const Duration(milliseconds: 500));
-    await tester.pump(
-      const Duration(milliseconds: 500),
-    ); // Second pump for transition
+    await tester.pump(const Duration(milliseconds: 500));
 
-    // Verify it popped
     expect(find.byType(ScreensaverScreen), findsNothing);
   });
 
@@ -128,12 +116,10 @@ void main() {
 
     expect(find.byType(ScreensaverScreen), findsOneWidget);
 
-    // Global key handler doesn't require focus on a specific widget
     await tester.sendKeyEvent(LogicalKeyboardKey.select);
     await tester.pump(const Duration(milliseconds: 500));
     await tester.pump(const Duration(milliseconds: 500));
 
-    // Verify it popped
     expect(find.byType(ScreensaverScreen), findsNothing);
   });
 
@@ -143,12 +129,10 @@ void main() {
 
     expect(find.byType(ScreensaverScreen), findsOneWidget);
 
-    // Simulate Back button press
     await tester.sendKeyEvent(LogicalKeyboardKey.escape);
     await tester.pump(const Duration(milliseconds: 500));
     await tester.pump(const Duration(milliseconds: 500));
 
-    // Verify it popped
     expect(find.byType(ScreensaverScreen), findsNothing);
   });
 }

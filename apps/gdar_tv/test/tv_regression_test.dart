@@ -1,4 +1,6 @@
-﻿import 'dart:async';
+@Skip('Moved to packages/shakedown_core/test during monorepo transition')
+library;
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
@@ -29,7 +31,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shakedown_core/services/catalog_service.dart';
 import 'package:shakedown_core/services/audio_cache_service.dart';
 import 'package:just_audio/just_audio.dart';
-import 'package:hive_ce/hive.dart';
 
 // Manual mocks to avoid dependency on generated files in this regression test
 class MockAudioProvider extends ChangeNotifier implements ap.AudioProvider {
@@ -209,17 +210,26 @@ class MockTvDeviceService extends ChangeNotifier implements DeviceService {
   Future<void> refresh() async {}
 }
 
+class MockCatalogService extends CatalogService {
+  MockCatalogService() : super.internal();
+
+  @override
+  bool get isInitialized => true;
+}
+
 class FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+
   @override
   AudioEngineMode get audioEngineMode => AudioEngineMode.auto;
   @override
   void setAudioEngineMode(AudioEngineMode mode) {}
+
   @override
   bool get useOilScreensaver => true;
   @override
-  int get oilScaleSource => 1;
+  int get oilScaleSource => 0;
   @override
   double get oilScaleMultiplier => 1.0;
   @override
@@ -251,8 +261,110 @@ class FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
   @override
   String get appFont => 'default';
   @override
+  String get activeAppFont => 'RockSalt';
+  @override
   void resetFruitFirstTimeSettings() {}
 
+  @override
+  int get glowMode => 0;
+  @override
+  bool get highlightPlayingWithRgb => false;
+  @override
+  double get rgbAnimationSpeed => 0.5;
+  @override
+  bool get useDynamicColor => true;
+  @override
+  bool get useTrueBlack => true;
+  @override
+  bool get showPlaybackMessages => true;
+  @override
+  bool get showDevAudioHud => false;
+  @override
+  bool get oilTvPremiumHighlight => true;
+  @override
+  bool get enableShakedownTween => true;
+  @override
+  bool get playRandomOnStartup => false;
+  @override
+  bool get showSplashScreen => false;
+  @override
+  bool get marqueeEnabled => true;
+  @override
+  bool get omitHttpPathInCopy => false;
+  @override
+  bool get fruitStickyNowPlaying => false;
+  @override
+  bool get hideTvScrollbars => false;
+  @override
+  bool get sortOldestFirst => false;
+  @override
+  bool get useSliverAppBar => true;
+  @override
+  bool get useSharedAxisTransition => true;
+  @override
+  bool get useStrictSrcCategorization => false;
+  @override
+  bool get offlineBuffering => false;
+  @override
+  bool get enableBufferAgent => false;
+  @override
+  bool get randomOnlyUnplayed => false;
+  @override
+  bool get randomOnlyHighRated => false;
+  @override
+  bool get randomExcludePlayed => false;
+  @override
+  bool get showGlobalAlbumArt => true;
+  @override
+  bool get hasShownAdvancedCacheSuggestion => true;
+  @override
+  bool get showDebugLayout => false;
+  @override
+  bool get isFirstRun => false;
+  @override
+  bool get showExpandIcon => false;
+  @override
+  set showExpandIcon(bool value) {}
+  @override
+  bool get hideTrackCountInSourceList => true;
+  @override
+  bool get hideTrackDuration => false;
+  @override
+  bool get showTrackNumbers => true;
+  @override
+  bool get playOnTap => true;
+  @override
+  bool get playRandomOnCompletion => false;
+  @override
+  bool get nonRandom => false;
+
+  @override
+  String get devAudioHudSnapshot => '';
+  @override
+  WebEngineProfile get webEngineProfile => WebEngineProfile.modern;
+  @override
+  int get handoffCrossfadeMs => 0;
+  @override
+  bool get allowHiddenWebAudio => false;
+  @override
+  bool get hybridForceHtml5Start => true;
+  @override
+  String get oilAudioGraphMode => 'none';
+  @override
+  double get oilBeatSensitivity => 1.0;
+  @override
+  bool get oilFlatColor => false;
+  @override
+  bool get oilBannerGlow => true;
+  @override
+  double get oilBannerGlowBlur => 5.0;
+  @override
+  double get oilBannerFlicker => 0.0;
+  @override
+  String get oilScreensaverMode => 'flow';
+
+  @override
+  double get crossfadeDurationSeconds => 3.0;
   @override
   bool get highlightCurrentShowCard => false;
   @override
@@ -265,206 +377,6 @@ class FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
   bool get dateFirstInShowCard => true;
   @override
   bool get showSingleShnid => false;
-  @override
-  bool get showTrackNumbers => false;
-  @override
-  bool get sortOldestFirst => true;
-  @override
-  void toggleSortOldestFirst() {}
-
-  @override
-  bool get fruitStickyNowPlaying => false;
-  @override
-  void toggleFruitStickyNowPlaying() {}
-  @override
-  bool get playOnTap => false;
-  @override
-  bool get playRandomOnCompletion => false;
-
-  @override
-  bool get fruitEnableLiquidGlass => false;
-  @override
-  void toggleFruitEnableLiquidGlass() {}
-  @override
-  bool get playRandomOnStartup => false;
-  @override
-  bool get nonRandom => false;
-  @override
-  bool get randomOnlyUnplayed => false;
-  @override
-  bool get randomOnlyHighRated => false;
-  @override
-  bool get randomExcludePlayed => false;
-  @override
-  bool get filterHighestShnid => false;
-  @override
-  bool get useTrueBlack => true;
-  @override
-  NeumorphicStyle get neumorphicStyle => NeumorphicStyle.convex;
-  @override
-  void setNeumorphicStyle(NeumorphicStyle value, {bool? notify}) {}
-  @override
-  bool get useDynamicColor => false;
-  @override
-  bool get showPlaybackMessages => false;
-  @override
-  bool get highlightPlayingWithRgb => true;
-  @override
-  bool get offlineBuffering => false;
-  @override
-  bool get enableBufferAgent => false;
-  @override
-  bool get showSplashScreen => false;
-  @override
-  bool get useSliverAppBar => false;
-  @override
-  bool get useSharedAxisTransition => false;
-  @override
-  bool get hideTrackCountInSourceList => false;
-  @override
-  bool get showExpandIcon => false;
-  @override
-  set showExpandIcon(bool value) {}
-  @override
-  int get glowMode => 0;
-  @override
-  double get rgbAnimationSpeed => 1.0;
-  @override
-  Color? get seedColor => null;
-  @override
-  bool get hideTrackDuration => false;
-  @override
-  bool get showGlobalAlbumArt => true;
-  @override
-  bool get isFirstRun => false;
-  @override
-  bool get hasShownAdvancedCacheSuggestion => true;
-  @override
-  bool get showDebugLayout => false;
-  @override
-  bool get enableShakedownTween => false;
-  @override
-  bool get simpleRandomIcon => false;
-  @override
-  bool get useStrictSrcCategorization => false;
-  @override
-  bool get marqueeEnabled => true;
-  @override
-  bool get omitHttpPathInCopy => true;
-  @override
-  void toggleOmitHttpPathInCopy() {}
-  @override
-  String get oilScreensaverMode => 'visualizer';
-  @override
-  double get oilFlowSpeed => 1.0;
-  @override
-  double get oilPulseIntensity => 1.0;
-  @override
-  String get oilPalette => 'psychedelic';
-  @override
-  double get oilHeatDrift => 0.5;
-  @override
-  bool get oilEnableAudioReactivity => true;
-  @override
-  int get oilPerformanceLevel => 0;
-  @override
-  bool get oilPaletteCycle => false;
-  @override
-  double get oilPaletteTransitionSpeed => 5.0;
-  @override
-  double get oilAudioPeakDecay => 0.998;
-  @override
-  double get oilAudioBassBoost => 1.0;
-  @override
-  double get oilAudioReactivityStrength => 1.0;
-  @override
-  double get oilFilmGrain => 0.15;
-  @override
-  double get oilBlurAmount => 0.0;
-  @override
-  bool get oilFlatColor => false;
-  @override
-  bool get oilBannerGlow => false;
-  @override
-  double get oilBannerFlicker => 0.0;
-  @override
-  double get oilBannerGlowBlur => 0.5;
-  @override
-  double get oilInnerRingScale => 1.0;
-  @override
-  double get oilInnerToMiddleGap => 0.3;
-  @override
-  double get oilMiddleToOuterGap => 0.3;
-  @override
-  double get oilOrbitDrift => 1.0;
-  @override
-  String get oilBannerDisplayMode => 'ring';
-  @override
-  Future<void> setOilBannerDisplayMode(String mode) async {}
-  @override
-  double get oilFlatTextProximity => 0.0;
-  @override
-  Future<void> setOilFlatTextProximity(double value) async {}
-  @override
-  String get oilFlatTextPlacement => 'below';
-  @override
-  Future<void> setOilFlatTextPlacement(String placement) async {}
-
-  @override
-  double get oilBannerResolution => 2.0;
-  @override
-  Future<void> setOilBannerResolution(double value) async {}
-  @override
-  bool get oilBannerPixelSnap => true;
-  @override
-  Future<void> toggleOilBannerPixelSnap() async {}
-  @override
-  double get oilBannerLetterSpacing => 1.02;
-  @override
-  Future<void> setOilBannerLetterSpacing(double value) async {}
-  @override
-  double get oilBannerWordSpacing => 0.4;
-  @override
-  Future<void> setOilBannerWordSpacing(double value) async {}
-  @override
-  double get oilTrackLetterSpacing => 1.02;
-  @override
-  Future<void> setOilTrackLetterSpacing(double value) async {}
-  @override
-  double get oilTrackWordSpacing => 0.4;
-  @override
-  Future<void> setOilTrackWordSpacing(double value) async {}
-  @override
-  double get oilFlatLineSpacing => 1.0;
-  @override
-  Future<void> setOilFlatLineSpacing(double value) async {}
-    @override
-    bool get oilAutoTextSpacing => false;
-    @override
-    Future<void> setOilAutoTextSpacing(bool value) async {}
-  @override
-  String get oilAudioGraphMode => 'off';
-  @override
-  void setOilAudioGraphMode(String mode) {}
-  @override
-  double get oilBeatSensitivity => 0.5;
-  @override
-  Future<void> setOilBeatSensitivity(double value) async {}
-
-  @override
-  double get oilLogoTrailIntensity => 0.0;
-  @override
-  int get oilLogoTrailSlices => 6;
-  @override
-  double get oilLogoTrailLength => 0.5;
-  @override
-  double get oilLogoTrailScale => 1.0;
-  @override
-  double get oilLogoTrailInitialScale => 0.92;
-  @override
-  bool get oilScreensaver4kSupport => false;
-  @override
-  bool get oilTvPremiumHighlight => false;
   @override
   void toggleOilTvPremiumHighlight() {}
   @override
@@ -502,6 +414,10 @@ class FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
   void toggleShowPlaybackMessages() {}
   @override
   void setRgbAnimationSpeed(double speed) {}
+  @override
+  void toggleShowDevAudioHud() {}
+  @override
+  void toggleEnableRunDetection() {}
   @override
   void setFruitEnableLiquidGlass(bool value) {}
   @override
@@ -583,9 +499,12 @@ class FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
   void setHybridBackgroundMode(HybridBackgroundMode value) {}
 
   @override
-  double get crossfadeDurationSeconds => 3.0;
-  @override
   void setCrossfadeDurationSeconds(double seconds) {}
+
+  @override
+  HiddenSessionPreset get hiddenSessionPreset => HiddenSessionPreset.balanced;
+  @override
+  void setHiddenSessionPreset(HiddenSessionPreset value) {}
 
   @override
   Future<void> resetToDefaults() async {}
@@ -694,9 +613,25 @@ class FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
   @override
   Future<void> setOilInnerRingFontScale(double value) async {}
   @override
+  double get oilMiddleRingFontScale => 0.75;
+  @override
+  Future<void> setOilMiddleRingFontScale(double value) async {}
+  @override
+  double get oilOuterRingFontScale => 0.75;
+  @override
+  Future<void> setOilOuterRingFontScale(double value) async {}
+  @override
   double get oilInnerRingSpacingMultiplier => 0.7;
   @override
   Future<void> setOilInnerRingSpacingMultiplier(double value) async {}
+  @override
+  double get oilMiddleRingSpacingMultiplier => 0.7;
+  @override
+  Future<void> setOilMiddleRingSpacingMultiplier(double value) async {}
+  @override
+  double get oilOuterRingSpacingMultiplier => 0.7;
+  @override
+  Future<void> setOilOuterRingSpacingMultiplier(double value) async {}
 
   @override
   double get oilTranslationSmoothing => 1.0;
@@ -730,14 +665,6 @@ class FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
   bool get fruitDenseList => false;
   @override
   void toggleFruitDenseList() {}
-
-  @override
-  bool get hasListeners => super.hasListeners;
-
-  @override
-  HiddenSessionPreset get hiddenSessionPreset => HiddenSessionPreset.balanced;
-  @override
-  void setHiddenSessionPreset(HiddenSessionPreset preset) {}
 }
 
 class MockShowListProvider extends ChangeNotifier implements ShowListProvider {
@@ -853,17 +780,13 @@ void main() {
         );
 
     SharedPreferences.setMockInitialValues({});
-    final prefs = await SharedPreferences.getInstance();
-    await CatalogService().initialize(prefs: prefs);
+    await SharedPreferences.getInstance();
+    CatalogService.setMock(MockCatalogService());
 
     mockAudioProvider = MockAudioProvider();
     mockSettingsProvider = FakeSettingsProvider();
     mockTvDeviceService = MockTvDeviceService();
     mockShowListProvider = MockShowListProvider();
-  });
-
-  tearDown(() async {
-    await Hive.close();
   });
 
   Widget createTestableWidget({required Widget child}) {
@@ -967,10 +890,12 @@ void main() {
     await tester.pumpWidget(
       createTestableWidget(
         child: const Material(
-          child: AppearanceSection(
-            scaleFactor: 1.0,
-            initiallyExpanded: true,
-            showFontSelection: false,
+          child: SingleChildScrollView(
+            child: AppearanceSection(
+              scaleFactor: 1.0,
+              initiallyExpanded: true,
+              showFontSelection: false,
+            ),
           ),
         ),
       ),
@@ -982,6 +907,4 @@ void main() {
     expect(find.text('RGB Animation Speed'), findsOneWidget);
   });
 }
-
-
 

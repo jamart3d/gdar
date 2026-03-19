@@ -1,8 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:shakedown_core/utils/web_perf_hint.dart';
 import 'package:shakedown_core/utils/pwa_detection_stub.dart'
-    if (dart.library.js_interop)
-        'package:shakedown_core/utils/pwa_detection_web.dart'
+    if (dart.library.js_interop) 'package:shakedown_core/utils/pwa_detection_web.dart'
     as impl;
 
 enum WebRuntimeProfile {
@@ -40,4 +39,3 @@ bool _isDesktopWeb() {
       defaultTargetPlatform == TargetPlatform.macOS ||
       defaultTargetPlatform == TargetPlatform.linux;
 }
-

@@ -7,8 +7,8 @@ The Web implementation serves as a hybrid platform between desktop browsing and 
 
 ### 1.1 Dual-Theme Support
 Web is the only platform that allows users to toggle between two distinct design languages:
-*   **Android Theme (Standard):** Implements the **Material 3 Expressive** baseline. See [android_theme_spec.md](file:///home/jam/StudioProjects/gdar/.agent/specs/android_theme_spec.md).
-*   **Fruit Theme (Liquid Glass):** Implements the premium **Walled-Off** aesthetic. See [fruit_theme_spec.md](file:///home/jam/StudioProjects/gdar/.agent/specs/fruit_theme_spec.md).
+*   **Android Theme (Standard):** Implements the **Material 3 Expressive** baseline. See `android_theme_spec.md`.
+*   **Fruit Theme (Liquid Glass):** Implements the premium **Walled-Off** aesthetic. See `fruit_theme_spec.md`.
 
 ### 1.2 Layout & Context
 Web-specific layout rules ensure that both themes translate effectively across varying screen sizes:
@@ -61,3 +61,5 @@ The Web platform serves as the testbed for GPU-accelerated UI experiments.
 ---
 *Version: 1.0*  
 *Last Updated: 2026-03-02*
+
+

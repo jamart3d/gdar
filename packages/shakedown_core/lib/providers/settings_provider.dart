@@ -1150,20 +1150,20 @@ class SettingsProvider with ChangeNotifier {
     _oilBannerPixelSnap =
         _prefs.getBool(_oilBannerPixelSnapKey) ??
         DefaultSettings.oilBannerPixelSnap;
-      _oilAutoTextSpacing =
-          _prefs.getBool(_oilAutoTextSpacingKey) ??
-          _dBool(
-            DefaultSettings.oilAutoTextSpacing,
-            TvDefaults.oilAutoTextSpacing,
-            DefaultSettings.oilAutoTextSpacing,
-          );
-      _oilAutoRingSpacing =
-          _prefs.getBool(_oilAutoRingSpacingKey) ??
-          _dBool(
-            DefaultSettings.oilAutoRingSpacing,
-            TvDefaults.oilAutoRingSpacing,
-            DefaultSettings.oilAutoRingSpacing,
-          );
+    _oilAutoTextSpacing =
+        _prefs.getBool(_oilAutoTextSpacingKey) ??
+        _dBool(
+          DefaultSettings.oilAutoTextSpacing,
+          TvDefaults.oilAutoTextSpacing,
+          DefaultSettings.oilAutoTextSpacing,
+        );
+    _oilAutoRingSpacing =
+        _prefs.getBool(_oilAutoRingSpacingKey) ??
+        _dBool(
+          DefaultSettings.oilAutoRingSpacing,
+          TvDefaults.oilAutoRingSpacing,
+          DefaultSettings.oilAutoRingSpacing,
+        );
     _oilBannerLetterSpacing =
         _prefs.getDouble(_oilBannerLetterSpacingKey) ??
         DefaultSettings.oilBannerLetterSpacing;
@@ -1546,9 +1546,11 @@ class SettingsProvider with ChangeNotifier {
     );
   }
 
-  /// Prefetch-ahead duration is now fixed at 30s (hidden from UI).
-  Future<void> setWebPrefetchSeconds(int seconds) async {
-    // This method is now a no-op as we use a fixed value.
+  /// Sets the prefetch-ahead duration (web-only).
+  void setWebPrefetchSeconds(int seconds) {
+    _webPrefetchSeconds = seconds;
+    _prefs.setInt(_webPrefetchSecondsKey, seconds);
+    notifyListeners();
   }
 
   static const String _rgbAnimationSpeedKey = 'rgb_animation_speed';
@@ -1771,8 +1773,6 @@ class SettingsProvider with ChangeNotifier {
     _oilBannerPixelSnap = !_oilBannerPixelSnap,
   );
 
-
-
   // Ring control setters
   Future<void> setOilInnerRingScale(double value) => _updateDoublePreference(
     _oilInnerRingScaleKey,
@@ -1826,7 +1826,6 @@ class SettingsProvider with ChangeNotifier {
         _oilOuterRingFontScaleKey,
         _oilOuterRingFontScale = value.clamp(0.3, 1.0),
       );
-
 
   Future<void> setOilScaleSource(int value) async {
     _oilScaleSource = value;
@@ -1973,4 +1972,3 @@ class SettingsProvider with ChangeNotifier {
     notifyListeners();
   }
 }
-

@@ -18,6 +18,9 @@ class AnimatedGradientBorder extends StatefulWidget {
   final bool ignoreGlobalClock;
   final bool enabled;
   final bool usePadding;
+  final bool backlightMode;
+  final double? glowSpread;
+  final double? glowBlur;
 
   const AnimatedGradientBorder({
     super.key,
@@ -33,6 +36,9 @@ class AnimatedGradientBorder extends StatefulWidget {
     this.ignoreGlobalClock = false,
     this.enabled = true,
     this.usePadding = true,
+    this.backlightMode = false,
+    this.glowSpread,
+    this.glowBlur,
   });
 
   @override
@@ -124,10 +130,11 @@ class _AnimatedGradientBorderState extends State<AnimatedGradientBorder>
     final sp = context.watch<SettingsProvider>();
     final performanceMode = sp.performanceMode;
     final isPlaying = context.watch<AudioProvider>().isPlaying;
-    final isWebPlayback = kIsWeb && isPlaying;
-    final bool disableGlow = performanceMode || isWebPlayback;
+    final bool isWebPlayback = kIsWeb && isPlaying;
+    // Relaxed: only disable if performance mode is ON (Simple Theme).
+    final bool disableGlow = performanceMode;
 
-    if (!widget.enabled && widget.borderWidth <= 0) {
+    if (!widget.enabled && widget.borderWidth <= 0 && !widget.showShadow) {
       return widget.child;
     }
 
@@ -159,7 +166,6 @@ class _AnimatedGradientBorderState extends State<AnimatedGradientBorder>
     // STABILITY: We always return the same structure (RepaintBoundary -> CustomPaint -> Padding -> Container -> child)
     // even if disabled or showGlow is false. We simply pass 0.0 values to the painter and padding.
     // This prevents structural widget tree changes that break TV focus nodes.
-
     final bool isEffectActive =
         widget.enabled &&
         (widget.showGlow || widget.borderWidth > 0) &&
@@ -170,7 +176,7 @@ class _AnimatedGradientBorderState extends State<AnimatedGradientBorder>
       child: widget.child,
       builder: (context, child) {
         final double spreadPadding = (isEffectActive && widget.showGlow)
-            ? 18.0
+            ? (widget.glowSpread ?? (widget.backlightMode ? 14.0 : 18.0))
             : 0.0;
 
         final innerContent = widget.usePadding
@@ -180,8 +186,10 @@ class _AnimatedGradientBorderState extends State<AnimatedGradientBorder>
                 ),
                 child: Container(
                   decoration: BoxDecoration(
-                    color:
-                        widget.backgroundColor ?? Theme.of(context).cardColor,
+                    color: widget.backlightMode
+                        ? Colors.transparent
+                        : (widget.backgroundColor ??
+                              Theme.of(context).cardColor),
                     borderRadius: BorderRadius.circular(widget.borderRadius),
                   ),
                   child: child,
@@ -205,15 +213,14 @@ class _AnimatedGradientBorderState extends State<AnimatedGradientBorder>
                     borderRadius: widget.borderRadius,
                     borderWidth: isEffectActive ? widget.borderWidth : 0.0,
                     rotation: animation.value * 2 * 3.14159,
-                    showShadow:
-                        isEffectActive &&
-                            !performanceMode &&
-                            !isWebPlayback &&
-                            !disableGlow
+                    showShadow: isEffectActive && !disableGlow
                         ? widget.showShadow
                         : false,
                     glowOpacity: isWebPlayback ? 0.2 : widget.glowOpacity,
+                    glowBlur:
+                        widget.glowBlur ?? (widget.backlightMode ? 10.0 : 12.0),
                     spreadPadding: spreadPadding,
+                    backlightMode: widget.backlightMode,
                   ),
                 ),
               ),
@@ -232,22 +239,26 @@ class _GradientBorderPainter extends CustomPainter {
   final double borderWidth;
   final double rotation;
   final bool showShadow;
-  final double glowOpacity;
   final double spreadPadding;
+  final bool backlightMode;
+  final double glowBlur;
+  final double glowOpacity;
 
   _GradientBorderPainter({
     required this.colors,
     required this.borderRadius,
     required this.borderWidth,
     required this.rotation,
+    required this.glowBlur,
+    required this.glowOpacity,
     this.showShadow = true,
-    this.glowOpacity = 0.5,
     this.spreadPadding = 0.0,
+    this.backlightMode = false,
   });
 
   @override
   void paint(Canvas canvas, Size size) {
-    if (borderWidth <= 0) return;
+    if (borderWidth <= 0 && !showShadow) return;
 
     final rect = Rect.fromLTWH(
       spreadPadding,
@@ -268,19 +279,22 @@ class _GradientBorderPainter extends CustomPainter {
 
       final shadowPaint = Paint()
         ..shader = gradient.createShader(rect)
-        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 12)
-        ..style = PaintingStyle.stroke
+        ..maskFilter = MaskFilter.blur(BlurStyle.normal, glowBlur)
+        ..style = backlightMode ? PaintingStyle.fill : PaintingStyle.stroke
         ..strokeWidth =
             borderWidth + 8.0; // Slightly wider than border for glow
 
       // We draw the shadow slightly larger to ensure it peeks out
+      final double shadowInflation = backlightMode ? -4.0 : 2.0;
       final shadowRRect = RRect.fromRectAndRadius(
-        rect.inflate(2.0),
-        Radius.circular(borderRadius + 2.0),
+        rect.inflate(shadowInflation),
+        Radius.circular(borderRadius + shadowInflation),
       );
 
       canvas.drawRRect(shadowRRect, shadowPaint);
     }
+
+    if (borderWidth <= 0) return;
 
     // 2. Draw Gradient Border using stroke (much more robust on Web than Path.combine)
     final borderPaint = Paint()

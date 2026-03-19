@@ -708,11 +708,13 @@ class PlaybackScreenState extends State<PlaybackScreen>
     final currentShow = audioProvider.currentShow;
     final currentSource = audioProvider.currentSource;
 
-    Color backgroundColor = colorScheme.surface;
+    Color backgroundColor = widget.isPane
+        ? Colors.transparent
+        : colorScheme.surface;
     final isDarkMode = theme.brightness == Brightness.dark;
     final isTrueBlackMode = isDarkMode && settingsProvider.useTrueBlack;
 
-    if (currentShow != null && currentSource != null) {
+    if (!widget.isPane && currentShow != null && currentSource != null) {
       if (!isTrueBlackMode &&
           settingsProvider.highlightCurrentShowCard &&
           !isFruit) {
@@ -1017,7 +1019,8 @@ class PlaybackScreenState extends State<PlaybackScreen>
                         onWrapAround: _focusTrack,
                       ),
                     ),
-                    if (context.watch<DeviceService>().isTv && !settingsProvider.hideTvScrollbars)
+                    if (context.watch<DeviceService>().isTv &&
+                        !settingsProvider.hideTvScrollbars)
                       TvScrollbar(
                         itemPositionsListener: _itemPositionsListener,
                         itemScrollController: _itemScrollController,

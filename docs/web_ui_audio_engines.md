@@ -105,44 +105,40 @@ from both settings state and runtime JS engine state.
 
 ### Layout & Appearance
 
-The HUD uses an **"Ultra-High-Density"** layout optimized for professional
-diagnostics:
+The HUD uses an **"Ultra-High-Density" (UHD)** layout optimized for professional real-time diagnostics:
 
-- **Stable & Snug:** Each chip background "hugs" its content perfectly to
-  eliminate whitespace, but the chip itself is wrapped in a fixed-width "slot"
-  to ensure the rest of the layout doesn't "dance" as values fluctuate.
-- **Two-Row Structure:**
-  - **Top Row:** A high-density `Wrap` containing all standard telemetry chips.
-  - **Bottom Row:** A dedicated full-width `Row` for `SIG` and `MSG` chips.
-- **Theme Adaptation:**
-  - **Android:** Uses **Roboto** and **RobotoMono** for all telemetry.
-  - **Fruit:** Inherits the system font (**Inter**) for a native Apple feel.
-  - **Tooltips:** Uses `FruitTooltip` when the Fruit theme is active.
+- **Stacked Performance Columns:** To prevent layout "jitter," performance chips use a **fixed-width slot (84px)** that perfectly aligns with the four sparkline types (`DFT`, `HD`, `BUF`, `NX`). This creates vertical columns for real-time visual-to-numeric correlation.
+- **Sparkline Suite:** The top row contains four real-time trend graphs, each with a **tiny integrated label** (`DFT`, `HD`, `BUF`, `NX`) in the lower corner.
+- **Status & Messaging Row:** The bottom row is reserved for logic signals (`SIG`) and detailed engine messages (`MSG`), using an automatic scrolling **Marquee** for text over 30 characters.
+- **Horizontal Heartbeat:** Background performance status is indicated by a **horizontal traffic-light pulse** integrated directly into the `BG` (Background) performance chip.
+- **Environmental Context:** The `DET` (Detection) chip is compacted to **52px** to preserve space for telemetry while showing the detected hardware profile.
+
+For a comprehensive guide to performance tuning and metric definitions, see [DevAudioHud: Advanced Diagnostic Interface](dev_audio_hud.md).
 
 ### HUD Abbreviations
 
-Common diagnostic chips (Top Row):
+Common diagnostic chips (organized by their diagnostic columns):
 
-- `ENG`: effective engine mode (WBA, H5, HYB, STD)
-- `DET`: detected profile label (LOW, PWA, DESK, WEB)
-- `TX`: transition mode (gap, gapless)
-- `HF`: hybrid handoff mode (imm, buf, bnd, none)
-- `BG`: hybrid background mode (h5, hb, vid, none)
-- `STB`: hidden-session preset (STB, BAL, MAX)
-- `AE`: active engine/context (webAudio, html5)
-- `V`: visibility status and duration (VIS, HID)
 - `DFT`: state tick drift (seconds since last update)
-- `PF`: prefetch window (seconds or G for greedy)
-- `PS`: mapped processing state (LD, BUF, RDY)
-- `BUF`: current buffered amount (MB or 0B)
 - `HD`: headroom remaining (seconds)
-- `NX`: next-track buffered amount
+- `BUF`: current buffered amount (MB or 0B)
+- `NX`: next-track prefetch progress
+- `PF`: prefetch threshold toggle (30s vs 60s)
+- `HF`: hybrid handoff mode (imm, buf, bnd, off)
+- `BG`: hybrid survival mode (h5, hb, vid, none) + heartbeat pulse
+- `STB`: hidden-session preset (STB, BAL, MAX)
+- `ENG`: effective engine mode (WBA, H5, HYB, STD)
+- `DET`: detected profile label (L, P, D, W)
+- `AE`: Active engine context. Variants: **`-New`** (Native), **`-Opt`** (Optimized). A pulsing **standard plus (`+`)** and **Indigo background** indicate active survival mode. The pulse is precisely synced (220ms) with the `BG` heartbeat indicator.
+- `V`: visibility status and hidden duration (VIS, HID)
 - `E`: error state flag
 - `ST`: raw engine status code
+- `SIG`: signal source (AGT, ISS, NTF or --)
+- `MSG`: message content (clears on tap)
 
-Interactive chips (Top Row):
-Tapping these chips opens a popup menu to adjust settings:
-- `ENG`, `HF`, `BG`, `STB`
+### Interactive HUD Controls
+Tapping these chips opens a popup menu to adjust engine behavior on-the-fly:
+- `ENG`, `HF`, `BG`, `STB`, `PF`
 
 ### Messaging & Signals (Bottom Row)
 
@@ -263,13 +259,14 @@ longer emphasizes transition switching.
 
 ### Prefetch Window
 
-`SettingsProvider.webPrefetchSeconds` is now derived automatically:
+`SettingsProvider.webPrefetchSeconds` is used to determine how far in advance the 
+next track buffer is opened.
 
-- `-1` when `audioEngineMode == webAudio` (greedy prefetch)
-- `30` seconds otherwise
-
-The setter is effectively a no-op from the settings side, so this is no longer
-meaningfully user-tunable in normal UI flow.
+- **Greedy (-1)**: Triggered automatically when `audioEngineMode == webAudio`. 
+  Attempts to prefetch as much as possible for maximum gapless reliability.
+- **User-Tunable**: Toggleable via the `PF` chip in the HUD between **30s** and **60s**.
+- Default behavior: Starts at 30s but can be overridden on-the-fly for poor 
+  network conditions.
 
 ## Hidden Session Presets
 

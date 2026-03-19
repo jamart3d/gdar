@@ -61,6 +61,7 @@ class TvHeader extends StatelessWidget {
             onTap: onRandomPlay,
             autofocus: autofocusDice,
             focusNode: diceFocusNode,
+            useUnderGlow: true,
             onKeyEvent: (node, event) {
               if (event is KeyDownEvent) {
                 if (event.logicalKey == LogicalKeyboardKey.arrowLeft) {
@@ -116,6 +117,9 @@ class TvHeader extends StatelessWidget {
               );
             },
             focusNode: gearsFocusNode,
+            useUnderGlow: true,
+            glowSpread: 10 * scaleFactor,
+            glowBlur: 6 * scaleFactor,
             onKeyEvent: (node, event) {
               if (event is KeyDownEvent) {
                 if (event.logicalKey == LogicalKeyboardKey.arrowLeft) {
@@ -128,13 +132,13 @@ class TvHeader extends StatelessWidget {
               }
               return KeyEventResult.ignored;
             },
-            borderRadius: BorderRadius.circular(50 * scaleFactor),
             child: Container(
-              padding: EdgeInsets.all(10 * scaleFactor),
+              padding: EdgeInsets.all(6 * scaleFactor),
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: colorScheme.surfaceContainerHighest.withValues(
-                  alpha: 0.5,
+                gradient: RadialGradient(
+                  colors: [Colors.black, Colors.black.withValues(alpha: 0.0)],
+                  stops: const [0.6, 1.0],
                 ),
               ),
               child: Icon(

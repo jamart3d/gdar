@@ -63,6 +63,7 @@ class TrackListView extends StatelessWidget {
     final settingsProvider = context.watch<SettingsProvider>();
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     final isTrueBlackMode = isDarkMode && settingsProvider.useTrueBlack;
+    final isTv = context.watch<DeviceService>().isTv;
 
     final Map<String, List<Track>> tracksBySet = {};
     for (var track in source.tracks) {
@@ -113,7 +114,9 @@ class TrackListView extends StatelessWidget {
         itemPositionsListener: itemPositionsListener,
         initialScrollIndex: resolvedInitialIndex,
         initialAlignment: initialScrollAlignment,
-        padding: EdgeInsets.fromLTRB(8, topPadding, 8, bottomPadding),
+        padding: isTv
+            ? EdgeInsets.fromLTRB(28, topPadding, 28, bottomPadding)
+            : EdgeInsets.fromLTRB(8, topPadding, 8, bottomPadding),
         itemCount: listItems.length,
         itemBuilder: (context, index) {
           final item = listItems[index];
@@ -277,7 +280,17 @@ class TrackListView extends StatelessWidget {
             focusNode: trackFocusNodes?[listIndex],
             scaleOnFocus: 1.0,
             isPlaying: isPlaying,
-            focusBackgroundColor: Colors.transparent,
+            focusDecoration: BoxDecoration(
+              color: Colors.black,
+              borderRadius: BorderRadius.circular(8),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.6),
+                  blurRadius: 16,
+                  spreadRadius: 4,
+                ),
+              ],
+            ),
             focusColor: colorScheme.primary,
             borderRadius: BorderRadius.circular(8),
             // We rely purely on the crisp border for selection to avoid

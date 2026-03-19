@@ -5,6 +5,8 @@
 
 This document serves as the source of truth for the web-based audio engine architecture and prevents unauthorized changes to stable components.
 
+**Monorepo scope:** Web bootstrap scripts and browser-specific engine code live under `apps/gdar_web`, while shared settings, providers, and player integration live under `packages/shakedown_core`.
+
 ## 1. Engine Architecture & Settings
 
 The engines are listed here in the same order as they appear in the UI selection menu:
@@ -82,3 +84,4 @@ To ensure the Hybrid engine [5] remains stable when the screen is off (e.g., dur
 1.  **Background Startup**: If `play()` or `syncState()` is called while `document.hidden` is true, the engine MUST trigger `_gdarHeartbeat.startHeartbeat()` immediately *before* attempting to prime the underlying audio engines.
 2.  **Hybrid Continuity**: The engine MUST NOT skip the "Instant Start" (HTML5 Engine [2]) phase just because the tab is hidden. Relying only on Web Audio for background starts is prohibited as it is more prone to suspension.
 3.  **Heartbeat Priority**: Survival heartbeats (video/audio) are the primary mechanism for background stability. If `backgroundMode` is set to `heartbeat` or `video`, these MUST remain active throughout the duration of the background session.
+

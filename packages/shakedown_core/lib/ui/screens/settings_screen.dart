@@ -1,4 +1,4 @@
-﻿import 'dart:async';
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
@@ -459,4 +459,3 @@ class _SettingsScreenState extends State<SettingsScreen>
     return FruitActionButton(icon: icon, onPressed: onPressed);
   }
 }
-

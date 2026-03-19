@@ -951,18 +951,17 @@ class _AppearanceSectionState extends State<AppearanceSection> {
                     Colors.purple,
                     Colors.red,
                   ],
-                  showGlow: true,
-                  // Glow mirrors the global logic:
-                  // If "Glow Border" is ON (1) or HALF (2), we show shadow.
-                  showShadow: settingsProvider.glowMode > 0,
-                  // Use percentage-based glow intensity
+                  // Force enable so preview works even if global glow is off
+                  enabled: true,
+                  showShadow: true,
                   glowOpacity: 0.5 * (settingsProvider.glowMode / 100.0),
                   animationSpeed: settingsProvider.rgbAnimationSpeed,
                   // Ignore global clock locally so the preview animates even if the
                   // global clock is paused by the ShowListScreen behind us.
                   ignoreGlobalClock: true,
-                  // Default background color (cardColor) masks the center of the RGB effect
-                  backgroundColor: null,
+                  // Use transparent background to let the gradient show through
+                  // and avoid being masked by True Black card colors.
+                  backgroundColor: Colors.transparent,
                   child: TvFocusWrapper(
                     showGlow: true,
                     borderRadius: BorderRadius.circular(

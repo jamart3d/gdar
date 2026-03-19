@@ -22,13 +22,34 @@ class GDARAndroidTheme {
     );
   }
 
-  static ThemeData dark({required String appFont, bool uiScale = false}) {
+  static ThemeData dark({
+    required String appFont,
+    bool uiScale = false,
+    bool useTrueBlack = false,
+  }) {
+    final Color? blackColor = useTrueBlack ? Colors.black : null;
     final themeData = ThemeData(
       useMaterial3: true,
       brightness: Brightness.dark,
       colorScheme: ColorScheme.fromSeed(
         seedColor: Colors.blue,
         brightness: Brightness.dark,
+        surface: blackColor,
+        surfaceContainer: blackColor,
+        surfaceContainerHigh: blackColor,
+        surfaceContainerHighest: blackColor,
+        surfaceContainerLow: blackColor,
+        surfaceContainerLowest: blackColor,
+        surfaceTint: useTrueBlack ? Colors.transparent : null,
+      ),
+      scaffoldBackgroundColor: blackColor,
+      appBarTheme: AppBarTheme(
+        backgroundColor: blackColor,
+        surfaceTintColor: useTrueBlack ? Colors.transparent : null,
+      ),
+      cardTheme: CardThemeData(
+        color: blackColor,
+        surfaceTintColor: useTrueBlack ? Colors.transparent : null,
       ),
     );
 

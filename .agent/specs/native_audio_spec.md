@@ -1,6 +1,8 @@
 # Native Mobile Audio Architecture (GDAR)
 
-This specification documents the current state and structure of the native audio engine used in the GDAR mobile applications (iOS/Android). It serves as the source of truth for background execution, caching policies, buffer handling, and default user configurations.
+This specification documents the current state and structure of the native audio engine used in GDAR's native mobile targets. It serves as the source of truth for background execution, caching policies, buffer handling, and default user configurations.
+
+**Monorepo scope:** Shared playback logic primarily lives in `packages/shakedown_core`, with native app integrations and entrypoints in `apps/gdar_mobile` and related platform folders.
 
 ## 1. Core Architecture
 
@@ -62,3 +64,4 @@ When a user fresh-installs GDAR, the audio engine inherits the following baselin
 *   **Persistent Custom Playlists:** Evolving the playlist logic to support mixing `AudioSource` objects from entirely different shows into a saved local playlist.
 *   **Queue Restore / Undo Block:** Implementing a memory stack to allow users to "undo" an accidental show selection and return to their exact previous spot in a queue, or undo a "swipe to block" action via a standard SnackBar action.
 *   **Live Continuous Playlist:** Changing the queue model from clearing on every new show to appending them. As each new show is requested (manually or via `playRandomOnCompletion`), it is appended to a continuous runtime playlist. This would allow a user to legitimately "Skip Previous" at track 1 of Show B, and jump backward into the end of Show A. This live queue would exist only in memory and be destroyed when the app closes.
+

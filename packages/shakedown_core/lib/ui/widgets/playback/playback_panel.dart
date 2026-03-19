@@ -91,7 +91,7 @@ class PlaybackPanel extends StatelessWidget {
                       height: 4,
                       decoration: BoxDecoration(
                         color: colorScheme.onSurfaceVariant.withValues(
-                          alpha: 0.4,
+                          alpha: isTrueBlackMode ? 0.22 : 0.4,
                         ),
                         borderRadius: BorderRadius.circular(2),
                       ),
@@ -368,14 +368,11 @@ class PlaybackPanel extends StatelessWidget {
                           const PlaybackProgressBar(),
                           if (kIsWeb && settingsProvider.showDevAudioHud) ...[
                             SizedBox(height: 8 * scaleFactor),
-                            const Align(
-                              alignment: Alignment.center,
-                              child: PlaybackMessages(
-                                textAlign: TextAlign.center,
-                                showDivider: false,
-                                showStatusLine: false,
-                                compactDevHud: true,
-                              ),
+                            const PlaybackMessages(
+                              textAlign: TextAlign.center,
+                              showDivider: false,
+                              showStatusLine: false,
+                              compactDevHud: true,
                             ),
                           ],
                           const SizedBox(height: 12),

@@ -849,9 +849,9 @@ class PlaybackSection extends StatelessWidget {
                   subtitle: Text(
                     'Keeps Web Audio active in background. '
                     'May stop sooner on mobile.',
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      fontSize: 12 * scaleFactor,
-                    ),
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodySmall?.copyWith(fontSize: 12 * scaleFactor),
                   ),
                   value: sp.allowHiddenWebAudio,
                   onChanged: (value) {
@@ -1095,13 +1095,3 @@ class _Segment<T> {
     this.tooltip,
   });
 }
-
-
-
-
-
-
-
-
-
-

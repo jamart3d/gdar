@@ -27,6 +27,9 @@ class _FakeThemeProvider extends ChangeNotifier implements ThemeProvider {
   bool get isFruitAllowed => true;
 
   @override
+  bool get isFruit => true;
+
+  @override
   void toggleTheme({Brightness? currentBrightness}) {
     _darkMode = !_darkMode;
     notifyListeners();
@@ -196,3 +199,4 @@ void main() {
     expect(find.byType(FruitTextAction), findsOneWidget);
   });
 }
+

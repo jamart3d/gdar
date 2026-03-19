@@ -1,6 +1,8 @@
 # TV Screensaver UI Specification (GDAR)
 
-This document outlines the current state, architecture, specifications, and future development plans specifically for the **TV Screensaver** feature within the GDAR application. The screensaver uses a fully custom generative visualizer ("Steal Your Face") to prevent screen burn-in while providing a highly aesthetic, audio-reactive experience tailored for Google TV and Android TV hardware.
+This document outlines the current state, architecture, specifications, and future development plans specifically for the **TV Screensaver** feature within GDAR's TV experience. The screensaver uses a fully custom generative visualizer ("Steal Your Face") to prevent screen burn-in while providing a highly aesthetic, audio-reactive experience tailored for Google TV and Android TV hardware.
+
+**Monorepo scope:** Shared screensaver logic and widgets primarily live in `packages/shakedown_core`, while TV-specific routing and app behavior live in `apps/gdar_tv`.
 
 ## 1. Current State & Architecture
 
@@ -96,3 +98,4 @@ To keep the UI consistent, the following settings (prefixed with `oil` internall
 
 ### **3. Screensaver "Daydream" OS Integration**
 - Investigate Android TV `DreamService`. Currently, the screensaver operates firmly inside the app. The ultimate goal is to register the `StealVisualizer` as a system-wide Android TV Daydream target, meaning the user can see the GDAR visuals even if the app is backgrounded.
+

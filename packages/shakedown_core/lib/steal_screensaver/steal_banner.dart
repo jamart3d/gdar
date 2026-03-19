@@ -553,17 +553,19 @@ class StealBanner extends Component with HasGameReference<StealGame> {
     final visibleCount = lines
         .where((l) => l.$1.isNotEmpty && l.$3 > 0.01)
         .length;
-        final baseLineHeight = _flatLineHeight * config.flatLineSpacing;
+    final baseLineHeight = _flatLineHeight * config.flatLineSpacing;
     double lineHeight = baseLineHeight;
     if (config.autoTextSpacing && visibleCount > 0) {
       final baseBlockHeight = visibleCount * baseLineHeight;
       final minBlockHeight = minDim * 0.14;
       final maxBlockHeight = minDim * 0.30;
       if (baseBlockHeight > maxBlockHeight) {
-        lineHeight = baseLineHeight *
-            (maxBlockHeight / baseBlockHeight).clamp(0.7, 1.0);
+        lineHeight =
+            baseLineHeight *
+            (maxBlockHeight / baseBlockHeight).clamp(0.65, 1.0);
       } else if (baseBlockHeight < minBlockHeight) {
-        lineHeight = baseLineHeight *
+        lineHeight =
+            baseLineHeight *
             (minBlockHeight / baseBlockHeight).clamp(1.0, 1.25);
       }
     }
@@ -651,32 +653,24 @@ class StealBanner extends Component with HasGameReference<StealGame> {
     }
   }
 
-  double _autoScaleForWidth(
-    double width,
-    double minWidth,
-    double maxWidth,
-  ) {
+  double _autoScaleForWidth(double width, double minWidth, double maxWidth) {
     if (width <= 0) return 1.0;
     if (width < minWidth) {
       return (minWidth / width).clamp(1.0, 1.25);
     }
     if (width > maxWidth) {
-      return (maxWidth / width).clamp(0.7, 1.0);
+      return (maxWidth / width).clamp(0.6, 1.0);
     }
     return 1.0;
   }
 
-  double _autoScaleForSpan(
-    double span,
-    double minSpan,
-    double maxSpan,
-  ) {
+  double _autoScaleForSpan(double span, double minSpan, double maxSpan) {
     if (span <= 0) return 1.0;
     if (span < minSpan) {
       return (minSpan / span).clamp(1.0, 1.25);
     }
     if (span > maxSpan) {
-      return (maxSpan / span).clamp(0.7, 1.0);
+      return (maxSpan / span).clamp(0.6, 1.0);
     }
     return 1.0;
   }
@@ -705,6 +699,7 @@ class StealBanner extends Component with HasGameReference<StealGame> {
     }
     return totalWidth;
   }
+
   void _drawFlatLine(
     Canvas canvas,
     String text,
@@ -741,14 +736,21 @@ class StealBanner extends Component with HasGameReference<StealGame> {
     double totalWidth = _measureWordListWidth(wordList, lSpace, wSpace, config);
 
     if (config.autoTextSpacing) {
-      final scale = _autoScaleForWidth(
-        totalWidth,
-        minLineWidth,
-        maxLineWidth,
-      );
+      final scale = _autoScaleForWidth(totalWidth, minLineWidth, maxLineWidth);
       if (scale != 1.0) {
         lSpace *= scale;
         wSpace *= scale;
+        totalWidth = _measureWordListWidth(wordList, lSpace, wSpace, config);
+      }
+
+      // 2. Dynamic Compression ("Squish-to-fit") for Flat Mode
+      // If text still exceeds maxLineWidth after auto-spacing (e.g. at 0.6 floor),
+      // we perform an emergency squish to ensure it fits the boundary.
+      if (totalWidth > maxLineWidth) {
+        final compressionFactor = maxLineWidth / totalWidth;
+        // Don't squish letters as much as words to preserve legibility.
+        lSpace *= max(0.8, compressionFactor);
+        wSpace *= compressionFactor;
         totalWidth = _measureWordListWidth(wordList, lSpace, wSpace, config);
       }
     }
@@ -949,21 +951,15 @@ class StealBanner extends Component with HasGameReference<StealGame> {
       return span;
     }
 
-        double currentSpan = calcRawSpan(lSpace, wSpace);
+    double currentSpan = calcRawSpan(lSpace, wSpace);
 
     if (config.autoRingSpacing) {
       // Inner ring (date) uses narrower targets to reduce spread.
       // Track and Venue use wider targets to increase spacing/legibility.
-      final double minAutoSpan =
-          isInner ? (110 / 180) * pi : (165 / 180) * pi;
-      final double maxAutoSpan =
-          isInner ? (260 / 180) * pi : (310 / 180) * pi;
+      final double minAutoSpan = isInner ? (110 / 180) * pi : (165 / 180) * pi;
+      final double maxAutoSpan = isInner ? (260 / 180) * pi : (310 / 180) * pi;
 
-      final scale = _autoScaleForSpan(
-        currentSpan,
-        minAutoSpan,
-        maxAutoSpan,
-      );
+      final scale = _autoScaleForSpan(currentSpan, minAutoSpan, maxAutoSpan);
       if (scale != 1.0) {
         lSpace *= scale;
         wSpace *= scale;
@@ -978,7 +974,7 @@ class StealBanner extends Component with HasGameReference<StealGame> {
       final compressionFactor = maxAllowedSpan / currentSpan;
       // We don't want to squish letters too much (min 0.8x original),
       // but words can squish more aggressively.
-      lSpace *= max(0.85, compressionFactor);
+      lSpace *= max(0.75, compressionFactor);
       wSpace *= compressionFactor;
       currentSpan = calcRawSpan(lSpace, wSpace);
     }
@@ -1167,8 +1163,5 @@ class StealBanner extends Component with HasGameReference<StealGame> {
     );
   }
 }
-
-
-
 
 // end of file

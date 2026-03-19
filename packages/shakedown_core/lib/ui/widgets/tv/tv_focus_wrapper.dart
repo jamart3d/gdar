@@ -19,6 +19,7 @@ class TvFocusWrapper extends StatefulWidget {
   final bool autofocus;
   final BorderRadius? borderRadius;
   final Color? focusBackgroundColor;
+  final Decoration? focusDecoration;
   final Color? focusColor;
   final bool showGlow;
   final bool useRgbBorder;
@@ -26,6 +27,9 @@ class TvFocusWrapper extends StatefulWidget {
   final FocusOnKeyEventCallback? onKeyEvent;
   final ValueChanged<bool>? onFocusChange;
   final bool? overridePremiumHighlight;
+  final bool useUnderGlow;
+  final double? glowSpread;
+  final double? glowBlur;
 
   const TvFocusWrapper({
     super.key,
@@ -38,12 +42,16 @@ class TvFocusWrapper extends StatefulWidget {
     this.borderRadius,
     this.focusColor,
     this.showGlow = false,
+    this.useUnderGlow = false,
     this.useRgbBorder = false,
     this.isPlaying = false,
     this.onKeyEvent,
     this.focusBackgroundColor,
+    this.focusDecoration,
     this.onFocusChange,
     this.overridePremiumHighlight,
+    this.glowSpread,
+    this.glowBlur,
   });
 
   @override
@@ -123,11 +131,26 @@ class _TvFocusWrapperState extends State<TvFocusWrapper> {
     final showPlayingRgb =
         widget.isPlaying && sp.highlightPlayingWithRgb && !showPremium;
 
+    // Merge base visuals with selection decorations
+    BoxDecoration activeDecoration;
+    if (_isFocused) {
+      if (widget.focusDecoration is BoxDecoration) {
+        activeDecoration = (widget.focusDecoration as BoxDecoration).copyWith(
+          borderRadius: radius,
+        );
+      } else {
+        activeDecoration = BoxDecoration(
+          color: widget.focusBackgroundColor,
+          borderRadius: radius,
+        );
+      }
+    } else {
+      activeDecoration = BoxDecoration(borderRadius: radius);
+    }
+
     Widget content = AnimatedContainer(
       duration: const Duration(milliseconds: 200),
-      decoration: BoxDecoration(
-        color: _isFocused ? widget.focusBackgroundColor : null,
-        borderRadius: radius,
+      decoration: activeDecoration.copyWith(
         border: Border.all(
           color:
               (showPremium ||
@@ -164,25 +187,29 @@ class _TvFocusWrapperState extends State<TvFocusWrapper> {
     final bool activeShowShadow;
     final bool activeShowGlow;
     final double activeAnimationSpeed;
+    final bool activeBacklight;
 
     if (showPremium) {
-      activeBorderWidth = 4.0;
-      activeGlowOpacity = 0.45;
+      activeBorderWidth = widget.useUnderGlow ? 0.0 : 4.0;
+      activeGlowOpacity = widget.useUnderGlow ? 0.7 : 0.45;
       activeShowShadow = true;
       activeShowGlow = true;
       activeAnimationSpeed = sp.rgbAnimationSpeed * 1.5;
+      activeBacklight = widget.useUnderGlow;
     } else if (showPlayingRgb || (widget.useRgbBorder && _isFocused)) {
       activeBorderWidth = _isFocused ? 4.0 : 2.5;
       activeGlowOpacity = 0.0;
       activeShowShadow = false;
       activeShowGlow = true; // Still true to render the line
       activeAnimationSpeed = sp.rgbAnimationSpeed;
+      activeBacklight = false;
     } else {
       activeBorderWidth = 0.0;
       activeGlowOpacity = 0.0;
       activeShowShadow = false;
       activeShowGlow = false;
       activeAnimationSpeed = 1.0;
+      activeBacklight = false;
     }
 
     // We compensate for the padding injected by AnimatedGradientBorder so the overall
@@ -215,6 +242,9 @@ class _TvFocusWrapperState extends State<TvFocusWrapper> {
       glowOpacity: activeGlowOpacity,
       backgroundColor: Colors.transparent,
       usePadding: true, // Necessary for stability
+      backlightMode: activeBacklight,
+      glowSpread: widget.glowSpread,
+      glowBlur: widget.glowBlur,
       enabled:
           isFeaturePossible, // Only enable if we might actually show something
       child: Padding(

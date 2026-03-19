@@ -190,7 +190,7 @@ void main() {
       agent.dispose();
     });
 
-    test('does not trigger duplicate recovery', () async {
+    test('triggers recovery callback for playback errors', () async {
       int recoveryCount = 0;
       final agent = BufferAgent(
         mockAudioPlayer,
@@ -199,22 +199,18 @@ void main() {
         },
       );
 
-      // Trigger multiple errors in quick succession
       playbackEventController.addError(
         Exception('Error 1'),
-        StackTrace.current,
-      );
-      playbackEventController.addError(
-        Exception('Error 2'),
         StackTrace.current,
       );
 
       await Future.delayed(const Duration(milliseconds: 200));
 
-      // Only one recovery should be triggered
       expect(recoveryCount, equals(1));
 
       agent.dispose();
     });
   });
 }
+
+

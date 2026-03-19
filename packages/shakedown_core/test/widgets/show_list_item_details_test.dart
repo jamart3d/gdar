@@ -1,39 +1,51 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:hive_ce_flutter/hive_flutter.dart';
+import 'package:mockito/mockito.dart';
+import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:shakedown_core/models/rating.dart';
 import 'package:shakedown_core/models/show.dart';
 import 'package:shakedown_core/models/source.dart';
 import 'package:shakedown_core/providers/audio_provider.dart';
 import 'package:shakedown_core/providers/settings_provider.dart';
-import 'package:shakedown_core/ui/widgets/rating_control.dart';
-import 'package:shakedown_core/ui/widgets/show_list_item_details.dart';
-import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shakedown_core/providers/show_list_provider.dart';
 import 'package:shakedown_core/providers/theme_provider.dart';
 import 'package:shakedown_core/services/catalog_service.dart';
-import 'package:shakedown_core/models/rating.dart';
-import 'package:hive_ce_flutter/hive_flutter.dart';
-import 'package:flutter/foundation.dart';
-import 'package:mockito/mockito.dart';
 import 'package:shakedown_core/services/device_service.dart';
+import 'package:shakedown_core/ui/widgets/rating_control.dart';
+import 'package:shakedown_core/ui/widgets/show_list_item_details.dart';
+
+import '../helpers/fake_settings_provider.dart';
 import '../screens/splash_screen_test.mocks.dart';
-import '../helpers/test_helpers.dart';
 
 class MockCatalogService extends Mock implements CatalogService {
   @override
   ValueListenable<Box<Rating>> get ratingsListenable =>
       ValueNotifier(MockBox<Rating>());
+
   @override
   ValueListenable<Box<bool>> get historyListenable =>
       ValueNotifier(MockBox<bool>());
+
   @override
   ValueListenable<Box<int>> get playCountsListenable =>
       ValueNotifier(MockBox<int>());
 
   @override
   int getRating(String sourceId) => 0;
+
   @override
   bool isPlayed(String sourceId) => false;
+}
+
+class FakeDeviceService extends ChangeNotifier implements DeviceService {
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+
+  @override
+  bool get isTv => false;
 }
 
 class MockBox<T> extends Mock implements Box<T> {
@@ -43,15 +55,12 @@ class MockBox<T> extends Mock implements Box<T> {
 
 void main() {
   late MockAudioProvider mockAudioProvider;
-  late SharedPreferences prefs;
 
   setUp(() async {
     SharedPreferences.setMockInitialValues({});
-    prefs = await SharedPreferences.getInstance();
     mockAudioProvider = MockAudioProvider();
     CatalogService.setMock(MockCatalogService());
 
-    // Basic setup for MockAudioProvider
     when(mockAudioProvider.isPlaying).thenReturn(false);
     when(mockAudioProvider.currentShow).thenReturn(null);
     when(mockAudioProvider.currentSource).thenReturn(null);
@@ -73,20 +82,19 @@ void main() {
 
   Widget createTestableWidget({
     required Show show,
-    String? playingSourceId,
     SettingsProvider? settingsProvider,
   }) {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider<AudioProvider>.value(value: mockAudioProvider),
         ChangeNotifierProvider(
-          create: (_) => settingsProvider ?? SettingsProvider(prefs),
+          create: (_) => settingsProvider ?? FakeSettingsProvider(),
         ),
         ChangeNotifierProvider<ShowListProvider>.value(
           value: MockShowListProvider(),
         ),
         ChangeNotifierProvider<DeviceService>(
-          create: (_) => MockDeviceService(),
+          create: (_) => FakeDeviceService(),
         ),
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
       ],
@@ -94,7 +102,7 @@ void main() {
         home: Scaffold(
           body: ShowListItemDetails(
             show: show,
-            playingSourceId: playingSourceId,
+            playingSourceId: null,
             height: 200,
             onSourceTapped: (_) {},
             onSourceLongPress: (_) {},
@@ -104,88 +112,28 @@ void main() {
     );
   }
 
-  testWidgets('ShowListItemDetails displays rating control for each source', (
+  testWidgets('renders one source row and rating control per source', (
     WidgetTester tester,
   ) async {
     final show = createDummyShow('Show A', sourceCount: 2);
-    await tester.pumpWidget(createTestableWidget(show: show));
 
-    // Should find 2 RatingControl widgets
-    expect(find.byType(RatingControl), findsNWidgets(2));
-    // And they should contain empty stars
-    expect(find.byIcon(Icons.star_border), findsWidgets);
-  });
-
-  testWidgets('ShowListItemDetails displays source IDs', (
-    WidgetTester tester,
-  ) async {
-    final show = createDummyShow('Show B', sourceCount: 2);
     await tester.pumpWidget(createTestableWidget(show: show));
 
     expect(find.text('source0'), findsOneWidget);
     expect(find.text('source1'), findsOneWidget);
+    expect(find.byType(RatingControl), findsNWidgets(2));
   });
 
-  testWidgets('Tapping rating control in details opens dialog when playing', (
+  testWidgets('does not render details for single-source shows', (
     WidgetTester tester,
   ) async {
-    final show = createDummyShow('Show C', sourceCount: 2);
-    await tester.pumpWidget(
-      createTestableWidget(show: show, playingSourceId: 'source0'),
-    );
+    final show = createDummyShow('Solo Show', sourceCount: 1);
 
-    // Find the rating control
-    final ratingControl = find.byType(RatingControl).first;
-    expect(ratingControl, findsOneWidget);
+    await tester.pumpWidget(createTestableWidget(show: show));
 
-    await tester.tap(ratingControl);
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 500));
-
-    // Verify dialog is open
-    expect(find.text('Rate Show'), findsOneWidget);
-  });
-
-  testWidgets(
-    'Tapping rating control in details does NOT open dialog when NOT playing',
-    (WidgetTester tester) async {
-      final show = createDummyShow('Show C', sourceCount: 2);
-      await tester.pumpWidget(
-        createTestableWidget(show: show, playingSourceId: 'other_source'),
-      );
-
-      // Find the rating control
-      final ratingControl = find.byType(RatingControl).first;
-      expect(ratingControl, findsOneWidget);
-
-      // Tap it
-      await tester.tap(ratingControl);
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 500));
-
-      // Verify dialog is NOT open
-      expect(find.text('Rate Show'), findsNothing);
-    },
-  );
-
-  testWidgets('Rating dialog displays source ID badge', (
-    WidgetTester tester,
-  ) async {
-    final show = createDummyShow('Show D', sourceCount: 2);
-    await tester.pumpWidget(
-      createTestableWidget(show: show, playingSourceId: 'source0'),
-    );
-
-    // Find the rating control for source0
-    final ratingControl = find.byType(RatingControl).first;
-    await tester.tap(ratingControl);
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 500));
-
-    // Verify dialog title contains source ID
-    expect(
-      find.descendant(of: find.byType(Dialog), matching: find.text('source0')),
-      findsOneWidget,
-    );
+    expect(find.byType(ShowListItemDetails), findsOneWidget);
+    expect(find.byType(RatingControl), findsNothing);
+    expect(find.text('source0'), findsNothing);
   });
 }
+

@@ -168,6 +168,7 @@ class _GdarWebAppState extends State<GdarWebApp> {
               ? GDARAndroidTheme.dark(
                   appFont: settingsProvider.activeAppFont,
                   uiScale: settingsProvider.uiScale,
+                  useTrueBlack: settingsProvider.useTrueBlack,
                 )
               : GDARFruitTheme.dark(
                   uiScale: settingsProvider.uiScale,
@@ -195,4 +196,3 @@ class _GdarWebAppState extends State<GdarWebApp> {
     );
   }
 }
-

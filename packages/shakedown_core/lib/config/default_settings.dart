@@ -6,7 +6,7 @@ import 'package:shakedown_core/providers/theme_provider.dart';
 class DefaultSettings {
   // Appearance
   static const bool useDynamicColor = true;
-  static const bool useTrueBlack = true;
+  static const bool useTrueBlack = false;
   static const String appFont = 'rock_salt';
   static const bool uiScaleDesktopDefault = false;
   static const bool uiScaleMobileDefault = false;
@@ -130,7 +130,7 @@ class DefaultSettings {
   static const double oilTrackWordSpacing = 0.2;
   static const double oilFlatLineSpacing = 1.0;
   static const double oilInnerRingFontScale = 0.75;
-  static const double oilMiddleRingFontScale = 0.85;
+  static const double oilMiddleRingFontScale = 0.80;
   static const double oilOuterRingFontScale = 1.0;
   static const double oilInnerRingSpacingMultiplier = 1.5;
   static const double oilMiddleRingSpacingMultiplier = 1.15;
@@ -170,12 +170,12 @@ class DefaultSettings {
   static const bool omitHttpPathInCopy = true;
 }
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// -----------------------------------------------------------------------------
 // Per-Platform Default Overrides
 //
 // Only list settings that DIFFER from the base DefaultSettings above.
 // SettingsProvider picks the right class at init time via _d.
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// -----------------------------------------------------------------------------
 
 /// Defaults for the Web UI (browser tab, desktop).
 class WebDefaults extends DefaultSettings {
@@ -191,7 +191,7 @@ class WebDefaults extends DefaultSettings {
   // Splash only shown on first run (handled dynamically in provider)
   static const bool showSplashScreen = false;
 
-  // Audio: auto (hybrid-first) is the default on web\r
+  // Audio: auto (hybrid-first) is the default on web
   static const String audioEngineMode = 'auto';
 }
 
@@ -203,10 +203,10 @@ class TvDefaults extends DefaultSettings {
   // Screensaver: steal mode looks great on TV
   static const String oilScreensaverMode = 'steal';
 
-  // Audio: TV is a native app â€” uses the same standard player as Phone
+  // Audio: TV is a native app - uses the same standard player as Phone
 
   // Screensaver performance mode ON by default (TV shader budget is limited)
-  // User can toggle this off in TV Settings â†’ Screensaver â†’ Performance Mode
+  // User can toggle this off in TV Settings -> Screensaver -> Performance Mode
   static const int oilPerformanceLevel = 1;
 
   // Auto spacing helps Rock Salt avoid crowding on TV.

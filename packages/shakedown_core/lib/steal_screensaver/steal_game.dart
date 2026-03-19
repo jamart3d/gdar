@@ -160,7 +160,6 @@ class StealGame extends FlameGame {
       _tickCycle(dt);
     }
 
-
     _tickWoodstock(dt);
     _tickTrailBuffer();
     _tickPulse(dt);
@@ -238,12 +237,10 @@ class StealGame extends FlameGame {
     final newConfig = config.copyWith(palette: next);
     config = newConfig;
 
-
     _applyBannerConfig(newConfig);
 
     _resetHoldTimer();
   }
-
 
   // -- Woodstock Mode ---------------------------------------------------------
   static const double _woodstockYellowDuration = 15.0;
@@ -299,8 +296,11 @@ class StealGame extends FlameGame {
   }
 
   void _restoreNormalPalette() {
-    final paletteColors = StealConfig.palettes[config.palette] ?? 
-        (StealConfig.palettes.isNotEmpty ? StealConfig.palettes.values.first : [Colors.white]);
+    final paletteColors =
+        StealConfig.palettes[config.palette] ??
+        (StealConfig.palettes.isNotEmpty
+            ? StealConfig.palettes.values.first
+            : [Colors.white]);
     _applyWoodstockColors(paletteColors, _woodstockFadeDuration * 2);
     _applyBannerConfig(config);
     _resetHoldTimer();
@@ -321,7 +321,9 @@ class StealGame extends FlameGame {
   void _applyBannerConfig(StealConfig cfg) {
     if (_banner == null) return;
     final paletteColors = StealConfig.palettes[cfg.palette] ?? [Colors.white];
-    final rawColor = paletteColors.isNotEmpty ? paletteColors.first : Colors.white;
+    final rawColor = paletteColors.isNotEmpty
+        ? paletteColors.first
+        : Colors.white;
 
     final bannerColor = rawColor.computeLuminance() > 0.85
         ? Colors.white
@@ -335,8 +337,6 @@ class StealGame extends FlameGame {
       date: cfg.date,
     );
   }
-
-
 
   double get time => _time;
   AudioEnergy get currentEnergy => _currentEnergy;
@@ -367,4 +367,3 @@ class StealGame extends FlameGame {
 }
 
 enum _WoodstockPhase { idle, yellow, green }
-

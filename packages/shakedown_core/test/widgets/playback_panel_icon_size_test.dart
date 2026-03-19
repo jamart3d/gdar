@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:shakedown_core/models/show.dart';
 import 'package:shakedown_core/models/source.dart';
 import 'package:shakedown_core/models/track.dart';
+import 'package:shakedown_core/models/hud_snapshot.dart';
 import 'package:shakedown_core/providers/audio_provider.dart';
 import 'package:shakedown_core/providers/settings_provider.dart';
 import 'package:shakedown_core/providers/theme_provider.dart';
@@ -120,6 +121,7 @@ class FakeAudioProvider extends ChangeNotifier implements AudioProvider {
   final _randomShowController =
       StreamController<({Show show, Source source})>.broadcast();
   final _focusController = StreamController<void>.broadcast();
+  final _hudSnapshotController = StreamController<HudSnapshot>.broadcast();
 
   @override
   Stream<PlayerState> get playerStateStream => _playerStateController.stream;
@@ -144,6 +146,10 @@ class FakeAudioProvider extends ChangeNotifier implements AudioProvider {
       _randomShowController.stream;
   @override
   Stream<void> get playbackFocusRequestStream => _focusController.stream;
+  @override
+  Stream<HudSnapshot> get hudSnapshotStream => _hudSnapshotController.stream;
+  @override
+  HudSnapshot get currentHudSnapshot => HudSnapshot.empty();
 
   @override
   bool get isPlaying => false;
@@ -160,6 +166,7 @@ class FakeAudioProvider extends ChangeNotifier implements AudioProvider {
     _agentController.close();
     _randomShowController.close();
     _focusController.close();
+    _hudSnapshotController.close();
     super.dispose();
   }
 
@@ -171,6 +178,12 @@ class MockSettingsProvider extends Mock implements SettingsProvider {
   @override
   String get appFont => super.noSuchMethod(
     Invocation.getter(#appFont),
+    returnValue: 'default',
+    returnValueForMissingStub: 'default',
+  );
+  @override
+  String get activeAppFont => super.noSuchMethod(
+    Invocation.getter(#activeAppFont),
     returnValue: 'default',
     returnValueForMissingStub: 'default',
   );
@@ -440,3 +453,5 @@ void main() {
     expect(scale, closeTo(2.0, 0.001));
   });
 }
+
+

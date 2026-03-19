@@ -64,7 +64,7 @@ A Flutter application for browsing and playing concert recordings of the Gratefu
   - **JS-Interoperability (Web)**: Custom integration bridge between Flutter and a high-performance JavaScript audio scheduler for the Web.
   - **Haptic Feedback**: Premium tactile feedback on all interactive elements for enhanced touch experience.
   - **Material 3 Transitions**: Expressive navigation animations with scale + fade effects for a polished, premium feel.
-- **Unified Diagnostics HUD**: A high-performance, real-time telemetry system that pipes engine state, buffer levels, and transition countdowns into a single `HudSnapshot` stream for instant debugging and transparency.
+- **Unified Diagnostics HUD**: A high-performance, real-time diagnostic overlay featuring synchronized heartbeat telemetry and 50ms pulse updates. All engine states, survival indicators, and buffer transitions are piped into a single `HudSnapshot` stream for total transparency.
 
 ## Usage Guide
 
@@ -125,10 +125,10 @@ Shared business logic and design tokens used by all applications:
 
 ## Monorepo Management
 
-We use **Melos** to manage the multi-package workspace.
+We use **Melos** to manage the multi-package workspace, integrated directly into the root `pubspec.yaml`.
 
 - **Bootstrap**: Run `melos bootstrap` (or `flutter pub get` at the root) to link all local packages and fetch external dependencies.
-- **Cleaning**: `melos clean` removes all build artifacts and `.dart_tool` folders across the workspace.
+- **Cleaning**: `melos run clean` removes all build artifacts and `.dart_tool` folders across the workspace.
 - **Testing**: `melos run test` executes tests in all packages and apps.
 - **Branding**: `melos run icons` regenerates launcher icons for all apps using core assets.
 

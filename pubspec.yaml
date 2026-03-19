@@ -1,5 +1,4 @@
 name: gdar_root
-#resolution: workspace
 
 environment:
   sdk: '^3.11.0'
@@ -13,6 +12,7 @@ workspace:
   - apps/gdar_web
 
 dev_dependencies:
+  melos: ^7.1.1
   shakedown_core:
     path: ./packages/shakedown_core
   flutter_test:
@@ -25,3 +25,29 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+
+melos:
+  packages:
+    - packages/**
+    - apps/**
+  command:
+    bootstrap:
+      usePubspecOverrides: true
+  scripts:
+    analyze:
+      description: Run analysis in all packages/apps.
+      run: melos exec -c 1 -- flutter analyze
+    test:
+      description: Run tests in all packages/apps.
+      run: melos exec -c 1 --dir-exists=test --ignore="screensaver_tv" -- flutter test
+    format:
+      description: Check formatting across the workspace.
+      run: dart format --set-exit-if-changed .
+    clean:
+      description: Clean all package/app build artifacts.
+      run: melos exec -c 1 -- flutter clean
+    icons:
+      description: Regenerate launcher icons for all apps.
+      run: melos exec -c 1 -- "flutter pub run flutter_launcher_icons:main"
+
+

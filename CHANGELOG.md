@@ -6,6 +6,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.5+205] - 2026-03-18
+
+### Changed
+- **Screensaver (TV)**: Enhanced auto-spacing for track information to better account for long titles. Increased horizontal compression depth and implemented "Squish-to-fit" logic to prevent text from bleeding off-screen in both Ring and Flat modes.
+- **Playback UI**: Hardened constrained-height playback header/layout behavior to avoid overflow in compact panel states.
+- **TV Bootstrap**: Standardized TV startup through `SplashScreen` while preserving the no-onboarding TV boot path.
+- **Monorepo/Test Coverage**: Replaced brittle startup and shared-widget regressions with smaller contract-focused tests and aligned stale test fakes with current provider/widget APIs.
+- **Docs**: Updated monorepo planning/rules docs and refreshed the 2026-03-18 scorecards.
+
+
 ## [1.2.4+204] - 2026-03-16
 
 ### Added
@@ -1087,3 +1097,4 @@ Release 1.0.9:
 - **Fixed**: Onboarding screen layout issues on some device sizes.
 - **Internal**: Updated test suite for better stability.
 ```
+

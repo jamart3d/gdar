@@ -1,6 +1,9 @@
 # Live Playlist (Session History) Specification
 
 ## 1. Overview
+
+**Monorepo scope:** Session history behavior should be implemented primarily in shared logic under `packages/shakedown_core`, while app-specific presentation may differ across `apps/gdar_mobile`, `apps/gdar_tv`, and `apps/gdar_web`.
+
 The "Live Playlist" (also known as Session History) tracks the history of shows played by the user. It allows for seamless navigation backward across different shows and provides "Undo" capabilities for accidental track skips or show blocks.
 
 ## 2. Data Model

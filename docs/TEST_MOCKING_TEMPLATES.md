@@ -1,14 +1,12 @@
----
-name: test_mocking_templates
-description: Standardized Mockito stubs and MultiProvider setup for GDAR Flutter tests.
----
-
 # Test Mocking Templates
 
-This skill provides a centralized repository of standardized mock stubs and provider setups. It is designed to be used by the `/test_fixer` workflow to quickly resolve `MissingStubError` and `ProviderNotFoundException`.
+This document provides standardized mock stubs and `MultiProvider` setup
+patterns for GDAR Flutter tests. Use it during test repair work to resolve
+`MissingStubError` and `ProviderNotFoundException` with minimal drift.
 
-## 1. Standard MultiProvider Setup
-When a test fails with `ProviderNotFoundException`, use this snippet to wrap the `MaterialApp`:
+## Standard MultiProvider Setup
+When a test fails with `ProviderNotFoundException`, use this snippet to wrap the
+`MaterialApp`:
 
 ```dart
 MultiProvider(
@@ -23,7 +21,7 @@ MultiProvider(
 )
 ```
 
-## 2. Common Mock Stubs
+## Common Mock Stubs
 
 ### SettingsProvider
 ```dart
@@ -49,8 +47,7 @@ when(mockThemeProvider.themeStyle).thenReturn(ThemeStyle.fruit);
 when(mockThemeProvider.isDarkMode).thenReturn(true);
 ```
 
-## 3. Usage with /test_fixer
-1. Trigger `/test_fixer`.
-2. The workflow will identify the missing stub or provider.
-3. The workflow will refer to this skill to find the correct `when(...)` or `Provider` block.
-4. The workflow will then apply the fix to the test file.
+## Usage
+1. Identify the missing stub or provider in the failing test.
+2. Use this doc to find the correct `when(...)` or `Provider` block.
+3. Apply the smallest fix that restores the test's intended coverage.

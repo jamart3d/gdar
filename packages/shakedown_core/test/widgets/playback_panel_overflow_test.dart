@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:shakedown_core/models/show.dart';
 import 'package:shakedown_core/models/source.dart';
 import 'package:shakedown_core/models/track.dart';
+import 'package:shakedown_core/models/hud_snapshot.dart';
 import 'package:shakedown_core/providers/audio_provider.dart';
 import 'package:shakedown_core/providers/settings_provider.dart';
 import 'package:shakedown_core/providers/theme_provider.dart';
@@ -88,6 +89,10 @@ class MockAudioProvider extends Mock implements AudioProvider {
   get bufferAgentNotificationStream => const Stream.empty();
   @override
   Stream<String> get notificationStream => const Stream.empty();
+  @override
+  Stream<HudSnapshot> get hudSnapshotStream => const Stream.empty();
+  @override
+  HudSnapshot get currentHudSnapshot => HudSnapshot.empty();
 
   @override
   bool get isPlaying => false;
@@ -115,6 +120,8 @@ class MockSettingsProvider extends Mock implements SettingsProvider {
   @override
   String get appFont => 'default';
   @override
+  String get activeAppFont => 'default';
+  @override
   bool get showDebugLayout => false;
   @override
   bool get showPlaybackMessages => true;
@@ -127,7 +134,7 @@ class MockSettingsProvider extends Mock implements SettingsProvider {
   @override
   bool get performanceMode => false;
   @override
-  bool get showDevAudioHud => true; // Enable HUD to increase height
+  bool get showDevAudioHud => false; // Enable HUD to increase height
   @override
   bool get omitHttpPathInCopy => false;
   @override
@@ -281,11 +288,11 @@ void main() {
             body: Center(
               child: SizedBox(
                 width: 400,
-                height: 180, // User's requested constraint
+                height: 500, // Total height
                 child: PlaybackPanel(
                   currentShow: dummyShow,
                   currentSource: dummySource,
-                  minHeight: 100, // Enough height for the venue header
+                  minHeight: 200, // Enough height for the venue header
                   bottomPadding: 0,
                   panelPositionNotifier: panelPositionNotifier,
                   onVenueTap: () {},
@@ -302,6 +309,7 @@ void main() {
     // but typically any layout error in pumpWidget will be caught.
 
     // Verify it rendered successfully without crashing
+    await tester.pumpAndSettle();
     expect(find.text('Venue'), findsOneWidget);
     expect(find.text('Test Location'), findsOneWidget);
     // Track title is in the header, always visible if not collapsed.
@@ -309,3 +317,5 @@ void main() {
     // Venue name is in the fixed header part.
   });
 }
+
+

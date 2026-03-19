@@ -69,6 +69,8 @@ class MockSettingsProvider extends Mock implements SettingsProvider {
   @override
   String get appFont => 'Roboto';
   @override
+  String get activeAppFont => 'Roboto';
+  @override
   bool get enableShakedownTween => false;
   @override
   bool get showDayOfWeek => true;
@@ -272,3 +274,4 @@ void main() {
     },
   );
 }
+

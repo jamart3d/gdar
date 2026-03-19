@@ -1,8 +1,6 @@
 ---
 trigger: always_on
 ---
-> [!NOTE]
-> This file contains the daily behavioral rules for Antigravity. For high-level persona and project mission (Jules standard), see [AGENTS.md](file:///home/jam/StudioProjects/gdar/AGENTS.md).
 
 # Project Rules: GDAR Audio Player
 

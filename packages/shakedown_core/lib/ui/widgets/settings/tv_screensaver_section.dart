@@ -118,7 +118,7 @@ class _TvScreensaverSectionState extends State<TvScreensaverSection> {
               ),
 
               const SizedBox(height: 16),
-                    _ToggleRow(
+              _ToggleRow(
                 focusNode: !settings.useOilScreensaver ? _lastFocusNode : null,
                 onKeyEvent: !settings.useOilScreensaver ? _handleLastKey : null,
                 label: 'Shakedown Screen Saver',
@@ -143,46 +143,52 @@ class _TvScreensaverSectionState extends State<TvScreensaverSection> {
                         ),
                       ),
                       const SizedBox(height: 8),
-                      TvFocusWrapper(
-                        onKeyEvent: (node, event) {
-                          if (event is KeyDownEvent) {
-                            final current =
-                                settings.oilScreensaverInactivityMinutes;
-                            int? newVal;
-                            if (event.logicalKey ==
-                                LogicalKeyboardKey.arrowLeft) {
-                              if (current == 15) {
-                                newVal = 5;
-                              } else if (current == 5) {
-                                newVal = 1;
+                      FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.centerLeft,
+                        child: TvFocusWrapper(
+                          onKeyEvent: (node, event) {
+                            if (event is KeyDownEvent) {
+                              final current =
+                                  settings.oilScreensaverInactivityMinutes;
+                              int? newVal;
+                              if (event.logicalKey ==
+                                  LogicalKeyboardKey.arrowLeft) {
+                                if (current == 15) {
+                                  newVal = 5;
+                                } else if (current == 5) {
+                                  newVal = 1;
+                                }
+                              } else if (event.logicalKey ==
+                                  LogicalKeyboardKey.arrowRight) {
+                                if (current == 1) {
+                                  newVal = 5;
+                                } else if (current == 5) {
+                                  newVal = 15;
+                                }
                               }
-                            } else if (event.logicalKey ==
-                                LogicalKeyboardKey.arrowRight) {
-                              if (current == 1) {
-                                newVal = 5;
-                              } else if (current == 5) {
-                                newVal = 15;
+                              if (newVal != null && newVal != current) {
+                                settings.setOilScreensaverInactivityMinutes(
+                                  newVal,
+                                );
+                                return KeyEventResult.handled;
                               }
                             }
-                            if (newVal != null && newVal != current) {
-                              settings.setOilScreensaverInactivityMinutes(
-                                newVal,
-                              );
-                              return KeyEventResult.handled;
-                            }
-                          }
-                          return KeyEventResult.ignored;
-                        },
-                        child: SegmentedButton<int>(
-                          segments: const [
-                            ButtonSegment(value: 1, label: Text('1 min')),
-                            ButtonSegment(value: 5, label: Text('5 min')),
-                            ButtonSegment(value: 15, label: Text('15 min')),
-                          ],
-                          selected: {settings.oilScreensaverInactivityMinutes},
-                          onSelectionChanged: (Set<int> s) => settings
-                              .setOilScreensaverInactivityMinutes(s.first),
-                          showSelectedIcon: false,
+                            return KeyEventResult.ignored;
+                          },
+                          child: SegmentedButton<int>(
+                            segments: const [
+                              ButtonSegment(value: 1, label: Text('1 min')),
+                              ButtonSegment(value: 5, label: Text('5 min')),
+                              ButtonSegment(value: 15, label: Text('15 min')),
+                            ],
+                            selected: {
+                              settings.oilScreensaverInactivityMinutes,
+                            },
+                            onSelectionChanged: (Set<int> s) => settings
+                                .setOilScreensaverInactivityMinutes(s.first),
+                            showSelectedIcon: false,
+                          ),
                         ),
                       ),
                     ],
@@ -240,7 +246,7 @@ class _TvScreensaverSectionState extends State<TvScreensaverSection> {
                 ),
 
                 const SizedBox(height: 16),
-                    _ToggleRow(
+                _ToggleRow(
                   label: 'Auto Palette Cycle',
                   subtitle: 'Automatically rotate through palettes over time',
                   value: settings.oilPaletteCycle,
@@ -286,7 +292,7 @@ class _TvScreensaverSectionState extends State<TvScreensaverSection> {
                 ),
 
                 const SizedBox(height: 16),
-                    _ToggleRow(
+                _ToggleRow(
                   label: 'Dynamic Trails',
                   subtitle: 'Scale trail quality based on movement speed',
                   value: settings.oilLogoTrailDynamic,
@@ -455,30 +461,40 @@ class _TvScreensaverSectionState extends State<TvScreensaverSection> {
                           ),
                         ),
                         const SizedBox(height: 8),
-                        TvFocusWrapper(
-                          onKeyEvent: (node, event) {
-                            if (event is KeyDownEvent) {
-                              if (event.logicalKey ==
-                                  LogicalKeyboardKey.arrowLeft) {
-                                settings.setOilBannerDisplayMode('ring');
-                                return KeyEventResult.handled;
-                              } else if (event.logicalKey ==
-                                  LogicalKeyboardKey.arrowRight) {
-                                settings.setOilBannerDisplayMode('flat');
-                                return KeyEventResult.handled;
+                        FittedBox(
+                          fit: BoxFit.scaleDown,
+                          alignment: Alignment.centerLeft,
+                          child: TvFocusWrapper(
+                            onKeyEvent: (node, event) {
+                              if (event is KeyDownEvent) {
+                                if (event.logicalKey ==
+                                    LogicalKeyboardKey.arrowLeft) {
+                                  settings.setOilBannerDisplayMode('ring');
+                                  return KeyEventResult.handled;
+                                } else if (event.logicalKey ==
+                                    LogicalKeyboardKey.arrowRight) {
+                                  settings.setOilBannerDisplayMode('flat');
+                                  return KeyEventResult.handled;
+                                }
                               }
-                            }
-                            return KeyEventResult.ignored;
-                          },
-                          child: SegmentedButton<String>(
-                            segments: const [
-                              ButtonSegment(value: 'ring', label: Text('Ring')),
-                              ButtonSegment(value: 'flat', label: Text('Flat')),
-                            ],
-                            selected: {settings.oilBannerDisplayMode},
-                            onSelectionChanged: (Set<String> s) =>
-                                settings.setOilBannerDisplayMode(s.first),
-                            showSelectedIcon: false,
+                              return KeyEventResult.ignored;
+                            },
+                            child: SegmentedButton<String>(
+                              segments: const [
+                                ButtonSegment(
+                                  value: 'ring',
+                                  label: Text('Ring'),
+                                ),
+                                ButtonSegment(
+                                  value: 'flat',
+                                  label: Text('Flat'),
+                                ),
+                              ],
+                              selected: {settings.oilBannerDisplayMode},
+                              onSelectionChanged: (Set<String> s) =>
+                                  settings.setOilBannerDisplayMode(s.first),
+                              showSelectedIcon: false,
+                            ),
                           ),
                         ),
                       ],
@@ -498,36 +514,40 @@ class _TvScreensaverSectionState extends State<TvScreensaverSection> {
                           ),
                         ),
                         const SizedBox(height: 8),
-                        TvFocusWrapper(
-                          onKeyEvent: (node, event) {
-                            if (event is KeyDownEvent) {
-                              if (event.logicalKey ==
-                                  LogicalKeyboardKey.arrowLeft) {
-                                settings.setOilBannerFont('RockSalt');
-                                return KeyEventResult.handled;
-                              } else if (event.logicalKey ==
-                                  LogicalKeyboardKey.arrowRight) {
-                                settings.setOilBannerFont('Roboto');
-                                return KeyEventResult.handled;
+                        FittedBox(
+                          fit: BoxFit.scaleDown,
+                          alignment: Alignment.centerLeft,
+                          child: TvFocusWrapper(
+                            onKeyEvent: (node, event) {
+                              if (event is KeyDownEvent) {
+                                if (event.logicalKey ==
+                                    LogicalKeyboardKey.arrowLeft) {
+                                  settings.setOilBannerFont('RockSalt');
+                                  return KeyEventResult.handled;
+                                } else if (event.logicalKey ==
+                                    LogicalKeyboardKey.arrowRight) {
+                                  settings.setOilBannerFont('Roboto');
+                                  return KeyEventResult.handled;
+                                }
                               }
-                            }
-                            return KeyEventResult.ignored;
-                          },
-                          child: SegmentedButton<String>(
-                            segments: const [
-                              ButtonSegment(
-                                value: 'RockSalt',
-                                label: Text('Rock Salt'),
-                              ),
-                              ButtonSegment(
-                                value: 'Roboto',
-                                label: Text('Roboto'),
-                              ),
-                            ],
-                            selected: {settings.oilBannerFont},
-                            onSelectionChanged: (Set<String> s) =>
-                                settings.setOilBannerFont(s.first),
-                            showSelectedIcon: false,
+                              return KeyEventResult.ignored;
+                            },
+                            child: SegmentedButton<String>(
+                              segments: const [
+                                ButtonSegment(
+                                  value: 'RockSalt',
+                                  label: Text('Rock Salt'),
+                                ),
+                                ButtonSegment(
+                                  value: 'Roboto',
+                                  label: Text('Roboto'),
+                                ),
+                              ],
+                              selected: {settings.oilBannerFont},
+                              onSelectionChanged: (Set<String> s) =>
+                                  settings.setOilBannerFont(s.first),
+                              showSelectedIcon: false,
+                            ),
                           ),
                         ),
                       ],
@@ -546,46 +566,45 @@ class _TvScreensaverSectionState extends State<TvScreensaverSection> {
                     onChanged: (v) => settings.setOilBannerResolution(v),
                   ),
                   const SizedBox(height: 16),
-                    _ToggleRow(
-                      label: isRingMode ? 'Auto Arc Spacing' : 'Auto Spacing',
-                      subtitle: isRingMode
-                          ? 'Auto-fit text to circular arcs'
-                          : 'Auto-fit letter, word, and line spacing',
-                      value: autoSpacing,
-                      onChanged: (value) => isRingMode
-                          ? settings.setOilAutoRingSpacing(value)
-                          : settings.setOilAutoTextSpacing(value),
-                      colorScheme: colorScheme,
-                      textTheme: textTheme,
-                    ),
-                    if (!autoSpacing) ...[
-                      const SizedBox(height: 16),
-                      TvStepperRow(
-                        label: 'Letter Spacing (General)',
-                        value: settings.oilBannerLetterSpacing,
-                        min: 0.5,
-                        max: 1.5,
-                        step: 0.01,
-                        leftLabel: 'Tight',
-                        rightLabel: 'Spaced',
-                        valueFormatter: (v) => v.toStringAsFixed(2),
-                        onChanged: (v) => settings.setOilBannerLetterSpacing(v),
-                      ),
-                      const SizedBox(height: 16),
-                      TvStepperRow(
-                        label: 'Word Spacing (General)',
-                        value: settings.oilBannerWordSpacing,
-                        min: 0.0,
-                        max: 2.0,
-                        step: 0.05,
-                        leftLabel: 'Tight',
-                        rightLabel: 'Spaced',
-                        valueFormatter: (v) => v.toStringAsFixed(2),
-                        onChanged: (v) => settings.setOilBannerWordSpacing(v),
-                      ),
-
-                    ],
+                  _ToggleRow(
+                    label: isRingMode ? 'Auto Arc Spacing' : 'Auto Spacing',
+                    subtitle: isRingMode
+                        ? 'Auto-fit text to circular arcs'
+                        : 'Auto-fit letter, word, and line spacing',
+                    value: autoSpacing,
+                    onChanged: (value) => isRingMode
+                        ? settings.setOilAutoRingSpacing(value)
+                        : settings.setOilAutoTextSpacing(value),
+                    colorScheme: colorScheme,
+                    textTheme: textTheme,
+                  ),
+                  if (!autoSpacing) ...[
                     const SizedBox(height: 16),
+                    TvStepperRow(
+                      label: 'Letter Spacing (General)',
+                      value: settings.oilBannerLetterSpacing,
+                      min: 0.5,
+                      max: 1.5,
+                      step: 0.01,
+                      leftLabel: 'Tight',
+                      rightLabel: 'Spaced',
+                      valueFormatter: (v) => v.toStringAsFixed(2),
+                      onChanged: (v) => settings.setOilBannerLetterSpacing(v),
+                    ),
+                    const SizedBox(height: 16),
+                    TvStepperRow(
+                      label: 'Word Spacing (General)',
+                      value: settings.oilBannerWordSpacing,
+                      min: 0.0,
+                      max: 2.0,
+                      step: 0.05,
+                      leftLabel: 'Tight',
+                      rightLabel: 'Spaced',
+                      valueFormatter: (v) => v.toStringAsFixed(2),
+                      onChanged: (v) => settings.setOilBannerWordSpacing(v),
+                    ),
+                  ],
+                  const SizedBox(height: 16),
 
                   // Ring-only settings
                   if (isRingMode) ...[
@@ -822,7 +841,7 @@ class _TvScreensaverSectionState extends State<TvScreensaverSection> {
 
                   // Glow & flicker � available in both modes
                   const SizedBox(height: 16),
-                    _ToggleRow(
+                  _ToggleRow(
                     label: 'Neon Glow',
                     subtitle: 'Multi-layer neon glow effect on text',
                     value: settings.oilBannerGlow,
@@ -964,59 +983,63 @@ class _TvScreensaverSectionState extends State<TvScreensaverSection> {
                           ),
                         ),
                         const SizedBox(height: 8),
-                        TvFocusWrapper(
-                          onKeyEvent: (node, event) {
-                            if (event is KeyDownEvent) {
-                              const modes = [
-                                'off',
-                                'corner',
-                                'corner_only',
-                                'circular',
-                                'ekg',
-                                'circular_ekg',
-                              ];
-                              final idx = modes.indexOf(
-                                settings.oilAudioGraphMode,
-                              );
-                              if (event.logicalKey ==
-                                      LogicalKeyboardKey.arrowLeft &&
-                                  idx > 0) {
-                                settings.setOilAudioGraphMode(modes[idx - 1]);
-                                return KeyEventResult.handled;
-                              } else if (event.logicalKey ==
-                                      LogicalKeyboardKey.arrowRight &&
-                                  idx < modes.length - 1) {
-                                settings.setOilAudioGraphMode(modes[idx + 1]);
-                                return KeyEventResult.handled;
+                        FittedBox(
+                          fit: BoxFit.scaleDown,
+                          alignment: Alignment.centerLeft,
+                          child: TvFocusWrapper(
+                            onKeyEvent: (node, event) {
+                              if (event is KeyDownEvent) {
+                                const modes = [
+                                  'off',
+                                  'corner',
+                                  'corner_only',
+                                  'circular',
+                                  'ekg',
+                                  'circular_ekg',
+                                ];
+                                final idx = modes.indexOf(
+                                  settings.oilAudioGraphMode,
+                                );
+                                if (event.logicalKey ==
+                                        LogicalKeyboardKey.arrowLeft &&
+                                    idx > 0) {
+                                  settings.setOilAudioGraphMode(modes[idx - 1]);
+                                  return KeyEventResult.handled;
+                                } else if (event.logicalKey ==
+                                        LogicalKeyboardKey.arrowRight &&
+                                    idx < modes.length - 1) {
+                                  settings.setOilAudioGraphMode(modes[idx + 1]);
+                                  return KeyEventResult.handled;
+                                }
                               }
-                            }
-                            return KeyEventResult.ignored;
-                          },
-                          child: SegmentedButton<String>(
-                            segments: const [
-                              ButtonSegment(value: 'off', label: Text('Off')),
-                              ButtonSegment(
-                                value: 'corner',
-                                label: Text('Corner'),
-                              ),
-                              ButtonSegment(
-                                value: 'corner_only',
-                                label: Text('Corner Only'),
-                              ),
-                              ButtonSegment(
-                                value: 'circular',
-                                label: Text('Circular'),
-                              ),
-                              ButtonSegment(value: 'ekg', label: Text('EKG')),
-                              ButtonSegment(
-                                value: 'circular_ekg',
-                                label: Text('Circ EKG'),
-                              ),
-                            ],
-                            selected: {settings.oilAudioGraphMode},
-                            onSelectionChanged: (Set<String> s) =>
-                                settings.setOilAudioGraphMode(s.first),
-                            showSelectedIcon: false,
+                              return KeyEventResult.ignored;
+                            },
+                            child: SegmentedButton<String>(
+                              segments: const [
+                                ButtonSegment(value: 'off', label: Text('Off')),
+                                ButtonSegment(
+                                  value: 'corner',
+                                  label: Text('Corner'),
+                                ),
+                                ButtonSegment(
+                                  value: 'corner_only',
+                                  label: Text('Corner Only'),
+                                ),
+                                ButtonSegment(
+                                  value: 'circular',
+                                  label: Text('Circular'),
+                                ),
+                                ButtonSegment(value: 'ekg', label: Text('EKG')),
+                                ButtonSegment(
+                                  value: 'circular_ekg',
+                                  label: Text('Circ EKG'),
+                                ),
+                              ],
+                              selected: {settings.oilAudioGraphMode},
+                              onSelectionChanged: (Set<String> s) =>
+                                  settings.setOilAudioGraphMode(s.first),
+                              showSelectedIcon: false,
+                            ),
                           ),
                         ),
                         if (settings.oilAudioGraphMode == 'ekg' ||
@@ -1654,10 +1677,5 @@ class _BandSegmentedButton extends StatelessWidget {
     );
   }
 }
-
-
-
-
-
 
 // end of file

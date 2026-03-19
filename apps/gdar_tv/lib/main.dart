@@ -12,6 +12,7 @@ import 'package:shakedown_core/services/catalog_service.dart';
 import 'package:shakedown_core/services/device_service.dart';
 import 'package:shakedown_core/services/wakelock_service.dart';
 import 'package:shakedown_core/services/deep_link_service.dart';
+import 'package:shakedown_core/ui/screens/splash_screen.dart';
 import 'package:shakedown_core/ui/widgets/rgb_clock_wrapper.dart';
 import 'package:shakedown_core/utils/app_themes.dart';
 import 'package:shakedown_core/utils/logger.dart';
@@ -19,7 +20,6 @@ import 'package:shakedown_core/utils/asset_constants.dart';
 import 'package:just_audio_background/just_audio_background.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:shakedown_core/ui/widgets/tv/tv_dual_pane_layout.dart';
 
 Future<void> main() async {
   await runZonedGuarded(
@@ -29,7 +29,6 @@ Future<void> main() async {
 
       final prefs = await SharedPreferences.getInstance();
 
-      // Force TV mode for this application host
       const bool isTv = true;
 
       if (!kIsWeb) {
@@ -61,6 +60,10 @@ class GdarTvApp extends StatefulWidget {
   final ShowListProvider? showListProvider;
   final AudioProvider? audioProvider;
   final AudioCacheService? audioCacheService;
+  final SettingsProvider? settingsProvider;
+  final DeviceService? deviceService;
+  final DeepLinkService? deepLinkService;
+  final bool enableDeepLinks;
 
   const GdarTvApp({
     super.key,
@@ -69,6 +72,10 @@ class GdarTvApp extends StatefulWidget {
     this.showListProvider,
     this.audioProvider,
     this.audioCacheService,
+    this.settingsProvider,
+    this.deviceService,
+    this.deepLinkService,
+    this.enableDeepLinks = true,
   });
 
   @override
@@ -78,14 +85,16 @@ class GdarTvApp extends StatefulWidget {
 class _GdarTvAppState extends State<GdarTvApp> {
   late final ShowListProvider _showListProvider;
   late final SettingsProvider _settingsProvider;
-  late final DeepLinkService _deepLinkService;
+  DeepLinkService? _deepLinkService;
   StreamSubscription? _linkSubscription;
   final GlobalKey<NavigatorState> _navigatorKey = GlobalKey<NavigatorState>();
 
   @override
   void initState() {
     super.initState();
-    _settingsProvider = SettingsProvider(widget.prefs, isTv: widget.isTv);
+    _settingsProvider =
+        widget.settingsProvider ??
+        SettingsProvider(widget.prefs, isTv: widget.isTv);
     _showListProvider = widget.showListProvider ?? ShowListProvider();
 
     ThemeProvider.getInstance?.setSettingsProvider(_settingsProvider);
@@ -93,21 +102,23 @@ class _GdarTvAppState extends State<GdarTvApp> {
     if (widget.showListProvider == null) {
       _showListProvider.init(widget.prefs);
     }
-    _initDeepLinks();
+    if (widget.enableDeepLinks) {
+      _initDeepLinks();
+    }
   }
 
   @override
   void dispose() {
     _linkSubscription?.cancel();
-    _deepLinkService.dispose();
+    _deepLinkService?.dispose();
     super.dispose();
   }
 
   void _initDeepLinks() {
-    _deepLinkService = DeepLinkService();
-    _deepLinkService.init();
+    _deepLinkService = widget.deepLinkService ?? DeepLinkService();
+    _deepLinkService!.init();
 
-    _linkSubscription = _deepLinkService.uriStream.listen((uri) {
+    _linkSubscription = _deepLinkService!.uriStream.listen((uri) {
       // Deep link handling
     });
   }
@@ -124,7 +135,6 @@ class _GdarTvAppState extends State<GdarTvApp> {
           create: (_) =>
               widget.audioCacheService ?? (AudioCacheService()..init()),
         ),
-
         ChangeNotifierProxyProvider<SettingsProvider, ShowListProvider>(
           create: (_) => _showListProvider,
           update: (_, settingsProvider, showListProvider) =>
@@ -147,10 +157,10 @@ class _GdarTvAppState extends State<GdarTvApp> {
               ) => audioProvider!
                 ..update(showListProvider, settingsProvider, audioCacheService),
         ),
-
         ChangeNotifierProvider(create: (_) => UpdateProvider()),
         ChangeNotifierProvider(
-          create: (_) => DeviceService(initialIsTv: widget.isTv),
+          create: (_) =>
+              widget.deviceService ?? DeviceService(initialIsTv: widget.isTv),
         ),
       ],
       child: Consumer2<ThemeProvider, SettingsProvider>(
@@ -175,8 +185,8 @@ class _GdarTvAppState extends State<GdarTvApp> {
                 title: 'GDAR TV',
                 debugShowCheckedModeBanner: false,
                 theme: finalTheme,
-                themeMode: ThemeMode.dark, // TV is always dark mode
-                home: const TvDualPaneLayout(),
+                themeMode: ThemeMode.dark,
+                home: const SplashScreen(),
               ),
             ),
           );
