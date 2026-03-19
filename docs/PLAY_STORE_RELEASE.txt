@@ -1,3 +1,9 @@
+What's new in v1.2.8+208
+- TV Bootstrap: Standardized SharedPreferences injection in GdarTvApp for consistent startup.
+- Testing: Hardened TV startup regression tests by addressing timing race conditions.
+
+---
+
 What's new in v1.2.7+207
 - Web Audio: Hardened source switching logic in AudioProvider to ignore transient state mismatches.
 - Web Audio: Optimized PlaybackScreen list synchronization with safety guards to prevent crashes.

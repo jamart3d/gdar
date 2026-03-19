@@ -6,7 +6,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [1.2.7+207] - 2026-03-19
+## [1.2.8+208] - 2026-03-19
+
+### Fixed
+- **TV Bootstrap**: Standardized `SharedPreferences` injection in `GdarTvApp` to ensure consistent state initialization on TV devices.
+- **Testing**: Hardened TV startup regression tests by addressing race conditions between specialized app navigation and inactivity timers.
 
 ### Fixed
 - **Web Audio**: Hardened source switching logic in `AudioProvider` to ignore transient state mismatches during manual show transitions.

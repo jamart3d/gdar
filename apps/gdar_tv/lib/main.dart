@@ -12,6 +12,8 @@ import 'package:shakedown_core/services/catalog_service.dart';
 import 'package:shakedown_core/services/device_service.dart';
 import 'package:shakedown_core/services/wakelock_service.dart';
 import 'package:shakedown_core/services/deep_link_service.dart';
+import 'package:shakedown_core/services/inactivity_service.dart';
+import 'package:shakedown_core/ui/screens/screensaver_screen.dart';
 import 'package:shakedown_core/ui/screens/splash_screen.dart';
 import 'package:shakedown_core/ui/widgets/rgb_clock_wrapper.dart';
 import 'package:shakedown_core/utils/app_themes.dart';
@@ -85,9 +87,11 @@ class GdarTvApp extends StatefulWidget {
 class _GdarTvAppState extends State<GdarTvApp> {
   late final ShowListProvider _showListProvider;
   late final SettingsProvider _settingsProvider;
+  late final InactivityService _inactivityService;
   DeepLinkService? _deepLinkService;
   StreamSubscription? _linkSubscription;
   final GlobalKey<NavigatorState> _navigatorKey = GlobalKey<NavigatorState>();
+  bool _isScreensaverActive = false;
 
   @override
   void initState() {
@@ -96,6 +100,12 @@ class _GdarTvAppState extends State<GdarTvApp> {
         widget.settingsProvider ??
         SettingsProvider(widget.prefs, isTv: widget.isTv);
     _showListProvider = widget.showListProvider ?? ShowListProvider();
+    _inactivityService = InactivityService(
+      onInactivityTimeout: _handleInactivityTimeout,
+      initialDuration: Duration(
+        minutes: _settingsProvider.oilScreensaverInactivityMinutes,
+      ),
+    );
 
     ThemeProvider.getInstance?.setSettingsProvider(_settingsProvider);
 
@@ -109,9 +119,42 @@ class _GdarTvAppState extends State<GdarTvApp> {
 
   @override
   void dispose() {
+    _inactivityService.dispose();
     _linkSubscription?.cancel();
     _deepLinkService?.dispose();
     super.dispose();
+  }
+
+  Future<void> _handleInactivityTimeout() async {
+    if (!mounted ||
+        _isScreensaverActive ||
+        !_settingsProvider.useOilScreensaver) {
+      return;
+    }
+
+    final navigator = _navigatorKey.currentState;
+    final navContext = _navigatorKey.currentContext;
+    if (navigator == null || navContext == null) return;
+
+    _isScreensaverActive = true;
+    try {
+      await ScreensaverScreen.show(navContext);
+    } finally {
+      _isScreensaverActive = false;
+      _inactivityService.onUserActivity();
+    }
+  }
+
+  void _syncInactivityService(SettingsProvider settingsProvider) {
+    _inactivityService.updateDuration(
+      Duration(minutes: settingsProvider.oilScreensaverInactivityMinutes),
+    );
+
+    if (settingsProvider.useOilScreensaver) {
+      _inactivityService.start();
+    } else {
+      _inactivityService.stop();
+    }
   }
 
   void _initDeepLinks() {
@@ -165,6 +208,7 @@ class _GdarTvAppState extends State<GdarTvApp> {
       ],
       child: Consumer2<ThemeProvider, SettingsProvider>(
         builder: (context, themeProvider, settingsProvider, child) {
+          _syncInactivityService(settingsProvider);
           final theme = AppThemes.darkTheme(
             settingsProvider.activeAppFont,
             useMaterial3: settingsProvider.useMaterial3,
@@ -178,15 +222,19 @@ class _GdarTvAppState extends State<GdarTvApp> {
 
           return RgbClockWrapper(
             animationSpeed: settingsProvider.rgbAnimationSpeed,
-            child: Material(
-              color: finalTheme.scaffoldBackgroundColor,
-              child: MaterialApp(
-                navigatorKey: _navigatorKey,
-                title: 'GDAR TV',
-                debugShowCheckedModeBanner: false,
-                theme: finalTheme,
-                themeMode: ThemeMode.dark,
-                home: const SplashScreen(),
+            child: InactivityDetector(
+              inactivityService: _inactivityService,
+              isScreensaverActive: _isScreensaverActive,
+              child: Material(
+                color: finalTheme.scaffoldBackgroundColor,
+                child: MaterialApp(
+                  navigatorKey: _navigatorKey,
+                  title: 'GDAR TV',
+                  debugShowCheckedModeBanner: false,
+                  theme: finalTheme,
+                  themeMode: ThemeMode.dark,
+                  home: const SplashScreen(),
+                ),
               ),
             ),
           );

@@ -12,6 +12,7 @@ import 'package:shakedown_core/providers/show_list_provider.dart';
 import 'package:shakedown_core/services/audio_cache_service.dart';
 import 'package:shakedown_core/services/device_service.dart';
 import 'package:shakedown_core/services/gapless_player/gapless_player.dart';
+import 'package:shakedown_core/ui/screens/screensaver_screen.dart';
 import 'package:shakedown_core/ui/screens/onboarding_screen.dart';
 import 'package:shakedown_core/ui/screens/splash_screen.dart';
 
@@ -298,6 +299,25 @@ class FakeTvSettingsProvider extends FakeSettingsProvider {
   bool get performanceMode => true;
 }
 
+class FakeTvScreensaverSettingsProvider extends FakeTvSettingsProvider {
+  FakeTvScreensaverSettingsProvider({
+    required this.screensaverEnabled,
+    required this.inactivityMinutes,
+  });
+
+  final bool screensaverEnabled;
+  final int inactivityMinutes;
+
+  @override
+  bool get useOilScreensaver => screensaverEnabled;
+
+  @override
+  int get oilScreensaverInactivityMinutes => inactivityMinutes;
+
+  @override
+  bool get oilEnableAudioReactivity => false;
+}
+
 void main() {
   testWidgets(
     'TV startup boots through splash and does not route to onboarding',
@@ -332,6 +352,72 @@ void main() {
       await tester.pump(const Duration(milliseconds: 100));
 
       expect(find.byType(OnboardingScreen), findsNothing);
+    },
+  );
+
+  testWidgets('TV app launches screensaver after inactivity when enabled', (
+    WidgetTester tester,
+  ) async {
+    SharedPreferences.setMockInitialValues({
+      'show_splash_screen': false,
+      'performance_mode': true,
+    });
+    final prefs = await SharedPreferences.getInstance();
+
+    await tester.pumpWidget(
+      GdarTvApp(
+        prefs: prefs,
+        isTv: true,
+        showListProvider: MockShowListProvider(),
+        audioProvider: MockAudioProvider(),
+        audioCacheService: MockAudioCacheService(),
+        settingsProvider: FakeTvScreensaverSettingsProvider(
+          screensaverEnabled: true,
+          inactivityMinutes: 1,
+        ),
+        deviceService: FakeTvDeviceService(),
+        enableDeepLinks: false,
+      ),
+    );
+
+    await tester.pump();
+    await tester.pump(const Duration(seconds: 10)); // Clear everything
+
+    await tester.pump(const Duration(minutes: 1)); // Trigger inactivity
+    await tester.pump(const Duration(seconds: 1));
+
+    expect(find.byType(ScreensaverScreen), findsOneWidget);
+  });
+
+  testWidgets(
+    'TV app does not launch screensaver after inactivity when disabled',
+    (WidgetTester tester) async {
+      SharedPreferences.setMockInitialValues({
+        'show_splash_screen': false,
+        'performance_mode': true,
+      });
+      final prefs = await SharedPreferences.getInstance();
+
+      await tester.pumpWidget(
+        GdarTvApp(
+          prefs: prefs,
+          isTv: true,
+          showListProvider: MockShowListProvider(),
+          audioProvider: MockAudioProvider(),
+          audioCacheService: MockAudioCacheService(),
+          settingsProvider: FakeTvScreensaverSettingsProvider(
+            screensaverEnabled: false,
+            inactivityMinutes: 1,
+          ),
+          deviceService: FakeTvDeviceService(),
+          enableDeepLinks: false,
+        ),
+      );
+
+      await tester.pump();
+      await tester.pump(const Duration(minutes: 1, milliseconds: 50));
+
+      expect(find.byType(ScreensaverScreen), findsNothing);
     },
   );
 }
