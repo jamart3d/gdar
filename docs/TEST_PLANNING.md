@@ -87,7 +87,7 @@ relevant code, workflows, and feature docs before writing tests.
 - **Scope:** `packages/shakedown_core/lib/providers`, settings-related tests across apps
 - **Test type:** unit and widget tests
 - **Primary checks:** ratings persist, blocked items persist, scroll position or UI state restoration behaves as intended, newly added settings are mirrored in test fakes/mocks
-- **References:** `.agent/workflows/check_mock_parity.md`, `.agent/skills/test_mocking_templates/SKILL.md`
+- **References:** `docs/TEST_MOCKING_TEMPLATES.md`
 
 ## Data and Performance
 
@@ -100,7 +100,7 @@ relevant code, workflows, and feature docs before writing tests.
 - **Scope:** workspace assets and build outputs
 - **Test type:** automated audit plus review-time checks
 - **Primary checks:** oversized assets, unoptimized images, budget drift
-- **References:** `.agent/skills/size_guard/SKILL.md`, `.agent/workflows/audit_size.md`
+- **References:** `scripts/size_guard`, `.agent/workflows/audit_size.md`
 
 ## What Not To Over-Automate
 - Device-specific background playback survival
@@ -113,4 +113,6 @@ relevant code, workflows, and feature docs before writing tests.
 - Prefer adding tests close to the changed code.
 - If a scenario is better suited to manual QA, say so explicitly.
 - When writing tests from this matrix, cite the target package/app and the expected user-facing behavior.
+
+
 

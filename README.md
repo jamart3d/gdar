@@ -1,4 +1,4 @@
-# Shakedown (v1.2.1+201)
+# Shakedown (v1.2.5+205)
 
 A Flutter application for browsing and playing concert recordings of the Grateful Dead from archives.
 
@@ -73,7 +73,7 @@ A Flutter application for browsing and playing concert recordings of the Gratefu
 - **Mini-Player**: Appears at the bottom of the screen while browsing. Tap to expand to the full Playback Screen.
 - **Playback Screen**:
   - **Single Tap**: Toggle Play/Pause.
-  - **Double Tap**: Like/Like+ (Cycle through ratings: 1 star → 2 stars → 3 stars).
+  - **Double Tap**: Like/Like+ (Cycle through ratings: 1 star -> 2 stars -> 3 stars).
   - **Long Press**: Show details/Expand specialized controls.
   - **Swipe Down**: Collapse to Mini-Player.
 - **Show List**:
@@ -271,3 +271,4 @@ Direct Jules to the following file for a 100% comprehensive system check:
 
 **To trigger a Full High-Volume Test (Large Tasks):**
 > "Run all tests via Jules (jules new 'Run all tests')."
+
