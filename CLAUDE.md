@@ -145,3 +145,42 @@ adb shell am start -W -a android.intent.action.VIEW \
 | `docs/web_ui_audio_hybrid_review_2026-03-19.md` | Web/audio audit — all findings resolved as of 2026-03-19 |
 | `docs/web_ui_audio_engines.md` | JS engine architecture, config reference |
 | `AGENTS.md` | Original persona/project brief (Jules-format) |
+
+---
+
+## Agent Rules & Specs (`.agent/`)
+
+These files were written for Jules but apply equally here. **Read the relevant ones before making changes** — they contain hard constraints that are not duplicated in code comments.
+
+### Read before any UI or platform change
+
+| File | When to read |
+|---|---|
+| `.agent/rules/fruit_theme_boundaries.md` | Any Fruit/web UI work |
+| `.agent/rules/fruit_theme.md` | Fruit component patterns |
+| `.agent/rules/tv_rules.md` | Any TV UI work |
+| `.agent/rules/tv_focus_stability.md` | TV focus/navigation changes |
+| `.agent/rules/performance_mode_gates.md` | Performance mode or visual effect changes |
+| `.agent/rules/mobile_rules.md` | Android phone/tablet work |
+| `.agent/rules/audio_architecture.md` | Audio engine or provider changes |
+| `.agent/rules/platform_shell.md` | Platform-conditional code |
+| `.agent/rules/testing_stubs.md` | Writing or updating tests |
+| `.agent/rules/web_audio_scheduling.md` | JS audio engine changes |
+
+### Read before any design or spec work
+
+| File | What it defines |
+|---|---|
+| `.agent/specs/fruit_theme_spec.md` | Fruit UI hard constraints and component rules |
+| `.agent/specs/tv_ui_design_spec.md` | TV layout, scale, color, and focus rules |
+| `.agent/specs/tv_ui_flow_spec.md` | TV navigation and interaction flows |
+| `.agent/specs/phone_ui_design_spec.md` | Phone layout and component rules |
+| `.agent/specs/web_ui_design_spec.md` | Web/PWA design rules |
+| `.agent/specs/web_ui_audio_engines.md` | JS engine spec (matches `docs/web_ui_audio_engines.md`) |
+
+### Useful notes
+
+| File | What it covers |
+|---|---|
+| `.agent/notes/session_handoff.md` | Last Jules session — Fruit UI refinement and TV regression cleanup |
+| `.agent/notes/pending_release.md` | Current release (`1.2.8+208`), build/deploy commands |
