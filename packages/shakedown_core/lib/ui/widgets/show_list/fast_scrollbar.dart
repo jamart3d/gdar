@@ -133,6 +133,14 @@ class _FastScrollbarState extends State<FastScrollbar>
     if (_isDragging) return;
     final positions = widget.itemPositionsListener.itemPositions.value;
     if (positions.isEmpty || widget.shows.isEmpty) return;
+    if (widget.shows.length == 1) {
+      if (mounted) {
+        setState(() => _thumbFraction = 0.0);
+        _showThumb();
+        _scheduleHide();
+      }
+      return;
+    }
 
     final sorted = positions.toList()
       ..sort((a, b) => a.index.compareTo(b.index));
@@ -203,6 +211,7 @@ class _FastScrollbarState extends State<FastScrollbar>
   void _updateFromFraction(double fraction) {
     if (!mounted) return;
     setState(() => _thumbFraction = fraction);
+    if (widget.shows.isEmpty) return;
 
     final index = (fraction * (widget.shows.length - 1)).round().clamp(
       0,
@@ -254,6 +263,10 @@ class _FastScrollbarState extends State<FastScrollbar>
 
   String _currentYear() {
     if (widget.shows.isEmpty) return '';
+    if (widget.shows.length == 1) {
+      final year = _yearByIndex.isNotEmpty ? _yearByIndex.first : 0;
+      return year > 0 ? '$year' : '';
+    }
     final index = (_thumbFraction * (widget.shows.length - 1)).round().clamp(
       0,
       widget.shows.length - 1,
@@ -286,7 +299,9 @@ class _FastScrollbarState extends State<FastScrollbar>
             builder: (context, constraints) {
               final trackH = constraints.maxHeight;
               final usable = trackH - widget.thumbHeight;
-              final thumbTop = (_thumbFraction * usable).clamp(0.0, usable);
+              final thumbTop = usable <= 0
+                  ? 0.0
+                  : (_thumbFraction * usable).clamp(0.0, usable);
 
               return Stack(
                 key: _trackKey,
@@ -307,7 +322,9 @@ class _FastScrollbarState extends State<FastScrollbar>
                   ..._uniqueYears.map((year) {
                     final firstIdx = _yearByIndex.indexOf(year);
                     if (firstIdx < 0) return const SizedBox.shrink();
-                    final f = firstIdx / (_yearByIndex.length - 1);
+                    final f = _yearByIndex.length <= 1
+                        ? 0.0
+                        : firstIdx / (_yearByIndex.length - 1);
                     final top = (f * usable + widget.thumbHeight / 2).clamp(
                       0.0,
                       trackH,

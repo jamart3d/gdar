@@ -6,6 +6,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.6+206] - 2026-03-18
+
+### Fixed
+- **Web Audio**: Resolved a critical "player hung" issue during rapid play/pause toggling by implementing a playback intent guard in the `GaplessAudioEngine` decode chain.
+- **Web Audio**: Fixed `InvalidAccessError` in the HTML5 fallback engine by hardening the `disconnect()` logic for non-active tracks.
+- **Web Audio**: Throttled error notifications in `AudioProvider` to prevent UI thread starvation during Archive.org network failure spikes.
+- **Hygiene**: Resolved `unawaited_futures` in `track_list_screen.dart`.
+- **Performance**: Optimized the high-frequency state emission loop in the Web engines by caching User Agent detection results.
+
 ## [1.2.5+205] - 2026-03-18
 
 ### Changed

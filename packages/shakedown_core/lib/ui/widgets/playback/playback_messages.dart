@@ -15,6 +15,7 @@ class PlaybackMessages extends StatefulWidget {
   final bool compactDevHud;
   final bool showStatusLine;
   final bool showDevHudInline;
+  final double fontScale;
 
   const PlaybackMessages({
     super.key,
@@ -23,6 +24,7 @@ class PlaybackMessages extends StatefulWidget {
     this.compactDevHud = false,
     this.showStatusLine = true,
     this.showDevHudInline = true,
+    this.fontScale = 1.0,
   });
 
   @override
@@ -72,7 +74,7 @@ class _PlaybackMessagesState extends State<PlaybackMessages>
       context,
       settingsProvider,
     );
-    final double labelsFontSize = 12.0 * scaleFactor;
+    final double labelsFontSize = 12.0 * scaleFactor * widget.fontScale;
     final String? fontFamily = isFruitTheme ? null : 'Roboto';
 
     return StreamBuilder<HudSnapshot>(

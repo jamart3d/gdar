@@ -75,44 +75,160 @@ class LiquidGlassWrapper extends StatelessWidget {
 
       return ClipRRect(
         borderRadius: borderRadius ?? BorderRadius.zero,
-        child: Container(
-          decoration: BoxDecoration(
-            color: baseColor.withValues(
-              alpha: !isAllowedPlatform && !shouldBypassBlur
-                  ? (effectiveOpacity > 0.5 ? 1.0 : effectiveOpacity * 2.0)
-                        .clamp(0.0, 1.0)
-                  : effectiveOpacity,
+        child: Stack(
+          fit: StackFit.passthrough,
+          children: [
+            Container(
+              decoration: BoxDecoration(
+                color: baseColor.withValues(
+                  alpha: !isAllowedPlatform && !shouldBypassBlur
+                      ? (effectiveOpacity > 0.5 ? 1.0 : effectiveOpacity * 2.0)
+                            .clamp(0.0, 1.0)
+                      : effectiveOpacity,
+                ),
+                borderRadius: borderRadius,
+                border: (isFruitTheme && !isFruitGlassEnabled) || !showBorder
+                    ? null
+                    : Border.all(
+                        color: baseColor.withValues(alpha: 0.1),
+                        width: 0.5,
+                      ),
+              ),
             ),
-            borderRadius: borderRadius,
-            border: (isFruitTheme && !isFruitGlassEnabled) || !showBorder
-                ? null
-                : Border.all(
-                    color: baseColor.withValues(alpha: 0.1),
-                    width: 0.5,
+            if (isFruitTheme)
+              Positioned.fill(
+                child: IgnorePointer(
+                  child: _FruitOpticalOverlay(
+                    borderRadius: borderRadius ?? BorderRadius.zero,
+                    brightness: Theme.of(context).brightness,
+                    showBorder: showBorder,
                   ),
-          ),
-          child: child,
+                ),
+              ),
+            child,
+          ],
         ),
       );
     }
 
     return ClipRRect(
       borderRadius: borderRadius ?? BorderRadius.zero,
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: effectiveBlur, sigmaY: effectiveBlur),
-        child: Container(
-          decoration: BoxDecoration(
-            color: baseColor.withValues(alpha: opacity),
-            borderRadius: borderRadius,
-            border: showBorder
-                ? Border.all(
-                    color: baseColor.withValues(alpha: 0.1),
-                    width: 0.5,
-                  )
-                : null,
+      child: Stack(
+        fit: StackFit.passthrough,
+        children: [
+          BackdropFilter(
+            filter: ImageFilter.blur(
+              sigmaX: effectiveBlur,
+              sigmaY: effectiveBlur,
+            ),
+            child: Container(
+              decoration: BoxDecoration(
+                color: baseColor.withValues(alpha: opacity),
+                borderRadius: borderRadius,
+                border: showBorder
+                    ? Border.all(
+                        color: baseColor.withValues(alpha: 0.1),
+                        width: 0.5,
+                      )
+                    : null,
+              ),
+            ),
           ),
-          child: child,
+          if (isFruitTheme)
+            Positioned.fill(
+              child: IgnorePointer(
+                child: _FruitOpticalOverlay(
+                  borderRadius: borderRadius ?? BorderRadius.zero,
+                  brightness: Theme.of(context).brightness,
+                  showBorder: showBorder,
+                ),
+              ),
+            ),
+          child,
+        ],
+      ),
+    );
+  }
+}
+
+class _FruitOpticalOverlay extends StatelessWidget {
+  final BorderRadius borderRadius;
+  final Brightness brightness;
+  final bool showBorder;
+
+  const _FruitOpticalOverlay({
+    required this.borderRadius,
+    required this.brightness,
+    required this.showBorder,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final bool isDark = brightness == Brightness.dark;
+    final double rimAlpha = isDark ? 0.18 : 0.14;
+    final double highlightAlpha = isDark ? 0.18 : 0.22;
+    final double accentAlpha = isDark ? 0.08 : 0.1;
+    final double topEdgeAlpha = isDark ? 0.24 : 0.34;
+    final double lowerFadeAlpha = isDark ? 0.02 : 0.03;
+
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        borderRadius: borderRadius,
+        border: showBorder
+            ? Border.all(
+                color: Colors.white.withValues(alpha: rimAlpha),
+                width: 0.8,
+              )
+            : null,
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            Colors.white.withValues(alpha: topEdgeAlpha),
+            Colors.white.withValues(alpha: highlightAlpha),
+            Colors.white.withValues(alpha: 0.06),
+            Colors.white.withValues(alpha: lowerFadeAlpha),
+          ],
+          stops: const [0.0, 0.08, 0.32, 1.0],
         ),
+      ),
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          Positioned(
+            left: 0,
+            right: 0,
+            top: 0,
+            height: 1.4,
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Colors.white.withValues(alpha: topEdgeAlpha),
+                    Colors.white.withValues(alpha: 0.0),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          DecoratedBox(
+            decoration: BoxDecoration(
+              borderRadius: borderRadius,
+              gradient: RadialGradient(
+                center: const Alignment(-0.9, -0.95),
+                radius: 1.3,
+                colors: [
+                  Colors.white.withValues(alpha: accentAlpha),
+                  Colors.white.withValues(alpha: 0.02),
+                  Colors.transparent,
+                ],
+                stops: const [0.0, 0.32, 1.0],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

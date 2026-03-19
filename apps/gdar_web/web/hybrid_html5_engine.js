@@ -140,7 +140,11 @@
                 if (this.bufferSourceNode.playbackRate.value === 0) return;
                 this.webAudioPausedAt = this.audioContext.currentTime;
                 this.bufferSourceNode.playbackRate.value = 0;
-                try { this.gainNode.disconnect(this.audioContext.destination); } catch (err) { console.error(err); }
+                try { 
+                    // Use zero-argument disconnect to avoid 'InvalidAccessError: the given destination is not connected'
+                    // This is safer during rapid state transitions or pre-loads.
+                    this.gainNode.disconnect(); 
+                } catch (err) { }
                 this.bufferSourceNode.onended = null;
             } else {
                 this.audio.pause();

@@ -121,14 +121,14 @@ class _TvSettingsScreenState extends State<TvSettingsScreen> {
     final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
-      backgroundColor: colorScheme.surface,
+      backgroundColor: Colors.black,
       body: Row(
         children: [
           // Left Pane: Navigation
           Expanded(
             flex: 1,
             child: Container(
-              color: colorScheme.surfaceContainer,
+              color: Colors.black,
               child: Column(
                 children: [
                   Padding(
@@ -217,7 +217,10 @@ class _TvSettingsScreenState extends State<TvSettingsScreen> {
             ),
           ),
           // Vertical Divider
-          VerticalDivider(width: 1, color: colorScheme.outlineVariant),
+          VerticalDivider(
+            width: 1,
+            color: colorScheme.onSurface.withValues(alpha: 0.12),
+          ),
           // Right Pane: Content
           Expanded(
             flex: 2,

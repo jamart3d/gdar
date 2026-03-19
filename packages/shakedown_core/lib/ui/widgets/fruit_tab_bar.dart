@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:shakedown_core/providers/audio_provider.dart';
@@ -131,6 +132,10 @@ class FruitTabBar extends StatelessWidget {
       return content;
     }
 
+    if (kIsWeb) {
+      return _FruitTabBarShell(child: content);
+    }
+
     return LiquidGlassWrapper(
       enabled: isLiquidGlassEnabled,
       blur: 18.0,
@@ -138,6 +143,72 @@ class FruitTabBar extends StatelessWidget {
       borderRadius: BorderRadius.zero,
       showBorder: false,
       child: content,
+    );
+  }
+}
+
+class _FruitTabBarShell extends StatelessWidget {
+  final Widget child;
+
+  const _FruitTabBarShell({required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return ClipRect(
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: Colors.black.withValues(alpha: isDark ? 0.72 : 0.58),
+          border: Border(
+            top: BorderSide(
+              color: Colors.white.withValues(alpha: isDark ? 0.14 : 0.18),
+              width: 0.7,
+            ),
+          ),
+        ),
+        child: Stack(
+          children: [
+            Positioned(
+              left: 0,
+              right: 0,
+              top: 0,
+              height: 1.2,
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.white.withValues(alpha: isDark ? 0.22 : 0.3),
+                      Colors.transparent,
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            Positioned.fill(
+              child: IgnorePointer(
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Colors.white.withValues(alpha: isDark ? 0.05 : 0.08),
+                        Colors.white.withValues(alpha: 0.02),
+                        Colors.transparent,
+                      ],
+                      stops: const [0.0, 0.12, 0.5],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            child,
+          ],
+        ),
+      ),
     );
   }
 }

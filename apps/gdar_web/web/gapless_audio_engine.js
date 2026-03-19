@@ -644,12 +644,19 @@
           playlistLength: _playlist.length,
           processingState: ps,
           heartbeatNeeded: (function () {
+            if (window._gdarHeartbeatNeeded !== undefined) return window._gdarHeartbeatNeeded;
             const ua = navigator.userAgent;
-            if (/Windows/i.test(ua) || (/Macintosh/i.test(ua) && navigator.maxTouchPoints === 0)) return false;
+            const isWindows = /Windows/i.test(ua);
+            const isMacDesktop = /Macintosh/i.test(ua) && navigator.maxTouchPoints === 0;
+            if (isWindows || isMacDesktop) {
+              window._gdarHeartbeatNeeded = false;
+              return false;
+            }
             const isAndroid = /Android/i.test(ua);
             const isIOS = /iPhone|iPad|iPod/i.test(ua);
             const isMacPad = navigator.maxTouchPoints > 0 && /Macintosh/.test(ua);
-            return isAndroid || isIOS || isMacPad;
+            window._gdarHeartbeatNeeded = isAndroid || isIOS || isMacPad;
+            return window._gdarHeartbeatNeeded;
           })(),
           heartbeatActive: (function () {
             if (document.visibilityState === 'visible' && _playing) return true;
@@ -657,6 +664,7 @@
           })(),
           contextState: (function() {
              const hbNeeded = (function() {
+                if (window._gdarHeartbeatNeeded !== undefined) return window._gdarHeartbeatNeeded;
                 const ua = navigator.userAgent;
                 if (/Windows/i.test(ua) || (/Macintosh/i.test(ua) && navigator.maxTouchPoints === 0)) return false;
                 const isAndroid = /Android/i.test(ua);
@@ -793,13 +801,23 @@
       _emitState();
 
       _decode(index).then(buf => {
-        if (_currentIndex !== index) return;
+        // RACE CONDITION GUARD: If user clicked Pause or Skipped while the fetch/decode 
+        // was pending, we MUST NOT call _startTrack. 
+        if (!_playing || _currentIndex !== index) {
+          _log.log(`[gdar engine] Play aborted: _playing=${_playing}, currentIdx=${_currentIndex}, targetIdx=${index}`);
+          _loadingIndex = -1;
+          _loadingState = 'idle';
+          _emitState();
+          return;
+        }
         _loadingIndex = -1;
         _startTrack(buf, _currentTrackStartOffset, null);
         _emitTrackChange(-1, index);
       }).catch(err => {
         _loadingIndex = -1;
+        _loadingState = 'idle';
         _emitError('Decode error: ' + err.message);
+        _emitState();
       });
     },
 

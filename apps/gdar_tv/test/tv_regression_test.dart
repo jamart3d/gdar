@@ -1,5 +1,6 @@
 @Skip('Moved to packages/shakedown_core/test during monorepo transition')
 library;
+
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -907,4 +908,3 @@ void main() {
     expect(find.text('RGB Animation Speed'), findsOneWidget);
   });
 }
-

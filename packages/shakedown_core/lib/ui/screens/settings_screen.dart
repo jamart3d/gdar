@@ -376,6 +376,7 @@ class _SettingsScreenState extends State<SettingsScreen>
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 24.0),
         child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             _buildFruitHeaderButton(
               context,
@@ -456,6 +457,12 @@ class _SettingsScreenState extends State<SettingsScreen>
     required IconData icon,
     required VoidCallback onPressed,
   }) {
-    return FruitActionButton(icon: icon, onPressed: onPressed);
+    return SizedBox(
+      width: 44,
+      height: 44,
+      child: Center(
+        child: FruitActionButton(icon: icon, onPressed: onPressed),
+      ),
+    );
   }
 }

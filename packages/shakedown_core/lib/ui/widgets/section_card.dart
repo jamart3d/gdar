@@ -5,7 +5,6 @@ import 'package:shakedown_core/services/device_service.dart';
 import 'package:shakedown_core/providers/settings_provider.dart';
 import 'package:shakedown_core/providers/theme_provider.dart';
 import 'package:shakedown_core/ui/widgets/theme/neumorphic_wrapper.dart';
-import 'package:shakedown_core/ui/widgets/theme/liquid_glass_wrapper.dart';
 
 class SectionCard extends StatelessWidget {
   final String title;
@@ -75,6 +74,8 @@ class SectionCard extends StatelessWidget {
     final activeIcon = (isFruit && lucideIcon != null) ? lucideIcon! : icon;
 
     final colorScheme = Theme.of(context).colorScheme;
+    final useTrueBlack = settingsProvider.useTrueBlack;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     Widget content = Theme(
       data: Theme.of(context).copyWith(
@@ -197,29 +198,11 @@ class SectionCard extends StatelessWidget {
 
     final isTv = context.watch<DeviceService>().isTv;
 
-    if (useNeumorphism && !isTv) {
+    if (useNeumorphism && !isTv && !isFruit) {
       return Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
         child: NeumorphicWrapper(
           borderRadius: 28,
-          child: LiquidGlassWrapper(
-            enabled: isFruit && settingsProvider.fruitEnableLiquidGlass,
-            borderRadius: BorderRadius.circular(28),
-            child: content,
-          ),
-        ),
-      );
-    }
-
-    final useTrueBlack = settingsProvider.useTrueBlack;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    if (isFruit && !isTv) {
-      return Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-        child: LiquidGlassWrapper(
-          enabled: settingsProvider.fruitEnableLiquidGlass,
-          borderRadius: BorderRadius.circular(28),
           child: Container(
             decoration: BoxDecoration(
               color: (useTrueBlack && isDark)
@@ -241,6 +224,22 @@ class SectionCard extends StatelessWidget {
       );
     }
 
+    if (isFruit && !isTv) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+        child: _FruitSectionShell(
+          borderRadius: BorderRadius.circular(28),
+          fillColor: (useTrueBlack && isDark)
+              ? Colors.transparent
+              : colorScheme.surfaceContainerHighest.withValues(alpha: 0.18),
+          outlineColor: (useTrueBlack && isDark)
+              ? colorScheme.outline.withValues(alpha: 0.2)
+              : Colors.white.withValues(alpha: isDark ? 0.12 : 0.18),
+          child: content,
+        ),
+      );
+    }
+
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
       elevation: 0,
@@ -257,6 +256,78 @@ class SectionCard extends StatelessWidget {
             : BorderSide.none,
       ),
       child: content,
+    );
+  }
+}
+
+class _FruitSectionShell extends StatelessWidget {
+  final Widget child;
+  final BorderRadius borderRadius;
+  final Color fillColor;
+  final Color outlineColor;
+
+  const _FruitSectionShell({
+    required this.child,
+    required this.borderRadius,
+    required this.fillColor,
+    required this.outlineColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return ClipRRect(
+      borderRadius: borderRadius,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          borderRadius: borderRadius,
+          color: fillColor,
+          border: Border.all(color: outlineColor, width: 0.7),
+        ),
+        child: Stack(
+          children: [
+            Positioned(
+              left: 0,
+              right: 0,
+              top: 0,
+              height: 1.2,
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.white.withValues(alpha: isDark ? 0.22 : 0.3),
+                      Colors.transparent,
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            Positioned.fill(
+              child: IgnorePointer(
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    borderRadius: borderRadius,
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Colors.white.withValues(alpha: isDark ? 0.07 : 0.09),
+                        Colors.white.withValues(alpha: 0.02),
+                        Colors.transparent,
+                      ],
+                      stops: const [0.0, 0.12, 0.55],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            child,
+          ],
+        ),
+      ),
     );
   }
 }

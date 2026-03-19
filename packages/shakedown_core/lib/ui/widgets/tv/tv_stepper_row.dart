@@ -53,8 +53,12 @@ class TvStepperRow extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
-          color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.4),
+          color: Colors.black,
           borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: colorScheme.onSurface.withValues(alpha: 0.12),
+            width: 1.0,
+          ),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -83,7 +87,7 @@ class TvStepperRow extends StatelessWidget {
                 Container(
                   height: 4,
                   decoration: BoxDecoration(
-                    color: colorScheme.surfaceContainerHighest,
+                    color: colorScheme.onSurface.withValues(alpha: 0.14),
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),

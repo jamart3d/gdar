@@ -14,7 +14,6 @@ import 'package:shakedown_core/ui/widgets/rating_control.dart';
 import 'package:shakedown_core/ui/widgets/src_badge.dart';
 import 'package:shakedown_core/ui/widgets/shnid_badge.dart';
 import 'package:shakedown_core/ui/widgets/fruit_tab_bar.dart';
-import 'package:shakedown_core/ui/widgets/theme/liquid_glass_wrapper.dart';
 import 'package:shakedown_core/ui/screens/fruit_tab_host_screen.dart';
 import 'package:shakedown_core/ui/widgets/playback/fruit_track_list.dart';
 import 'package:shakedown_core/ui/widgets/playback/fruit_now_playing_card.dart';
@@ -153,6 +152,34 @@ class PlaybackScreenState extends State<PlaybackScreen>
     super.dispose();
   }
 
+  Future<void> _safeItemScrollTo({
+    required int index,
+    required double alignment,
+    required Duration duration,
+    required Curve curve,
+  }) async {
+    if (!mounted || !_itemScrollController.isAttached) return;
+    try {
+      await _itemScrollController.scrollTo(
+        index: index,
+        duration: duration,
+        curve: curve,
+        alignment: alignment,
+      );
+    } catch (_) {
+      // The list can detach between scheduling and execution on web.
+    }
+  }
+
+  void _safeItemJumpTo({required int index, required double alignment}) {
+    if (!mounted || !_itemScrollController.isAttached) return;
+    try {
+      _itemScrollController.jumpTo(index: index, alignment: alignment);
+    } catch (_) {
+      // Ignore detach races during route/layout transitions.
+    }
+  }
+
   void _scrollToCurrentTrack(
     bool animate, {
     bool force = false,
@@ -221,17 +248,16 @@ class PlaybackScreenState extends State<PlaybackScreen>
 
         if (!skipScroll) {
           if (animate) {
-            _itemScrollController.scrollTo(
-              index: targetIndex,
-              duration: const Duration(milliseconds: 500),
-              curve: Curves.easeInOutCubic,
-              alignment: alignment,
+            unawaited(
+              _safeItemScrollTo(
+                index: targetIndex,
+                duration: const Duration(milliseconds: 500),
+                curve: Curves.easeInOutCubic,
+                alignment: alignment,
+              ),
             );
           } else {
-            _itemScrollController.jumpTo(
-              index: targetIndex,
-              alignment: alignment,
-            );
+            _safeItemJumpTo(index: targetIndex, alignment: alignment);
           }
         }
       }
@@ -382,7 +408,7 @@ class PlaybackScreenState extends State<PlaybackScreen>
       }
 
       if (!alreadyAligned) {
-        _itemScrollController.jumpTo(index: index, alignment: 0.3);
+        _safeItemJumpTo(index: index, alignment: 0.3);
       }
     }
 
@@ -505,11 +531,11 @@ class PlaybackScreenState extends State<PlaybackScreen>
                     fontFamily: 'Inter',
                     fontSize: 15 * scaleFactor, // text-base equivalent
                     fontWeight: FontWeight.bold, // font-bold
-                    letterSpacing: -0.5, // tracking-tight
+                    letterSpacing: 0.15,
                     color: Theme.of(context).colorScheme.onSurface,
                   ),
                 ),
-                SizedBox(height: 2 * scaleFactor),
+                SizedBox(height: 5 * scaleFactor),
                 Text(
                   '${currentShow.venue}, ${currentShow.location}'.toUpperCase(),
                   textAlign: TextAlign.center,
@@ -525,7 +551,7 @@ class PlaybackScreenState extends State<PlaybackScreen>
                     ).colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
                   ),
                 ),
-                SizedBox(height: 6 * scaleFactor),
+                SizedBox(height: 8 * scaleFactor),
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -1105,14 +1131,10 @@ class PlaybackScreenState extends State<PlaybackScreen>
                 top: 0,
                 left: 0,
                 right: 0,
-                child: LiquidGlassWrapper(
-                  enabled:
-                      isFruit &&
-                      settingsProvider.fruitEnableLiquidGlass &&
-                      !settingsProvider.performanceMode,
-                  blur: 20,
-                  opacity: 0.8,
+                child: FruitSurface(
                   borderRadius: BorderRadius.zero,
+                  blur: 18,
+                  opacity: settingsProvider.performanceMode ? 0.96 : 0.82,
                   child: Container(
                     height: MediaQuery.paddingOf(context).top + 80,
                     padding: EdgeInsets.only(
@@ -1122,14 +1144,6 @@ class PlaybackScreenState extends State<PlaybackScreen>
                       color: settingsProvider.performanceMode
                           ? Theme.of(context).colorScheme.surface
                           : null,
-                      border: Border(
-                        bottom: BorderSide(
-                          color: Theme.of(
-                            context,
-                          ).colorScheme.onSurface.withValues(alpha: 0.05),
-                          width: 1.0,
-                        ),
-                      ),
                     ),
                     alignment: Alignment.center,
                     child: _buildFruitTopBar(context, scaleFactor),

@@ -152,6 +152,34 @@ class PlaybackScreenState extends State<PlaybackScreen>
     super.dispose();
   }
 
+  Future<void> _safeItemScrollTo({
+    required int index,
+    required double alignment,
+    required Duration duration,
+    required Curve curve,
+  }) async {
+    if (!mounted || !_itemScrollController.isAttached) return;
+    try {
+      await _itemScrollController.scrollTo(
+        index: index,
+        duration: duration,
+        curve: curve,
+        alignment: alignment,
+      );
+    } catch (_) {
+      // The list can detach between scheduling and execution on web.
+    }
+  }
+
+  void _safeItemJumpTo({required int index, required double alignment}) {
+    if (!mounted || !_itemScrollController.isAttached) return;
+    try {
+      _itemScrollController.jumpTo(index: index, alignment: alignment);
+    } catch (_) {
+      // Ignore detach races during route/layout transitions.
+    }
+  }
+
   void _scrollToCurrentTrack(
     bool animate, {
     bool force = false,
@@ -220,17 +248,16 @@ class PlaybackScreenState extends State<PlaybackScreen>
 
         if (!skipScroll) {
           if (animate) {
-            _itemScrollController.scrollTo(
-              index: targetIndex,
-              duration: const Duration(milliseconds: 500),
-              curve: Curves.easeInOutCubic,
-              alignment: alignment,
+            unawaited(
+              _safeItemScrollTo(
+                index: targetIndex,
+                duration: const Duration(milliseconds: 500),
+                curve: Curves.easeInOutCubic,
+                alignment: alignment,
+              ),
             );
           } else {
-            _itemScrollController.jumpTo(
-              index: targetIndex,
-              alignment: alignment,
-            );
+            _safeItemJumpTo(index: targetIndex, alignment: alignment);
           }
         }
       }
@@ -381,7 +408,7 @@ class PlaybackScreenState extends State<PlaybackScreen>
       }
 
       if (!alreadyAligned) {
-        _itemScrollController.jumpTo(index: index, alignment: 0.3);
+        _safeItemJumpTo(index: index, alignment: 0.3);
       }
     }
 

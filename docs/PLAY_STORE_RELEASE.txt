@@ -1,3 +1,12 @@
+What's new in v1.2.6+206
+- Resolved critical "player hung" issues in the Gapless Web Audio engine.
+- Hardened HTML5 fallback engine with improved track disconnection logic.
+- Implemented error notification throttling to prevent UI starvation.
+- Optimized high-frequency state emission for improved Web performance.
+- Fixed unawaited_futures in track list screen for improved code hygiene.
+
+---
+
 What's new in v1.2.5+205
 - Enhanced TV screensaver text spacing and squish-to-fit behavior for long track titles.
 - Hardened compact playback layouts to avoid header overflow in constrained panel states.

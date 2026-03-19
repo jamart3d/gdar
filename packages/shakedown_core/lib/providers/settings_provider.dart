@@ -1277,8 +1277,12 @@ class SettingsProvider with ChangeNotifier {
         _prefs.getBool(_oilScreensaver4kSupportKey) ?? false;
     _oilTvPremiumHighlight =
         _prefs.getBool(_oilTvPremiumHighlightKey) ??
-        DefaultSettings.oilTvPremiumHighlight;
-    _hideTvScrollbars = _prefs.getBool(_hideTvScrollbarsKey) ?? false;
+        (isTv
+            ? TvDefaults.oilTvPremiumHighlight
+            : DefaultSettings.oilTvPremiumHighlight);
+    _hideTvScrollbars =
+        _prefs.getBool(_hideTvScrollbarsKey) ??
+        (isTv ? TvDefaults.hideTvScrollbars : false);
 
     // Reactivity isolation
     _oilScaleSource =
@@ -1503,8 +1507,10 @@ class SettingsProvider with ChangeNotifier {
   //
   void setUseNeumorphism(bool value) =>
       _updatePreference(_useNeumorphismKey, _useNeumorphism = value);
-  void togglePerformanceMode() {
-    _performanceMode = !_performanceMode;
+  void setPerformanceMode(bool value) {
+    if (_performanceMode == value) return;
+
+    _performanceMode = value;
     _updatePreference(_performanceModeKey, _performanceMode);
 
     if (_performanceMode) {
@@ -1513,6 +1519,10 @@ class SettingsProvider with ChangeNotifier {
       setGlowMode(0);
       setHighlightPlayingWithRgb(false);
     }
+  }
+
+  void togglePerformanceMode() {
+    setPerformanceMode(!_performanceMode);
   }
 
   void toggleForceTv() => _updatePreference(_forceTvKey, _forceTv = !_forceTv);

@@ -1,64 +1,180 @@
 # Fruit Theme Specification: GDAR Audio Player
 
-This document defines the **Fruit** (Liquid Glass) theme, a premium, tactile, and immersive aesthetic developed for the GDAR ecosystem. It is an **optional visual layer** for the Web UI/PWA, while **Android (Material 3)** remains the default style across all platforms.
+This document defines the **Fruit** theme for GDAR Web/PWA. Fruit is the
+project's Apple-inspired **Liquid Glass** presentation: tactile, translucent,
+and highly responsive, while remaining settings-aware and performance-safe.
+Android and TV do not use this visual system.
 
 ## 1. Aesthetic Philosophy
-The "Fruit" look centers on depth, translucency, and physical responsiveness. It moves away from Material's elevation-based shadow model towards a model of blurred surfaces and tactile feedback.
 
-## 2. Visual Tokens
+Fruit should feel like **one refractive material plane** floating above the
+content, not a stack of blurred cards. It prioritizes:
 
-### 2.1 Translucency (Liquid Glass)
-*   **Backdrop Blur:** Surfaces use `BackdropFilter` with `sigma: 15.0`.
-*   **Opacity:** Background alpha is typically `0.7`, allowing underlying colors and shaders (like `StealVisualizer`) to bleed through.
-*   **Availability:** Specifically enabled on **Web** platforms when the Fruit theme is active. Disabled on Phone/TV for performance and platform-native feel.
+- translucency over opaque layering
+- refraction and edge sheen over generic blur
+- springy physical response over opacity-only feedback
+- clarity and restraint over constant neon effects
 
-### 2.2 Tactility (Neumorphism)
-*   **Shadow System:** Interactive elements (Buttons, Search Bars) use dual-shadow light/dark offsets instead of standard elevation.
-*   **Convex (Pop):** Standard buttons and active cards.
-*   **Concave (Depressed):** Search fields, inactive inputs, and "active" control regions.
-*   **Dynamic Response:** Neumorphic shadows may shift or flatten upon interaction to simulate physical compression.
+Fruit is not Material 3, and it should not fall back to Material patterns when
+Fruit effects are reduced or disabled.
 
-### 2.3 Symbology & Typography
-*   **Font Family:** **Inter** (Hard-enforced). Designed for maximum legibility and architectural clarity.
-*   **Icon Set:** **Lucide Icons** exclusively. Known for consistent line weights and a more "modern/premium" aesthetic than standard Material.
-*   **Vapor Transitions:** Use of `ShaderMask` with linear gradients to "melt" header and modal edges into the content, eliminating sharp visual lines. Floating AppBars use these transitions instead of bottom borders.
+## 2. Platform Policy
 
-## 3. Color Configurations (The Three Modes)
-The theme cycles randomly between three curated palettes:
+Fruit is a **Web/PWA-only** theme.
 
-### 3.1 🧪 Sophisticate (Indigo/Slate)
-- **Primary**: Indigo (`0xFF5C6BC0`)
-- **Background (Light)**: Slate/Soft Blue-Gray (`0xFFE0E5EC`)
-- **Background (Dark)**: Slate 900 (`0xFF0F172A`)
-- **Surface (Dark)**: Slate 800 (`0xFF1E293B`)
+- **Web / PWA:** Full Fruit implementation is allowed.
+- **Phone / Tablet native:** Forbidden. Use the Android/Material system.
+- **TV:** Forbidden. Use the TV-focused dark system.
 
-### 3.2 🌿 Minimalist (Apple Green)
-- **Primary**: Apple Green (`0xFF34C759`)
-- **Background (Light)**: Pure White
-- **Background (Dark)**: System Gray 6 (`0xFF1C1C1E`)
+## 3. Material Model
 
-### 3.3 🎨 Creative (Apple Pink)
-- **Primary**: Apple Pink (`0xFFFF2D55`)
-- **Background (Light)**: Warm Tint (`0xFFFFF9F9`)
-- **Background (Dark)**: Warm Charcoal (`0xFF1A1A1A`)
+### 3.1 Core Surface Rule
 
-## 4. Dynamic Effects
+Fruit uses a **single-sheet liquid surface model**.
 
-### 3.1 RGB Active Track
-*   The currently playing track or selected show features a rotating `SweepGradient` border.
-*   Controlled via the user's `glowMode` and `highlightPlayingWithRgb` settings.
+- Large playback chrome should read as one continuous refractive layer.
+- Header, sticky now-playing, and inline now-playing states should reuse the
+  same material language rather than stack independent blur treatments.
+- Nested glass inside glass is an anti-pattern unless there is a strong
+  functional reason and the inner layer is visually minimal.
 
-### 3.2 Motion & Easing
-*   **Motion & Easing:** Avoid traditional easing curves. Rely on Apple-style spring physics for transitions. Use scale-down/bounce-back animations for button taps instead of ink-drops/ripples (`NoSplash.splashFactory`).
-*   **Aesthetic Governance:** Borderless Glass. All glass components must have `showBorder: false` to avoid sharp geometric lines.
+### 3.2 Liquid Glass
 
-## 4. Platform Application (The "Walled" Policy)
-The Fruit theme is architecturally **walled off** as a **Web and PWA Exclusive**. It is specifically designed to leverage browser-based GPU acceleration and high-fidelity translucency.
+- `BackdropFilter` blur is only the base ingredient, not the full effect.
+- Fruit surfaces should include subtle **edge sheen**, **inner highlight**, and
+  **corner falloff** so the perimeter reads as bending light rather than merely
+  softening pixels.
+- Borders must remain soft and optical. Avoid hard geometric outlines.
+- Default glass should be visually clean and restrained.
 
-*   **Web / PWA (Exclusive Domain):** Full implementation permitted. This is the only environment where `LiquidGlassWrapper`, Neumorphic shadows, and `Inter` typography are active.
-*   **Native Mobile (Phone/Tablet):** **STRICTLY FORBIDDEN**. Native builds must adhere to the **Phone UI Design Specification** (Material 3 Baseline) to ensure platform consistency and performance.
-*   **TV:** **STRICTLY FORBIDDEN**. TV builds must adhere to the **TV UI Design Specification** (v135 Legacy / Material Dark).
+### 3.3 Fallback Behavior
+
+When Fruit effects are reduced, the structure stays Fruit:
+
+- no Material 3 components
+- no ripples or FAB language
+- no substitution of the Fruit shell with generic cards
+
+Reduced mode should preserve layout, spacing, and control hierarchy while
+removing expensive optics.
+
+## 4. Motion and Physicality
+
+### 4.1 Interaction Response
+
+- Press interactions should feel like the surface briefly **sinks** and
+  rebounds.
+- Prefer spring-like motion over opacity-only feedback.
+- Scale, depth, highlight compression, and rebound are appropriate.
+- Ink-drop/ripple behavior is forbidden.
+
+### 4.2 Transport Transitions
+
+- Play/pause transitions should not feel like a simple icon swap.
+- Pending/buffering states should use a **liquid transition**, such as a glyph
+  compressing into a highlight core with a specular sweep or shimmer.
+- Loading affordances should feel integrated with the glass surface rather than
+  pasted on top as generic spinners.
+
+## 5. Typography and Iconography
+
+- **Font family:** `Inter` for Fruit UI.
+- **Icon set:** `Lucide Icons` for standard Fruit controls.
+- Typography should remain crisp and highly legible against translucent
+  surfaces.
+
+## 6. Color Configurations
+
+Fruit offers three curated palette modes selected by the user in settings.
+
+### 6.1 Sophisticate
+
+- **Primary:** Indigo (`0xFF5C6BC0`)
+- **Background (Light):** Slate / Soft Blue-Gray (`0xFFE0E5EC`)
+- **Background (Dark):** Slate 900 (`0xFF0F172A`)
+- **Surface (Dark):** Slate 800 (`0xFF1E293B`)
+
+### 6.2 Minimalist
+
+- **Primary:** Apple Green (`0xFF34C759`)
+- **Background (Light):** White
+- **Background (Dark):** System Gray 6 (`0xFF1C1C1E`)
+
+### 6.3 Creative
+
+- **Primary:** Apple Pink (`0xFFFF2D55`)
+- **Background (Light):** Warm Tint (`0xFFFFF9F9`)
+- **Background (Dark):** Warm Charcoal (`0xFF1A1A1A`)
+
+## 7. Settings Contract
+
+Fruit must honor the existing Appearance settings.
+
+### 7.1 `fruitEnableLiquidGlass`
+
+- Core Fruit material toggle.
+- Enables the liquid surface treatment and related optical effects.
+- This is more than blur; it controls the overall refractive presentation.
+
+### 7.2 `performanceMode`
+
+- Hard-disables expensive Fruit effects.
+- Must disable or significantly reduce:
+  - liquid optics
+  - glow
+  - RGB animation
+  - spring-heavy motion
+- The UI remains Fruit in structure, but simplified in rendering cost.
+
+### 7.3 `fruitStickyNowPlaying`
+
+- Repositions the now-playing sheet between inline and sticky states.
+- Should not create the appearance of multiple independent glass slabs.
+
+### 7.4 `fruitDenseList`
+
+- Changes spacing density only.
+- Must not alter the Fruit material model.
+
+### 7.5 `glowMode`
+
+- Supported in Fruit as an **optional expressive accent**.
+- It is **not** part of the default native Fruit look.
+- In Fruit, glow should be interpreted as subtle edge energy or active-state
+  luminance, not a persistent neon border around all surfaces.
+
+### 7.6 `highlightPlayingWithRgb`
+
+- Supported in Fruit as an **optional expressive accent**.
+- It is **not** part of the default native Fruit look.
+- RGB should be limited to active playback emphasis and should remain more
+  restrained than arcade-like by default.
+
+## 8. Anti-Patterns
+
+The following are considered non-compliant with Fruit:
+
+- stacked glass panels that read like layered plastic
+- blur-only "glass" with no optical edge treatment
+- opacity-only press feedback on primary controls
+- generic spinner replacement for transport pending states
+- always-on RGB borders as the default Fruit identity
+- strong neumorphic shadows competing with the liquid material read
+- Material 3 components or interaction language inside Fruit screens
+
+## 9. Governance
+
+- Default Fruit should feel **native, calm, and premium**.
+- Glow and RGB are permitted as user-controlled expressive modes, but they are
+  secondary to the liquid material model.
+- Any new Fruit component should be evaluated first against:
+  - single-sheet hierarchy
+  - physical press response
+  - contrast on bright and dark backgrounds
+  - settings compatibility
+  - performance fallback behavior
 
 ---
-*Version: 1.1 (Walled Architecture)*  
-*Last Updated: 2026-03-02*
+
+*Version: 1.2 (Single-Sheet Liquid Contract)*  
+*Last Updated: 2026-03-18*

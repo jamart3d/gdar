@@ -1099,12 +1099,20 @@ class AudioProvider with ChangeNotifier {
   String? _error;
   String? get error => _error;
 
+  DateTime _lastErrorNotifyAt = DateTime.fromMillisecondsSinceEpoch(0);
   void _setError(String message) {
     if (_error == message) {
       return;
     }
     _error = message;
     _errorController.add(message);
+
+    final now = DateTime.now();
+    if (now.difference(_lastErrorNotifyAt) <
+        const Duration(milliseconds: 500)) {
+      return;
+    }
+    _lastErrorNotifyAt = now;
     notifyListeners();
   }
 

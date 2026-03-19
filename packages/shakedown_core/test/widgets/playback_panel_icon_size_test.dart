@@ -453,5 +453,3 @@ void main() {
     expect(scale, closeTo(2.0, 0.001));
   });
 }
-
-

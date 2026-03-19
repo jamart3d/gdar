@@ -199,4 +199,3 @@ void main() {
     expect(find.byType(FruitTextAction), findsOneWidget);
   });
 }
-

@@ -88,7 +88,9 @@ void main() {
     when(mockAudioProvider.playerStateStream).thenAnswer(
       (_) => Stream.value(PlayerState(false, ProcessingState.ready)),
     );
-    when(mockAudioProvider.hudSnapshotStream).thenAnswer((_) => const Stream.empty());
+    when(
+      mockAudioProvider.hudSnapshotStream,
+    ).thenAnswer((_) => const Stream.empty());
     when(mockAudioProvider.currentHudSnapshot).thenReturn(HudSnapshot.empty());
     when(
       mockAudioProvider.bufferAgentNotificationStream,
@@ -239,8 +241,3 @@ void main() {
     },
   );
 }
-
-
-
-
-

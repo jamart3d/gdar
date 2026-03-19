@@ -582,4 +582,3 @@ class FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
   @override
   bool get hasListeners => super.hasListeners;
 }
-

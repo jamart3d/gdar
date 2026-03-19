@@ -147,23 +147,26 @@ class CollectionStatistics extends StatelessWidget {
     // Flat category rows used on TV (no ExpansionTile)
     Widget catRow(String label, int showCount, int sourceCount) {
       return Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 3),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
         child: Row(
           children: [
-            Text(
-              label,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                fontSize: 10 * scaleFactor,
-                color: colorScheme.onSurfaceVariant,
+            Expanded(
+              child: Text(
+                label,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  fontSize: 14 * scaleFactor,
+                  color: colorScheme.onSurface,
+                ),
               ),
             ),
-            const Spacer(),
+            const SizedBox(width: 24),
             Text(
               '$showCount Shows / $sourceCount Sources',
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                fontSize: 8.5 * scaleFactor,
+                fontSize: 12 * scaleFactor,
                 color: colorScheme.onSurfaceVariant,
               ),
+              textAlign: TextAlign.right,
             ),
           ],
         ),
@@ -185,6 +188,8 @@ class CollectionStatistics extends StatelessWidget {
         catRow('Soundboard', catSbdShows.length, catSbdSources),
     ];
 
+    final isTv = !showCategoryDetails;
+
     return SectionCard(
       scaleFactor: scaleFactor,
       title: 'Collection Statistics',
@@ -203,85 +208,119 @@ class CollectionStatistics extends StatelessWidget {
               ),
             ),
           ),
-        ListTile(
-          dense: true,
-          visualDensity: VisualDensity.compact,
-          leading: Icon(
-            isFruit ? LucideIcons.library : Icons.library_music,
-            size: 24 * scaleFactor,
-            color: colorScheme.primary,
-          ),
-          title: FittedBox(
-            fit: BoxFit.scaleDown,
-            alignment: Alignment.centerLeft,
-            child: Text(
-              showsText,
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontSize: 16 * scaleFactor,
-                fontWeight: FontWeight.w500,
-              ),
+        if (isTv)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+            child: Wrap(
+              spacing: 20,
+              runSpacing: 20,
+              children: [
+                _TvStatBlock(
+                  icon: Icons.library_music,
+                  title: showsText,
+                  subtitle: sourcesText,
+                  scaleFactor: scaleFactor,
+                ),
+                _TvStatBlock(
+                  icon: Icons.timer,
+                  title: runtimeText,
+                  subtitle: songsText,
+                  scaleFactor: scaleFactor,
+                ),
+              ],
             ),
-          ),
-          subtitle: Padding(
-            padding: EdgeInsets.only(
-              top: settingsProvider.appFont == 'rock_salt'
-                  ? 4.0 * scaleFactor
-                  : 0,
+          )
+        else ...[
+          ListTile(
+            dense: true,
+            visualDensity: VisualDensity.compact,
+            leading: Icon(
+              isFruit ? LucideIcons.library : Icons.library_music,
+              size: 24 * scaleFactor,
+              color: colorScheme.primary,
             ),
-            child: FittedBox(
+            title: FittedBox(
               fit: BoxFit.scaleDown,
               alignment: Alignment.centerLeft,
               child: Text(
-                sourcesText,
-                style: Theme.of(
-                  context,
-                ).textTheme.bodySmall?.copyWith(fontSize: 12 * scaleFactor),
+                showsText,
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  fontSize: 16 * scaleFactor,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+            subtitle: Padding(
+              padding: EdgeInsets.only(
+                top: settingsProvider.appFont == 'rock_salt'
+                    ? 4.0 * scaleFactor
+                    : 0,
+              ),
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  sourcesText,
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodySmall?.copyWith(fontSize: 12 * scaleFactor),
+                ),
               ),
             ),
           ),
-        ),
-        ListTile(
-          dense: true,
-          visualDensity: VisualDensity.compact,
-          leading: Icon(
-            isFruit ? LucideIcons.clock : Icons.timer,
-            size: 24 * scaleFactor,
-            color: colorScheme.primary,
-          ),
-          title: FittedBox(
-            fit: BoxFit.scaleDown,
-            alignment: Alignment.centerLeft,
-            child: Text(
-              runtimeText,
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontSize: 16 * scaleFactor,
-                fontWeight: FontWeight.w500,
-              ),
+          ListTile(
+            dense: true,
+            visualDensity: VisualDensity.compact,
+            leading: Icon(
+              isFruit ? LucideIcons.clock : Icons.timer,
+              size: 24 * scaleFactor,
+              color: colorScheme.primary,
             ),
-          ),
-          subtitle: Padding(
-            padding: EdgeInsets.only(
-              top: settingsProvider.appFont == 'rock_salt'
-                  ? 4.0 * scaleFactor
-                  : 0,
-            ),
-            child: FittedBox(
+            title: FittedBox(
               fit: BoxFit.scaleDown,
               alignment: Alignment.centerLeft,
               child: Text(
-                songsText,
-                style: Theme.of(
-                  context,
-                ).textTheme.bodySmall?.copyWith(fontSize: 12 * scaleFactor),
+                runtimeText,
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  fontSize: 16 * scaleFactor,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+            subtitle: Padding(
+              padding: EdgeInsets.only(
+                top: settingsProvider.appFont == 'rock_salt'
+                    ? 4.0 * scaleFactor
+                    : 0,
+              ),
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  songsText,
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodySmall?.copyWith(fontSize: 12 * scaleFactor),
+                ),
               ),
             ),
           ),
-        ),
+        ],
         // TV: flat rows, no expand/collapse chrome
         if (!showCategoryDetails && flatCategoryRows.isNotEmpty) ...[
-          const SizedBox(height: 4),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 4, 16, 6),
+            child: Text(
+              'Source Categories',
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                fontSize: 14 * scaleFactor,
+                fontWeight: FontWeight.w700,
+                color: colorScheme.onSurface,
+              ),
+            ),
+          ),
           ...flatCategoryRows,
-          const SizedBox(height: 4),
+          const SizedBox(height: 10),
         ],
         // Mobile: collapsible ExpansionTile
         if (showCategoryDetails)
@@ -472,6 +511,70 @@ class CollectionStatistics extends StatelessWidget {
             ],
           ),
       ],
+    );
+  }
+}
+
+class _TvStatBlock extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final double scaleFactor;
+
+  const _TvStatBlock({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.scaleFactor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return ConstrainedBox(
+      constraints: const BoxConstraints(minWidth: 360, maxWidth: 520),
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: Colors.black,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: colorScheme.onSurface.withValues(alpha: 0.12),
+            width: 1,
+          ),
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(icon, size: 28 * scaleFactor, color: colorScheme.primary),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontSize: 18 * scaleFactor,
+                      fontWeight: FontWeight.w700,
+                      color: colorScheme.onSurface,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    subtitle,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      fontSize: 14 * scaleFactor,
+                      color: colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

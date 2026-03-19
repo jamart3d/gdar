@@ -251,6 +251,7 @@ class ShowListAppBar extends StatelessWidget implements PreferredSizeWidget {
       padding: const EdgeInsets.symmetric(horizontal: 24.0),
       child: Center(
         child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             // Left/Center Area: Title or Search
             Expanded(
@@ -284,6 +285,7 @@ class ShowListAppBar extends StatelessWidget implements PreferredSizeWidget {
                           fontSize: 20,
                           animateOnStart: true,
                           shakeDelay: Duration(milliseconds: 1700),
+                          fontKeyOverride: 'rock_salt',
                         ),
                         _buildFruitHeaderButton(
                           context,
@@ -317,6 +319,12 @@ class ShowListAppBar extends StatelessWidget implements PreferredSizeWidget {
     required IconData icon,
     required VoidCallback onPressed,
   }) {
-    return FruitActionButton(icon: icon, onPressed: onPressed);
+    return SizedBox(
+      width: 44,
+      height: 44,
+      child: Center(
+        child: FruitActionButton(icon: icon, onPressed: onPressed),
+      ),
+    );
   }
 }

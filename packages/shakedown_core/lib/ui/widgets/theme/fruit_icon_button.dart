@@ -88,10 +88,20 @@ class _FruitIconButtonState extends State<FruitIconButton> {
             : null,
         onTap: isEnabled ? _activate : null,
         behavior: HitTestBehavior.opaque,
-        child: AnimatedOpacity(
-          duration: const Duration(milliseconds: 100),
-          opacity: _isPressed ? 0.4 : (_isFocused ? 0.85 : 1.0),
-          child: content,
+        child: AnimatedSlide(
+          duration: const Duration(milliseconds: 140),
+          curve: Curves.easeOutCubic,
+          offset: _isPressed ? const Offset(0, 0.02) : Offset.zero,
+          child: AnimatedScale(
+            duration: const Duration(milliseconds: 140),
+            curve: Curves.easeOutCubic,
+            scale: _isPressed ? 0.94 : 1.0,
+            child: AnimatedOpacity(
+              duration: const Duration(milliseconds: 100),
+              opacity: _isPressed ? 0.52 : (_isFocused ? 0.85 : 1.0),
+              child: content,
+            ),
+          ),
         ),
       ),
     );

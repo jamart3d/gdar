@@ -12,6 +12,7 @@ class ShakedownTitle extends StatefulWidget {
   final bool enableHero;
   final bool animateOnStart;
   final Duration shakeDelay;
+  final String? fontKeyOverride;
 
   const ShakedownTitle({
     super.key,
@@ -19,6 +20,7 @@ class ShakedownTitle extends StatefulWidget {
     this.enableHero = true,
     this.animateOnStart = false,
     this.shakeDelay = Duration.zero,
+    this.fontKeyOverride,
   });
 
   @override
@@ -108,7 +110,8 @@ class _ShakedownTitleState extends State<ShakedownTitle>
       settingsProvider,
     );
 
-    final String activeFont = settingsProvider.activeAppFont;
+    final String activeFont =
+        widget.fontKeyOverride ?? settingsProvider.activeAppFont;
 
     final textStyle = theme.textTheme.displayLarge?.copyWith(
       fontSize: widget.fontSize * scaleFactor,

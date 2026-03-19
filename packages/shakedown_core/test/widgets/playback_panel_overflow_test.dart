@@ -317,5 +317,3 @@ void main() {
     // Venue name is in the fixed header part.
   });
 }
-
-

@@ -41,6 +41,9 @@ class TrackListScreen extends StatefulWidget {
 }
 
 class _TrackListScreenState extends State<TrackListScreen> {
+  static const double _fruitHeaderTopGap = 14.0;
+  static const double _fruitHeaderBodyHeight = 92.0;
+
   Uri _archiveUriForSource(Source source) {
     final String fallback = 'https://archive.org/details/${source.id}';
     if (source.tracks.isEmpty) {
@@ -108,6 +111,16 @@ class _TrackListScreenState extends State<TrackListScreen> {
         unawaited(controller.repeat());
       } catch (_) {}
     }
+  }
+
+  Future<void> _playShowFromHeader() async {
+    unawaited(AppHaptics.selectionClick(context.read<DeviceService>()));
+    final ap = context.read<AudioProvider>();
+    if (ap.currentShow != null && ap.currentShow!.name != widget.show.name) {
+      await ap.stopAndClear();
+    }
+    unawaited(ap.playSource(widget.show, widget.source));
+    await _openPlaybackScreen();
   }
 
   @override
@@ -291,10 +304,30 @@ class _TrackListScreenState extends State<TrackListScreen> {
           _buildBody(),
           if (themeProvider.themeStyle == ThemeStyle.fruit)
             Positioned(
-              top: MediaQuery.paddingOf(context).top,
+              top: 0,
               left: 0,
               right: 0,
-              child: _buildFruitHeader(context),
+              child: FruitSurface(
+                borderRadius: BorderRadius.zero,
+                blur: 18,
+                opacity: settingsProvider.performanceMode ? 0.96 : 0.82,
+                child: Container(
+                  height:
+                      MediaQuery.paddingOf(context).top +
+                      _fruitHeaderTopGap +
+                      _fruitHeaderBodyHeight,
+                  padding: EdgeInsets.only(
+                    top: MediaQuery.paddingOf(context).top + _fruitHeaderTopGap,
+                  ),
+                  decoration: BoxDecoration(
+                    color: settingsProvider.performanceMode
+                        ? Theme.of(context).colorScheme.surface
+                        : null,
+                  ),
+                  alignment: Alignment.center,
+                  child: _buildFruitHeader(context),
+                ),
+              ),
             ),
         ],
       ),
@@ -418,68 +451,32 @@ class _TrackListScreenState extends State<TrackListScreen> {
     List<dynamic> listItems,
     double bottomPadding,
   ) {
-    final settingsProvider = context.watch<SettingsProvider>();
-    final usePremium =
-        settingsProvider.useNeumorphism && !settingsProvider.useTrueBlack;
     final double scaleFactor = FontLayoutConfig.getEffectiveScale(
       context,
-      settingsProvider,
+      context.watch<SettingsProvider>(),
     );
 
     return ListView(
       padding: EdgeInsets.fromLTRB(
         16,
-        MediaQuery.paddingOf(context).top + (152.0 * scaleFactor),
+        MediaQuery.paddingOf(context).top +
+            _fruitHeaderTopGap +
+            (118.0 * scaleFactor),
         16,
         bottomPadding,
       ),
       children: [
-        Builder(
-          builder: (context) {
-            final List<Widget> tracksAndSets = [];
-            for (int i = 0; i < listItems.length; i++) {
-              final item = listItems[i];
-              if (item == 'SHOW_HEADER') continue;
-              if (item is String) {
-                tracksAndSets.add(_buildSetHeader(context, item));
-              } else if (item is Track) {
-                final trackIndex = widget.source.tracks.indexOf(item);
-                tracksAndSets.add(
-                  _buildTrackItem(context, item, widget.source, trackIndex),
-                );
-              }
-            }
-
-            Widget card = Container(
-              decoration: BoxDecoration(
-                color: usePremium
-                    ? Colors.transparent
-                    : Theme.of(context).colorScheme.surfaceContainerHigh,
-                borderRadius: BorderRadius.circular(28),
-              ),
-              child: Column(children: tracksAndSets),
-            );
-
-            final isTv = context.read<DeviceService>().isTv;
-
-            if (usePremium && !isTv) {
-              card = NeumorphicWrapper(
-                borderRadius: 28,
-                intensity: 1.0,
-                color: Colors.transparent,
-                child: LiquidGlassWrapper(
-                  enabled: !isTv,
-                  borderRadius: BorderRadius.circular(28),
-                  opacity: 0.08,
-                  blur: 15.0,
-                  child: card,
-                ),
-              );
-            }
-
-            return card;
-          },
-        ),
+        for (int i = 0; i < listItems.length; i++) ...[
+          if (listItems[i] is String && listItems[i] != 'SHOW_HEADER')
+            _buildSetHeader(context, listItems[i] as String),
+          if (listItems[i] is Track)
+            _buildTrackItem(
+              context,
+              listItems[i] as Track,
+              widget.source,
+              widget.source.tracks.indexOf(listItems[i] as Track),
+            ),
+        ],
       ],
     );
   }
@@ -988,212 +985,242 @@ class _TrackListScreenState extends State<TrackListScreen> {
       );
     }
 
-    final bool usePremium =
-        settingsProvider.useNeumorphism && !settingsProvider.useTrueBlack;
     final catalog = CatalogService();
     final String ratingKey = widget.source.id;
     final Uri archiveUri = _archiveUriForSource(widget.source);
 
-    Widget modeBadge = Container(
-      padding: EdgeInsets.symmetric(
-        horizontal: 12.0 * scaleFactor,
-        vertical: 5.0 * scaleFactor,
-      ),
-      decoration: BoxDecoration(
-        color: colorScheme.primary.withValues(alpha: usePremium ? 0.12 : 0.18),
-        borderRadius: BorderRadius.circular(999),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            LucideIcons.listMusic,
-            size: 12.0 * scaleFactor,
-            color: colorScheme.primary,
-          ),
-          SizedBox(width: 6.0 * scaleFactor),
-          Text(
-            'TRACK LIST',
-            style: TextStyle(
-              fontFamily: 'Inter',
-              fontSize: 10.0 * scaleFactor,
-              fontWeight: FontWeight.w800,
-              letterSpacing: 1.2,
-              color: colorScheme.primary,
-            ),
-          ),
-        ],
-      ),
-    );
-    if (usePremium) {
-      modeBadge = LiquidGlassWrapper(
-        enabled: true,
-        borderRadius: BorderRadius.circular(999),
-        opacity: 0.06,
-        blur: 8.0,
-        child: modeBadge,
-      );
-    }
-
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24.0),
-      child: Column(
+      padding: EdgeInsets.symmetric(horizontal: 24.0 * scaleFactor),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SizedBox(
-            height: 80,
-            child: Center(
-              child: Row(
-                children: [
-                  _buildFruitNavButton(
-                    context,
-                    icon: LucideIcons.chevronLeft,
-                    onPressed: () => Navigator.of(context).pop(),
+          _buildFruitNavButton(
+            context,
+            icon: LucideIcons.chevronLeft,
+            onPressed: () => Navigator.of(context).pop(),
+          ),
+          Expanded(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  dateText,
+                  textAlign: TextAlign.center,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontFamily: 'Inter',
+                    fontSize: 15 * scaleFactor,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 0.15,
+                    color: colorScheme.onSurface,
                   ),
-                  Expanded(
-                    child: Column(
+                ),
+                SizedBox(height: 5 * scaleFactor),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    _buildFruitInlinePlayButton(
+                      context,
+                      onPressed: _playShowFromHeader,
+                    ),
+                    SizedBox(width: 8 * scaleFactor),
+                    Flexible(
+                      child: Text(
+                        '${widget.show.venue}, ${widget.show.location}'
+                            .toUpperCase(),
+                        textAlign: TextAlign.center,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontFamily: 'Inter',
+                          fontSize: 10 * scaleFactor,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 1.5,
+                          color: colorScheme.onSurfaceVariant.withValues(
+                            alpha: 0.6,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 6 * scaleFactor),
+                ValueListenableBuilder(
+                  valueListenable: CatalogService().ratingsListenable,
+                  builder: (context, _, _) {
+                    final int rating = catalog.getRating(ratingKey);
+                    final bool isPlayed = catalog.isPlayed(ratingKey);
+                    return Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Text(
-                          dateText,
-                          textAlign: TextAlign.center,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontFamily: 'Inter',
-                            fontSize: 15 * scaleFactor,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: -0.4,
-                            color: colorScheme.onSurface,
-                          ),
+                        RatingControl(
+                          key: ValueKey('${ratingKey}_${rating}_$isPlayed'),
+                          rating: rating,
+                          isPlayed: isPlayed,
+                          compact: true,
+                          size: 20 * scaleFactor,
+                          onTap: () async {
+                            await showDialog(
+                              context: context,
+                              builder: (context) => RatingDialog(
+                                initialRating: rating,
+                                sourceId: widget.source.id,
+                                sourceUrl: widget.source.tracks.isNotEmpty
+                                    ? widget.source.tracks.first.url
+                                    : null,
+                                isPlayed: isPlayed,
+                                onRatingChanged: (newRating) {
+                                  catalog.setRating(ratingKey, newRating);
+                                },
+                                onPlayedChanged: (bool newIsPlayed) {
+                                  if (newIsPlayed != isPlayed) {
+                                    catalog.togglePlayed(ratingKey);
+                                  }
+                                },
+                              ),
+                            );
+                          },
                         ),
-                        SizedBox(height: 2.0 * scaleFactor),
-                        Text(
-                          '${widget.show.venue}, ${widget.show.location}'
-                              .toUpperCase(),
-                          textAlign: TextAlign.center,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontFamily: 'Inter',
-                            fontSize: 9.5 * scaleFactor,
-                            fontWeight: FontWeight.w800,
-                            letterSpacing: 1.25,
-                            color: colorScheme.onSurfaceVariant.withValues(
-                              alpha: 0.58,
-                            ),
+                        if ((widget.source.src ?? '').isNotEmpty) ...[
+                          SizedBox(width: 8 * scaleFactor),
+                          SrcBadge(
+                            src: widget.source.src ?? '',
+                            scaleFactor: scaleFactor,
                           ),
+                        ],
+                        SizedBox(width: 4 * scaleFactor),
+                        ShnidBadge(
+                          text: widget.source.id,
+                          scaleFactor: scaleFactor,
+                          uri: archiveUri,
                         ),
                       ],
-                    ),
-                  ),
-                  const SizedBox(width: 12.0),
-                  _buildFruitThemeButton(
-                    context,
-                    onPressed: () {
-                      context.read<ThemeProvider>().toggleTheme(
-                        currentBrightness: Theme.of(context).brightness,
-                      );
-                    },
-                  ),
-                ],
-              ),
+                    );
+                  },
+                ),
+              ],
             ),
           ),
-          SizedBox(height: 8.0 * scaleFactor),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              FruitActionButton(
-                icon: LucideIcons.play,
-                onPressed: () async {
-                  unawaited(
-                    AppHaptics.selectionClick(context.read<DeviceService>()),
-                  );
-                  final ap = context.read<AudioProvider>();
-                  if (ap.currentShow != null &&
-                      ap.currentShow!.name != widget.show.name) {
-                    await ap.stopAndClear();
-                  }
-                  unawaited(ap.playSource(widget.show, widget.source));
-                  await _openPlaybackScreen();
-                },
-                tooltip: 'Play Show',
-              ),
-              SizedBox(width: 8.0 * scaleFactor),
-              modeBadge,
-            ],
-          ),
-          SizedBox(height: 8.0 * scaleFactor),
-          ValueListenableBuilder(
-            valueListenable: CatalogService().ratingsListenable,
-            builder: (context, _, _) {
-              final int rating = catalog.getRating(ratingKey);
-              final bool isPlayed = catalog.isPlayed(ratingKey);
-              return Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  RatingControl(
-                    key: ValueKey('${ratingKey}_${rating}_$isPlayed'),
-                    rating: rating,
-                    isPlayed: isPlayed,
-                    compact: true,
-                    size: 22.0 * scaleFactor,
-                    enforceMinTapTarget: true,
-                    onTap: () async {
-                      unawaited(
-                        showDialog(
-                          context: context,
-                          builder: (context) => RatingDialog(
-                            initialRating: rating,
-                            sourceId: widget.source.id,
-                            sourceUrl: widget.source.tracks.isNotEmpty
-                                ? widget.source.tracks.first.url
-                                : null,
-                            isPlayed: isPlayed,
-                            onRatingChanged: (newRating) {
-                              catalog.setRating(ratingKey, newRating);
-                            },
-                            onPlayedChanged: (bool newIsPlayed) {
-                              if (newIsPlayed != isPlayed) {
-                                catalog.togglePlayed(ratingKey);
-                              }
-                            },
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                  SizedBox(width: 8.0 * scaleFactor),
-                  if ((widget.source.src ?? '').isNotEmpty) ...[
-                    SrcBadge(
-                      src: widget.source.src ?? '',
-                      scaleFactor: scaleFactor,
-                    ),
-                    SizedBox(width: 6.0 * scaleFactor),
-                  ],
-                  ShnidBadge(
-                    text: widget.source.id,
-                    scaleFactor: scaleFactor,
-                    uri: archiveUri,
-                  ),
-                ],
-              );
-            },
+          _buildFruitMenuButton(
+            context,
+            onPressed: () => _showFruitOptionsMenu(context, scaleFactor),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildFruitThemeButton(
+  Future<void> _showFruitOptionsMenu(
+    BuildContext context,
+    double scaleFactor,
+  ) async {
+    final settingsProvider = context.read<SettingsProvider>();
+    final size = MediaQuery.sizeOf(context);
+    final double topPadding = MediaQuery.paddingOf(context).top;
+
+    final RelativeRect position = RelativeRect.fromLTRB(
+      size.width - 24 * scaleFactor,
+      topPadding + 70 * scaleFactor,
+      24 * scaleFactor,
+      0,
+    );
+
+    await showMenu(
+      context: context,
+      position: position,
+      elevation: settingsProvider.performanceMode ? 4 : 0,
+      color: settingsProvider.performanceMode
+          ? Theme.of(context).colorScheme.surface
+          : Theme.of(context).colorScheme.surface.withValues(alpha: 0.85),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(24 * scaleFactor),
+        side: BorderSide(
+          color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.1),
+          width: 1.0,
+        ),
+      ),
+      items: [
+        PopupMenuItem(
+          onTap: () => settingsProvider.toggleShowTrackNumbers(),
+          child: Row(
+            children: [
+              Icon(
+                settingsProvider.showTrackNumbers
+                    ? LucideIcons.checkCircle2
+                    : LucideIcons.circle,
+                size: 18 * scaleFactor,
+                color: settingsProvider.showTrackNumbers
+                    ? Theme.of(context).colorScheme.primary
+                    : null,
+              ),
+              SizedBox(width: 12 * scaleFactor),
+              Text(
+                'Track Numbers',
+                style: TextStyle(fontSize: 14 * scaleFactor),
+              ),
+            ],
+          ),
+        ),
+        PopupMenuItem(
+          onTap: () => settingsProvider.toggleHideTrackDuration(),
+          child: Row(
+            children: [
+              Icon(
+                !settingsProvider.hideTrackDuration
+                    ? LucideIcons.checkCircle2
+                    : LucideIcons.circle,
+                size: 18 * scaleFactor,
+                color: !settingsProvider.hideTrackDuration
+                    ? Theme.of(context).colorScheme.primary
+                    : null,
+              ),
+              SizedBox(width: 12 * scaleFactor),
+              Text(
+                'Track Duration',
+                style: TextStyle(fontSize: 14 * scaleFactor),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildFruitMenuButton(
     BuildContext context, {
     required VoidCallback onPressed,
   }) {
     return FruitActionButton(
-      icon: Theme.of(context).brightness == Brightness.dark
-          ? LucideIcons.sun
-          : LucideIcons.moon,
+      icon: LucideIcons.moreHorizontal,
       onPressed: onPressed,
+      tooltip: 'Track list options',
+    );
+  }
+
+  Widget _buildFruitInlinePlayButton(
+    BuildContext context, {
+    required VoidCallback onPressed,
+  }) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return GestureDetector(
+      onTap: onPressed,
+      behavior: HitTestBehavior.opaque,
+      child: Container(
+        width: 24,
+        height: 24,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: colorScheme.primary.withValues(alpha: 0.12),
+          border: Border.all(
+            color: colorScheme.primary.withValues(alpha: 0.18),
+            width: 0.8,
+          ),
+        ),
+        child: Icon(LucideIcons.play, size: 12, color: colorScheme.primary),
+      ),
     );
   }
 

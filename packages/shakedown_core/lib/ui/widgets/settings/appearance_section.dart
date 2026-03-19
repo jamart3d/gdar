@@ -65,6 +65,7 @@ class _AppearanceSectionState extends State<AppearanceSection> {
     final themeProvider = context.watch<ThemeProvider>();
     final settingsProvider = context.watch<SettingsProvider>();
     final isFruit = themeProvider.themeStyle == ThemeStyle.fruit;
+    final showExpressiveAccents = !isFruit;
     final colorScheme = Theme.of(context).colorScheme;
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
@@ -296,10 +297,6 @@ class _AppearanceSectionState extends State<AppearanceSection> {
                                     if (sp.useDynamicColor) {
                                       sp.toggleUseDynamicColor();
                                     }
-                                    if (sp.glowMode == 0 &&
-                                        !sp.performanceMode) {
-                                      sp.setGlowMode(65);
-                                    }
                                   } else {
                                     sp.setUseNeumorphism(false);
                                     if (!sp.useTrueBlack) {
@@ -372,10 +369,6 @@ class _AppearanceSectionState extends State<AppearanceSection> {
                                     }
                                     if (sp.useDynamicColor) {
                                       sp.toggleUseDynamicColor();
-                                    }
-                                    if (sp.glowMode == 0 &&
-                                        !sp.performanceMode) {
-                                      sp.setGlowMode(65);
                                     }
                                   } else {
                                     // Default back to True Black when Fruit is off
@@ -500,106 +493,78 @@ class _AppearanceSectionState extends State<AppearanceSection> {
                         },
                         secondary: const Icon(LucideIcons.listFilter),
                       ),
-                      (() {
-                        final isGated = settingsProvider.performanceMode;
-                        const reason = 'Disabled in Simple Theme';
-
-                        return TvSwitchListTile(
-                          dense: true,
-                          visualDensity: VisualDensity.compact,
-                          title: FittedBox(
-                            fit: BoxFit.scaleDown,
-                            alignment: Alignment.centerLeft,
-                            child: Text(
-                              'Enable Liquid Glass',
-                              style: Theme.of(context).textTheme.titleMedium
-                                  ?.copyWith(
-                                    fontSize: 16 * widget.scaleFactor,
-                                    color: isGated
-                                        ? colorScheme.onSurface.withValues(
-                                            alpha: 0.5,
-                                          )
-                                        : null,
-                                  ),
-                            ),
+                      TvSwitchListTile(
+                        dense: true,
+                        visualDensity: VisualDensity.compact,
+                        title: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            'Liquid Glass',
+                            style: Theme.of(context).textTheme.titleMedium
+                                ?.copyWith(fontSize: 16 * widget.scaleFactor),
                           ),
-                          subtitle: isGated
-                              ? Text(
-                                  reason,
-                                  style: Theme.of(context).textTheme.bodySmall
-                                      ?.copyWith(
-                                        fontSize: 12 * widget.scaleFactor,
-                                        color: colorScheme.secondary.withValues(
-                                          alpha: 0.7,
-                                        ),
-                                      ),
-                                )
-                              : FittedBox(
-                                  fit: BoxFit.scaleDown,
-                                  alignment: Alignment.centerLeft,
-                                  child: Text(
-                                    'Apply translucent blur over background elements',
-                                    style: Theme.of(context).textTheme.bodySmall
-                                        ?.copyWith(
-                                          fontSize: 12 * widget.scaleFactor,
-                                        ),
-                                  ),
-                                ),
-                          value:
-                              !isGated &&
-                              settingsProvider.fruitEnableLiquidGlass,
-                          onChanged: isGated
-                              ? null
-                              : (value) {
-                                  AppHaptics.lightImpact(
-                                    context.read<DeviceService>(),
-                                  );
-                                  context
-                                      .read<SettingsProvider>()
-                                      .toggleFruitEnableLiquidGlass();
-                                },
-                          secondary: Icon(
-                            LucideIcons.droplet,
-                            color: isGated
-                                ? colorScheme.onSurface.withValues(alpha: 0.3)
-                                : null,
+                        ),
+                        subtitle: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            'Off switches Fruit into Simple Theme for lighter rendering',
+                            style: Theme.of(context).textTheme.bodySmall
+                                ?.copyWith(fontSize: 12 * widget.scaleFactor),
                           ),
-                        );
-                      })(),
+                        ),
+                        value:
+                            !settingsProvider.performanceMode &&
+                            settingsProvider.fruitEnableLiquidGlass,
+                        onChanged: (value) {
+                          AppHaptics.lightImpact(context.read<DeviceService>());
+                          final provider = context.read<SettingsProvider>();
+                          if (value) {
+                            provider.setPerformanceMode(false);
+                            provider.setFruitEnableLiquidGlass(true);
+                          } else {
+                            provider.setFruitEnableLiquidGlass(false);
+                            provider.setPerformanceMode(true);
+                          }
+                        },
+                        secondary: const Icon(LucideIcons.droplet),
+                      ),
                     ],
                   )
                 : const SizedBox.shrink(),
           ),
-          TvSwitchListTile(
-            dense: true,
-            visualDensity: VisualDensity.compact,
-            title: FittedBox(
-              fit: BoxFit.scaleDown,
-              alignment: Alignment.centerLeft,
-              child: Text(
-                'Performance Mode (Simple Theme)',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontSize: 16 * widget.scaleFactor,
+          if (themeProvider.themeStyle != ThemeStyle.fruit)
+            TvSwitchListTile(
+              dense: true,
+              visualDensity: VisualDensity.compact,
+              title: FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  'Performance Mode (Simple Theme)',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontSize: 16 * widget.scaleFactor,
+                  ),
                 ),
               ),
-            ),
-            subtitle: FittedBox(
-              fit: BoxFit.scaleDown,
-              alignment: Alignment.centerLeft,
-              child: Text(
-                'Optimizes UI for older phones (removes blurs, shadows, and complex animations)',
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  fontSize: 12 * widget.scaleFactor,
+              subtitle: FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  'Optimizes UI for older phones (removes blurs, shadows, and complex animations)',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    fontSize: 12 * widget.scaleFactor,
+                  ),
                 ),
               ),
+              value: settingsProvider.performanceMode,
+              onChanged: (value) {
+                AppHaptics.lightImpact(context.read<DeviceService>());
+                context.read<SettingsProvider>().togglePerformanceMode();
+              },
+              secondary: const Icon(LucideIcons.zap),
             ),
-            value: settingsProvider.performanceMode,
-            onChanged: (value) {
-              AppHaptics.lightImpact(context.read<DeviceService>());
-              context.read<SettingsProvider>().togglePerformanceMode();
-            },
-            secondary: const Icon(LucideIcons.zap),
-          ),
         ],
         if (themeProvider.themeStyle != ThemeStyle.fruit)
           TvSwitchListTile(
@@ -718,7 +683,7 @@ class _AppearanceSectionState extends State<AppearanceSection> {
                     ),
                   ),
                 ),
-        if (!context.read<DeviceService>().isTv) ...[
+        if (showExpressiveAccents && !context.read<DeviceService>().isTv) ...[
           (() {
             final isGated = settingsProvider.performanceMode;
             const reason = 'Disabled in Simple Theme';
@@ -862,7 +827,7 @@ class _AppearanceSectionState extends State<AppearanceSection> {
               ),
             ),
         ],
-        if (true) // Enable RGB for all platforms
+        if (showExpressiveAccents)
           (() {
             final isGated = settingsProvider.performanceMode;
             const reason = 'Disabled in Simple Theme';

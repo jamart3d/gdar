@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
@@ -11,6 +10,7 @@ import 'package:shakedown_core/ui/widgets/playback/fruit_now_playing_card.dart';
 import 'package:shakedown_core/services/device_service.dart';
 import 'package:shakedown_core/utils/app_haptics.dart';
 import 'package:shakedown_core/providers/settings_provider.dart';
+import 'package:shakedown_core/ui/widgets/theme/fruit_ui.dart';
 import 'package:shakedown_core/utils/web_runtime.dart';
 
 class FruitTrackList extends StatefulWidget {
@@ -201,45 +201,19 @@ class _FruitTrackListState extends State<FruitTrackList> {
             top: widget.topOffset,
             left: 0,
             right: 0,
-            child: ClipRRect(
-              child: disableBlur
-                  ? Container(
-                      padding: EdgeInsets.fromLTRB(
-                        24 * widget.scaleFactor,
-                        20 * widget.scaleFactor,
-                        24 * widget.scaleFactor,
-                        20 * widget.scaleFactor,
-                      ),
-                      color: Theme.of(context).colorScheme.surface,
-                      child: buildStickyCard(currentTrackIndex),
-                    )
-                  : BackdropFilter(
-                      filter: ImageFilter.blur(
-                        sigmaX: stickyBlurSigma,
-                        sigmaY: stickyBlurSigma,
-                      ),
-                      child: Container(
-                        padding: EdgeInsets.fromLTRB(
-                          24 * widget.scaleFactor,
-                          20 * widget.scaleFactor,
-                          24 * widget.scaleFactor,
-                          20 * widget.scaleFactor,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Theme.of(
-                            context,
-                          ).colorScheme.surface.withValues(alpha: 0.1),
-                          border: Border(
-                            bottom: BorderSide(
-                              color: Theme.of(
-                                context,
-                              ).colorScheme.onSurface.withValues(alpha: 0.05),
-                            ),
-                          ),
-                        ),
-                        child: buildStickyCard(currentTrackIndex),
-                      ),
-                    ),
+            child: FruitSurface(
+              borderRadius: BorderRadius.zero,
+              blur: stickyBlurSigma,
+              opacity: disableBlur ? 0.96 : 0.74,
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(
+                  24 * widget.scaleFactor,
+                  20 * widget.scaleFactor,
+                  24 * widget.scaleFactor,
+                  20 * widget.scaleFactor,
+                ),
+                child: buildStickyCard(currentTrackIndex),
+              ),
             ),
           ),
         // Sticky Bottom
@@ -248,45 +222,19 @@ class _FruitTrackListState extends State<FruitTrackList> {
             bottom: 100 * widget.scaleFactor, // Above tab bar
             left: 0,
             right: 0,
-            child: ClipRRect(
-              child: disableBlur
-                  ? Container(
-                      padding: EdgeInsets.fromLTRB(
-                        24 * widget.scaleFactor,
-                        20 * widget.scaleFactor,
-                        24 * widget.scaleFactor,
-                        20 * widget.scaleFactor,
-                      ),
-                      color: Theme.of(context).colorScheme.surface,
-                      child: buildStickyCard(currentTrackIndex),
-                    )
-                  : BackdropFilter(
-                      filter: ImageFilter.blur(
-                        sigmaX: stickyBlurSigma,
-                        sigmaY: stickyBlurSigma,
-                      ),
-                      child: Container(
-                        padding: EdgeInsets.fromLTRB(
-                          24 * widget.scaleFactor,
-                          20 * widget.scaleFactor,
-                          24 * widget.scaleFactor,
-                          20 * widget.scaleFactor,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Theme.of(
-                            context,
-                          ).colorScheme.surface.withValues(alpha: 0.1),
-                          border: Border(
-                            top: BorderSide(
-                              color: Theme.of(
-                                context,
-                              ).colorScheme.onSurface.withValues(alpha: 0.05),
-                            ),
-                          ),
-                        ),
-                        child: buildStickyCard(currentTrackIndex),
-                      ),
-                    ),
+            child: FruitSurface(
+              borderRadius: BorderRadius.zero,
+              blur: stickyBlurSigma,
+              opacity: disableBlur ? 0.96 : 0.74,
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(
+                  24 * widget.scaleFactor,
+                  20 * widget.scaleFactor,
+                  24 * widget.scaleFactor,
+                  20 * widget.scaleFactor,
+                ),
+                child: buildStickyCard(currentTrackIndex),
+              ),
             ),
           ),
       ],
@@ -376,97 +324,111 @@ class _FruitTrackRowState extends State<_FruitTrackRow> {
             onTapUp: (_) => setState(() => _isPressed = false),
             onTapCancel: () => setState(() => _isPressed = false),
             onTap: activate,
-            child: AnimatedOpacity(
-              duration: const Duration(milliseconds: 100),
-              opacity: _isPressed ? 0.6 : (_isFocused ? 0.85 : 1.0),
-              child: Container(
-                padding: EdgeInsets.symmetric(
-                  horizontal: 8.0 * widget.scaleFactor, // px-2
-                  vertical:
-                      (settingsProvider.fruitDenseList ? 8.0 : 16.0) *
-                      widget.scaleFactor, // RESPECT DENSE TOGGLE
-                ),
-                decoration: BoxDecoration(
-                  color: widget.isActive
-                      ? colorScheme.primary.withValues(alpha: 0.05)
-                      : Colors.transparent,
-                  border: Border(
-                    bottom: BorderSide(
-                      color: widget.isActive
-                          ? colorScheme.primary.withValues(alpha: 0.2)
-                          : colorScheme.onSurface.withValues(alpha: 0.08),
-                      width: 1.0,
+            child: AnimatedSlide(
+              duration: const Duration(milliseconds: 140),
+              curve: Curves.easeOutCubic,
+              offset: _isPressed ? const Offset(0, 0.01) : Offset.zero,
+              child: AnimatedScale(
+                duration: const Duration(milliseconds: 140),
+                curve: Curves.easeOutCubic,
+                scale: _isPressed ? 0.992 : 1.0,
+                child: AnimatedOpacity(
+                  duration: const Duration(milliseconds: 100),
+                  opacity: _isPressed ? 0.76 : (_isFocused ? 0.85 : 1.0),
+                  child: Container(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 8.0 * widget.scaleFactor, // px-2
+                      vertical:
+                          (settingsProvider.fruitDenseList ? 8.0 : 16.0) *
+                          widget.scaleFactor, // RESPECT DENSE TOGGLE
                     ),
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    if (showTrackNumbers) ...[
-                      SizedBox(
-                        width: 20 * widget.scaleFactor, // w-5
-                        child: Text(
-                          (widget.index + 1).toString().padLeft(2, '0'),
-                          style: TextStyle(
-                            fontFamily: 'Inter',
-                            fontSize: 10 * widget.scaleFactor, // text-[10px]
-                            fontWeight: FontWeight.w800, // font-bold
-                            color: colorScheme.onSurfaceVariant.withValues(
-                              alpha: 0.4,
-                            ),
-                          ),
+                    decoration: BoxDecoration(
+                      color: widget.isActive
+                          ? colorScheme.primary.withValues(alpha: 0.05)
+                          : Colors.transparent,
+                      border: Border(
+                        bottom: BorderSide(
+                          color: widget.isActive
+                              ? colorScheme.primary.withValues(alpha: 0.2)
+                              : colorScheme.onSurface.withValues(alpha: 0.08),
+                          width: 1.0,
                         ),
                       ),
-                      SizedBox(width: 16 * widget.scaleFactor), // gap-4
-                    ],
-                    Expanded(
-                      child: Row(
-                        children: [
-                          Container(
-                            width: 5 * widget.scaleFactor,
-                            height: 5 * widget.scaleFactor,
-                            decoration: BoxDecoration(
-                              color: colorScheme.primary,
-                              shape: BoxShape.circle,
-                            ),
-                          ),
-                          SizedBox(width: 10 * widget.scaleFactor),
-                          Expanded(
+                    ),
+                    child: Row(
+                      children: [
+                        if (showTrackNumbers) ...[
+                          SizedBox(
+                            width: 20 * widget.scaleFactor, // w-5
                             child: Text(
-                              widget.track.title,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
+                              (widget.index + 1).toString().padLeft(2, '0'),
                               style: TextStyle(
                                 fontFamily: 'Inter',
                                 fontSize:
-                                    15 * widget.scaleFactor, // text-base-ish
-                                fontWeight: widget.isActive
-                                    ? FontWeight.w800
-                                    : FontWeight.w600,
-                                color: widget.isActive
-                                    ? colorScheme.primary
-                                    : colorScheme.onSurface.withValues(
-                                        alpha: 0.8,
-                                      ),
+                                    10 * widget.scaleFactor, // text-[10px]
+                                fontWeight: FontWeight.w800, // font-bold
+                                color: colorScheme.onSurfaceVariant.withValues(
+                                  alpha: 0.4,
+                                ),
                               ),
                             ),
                           ),
+                          SizedBox(width: 16 * widget.scaleFactor), // gap-4
                         ],
-                      ),
-                    ),
-                    if (!hideDuration)
-                      Text(
-                        _formatDuration(widget.track.duration),
-                        style: TextStyle(
-                          fontFamily: 'Roboto',
-                          fontSize: 10 * widget.scaleFactor, // text-[10px]
-                          fontWeight: FontWeight.w500, // font-medium
-                          color: colorScheme.onSurfaceVariant.withValues(
-                            alpha: 0.4,
+                        Expanded(
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 5 * widget.scaleFactor,
+                                height: 5 * widget.scaleFactor,
+                                decoration: BoxDecoration(
+                                  color: colorScheme.primary,
+                                  shape: BoxShape.circle,
+                                ),
+                              ),
+                              SizedBox(width: 10 * widget.scaleFactor),
+                              Expanded(
+                                child: Text(
+                                  widget.track.title,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    fontFamily: 'Inter',
+                                    fontSize:
+                                        15 *
+                                        widget.scaleFactor, // text-base-ish
+                                    fontWeight: widget.isActive
+                                        ? FontWeight.w800
+                                        : FontWeight.w600,
+                                    color: widget.isActive
+                                        ? colorScheme.primary
+                                        : colorScheme.onSurface.withValues(
+                                            alpha: 0.8,
+                                          ),
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
-                          fontFeatures: const [FontFeature.tabularFigures()],
                         ),
-                      ),
-                  ],
+                        if (!hideDuration)
+                          Text(
+                            _formatDuration(widget.track.duration),
+                            style: TextStyle(
+                              fontFamily: 'Roboto',
+                              fontSize: 10 * widget.scaleFactor, // text-[10px]
+                              fontWeight: FontWeight.w500, // font-medium
+                              color: colorScheme.onSurfaceVariant.withValues(
+                                alpha: 0.4,
+                              ),
+                              fontFeatures: const [
+                                FontFeature.tabularFigures(),
+                              ],
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
                 ),
               ),
             ),

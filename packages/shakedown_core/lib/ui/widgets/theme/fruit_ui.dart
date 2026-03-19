@@ -152,17 +152,30 @@ class _FruitTextActionState extends State<FruitTextAction> {
             onTapCancel: () => setState(() => _pressed = false),
             onTap: widget.onPressed,
             behavior: HitTestBehavior.opaque,
-            child: AnimatedOpacity(
-              duration: const Duration(milliseconds: 100),
-              opacity: _pressed ? 0.6 : (_isFocused ? 0.85 : 1.0),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-                child: Text(
-                  widget.label,
-                  style: TextStyle(
-                    color: primary,
-                    fontWeight: FontWeight.w600,
-                    fontSize: 15,
+            child: AnimatedSlide(
+              duration: const Duration(milliseconds: 140),
+              curve: Curves.easeOutCubic,
+              offset: _pressed ? const Offset(0, 0.02) : Offset.zero,
+              child: AnimatedScale(
+                duration: const Duration(milliseconds: 140),
+                curve: Curves.easeOutCubic,
+                scale: _pressed ? 0.97 : 1.0,
+                child: AnimatedOpacity(
+                  duration: const Duration(milliseconds: 100),
+                  opacity: _pressed ? 0.72 : (_isFocused ? 0.85 : 1.0),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 6,
+                    ),
+                    child: Text(
+                      widget.label,
+                      style: TextStyle(
+                        color: primary,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 15,
+                      ),
+                    ),
                   ),
                 ),
               ),

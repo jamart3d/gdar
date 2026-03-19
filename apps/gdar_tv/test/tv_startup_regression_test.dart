@@ -1,4 +1,3 @@
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gdar_tv/main.dart';
@@ -336,8 +335,3 @@ void main() {
     },
   );
 }
-
-
-
-
-

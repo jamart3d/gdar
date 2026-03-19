@@ -594,5 +594,3 @@ void main() {
     expect(find.byIcon(Icons.star_rounded), findsAtLeastNWidgets(3));
   });
 }
-
-

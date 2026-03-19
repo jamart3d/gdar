@@ -207,11 +207,14 @@ class CardStyle {
     );
 
     // Background Color
-    Color backgroundColor = colorScheme.surface;
+    Color backgroundColor = deviceService.isTv
+        ? Colors.black
+        : colorScheme.surface;
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     final isTrueBlackMode = isDarkMode && settings.useTrueBlack;
 
-    if (themeProvider.themeStyle != ThemeStyle.fruit &&
+    if (!deviceService.isTv &&
+        themeProvider.themeStyle != ThemeStyle.fruit &&
         (!isTrueBlackMode || settings.glowMode >= 25) &&
         isPlaying &&
         settings.highlightCurrentShowCard) {

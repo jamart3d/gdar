@@ -191,17 +191,11 @@ class SourceFilterSettings extends StatelessWidget {
   }) {
     final isTv = context.read<DeviceService>().isTv;
 
-    Widget badge = _TactileBadge(
-      label: label,
-      isActive: isActive,
-      onTap: onTap,
-      onLongPress: onLongPress,
-    );
-
     if (isTv) {
+      Widget badge = _TvSourceFilterChip(label: label, isActive: isActive);
       if (isActive) {
         badge = AnimatedGradientBorder(
-          borderRadius: 10,
+          borderRadius: 24,
           borderWidth: 2,
           showGlow: true,
           showShadow: true,
@@ -212,15 +206,68 @@ class SourceFilterSettings extends StatelessWidget {
       return TvFocusWrapper(
         onTap: onTap,
         onLongPress: onLongPress,
-        borderRadius: BorderRadius.circular(20), // Match badge rounding roughly
+        borderRadius: BorderRadius.circular(24),
         focusColor: isActive
-            ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.4)
-            : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.2),
+            ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.24)
+            : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.1),
         child: IgnorePointer(ignoring: true, child: badge),
       );
     }
 
-    return badge;
+    return _TactileBadge(
+      label: label,
+      isActive: isActive,
+      onTap: onTap,
+      onLongPress: onLongPress,
+    );
+  }
+}
+
+class _TvSourceFilterChip extends StatelessWidget {
+  final String label;
+  final bool isActive;
+
+  const _TvSourceFilterChip({required this.label, required this.isActive});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final borderColor = isActive
+        ? theme.colorScheme.primary.withValues(alpha: 0.55)
+        : theme.colorScheme.onSurface.withValues(alpha: 0.14);
+
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 180),
+      curve: Curves.easeOutCubic,
+      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+      decoration: BoxDecoration(
+        color: isActive
+            ? theme.colorScheme.primary.withValues(alpha: 0.14)
+            : Colors.black,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: borderColor),
+        boxShadow: isActive
+            ? [
+                BoxShadow(
+                  color: theme.colorScheme.primary.withValues(alpha: 0.12),
+                  blurRadius: 16,
+                  spreadRadius: 1,
+                ),
+              ]
+            : null,
+      ),
+      child: Text(
+        label.toUpperCase(),
+        style: theme.textTheme.titleMedium?.copyWith(
+          fontSize: 15,
+          fontWeight: FontWeight.w700,
+          letterSpacing: 0.8,
+          color: isActive
+              ? theme.colorScheme.onPrimaryContainer
+              : theme.colorScheme.onSurface.withValues(alpha: 0.92),
+        ),
+      ),
+    );
   }
 }
 
