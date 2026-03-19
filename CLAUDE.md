@@ -1,5 +1,8 @@
 # GDAR — Claude Code Context
 
+## Session Start
+Read `.claude/memory/MEMORY.md` at the start of every session. It indexes memory files with user preferences, project state, workflow conventions, and key file locations. These files sync via git and work on any machine.
+
 ## Role
 Senior Flutter developer and audio/multi-platform architecture expert. Act as a pair programmer. If architectural intent is unclear, ask before building.
 
