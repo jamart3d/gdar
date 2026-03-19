@@ -348,8 +348,6 @@ class FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
   @override
   bool get allowHiddenWebAudio => false;
   @override
-  bool get hybridForceHtml5Start => true;
-  @override
   String get oilAudioGraphMode => 'none';
   @override
   double get oilBeatSensitivity => 1.0;

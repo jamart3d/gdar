@@ -643,35 +643,13 @@
           nextTrackTotal: nextTotal,
           playlistLength: _playlist.length,
           processingState: ps,
-          heartbeatNeeded: (function () {
-            if (window._gdarHeartbeatNeeded !== undefined) return window._gdarHeartbeatNeeded;
-            const ua = navigator.userAgent;
-            const isWindows = /Windows/i.test(ua);
-            const isMacDesktop = /Macintosh/i.test(ua) && navigator.maxTouchPoints === 0;
-            if (isWindows || isMacDesktop) {
-              window._gdarHeartbeatNeeded = false;
-              return false;
-            }
-            const isAndroid = /Android/i.test(ua);
-            const isIOS = /iPhone|iPad|iPod/i.test(ua);
-            const isMacPad = navigator.maxTouchPoints > 0 && /Macintosh/.test(ua);
-            window._gdarHeartbeatNeeded = isAndroid || isIOS || isMacPad;
-            return window._gdarHeartbeatNeeded;
-          })(),
+          heartbeatNeeded: window._gdarIsHeartbeatNeeded(),
           heartbeatActive: (function () {
             if (document.visibilityState === 'visible' && _playing) return true;
             return window._gdarHeartbeat ? window._gdarHeartbeat.isActive() : false;
           })(),
           contextState: (function() {
-             const hbNeeded = (function() {
-                if (window._gdarHeartbeatNeeded !== undefined) return window._gdarHeartbeatNeeded;
-                const ua = navigator.userAgent;
-                if (/Windows/i.test(ua) || (/Macintosh/i.test(ua) && navigator.maxTouchPoints === 0)) return false;
-                const isAndroid = /Android/i.test(ua);
-                const isIOS = /iPhone|iPad|iPod/i.test(ua);
-                const isMacPad = navigator.maxTouchPoints > 0 && /Macintosh/.test(ua);
-                return isAndroid || isIOS || isMacPad;
-             })();
+             const hbNeeded = window._gdarIsHeartbeatNeeded();
              const base = _ctx ? (_ctx.state === 'running' || _ctx.state === 'suspended' ? _ctx.state + ' (WA)' : _ctx.state) : 'none';
              return base + (hbNeeded ? ' [HBN]' : ' [HBO]') + ' v1.1.hb';
           })(),
@@ -940,23 +918,9 @@
           if (document.visibilityState === 'visible' && _playing) return true;
           return window._gdarHeartbeat ? window._gdarHeartbeat.isActive() : false;
         })(),
-        heartbeatNeeded: (function () {
-          const ua = navigator.userAgent;
-          if (/Windows/i.test(ua) || (/Macintosh/i.test(ua) && navigator.maxTouchPoints === 0)) return false;
-          const isAndroid = /Android/i.test(ua);
-          const isIOS = /iPhone|iPad|iPod/i.test(ua);
-          const isMacPad = navigator.maxTouchPoints > 0 && /Macintosh/.test(ua);
-          return isAndroid || isIOS || isMacPad;
-        })(),
+        heartbeatNeeded: window._gdarIsHeartbeatNeeded(),
         contextState: (function() {
-            const hbNeeded = (function() {
-                const ua = navigator.userAgent;
-                if (/Windows/i.test(ua) || (/Macintosh/i.test(ua) && navigator.maxTouchPoints === 0)) return false;
-                const isAndroid = /Android/i.test(ua);
-                const isIOS = /iPhone|iPad|iPod/i.test(ua);
-                const isMacPad = navigator.maxTouchPoints > 0 && /Macintosh/.test(ua);
-                return isAndroid || isIOS || isMacPad;
-            })();
+            const hbNeeded = window._gdarIsHeartbeatNeeded();
             const base = _ctx ? _ctx.state : 'none';
             return base + (hbNeeded ? ' [HBN]' : ' [HBO]');
         })(),

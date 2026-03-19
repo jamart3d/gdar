@@ -609,15 +609,6 @@ class MockSettingsProvider extends _i1.Mock implements _i5.SettingsProvider {
           as int);
 
   @override
-  bool get hybridForceHtml5Start =>
-      (super.noSuchMethod(
-            Invocation.getter(#hybridForceHtml5Start),
-            returnValue: false,
-            returnValueForMissingStub: false,
-          )
-          as bool);
-
-  @override
   _i2.HiddenSessionPreset get hiddenSessionPreset =>
       (super.noSuchMethod(
             Invocation.getter(#hiddenSessionPreset),
@@ -3382,11 +3373,6 @@ class MockAudioPlayerRelaxed extends _i1.Mock implements _i2.GaplessPlayer {
     returnValueForMissingStub: null,
   );
 
-  @override
-  void setHybridForceHtml5Start(bool? enabled) => super.noSuchMethod(
-    Invocation.method(#setHybridForceHtml5Start, [enabled]),
-    returnValueForMissingStub: null,
-  );
 
   @override
   void setTrackTransitionMode(String? mode) => super.noSuchMethod(

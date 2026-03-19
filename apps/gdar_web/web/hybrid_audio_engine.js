@@ -68,6 +68,7 @@
     // Mode state
     let _activeEngine = _fgEngine; // Default to Web Audio API
     let _stallTimer = null;
+    let _fenceTimer = null; // Bounds the desktop fence so hidden WA doesn't run indefinitely
     let _instantHandoffPending = false;
     let _instantHandoffIndex = -1;
     let _handoffInProgress = false;
@@ -194,21 +195,12 @@
         else if (_backgroundMode === 'heartbeat') { __tech = '(HBT)'; }
         else { __tech = 'OFF'; }
 
-        const hbNeeded = (function () {
-            const ua = navigator.userAgent || '';
-            if (/Windows/i.test(ua) || (/Macintosh/i.test(ua) && navigator.maxTouchPoints === 0)) return false;
-            const isAndroid = /Android/i.test(ua);
-            const isIOS = /iPhone|iPad|iPod/i.test(ua);
-            const isMacPad = navigator.maxTouchPoints > 0 && /Macintosh/.test(ua);
-            return isAndroid || isIOS || isMacPad;
-        })();
+        const hbNeeded = window._gdarIsHeartbeatNeeded();
         state.heartbeatNeeded = hbNeeded;
         state.contextState = 'hybrid ' + __tech + (hbNeeded ? ' [HBN]' : ' [HBO]') + ' v1.1.hb';
 
-        state.heartbeatActive = (function () {
-            if (document.visibilityState === 'visible' && _playing) return true;
-            return window._gdarHeartbeat ? window._gdarHeartbeat.isActive() : false;
-        })();
+        state.heartbeatActive = !!(document.visibilityState === 'visible' && _playing) ||
+            !!(window._gdarHeartbeat && window._gdarHeartbeat.isActive());
         _onStateChange(state);
     }
 
@@ -294,27 +286,31 @@
 
             if (_activeEngine === _fgEngine && _playing && !_allowHiddenWebAudio) {
                 const allowHandoff = _handoffMode !== 'none';
-                const isMobile = (function () {
-                    const ua = navigator.userAgent || '';
-                    if (/Windows/i.test(ua) || (/Macintosh/i.test(ua) && navigator.maxTouchPoints === 0)) return false;
-                    const isAndroid = /Android/i.test(ua);
-                    const isIOS = /iPhone|iPad|iPod/i.test(ua);
-                    const isMacPad = navigator.maxTouchPoints > 0 && /Macintosh/.test(ua);
-                    return isAndroid || isIOS || isMacPad;
-                })();
+                const isMobile = window._gdarIsHeartbeatNeeded();
 
                 if (isMobile) {
                     _log.log('[hybrid] Background Handoff: Mobile detected. Pre-emptively swapping to HTML5.');
                     _instantHandoffPending = allowHandoff;
                     _attemptHandoff(_currentIndex, true);
                 } else {
-                    _log.log('[hybrid] Background Handoff: Desktop detected. Fence enabled: waiting for track boundary.');
+                    _log.log('[hybrid] Background Handoff: Desktop detected. Fence enabled: waiting for track boundary (max 10min).');
                     _fenceHandoffPending = true;
+                    // Cap the fence so Web Audio doesn't run hidden indefinitely on desktop.
+                    if (_fenceTimer) clearTimeout(_fenceTimer);
+                    _fenceTimer = setTimeout(() => {
+                        if (_fenceHandoffPending && _activeEngine === _fgEngine && _playing) {
+                            _log.warn('[hybrid] Fence timed out (10min). Forcing handoff to HTML5.');
+                            _fenceHandoffPending = false;
+                            _attemptHandoff(_currentIndex, true);
+                        }
+                        _fenceTimer = null;
+                    }, 10 * 60 * 1000);
                 }
             }
         } else {
             _log.log('[hybrid] Tab visible. Ensuring survival tricks are off.');
             _fenceHandoffPending = false;
+            if (_fenceTimer) { clearTimeout(_fenceTimer); _fenceTimer = null; }
             if (window._gdarHeartbeat) window._gdarHeartbeat.stopHeartbeat();
 
             // Note: Spec 5 says NOT to auto-restore on foreground return.
@@ -781,29 +777,11 @@
             else if (_backgroundMode === 'heartbeat') { __tech = '(HBT)'; }
             else { __tech = 'OFF'; }
 
-            const hbNeeded = (function () {
-                const ua = navigator.userAgent;
-                if (/Windows/i.test(ua) || (/Macintosh/i.test(ua) && navigator.maxTouchPoints === 0)) return false;
-                const isAndroid = /Android/i.test(ua);
-                const isIOS = /iPhone|iPad|iPod/i.test(ua);
-                const isMacPad = navigator.maxTouchPoints > 0 && /Macintosh/.test(ua);
-                return isAndroid || isIOS || isMacPad;
-            })();
+            const hbNeeded = window._gdarIsHeartbeatNeeded();
             state.heartbeatNeeded = hbNeeded;
-            state.contextState = 'hybrid_' + __tech + (hbNeeded ? ' [HBN]' : ' [HBO]');
-
-            state.heartbeatActive = (function () {
-                if (document.visibilityState === 'visible' && _playing) return true;
-                return window._gdarHeartbeat ? window._gdarHeartbeat.isActive() : false;
-            })();
-            state.heartbeatNeeded = (function () {
-                const ua = navigator.userAgent;
-                if (/Windows/i.test(ua) || (/Macintosh/i.test(ua) && navigator.maxTouchPoints === 0)) return false;
-                const isAndroid = /Android/i.test(ua);
-                const isIOS = /iPhone|iPad|iPod/i.test(ua);
-                const isMacPad = navigator.maxTouchPoints > 0 && /Macintosh/.test(ua);
-                return isAndroid || isIOS || isMacPad;
-            })();
+            state.contextState = 'hybrid ' + __tech + (hbNeeded ? ' [HBN]' : ' [HBO]') + ' v1.1.hb';
+            state.heartbeatActive = !!(document.visibilityState === 'visible' && _playing) ||
+                !!(window._gdarHeartbeat && window._gdarHeartbeat.isActive());
             return state;
         },
 

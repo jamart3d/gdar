@@ -51,7 +51,6 @@ extension type _GdarAudioEngine(JSObject _) {
   external void setHybridBackgroundMode(JSString mode);
   external void setHybridHandoffMode(JSString mode);
   external void setHybridAllowHiddenWebAudio(JSBoolean enabled);
-  external void setHybridForceHtml5Start(JSBoolean enabled);
 }
 
 /// Snapshot of engine state returned by [_GdarAudioEngine.getState].
@@ -825,17 +824,6 @@ class GaplessPlayer {
         final obj = _JSObject(e as JSObject);
         if (obj.hasOwnProperty('setHybridAllowHiddenWebAudio'.toJS)) {
           e.setHybridAllowHiddenWebAudio(enabled.toJS);
-        }
-      });
-    }
-  }
-
-  void setHybridForceHtml5Start(bool enabled) {
-    if (_useJsEngine) {
-      _callEngine((e) {
-        final obj = _JSObject(e as JSObject);
-        if (obj.hasOwnProperty('setHybridForceHtml5Start'.toJS)) {
-          e.setHybridForceHtml5Start(enabled.toJS);
         }
       });
     }

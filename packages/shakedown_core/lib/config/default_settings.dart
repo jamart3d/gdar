@@ -44,7 +44,6 @@ class DefaultSettings {
   static const String trackTransitionMode = 'gapless'; // gap, gapless
   static const double crossfadeDurationSeconds = 3.0; // 1.0 - 12.0
   static const int handoffCrossfadeMs = 0; // 0 = off, 0-200 recommended
-  static const bool hybridForceHtml5Start = false;
 
   // Data & Filtering
   static const bool showSingleShnid = false;
@@ -183,7 +182,7 @@ class WebDefaults extends DefaultSettings {
   static const bool useTrueBlack = false; // OLED burn-in not a concern on web
   static const bool useNeumorphism = true; // Fruit / Liquid Glass theme
   static const String appFont = 'rock_salt';
-  static const bool performanceMode = true; // Simple Theme by default on Web
+  static const bool performanceMode = false; // Fruit-first by default; low-power devices opt in via SettingsProvider detection
 
   // Screensaver: disabled by default on web (no idle-lock risk)
   static const bool useOilScreensaver = false;

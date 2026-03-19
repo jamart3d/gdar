@@ -186,11 +186,6 @@ class GaplessPlayer {
     // Not applicable natively
   }
 
-  /// Forces HTML5 instant-start in hybrid. No-op on native.
-  void setHybridForceHtml5Start(bool enabled) {
-    // Not applicable natively
-  }
-
   /// Sets transition mode for web engines. No-op on native.
   void setTrackTransitionMode(String mode) {
     // Not applicable natively

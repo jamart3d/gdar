@@ -102,10 +102,18 @@
                             else this.playbackType = GaplessPlaybackType.WEBAUDIO;
                             cb && cb(buffer);
                         },
-                        (err) => console.error('error decoding audio data', err)
+                        (err) => {
+                            _log.error('[html5] WA decode failed for track', this.idx, '— staying on HTML5 stream');
+                            this.webAudioLoadingState = GaplessPlaybackLoadingState.NONE;
+                            this.queue.onError();
+                        }
                     )
                 )
-                .catch((e) => console.debug('caught fetch error', e));
+                .catch((e) => {
+                    _log.warn('[html5] Fetch error for track', this.idx, e && e.message);
+                    this.webAudioLoadingState = GaplessPlaybackLoadingState.NONE;
+                    this.queue.onError();
+                });
         }
 
         switchToWebAudio(forcePause) {
@@ -230,9 +238,10 @@
         onEnded(from) {
             _log.log(`[html5] Track ended (source: ${from || 'unknown'})`);
 
-            // Simple Relisten Guard:
-            if (!this.isActiveTrack) {
-                _log.warn(`[html5] Ignoring onEnded for zombie track (idx: ${this.idx}).`);
+            // Guard: ignore if no longer the active track OR if this track's queue
+            // is stale (e.g. setPlaylist rebuilt the queue while this track was decoding).
+            if (!this.isActiveTrack || this.queue !== _queue) {
+                _log.warn(`[html5] Ignoring onEnded for zombie track (idx: ${this.idx}). Skip Next.`);
                 return;
             }
 
@@ -542,25 +551,8 @@
                 if (document.visibilityState === 'visible') return true;
                 return window._gdarHeartbeat ? window._gdarHeartbeat.isActive() : false;
             })(),
-            heartbeatNeeded: (function () {
-                const ua = navigator.userAgent || '';
-                if (/Windows/i.test(ua) || (/Macintosh/i.test(ua) && navigator.maxTouchPoints === 0)) return false;
-                const isAndroid = /Android/i.test(ua);
-                const isIOS = /iPhone|iPad|iPod/i.test(ua);
-                const isMacPad = navigator.maxTouchPoints > 0 && /Macintosh/.test(ua);
-                return isAndroid || isIOS || isMacPad;
-            })(),
-            contextState: (function() {
-                const ua = navigator.userAgent || '';
-                const hbNeeded = (function() {
-                    if (/Windows/i.test(ua) || (/Macintosh/i.test(ua) && navigator.maxTouchPoints === 0)) return false;
-                    const isAndroid = /Android/i.test(ua);
-                    const isIOS = /iPhone|iPad|iPod/i.test(ua);
-                    const isMacPad = navigator.maxTouchPoints > 0 && /Macintosh/.test(ua);
-                    return isAndroid || isIOS || isMacPad;
-                })();
-                return 'html5 (H5)' + (hbNeeded ? ' [HBN]' : ' [HBO]') + ' v1.1.hb';
-            })()
+            heartbeatNeeded: window._gdarIsHeartbeatNeeded(),
+            contextState: 'html5 (H5)' + (window._gdarIsHeartbeatNeeded() ? ' [HBN]' : ' [HBO]') + ' v1.1.hb'
         };
 
         const currentTime = track.currentTime || 0;
@@ -591,25 +583,8 @@
                 if (document.visibilityState === 'visible' && !track.isPaused) return true;
                 return window._gdarHeartbeat ? window._gdarHeartbeat.isActive() : false;
             })(),
-            heartbeatNeeded: (function () {
-                const ua = navigator.userAgent || '';
-                if (/Windows/i.test(ua) || (/Macintosh/i.test(ua) && navigator.maxTouchPoints === 0)) return false;
-                const isAndroid = /Android/i.test(ua);
-                const isIOS = /iPhone|iPad|iPod/i.test(ua);
-                const isMacPad = navigator.maxTouchPoints > 0 && /Macintosh/.test(ua);
-                return isAndroid || isIOS || isMacPad;
-            })(),
-            contextState: (function() {
-                const ua = navigator.userAgent || '';
-                const hbNeeded = (function() {
-                    if (/Windows/i.test(ua) || (/Macintosh/i.test(ua) && navigator.maxTouchPoints === 0)) return false;
-                    const isAndroid = /Android/i.test(ua);
-                    const isIOS = /iPhone|iPad|iPod/i.test(ua);
-                    const isMacPad = navigator.maxTouchPoints > 0 && /Macintosh/.test(ua);
-                    return isAndroid || isIOS || isMacPad;
-                })();
-                return 'html5 (H5)' + (hbNeeded ? ' [HBN]' : ' [HBO]') + ' v1.1.hb';
-            })()
+            heartbeatNeeded: window._gdarIsHeartbeatNeeded(),
+            contextState: 'html5 (H5)' + (window._gdarIsHeartbeatNeeded() ? ' [HBN]' : ' [HBO]') + ' v1.1.hb'
         };
     }
 

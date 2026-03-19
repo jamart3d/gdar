@@ -128,22 +128,11 @@ class FruitTabBar extends StatelessWidget {
       ),
     );
 
-    if (isTrueBlackMode || isLiquidGlassOff) {
+    if (isTrueBlackMode || isLiquidGlassOff || !kIsWeb) {
       return content;
     }
 
-    if (kIsWeb) {
-      return _FruitTabBarShell(child: content);
-    }
-
-    return LiquidGlassWrapper(
-      enabled: isLiquidGlassEnabled,
-      blur: 18.0,
-      opacity: 0.45,
-      borderRadius: BorderRadius.zero,
-      showBorder: false,
-      child: content,
-    );
+    return _FruitTabBarShell(child: content);
   }
 }
 

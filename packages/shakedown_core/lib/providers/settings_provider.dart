@@ -97,7 +97,6 @@ class SettingsProvider with ChangeNotifier {
   static const String _hybridBackgroundModeKey = 'hybrid_background_mode';
   static const String _allowHiddenWebAudioKey = 'allow_hidden_web_audio';
   static const String _handoffCrossfadeMsKey = 'handoff_crossfade_ms';
-  static const String _hybridForceHtml5StartKey = 'hybrid_force_html5_start';
   static const String _hiddenSessionPresetKey = 'hidden_session_preset';
   static const String _webEngineProfileInitKey = 'web_engine_profile_init_v1';
   static const String _webEngineProfileChoiceKey = 'web_engine_profile_choice';
@@ -278,7 +277,6 @@ class SettingsProvider with ChangeNotifier {
   late HybridBackgroundMode _hybridBackgroundMode;
   late bool _allowHiddenWebAudio;
   late int _handoffCrossfadeMs;
-  late bool _hybridForceHtml5Start;
   late HiddenSessionPreset _hiddenSessionPreset;
   late WebEngineProfile _webEngineProfile;
 
@@ -498,13 +496,6 @@ class SettingsProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  bool get hybridForceHtml5Start => _hybridForceHtml5Start;
-  void setHybridForceHtml5Start(bool value) {
-    _hybridForceHtml5Start = value;
-    _prefs.setBool(_hybridForceHtml5StartKey, value);
-    notifyListeners();
-  }
-
   HiddenSessionPreset get hiddenSessionPreset => _hiddenSessionPreset;
   WebEngineProfile get webEngineProfile => _webEngineProfile;
   void setHybridBackgroundMode(HybridBackgroundMode mode) {
@@ -522,21 +513,18 @@ class SettingsProvider with ChangeNotifier {
         _hybridHandoffMode = HybridHandoffMode.buffered;
         _hybridBackgroundMode = HybridBackgroundMode.video;
         _allowHiddenWebAudio = false;
-        _hybridForceHtml5Start = true;
         break;
       case HiddenSessionPreset.balanced:
         _audioEngineMode = AudioEngineMode.hybrid;
         _hybridHandoffMode = HybridHandoffMode.buffered;
         _hybridBackgroundMode = HybridBackgroundMode.heartbeat;
         _allowHiddenWebAudio = false;
-        _hybridForceHtml5Start = true;
         break;
       case HiddenSessionPreset.maxGapless:
         _audioEngineMode = AudioEngineMode.webAudio;
         _hybridHandoffMode = HybridHandoffMode.immediate;
         _hybridBackgroundMode = HybridBackgroundMode.heartbeat;
         _allowHiddenWebAudio = true;
-        _hybridForceHtml5Start = false;
         break;
     }
 
@@ -545,7 +533,6 @@ class SettingsProvider with ChangeNotifier {
     _prefs.setString(_hybridHandoffModeKey, _hybridHandoffMode.name);
     _prefs.setString(_hybridBackgroundModeKey, _hybridBackgroundMode.name);
     _prefs.setBool(_allowHiddenWebAudioKey, _allowHiddenWebAudio);
-    _prefs.setBool(_hybridForceHtml5StartKey, _hybridForceHtml5Start);
 
     notifyListeners();
   }
@@ -570,7 +557,6 @@ class SettingsProvider with ChangeNotifier {
         _hybridHandoffMode = HybridHandoffMode.buffered;
         _hybridBackgroundMode = HybridBackgroundMode.heartbeat;
         _allowHiddenWebAudio = false;
-        _hybridForceHtml5Start = true;
         break;
       case WebEngineProfile.legacy:
         _hiddenSessionPreset = HiddenSessionPreset.stability;
@@ -578,7 +564,6 @@ class SettingsProvider with ChangeNotifier {
         _hybridHandoffMode = HybridHandoffMode.buffered;
         _hybridBackgroundMode = HybridBackgroundMode.video;
         _allowHiddenWebAudio = false;
-        _hybridForceHtml5Start = true;
         break;
     }
 
@@ -588,7 +573,6 @@ class SettingsProvider with ChangeNotifier {
     _prefs.setString(_hybridHandoffModeKey, _hybridHandoffMode.name);
     _prefs.setString(_hybridBackgroundModeKey, _hybridBackgroundMode.name);
     _prefs.setBool(_allowHiddenWebAudioKey, _allowHiddenWebAudio);
-    _prefs.setBool(_hybridForceHtml5StartKey, _hybridForceHtml5Start);
   }
 
   // Screensaver getters
@@ -1067,7 +1051,7 @@ class SettingsProvider with ChangeNotifier {
       _prefs.getString(_hybridHandoffModeKey) ?? 'buffered',
     );
     _hybridBackgroundMode = HybridBackgroundMode.fromString(
-      _prefs.getString(_hybridBackgroundModeKey) ?? 'html5',
+      _prefs.getString(_hybridBackgroundModeKey) ?? 'heartbeat',
     );
     _hiddenSessionPreset = HiddenSessionPreset.fromString(
       _prefs.getString(_hiddenSessionPresetKey) ?? 'balanced',
@@ -1076,10 +1060,6 @@ class SettingsProvider with ChangeNotifier {
     _handoffCrossfadeMs =
         _prefs.getInt(_handoffCrossfadeMsKey) ??
         DefaultSettings.handoffCrossfadeMs;
-    _hybridForceHtml5Start =
-        _prefs.getBool(_hybridForceHtml5StartKey) ??
-        DefaultSettings.hybridForceHtml5Start;
-
     // Screensaver
     _useOilScreensaver =
         _prefs.getBool(_useOilScreensaverKey) ??
@@ -1315,7 +1295,7 @@ class SettingsProvider with ChangeNotifier {
         _prefs.getDouble(_oilScaleSineAmpKey) ??
         DefaultSettings.oilScaleSineAmp;
 
-    // TV screensaver mode override â€” use TvDefaults as the canonical source.
+    // TV screensaver mode override — use TvDefaults as the canonical source.
     if (isTv) _oilScreensaverMode = TvDefaults.oilScreensaverMode;
 
     final seedColorValue = _prefs.getInt(_seedColorKey);
@@ -1352,9 +1332,6 @@ class SettingsProvider with ChangeNotifier {
       _sourceCategoryFilters = Map.from(DefaultSettings.sourceCategoryFilters);
     }
 
-    // Web-only override: all categories ON by default.
-    // We use a one-time migration check to ensure existing web users also get
-    // all categories enabled, while preserving their future custom choices.
     // Web-only override: Only 'matrix' ON by default for a curated first experience.
     // We use a one-time migration check to ensure new web users start with matrix,
     // while preserving their future custom choices.

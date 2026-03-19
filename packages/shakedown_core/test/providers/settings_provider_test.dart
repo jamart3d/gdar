@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shakedown_core/providers/settings_provider.dart';
+import 'package:shakedown_core/services/gapless_player/gapless_player.dart';
 
 void main() {
   late SettingsProvider settingsProvider;
@@ -226,6 +227,55 @@ void main() {
       expect(settingsProvider.abbreviateMonth, false);
     });
   });
+  group('SettingsProvider Hybrid Audio Web Defaults', () {
+    test('hybridBackgroundMode defaults to heartbeat on fresh install', () {
+      expect(settingsProvider.hybridBackgroundMode, HybridBackgroundMode.heartbeat);
+    });
+
+    test('hybridBackgroundMode persists when set', () async {
+      settingsProvider.setHybridBackgroundMode(HybridBackgroundMode.video);
+      expect(settingsProvider.hybridBackgroundMode, HybridBackgroundMode.video);
+
+      final prefs = await SharedPreferences.getInstance();
+      expect(prefs.getString('hybrid_background_mode'), 'video');
+    });
+
+    test('hybridBackgroundMode is restored from prefs', () async {
+      SharedPreferences.setMockInitialValues({
+        'first_run_check_done': true,
+        'hybrid_background_mode': 'video',
+      });
+      final prefs = await SharedPreferences.getInstance();
+      final provider = SettingsProvider(prefs);
+      expect(provider.hybridBackgroundMode, HybridBackgroundMode.video);
+    });
+
+    test('hiddenSessionPreset defaults to balanced on fresh install', () {
+      expect(settingsProvider.hiddenSessionPreset, HiddenSessionPreset.balanced);
+    });
+
+    test('setHiddenSessionPreset applies stability preset fields', () {
+      settingsProvider.setHiddenSessionPreset(HiddenSessionPreset.stability);
+      expect(settingsProvider.hiddenSessionPreset, HiddenSessionPreset.stability);
+      expect(settingsProvider.hybridBackgroundMode, HybridBackgroundMode.video);
+      expect(settingsProvider.hybridHandoffMode, HybridHandoffMode.buffered);
+    });
+
+    test('setHiddenSessionPreset applies balanced preset fields', () {
+      settingsProvider.setHiddenSessionPreset(HiddenSessionPreset.balanced);
+      expect(settingsProvider.hiddenSessionPreset, HiddenSessionPreset.balanced);
+      expect(settingsProvider.hybridBackgroundMode, HybridBackgroundMode.heartbeat);
+      expect(settingsProvider.hybridHandoffMode, HybridHandoffMode.buffered);
+    });
+
+    test('setHiddenSessionPreset applies maxGapless preset fields', () {
+      settingsProvider.setHiddenSessionPreset(HiddenSessionPreset.maxGapless);
+      expect(settingsProvider.hiddenSessionPreset, HiddenSessionPreset.maxGapless);
+      expect(settingsProvider.hybridBackgroundMode, HybridBackgroundMode.heartbeat);
+      expect(settingsProvider.hybridHandoffMode, HybridHandoffMode.immediate);
+    });
+  });
+
   group('SettingsProvider Screensaver (Steal)', () {
     test('initializes with default values', () {
       expect(settingsProvider.useOilScreensaver, true);

@@ -57,8 +57,7 @@
 
     window._gdarScheduler = api;
 
-    // Auto-start for safety, or we can let engines call it.
-    // Given our goal of stability, we start it early.
-    api.start();
+    // Scheduler is started by hybrid_init.js after the engine strategy is
+    // selected. Not needed for 'passive' or 'standard' engines.
 
 })();

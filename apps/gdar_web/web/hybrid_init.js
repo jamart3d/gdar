@@ -15,6 +15,11 @@
  *   window._gdarAudio.getState().contextState
  *   → 'html5'       : HTML5 streaming engine (mobile)
  *   → 'running'|... : GDAR Web Audio API engine (desktop)
+ *
+ * Requires audio_utils.js to be loaded before this script.
+ * audio_utils.js defines window._gdarIsHeartbeatNeeded(), which is called
+ * by all engines at state-emission time. If audio_utils.js is absent or
+ * loaded after the engines, heartbeat detection will throw silently.
  */
 (function () {
     'use strict';
@@ -22,13 +27,21 @@
     // Safe Logger Utility
     const _log = (window._gdarLogger || console);
 
-    // FLUSH Logic: If ?flush=true is in URL, clear localStorage for a fresh start.
+    // FLUSH Logic: If ?flush=true is in URL, clear GDAR keys for a fresh start.
+    // Targets only flutter.* (SharedPreferences) and known raw GDAR keys — does NOT
+    // wipe unrelated keys that other scripts on the same origin may have written.
     // Use sessionStorage to ensure it only happens ONCE per session (allowing reload to persist).
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('flush') === 'true' && !sessionStorage.getItem('shakedown_flushed')) {
-        localStorage.clear();
+        const keysToRemove = Object.keys(localStorage).filter(k =>
+            k.startsWith('flutter.') ||
+            k === 'audio_engine_mode' ||
+            k === 'allow_hidden_web_audio' ||
+            k === 'gdar_web_error_log_v1'
+        );
+        keysToRemove.forEach(k => localStorage.removeItem(k));
         sessionStorage.setItem('shakedown_flushed', 'true');
-        console.warn('%c[Shakedown] localStorage FLUSHED via URL parameter.', 'color: #ff0000; font-weight: bold;');
+        console.warn('%c[Shakedown] localStorage FLUSHED via URL parameter (' + keysToRemove.length + ' keys removed).', 'color: #ff0000; font-weight: bold;');
     }
 
     const ua = navigator.userAgent;
@@ -120,7 +133,7 @@
         // Advanced Hybrid Settings Sync
         if (selectedEngine === window._hybridAudio) {
             try {
-                const bgMode = localStorage.getItem('flutter.hybrid_background_mode') || '"html5"';
+                const bgMode = localStorage.getItem('flutter.hybrid_background_mode') || '"heartbeat"';
                 const handoffMode = localStorage.getItem('flutter.hybrid_handoff_mode') || '"buffered"';
 
                 selectedEngine.setHybridBackgroundMode(bgMode.replace(/"/g, '').toLowerCase());
@@ -131,9 +144,22 @@
         }
 
         console.log('[Shakedown] window._gdarAudio is now configured:', window._gdarAudio.engineType);
+
+        // Start the background tick scheduler for engines that need it.
+        // Passive and standard engines use their own timing — no worker needed.
+        if (strategy !== 'passive' && strategy !== 'standard') {
+            if (window._gdarScheduler) window._gdarScheduler.start();
+        }
     } else {
         _log.error(`[Shakedown] FATAL: No audio engine scripts loaded successfully or strict selection failed. Strategy: ${strategy}, Override: ${override}`);
     }
+
+    // Expose detection results for diagnostics and Dart-side alignment.
+    window._gdarIsMobile = (isMobiUA || isIPadOS || (hasTouch && isNarrow));
+    const _lpDpr = window.devicePixelRatio || 1;
+    const _lpCores = navigator.hardwareConcurrency || 0;
+    const _lpIsLowCores = _lpCores > 0 && (_lpCores <= 2 || (_lpCores <= 4 && _lpDpr < 2.0));
+    window._gdarDetectedAsLowPower = (isMobiUA || isIPadOS) && _lpIsLowCores;
 
     // Diagnostic: Log all localStorage keys related to audio for debugging
     try {

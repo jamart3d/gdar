@@ -499,6 +499,9 @@ class PlaybackSection extends StatelessWidget {
   ) {
     final audioProvider = context.watch<AudioProvider>();
     final detectedProfile = detectedWebProfileLabel();
+    final resolvedMode = sp.audioEngineMode == AudioEngineMode.auto
+        ? audioProvider.audioPlayer.activeMode
+        : sp.audioEngineMode;
     return [
       Padding(
         padding: EdgeInsets.only(
@@ -704,7 +707,7 @@ class PlaybackSection extends StatelessWidget {
                 ),
               ),
             ),
-            if (sp.audioEngineMode == AudioEngineMode.hybrid) ...[
+            if (resolvedMode == AudioEngineMode.hybrid) ...[
               const SizedBox(height: 16),
               Padding(
                 padding: EdgeInsets.only(left: 40.0 * scaleFactor),

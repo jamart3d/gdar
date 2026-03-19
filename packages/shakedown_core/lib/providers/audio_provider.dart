@@ -608,14 +608,6 @@ class AudioProvider with ChangeNotifier {
       );
     }
 
-    if (_settingsProvider == null ||
-        settingsProvider.hybridForceHtml5Start !=
-            _settingsProvider!.hybridForceHtml5Start) {
-      _audioPlayer.setHybridForceHtml5Start(
-        settingsProvider.hybridForceHtml5Start,
-      );
-    }
-
     // Sync hybrid handoff crossfade duration
     if (_settingsProvider == null ||
         settingsProvider.handoffCrossfadeMs !=

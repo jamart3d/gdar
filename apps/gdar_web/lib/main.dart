@@ -17,6 +17,7 @@ import 'package:shakedown_core/ui/screens/splash_screen.dart';
 import 'package:shakedown_core/ui/widgets/rgb_clock_wrapper.dart';
 import 'package:shakedown_core/utils/logger.dart';
 import 'package:shakedown_core/utils/web_error_logger.dart';
+import 'package:shakedown_core/utils/web_perf_hint.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:gdar_android/android_theme.dart';
@@ -81,7 +82,7 @@ class _GdarWebAppState extends State<GdarWebApp> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final themeProvider = _navigatorKey.currentContext?.read<ThemeProvider>();
       if (themeProvider != null) {
-        final targetStyle = _isAndroidStyle
+        final targetStyle = (_isAndroidStyle || isLikelyLowPowerWebDevice())
             ? ThemeStyle.android
             : ThemeStyle.fruit;
         if (themeProvider.themeStyle != targetStyle) {

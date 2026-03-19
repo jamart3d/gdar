@@ -69,14 +69,12 @@ engine choice, `SettingsProvider` applies an adaptive web profile:
   - `hybridHandoffMode = buffered`
   - `hybridBackgroundMode = heartbeat`
   - `allowHiddenWebAudio = false`
-  - `hybridForceHtml5Start = true`
 - `legacy`
   - `hiddenSessionPreset = stability`
   - `audioEngineMode = html5`
   - `hybridHandoffMode = buffered`
   - `hybridBackgroundMode = video`
   - `allowHiddenWebAudio = false`
-  - `hybridForceHtml5Start = true`
 
 This adaptive profile is only applied once unless the user clears settings.
 
@@ -280,7 +278,6 @@ Current preset mappings:
 - `hybridHandoffMode = buffered`
 - `hybridBackgroundMode = video`
 - `allowHiddenWebAudio = false`
-- `hybridForceHtml5Start = true`
 
 ### `balanced`
 
@@ -288,7 +285,6 @@ Current preset mappings:
 - `hybridHandoffMode = buffered`
 - `hybridBackgroundMode = heartbeat`
 - `allowHiddenWebAudio = false`
-- `hybridForceHtml5Start = true`
 
 ### `maxGapless`
 
@@ -296,31 +292,41 @@ Current preset mappings:
 - `hybridHandoffMode = immediate`
 - `hybridBackgroundMode = heartbeat`
 - `allowHiddenWebAudio = true`
-- `hybridForceHtml5Start = false`
 
-## Known Mismatch in Current Project State
+## Recent Cleanup (2026-03-19)
 
-`hybridForceHtml5Start` exists in:
+- **`hybridForceHtml5Start` removed**: The setting existed in defaults, presets,
+  `SettingsProvider`, `AudioProvider`, and Dart JS interop, but the JS engine
+  never implemented `setHybridForceHtml5Start()`. It was a dead setting with no
+  runtime effect. Fully removed from all source files and mocks.
 
-- defaults
-- adaptive profile logic
-- hidden-session presets
-- `SettingsProvider`
-- `AudioProvider` sync
-- Dart JS interop surface
+- **`audio_utils.js` added**: Shared utility loaded before all engine scripts.
+  Provides `window._gdarIsHeartbeatNeeded()` — a cached, UA-based function that
+  replaces 15+ copy-pasted inline lambdas across `hybrid_audio_engine.js`,
+  `gapless_audio_engine.js`, `html5_audio_engine.js`, `hybrid_html5_engine.js`,
+  and `passive_audio_engine.js`.
 
-But the current JS hybrid engine does not implement a corresponding
-`setHybridForceHtml5Start` method, and bootstrap logic does not appear to use
-that setting directly.
+- **Fence timer cap**: Desktop hybrid engine now has a 10-minute cap on the
+  `_fenceHandoffPending` guard. If the tab is hidden for more than 10 minutes,
+  handoff to HTML5 is forced regardless of track boundary.
 
-Practical implication:
+- **Scheduler gating**: `audio_scheduler.js` no longer auto-starts the Web Worker.
+  `hybrid_init.js` starts it after engine selection, skipping it for `passive`
+  and `standard` engine strategies.
 
-- the setting exists in app state
-- the setting is documented in presets
-- the setting is not currently a reliable JS runtime control
+- **`hybridBackgroundMode` default corrected**: Cold-start default changed from
+  `'html5'` to `'heartbeat'` to match the `balanced` preset (which is the
+  `modern` adaptive profile default).
 
-Until it is wired through, treat it as an incomplete setting rather than a
-stable behavior guarantee.
+- **Low-power threshold tightened**: `web_perf_hint_web.dart` now uses
+  `cores <= 2 || (cores <= 4 && devicePixelRatio < 2.0)` instead of the
+  blunt `cores <= 4` threshold. This avoids false-positiving modern quad-core
+  phones (iPhone 14, mid-range Android) that pair high core counts with high-DPI
+  screens.
+
+- **WA decode errors surfaced**: `html5_audio_engine.js` and
+  `hybrid_html5_engine.js` now call `queue.onError()` on Web Audio decode
+  failures and fetch errors instead of silently degrading.
 
 ## Current Playback Settings That Affect Web Audio
 

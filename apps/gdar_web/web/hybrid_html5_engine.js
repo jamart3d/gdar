@@ -103,10 +103,18 @@
                             else this.playbackType = GaplessPlaybackType.WEBAUDIO;
                             cb && cb(buffer);
                         },
-                        (err) => console.error('error decoding audio data', err)
+                        (err) => {
+                            _log.error('[html5] WA decode failed for track', this.idx, '— staying on HTML5 stream');
+                            this.webAudioLoadingState = GaplessPlaybackLoadingState.NONE;
+                            this.queue.onError();
+                        }
                     )
                 )
-                .catch((e) => console.debug('caught fetch error', e));
+                .catch((e) => {
+                    _log.warn('[html5] Fetch error for track', this.idx, e && e.message);
+                    this.webAudioLoadingState = GaplessPlaybackLoadingState.NONE;
+                    this.queue.onError();
+                });
         }
 
         switchToWebAudio(forcePause) {
@@ -572,19 +580,9 @@
             nextTrackTotal: nextTrack?.duration || 0,
             playlistLength: (_queue && _queue.tracks) ? _queue.tracks.length : 0,
             processingState: (track.currentTime > 0 && track.duration > 0 && currentTime >= (duration - 0.1) && track.idx >= _queue.tracks.length - 1) ? 'completed' : 'ready',
-            contextState: 'html5',
-            heartbeatActive: (function () {
-                if (document.visibilityState === 'visible') return true;
-                return window._gdarHeartbeat ? window._gdarHeartbeat.isActive() : false;
-            })(),
-            heartbeatNeeded: (function () {
-                const ua = navigator.userAgent;
-                if (/Windows/i.test(ua) || (/Macintosh/i.test(ua) && navigator.maxTouchPoints === 0)) return false;
-                const isAndroid = /Android/i.test(ua);
-                const isIOS = /iPhone|iPad|iPod/i.test(ua);
-                const isMacPad = navigator.maxTouchPoints > 0 && /Macintosh/.test(ua);
-                return isAndroid || isIOS || isMacPad;
-            })()
+            contextState: 'html5 (H5)' + (window._gdarIsHeartbeatNeeded() ? ' [HBN]' : ' [HBO]') + ' v1.1.hb',
+            heartbeatActive: (document.visibilityState === 'visible') || !!(window._gdarHeartbeat && window._gdarHeartbeat.isActive()),
+            heartbeatNeeded: window._gdarIsHeartbeatNeeded()
         };
     }
 

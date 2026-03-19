@@ -932,14 +932,6 @@ class MockSettingsProvider extends _i1.Mock implements _i12.SettingsProvider {
           as int);
 
   @override
-  bool get hybridForceHtml5Start =>
-      (super.noSuchMethod(
-            Invocation.getter(#hybridForceHtml5Start),
-            returnValue: false,
-          )
-          as bool);
-
-  @override
   _i2.HiddenSessionPreset get hiddenSessionPreset =>
       (super.noSuchMethod(
             Invocation.getter(#hiddenSessionPreset),
@@ -1618,11 +1610,6 @@ class MockSettingsProvider extends _i1.Mock implements _i12.SettingsProvider {
     returnValueForMissingStub: null,
   );
 
-  @override
-  void setHybridForceHtml5Start(bool? value) => super.noSuchMethod(
-    Invocation.method(#setHybridForceHtml5Start, [value]),
-    returnValueForMissingStub: null,
-  );
 
   @override
   void setHybridBackgroundMode(_i2.HybridBackgroundMode? mode) =>

@@ -403,7 +403,7 @@ class FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
   void setHybridHandoffMode(HybridHandoffMode value) {}
 
   @override
-  HybridBackgroundMode get hybridBackgroundMode => HybridBackgroundMode.html5;
+  HybridBackgroundMode get hybridBackgroundMode => HybridBackgroundMode.heartbeat;
   @override
   void setHybridBackgroundMode(HybridBackgroundMode value) {}
 
