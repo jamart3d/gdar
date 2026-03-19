@@ -166,6 +166,8 @@ These files were written for Jules but apply equally here. **Read the relevant o
 | `.agent/rules/platform_shell.md` | Platform-conditional code |
 | `.agent/rules/testing_stubs.md` | Writing or updating tests |
 | `.agent/rules/web_audio_scheduling.md` | JS audio engine changes |
+| `.agent/rules/audio_mode_resolution.md` | Resolved vs stored AudioEngineMode |
+| `.agent/rules/localstorage_hygiene.md` | Web localStorage key rules |
 
 ### Read before any design or spec work
 

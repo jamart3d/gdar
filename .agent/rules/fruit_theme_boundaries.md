@@ -1,13 +1,27 @@
 # Fruit Theme Architecture Boundaries
 
-The "Fruit" (Liquid Glass) theme is a premium aesthetic designed specifically for Web and PWA environments. It must NOT bleed into native mobile or TV experiences.
+The Fruit (Liquid Glass) theme is exclusive to Web/PWA. It must not bleed into native mobile or TV.
 
 ### 1. Platform Gating
-- **Constraint:** Any widget or layout specific to the "Fruit" theme must be safely gated.
-- **Action:** Use `kIsWeb` directly, or abstract the check into a provider (e.g., `themeProvider.themeStyle == ThemeStyle.fruit`).
-- **Reason:** Native Android, iOS, and specifically Google TV users expect platform-standard Material 3 interfaces.
+- Gate Fruit-specific widgets on `kIsWeb` (compile-time) and/or `themeProvider.themeStyle == ThemeStyle.fruit`.
+- Native Android, iOS, and TV expect platform-standard Material 3 interfaces.
 
-### 2. Liquid Glass & Neumorphism
-- **Constraint:** Components utilizing `LiquidGlassWrapper`, `NeumorphicWrapper`, or high-blur background filters are exclusive to the Fruit theme.
-- **Action:** If a shared component (e.g., a button or card) uses these effects, provide a clean Material 3 fallback when the Fruit theme is inactive.
-- **Example:** A `SectionCard` should render as a standard `Card(elevation: 0, color: surfaceContainer)` on TV, but can render with a `LiquidGlassWrapper` on Web.
+### 2. LiquidGlassWrapper
+- `LiquidGlassWrapper` is gated internally: `isAllowedPlatform = kIsWeb && !dev.isTv`.
+- **Do NOT instantiate `LiquidGlassWrapper` on phone or desktop** even if it self-bypasses internally — the widget tree work is unnecessary and the bypass is not guaranteed to stay.
+- Correct guard pattern in `fruit_tab_bar.dart`:
+  ```dart
+  if (isTrueBlackMode || isLiquidGlassOff || !kIsWeb) {
+    return content; // phone/desktop: skip wrapper entirely
+  }
+  return _FruitTabBarShell(child: content); // web only
+  ```
+
+### 3. Performance Mode Fallback
+When Fruit effects are disabled (performance mode or settings toggle):
+- **Keep Fruit structure** — layout, spacing, control hierarchy stay Fruit.
+- **Do NOT** swap to Material 3 components, ripples, or FAB patterns.
+- `fruitEnableLiquidGlass` is automatically set `false` when `performanceMode = true`.
+
+### 4. Shared Components
+If a shared component uses `LiquidGlassWrapper` or `NeumorphicWrapper`, provide a clean Material 3 fallback when the Fruit theme is inactive. Example: `SectionCard` renders as a standard `Card` on TV but uses `LiquidGlassWrapper` on web Fruit.

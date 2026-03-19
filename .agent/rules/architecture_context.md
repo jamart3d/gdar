@@ -2,32 +2,27 @@
 trigger: always_on
 ---
 
-# Antigravity Agent Architecture & Domain Rules
+# GDAR Architecture Context
 
-You are assisting with specialized Flutter applications. To prevent architectural drift and maintain consistency, you MUST adhere to the following domain-specific constraints:
+## Project Shape
+Dart/Flutter monorepo. Three apps share `packages/shakedown_core` for all providers, services, and shared widgets. Platform-specific entrypoints live in `apps/`.
 
-### 1. Game Engine Constraints (Flame)
-When working within mobile simulation or game environments utilizing Flame:
-* **Action:** Respect the game loop. Do not attempt to use standard Flutter `setState` or standard animation controllers for components inside the Flame world.
-* **Constraint:** All game-state updates must remain within the Flame `update(dt)` cycle. UI overlays should communicate with the game state via event notifications without blocking the rendering pipeline.
+## Key Providers
+- **`SettingsProvider`** — all user prefs via `SharedPreferences`. Platform defaults via `_dBool(webVal, tvVal, phoneVal)`. 1,960+ lines. Splitting requires a separate class or mixin — NOT Dart extension methods (static dispatch breaks provider fakes).
+- **`AudioProvider`** — wraps the active engine. `audioPlayer.activeMode` is the **resolved** mode; `sp.audioEngineMode` is the **stored** preference (may be `auto`). Always gate UI on the resolved mode, not the stored enum.
+- **`ThemeProvider`** — `ThemeStyle` has exactly two values: `android` and `fruit`. `isFruitAllowed = kIsWeb && !isTv`.
+- **`DeviceService`** — `isTv`, `isMobile`, `isDesktop`, `isSafari`, `isPwa`.
 
-### 2. Asynchronous Data & API Handling
-When dealing with external data fetching (such as pulling tide data or remote configurations):
-* **Action:** Always implement robust error handling and loading states.
-* **Constraint:** Do not make blocking network calls on the main thread. Ensure all data parsing happens asynchronously to prevent UI jank.
+## Platform Policy
+| Platform | App | Theme |
+|---|---|---|
+| Web/PWA | `gdar_web` | Fruit (Liquid Glass) — `kIsWeb && !isTv` only |
+| Google TV | `gdar_tv` | Material Dark, D-Pad focus, dual-pane |
+| Android Phone | `gdar_mobile` | Material 3 Expressive |
 
-### 3. Routing Discipline
-* **Action:** Adhere to the existing routing implementation (e.g., whether the project uses standard Navigator 2.0, GoRouter, etc.).
-* **Constraint:** Do not suggest migrating to a different routing package to solve a simple navigation bug. Fix the issue within the current architectural paradigm.
-
-### 4. AMOLED & True Black Design
-* **Action:** When implementing "Glow" effects (e.g., in `AnimatedGradientBorder`), ensure shadows are NOT fully disabled in True Black mode if the glow intensity is > 0.
-* **Constraint:** True Black mode removes background colors but should preserve depth through subtle shadows to maintain UI hierarchy.
-
-### 5. UI Padding & Scaffold
-* **Action:** When using a custom `Positioned` AppBar inside a `Stack` (e.g., in `PlaybackScreen`), set `primary: false` on the parent `Scaffold`.
-* **Constraint:** This prevents the `Scaffold` from adding its own automatic top padding (status bar height), which results in "double-padding" when the AppBar is already handling its own offset.
- 
-### 6. Async Playback Transitions
-* **Action**: When implementing "pending" or "look-ahead" states for show selection (e.g., during dice rolls or automated transitions), ensure these states are strictly cleared or synchronized when the underlying audio engine's `currentIndexStream` or `MediaItem` tag emits a new value.
-* **Constraint**: Do not rely on loose timers or `Future.delayed` to synchronize UI metadata with the audio engine; authoritative stream synchronization is mandatory to prevent stale metadata.
+## Hard Constraints
+- **True Black mode**: removes background colors but preserves subtle shadows for depth. Never fully disable shadows when glow intensity > 0.
+- **Scaffold padding**: when using a custom `Positioned` AppBar inside a `Stack`, set `primary: false` on the parent `Scaffold` to prevent double top-padding.
+- **Async playback sync**: never use `Future.delayed` to sync UI with audio state. Use `currentIndexStream` or `MediaItem` tag streams as the authoritative source.
+- **Routing**: do not migrate routing packages to fix navigation bugs. Fix within the current paradigm.
+- **Data parsing**: `output.optimized_src.json` is 8MB. Always use `compute()` or Isolates. Never parse on the main thread.

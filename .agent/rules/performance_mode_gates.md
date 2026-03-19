@@ -1,31 +1,37 @@
 # Performance Mode (Simple Theme) Gates
 
-### 1. Goal
-Performance Mode (Simple Theme) is designed to ensure the application remains fluid on low-power devices (older phones, low-end TV boxes) and efficient in PWA environments.
+### 1. Default Behavior (as of 2026-03-19)
+`WebDefaults.performanceMode = false` — capable desktop and modern phones boot **Fruit-first** with liquid glass enabled.
+
+Low-power detection (`isLikelyLowPowerWebDevice()` in `utils/web_perf_hint.dart`) opts low-power devices in automatically on first run:
+- Mobile UA + `cores <= 2`, or `cores <= 4 && devicePixelRatio < 2.0`
+- `SettingsProvider` sets `performanceMode = true` and persists it
+- `gdar_web/lib/main.dart` sets `ThemeStyle.android` (not Fruit) for low-power devices
 
 ### 2. Visual Prohibitions
-When `performanceMode` is `true`, the following visual effects MUST be gated/disabled:
-- **Blurs**: `BackdropFilter`, `ImageFilter.blur`, or any translucent blurred layers.
-- **Shadows**: All `BoxShadow` elements (except for extremely subtle depth indicators in True Black mode if intensity is high).
-- **Complex Animations**: Large-scale hero transitions or audio-reactive particle systems (the screensaver has its own performance gates).
-- **Glows**: `AnimatedGradientBorder` glow effects and intense neon flickers.
+When `performanceMode` is `true`, the following MUST be gated/disabled:
+- **Blurs**: `BackdropFilter`, `ImageFilter.blur`, translucent blurred layers
+- **Shadows**: all `BoxShadow` (except subtle depth in True Black mode when glow > 0)
+- **Complex Animations**: large hero transitions, audio-reactive particle systems
+- **Glows**: `AnimatedGradientBorder` effects and neon flickers
+- **Liquid Glass**: `fruitEnableLiquidGlass` is set `false` automatically
 
 ### 3. UI Component Specifics
-- **FruitTabBar**: Use solid backgrounds/borders instead of glass blurs.
-- **Settings Headers**: Remove translucency and overlapping filters.
-- **Mini Player**: Simplify to flat colors.
+- **FruitTabBar**: use solid backgrounds/borders instead of glass blurs
+- **Settings Headers**: remove translucency and overlapping filters
+- **Mini Player**: simplify to flat colors
 
 ### 4. Implementation Pattern
-Always use the `settingsProvider.performanceMode` flag to conditionally render or style widgets:
 ```dart
 final isSimple = settingsProvider.performanceMode;
-// ...
+
 decoration: BoxDecoration(
   color: isSimple ? baseColor : baseColor.withValues(alpha: 0.8),
   boxShadow: isSimple ? null : [defaultShadow],
 ),
-### 5. Initialization & State Resets
-When transitioning between themes (e.g., Material 3 to Fruit), certain secondary flags (like `glowMode`) may need strict resets to preserve brand integrity.
-- **Constraint:** Do NOT gate theme initialization logic or state resets behind `performanceMode`. 
-- **Example:** In `ThemeProvider`, the initial reset of `glowMode` when switching to Fruit theme MUST happen regardless of whether `performanceMode` is active. Failing to do so can lead to "Glow Mode" sticking in the Fruit theme when it should be disabled for that look.
-- **Testing:** Ensure theme activation tests verify state resets with both `performanceMode` enabled and disabled.
+```
+
+### 5. Theme Transition Resets
+- **Constraint:** Do NOT gate theme initialization or state resets behind `performanceMode`.
+- When switching to Fruit theme, `glowMode` and related flags MUST reset regardless of performance mode state. Failing to do so leaves glow stuck in Fruit theme.
+- Test theme activation with both `performanceMode` enabled and disabled.

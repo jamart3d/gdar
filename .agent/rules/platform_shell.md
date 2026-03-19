@@ -1,12 +1,25 @@
 # Platform-Specific Shell Execution Rules
 
-### Linux / ChromeOS
-1. **Always execute commands as:** `timeout 60s bash -lc "<command>"`
-2. **Never use interactive shells.**
-3. **Never leave background processes running.**
+### Claude Code (Linux / ChromeOS)
+Claude Code executes commands directly via the Bash tool — no wrapper needed.
+- Run `melos` commands from the repo root.
+- Build commands (`flutter build appbundle`, etc.) must run from the specific app directory (e.g., `apps/gdar_mobile`).
+- Never leave background processes running.
 
-### Windows
-1. **Always use `cmd /c`** for all shell executions to ensure the process terminates correctly and sends an EOF signal.
-   - ✅ `cmd /c pip list`
-   - ❌ `pip list`
-2. **Avoid interactive shells.** If a persistent session is needed, use `cmd /k` but ensure the command is self-terminating.
+### Jules (Linux / ChromeOS)
+Jules wraps commands as: `timeout 60s bash -lc "<command>"`
+- Never use interactive shells.
+
+### Windows (PowerShell / cmd — build & deploy only)
+Build and deploy commands run on Windows. See `.agent/notes/pending_release.md` for exact commands.
+- Use `cmd /c` for shell executions to ensure the process terminates correctly.
+- Avoid interactive shells.
+- Flutter and Firebase CLI paths are on the Windows PATH, not the Linux PATH.
+
+### Which Machine Does What
+| Task | Machine |
+|---|---|
+| Code editing, tests, analysis | Linux / ChromeOS (Claude Code / Jules) |
+| `flutter build appbundle` | Windows |
+| `firebase deploy` | Windows |
+| `flutter build web` | Windows |
