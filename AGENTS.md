@@ -75,3 +75,12 @@ _Configured in root `pubspec.yaml`_
 * **Threading:** Do NOT attempt to read this file synchronously on the main thread.
 * **Performance:** Always use `compute()` or `Isolates` to parse this data to avoid UI jank.
 * **Schema Integrity:** If adding/modifying data, maintain the exact schema to avoid breaking Hive serialization.
+
+## Agent Infrastructure Protocols (Mandatory)
+To maintain "Strong" agentic behavior and zero human friction, the following protocols must be followed strictly:
+
+* **Session Indexing (First Turn):** At the start of any session, the agent MUST recursively list all files in the `.agent/` directory (using `ls -R` or `git ls-files`) to map triggers to absolute paths without human intervention.
+* **Command Syntax Verification:** Before executing primary orchestration tools (Melos, Firebase, Flutter build) for the first time in a session, the agent MUST verify CLI flag signatures using `[tool] --help` silently.
+* **Auto-Run Discipline:** Read-only discovery commands (ls, cat, git status, file listings) MUST always be executed with `SafeToAutoRun: true` in accordance with Rule 6 to prevent unnecessary human confirmation prompts.
+* **Anti-Deflection Rule:** When an agentic failure occurs (syntax error, discovery lag), the agent MUST prioritize immediate structural self-correction over "explanatory analogies."
+

@@ -1,16 +1,13 @@
 # Pending Release Notes
 
 ### Status
-- **Current Version**: `1.2.7+207`
-- **Git State**: Local changes staged with version bump.
-- **Goal**: Finalize build and deployment for `1.2.7+207`.
+- **Current Version**: `1.2.8+208`
+- **Git State**: Clean and pushed to main.
+- **Goal**: Monitoring feedback after `1.2.8+208` release.
 
-### What's In This Release (1.2.7+207)
-- **Web Audio**: Hardened source switching logic in `AudioProvider` to ignore transient state mismatches during manual show transitions.
-- **Web Audio**: Optimized `PlaybackScreen` list synchronization by adding safety guards to scroll and jump operations, preventing crashes when the view detaches on browser re-renders.
-- **Architecture**: Improved navigation between Library and Playback screens in Fruit theme by routing through a unified `FruitTabHostScreen`.
-- **UI**: Refined hit-testing and layout for the `FruitNowPlayingCard` to ensure controls remain responsive during rapid state updates.
-- **Testing**: Added unit tests for `AudioProvider` focusing on pre-queueing and source synchronization stability.
+### What's In This Release (1.2.8+208)
+- **TV Bootstrap**: Standardized `SharedPreferences` injection in `GdarTvApp` to ensure consistent state initialization on TV devices.
+- **Testing**: Hardened TV startup regression tests by addressing race conditions between specialized app navigation and inactivity timers.
 
 ### Next Commands
 Use PowerShell.
