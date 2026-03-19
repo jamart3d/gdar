@@ -40,6 +40,7 @@ class FruitNowPlayingCard extends StatelessWidget {
 
     final isSimple = settingsProvider.performanceMode;
     final showCompactHud = kIsWeb && settingsProvider.showDevAudioHud;
+    final horizontalPadding = showCompactHud ? 12.0 : 16.0;
 
     return FruitSurface(
       borderRadius: BorderRadius.circular(16.0 * scaleFactor),
@@ -53,7 +54,7 @@ class FruitNowPlayingCard extends StatelessWidget {
               : colorScheme.surfaceContainerHighest.withValues(alpha: 0.16),
         ),
         padding: EdgeInsets.symmetric(
-          horizontal: 16.0 * scaleFactor,
+          horizontal: horizontalPadding * scaleFactor,
           vertical: 12.0 * scaleFactor,
         ),
         child: Row(
@@ -99,6 +100,10 @@ class FruitNowPlayingCard extends StatelessWidget {
                         colorScheme,
                         isSimple: isSimple,
                       ),
+                      if (showCompactHud && showNext) ...[
+                        SizedBox(width: 8 * scaleFactor),
+                        _buildSkipNextButton(audioProvider, colorScheme),
+                      ],
                     ],
                   ),
                   SizedBox(height: 8 * scaleFactor),
@@ -172,23 +177,30 @@ class FruitNowPlayingCard extends StatelessWidget {
                 ],
               ),
             ),
-            SizedBox(width: 12 * scaleFactor),
-            // Skip Next Button (Compact)
-            if (showNext)
-              FruitIconButton(
-                onPressed: () => audioProvider.seekToNext(),
-                icon: Icon(
-                  LucideIcons.skipForward,
-                  color: colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
-                  size: 18 * scaleFactor,
-                ),
-                size: 20 * scaleFactor,
-                padding: 4 * scaleFactor,
-                tooltip: 'Skip Next',
-              ),
+            if (!showCompactHud && showNext) ...[
+              SizedBox(width: 12 * scaleFactor),
+              _buildSkipNextButton(audioProvider, colorScheme),
+            ],
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildSkipNextButton(
+    AudioProvider audioProvider,
+    ColorScheme colorScheme,
+  ) {
+    return FruitIconButton(
+      onPressed: () => audioProvider.seekToNext(),
+      icon: Icon(
+        LucideIcons.skipForward,
+        color: colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+        size: 18 * scaleFactor,
+      ),
+      size: 20 * scaleFactor,
+      padding: 4 * scaleFactor,
+      tooltip: 'Skip Next',
     );
   }
 

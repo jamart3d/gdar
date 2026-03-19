@@ -557,6 +557,50 @@ void main() {
         });
       },
     );
+
+    testWidgets(
+      'Does not fallback-load random show after last-track prequeue succeeds',
+      (WidgetTester tester) async {
+        await tester.runAsync(() async {
+          when(mockSettingsProvider.playRandomOnCompletion).thenReturn(true);
+          final queuedShow = createDummyShow(5);
+          when(mockShowListProvider.allShows).thenReturn([queuedShow]);
+          when(mockShowListProvider.filteredShows).thenReturn([queuedShow]);
+
+          when(mockAudioPlayer.addAudioSources(any)).thenAnswer((_) async {});
+          when(
+            mockAudioPlayer.setAudioSources(
+              any,
+              initialIndex: anyNamed('initialIndex'),
+              preload: anyNamed('preload'),
+            ),
+          ).thenAnswer((_) async => const Duration(seconds: 10));
+
+          when(mockAudioPlayer.sequence).thenReturn([
+            AudioSource.uri(Uri.parse('1')),
+            AudioSource.uri(Uri.parse('2')),
+          ]);
+          when(mockAudioPlayer.currentIndex).thenReturn(1);
+
+          currentIndexController.add(1);
+          await Future.delayed(const Duration(milliseconds: 50));
+
+          verify(mockAudioPlayer.addAudioSources(any)).called(1);
+
+          processingStateController.add(ProcessingState.completed);
+          await Future.delayed(const Duration(milliseconds: 100));
+
+          verifyNever(
+            mockAudioPlayer.setAudioSources(
+              any,
+              initialIndex: anyNamed('initialIndex'),
+              preload: anyNamed('preload'),
+            ),
+          );
+        });
+      },
+    );
+
     testWidgets('stopAndClear stops player and clears state', (
       WidgetTester tester,
     ) async {

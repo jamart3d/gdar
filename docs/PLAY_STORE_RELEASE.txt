@@ -1,3 +1,12 @@
+What's new in v1.2.7+207
+- Web Audio: Hardened source switching logic in AudioProvider to ignore transient state mismatches.
+- Web Audio: Optimized PlaybackScreen list synchronization with safety guards to prevent crashes.
+- Architecture: Improved navigation between Library and Playback screens in Fruit theme.
+- UI: Refined hit-testing and layout for the FruitNowPlayingCard mini player.
+- Testing: Added unit tests for AudioProvider pre-queueing and source synchronization.
+
+---
+
 What's new in v1.2.6+206
 - Resolved critical "player hung" issues in the Gapless Web Audio engine.
 - Hardened HTML5 fallback engine with improved track disconnection logic.

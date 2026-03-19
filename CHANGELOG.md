@@ -6,6 +6,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.7+207] - 2026-03-19
+
+### Fixed
+- **Web Audio**: Hardened source switching logic in `AudioProvider` to ignore transient state mismatches during manual show transitions.
+- **Web Audio**: Optimized `PlaybackScreen` list synchronization by adding safety guards to scroll and jump operations, preventing crashes when the view detaches on browser re-renders.
+- **Architecture**: Improved navigation between Library and Playback screens in Fruit theme by routing through a unified `FruitTabHostScreen`.
+- **UI**: Refined hit-testing and layout for the `FruitNowPlayingCard` to ensure controls remain responsive during rapid state updates.
+
+### Added
+- **Testing**: Added unit tests for `AudioProvider` focusing on pre-queueing and source synchronization stability.
+
+
 ## [1.2.6+206] - 2026-03-18
 
 ### Fixed

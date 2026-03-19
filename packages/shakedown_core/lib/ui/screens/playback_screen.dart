@@ -24,6 +24,8 @@ import 'package:shakedown_core/ui/widgets/theme/fruit_activity_indicator.dart';
 import 'package:shakedown_core/ui/widgets/theme/fruit_ui.dart';
 import 'package:shakedown_core/utils/font_layout_config.dart';
 import 'package:shakedown_core/utils/color_generator.dart';
+import 'package:shakedown_core/utils/app_haptics.dart';
+import 'package:shakedown_core/models/show.dart';
 import 'package:shakedown_core/models/track.dart';
 import 'package:shakedown_core/models/source.dart';
 import 'package:shakedown_core/models/rating.dart';
@@ -536,20 +538,36 @@ class PlaybackScreenState extends State<PlaybackScreen>
                   ),
                 ),
                 SizedBox(height: 5 * scaleFactor),
-                Text(
-                  '${currentShow.venue}, ${currentShow.location}'.toUpperCase(),
-                  textAlign: TextAlign.center,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontFamily: 'Inter',
-                    fontSize: 10 * scaleFactor, // text-[10px]
-                    fontWeight: FontWeight.bold, // font-bold
-                    letterSpacing: 1.5, // tracking-widest
-                    color: Theme.of(
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Flexible(
+                      child: Text(
+                        '${currentShow.venue}, ${currentShow.location}'
+                            .toUpperCase(),
+                        textAlign: TextAlign.center,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontFamily: 'Inter',
+                          fontSize: 10 * scaleFactor, // text-[10px]
+                          fontWeight: FontWeight.bold, // font-bold
+                          letterSpacing: 1.5, // tracking-widest
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
+                        ),
+                      ),
+                    ),
+                    SizedBox(width: 6 * scaleFactor),
+                    _buildFruitCopyButton(
                       context,
-                    ).colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
-                  ),
+                      scaleFactor,
+                      currentShow,
+                      currentSource,
+                      dateText,
+                    ),
+                  ],
                 ),
                 SizedBox(height: 8 * scaleFactor),
                 Row(
@@ -683,6 +701,28 @@ class PlaybackScreenState extends State<PlaybackScreen>
                       ],
                     ),
                   ),
+                  if (kIsWeb)
+                    PopupMenuItem(
+                      onTap: () => settingsProvider.toggleShowDevAudioHud(),
+                      child: Row(
+                        children: [
+                          Icon(
+                            settingsProvider.showDevAudioHud
+                                ? LucideIcons.checkCircle2
+                                : LucideIcons.circle,
+                            size: 18 * scaleFactor,
+                            color: settingsProvider.showDevAudioHud
+                                ? Theme.of(context).colorScheme.primary
+                                : null,
+                          ),
+                          SizedBox(width: 12 * scaleFactor),
+                          Text(
+                            'Audio HUD',
+                            style: TextStyle(fontSize: 14 * scaleFactor),
+                          ),
+                        ],
+                      ),
+                    ),
                   PopupMenuItem(
                     onTap: () => settingsProvider.toggleHideTrackDuration(),
                     child: Row(
@@ -712,6 +752,56 @@ class PlaybackScreenState extends State<PlaybackScreen>
             semanticLabel: 'Playback options',
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildFruitCopyButton(
+    BuildContext context,
+    double scaleFactor,
+    Show currentShow,
+    Source? currentSource,
+    String formattedDate,
+  ) {
+    final audioProvider = context.read<AudioProvider>();
+    final settingsProvider = context.read<SettingsProvider>();
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Semantics(
+      button: true,
+      label: 'Copy show details',
+      child: GestureDetector(
+        onTap: () {
+          final track = audioProvider.currentTrack;
+          if (track == null || currentSource == null) return;
+          final locationStr = currentSource.location != null
+              ? ' - ${currentSource.location}'
+              : '';
+          final urlStr = settingsProvider.omitHttpPathInCopy
+              ? ''
+              : '\n${track.url.replaceAll('/download/', '/details/').split('/').sublist(0, 5).join('/')}';
+          final info =
+              '${currentShow.venue}$locationStr - $formattedDate - ${currentSource.id}\n${track.title}$urlStr';
+          Clipboard.setData(ClipboardData(text: info));
+          AppHaptics.selectionClick(context.read<DeviceService>());
+          showMessage(context, 'Details copied to clipboard');
+        },
+        child: Container(
+          width: 16 * scaleFactor,
+          height: 16 * scaleFactor,
+          decoration: BoxDecoration(
+            color: colorScheme.onSurface.withValues(alpha: 0.06),
+            borderRadius: BorderRadius.circular(5 * scaleFactor),
+            border: Border.all(
+              color: colorScheme.onSurface.withValues(alpha: 0.08),
+            ),
+          ),
+          child: Icon(
+            LucideIcons.copy,
+            size: 9 * scaleFactor,
+            color: colorScheme.onSurfaceVariant.withValues(alpha: 0.65),
+          ),
+        ),
       ),
     );
   }

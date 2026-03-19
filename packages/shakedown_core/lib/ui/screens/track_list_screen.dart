@@ -1192,10 +1192,16 @@ class _TrackListScreenState extends State<TrackListScreen> {
     BuildContext context, {
     required VoidCallback onPressed,
   }) {
-    return FruitActionButton(
-      icon: LucideIcons.moreHorizontal,
-      onPressed: onPressed,
-      tooltip: 'Track list options',
+    return SizedBox(
+      width: 44,
+      height: 44,
+      child: Center(
+        child: FruitActionButton(
+          icon: LucideIcons.moreHorizontal,
+          onPressed: onPressed,
+          tooltip: 'Track list options',
+        ),
+      ),
     );
   }
 
@@ -1229,6 +1235,12 @@ class _TrackListScreenState extends State<TrackListScreen> {
     required IconData icon,
     required VoidCallback onPressed,
   }) {
-    return FruitActionButton(icon: icon, onPressed: onPressed);
+    return SizedBox(
+      width: 44,
+      height: 44,
+      child: Center(
+        child: FruitActionButton(icon: icon, onPressed: onPressed),
+      ),
+    );
   }
 }

@@ -129,10 +129,14 @@ class _DevAudioHudState extends State<DevAudioHud> {
             isDarkMode &&
             (context.read<SettingsProvider?>()?.useTrueBlack ?? false);
 
+        final hudPadding = widget.compact
+            ? const EdgeInsets.symmetric(horizontal: 4, vertical: 5)
+            : const EdgeInsets.symmetric(horizontal: 8, vertical: 6);
+
         Widget hudContent = Container(
           key: const ValueKey('hud_always_expanded'),
           width: double.infinity,
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+          padding: hudPadding,
           decoration: BoxDecoration(
             color: isTrueBlack
                 ? Colors.black
@@ -193,7 +197,7 @@ class _DevAudioHudState extends State<DevAudioHud> {
 
         if (isFruitMode && !isTrueBlack) {
           hudContent = Padding(
-            padding: const EdgeInsets.symmetric(vertical: 2.0),
+            padding: EdgeInsets.symmetric(vertical: widget.compact ? 1.0 : 2.0),
             child: LiquidGlassWrapper(
               borderRadius: BorderRadius.circular(14),
               child: hudContent,
@@ -750,7 +754,7 @@ class _DevAudioHudState extends State<DevAudioHud> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              '$key:',
+              '${key == 'DET' ? 'D' : key}:',
               style: TextStyle(
                 color: finalKeyTextColor,
                 fontWeight: FontWeight.w700,

@@ -1,22 +1,16 @@
 # Pending Release Notes
 
 ### Status
-- Release commit `b098534` (`release: 1.2.5+205`) has been created and pushed to `origin/main`.
-- App versions are synced at `1.2.5+205` in:
-  - `apps/gdar_mobile/pubspec.yaml`
-  - `apps/gdar_tv/pubspec.yaml`
-  - `apps/gdar_web/pubspec.yaml`
-- `CHANGELOG.md` and `docs/PLAY_STORE_RELEASE.txt` have been updated for `1.2.5+205`.
-- Workspace verification previously completed cleanly:
-  - `dart run melos run analyze`
-  - `dart run melos run test` (`00:17 +180: All tests passed!`)
+- **Current Version**: `1.2.7+207`
+- **Git State**: Local changes staged with version bump.
+- **Goal**: Finalize build and deployment for `1.2.7+207`.
 
-### What Shipped In This Release
-- TV screensaver text spacing and squish-to-fit improvements for long titles.
-- Overflow-safe playback header/layout hardening for constrained panel states.
-- TV startup contract cleanup through `SplashScreen` with no TV onboarding flow.
-- Smaller, more durable regression tests across TV startup, playback, screensaver, and shared widget coverage.
-- Monorepo docs refresh and new test-planning/scorecard docs.
+### What's In This Release (1.2.7+207)
+- **Web Audio**: Hardened source switching logic in `AudioProvider` to ignore transient state mismatches during manual show transitions.
+- **Web Audio**: Optimized `PlaybackScreen` list synchronization by adding safety guards to scroll and jump operations, preventing crashes when the view detaches on browser re-renders.
+- **Architecture**: Improved navigation between Library and Playback screens in Fruit theme by routing through a unified `FruitTabHostScreen`.
+- **UI**: Refined hit-testing and layout for the `FruitNowPlayingCard` to ensure controls remain responsive during rapid state updates.
+- **Testing**: Added unit tests for `AudioProvider` focusing on pre-queueing and source synchronization stability.
 
 ### Next Commands
 Use PowerShell.

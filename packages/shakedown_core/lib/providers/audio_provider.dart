@@ -176,6 +176,7 @@ class AudioProvider with ChangeNotifier {
   int get cachedTrackCount => _audioCacheService.cachedTrackCount;
 
   bool _isTransitioning = false;
+  bool _hasPrequeuedNextShow = false;
 
   // Flag to ignore player stream events while we are manually loading a new source.
   bool _isSwitchingSource = false;
@@ -502,9 +503,27 @@ class AudioProvider with ChangeNotifier {
 
       if (state == ProcessingState.completed) {
         final shouldPlay = _settingsProvider?.playRandomOnCompletion ?? false;
+        final sequence = _audioPlayer.sequence;
+        final currentIndex = _audioPlayer.currentIndex;
+        final looksTerminal =
+            sequence.isEmpty ||
+            currentIndex == null ||
+            currentIndex >= sequence.length - 1;
         logger.i(
-          'AudioProvider: ProcessingState.completed received. AutoPlay: $shouldPlay',
+          'AudioProvider: ProcessingState.completed received. AutoPlay: $shouldPlay, Transitioning: $_isTransitioning, Prequeued: $_hasPrequeuedNextShow, LooksTerminal: $looksTerminal',
         );
+        if (!looksTerminal) {
+          logger.w(
+            'Ignoring ProcessingState.completed because player is not at the terminal index.',
+          );
+          return;
+        }
+        if (_isTransitioning || _hasPrequeuedNextShow) {
+          logger.i(
+            'Skipping fallback random show because a transition/prequeued show is already in flight.',
+          );
+          return;
+        }
         if (shouldPlay) {
           logger.i('Playback completed. Triggering fallback random show...');
           // Use playRandomShow (Stop & Load) as fallback
@@ -797,6 +816,7 @@ class AudioProvider with ChangeNotifier {
 
     _pendingRandomShowRequest = selection;
     _randomShowRequestController.add(selection);
+    _hasPrequeuedNextShow = false;
 
     if (animationOnly) {
       logger.i(
@@ -842,6 +862,7 @@ class AudioProvider with ChangeNotifier {
   }) async {
     _currentShow = show;
     _currentSource = source;
+    _hasPrequeuedNextShow = false;
     // Notify ShowListProvider to ensuring visibility
     _showListProvider?.setPlayingShow(show.name, source.id);
     _showListProvider?.setIsChoosingRandomShow(false);
@@ -970,6 +991,7 @@ class AudioProvider with ChangeNotifier {
       logger.w('Pre-queueing aborted: No show selected.');
       _isTransitioning =
           false; // Reset flag so we can retry if conditions change
+      _hasPrequeuedNextShow = false;
       return;
     }
 
@@ -1024,6 +1046,7 @@ class AudioProvider with ChangeNotifier {
     try {
       await _audioPlayer.addAudioSources(nextSources);
       logger.i('Successfully appended ${nextSources.length} tracks.');
+      _hasPrequeuedNextShow = true;
 
       // Trigger Smart Pre-Load for the queued show
       if (_settingsProvider?.offlineBuffering ?? false) {
@@ -1037,6 +1060,7 @@ class AudioProvider with ChangeNotifier {
       logger.w(
         'Failed to pre-queue next show (addAudioSources failed). Will load normally on track end. Error: $e',
       );
+      _hasPrequeuedNextShow = false;
       _isTransitioning = false;
     }
   }
@@ -1083,6 +1107,7 @@ class AudioProvider with ChangeNotifier {
       _currentSource = foundSource;
       _showListProvider?.setPlayingShow(foundShow.name, foundSource.id);
       _hasMarkedAsPlayed = false; // Reset for the new show
+      _hasPrequeuedNextShow = false;
       _isTransitioning = false; // Ready for the NEXT transition
 
       // Record in Session History
@@ -1209,6 +1234,7 @@ class AudioProvider with ChangeNotifier {
     _currentSource = null;
     _error = null;
     _pendingRandomShowRequest = null;
+    _hasPrequeuedNextShow = false;
     _isTransitioning = false;
     _hasMarkedAsPlayed = false;
     notifyListeners();
