@@ -13,3 +13,5 @@ description: Formalized handoff to Jules for full suite verification.
 
 > [!TIP]
 > Use this workflow whenever you finish a task that involves test fixes or core provider changes.
+>
+> **Troubleshooting**: If `jules` fails with `ENOENT` or "not found", first run `where.exe jules` (Windows) or `which jules` (ChromeOS) to ensure the PATH is correctly initialized.
