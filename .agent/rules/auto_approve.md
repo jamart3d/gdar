@@ -120,7 +120,7 @@ These mutate state and ALWAYS require user confirmation unless covered by the ex
 - `flutter build`, `flutter run` - long builds / launches app
 - `firebase deploy` - production deployment
 - `flutter pub add`, `flutter pub remove` - mutates `pubspec.yaml`
-- Any `Set-Content`, `Out-File`, `>`, `>>` - writes to files
+- Any `Set-Content`, `Out-File`, `>`, `>>` - writes to files (EXCEPT when redirected to `/tmp/` or `%TEMP%`)
 
 ---
 

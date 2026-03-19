@@ -32,6 +32,7 @@ trigger: always_on
   before running shipit.
 * **Constraint:** Never write to `docs/RELEASE_NOTES.txt`. That file is
   legacy and retired.
+* **Action:** When updating `docs/PLAY_STORE_RELEASE.txt`, ALWAYS prepend the new release block to the top of the file. NEVER overwrite or replace the existing contents.
 
 ### 3. VERIFICATION & OUTPUT
 * **Task Artifacts:** When completing a significant feature or fix, provide
