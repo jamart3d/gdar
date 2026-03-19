@@ -178,6 +178,22 @@ These files were written for Jules but apply equally here. **Read the relevant o
 | `.agent/specs/web_ui_design_spec.md` | Web/PWA design rules |
 | `.agent/specs/web_ui_audio_engines.md` | JS engine spec (matches `docs/web_ui_audio_engines.md`) |
 
+### Workflows
+
+Execute these by reading the file and following its steps.
+
+| File | Trigger | What it does |
+|---|---|---|
+| `.agent/workflows/save.md` | save, commit, backup | `git add . && git commit && git push` with auto-message |
+| `.agent/workflows/jules.md` | jules, handoff | Send session to Jules for full suite verification |
+| `.agent/workflows/checkup.md` | checkup, health | Fast lint + format + targeted tests |
+| `.agent/workflows/audit.md` | audit | Full quality, design, TV flow, and spec conformance audit |
+| `.agent/workflows/verify.md` | verify | Run analyze + test suite, report results |
+| `.agent/workflows/mock_regen.md` | mock regen | Regenerate Mockito mocks after interface changes |
+| `.agent/workflows/fruit_audit.md` | fruit audit | Fruit/Liquid Glass conformance check |
+| `.agent/workflows/session_debrief.md` | debrief | Generate session summary and update handoff notes |
+| `.agent/workflows/shipit.md` | shipit | Build + deploy web and Android |
+
 ### Useful notes
 
 | File | What it covers |
