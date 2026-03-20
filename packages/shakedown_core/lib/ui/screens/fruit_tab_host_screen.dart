@@ -123,8 +123,10 @@ class _FruitTabHostScreenState extends State<FruitTabHostScreen> {
         if (audioProvider.pendingRandomShowRequest != null) {
           await audioProvider.playPendingSelection();
           audioProvider.clearPendingRandomShowRequest();
-          await Future<void>.delayed(const Duration(milliseconds: 50));
-          _jumpToPlayTabImmediate();
+          if (mounted && _selectedTab == 2) {
+            await Future<void>.delayed(const Duration(milliseconds: 50));
+            _jumpToPlayTabImmediate();
+          }
           return;
         }
 
@@ -138,8 +140,9 @@ class _FruitTabHostScreenState extends State<FruitTabHostScreen> {
           );
         }
 
-        // 4. TRANSITION: Jump to Playback even if picked is null (to show error/empty state)
-        if (mounted) {
+        // 4. TRANSITION: Jump to Playback only if user hasn't navigated away
+        // (guard against race: user taps Library while playRandomShow() is awaiting)
+        if (mounted && _selectedTab == 2) {
           await Future<void>.delayed(const Duration(milliseconds: 100));
           _jumpToPlayTabImmediate();
         }
@@ -147,7 +150,7 @@ class _FruitTabHostScreenState extends State<FruitTabHostScreen> {
         _scheduleRandomReset(showListProvider);
       } catch (e) {
         debugPrint('Dice Error: $e');
-        if (mounted) _jumpToPlayTabImmediate();
+        if (mounted && _selectedTab == 2) _jumpToPlayTabImmediate();
       } finally {
         _isHandlingRandomTab = false;
       }
