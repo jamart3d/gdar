@@ -2891,7 +2891,6 @@ class MockGaplessPlayer extends _i1.Mock implements _i2.GaplessPlayer {
     returnValueForMissingStub: null,
   );
 
-
   @override
   void setTrackTransitionMode(String? mode) => super.noSuchMethod(
     Invocation.method(#setTrackTransitionMode, [mode]),

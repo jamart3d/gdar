@@ -1,3 +1,9 @@
+What's new in v1.2.9+209
+- Hygiene: Enforced strict codebase formatting across the monorepo to maintain high standards and readability.
+- Maintenance: Verified and synchronized test stubs and contract tests following the latest provider API updates.
+
+---
+
 What's new in v1.2.8+208
 - TV Bootstrap: Standardized SharedPreferences injection in GdarTvApp for consistent startup.
 - Testing: Hardened TV startup regression tests by addressing timing race conditions.

@@ -229,7 +229,10 @@ void main() {
   });
   group('SettingsProvider Hybrid Audio Web Defaults', () {
     test('hybridBackgroundMode defaults to heartbeat on fresh install', () {
-      expect(settingsProvider.hybridBackgroundMode, HybridBackgroundMode.heartbeat);
+      expect(
+        settingsProvider.hybridBackgroundMode,
+        HybridBackgroundMode.heartbeat,
+      );
     });
 
     test('hybridBackgroundMode persists when set', () async {
@@ -251,27 +254,45 @@ void main() {
     });
 
     test('hiddenSessionPreset defaults to balanced on fresh install', () {
-      expect(settingsProvider.hiddenSessionPreset, HiddenSessionPreset.balanced);
+      expect(
+        settingsProvider.hiddenSessionPreset,
+        HiddenSessionPreset.balanced,
+      );
     });
 
     test('setHiddenSessionPreset applies stability preset fields', () {
       settingsProvider.setHiddenSessionPreset(HiddenSessionPreset.stability);
-      expect(settingsProvider.hiddenSessionPreset, HiddenSessionPreset.stability);
+      expect(
+        settingsProvider.hiddenSessionPreset,
+        HiddenSessionPreset.stability,
+      );
       expect(settingsProvider.hybridBackgroundMode, HybridBackgroundMode.video);
       expect(settingsProvider.hybridHandoffMode, HybridHandoffMode.buffered);
     });
 
     test('setHiddenSessionPreset applies balanced preset fields', () {
       settingsProvider.setHiddenSessionPreset(HiddenSessionPreset.balanced);
-      expect(settingsProvider.hiddenSessionPreset, HiddenSessionPreset.balanced);
-      expect(settingsProvider.hybridBackgroundMode, HybridBackgroundMode.heartbeat);
+      expect(
+        settingsProvider.hiddenSessionPreset,
+        HiddenSessionPreset.balanced,
+      );
+      expect(
+        settingsProvider.hybridBackgroundMode,
+        HybridBackgroundMode.heartbeat,
+      );
       expect(settingsProvider.hybridHandoffMode, HybridHandoffMode.buffered);
     });
 
     test('setHiddenSessionPreset applies maxGapless preset fields', () {
       settingsProvider.setHiddenSessionPreset(HiddenSessionPreset.maxGapless);
-      expect(settingsProvider.hiddenSessionPreset, HiddenSessionPreset.maxGapless);
-      expect(settingsProvider.hybridBackgroundMode, HybridBackgroundMode.heartbeat);
+      expect(
+        settingsProvider.hiddenSessionPreset,
+        HiddenSessionPreset.maxGapless,
+      );
+      expect(
+        settingsProvider.hybridBackgroundMode,
+        HybridBackgroundMode.heartbeat,
+      );
       expect(settingsProvider.hybridHandoffMode, HybridHandoffMode.immediate);
     });
   });

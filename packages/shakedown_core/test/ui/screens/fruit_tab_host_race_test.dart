@@ -212,7 +212,9 @@ void main() {
       // Step 3: playRandomShow() completes — guard must prevent jump to PLAY.
       audioProvider.completeRandomPlay();
       await tester.pump(); // completer resolves
-      await tester.pump(const Duration(milliseconds: 150)); // past guarded 100ms delay
+      await tester.pump(
+        const Duration(milliseconds: 150),
+      ); // past guarded 100ms delay
 
       expect(
         tabBar().selectedIndex,

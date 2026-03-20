@@ -90,11 +90,17 @@ class _FakeShowList extends ChangeNotifier implements ShowListProvider {
 
 // ─── Helper ─────────────────────────────────────────────────────────────────
 
-Widget _wrap(Widget child, _FakeSettings settings, {ThemeStyle style = ThemeStyle.fruit}) {
+Widget _wrap(
+  Widget child,
+  _FakeSettings settings, {
+  ThemeStyle style = ThemeStyle.fruit,
+}) {
   return MultiProvider(
     providers: [
       ChangeNotifierProvider<SettingsProvider>.value(value: settings),
-      ChangeNotifierProvider<ThemeProvider>.value(value: _FakeTheme(style: style)),
+      ChangeNotifierProvider<ThemeProvider>.value(
+        value: _FakeTheme(style: style),
+      ),
       ChangeNotifierProvider<AudioProvider>.value(value: _FakeAudio()),
       ChangeNotifierProvider<ShowListProvider>.value(value: _FakeShowList()),
       ChangeNotifierProvider<DeviceService>.value(value: _FakeDeviceService()),
@@ -109,39 +115,49 @@ void main() {
   group('FruitTabBar — LiquidGlassWrapper never rendered on non-web', () {
     // kIsWeb = false in all unit tests, so every case exercises the phone path.
 
-    testWidgets('liquid glass ON + Fruit theme → no LiquidGlassWrapper', (tester) async {
-      await tester.pumpWidget(_wrap(
-        FruitTabBar(selectedIndex: 0, onTabSelected: (_) {}),
-        _FakeSettings(fruitEnableLiquidGlass: true, useTrueBlack: false),
-      ));
+    testWidgets('liquid glass ON + Fruit theme → no LiquidGlassWrapper', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _wrap(
+          FruitTabBar(selectedIndex: 0, onTabSelected: (_) {}),
+          _FakeSettings(fruitEnableLiquidGlass: true, useTrueBlack: false),
+        ),
+      );
 
       expect(find.byType(LiquidGlassWrapper), findsNothing);
     });
 
     testWidgets('true black mode → no LiquidGlassWrapper', (tester) async {
-      await tester.pumpWidget(_wrap(
-        FruitTabBar(selectedIndex: 0, onTabSelected: (_) {}),
-        _FakeSettings(fruitEnableLiquidGlass: true, useTrueBlack: true),
-      ));
+      await tester.pumpWidget(
+        _wrap(
+          FruitTabBar(selectedIndex: 0, onTabSelected: (_) {}),
+          _FakeSettings(fruitEnableLiquidGlass: true, useTrueBlack: true),
+        ),
+      );
 
       expect(find.byType(LiquidGlassWrapper), findsNothing);
     });
 
     testWidgets('liquid glass OFF → no LiquidGlassWrapper', (tester) async {
-      await tester.pumpWidget(_wrap(
-        FruitTabBar(selectedIndex: 0, onTabSelected: (_) {}),
-        _FakeSettings(fruitEnableLiquidGlass: false, useTrueBlack: false),
-      ));
+      await tester.pumpWidget(
+        _wrap(
+          FruitTabBar(selectedIndex: 0, onTabSelected: (_) {}),
+          _FakeSettings(fruitEnableLiquidGlass: false, useTrueBlack: false),
+        ),
+      );
 
       expect(find.byType(LiquidGlassWrapper), findsNothing);
     });
 
     testWidgets('non-Fruit theme → no LiquidGlassWrapper', (tester) async {
-      await tester.pumpWidget(_wrap(
-        FruitTabBar(selectedIndex: 0, onTabSelected: (_) {}),
-        _FakeSettings(fruitEnableLiquidGlass: true, useTrueBlack: false),
-        style: ThemeStyle.android,
-      ));
+      await tester.pumpWidget(
+        _wrap(
+          FruitTabBar(selectedIndex: 0, onTabSelected: (_) {}),
+          _FakeSettings(fruitEnableLiquidGlass: true, useTrueBlack: false),
+          style: ThemeStyle.android,
+        ),
+      );
 
       expect(find.byType(LiquidGlassWrapper), findsNothing);
     });

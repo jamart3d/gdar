@@ -1418,7 +1418,6 @@ class MockSettingsProvider extends _i1.Mock implements _i4.SettingsProvider {
     returnValueForMissingStub: null,
   );
 
-
   @override
   void setHybridBackgroundMode(_i2.HybridBackgroundMode? mode) =>
       super.noSuchMethod(

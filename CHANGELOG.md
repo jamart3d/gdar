@@ -6,6 +6,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.9+209] - 2026-03-19
+
+### Changed
+- **Hygiene**: Enforced strict codebase formatting across the monorepo to maintain high standards and readability (mostly test fakes and contract stubs).
+- **Maintenance**: Verified and synchronized test stubs and contract tests following the latest provider API updates.
+- **Auto-Save**: Synchronized session memory files and updated `.agent/rules/` to prune stale content and add new protocols.
+
 ## [1.2.8+208] - 2026-03-19
 
 ### Fixed

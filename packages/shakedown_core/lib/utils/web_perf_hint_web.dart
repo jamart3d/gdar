@@ -14,7 +14,8 @@ bool isLikelyLowPowerWebDevice() {
     // <= 2 cores: always low-power; <= 4 cores with low-DPI screen: budget device.
     // Avoids false-positiving modern quad-core phones (iPhone 14, mid-range Android)
     // which pair high core counts with high-DPI screens.
-    final isLowCoreCount = cores > 0 && (cores <= 2 || (cores <= 4 && dpr < 2.0));
+    final isLowCoreCount =
+        cores > 0 && (cores <= 2 || (cores <= 4 && dpr < 2.0));
 
     return isMobileUa && isLowCoreCount;
   } catch (_) {

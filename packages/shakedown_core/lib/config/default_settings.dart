@@ -182,7 +182,8 @@ class WebDefaults extends DefaultSettings {
   static const bool useTrueBlack = false; // OLED burn-in not a concern on web
   static const bool useNeumorphism = true; // Fruit / Liquid Glass theme
   static const String appFont = 'rock_salt';
-  static const bool performanceMode = false; // Fruit-first by default; low-power devices opt in via SettingsProvider detection
+  static const bool performanceMode =
+      false; // Fruit-first by default; low-power devices opt in via SettingsProvider detection
 
   // Screensaver: disabled by default on web (no idle-lock risk)
   static const bool useOilScreensaver = false;

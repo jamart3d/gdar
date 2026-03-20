@@ -36,8 +36,7 @@ class _FakeDeviceService extends ChangeNotifier implements DeviceService {
 class _FakeAudioProvider extends ChangeNotifier implements AudioProvider {
   final List<String> notifications = [];
 
-  final _notificationStreamController =
-      StreamController<String>.broadcast();
+  final _notificationStreamController = StreamController<String>.broadcast();
 
   @override
   void showNotification(String message) {
@@ -88,10 +87,12 @@ Widget _buildTestApp({
   return MultiProvider(
     providers: [
       ChangeNotifierProvider<DeviceService>.value(
-          value: _FakeDeviceService(isTv: isTv)),
+        value: _FakeDeviceService(isTv: isTv),
+      ),
       ChangeNotifierProvider<AudioProvider>.value(value: audio),
       ChangeNotifierProvider<SettingsProvider>.value(
-          value: _FakeSettingsProvider()),
+        value: _FakeSettingsProvider(),
+      ),
       ChangeNotifierProvider<ThemeProvider>.value(value: _FakeThemeProvider()),
     ],
     child: MaterialApp(
@@ -119,22 +120,27 @@ void main() {
         MultiProvider(
           providers: [
             ChangeNotifierProvider<DeviceService>.value(
-                value: _FakeDeviceService(isTv: true)),
+              value: _FakeDeviceService(isTv: true),
+            ),
             ChangeNotifierProvider<AudioProvider>.value(value: audio),
             ChangeNotifierProvider<SettingsProvider>.value(
-                value: _FakeSettingsProvider()),
+              value: _FakeSettingsProvider(),
+            ),
             ChangeNotifierProvider<ThemeProvider>.value(
-                value: _FakeThemeProvider()),
+              value: _FakeThemeProvider(),
+            ),
           ],
           child: MaterialApp(
             home: Scaffold(
-              body: Builder(builder: (ctx) {
-                capturedContext = ctx;
-                return TextButton(
-                  onPressed: () => showMessage(capturedContext, 'hello TV'),
-                  child: const Text('tap'),
-                );
-              }),
+              body: Builder(
+                builder: (ctx) {
+                  capturedContext = ctx;
+                  return TextButton(
+                    onPressed: () => showMessage(capturedContext, 'hello TV'),
+                    child: const Text('tap'),
+                  );
+                },
+              ),
             ),
           ),
         ),
@@ -147,8 +153,9 @@ void main() {
       expect(find.byType(SnackBar), findsNothing);
     });
 
-    testWidgets('phone: shows SnackBar, does NOT call showNotification',
-        (tester) async {
+    testWidgets('phone: shows SnackBar, does NOT call showNotification', (
+      tester,
+    ) async {
       final audio = _FakeAudioProvider();
       late BuildContext capturedContext;
 
@@ -156,22 +163,28 @@ void main() {
         MultiProvider(
           providers: [
             ChangeNotifierProvider<DeviceService>.value(
-                value: _FakeDeviceService(isTv: false)),
+              value: _FakeDeviceService(isTv: false),
+            ),
             ChangeNotifierProvider<AudioProvider>.value(value: audio),
             ChangeNotifierProvider<SettingsProvider>.value(
-                value: _FakeSettingsProvider()),
+              value: _FakeSettingsProvider(),
+            ),
             ChangeNotifierProvider<ThemeProvider>.value(
-                value: _FakeThemeProvider()),
+              value: _FakeThemeProvider(),
+            ),
           ],
           child: MaterialApp(
             home: Scaffold(
-              body: Builder(builder: (ctx) {
-                capturedContext = ctx;
-                return TextButton(
-                  onPressed: () => showMessage(capturedContext, 'hello phone'),
-                  child: const Text('tap'),
-                );
-              }),
+              body: Builder(
+                builder: (ctx) {
+                  capturedContext = ctx;
+                  return TextButton(
+                    onPressed: () =>
+                        showMessage(capturedContext, 'hello phone'),
+                    child: const Text('tap'),
+                  );
+                },
+              ),
             ),
           ),
         ),
@@ -192,23 +205,28 @@ void main() {
         MultiProvider(
           providers: [
             ChangeNotifierProvider<DeviceService>.value(
-                value: _FakeDeviceService(isTv: true)),
+              value: _FakeDeviceService(isTv: true),
+            ),
             ChangeNotifierProvider<AudioProvider>.value(value: audio),
             ChangeNotifierProvider<SettingsProvider>.value(
-                value: _FakeSettingsProvider()),
+              value: _FakeSettingsProvider(),
+            ),
             ChangeNotifierProvider<ThemeProvider>.value(
-                value: _FakeThemeProvider()),
+              value: _FakeThemeProvider(),
+            ),
           ],
           child: MaterialApp(
             home: Scaffold(
-              body: Builder(builder: (ctx) {
-                capturedContext = ctx;
-                return TextButton(
-                  onPressed: () =>
-                      showRestartMessage(capturedContext, 'restart needed'),
-                  child: const Text('tap'),
-                );
-              }),
+              body: Builder(
+                builder: (ctx) {
+                  capturedContext = ctx;
+                  return TextButton(
+                    onPressed: () =>
+                        showRestartMessage(capturedContext, 'restart needed'),
+                    child: const Text('tap'),
+                  );
+                },
+              ),
             ),
           ),
         ),
