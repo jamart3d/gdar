@@ -550,9 +550,10 @@ class StealBanner extends Component with HasGameReference<StealGame> {
     ];
 
     final isAbove = config.flatTextPlacement == 'above';
-    final visibleCount = lines
-        .where((l) => l.$1.isNotEmpty && l.$3 > 0.01)
-        .length;
+    // Use text presence (not opacity) so block height stays stable while lines
+    // cross-fade. Gating on opacity caused the venue/date lines to jump position
+    // whenever the track title crossed the 0.01 threshold during a transition.
+    final visibleCount = lines.where((l) => l.$1.isNotEmpty).length;
     final baseLineHeight = _flatLineHeight * config.flatLineSpacing;
     double lineHeight = baseLineHeight;
     if (config.autoTextSpacing && visibleCount > 0) {
@@ -620,36 +621,42 @@ class StealBanner extends Component with HasGameReference<StealGame> {
 
     final startY = blockCenterY - (blockHeight / 2) + (lineHeight / 2);
 
-    int visibleIndex = 0;
+    // slotIndex counts lines with text content (mirrors visibleCount above),
+    // giving each line a stable vertical position throughout the cross-fade.
+    // A line is not skipped from the slot count even when its opacity is near
+    // zero, so other lines never jump when a track title fades through 0.01.
+    int slotIndex = 0;
     for (int i = 0; i < lines.length; i++) {
       final text = lines[i].$1;
       final words = lines[i].$2;
       final lineOpacity = lines[i].$3;
 
-      if (text.isEmpty || lineOpacity <= 0.01) continue;
+      if (text.isEmpty) continue; // permanently empty — no slot
 
       final effectiveOpacity = _opacity * lineOpacity;
 
-      final lineCenter = Offset(center.dx, startY + visibleIndex * lineHeight);
+      if (effectiveOpacity > 0.001) {
+        final lineCenter = Offset(center.dx, startY + slotIndex * lineHeight);
 
-      _drawFlatLine(
-        canvas,
-        text,
-        words,
-        lineCenter,
-        effectiveOpacity,
-        glowEnabled,
-        config,
-        letterSpacing: (i == 0)
-            ? config.trackLetterSpacing
-            : config.bannerLetterSpacing,
-        wordSpacing: (i == 0)
-            ? config.trackWordSpacing
-            : config.bannerWordSpacing,
-        minLineWidth: minLineWidth,
-        maxLineWidth: maxLineWidth,
-      );
-      visibleIndex++;
+        _drawFlatLine(
+          canvas,
+          text,
+          words,
+          lineCenter,
+          effectiveOpacity,
+          glowEnabled,
+          config,
+          letterSpacing: (i == 0)
+              ? config.trackLetterSpacing
+              : config.bannerLetterSpacing,
+          wordSpacing: (i == 0)
+              ? config.trackWordSpacing
+              : config.bannerWordSpacing,
+          minLineWidth: minLineWidth,
+          maxLineWidth: maxLineWidth,
+        );
+      }
+      slotIndex++; // always advance — holds the slot even while fading
     }
   }
 

@@ -6,6 +6,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.3.1+211] - 2026-03-20
+
+### Added
+- **TV Enhancement**: Implemented `StereoCapture` for the Android TV engine, providing high-fidelity PCM capture for real-time visualizers.
+- **TV Architecture**: Added specialized TV banner assets and startup metadata configurations for enhanced Leanback visibility.
+
+### Changed
+- **Screensaver**: Optimized EKG spread and beat detection sensitivity in `default_settings.dart` for a more responsive reactive experience.
+- **TV Debugging**: Expanded and refined the `TV_DEBUGGING.md` documentation with new deep-link automation sequences for rapid UI verification.
+
+## [1.3.0+210] - 2026-03-19
+
+### Changed
+- **Maintenance**: Synchronized codebase with the latest monorepo standards and regenerated test mocks across all packages.
+- **Hygiene**: Resolved unused imports in `fruit_tab_bar.dart` and synchronized cross-package message routing contract tests.
+- **Agent Architecture**: Hardened release and auto-approve protocols to ensure zero-friction orchestration for discovery commands.
+
 ## [1.2.9+209] - 2026-03-19
 
 ### Changed

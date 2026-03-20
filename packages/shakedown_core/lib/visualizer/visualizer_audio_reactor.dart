@@ -14,6 +14,7 @@ class VisualizerAudioReactor implements AudioReactor {
   static const EventChannel _eventChannel = EventChannel(
     'shakedown/visualizer_events',
   );
+  static const MethodChannel _stereoChannel = MethodChannel('shakedown/stereo');
 
   final StreamController<AudioEnergy> _energyController =
       StreamController<AudioEnergy>.broadcast();
@@ -29,7 +30,7 @@ class VisualizerAudioReactor implements AudioReactor {
   Stream<AudioEnergy> get energyStream => _energyController.stream;
 
   @override
-  void start() async {
+  Future<void> start() async {
     if (_isRunning || _isDisposed) return;
 
     try {
@@ -138,6 +139,44 @@ class VisualizerAudioReactor implements AudioReactor {
         ];
       }
 
+      List<double> waveform = const [];
+      final rawWaveform = data['waveform'];
+      if (rawWaveform is List && rawWaveform.isNotEmpty) {
+        waveform = rawWaveform
+            .map((e) => (e as num).toDouble().clamp(-1.0, 1.0))
+            .toList();
+      }
+
+      List<double> waveformL = const [];
+      final rawWaveformL = data['waveformL'];
+      if (rawWaveformL is List && rawWaveformL.isNotEmpty) {
+        waveformL = rawWaveformL
+            .map((e) => (e as num).toDouble().clamp(-1.0, 1.0))
+            .toList();
+      }
+
+      List<double> waveformR = const [];
+      final rawWaveformR = data['waveformR'];
+      if (rawWaveformR is List && rawWaveformR.isNotEmpty) {
+        waveformR = rawWaveformR
+            .map((e) => (e as num).toDouble().clamp(-1.0, 1.0))
+            .toList();
+      }
+
+      List<bool> beatAlgos = const [];
+      final rawBeatAlgos = data['beatAlgos'];
+      if (rawBeatAlgos is List && rawBeatAlgos.isNotEmpty) {
+        beatAlgos = rawBeatAlgos.map((e) => e == true).toList();
+      }
+
+      List<double> algoLevels = const [];
+      final rawAlgoLevels = data['algoLevels'];
+      if (rawAlgoLevels is List && rawAlgoLevels.isNotEmpty) {
+        algoLevels = rawAlgoLevels
+            .map((e) => (e as num).toDouble().clamp(0.0, 3.0))
+            .toList();
+      }
+
       _safeAdd(
         AudioEnergy(
           bass: bass.clamp(0.0, 1.0),
@@ -146,6 +185,11 @@ class VisualizerAudioReactor implements AudioReactor {
           overall: overall.clamp(0.0, 1.0),
           isBeat: isBeat,
           bands: bands,
+          waveform: waveform,
+          waveformL: waveformL,
+          waveformR: waveformR,
+          beatAlgos: beatAlgos,
+          algoLevels: algoLevels,
         ),
       );
     }
@@ -153,6 +197,25 @@ class VisualizerAudioReactor implements AudioReactor {
 
   void _handleError(dynamic error) {
     _safeAdd(const AudioEnergy.zero());
+  }
+
+  /// Request AudioPlaybackCapture permission (shows system dialog on TV).
+  /// Returns true if capture started, false if denied or unavailable.
+  /// Falls back gracefully: waveformL/R stay empty and VU uses FFT bands.
+  static Future<bool> requestStereoCapture() async {
+    try {
+      final result = await _stereoChannel.invokeMethod<bool>('requestCapture');
+      return result ?? false;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  /// Stop AudioPlaybackCapture. Waveform L/R return to empty.
+  static Future<void> stopStereoCapture() async {
+    try {
+      await _stereoChannel.invokeMethod<bool>('stopCapture');
+    } catch (_) {}
   }
 
   static Future<bool> isAvailable() async {

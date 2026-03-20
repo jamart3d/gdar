@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shakedown_core/providers/settings_provider.dart';
+import 'package:shakedown_core/visualizer/audio_reactor.dart';
 
 /// Verifies that SettingsProvider applies correct per-platform defaults when
 /// no user preferences have been saved (first install / fresh prefs).
@@ -77,6 +78,54 @@ void main() {
 
     test('oilScreensaverMode defaults to standard on phone', () {
       expect(provider.oilScreensaverMode, 'standard');
+    });
+  });
+
+  group('AudioEnergy waveform field contract', () {
+    test('waveform defaults to empty list', () {
+      const e = AudioEnergy(bass: 0, mid: 0, treble: 0, overall: 0);
+      expect(e.waveform, isEmpty);
+    });
+
+    test('AudioEnergy.zero() waveform is empty', () {
+      expect(const AudioEnergy.zero().waveform, isEmpty);
+    });
+
+    test('waveform values are preserved', () {
+      const e = AudioEnergy(
+        bass: 0,
+        mid: 0,
+        treble: 0,
+        overall: 0,
+        waveform: [0.5, -0.5, 0.0],
+      );
+      expect(e.waveform, [0.5, -0.5, 0.0]);
+    });
+  });
+
+  group('SettingsProvider platform defaults — EKG screensaver', () {
+    late SettingsProvider provider;
+
+    setUp(() async {
+      SharedPreferences.setMockInitialValues({'first_run_check_done': true});
+      final prefs = await SharedPreferences.getInstance();
+      provider = SettingsProvider(prefs, isTv: true);
+    });
+
+    test('oilEkgRadius defaults to 0.1', () {
+      expect(provider.oilEkgRadius, 0.1);
+    });
+
+    test('oilEkgReplication defaults to 4', () {
+      expect(provider.oilEkgReplication, 4);
+    });
+
+    test('oilEkgSpread defaults to 16.0', () {
+      expect(provider.oilEkgSpread, 16.0);
+    });
+
+    test('oilBeatSensitivity defaults to 0.80', () {
+      expect(provider.oilBeatSensitivity, 0.80);
     });
   });
 

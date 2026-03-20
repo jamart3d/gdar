@@ -13,6 +13,7 @@ import 'package:shakedown_core/services/device_service.dart';
 import 'package:shakedown_core/services/wakelock_service.dart';
 import 'package:shakedown_core/services/deep_link_service.dart';
 import 'package:shakedown_core/ui/screens/splash_screen.dart';
+import 'package:shakedown_core/ui/screens/screensaver_screen.dart';
 import 'package:shakedown_core/ui/widgets/rgb_clock_wrapper.dart';
 import 'package:shakedown_core/utils/app_themes.dart';
 import 'package:shakedown_core/utils/logger.dart';
@@ -139,26 +140,84 @@ class _GdarMobileAppState extends State<GdarMobileApp> {
     _deepLinkService = widget.deepLinkService ?? DeepLinkService();
     _deepLinkService!.init();
 
-    _linkSubscription = _deepLinkService!.uriStream.listen((uri) async {
-      if (uri.scheme == 'shakedown' && uri.host == 'settings') {
-        final key = uri.queryParameters['key'];
-        final value = uri.queryParameters['value'];
+    _linkSubscription = _deepLinkService!.uriStream.listen((Uri? uri) async {
+      if (uri == null) return;
 
-        if (key != null && value != null) {
-          if (value == 'true' || value == 'false') {
-            await widget.prefs.setBool(key, value == 'true');
-            if (key == 'force_tv') {
-              if (mounted) {
-                await Provider.of<DeviceService>(
-                  context,
-                  listen: false,
-                ).refresh();
+      if (uri.scheme == 'shakedown') {
+        if (uri.path == 'automate' || uri.host == 'automate') {
+          final steps = uri.queryParameters['steps']?.split(',') ?? [];
+          await _handleAutomation(steps);
+        } else if (uri.host == 'settings') {
+          final key = uri.queryParameters['key'];
+          final value = uri.queryParameters['value'];
+
+          if (key != null && value != null) {
+            if (value == 'true' || value == 'false') {
+              await widget.prefs.setBool(key, value == 'true');
+              if (key == 'force_tv') {
+                if (mounted) {
+                  // We need to refresh the device service to reflect the change
+                  // But we usually do this via a broadcast or provider update
+                }
               }
             }
           }
         }
       }
     });
+  }
+
+  Future<void> _handleAutomation(List<String> steps) async {
+    // Wait for navigator to be ready
+    final state = _navigatorKey.currentState;
+    if (state == null) {
+      Future.delayed(
+        const Duration(milliseconds: 500),
+        () => _handleAutomation(steps),
+      );
+      return;
+    }
+
+    final context = state.context;
+    final audioProvider = Provider.of<AudioProvider>(context, listen: false);
+    final settingsProvider = Provider.of<SettingsProvider>(
+      context,
+      listen: false,
+    );
+
+    for (final step in steps) {
+      final trimmedStep = step.trim();
+      if (trimmedStep == 'dice') {
+        await audioProvider.playRandomShow();
+      } else if (trimmedStep.startsWith('sleep:')) {
+        final seconds = int.tryParse(trimmedStep.split(':')[1]) ?? 0;
+        await Future.delayed(Duration(seconds: seconds));
+      } else if (trimmedStep.startsWith('settings:')) {
+        final parts = trimmedStep.split(':');
+        if (parts.length < 2) continue;
+        final keyValue = parts[1].split('=');
+        if (keyValue.length < 2) continue;
+        final key = keyValue[0];
+        final value = keyValue[1];
+
+        if (key == 'oil_enable_audio_reactivity') {
+          final target = value == 'true';
+          if (settingsProvider.oilEnableAudioReactivity != target) {
+            await settingsProvider.toggleOilEnableAudioReactivity();
+          }
+        } else if (key == 'oil_audio_graph_mode') {
+          await settingsProvider.setOilAudioGraphMode(value);
+        } else if (key == 'force_tv') {
+          await settingsProvider.setForceTv(value == 'true');
+        } else if (key == 'oil_screensaver_mode') {
+          await settingsProvider.setOilScreensaverMode(value);
+        }
+      } else if (trimmedStep == 'screensaver') {
+        if (context.mounted) {
+          await ScreensaverScreen.show(context);
+        }
+      }
+    }
   }
 
   @override

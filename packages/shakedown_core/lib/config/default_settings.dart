@@ -142,16 +142,17 @@ class DefaultSettings {
   static const String oilAudioGraphMode = 'off';
 
   /// Radius multiplier for EKG (0.5x to 2.0x of base logo radius).
-  static const double oilEkgRadius = 1.0;
+  static const double oilEkgRadius = 0.1;
 
   /// Number of parallel offset lines for EKG (1 to 10).
-  static const int oilEkgReplication = 1;
+  static const int oilEkgReplication = 4;
 
   /// Vertical/Radial spread between replicated EKG lines.
-  static const double oilEkgSpread = 4.0;
+  static const double oilEkgSpread = 16.0;
 
   /// Beat detection sensitivity (0.0 = gentle, 1.0 = aggressive).
-  static const double oilBeatSensitivity = 0.45;
+  /// 0.65 → threshold = 1.7× avg (better for live/matrix recordings).
+  static const double oilBeatSensitivity = 0.80;
   static const double oilBeatImpact = 0.25;
 
   /// Audio Reactivity Isolation

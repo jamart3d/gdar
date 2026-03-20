@@ -1,3 +1,18 @@
+What's new in v1.3.1+211
+- TV Enhancement: Implemented StereoCapture for the Android TV engine, providing high-fidelity PCM capture for real-time visualizers.
+- TV Architecture: Added specialized TV banner assets and startup metadata for enhanced Leanback visibility.
+- TV Debugging: Expanded TV_DEBUGGING.md with new deep-link automation sequences for rapid UI verification.
+- Screensaver: Optimized EKG spread and beat detection sensitivity for a more responsive reactive experience.
+
+---
+
+What's new in v1.3.0+210
+- Maintenance: Synchronized codebase with latest monorepo standards and regenerated test mocks.
+- Hygiene: Resolved unused imports and synchronized cross-package message routing contracts.
+- Agent Architecture: Hardened release and auto-approve protocols for zero-friction orchestration.
+
+---
+
 What's new in v1.2.9+209
 - Hygiene: Enforced strict codebase formatting across the monorepo to maintain high standards and readability.
 - Maintenance: Verified and synchronized test stubs and contract tests following the latest provider API updates.

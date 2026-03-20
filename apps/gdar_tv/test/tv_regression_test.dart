@@ -347,8 +347,7 @@ class FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
   int get handoffCrossfadeMs => 0;
   @override
   bool get allowHiddenWebAudio => false;
-  @override
-  String get oilAudioGraphMode => 'none';
+
   @override
   double get oilBeatSensitivity => 1.0;
   @override
@@ -528,7 +527,8 @@ class FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
   @override
   void toggleUseOilScreensaver() {}
   @override
-  void setOilScreensaverMode(String mode) {}
+  @override
+  Future<void> setOilScreensaverMode(String mode) async {}
   @override
   void setOilScreensaverInactivityMinutes(int minutes) {}
   @override
@@ -658,7 +658,12 @@ class FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
   @override
   void toggleForceTv() {}
   @override
-  void setForceTv(bool value) {}
+  @override
+  Future<void> setForceTv(bool value) async {}
+  @override
+  String get oilAudioGraphMode => 'off';
+  @override
+  Future<void> setOilAudioGraphMode(String mode) async {}
 
   @override
   bool get fruitDenseList => false;

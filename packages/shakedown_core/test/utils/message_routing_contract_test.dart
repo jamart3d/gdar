@@ -79,35 +79,6 @@ class _FakeThemeProvider extends ChangeNotifier implements ThemeProvider {
 
 // ─── Helper ──────────────────────────────────────────────────────────────────
 
-Widget _buildTestApp({
-  required bool isTv,
-  required _FakeAudioProvider audio,
-  required VoidCallback onTrigger,
-}) {
-  return MultiProvider(
-    providers: [
-      ChangeNotifierProvider<DeviceService>.value(
-        value: _FakeDeviceService(isTv: isTv),
-      ),
-      ChangeNotifierProvider<AudioProvider>.value(value: audio),
-      ChangeNotifierProvider<SettingsProvider>.value(
-        value: _FakeSettingsProvider(),
-      ),
-      ChangeNotifierProvider<ThemeProvider>.value(value: _FakeThemeProvider()),
-    ],
-    child: MaterialApp(
-      home: Scaffold(
-        body: Builder(
-          builder: (context) => TextButton(
-            onPressed: () => onTrigger(),
-            child: const Text('trigger'),
-          ),
-        ),
-      ),
-    ),
-  );
-}
-
 // ─── Tests ───────────────────────────────────────────────────────────────────
 
 void main() {

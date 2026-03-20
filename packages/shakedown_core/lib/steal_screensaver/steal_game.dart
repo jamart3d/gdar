@@ -149,6 +149,10 @@ class StealGame extends FlameGame {
 
   @override
   void update(double dt) {
+    // Push current energy to graph BEFORE super.update() so StealGraph.update()
+    // receives fresh data for this frame rather than being one frame behind.
+    if (_graph != null) _graph!.energy = _currentEnergy;
+
     super.update(dt);
     // Cap dt for the position-curve clock so dropped frames don't cause the
     // Lissajous target to leap forward and produce a visible logo "jump".
@@ -316,6 +320,8 @@ class StealGame extends FlameGame {
 
   void _applyGraphConfig(StealConfig cfg) {
     if (_graph == null) return;
+    _graph!.graphMode = cfg.audioGraphMode;
+    _graph!.isVisible = cfg.audioGraphMode != 'off';
   }
 
   void _applyBannerConfig(StealConfig cfg) {

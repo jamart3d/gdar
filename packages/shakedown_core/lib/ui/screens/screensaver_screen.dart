@@ -75,12 +75,12 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
 
   void _pushAudioConfig(SettingsProvider settings) {
     if (_audioReactor is! VisualizerAudioReactor) return;
+    final reactor = _audioReactor as VisualizerAudioReactor;
 
     final peakDecay = settings.oilAudioPeakDecay;
     final bassBoost = settings.oilAudioBassBoost;
     final reactivityStrength = settings.oilAudioReactivityStrength;
     final beatSensitivity = settings.oilBeatSensitivity;
-
     final unchanged =
         _lastPushedPeakDecay == peakDecay &&
         _lastPushedBassBoost == bassBoost &&
@@ -88,7 +88,7 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
         _lastPushedBeatSensitivity == beatSensitivity;
     if (unchanged) return;
 
-    (_audioReactor as VisualizerAudioReactor).updateConfig(
+    reactor.updateConfig(
       peakDecay: peakDecay,
       bassBoost: bassBoost,
       reactivityStrength: reactivityStrength,
@@ -159,10 +159,10 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
       }
 
       setState(() => _audioReactor = reactor);
+      await reactor?.start();
       if (reactor is VisualizerAudioReactor) {
         _pushAudioConfig(settings);
       }
-      reactor?.start();
     } finally {
       _isInitializingAudioReactor = false;
     }

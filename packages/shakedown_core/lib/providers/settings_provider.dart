@@ -1504,7 +1504,7 @@ class SettingsProvider with ChangeNotifier {
 
   void toggleForceTv() => _updatePreference(_forceTvKey, _forceTv = !_forceTv);
 
-  void setForceTv(bool value) =>
+  Future<void> setForceTv(bool value) =>
       _updatePreference(_forceTvKey, _forceTv = value);
 
   void toggleEnableHaptics() =>
@@ -1576,7 +1576,7 @@ class SettingsProvider with ChangeNotifier {
     _useOilScreensaverKey,
     _useOilScreensaver = !_useOilScreensaver,
   );
-  void setOilScreensaverMode(String mode) => _updateStringPreference(
+  Future<void> setOilScreensaverMode(String mode) => _updateStringPreference(
     _oilScreensaverModeKey,
     _oilScreensaverMode = mode,
   );
@@ -1716,7 +1716,7 @@ class SettingsProvider with ChangeNotifier {
         _oilAudioReactivityStrengthKey,
         _oilAudioReactivityStrength = value.clamp(0.5, 2.0),
       );
-  void setOilAudioGraphMode(String mode) =>
+  Future<void> setOilAudioGraphMode(String mode) =>
       _updateStringPreference(_oilAudioGraphModeKey, _oilAudioGraphMode = mode);
   Future<void> setOilBeatSensitivity(double value) => _updateDoublePreference(
     _oilBeatSensitivityKey,

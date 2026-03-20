@@ -1,13 +1,15 @@
 # Pending Release Notes
 
 ### Status
-- **Current Version**: `1.2.8+208`
-- **Git State**: Clean and pushed to main.
-- **Goal**: Monitoring feedback after `1.2.8+208` release.
+- **Current Version**: `1.3.1+211`
+- **Git State**: RELEASE PENDING
+- **Goal**: Monitoring feedback after `1.3.1+211` release.
 
-### What's In This Release (1.2.8+208)
-- **TV Bootstrap**: Standardized `SharedPreferences` injection in `GdarTvApp` to ensure consistent state initialization on TV devices.
-- **Testing**: Hardened TV startup regression tests by addressing race conditions between specialized app navigation and inactivity timers.
+### What's In This Release (1.3.1+211)
+- **TV Enhancement**: Implemented `StereoCapture` for the Android TV engine, providing high-fidelity PCM capture for real-time visualizers.
+- **TV Architecture**: Added specialized TV banner assets and startup metadata configurations for enhanced Leanback visibility.
+- **Screensaver**: Optimized EKG spread and beat detection sensitivity in `default_settings.dart` for a more responsive reactive experience.
+- **TV Debugging**: Expanded and refined the `TV_DEBUGGING.md` documentation with new deep-link automation sequences for rapid UI verification.
 
 ### Next Commands
 Use PowerShell.

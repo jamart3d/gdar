@@ -15,6 +15,29 @@ class AudioEnergy {
   /// Bands: sub-bass, bass, low-mid, mid, upper-mid, presence, brilliance, air.
   final List<double> bands;
 
+  /// Raw PCM waveform samples, downsampled to 256 points, range -1.0..1.0.
+  /// Empty when oscilloscope capture is unavailable (web, fallback reactor).
+  final List<double> waveform;
+
+  /// Stereo left-channel PCM, 256 points, range -1.0..1.0.
+  /// Non-empty only on TV when AudioPlaybackCapture is active.
+  /// Empty on web/mobile/fallback — VU meter falls back to fake-stereo FFT bands.
+  final List<double> waveformL;
+
+  /// Stereo right-channel PCM, 256 points, range -1.0..1.0.
+  /// Non-empty only on TV when AudioPlaybackCapture is active.
+  final List<double> waveformR;
+
+  /// Results from 6 parallel beat-detection algorithms (beat_debug mode).
+  /// Index: 0=NARROW, 1=KICK, 2=FULL, 3=EMA, 4=KICK+, 5=LONG.
+  /// Empty on web / fallback reactor.
+  final List<bool> beatAlgos;
+
+  /// Normalised flux/mean ratio per algorithm (0.0–3.0).
+  /// 1.0 = at mean, >1.66 = main threshold, >1.1 = KICK+ threshold.
+  /// Empty on web / fallback reactor.
+  final List<double> algoLevels;
+
   const AudioEnergy({
     required this.bass,
     required this.mid,
@@ -22,6 +45,11 @@ class AudioEnergy {
     required this.overall,
     this.isBeat = false,
     this.bands = const [0, 0, 0, 0, 0, 0, 0, 0],
+    this.waveform = const [],
+    this.waveformL = const [],
+    this.waveformR = const [],
+    this.beatAlgos = const [],
+    this.algoLevels = const [],
   });
 
   /// Create an AudioEnergy with all values set to zero (silence)
@@ -31,7 +59,12 @@ class AudioEnergy {
       treble = 0.0,
       overall = 0.0,
       isBeat = false,
-      bands = const [0, 0, 0, 0, 0, 0, 0, 0];
+      bands = const [0, 0, 0, 0, 0, 0, 0, 0],
+      waveform = const [],
+      waveformL = const [],
+      waveformR = const [],
+      beatAlgos = const [],
+      algoLevels = const [];
 
   @override
   String toString() {
@@ -54,7 +87,7 @@ abstract class AudioReactor {
   Stream<AudioEnergy> get energyStream;
 
   /// Start listening to audio data.
-  void start();
+  Future<void> start();
 
   /// Stop listening to audio data.
   void stop();

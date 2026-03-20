@@ -161,9 +161,71 @@ class _GdarTvAppState extends State<GdarTvApp> {
     _deepLinkService = widget.deepLinkService ?? DeepLinkService();
     _deepLinkService!.init();
 
-    _linkSubscription = _deepLinkService!.uriStream.listen((uri) {
-      // Deep link handling
+    _linkSubscription = _deepLinkService!.uriStream.listen((Uri? uri) {
+      if (uri == null) return;
+
+      if (uri.scheme == 'shakedown') {
+        if (uri.path == 'automate') {
+          final steps = uri.queryParameters['steps']?.split(',') ?? [];
+          _handleAutomation(steps);
+        } else if (uri.host == 'automate') {
+          // Handle shakedown://automate?steps=...
+          final steps = uri.queryParameters['steps']?.split(',') ?? [];
+          _handleAutomation(steps);
+        }
+      }
     });
+  }
+
+  Future<void> _handleAutomation(List<String> steps) async {
+    final context = _navigatorKey.currentState?.context;
+    if (context == null) {
+      // Wait a bit and try again if the navigator isn't ready
+      Future.delayed(const Duration(milliseconds: 500), () {
+        _handleAutomation(steps);
+      });
+      return;
+    }
+
+    final audioProvider = Provider.of<AudioProvider>(context, listen: false);
+    final settingsProvider = Provider.of<SettingsProvider>(
+      context,
+      listen: false,
+    );
+
+    for (final step in steps) {
+      final trimmedStep = step.trim();
+      if (trimmedStep == 'dice') {
+        await audioProvider.playRandomShow();
+      } else if (trimmedStep.startsWith('sleep:')) {
+        final seconds = int.tryParse(trimmedStep.split(':')[1]) ?? 0;
+        await Future.delayed(Duration(seconds: seconds));
+      } else if (trimmedStep.startsWith('settings:')) {
+        final parts = trimmedStep.split(':');
+        if (parts.length < 2) continue;
+        final keyValue = parts[1].split('=');
+        if (keyValue.length < 2) continue;
+        final key = keyValue[0];
+        final value = keyValue[1];
+
+        if (key == 'oil_enable_audio_reactivity') {
+          final target = value == 'true';
+          if (settingsProvider.oilEnableAudioReactivity != target) {
+            await settingsProvider.toggleOilEnableAudioReactivity();
+          }
+        } else if (key == 'oil_audio_graph_mode') {
+          await settingsProvider.setOilAudioGraphMode(value);
+        } else if (key == 'force_tv') {
+          await settingsProvider.setForceTv(value == 'true');
+        } else if (key == 'oil_screensaver_mode') {
+          await settingsProvider.setOilScreensaverMode(value);
+        }
+      } else if (trimmedStep == 'screensaver') {
+        if (context.mounted) {
+          await ScreensaverScreen.show(context);
+        }
+      }
+    }
   }
 
   @override

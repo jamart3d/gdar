@@ -9,7 +9,6 @@ import 'package:shakedown_core/utils/font_layout_config.dart';
 import 'package:shakedown_core/providers/settings_provider.dart';
 import 'package:shakedown_core/providers/show_list_provider.dart';
 import 'package:shakedown_core/ui/widgets/show_list/animated_dice_icon.dart';
-import 'package:shakedown_core/ui/widgets/theme/liquid_glass_wrapper.dart';
 import 'package:shakedown_core/providers/theme_provider.dart';
 import 'package:shakedown_core/services/device_service.dart';
 import 'package:shakedown_core/utils/app_haptics.dart';

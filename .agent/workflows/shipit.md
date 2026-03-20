@@ -1,6 +1,7 @@
 ---
 description: Guided production release workflow for GDAR (monorepo).
 ---
+// turbo-all
 # Shipit Workflow (Monorepo)
 
 **TRIGGERS:** shipit, release, prod, deploy

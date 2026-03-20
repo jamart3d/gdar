@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(flutter test:*)",
+      "Bash(dart analyze:*)",
+      "Bash(./gradlew :app:compileDebugKotlin --info)",
+      "Bash(./gradlew :app:compileReleaseKotlin)",
+      "Bash(find C:/Users/jeff/StudioProjects/gdar/apps/gdar_tv/android/app/src/main/res -name *.png -o -name *.jpg -o -name *.webp)",
+      "Bash(./gradlew :app:compileReleaseKotlin --stacktrace)",
+      "Bash(./gradlew :app:processReleaseResources)",
+      "Bash(flutter --version)",
+      "Bash(flutter build:*)"
+    ]
+  }
+}

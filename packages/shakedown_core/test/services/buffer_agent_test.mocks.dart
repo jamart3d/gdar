@@ -394,12 +394,6 @@ class MockGaplessPlayer extends _i1.Mock implements _i3.GaplessPlayer {
   );
 
   @override
-  void setHybridForceHtml5Start(bool? enabled) => super.noSuchMethod(
-    Invocation.method(#setHybridForceHtml5Start, [enabled]),
-    returnValueForMissingStub: null,
-  );
-
-  @override
   void setTrackTransitionMode(String? mode) => super.noSuchMethod(
     Invocation.method(#setTrackTransitionMode, [mode]),
     returnValueForMissingStub: null,

@@ -1,3 +1,7 @@
+---
+trigger: always_on
+---
+
 # Auto-Approve Command Rules
 
 Commands listed here MUST be run with `SafeToAutoRun: true`.
@@ -13,10 +17,12 @@ They are read-only or strictly non-destructive and the user must never be prompt
 | `Get-Content -Path ...` | Read file contents |
 | `Get-Item ...` | File/dir metadata |
 | `Get-ChildItem ...` (alias `ls`, `dir`) | Directory listing |
+| `Get-ChildItem docs/*.md` | List documentation files |
 | `Test-Path ...` | Check if path exists |
-| `Select-String ...` | Grep-style search in files |
-| `Get-Location` (alias `pwd`) | Current directory |
-| `Measure-Object` | Count/stats on output |
+| `Select-String ...` | Grep-style search in files (Safe) |
+| `Get-Location` (alias `pwd`) | Current directory (Safe) |
+| `Measure-Object` | Count/stats on output (Safe) |
+| `sls ...` | Alias for Select-String (Safe) |
 
 ### Git Read-Only
 | Command | Notes |
@@ -30,6 +36,7 @@ They are read-only or strictly non-destructive and the user must never be prompt
 | `git show ...` | Show commit object |
 | `git stash list` | List stashes |
 | `git rev-parse HEAD` | Current commit SHA |
+| `git add`| `git commit`
 
 ### Flutter / Dart Read-Only
 | Command | Notes |
@@ -38,10 +45,9 @@ They are read-only or strictly non-destructive and the user must never be prompt
 | `dart analyze` | Same |
 | `flutter doctor` | Environment check |
 | `dart pub deps` | Dependency tree |
-| `flutter --version` | Version info |
-| `dart --version` | Version info |
-| `dart format .` | Standard code formatting |
-| `flutter format .` | Standard code formatting |
+| `flutter --version`, `dart --version` | Version info |
+| `... --help` (melos, flutter, firebase) | CLI Discovery (Safe and Read-only) |
+| `dart format .`, `flutter format .` | Standard code formatting |
 
 ### General Inspection
 | Command | Notes |
@@ -102,6 +108,7 @@ These commands are auto-approved only when executed within the specific release 
 
 ### `shipit`
 - Stage only the intended release files after verifying `git status`.
+- `git status`
 - `git commit -m "..."`
 - `git commit --amend`
 - `git push`
@@ -114,9 +121,9 @@ These commands are auto-approved only when executed within the specific release 
 ## NEVER Auto-Approve
 These mutate state and ALWAYS require user confirmation unless covered by the exceptions above:
 
-- `git add`, `git commit`, `git push`, `git reset`, `git checkout` (branch switch)
+- `git push`, `git reset`, `git checkout` (branch switch)
 - `rm`, `Remove-Item`, `del` - file deletion
-- `dart fix --apply`, `dart format` - modifies source files
+- `dart fix --apply` - modifies source files
 - `flutter build`, `flutter run` - long builds / launches app
 - `firebase deploy` - production deployment
 - `flutter pub add`, `flutter pub remove` - mutates `pubspec.yaml`
@@ -128,6 +135,3 @@ These mutate state and ALWAYS require user confirmation unless covered by the ex
 - **Windows only**: Use `;` between chained commands, never `&&` (bash-only).
 - **ChromeOS only**: `&&` is fine for chaining in bash.
 - When in doubt: read-only = auto. Write/mutate = ask.
-
-
-

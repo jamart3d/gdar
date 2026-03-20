@@ -24,7 +24,7 @@ class StealGraph extends Component with HasGameReference<StealGame> {
   AudioEnergy energy = const AudioEnergy.zero();
   bool isVisible = false;
 
-  /// Display mode: 'corner', 'circular', 'ekg', 'circular_ekg', or 'off'.
+  /// Display mode: 'corner', 'circular', 'ekg', 'circular_ekg', 'beat_debug', or 'off'.
   String graphMode = 'off';
 
   /// Number of FFT bands rendered.
@@ -67,7 +67,10 @@ class StealGraph extends Component with HasGameReference<StealGame> {
   static const double _riseSmoothing = 15.0;
   static const double _fallSmoothing = 5.0;
   static const double _peakHoldDecayPerSec = 22.0;
-  static const double _beatFlashDecayPerSec = 5.5;
+  static const double _beatFlashDecayPerSec =
+      3.5; // ~285ms visible — more forgiving for live recordings
+  static const double _beatBarFallSmoothing =
+      7.0; // faster than bands but not jarring
 
   // Current smoothed heights for corner bars (8 FFT bands + 1 Beat).
   final List<double> _cornerHeights = List.filled(_cornerBarCount, 0.0);
@@ -84,9 +87,50 @@ class StealGraph extends Component with HasGameReference<StealGame> {
   // EKG history buffer (0.0 - 1.0)
   final List<double> _ekgHistory = List.filled(_ekgSampleCount, 0.0);
   double _lastEkgVal = 0.0;
+  double _ekgAccum = 0.0; // time accumulator for frame-rate-independent scroll
+  double _ekgRotation = 0.0; // slow angular rotation for circular_ekg
+  static const double _ekgSampleRate = 60.0; // samples/sec regardless of fps
+  HSLColor _ekgHsl = const HSLColor.fromAHSL(
+    1.0,
+    195.0,
+    1.0,
+    0.6,
+  ); // smoothed toward palette
 
   // Short-lived beat flash factor for HUD accent.
   double _beatFlash = 0.0;
+
+  // Per-algorithm flash values for beat_debug mode (6 algorithms).
+  final List<double> _algoFlash = List.filled(6, 0.0);
+  // Smoothed flux/mean ratio for continuous bar display (0–3).
+  final List<double> _algoLevel = List.filled(6, 0.0);
+  static const List<String> _algoLabels = [
+    'BASS\n0-250',
+    'MID\n250-4k',
+    'TREB\n4k+',
+    'BROAD\nB+M',
+    'ALL\nBANDS',
+    'S-MID\nSMTH',
+  ];
+
+  // ── VU meter state ───────────────────────────────────────────────────────
+  static const double _vuRiseSmoothing = 12.0;
+  static const double _vuFallSmoothing = 2.2;
+  static const double _vuPeakDecayPerSec = 0.5;
+  static const double _vuWidth = 155.0;
+  static const double _vuHeight = 110.0;
+  static const double _vuNeedleLength = 74.0;
+  static const double _vuSweepHalf = 1.1; // radians half-swing (~63°)
+
+  double _vuLeft = 0.0;
+  double _vuRight = 0.0;
+  double _vuPeakLeft = 0.0;
+  double _vuPeakRight = 0.0;
+
+  // ── Oscilloscope state ───────────────────────────────────────────────────
+  List<double> _scopeWaveform = const [];
+  // Rolling peak for auto-gain — decays slowly so gain doesn't jump on silence.
+  double _scopePeak = 0.05;
 
   final TextPainter _textPainter = TextPainter(
     textDirection: TextDirection.ltr,
@@ -144,10 +188,14 @@ class StealGraph extends Component with HasGameReference<StealGame> {
       if (_beatFlash < 0.0) _beatFlash = 0.0;
     }
 
-    if (graphMode == 'corner') {
+    if (graphMode == 'corner' || graphMode == 'corner_only') {
       _updateCornerHeights(dt);
       _updatePeakHolds(_cornerHeights, _cornerPeakHeights, _maxBarHeight, dt);
-    } else if (graphMode == 'circular') {
+    }
+    if (graphMode == 'corner_only') {
+      _updateVuLevels(dt);
+    }
+    if (graphMode == 'circular') {
       _updateCircularHeights(dt);
       _updatePeakHolds(
         _circularHeights,
@@ -161,28 +209,155 @@ class StealGraph extends Component with HasGameReference<StealGame> {
     if (graphMode == 'ekg' || graphMode == 'circular_ekg') {
       _updateEkgHistory(dt);
     }
+    if (graphMode == 'circular_ekg') {
+      _ekgRotation += dt * 0.15;
+      if (_ekgRotation > 2 * pi) _ekgRotation -= 2 * pi;
+    }
+
+    if (graphMode == 'vu') _updateVuLevels(dt);
+
+    if (graphMode == 'beat_debug') {
+      final algos = energy.beatAlgos;
+      final levels = energy.algoLevels;
+      for (int i = 0; i < _algoFlash.length; i++) {
+        // Flash on beat fire.
+        final fired = i < algos.length && algos[i];
+        if (fired) {
+          _algoFlash[i] = 1.0;
+        } else {
+          _algoFlash[i] = (_algoFlash[i] - _beatFlashDecayPerSec * dt).clamp(
+            0.0,
+            1.0,
+          );
+        }
+        // Smooth the continuous level toward the incoming ratio.
+        final target = i < levels.length ? levels[i] : 0.0;
+        _algoLevel[i] += (target - _algoLevel[i]) * 12.0 * dt;
+      }
+    }
+
+    final wantsScope = graphMode == 'scope' || graphMode == 'corner_only';
+    if (wantsScope && energy.waveform.isNotEmpty) {
+      _scopeWaveform = energy.waveform;
+      for (final v in _scopeWaveform) {
+        if (v.abs() > _scopePeak) _scopePeak = v.abs();
+      }
+    }
+    if (wantsScope) {
+      _scopePeak = max(_scopePeak * 0.995, 0.001);
+    }
+
+    // Smoothly lerp EKG color toward the current palette — same pace as
+    // StealBackground's _colorLerpSpeed so it tracks the visual transition.
+    _updateEkgColor(dt);
   }
 
-  /// Extracts "guitar" energy from mids (bands 2, 3, 4) and updates the rolling history.
+  void _updateEkgColor(double dt) {
+    final paletteColors =
+        StealConfig.palettes[game.config.palette] ??
+        StealConfig.palettes.values.first;
+    final rawColor = paletteColors.isNotEmpty
+        ? paletteColors.first
+        : Colors.white;
+    final baseColor = rawColor.computeLuminance() > 0.85
+        ? Colors.white
+        : rawColor;
+    final target = HSLColor.fromColor(baseColor);
+    // dt * 1.5 ≈ 0.025 per frame at 60fps — matches background shader lerp speed.
+    _ekgHsl = HSLColor.lerp(_ekgHsl, target, (dt * 1.5).clamp(0.0, 1.0))!;
+  }
+
+  /// Drives the EKG history at a fixed sample rate so scroll speed is consistent
+  /// regardless of device frame rate (60fps vs 30fps on Google TV).
   void _updateEkgHistory(double dt) {
+    _ekgAccum += dt;
+    const interval = 1.0 / _ekgSampleRate;
+    while (_ekgAccum >= interval) {
+      _ekgAccum -= interval;
+      _pushEkgSample(interval);
+    }
+  }
+
+  /// Extracts guitar-range energy (bands 2-4, 250-2000 Hz) and pushes one
+  /// sample into the rolling history buffer.
+  void _pushEkgSample(double dt) {
     final bands = energy.bands;
     if (bands.length < 5) return;
 
-    // Isolate guitar range: LowMid + Mid + UpperMid
     final target = (bands[2] + bands[3] + bands[4]) / 3.0;
 
-    // Smoothed rise/fall
     if (target > _lastEkgVal) {
       _lastEkgVal += (target - _lastEkgVal) * _ekgRiseSmoothing * dt;
     } else {
       _lastEkgVal += (target - _lastEkgVal) * _ekgFallSmoothing * dt;
     }
 
-    // Shift history left
     for (int i = 0; i < _ekgSampleCount - 1; i++) {
       _ekgHistory[i] = _ekgHistory[i + 1];
     }
     _ekgHistory[_ekgSampleCount - 1] = _lastEkgVal.clamp(0.0, 1.0);
+  }
+
+  // True when latest AudioEnergy carries real stereo PCM from AudioPlaybackCapture.
+  bool _hasRealStereo = false;
+
+  void _updateVuLevels(double dt) {
+    double targetL;
+    double targetR;
+
+    if (energy.waveformL.isNotEmpty && energy.waveformR.isNotEmpty) {
+      // Real stereo from AudioPlaybackCapture — compute RMS of each channel.
+      // 2.5× boost maps typical speech/music RMS (~0.1–0.3) into needle range.
+      _hasRealStereo = true;
+      targetL = (_rms(energy.waveformL) * 2.5).clamp(0.0, 1.0);
+      targetR = (_rms(energy.waveformR) * 2.5).clamp(0.0, 1.0);
+    } else {
+      // Fallback: fake stereo by splitting 8-band FFT (lo bands → L, hi → R).
+      _hasRealStereo = false;
+      const boost = 1.5;
+      final bands = energy.bands;
+      targetL =
+          (bands.length >= 8
+              ? (bands[0] + bands[1] + bands[2] + bands[3]) / 4.0
+              : energy.bass) *
+          boost;
+      targetR =
+          (bands.length >= 8
+              ? (bands[4] + bands[5] + bands[6] + bands[7]) / 4.0
+              : energy.treble) *
+          boost;
+    }
+
+    _vuLeft = _vuSmooth(_vuLeft, targetL, dt);
+    _vuRight = _vuSmooth(_vuRight, targetR, dt);
+
+    if (_vuLeft >= _vuPeakLeft) {
+      _vuPeakLeft = _vuLeft;
+    } else {
+      _vuPeakLeft = max(0.0, _vuPeakLeft - _vuPeakDecayPerSec * dt);
+    }
+    if (_vuRight >= _vuPeakRight) {
+      _vuPeakRight = _vuRight;
+    } else {
+      _vuPeakRight = max(0.0, _vuPeakRight - _vuPeakDecayPerSec * dt);
+    }
+  }
+
+  double _vuSmooth(double current, double target, double dt) {
+    if (target > current) {
+      return current + (target - current) * _vuRiseSmoothing * dt;
+    } else {
+      return current + (target - current) * _vuFallSmoothing * dt;
+    }
+  }
+
+  double _rms(List<double> samples) {
+    if (samples.isEmpty) return 0.0;
+    var sum = 0.0;
+    for (final s in samples) {
+      sum += s * s;
+    }
+    return sqrt(sum / samples.length);
   }
 
   /// Smooth the 8-band FFT data + Beat for corner graph rendering.
@@ -199,14 +374,14 @@ class StealGraph extends Component with HasGameReference<StealGame> {
       }
     }
 
-    // Beat bar (index 8).
+    // Beat bar (index 8): instant attack, faster decay than regular bands.
     final targetBeat = energy.isBeat ? _maxBarHeight : 0.0;
     final currentBeat = _cornerHeights[_bandCount];
     if (targetBeat > currentBeat) {
       _cornerHeights[_bandCount] = targetBeat;
     } else {
       _cornerHeights[_bandCount] +=
-          (targetBeat - currentBeat) * _fallSmoothing * dt;
+          (targetBeat - currentBeat) * _beatBarFallSmoothing * dt;
     }
   }
 
@@ -253,12 +428,23 @@ class StealGraph extends Component with HasGameReference<StealGame> {
     switch (graphMode) {
       case 'corner':
         _renderCorner(canvas);
+      case 'corner_only':
+        _renderCorner(canvas);
+        _renderVu(canvas);
+        // Scope mirrors bar graph: same panel size, right-anchored.
+        _renderScope(canvas, panelWidth: 220.0);
       case 'circular':
         _renderCircular(canvas);
       case 'ekg':
         _renderEKG(canvas);
       case 'circular_ekg':
         _renderCircularEKG(canvas);
+      case 'vu':
+        _renderVu(canvas);
+      case 'scope':
+        _renderScope(canvas);
+      case 'beat_debug':
+        _renderBeatDebug(canvas);
     }
   }
 
@@ -271,17 +457,27 @@ class StealGraph extends Component with HasGameReference<StealGame> {
     final startX = _leftPadding + drift.dx;
     final availableWidth = w - (_leftPadding * 2);
 
-    final color = const Color(
-      0xFF34E7FF,
-    ).withValues(alpha: 0.8); // Phosphor Blue
+    // Use the smoothed palette color — no per-frame snap on palette cycle.
+    final hsl = _ekgHsl;
 
     final replication = game.config.ekgReplication.clamp(1, 10);
     final spread = game.config.ekgSpread;
 
     for (int r = replication - 1; r >= 0; r--) {
-      final opacity = (1.0 / (r + 1)) * color.a;
-      final verticalOffset = r * spread; // Offset each line slightly
-      final beatThick = energy.isBeat ? 0.8 : 0.0;
+      // t=0 → front line (vivid, full lightness), t=1 → back line (dark, dim).
+      final t = replication > 1 ? r / (replication - 1) : 0.0;
+      final lineColor = hsl
+          .withLightness(
+            (hsl.lightness * (0.55 + 0.45 * (1.0 - t))).clamp(0.15, 1.0),
+          )
+          .withSaturation(
+            (hsl.saturation * (0.7 + 0.3 * (1.0 - t))).clamp(0.0, 1.0),
+          )
+          .toColor();
+      final lineAlpha = 0.9 - t * 0.5;
+
+      final verticalOffset = r * spread;
+      final beatThick = energy.isBeat ? 1.2 : 0.0;
 
       final points = <Offset>[];
       for (int i = 0; i < _ekgSampleCount; i++) {
@@ -291,37 +487,47 @@ class StealGraph extends Component with HasGameReference<StealGame> {
         points.add(Offset(x, y));
       }
 
+      // Smooth bezier path through midpoints — organic waveform shape.
+      final path = Path();
+      path.moveTo(points[0].dx, points[0].dy);
+      for (int i = 0; i + 1 < points.length; i++) {
+        final midX = (points[i].dx + points[i + 1].dx) / 2;
+        final midY = (points[i].dy + points[i + 1].dy) / 2;
+        path.quadraticBezierTo(points[i].dx, points[i].dy, midX, midY);
+      }
+      path.lineTo(points.last.dx, points.last.dy);
+
       if (r == 0 && _glowSigma > 0.0) {
         final glowPaint = Paint()
-          ..color = color.withValues(
-            alpha: (0.15 + (_beatFlash * 0.1)) * opacity,
+          ..color = lineColor.withValues(
+            alpha: (0.18 + (_beatFlash * 0.28)) * lineAlpha,
           )
           ..style = PaintingStyle.stroke
-          ..strokeWidth = 3.5 + beatThick
+          ..strokeWidth = 4.0 + beatThick
           ..strokeCap = StrokeCap.round
           ..maskFilter = isWasmSafeMode()
               ? null
               : MaskFilter.blur(BlurStyle.normal, _glowSigma);
-        canvas.drawPoints(PointMode.polygon, points, glowPaint);
+        canvas.drawPath(path, glowPaint);
       }
 
       final corePaint = Paint()
-        ..color = color.withValues(
-          alpha: (0.85 + (_beatFlash * 0.15)) * opacity,
+        ..color = lineColor.withValues(
+          alpha: (0.85 + (_beatFlash * 0.15)) * lineAlpha,
         )
         ..style = PaintingStyle.stroke
         ..strokeWidth = 2.0 + (r == 0 ? beatThick : 0.0)
         ..strokeCap = StrokeCap.round;
-      canvas.drawPoints(PointMode.polygon, points, corePaint);
+      canvas.drawPath(path, corePaint);
     }
 
-    // Label
+    // Label uses the smoothed front-line color.
     canvas.save();
     canvas.translate(startX, centerY + (_ekgMaxHeight / 2) + 12.0);
     _textPainter.text = TextSpan(
       text: 'EKG GUITAR (MID 250-2000Hz)',
       style: TextStyle(
-        color: color.withValues(alpha: 0.45),
+        color: _ekgHsl.toColor().withValues(alpha: 0.45),
         fontSize: 8,
         fontWeight: FontWeight.w600,
         letterSpacing: 1.1,
@@ -347,60 +553,75 @@ class StealGraph extends Component with HasGameReference<StealGame> {
           600.0,
         );
 
-    final paletteColors =
-        StealConfig.palettes[game.config.palette] ??
-        StealConfig.palettes.values.first;
-    final rawColor = paletteColors.isNotEmpty
-        ? paletteColors.first
-        : Colors.white;
-    final hsl = HSLColor.fromColor(rawColor);
-    final color = hsl
-        .withSaturation((hsl.saturation * 0.4).clamp(0.0, 1.0))
-        .withLightness((hsl.lightness * 0.6).clamp(0.1, 1.0))
-        .toColor()
-        .withValues(alpha: 0.4);
+    // Use the smoothed palette color — no per-frame snap on palette cycle.
+    final hsl = _ekgHsl;
 
     final replication = game.config.ekgReplication.clamp(1, 10);
     final spread = game.config.ekgSpread;
 
     for (int r = replication - 1; r >= 0; r--) {
-      final opacity = (1.0 / (r + 1)) * color.a;
-      final radiusOffset = r * spread;
-      final beatThick = energy.isBeat ? 1.0 : 0.0;
+      // t=0 → front ring (vivid, full lightness), t=1 → back ring (dark, dim).
+      final t = replication > 1 ? r / (replication - 1) : 0.0;
+      final lineColor = hsl
+          .withLightness(
+            (hsl.lightness * (0.55 + 0.45 * (1.0 - t))).clamp(0.15, 1.0),
+          )
+          .withSaturation(
+            (hsl.saturation * (0.7 + 0.3 * (1.0 - t))).clamp(0.0, 1.0),
+          )
+          .toColor();
+      final lineAlpha = 0.9 - t * 0.5;
 
+      final radiusOffset = r * spread;
+      final beatThick = energy.isBeat ? 2.0 : 0.0;
+
+      // Build point ring with slow rotation offset applied to every angle.
       final points = <Offset>[];
       for (int i = 0; i < _ekgSampleCount; i++) {
-        // Rotate history so newest is at the "top" or leading the circle
-        final angle = (i / _ekgSampleCount) * 2 * pi - (pi / 2);
+        final angle = (i / _ekgSampleCount) * 2 * pi - (pi / 2) + _ekgRotation;
         final rad =
             baseRadius + radiusOffset + (_ekgHistory[i] * _ekgMaxHeight * 0.8);
         points.add(Offset(cx + rad * cos(angle), cy + rad * sin(angle)));
       }
-      // Close the circle loop for PointMode.polygon
-      points.add(points.first);
+
+      // Seamless closed bezier: start at midpoint between last and first
+      // so the join is smoothed by the curve, not a hard corner.
+      final path = Path();
+      final startMid = Offset(
+        (points.last.dx + points[0].dx) / 2,
+        (points.last.dy + points[0].dy) / 2,
+      );
+      path.moveTo(startMid.dx, startMid.dy);
+      for (int i = 0; i < points.length; i++) {
+        final next = points[(i + 1) % points.length];
+        final midX = (points[i].dx + next.dx) / 2;
+        final midY = (points[i].dy + next.dy) / 2;
+        path.quadraticBezierTo(points[i].dx, points[i].dy, midX, midY);
+      }
+      // Path ends at startMid — no gap, no seam.
 
       if (r == 0 && _glowSigma > 0.0) {
         final glowPaint = Paint()
-          ..color = color.withValues(
-            alpha: (0.15 + (_beatFlash * 0.1)) * opacity,
+          ..color = lineColor.withValues(
+            alpha: (0.18 + (_beatFlash * 0.35)) * lineAlpha,
           )
           ..style = PaintingStyle.stroke
-          ..strokeWidth = 3.5 + beatThick
+          ..strokeWidth = 4.0 + beatThick
           ..strokeCap = StrokeCap.round
           ..maskFilter = isWasmSafeMode()
               ? null
               : MaskFilter.blur(BlurStyle.normal, _glowSigma);
-        canvas.drawPoints(PointMode.polygon, points, glowPaint);
+        canvas.drawPath(path, glowPaint);
       }
 
       final corePaint = Paint()
-        ..color = color.withValues(
-          alpha: (0.85 + (_beatFlash * 0.15)) * opacity,
+        ..color = lineColor.withValues(
+          alpha: (0.85 + (_beatFlash * 0.15)) * lineAlpha,
         )
         ..style = PaintingStyle.stroke
         ..strokeWidth = 2.0 + (r == 0 ? beatThick : 0.0)
         ..strokeCap = StrokeCap.round;
-      canvas.drawPoints(PointMode.polygon, points, corePaint);
+      canvas.drawPath(path, corePaint);
     }
   }
 
@@ -415,6 +636,7 @@ class StealGraph extends Component with HasGameReference<StealGame> {
     }
 
     for (int i = 0; i < _cornerBarCount; i++) {
+      final isBeatBar = i == _bandCount;
       final height = _cornerHeights[i].clamp(2.0, _maxBarHeight);
       final barLeft = startX + (i * (_barWidth + _barGap));
       final barTop = startY - height;
@@ -427,23 +649,46 @@ class StealGraph extends Component with HasGameReference<StealGame> {
       );
 
       if (_glowSigma > 0.0) {
+        // Beat bar gets 2× sigma and a much stronger alpha on flash.
+        final glowAlpha = isBeatBar
+            ? (0.35 + _beatFlash * 0.55).clamp(0.0, 1.0)
+            : (0.22 + _beatFlash * 0.18).clamp(0.0, 1.0);
+        final glowSigma = isBeatBar ? _glowSigma * 2.0 : _glowSigma;
         final glowPaint = Paint()
-          ..color = color.withValues(alpha: 0.22 + (_beatFlash * 0.18))
+          ..color = color.withValues(alpha: glowAlpha)
           ..style = PaintingStyle.fill
           ..maskFilter = isWasmSafeMode()
               ? null
-              : MaskFilter.blur(BlurStyle.normal, _glowSigma);
+              : MaskFilter.blur(BlurStyle.normal, glowSigma);
         canvas.drawRRect(rect, glowPaint);
       }
 
+      // Beat bar top alpha brightens with flash; other bars use fixed alpha.
+      final topAlpha = isBeatBar
+          ? (0.75 + _beatFlash * 0.25).clamp(0.0, 1.0)
+          : 0.88;
       final corePaint = Paint()
-        ..shader =
-            Gradient.linear(Offset(barLeft, startY), Offset(barLeft, barTop), [
-              color.withValues(alpha: 0.24),
-              color.withValues(alpha: i == _bandCount ? 0.98 : 0.88),
-            ])
+        ..shader = Gradient.linear(
+          Offset(barLeft, startY),
+          Offset(barLeft, barTop),
+          [color.withValues(alpha: 0.24), color.withValues(alpha: topAlpha)],
+        )
         ..style = PaintingStyle.fill;
       canvas.drawRRect(rect, corePaint);
+
+      // White spark at beat bar top on strong flash.
+      if (isBeatBar && _beatFlash > 0.45) {
+        final sparkAlpha = ((_beatFlash - 0.45) / 0.55).clamp(0.0, 1.0);
+        final sparkPaint = Paint()
+          ..color = Colors.white.withValues(alpha: sparkAlpha * 0.95)
+          ..strokeWidth = 2.0
+          ..strokeCap = StrokeCap.round;
+        canvas.drawLine(
+          Offset(barLeft - 1.0, barTop),
+          Offset(barLeft + _barWidth + 1.0, barTop),
+          sparkPaint,
+        );
+      }
 
       final peakY = startY - _cornerPeakHeights[i].clamp(0.0, _maxBarHeight);
       final capPaint = Paint()
@@ -463,11 +708,11 @@ class StealGraph extends Component with HasGameReference<StealGame> {
       _textPainter.text = TextSpan(
         text: _cornerLabels[i],
         style: TextStyle(
-          color: i == _bandCount
+          color: isBeatBar
               ? Colors.white.withValues(alpha: 0.9)
               : color.withValues(alpha: 0.7),
           fontSize: 8,
-          fontWeight: i == _bandCount ? FontWeight.w700 : FontWeight.w600,
+          fontWeight: isBeatBar ? FontWeight.w700 : FontWeight.w600,
           letterSpacing: 1.0,
           fontFamily: 'RobotoMono',
         ),
@@ -528,6 +773,709 @@ class StealGraph extends Component with HasGameReference<StealGame> {
     _textPainter.paint(canvas, Offset(startX - 2, startY + 16));
   }
 
+  /// Render phosphor oscilloscope — raw PCM waveform, bottom strip.
+  /// When PCM is flat (common on some Android TV chipsets), falls back to a
+  /// smooth synthesized waveform derived from the 8 FFT bands so the scope
+  /// always shows something audio-reactive.
+  ///
+  /// [panelWidth]: when provided the scope is right-anchored with a fixed
+  /// panel width, mirroring the bar-graph panel on the left.  The waveform
+  /// height matches [_maxBarHeight] so both panels share the same vertical
+  /// footprint.  When omitted the scope fills the full screen width (standalone
+  /// 'scope' mode).
+  void _renderScope(Canvas canvas, {double? panelWidth}) {
+    final drift = _burnInDrift();
+    final w = game.size.x;
+    final h = game.size.y;
+
+    // Panel mode (corner_only): same height as bar graph, right-anchored.
+    // Standalone mode: fill width, slightly shorter trace.
+    final isPanelMode = panelWidth != null;
+    final scopeHeight = isPanelMode ? _maxBarHeight : 70.0;
+    final availableWidth = isPanelMode ? panelWidth : w - _leftPadding * 2;
+    final startX =
+        (isPanelMode ? w - _leftPadding - panelWidth : _leftPadding) + drift.dx;
+    // Center of waveform sits at the vertical midpoint of the bar-graph area.
+    final centerY =
+        h - _bottomPadding + drift.dy - (isPanelMode ? scopeHeight / 2 : 0.0);
+
+    // P31 phosphor green
+    const phosphorColor = Color(0xFF33FF66);
+
+    // Soft-clip: atan(v*50)/(π/2) ≈ 50v for tiny v, approaches ±1 asymptotically.
+    double softClip(double v) => atan(v * 50.0) / (pi / 2);
+
+    // Panel background — only in corner_only mode, mirrors bar-graph HUD panel.
+    if (isPanelMode && !_isFast) {
+      const panelPad = 10.0;
+      final panelRect = RRect.fromRectAndRadius(
+        Rect.fromLTWH(
+          startX - panelPad,
+          centerY - scopeHeight / 2 - 14,
+          availableWidth + panelPad * 2,
+          scopeHeight + 40,
+        ),
+        const Radius.circular(10),
+      );
+      canvas.drawRRect(
+        panelRect,
+        Paint()
+          ..color = Colors.white.withValues(alpha: _isBalanced ? 0.035 : 0.06)
+          ..style = PaintingStyle.fill,
+      );
+      canvas.drawRRect(
+        panelRect,
+        Paint()
+          ..color = Colors.white.withValues(alpha: 0.14 + _beatFlash * 0.1)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 1.0,
+      );
+    }
+
+    // Graticule: always visible — center line and ±50% bounds.
+    final graticulePaint = Paint()
+      ..color = phosphorColor.withValues(alpha: 0.08)
+      ..strokeWidth = 0.5;
+    canvas.drawLine(
+      Offset(startX, centerY),
+      Offset(startX + availableWidth, centerY),
+      graticulePaint,
+    );
+    for (final yOff in [-scopeHeight / 2, scopeHeight / 2]) {
+      canvas.drawLine(
+        Offset(startX, centerY + yOff),
+        Offset(startX + availableWidth, centerY + yOff),
+        graticulePaint,
+      );
+    }
+
+    // Beat shifts trace colour toward warm white for one flash cycle.
+    final traceColor = _beatFlash > 0.01
+        ? Color.lerp(phosphorColor, const Color(0xFFFFFFFF), _beatFlash * 0.5)!
+        : phosphorColor;
+
+    void drawTrace(Path path) {
+      if (_glowSigma > 0.0) {
+        canvas.drawPath(
+          path,
+          Paint()
+            ..color = traceColor.withValues(alpha: 0.22 + _beatFlash * 0.28)
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 4.0
+            ..strokeCap = StrokeCap.round
+            ..maskFilter = isWasmSafeMode()
+                ? null
+                : MaskFilter.blur(BlurStyle.normal, _glowSigma),
+        );
+      }
+      canvas.drawPath(
+        path,
+        Paint()
+          ..color = traceColor.withValues(alpha: 0.92)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 1.5 + _beatFlash * 0.8
+          ..strokeCap = StrokeCap.round,
+      );
+    }
+
+    final waveform = _scopeWaveform;
+    final hasPcm = waveform.length >= 2 && _scopePeak > 0.015;
+
+    if (hasPcm) {
+      // ── Real PCM path ─────────────────────────────────────────────────────
+      final path = Path();
+      path.moveTo(startX, centerY - softClip(waveform[0]) * (scopeHeight / 2));
+      for (int i = 1; i < waveform.length; i++) {
+        final x = startX + (i / (waveform.length - 1)) * availableWidth;
+        final y = centerY - softClip(waveform[i]) * (scopeHeight / 2);
+        path.lineTo(x, y);
+      }
+      drawTrace(path);
+
+      // Label bottom-left.
+      canvas.save();
+      canvas.translate(startX, centerY + scopeHeight / 2 + 6.0);
+      _textPainter.text = TextSpan(
+        text: 'OSC PCM  256pt',
+        style: TextStyle(
+          color: phosphorColor.withValues(alpha: 0.4),
+          fontSize: 8,
+          fontWeight: FontWeight.w600,
+          letterSpacing: 1.1,
+          fontFamily: 'RobotoMono',
+        ),
+      );
+      _textPainter.layout();
+      _textPainter.paint(canvas, Offset.zero);
+      canvas.restore();
+
+      // Peak level readout — right side.
+      final peakPct = (_scopePeak * 100).clamp(0.0, 100.0).toStringAsFixed(0);
+      _textPainter.text = TextSpan(
+        text: 'LVL $peakPct%',
+        style: TextStyle(
+          color: phosphorColor.withValues(alpha: 0.3),
+          fontSize: 7,
+          fontWeight: FontWeight.w600,
+          letterSpacing: 1.0,
+          fontFamily: 'RobotoMono',
+        ),
+      );
+      _textPainter.layout();
+      canvas.save();
+      canvas.translate(
+        startX + availableWidth - _textPainter.width,
+        centerY + scopeHeight / 2 + 6.0,
+      );
+      _textPainter.paint(canvas, Offset.zero);
+      canvas.restore();
+    } else {
+      // ── FFT-band synthesized waveform fallback ────────────────────────────
+      // PCM capture returns flat data on some Android TV chipsets.  Instead of
+      // a dead flat line we build a smooth bezier from the 8 FFT bands:
+      //   • 9 control points spaced evenly across the scope width.
+      //   • Band amplitude alternates sign (±) to create an oscillating shape.
+      //   • softClip keeps the curve within the display bounds.
+      final bands = energy.bands;
+      final hasSignal = bands.length >= 8 && energy.overall > 0.008;
+
+      if (hasSignal) {
+        // Time-varying additive synthesis: each band drives a sinusoid at a
+        // characteristic visual frequency.  The scope window advances with
+        // game.time so the trace scrolls continuously — left = oldest, right =
+        // newest.  Band energy sets each component's amplitude, giving a live
+        // waveform that reacts to bass, mids, and treble independently.
+        //
+        // Visual frequencies (Hz): chosen so the scope shows 0.5-4 full cycles
+        // of each component in the 0.5-second window — visually readable.
+        const freqs = [0.2, 0.4, 0.7, 1.1, 1.6, 2.25, 3.0, 4.0];
+        const windowSecs = 4.0; // seconds of signal shown across scope width
+        const numPoints = 128;
+
+        final t = game.time;
+        // Pre-scale each band; softClip keeps amplitude in ±1 territory.
+        final amps = List<double>.generate(
+          8,
+          (b) => b < bands.length ? softClip(bands[b] * 3.0) : 0.0,
+        );
+
+        final path = Path();
+        for (int i = 0; i < numPoints; i++) {
+          final x = startX + (i / (numPoints - 1)) * availableWidth;
+          // Map x to a time offset so the trace scrolls left as time advances.
+          final tx = t - windowSecs + (i / (numPoints - 1)) * windowSecs;
+          // Sum sinusoids — 8 components give a rich, complex waveform.
+          var val = 0.0;
+          for (int b = 0; b < 8; b++) {
+            val += amps[b] * sin(2 * pi * freqs[b] * tx);
+          }
+          val = (val / 4.0).clamp(-1.0, 1.0);
+          final y = centerY - val * (scopeHeight / 2);
+          if (i == 0) {
+            path.moveTo(x, y);
+          } else {
+            path.lineTo(x, y);
+          }
+        }
+        drawTrace(path);
+
+        // Label indicating fallback mode.
+        canvas.save();
+        canvas.translate(startX, centerY + scopeHeight / 2 + 6.0);
+        _textPainter.text = TextSpan(
+          text: 'OSC FFT-SYN  8B',
+          style: TextStyle(
+            color: phosphorColor.withValues(alpha: 0.4),
+            fontSize: 8,
+            fontWeight: FontWeight.w600,
+            letterSpacing: 1.1,
+            fontFamily: 'RobotoMono',
+          ),
+        );
+        _textPainter.layout();
+        _textPainter.paint(canvas, Offset.zero);
+        canvas.restore();
+      } else {
+        // Completely silent — pulsing flat line.
+        final flatAlpha = 0.15 + energy.overall * 0.35 + _beatFlash * 0.3;
+        canvas.drawLine(
+          Offset(startX, centerY),
+          Offset(startX + availableWidth, centerY),
+          Paint()
+            ..color = phosphorColor.withValues(alpha: flatAlpha.clamp(0.0, 1.0))
+            ..strokeWidth = 1.2,
+        );
+
+        canvas.save();
+        canvas.translate(startX, centerY + scopeHeight / 2 + 6.0);
+        _textPainter.text = TextSpan(
+          text: 'OSC — SILENT',
+          style: TextStyle(
+            color: phosphorColor.withValues(alpha: 0.25),
+            fontSize: 8,
+            fontWeight: FontWeight.w600,
+            letterSpacing: 1.1,
+            fontFamily: 'RobotoMono',
+          ),
+        );
+        _textPainter.layout();
+        _textPainter.paint(canvas, Offset.zero);
+        canvas.restore();
+      }
+    }
+  }
+
+  /// Render dual VU needle meters.
+  /// When AudioPlaybackCapture is active, uses real L/R RMS levels.
+  /// Otherwise fakes stereo by splitting low vs high FFT bands.
+  void _renderVu(Canvas canvas) {
+    final drift = _burnInDrift();
+    final cx = game.size.x / 2 + drift.dx;
+    final baseY = game.size.y - _bottomPadding + drift.dy;
+    const gap = 10.0;
+    // Show stereo source in range label: 'ST' = real stereo, 'LO'/'HI' = FFT fake.
+    final lRange = _hasRealStereo ? 'ST' : 'LO';
+    final rRange = _hasRealStereo ? 'ST' : 'HI';
+
+    _drawVuMeter(
+      canvas,
+      cx - _vuWidth - gap / 2,
+      baseY,
+      _vuLeft,
+      _vuPeakLeft,
+      'L',
+      lRange,
+    );
+    _drawVuMeter(
+      canvas,
+      cx + gap / 2,
+      baseY,
+      _vuRight,
+      _vuPeakRight,
+      'R',
+      rRange,
+    );
+  }
+
+  void _drawVuMeter(
+    Canvas canvas,
+    double left,
+    double bottom,
+    double level,
+    double peakLevel,
+    String chanLabel,
+    String rangeLabel,
+  ) {
+    // Panel background
+    if (!_isFast) {
+      final panelRect = RRect.fromRectAndRadius(
+        Rect.fromLTWH(left, bottom - _vuHeight, _vuWidth, _vuHeight),
+        const Radius.circular(8),
+      );
+      canvas.drawRRect(
+        panelRect,
+        Paint()
+          ..color = Colors.white.withValues(alpha: 0.05)
+          ..style = PaintingStyle.fill,
+      );
+      canvas.drawRRect(
+        panelRect,
+        Paint()
+          ..color = Colors.white.withValues(alpha: 0.12 + _beatFlash * 0.06)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 1.0,
+      );
+    }
+
+    final pivotX = left + _vuWidth / 2;
+    final pivotY = bottom - 14.0;
+    const arcRadius = _vuNeedleLength + 5.0;
+
+    // Colored arc zones (background)
+    final arcRect = Rect.fromCenter(
+      center: Offset(pivotX, pivotY),
+      width: _vuNeedleLength * 2,
+      height: _vuNeedleLength * 2,
+    );
+    const arcStart = -pi / 2 - _vuSweepHalf;
+    const totalSweep = _vuSweepHalf * 2;
+
+    canvas.drawArc(
+      arcRect,
+      arcStart,
+      totalSweep * 0.65,
+      false,
+      Paint()
+        ..color = const Color(0xFF4AF3C6).withValues(alpha: 0.10)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 5.0,
+    );
+    canvas.drawArc(
+      arcRect,
+      arcStart + totalSweep * 0.65,
+      totalSweep * 0.17,
+      false,
+      Paint()
+        ..color = const Color(0xFFFFE66D).withValues(alpha: 0.12)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 5.0,
+    );
+    canvas.drawArc(
+      arcRect,
+      arcStart + totalSweep * 0.82,
+      totalSweep * 0.18,
+      false,
+      Paint()
+        ..color = const Color(0xFFFF4444).withValues(alpha: 0.15)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 5.0,
+    );
+
+    // Scale tick marks
+    const markFracs = [0.0, 0.2, 0.4, 0.58, 0.72, 0.84, 1.0];
+    const markLabels = ['-20', '-10', '-7', '-3', '0', '+1', '+3'];
+    const showLabel = [true, false, false, false, true, false, true];
+
+    for (int m = 0; m < markFracs.length; m++) {
+      final frac = markFracs[m];
+      final angle = -pi / 2 + (-_vuSweepHalf + frac * totalSweep);
+      final mx1 = pivotX + cos(angle) * arcRadius;
+      final my1 = pivotY + sin(angle) * arcRadius;
+      final mx2 =
+          pivotX + cos(angle) * (arcRadius + (frac == 0.72 ? 9.0 : 6.0));
+      final my2 =
+          pivotY + sin(angle) * (arcRadius + (frac == 0.72 ? 9.0 : 6.0));
+
+      final tickColor = frac < 0.65
+          ? const Color(0xFF4AF3C6)
+          : frac < 0.82
+          ? const Color(0xFFFFE66D)
+          : const Color(0xFFFF5555);
+
+      canvas.drawLine(
+        Offset(mx1, my1),
+        Offset(mx2, my2),
+        Paint()
+          ..color = tickColor.withValues(alpha: 0.65)
+          ..strokeWidth = frac == 0.72 ? 1.5 : 0.8,
+      );
+
+      if (showLabel[m]) {
+        _textPainter.text = TextSpan(
+          text: markLabels[m],
+          style: TextStyle(
+            color: tickColor.withValues(alpha: 0.55),
+            fontSize: 7,
+            fontWeight: FontWeight.w600,
+            fontFamily: 'RobotoMono',
+          ),
+        );
+        _textPainter.layout();
+        final lx =
+            pivotX + cos(angle) * (arcRadius + 15) - _textPainter.width / 2;
+        final ly =
+            pivotY + sin(angle) * (arcRadius + 15) - _textPainter.height / 2;
+        _textPainter.paint(canvas, Offset(lx, ly));
+      }
+    }
+
+    // Peak hold dot on arc
+    if (peakLevel > 0.02) {
+      final peakAngle =
+          -pi / 2 + (-_vuSweepHalf + peakLevel.clamp(0.0, 1.0) * totalSweep);
+      final peakColor = peakLevel < 0.65
+          ? const Color(0xFF4AF3C6)
+          : peakLevel < 0.82
+          ? const Color(0xFFFFE66D)
+          : const Color(0xFFFF5555);
+      canvas.drawCircle(
+        Offset(
+          pivotX + cos(peakAngle) * (_vuNeedleLength - 3),
+          pivotY + sin(peakAngle) * (_vuNeedleLength - 3),
+        ),
+        2.2,
+        Paint()
+          ..color = peakColor.withValues(alpha: 0.9)
+          ..style = PaintingStyle.fill,
+      );
+    }
+
+    // Needle
+    final needleLevel = level.clamp(0.0, 1.0);
+    final needleAngle = -pi / 2 + (-_vuSweepHalf + needleLevel * totalSweep);
+    final tipX = pivotX + cos(needleAngle) * _vuNeedleLength;
+    final tipY = pivotY + sin(needleAngle) * _vuNeedleLength;
+
+    final needleColor = needleLevel < 0.65
+        ? const Color(0xFFDDDDDD)
+        : needleLevel < 0.82
+        ? const Color(0xFFFFE66D)
+        : const Color(0xFFFF5555);
+
+    if (_glowSigma > 0.0 && needleLevel > 0.05) {
+      canvas.drawLine(
+        Offset(pivotX, pivotY),
+        Offset(tipX, tipY),
+        Paint()
+          ..color = needleColor.withValues(alpha: 0.18)
+          ..strokeWidth = 3.0
+          ..maskFilter = isWasmSafeMode()
+              ? null
+              : const MaskFilter.blur(BlurStyle.normal, 4.0),
+      );
+    }
+    canvas.drawLine(
+      Offset(pivotX, pivotY),
+      Offset(tipX, tipY),
+      Paint()
+        ..color = needleColor.withValues(alpha: 0.95)
+        ..strokeWidth = 1.4
+        ..strokeCap = StrokeCap.round,
+    );
+
+    // Pivot
+    canvas.drawCircle(
+      Offset(pivotX, pivotY),
+      4.5,
+      Paint()
+        ..color = Colors.white.withValues(alpha: 0.65)
+        ..style = PaintingStyle.fill,
+    );
+    canvas.drawCircle(
+      Offset(pivotX, pivotY),
+      4.5,
+      Paint()
+        ..color = Colors.black.withValues(alpha: 0.5)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.0,
+    );
+
+    // Channel and range labels
+    _textPainter.text = TextSpan(
+      text: chanLabel,
+      style: const TextStyle(
+        color: Color(0xFF99AABB),
+        fontSize: 13,
+        fontWeight: FontWeight.w700,
+        letterSpacing: 2.0,
+        fontFamily: 'RobotoMono',
+      ),
+    );
+    _textPainter.layout();
+    _textPainter.paint(canvas, Offset(left + 7, bottom - _vuHeight + 6));
+
+    _textPainter.text = TextSpan(
+      text: rangeLabel,
+      style: TextStyle(
+        color: const Color(0xFF667788).withValues(alpha: 0.8),
+        fontSize: 7,
+        fontWeight: FontWeight.w600,
+        letterSpacing: 1.5,
+        fontFamily: 'RobotoMono',
+      ),
+    );
+    _textPainter.layout();
+    _textPainter.paint(
+      canvas,
+      Offset(left + _vuWidth - _textPainter.width - 7, bottom - _vuHeight + 6),
+    );
+
+    _textPainter.text = const TextSpan(
+      text: 'VU',
+      style: TextStyle(
+        color: Color(0xFF445566),
+        fontSize: 7,
+        fontWeight: FontWeight.w600,
+        letterSpacing: 1.5,
+        fontFamily: 'RobotoMono',
+      ),
+    );
+    _textPainter.layout();
+    _textPainter.paint(
+      canvas,
+      Offset(pivotX - _textPainter.width / 2, bottom - 6),
+    );
+  }
+
+  /// Beat algorithm comparison display — 6 continuous level bars, one per algorithm.
+  ///
+  /// Bar height = flux/mean ratio (0–3×).  Horizontal lines show thresholds:
+  ///   yellow dashed = 1.2× (default beat threshold at sensitivity=0.5)
+  ///   red dashed    = 1.7× (beat threshold at sensitivity=0)
+  /// Bar glows white when that algorithm fires a beat.
+  /// If bars never move → data pipeline broken (check logcat / fresh install).
+  void _renderBeatDebug(Canvas canvas) {
+    const numAlgos = 6;
+    const barW = 64.0;
+    const barGap = 18.0;
+    const maxH = 140.0; // height representing ratio = 3.0
+    const bottomPad = 100.0;
+    const labelH = 32.0;
+    const panelPad = 20.0;
+
+    final w = game.size.x;
+    final h = game.size.y;
+    const totalW = numAlgos * barW + (numAlgos - 1) * barGap;
+    final startX = (w - totalW) / 2;
+    final baseY = h - bottomPad;
+
+    // Background panel
+    final panelRect = RRect.fromRectAndRadius(
+      Rect.fromLTWH(
+        startX - panelPad,
+        baseY - maxH - 28,
+        totalW + panelPad * 2,
+        maxH + labelH + 36,
+      ),
+      const Radius.circular(12),
+    );
+    canvas.drawRRect(
+      panelRect,
+      Paint()
+        ..color = Colors.white.withValues(alpha: 0.06)
+        ..style = PaintingStyle.fill,
+    );
+    canvas.drawRRect(
+      panelRect,
+      Paint()
+        ..color = Colors.white.withValues(alpha: 0.20)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.0,
+    );
+
+    // Title + energy readout (proves data is flowing even before beats fire)
+    _textPainter.text = TextSpan(
+      text:
+          'BEAT DEBUG  '
+          'OVR:${(energy.overall * 100).toStringAsFixed(0).padLeft(3)}%  '
+          'MID:${energy.algoLevels.length > 1 ? energy.algoLevels[1].toStringAsFixed(2) : "---"}  '
+          'LEN:${energy.algoLevels.length}',
+      style: TextStyle(
+        color: Colors.white.withValues(alpha: 0.5),
+        fontSize: 9,
+        fontWeight: FontWeight.w700,
+        letterSpacing: 1.8,
+        fontFamily: 'RobotoMono',
+      ),
+    );
+    _textPainter.layout();
+    _textPainter.paint(
+      canvas,
+      Offset(startX + (totalW - _textPainter.width) / 2, baseY - maxH - 20),
+    );
+
+    // Threshold lines (drawn behind all bars)
+    // 1.66× line (main threshold) — red
+    // 1.1×  line (KICK+ threshold) — yellow
+    for (final entry in [
+      (1.7, const Color(0xFFFF5555)),
+      (1.2, const Color(0xFFFFE66D)),
+    ]) {
+      final ratio = entry.$1;
+      final color = entry.$2;
+      final lineY = baseY - (ratio / 3.0 * maxH);
+      canvas.drawLine(
+        Offset(startX - panelPad + 4, lineY),
+        Offset(startX + totalW + panelPad - 4, lineY),
+        Paint()
+          ..color = color.withValues(alpha: 0.35)
+          ..strokeWidth = 1.0,
+      );
+      _textPainter.text = TextSpan(
+        text: '$ratio×',
+        style: TextStyle(
+          color: color.withValues(alpha: 0.55),
+          fontSize: 7,
+          fontFamily: 'RobotoMono',
+        ),
+      );
+      _textPainter.layout();
+      _textPainter.paint(canvas, Offset(startX - panelPad + 4, lineY - 9));
+    }
+
+    for (int i = 0; i < numAlgos; i++) {
+      final flash = _algoFlash[i];
+      final level = _algoLevel[i].clamp(0.0, 3.0);
+      final barLeft = startX + i * (barW + barGap);
+      final color = _bandColors[i + 1];
+
+      // Level bar (continuous, driven by flux/mean ratio)
+      final levelH = (level / 3.0 * maxH).clamp(2.0, maxH);
+      final levelTop = baseY - levelH;
+      final levelRect = RRect.fromRectAndRadius(
+        Rect.fromLTWH(barLeft, levelTop, barW, levelH),
+        const Radius.circular(5),
+      );
+
+      canvas.drawRRect(
+        levelRect,
+        Paint()
+          ..shader = Gradient.linear(
+            Offset(barLeft, baseY),
+            Offset(barLeft, levelTop),
+            [color.withValues(alpha: 0.18), color.withValues(alpha: 0.55)],
+          )
+          ..style = PaintingStyle.fill,
+      );
+
+      // Beat flash glow overlay
+      if (flash > 0.01 && _glowSigma > 0.0) {
+        canvas.drawRRect(
+          RRect.fromRectAndRadius(
+            Rect.fromLTWH(barLeft, baseY - maxH, barW, maxH),
+            const Radius.circular(5),
+          ),
+          Paint()
+            ..color = Colors.white.withValues(alpha: flash * 0.45)
+            ..style = PaintingStyle.fill
+            ..maskFilter = isWasmSafeMode()
+                ? null
+                : MaskFilter.blur(BlurStyle.normal, _glowSigma),
+        );
+      }
+
+      // Bar border — brightens on flash
+      canvas.drawRRect(
+        levelRect,
+        Paint()
+          ..color = color.withValues(alpha: 0.35 + flash * 0.55)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = flash > 0.1 ? 2.0 : 1.0,
+      );
+
+      // BEAT dot above bar
+      if (flash > 0.3) {
+        canvas.drawCircle(
+          Offset(barLeft + barW / 2, levelTop - 7),
+          5.0 * flash,
+          Paint()
+            ..color = Colors.white.withValues(alpha: flash * 0.9)
+            ..style = PaintingStyle.fill,
+        );
+      }
+
+      // Label
+      final lines = _algoLabels[i].split('\n');
+      for (int l = 0; l < lines.length; l++) {
+        _textPainter.text = TextSpan(
+          text: lines[l],
+          style: TextStyle(
+            color: color.withValues(alpha: 0.55 + flash * 0.45),
+            fontSize: l == 0 ? 9 : 7,
+            fontWeight: l == 0 ? FontWeight.w700 : FontWeight.w500,
+            letterSpacing: 0.8,
+            fontFamily: 'RobotoMono',
+          ),
+        );
+        _textPainter.layout();
+        _textPainter.paint(
+          canvas,
+          Offset(barLeft + (barW - _textPainter.width) / 2, baseY + 8 + l * 12),
+        );
+      }
+    }
+  }
+
   /// Render 8-band radial EQ centered on the logo.
   void _renderCircular(Canvas canvas) {
     final logoUV = game.smoothedLogoPos;
@@ -536,10 +1484,13 @@ class StealGraph extends Component with HasGameReference<StealGame> {
     final cy = logoUV.dy * game.size.y + (drift.dy * 0.4);
 
     final minDim = min(game.size.x, game.size.y);
-    final dynamicRadius = (game.config.logoScale * minDim * 0.45).clamp(
-      40.0,
-      300.0,
-    );
+    final dynamicRadius =
+        (game.config.logoScale *
+                minDim *
+                0.45 *
+                game.pulseScale *
+                game.config.ekgRadius)
+            .clamp(40.0, 300.0);
 
     for (int i = 0; i < _bandCount; i++) {
       final angle = (i / _bandCount) * 2 * pi - (pi / 2);

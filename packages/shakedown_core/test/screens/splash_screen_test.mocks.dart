@@ -834,6 +834,15 @@ class MockSettingsProvider extends _i1.Mock implements _i9.SettingsProvider {
           as bool);
 
   @override
+  bool get hideTvScrollbars =>
+      (super.noSuchMethod(
+            Invocation.getter(#hideTvScrollbars),
+            returnValue: false,
+            returnValueForMissingStub: false,
+          )
+          as bool);
+
+  @override
   _i2.AudioEngineMode get audioEngineMode =>
       (super.noSuchMethod(
             Invocation.getter(#audioEngineMode),
@@ -1125,6 +1134,24 @@ class MockSettingsProvider extends _i1.Mock implements _i9.SettingsProvider {
   bool get oilBannerPixelSnap =>
       (super.noSuchMethod(
             Invocation.getter(#oilBannerPixelSnap),
+            returnValue: false,
+            returnValueForMissingStub: false,
+          )
+          as bool);
+
+  @override
+  bool get oilAutoTextSpacing =>
+      (super.noSuchMethod(
+            Invocation.getter(#oilAutoTextSpacing),
+            returnValue: false,
+            returnValueForMissingStub: false,
+          )
+          as bool);
+
+  @override
+  bool get oilAutoRingSpacing =>
+      (super.noSuchMethod(
+            Invocation.getter(#oilAutoRingSpacing),
             returnValue: false,
             returnValueForMissingStub: false,
           )
@@ -1443,9 +1470,45 @@ class MockSettingsProvider extends _i1.Mock implements _i9.SettingsProvider {
           as double);
 
   @override
+  double get oilMiddleRingFontScale =>
+      (super.noSuchMethod(
+            Invocation.getter(#oilMiddleRingFontScale),
+            returnValue: 0.0,
+            returnValueForMissingStub: 0.0,
+          )
+          as double);
+
+  @override
+  double get oilOuterRingFontScale =>
+      (super.noSuchMethod(
+            Invocation.getter(#oilOuterRingFontScale),
+            returnValue: 0.0,
+            returnValueForMissingStub: 0.0,
+          )
+          as double);
+
+  @override
   double get oilInnerRingSpacingMultiplier =>
       (super.noSuchMethod(
             Invocation.getter(#oilInnerRingSpacingMultiplier),
+            returnValue: 0.0,
+            returnValueForMissingStub: 0.0,
+          )
+          as double);
+
+  @override
+  double get oilMiddleRingSpacingMultiplier =>
+      (super.noSuchMethod(
+            Invocation.getter(#oilMiddleRingSpacingMultiplier),
+            returnValue: 0.0,
+            returnValueForMissingStub: 0.0,
+          )
+          as double);
+
+  @override
+  double get oilOuterRingSpacingMultiplier =>
+      (super.noSuchMethod(
+            Invocation.getter(#oilOuterRingSpacingMultiplier),
             returnValue: 0.0,
             returnValueForMissingStub: 0.0,
           )
@@ -1877,6 +1940,12 @@ class MockSettingsProvider extends _i1.Mock implements _i9.SettingsProvider {
   );
 
   @override
+  void toggleHideTvScrollbars() => super.noSuchMethod(
+    Invocation.method(#toggleHideTvScrollbars, []),
+    returnValueForMissingStub: null,
+  );
+
+  @override
   void setGlowMode(int? mode) => super.noSuchMethod(
     Invocation.method(#setGlowMode, [mode]),
     returnValueForMissingStub: null,
@@ -1976,6 +2045,12 @@ class MockSettingsProvider extends _i1.Mock implements _i9.SettingsProvider {
   );
 
   @override
+  void setPerformanceMode(bool? value) => super.noSuchMethod(
+    Invocation.method(#setPerformanceMode, [value]),
+    returnValueForMissingStub: null,
+  );
+
+  @override
   void togglePerformanceMode() => super.noSuchMethod(
     Invocation.method(#togglePerformanceMode, []),
     returnValueForMissingStub: null,
@@ -1988,10 +2063,13 @@ class MockSettingsProvider extends _i1.Mock implements _i9.SettingsProvider {
   );
 
   @override
-  void setForceTv(bool? value) => super.noSuchMethod(
-    Invocation.method(#setForceTv, [value]),
-    returnValueForMissingStub: null,
-  );
+  _i5.Future<void> setForceTv(bool? value) =>
+      (super.noSuchMethod(
+            Invocation.method(#setForceTv, [value]),
+            returnValue: _i5.Future<void>.value(),
+            returnValueForMissingStub: _i5.Future<void>.value(),
+          )
+          as _i5.Future<void>);
 
   @override
   void toggleEnableHaptics() => super.noSuchMethod(
@@ -2025,13 +2103,10 @@ class MockSettingsProvider extends _i1.Mock implements _i9.SettingsProvider {
   );
 
   @override
-  _i5.Future<void> setWebPrefetchSeconds(int? seconds) =>
-      (super.noSuchMethod(
-            Invocation.method(#setWebPrefetchSeconds, [seconds]),
-            returnValue: _i5.Future<void>.value(),
-            returnValueForMissingStub: _i5.Future<void>.value(),
-          )
-          as _i5.Future<void>);
+  void setWebPrefetchSeconds(int? seconds) => super.noSuchMethod(
+    Invocation.method(#setWebPrefetchSeconds, [seconds]),
+    returnValueForMissingStub: null,
+  );
 
   @override
   void setRgbAnimationSpeed(double? speed) => super.noSuchMethod(
@@ -2073,10 +2148,13 @@ class MockSettingsProvider extends _i1.Mock implements _i9.SettingsProvider {
   );
 
   @override
-  void setOilScreensaverMode(String? mode) => super.noSuchMethod(
-    Invocation.method(#setOilScreensaverMode, [mode]),
-    returnValueForMissingStub: null,
-  );
+  _i5.Future<void> setOilScreensaverMode(String? mode) =>
+      (super.noSuchMethod(
+            Invocation.method(#setOilScreensaverMode, [mode]),
+            returnValue: _i5.Future<void>.value(),
+            returnValueForMissingStub: _i5.Future<void>.value(),
+          )
+          as _i5.Future<void>);
 
   @override
   void setOilScreensaverInactivityMinutes(int? minutes) => super.noSuchMethod(
@@ -2235,6 +2313,24 @@ class MockSettingsProvider extends _i1.Mock implements _i9.SettingsProvider {
           as _i5.Future<void>);
 
   @override
+  _i5.Future<void> setOilAutoTextSpacing(bool? value) =>
+      (super.noSuchMethod(
+            Invocation.method(#setOilAutoTextSpacing, [value]),
+            returnValue: _i5.Future<void>.value(),
+            returnValueForMissingStub: _i5.Future<void>.value(),
+          )
+          as _i5.Future<void>);
+
+  @override
+  _i5.Future<void> setOilAutoRingSpacing(bool? value) =>
+      (super.noSuchMethod(
+            Invocation.method(#setOilAutoRingSpacing, [value]),
+            returnValue: _i5.Future<void>.value(),
+            returnValueForMissingStub: _i5.Future<void>.value(),
+          )
+          as _i5.Future<void>);
+
+  @override
   _i5.Future<void> setOilLogoTrailIntensity(double? value) =>
       (super.noSuchMethod(
             Invocation.method(#setOilLogoTrailIntensity, [value]),
@@ -2313,10 +2409,13 @@ class MockSettingsProvider extends _i1.Mock implements _i9.SettingsProvider {
           as _i5.Future<void>);
 
   @override
-  void setOilAudioGraphMode(String? mode) => super.noSuchMethod(
-    Invocation.method(#setOilAudioGraphMode, [mode]),
-    returnValueForMissingStub: null,
-  );
+  _i5.Future<void> setOilAudioGraphMode(String? mode) =>
+      (super.noSuchMethod(
+            Invocation.method(#setOilAudioGraphMode, [mode]),
+            returnValue: _i5.Future<void>.value(),
+            returnValueForMissingStub: _i5.Future<void>.value(),
+          )
+          as _i5.Future<void>);
 
   @override
   _i5.Future<void> setOilBeatSensitivity(double? value) =>
@@ -2427,6 +2526,33 @@ class MockSettingsProvider extends _i1.Mock implements _i9.SettingsProvider {
           as _i5.Future<void>);
 
   @override
+  _i5.Future<void> setOilInnerRingSpacingMultiplier(double? value) =>
+      (super.noSuchMethod(
+            Invocation.method(#setOilInnerRingSpacingMultiplier, [value]),
+            returnValue: _i5.Future<void>.value(),
+            returnValueForMissingStub: _i5.Future<void>.value(),
+          )
+          as _i5.Future<void>);
+
+  @override
+  _i5.Future<void> setOilMiddleRingSpacingMultiplier(double? value) =>
+      (super.noSuchMethod(
+            Invocation.method(#setOilMiddleRingSpacingMultiplier, [value]),
+            returnValue: _i5.Future<void>.value(),
+            returnValueForMissingStub: _i5.Future<void>.value(),
+          )
+          as _i5.Future<void>);
+
+  @override
+  _i5.Future<void> setOilOuterRingSpacingMultiplier(double? value) =>
+      (super.noSuchMethod(
+            Invocation.method(#setOilOuterRingSpacingMultiplier, [value]),
+            returnValue: _i5.Future<void>.value(),
+            returnValueForMissingStub: _i5.Future<void>.value(),
+          )
+          as _i5.Future<void>);
+
+  @override
   _i5.Future<void> setOilInnerToMiddleGap(double? value) =>
       (super.noSuchMethod(
             Invocation.method(#setOilInnerToMiddleGap, [value]),
@@ -2463,9 +2589,18 @@ class MockSettingsProvider extends _i1.Mock implements _i9.SettingsProvider {
           as _i5.Future<void>);
 
   @override
-  _i5.Future<void> setOilInnerRingSpacingMultiplier(double? value) =>
+  _i5.Future<void> setOilMiddleRingFontScale(double? value) =>
       (super.noSuchMethod(
-            Invocation.method(#setOilInnerRingSpacingMultiplier, [value]),
+            Invocation.method(#setOilMiddleRingFontScale, [value]),
+            returnValue: _i5.Future<void>.value(),
+            returnValueForMissingStub: _i5.Future<void>.value(),
+          )
+          as _i5.Future<void>);
+
+  @override
+  _i5.Future<void> setOilOuterRingFontScale(double? value) =>
+      (super.noSuchMethod(
+            Invocation.method(#setOilOuterRingFontScale, [value]),
             returnValue: _i5.Future<void>.value(),
             returnValueForMissingStub: _i5.Future<void>.value(),
           )

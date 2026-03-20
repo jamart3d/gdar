@@ -996,6 +996,9 @@ class _TvScreensaverSectionState extends State<TvScreensaverSection> {
                                   'circular',
                                   'ekg',
                                   'circular_ekg',
+                                  'vu',
+                                  'scope',
+                                  'beat_debug',
                                 ];
                                 final idx = modes.indexOf(
                                   settings.oilAudioGraphMode,
@@ -1034,6 +1037,15 @@ class _TvScreensaverSectionState extends State<TvScreensaverSection> {
                                   value: 'circular_ekg',
                                   label: Text('Circ EKG'),
                                 ),
+                                ButtonSegment(value: 'vu', label: Text('VU')),
+                                ButtonSegment(
+                                  value: 'scope',
+                                  label: Text('Scope'),
+                                ),
+                                ButtonSegment(
+                                  value: 'beat_debug',
+                                  label: Text('Beat Debug'),
+                                ),
                               ],
                               selected: {settings.oilAudioGraphMode},
                               onSelectionChanged: (Set<String> s) =>
@@ -1042,12 +1054,14 @@ class _TvScreensaverSectionState extends State<TvScreensaverSection> {
                             ),
                           ),
                         ),
-                        if (settings.oilAudioGraphMode == 'ekg' ||
+                        if (settings.oilAudioGraphMode == 'circular' ||
+                            settings.oilAudioGraphMode == 'ekg' ||
                             settings.oilAudioGraphMode == 'circular_ekg') ...[
                           const SizedBox(height: 16),
-                          if (settings.oilAudioGraphMode == 'circular_ekg') ...[
+                          if (settings.oilAudioGraphMode == 'circular' ||
+                              settings.oilAudioGraphMode == 'circular_ekg') ...[
                             TvStepperRow(
-                              label: 'EKG Radius',
+                              label: 'Radius',
                               value: settings.oilEkgRadius,
                               min: 0.1,
                               max: 2.0,
@@ -1057,26 +1071,28 @@ class _TvScreensaverSectionState extends State<TvScreensaverSection> {
                             ),
                             const SizedBox(height: 16),
                           ],
-                          TvStepperRow(
-                            label: 'Line Replication',
-                            value: settings.oilEkgReplication.toDouble(),
-                            min: 1,
-                            max: 10,
-                            step: 1,
-                            valueFormatter: (v) => v.round().toString(),
-                            onChanged: (v) =>
-                                settings.setOilEkgReplication(v.round()),
-                          ),
-                          const SizedBox(height: 16),
-                          TvStepperRow(
-                            label: 'Line Spread',
-                            value: settings.oilEkgSpread,
-                            min: 0.0,
-                            max: 20.0,
-                            step: 0.5,
-                            valueFormatter: (v) => v.toStringAsFixed(1),
-                            onChanged: (v) => settings.setOilEkgSpread(v),
-                          ),
+                          if (settings.oilAudioGraphMode != 'circular') ...[
+                            TvStepperRow(
+                              label: 'Line Replication',
+                              value: settings.oilEkgReplication.toDouble(),
+                              min: 1,
+                              max: 10,
+                              step: 1,
+                              valueFormatter: (v) => v.round().toString(),
+                              onChanged: (v) =>
+                                  settings.setOilEkgReplication(v.round()),
+                            ),
+                            const SizedBox(height: 16),
+                            TvStepperRow(
+                              label: 'Line Spread',
+                              value: settings.oilEkgSpread,
+                              min: 0.0,
+                              max: 20.0,
+                              step: 0.5,
+                              valueFormatter: (v) => v.toStringAsFixed(1),
+                              onChanged: (v) => settings.setOilEkgSpread(v),
+                            ),
+                          ],
                         ],
                       ],
                     ),
