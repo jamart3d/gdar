@@ -951,70 +951,80 @@ class _SegmentedWrap<T> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Wrap(
-      spacing: 8.0 * scaleFactor,
-      runSpacing: 8.0 * scaleFactor,
-      children: segments.map((segment) {
-        final isSelected = segment.value == selectedValue;
-        final theme = Theme.of(context);
+    final theme = Theme.of(context);
+    final dividerColor = theme.colorScheme.outline.withValues(alpha: 0.35);
 
-        return Tooltip(
-          message: segment.tooltip ?? '',
-          child: Material(
-            color: Colors.transparent,
-            child: InkWell(
-              borderRadius: BorderRadius.circular(20),
-              onTap: () => onSelectionChanged(segment.value),
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
-                padding: EdgeInsets.symmetric(
-                  horizontal: 16 * scaleFactor,
-                  vertical: 8 * scaleFactor,
-                ),
-                decoration: BoxDecoration(
-                  color: isSelected
-                      ? theme.colorScheme.primaryContainer
-                      : theme.colorScheme.surfaceContainerHighest,
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: dividerColor, width: 1),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: IntrinsicHeight(
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            for (int i = 0; i < segments.length; i++) ...[
+              if (i > 0)
+                VerticalDivider(width: 1, thickness: 1, color: dividerColor),
+              _buildSegment(context, theme, segments[i]),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSegment(
+    BuildContext context,
+    ThemeData theme,
+    _Segment<T> segment,
+  ) {
+    final isSelected = segment.value == selectedValue;
+
+    return Tooltip(
+      message: segment.tooltip ?? '',
+      child: Material(
+        color: isSelected
+            ? theme.colorScheme.primaryContainer
+            : theme.colorScheme.surfaceContainerHighest,
+        child: InkWell(
+          onTap: () => onSelectionChanged(segment.value),
+          child: Padding(
+            padding: EdgeInsets.symmetric(
+              horizontal: 14 * scaleFactor,
+              vertical: 8 * scaleFactor,
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (segment.icon != null) ...[
+                  Icon(
+                    segment.icon,
+                    size: 15 * scaleFactor,
                     color: isSelected
-                        ? theme.colorScheme.primary
-                        : Colors.transparent,
-                    width: isSelected ? 2 : 1,
+                        ? theme.colorScheme.onPrimaryContainer
+                        : theme.colorScheme.onSurfaceVariant,
+                  ),
+                  SizedBox(width: 6 * scaleFactor),
+                ],
+                Text(
+                  segment.label,
+                  style: theme.textTheme.labelLarge?.copyWith(
+                    fontSize: 12 * scaleFactor,
+                    color: isSelected
+                        ? theme.colorScheme.onPrimaryContainer
+                        : theme.colorScheme.onSurfaceVariant,
+                    fontWeight:
+                        isSelected ? FontWeight.bold : FontWeight.w500,
                   ),
                 ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    if (segment.icon != null) ...[
-                      Icon(
-                        segment.icon,
-                        size: 16 * scaleFactor,
-                        color: isSelected
-                            ? theme.colorScheme.onPrimaryContainer
-                            : theme.colorScheme.onSurfaceVariant,
-                      ),
-                      SizedBox(width: 8 * scaleFactor),
-                    ],
-                    Text(
-                      segment.label,
-                      style: theme.textTheme.labelLarge?.copyWith(
-                        fontSize: 13 * scaleFactor,
-                        color: isSelected
-                            ? theme.colorScheme.onPrimaryContainer
-                            : theme.colorScheme.onSurfaceVariant,
-                        fontWeight: isSelected
-                            ? FontWeight.bold
-                            : FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+              ],
             ),
           ),
-        );
-      }).toList(),
+        ),
+      ),
     );
   }
 }
