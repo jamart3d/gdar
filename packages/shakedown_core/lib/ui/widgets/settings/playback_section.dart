@@ -740,7 +740,7 @@ class PlaybackSection extends StatelessWidget {
                       ),
                       _Segment(
                         value: HybridHandoffMode.buffered,
-                        label: 'End of Buffer',
+                        label: 'Mid',
                         tooltip:
                             'Wait until HTML5 buffer is exhausted before swap',
                         icon: isFruit
@@ -749,7 +749,7 @@ class PlaybackSection extends StatelessWidget {
                       ),
                       _Segment(
                         value: HybridHandoffMode.boundary,
-                        label: 'Boundary',
+                        label: 'End',
                         tooltip: 'Swap at the next track boundary',
                         icon: isFruit
                             ? LucideIcons.skipForward
