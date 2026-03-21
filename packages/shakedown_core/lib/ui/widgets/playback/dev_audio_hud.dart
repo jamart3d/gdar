@@ -1084,11 +1084,14 @@ class _DevAudioHudState extends State<DevAudioHud> {
         return 'Hybrid Handoff Mode: $desc ($value)';
       case 'BG':
         String desc = 'Unknown';
-        if (value == 'VID') desc = 'Video Overlay';
-        if (value == 'HBT') desc = 'Heartbeat (Silent)';
-        if (value == 'OFF') desc = 'Disabled';
-        if (value == 'H5') desc = 'HTML5 Keepalive';
-        return 'Hybrid Background Mode: $desc ($value)';
+        if (value == 'VID') desc = 'Video Overlay — silent video keeps WebAudio alive in background';
+        if (value == 'HBT') desc = 'Heartbeat — silent audio clock keeps WebAudio alive in background';
+        if (value == 'OFF') desc = 'Disabled — no background survival, may throttle on mobile';
+        if (value == 'H5') desc = 'HTML5 Keepalive — hands off to HTML5 in background';
+        final dotLegend = value == 'HBT'
+            ? ' | Dots: 🔴 needed but inactive (risk) · 🟠 not needed (desktop) · 🟢 active (protected)'
+            : '';
+        return 'Background Survival: $desc$dotLegend';
       case 'STB':
         String desc = 'Unknown';
         if (value == 'STB') desc = 'Stability (Safe)';
