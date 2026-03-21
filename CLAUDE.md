@@ -124,7 +124,7 @@ SharedPreferences keys on web use the `flutter.` prefix. Raw GDAR keys: `audio_e
 
 ## Workflow
 
-**Save:** `git add . && git commit -m "[Auto-Save] <message>" && git push`
+**Save:** `git add . && git commit -m "[Auto-Save] <message>" && git push` — always `git add .` to include ALL modified and untracked files, never stage only recently edited files.
 
 **Jules checkup:** Create a task file in `.agent/tasks/` describing what to verify, following existing task file conventions in that directory.
 
