@@ -1109,7 +1109,12 @@ class _DevAudioHudState extends State<DevAudioHud> {
       case 'DFT':
         return 'JS Engine Tick Drift (seconds since last heartbeat): $value. Lower is better.';
       case 'PF':
-        return 'Prefetch Window (seconds to pre-load next track): $value';
+        if (value == 'G') {
+          return 'Prefetch: Greedy — fetch full track immediately. '
+              'Required by WebAudio engine (needs full buffer decoded upfront).';
+        }
+        return 'Prefetch Window: pre-load $value of the next track. '
+            'Applies to HTML5/Hybrid engines only.';
       case 'PS':
         String desc = 'Unknown';
         if (value == 'LD') desc = 'Loading';
