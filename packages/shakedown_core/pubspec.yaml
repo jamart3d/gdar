@@ -42,6 +42,7 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  flame_test: ^1.16.0
   flutter_lints: ^6.0.0
   build_runner: ^2.4.8
   mockito: ^5.4.4
