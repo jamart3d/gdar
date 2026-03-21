@@ -1,15 +1,15 @@
 # Pending Release Notes
 
 ### Status
-- **Current Version**: `1.3.1+211`
+- **Current Version**: `1.3.2+212`
 - **Git State**: RELEASE PENDING
-- **Goal**: Monitoring feedback after `1.3.1+211` release.
+- **Goal**: Monitoring feedback after `1.3.2+212` release.
 
-### What's In This Release (1.3.1+211)
-- **TV Enhancement**: Implemented `StereoCapture` for the Android TV engine, providing high-fidelity PCM capture for real-time visualizers.
-- **TV Architecture**: Added specialized TV banner assets and startup metadata configurations for enhanced Leanback visibility.
-- **Screensaver**: Optimized EKG spread and beat detection sensitivity in `default_settings.dart` for a more responsive reactive experience.
-- **TV Debugging**: Expanded and refined the `TV_DEBUGGING.md` documentation with new deep-link automation sequences for rapid UI verification.
+### What's In This Release (1.3.2+212)
+- **TV Enhancement**: Finalized infrastructure for true stereo L/R VU meters via `AudioPlaybackCapture` (API 29+).
+- **TV Architecture**: Conducted a comprehensive screensaver audio audit (2026-03-21) to align native detector levels with visualizer telemetry.
+- **Documentation**: Updated audio graph modes, reactivity status, and tuning guides for advanced TV configuration.
+- **Maintenance**: Synchronized codebase formatting and refined performance-tier naming in `StealGraph`.
 
 ### Next Commands
 Use PowerShell.

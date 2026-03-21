@@ -1153,7 +1153,9 @@ class _DevAudioHudState extends State<DevAudioHud> {
       case 'BGT':
         return 'Background Time (total time app has been hidden this session): $value';
       case 'PM':
-        String pmDesc = value == 'ON' ? 'Enabled (effects reduced)' : 'Disabled';
+        String pmDesc = value == 'ON'
+            ? 'Enabled (effects reduced)'
+            : 'Disabled';
         return 'Performance Mode: $pmDesc ($value)';
       default:
         return '$key: $value';

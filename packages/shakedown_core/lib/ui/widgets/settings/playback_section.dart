@@ -679,13 +679,15 @@ class PlaybackSection extends StatelessWidget {
                     _Segment(
                       value: HiddenSessionPreset.stability,
                       label: 'Compatible',
-                      tooltip: 'Best background longevity — video keepalive, gapless when visible',
+                      tooltip:
+                          'Best background longevity — video keepalive, gapless when visible',
                       icon: isFruit ? LucideIcons.shield : Icons.shield_rounded,
                     ),
                     _Segment(
                       value: HiddenSessionPreset.balanced,
                       label: 'Balanced',
-                      tooltip: 'Good background survival + gapless when visible',
+                      tooltip:
+                          'Good background survival + gapless when visible',
                       icon: isFruit ? LucideIcons.scale : Icons.balance_rounded,
                     ),
                     _Segment(

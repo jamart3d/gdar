@@ -1,193 +1,276 @@
-# Audio Graph Modes — Design & Implementation Notes
+# Audio Graph Modes - Design and Implementation Notes
 
-_Session: 2026-03-19 / 2026-03-20_
+Session context: 2026-03-19 / 2026-03-20
+Audit refresh: 2026-03-21
 
 ---
 
 ## Overview
 
-The screensaver audio graph (`StealGraph`) supports multiple display modes driven by
-the Android Visualizer API. All modes are selected via `oilAudioGraphMode` in
-`SettingsProvider` and rendered by `steal_graph.dart`.
+The TV screensaver audio graph (`StealGraph`) supports multiple display modes
+driven by the Android Visualizer pipeline, with optional stereo VU support from
+`AudioPlaybackCapture`.
+
+All modes are selected via `oilAudioGraphMode` in `SettingsProvider` and
+rendered by `packages/shakedown_core/lib/steal_screensaver/steal_graph.dart`.
 
 | Mode | Description |
 |---|---|
 | `off` | No graph |
-| `corner` | 8-band FFT bars + BEAT bar, bottom-left |
-| `corner_only` | Same as corner + VU meters + oscilloscope (all three combined) |
+| `corner` | 8-band FFT bars plus BEAT bar, bottom-left |
+| `corner_only` | Corner bars plus VU meters plus oscilloscope |
 | `circular` | 8-band radial EQ orbiting the logo |
-| `ekg` | Scrolling EKG line, guitar-range (mid 250–2000 Hz) |
-| `circular_ekg` | EKG orbiting the logo |
-| `vu` | Dual analog VU needle meters only |
-| `scope` | Oscilloscope full-screen strip |
+| `ekg` | Scrolling guitar-range EKG line across the bottom |
+| `circular_ekg` | Circular EKG orbiting the logo |
+| `vu` | Dual analog VU meters only |
+| `scope` | Standalone oscilloscope strip |
+| `beat_debug` | Diagnostic beat detector panel |
 
 ---
 
 ## Beat Detection
 
-> **STATUS: NOT WORKING RELIABLY**
-> Beat detection fires very infrequently and misses the majority of beats during
-> normal playback. The BEAT bar in corner mode and the scope flash are both
-> driven by this signal — both are essentially non-functional as a result.
-> Further work needed; see open questions below.
+### Current status
 
-### Algorithm: EMA Onset Detector (Kotlin `VisualizerPlugin`)
+Beat detection is wired through the native plugin and drives:
 
-Replaces the original peak-floor tracker that converged to sustained bass
-levels and missed beats entirely.
+- the BEAT bar in `corner`
+- beat flash in `scope`
+- `game.beatPulse`, which feeds screensaver pulse effects
+- the `beat_debug` panel
 
+It is still not reliable enough to treat as production-quality beat locking on
+real TV hardware.
+
+### Current native implementation
+
+Current Kotlin code in
+`apps/gdar_tv/android/app/src/main/kotlin/com/jamart3d/shakedown/VisualizerPlugin.kt`
+does not use the older bass-only EMA detector described in previous notes.
+
+It currently runs 6 detector variants on peak-normalized 3-band signals:
+
+- `0 BASS` - normalized bass vs rolling mean
+- `1 MID` - normalized mid vs rolling mean
+- `2 BROAD` - `(bass + mid) / 2` vs rolling mean
+- `3 ALL` - all-band average vs rolling mean
+- `4 EMA` - normalized mid vs EMA background
+- `5 TREB` - normalized treble vs rolling mean
+
+The final `isBeat` currently comes from `MID`, not from the EMA variant.
+
+### Thresholds
+
+Mean-threshold detector variants currently use:
+
+```text
+adaptiveMultiplier = 1.2 + (1.0 - beatSensitivity) * 1.0
 ```
-bassEma = bassEma * (1 - 0.1) + beatBass * 0.1   // ~0.5s window at 20 Hz
-threshold = 1.0 + (1.0 - beatSensitivity) * 0.5  // 1.0–1.5× EMA
-isBeat = beatBass > bassEma * threshold
-         && (nowMs - lastBeatTimeMs) > 200ms
-         && recentBassHistory.size >= 10           // warm-up guard
+
+So:
+
+- sensitivity `1.0` -> `1.2x`
+- sensitivity `0.5` -> `1.7x`
+- sensitivity `0.0` -> `2.2x`
+
+The EMA variant uses a different threshold:
+
+```text
+sig1 > midEmaVal * (1.0 + (1.0 - beatSensitivity) * 0.5)
 ```
 
-- `beatBass` uses pre-boost raw bass so visual gain does not alter trigger rate
-- Min beat gap: 200 ms = max 5 beats/sec, supports up to 150 BPM in 4/4
-- Warm-up guard (10 frames) prevents false triggers on startup
+### Important caveat: `beat_debug` is still diagnostic
 
-### Key fix: `_pushAudioConfig` ordering bug
+The `beat_debug` panel currently shows real `beatAlgos` flags, but its
+continuous `algoLevels` bars are still placeholder diagnostic values:
 
-`start()` was `void` (async internally). Config was being pushed before
-`_isRunning = true`, so `beatSensitivity` was silently dropped every time.
-Fixed by making `start()` return `Future<void>` and awaiting it in
-`screensaver_screen.dart` before calling `_pushAudioConfig`.
+```text
+algoLevels = overall * 3.0
+```
 
-### Default sensitivity
-`oilBeatSensitivity` default: **0.80** (was 0.45, then 0.65).
-Higher = more beats triggered; 1.0 = fires on any bass spike above EMA.
+That means:
 
-### Open questions / known issues
-- The EMA algorithm may be too conservative for live Grateful Dead recordings,
-  which have highly variable bass levels and less rigid rhythmic transients than
-  studio pop.
-- The Android Visualizer only runs at 20 Hz — at that rate, a 120 BPM kick
-  drum fires every 500 ms but the visualizer only delivers 10 frames in that
-  window. Onset detection at 20 Hz is fundamentally coarse.
-- It is unclear whether the PCM flatness issue (see Oscilloscope section) also
-  affects the FFT data quality or dynamic range on this specific chipset, which
-  could suppress the bass transients that the detector relies on.
-- No alternative algorithm (e.g. spectral flux, HFC, complex-domain onset) has
-  been tried. The EMA approach was an improvement over the original peak-floor
-  tracker but is still not production-quality.
+- `LEN:6` proves the payload reaches Flutter
+- bar flashing proves detector booleans are flowing through
+- continuous bar height does not yet prove real per-algorithm strength
+
+Until `algoLevels` is replaced with real detector telemetry, `beat_debug`
+should be treated as a transport/debug screen rather than a final calibration
+tool.
+
+### Known limitations
+
+- The Android Visualizer usually runs at about 20 Hz, which is a hard limit on
+  onset timing quality.
+- The detector still relies on peak-normalized amplitudes, which are good for
+  graph rendering but weaker for onset contrast.
+- `bassBoost` is currently applied before bass normalization, so user gain can
+  still affect bass-oriented detector behavior.
+- The current Flutter `beat_debug` labels are drifted from the native detector
+  order and need cleanup.
 
 ---
 
 ## VU Meters
 
-### Layout
-Two analog needle meters, centered at bottom, fake stereo split from FFT bands:
+### Current behavior
 
-- **L needle** (LO): average of bands 0–3 (sub/bass/low-mid)
-- **R needle** (HI): average of bands 4–7 (upper-mid/presence/brilliance/air)
+VU mode is no longer fake stereo only.
+
+It now has two paths:
+
+1. Real stereo path:
+   - uses `AudioPlaybackCapture` via `StereoCapture.kt`
+   - computes RMS independently for `waveformL` and `waveformR`
+   - shows `ST` range labels in the VU panel
+2. Fallback path:
+   - splits FFT bands `0-3` to left and `4-7` to right
+   - shows `LO` and `HI` range labels
+
+### Layout
+
+Two analog needle meters, centered near the bottom:
+
+- left meter: `L`
+- right meter: `R`
 
 ### Ballistics
+
 ```dart
-_vuRiseSmoothing = 12.0   // fast attack
-_vuFallSmoothing = 2.2    // slow fall (classic VU ballistic feel)
-_vuPeakDecayPerSec = 0.5  // peak-hold dot falls slowly
+_vuRiseSmoothing = 12.0
+_vuFallSmoothing = 2.2
+_vuPeakDecayPerSec = 0.5
 ```
 
-### Signal boost
-Band values are compressed by the Kotlin normalizer during long playback.
-A **1.5× pre-boost** lifts the needle into the working range without pegging.
-(3× was tried and caused needles to slam full-right; 1.5× is the compromise.)
+### Signal scaling
+
+Fallback FFT fake stereo uses a `1.5x` boost.
+
+Real stereo RMS uses a `2.5x` boost to map typical PCM levels into a readable
+needle range.
 
 ### Visual zones
-- Green arc: 0–65% (safe)
-- Yellow arc: 65–82% (caution)
-- Red arc: 82–100% (over)
-- Needle color tracks zone; peak-hold dot shows highest recent level
+
+- green: `0-65%`
+- yellow: `65-82%`
+- red: `82-100%`
+
+Needle color tracks the zone, and a peak-hold dot shows the recent maximum.
 
 ---
 
 ## Oscilloscope
 
-### PCM reality on this device
-The Android Visualizer API provides PCM waveform data via
-`onWaveFormDataCapture`. On the Google TV (this device), the PCM capture
-returns flat/near-zero data even though FFT works correctly. This is a known
-chipset limitation.
+### Source path
 
-Waveform capture is **always-on** in the Kotlin plugin (no gating) — earlier
-attempts to gate it caused timing bugs where the enable call happened before
-`_isRunning = true`.
+The scope currently uses `energy.waveform`, which comes from Android Visualizer
+waveform capture through `onWaveFormDataCapture`.
 
-### Fallback: FFT-band additive synthesis
-When `_scopePeak ≤ 0.015` (PCM is flat), the scope synthesizes a waveform
-from the 8 FFT bands using additive sinusoidal synthesis:
+It does not currently use `StereoCapture.waveformL` or `waveformR`.
 
-```dart
-// 8 sine components, one per band, scrolling with game.time
-const freqs = [0.2, 0.4, 0.7, 1.1, 1.6, 2.25, 3.0, 4.0]; // Hz
-const windowSecs = 4.0; // seconds of signal across scope width
+### Real PCM path
 
-for each x-pixel:
-  tx = game.time - windowSecs + (x/width) * windowSecs  // left=old, right=new
-  val = sum(bands[b] * softClip * sin(2π * freqs[b] * tx)) / 4.0
-```
+When Visualizer waveform capture is not flat, the scope renders:
 
-This creates a continuously scrolling, music-reactive waveform:
-- Bass-heavy → slow large undulations
-- Treble-heavy → fast tight ripples
-- Complex music → multi-component complex wave
+- `OSC PCM 256pt`
+- downsampled mono waveform
+- phosphor trace with beat flash tint/thickness
 
-The scope label shows `OSC FFT-SYN 8B` vs `OSC PCM 256pt` so you can tell
-which path is active.
+### Fallback path
 
-### Soft-clip
-`atan(v * 50.0) / (π/2)` — maps tiny PCM values (or band amplitudes) to
-visible deflections without hard-clipping. Gain is ~50× for quiet signals,
-approaches ±1 asymptotically.
+When Visualizer waveform data is near-flat, the scope falls back to an
+FFT-synthesized waveform derived from the 8 graph bands.
 
-### Beat flash
-When `energy.isBeat`, the trace color lerps toward white and the stroke
-thickens slightly. `_beatFlash` decays at 3.5/sec (~285ms visible).
+The label shows:
+
+- `OSC FFT-SYN 8B`
+
+This keeps the scope visually alive even on chipsets where Visualizer PCM is not
+useful.
+
+### Silent state
+
+If there is no usable signal at all, the scope renders a flat line:
+
+- `OSC - SILENT`
 
 ---
 
 ## `corner_only` Combined Layout
 
-All three displays visible simultaneously, bottom strip:
+`corner_only` shows all three displays together in one bottom strip:
 
-```
+```text
 [ bar graph ]   [ L VU | R VU ]   [ oscilloscope ]
-  left-anchored    centered          right-anchored
-  48px left pad                      48px right pad
-  ~122px wide       ~320px wide        220px wide
+  left side         centered          right side
 ```
 
-### Scope positioning
-Right-anchored to mirror the bar graph panel symmetrically:
-```dart
-xStart = w - _leftPadding - panelWidth  // panelWidth = 220
-```
+Approximate layout:
 
-Panel height matches bar graph: `scopeHeight = _maxBarHeight = 80px`.
-Waveform centered vertically in the bar area (`centerY = baseline - 40px`).
-Same panel background style (semi-transparent rounded rect + border glow).
+- left panel: corner bars
+- center panel: dual VU
+- right panel: scope panel, width about `220px`
+
+The scope is right-anchored so it mirrors the left graph panel visually.
 
 ---
 
-## Android Visualizer Notes
+## Android Capture Notes
 
-- Runs at `Visualizer.getMaxCaptureRate()` — typically **20 Hz** (20000 mHz)
-- FFT capture size: max available (`Visualizer.getCaptureSizeRange()[1]`)
-- PCM: 256 points after downsampling from full capture size
-- Audio is **mono** — no L/R stereo split possible via this API
-- See `todo_true_stereo_vu.md` for future `AudioPlaybackCapture` approach
+### Visualizer path
+
+- capture rate: usually about `20 Hz`
+- FFT capture size: max available capture size
+- waveform path: mono
+- graph bars and scope waveform come from this path
+
+### Stereo path
+
+Stereo VU support is now implemented separately through
+`AudioPlaybackCapture`:
+
+- `apps/gdar_tv/android/app/src/main/kotlin/com/jamart3d/shakedown/StereoCapture.kt`
+- `apps/gdar_tv/android/app/src/main/kotlin/com/jamart3d/shakedown/MainActivity.kt`
+
+This path is used for VU meters when permission is granted, but not yet for
+scope rendering or final beat detection.
 
 ---
 
-## Tuning Knobs (live-updatable via `updateConfig`)
+## Tuning Knobs
 
-| Knob | Range | Default | Effect |
+These are pushed live from Flutter through `updateConfig`.
+
+| Knob | Range | Effective default | Effect |
 |---|---|---|---|
-| `peakDecay` | 0.990–0.999 | 0.998 | How slowly FFT peaks decay |
-| `bassBoost` | 1.0–3.0 | 1.0 | Multiplier on raw bass before normalization |
-| `reactivityStrength` | 0.5–2.0 | 1.0 | Global scale on all band outputs |
-| `beatSensitivity` | 0.0–1.0 | 0.80 | EMA threshold tightness |
+| `peakDecay` | `0.990-0.999` | `0.992` from settings | Peak normalization decay speed |
+| `bassBoost` | `1.0-3.0` | `1.6` from settings | Boosts bass before normalization; currently affects bass detector inputs too |
+| `reactivityStrength` | `0.5-2.0` | `1.1` from settings | Global scale on visible band outputs |
+| `beatSensitivity` | `0.0-1.0` | `0.80` from settings | Controls mean-threshold detector variants and the EMA variant |
 
-Changes pushed from Flutter settings take effect immediately — no restart needed.
+Notes:
+
+- The Kotlin field initializers are not the same thing as the long-lived
+  effective settings defaults.
+- Settings are pushed after startup from `ScreensaverScreen`.
+
+---
+
+## Current Reliability Read
+
+The safest interpretation of the current system is:
+
+- graph modes are implemented and mostly accurate
+- VU mode now supports real stereo with fallback
+- scope fallback is implemented and useful
+- beat detection is present but still weak
+- `beat_debug` is useful for connectivity checks, not final detector tuning
+
+---
+
+## Recommended Next Cleanup
+
+1. Replace placeholder `algoLevels` with real detector telemetry.
+2. Align `beat_debug` labels with native detector order.
+3. Update on-screen threshold guides to match current math.
+4. Move beat detection toward a hybrid or PCM-backed detector.

@@ -123,3 +123,83 @@ hardware.
    - Verify L and R needles move independently during stereo content.
    - If TV 2020 SoC struggles (CPU spike, choppy FFT), disable via
      `stopStereoCapture()` and keep fake-stereo fallback.
+
+---
+
+## 2026-03-21 audit corrections
+
+This document is still useful as a session log, but a few beat-detection notes
+have drifted from the current code and should not be treated as the final source
+of truth.
+
+### What is still accurate
+
+- The general architecture description is accurate:
+  - native `VisualizerPlugin.kt`
+  - Dart bridge via `visualizer_audio_reactor.dart`
+  - graph and screensaver consumption on the Flutter side
+- The 8-band silence-gate fix appears accurately described.
+- The emulator warning remains accurate: do not use the emulator to validate TV
+  audio reactivity.
+- The stereo VU infrastructure section is accurate as written:
+  - `StereoCapture.kt`
+  - `MainActivity.kt`
+  - `VisualizerPlugin.kt`
+  - `visualizer_audio_reactor.dart`
+  - `steal_graph.dart`
+
+### Corrections / caveats
+
+1. `beat_debug` is still diagnostic, not trustworthy enough for algorithm tuning.
+   - `algoLevels` are currently hardcoded to `overall * 3.0` in
+     `VisualizerPlugin.kt`.
+   - That means `LEN:6` only proves the payload reaches Flutter.
+   - It does not prove that the six bars represent real per-algorithm strength.
+
+2. The algorithm labels in docs and Flutter no longer match the native detector order exactly.
+   - This document lists: `BASS, MID, TREB, BROAD, ALL, S-MID`
+   - Current native code is closer to:
+     - `0 BASS`
+     - `1 MID`
+     - `2 BROAD`
+     - `3 ALL`
+     - `4 EMA`
+     - `5 TREB`
+   - Flutter `beat_debug` labels are also drifted, so the current screen can be
+     misleading until labels and payload are aligned.
+
+3. The native detector is still built on peak-normalized amplitudes.
+   - That is acceptable for graph rendering.
+   - It is weaker for actual beat onset detection, especially on live material.
+   - So the phrase "updated beat detection" is true, but it should not be read
+     as "production-quality beat detection".
+
+4. `bassBoost` still affects detector inputs in the current Kotlin path.
+   - This means user gain controls can still influence beat behavior, not just
+     visual magnitude.
+   - That should be corrected before using detector comparisons as a tuning
+     reference.
+
+5. The true primary beat path is `MID`, not the older kick/sub-bass description.
+   - This matters because some comments in code still describe an older
+     bass-first model.
+
+### Updated reading of the status
+
+The safest interpretation is:
+
+- audio reactivity plumbing is implemented
+- stereo VU plumbing is implemented
+- emulator is not valid for verification
+- beat detection is present and wired through
+- `beat_debug` currently confirms payload connectivity more than detector quality
+- the next priority is to make `beat_debug` honest before tuning detector logic
+
+### Updated next-step priority
+
+Before using `beat_debug` to decide which beat method is best:
+
+1. replace placeholder `algoLevels` with real per-algorithm telemetry
+2. align algorithm names across Kotlin, Dart, and docs
+3. ensure thresholds shown in Flutter match native sensitivity math
+4. then tune detector behavior on real TV hardware

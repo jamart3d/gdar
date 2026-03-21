@@ -3,6 +3,11 @@
 ## Status
 **Infrastructure complete (2026-03-20). Awaiting real-device test.**
 
+Correction: the low-level pipeline is implemented, but a normal user-facing
+activation path does not appear to be wired yet. `requestStereoCapture()` and
+`stopStereoCapture()` exist in the reactor, but they are not currently invoked
+from the TV UI or screensaver lifecycle.
+
 Core pipeline implemented — see `audio_reactivity_status.md` for full details.
 Current VU meter falls back to fake stereo (FFT bands 0–3 → L, 4–7 → R) until
 `VisualizerAudioReactor.requestStereoCapture()` is called and the system dialog
@@ -94,3 +99,89 @@ entire reactor path is dormant on phone.
 - `packages/shakedown_core/lib/visualizer/visualizer_audio_reactor.dart`
 - `packages/shakedown_core/lib/visualizer/audio_reactor.dart`
 - `packages/shakedown_core/lib/steal_screensaver/steal_graph.dart`
+
+---
+
+## 2026-03-21 audit corrections
+
+Short answer: the core true-stereo VU infrastructure has been done, but this
+file still mixes completed work with future ideas.
+
+### Implemented now
+
+- `StereoCapture.kt` exists and captures stereo PCM through
+  `AudioPlaybackCapture`.
+- `MainActivity.kt` owns a `shakedown/stereo` method channel and launches the
+  system capture flow.
+- `VisualizerPlugin.kt` appends `waveformL` and `waveformR` to the existing
+  visualizer payload.
+- `AudioEnergy` already has `waveformL` and `waveformR`.
+- `visualizer_audio_reactor.dart` already parses `waveformL` and `waveformR`
+  and exposes `requestStereoCapture()` / `stopStereoCapture()`.
+- `steal_graph.dart` already switches VU mode from fake stereo to real L/R RMS
+  when stereo capture is active.
+- The fake-stereo fallback remains in place when stereo capture is inactive.
+
+### Not implemented yet
+
+- `lissajous` mode
+- `goniometer` mode
+- true stereo oscilloscope path
+- a user-facing activation path that actually calls
+  `VisualizerAudioReactor.requestStereoCapture()`
+- lifecycle cleanup wiring that calls `stopStereoCapture()` when stereo capture
+  should end
+- automatic mode-based activation of stereo capture
+- final real-device validation of the stereo path
+
+### Important corrections
+
+1. The TODO title is now slightly misleading.
+   - True stereo VU is no longer just a TODO.
+   - The better reading is: infrastructure implemented, awaiting device
+     validation and any optional follow-on stereo modes.
+
+2. The note saying `MediaProjection` is not required does not match the current implementation.
+   - Current code explicitly requires `MediaProjectionManager` and a permission
+     dialog in `MainActivity.kt`.
+   - `StereoCapture.start()` takes a `MediaProjection`.
+   - So for this codebase, the active implementation path does require the
+     projection flow.
+
+3. The event-channel decision has already been made.
+   - The code extends the existing `shakedown/visualizer_events` payload.
+   - There is no separate stereo event channel.
+
+4. The VU update step is already complete.
+   - `vu` mode already consumes real stereo RMS from `waveformL` /
+     `waveformR`.
+   - Range labels already show `ST` for real stereo and `LO` / `HI` for fake.
+
+5. The "gate it behind mode" recommendation is not how the current code works.
+   - Stereo capture is started manually by calling
+     `VisualizerAudioReactor.requestStereoCapture()`.
+   - It is not currently auto-started when entering `vu` or `scope`.
+
+6. The stereo path currently improves VU only.
+   - Scope still uses `energy.waveform` from the mono Visualizer waveform path.
+   - Stereo PCM is not yet used for scope rendering or beat detection.
+
+7. The feature is implemented at the plumbing layer, but may not yet be
+   reachable in normal app flow.
+   - A code search in the app layer shows the static methods
+     `VisualizerAudioReactor.requestStereoCapture()` and
+     `VisualizerAudioReactor.stopStereoCapture()`, but no current call sites.
+   - That means true stereo VU support exists, but may still require a manual
+     developer-triggered path until the UI or screensaver owns the capture
+     lifecycle.
+
+### Updated read of this file
+
+The safest interpretation is:
+
+- true stereo VU plumbing is implemented
+- permission flow is implemented
+- payload transport is implemented
+- VU rendering is implemented
+- the remaining work is UI/lifecycle activation, validation, and any optional
+  stereo-specific graph modes

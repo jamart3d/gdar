@@ -146,3 +146,89 @@ No changes needed to `QualityConfig` for audio.
 - [ ] Scale drops cleanly between beats — doesn't stay inflated
 - [ ] Tested with at least two genres (electronic + something with live drums)
 - [ ] `attack` and `release` constants confirmed on actual Google TV hardware
+
+---
+
+## 2026-03-21 audit corrections
+
+This guide is only partially accurate now.
+
+### What still holds up
+
+- The instinct to keep logo scaling subtle is still correct.
+- Fast-attack / slow-release behavior is still a good visual target for pulse
+  feel.
+- Real-device tuning is still mandatory for TV audio reactivity work.
+
+### What is outdated
+
+1. The document is describing a future-facing screensaver concept, not the
+   current TV implementation.
+   - It says `Sheep screensaver`.
+   - Sheep may still be a valid future feature.
+   - The current TV screensaver path in code is the Steal visualizer.
+
+2. The current implementation is not "FFT-based logo scaling only".
+   - The current pipeline includes:
+     - native Android `VisualizerPlugin.kt`
+     - `AudioEnergy`
+     - `StealGame.beatPulse`
+     - `StealBackground` continuous energy uniforms
+     - `StealGraph` graph modes and `beat_debug`
+
+3. "Target the bass band" is too narrow for the current TV hardware.
+   - Current native code does not trust bass alone.
+   - The active beat path is currently `MID`, with other parallel detector
+     variants for bass, broad, all-band, EMA, and treble.
+   - This is because some TV hardware reports weak sub-bass / bass bins.
+
+4. The code no longer maps logo scale with a simple `1.0 + bass * 0.4`.
+   - Current scale behavior is split across:
+     - continuous selected-band scale in `StealGame.pulseScale`
+     - discrete beat boost in `StealBackground` using `beatPulse` and
+       `beatImpact`
+
+5. Beat detection is no longer a future idea in this codebase.
+   - A native beat detector already exists.
+   - The real issue is that it is still weak and `beat_debug` is still partly
+     diagnostic.
+
+6. The "frequency map" and "genome mutation / Forge2D gravity pulse" notes read
+   as future-feature design ideas, not current TV screensaver behavior.
+
+### Corrected current-state summary
+
+The current system is better described like this:
+
+- graph rendering uses normalized and smoothed band energy
+- logo motion and shader uniforms use selected-band continuous energy
+- logo punch uses a separate boolean beat pulse path
+- native beat detection currently runs multiple simple detector variants
+- the final beat signal is still not reliable enough for production-quality beat
+  locking
+
+### Best way to use this guide now
+
+Treat this file as an old design note, not a current implementation spec.
+
+The parts worth carrying forward are:
+
+- subtle scaling
+- asymmetric visual pulse feel
+- real-device tuning
+
+The parts that should not be followed literally are:
+
+- bass-only detector advice
+- simple `logoScale = 1.0 + bass * 0.4` mapping
+- "beat detection is future work"
+- the old future-feature references
+
+### Better next-step guidance
+
+If this guide is kept, the modern replacement direction should be:
+
+1. use a hybrid detector instead of bass-only logic
+2. keep continuous energy and discrete beat impact as separate channels
+3. tune `beatPulse` feel independently from graph smoothing
+4. prefer real TV hardware and, eventually, PCM-based detection for timing

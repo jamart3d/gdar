@@ -6,7 +6,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [1.3.1+211] - 2026-03-20
+## [1.3.2+212] - 2026-03-21
+
+### Added
+- **TV Enhancement**: Finalized infrastructure for true stereo L/R VU meters via `AudioPlaybackCapture` (API 29+).
+- **TV Architecture**: Conducted a comprehensive screensaver audio audit (2026-03-21) to align native detector levels with visualizer telemetry.
+
+### Changed
+- **Documentation**: Updated audio graph modes, reactivity status, and tuning guides for advanced TV screensaver configuration.
+- **Maintenance**: Synchronized codebase formatting and refined `HiddenSessionPreset` segmented button alignment in `playback_section.dart`.
 
 ### Added
 - **TV Enhancement**: Implemented `StereoCapture` for the Android TV engine, providing high-fidelity PCM capture for real-time visualizers.

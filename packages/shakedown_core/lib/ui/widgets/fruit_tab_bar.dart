@@ -212,20 +212,14 @@ class _FruitTabBarShell extends StatelessWidget {
 
     if (skipBlur) {
       return ClipRect(
-        child: DecoratedBox(
-          decoration: decoration,
-          child: stack,
-        ),
+        child: DecoratedBox(decoration: decoration, child: stack),
       );
     }
 
     return ClipRect(
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: sigma, sigmaY: sigma),
-        child: DecoratedBox(
-          decoration: decoration,
-          child: stack,
-        ),
+        child: DecoratedBox(decoration: decoration, child: stack),
       ),
     );
   }
