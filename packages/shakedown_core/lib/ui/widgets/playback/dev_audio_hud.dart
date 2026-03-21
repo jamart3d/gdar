@@ -1099,14 +1099,20 @@ class _DevAudioHudState extends State<DevAudioHud> {
         if (value == 'MAX') desc = 'Maximum (Performance)';
         return 'Session Stability Preset: $desc ($value)';
       case 'AE':
-        String desc = 'Unknown';
-        if (value.startsWith('WA')) desc = 'WebAudio';
-        if (value.startsWith('H5')) desc = 'HTML5';
-        if (value.startsWith('VI')) desc = 'Video Overlay';
-        if (value.startsWith('HBT')) desc = 'Heartbeat';
-        if (value.startsWith('BG')) desc = 'Generic Background';
-        if (value.startsWith('FG')) desc = 'Generic Foreground';
-        return 'Active Low-level Engine: $desc ($value)';
+        if (value == '--') return 'Active Engine: not applicable (non-hybrid mode)';
+        if (value == '?') return 'Active Engine: unknown — engine context not yet reported';
+        String aeDesc = 'Unknown';
+        if (value.startsWith('WA')) aeDesc = 'Web Audio API — low-latency, gapless, needs full buffer decoded. Shown in cyan.';
+        if (value.startsWith('H5')) aeDesc = 'HTML5 <audio> element — streaming, background-safe. Shown in blue.';
+        if (value.startsWith('VI')) aeDesc = 'Video Overlay — silent video trick keeps WebAudio alive in background.';
+        if (value.startsWith('HBT')) aeDesc = 'Heartbeat — silent audio clock preventing browser throttle.';
+        if (value.startsWith('BG')) aeDesc = 'Generic background engine.';
+        if (value.startsWith('FG')) aeDesc = 'Generic foreground engine.';
+        String aeSuffix = '';
+        if (value.contains('-New')) aeSuffix += ' | -New: heartbeat required (mobile — WebAudio will stop without it).';
+        if (value.contains('-Opt')) aeSuffix += ' | -Opt: heartbeat optional (desktop — WebAudio can run unassisted).';
+        if (value.endsWith('+')) aeSuffix += ' | +: heartbeat-capable build active (indigo = survival mode).';
+        return 'Active Engine: $aeDesc$aeSuffix';
       case 'V':
         return 'App Visibility Status (VIS: Visible, HID: Hidden) and duration: $value';
       case 'DFT':
