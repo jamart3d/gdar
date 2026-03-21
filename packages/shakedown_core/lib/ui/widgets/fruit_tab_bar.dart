@@ -1,6 +1,9 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart';
+import 'package:shakedown_core/utils/web_runtime.dart';
 import 'package:provider/provider.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:shakedown_core/providers/audio_provider.dart';
@@ -144,57 +147,84 @@ class _FruitTabBarShell extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return ClipRect(
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          color: Colors.black.withValues(alpha: isDark ? 0.72 : 0.58),
-          border: Border(
-            top: BorderSide(
-              color: Colors.white.withValues(alpha: isDark ? 0.14 : 0.18),
-              width: 0.7,
+    // Conservative blur budget matching LiquidGlassWrapper web pattern.
+    // Skip blur entirely on WASM (no compositor support).
+    final bool skipBlur = isWasmSafeMode();
+    final double sigma = MediaQuery.sizeOf(context).shortestSide < 700
+        ? 8.0
+        : 12.0;
+    final baseColor = isDark ? Colors.black : Colors.white;
+    final baseAlpha = isDark ? 0.55 : 0.65;
+
+    final decoration = BoxDecoration(
+      color: baseColor.withValues(alpha: baseAlpha),
+      border: Border(
+        top: BorderSide(
+          color: isDark
+              ? Colors.white.withValues(alpha: 0.14)
+              : Colors.black.withValues(alpha: 0.08),
+          width: 0.7,
+        ),
+      ),
+    );
+
+    final stack = Stack(
+      children: [
+        Positioned(
+          left: 0,
+          right: 0,
+          top: 0,
+          height: 1.2,
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Colors.white.withValues(alpha: isDark ? 0.22 : 0.3),
+                  Colors.transparent,
+                ],
+              ),
             ),
           ),
         ),
-        child: Stack(
-          children: [
-            Positioned(
-              left: 0,
-              right: 0,
-              top: 0,
-              height: 1.2,
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      Colors.white.withValues(alpha: isDark ? 0.22 : 0.3),
-                      Colors.transparent,
-                    ],
-                  ),
+        Positioned.fill(
+          child: IgnorePointer(
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Colors.white.withValues(alpha: isDark ? 0.05 : 0.08),
+                    Colors.white.withValues(alpha: 0.02),
+                    Colors.transparent,
+                  ],
+                  stops: const [0.0, 0.12, 0.5],
                 ),
               ),
             ),
-            Positioned.fill(
-              child: IgnorePointer(
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        Colors.white.withValues(alpha: isDark ? 0.05 : 0.08),
-                        Colors.white.withValues(alpha: 0.02),
-                        Colors.transparent,
-                      ],
-                      stops: const [0.0, 0.12, 0.5],
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            child,
-          ],
+          ),
+        ),
+        child,
+      ],
+    );
+
+    if (skipBlur) {
+      return ClipRect(
+        child: DecoratedBox(
+          decoration: decoration,
+          child: stack,
+        ),
+      );
+    }
+
+    return ClipRect(
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: sigma, sigmaY: sigma),
+        child: DecoratedBox(
+          decoration: decoration,
+          child: stack,
         ),
       ),
     );

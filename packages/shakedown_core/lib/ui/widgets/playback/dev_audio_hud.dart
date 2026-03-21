@@ -44,15 +44,14 @@ class DevAudioHud extends StatefulWidget {
 class _DevAudioHudState extends State<DevAudioHud> {
   static const int _driftHistoryMaxPoints = 120;
   static const int _headroomHistoryMaxPoints = 180;
-  static const int _bufferHistoryMaxPoints = 180;
-
   Timer? _heartbeatPulseTimer;
   bool _heartbeatPulseOn = false;
   final List<double> _driftHistory = <double>[];
   final List<double> _headroomHistory = <double>[];
-  final List<double> _bufferHistory = <double>[];
-  final List<double> _nxHistory = <double>[];
 
+  // BGT: cumulative background time tracking
+  Duration _totalBgtDuration = Duration.zero;
+  DateTime? _bgHiddenSince;
   @override
   void initState() {
     super.initState();
@@ -98,6 +97,7 @@ class _DevAudioHudState extends State<DevAudioHud> {
         if (hud == null) return const SizedBox.shrink();
 
         _syncHeartbeatPulse(hud.isPlaying);
+        _trackBgt(hud);
 
         if (!widget.compact) {
           final summary = hud
@@ -119,7 +119,13 @@ class _DevAudioHudState extends State<DevAudioHud> {
           );
         }
 
-        final fields = hud.toMap();
+        final fields = {
+          ...hud.toMap(),
+          'SHD': _computeShield(hud),
+          'GAP': _computeGap(hud),
+          'BGT': _computeBgt(),
+          'PM': widget.settingsProvider.performanceMode ? 'ON' : 'OFF',
+        };
         final isFruitMode =
             context.read<ThemeProvider?>()?.themeStyle == ThemeStyle.fruit;
 
@@ -165,6 +171,7 @@ class _DevAudioHudState extends State<DevAudioHud> {
                 'NX',
                 'PF',
                 'HF',
+                'TX',
                 'DET',
                 'BG',
                 'STB',
@@ -173,6 +180,11 @@ class _DevAudioHudState extends State<DevAudioHud> {
                 'V',
                 'E',
                 'ST',
+                'PS',
+                'SHD',
+                'GAP',
+                'BGT',
+                'PM',
                 'SIG',
                 'MSG',
               ];
@@ -463,6 +475,55 @@ class _DevAudioHudState extends State<DevAudioHud> {
     }
   }
 
+  void _trackBgt(HudSnapshot hud) {
+    final isHidden = hud.visibility.startsWith('HID') && hud.isPlaying;
+    if (isHidden && _bgHiddenSince == null) {
+      _bgHiddenSince = DateTime.now();
+    } else if (!isHidden && _bgHiddenSince != null) {
+      _totalBgtDuration += DateTime.now().difference(_bgHiddenSince!);
+      _bgHiddenSince = null;
+    }
+  }
+
+  String _computeBgt() {
+    var total = _totalBgtDuration;
+    if (_bgHiddenSince != null) {
+      total += DateTime.now().difference(_bgHiddenSince!);
+    }
+    if (total == Duration.zero) return '--';
+    final h = total.inHours;
+    final m = total.inMinutes.remainder(60);
+    final s = total.inSeconds.remainder(60);
+    if (h > 0) {
+      return '$h:${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}';
+    }
+    return '${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}';
+  }
+
+  String _computeShield(HudSnapshot hud) {
+    if (!hud.isPlaying) return '--';
+    if (!hud.visibility.startsWith('HID')) return 'VIS';
+    if (hud.hbActive) return 'OK';
+    final bg = hud.background;
+    if (bg == 'OFF' || bg == 'NONE' || bg == '--') return 'DEAD';
+    if (hud.hbNeeded) return 'RISK';
+    return 'SOFT';
+  }
+
+  String _computeGap(HudSnapshot hud) {
+    if (!hud.isPlaying) return '--';
+    if (hud.handoff == 'OFF') return 'OFF';
+    final nxEmpty = hud.nextBuffered == '--' || hud.nextBuffered == '00:00';
+    if (nxEmpty && !hud.isHandoffCountdown) return '--';
+    final prefetchSec = widget.settingsProvider.webPrefetchSeconds.toDouble();
+    final nxSec = _parseDurationToSeconds(hud.nextBuffered) ?? 0.0;
+    final nxFraction = (nxSec / prefetchSec).clamp(0.0, 1.0);
+    if (hud.isHandoffCountdown && nxFraction < 0.05) return 'MISS';
+    if (hud.isHandoffCountdown && nxFraction < 0.4) return 'LOW';
+    if (nxFraction >= 0.5) return 'RDY';
+    return 'WAIT';
+  }
+
   double? _parseDurationToSeconds(String? raw) {
     if (raw == null || raw == '--' || raw == '00:00' || raw.isEmpty) {
       return null;
@@ -475,24 +536,6 @@ class _DevAudioHudState extends State<DevAudioHud> {
       return (mins * 60) + secs;
     } catch (_) {
       return null;
-    }
-  }
-
-  void _appendBufferSample(String? rawValue) {
-    final sample = _parseDurationToSeconds(rawValue);
-    if (sample == null) return;
-    _bufferHistory.add(sample);
-    if (_bufferHistory.length > _bufferHistoryMaxPoints) {
-      _bufferHistory.removeAt(0);
-    }
-  }
-
-  void _appendNxSample(String? rawValue) {
-    final sample = _parseDurationToSeconds(rawValue);
-    if (sample == null) return;
-    _nxHistory.add(sample);
-    if (_nxHistory.length > _bufferHistoryMaxPoints) {
-      _nxHistory.removeAt(0);
     }
   }
 
@@ -528,9 +571,6 @@ class _DevAudioHudState extends State<DevAudioHud> {
     const sparklineChipWidth = 84.0;
     _appendDriftSample(fields['DFT']);
     _appendHeadroomSample(fields['HD']);
-    _appendBufferSample(fields['BUF']);
-    _appendNxSample(fields['NX']);
-
     final telemetryChips = <Widget>[];
     final sparklineValueChips = <Widget>[];
     final trendChips = <Widget>[];
@@ -601,13 +641,6 @@ class _DevAudioHudState extends State<DevAudioHud> {
       buildTrendChip(_driftHistory, 'DFT', baseTextColor, alpha: 1.0),
     );
     trendChips.add(buildTrendChip(_headroomHistory, 'HD', baseTextColor));
-    trendChips.add(
-      buildTrendChip(_bufferHistory, 'BUF', Colors.tealAccent, alpha: 0.8),
-    );
-    trendChips.add(
-      buildTrendChip(_nxHistory, 'NX', Colors.greenAccent, alpha: 0.8),
-    );
-
     // Standalone heartbeat removed from top row, now integrated into SIG below.
 
     for (final key in orderedKeys) {
@@ -620,8 +653,6 @@ class _DevAudioHudState extends State<DevAudioHud> {
       if (!isDynamic) {
         chipWidth = 48; // Default
         switch (key) {
-          case 'BUF':
-          case 'NX':
           case 'DFT':
           case 'HD':
             chipWidth = 76;
@@ -639,6 +670,7 @@ class _DevAudioHudState extends State<DevAudioHud> {
             chipWidth = 68; // Tightened for internal dots
             break;
           case 'HF':
+          case 'TX':
           case 'ST':
           case 'PF':
           case 'PS':
@@ -647,6 +679,16 @@ class _DevAudioHudState extends State<DevAudioHud> {
           case 'V':
           case 'AE':
             chipWidth = 48;
+            break;
+          case 'SHD':
+          case 'GAP':
+            chipWidth = 52;
+            break;
+          case 'BGT':
+            chipWidth = 62;
+            break;
+          case 'PM':
+            chipWidth = 44;
             break;
           case 'E':
             chipWidth = 36;
@@ -733,6 +775,45 @@ class _DevAudioHudState extends State<DevAudioHud> {
         if (value == 'STB') finalBaseTextColor = Colors.greenAccent;
         if (value == 'BAL') finalBaseTextColor = Colors.lightBlueAccent;
         if (value == 'MAX') finalBaseTextColor = Colors.orangeAccent;
+      } else if (key == 'SHD') {
+        switch (value) {
+          case 'OK':
+            finalChipBgColor = Colors.green.withValues(alpha: 0.7);
+            finalBaseTextColor = Colors.white;
+            finalKeyTextColor = Colors.white.withValues(alpha: 0.75);
+            break;
+          case 'SOFT':
+            finalChipBgColor = Colors.amber.withValues(alpha: 0.75);
+            finalBaseTextColor = Colors.black;
+            finalKeyTextColor = Colors.black.withValues(alpha: 0.7);
+            break;
+          case 'RISK':
+          case 'DEAD':
+            finalChipBgColor = Colors.redAccent.withValues(alpha: 0.85);
+            finalBaseTextColor = Colors.white;
+            finalKeyTextColor = Colors.white.withValues(alpha: 0.8);
+            break;
+        }
+      } else if (key == 'GAP') {
+        switch (value) {
+          case 'RDY':
+            finalBaseTextColor = Colors.greenAccent;
+            break;
+          case 'LOW':
+          case 'MISS':
+            finalChipBgColor = Colors.redAccent.withValues(alpha: 0.9);
+            finalBaseTextColor = Colors.white;
+            finalKeyTextColor = Colors.white.withValues(alpha: 0.8);
+            break;
+        }
+      } else if (key == 'BGT' && value != '--') {
+        finalBaseTextColor = Colors.lightBlueAccent;
+      } else if (key == 'PM') {
+        if (value == 'ON') {
+          finalChipBgColor = Colors.amber.withValues(alpha: 0.75);
+          finalBaseTextColor = Colors.black;
+          finalKeyTextColor = Colors.black.withValues(alpha: 0.7);
+        }
       }
 
       Widget chip = Container(
@@ -911,7 +992,7 @@ class _DevAudioHudState extends State<DevAudioHud> {
         detChip = chip;
       } else if (key == 'E') {
         errorChip = chip;
-      } else if (key == 'DFT' || key == 'HD' || key == 'BUF' || key == 'NX') {
+      } else if (key == 'DFT' || key == 'HD') {
         sparklineValueChips.add(chip);
       } else if (key == 'BG') {
         bgChip = chip;
@@ -1051,6 +1132,29 @@ class _DevAudioHudState extends State<DevAudioHud> {
         return 'Signal Source (ISS: Issue, NTF: Notification, AGT: Agent): $value';
       case 'MSG':
         return 'Detailed Status Message: $value';
+      case 'TX':
+        String txDesc = 'Unknown';
+        if (value == 'XFD') txDesc = 'Crossfade';
+        if (value == 'GAP') txDesc = 'Gapless';
+        if (value == 'OFF') txDesc = 'Off';
+        return 'Track Transition Mode: $txDesc ($value)';
+      case 'SHD':
+        String shdDesc = 'Unknown';
+        if (value == 'ON') shdDesc = 'Active (session protected)';
+        if (value == 'OFF') shdDesc = 'Disabled';
+        if (value == 'N/A') shdDesc = 'Not Available';
+        return 'Session Shield (background protection): $shdDesc ($value)';
+      case 'GAP':
+        String gapDesc = 'Unknown';
+        if (value == 'RDY') gapDesc = 'Ready (next track buffered)';
+        if (value == 'NO') gapDesc = 'Not ready';
+        if (value == 'N/A') gapDesc = 'Not applicable';
+        return 'Gapless Readiness (next track pre-loaded): $gapDesc ($value)';
+      case 'BGT':
+        return 'Background Time (total time app has been hidden this session): $value';
+      case 'PM':
+        String pmDesc = value == 'ON' ? 'Enabled (effects reduced)' : 'Disabled';
+        return 'Performance Mode: $pmDesc ($value)';
       default:
         return '$key: $value';
     }
