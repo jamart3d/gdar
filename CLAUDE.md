@@ -142,8 +142,8 @@ adb shell am start -W -a android.intent.action.VIEW \
 | File | What it covers |
 |---|---|
 | `docs/monorepo_scorecard_2026-03-19.md` | Current quality score (8.0/10) and path to 8.5+ |
-| `docs/web_ui_audio_hybrid_review_2026-03-19.md` | Web/audio audit — all findings resolved as of 2026-03-19 |
-| `docs/web_ui_audio_engines.md` | JS engine architecture, config reference |
+| `apps/gdar_web/docs/web_ui_audio_hybrid_review_2026-03-19.md` | Web/audio audit — all findings resolved as of 2026-03-19 |
+| `apps/gdar_web/docs/web_ui_audio_engines.md` | JS engine architecture, config reference |
 | `AGENTS.md` | Original persona/project brief (Jules-format) |
 
 ---
@@ -178,7 +178,7 @@ These files were written for Jules but apply equally here. **Read the relevant o
 | `.agent/specs/tv_ui_flow_spec.md` | TV navigation and interaction flows |
 | `.agent/specs/phone_ui_design_spec.md` | Phone layout and component rules |
 | `.agent/specs/web_ui_design_spec.md` | Web/PWA design rules |
-| `.agent/specs/web_ui_audio_engines.md` | JS engine spec (matches `docs/web_ui_audio_engines.md`) |
+| `.agent/specs/web_ui_audio_engines.md` | JS engine spec (matches `apps/gdar_web/docs/web_ui_audio_engines.md`) |
 
 ### Workflows
 

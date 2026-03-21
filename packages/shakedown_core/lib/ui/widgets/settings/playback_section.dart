@@ -660,7 +660,7 @@ class PlaybackSection extends StatelessWidget {
             Padding(
               padding: EdgeInsets.only(left: 40.0 * scaleFactor),
               child: Text(
-                'Hidden Session Preset',
+                'Background Mode',
                 style: Theme.of(context).textTheme.titleSmall?.copyWith(
                   fontSize: 14 * scaleFactor,
                   fontWeight: FontWeight.bold,
@@ -678,20 +678,20 @@ class PlaybackSection extends StatelessWidget {
                   segments: [
                     _Segment(
                       value: HiddenSessionPreset.stability,
-                      label: 'Stability',
-                      tooltip: 'Hybrid + buffered + video survival',
+                      label: 'Compatible',
+                      tooltip: 'Best background longevity — video keepalive, gapless when visible',
                       icon: isFruit ? LucideIcons.shield : Icons.shield_rounded,
                     ),
                     _Segment(
                       value: HiddenSessionPreset.balanced,
                       label: 'Balanced',
-                      tooltip: 'Hybrid + buffered + heartbeat survival',
+                      tooltip: 'Good background survival + gapless when visible',
                       icon: isFruit ? LucideIcons.scale : Icons.balance_rounded,
                     ),
                     _Segment(
                       value: HiddenSessionPreset.maxGapless,
-                      label: 'Max Gapless',
-                      tooltip: 'Web Audio first, best continuity when alive',
+                      label: 'Gapless',
+                      tooltip: 'Best gapless playback — needs a strong browser',
                       icon: isFruit ? LucideIcons.zap : Icons.flash_on_rounded,
                     ),
                   ],

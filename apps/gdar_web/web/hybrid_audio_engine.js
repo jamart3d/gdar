@@ -69,6 +69,7 @@
     let _activeEngine = _fgEngine; // Default to Web Audio API
     let _stallTimer = null;
     let _fenceTimer = null; // Bounds the desktop fence so hidden WA doesn't run indefinitely
+    let _heartbeatEscalateTimer = null; // Escalates heartbeat → video after 60s on mobile
     let _instantHandoffPending = false;
     let _instantHandoffIndex = -1;
     let _handoffInProgress = false;
@@ -267,6 +268,17 @@
 
         if (_backgroundMode === 'heartbeat') {
             window._gdarHeartbeat.startAudioHeartbeat();
+            // On mobile browsers, escalate to video heartbeat after 60s if still hidden.
+            if (window._gdarIsHeartbeatNeeded()) {
+                if (_heartbeatEscalateTimer) clearTimeout(_heartbeatEscalateTimer);
+                _heartbeatEscalateTimer = setTimeout(() => {
+                    _heartbeatEscalateTimer = null;
+                    if (document.visibilityState === 'hidden' && _playing) {
+                        _log.warn('[hybrid] Heartbeat escalation: upgrading to video heartbeat after 60s.');
+                        window._gdarHeartbeat.startVideoHeartbeat();
+                    }
+                }, 60000);
+            }
             return;
         }
         if (_backgroundMode === 'video') {
@@ -311,6 +323,7 @@
             _log.log('[hybrid] Tab visible. Ensuring survival tricks are off.');
             _fenceHandoffPending = false;
             if (_fenceTimer) { clearTimeout(_fenceTimer); _fenceTimer = null; }
+            if (_heartbeatEscalateTimer) { clearTimeout(_heartbeatEscalateTimer); _heartbeatEscalateTimer = null; }
             if (window._gdarHeartbeat) window._gdarHeartbeat.stopHeartbeat();
 
             // Note: Spec 5 says NOT to auto-restore on foreground return.
@@ -342,12 +355,15 @@
         // TERMINATION GUARD: If a new handoff or seek has started, kill this loop immediately.
         if (id !== _handoffAttemptId) {
             _log.log('[hybrid] Terminating stale handoff loop (ID:', id, ')');
+            // Silence any ghost audio the fg engine started during this attempt.
+            if (_activeEngine !== _fgEngine) _fgEngine.stop();
             return;
         }
 
         if (pollCount > 50) { // Give up after 5 seconds
             _handoffInProgress = false;
             _log.error('[hybrid] Handoff FAILED: Foreground never became ready. Staying on HTML5.');
+            if (_activeEngine !== _fgEngine) _fgEngine.stop();
             return;
         }
 
@@ -360,7 +376,12 @@
         // Poll for readiness
         setTimeout(() => {
             // Re-check ID inside the timeout
-            if (id !== _handoffAttemptId) return;
+            if (id !== _handoffAttemptId) {
+                // A newer handoff or track change cancelled this attempt.
+                // Stop any fg audio started during this attempt to prevent ghost playback.
+                if (_activeEngine !== _fgEngine) _fgEngine.stop();
+                return;
+            }
 
             const fgState = _fgEngine.getState();
             const isReady = fgState.playing && fgState.processingState === 'ready';
@@ -538,8 +559,8 @@
             window._gdarMediaSession.setActionHandlers({
                 onPlay: () => api.play(),
                 onPause: () => api.pause(),
-                onNext: () => api.seekToIndex(_fgEngine.getState().index + 1),
-                onPrevious: () => api.seekToIndex(_fgEngine.getState().index - 1),
+                onNext: () => api.seekToIndex(_currentIndex + 1),
+                onPrevious: () => api.seekToIndex(_currentIndex - 1),
                 onSeekTo: (e) => api.seek(e.seekTime)
             });
         }

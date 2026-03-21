@@ -66,7 +66,9 @@
                 if (duration > 0 && position >= 0 && position <= duration) {
                     navigator.mediaSession.setPositionState({
                         duration: duration,
-                        playbackRate: playing ? 1.0 : 0.0,
+                        // playbackRate must be > 0 per spec; pause state is
+                        // communicated separately via playbackState, not here.
+                        playbackRate: 1.0,
                         position: position
                     });
                 }

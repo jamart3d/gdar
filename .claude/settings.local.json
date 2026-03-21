@@ -9,7 +9,12 @@
       "Bash(./gradlew :app:compileReleaseKotlin --stacktrace)",
       "Bash(./gradlew :app:processReleaseResources)",
       "Bash(flutter --version)",
-      "Bash(flutter build:*)"
+      "Bash(flutter build:*)",
+      "Bash(git checkout:*)",
+      "Bash(grep -v \"^[+-]\\\\s*$\")",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)"
     ]
   }
 }

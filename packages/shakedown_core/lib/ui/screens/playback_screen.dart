@@ -703,7 +703,13 @@ class PlaybackScreenState extends State<PlaybackScreen>
                   ),
                   if (kIsWeb)
                     PopupMenuItem(
-                      onTap: () => settingsProvider.toggleShowDevAudioHud(),
+                      onTap: () {
+                        settingsProvider.toggleShowDevAudioHud();
+                        if (settingsProvider.showPlaybackMessages !=
+                            settingsProvider.showDevAudioHud) {
+                          settingsProvider.toggleShowPlaybackMessages();
+                        }
+                      },
                       child: Row(
                         children: [
                           Icon(

@@ -12,8 +12,10 @@ type: reference
 | Agent rules | `.agent/rules/` |
 | Session handoff notes | `.agent/notes/session_handoff.md` |
 | Monorepo scorecard | `docs/monorepo_scorecard_2026-03-19.md` |
-| Web/audio audit | `docs/web_ui_audio_hybrid_review_2026-03-19.md` |
-| JS engine architecture doc | `docs/web_ui_audio_engines.md` |
+| Web/audio audit | `apps/gdar_web/docs/web_ui_audio_hybrid_review_2026-03-19.md` |
+| JS engine architecture doc | `apps/gdar_web/docs/web_ui_audio_engines.md` |
+| Dev audio HUD reference | `apps/gdar_web/docs/dev_audio_hud.md` |
+| First-run & device preset logic | `apps/gdar_web/docs/first_run_presets.md` |
 | Platform defaults config | `packages/shakedown_core/lib/config/default_settings.dart` |
 | SettingsProvider | `packages/shakedown_core/lib/providers/settings_provider.dart` |
 | Web bootstrap dispatcher | `apps/gdar_web/web/hybrid_init.js` |
