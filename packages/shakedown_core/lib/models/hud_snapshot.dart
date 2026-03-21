@@ -1,3 +1,8 @@
+// TODO(fetch-latency): add fetchTtfbMs field once gapless_audio_engine.js
+// emits time-to-first-byte from performance.now() at fetch start → first chunk.
+// Wire through: JS _emitState() → gapless_player_web.dart → AudioProvider
+// → HudSnapshot, then add a NET chip + sparkline in dev_audio_hud.dart.
+
 /// A processed snapshot of audio engine state and configuration for the HUD.
 class HudSnapshot {
   final String engine; // ENG

@@ -44,14 +44,10 @@ class DevAudioHud extends StatefulWidget {
 class _DevAudioHudState extends State<DevAudioHud> {
   static const int _driftHistoryMaxPoints = 120;
   static const int _headroomHistoryMaxPoints = 180;
-  static const int _stallHistoryMaxPoints = 60;
   Timer? _heartbeatPulseTimer;
   bool _heartbeatPulseOn = false;
   final List<double> _driftHistory = <double>[];
   final List<double> _headroomHistory = <double>[];
-  final List<double> _stallHistory = <double>[];
-  DateTime? _stallStartTime;
-  double? _currentStallSec;
 
   // BGT: cumulative background time tracking
   Duration _totalBgtDuration = Duration.zero;
@@ -102,7 +98,6 @@ class _DevAudioHudState extends State<DevAudioHud> {
 
         _syncHeartbeatPulse(hud.isPlaying);
         _trackBgt(hud);
-        _trackStall(hud);
 
         if (!widget.compact) {
           final summary = hud
@@ -130,7 +125,6 @@ class _DevAudioHudState extends State<DevAudioHud> {
           'GAP': _computeGap(hud),
           'BGT': _computeBgt(),
           'PM': widget.settingsProvider.performanceMode ? 'ON' : 'OFF',
-          'WAIT': _computeWait(),
         };
         final isFruitMode =
             context.read<ThemeProvider?>()?.themeStyle == ThemeStyle.fruit;
@@ -173,7 +167,6 @@ class _DevAudioHudState extends State<DevAudioHud> {
               const keys = [
                 'DFT',
                 'HD',
-                'WAIT',
                 'BUF',
                 'NX',
                 'PF',
@@ -531,40 +524,6 @@ class _DevAudioHudState extends State<DevAudioHud> {
     return 'WAIT';
   }
 
-  void _trackStall(HudSnapshot hud) {
-    final isStalling =
-        hud.isPlaying &&
-        (hud.processing == 'BUF' || hud.processing == 'LD');
-    if (isStalling && _stallStartTime == null) {
-      _stallStartTime = DateTime.now();
-      _currentStallSec = 0.0;
-    } else if (!isStalling && _stallStartTime != null) {
-      final durationSec =
-          DateTime.now().difference(_stallStartTime!).inMilliseconds / 1000.0;
-      _stallStartTime = null;
-      _currentStallSec = null;
-      if (durationSec > 0.3) {
-        _stallHistory.add(durationSec);
-        if (_stallHistory.length > _stallHistoryMaxPoints) {
-          _stallHistory.removeAt(0);
-        }
-      }
-    } else if (_stallStartTime != null) {
-      _currentStallSec =
-          DateTime.now().difference(_stallStartTime!).inMilliseconds / 1000.0;
-    }
-  }
-
-  String _computeWait() {
-    if (_currentStallSec != null) {
-      return '${_currentStallSec!.toStringAsFixed(1)}s';
-    }
-    if (_stallHistory.isNotEmpty) {
-      return '${_stallHistory.last.toStringAsFixed(1)}s';
-    }
-    return '--';
-  }
-
   double? _parseDurationToSeconds(String? raw) {
     if (raw == null || raw == '--' || raw == '00:00' || raw.isEmpty) {
       return null;
@@ -684,7 +643,6 @@ class _DevAudioHudState extends State<DevAudioHud> {
       buildTrendChip(_driftHistory, 'DFT', baseTextColor, alpha: 1.0),
     );
     trendChips.add(buildTrendChip(_headroomHistory, 'HD', baseTextColor));
-    trendChips.add(buildTrendChip(_stallHistory, 'NET', Colors.amber));
     // Standalone heartbeat removed from top row, now integrated into SIG below.
 
     for (final key in orderedKeys) {
@@ -700,9 +658,6 @@ class _DevAudioHudState extends State<DevAudioHud> {
           case 'DFT':
           case 'HD':
             chipWidth = 76;
-            break;
-          case 'WAIT':
-            chipWidth = 64;
             break;
           case 'DET':
             chipWidth = 38; // Slightly tighter as requested
@@ -811,31 +766,6 @@ class _DevAudioHudState extends State<DevAudioHud> {
         }
       } else if (key == 'NX' && value != '00:00' && value != '--') {
         finalBaseTextColor = Colors.greenAccent;
-      } else if (key == 'WAIT' && value != '--') {
-        final stallSec = double.tryParse(value.replaceAll('s', '')) ?? 0.0;
-        if (_currentStallSec != null) {
-          // Active stall — escalate color with duration
-          if (stallSec >= 8.0) {
-            finalChipBgColor = Colors.redAccent.withValues(alpha: 0.9);
-            finalBaseTextColor = Colors.white;
-            finalKeyTextColor = Colors.white.withValues(alpha: 0.8);
-          } else if (stallSec >= 2.0) {
-            finalChipBgColor = Colors.orange.withValues(alpha: 0.8);
-            finalBaseTextColor = Colors.black;
-            finalKeyTextColor = Colors.black.withValues(alpha: 0.7);
-          } else {
-            finalBaseTextColor = Colors.amber;
-          }
-        } else {
-          // Last completed stall — static color
-          if (stallSec >= 8.0) {
-            finalBaseTextColor = Colors.redAccent;
-          } else if (stallSec >= 2.0) {
-            finalBaseTextColor = Colors.orange;
-          } else {
-            finalBaseTextColor = Colors.greenAccent;
-          }
-        }
       } else if (key == 'DFT') {
         final drift = _parseDriftValue(value) ?? 0.0;
         if (drift.abs() > 0.1) {
@@ -1064,7 +994,7 @@ class _DevAudioHudState extends State<DevAudioHud> {
         detChip = chip;
       } else if (key == 'E') {
         errorChip = chip;
-      } else if (key == 'DFT' || key == 'HD' || key == 'WAIT') {
+      } else if (key == 'DFT' || key == 'HD') {
         sparklineValueChips.add(chip);
       } else if (key == 'BG') {
         bgChip = chip;
@@ -1229,11 +1159,6 @@ class _DevAudioHudState extends State<DevAudioHud> {
             ? 'Enabled (effects reduced)'
             : 'Disabled';
         return 'Performance Mode: $pmDesc ($value)';
-      case 'WAIT':
-        if (value == '--') return 'Archive.org fetch wait: no stalls recorded';
-        final isActive = _currentStallSec != null;
-        final suffix = isActive ? ' (active stall)' : ' (last stall)';
-        return 'Archive.org fetch wait$suffix: $value — green <2s, orange 2–8s, red >8s. NET sparkline shows history.';
       default:
         return '$key: $value';
     }

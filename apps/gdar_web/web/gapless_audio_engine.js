@@ -168,6 +168,12 @@
 
     _log.log('[gdar engine] Fetching', index, track.url);
 
+    // TODO(fetch-latency): capture performance.now() here as fetchStart, then
+    // record time-to-first-byte when the first reader.read() chunk arrives.
+    // Emit as `fetchTtfbMs` on the state object so the HUD can surface a
+    // NET chip/sparkline showing archive.org response quality.
+    // Requires: new field in _emitState(), gapless_player_web.dart interop,
+    // HudSnapshot.fetchTtfbMs, and a NET sparkline in dev_audio_hud.dart.
     return fetch(track.url, { signal: controller.signal })
       .then(async r => {
         if (!r.ok) {
