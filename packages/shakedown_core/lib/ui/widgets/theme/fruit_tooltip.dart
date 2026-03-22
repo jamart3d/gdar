@@ -28,6 +28,7 @@ class FruitTooltip extends StatefulWidget {
 class _FruitTooltipState extends State<FruitTooltip> {
   OverlayEntry? _entry;
   Timer? _timer;
+  Timer? _exitDebounce;
   bool _hovering = false;
 
   void _showTooltip() {
@@ -134,21 +135,36 @@ class _FruitTooltipState extends State<FruitTooltip> {
   void _hideTooltip() {
     _timer?.cancel();
     _timer = null;
+    _exitDebounce?.cancel();
+    _exitDebounce = null;
     _entry?.remove();
     _entry = null;
   }
 
   void _scheduleShow() {
-    _timer?.cancel();
+    _exitDebounce?.cancel();
+    _exitDebounce = null;
     _hovering = true;
-    _timer = Timer(widget.showDelay, _showTooltip);
+    // ??= so a spurious re-enter after a spurious exit does not reset the
+    // 500ms countdown back to zero. The tooltip appears 500ms after the
+    // *first* enter, regardless of how many spurious exit/enter pairs fire.
+    _timer ??= Timer(widget.showDelay, _showTooltip);
   }
 
   void _cancelShow() {
+    // Cancel the show timer immediately so it cannot fire and insert an entry
+    // during the debounce window (which would then be removed by the debounce
+    // callback, causing a visible flash).
     _timer?.cancel();
     _timer = null;
     _hovering = false;
-    _hideTooltip();
+    // ??= so multiple rapid exits (e.g. from AnimatedContainer repaints) do
+    // not keep resetting the deadline. Only the first exit arms the timer;
+    // a real re-enter cancels it.
+    _exitDebounce ??= Timer(const Duration(milliseconds: 300), () {
+      _exitDebounce = null;
+      if (!_hovering) _hideTooltip();
+    });
   }
 
   @override
