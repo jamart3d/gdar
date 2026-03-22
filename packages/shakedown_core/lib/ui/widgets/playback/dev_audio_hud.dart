@@ -1077,10 +1077,10 @@ class _DevAudioHudState extends State<DevAudioHud> {
         return 'Detected Hardware Profile: $profile ($value)';
       case 'HF':
         String desc = 'Unknown';
-        if (value == 'IMM') desc = 'Immediate';
-        if (value == 'BND') desc = 'Boundary';
-        if (value == 'OFF') desc = 'Off';
-        if (value == 'BUF') desc = 'Buffered';
+        if (value == 'IMM') desc = 'Immediate — swap to WebAudio as soon as loaded';
+        if (value == 'BND') desc = 'End — swap at the next track boundary';
+        if (value == 'OFF') desc = 'Disabled — stay on HTML5, no WebAudio handoff';
+        if (value == 'BUF') desc = 'Mid — wait until HTML5 buffer is exhausted, then swap';
         return 'Hybrid Handoff Mode: $desc ($value)';
       case 'BG':
         String desc = 'Unknown';

@@ -200,7 +200,7 @@ if (value == 'BND') desc = 'End — swap at the next track boundary';
 if (value == 'BUF') desc = 'Mid — wait until HTML5 buffer is exhausted, then swap';
 ```
 
-**Status: open.**
+**Status: closed.**
 
 ---
 
@@ -297,7 +297,7 @@ use it. Closed.
 
 | ID | Priority | Status | Description |
 |----|----------|--------|-------------|
-| N4 | P3 | Open | HF tooltip says Boundary/Buffered; settings UI says End/Mid |
+| N4 | P3 | Resolved | HF tooltip updated to match End/Mid settings labels |
 
 ---
 
