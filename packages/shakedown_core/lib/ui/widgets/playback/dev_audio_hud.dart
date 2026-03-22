@@ -1046,7 +1046,11 @@ class _DevAudioHudState extends State<DevAudioHud> {
       final tooltip = _hudFieldTooltip(key, value);
       if (tooltip.isNotEmpty) {
         if (isFruit) {
-          chip = FruitTooltip(message: tooltip, child: chip);
+          chip = FruitTooltip(
+            key: ValueKey('hud_tt_$key'),
+            message: tooltip,
+            child: chip,
+          );
         } else {
           chip = Tooltip(
             message: tooltip,
