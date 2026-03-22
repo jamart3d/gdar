@@ -174,7 +174,6 @@ class _DevAudioHudState extends State<DevAudioHud> {
               const keys = [
                 'DFT',
                 'HD',
-                'NET',
                 'BUF',
                 'NX',
                 'PF',
@@ -193,6 +192,7 @@ class _DevAudioHudState extends State<DevAudioHud> {
                 'GAP',
                 'BGT',
                 'PM',
+                'NET',
                 'SIG',
                 'MSG',
               ];
@@ -1046,11 +1046,7 @@ class _DevAudioHudState extends State<DevAudioHud> {
       final tooltip = _hudFieldTooltip(key, value);
       if (tooltip.isNotEmpty) {
         if (isFruit) {
-          chip = FruitTooltip(
-            key: ValueKey('hud_tt_$key'),
-            message: tooltip,
-            child: chip,
-          );
+          chip = FruitTooltip(message: tooltip, child: chip);
         } else {
           chip = Tooltip(
             message: tooltip,
@@ -1072,7 +1068,7 @@ class _DevAudioHudState extends State<DevAudioHud> {
         detChip = chip;
       } else if (key == 'E') {
         errorChip = chip;
-      } else if (key == 'DFT' || key == 'HD' || key == 'NET') {
+      } else if (key == 'DFT' || key == 'HD') {
         sparklineValueChips.add(chip);
       } else if (key == 'BG') {
         bgChip = chip;
