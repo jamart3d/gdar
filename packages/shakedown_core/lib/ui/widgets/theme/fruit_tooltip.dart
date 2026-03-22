@@ -31,6 +31,27 @@ class _FruitTooltipState extends State<FruitTooltip> {
   Timer? _exitDebounce;
   bool _hovering = false;
 
+  // Stable callback references created once — prevents RenderMouseRegion from
+  // calling _updateAnnotations() on every build() when new lambda objects would
+  // otherwise compare as unequal and trigger MouseTracker re-evaluation.
+  late final void Function(PointerEnterEvent) _onMouseEnter;
+  late final void Function(PointerExitEvent) _onMouseExit;
+  late final void Function(bool) _onShowFocusHighlight;
+
+  @override
+  void initState() {
+    super.initState();
+    _onMouseEnter = (_) => _scheduleShow();
+    _onMouseExit = (_) => _cancelShow();
+    _onShowFocusHighlight = (value) {
+      if (value) {
+        _scheduleShow();
+      } else {
+        _cancelShow();
+      }
+    };
+  }
+
   void _showTooltip() {
     if (_entry != null || widget.message.isEmpty) return;
     final RenderBox box = context.findRenderObject() as RenderBox;
@@ -185,17 +206,11 @@ class _FruitTooltipState extends State<FruitTooltip> {
     }
 
     return MouseRegion(
-      onEnter: (_) => _scheduleShow(),
-      onExit: (_) => _cancelShow(),
+      onEnter: _onMouseEnter,
+      onExit: _onMouseExit,
       cursor: SystemMouseCursors.click,
       child: FocusableActionDetector(
-        onShowFocusHighlight: (value) {
-          if (value) {
-            _scheduleShow();
-          } else {
-            _cancelShow();
-          }
-        },
+        onShowFocusHighlight: _onShowFocusHighlight,
         shortcuts: const <ShortcutActivator, Intent>{
           SingleActivator(LogicalKeyboardKey.enter): ActivateIntent(),
           SingleActivator(LogicalKeyboardKey.space): ActivateIntent(),
