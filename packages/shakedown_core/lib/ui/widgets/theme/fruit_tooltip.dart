@@ -28,6 +28,7 @@ class FruitTooltip extends StatefulWidget {
 class _FruitTooltipState extends State<FruitTooltip> {
   OverlayEntry? _entry;
   Timer? _timer;
+  Timer? _hideTimer;
   bool _hovering = false;
 
   void _showTooltip() {
@@ -134,11 +135,15 @@ class _FruitTooltipState extends State<FruitTooltip> {
   void _hideTooltip() {
     _timer?.cancel();
     _timer = null;
+    _hideTimer?.cancel();
+    _hideTimer = null;
     _entry?.remove();
     _entry = null;
   }
 
   void _scheduleShow() {
+    _hideTimer?.cancel();
+    _hideTimer = null;
     _timer?.cancel();
     _hovering = true;
     _timer = Timer(widget.showDelay, _showTooltip);
@@ -148,11 +153,16 @@ class _FruitTooltipState extends State<FruitTooltip> {
     _timer?.cancel();
     _timer = null;
     _hovering = false;
-    _hideTooltip();
+    // Debounce: Flutter Web fires a spurious exit+enter pair during hit-test
+    // re-evaluation on rebuilds. Waiting 80ms absorbs it; a genuine mouse-out
+    // (user moves away and stays away) still hides the tooltip promptly.
+    _hideTimer?.cancel();
+    _hideTimer = Timer(const Duration(milliseconds: 80), _hideTooltip);
   }
 
   @override
   void dispose() {
+    _hideTimer?.cancel();
     _hideTooltip();
     super.dispose();
   }
