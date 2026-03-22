@@ -1,12 +1,14 @@
 # Pending Release Notes
 
 ### Status
-- **Current Version**: `1.3.4+214`
+- **Current Version**: `1.3.7+217`
 - **Git State**: LIVE
 - **Goal**: Monitoring release success and preparing for next cycle.
 
 ### What's In This Release
-- (Empty)
+- **TV Enhancement**: New `InactivityService` for reliable screensaver triggering.
+- **TV Enhancement**: Improved Android Manifest for better Google TV compatibility.
+- **Testing**: Added regression tests for TV inactivity and screensaver flow.
 
 ### Next Commands
 Use PowerShell.

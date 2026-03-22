@@ -1,4 +1,10 @@
-What's new in v1.3.6+216
+What's new in v1.3.7+217
+- TV Enhancement: New InactivityService for more reliable screensaver triggering.
+- TV Enhancement: Improved Android Manifest for better Google TV compatibility.
+- Testing: Added regression tests for TV inactivity and screensaver flow.
+
+---
+
 - Core (Visualizer): New EKG, Circular EKG, VU, and Oscilloscope modes for screensaver.
 - TV Enhancement: High-fidelity stereo capture and multi-algorithm beat detection.
 - Web Audio: Fixed player hang issue during rapid state transitions.

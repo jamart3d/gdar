@@ -6,6 +6,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.3.7+217] - 2026-03-22
+
+### Added
+- **TV Enhancement**: Implemented a dedicated `InactivityService` and `InactivityDetector` for more reliable inactivity tracking and screensaver triggering on Google TV.
+- **TV Enhancement**: Updated `AndroidManifest.xml` to explicitly mark touchscreen as non-required and added Leanback support for better TV Play Store visibility.
+- **Testing**: Added specialized regression tests for TV inactivity detection and automated screensaver activation.
+
+### Fixed
+- **TV UI**: Resolved a potential race condition where the screensaver might attempt to launch before the navigator was fully initialized.
+
 ## [1.3.6+216] - 2026-03-22
 
 ### Added

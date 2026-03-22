@@ -93,6 +93,26 @@ class _GdarTvAppState extends State<GdarTvApp> {
   final GlobalKey<NavigatorState> _navigatorKey = GlobalKey<NavigatorState>();
   bool _isScreensaverActive = false;
 
+  void _setScreensaverActive(bool active) {
+    if (!mounted) {
+      _isScreensaverActive = active;
+      return;
+    }
+    setState(() {
+      _isScreensaverActive = active;
+    });
+  }
+
+  Future<void> _showScreensaver(BuildContext context) async {
+    _setScreensaverActive(true);
+    try {
+      await ScreensaverScreen.show(context);
+    } finally {
+      _setScreensaverActive(false);
+      _inactivityService.onUserActivity();
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -126,23 +146,26 @@ class _GdarTvAppState extends State<GdarTvApp> {
   }
 
   Future<void> _handleInactivityTimeout() async {
-    if (!mounted ||
-        _isScreensaverActive ||
-        !_settingsProvider.useOilScreensaver) {
+    if (!mounted || _isScreensaverActive) {
+      return;
+    }
+
+    if (!_settingsProvider.useOilScreensaver) {
       return;
     }
 
     final navigator = _navigatorKey.currentState;
     final navContext = _navigatorKey.currentContext;
-    if (navigator == null || navContext == null) return;
-
-    _isScreensaverActive = true;
-    try {
-      await ScreensaverScreen.show(navContext);
-    } finally {
-      _isScreensaverActive = false;
+    if (navigator == null || navContext == null) {
+      logger.w(
+        'TV inactivity timeout fired before navigator was ready; retrying timer',
+      );
       _inactivityService.onUserActivity();
+      return;
     }
+
+    logger.i('TV inactivity timeout fired; launching screensaver');
+    await _showScreensaver(navContext);
   }
 
   void _syncInactivityService(SettingsProvider settingsProvider) {
@@ -222,7 +245,7 @@ class _GdarTvAppState extends State<GdarTvApp> {
         }
       } else if (trimmedStep == 'screensaver') {
         if (context.mounted) {
-          await ScreensaverScreen.show(context);
+          await _showScreensaver(context);
         }
       }
     }

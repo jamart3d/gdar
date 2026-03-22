@@ -12,6 +12,7 @@ import 'package:shakedown_core/providers/show_list_provider.dart';
 import 'package:shakedown_core/services/audio_cache_service.dart';
 import 'package:shakedown_core/services/device_service.dart';
 import 'package:shakedown_core/services/gapless_player/gapless_player.dart';
+import 'package:shakedown_core/services/inactivity_service.dart';
 import 'package:shakedown_core/ui/screens/screensaver_screen.dart';
 import 'package:shakedown_core/ui/screens/onboarding_screen.dart';
 import 'package:shakedown_core/ui/screens/splash_screen.dart';
@@ -387,6 +388,12 @@ void main() {
     await tester.pump(const Duration(seconds: 1));
 
     expect(find.byType(ScreensaverScreen), findsOneWidget);
+    expect(
+      tester
+          .widget<InactivityDetector>(find.byType(InactivityDetector))
+          .isScreensaverActive,
+      isTrue,
+    );
   });
 
   testWidgets(
