@@ -43,13 +43,16 @@ class _FruitTooltipState extends State<FruitTooltip> {
     final Size size = box.size;
     final Offset globalTopLeft = box.localToGlobal(Offset.zero);
     final double centerX = globalTopLeft.dx + size.width / 2;
-    final double screenWidth = MediaQuery.of(context).size.width;
+    final MediaQueryData mq = MediaQuery.of(context);
+    final double screenWidth = mq.size.width;
+    final double screenHeight = mq.size.height;
     final double left = (centerX - 120).clamp(12.0, screenWidth - 12 - 240);
-    final double top = globalTopLeft.dy - 44;
+    // Anchor by bottom so tooltip always grows upward, clear of the chip/cursor.
+    final double bottom = screenHeight - globalTopLeft.dy + 8;
     _entry = OverlayEntry(
       builder: (overlayContext) => Positioned(
         left: left,
-        top: top,
+        bottom: bottom,
         child: Material(
           color: Colors.transparent,
           child: IgnorePointer(

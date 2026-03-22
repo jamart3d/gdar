@@ -1008,14 +1008,16 @@ class _DevAudioHudState extends State<DevAudioHud> {
               ),
             if (key == 'BG' && heartbeatEnabledBySettings) ...[
               const SizedBox(width: 4),
-              _buildTrafficLightHeartbeat(
-                labelsFontSize,
-                colorScheme,
-                active: heartbeatActive,
-                needed: heartbeatNeeded,
-                enabledBySettings: true,
-                isPlaying: isPlaying,
-                horizontal: true,
+              RepaintBoundary(
+                child: _buildTrafficLightHeartbeat(
+                  labelsFontSize,
+                  colorScheme,
+                  active: heartbeatActive,
+                  needed: heartbeatNeeded,
+                  enabledBySettings: true,
+                  isPlaying: isPlaying,
+                  horizontal: true,
+                ),
               ),
             ],
           ],

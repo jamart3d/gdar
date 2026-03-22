@@ -160,6 +160,7 @@ These files were written for Jules but apply equally here. **Read the relevant o
 |---|---|
 | `.agent/rules/fruit_theme_boundaries.md` | Any Fruit/web UI work |
 | `.agent/rules/fruit_theme.md` | Fruit component patterns |
+| `.agent/rules/fruit_tooltip_positioning.md` | Any changes to FruitTooltip or animated chip content |
 | `.agent/rules/tv_rules.md` | Any TV UI work |
 | `.agent/rules/tv_focus_stability.md` | TV focus/navigation changes |
 | `.agent/rules/performance_mode_gates.md` | Performance mode or visual effect changes |
