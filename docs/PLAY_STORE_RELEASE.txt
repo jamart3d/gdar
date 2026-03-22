@@ -1,3 +1,11 @@
+What's new in v1.3.6+216
+- Core (Visualizer): New EKG, Circular EKG, VU, and Oscilloscope modes for screensaver.
+- TV Enhancement: High-fidelity stereo capture and multi-algorithm beat detection.
+- Web Audio: Fixed player hang issue during rapid state transitions.
+- Testing: Hardened gdar_mobile widget tests and fixed monorepo asset resolution.
+
+---
+
 What's new in v1.3.5+215
 - Core: Introduced SongStructureHintService and related models for track-specific hint parsing.
 - Testing: Fixed asset path resolution in shakedown_core unit tests for monorepo compatibility.

@@ -5,15 +5,14 @@ import 'package:shakedown_core/services/song_structure_hint_service.dart';
 
 void main() {
   test('parses grateful dead song structure hints asset', () async {
-    String path = 'packages/shakedown_core/assets/data/audio/grateful_dead_song_structure_hints.json';
+    String path =
+        'packages/shakedown_core/assets/data/audio/grateful_dead_song_structure_hints.json';
     if (!await File(path).exists()) {
       path = 'assets/data/audio/grateful_dead_song_structure_hints.json';
     }
     final file = File(path);
     if (!await file.exists()) {
-      fail(
-        'grateful_dead_song_structure_hints.json not found in $path',
-      );
+      fail('grateful_dead_song_structure_hints.json not found in $path');
     }
 
     final jsonString = await file.readAsString();
@@ -35,7 +34,8 @@ void main() {
   });
 
   test('lookup normalizes punctuation and aliases', () async {
-    String path = 'packages/shakedown_core/assets/data/audio/grateful_dead_song_structure_hints.json';
+    String path =
+        'packages/shakedown_core/assets/data/audio/grateful_dead_song_structure_hints.json';
     if (!await File(path).exists()) {
       path = 'assets/data/audio/grateful_dead_song_structure_hints.json';
     }

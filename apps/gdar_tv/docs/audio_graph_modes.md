@@ -147,7 +147,7 @@ It now has two paths:
 2. Fallback path:
    - splits FFT bands `0-3` to left and `4-7` to right
    - shows `LO` and `HI` range labels
-   - shows the fallback drive factor (`x1.5`)
+   - shows the fallback drive factor (`x1.0`)
 
 ### Layout
 
@@ -166,7 +166,7 @@ _vuPeakDecayPerSec = 0.5
 
 ### Signal scaling
 
-Fallback FFT fake stereo uses a `1.5x` boost.
+Fallback FFT fake stereo now uses raw split-band levels with no extra boost.
 
 Real stereo RMS uses a `2.5x` boost to map typical PCM levels into a readable
 needle range.

@@ -341,7 +341,7 @@ class StealGraph extends Component with HasGameReference<StealGame> {
     } else {
       // Fallback: fake stereo by splitting 8-band FFT (lo bands → L, hi → R).
       _hasRealStereo = false;
-      _vuDrive = 1.5;
+      _vuDrive = 1.0;
       final bands = energy.bands;
       _vuRawLeft =
           (bands.length >= 8
@@ -1632,13 +1632,32 @@ class StealGraph extends Component with HasGameReference<StealGame> {
     final finalMeterLeft = startX - panelPad + 8;
     final finalMeterTop = baseY - maxH - 8;
     const finalMeterWidth = totalW + panelPad * 2 - 16;
+    const finalMeterHeight = 10.0;
     final finalColor = beatSource == 'PCM'
         ? const Color(0xFF55D9FF)
         : const Color(0xFFFFB84D);
 
+    _textPainter.text = TextSpan(
+      text: 'FINAL $beatSource',
+      style: TextStyle(
+        color: finalColor.withValues(alpha: 0.72),
+        fontSize: 7,
+        fontWeight: FontWeight.w700,
+        letterSpacing: 1.3,
+        fontFamily: 'RobotoMono',
+      ),
+    );
+    _textPainter.layout();
+    _textPainter.paint(canvas, Offset(finalMeterLeft, finalMeterTop - 10));
+
     canvas.drawRRect(
       RRect.fromRectAndRadius(
-        Rect.fromLTWH(finalMeterLeft, finalMeterTop, finalMeterWidth, 6),
+        Rect.fromLTWH(
+          finalMeterLeft,
+          finalMeterTop,
+          finalMeterWidth,
+          finalMeterHeight,
+        ),
         const Radius.circular(3),
       ),
       Paint()
@@ -1651,7 +1670,7 @@ class StealGraph extends Component with HasGameReference<StealGame> {
           finalMeterLeft,
           finalMeterTop,
           finalMeterWidth * (finalRatio / 2.0),
-          6,
+          finalMeterHeight,
         ),
         const Radius.circular(3),
       ),

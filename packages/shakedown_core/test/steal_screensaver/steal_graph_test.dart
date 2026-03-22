@@ -91,5 +91,36 @@ void main() {
         expect(graph.energy.isBeat, isTrue);
       },
     );
+
+    stealGraphTester.testGameWidget(
+      'keeps beat_debug telemetry from the incoming reactor payload',
+      setUp: (game, tester) async {
+        game.updateConfig(const StealConfig(audioGraphMode: 'beat_debug'));
+
+        fakeReactor.push(
+          const AudioEnergy(
+            bass: 0.4,
+            mid: 0.5,
+            treble: 0.3,
+            overall: 0.5,
+            beatScore: 0.9,
+            beatThreshold: 0.45,
+            beatConfidence: 0.8,
+            beatSource: 'PCM',
+            algoLevels: [0.2, 0.4, 0.1, 0.0, 0.0, 0.0],
+          ),
+        );
+
+        await Future.delayed(Duration.zero);
+        game.update(0.016);
+      },
+      verify: (game, tester) async {
+        final graph = game.children.whereType<StealGraph>().first;
+        expect(graph.graphMode, 'beat_debug');
+        expect(graph.energy.beatSource, 'PCM');
+        expect(graph.energy.beatScore, closeTo(0.9, 0.001));
+        expect(graph.energy.algoLevels, isNotEmpty);
+      },
+    );
   });
 }

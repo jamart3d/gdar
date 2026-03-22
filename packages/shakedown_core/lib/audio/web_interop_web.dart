@@ -2,16 +2,18 @@ import 'dart:async';
 import 'dart:js_interop';
 import 'package:web/web.dart' as web;
 
+@JS('window._gdarMediaSession.updatePlaybackState')
+external void _jsUpdatePlaybackState(bool playing);
+
 /// Utility class for JS Interop and Web-specific background stability.
 class WebInterop {
-  /// Sets the MediaSession playback state to 'playing' or 'paused'.
-  /// This helps the OS/Browser understand the process priority.
+  /// Syncs playback state through the centralised JS MediaSession
+  /// anchor so there is a single writer with consistent state tracking.
   static void syncMediaSession(bool isPlaying) {
     try {
-      final mediaSession = web.window.navigator.mediaSession;
-      mediaSession.playbackState = isPlaying ? 'playing' : 'paused';
+      _jsUpdatePlaybackState(isPlaying);
     } catch (e) {
-      // MediaSession might not be available in all browsers/contexts
+      // Anchor or MediaSession might not be available
     }
   }
 

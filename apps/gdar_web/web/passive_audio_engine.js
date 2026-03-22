@@ -213,24 +213,37 @@
 
     /** Register action handlers once. Called from init(). */
     function _registerMediaSessionHandlers() {
-        if (!('mediaSession' in navigator) || _mediaSessionRegistered) return;
-        navigator.mediaSession.setActionHandler('play', () => api.play());
-        navigator.mediaSession.setActionHandler('pause', () => api.pause());
-        navigator.mediaSession.setActionHandler('nexttrack', () => api.seekToIndex(_currentIndex + 1));
-        navigator.mediaSession.setActionHandler('previoustrack', () => api.seekToIndex(Math.max(0, _currentIndex - 1)));
+        if (_mediaSessionRegistered) return;
+        if (window._gdarMediaSession) {
+            window._gdarMediaSession.setActionHandlers({
+                onPlay: () => api.play(),
+                onPause: () => api.pause(),
+                onNext: () => api.seekToIndex(_currentIndex + 1),
+                onPrevious: () => api.seekToIndex(Math.max(0, _currentIndex - 1)),
+            });
+        }
         _mediaSessionRegistered = true;
     }
 
-    /** Update metadata only. Called on every track change. */
+    /** Update metadata and playback state. Called on every track change. */
     function _updateMediaSession() {
-        if (!('mediaSession' in navigator)) return;
+        if (!window._gdarMediaSession) return;
         const track = _playlist[_currentIndex];
-        if (!track) return;
-        navigator.mediaSession.metadata = new MediaMetadata({
-            title: track.title || '',
-            artist: track.artist || '',
-            album: track.album || '',
-        });
+        if (track) {
+            window._gdarMediaSession.updateMetadata({
+                title: track.title || '',
+                artist: track.artist || '',
+                album: track.album || '',
+            });
+        }
+        window._gdarMediaSession.updatePlaybackState(_playing);
+        if (_audio && !isNaN(_audio.duration) && _audio.duration > 0) {
+            window._gdarMediaSession.updatePositionState({
+                duration: _audio.duration,
+                position: _audio.currentTime || 0,
+                playing: _playing,
+            });
+        }
     }
 
     // ─── Callbacks ────────────────────────────────────────────────────────────
@@ -328,6 +341,7 @@
                     _loadingState = 'ready';
                     _emitState();
                     _startPositionTimer();
+                    _updateMediaSession();
                 }).catch(err => {
                     _playPromise = null;
                     if (err.name !== 'AbortError' && err.name !== 'NotAllowedError') {
@@ -354,6 +368,7 @@
             _playing = false;
             _stopPositionTimer();
             _emitState();
+            _updateMediaSession();
         },
 
         stop: function () {
@@ -368,6 +383,9 @@
             _loadingState = 'idle';
             _isTransitioning = false;
             _emitState();
+            if (window._gdarMediaSession) {
+                window._gdarMediaSession.updatePlaybackState(false);
+            }
         },
 
         seek: function (seconds) {

@@ -6,6 +6,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.3.6+216] - 2026-03-22
+
+### Added
+- **Core (Visualizer)**: Implemented new `StealGraph` display modes: EKG, Circular EKG, VU Meter, and Oscilloscope Scope.
+- **TV Enhancement**: Added multi-algorithm beat detection and stereo L/R capture support for high-fidelity reactivity.
+
+### Fixed
+- **Web Audio**: Resolved a critical player hang condition in the Gapless Web Audio engine triggered by rapid play/pause transitions.
+- **Testing**: Hardened `gdar_mobile` widget test suite by suppressing noisy framework-level teardown exceptions.
+- **Documentation**: Finalized `audio_graph_modes.md` and updated screensaver audio audit records for 2026-03-21.
+
 ## [1.3.5+215] - 2026-03-22
 
 ### Added

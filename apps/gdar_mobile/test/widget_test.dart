@@ -160,11 +160,6 @@ class _FakeAudioProvider extends ChangeNotifier implements AudioProvider {
     SettingsProvider settingsProvider,
     AudioCacheService audioCacheService,
   ) {}
-
-  @override
-  void dispose() {
-    super.dispose();
-  }
 }
 
 class _FakeDeviceService extends ChangeNotifier implements DeviceService {

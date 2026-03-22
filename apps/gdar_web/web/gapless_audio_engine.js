@@ -328,7 +328,6 @@
   let _lastStartTrackTime = 0;
 
   function _startTrack(audioBuf, offsetSeconds, startContextTime) {
-    console.log('[Gapless] _startTrack called!');
     const targetIdx = _currentIndex;
     const targetTime = startContextTime != null ? startContextTime : _ctx.currentTime;
 
@@ -698,17 +697,11 @@
     }
   }
 
-  function _updateMediaSession() {
+  let _mediaSessionRegistered = false;
+
+  function _registerMediaSessionHandlers() {
+    if (_mediaSessionRegistered) return;
     if (window._gdarMediaSession) {
-      const track = _playlist[_currentIndex];
-      if (track) {
-        window._gdarMediaSession.updateMetadata({
-          title: track.title,
-          artist: track.artist,
-          album: track.album
-        });
-      }
-      window._gdarMediaSession.updatePlaybackState(_playing);
       window._gdarMediaSession.setActionHandlers({
         onPlay: () => api.play(),
         onPause: () => api.pause(),
@@ -716,19 +709,22 @@
         onPrevious: () => api.seekToIndex(_currentIndex - 1),
         onSeekTo: (e) => api.seek(e.seekTime)
       });
-    } else if ('mediaSession' in navigator) {
-      const track = _playlist[_currentIndex];
-      if (!track) return;
-      navigator.mediaSession.metadata = new MediaMetadata({
-        title: track.title || '',
-        artist: track.artist || '',
-        album: track.album || '',
-      });
-      navigator.mediaSession.setActionHandler('play', () => api.play());
-      navigator.mediaSession.setActionHandler('pause', () => api.pause());
-      navigator.mediaSession.setActionHandler('nexttrack', () => api.seekToIndex(_currentIndex + 1));
-      navigator.mediaSession.setActionHandler('previoustrack', () => api.seekToIndex(_currentIndex - 1));
     }
+    _mediaSessionRegistered = true;
+  }
+
+  function _updateMediaSession() {
+    if (!window._gdarMediaSession) return;
+    _registerMediaSessionHandlers();
+    const track = _playlist[_currentIndex];
+    if (track) {
+      window._gdarMediaSession.updateMetadata({
+        title: track.title,
+        artist: track.artist,
+        album: track.album
+      });
+    }
+    window._gdarMediaSession.updatePlaybackState(_playing);
   }
 
   const api = {
@@ -762,7 +758,6 @@
     },
 
     play: function () {
-      console.log(`[Gapless] api.play() called! _playing=${_playing}, state=${_ctx ? _ctx.state : 'null'}`);
       _ensureContext();
       _playing = true; // Set playback intent early so resume callback triggers api.play() again
 
