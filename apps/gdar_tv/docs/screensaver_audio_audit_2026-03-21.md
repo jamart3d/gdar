@@ -721,6 +721,10 @@ Test coverage note:
    Files:
    - `apps/gdar_tv/android/app/src/main/kotlin/com/jamart3d/shakedown/StereoCapture.kt`
    - `apps/gdar_tv/android/app/src/main/kotlin/com/jamart3d/shakedown/VisualizerPlugin.kt`
+   Status:
+   - Partially completed 2026-03-21.
+   - When stereo capture is active and warmed up, the TV path now prefers a first-pass PCM onset detector for final `isBeat`.
+   - Visualizer hybrid remains the fallback when PCM is unavailable or not ready.
 2. Add a user-facing ownership path that explicitly starts and stops stereo
    capture from the TV UI or screensaver lifecycle.
    Files:
@@ -732,14 +736,27 @@ Test coverage note:
      path is needed
    - call `stopStereoCapture()` when leaving that mode or shutting down the
      screensaver
+   Status:
+   - Completed 2026-03-21 for current screensaver use.
+   - `ScreensaverScreen` now owns stereo capture for reactive TV screensaver sessions, which keeps the PCM beat path available across graph modes.
 3. Sum stereo PCM to mono for detection.
+   Status:
+   - Completed 2026-03-21.
+   - Current PCM detector uses mono RMS derived from stereo L/R capture buffers.
 4. Run a lightweight analysis hop on PCM:
    - envelope follower
    - or small-window FFT plus flux
+   Status:
+   - Completed for first-pass PCM detector on 2026-03-21.
+   - `StereoCapture` now computes raw-buffer mono RMS, fast/slow envelope onset, and positive PCM flux on the capture thread.
+   - `VisualizerPlugin` consumes those analysis values for final PCM beat timing instead of deriving detector input from the downsampled waveform snapshot.
 5. Keep `Visualizer` as fallback for:
    - no permission
    - unsupported device path
    - low-end performance fallback
+   Status:
+   - Completed 2026-03-21.
+   - Final beat source now reports `PCM` or `VIS`, with Visualizer fallback preserved.
 6. Keep optional stereo-only graph modes separate from detector work.
    Examples:
    - Lissajous
@@ -783,6 +800,10 @@ Test coverage note:
    - permission prompt appears when expected
    - `ST` labels appear only when real stereo is active
    - fallback returns cleanly to `LO`/`HI` when stereo capture is unavailable or stopped
+   Status:
+   - Partially completed 2026-03-21.
+   - `ScreensaverScreen` now owns stereo capture activation for reactive TV screensaver sessions, and stops capture on cleanup or when reactivity is disabled.
+   - Real-device validation is still required for permission flow and device compatibility.
 7. Verify no regressions in:
    - corner graph
    - circular graph

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -44,6 +46,9 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
   AudioReactor? _audioReactor;
   bool _isInitializingAudioReactor = false;
   WakelockService? _wakelockService;
+  bool _isStereoCapturePending = false;
+  bool _isStereoCaptureActive = false;
+  bool _hasAttemptedStereoCapture = false;
 
   double? _lastPushedPeakDecay;
   double? _lastPushedBassBoost;
@@ -99,6 +104,65 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
     _lastPushedBassBoost = bassBoost;
     _lastPushedReactivityStrength = reactivityStrength;
     _lastPushedBeatSensitivity = beatSensitivity;
+  }
+
+  bool _wantsStereoCapture(SettingsProvider settings) {
+    if (kIsWeb || defaultTargetPlatform != TargetPlatform.android) {
+      return false;
+    }
+    if (!settings.oilEnableAudioReactivity) {
+      return false;
+    }
+    if (_audioReactor is! VisualizerAudioReactor) {
+      return false;
+    }
+    // Keep stereo PCM alive for the whole reactive screensaver session so the
+    // PCM beat detector can contribute regardless of the current graph mode.
+    return true;
+  }
+
+  Future<void> _syncStereoCapture(SettingsProvider settings) async {
+    final wantsStereoCapture = _wantsStereoCapture(settings);
+
+    if (!wantsStereoCapture) {
+      await _stopStereoCapture(resetAttempt: true);
+      return;
+    }
+
+    if (_isStereoCaptureActive ||
+        _isStereoCapturePending ||
+        _hasAttemptedStereoCapture) {
+      return;
+    }
+
+    _isStereoCapturePending = true;
+    _hasAttemptedStereoCapture = true;
+    final started = await VisualizerAudioReactor.requestStereoCapture();
+    _isStereoCapturePending = false;
+
+    if (!mounted) {
+      if (started) {
+        await VisualizerAudioReactor.stopStereoCapture();
+      }
+      return;
+    }
+
+    _isStereoCaptureActive = started;
+  }
+
+  Future<void> _stopStereoCapture({bool resetAttempt = false}) async {
+    if (!_isStereoCaptureActive && !_isStereoCapturePending) {
+      if (resetAttempt) {
+        _hasAttemptedStereoCapture = false;
+      }
+      return;
+    }
+    _isStereoCapturePending = false;
+    _isStereoCaptureActive = false;
+    if (resetAttempt) {
+      _hasAttemptedStereoCapture = false;
+    }
+    await VisualizerAudioReactor.stopStereoCapture();
   }
 
   bool _handleGlobalKeyEvent(KeyEvent event) {
@@ -162,6 +226,7 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
       await reactor?.start();
       if (reactor is VisualizerAudioReactor) {
         _pushAudioConfig(settings);
+        await _syncStereoCapture(settings);
       }
     } finally {
       _isInitializingAudioReactor = false;
@@ -178,6 +243,7 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
   void _ensureAudioReactorState(SettingsProvider settings) {
     if (kIsWeb || !settings.oilEnableAudioReactivity) {
       if (_audioReactor != null) {
+        unawaited(_stopStereoCapture(resetAttempt: true));
         _audioReactor?.dispose();
         _audioReactor = null;
         _clearPushedAudioConfig();
@@ -209,6 +275,7 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
   void dispose() {
     HardwareKeyboard.instance.removeHandler(_handleGlobalKeyEvent);
     _wakelockService?.disable();
+    unawaited(_stopStereoCapture(resetAttempt: true));
     _audioReactor?.dispose();
     _audioReactor = null;
     _clearPushedAudioConfig();
@@ -221,7 +288,10 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
     final audioProvider = context.watch<AudioProvider>();
 
     _ensureAudioReactorState(settings);
-    if (_audioReactor != null) _pushAudioConfig(settings);
+    if (_audioReactor != null) {
+      _pushAudioConfig(settings);
+      unawaited(_syncStereoCapture(settings));
+    }
 
     final config = StealConfig(
       flowSpeed: settings.oilFlowSpeed,

@@ -18,6 +18,10 @@ void main() {
       final beatThreshold = (data['beatThreshold'] as num?)?.toDouble() ?? 0.0;
       final beatConfidence =
           (data['beatConfidence'] as num?)?.toDouble() ?? 0.0;
+      final rawBeatSource = data['beatSource'];
+      final beatSource = rawBeatSource is String && rawBeatSource.isNotEmpty
+          ? rawBeatSource
+          : null;
 
       List<double> bands;
       final rawBands = data['bands'];
@@ -67,6 +71,7 @@ void main() {
         beatScore: beatScore.clamp(0.0, 3.0),
         beatThreshold: beatThreshold.clamp(0.0, 3.0),
         beatConfidence: beatConfidence.clamp(0.0, 1.0),
+        beatSource: beatSource,
         bands: bands,
         waveform: waveform,
         algoLevels: algoLevels,
@@ -153,10 +158,12 @@ void main() {
         'beatScore': 4.0,
         'beatThreshold': -1.0,
         'beatConfidence': 1.5,
+        'beatSource': 'PCM',
       });
       expect(e.beatScore, 3.0);
       expect(e.beatThreshold, 0.0);
       expect(e.beatConfidence, 1.0);
+      expect(e.beatSource, 'PCM');
     });
 
     test('beat telemetry fields parse and clamp correctly', () {

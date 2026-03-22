@@ -194,7 +194,7 @@ class _SplashScreenState extends State<SplashScreen>
                   child: FittedBox(
                     fit: BoxFit.scaleDown,
                     child: SizedBox(
-                      width: 280,
+                      width: settingsProvider.isTv ? 500 : 320,
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         crossAxisAlignment: CrossAxisAlignment.start,

@@ -764,8 +764,8 @@ class SettingsProvider with ChangeNotifier {
         final view = views.first;
         final physicalWidth = view.physicalSize.width;
         if (isTv) {
-          _uiScale = true;
-          _prefs.setBool(_uiScaleKey, true);
+          _uiScale = false;
+          _prefs.setBool(_uiScaleKey, false);
         } else if (physicalWidth <= 720) {
           _uiScale = DefaultSettings.uiScaleMobileDefault;
           _prefs.setBool(_uiScaleKey, DefaultSettings.uiScaleMobileDefault);

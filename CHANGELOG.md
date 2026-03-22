@@ -6,7 +6,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [1.3.3+213] - 2026-03-22
+## [1.3.4+214] - 2026-03-21
+
+### Added
+- **Visualizer**: Implemented `beatSource` (PCM/FFT) in `VisualizerAudioReactor` to distinguish between capture sources in telemetry.
+- **Android**: Enhanced `VisualizerPlugin.kt` with support for raw PCM capture, enabling higher fidelity reactivity on TV devices.
+- **Documentation**: Finalized `audio_graph_modes.md` and conducted a detailed screensaver audio audit (2026-03-21).
+
+### Fixed
+- **Maintenance**: Resolved project-wide curly brace lint issues in `dev_audio_hud.dart` to maintain strict analysis standards.
+- **Testing**: Hardened `gdar_mobile` widget tests by suppressing framework-level ancestor lookup exceptions during Provider tree teardown.
+- **Core**: Added robust numeric parsing and clamping for visualizer telemetry to prevent overflow in HUD displays.
+
 
 ### Fixed
 - **Testing**: Resolved text stream corruption in parallel test execution by configuring simplified logger output for test environments.

@@ -100,6 +100,7 @@ class _InactivityDetectorState extends State<InactivityDetector> {
   @override
   Widget build(BuildContext context) {
     return Listener(
+      behavior: HitTestBehavior.translucent,
       onPointerDown: (_) => widget.isScreensaverActive
           ? null
           : widget.inactivityService?.onUserActivity(),

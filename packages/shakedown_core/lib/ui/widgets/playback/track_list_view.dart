@@ -614,6 +614,7 @@ class TrackListView extends StatelessWidget {
               borderRadius: BorderRadius.circular(2),
               child: SizedBox(
                 height: 2,
+                width: double.infinity,
                 child: StreamBuilder<Duration>(
                   stream: audioProvider.positionStream,
                   builder: (context, snapshot) {
@@ -639,6 +640,7 @@ class TrackListView extends StatelessWidget {
                               ),
                             ),
                             FractionallySizedBox(
+                              alignment: Alignment.centerLeft,
                               widthFactor: bufferedProgress.clamp(0.0, 1.0),
                               child: Container(
                                 color: colorScheme.tertiary.withValues(
@@ -647,6 +649,7 @@ class TrackListView extends StatelessWidget {
                               ),
                             ),
                             FractionallySizedBox(
+                              alignment: Alignment.centerLeft,
                               widthFactor: progress.clamp(0.0, 1.0),
                               child: Container(
                                 decoration: BoxDecoration(

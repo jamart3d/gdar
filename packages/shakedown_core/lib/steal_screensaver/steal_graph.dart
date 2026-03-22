@@ -1332,6 +1332,7 @@ class StealGraph extends Component with HasGameReference<StealGame> {
         ? payloadThresholds[4]
         : 1.0 + (1.0 - beatSensitivity) * 0.5;
     final winningAlgoId = energy.winningAlgoId;
+    final beatSource = energy.beatSource ?? '--';
     final winningLabel =
         winningAlgoId != null &&
             winningAlgoId >= 0 &&
@@ -1372,6 +1373,7 @@ class StealGraph extends Component with HasGameReference<StealGame> {
           'SCR:${energy.beatScore.toStringAsFixed(2)}  '
           'THR:${energy.beatThreshold.toStringAsFixed(2)}  '
           'CNF:${energy.beatConfidence.toStringAsFixed(2)}  '
+          'SRC:$beatSource  '
           'MID:${energy.algoLevels.length > 1 ? energy.algoLevels[1].toStringAsFixed(2) : "---"}  '
           'WIN:$winningLabel  '
           'LEN:${energy.algoLevels.length}',

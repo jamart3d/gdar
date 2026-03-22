@@ -11,14 +11,17 @@ class AudioEnergy {
   /// Whether a beat was detected in this frame (onset detection).
   final bool isBeat;
 
-  /// Final hybrid detector score used to decide [isBeat] on the TV path.
+  /// Final detector score used to decide [isBeat] on the TV path.
   final double beatScore;
 
-  /// Final hybrid detector threshold in the same units as [beatScore].
+  /// Final detector threshold in the same units as [beatScore].
   final double beatThreshold;
 
-  /// Final hybrid detector confidence, normalized to 0.0..1.0.
+  /// Final detector confidence, normalized to 0.0..1.0.
   final double beatConfidence;
+
+  /// Final timing source for [isBeat], typically `VIS` or `PCM` on TV.
+  final String? beatSource;
 
   /// 8-band frequency data for detailed EQ visualization.
   /// Bands: sub-bass, bass, low-mid, mid, upper-mid, presence, brilliance, air.
@@ -73,6 +76,7 @@ class AudioEnergy {
     this.beatScore = 0.0,
     this.beatThreshold = 0.0,
     this.beatConfidence = 0.0,
+    this.beatSource,
     this.bands = const [0, 0, 0, 0, 0, 0, 0, 0],
     this.waveform = const [],
     this.waveformL = const [],
@@ -95,6 +99,7 @@ class AudioEnergy {
       beatScore = 0.0,
       beatThreshold = 0.0,
       beatConfidence = 0.0,
+      beatSource = null,
       bands = const [0, 0, 0, 0, 0, 0, 0, 0],
       waveform = const [],
       waveformL = const [],

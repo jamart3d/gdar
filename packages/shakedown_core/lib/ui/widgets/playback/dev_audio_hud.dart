@@ -680,12 +680,7 @@ class _DevAudioHudState extends State<DevAudioHud> {
     );
     trendChips.add(buildTrendChip(_headroomHistory, 'HD', baseTextColor));
     trendChips.add(
-      buildTrendChip(
-        _netHistory,
-        'NET',
-        Colors.amberAccent,
-        alpha: 0.9,
-      ),
+      buildTrendChip(_netHistory, 'NET', Colors.amberAccent, alpha: 0.9),
     );
     // Standalone heartbeat removed from top row, now integrated into SIG below.
 
@@ -1153,17 +1148,35 @@ class _DevAudioHudState extends State<DevAudioHud> {
         return 'Detected Hardware Profile: $profile ($value)';
       case 'HF':
         String desc = 'Unknown';
-        if (value == 'IMM') desc = 'Immediate — swap to WebAudio as soon as loaded';
-        if (value == 'BND') desc = 'End — swap at the next track boundary';
-        if (value == 'OFF') desc = 'Disabled — stay on HTML5, no WebAudio handoff';
-        if (value == 'BUF') desc = 'Mid — wait until HTML5 buffer is exhausted, then swap';
+        if (value == 'IMM') {
+          desc = 'Immediate — swap to WebAudio as soon as loaded';
+        }
+        if (value == 'BND') {
+          desc = 'End — swap at the next track boundary';
+        }
+        if (value == 'OFF') {
+          desc = 'Disabled — stay on HTML5, no WebAudio handoff';
+        }
+        if (value == 'BUF') {
+          desc = 'Mid — wait until HTML5 buffer is exhausted, then swap';
+        }
         return 'Hybrid Handoff Mode: $desc ($value)';
       case 'BG':
         String desc = 'Unknown';
-        if (value == 'VID') desc = 'Video Overlay — silent video keeps WebAudio alive in background';
-        if (value == 'HBT') desc = 'Heartbeat — silent audio clock keeps WebAudio alive in background';
-        if (value == 'OFF') desc = 'Disabled — no background survival, may throttle on mobile';
-        if (value == 'H5') desc = 'HTML5 Keepalive — hands off to HTML5 in background';
+        if (value == 'VID') {
+          desc =
+              'Video Overlay — silent video keeps WebAudio alive in background';
+        }
+        if (value == 'HBT') {
+          desc =
+              'Heartbeat — silent audio clock keeps WebAudio alive in background';
+        }
+        if (value == 'OFF') {
+          desc = 'Disabled — no background survival, may throttle on mobile';
+        }
+        if (value == 'H5') {
+          desc = 'HTML5 Keepalive — hands off to HTML5 in background';
+        }
         final dotLegend = value == 'HBT'
             ? ' | Dots: 🔴 needed but inactive (risk) · 🟠 not needed (desktop) · 🟢 active (protected)'
             : '';
@@ -1175,19 +1188,48 @@ class _DevAudioHudState extends State<DevAudioHud> {
         if (value == 'MAX') desc = 'Maximum (Performance)';
         return 'Session Stability Preset: $desc ($value)';
       case 'AE':
-        if (value == '--') return 'Active Engine: not applicable (non-hybrid mode)';
-        if (value == '?') return 'Active Engine: unknown — engine context not yet reported';
+        if (value == '--') {
+          return 'Active Engine: not applicable (non-hybrid mode)';
+        }
+        if (value == '?') {
+          return 'Active Engine: unknown — engine context not yet reported';
+        }
         String aeDesc = 'Unknown';
-        if (value.startsWith('WA')) aeDesc = 'Web Audio API — low-latency, gapless, needs full buffer decoded. Shown in cyan.';
-        if (value.startsWith('H5')) aeDesc = 'HTML5 <audio> element — streaming, background-safe. Shown in blue.';
-        if (value.startsWith('VI')) aeDesc = 'Video Overlay — silent video trick keeps WebAudio alive in background.';
-        if (value.startsWith('HBT')) aeDesc = 'Heartbeat — silent audio clock preventing browser throttle.';
-        if (value.startsWith('BG')) aeDesc = 'Generic background engine.';
-        if (value.startsWith('FG')) aeDesc = 'Generic foreground engine.';
+        if (value.startsWith('WA')) {
+          aeDesc =
+              'Web Audio API — low-latency, gapless, needs full buffer decoded. Shown in cyan.';
+        }
+        if (value.startsWith('H5')) {
+          aeDesc =
+              'HTML5 <audio> element — streaming, background-safe. Shown in blue.';
+        }
+        if (value.startsWith('VI')) {
+          aeDesc =
+              'Video Overlay — silent video trick keeps WebAudio alive in background.';
+        }
+        if (value.startsWith('HBT')) {
+          aeDesc =
+              'Heartbeat — silent audio clock preventing browser throttle.';
+        }
+        if (value.startsWith('BG')) {
+          aeDesc = 'Generic background engine.';
+        }
+        if (value.startsWith('FG')) {
+          aeDesc = 'Generic foreground engine.';
+        }
         String aeSuffix = '';
-        if (value.contains('-New')) aeSuffix += ' | -New: heartbeat required (mobile — WebAudio will stop without it).';
-        if (value.contains('-Opt')) aeSuffix += ' | -Opt: heartbeat optional (desktop — WebAudio can run unassisted).';
-        if (value.endsWith('+')) aeSuffix += ' | +: heartbeat-capable build active (indigo = survival mode).';
+        if (value.contains('-New')) {
+          aeSuffix +=
+              ' | -New: heartbeat required (mobile — WebAudio will stop without it).';
+        }
+        if (value.contains('-Opt')) {
+          aeSuffix +=
+              ' | -Opt: heartbeat optional (desktop — WebAudio can run unassisted).';
+        }
+        if (value.endsWith('+')) {
+          aeSuffix +=
+              ' | +: heartbeat-capable build active (indigo = survival mode).';
+        }
         return 'Active Engine: $aeDesc$aeSuffix';
       case 'V':
         return 'App Visibility Status (VIS: Visible, HID: Hidden) and duration: $value';
@@ -1250,7 +1292,9 @@ class _DevAudioHudState extends State<DevAudioHud> {
             : 'Disabled';
         return 'Performance Mode: $pmDesc ($value)';
       case 'NET':
-        if (value == '--') return 'Network TTFB: no fetch recorded yet (WebAudio engine only)';
+        if (value == '--') {
+          return 'Network TTFB: no fetch recorded yet (WebAudio engine only)';
+        }
         if (value.endsWith('\u2026')) {
           return 'Network TTFB: fetch in progress ($value) — time since request started';
         }

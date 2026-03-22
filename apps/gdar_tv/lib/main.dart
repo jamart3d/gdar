@@ -284,20 +284,21 @@ class _GdarTvAppState extends State<GdarTvApp> {
 
           return RgbClockWrapper(
             animationSpeed: settingsProvider.rgbAnimationSpeed,
-            child: InactivityDetector(
-              inactivityService: _inactivityService,
-              isScreensaverActive: _isScreensaverActive,
-              child: Material(
-                color: finalTheme.scaffoldBackgroundColor,
-                child: MaterialApp(
-                  navigatorKey: _navigatorKey,
-                  title: 'GDAR TV',
-                  debugShowCheckedModeBanner: false,
-                  theme: finalTheme,
-                  themeMode: ThemeMode.dark,
-                  home: const SplashScreen(),
+            child: MaterialApp(
+              navigatorKey: _navigatorKey,
+              title: 'GDAR TV',
+              debugShowCheckedModeBanner: false,
+              theme: finalTheme,
+              themeMode: ThemeMode.dark,
+              builder: (context, child) => InactivityDetector(
+                inactivityService: _inactivityService,
+                isScreensaverActive: _isScreensaverActive,
+                child: ColoredBox(
+                  color: finalTheme.scaffoldBackgroundColor,
+                  child: child ?? const SizedBox.shrink(),
                 ),
               ),
+              home: const SplashScreen(),
             ),
           );
         },

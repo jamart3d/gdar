@@ -138,8 +138,10 @@ class DefaultSettings {
   /// Logo anti-aliasing: fwidth smoothstep on alpha edge (TV-only setting).
   static const bool oilLogoAntiAlias = false;
 
-  /// Audio graph display mode: 'off', 'corner', 'circular', 'ekg', or 'circular_ekg'.
-  static const String oilAudioGraphMode = 'corner_debug';
+  /// Audio graph display mode.
+  /// Valid TV modes include: 'off', 'corner', 'corner_only', 'circular',
+  /// 'ekg', 'circular_ekg', 'vu', 'scope', and 'beat_debug'.
+  static const String oilAudioGraphMode = 'beat_debug';
 
   /// Radius multiplier for EKG (0.5x to 2.0x of base logo radius).
   static const double oilEkgRadius = 0.1;

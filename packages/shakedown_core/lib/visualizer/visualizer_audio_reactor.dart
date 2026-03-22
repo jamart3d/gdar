@@ -121,6 +121,10 @@ class VisualizerAudioReactor implements AudioReactor {
       final beatThreshold = (data['beatThreshold'] as num?)?.toDouble() ?? 0.0;
       final beatConfidence =
           (data['beatConfidence'] as num?)?.toDouble() ?? 0.0;
+      final rawBeatSource = data['beatSource'];
+      final beatSource = rawBeatSource is String && rawBeatSource.isNotEmpty
+          ? rawBeatSource
+          : null;
 
       // Parse 8-band data if available, otherwise synthesise from 3-band
       List<double> bands;
@@ -203,6 +207,7 @@ class VisualizerAudioReactor implements AudioReactor {
           beatScore: beatScore.clamp(0.0, 3.0),
           beatThreshold: beatThreshold.clamp(0.0, 3.0),
           beatConfidence: beatConfidence.clamp(0.0, 1.0),
+          beatSource: beatSource,
           bands: bands,
           waveform: waveform,
           waveformL: waveformL,

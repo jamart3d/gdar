@@ -34,8 +34,10 @@ import kotlin.math.max
  *     3 ALL    all-band onset vs rolling mean
  *     4 EMA    mid band vs EMA background
  *     5 TREB   treble band vs rolling mean
- *   Final isBeat is produced by a hybrid onset score built from low-band onset,
- *   mid-band onset, and positive broadband flux.
+ *   Final isBeat is produced by a preferred timing source:
+ *     - PCM onset when StereoCapture is active and warmed up
+ *     - otherwise the Visualizer hybrid onset score built from low-band onset,
+ *       mid-band onset, and positive broadband flux
  */
 class VisualizerPlugin(
     private val stereoCapture: StereoCapture,
@@ -119,6 +121,9 @@ class VisualizerPlugin(
     private var midSlowVal     = 0.0
     private var prevAllVal     = 0.0
     private var hybridLastBeatMs = 0L
+    private var pcmBaselineVal = 0.0
+    private var pcmFloorVal    = 0.0
+    private var pcmLastBeatMs  = 0L
 
     // Independent last-beat timestamps so algorithms don't suppress each other.
     private val lastBeatMs = LongArray(NUM_BEAT_ALGOS)
@@ -221,6 +226,9 @@ class VisualizerPlugin(
             midFastVal = 0.0;      midSlowVal = 0.0
             prevAllVal = 0.0
             hybridLastBeatMs = 0L
+            pcmBaselineVal = 0.0
+            pcmFloorVal = 0.0
+            pcmLastBeatMs = 0L
 
             visualizer?.enabled = true
             isRunning = true
@@ -460,15 +468,15 @@ class VisualizerPlugin(
             hybridBaseline * hybridThresholdRatio,
             hybridFloor + hybridThresholdFloor,
         )
-        val beatConfidence =
+        val hybridConfidence =
             if (beatThreshold > 0.0) (hybridScore / beatThreshold).coerceIn(0.0, 1.0)
             else 0.0
-        val isBeat =
+        val hybridIsBeat =
             hybridHistory.size >= 10 &&
             hybridHasSignal &&
             hybridScore > beatThreshold &&
             (nowMs - hybridLastBeatMs) > MIN_BEAT_GAP_MS
-        if (isBeat) hybridLastBeatMs = nowMs
+        if (hybridIsBeat) hybridLastBeatMs = nowMs
         hybridHistory.pushCapped(hybridScore, FLUX_HISTORY_SIZE)
         if (hybridHasSignal) {
             hybridBaselineVal =
@@ -485,6 +493,73 @@ class VisualizerPlugin(
             hybridBaselineVal *= 0.96
             hybridFloorVal *= 0.96
         }
+
+        val pcmWaveformL = stereoCapture.waveformL
+        val pcmWaveformR = stereoCapture.waveformR
+        val pcmFresh =
+            stereoCapture.lastAnalysisMs > 0L &&
+            (nowMs - stereoCapture.lastAnalysisMs) <= 250L
+        val hasStereoPcm =
+            stereoCapture.isActive &&
+            pcmWaveformL.isNotEmpty() &&
+            pcmWaveformR.isNotEmpty() &&
+            pcmFresh
+        val pcmLevel =
+            if (hasStereoPcm) stereoCapture.monoLevelRms.coerceIn(0.0, 1.0)
+            else 0.0
+        val pcmOnset =
+            if (hasStereoPcm) stereoCapture.monoOnset.coerceAtLeast(0.0)
+            else 0.0
+        val pcmFlux =
+            if (hasStereoPcm) stereoCapture.monoFlux.coerceAtLeast(0.0)
+            else 0.0
+        val pcmScore = (pcmOnset * 0.70) + (pcmFlux * 0.30)
+        val pcmHasSignal = hasStereoPcm && (pcmLevel > 0.003 || pcmOnset > 0.001)
+        val pcmWarmupReady = hasStereoPcm && stereoCapture.analysisFrames >= 12
+        val pcmThresholdRatio = 1.05 + (1.0 - beatSensitivity) * 0.55
+        val pcmThresholdFloor = 0.0025 + (1.0 - beatSensitivity) * 0.008
+        val pcmBaseline = pcmBaselineVal
+        val pcmFloor = pcmFloorVal
+        val pcmThreshold = max(
+            pcmBaseline * pcmThresholdRatio,
+            pcmFloor + pcmThresholdFloor,
+        )
+        val pcmConfidence =
+            if (pcmThreshold > 0.0) (pcmScore / pcmThreshold).coerceIn(0.0, 1.0)
+            else 0.0
+        val pcmIsBeat =
+            pcmWarmupReady &&
+            pcmHasSignal &&
+            pcmScore > pcmThreshold &&
+            (nowMs - pcmLastBeatMs) > MIN_BEAT_GAP_MS
+        if (pcmIsBeat) pcmLastBeatMs = nowMs
+        if (hasStereoPcm) {
+            if (pcmHasSignal) {
+                pcmBaselineVal =
+                    if (pcmBaselineVal <= 0.0) pcmScore
+                    else pcmBaselineVal * 0.92 + pcmScore * 0.08
+                pcmFloorVal =
+                    if (pcmFloorVal <= 0.0) pcmScore
+                    else if (pcmScore < pcmFloorVal) {
+                        pcmFloorVal * 0.75 + pcmScore * 0.25
+                    } else {
+                        pcmFloorVal * 0.995 + pcmScore * 0.005
+                    }
+            } else {
+                pcmBaselineVal *= 0.96
+                pcmFloorVal *= 0.96
+            }
+        } else {
+            pcmBaselineVal *= 0.92
+            pcmFloorVal *= 0.92
+        }
+
+        val preferPcmBeat = pcmWarmupReady && pcmHasSignal
+        val finalBeatScore = if (preferPcmBeat) pcmScore else hybridScore
+        val finalBeatThreshold = if (preferPcmBeat) pcmThreshold else beatThreshold
+        val finalBeatConfidence = if (preferPcmBeat) pcmConfidence else hybridConfidence
+        val finalBeatSource = if (preferPcmBeat) "PCM" else "VIS"
+        val isBeat = if (preferPcmBeat) pcmIsBeat else hybridIsBeat
 
         val beats = BooleanArray(NUM_BEAT_ALGOS)
         // 0 BASS   – pre-boost bass vs 20-frame mean
@@ -506,14 +581,28 @@ class VisualizerPlugin(
         if (isBeat) {
             Log.d(
                 TAG,
-                "BEAT hybrid=%.3f base=%.3f floor=%.3f thr=%.3f low=%.3f mid=%.3f flux=%.3f".format(
+                "BEAT src=%s score=%.3f thr=%.3f conf=%.3f vis=%.3f pcm=%.3f".format(
+                    finalBeatSource,
+                    finalBeatScore,
+                    finalBeatThreshold,
+                    finalBeatConfidence,
                     hybridScore,
+                    pcmScore,
+                )
+            )
+            Log.d(
+                TAG,
+                "BEAT detail visBase=%.3f visFloor=%.3f low=%.3f mid=%.3f flux=%.3f pcmBase=%.3f pcmFloor=%.3f pcmLvl=%.3f pcmOn=%.3f pcmFx=%.3f".format(
                     hybridBaseline,
                     hybridFloor,
-                    beatThreshold,
                     lowOnset,
                     midOnset,
                     broadFlux,
+                    pcmBaseline,
+                    pcmFloor,
+                    pcmLevel,
+                    pcmOnset,
+                    pcmFlux,
                 )
             )
         }
@@ -567,9 +656,10 @@ class VisualizerPlugin(
             "treble" to finalTreble,
             "overall" to overall,
             "isBeat" to isBeat,
-            "beatScore" to hybridScore,
-            "beatThreshold" to beatThreshold,
-            "beatConfidence" to beatConfidence,
+            "beatScore" to finalBeatScore,
+            "beatThreshold" to finalBeatThreshold,
+            "beatConfidence" to finalBeatConfidence,
+            "beatSource" to finalBeatSource,
             "bands" to finalBands.toList(),
             "waveform" to pendingWaveform,
             "waveformL" to stereoCapture.waveformL, // real L PCM or empty

@@ -107,6 +107,7 @@ class PlaybackScreenState extends State<PlaybackScreen>
   final ValueNotifier<double> _panelPositionNotifier = ValueNotifier(0.0);
   StreamSubscription? _errorSubscription;
   String? _lastTrackTitle;
+  int? _lastTrackNumber;
   bool? _lastStickyState;
   final Map<int, FocusNode> _trackFocusNodes = {};
   final FocusNode _trackListFocusNode = FocusNode(canRequestFocus: false);
@@ -116,6 +117,7 @@ class PlaybackScreenState extends State<PlaybackScreen>
     super.initState();
     final audioProvider = context.read<AudioProvider>();
     _lastTrackTitle = audioProvider.currentTrack?.title;
+    _lastTrackNumber = audioProvider.currentTrack?.trackNumber;
     _pulseController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1500),
@@ -315,6 +317,28 @@ class PlaybackScreenState extends State<PlaybackScreen>
     } else {
       _focusTrack(1);
     }
+  }
+
+  int _getListIndexForTrack(Source? source, String? title, int? trackNumber) {
+    if (source == null || title == null || trackNumber == null) return -1;
+
+    final Map<String, List<Track>> tracksBySet = {};
+    for (var track in source.tracks) {
+      if (!tracksBySet.containsKey(track.setName)) {
+        tracksBySet[track.setName] = [];
+      }
+      tracksBySet[track.setName]!.add(track);
+    }
+
+    int i = 0;
+    for (var entry in tracksBySet.entries) {
+      i++; // Output Set Name
+      for (var track in entry.value) {
+        if (track.title == title && track.trackNumber == trackNumber) return i;
+        i++;
+      }
+    }
+    return -1;
   }
 
   int _calculateTotalItems(Source source) {
@@ -817,26 +841,44 @@ class PlaybackScreenState extends State<PlaybackScreen>
 
     final stickyNowPlaying = settingsProvider.fruitStickyNowPlaying;
     final bool trackChanged =
-        audioProvider.currentTrack?.title != _lastTrackTitle;
+        audioProvider.currentTrack?.title != _lastTrackTitle ||
+        audioProvider.currentTrack?.trackNumber != _lastTrackNumber;
     final bool stickyToggledOn = stickyNowPlaying && _lastStickyState == false;
     final bool isInitialBuild = _lastStickyState == null;
 
     if (trackChanged || stickyToggledOn || (isInitialBuild && isFruit)) {
+      final oldTrackTitle = _lastTrackTitle;
+      final oldTrackNumber = _lastTrackNumber;
+
       _lastTrackTitle = audioProvider.currentTrack?.title;
+      _lastTrackNumber = audioProvider.currentTrack?.trackNumber;
       _lastStickyState = stickyNowPlaying;
 
       final bool capturedIsTv = isTv;
+      final bool wasOldTrackFocused =
+          capturedIsTv &&
+          _trackListFocusNode.hasFocus &&
+          oldTrackTitle != null &&
+          oldTrackNumber != null &&
+          (_trackFocusNodes[_getListIndexForTrack(
+                    currentSource,
+                    oldTrackTitle,
+                    oldTrackNumber,
+                  )]
+                  ?.hasFocus ??
+              false);
+
       WidgetsBinding.instance.addPostFrameCallback((_) {
         // Only force focus to the new playing track if we aren't currently exploring the list
-        // on TV. Otherwise, just scroll it into view naturally without hijacking the user's remote.
+        // on TV, OR if the focus was resting directly on the track that just organically ended.
         final bool listHasFocus = capturedIsTv && _trackListFocusNode.hasFocus;
+        final bool shouldSyncFocus = !listHasFocus || wasOldTrackFocused;
 
         final isPanelOpen = _panelPositionNotifier.value > 0.1;
         _scrollToCurrentTrack(
           true,
           maxVisibleY: isPanelOpen ? 0.4 : 1.0,
-          syncFocus:
-              !listHasFocus, // Don't snatch focus if user is actively navigating
+          syncFocus: shouldSyncFocus,
         );
       });
     }

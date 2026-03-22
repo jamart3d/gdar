@@ -6,8 +6,11 @@ import android.media.AudioRecord
 import android.media.AudioPlaybackCaptureConfiguration
 import android.media.projection.MediaProjection
 import android.os.Build
+import android.os.SystemClock
 import android.util.Log
 import androidx.annotation.RequiresApi
+import kotlin.math.max
+import kotlin.math.sqrt
 
 /**
  * Captures stereo PCM from the app's own audio playback via AudioPlaybackCapture (API 29+).
@@ -43,9 +46,32 @@ class StereoCapture {
     @Volatile var isActive: Boolean = false
         private set
 
+    /** Raw-buffer mono RMS from the latest capture read, normalized to 0.0..1.0. */
+    @Volatile var monoLevelRms: Double = 0.0
+        private set
+
+    /** Fast-minus-slow mono envelope from the latest capture read. */
+    @Volatile var monoOnset: Double = 0.0
+        private set
+
+    /** Positive mono energy change from the latest capture read. */
+    @Volatile var monoFlux: Double = 0.0
+        private set
+
+    /** Number of analysis frames processed since capture started. */
+    @Volatile var analysisFrames: Int = 0
+        private set
+
+    /** Uptime timestamp of the latest successful analysis update. */
+    @Volatile var lastAnalysisMs: Long = 0L
+        private set
+
     private var audioRecord: AudioRecord? = null
     private var captureThread: Thread? = null
     @Volatile private var isRunning = false
+    private var monoFastEnv = 0.0
+    private var monoSlowEnv = 0.0
+    private var prevMonoLevel = 0.0
 
     /**
      * Start stereo capture using [projection].
@@ -126,19 +152,36 @@ class StereoCapture {
 
         val l = ArrayList<Float>(WAVEFORM_POINTS)
         val r = ArrayList<Float>(WAVEFORM_POINTS)
+        var monoSumSq = 0.0
 
         var frameIdx = 0
-        while (frameIdx < frameCount && l.size < WAVEFORM_POINTS) {
+        while (frameIdx < frameCount) {
             val si = frameIdx * 2 // sample index for this frame's L channel
             if (si + 1 < count) {
-                l.add(buffer[si].toFloat() / 32768f)
-                r.add(buffer[si + 1].toFloat() / 32768f)
+                val left = buffer[si].toDouble() / 32768.0
+                val right = buffer[si + 1].toDouble() / 32768.0
+                val mono = (left + right) * 0.5
+                monoSumSq += mono * mono
+
+                if (l.size < WAVEFORM_POINTS) {
+                    l.add(left.toFloat())
+                    r.add(right.toFloat())
+                }
             }
             frameIdx += step
         }
 
         waveformL = l
         waveformR = r
+        val monoLevel = sqrt(monoSumSq / frameCount).coerceIn(0.0, 1.0)
+        monoFastEnv = monoFastEnv * 0.45 + monoLevel * 0.55
+        monoSlowEnv = monoSlowEnv * 0.97 + monoLevel * 0.03
+        monoLevelRms = monoLevel
+        monoOnset = max(0.0, monoFastEnv - monoSlowEnv)
+        monoFlux = max(0.0, monoLevel - prevMonoLevel)
+        prevMonoLevel = monoLevel
+        analysisFrames += 1
+        lastAnalysisMs = SystemClock.elapsedRealtime()
     }
 
     /** Stop capture and release AudioRecord. Safe to call multiple times. */
@@ -157,5 +200,13 @@ class StereoCapture {
         audioRecord = null
         waveformL = emptyList()
         waveformR = emptyList()
+        monoLevelRms = 0.0
+        monoOnset = 0.0
+        monoFlux = 0.0
+        analysisFrames = 0
+        lastAnalysisMs = 0L
+        monoFastEnv = 0.0
+        monoSlowEnv = 0.0
+        prevMonoLevel = 0.0
     }
 }

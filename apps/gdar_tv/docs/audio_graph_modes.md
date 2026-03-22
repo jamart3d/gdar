@@ -63,6 +63,12 @@ The final `isBeat` now comes from a hybrid onset score built from:
 - mid-band onset
 - positive broadband flux
 
+When stereo capture is active and warmed up, the TV path can now prefer a
+first-pass PCM onset detector instead. In that case, the final beat source is
+PCM and the Visualizer hybrid remains as fallback. The current PCM path uses
+raw-buffer mono RMS, fast/slow envelope onset, and positive PCM flux from
+`StereoCapture`.
+
 ### Thresholds
 
 Mean-threshold detector variants currently use:
@@ -103,8 +109,8 @@ That means:
 
 But:
 
-- the final `isBeat` now comes from the hybrid score, not directly from one of
-  the six comparison bars
+- the final `isBeat` now comes from either the PCM detector or the Visualizer
+  hybrid score, not directly from one of the six comparison bars
 - so `beat_debug` is best read as per-algorithm telemetry plus a summary of the
   final hybrid decision, not as a one-to-one view of the final beat logic
 
@@ -114,8 +120,8 @@ But:
   onset timing quality.
 - The detector still relies on peak-normalized amplitudes, which are good for
   graph rendering but weaker for onset contrast.
-- The final hybrid score still comes from Visualizer-derived signals, not PCM,
-  so timing and dynamic contrast are still capped by the platform feed.
+- The PCM detector is still a first pass based on raw-buffer RMS envelope plus
+  flux, not a full high-resolution onset/tempo tracker.
 - `beat_debug` is now useful for detector tuning, but it still shows
   per-algorithm diagnostics plus a summary header, not a full one-panel view of
   every hybrid internal.
@@ -245,6 +251,12 @@ Stereo VU support is now implemented separately through
 
 This path is used for VU meters when permission is granted, but not yet for
 scope rendering or final beat detection.
+
+In current TV flow, `ScreensaverScreen` now requests stereo capture
+automatically for reactive TV screensaver sessions, and stops it when the
+screensaver closes or reactivity is disabled. That same stereo PCM path is now
+available for first-pass beat timing across graph modes while the screensaver
+is active.
 
 ---
 

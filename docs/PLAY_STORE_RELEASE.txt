@@ -1,3 +1,12 @@
+What's new in v1.3.4+214
+- Visualizer: Added beatSource (PCM/FFT) support for higher fidelity capture telemetry.
+- Android: Enhanced VisualizerPlugin.kt to support raw PCM capture on modern TV devices.
+- Documentation: Conducted a detailed 2026-03-21 screensaver audio and graph mode audit.
+- Maintenance: Resolved curly brace style lints and hardened mobile widget test stability.
+- Core: Improved visualizer telemetry parsing with robust numeric clamping and validation.
+
+---
+
 What's new in v1.3.3+213
 - Testing: Resolved text stream corruption and hardened unit test isolation.
 - Quality: Fixed assertion failures related to new default audio reactivity states, ensuring a 100% clean test pass.

@@ -1,12 +1,11 @@
 # TODO: True Stereo L/R VU Meters via AudioPlaybackCapture
 
 ## Status
-**Infrastructure complete (2026-03-20). Awaiting real-device test.**
+**Infrastructure and screensaver activation path complete (2026-03-21). Awaiting real-device test.**
 
-Correction: the low-level pipeline is implemented, but a normal user-facing
-activation path does not appear to be wired yet. `requestStereoCapture()` and
-`stopStereoCapture()` exist in the reactor, but they are not currently invoked
-from the TV UI or screensaver lifecycle.
+Correction: the low-level pipeline was already implemented earlier, and as of
+2026-03-21 the TV screensaver now owns a normal activation path for stereo
+capture in the graph modes that actually use it.
 
 Core pipeline implemented — see `audio_reactivity_status.md` for full details.
 Current VU meter falls back to fake stereo (FFT bands 0–3 → L, 4–7 → R) until
@@ -127,12 +126,8 @@ file still mixes completed work with future ideas.
 - `lissajous` mode
 - `goniometer` mode
 - true stereo oscilloscope path
-- a user-facing activation path that actually calls
-  `VisualizerAudioReactor.requestStereoCapture()`
-- lifecycle cleanup wiring that calls `stopStereoCapture()` when stereo capture
-  should end
-- automatic mode-based activation of stereo capture
 - final real-device validation of the stereo path
+- optional broader activation beyond the current screensaver-owned path
 
 ### Important corrections
 
@@ -157,23 +152,30 @@ file still mixes completed work with future ideas.
      `waveformR`.
    - Range labels already show `ST` for real stereo and `LO` / `HI` for fake.
 
-5. The "gate it behind mode" recommendation is not how the current code works.
-   - Stereo capture is started manually by calling
-     `VisualizerAudioReactor.requestStereoCapture()`.
-   - It is not currently auto-started when entering `vu` or `scope`.
+5. The "gate it behind mode" recommendation is now partially implemented.
+   - `ScreensaverScreen` now auto-requests stereo capture for reactive TV
+     screensaver sessions, not just VU-specific views.
+   - It stops stereo capture on screensaver dispose or when audio reactivity is
+     turned off.
+   - That keeps the PCM beat detector available across graph modes while the
+     screensaver is active.
 
 6. The stereo path currently improves VU only.
    - Scope still uses `energy.waveform` from the mono Visualizer waveform path.
-   - Stereo PCM is not yet used for scope rendering or beat detection.
+   - As of 2026-03-21, stereo PCM is now also used by a first-pass PCM beat
+     detector when capture is active.
+   - That detector now uses raw-buffer mono RMS, fast/slow envelope onset, and
+     positive flux computed inside `StereoCapture`.
+   - Stereo PCM is not yet used for scope rendering.
 
-7. The feature is implemented at the plumbing layer, but may not yet be
-   reachable in normal app flow.
-   - A code search in the app layer shows the static methods
-     `VisualizerAudioReactor.requestStereoCapture()` and
-     `VisualizerAudioReactor.stopStereoCapture()`, but no current call sites.
-   - That means true stereo VU support exists, but may still require a manual
-     developer-triggered path until the UI or screensaver owns the capture
-     lifecycle.
+7. The feature is now reachable in normal screensaver flow.
+   - `ScreensaverScreen` now calls
+     `VisualizerAudioReactor.requestStereoCapture()` for reactive TV
+     screensaver sessions.
+   - It calls `stopStereoCapture()` during cleanup and when audio reactivity is
+     disabled.
+   - Real-device validation is still needed to confirm permission behavior and
+     device compatibility.
 
 ### Updated read of this file
 
@@ -183,5 +185,6 @@ The safest interpretation is:
 - permission flow is implemented
 - payload transport is implemented
 - VU rendering is implemented
-- the remaining work is UI/lifecycle activation, validation, and any optional
-  stereo-specific graph modes
+- screensaver-owned activation/lifecycle wiring is implemented for reactive TV
+  screensaver sessions
+- the remaining work is validation and any optional stereo-specific graph modes
