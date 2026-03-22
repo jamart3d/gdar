@@ -154,11 +154,13 @@ class _FruitTooltipState extends State<FruitTooltip> {
 
   void _cancelShow() {
     _hovering = false;
-    // Debounce the hide decision. Flutter Web fires a spurious exit+enter pair
-    // (~1 frame apart) whenever hit-testing re-evaluates after a layout change.
-    // We only act if the mouse is still outside after 150ms.
-    _exitDebounce?.cancel();
-    _exitDebounce = Timer(const Duration(milliseconds: 150), () {
+    // Debounce the hide decision. Flutter Web fires spurious exit events during
+    // compositing updates (AnimatedContainers, layout passes). We only act if
+    // the mouse is still outside when the debounce fires.
+    // Use ??= so multiple rapid exits don't reset the timer — only the first
+    // exit starts it. Any re-enter cancels it via _scheduleShow.
+    _exitDebounce ??= Timer(const Duration(milliseconds: 300), () {
+      _exitDebounce = null;
       if (!_hovering) {
         _timer?.cancel();
         _timer = null;
