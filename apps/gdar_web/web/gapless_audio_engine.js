@@ -68,6 +68,10 @@
   let _fetchInFlight = false;
   let _lastFetchTtfbMs = null;
 
+  // Track transition gap measurement (LG chip).
+  let _trackEndedAtMs = 0;
+  let _lastGapMs = null;
+
   // Callbacks registered by Dart.
   let _onStateChange = null;
   let _onTrackChange = null;
@@ -141,6 +145,8 @@
     _currentIndex = startIndex != null ? startIndex : 0;
     _loadingState = 'idle';
     _playing = false;
+    _lastGapMs = null;
+    _trackEndedAtMs = 0;
     _emitState();
   }
 
@@ -355,6 +361,12 @@
     _startedIndex = targetIdx;
     _lastStartTrackTime = performance.now();
 
+    // Measure gap between previous track end and this track start
+    if (_trackEndedAtMs > 0) {
+      _lastGapMs = _lastStartTrackTime - _trackEndedAtMs;
+      _trackEndedAtMs = 0;
+    }
+
     const src = _ctx.createBufferSource();
     src.buffer = audioBuf;
     src.connect(_gainNode);
@@ -407,6 +419,7 @@
   function _onTrackEnded() {
     if (_isTransitioning) return;
     _isTransitioning = true;
+    _trackEndedAtMs = performance.now();
 
     const wasIndex = _currentIndex;
     _currentIndex++;
@@ -423,6 +436,10 @@
     }
 
     if (_scheduledSource && _scheduledIndex === _currentIndex) {
+      // Measure gapless transition gap (should be ~0ms for seamless handoff)
+      _lastGapMs = performance.now() - _trackEndedAtMs;
+      _trackEndedAtMs = 0;
+
       _currentSource = _scheduledSource;
       _scheduledSource = null;
       _scheduledIndex = -1;
@@ -666,6 +683,7 @@
           })(),
           fetchTtfbMs: _lastFetchTtfbMs,
           fetchInFlight: _fetchInFlight,
+          lastGapMs: _lastGapMs,
         });
 
         // Update MediaSession Position State

@@ -524,6 +524,8 @@
     let _queue = null;
     let _onStateChange = null;
     let _lastStateEmitMs = 0;
+    let _trackEndedAtMs = 0;
+    let _lastGapMs = null;
 
     function _emitStateThrottled(track) {
         if (!_onStateChange) return;
@@ -584,7 +586,8 @@
                 return window._gdarHeartbeat ? window._gdarHeartbeat.isActive() : false;
             })(),
             heartbeatNeeded: window._gdarIsHeartbeatNeeded(),
-            contextState: 'html5 (H5)' + (window._gdarIsHeartbeatNeeded() ? ' [HBN]' : ' [HBO]') + ' v1.1.hb'
+            contextState: 'html5 (H5)' + (window._gdarIsHeartbeatNeeded() ? ' [HBN]' : ' [HBO]') + ' v1.1.hb',
+            lastGapMs: _lastGapMs,
         };
     }
 
@@ -597,9 +600,14 @@
                     _emitStateThrottled(track);
                 },
                 onEnded: () => {
+                    _trackEndedAtMs = performance.now();
                     _log.log('[html5] Queue.onEnded triggered');
                 },
                 onStartNewTrack: (track) => {
+                    if (_trackEndedAtMs > 0) {
+                        _lastGapMs = performance.now() - _trackEndedAtMs;
+                        _trackEndedAtMs = 0;
+                    }
                     if (_onTrackChange) _onTrackChange({ from: _lastIndex, to: track.idx });
                     _lastIndex = track.idx;
                 },
@@ -632,6 +640,8 @@
             }));
             _queue.state.currentTrackIdx = startIndex || 0;
             _lastIndex = _queue.state.currentTrackIdx;
+            _lastGapMs = null;
+            _trackEndedAtMs = 0;
             _log.log('[html5] Playlist set, startIndex:', _queue.state.currentTrackIdx);
         },
 

@@ -22,7 +22,8 @@
       "mcp__dart__analyze_files",
       "mcp__dart__run_tests",
       "mcp__dart__dart_format",
-      "Bash(flutter pub:*)"
+      "Bash(flutter pub:*)",
+      "Bash(grep -rn \"tap\\\\|click\\\\|event\" /home/jam/StudioProjects/gdar/apps/gdar_web/web/*.js)"
     ]
   }
 }

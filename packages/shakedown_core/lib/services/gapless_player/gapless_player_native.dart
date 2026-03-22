@@ -91,6 +91,9 @@ class GaplessPlayer {
   /// Fetch in-flight flag (not applicable natively).
   bool get fetchInFlight => false;
 
+  /// Last track gap (not applicable natively).
+  double? get lastGapMs => null;
+
   // ─── Passthrough streams ─────────────────────────────────────────────────
 
   /// Stream of [PlayerState] changes.

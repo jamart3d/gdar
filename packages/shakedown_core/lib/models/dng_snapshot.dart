@@ -20,6 +20,7 @@ class DngSnapshot {
   final DateTime timestamp;
   final double? fetchTtfbMs;
   final bool fetchInFlight;
+  final double? lastGapMs;
 
   DngSnapshot({
     required this.position,
@@ -39,6 +40,7 @@ class DngSnapshot {
     this.error,
     this.fetchTtfbMs,
     this.fetchInFlight = false,
+    this.lastGapMs,
     DateTime? timestamp,
   }) : timestamp = timestamp ?? DateTime.now();
 

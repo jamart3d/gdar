@@ -132,6 +132,7 @@ class _DevAudioHudState extends State<DevAudioHud> {
           'BGT': _computeBgt(),
           'PM': widget.settingsProvider.performanceMode ? 'ON' : 'OFF',
           'NET': _computeNetDisplay(hud),
+          'LG': _computeLastGap(hud),
         };
         final isFruitMode =
             context.read<ThemeProvider?>()?.themeStyle == ThemeStyle.fruit;
@@ -197,6 +198,7 @@ class _DevAudioHudState extends State<DevAudioHud> {
                 'BGT',
                 'PM',
                 'NET',
+                'LG',
                 'SIG',
                 'MSG',
               ];
@@ -516,6 +518,14 @@ class _DevAudioHudState extends State<DevAudioHud> {
     return '${(ms / 1000.0).toStringAsFixed(1)}s';
   }
 
+  String _computeLastGap(HudSnapshot hud) {
+    final ms = hud.lastGapMs;
+    if (ms == null) return '--';
+    if (ms < 1) return '0ms';
+    if (ms < 1000) return '${ms.round()}ms';
+    return '${(ms / 1000.0).toStringAsFixed(1)}s';
+  }
+
   void _trackBgt(HudSnapshot hud) {
     final isHidden = hud.visibility.startsWith('HID') && hud.isPlaying;
     if (isHidden && _bgHiddenSince == null) {
@@ -578,6 +588,16 @@ class _DevAudioHudState extends State<DevAudioHud> {
     } catch (_) {
       return null;
     }
+  }
+
+  double _parseGapMs(String raw) {
+    if (raw.endsWith('ms')) {
+      return double.tryParse(raw.replaceAll('ms', '')) ?? 0;
+    }
+    if (raw.endsWith('s')) {
+      return (double.tryParse(raw.replaceAll('s', '')) ?? 0) * 1000;
+    }
+    return 0;
   }
 
   void _safeSetState(VoidCallback fn) {
@@ -742,6 +762,9 @@ class _DevAudioHudState extends State<DevAudioHud> {
           case 'E':
             chipWidth = 36;
             break;
+          case 'LG':
+            chipWidth = 58;
+            break;
         }
       }
 
@@ -771,14 +794,14 @@ class _DevAudioHudState extends State<DevAudioHud> {
           finalChipBgColor = Colors.orange.withValues(alpha: 0.8);
           finalBaseTextColor = Colors.black;
         } else if (driftValue > 20) {
-          finalBaseTextColor = Colors.greenAccent;
+          finalBaseTextColor = Colors.green;
         }
       } else if (key == 'PS') {
         if (value == 'BUF' || value == 'LD') {
           finalChipBgColor = Colors.orange.withValues(alpha: 0.7);
           finalBaseTextColor = Colors.black;
         } else if (value == 'RDY') {
-          finalBaseTextColor = Colors.greenAccent;
+          finalBaseTextColor = Colors.green;
         }
       } else if (key == 'AE') {
         final isSurvival = value.contains('+');
@@ -812,7 +835,7 @@ class _DevAudioHudState extends State<DevAudioHud> {
           finalBaseTextColor = Colors.white;
         }
       } else if (key == 'NX' && value != '00:00' && value != '--') {
-        finalBaseTextColor = Colors.greenAccent;
+        finalBaseTextColor = Colors.green;
       } else if (key == 'DFT') {
         final drift = _parseDriftValue(value) ?? 0.0;
         if (drift.abs() > 0.1) {
@@ -821,7 +844,7 @@ class _DevAudioHudState extends State<DevAudioHud> {
       } else if (key == 'V' && value.startsWith('HID')) {
         finalBaseTextColor = Colors.lightBlueAccent;
       } else if (key == 'STB') {
-        if (value == 'STB') finalBaseTextColor = Colors.greenAccent;
+        if (value == 'STB') finalBaseTextColor = Colors.green;
         if (value == 'BAL') finalBaseTextColor = Colors.lightBlueAccent;
         if (value == 'MAX') finalBaseTextColor = Colors.orangeAccent;
       } else if (key == 'SHD') {
@@ -846,7 +869,7 @@ class _DevAudioHudState extends State<DevAudioHud> {
       } else if (key == 'GAP') {
         switch (value) {
           case 'RDY':
-            finalBaseTextColor = Colors.greenAccent;
+            finalBaseTextColor = Colors.green;
             break;
           case 'LOW':
           case 'MISS':
@@ -878,7 +901,7 @@ class _DevAudioHudState extends State<DevAudioHud> {
           }
           if (netMs != null) {
             if (netMs < 800) {
-              finalBaseTextColor = Colors.greenAccent;
+              finalBaseTextColor = Colors.green;
             } else if (netMs < 2000) {
               finalChipBgColor = Colors.orange.withValues(alpha: 0.8);
               finalBaseTextColor = Colors.black;
@@ -888,6 +911,21 @@ class _DevAudioHudState extends State<DevAudioHud> {
               finalBaseTextColor = Colors.white;
               finalKeyTextColor = Colors.white.withValues(alpha: 0.8);
             }
+          }
+        }
+      } else if (key == 'LG') {
+        if (value != '--') {
+          final gapMs = _parseGapMs(value);
+          if (gapMs < 5) {
+            finalBaseTextColor = Colors.green;
+          } else if (gapMs < 50) {
+            finalChipBgColor = Colors.amber.withValues(alpha: 0.75);
+            finalBaseTextColor = Colors.black;
+            finalKeyTextColor = Colors.black.withValues(alpha: 0.7);
+          } else {
+            finalChipBgColor = Colors.redAccent.withValues(alpha: 0.85);
+            finalBaseTextColor = Colors.white;
+            finalKeyTextColor = Colors.white.withValues(alpha: 0.8);
           }
         }
       }
@@ -902,8 +940,8 @@ class _DevAudioHudState extends State<DevAudioHud> {
           borderRadius: BorderRadius.circular(6),
           border: hasClickableBorder
               ? Border.all(
-                  color: colorScheme.onSurface.withValues(alpha: 0.15),
-                  width: 0.5,
+                  color: colorScheme.primary.withValues(alpha: 0.4),
+                  width: 1.0,
                 )
               : null,
         ),
@@ -1020,6 +1058,15 @@ class _DevAudioHudState extends State<DevAudioHud> {
                 ),
               ),
             ],
+            if (hasClickableBorder)
+              Padding(
+                padding: const EdgeInsets.only(left: 1),
+                child: Icon(
+                  Icons.arrow_drop_down,
+                  size: labelsFontSize * 0.9,
+                  color: finalKeyTextColor,
+                ),
+              ),
           ],
         ),
       );
@@ -1237,9 +1284,12 @@ class _DevAudioHudState extends State<DevAudioHud> {
         }
         return 'Active Engine: $aeDesc$aeSuffix';
       case 'V':
-        return 'App Visibility Status (VIS: Visible, HID: Hidden) and duration: $value';
+        if (value.startsWith('VIS')) {
+          return 'Tab Visible — app is in the foreground ($value)';
+        }
+        return 'Tab Hidden — app is in the background ($value). Audio may throttle on mobile.';
       case 'DFT':
-        return 'JS Engine Tick Drift (seconds since last heartbeat): $value. Lower is better.';
+        return 'Tick Drift: $value — time between engine heartbeats. Lower = more stable playback.';
       case 'PF':
         if (value == 'G') {
           return 'Prefetch: Greedy — fetch full track immediately. '
@@ -1249,28 +1299,38 @@ class _DevAudioHudState extends State<DevAudioHud> {
             'Applies to HTML5/Hybrid engines only.';
       case 'PS':
         String desc = 'Unknown';
-        if (value == 'LD') desc = 'Loading';
-        if (value == 'BUF') desc = 'Buffering';
-        if (value == 'RDY') desc = 'Ready';
-        if (value == 'END') desc = 'Completed';
-        if (value == 'IDL') desc = 'Idle';
-        return 'Player Processing State: $desc ($value)';
+        if (value == 'LD') desc = 'Loading — fetching audio data';
+        if (value == 'BUF') desc = 'Buffering — waiting for enough data to play';
+        if (value == 'RDY') desc = 'Ready — playing normally';
+        if (value == 'END') desc = 'Completed — reached end of playlist';
+        if (value == 'IDL') desc = 'Idle — no track loaded';
+        return 'Processing State: $desc';
       case 'P':
-        return 'Low-level Player State: $value';
+        return 'Player State: $value — whether audio is playing or paused';
       case 'BUF':
-        return 'Current Buffered amount: $value';
+        return 'Current Track Buffered: $value of this track is downloaded';
       case 'HD':
-        return 'Buffer Headroom (Buffered - Position): $value. Positive values prevent gaps.';
+        return 'Buffer Headroom: $value ahead of playback position. Positive = smooth, negative = risk of stall.';
       case 'NX':
-        return 'Next Track Buffered Position: $value';
+        if (value == '--' || value == '00:00') {
+          return 'Next Track Buffer: nothing buffered yet';
+        }
+        return 'Next Track Buffer: $value of the next track is pre-loaded and ready for gapless playback';
       case 'E':
-        return 'Error Flag: $value';
+        if (value == 'OK') return 'No errors';
+        if (value == '--') return 'Error status not available';
+        return 'Error detected: $value — tap MSG chip for details';
       case 'ST':
-        return 'Internal Engine Status: $value';
+        return 'Engine Context: $value — internal state of the active audio engine';
       case 'SIG':
-        return 'Signal Source (ISS: Issue, NTF: Notification, AGT: Agent): $value';
+        String sigDesc = value;
+        if (value == 'ISS') sigDesc = 'Issue detected';
+        if (value == 'NTF') sigDesc = 'Notification';
+        if (value == 'AGT') sigDesc = 'Agent update';
+        if (value == 'OK') sigDesc = 'All clear';
+        return 'Signal: $sigDesc — tap MSG for details';
       case 'MSG':
-        return 'Detailed Status Message: $value';
+        return 'Status Message — tap to dismiss. $value';
       case 'TX':
         String txDesc = 'Unknown';
         if (value == 'XFD') txDesc = 'Crossfade';
@@ -1290,7 +1350,7 @@ class _DevAudioHudState extends State<DevAudioHud> {
         if (value == 'N/A') gapDesc = 'Not applicable';
         return 'Gapless Readiness (next track pre-loaded): $gapDesc ($value)';
       case 'BGT':
-        return 'Background Time (total time app has been hidden this session): $value';
+        return 'Background Time: $value total time the tab has been hidden this session';
       case 'PM':
         String pmDesc = value == 'ON'
             ? 'Enabled (effects reduced)'
@@ -1305,6 +1365,12 @@ class _DevAudioHudState extends State<DevAudioHud> {
         }
         return 'Network TTFB (archive.org time-to-first-byte): $value'
             ' | Green <800ms · Orange 800ms–2s · Red >2s';
+      case 'LG':
+        if (value == '--') {
+          return 'Last Gap: no track transition yet';
+        }
+        return 'Last Gap: $value between previous track ending and current track starting.'
+            ' Green <5ms (seamless) · Amber 5–50ms (minor gap) · Red >50ms (audible gap)';
       default:
         return '$key: $value';
     }

@@ -247,6 +247,7 @@ class TrackListView extends StatelessWidget {
                         isPlaying,
                         scaleFactor,
                         false,
+                        currentIdx,
                       ),
                     ),
                   ),
@@ -261,6 +262,7 @@ class TrackListView extends StatelessWidget {
                     isPlaying,
                     scaleFactor,
                     false,
+                    currentIdx,
                   ),
                 ),
         );
@@ -274,6 +276,7 @@ class TrackListView extends StatelessWidget {
             isPlaying,
             scaleFactor,
             true,
+            currentIdx,
           );
 
           trackItem = TvFocusWrapper(
@@ -382,6 +385,7 @@ class TrackListView extends StatelessWidget {
     bool isPlaying,
     double scaleFactor, [
     bool isTvFocus = false,
+    int? activeTrackIndex,
   ]) {
     final settingsProvider = context.watch<SettingsProvider>();
     final colorScheme = Theme.of(context).colorScheme;
@@ -493,13 +497,89 @@ class TrackListView extends StatelessWidget {
             }
           },
         );
+      } else if (isFruit) {
+        // Fruit: track state dot — played / next (buffered) / queued
+        final activeIdx = activeTrackIndex ?? -1;
+        const dotSize = 32.0;
+        final isPlayed = activeIdx >= 0 && trackIndex < activeIdx;
+        final isNext = activeIdx >= 0 &&
+            trackIndex == activeIdx + 1;
+
+        if (isPlayed) {
+          // Played: small muted filled dot
+          leadingWidget = SizedBox(
+            width: dotSize,
+            height: dotSize,
+            child: Center(
+              child: Container(
+                width: 6,
+                height: 6,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: colorScheme.primary.withValues(alpha: 0.3),
+                ),
+              ),
+            ),
+          );
+        } else if (isNext) {
+          // Next track: green if buffered, amber if loading
+          leadingWidget = StreamBuilder<Duration?>(
+            stream: audioProvider.nextTrackBufferedStream,
+            builder: (context, bufSnapshot) {
+              final buffered = bufSnapshot.data;
+              final nextTotal = audioProvider.audioPlayer.nextTrackTotal;
+              final hasBuffer = buffered != null &&
+                  buffered.inMilliseconds > 0;
+              final isFullyBuffered = hasBuffer &&
+                  nextTotal != null &&
+                  nextTotal.inMilliseconds > 0 &&
+                  buffered.inMilliseconds >=
+                      nextTotal.inMilliseconds - 500;
+              return SizedBox(
+                width: dotSize,
+                height: dotSize,
+                child: Center(
+                  child: Container(
+                    width: 8,
+                    height: 8,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: isFullyBuffered
+                          ? Colors.green
+                          : hasBuffer
+                              ? Colors.green.withValues(alpha: 0.5)
+                              : Colors.amber.withValues(alpha: 0.7),
+                    ),
+                  ),
+                ),
+              );
+            },
+          );
+        } else {
+          // Future: subtle hollow ring
+          leadingWidget = SizedBox(
+            width: dotSize,
+            height: dotSize,
+            child: Center(
+              child: Container(
+                width: 6,
+                height: 6,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: isDarkMode
+                        ? Colors.white.withValues(alpha: 0.15)
+                        : Colors.black.withValues(alpha: 0.15),
+                    width: 1,
+                  ),
+                ),
+              ),
+            ),
+          );
+        }
       } else {
-        // Alignment Fix: Always provide a leading space in Fruit or TV themes.
-        // This prevents the track title from jumping/indenting only when playing.
-        leadingWidget = SizedBox(
-          width: isFruit ? 32 : 24,
-          height: isFruit ? 32 : 24,
-        );
+        // TV/non-Fruit: plain spacer for alignment
+        leadingWidget = const SizedBox(width: 24, height: 24);
       }
     }
 

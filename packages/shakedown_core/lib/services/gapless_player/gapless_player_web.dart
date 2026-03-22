@@ -112,6 +112,10 @@ extension type _GdarState(JSObject _) implements JSObject {
   @JS('fetchInFlight')
   external JSBoolean? get fetchInFlightJS;
   bool? get fetchInFlight => fetchInFlightJS?.toDart;
+
+  @JS('lastGapMs')
+  external JSNumber? get lastGapMsJS;
+  double? get lastGapMs => lastGapMsJS?.toDartDouble;
 }
 
 /// Track change event sent from the JS engine.
@@ -199,6 +203,7 @@ class GaplessPlayer {
   String? _lastJsState;
   double? _lastFetchTtfbMs;
   bool _fetchInFlight = false;
+  double? _lastGapMs;
 
   final bool _useJsEngine;
   final AudioPlayer? _fallbackPlayer;
@@ -423,6 +428,8 @@ class GaplessPlayer {
       final ttfb = s.fetchTtfbMs;
       if (ttfb != null && ttfb.isFinite) _lastFetchTtfbMs = ttfb;
       _fetchInFlight = s.fetchInFlight ?? false;
+      final gap = s.lastGapMs;
+      if (gap != null && gap.isFinite) _lastGapMs = gap;
     } catch (e, st) {
       logger.w('GaplessPlayerWeb: Error unboxing engine state: $e\n$st');
       return;
@@ -558,6 +565,8 @@ class GaplessPlayer {
   double? get fetchTtfbMs => _useJsEngine ? _lastFetchTtfbMs : null;
 
   bool get fetchInFlight => _useJsEngine ? _fetchInFlight : false;
+
+  double? get lastGapMs => _useJsEngine ? _lastGapMs : null;
 
   /// Returns the name of the active audio engine.
   String get engineName {

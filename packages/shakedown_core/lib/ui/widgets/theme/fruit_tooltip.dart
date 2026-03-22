@@ -29,7 +29,9 @@ class _FruitTooltipState extends State<FruitTooltip> {
   OverlayEntry? _entry;
   Timer? _timer;
   Timer? _exitDebounce;
+  Timer? _autoDismiss;
   bool _hovering = false;
+  bool _tapped = false;
 
   void _showTooltip() {
     if (_entry != null || widget.message.isEmpty) return;
@@ -140,8 +142,23 @@ class _FruitTooltipState extends State<FruitTooltip> {
     _timer = null;
     _exitDebounce?.cancel();
     _exitDebounce = null;
+    _autoDismiss?.cancel();
+    _autoDismiss = null;
+    _tapped = false;
     _entry?.remove();
     _entry = null;
+  }
+
+  void _handleTap() {
+    if (_tapped) {
+      _hideTooltip();
+      return;
+    }
+    _tapped = true;
+    _hovering = true;
+    _showTooltip();
+    _autoDismiss?.cancel();
+    _autoDismiss = Timer(const Duration(seconds: 4), _hideTooltip);
   }
 
   void _scheduleShow() {
@@ -172,6 +189,7 @@ class _FruitTooltipState extends State<FruitTooltip> {
 
   @override
   void dispose() {
+    _autoDismiss?.cancel();
     _hideTooltip();
     super.dispose();
   }
@@ -185,31 +203,34 @@ class _FruitTooltipState extends State<FruitTooltip> {
       return widget.child;
     }
 
-    return MouseRegion(
-      onEnter: (_) => _scheduleShow(),
-      onExit: (_) => _cancelShow(),
-      cursor: SystemMouseCursors.click,
-      child: FocusableActionDetector(
-        onShowFocusHighlight: (value) {
-          if (value) {
-            _scheduleShow();
-          } else {
-            _cancelShow();
-          }
-        },
-        shortcuts: const <ShortcutActivator, Intent>{
-          SingleActivator(LogicalKeyboardKey.enter): ActivateIntent(),
-          SingleActivator(LogicalKeyboardKey.space): ActivateIntent(),
-        },
-        actions: <Type, Action<Intent>>{
-          ActivateIntent: CallbackAction<ActivateIntent>(
-            onInvoke: (_) {
+    return GestureDetector(
+      onTap: _handleTap,
+      child: MouseRegion(
+        onEnter: (_) => _scheduleShow(),
+        onExit: (_) => _cancelShow(),
+        cursor: SystemMouseCursors.click,
+        child: FocusableActionDetector(
+          onShowFocusHighlight: (value) {
+            if (value) {
               _scheduleShow();
-              return null;
-            },
-          ),
-        },
-        child: widget.child,
+            } else {
+              _cancelShow();
+            }
+          },
+          shortcuts: const <ShortcutActivator, Intent>{
+            SingleActivator(LogicalKeyboardKey.enter): ActivateIntent(),
+            SingleActivator(LogicalKeyboardKey.space): ActivateIntent(),
+          },
+          actions: <Type, Action<Intent>>{
+            ActivateIntent: CallbackAction<ActivateIntent>(
+              onInvoke: (_) {
+                _scheduleShow();
+                return null;
+              },
+            ),
+          },
+          child: widget.child,
+        ),
       ),
     );
   }

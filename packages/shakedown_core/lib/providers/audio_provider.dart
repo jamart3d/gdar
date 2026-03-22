@@ -296,6 +296,7 @@ class AudioProvider with ChangeNotifier {
       error: (error != null && error!.isNotEmpty) ? 'ERR' : 'OK',
       fetchTtfbMs: _audioPlayer.fetchTtfbMs,
       fetchInFlight: _audioPlayer.fetchInFlight,
+      lastGapMs: _audioPlayer.lastGapMs,
     );
   }
 
@@ -379,6 +380,7 @@ class AudioProvider with ChangeNotifier {
       isHandoffCountdown: dng.engineState == 'handoff_countdown',
       fetchTtfbMs: dng.fetchTtfbMs,
       fetchInFlight: dng.fetchInFlight,
+      lastGapMs: dng.lastGapMs,
     );
   }
 
@@ -1110,10 +1112,6 @@ class AudioProvider with ChangeNotifier {
       _catalogService.recordSession(foundSource.id, showDate: foundShow.date);
 
       notifyListeners();
-
-      // Notify Random Request Stream (For UI Parity causing scroll/expand)
-      _pendingRandomShowRequest = (show: foundShow, source: foundSource);
-      _randomShowRequestController.add((show: foundShow, source: foundSource));
     }
   }
 

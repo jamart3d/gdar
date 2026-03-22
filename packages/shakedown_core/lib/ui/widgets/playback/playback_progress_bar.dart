@@ -83,6 +83,9 @@ class _PlaybackProgressBarState extends State<PlaybackProgressBar>
           builder: (context, durationSnapshot) {
             final totalDuration = durationSnapshot.data ?? Duration.zero;
             final hasKnownDuration = totalDuration.inSeconds > 0;
+            final isUnknown = !hasKnownDuration &&
+                position.inMilliseconds == 0;
+            const unknownLabel = '--:--';
 
             return SizedBox(
               height: 32 * scaleFactor,
@@ -91,7 +94,9 @@ class _PlaybackProgressBarState extends State<PlaybackProgressBar>
                   // 1. ELAPSED TIME
                   _buildTimeBadge(
                     context: context,
-                    text: formatDuration(position),
+                    text: isUnknown
+                        ? unknownLabel
+                        : formatDuration(position),
                     scaleFactor: scaleFactor,
                     alignRight: false,
                     isSimple: isSimple,
@@ -321,11 +326,17 @@ class _PlaybackProgressBarState extends State<PlaybackProgressBar>
                     initialData: audioProvider.audioPlayer.bufferedPosition,
                     builder: (context, bufferedSnapshot) {
                       final buffered = bufferedSnapshot.data ?? Duration.zero;
+                      final totalUnknown = isUnknown &&
+                          buffered.inMilliseconds == 0;
                       return _buildTimeBadge(
                         context: context,
-                        text: formatDuration(
-                          hasKnownDuration ? totalDuration : buffered,
-                        ),
+                        text: totalUnknown
+                            ? unknownLabel
+                            : formatDuration(
+                                hasKnownDuration
+                                    ? totalDuration
+                                    : buffered,
+                              ),
                         scaleFactor: scaleFactor,
                         alignRight: true,
                         isSimple: isSimple,

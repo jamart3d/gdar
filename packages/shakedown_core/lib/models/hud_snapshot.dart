@@ -31,6 +31,9 @@ class HudSnapshot {
   final double? fetchTtfbMs;
   final bool fetchInFlight;
 
+  // Track transition gap (ms between previous track end and current track start)
+  final double? lastGapMs;
+
   const HudSnapshot({
     required this.engine,
     required this.detectedProfile,
@@ -58,6 +61,7 @@ class HudSnapshot {
     required this.isHandoffCountdown,
     this.fetchTtfbMs,
     this.fetchInFlight = false,
+    this.lastGapMs,
   });
 
   /// Initial empty snapshot to avoid null checks in UI.
@@ -88,6 +92,7 @@ class HudSnapshot {
     isHandoffCountdown: false,
     fetchTtfbMs: null,
     fetchInFlight: false,
+    lastGapMs: null,
   );
 
   Map<String, String> toMap() {
@@ -141,6 +146,7 @@ class HudSnapshot {
     bool? isHandoffCountdown,
     double? fetchTtfbMs,
     bool? fetchInFlight,
+    double? lastGapMs,
   }) {
     return HudSnapshot(
       engine: engine ?? this.engine,
@@ -170,6 +176,7 @@ class HudSnapshot {
       isHandoffCountdown: isHandoffCountdown ?? this.isHandoffCountdown,
       fetchTtfbMs: fetchTtfbMs ?? this.fetchTtfbMs,
       fetchInFlight: fetchInFlight ?? this.fetchInFlight,
+      lastGapMs: lastGapMs ?? this.lastGapMs,
     );
   }
 }
