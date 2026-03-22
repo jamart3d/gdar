@@ -28,7 +28,7 @@ class FruitTooltip extends StatefulWidget {
 class _FruitTooltipState extends State<FruitTooltip> {
   OverlayEntry? _entry;
   Timer? _timer;
-  Timer? _hideTimer;
+  Timer? _exitDebounce;
   bool _hovering = false;
 
   void _showTooltip() {
@@ -135,34 +135,40 @@ class _FruitTooltipState extends State<FruitTooltip> {
   void _hideTooltip() {
     _timer?.cancel();
     _timer = null;
-    _hideTimer?.cancel();
-    _hideTimer = null;
+    _exitDebounce?.cancel();
+    _exitDebounce = null;
     _entry?.remove();
     _entry = null;
   }
 
   void _scheduleShow() {
-    _hideTimer?.cancel();
-    _hideTimer = null;
-    _timer?.cancel();
+    // Cancel any pending hide.
+    _exitDebounce?.cancel();
+    _exitDebounce = null;
     _hovering = true;
-    _timer = Timer(widget.showDelay, _showTooltip);
+    // Don't restart the show timer if one is already running — this means a
+    // spurious exit+enter pair during a rebuild won't reset the 500ms delay
+    // back to zero; the tooltip appears at 500ms from the *first* enter.
+    _timer ??= Timer(widget.showDelay, _showTooltip);
   }
 
   void _cancelShow() {
-    _timer?.cancel();
-    _timer = null;
     _hovering = false;
-    // Debounce: Flutter Web fires a spurious exit+enter pair during hit-test
-    // re-evaluation on rebuilds. Waiting 80ms absorbs it; a genuine mouse-out
-    // (user moves away and stays away) still hides the tooltip promptly.
-    _hideTimer?.cancel();
-    _hideTimer = Timer(const Duration(milliseconds: 80), _hideTooltip);
+    // Debounce the hide decision. Flutter Web fires a spurious exit+enter pair
+    // (~1 frame apart) whenever hit-testing re-evaluates after a layout change.
+    // We only act if the mouse is still outside after 150ms.
+    _exitDebounce?.cancel();
+    _exitDebounce = Timer(const Duration(milliseconds: 150), () {
+      if (!_hovering) {
+        _timer?.cancel();
+        _timer = null;
+        _hideTooltip();
+      }
+    });
   }
 
   @override
   void dispose() {
-    _hideTimer?.cancel();
     _hideTooltip();
     super.dispose();
   }
