@@ -644,11 +644,19 @@
             if (_queue) {
                 _queue.resumeAudioContext();
                 _queue.play();
+                _updateMediaSession();
             }
         },
 
         pause: function () {
-            if (_queue) _queue.pause();
+            if (_queue) {
+                _queue.pause();
+                if (_onStateChange) {
+                    _lastStateEmitMs = 0;
+                    _emitStateThrottled(_queue.currentTrack);
+                }
+                _updateMediaSession();
+            }
         },
 
         stop: function () {

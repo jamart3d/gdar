@@ -17,7 +17,12 @@
       "Bash(git push:*)",
       "Bash(flutter analyze:*)",
       "Bash(flutter sdk-path:*)",
-      "Bash(xargs dirname:*)"
+      "Bash(xargs dirname:*)",
+      "Bash(grep -r \"onTrackChange\\\\|_updateMediaSession\" /home/jam/StudioProjects/gdar/apps/gdar_web/web/*.js)",
+      "mcp__dart__analyze_files",
+      "mcp__dart__run_tests",
+      "mcp__dart__dart_format",
+      "Bash(flutter pub:*)"
     ]
   }
 }

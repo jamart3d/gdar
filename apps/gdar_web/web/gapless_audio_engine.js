@@ -760,6 +760,7 @@
     play: function () {
       _ensureContext();
       _playing = true; // Set playback intent early so resume callback triggers api.play() again
+      _updateMediaSession();
 
       if (_ctx.state === 'suspended') {
         if (!_ctx._isResuming) {
@@ -833,6 +834,7 @@
       if (!_ctx || !_playing) return;
       _currentTrackStartOffset = _getCurrentPositionSeconds();
       _playing = false;
+      _updateMediaSession();
       _ctx.suspend().then(() => {
         _stopPositionTimer();
         _stopCurrentSource();
