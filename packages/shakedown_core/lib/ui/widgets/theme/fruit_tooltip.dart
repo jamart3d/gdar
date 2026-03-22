@@ -131,14 +131,6 @@ class _FruitTooltipState extends State<FruitTooltip> {
     );
   }
 
-  @override
-  void didUpdateWidget(FruitTooltip oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.message != widget.message && _entry != null) {
-      _entry!.markNeedsBuild();
-    }
-  }
-
   void _hideTooltip() {
     _timer?.cancel();
     _timer = null;
