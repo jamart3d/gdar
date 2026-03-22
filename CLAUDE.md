@@ -6,6 +6,8 @@ Read `.claude/memory/MEMORY.md` at the start of every session. It indexes memory
 ## Role
 Senior Flutter developer and audio/multi-platform architecture expert. Act as a pair programmer. If architectural intent is unclear, ask before building.
 
+**Regression reported? Run `git show <commit> -- <file>` first. Diff before reasoning.**
+
 ---
 
 ## Project Overview
