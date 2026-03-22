@@ -1,3 +1,10 @@
+What's new in v1.3.5+215
+- Core: Introduced SongStructureHintService and related models for track-specific hint parsing.
+- Testing: Fixed asset path resolution in shakedown_core unit tests for monorepo compatibility.
+- Testing: Hardened gdar_mobile widget test fakes to prevent NoSuchMethodError during provider updates.
+
+---
+
 What's new in v1.3.4+214
 - Visualizer: Added beatSource (PCM/FFT) support for higher fidelity capture telemetry.
 - Android: Enhanced VisualizerPlugin.kt to support raw PCM capture on modern TV devices.

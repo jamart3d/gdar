@@ -2,6 +2,7 @@ library;
 
 export 'models/rating.dart';
 export 'models/show.dart';
+export 'models/song_structure_hints.dart';
 export 'models/source.dart';
 export 'models/track.dart';
 
@@ -16,6 +17,7 @@ export 'providers/update_provider.dart';
 export 'services/catalog_service.dart';
 export 'services/audio_cache_service.dart';
 export 'services/device_service.dart';
+export 'services/song_structure_hint_service.dart';
 
 // UI Screens
 export 'ui/screens/show_list_screen.dart';

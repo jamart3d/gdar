@@ -23,6 +23,21 @@ class AudioEnergy {
   /// Final timing source for [isBeat], typically `VIS` or `PCM` on TV.
   final String? beatSource;
 
+  /// Estimated pulse-grid tempo in beats per minute, when tracking is stable.
+  final double? beatBpm;
+
+  /// Recent inter-beat interval in milliseconds, when tracking is stable.
+  final double? beatIbiMs;
+
+  /// Current phase through the predicted beat interval, normalized to 0.0..1.0.
+  final double? beatPhase;
+
+  /// Milliseconds remaining until the next predicted beat window.
+  final double? nextBeatMs;
+
+  /// Confidence that the tracker has locked to a stable pulse grid.
+  final double? beatGridConfidence;
+
   /// 8-band frequency data for detailed EQ visualization.
   /// Bands: sub-bass, bass, low-mid, mid, upper-mid, presence, brilliance, air.
   final List<double> bands;
@@ -77,6 +92,11 @@ class AudioEnergy {
     this.beatThreshold = 0.0,
     this.beatConfidence = 0.0,
     this.beatSource,
+    this.beatBpm,
+    this.beatIbiMs,
+    this.beatPhase,
+    this.nextBeatMs,
+    this.beatGridConfidence,
     this.bands = const [0, 0, 0, 0, 0, 0, 0, 0],
     this.waveform = const [],
     this.waveformL = const [],
@@ -100,6 +120,11 @@ class AudioEnergy {
       beatThreshold = 0.0,
       beatConfidence = 0.0,
       beatSource = null,
+      beatBpm = null,
+      beatIbiMs = null,
+      beatPhase = null,
+      nextBeatMs = null,
+      beatGridConfidence = null,
       bands = const [0, 0, 0, 0, 0, 0, 0, 0],
       waveform = const [],
       waveformL = const [],

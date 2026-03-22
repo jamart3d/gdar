@@ -135,6 +135,8 @@ class _DevAudioHudState extends State<DevAudioHud> {
         };
         final isFruitMode =
             context.read<ThemeProvider?>()?.themeStyle == ThemeStyle.fruit;
+        final isFruitGlassOn =
+            isFruitMode && (widget.settingsProvider.fruitEnableLiquidGlass);
 
         final theme = Theme.of(context);
         final isDarkMode = theme.brightness == Brightness.dark;
@@ -153,8 +155,10 @@ class _DevAudioHudState extends State<DevAudioHud> {
           decoration: BoxDecoration(
             color: isTrueBlack
                 ? Colors.black
+                : isFruitGlassOn
+                ? Colors.transparent
                 : Theme.of(context).colorScheme.surface.withValues(
-                    alpha: isFruitMode ? 0.35 : 0.78,
+                    alpha: isFruitMode ? 0.85 : 0.78,
                   ),
             borderRadius: BorderRadius.circular(isFruitMode ? 14 : 10),
             border: isTrueBlack
@@ -220,6 +224,7 @@ class _DevAudioHudState extends State<DevAudioHud> {
             padding: EdgeInsets.symmetric(vertical: widget.compact ? 1.0 : 2.0),
             child: LiquidGlassWrapper(
               borderRadius: BorderRadius.circular(14),
+              opacity: 0.85,
               child: hudContent,
             ),
           );

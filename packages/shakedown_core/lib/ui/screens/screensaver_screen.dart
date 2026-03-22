@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:shakedown_core/models/song_structure_hints.dart';
 import 'package:shakedown_core/steal_screensaver/steal_config.dart';
 import 'package:shakedown_core/steal_screensaver/steal_visualizer.dart';
 import 'package:shakedown_core/visualizer/audio_reactor.dart';
@@ -12,13 +13,16 @@ import 'package:shakedown_core/visualizer/visualizer_audio_reactor.dart';
 import 'package:shakedown_core/providers/settings_provider.dart';
 import 'package:shakedown_core/providers/audio_provider.dart';
 import 'package:shakedown_core/services/device_service.dart';
+import 'package:shakedown_core/services/song_structure_hint_service.dart';
 import 'package:shakedown_core/services/wakelock_service.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 /// Screensaver screen displaying the Steal Your Face visualizer.
 /// Note: This screensaver and its audio reactivity are explicitly for the TV UI.
 class ScreensaverScreen extends StatefulWidget {
-  const ScreensaverScreen({super.key});
+  const ScreensaverScreen({super.key, this.songHintCatalogOverride});
+
+  final SongStructureHintCatalog? songHintCatalogOverride;
 
   static Future<void> show(BuildContext context) {
     return Navigator.of(context).push(
@@ -49,6 +53,9 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
   bool _isStereoCapturePending = false;
   bool _isStereoCaptureActive = false;
   bool _hasAttemptedStereoCapture = false;
+  final SongStructureHintService _songHintService =
+      const SongStructureHintService();
+  SongStructureHintCatalog? _songHintCatalog;
 
   double? _lastPushedPeakDecay;
   double? _lastPushedBassBoost;
@@ -58,6 +65,10 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
   @override
   void initState() {
     super.initState();
+    _songHintCatalog = widget.songHintCatalogOverride;
+    if (_songHintCatalog == null) {
+      _loadSongHintCatalog();
+    }
     _initAudioReactor();
     Future.delayed(const Duration(milliseconds: 500), () {
       if (mounted) HardwareKeyboard.instance.addHandler(_handleGlobalKeyEvent);
@@ -163,6 +174,56 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
       _hasAttemptedStereoCapture = false;
     }
     await VisualizerAudioReactor.stopStereoCapture();
+  }
+
+  Future<void> _loadSongHintCatalog() async {
+    try {
+      final catalog = await _songHintService.loadCatalog();
+      if (!mounted) return;
+      setState(() => _songHintCatalog = catalog);
+    } catch (error) {
+      debugPrint('Screensaver: Failed to load song structure hints: $error');
+    }
+  }
+
+  SongStructureHintEntry? _bestSongHintForTitle(String? title) {
+    if (title == null || title.trim().isEmpty) return null;
+    final catalog = _songHintCatalog;
+    if (catalog == null) return null;
+
+    final normalizedTitle = SongStructureHintEntry.normalizeLookupKey(title);
+    final matches = catalog.lookup(title);
+    if (matches.isEmpty) return null;
+
+    matches.sort((a, b) {
+      final aTitleExact =
+          SongStructureHintEntry.normalizeLookupKey(a.title) == normalizedTitle;
+      final bTitleExact =
+          SongStructureHintEntry.normalizeLookupKey(b.title) == normalizedTitle;
+      if (aTitleExact != bTitleExact) {
+        return aTitleExact ? -1 : 1;
+      }
+
+      final aCanonicalExact =
+          SongStructureHintEntry.normalizeLookupKey(a.canonicalTitle) ==
+          normalizedTitle;
+      final bCanonicalExact =
+          SongStructureHintEntry.normalizeLookupKey(b.canonicalTitle) ==
+          normalizedTitle;
+      if (aCanonicalExact != bCanonicalExact) {
+        return aCanonicalExact ? -1 : 1;
+      }
+
+      final confidenceCompare = b.confidence.compareTo(a.confidence);
+      if (confidenceCompare != 0) return confidenceCompare;
+
+      if (a.variant == b.variant) return 0;
+      if (a.variant == 'main') return -1;
+      if (b.variant == 'main') return 1;
+      return a.variant.compareTo(b.variant);
+    });
+
+    return matches.first;
   }
 
   bool _handleGlobalKeyEvent(KeyEvent event) {
@@ -286,6 +347,7 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
   Widget build(BuildContext context) {
     final settings = context.watch<SettingsProvider>();
     final audioProvider = context.watch<AudioProvider>();
+    final songHint = _bestSongHintForTitle(audioProvider.currentTrack?.title);
 
     _ensureAudioReactorState(settings);
     if (_audioReactor != null) {
@@ -311,6 +373,10 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
       bannerText: _composeBannerText(settings, audioProvider),
       venue: _composeVenue(settings, audioProvider),
       date: _composeDate(settings, audioProvider),
+      trackHintId: songHint?.id ?? '',
+      trackHintTitle: songHint?.canonicalTitle ?? '',
+      trackHintVariant: songHint?.variant ?? '',
+      trackHintSeedSource: songHint == null ? 'audio' : 'title',
       paletteCycle: settings.oilPaletteCycle,
       paletteTransitionSpeed: settings.oilPaletteTransitionSpeed,
       innerRingScale: settings.oilInnerRingScale,

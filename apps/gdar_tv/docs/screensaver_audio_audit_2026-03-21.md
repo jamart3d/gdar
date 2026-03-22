@@ -810,6 +810,53 @@ Test coverage note:
    - VU mode
    - scope mode
    - `corner_only`
+8. Plan a structured `beat_debug` upgrade before any title-assisted seeding work.
+   Add native telemetry fields for:
+   - estimated `BPM`
+   - recent inter-beat interval (`IBI`)
+   - predicted next-beat window / phase
+   - pulse-grid confidence
+   - optional bar position such as `1/4`, `2/4`, `3/4`, `4/4`
+   - seed source such as `audio`, `title`, or `hybrid`
+   Status:
+   - Partially completed 2026-03-21.
+   - Native TV payload now exports `beatBpm`, `beatIbiMs`, `beatPhase`,
+     `nextBeatMs`, and `beatGridConfidence`.
+   - `beat_debug` now renders those tracker values alongside the existing onset
+     telemetry and title-hint metadata.
+   - Optional bar-position / measure-group telemetry is still future work.
+   Notes:
+   - track title should only bias startup assumptions, not override live audio
+   - `beat_debug` should show what the tracker is learning over time, not just raw onset telemetry
+   - measure / bar grouping should be treated as low-confidence until a stable pulse grid is established
+9. Keep title-assisted hints explicitly optional and soft-scored.
+   Current groundwork completed on 2026-03-21:
+   - `packages/shakedown_core/assets/data/audio/grateful_dead_song_structure_hints.json`
+     now exists as a versioned hint catalog with stable `id`, `canonical_title`,
+     `variant`, and `match_keys`
+   - `packages/shakedown_core/lib/models/song_structure_hints.dart`
+     provides typed parsing models
+   - `packages/shakedown_core/lib/services/song_structure_hint_service.dart`
+     provides a loader/parser without wiring the hints into runtime behavior yet
+   - `packages/shakedown_core/test/services/song_structure_hint_service_test.dart`
+     verifies parsing and alias lookup
+   Rules for future use:
+   - use title/alias matching only to seed startup assumptions
+   - let live audio override title hints quickly
+   - never allow title hints alone to force `isBeat`
+   - prefer using hint data to narrow BPM search range, phase-lock strength,
+     and detector bias rather than to dictate bar position
+   Recommended next use:
+   - Completed 2026-03-21 for display-only observability.
+   - `ScreensaverScreen` now matches the current track title against the hint
+     catalog and passes `trackHintId`, `trackHintTitle`, `trackHintVariant`,
+     and `trackHintSeedSource` into the screensaver config.
+   - `beat_debug` now renders `META`, `VAR`, and `SEED` so title-assisted
+     startup hints are visible during tuning.
+   - This metadata is still display-only and does not change final `isBeat`.
+   - keep title-assisted tempo/pulse hints disabled for final beat firing until
+     the new beat-grid telemetry is validated on real hardware and deliberately
+     wired into a soft-seeding path
 
 ### Definition of done for the patch
 
@@ -820,3 +867,4 @@ Test coverage note:
 - The final `isBeat` comes from either:
   - the hybrid Visualizer-path detector
   - or PCM when available, with Visualizer fallback.
+- Optional metadata hints remain advisory and cannot override live audio.

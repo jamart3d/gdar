@@ -13,6 +13,7 @@ import 'package:shakedown_core/services/device_service.dart';
 import 'package:shakedown_core/ui/widgets/tv/tv_dual_pane_layout.dart';
 import 'package:shakedown_core/ui/styles/app_typography.dart';
 import 'package:shakedown_core/utils/font_layout_config.dart';
+import 'package:shakedown_core/utils/web_perf_hint.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -73,6 +74,13 @@ class _SplashScreenState extends State<SplashScreen>
     if (!_showListProvider.isLoading &&
         !_countController.isAnimating &&
         _countController.status != AnimationStatus.completed) {
+      // On low-power devices, skip count animation to avoid stutter
+      if (isLikelyLowPowerWebDevice()) {
+        _countController.value = 1.0;
+        setState(() {});
+        _checkNavigation();
+        return;
+      }
       // Loading finished, start counting animation
       setState(() {
         _shnidCountAnimation =
@@ -332,6 +340,13 @@ class _SplashScreenState extends State<SplashScreen>
                         ? colorScheme.primary
                         : colorScheme.error, // Red for error
                     size: AppTypography.responsiveFontSize(context, 20.0),
+                  )
+                : isLikelyLowPowerWebDevice()
+                ? Icon(
+                    Icons.radio_button_unchecked,
+                    key: const ValueKey('loading_static'),
+                    color: colorScheme.onSurface.withValues(alpha: 0.3),
+                    size: 14 * scaleFactor,
                   )
                 : SizedBox(
                     width: 14 * scaleFactor,

@@ -126,11 +126,18 @@ class StealGraph extends Component with HasGameReference<StealGame> {
   double _vuRight = 0.0;
   double _vuPeakLeft = 0.0;
   double _vuPeakRight = 0.0;
+  double _vuRawLeft = 0.0;
+  double _vuRawRight = 0.0;
+  double _vuDrive = 1.0;
 
   // ── Oscilloscope state ───────────────────────────────────────────────────
   List<double> _scopeWaveform = const [];
+  List<double> _scopeWaveformL = const [];
+  List<double> _scopeWaveformR = const [];
   // Rolling peak for auto-gain — decays slowly so gain doesn't jump on silence.
   double _scopePeak = 0.05;
+  double _scopePeakL = 0.05;
+  double _scopePeakR = 0.05;
 
   final TextPainter _textPainter = TextPainter(
     textDirection: TextDirection.ltr,
@@ -243,8 +250,25 @@ class StealGraph extends Component with HasGameReference<StealGame> {
         if (v.abs() > _scopePeak) _scopePeak = v.abs();
       }
     }
+    if (wantsScope &&
+        energy.waveformL.isNotEmpty &&
+        energy.waveformR.isNotEmpty) {
+      _scopeWaveformL = energy.waveformL;
+      _scopeWaveformR = energy.waveformR;
+      for (final v in _scopeWaveformL) {
+        if (v.abs() > _scopePeakL) _scopePeakL = v.abs();
+      }
+      for (final v in _scopeWaveformR) {
+        if (v.abs() > _scopePeakR) _scopePeakR = v.abs();
+      }
+    } else if (wantsScope) {
+      _scopeWaveformL = const [];
+      _scopeWaveformR = const [];
+    }
     if (wantsScope) {
       _scopePeak = max(_scopePeak * 0.995, 0.001);
+      _scopePeakL = max(_scopePeakL * 0.995, 0.001);
+      _scopePeakR = max(_scopePeakR * 0.995, 0.001);
     }
 
     // Smoothly lerp EKG color toward the current palette — same pace as
@@ -309,23 +333,28 @@ class StealGraph extends Component with HasGameReference<StealGame> {
       // Real stereo from AudioPlaybackCapture — compute RMS of each channel.
       // 2.5× boost maps typical speech/music RMS (~0.1–0.3) into needle range.
       _hasRealStereo = true;
-      targetL = (_rms(energy.waveformL) * 2.5).clamp(0.0, 1.0);
-      targetR = (_rms(energy.waveformR) * 2.5).clamp(0.0, 1.0);
+      _vuDrive = 2.5;
+      _vuRawLeft = _rms(energy.waveformL).clamp(0.0, 1.0);
+      _vuRawRight = _rms(energy.waveformR).clamp(0.0, 1.0);
+      targetL = (_vuRawLeft * _vuDrive).clamp(0.0, 1.0);
+      targetR = (_vuRawRight * _vuDrive).clamp(0.0, 1.0);
     } else {
       // Fallback: fake stereo by splitting 8-band FFT (lo bands → L, hi → R).
       _hasRealStereo = false;
-      const boost = 1.5;
+      _vuDrive = 1.5;
       final bands = energy.bands;
-      targetL =
+      _vuRawLeft =
           (bands.length >= 8
-              ? (bands[0] + bands[1] + bands[2] + bands[3]) / 4.0
-              : energy.bass) *
-          boost;
-      targetR =
+                  ? (bands[0] + bands[1] + bands[2] + bands[3]) / 4.0
+                  : energy.bass)
+              .clamp(0.0, 1.0);
+      _vuRawRight =
           (bands.length >= 8
-              ? (bands[4] + bands[5] + bands[6] + bands[7]) / 4.0
-              : energy.treble) *
-          boost;
+                  ? (bands[4] + bands[5] + bands[6] + bands[7]) / 4.0
+                  : energy.treble)
+              .clamp(0.0, 1.0);
+      targetL = (_vuRawLeft * _vuDrive).clamp(0.0, 1.0);
+      targetR = (_vuRawRight * _vuDrive).clamp(0.0, 1.0);
     }
 
     _vuLeft = _vuSmooth(_vuLeft, targetL, dt);
@@ -878,8 +907,144 @@ class StealGraph extends Component with HasGameReference<StealGame> {
       );
     }
 
+    void drawStereoLane(
+      List<double> waveform,
+      double laneCenterY,
+      double laneHeight,
+      Color color,
+    ) {
+      if (waveform.length < 2) return;
+      final path = Path();
+      path.moveTo(
+        startX,
+        laneCenterY - softClip(waveform[0]) * (laneHeight / 2),
+      );
+      for (int i = 1; i < waveform.length; i++) {
+        final x = startX + (i / (waveform.length - 1)) * availableWidth;
+        final y = laneCenterY - softClip(waveform[i]) * (laneHeight / 2);
+        path.lineTo(x, y);
+      }
+      if (_glowSigma > 0.0) {
+        canvas.drawPath(
+          path,
+          Paint()
+            ..color = color.withValues(alpha: 0.18 + _beatFlash * 0.18)
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 3.0
+            ..strokeCap = StrokeCap.round
+            ..maskFilter = isWasmSafeMode()
+                ? null
+                : MaskFilter.blur(BlurStyle.normal, _glowSigma),
+        );
+      }
+      canvas.drawPath(
+        path,
+        Paint()
+          ..color = color.withValues(alpha: 0.92)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 1.2 + _beatFlash * 0.6
+          ..strokeCap = StrokeCap.round,
+      );
+    }
+
     final waveform = _scopeWaveform;
     final hasPcm = waveform.length >= 2 && _scopePeak > 0.015;
+    final hasStereoScope =
+        isPanelMode &&
+        _scopeWaveformL.length >= 2 &&
+        _scopeWaveformR.length >= 2 &&
+        max(_scopePeakL, _scopePeakR) > 0.015;
+
+    if (hasStereoScope) {
+      final upperCenterY = centerY - scopeHeight * 0.24;
+      final lowerCenterY = centerY + scopeHeight * 0.24;
+      final laneHeight = scopeHeight * 0.42;
+      const leftColor = Color(0xFF5DFFB2);
+      const rightColor = Color(0xFF55D9FF);
+
+      for (final laneY in [upperCenterY, lowerCenterY]) {
+        canvas.drawLine(
+          Offset(startX, laneY),
+          Offset(startX + availableWidth, laneY),
+          Paint()
+            ..color = phosphorColor.withValues(alpha: 0.08)
+            ..strokeWidth = 0.5,
+        );
+      }
+
+      drawStereoLane(_scopeWaveformL, upperCenterY, laneHeight, leftColor);
+      drawStereoLane(_scopeWaveformR, lowerCenterY, laneHeight, rightColor);
+
+      _textPainter.text = TextSpan(
+        text: 'OSC PCM ST  256pt',
+        style: TextStyle(
+          color: phosphorColor.withValues(alpha: 0.42),
+          fontSize: 8,
+          fontWeight: FontWeight.w600,
+          letterSpacing: 1.1,
+          fontFamily: 'RobotoMono',
+        ),
+      );
+      _textPainter.layout();
+      _textPainter.paint(
+        canvas,
+        Offset(startX, centerY + scopeHeight / 2 + 6.0),
+      );
+
+      _textPainter.text = TextSpan(
+        text:
+            'L ${(_scopePeakL * 100).clamp(0.0, 100.0).toStringAsFixed(0).padLeft(3)}%  '
+            'R ${(_scopePeakR * 100).clamp(0.0, 100.0).toStringAsFixed(0).padLeft(3)}%',
+        style: TextStyle(
+          color: phosphorColor.withValues(alpha: 0.32),
+          fontSize: 7,
+          fontWeight: FontWeight.w600,
+          letterSpacing: 1.0,
+          fontFamily: 'RobotoMono',
+        ),
+      );
+      _textPainter.layout();
+      canvas.save();
+      canvas.translate(
+        startX + availableWidth - _textPainter.width,
+        centerY + scopeHeight / 2 + 6.0,
+      );
+      _textPainter.paint(canvas, Offset.zero);
+      canvas.restore();
+
+      _textPainter.text = TextSpan(
+        text: 'L',
+        style: TextStyle(
+          color: leftColor.withValues(alpha: 0.7),
+          fontSize: 8,
+          fontWeight: FontWeight.w700,
+          letterSpacing: 1.2,
+          fontFamily: 'RobotoMono',
+        ),
+      );
+      _textPainter.layout();
+      _textPainter.paint(
+        canvas,
+        Offset(startX + 4, upperCenterY - laneHeight / 2),
+      );
+
+      _textPainter.text = TextSpan(
+        text: 'R',
+        style: TextStyle(
+          color: rightColor.withValues(alpha: 0.7),
+          fontSize: 8,
+          fontWeight: FontWeight.w700,
+          letterSpacing: 1.2,
+          fontFamily: 'RobotoMono',
+        ),
+      );
+      _textPainter.layout();
+      _textPainter.paint(
+        canvas,
+        Offset(startX + 4, lowerCenterY - laneHeight / 2),
+      );
+      return;
+    }
 
     if (hasPcm) {
       // ── Real PCM path ─────────────────────────────────────────────────────
@@ -1043,8 +1208,10 @@ class StealGraph extends Component with HasGameReference<StealGame> {
       baseY,
       _vuLeft,
       _vuPeakLeft,
+      _vuRawLeft,
       'L',
       lRange,
+      _vuDrive,
     );
     _drawVuMeter(
       canvas,
@@ -1052,8 +1219,10 @@ class StealGraph extends Component with HasGameReference<StealGame> {
       baseY,
       _vuRight,
       _vuPeakRight,
+      _vuRawRight,
       'R',
       rRange,
+      _vuDrive,
     );
   }
 
@@ -1063,8 +1232,10 @@ class StealGraph extends Component with HasGameReference<StealGame> {
     double bottom,
     double level,
     double peakLevel,
+    double rawLevel,
     String chanLabel,
     String rangeLabel,
+    double drive,
   ) {
     // Panel background
     if (!_isFast) {
@@ -1280,6 +1451,36 @@ class StealGraph extends Component with HasGameReference<StealGame> {
       Offset(left + _vuWidth - _textPainter.width - 7, bottom - _vuHeight + 6),
     );
 
+    final rawPct = (rawLevel * 100).clamp(0.0, 100.0).toStringAsFixed(0);
+    _textPainter.text = TextSpan(
+      text: 'SIG ${rawPct.padLeft(3)}%',
+      style: TextStyle(
+        color: const Color(0xFF7FA0B8).withValues(alpha: 0.75),
+        fontSize: 7,
+        fontWeight: FontWeight.w600,
+        letterSpacing: 1.0,
+        fontFamily: 'RobotoMono',
+      ),
+    );
+    _textPainter.layout();
+    _textPainter.paint(canvas, Offset(left + 7, bottom - 18));
+
+    _textPainter.text = TextSpan(
+      text: 'x${drive.toStringAsFixed(1)}',
+      style: TextStyle(
+        color: const Color(0xFF667788).withValues(alpha: 0.8),
+        fontSize: 7,
+        fontWeight: FontWeight.w600,
+        letterSpacing: 1.0,
+        fontFamily: 'RobotoMono',
+      ),
+    );
+    _textPainter.layout();
+    _textPainter.paint(
+      canvas,
+      Offset(left + _vuWidth - _textPainter.width - 7, bottom - 18),
+    );
+
     _textPainter.text = const TextSpan(
       text: 'VU',
       style: TextStyle(
@@ -1333,20 +1534,36 @@ class StealGraph extends Component with HasGameReference<StealGame> {
         : 1.0 + (1.0 - beatSensitivity) * 0.5;
     final winningAlgoId = energy.winningAlgoId;
     final beatSource = energy.beatSource ?? '--';
+    final hintTitle = game.config.trackHintTitle;
+    final hintVariant = game.config.trackHintVariant;
+    final hintId = game.config.trackHintId;
+    final hintSeedSource = game.config.trackHintSeedSource.toUpperCase();
     final winningLabel =
         winningAlgoId != null &&
             winningAlgoId >= 0 &&
             winningAlgoId < _algoLabels.length
         ? _algoLabels[winningAlgoId].split('\n').first
         : '--';
+    String formatTelemetry(double? value, {int digits = 2}) =>
+        value == null ? '--' : value.toStringAsFixed(digits);
+    final hasHint = hintId.isNotEmpty;
+    final hintSummary = hasHint
+        ? 'META:${hintTitle.isNotEmpty ? hintTitle : hintId}  '
+              'VAR:${hintVariant.isEmpty ? "main" : hintVariant}  '
+              'SEED:$hintSeedSource'
+        : 'META:--  VAR:--  SEED:$hintSeedSource';
+    final trackingSummary =
+        'PH:${formatTelemetry(energy.beatPhase)}  '
+        'NXT:${formatTelemetry(energy.nextBeatMs, digits: 0)}  '
+        'GRID:${formatTelemetry(energy.beatGridConfidence)}';
 
     // Background panel
     final panelRect = RRect.fromRectAndRadius(
       Rect.fromLTWH(
         startX - panelPad,
-        baseY - maxH - 28,
+        baseY - maxH - 40,
         totalW + panelPad * 2,
-        maxH + labelH + 36,
+        maxH + labelH + 48,
       ),
       const Radius.circular(12),
     );
@@ -1374,9 +1591,9 @@ class StealGraph extends Component with HasGameReference<StealGame> {
           'THR:${energy.beatThreshold.toStringAsFixed(2)}  '
           'CNF:${energy.beatConfidence.toStringAsFixed(2)}  '
           'SRC:$beatSource  '
-          'MID:${energy.algoLevels.length > 1 ? energy.algoLevels[1].toStringAsFixed(2) : "---"}  '
           'WIN:$winningLabel  '
-          'LEN:${energy.algoLevels.length}',
+          'BPM:${formatTelemetry(energy.beatBpm, digits: 1)}  '
+          'IBI:${formatTelemetry(energy.beatIbiMs, digits: 0)}',
       style: TextStyle(
         color: Colors.white.withValues(alpha: 0.5),
         fontSize: 9,
@@ -1388,7 +1605,59 @@ class StealGraph extends Component with HasGameReference<StealGame> {
     _textPainter.layout();
     _textPainter.paint(
       canvas,
+      Offset(startX + (totalW - _textPainter.width) / 2, baseY - maxH - 32),
+    );
+
+    _textPainter.text = TextSpan(
+      text: '$hintSummary  $trackingSummary',
+      style: TextStyle(
+        color: hasHint
+            ? const Color(0xFF7FD8FF).withValues(alpha: 0.72)
+            : Colors.white.withValues(alpha: 0.35),
+        fontSize: 8,
+        fontWeight: FontWeight.w600,
+        letterSpacing: 1.2,
+        fontFamily: 'RobotoMono',
+      ),
+    );
+    _textPainter.layout(maxWidth: totalW + panelPad * 2 - 24);
+    _textPainter.paint(
+      canvas,
       Offset(startX + (totalW - _textPainter.width) / 2, baseY - maxH - 20),
+    );
+
+    final finalRatio = energy.beatThreshold > 0.0
+        ? (energy.beatScore / energy.beatThreshold).clamp(0.0, 2.0)
+        : 0.0;
+    final finalMeterLeft = startX - panelPad + 8;
+    final finalMeterTop = baseY - maxH - 8;
+    const finalMeterWidth = totalW + panelPad * 2 - 16;
+    final finalColor = beatSource == 'PCM'
+        ? const Color(0xFF55D9FF)
+        : const Color(0xFFFFB84D);
+
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromLTWH(finalMeterLeft, finalMeterTop, finalMeterWidth, 6),
+        const Radius.circular(3),
+      ),
+      Paint()
+        ..color = Colors.white.withValues(alpha: 0.06)
+        ..style = PaintingStyle.fill,
+    );
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromLTWH(
+          finalMeterLeft,
+          finalMeterTop,
+          finalMeterWidth * (finalRatio / 2.0),
+          6,
+        ),
+        const Radius.circular(3),
+      ),
+      Paint()
+        ..color = finalColor.withValues(alpha: 0.72)
+        ..style = PaintingStyle.fill,
     );
 
     // Threshold lines (drawn behind all bars) from live sensitivity math.

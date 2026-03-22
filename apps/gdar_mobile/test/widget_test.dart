@@ -55,6 +55,9 @@ class _FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
 
   @override
   bool get useNeumorphism => false;
+
+  @override
+  bool get isTv => false;
 }
 
 class _FakeShowListProvider extends ChangeNotifier implements ShowListProvider {
@@ -150,6 +153,18 @@ class _FakeAudioProvider extends ChangeNotifier implements AudioProvider {
 
   @override
   Stream<void> get playbackFocusRequestStream => const Stream.empty();
+
+  @override
+  void update(
+    ShowListProvider showListProvider,
+    SettingsProvider settingsProvider,
+    AudioCacheService audioCacheService,
+  ) {}
+
+  @override
+  void dispose() {
+    super.dispose();
+  }
 }
 
 class _FakeDeviceService extends ChangeNotifier implements DeviceService {

@@ -20,6 +20,7 @@ class ThemeProvider with ChangeNotifier {
   static const String _themeStyleKey = 'theme_style_preference';
   static const String _fruitColorOptionKey = 'fruit_color_option_preference';
   static const String _webFruitThemeInitKey = 'web_fruit_theme_init_v1';
+  static const String _webAndroidThemeInitKey = 'web_android_theme_init_v1';
 
   // 0 = System, 1 = Light, 2 = Dark
   int _themeModeIndex;
@@ -131,17 +132,33 @@ class ThemeProvider with ChangeNotifier {
       _checkAndResetFruitSettings();
     }
 
+    // One-time reset when switching TO android theme
+    if (style == ThemeStyle.android && wasFruit) {
+      _checkAndResetAndroidSettings();
+    }
+
     unawaited(_saveThemePreference());
     _syncPwaBranding();
     notifyListeners();
   }
 
-  Future<void> _checkAndResetFruitSettings() async {
-    final prefs = await SharedPreferences.getInstance();
+  void _checkAndResetFruitSettings() {
+    final prefs = _settingsProvider?.prefs;
+    if (prefs == null) return;
     if (!prefs.containsKey(_webFruitThemeInitKey) ||
         prefs.getBool(_webFruitThemeInitKey) == false) {
       _settingsProvider?.resetFruitFirstTimeSettings();
-      await prefs.setBool(_webFruitThemeInitKey, true);
+      prefs.setBool(_webFruitThemeInitKey, true);
+    }
+  }
+
+  void _checkAndResetAndroidSettings() {
+    final prefs = _settingsProvider?.prefs;
+    if (prefs == null) return;
+    if (!prefs.containsKey(_webAndroidThemeInitKey) ||
+        prefs.getBool(_webAndroidThemeInitKey) == false) {
+      _settingsProvider?.resetAndroidFirstTimeSettings();
+      prefs.setBool(_webAndroidThemeInitKey, true);
     }
   }
 

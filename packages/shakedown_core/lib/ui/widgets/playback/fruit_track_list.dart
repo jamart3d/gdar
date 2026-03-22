@@ -204,7 +204,7 @@ class _FruitTrackListState extends State<FruitTrackList> {
             child: FruitSurface(
               borderRadius: BorderRadius.zero,
               blur: stickyBlurSigma,
-              opacity: disableBlur ? 0.96 : 0.74,
+              opacity: disableBlur ? 0.96 : 0.88,
               child: Padding(
                 padding: EdgeInsets.fromLTRB(
                   24 * widget.scaleFactor,
@@ -225,7 +225,7 @@ class _FruitTrackListState extends State<FruitTrackList> {
             child: FruitSurface(
               borderRadius: BorderRadius.zero,
               blur: stickyBlurSigma,
-              opacity: disableBlur ? 0.96 : 0.74,
+              opacity: disableBlur ? 0.96 : 0.88,
               child: Padding(
                 padding: EdgeInsets.fromLTRB(
                   24 * widget.scaleFactor,

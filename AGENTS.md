@@ -83,4 +83,5 @@ To maintain "Strong" agentic behavior and zero human friction, the following pro
 * **Command Syntax Verification:** Before executing primary orchestration tools (Melos, Firebase, Flutter build) for the first time in a session, the agent MUST verify CLI flag signatures using `[tool] --help` silently.
 * **Auto-Run Discipline:** Read-only discovery commands (ls, cat, git status, file listings) MUST always be executed with `SafeToAutoRun: true` in accordance with Rule 6 to prevent unnecessary human confirmation prompts.
 * **Anti-Deflection Rule:** When an agentic failure occurs (syntax error, discovery lag), the agent MUST prioritize immediate structural self-correction over "explanatory analogies."
+* **`.agent/appdata` Is Reserved:** Do NOT recreate, write to, or redirect `APPDATA`, `LOCALAPPDATA`, Pub cache, Dart cache, Flutter cache, or analysis-server state into `.agent/appdata`. If tooling needs writable external cache/state, use escalation or another user-approved location instead.
 

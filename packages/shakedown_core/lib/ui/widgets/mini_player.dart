@@ -11,6 +11,7 @@ import 'package:shakedown_core/utils/font_layout_config.dart';
 import 'package:shakedown_core/ui/styles/app_typography.dart';
 import 'package:shakedown_core/utils/app_haptics.dart';
 import 'package:shakedown_core/services/device_service.dart';
+import 'package:shakedown_core/providers/theme_provider.dart';
 import 'package:shakedown_core/utils/color_generator.dart';
 
 class MiniPlayer extends StatefulWidget {
@@ -55,7 +56,12 @@ class _MiniPlayerState extends State<MiniPlayer> {
         ? Colors.black
         : colorScheme.surfaceContainerHigh;
 
-    if (!isTrueBlackMode && settingsProvider.highlightCurrentShowCard) {
+    final isFruit =
+        context.watch<ThemeProvider?>()?.themeStyle == ThemeStyle.fruit;
+
+    if (!isFruit &&
+        !isTrueBlackMode &&
+        settingsProvider.highlightCurrentShowCard) {
       String seed = currentShow.name;
       if (currentShow.sources.length > 1) {
         seed = currentSource.id;

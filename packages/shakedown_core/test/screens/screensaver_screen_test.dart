@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 import 'package:shakedown_core/models/show.dart';
+import 'package:shakedown_core/models/song_structure_hints.dart';
 import 'package:shakedown_core/models/source.dart';
 import 'package:shakedown_core/models/track.dart';
 import 'package:shakedown_core/providers/audio_provider.dart';
@@ -66,6 +67,9 @@ class FakeDeviceService extends ChangeNotifier implements DeviceService {
 }
 
 class FakeAudioProvider extends ChangeNotifier implements AudioProvider {
+  FakeAudioProvider({this.trackTitle = 'Track'});
+
+  final String trackTitle;
   final _audioPlayer = FakeScreensaverAudioPlayer();
 
   @override
@@ -80,7 +84,7 @@ class FakeAudioProvider extends ChangeNotifier implements AudioProvider {
   @override
   Track? get currentTrack => Track(
     trackNumber: 1,
-    title: 'Track',
+    title: trackTitle,
     duration: 60,
     url: 'url',
     setName: 'Set 1',
@@ -130,15 +134,62 @@ void main() {
         .setMockMethodCallHandler(permissionChannel, null);
   });
 
-  Widget createTestableWidget({required Widget child}) {
+  Widget createTestableWidget({
+    required Widget child,
+    AudioProvider? audioOverride,
+  }) {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider<SettingsProvider>.value(value: settingsProvider),
-        ChangeNotifierProvider<AudioProvider>.value(value: audioProvider),
+        ChangeNotifierProvider<AudioProvider>.value(
+          value: audioOverride ?? audioProvider,
+        ),
         ChangeNotifierProvider<DeviceService>.value(value: deviceService),
         Provider<WakelockService>.value(value: wakelockService),
       ],
       child: MaterialApp(home: child),
+    );
+  }
+
+  SongStructureHintCatalog createHintCatalog() {
+    return const SongStructureHintCatalog(
+      version: 1,
+      kind: 'song_structure_hints',
+      entries: [
+        SongStructureHintEntry(
+          id: 'eyes_main',
+          title: 'Eyes of the World',
+          canonicalTitle: 'Eyes of the World',
+          variant: 'main',
+          aliases: ['Eyes'],
+          matchKeys: ['eyes', 'eyes_of_the_world'],
+          confidence: 0.9,
+          tempo: SongTempoHint(
+            bpmMin: 108,
+            bpmMax: 124,
+            feel: 'steady',
+            swing: 0.2,
+          ),
+          pulse: SongPulseHint(
+            beatsPerBar: 4,
+            subdivision: '8th',
+            beatStrength: 'medium',
+          ),
+          rhythm: SongRhythmHint(
+            density: 'medium',
+            transientProfile: 'mid_onsets',
+            notes: 'Test entry',
+          ),
+          sections: [],
+          detectorHints: SongDetectorHint(
+            preferPcm: true,
+            preferLowOnsets: false,
+            preferMidOnsets: true,
+            phaseLockStrength: 0.4,
+            refractoryBias: 'normal',
+          ),
+        ),
+      ],
     );
   }
 
@@ -165,6 +216,32 @@ void main() {
       );
       expect(visualizer.config.palette, 'psychedelic');
       expect(visualizer.config.flowSpeed, 1.0);
+      await tester.pump(const Duration(milliseconds: 600));
+      await tester.pumpWidget(const SizedBox.shrink());
+    });
+
+    testWidgets('passes matched song hint metadata into StealVisualizer', (
+      WidgetTester tester,
+    ) async {
+      final hintAudioProvider = FakeAudioProvider(trackTitle: 'Eyes');
+
+      await tester.pumpWidget(
+        createTestableWidget(
+          child: ScreensaverScreen(
+            songHintCatalogOverride: createHintCatalog(),
+          ),
+          audioOverride: hintAudioProvider,
+        ),
+      );
+      await tester.pump();
+
+      final visualizer = tester.widget<StealVisualizer>(
+        find.byType(StealVisualizer),
+      );
+      expect(visualizer.config.trackHintId, isNotEmpty);
+      expect(visualizer.config.trackHintTitle, 'Eyes of the World');
+      expect(visualizer.config.trackHintSeedSource, 'title');
+
       await tester.pump(const Duration(milliseconds: 600));
       await tester.pumpWidget(const SizedBox.shrink());
     });

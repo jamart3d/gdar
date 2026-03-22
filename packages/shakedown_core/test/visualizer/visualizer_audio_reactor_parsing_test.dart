@@ -22,6 +22,40 @@ void main() {
       final beatSource = rawBeatSource is String && rawBeatSource.isNotEmpty
           ? rawBeatSource
           : null;
+      double? parseOptionalDouble(
+        Object? raw, {
+        required double min,
+        required double max,
+      }) {
+        if (raw is! num) return null;
+        return raw.toDouble().clamp(min, max);
+      }
+
+      final beatBpm = parseOptionalDouble(
+        data['beatBpm'],
+        min: 0.0,
+        max: 400.0,
+      );
+      final beatIbiMs = parseOptionalDouble(
+        data['beatIbiMs'],
+        min: 0.0,
+        max: 5000.0,
+      );
+      final beatPhase = parseOptionalDouble(
+        data['beatPhase'],
+        min: 0.0,
+        max: 1.0,
+      );
+      final nextBeatMs = parseOptionalDouble(
+        data['nextBeatMs'],
+        min: 0.0,
+        max: 5000.0,
+      );
+      final beatGridConfidence = parseOptionalDouble(
+        data['beatGridConfidence'],
+        min: 0.0,
+        max: 1.0,
+      );
 
       List<double> bands;
       final rawBands = data['bands'];
@@ -72,6 +106,11 @@ void main() {
         beatThreshold: beatThreshold.clamp(0.0, 3.0),
         beatConfidence: beatConfidence.clamp(0.0, 1.0),
         beatSource: beatSource,
+        beatBpm: beatBpm,
+        beatIbiMs: beatIbiMs,
+        beatPhase: beatPhase,
+        nextBeatMs: nextBeatMs,
+        beatGridConfidence: beatGridConfidence,
         bands: bands,
         waveform: waveform,
         algoLevels: algoLevels,
@@ -164,6 +203,39 @@ void main() {
       expect(e.beatThreshold, 0.0);
       expect(e.beatConfidence, 1.0);
       expect(e.beatSource, 'PCM');
+    });
+
+    test('beat tracking telemetry parses and clamps correctly', () {
+      final e = parseEvent({
+        'bass': 0.5,
+        'mid': 0.3,
+        'treble': 0.2,
+        'overall': 0.3,
+        'beatBpm': 480.0,
+        'beatIbiMs': -10.0,
+        'beatPhase': 1.5,
+        'nextBeatMs': 6400.0,
+        'beatGridConfidence': -1.0,
+      });
+      expect(e.beatBpm, 400.0);
+      expect(e.beatIbiMs, 0.0);
+      expect(e.beatPhase, 1.0);
+      expect(e.nextBeatMs, 5000.0);
+      expect(e.beatGridConfidence, 0.0);
+    });
+
+    test('missing beat tracking telemetry stays null', () {
+      final e = parseEvent({
+        'bass': 0.5,
+        'mid': 0.3,
+        'treble': 0.2,
+        'overall': 0.3,
+      });
+      expect(e.beatBpm, isNull);
+      expect(e.beatIbiMs, isNull);
+      expect(e.beatPhase, isNull);
+      expect(e.nextBeatMs, isNull);
+      expect(e.beatGridConfidence, isNull);
     });
 
     test('beat telemetry fields parse and clamp correctly', () {

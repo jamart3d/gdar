@@ -125,6 +125,31 @@ class VisualizerAudioReactor implements AudioReactor {
       final beatSource = rawBeatSource is String && rawBeatSource.isNotEmpty
           ? rawBeatSource
           : null;
+      final beatBpm = _parseOptionalDouble(
+        data['beatBpm'],
+        min: 0.0,
+        max: 400.0,
+      );
+      final beatIbiMs = _parseOptionalDouble(
+        data['beatIbiMs'],
+        min: 0.0,
+        max: 5000.0,
+      );
+      final beatPhase = _parseOptionalDouble(
+        data['beatPhase'],
+        min: 0.0,
+        max: 1.0,
+      );
+      final nextBeatMs = _parseOptionalDouble(
+        data['nextBeatMs'],
+        min: 0.0,
+        max: 5000.0,
+      );
+      final beatGridConfidence = _parseOptionalDouble(
+        data['beatGridConfidence'],
+        min: 0.0,
+        max: 1.0,
+      );
 
       // Parse 8-band data if available, otherwise synthesise from 3-band
       List<double> bands;
@@ -208,6 +233,11 @@ class VisualizerAudioReactor implements AudioReactor {
           beatThreshold: beatThreshold.clamp(0.0, 3.0),
           beatConfidence: beatConfidence.clamp(0.0, 1.0),
           beatSource: beatSource,
+          beatBpm: beatBpm,
+          beatIbiMs: beatIbiMs,
+          beatPhase: beatPhase,
+          nextBeatMs: nextBeatMs,
+          beatGridConfidence: beatGridConfidence,
           bands: bands,
           waveform: waveform,
           waveformL: waveformL,
@@ -225,6 +255,15 @@ class VisualizerAudioReactor implements AudioReactor {
 
   void _handleError(dynamic error) {
     _safeAdd(const AudioEnergy.zero());
+  }
+
+  double? _parseOptionalDouble(
+    Object? raw, {
+    required double min,
+    required double max,
+  }) {
+    if (raw is! num) return null;
+    return raw.toDouble().clamp(min, max);
   }
 
   /// Request AudioPlaybackCapture permission (shows system dialog on TV).

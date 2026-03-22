@@ -34,6 +34,8 @@ screenshots/
 .pub/
 **/build/
 /coverage/
+.agent/appdata/
+.agent/gradle/
 
 # Symbolication related
 app.*.symbols
@@ -100,6 +102,5 @@ packages/shakedown_core/build/
 # Then, explicitly ensure the test directory is NOT ignored
 !packages/shakedown_core/test/
 !packages/shakedown_core/test/**
-
 
 

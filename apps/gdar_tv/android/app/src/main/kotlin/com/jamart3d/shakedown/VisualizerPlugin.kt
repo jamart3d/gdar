@@ -63,6 +63,7 @@ class VisualizerPlugin(
 
         // Signal history sizes for adaptive beat thresholds.
         private const val FLUX_HISTORY_SIZE = 20      // ~1s at 20 Hz
+        private const val TRACKING_HISTORY_SIZE = 8
 
         // Number of beat-detection algorithms run in parallel (for beat_debug mode).
         private const val NUM_BEAT_ALGOS = 6
@@ -124,6 +125,9 @@ class VisualizerPlugin(
     private var pcmBaselineVal = 0.0
     private var pcmFloorVal    = 0.0
     private var pcmLastBeatMs  = 0L
+    private val trackedBeatIntervalsMs = ArrayDeque<Double>(TRACKING_HISTORY_SIZE)
+    private var trackedIbiMs = 0.0
+    private var trackedLastBeatMs = 0L
 
     // Independent last-beat timestamps so algorithms don't suppress each other.
     private val lastBeatMs = LongArray(NUM_BEAT_ALGOS)
@@ -229,6 +233,9 @@ class VisualizerPlugin(
             pcmBaselineVal = 0.0
             pcmFloorVal = 0.0
             pcmLastBeatMs = 0L
+            trackedBeatIntervalsMs.clear()
+            trackedIbiMs = 0.0
+            trackedLastBeatMs = 0L
 
             visualizer?.enabled = true
             isRunning = true
@@ -439,6 +446,17 @@ class VisualizerPlugin(
             return history.average()
         }
 
+        fun median(values: List<Double>): Double {
+            if (values.isEmpty()) return 0.0
+            val sorted = values.sorted()
+            val mid = sorted.size / 2
+            return if (sorted.size % 2 == 0) {
+                (sorted[mid - 1] + sorted[mid]) / 2.0
+            } else {
+                sorted[mid]
+            }
+        }
+
         // Helper: fire when signal spikes above rolling mean × multiplier.
         fun normBeat(signal: Double, history: ArrayDeque<Double>, multiplier: Double, algoIdx: Int): Boolean {
             if (history.size < 10 || signal < SILENCE_THRESHOLD) return false
@@ -561,6 +579,73 @@ class VisualizerPlugin(
         val finalBeatSource = if (preferPcmBeat) "PCM" else "VIS"
         val isBeat = if (preferPcmBeat) pcmIsBeat else hybridIsBeat
 
+        if (isBeat) {
+            if (trackedLastBeatMs > 0L) {
+                val intervalMs = (nowMs - trackedLastBeatMs).toDouble()
+                when {
+                    intervalMs in 250.0..1500.0 -> {
+                        trackedBeatIntervalsMs.pushCapped(intervalMs, TRACKING_HISTORY_SIZE)
+                        trackedIbiMs =
+                            if (trackedIbiMs <= 0.0) intervalMs
+                            else trackedIbiMs * 0.70 + intervalMs * 0.30
+                    }
+                    intervalMs > 1500.0 -> {
+                        trackedBeatIntervalsMs.clear()
+                        trackedIbiMs = 0.0
+                    }
+                }
+            }
+            trackedLastBeatMs = nowMs
+        }
+
+        val trackingAgeMs =
+            if (trackedLastBeatMs > 0L) (nowMs - trackedLastBeatMs).coerceAtLeast(0L).toDouble()
+            else Double.POSITIVE_INFINITY
+        val trackingMedianIbi =
+            if (trackedBeatIntervalsMs.isNotEmpty()) median(trackedBeatIntervalsMs.toList())
+            else 0.0
+        if (trackingMedianIbi > 0.0) {
+            trackedIbiMs =
+                if (trackedIbiMs <= 0.0) trackingMedianIbi
+                else trackedIbiMs * 0.80 + trackingMedianIbi * 0.20
+        }
+
+        var trackedBeatBpm: Double? = null
+        var trackedBeatIbiMs: Double? = null
+        var trackedBeatPhase: Double? = null
+        var trackedNextBeatMs: Double? = null
+        var trackedGridConfidence: Double? = null
+        if (trackedBeatIntervalsMs.size >= 3 &&
+            trackedIbiMs > 0.0 &&
+            trackedLastBeatMs > 0L &&
+            trackingAgeMs <= trackedIbiMs * 3.0
+        ) {
+            val intervalValues = trackedBeatIntervalsMs.toList()
+            val intervalMean = intervalValues.average()
+            val variance = intervalValues.fold(0.0) { acc, value ->
+                val delta = value - intervalMean
+                acc + delta * delta
+            } / intervalValues.size.toDouble()
+            val intervalStdDev = sqrt(variance)
+            val jitterRatio = if (intervalMean > 0.0) intervalStdDev / intervalMean else 1.0
+            val stability = (1.0 - (jitterRatio / 0.18)).coerceIn(0.0, 1.0)
+            val warmup =
+                (intervalValues.size / TRACKING_HISTORY_SIZE.toDouble()).coerceIn(0.0, 1.0)
+            val freshness =
+                (1.0 - ((trackingAgeMs / (trackedIbiMs * 2.0)) - 0.5)).coerceIn(0.0, 1.0)
+            val gridConfidence = (stability * warmup * freshness).coerceIn(0.0, 1.0)
+
+            trackedBeatBpm = (60000.0 / trackedIbiMs).coerceIn(0.0, 400.0)
+            trackedBeatIbiMs = trackedIbiMs.coerceIn(0.0, 5000.0)
+            trackedGridConfidence = gridConfidence
+
+            if (gridConfidence > 0.0) {
+                val cycleOffsetMs = trackingAgeMs % trackedIbiMs
+                trackedBeatPhase = (cycleOffsetMs / trackedIbiMs).coerceIn(0.0, 1.0)
+                trackedNextBeatMs = (trackedIbiMs - cycleOffsetMs).coerceIn(0.0, 5000.0)
+            }
+        }
+
         val beats = BooleanArray(NUM_BEAT_ALGOS)
         // 0 BASS   – pre-boost bass vs 20-frame mean
         beats[0] = normBeat(sig0, bassHistory,   adaptiveMultiplier, 0)
@@ -660,6 +745,11 @@ class VisualizerPlugin(
             "beatThreshold" to finalBeatThreshold,
             "beatConfidence" to finalBeatConfidence,
             "beatSource" to finalBeatSource,
+            "beatBpm" to trackedBeatBpm,
+            "beatIbiMs" to trackedBeatIbiMs,
+            "beatPhase" to trackedBeatPhase,
+            "nextBeatMs" to trackedNextBeatMs,
+            "beatGridConfidence" to trackedGridConfidence,
             "bands" to finalBands.toList(),
             "waveform" to pendingWaveform,
             "waveformL" to stereoCapture.waveformL, // real L PCM or empty

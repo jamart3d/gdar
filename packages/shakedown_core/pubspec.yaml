@@ -52,6 +52,7 @@ dev_dependencies:
 flutter:
   assets:
     - assets/data/output.optimized_src.json
+    - assets/data/audio/grateful_dead_song_structure_hints.json
     - assets/images/
 
   shaders:

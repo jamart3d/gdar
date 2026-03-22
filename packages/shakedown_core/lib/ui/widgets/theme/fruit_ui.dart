@@ -46,10 +46,13 @@ class FruitSurface extends StatelessWidget {
         ? Colors.black
         : Colors.white;
 
+    final glassEnabled = isFruit && settings.fruitEnableLiquidGlass;
+
     final content = Container(
       padding: padding,
       decoration: BoxDecoration(
         borderRadius: borderRadius,
+        color: glassEnabled ? null : surfaceColor.withValues(alpha: opacity),
         border: showBorder
             ? Border.all(
                 color: surfaceColor.withValues(alpha: 0.12),
@@ -61,7 +64,7 @@ class FruitSurface extends StatelessWidget {
     );
 
     return LiquidGlassWrapper(
-      enabled: isFruit && settings.fruitEnableLiquidGlass,
+      enabled: glassEnabled,
       borderRadius: borderRadius,
       blur: blur,
       opacity: opacity,

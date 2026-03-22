@@ -151,6 +151,8 @@ file still mixes completed work with future ideas.
    - `vu` mode already consumes real stereo RMS from `waveformL` /
      `waveformR`.
    - Range labels already show `ST` for real stereo and `LO` / `HI` for fake.
+   - The panel now also shows digital `SIG` readouts and the active drive
+     factor.
 
 5. The "gate it behind mode" recommendation is now partially implemented.
    - `ScreensaverScreen` now auto-requests stereo capture for reactive TV
@@ -160,13 +162,15 @@ file still mixes completed work with future ideas.
    - That keeps the PCM beat detector available across graph modes while the
      screensaver is active.
 
-6. The stereo path currently improves VU only.
-   - Scope still uses `energy.waveform` from the mono Visualizer waveform path.
+6. The stereo path now improves VU and part of the scope path.
+   - Standalone `scope` still uses `energy.waveform` from the mono Visualizer
+     waveform path.
    - As of 2026-03-21, stereo PCM is now also used by a first-pass PCM beat
      detector when capture is active.
    - That detector now uses raw-buffer mono RMS, fast/slow envelope onset, and
      positive flux computed inside `StereoCapture`.
-   - Stereo PCM is not yet used for scope rendering.
+   - `corner_only` can now render stacked stereo scope lanes from
+     `waveformL` / `waveformR` when real stereo capture is active.
 
 7. The feature is now reachable in normal screensaver flow.
    - `ScreensaverScreen` now calls

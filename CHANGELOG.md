@@ -6,6 +6,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.3.5+215] - 2026-03-22
+
+### Added
+- **Core**: Introduced `SongStructureHintService` and models for parsing track-specific metadata.
+
+### Fixed
+- **Testing**: Resolved `NoSuchMethodError` in `gdar_mobile` widget tests by hardening fakes.
+- **Testing**: Fixed monorepo asset path resolution in `shakedown_core` service tests.
+
 ## [1.3.4+214] - 2026-03-21
 
 ### Added

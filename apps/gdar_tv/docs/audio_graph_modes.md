@@ -106,11 +106,13 @@ That means:
 - threshold guides now track live `beatSensitivity`
 - the panel can show a current winning algorithm
 - the header can show final hybrid `beatScore`, `beatThreshold`, and `beatConfidence`
+- the panel can now show matched song-hint metadata as `META`, `VAR`, and `SEED`
 
 But:
 
 - the final `isBeat` now comes from either the PCM detector or the Visualizer
   hybrid score, not directly from one of the six comparison bars
+- metadata title hints shown in `beat_debug` are display-only right now
 - so `beat_debug` is best read as per-algorithm telemetry plus a summary of the
   final hybrid decision, not as a one-to-one view of the final beat logic
 
@@ -140,9 +142,12 @@ It now has two paths:
    - uses `AudioPlaybackCapture` via `StereoCapture.kt`
    - computes RMS independently for `waveformL` and `waveformR`
    - shows `ST` range labels in the VU panel
+   - shows `SIG` digital readouts for left and right input level
+   - shows the active VU drive factor (`x2.5` for real stereo)
 2. Fallback path:
    - splits FFT bands `0-3` to left and `4-7` to right
    - shows `LO` and `HI` range labels
+   - shows the fallback drive factor (`x1.5`)
 
 ### Layout
 
@@ -180,14 +185,16 @@ Needle color tracks the zone, and a peak-hold dot shows the recent maximum.
 
 ### Source path
 
-The scope currently uses `energy.waveform`, which comes from Android Visualizer
-waveform capture through `onWaveFormDataCapture`.
+Standalone `scope` mode currently uses `energy.waveform`, which comes from
+Android Visualizer waveform capture through `onWaveFormDataCapture`.
 
-It does not currently use `StereoCapture.waveformL` or `waveformR`.
+In `corner_only`, the scope can now switch to a stereo panel view when real
+`waveformL` and `waveformR` are present. That view renders separate L and R
+lanes plus simple digital level readouts.
 
 ### Real PCM path
 
-When Visualizer waveform capture is not flat, the scope renders:
+When Visualizer waveform capture is not flat, the standalone mono scope renders:
 
 - `OSC PCM 256pt`
 - downsampled mono waveform
@@ -195,7 +202,7 @@ When Visualizer waveform capture is not flat, the scope renders:
 
 ### Fallback path
 
-When Visualizer waveform data is near-flat, the scope falls back to an
+When usable mono waveform data is near-flat, the standalone scope falls back to an
 FFT-synthesized waveform derived from the 8 graph bands.
 
 The label shows:
@@ -230,6 +237,9 @@ Approximate layout:
 
 The scope is right-anchored so it mirrors the left graph panel visually.
 
+When real stereo PCM is active, the right-hand scope panel can split into
+stacked `L` and `R` traces instead of a single mono trace.
+
 ---
 
 ## Android Capture Notes
@@ -249,8 +259,9 @@ Stereo VU support is now implemented separately through
 - `apps/gdar_tv/android/app/src/main/kotlin/com/jamart3d/shakedown/StereoCapture.kt`
 - `apps/gdar_tv/android/app/src/main/kotlin/com/jamart3d/shakedown/MainActivity.kt`
 
-This path is used for VU meters when permission is granted, but not yet for
-scope rendering or final beat detection.
+This path is used for VU meters when permission is granted, for first-pass PCM
+beat timing, and now for stereo scope lanes in `corner_only` when L/R waveforms
+are available.
 
 In current TV flow, `ScreensaverScreen` now requests stereo capture
 automatically for reactive TV screensaver sessions, and stops it when the
@@ -296,4 +307,5 @@ The safest interpretation of the current system is:
 1. Add `beat_debug`-specific automated assertions for winning algorithm, header telemetry, and threshold guide behavior.
 2. Tune the hybrid detector on real TV hardware across quiet, dense, and live-mix material.
 3. Consider a stronger robust baseline such as median/MAD if EMA-plus-floor still chatters on live recordings.
-4. Move final beat timing to PCM when stereo capture is available.
+4. Extend `beat_debug` toward structured tracking telemetry: estimated `BPM`, `IBI`, phase / next-beat window, pulse-grid confidence, and optional bar position.
+5. If metadata seeding is attempted later, use track title only as a startup hint for tempo / pulse style and let live audio override quickly.

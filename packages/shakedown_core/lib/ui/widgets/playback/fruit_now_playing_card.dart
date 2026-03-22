@@ -39,19 +39,20 @@ class FruitNowPlayingCard extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
 
     final isSimple = settingsProvider.performanceMode;
+    final hasGlass = settingsProvider.fruitEnableLiquidGlass && !isSimple;
     final showCompactHud = kIsWeb && settingsProvider.showDevAudioHud;
     final horizontalPadding = showCompactHud ? 12.0 : 16.0;
 
     return FruitSurface(
       borderRadius: BorderRadius.circular(16.0 * scaleFactor),
       blur: isSimple ? FruitTokens.blurSoft : 18.0,
-      opacity: isSimple ? 0.96 : 0.78,
+      opacity: isSimple ? 0.96 : 0.88,
       child: Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16.0 * scaleFactor),
-          color: isSimple
-              ? colorScheme.surfaceContainer
-              : colorScheme.surfaceContainerHighest.withValues(alpha: 0.16),
+          color: hasGlass
+              ? colorScheme.surfaceContainerHighest.withValues(alpha: 0.08)
+              : colorScheme.surfaceContainer,
         ),
         padding: EdgeInsets.symmetric(
           horizontal: horizontalPadding * scaleFactor,

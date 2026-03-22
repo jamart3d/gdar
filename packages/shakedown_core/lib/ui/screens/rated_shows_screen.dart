@@ -17,6 +17,7 @@ import 'package:shakedown_core/ui/widgets/src_badge.dart';
 import 'package:hive_ce_flutter/hive_flutter.dart';
 import 'package:shakedown_core/models/rating.dart';
 import 'package:shakedown_core/utils/font_layout_config.dart';
+import 'package:shakedown_core/providers/theme_provider.dart';
 import 'package:shakedown_core/utils/color_generator.dart';
 
 class RatedShowsScreen extends StatelessWidget {
@@ -43,7 +44,11 @@ class RatedShowsScreen extends StatelessWidget {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     final isTrueBlackMode = isDarkMode && settingsProvider.useTrueBlack;
 
-    if (!isTrueBlackMode &&
+    final isFruit =
+        context.watch<ThemeProvider>().themeStyle == ThemeStyle.fruit;
+
+    if (!isFruit &&
+        !isTrueBlackMode &&
         settingsProvider.highlightCurrentShowCard &&
         audioProvider.currentShow != null) {
       String seed = audioProvider.currentShow!.name;

@@ -26,7 +26,11 @@ class AboutScreen extends StatelessWidget {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     final isTrueBlackMode = isDarkMode && settingsProvider.useTrueBlack;
 
-    if (!isTrueBlackMode &&
+    final isFruit =
+        context.watch<ThemeProvider>().themeStyle == ThemeStyle.fruit;
+
+    if (!isFruit &&
+        !isTrueBlackMode &&
         settingsProvider.highlightCurrentShowCard &&
         audioProvider.currentShow != null) {
       String seed = audioProvider.currentShow!.name;

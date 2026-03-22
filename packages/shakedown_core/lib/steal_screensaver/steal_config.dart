@@ -23,6 +23,10 @@ class StealConfig {
   final String bannerText;
   final String venue;
   final String date;
+  final String trackHintId;
+  final String trackHintTitle;
+  final String trackHintVariant;
+  final String trackHintSeedSource;
   final bool paletteCycle;
   final double paletteTransitionSpeed;
   final double innerRingScale;
@@ -188,6 +192,10 @@ class StealConfig {
     this.bannerText = '',
     this.venue = '',
     this.date = '',
+    this.trackHintId = '',
+    this.trackHintTitle = '',
+    this.trackHintVariant = '',
+    this.trackHintSeedSource = 'audio',
     this.paletteCycle = true,
     this.paletteTransitionSpeed = 5.0,
     this.innerRingScale = 1.0,
@@ -259,6 +267,10 @@ class StealConfig {
       bannerText: map['bannerText'] as String? ?? '',
       venue: map['venue'] as String? ?? '',
       date: map['date'] as String? ?? '',
+      trackHintId: map['trackHintId'] as String? ?? '',
+      trackHintTitle: map['trackHintTitle'] as String? ?? '',
+      trackHintVariant: map['trackHintVariant'] as String? ?? '',
+      trackHintSeedSource: map['trackHintSeedSource'] as String? ?? 'audio',
       paletteCycle: map['paletteCycle'] as bool? ?? true,
       paletteTransitionSpeed:
           (map['paletteTransitionSpeed'] as num?)?.toDouble() ?? 5.0,
@@ -339,6 +351,10 @@ class StealConfig {
       'bannerText': bannerText,
       'venue': venue,
       'date': date,
+      'trackHintId': trackHintId,
+      'trackHintTitle': trackHintTitle,
+      'trackHintVariant': trackHintVariant,
+      'trackHintSeedSource': trackHintSeedSource,
       'paletteCycle': paletteCycle,
       'paletteTransitionSpeed': paletteTransitionSpeed,
       'innerRingScale': innerRingScale,
@@ -406,6 +422,10 @@ class StealConfig {
     String? bannerText,
     String? venue,
     String? date,
+    String? trackHintId,
+    String? trackHintTitle,
+    String? trackHintVariant,
+    String? trackHintSeedSource,
     bool? paletteCycle,
     double? paletteTransitionSpeed,
     double? innerRingScale,
@@ -473,6 +493,10 @@ class StealConfig {
       bannerText: bannerText ?? this.bannerText,
       venue: venue ?? this.venue,
       date: date ?? this.date,
+      trackHintId: trackHintId ?? this.trackHintId,
+      trackHintTitle: trackHintTitle ?? this.trackHintTitle,
+      trackHintVariant: trackHintVariant ?? this.trackHintVariant,
+      trackHintSeedSource: trackHintSeedSource ?? this.trackHintSeedSource,
       paletteCycle: paletteCycle ?? this.paletteCycle,
       paletteTransitionSpeed:
           paletteTransitionSpeed ?? this.paletteTransitionSpeed,
@@ -549,6 +573,10 @@ class StealConfig {
         bannerText == other.bannerText &&
         venue == other.venue &&
         date == other.date &&
+        trackHintId == other.trackHintId &&
+        trackHintTitle == other.trackHintTitle &&
+        trackHintVariant == other.trackHintVariant &&
+        trackHintSeedSource == other.trackHintSeedSource &&
         paletteCycle == other.paletteCycle &&
         paletteTransitionSpeed == other.paletteTransitionSpeed &&
         innerRingScale == other.innerRingScale &&
@@ -617,6 +645,10 @@ class StealConfig {
     bannerText,
     venue,
     date,
+    trackHintId,
+    trackHintTitle,
+    trackHintVariant,
+    trackHintSeedSource,
     paletteCycle,
     paletteTransitionSpeed,
     innerRingScale,

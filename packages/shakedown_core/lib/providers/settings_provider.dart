@@ -38,6 +38,7 @@ enum WebEngineProfile {
 
 class SettingsProvider with ChangeNotifier {
   final SharedPreferences _prefs;
+  SharedPreferences get prefs => _prefs;
   final bool isTv;
 
   // Preference Keys
@@ -687,6 +688,28 @@ class SettingsProvider with ChangeNotifier {
     'com.jamart3d.shakedown/ui_scale',
   );
 
+  void resetAndroidFirstTimeSettings() {
+    // Rock Salt font
+    _appFont = 'rock_salt';
+    _prefs.setString(_appFontKey, 'rock_salt');
+
+    final lowPower = kIsWeb && isLikelyLowPowerWebDevice();
+
+    if (lowPower) {
+      // Low-power: performance mode on, no glow/RGB
+      _performanceMode = true;
+      _prefs.setBool(_performanceModeKey, true);
+    } else {
+      // Normal: show effects
+      _performanceMode = false;
+      _prefs.setBool(_performanceModeKey, false);
+      setGlowMode(25);
+      setHighlightPlayingWithRgb(true);
+    }
+
+    notifyListeners();
+  }
+
   void resetFruitFirstTimeSettings() {
     // Disable dense list for Fruit
     _fruitDenseList = false;
@@ -703,6 +726,12 @@ class SettingsProvider with ChangeNotifier {
     _prefs.setBool(_oilBannerGlowKey, false);
     setGlowMode(0);
     setHighlightPlayingWithRgb(false);
+
+    // Low-power: ensure liquid glass is off
+    if (kIsWeb && isLikelyLowPowerWebDevice()) {
+      _fruitEnableLiquidGlass = false;
+      _prefs.setBool(_fruitEnableLiquidGlassKey, false);
+    }
 
     notifyListeners();
   }
