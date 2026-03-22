@@ -28,29 +28,7 @@ class FruitTooltip extends StatefulWidget {
 class _FruitTooltipState extends State<FruitTooltip> {
   OverlayEntry? _entry;
   Timer? _timer;
-  Timer? _exitDebounce;
   bool _hovering = false;
-
-  // Stable callback references created once — prevents RenderMouseRegion from
-  // calling _updateAnnotations() on every build() when new lambda objects would
-  // otherwise compare as unequal and trigger MouseTracker re-evaluation.
-  late final void Function(PointerEnterEvent) _onMouseEnter;
-  late final void Function(PointerExitEvent) _onMouseExit;
-  late final void Function(bool) _onShowFocusHighlight;
-
-  @override
-  void initState() {
-    super.initState();
-    _onMouseEnter = (_) => _scheduleShow();
-    _onMouseExit = (_) => _cancelShow();
-    _onShowFocusHighlight = (value) {
-      if (value) {
-        _scheduleShow();
-      } else {
-        _cancelShow();
-      }
-    };
-  }
 
   void _showTooltip() {
     if (_entry != null || widget.message.isEmpty) return;
@@ -156,38 +134,21 @@ class _FruitTooltipState extends State<FruitTooltip> {
   void _hideTooltip() {
     _timer?.cancel();
     _timer = null;
-    _exitDebounce?.cancel();
-    _exitDebounce = null;
     _entry?.remove();
     _entry = null;
   }
 
   void _scheduleShow() {
-    // Cancel any pending hide.
-    _exitDebounce?.cancel();
-    _exitDebounce = null;
+    _timer?.cancel();
     _hovering = true;
-    // Don't restart the show timer if one is already running — this means a
-    // spurious exit+enter pair during a rebuild won't reset the 500ms delay
-    // back to zero; the tooltip appears at 500ms from the *first* enter.
-    _timer ??= Timer(widget.showDelay, _showTooltip);
+    _timer = Timer(widget.showDelay, _showTooltip);
   }
 
   void _cancelShow() {
+    _timer?.cancel();
+    _timer = null;
     _hovering = false;
-    // Debounce the hide decision. Flutter Web fires spurious exit events during
-    // compositing updates (AnimatedContainers, layout passes). We only act if
-    // the mouse is still outside when the debounce fires.
-    // Use ??= so multiple rapid exits don't reset the timer — only the first
-    // exit starts it. Any re-enter cancels it via _scheduleShow.
-    _exitDebounce ??= Timer(const Duration(milliseconds: 300), () {
-      _exitDebounce = null;
-      if (!_hovering) {
-        _timer?.cancel();
-        _timer = null;
-        _hideTooltip();
-      }
-    });
+    _hideTooltip();
   }
 
   @override
@@ -206,11 +167,17 @@ class _FruitTooltipState extends State<FruitTooltip> {
     }
 
     return MouseRegion(
-      onEnter: _onMouseEnter,
-      onExit: _onMouseExit,
+      onEnter: (_) => _scheduleShow(),
+      onExit: (_) => _cancelShow(),
       cursor: SystemMouseCursors.click,
       child: FocusableActionDetector(
-        onShowFocusHighlight: _onShowFocusHighlight,
+        onShowFocusHighlight: (value) {
+          if (value) {
+            _scheduleShow();
+          } else {
+            _cancelShow();
+          }
+        },
         shortcuts: const <ShortcutActivator, Intent>{
           SingleActivator(LogicalKeyboardKey.enter): ActivateIntent(),
           SingleActivator(LogicalKeyboardKey.space): ActivateIntent(),
