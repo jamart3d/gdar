@@ -57,7 +57,11 @@ It currently runs 6 detector variants on peak-normalized 3-band signals:
 - `4 EMA` - normalized mid vs EMA background
 - `5 TREB` - normalized treble vs rolling mean
 
-The final `isBeat` currently comes from `MID`, not from the EMA variant.
+The final `isBeat` now comes from a hybrid onset score built from:
+
+- low-band onset
+- mid-band onset
+- positive broadband flux
 
 ### Thresholds
 
@@ -79,24 +83,30 @@ The EMA variant uses a different threshold:
 sig1 > midEmaVal * (1.0 + (1.0 - beatSensitivity) * 0.5)
 ```
 
-### Important caveat: `beat_debug` is still diagnostic
+The final hybrid beat path now uses:
 
-The `beat_debug` panel currently shows real `beatAlgos` flags, but its
-continuous `algoLevels` bars are still placeholder diagnostic values:
+- an EMA-style baseline on the fused hybrid score
+- a small additive floor to suppress near-silence chatter
+- the same fixed refractory gate for trigger spacing
 
-```text
-algoLevels = overall * 3.0
-```
+### Important caveat: `beat_debug` is now more honest, but still not the full detector story
+
+The `beat_debug` panel now shows real per-algorithm score values and live
+threshold guides.
 
 That means:
 
-- `LEN:6` proves the payload reaches Flutter
-- bar flashing proves detector booleans are flowing through
-- continuous bar height does not yet prove real per-algorithm strength
+- `algoLevels` are now real score ratios, not placeholders
+- threshold guides now track live `beatSensitivity`
+- the panel can show a current winning algorithm
+- the header can show final hybrid `beatScore`, `beatThreshold`, and `beatConfidence`
 
-Until `algoLevels` is replaced with real detector telemetry, `beat_debug`
-should be treated as a transport/debug screen rather than a final calibration
-tool.
+But:
+
+- the final `isBeat` now comes from the hybrid score, not directly from one of
+  the six comparison bars
+- so `beat_debug` is best read as per-algorithm telemetry plus a summary of the
+  final hybrid decision, not as a one-to-one view of the final beat logic
 
 ### Known limitations
 
@@ -104,10 +114,11 @@ tool.
   onset timing quality.
 - The detector still relies on peak-normalized amplitudes, which are good for
   graph rendering but weaker for onset contrast.
-- `bassBoost` is currently applied before bass normalization, so user gain can
-  still affect bass-oriented detector behavior.
-- The current Flutter `beat_debug` labels are drifted from the native detector
-  order and need cleanup.
+- The final hybrid score still comes from Visualizer-derived signals, not PCM,
+  so timing and dynamic contrast are still capped by the platform feed.
+- `beat_debug` is now useful for detector tuning, but it still shows
+  per-algorithm diagnostics plus a summary header, not a full one-panel view of
+  every hybrid internal.
 
 ---
 
@@ -244,9 +255,9 @@ These are pushed live from Flutter through `updateConfig`.
 | Knob | Range | Effective default | Effect |
 |---|---|---|---|
 | `peakDecay` | `0.990-0.999` | `0.992` from settings | Peak normalization decay speed |
-| `bassBoost` | `1.0-3.0` | `1.6` from settings | Boosts bass before normalization; currently affects bass detector inputs too |
+| `bassBoost` | `1.0-3.0` | `1.6` from settings | Boosts visible bass only; native beat detection stays on pre-boost bass energy |
 | `reactivityStrength` | `0.5-2.0` | `1.1` from settings | Global scale on visible band outputs |
-| `beatSensitivity` | `0.0-1.0` | `0.80` from settings | Controls mean-threshold detector variants and the EMA variant |
+| `beatSensitivity` | `0.0-1.0` | `0.80` from settings | Controls mean-threshold variants, the EMA variant, and the hybrid detector threshold ratio/floor |
 
 Notes:
 
@@ -263,14 +274,14 @@ The safest interpretation of the current system is:
 - graph modes are implemented and mostly accurate
 - VU mode now supports real stereo with fallback
 - scope fallback is implemented and useful
-- beat detection is present but still weak
-- `beat_debug` is useful for connectivity checks, not final detector tuning
+- beat detection is now materially better instrumented and partially stabilized
+- real-device tuning is still required before calling beat locking production-ready
 
 ---
 
 ## Recommended Next Cleanup
 
-1. Replace placeholder `algoLevels` with real detector telemetry.
-2. Align `beat_debug` labels with native detector order.
-3. Update on-screen threshold guides to match current math.
-4. Move beat detection toward a hybrid or PCM-backed detector.
+1. Add `beat_debug`-specific automated assertions for winning algorithm, header telemetry, and threshold guide behavior.
+2. Tune the hybrid detector on real TV hardware across quiet, dense, and live-mix material.
+3. Consider a stronger robust baseline such as median/MAD if EMA-plus-floor still chatters on live recordings.
+4. Move final beat timing to PCM when stereo capture is available.

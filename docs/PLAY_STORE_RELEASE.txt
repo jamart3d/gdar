@@ -1,3 +1,9 @@
+What's new in v1.3.3+213
+- Testing: Resolved text stream corruption and hardened unit test isolation.
+- Quality: Fixed assertion failures related to new default audio reactivity states, ensuring a 100% clean test pass.
+
+---
+
 What's new in v1.3.2+212
 - TV Enhancement: Finalized infrastructure for true stereo L/R VU meters via AudioPlaybackCapture (API 29+).
 - TV Architecture: Conducted a comprehensive screensaver audio audit (2026-03-21) to align native detector levels with visualizer telemetry.

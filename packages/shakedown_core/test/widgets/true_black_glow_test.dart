@@ -46,6 +46,7 @@ void main() {
   setUp(() async {
     SharedPreferences.setMockInitialValues({});
     prefs = await SharedPreferences.getInstance();
+    await prefs.clear(); // Ensure clean state between tests
     CatalogService.setMock(MockCatalogService());
   });
 
@@ -110,6 +111,10 @@ void main() {
     if (!settingsProvider.useDynamicColor) {
       settingsProvider.toggleUseDynamicColor();
     }
+    // Disable performance mode which blocks glow
+    if (settingsProvider.performanceMode) {
+      settingsProvider.togglePerformanceMode();
+    }
     // 3. Set Glow Mode to HALF (2)
     settingsProvider.setGlowMode(2);
 
@@ -152,6 +157,9 @@ void main() {
     final settingsProvider = SettingsProvider(prefs);
     if (!settingsProvider.useDynamicColor) {
       settingsProvider.toggleUseDynamicColor();
+    }
+    if (settingsProvider.performanceMode) {
+      settingsProvider.togglePerformanceMode();
     }
     // Set Glow Mode to HALF (2) to test reduced opacity
     settingsProvider.setGlowMode(2);

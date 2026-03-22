@@ -102,15 +102,15 @@ class StealGraph extends Component with HasGameReference<StealGame> {
 
   // Per-algorithm flash values for beat_debug mode (6 algorithms).
   final List<double> _algoFlash = List.filled(6, 0.0);
-  // Smoothed flux/mean ratio for continuous bar display (0–3).
+  // Smoothed per-algorithm diagnostic score display (0–3).
   final List<double> _algoLevel = List.filled(6, 0.0);
   static const List<String> _algoLabels = [
     'BASS\n0-250',
     'MID\n250-4k',
-    'TREB\n4k+',
     'BROAD\nB+M',
     'ALL\nBANDS',
-    'S-MID\nSMTH',
+    'EMA\nMID',
+    'TREB\n4k+',
   ];
 
   // ── VU meter state ───────────────────────────────────────────────────────
@@ -1297,13 +1297,16 @@ class StealGraph extends Component with HasGameReference<StealGame> {
     );
   }
 
-  /// Beat algorithm comparison display — 6 continuous level bars, one per algorithm.
+  /// Beat algorithm comparison display — 6 continuous level bars, one per
+  /// algorithm.
   ///
-  /// Bar height = flux/mean ratio (0–3×).  Horizontal lines show thresholds:
-  ///   yellow dashed = 1.2× (default beat threshold at sensitivity=0.5)
-  ///   red dashed    = 1.7× (beat threshold at sensitivity=0)
+  /// Bar height = diagnostic algorithm score (0–3× in the current TV path).
+  /// Horizontal guide lines reflect the live detector math from Kotlin:
+  ///   red    = mean-threshold variants (`BASS`, `MID`, `BROAD`, `ALL`, `TREB`)
+  ///   yellow = `EMA`
   /// Bar glows white when that algorithm fires a beat.
-  /// If bars never move → data pipeline broken (check logcat / fresh install).
+  /// If bars never move, the detector is likely silent or the payload is not
+  /// arriving.
   void _renderBeatDebug(Canvas canvas) {
     const numAlgos = 6;
     const barW = 64.0;
@@ -1318,6 +1321,23 @@ class StealGraph extends Component with HasGameReference<StealGame> {
     const totalW = numAlgos * barW + (numAlgos - 1) * barGap;
     final startX = (w - totalW) / 2;
     final baseY = h - bottomPad;
+    final beatSensitivity = game.config.beatSensitivity.clamp(0.0, 1.0);
+    final payloadThresholds = energy.algoThresholds;
+    final meanThreshold =
+        payloadThresholds.length > 1 && payloadThresholds[1] > 0.0
+        ? payloadThresholds[1]
+        : 1.2 + (1.0 - beatSensitivity) * 1.0;
+    final emaThreshold =
+        payloadThresholds.length > 4 && payloadThresholds[4] > 0.0
+        ? payloadThresholds[4]
+        : 1.0 + (1.0 - beatSensitivity) * 0.5;
+    final winningAlgoId = energy.winningAlgoId;
+    final winningLabel =
+        winningAlgoId != null &&
+            winningAlgoId >= 0 &&
+            winningAlgoId < _algoLabels.length
+        ? _algoLabels[winningAlgoId].split('\n').first
+        : '--';
 
     // Background panel
     final panelRect = RRect.fromRectAndRadius(
@@ -1347,8 +1367,13 @@ class StealGraph extends Component with HasGameReference<StealGame> {
     _textPainter.text = TextSpan(
       text:
           'BEAT DEBUG  '
+          'SENS:${beatSensitivity.toStringAsFixed(2)}  '
           'OVR:${(energy.overall * 100).toStringAsFixed(0).padLeft(3)}%  '
+          'SCR:${energy.beatScore.toStringAsFixed(2)}  '
+          'THR:${energy.beatThreshold.toStringAsFixed(2)}  '
+          'CNF:${energy.beatConfidence.toStringAsFixed(2)}  '
           'MID:${energy.algoLevels.length > 1 ? energy.algoLevels[1].toStringAsFixed(2) : "---"}  '
+          'WIN:$winningLabel  '
           'LEN:${energy.algoLevels.length}',
       style: TextStyle(
         color: Colors.white.withValues(alpha: 0.5),
@@ -1364,15 +1389,14 @@ class StealGraph extends Component with HasGameReference<StealGame> {
       Offset(startX + (totalW - _textPainter.width) / 2, baseY - maxH - 20),
     );
 
-    // Threshold lines (drawn behind all bars)
-    // 1.66× line (main threshold) — red
-    // 1.1×  line (KICK+ threshold) — yellow
+    // Threshold lines (drawn behind all bars) from live sensitivity math.
     for (final entry in [
-      (1.7, const Color(0xFFFF5555)),
-      (1.2, const Color(0xFFFFE66D)),
+      (meanThreshold, const Color(0xFFFF5555), 'MEAN'),
+      (emaThreshold, const Color(0xFFFFE66D), 'EMA'),
     ]) {
       final ratio = entry.$1;
       final color = entry.$2;
+      final label = entry.$3;
       final lineY = baseY - (ratio / 3.0 * maxH);
       canvas.drawLine(
         Offset(startX - panelPad + 4, lineY),
@@ -1382,7 +1406,7 @@ class StealGraph extends Component with HasGameReference<StealGame> {
           ..strokeWidth = 1.0,
       );
       _textPainter.text = TextSpan(
-        text: '$ratio×',
+        text: '$label ${ratio.toStringAsFixed(2)}x',
         style: TextStyle(
           color: color.withValues(alpha: 0.55),
           fontSize: 7,
@@ -1398,6 +1422,7 @@ class StealGraph extends Component with HasGameReference<StealGame> {
       final level = _algoLevel[i].clamp(0.0, 3.0);
       final barLeft = startX + i * (barW + barGap);
       final color = _bandColors[i + 1];
+      final isWinning = winningAlgoId == i;
 
       // Level bar (continuous, driven by flux/mean ratio)
       final levelH = (level / 3.0 * maxH).clamp(2.0, maxH);
@@ -1438,9 +1463,11 @@ class StealGraph extends Component with HasGameReference<StealGame> {
       canvas.drawRRect(
         levelRect,
         Paint()
-          ..color = color.withValues(alpha: 0.35 + flash * 0.55)
+          ..color = color.withValues(
+            alpha: (isWinning ? 0.65 : 0.35) + flash * 0.30,
+          )
           ..style = PaintingStyle.stroke
-          ..strokeWidth = flash > 0.1 ? 2.0 : 1.0,
+          ..strokeWidth = isWinning || flash > 0.1 ? 2.0 : 1.0,
       );
 
       // BEAT dot above bar
@@ -1450,6 +1477,16 @@ class StealGraph extends Component with HasGameReference<StealGame> {
           5.0 * flash,
           Paint()
             ..color = Colors.white.withValues(alpha: flash * 0.9)
+            ..style = PaintingStyle.fill,
+        );
+      }
+
+      if (isWinning) {
+        canvas.drawCircle(
+          Offset(barLeft + barW / 2, baseY - maxH - 10),
+          3.0,
+          Paint()
+            ..color = color.withValues(alpha: 0.9)
             ..style = PaintingStyle.fill,
         );
       }

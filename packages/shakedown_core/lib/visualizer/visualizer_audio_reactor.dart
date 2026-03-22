@@ -117,6 +117,10 @@ class VisualizerAudioReactor implements AudioReactor {
       final treble = (data['treble'] as num?)?.toDouble() ?? 0.0;
       final overall = (data['overall'] as num?)?.toDouble() ?? 0.0;
       final isBeat = (data['isBeat'] as bool?) ?? false;
+      final beatScore = (data['beatScore'] as num?)?.toDouble() ?? 0.0;
+      final beatThreshold = (data['beatThreshold'] as num?)?.toDouble() ?? 0.0;
+      final beatConfidence =
+          (data['beatConfidence'] as num?)?.toDouble() ?? 0.0;
 
       // Parse 8-band data if available, otherwise synthesise from 3-band
       List<double> bands;
@@ -169,13 +173,25 @@ class VisualizerAudioReactor implements AudioReactor {
         beatAlgos = rawBeatAlgos.map((e) => e == true).toList();
       }
 
-      List<double> algoLevels = const [];
-      final rawAlgoLevels = data['algoLevels'];
-      if (rawAlgoLevels is List && rawAlgoLevels.isNotEmpty) {
-        algoLevels = rawAlgoLevels
-            .map((e) => (e as num).toDouble().clamp(0.0, 3.0))
-            .toList();
+      List<double> parseDoubleList(
+        Object? raw, {
+        double min = 0.0,
+        double max = 1.0,
+      }) {
+        if (raw is List && raw.isNotEmpty) {
+          return raw.map((e) => (e as num).toDouble().clamp(min, max)).toList();
+        }
+        return const [];
       }
+
+      final algoLevels = parseDoubleList(data['algoLevels'], max: 3.0);
+      final algoSignals = parseDoubleList(data['algoSignals']);
+      final algoBaselines = parseDoubleList(data['algoBaselines']);
+      final algoThresholds = parseDoubleList(data['algoThresholds'], max: 3.0);
+      final rawWinningAlgoId = data['winningAlgoId'];
+      final winningAlgoId = rawWinningAlgoId is num && rawWinningAlgoId >= 0
+          ? rawWinningAlgoId.toInt()
+          : null;
 
       _safeAdd(
         AudioEnergy(
@@ -184,12 +200,19 @@ class VisualizerAudioReactor implements AudioReactor {
           treble: treble.clamp(0.0, 1.0),
           overall: overall.clamp(0.0, 1.0),
           isBeat: isBeat,
+          beatScore: beatScore.clamp(0.0, 3.0),
+          beatThreshold: beatThreshold.clamp(0.0, 3.0),
+          beatConfidence: beatConfidence.clamp(0.0, 1.0),
           bands: bands,
           waveform: waveform,
           waveformL: waveformL,
           waveformR: waveformR,
           beatAlgos: beatAlgos,
           algoLevels: algoLevels,
+          algoSignals: algoSignals,
+          algoBaselines: algoBaselines,
+          algoThresholds: algoThresholds,
+          winningAlgoId: winningAlgoId,
         ),
       );
     }

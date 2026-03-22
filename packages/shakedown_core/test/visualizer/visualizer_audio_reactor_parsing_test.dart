@@ -14,6 +14,10 @@ void main() {
       final treble = (data['treble'] as num?)?.toDouble() ?? 0.0;
       final overall = (data['overall'] as num?)?.toDouble() ?? 0.0;
       final isBeat = (data['isBeat'] as bool?) ?? false;
+      final beatScore = (data['beatScore'] as num?)?.toDouble() ?? 0.0;
+      final beatThreshold = (data['beatThreshold'] as num?)?.toDouble() ?? 0.0;
+      final beatConfidence =
+          (data['beatConfidence'] as num?)?.toDouble() ?? 0.0;
 
       List<double> bands;
       final rawBands = data['bands'];
@@ -34,14 +38,42 @@ void main() {
             .toList();
       }
 
+      List<double> parseDoubleList(
+        Object? raw, {
+        double min = 0.0,
+        double max = 1.0,
+      }) {
+        if (raw is List && raw.isNotEmpty) {
+          return raw.map((e) => (e as num).toDouble().clamp(min, max)).toList();
+        }
+        return const [];
+      }
+
+      final algoLevels = parseDoubleList(data['algoLevels'], max: 3.0);
+      final algoSignals = parseDoubleList(data['algoSignals']);
+      final algoBaselines = parseDoubleList(data['algoBaselines']);
+      final algoThresholds = parseDoubleList(data['algoThresholds'], max: 3.0);
+      final rawWinningAlgoId = data['winningAlgoId'];
+      final winningAlgoId = rawWinningAlgoId is num && rawWinningAlgoId >= 0
+          ? rawWinningAlgoId.toInt()
+          : null;
+
       return AudioEnergy(
         bass: bass.clamp(0.0, 1.0),
         mid: mid.clamp(0.0, 1.0),
         treble: treble.clamp(0.0, 1.0),
         overall: overall.clamp(0.0, 1.0),
         isBeat: isBeat,
+        beatScore: beatScore.clamp(0.0, 3.0),
+        beatThreshold: beatThreshold.clamp(0.0, 3.0),
+        beatConfidence: beatConfidence.clamp(0.0, 1.0),
         bands: bands,
         waveform: waveform,
+        algoLevels: algoLevels,
+        algoSignals: algoSignals,
+        algoBaselines: algoBaselines,
+        algoThresholds: algoThresholds,
+        winningAlgoId: winningAlgoId,
       );
     }
 
@@ -110,6 +142,51 @@ void main() {
         'isBeat': true,
       });
       expect(e.isBeat, true);
+    });
+
+    test('final hybrid beat telemetry parses and clamps correctly', () {
+      final e = parseEvent({
+        'bass': 0.5,
+        'mid': 0.3,
+        'treble': 0.2,
+        'overall': 0.3,
+        'beatScore': 4.0,
+        'beatThreshold': -1.0,
+        'beatConfidence': 1.5,
+      });
+      expect(e.beatScore, 3.0);
+      expect(e.beatThreshold, 0.0);
+      expect(e.beatConfidence, 1.0);
+    });
+
+    test('beat telemetry fields parse and clamp correctly', () {
+      final e = parseEvent({
+        'bass': 0.5,
+        'mid': 0.3,
+        'treble': 0.2,
+        'overall': 0.3,
+        'algoLevels': [4.0, 1.5, -1.0],
+        'algoSignals': [0.8, 0.4, 2.0],
+        'algoBaselines': [0.2, -1.0, 0.5],
+        'algoThresholds': [2.5, 4.0, -1.0],
+        'winningAlgoId': 1,
+      });
+      expect(e.algoLevels, [3.0, 1.5, 0.0]);
+      expect(e.algoSignals, [0.8, 0.4, 1.0]);
+      expect(e.algoBaselines, [0.2, 0.0, 0.5]);
+      expect(e.algoThresholds, [2.5, 3.0, 0.0]);
+      expect(e.winningAlgoId, 1);
+    });
+
+    test('negative winning algorithm id parses as null', () {
+      final e = parseEvent({
+        'bass': 0.5,
+        'mid': 0.3,
+        'treble': 0.2,
+        'overall': 0.3,
+        'winningAlgoId': -1,
+      });
+      expect(e.winningAlgoId, isNull);
     });
   });
 }

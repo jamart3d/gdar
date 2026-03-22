@@ -18,7 +18,7 @@ import kotlin.math.max
  *
  * Tuning knobs (set via 'updateConfig' method call from Flutter):
  *   peakDecay          (0.990–0.999) How slowly peaks decay. Higher = slower adaptation.
- *   bassBoost          (1.0–3.0)     Multiplier applied to bass energy before smoothing.
+ *   bassBoost          (1.0–3.0)     Visual-only bass gain before display smoothing.
  *   reactivityStrength (0.5–2.0)     Global scale applied to all bands before sending to Flutter.
  *   beatSensitivity    (0.0–1.0)     Beat detector sensitivity. Higher = fires more easily.
  *
@@ -27,7 +27,15 @@ import kotlin.math.max
  *   returns near-identical FFT frames every callback, making flux always ~0.
  *   Each algorithm compares a normed signal against a rolling mean and fires
  *   isBeat when the signal spikes above mean × threshold.
- *   Primary isBeat = KICK algorithm (avg of sub-bass + bass bands).
+ *   Current detector order:
+ *     0 BASS   bass band vs rolling mean
+ *     1 MID    mid band vs rolling mean
+ *     2 BROAD  (bass + mid) / 2 vs rolling mean
+ *     3 ALL    all-band onset vs rolling mean
+ *     4 EMA    mid band vs EMA background
+ *     5 TREB   treble band vs rolling mean
+ *   Final isBeat is produced by a hybrid onset score built from low-band onset,
+ *   mid-band onset, and positive broadband flux.
  */
 class VisualizerPlugin(
     private val stereoCapture: StereoCapture,
@@ -53,7 +61,6 @@ class VisualizerPlugin(
 
         // Signal history sizes for adaptive beat thresholds.
         private const val FLUX_HISTORY_SIZE = 20      // ~1s at 20 Hz
-        private const val FLUX_LONG_HISTORY_SIZE = 40 // ~2s at 20 Hz
 
         // Number of beat-detection algorithms run in parallel (for beat_debug mode).
         private const val NUM_BEAT_ALGOS = 6
@@ -77,10 +84,13 @@ class VisualizerPlugin(
     // Smoothed 8-band values
     private val smoothBands = DoubleArray(8)
 
-    // Rolling peaks for normalization (3-band legacy)
+    // Rolling peaks for display normalization (3-band visual path)
     private var peakBass = PEAK_FLOOR
     private var peakMid = PEAK_FLOOR
     private var peakTreble = PEAK_FLOOR
+
+    // Separate detector peak so beat logic stays independent from visual bass gain.
+    private var detectorPeakBass = PEAK_FLOOR
 
     // Rolling peaks for 8-band normalization
     private val peakBands = DoubleArray(8) { PEAK_FLOOR }
@@ -97,17 +107,21 @@ class VisualizerPlugin(
     private val midHistory     = ArrayDeque<Double>(FLUX_HISTORY_SIZE)      // 1 MID
     private val broadHistory   = ArrayDeque<Double>(FLUX_HISTORY_SIZE)      // 2 BROAD
     private val allHistory     = ArrayDeque<Double>(FLUX_HISTORY_SIZE)      // 3 ALL
-    private val longHistory    = ArrayDeque<Double>(FLUX_LONG_HISTORY_SIZE) // 4 LONG-MID
     private val trebleHistory  = ArrayDeque<Double>(FLUX_HISTORY_SIZE)      // 5 TREB
     private var midEmaVal      = 0.0                                        // EMA on mid
     private val midEmaWarmup   = ArrayDeque<Double>(10)                     // EMA warmup
+    private val hybridHistory  = ArrayDeque<Double>(FLUX_HISTORY_SIZE)      // warmup / future robust baseline
+    private var hybridBaselineVal = 0.0
+    private var hybridFloorVal    = 0.0
+    private var lowFastVal     = 0.0
+    private var lowSlowVal     = 0.0
+    private var midFastVal     = 0.0
+    private var midSlowVal     = 0.0
+    private var prevAllVal     = 0.0
+    private var hybridLastBeatMs = 0L
 
     // Independent last-beat timestamps so algorithms don't suppress each other.
     private val lastBeatMs = LongArray(NUM_BEAT_ALGOS)
-    // Keep primary isBeat timestamp alias for convenience.
-    private var lastBeatTimeMs: Long
-        get() = lastBeatMs[1]
-        set(v) { lastBeatMs[1] = v }
 
     // Latest downsampled PCM waveform for the oscilloscope display.
     // Written by onWaveFormDataCapture, read by processFftData (same thread).
@@ -192,13 +206,21 @@ class VisualizerPlugin(
             // Reset state on start
             smoothBass = 0.0; smoothMid = 0.0; smoothTreble = 0.0
             peakBass = PEAK_FLOOR; peakMid = PEAK_FLOOR; peakTreble = PEAK_FLOOR
+            detectorPeakBass = PEAK_FLOOR
             smoothBands.fill(0.0)
             peakBands.fill(PEAK_FLOOR)
             lastBeatMs.fill(0L)
             bassHistory.clear();   midHistory.clear()
             broadHistory.clear();  allHistory.clear()
-            longHistory.clear();   trebleHistory.clear()
+            trebleHistory.clear()
             midEmaVal = 0.0;       midEmaWarmup.clear()
+            hybridHistory.clear()
+            hybridBaselineVal = 0.0
+            hybridFloorVal = 0.0
+            lowFastVal = 0.0;      lowSlowVal = 0.0
+            midFastVal = 0.0;      midSlowVal = 0.0
+            prevAllVal = 0.0
+            hybridLastBeatMs = 0L
 
             visualizer?.enabled = true
             isRunning = true
@@ -275,33 +297,45 @@ class VisualizerPlugin(
         }
 
         // ── Legacy 3-band processing ────────────────────────────────────
-        var rawBass = if (bassCount > 0) sqrt(bassSum / bassCount) / 128.0 else 0.0
+        val detectorRawBass = if (bassCount > 0) sqrt(bassSum / bassCount) / 128.0 else 0.0
         val rawMid = if (midCount > 0) sqrt(midSum / midCount) / 128.0 else 0.0
         val rawTreble = if (trebleCount > 0) sqrt(trebleSum / trebleCount) / 128.0 else 0.0
 
-        // Apply bass boost before normalization
-        rawBass = (rawBass * bassBoost).coerceIn(0.0, 2.0)
+        // Visual-only bass gain. Beat detection must stay on pre-boost bass energy.
+        val visualRawBass = (detectorRawBass * bassBoost).coerceIn(0.0, 2.0)
 
         // Update rolling peaks using the user-controlled decay rate
         // If the signal is pure silence, we eventually reset peaks to PEAK_FLOOR
         // to prevent normalization artifacts when music starts again.
-        if (rawBass < SILENCE_THRESHOLD && rawMid < SILENCE_THRESHOLD && rawTreble < SILENCE_THRESHOLD) {
+        if (visualRawBass < SILENCE_THRESHOLD && rawMid < SILENCE_THRESHOLD && rawTreble < SILENCE_THRESHOLD) {
             peakBass = max(peakBass * peakDecay, PEAK_FLOOR)
             peakMid = max(peakMid * peakDecay, PEAK_FLOOR)
             peakTreble = max(peakTreble * peakDecay, PEAK_FLOOR)
         } else {
-            peakBass = max(peakBass * peakDecay, max(rawBass, PEAK_FLOOR))
+            peakBass = max(peakBass * peakDecay, max(visualRawBass, PEAK_FLOOR))
             peakMid = max(peakMid * peakDecay, max(rawMid, PEAK_FLOOR))
             peakTreble = max(peakTreble * peakDecay, max(rawTreble, PEAK_FLOOR))
         }
 
-        // Normalize against peak, applying noise gate (hard floor)
-        val normalizedBass = if (rawBass < SILENCE_THRESHOLD) 0.0 else (rawBass / peakBass).coerceIn(0.0, 1.0)
-        val normalizedMid = if (rawMid < SILENCE_THRESHOLD) 0.0 else (rawMid / peakMid).coerceIn(0.0, 1.0)
-        val normalizedTreble = if (rawTreble < SILENCE_THRESHOLD) 0.0 else (rawTreble / peakTreble).coerceIn(0.0, 1.0)
+        // Detector bass peak stays on pre-boost energy so beat rate is independent from bassBoost.
+        if (detectorRawBass < SILENCE_THRESHOLD) {
+            detectorPeakBass = max(detectorPeakBass * peakDecay, PEAK_FLOOR)
+        } else {
+            detectorPeakBass = max(detectorPeakBass * peakDecay, max(detectorRawBass, PEAK_FLOOR))
+        }
+
+        // Normalize against peak, applying noise gate (hard floor).
+        val visualNormalizedBass =
+            if (visualRawBass < SILENCE_THRESHOLD) 0.0 else (visualRawBass / peakBass).coerceIn(0.0, 1.0)
+        val normalizedMid =
+            if (rawMid < SILENCE_THRESHOLD) 0.0 else (rawMid / peakMid).coerceIn(0.0, 1.0)
+        val normalizedTreble =
+            if (rawTreble < SILENCE_THRESHOLD) 0.0 else (rawTreble / peakTreble).coerceIn(0.0, 1.0)
+        val detectorNormalizedBass =
+            if (detectorRawBass < SILENCE_THRESHOLD) 0.0 else (detectorRawBass / detectorPeakBass).coerceIn(0.0, 1.0)
 
         // Exponential smoothing to kill jitter
-        smoothBass = smoothBass * SMOOTHING + normalizedBass * (1.0 - SMOOTHING)
+        smoothBass = smoothBass * SMOOTHING + visualNormalizedBass * (1.0 - SMOOTHING)
         smoothMid = smoothMid * SMOOTHING + normalizedMid * (1.0 - SMOOTHING)
         smoothTreble = smoothTreble * SMOOTHING + normalizedTreble * (1.0 - SMOOTHING)
 
@@ -312,7 +346,7 @@ class VisualizerPlugin(
         val overall = (finalBass + finalMid + finalTreble) / 3.0
 
         // ── 8-band processing ───────────────────────────────────────────
-        val isSilent = rawBass < SILENCE_THRESHOLD && rawMid < SILENCE_THRESHOLD && rawTreble < SILENCE_THRESHOLD
+        val isSilent = visualRawBass < SILENCE_THRESHOLD && rawMid < SILENCE_THRESHOLD && rawTreble < SILENCE_THRESHOLD
         val finalBands = DoubleArray(8)
         for (b in 0 until 8) {
             val rawBand = if (bandCounts[b] > 0) sqrt(bandSums[b] / bandCounts[b]) / 128.0 else 0.0
@@ -331,30 +365,27 @@ class VisualizerPlugin(
         }
 
         // ── 6-algorithm parallel beat detection ──────────────────────────────
-        // Uses the 3-band peak-normalised values (normalizedBass/Mid/Treble) which
-        // are the same signals that drive the visible bar graph.  These are
-        // pre-smoothing (before the SMOOTHING EMA) so transients show clearly.
+        // Uses pre-smoothing detector values. Bass stays on pre-boost energy so
+        // beat frequency does not change when the user only raises visual gain.
         //
         // NOTE: on some TV chipsets the sub-bass and bass FFT bins return near-zero
-        // energy even during loud music — normalizedBass can therefore be 0 while
+        // energy even during loud music — detectorNormalizedBass can therefore be 0 while
         // normalizedMid and normalizedTreble are healthy.  We therefore spread the
         // 6 algorithms across bass, mid, treble, and combined signals so at least
         // some of them will respond on any hardware.
         //
         // Signals used:
-        //   sig0 = normalizedBass                    (0–250 Hz)
+        //   sig0 = detectorNormalizedBass            (0–250 Hz)
         //   sig1 = normalizedMid                     (250–4000 Hz)
         //   sig2 = normalizedTreble                  (4000+ Hz)
-        //   sig3 = (normalizedBass + normalizedMid)/2 (broadband)
+        //   sig3 = (detectorNormalizedBass + normalizedMid)/2 (broadband)
         //   sig4 = (sig0+sig1+sig2)/3                (all-band onset)
-        //   sig5 = normalizedMid                     (same as sig1, long window)
 
-        val sig0 = normalizedBass
+        val sig0 = detectorNormalizedBass
         val sig1 = normalizedMid
         val sig2 = normalizedTreble
         val sig3 = (sig0 + sig1) / 2.0
         val sig4 = (sig0 + sig1 + sig2) / 3.0
-        // sig5 = sig1 (shared, different history window)
 
         fun <T> ArrayDeque<T>.pushCapped(v: T, cap: Int) { addLast(v); if (size > cap) removeFirst() }
 
@@ -362,15 +393,43 @@ class VisualizerPlugin(
         midEmaWarmup.pushCapped(sig1, 10)
         midEmaVal = midEmaVal * 0.85 + sig1 * 0.15
 
+        // Fast/slow envelope followers plus positive broadband flux for the
+        // hybrid final beat decision.
+        lowFastVal = lowFastVal * 0.55 + sig0 * 0.45
+        lowSlowVal = lowSlowVal * 0.90 + sig0 * 0.10
+        midFastVal = midFastVal * 0.60 + sig1 * 0.40
+        midSlowVal = midSlowVal * 0.92 + sig1 * 0.08
+        val lowOnset = max(0.0, lowFastVal - lowSlowVal)
+        val midOnset = max(0.0, midFastVal - midSlowVal)
+        val broadFlux = max(0.0, sig4 - prevAllVal)
+        prevAllVal = sig4
+
         // Populate per-algorithm histories.
         bassHistory.pushCapped(sig0,   FLUX_HISTORY_SIZE)
         midHistory.pushCapped(sig1,    FLUX_HISTORY_SIZE)
         broadHistory.pushCapped(sig3,  FLUX_HISTORY_SIZE)
         allHistory.pushCapped(sig4,    FLUX_HISTORY_SIZE)
-        longHistory.pushCapped(sig1,   FLUX_LONG_HISTORY_SIZE)
         trebleHistory.pushCapped(sig2, FLUX_HISTORY_SIZE)
 
         val nowMs = System.currentTimeMillis()
+
+        // Helper: compute the current signal-to-baseline ratio for debug display.
+        fun scoreVsMean(signal: Double, history: ArrayDeque<Double>): Double {
+            if (history.size < 10 || signal < SILENCE_THRESHOLD) return 0.0
+            val mean = history.average()
+            if (mean <= 0.0) return 0.0
+            return signal / mean
+        }
+
+        fun scoreVsEma(signal: Double, baseline: Double, warmupReady: Boolean): Double {
+            if (!warmupReady || signal < SILENCE_THRESHOLD || baseline <= 0.0) return 0.0
+            return signal / baseline
+        }
+
+        fun meanOrZero(history: ArrayDeque<Double>): Double {
+            if (history.size < 10) return 0.0
+            return history.average()
+        }
 
         // Helper: fire when signal spikes above rolling mean × multiplier.
         fun normBeat(signal: Double, history: ArrayDeque<Double>, multiplier: Double, algoIdx: Int): Boolean {
@@ -384,11 +443,53 @@ class VisualizerPlugin(
 
         // sensitivity 1.0 → 1.2× mean  |  sensitivity 0.0 → 2.2× mean
         val adaptiveMultiplier = 1.2 + (1.0 - beatSensitivity) * 1.0
+        val hybridThresholdRatio = 1.10 + (1.0 - beatSensitivity) * 0.70
+
+        val hybridScore =
+            (lowOnset * 0.45) +
+            (midOnset * 0.35) +
+            (broadFlux * 0.20)
+        val hybridHasSignal =
+            sig0 > SILENCE_THRESHOLD ||
+            sig1 > SILENCE_THRESHOLD ||
+            sig4 > SILENCE_THRESHOLD
+        val hybridBaseline = hybridBaselineVal
+        val hybridFloor = hybridFloorVal
+        val hybridThresholdFloor = 0.015 + (1.0 - beatSensitivity) * 0.02
+        val beatThreshold = max(
+            hybridBaseline * hybridThresholdRatio,
+            hybridFloor + hybridThresholdFloor,
+        )
+        val beatConfidence =
+            if (beatThreshold > 0.0) (hybridScore / beatThreshold).coerceIn(0.0, 1.0)
+            else 0.0
+        val isBeat =
+            hybridHistory.size >= 10 &&
+            hybridHasSignal &&
+            hybridScore > beatThreshold &&
+            (nowMs - hybridLastBeatMs) > MIN_BEAT_GAP_MS
+        if (isBeat) hybridLastBeatMs = nowMs
+        hybridHistory.pushCapped(hybridScore, FLUX_HISTORY_SIZE)
+        if (hybridHasSignal) {
+            hybridBaselineVal =
+                if (hybridBaselineVal <= 0.0) hybridScore
+                else hybridBaselineVal * 0.94 + hybridScore * 0.06
+            hybridFloorVal =
+                if (hybridFloorVal <= 0.0) hybridScore
+                else if (hybridScore < hybridFloorVal) {
+                    hybridFloorVal * 0.80 + hybridScore * 0.20
+                } else {
+                    hybridFloorVal * 0.995 + hybridScore * 0.005
+                }
+        } else {
+            hybridBaselineVal *= 0.96
+            hybridFloorVal *= 0.96
+        }
 
         val beats = BooleanArray(NUM_BEAT_ALGOS)
-        // 0 BASS   – normalizedBass vs 20-frame mean
+        // 0 BASS   – pre-boost bass vs 20-frame mean
         beats[0] = normBeat(sig0, bassHistory,   adaptiveMultiplier, 0)
-        // 1 MID    – normalizedMid vs 20-frame mean  (primary / isBeat)
+        // 1 MID    – normalizedMid vs 20-frame mean
         beats[1] = normBeat(sig1, midHistory,    adaptiveMultiplier, 1)
         // 2 BROAD  – (bass+mid)/2 vs 20-frame mean
         beats[2] = normBeat(sig3, broadHistory,  adaptiveMultiplier, 2)
@@ -402,21 +503,61 @@ class VisualizerPlugin(
         if (beats[4]) lastBeatMs[4] = nowMs
         // 5 TREB   – normalizedTreble vs 20-frame mean
         beats[5] = normBeat(sig2, trebleHistory, adaptiveMultiplier, 5)
+        if (isBeat) {
+            Log.d(
+                TAG,
+                "BEAT hybrid=%.3f base=%.3f floor=%.3f thr=%.3f low=%.3f mid=%.3f flux=%.3f".format(
+                    hybridScore,
+                    hybridBaseline,
+                    hybridFloor,
+                    beatThreshold,
+                    lowOnset,
+                    midOnset,
+                    broadFlux,
+                )
+            )
+        }
 
-        // Primary isBeat = MID algorithm (most likely to have signal on any TV).
-        val isBeat = beats[1]
-        if (isBeat) Log.d(TAG, "BEAT mid=%.3f ema=%.3f".format(sig1, midEmaVal))
-
-        // DIAGNOSTIC: hardcoded staircase — if LEN=6 and MID≈1.5 the pipeline works.
-        // overall is threaded in so we can cross-check MID = overall × 3.
-        val algoLevels = doubleArrayOf(
-            overall * 3.0,   // 0 BASS  → same as overall (diagnostic)
-            overall * 3.0,   // 1 MID   → same (title shows MID = overall × 3)
-            overall * 3.0,   // 2 TREB
-            overall * 3.0,   // 3 BROAD
-            overall * 3.0,   // 4 ALL
-            overall * 3.0,   // 5 S-MID
+        val emaThresholdRatio = 1.0 + (1.0 - beatSensitivity) * 0.5
+        val algoSignals = doubleArrayOf(
+            sig0, // 0 BASS
+            sig1, // 1 MID
+            sig3, // 2 BROAD
+            sig4, // 3 ALL
+            sig1, // 4 EMA (same input signal as MID, different baseline)
+            sig2, // 5 TREB
         )
+        val algoBaselines = doubleArrayOf(
+            meanOrZero(bassHistory),                                  // 0 BASS
+            meanOrZero(midHistory),                                   // 1 MID
+            meanOrZero(broadHistory),                                 // 2 BROAD
+            meanOrZero(allHistory),                                   // 3 ALL
+            if (midEmaWarmup.size >= 10) midEmaVal else 0.0,          // 4 EMA
+            meanOrZero(trebleHistory),                                // 5 TREB
+        )
+        val algoThresholds = doubleArrayOf(
+            adaptiveMultiplier, // 0 BASS
+            adaptiveMultiplier, // 1 MID
+            adaptiveMultiplier, // 2 BROAD
+            adaptiveMultiplier, // 3 ALL
+            emaThresholdRatio,  // 4 EMA
+            adaptiveMultiplier, // 5 TREB
+        )
+
+        // Per-algorithm diagnostic scores used by beat_debug.
+        // Mean-window variants report signal / rolling mean.
+        // EMA reports signal / EMA baseline.
+        val algoLevels = doubleArrayOf(
+            scoreVsMean(sig0, bassHistory).coerceIn(0.0, 3.0),                               // 0 BASS
+            scoreVsMean(sig1, midHistory).coerceIn(0.0, 3.0),                                // 1 MID
+            scoreVsMean(sig3, broadHistory).coerceIn(0.0, 3.0),                              // 2 BROAD
+            scoreVsMean(sig4, allHistory).coerceIn(0.0, 3.0),                                // 3 ALL
+            scoreVsEma(sig1, midEmaVal, midEmaWarmup.size >= 10).coerceIn(0.0, 3.0),         // 4 EMA
+            scoreVsMean(sig2, trebleHistory).coerceIn(0.0, 3.0),                             // 5 TREB
+        )
+        val winningAlgoId = algoLevels.indices.maxByOrNull { algoLevels[it] }
+            ?.takeIf { algoLevels[it] > 0.0 }
+            ?: -1
 
         // Include stereo waveforms when AudioPlaybackCapture is active;
         // empty lists signal the Flutter side to fall back to fake-stereo FFT bands.
@@ -426,12 +567,19 @@ class VisualizerPlugin(
             "treble" to finalTreble,
             "overall" to overall,
             "isBeat" to isBeat,
+            "beatScore" to hybridScore,
+            "beatThreshold" to beatThreshold,
+            "beatConfidence" to beatConfidence,
             "bands" to finalBands.toList(),
             "waveform" to pendingWaveform,
             "waveformL" to stereoCapture.waveformL, // real L PCM or empty
             "waveformR" to stereoCapture.waveformR, // real R PCM or empty
             "beatAlgos"  to beats.toList(),
-            "algoLevels" to algoLevels.toList()
+            "algoLevels" to algoLevels.toList(),
+            "algoSignals" to algoSignals.toList(),
+            "algoBaselines" to algoBaselines.toList(),
+            "algoThresholds" to algoThresholds.toList(),
+            "winningAlgoId" to winningAlgoId
         )
 
         eventSink?.success(data)

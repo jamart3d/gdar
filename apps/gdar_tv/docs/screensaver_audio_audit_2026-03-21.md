@@ -97,10 +97,10 @@ Relevant refs:
 
 ### P1: `beat_debug` bars are not showing real algorithm levels
 
-Native code is still sending a diagnostic placeholder:
+At audit time, native code was still sending a diagnostic placeholder:
 
 - `algoLevels = overall * 3.0` for all 6 slots
-- every bar therefore receives the same continuous level
+- every bar therefore received the same continuous level
 
 Refs:
 - `apps/gdar_tv/android/app/src/main/kotlin/com/jamart3d/shakedown/VisualizerPlugin.kt:410`
@@ -116,11 +116,23 @@ Refs:
 - `packages/shakedown_core/lib/steal_screensaver/steal_graph.dart:235`
 - `packages/shakedown_core/lib/steal_screensaver/steal_graph.dart:1300`
 
-Impact:
+Impact at audit time:
 
-- `beat_debug` currently cannot answer which algorithm is actually strongest.
-- Tuning decisions made from this screen are unsafe.
-- Any apparent bar difference is visual smoothing noise, not detector truth.
+- `beat_debug` could not answer which algorithm was actually strongest.
+- Tuning decisions made from this screen were unsafe.
+- Any apparent bar difference was visual smoothing noise, not detector truth.
+
+Status:
+
+- Fixed on 2026-03-21.
+- `algoLevels` now report real per-algorithm scores:
+  - mean-window variants use `signal / rollingMean`
+  - EMA uses `signal / emaBaseline`
+- The payload now also exposes richer telemetry:
+  - `algoSignals`
+  - `algoBaselines`
+  - `algoThresholds`
+  - `winningAlgoId`
 
 ### P1: Algorithm labels have drifted across Kotlin, Dart, and docs
 
@@ -149,17 +161,15 @@ But the Flutter labels say:
 Ref:
 - `packages/shakedown_core/lib/steal_screensaver/steal_graph.dart:107`
 
-And the `AudioEnergy` comments still describe an older mapping:
+At audit time, the `AudioEnergy` comments still described an older mapping:
 
 - `0=NARROW, 1=KICK, 2=FULL, 3=EMA, 4=KICK+, 5=LONG`
 
-Ref:
-- `packages/shakedown_core/lib/visualizer/audio_reactor.dart:31`
+That comment drift was fixed on 2026-03-21 so the shared order now matches the
+native detector: `BASS`, `MID`, `BROAD`, `ALL`, `EMA`, `TREB`.
 
-Also, `longHistory` is still populated natively but not used by any active
-detector path:
-
-- `apps/gdar_tv/android/app/src/main/kotlin/com/jamart3d/shakedown/VisualizerPlugin.kt:370`
+At audit time, `longHistory` was still populated natively but not used by any
+active detector path. That dead staging path was removed on 2026-03-21.
 
 Impact:
 
@@ -199,11 +209,17 @@ The EMA path is different again:
 Ref:
 - `apps/gdar_tv/android/app/src/main/kotlin/com/jamart3d/shakedown/VisualizerPlugin.kt:398`
 
-Impact:
+Impact at audit time:
 
-- The threshold lines on screen are currently misleading.
-- The operator can believe the detector is missing beats when the overlay is
-  simply showing the wrong threshold.
+- The threshold lines on screen were misleading.
+- The operator could believe the detector was missing beats when the overlay
+  was simply showing the wrong threshold.
+
+Status:
+
+- Fixed on 2026-03-21.
+- `beat_debug` now derives its guide lines from live `beatSensitivity` and
+  labels them `MEAN` and `EMA`.
 
 ### P1: Detector still relies on peak-normalized amplitudes, which compresses dynamics
 
@@ -236,7 +252,7 @@ The calibration rule for this feature family says beat detection should use raw
 pre-boost energy, so user gain controls only affect visual magnitude and not
 beat frequency.
 
-Current code boosts `rawBass` before normalization:
+At audit time, code boosted `rawBass` before detector normalization:
 
 - `rawBass = (rawBass * bassBoost).coerceIn(0.0, 2.0)`
 
@@ -252,7 +268,12 @@ That boosted value feeds:
 
 Refs:
 - `apps/gdar_tv/android/app/src/main/kotlin/com/jamart3d/shakedown/VisualizerPlugin.kt:299`
-- `apps/gdar_tv/android/app/src/main/kotlin/com/jamart3d/shakedown/VisualizerPlugin.kt:352`
+
+Status:
+
+- Fixed on 2026-03-21.
+- The detector bass path now uses pre-boost energy and its own normalization peak.
+- `bassBoost` now changes visible bass magnitude without changing bass detector rate.
 
 Impact:
 
@@ -502,7 +523,6 @@ machine-gun retriggers.
 - Remove stale `AudioEnergy` comments.
 - Draw threshold lines from current `beatSensitivity`, not hardcoded values.
 - Use pre-boost bass for all detector signals.
-- Remove `longHistory` if unused, or wire it into a real long-window algorithm.
 - Rename graph performance helpers to match actual tiers.
 
 ---
@@ -535,22 +555,39 @@ small steps so observability is fixed before detector behavior changes.
    - `packages/shakedown_core/lib/visualizer/audio_reactor.dart`
    - `packages/shakedown_core/lib/steal_screensaver/steal_graph.dart`
    - `packages/shakedown_core/lib/config/default_settings.dart`
+   Status:
+   - Completed 2026-03-21.
+   - Detector order is now documented consistently as `BASS`, `MID`, `BROAD`, `ALL`, `EMA`, `TREB`.
 2. Remove or repurpose `longHistory` if it is not part of the active detector family.
    File:
    - `apps/gdar_tv/android/app/src/main/kotlin/com/jamart3d/shakedown/VisualizerPlugin.kt`
+   Status:
+   - Completed 2026-03-21.
+   - `longHistory` and its unused long-window staging path were removed.
+   - No detector behavior changed; active algorithms remain `BASS`, `MID`, `BROAD`, `ALL`, `EMA`, `TREB`.
 3. Fix the threshold guide text in `beat_debug` so it reflects the current sensitivity math.
    File:
    - `packages/shakedown_core/lib/steal_screensaver/steal_graph.dart`
+   Status:
+   - Completed 2026-03-21.
+   - `beat_debug` threshold guides now derive from live `beatSensitivity`.
+   - The screen now labels the red line as `MEAN` and the yellow line as `EMA`.
 
 ### Phase 1: Make `beat_debug` honest
 
 1. Replace diagnostic `algoLevels = overall * 3.0` with real per-algorithm scores.
    File:
    - `apps/gdar_tv/android/app/src/main/kotlin/com/jamart3d/shakedown/VisualizerPlugin.kt`
+   Status:
+   - Completed 2026-03-21.
+   - `algoLevels` now carry real score values for `BASS`, `MID`, `BROAD`, `ALL`, `EMA`, `TREB`.
 2. Decide the score definition and keep it consistent.
    Recommended:
    - `score = signal / baseline`, clamped to `0.0..3.0`
    - separate fields for `signal`, `baseline`, and `threshold`
+   Status:
+   - Completed 2026-03-21.
+   - The live contract now uses `score = signal / baseline`, clamped to `0.0..3.0`.
 3. Expand the event payload so Flutter receives real detector telemetry.
    Minimum fields:
    - `beatAlgos`
@@ -560,23 +597,56 @@ small steps so observability is fixed before detector behavior changes.
    - `algoBaselines`
    - `algoThresholds`
    - `winningAlgoId`
+   Status:
+   - Completed 2026-03-21.
+   - All listed "better fields" were added to the TV payload.
 4. Update the Dart bridge to parse the new payload safely.
    File:
    - `packages/shakedown_core/lib/visualizer/visualizer_audio_reactor.dart`
+   Status:
+   - Completed 2026-03-21.
+   - The parser now reads `algoSignals`, `algoBaselines`, `algoThresholds`, and `winningAlgoId`.
 5. Update `StealGraph` so the bar labels, bar heights, and threshold guides all match the native payload.
    File:
    - `packages/shakedown_core/lib/steal_screensaver/steal_graph.dart`
+   Status:
+   - Completed 2026-03-21.
+   - `beat_debug` now consumes native threshold ratios when present.
+   - The panel also shows the current winning algorithm.
+
+Test coverage note:
+
+- The base Flutter/Flame harness already exists and is not a missing prerequisite.
+- Existing automated coverage already includes:
+  - `packages/shakedown_core/test/steal_screensaver/steal_game_test.dart`
+  - `packages/shakedown_core/test/steal_screensaver/steal_graph_test.dart`
+  - `packages/shakedown_core/test/screens/screensaver_screen_test.dart`
+  - `packages/shakedown_core/test/visualizer/visualizer_audio_reactor_parsing_test.dart`
+- The remaining test work is narrower:
+  - add `beat_debug`-specific assertions
+  - add parsing checks for richer telemetry fields
+  - add regression coverage for threshold-guide math vs `beatSensitivity`
 
 ### Phase 2: Decouple visuals from detection
 
 1. Split raw detector signals from display-normalized signals in the Kotlin plugin.
    File:
    - `apps/gdar_tv/android/app/src/main/kotlin/com/jamart3d/shakedown/VisualizerPlugin.kt`
+   Status:
+   - Completed 2026-03-21.
+   - The plugin now keeps a separate pre-boost detector bass path and a post-boost visual bass path.
 2. Keep these as visual-only controls:
    - `bassBoost`
    - `reactivityStrength`
    - `beatImpact`
+   Status:
+   - Completed 2026-03-21 for the current implementation path.
+   - `bassBoost` is now visual-only in native detection.
+   - `reactivityStrength` was already visual-only because it is applied after detector inputs are derived.
+   - `beatImpact` remains a Dart-side visual control.
 3. Ensure all beat detector inputs use pre-boost energy.
+   Status:
+   - Completed 2026-03-21 for bass-derived detector inputs.
 4. Preserve the current smoothed normalized bands for:
    - corner graph
    - circular graph
@@ -587,29 +657,52 @@ small steps so observability is fixed before detector behavior changes.
 1. Add low-band, mid-band, and broadband detector signals from raw or log energy.
    File:
    - `apps/gdar_tv/android/app/src/main/kotlin/com/jamart3d/shakedown/VisualizerPlugin.kt`
+   Status:
+   - Completed 2026-03-21.
+   - The current hybrid path uses low-band onset, mid-band onset, and positive broadband flux.
 2. Add fast and slow envelopes for low and mid bands.
    Suggested outputs:
    - `lowOnset = max(0, lowFast - lowSlow)`
    - `midOnset = max(0, midFast - midSlow)`
+   Status:
+   - Completed 2026-03-21.
+   - Low and mid fast/slow followers now feed onset terms in the hybrid score.
 3. Add positive broadband flux.
    Suggested output:
    - `allFlux = max(0, allLogEnergy - prevAllLogEnergy)`
+   Status:
+   - Completed 2026-03-21.
+   - First pass uses positive flux on the current broadband onset signal.
 4. Fuse the three cues into one score.
    Suggested weighting:
    - `0.50 * lowOnset`
    - `0.30 * midOnset`
    - `0.20 * allFlux`
+   Status:
+   - Completed 2026-03-21.
+   - Current weighting is `0.45 low + 0.35 mid + 0.20 flux`.
 5. Add adaptive thresholding using a rolling robust baseline.
    Preferred:
    - median + MAD
    Acceptable first pass:
    - EMA baseline + floor + refractory
+   Status:
+   - Completed 2026-03-21 for the first-pass target.
+   - The live hybrid detector now compares against the previous EMA-style baseline plus a small floor, then folds the current score into state after the decision.
+   - A median/MAD baseline is still optional future work, but the rolling-average baseline is no longer used for final `isBeat`.
 6. Export:
    - `beatScore`
    - `beatThreshold`
    - `beatConfidence`
    - `winningAlgoId`
+   Status:
+   - Completed 2026-03-21.
+   - The TV payload now exports `beatScore`, `beatThreshold`, `beatConfidence`, and `winningAlgoId`.
+   - `beat_debug` now shows the final hybrid score, threshold, and confidence in its header.
 7. Make the final `isBeat` come from the hybrid score, not from a single fixed `MID` rule.
+   Status:
+   - Completed 2026-03-21.
+   - Final `isBeat` now comes from the hybrid onset score.
 
 ### Phase 4: Connect the new detector to the screensaver
 
@@ -660,17 +753,37 @@ small steps so observability is fixed before detector behavior changes.
    - labels match actual algorithms
    - thresholds track the selected sensitivity
    - a winning algorithm can be identified
-2. Test on real TV hardware with at least:
+2. Keep automated regression coverage current as telemetry evolves.
+   Add or extend tests for:
+   - `beat_debug` label order
+   - `beat_debug` threshold-guide math vs `beatSensitivity`
+   - parsing of added telemetry fields such as signals, baselines, and thresholds
+3. Test on real TV hardware with at least:
    - kick-heavy studio track
    - live Grateful Dead recording
    - quieter acoustic material
-3. Verify that changing `bassBoost` changes visual intensity but not beat frequency.
-4. Verify that changing `beatSensitivity` changes trigger rate in the expected direction.
-5. Verify the stereo activation path end to end:
+   Suggested quick tuning sequence:
+   - Start in `beat_debug` with current defaults and let the detector warm up for 10 to 15 seconds.
+   - Use one kick-heavy track first to judge basic lock, missed beats, and double-fires.
+   - Switch to a live Dead track to judge chatter, drift, and whether the detector follows vocal/guitar transients instead of the groove.
+   - Finish with quieter acoustic material to confirm the floor is not suppressing all useful motion.
+   What to watch in `beat_debug`:
+   - `SCR` should rise above `THR` cleanly on strong onsets, not hover just under it forever.
+   - `CNF` should spike on real hits and spend most non-hit frames below `1.0`.
+   - `WIN` should move sensibly between `BASS`, `MID`, `BROAD`, `ALL`, `EMA`, and `TREB`, but final pulse quality matters more than a single winning bar.
+   - If bars look active but no beat fires, the floor or threshold is likely too high.
+   - If beats machine-gun during dense passages, the floor or refractory is likely too low.
+   Adjustment order on hardware:
+   - Tune `beatSensitivity` first.
+   - Then tune hybrid weight balance or floor constants in Kotlin if sensitivity alone cannot separate missed beats from chatter.
+   - Touch `bassBoost` only to judge visual feel, not detector correctness.
+4. Verify that changing `bassBoost` changes visual intensity but not beat frequency.
+5. Verify that changing `beatSensitivity` changes trigger rate in the expected direction.
+6. Verify the stereo activation path end to end:
    - permission prompt appears when expected
    - `ST` labels appear only when real stereo is active
    - fallback returns cleanly to `LO`/`HI` when stereo capture is unavailable or stopped
-6. Verify no regressions in:
+7. Verify no regressions in:
    - corner graph
    - circular graph
    - VU mode

@@ -12,9 +12,9 @@ void main() {
   group('StealGame', () {
     // We use MockDeviceService from your existing helpers
     final mockDevice = MockDeviceService();
-    final defaultConfig = StealConfig();
+    const defaultConfig = StealConfig();
 
-    // FlameTester helps instantiate the game, pump the game loop (dt), 
+    // FlameTester helps instantiate the game, pump the game loop (dt),
     // and check the component tree lifecycle.
     final stealGameTester = FlameTester<StealGame>(
       () => StealGame(config: defaultConfig, deviceService: mockDevice),
@@ -37,17 +37,19 @@ void main() {
       'time advances and palette cycle changes configuration',
       setUp: (game, tester) async {
         // Ensure palette cycling is turned on with high speed for the test
-        game.updateConfig(defaultConfig.copyWith(
-          paletteCycle: true,
-          paletteTransitionSpeed: 20.0,
-        ));
+        game.updateConfig(
+          defaultConfig.copyWith(
+            paletteCycle: true,
+            paletteTransitionSpeed: 20.0,
+          ),
+        );
       },
       verify: (game, tester) async {
         final initialPalette = game.config.palette;
-        
+
         // Pump game loop forward by a large amount of time (100 seconds)
         game.update(100.0);
-        
+
         // We should have transitioned to a new palette automatically
         expect(game.config.palette, isNot(equals(initialPalette)));
         expect(game.time, greaterThan(0));

@@ -11,6 +11,15 @@ class AudioEnergy {
   /// Whether a beat was detected in this frame (onset detection).
   final bool isBeat;
 
+  /// Final hybrid detector score used to decide [isBeat] on the TV path.
+  final double beatScore;
+
+  /// Final hybrid detector threshold in the same units as [beatScore].
+  final double beatThreshold;
+
+  /// Final hybrid detector confidence, normalized to 0.0..1.0.
+  final double beatConfidence;
+
   /// 8-band frequency data for detailed EQ visualization.
   /// Bands: sub-bass, bass, low-mid, mid, upper-mid, presence, brilliance, air.
   final List<double> bands;
@@ -29,14 +38,31 @@ class AudioEnergy {
   final List<double> waveformR;
 
   /// Results from 6 parallel beat-detection algorithms (beat_debug mode).
-  /// Index: 0=NARROW, 1=KICK, 2=FULL, 3=EMA, 4=KICK+, 5=LONG.
+  /// Index: 0=BASS, 1=MID, 2=BROAD, 3=ALL, 4=EMA, 5=TREB.
   /// Empty on web / fallback reactor.
   final List<bool> beatAlgos;
 
-  /// Normalised flux/mean ratio per algorithm (0.0–3.0).
-  /// 1.0 = at mean, >1.66 = main threshold, >1.1 = KICK+ threshold.
+  /// Diagnostic per-algorithm score payload (0.0–3.0 in current TV path).
+  /// Order matches [beatAlgos]: BASS, MID, BROAD, ALL, EMA, TREB.
   /// Empty on web / fallback reactor.
   final List<double> algoLevels;
+
+  /// Raw detector input signal per algorithm before thresholding.
+  /// Order matches [beatAlgos].
+  final List<double> algoSignals;
+
+  /// Baseline per algorithm used to compute [algoLevels].
+  /// For mean-window variants this is the rolling mean; for `EMA` this is the
+  /// EMA baseline. Order matches [beatAlgos].
+  final List<double> algoBaselines;
+
+  /// Threshold ratio per algorithm in score space.
+  /// Example: `signal / baseline > thresholdRatio`.
+  final List<double> algoThresholds;
+
+  /// Index of the strongest current algorithm score, or null when no algorithm
+  /// has a meaningful score yet.
+  final int? winningAlgoId;
 
   const AudioEnergy({
     required this.bass,
@@ -44,12 +70,19 @@ class AudioEnergy {
     required this.treble,
     required this.overall,
     this.isBeat = false,
+    this.beatScore = 0.0,
+    this.beatThreshold = 0.0,
+    this.beatConfidence = 0.0,
     this.bands = const [0, 0, 0, 0, 0, 0, 0, 0],
     this.waveform = const [],
     this.waveformL = const [],
     this.waveformR = const [],
     this.beatAlgos = const [],
     this.algoLevels = const [],
+    this.algoSignals = const [],
+    this.algoBaselines = const [],
+    this.algoThresholds = const [],
+    this.winningAlgoId,
   });
 
   /// Create an AudioEnergy with all values set to zero (silence)
@@ -59,12 +92,19 @@ class AudioEnergy {
       treble = 0.0,
       overall = 0.0,
       isBeat = false,
+      beatScore = 0.0,
+      beatThreshold = 0.0,
+      beatConfidence = 0.0,
       bands = const [0, 0, 0, 0, 0, 0, 0, 0],
       waveform = const [],
       waveformL = const [],
       waveformR = const [],
       beatAlgos = const [],
-      algoLevels = const [];
+      algoLevels = const [],
+      algoSignals = const [],
+      algoBaselines = const [],
+      algoThresholds = const [],
+      winningAlgoId = null;
 
   @override
   String toString() {

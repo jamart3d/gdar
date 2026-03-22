@@ -6,6 +6,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.3.3+213] - 2026-03-22
+
+### Fixed
+- **Testing**: Resolved text stream corruption in parallel test execution by configuring simplified logger output for test environments.
+- **Testing**: Fixed state leakage in `true_black_glow_test.dart` caused by `SettingsProvider` performance mode interference.
+- **Testing**: Updated assertion logic to align with new default audio reactivity states, achieving a clean passing suite.
 ## [1.3.2+212] - 2026-03-21
 
 ### Added

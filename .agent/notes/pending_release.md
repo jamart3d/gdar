@@ -1,15 +1,12 @@
 # Pending Release Notes
 
 ### Status
-- **Current Version**: `1.3.2+212`
-- **Git State**: RELEASE PENDING
-- **Goal**: Monitoring feedback after `1.3.2+212` release.
+- **Current Version**: `1.3.3+213`
+- **Git State**: LIVE
+- **Goal**: Drafting next release features.
 
-### What's In This Release (1.3.2+212)
-- **TV Enhancement**: Finalized infrastructure for true stereo L/R VU meters via `AudioPlaybackCapture` (API 29+).
-- **TV Architecture**: Conducted a comprehensive screensaver audio audit (2026-03-21) to align native detector levels with visualizer telemetry.
-- **Documentation**: Updated audio graph modes, reactivity status, and tuning guides for advanced TV configuration.
-- **Maintenance**: Synchronized codebase formatting and refined performance-tier naming in `StealGraph`.
+### What's In This Release
+- (Empty)
 
 ### Next Commands
 Use PowerShell.

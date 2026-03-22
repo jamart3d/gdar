@@ -91,7 +91,7 @@ class DefaultSettings {
   static const bool oilBannerGlow = true;
   static const double oilBannerFlicker = 0.6;
   static const double oilBannerGlowBlur = 0.5;
-  static const bool oilEnableAudioReactivity = false;
+  static const bool oilEnableAudioReactivity = true;
   static const int oilPerformanceLevel = 0;
   static const bool oilPaletteCycle = true;
   static const double oilPaletteTransitionSpeed = 5.0;
@@ -139,7 +139,7 @@ class DefaultSettings {
   static const bool oilLogoAntiAlias = false;
 
   /// Audio graph display mode: 'off', 'corner', 'circular', 'ekg', or 'circular_ekg'.
-  static const String oilAudioGraphMode = 'off';
+  static const String oilAudioGraphMode = 'corner_debug';
 
   /// Radius multiplier for EKG (0.5x to 2.0x of base logo radius).
   static const double oilEkgRadius = 0.1;
@@ -150,8 +150,8 @@ class DefaultSettings {
   /// Vertical/Radial spread between replicated EKG lines.
   static const double oilEkgSpread = 16.0;
 
-  /// Beat detection sensitivity (0.0 = gentle, 1.0 = aggressive).
-  /// 0.65 → threshold = 1.7× avg (better for live/matrix recordings).
+  /// Beat detection sensitivity for the TV visualizer (0.0 = gentler,
+  /// 1.0 = more aggressive / easier to trigger).
   static const double oilBeatSensitivity = 0.80;
   static const double oilBeatImpact = 0.25;
 
