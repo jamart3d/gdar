@@ -1,8 +1,3 @@
-// TODO(fetch-latency): add fetchTtfbMs field once gapless_audio_engine.js
-// emits time-to-first-byte from performance.now() at fetch start → first chunk.
-// Wire through: JS _emitState() → gapless_player_web.dart → AudioProvider
-// → HudSnapshot, then add a NET chip + sparkline in dev_audio_hud.dart.
-
 /// A processed snapshot of audio engine state and configuration for the HUD.
 class HudSnapshot {
   final String engine; // ENG
@@ -32,6 +27,10 @@ class HudSnapshot {
   final bool isPlaying;
   final bool isHandoffCountdown;
 
+  // Fetch timing (web gapless engine only; null on native/HTML5/hybrid)
+  final double? fetchTtfbMs;
+  final bool fetchInFlight;
+
   const HudSnapshot({
     required this.engine,
     required this.detectedProfile,
@@ -57,6 +56,8 @@ class HudSnapshot {
     required this.heartbeatEnabledBySettings,
     required this.isPlaying,
     required this.isHandoffCountdown,
+    this.fetchTtfbMs,
+    this.fetchInFlight = false,
   });
 
   /// Initial empty snapshot to avoid null checks in UI.
@@ -85,6 +86,8 @@ class HudSnapshot {
     heartbeatEnabledBySettings: false,
     isPlaying: false,
     isHandoffCountdown: false,
+    fetchTtfbMs: null,
+    fetchInFlight: false,
   );
 
   Map<String, String> toMap() {
@@ -136,6 +139,8 @@ class HudSnapshot {
     bool? heartbeatEnabledBySettings,
     bool? isPlaying,
     bool? isHandoffCountdown,
+    double? fetchTtfbMs,
+    bool? fetchInFlight,
   }) {
     return HudSnapshot(
       engine: engine ?? this.engine,
@@ -163,6 +168,8 @@ class HudSnapshot {
           heartbeatEnabledBySettings ?? this.heartbeatEnabledBySettings,
       isPlaying: isPlaying ?? this.isPlaying,
       isHandoffCountdown: isHandoffCountdown ?? this.isHandoffCountdown,
+      fetchTtfbMs: fetchTtfbMs ?? this.fetchTtfbMs,
+      fetchInFlight: fetchInFlight ?? this.fetchInFlight,
     );
   }
 }

@@ -104,6 +104,14 @@ extension type _GdarState(JSObject _) implements JSObject {
   @JS('heartbeatNeeded')
   external JSBoolean? get heartbeatNeededJS;
   bool? get heartbeatNeeded => heartbeatNeededJS?.toDart;
+
+  @JS('fetchTtfbMs')
+  external JSNumber? get fetchTtfbMsJS;
+  double? get fetchTtfbMs => fetchTtfbMsJS?.toDartDouble;
+
+  @JS('fetchInFlight')
+  external JSBoolean? get fetchInFlightJS;
+  bool? get fetchInFlight => fetchInFlightJS?.toDart;
 }
 
 /// Track change event sent from the JS engine.
@@ -189,6 +197,8 @@ class GaplessPlayer {
   List<IndexedAudioSource> _sequence = [];
   String? _lastContextState;
   String? _lastJsState;
+  double? _lastFetchTtfbMs;
+  bool _fetchInFlight = false;
 
   final bool _useJsEngine;
   final AudioPlayer? _fallbackPlayer;
@@ -409,6 +419,10 @@ class GaplessPlayer {
         _heartbeatNeeded = hbNeeded;
         _heartbeatNeededController.add(_heartbeatNeeded);
       }
+
+      final ttfb = s.fetchTtfbMs;
+      if (ttfb != null && ttfb.isFinite) _lastFetchTtfbMs = ttfb;
+      _fetchInFlight = s.fetchInFlight ?? false;
     } catch (e, st) {
       logger.w('GaplessPlayerWeb: Error unboxing engine state: $e\n$st');
       return;
@@ -540,6 +554,10 @@ class GaplessPlayer {
   bool get heartbeatActive => _useJsEngine ? _heartbeatActive : false;
 
   bool get heartbeatNeeded => _useJsEngine ? _heartbeatNeeded : false;
+
+  double? get fetchTtfbMs => _useJsEngine ? _lastFetchTtfbMs : null;
+
+  bool get fetchInFlight => _useJsEngine ? _fetchInFlight : false;
 
   /// Returns the name of the active audio engine.
   String get engineName {

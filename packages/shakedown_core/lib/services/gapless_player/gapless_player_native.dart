@@ -85,6 +85,12 @@ class GaplessPlayer {
   /// Heartbeat needed state (not applicable natively).
   bool get heartbeatNeeded => false;
 
+  /// Fetch TTFB (not applicable natively).
+  double? get fetchTtfbMs => null;
+
+  /// Fetch in-flight flag (not applicable natively).
+  bool get fetchInFlight => false;
+
   // ─── Passthrough streams ─────────────────────────────────────────────────
 
   /// Stream of [PlayerState] changes.

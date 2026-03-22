@@ -44,10 +44,15 @@ class DevAudioHud extends StatefulWidget {
 class _DevAudioHudState extends State<DevAudioHud> {
   static const int _driftHistoryMaxPoints = 120;
   static const int _headroomHistoryMaxPoints = 180;
+  static const int _netHistoryMaxPoints = 60;
   Timer? _heartbeatPulseTimer;
   bool _heartbeatPulseOn = false;
   final List<double> _driftHistory = <double>[];
   final List<double> _headroomHistory = <double>[];
+  final List<double> _netHistory = <double>[];
+  bool _prevFetchInFlight = false;
+  double? _lastAppendedNetMs;
+  DateTime? _fetchInFlightSince;
 
   // BGT: cumulative background time tracking
   Duration _totalBgtDuration = Duration.zero;
@@ -98,6 +103,7 @@ class _DevAudioHudState extends State<DevAudioHud> {
 
         _syncHeartbeatPulse(hud.isPlaying);
         _trackBgt(hud);
+        _trackNet(hud);
 
         if (!widget.compact) {
           final summary = hud
@@ -125,6 +131,7 @@ class _DevAudioHudState extends State<DevAudioHud> {
           'GAP': _computeGap(hud),
           'BGT': _computeBgt(),
           'PM': widget.settingsProvider.performanceMode ? 'ON' : 'OFF',
+          'NET': _computeNetDisplay(hud),
         };
         final isFruitMode =
             context.read<ThemeProvider?>()?.themeStyle == ThemeStyle.fruit;
@@ -167,6 +174,7 @@ class _DevAudioHudState extends State<DevAudioHud> {
               const keys = [
                 'DFT',
                 'HD',
+                'NET',
                 'BUF',
                 'NX',
                 'PF',
@@ -475,6 +483,34 @@ class _DevAudioHudState extends State<DevAudioHud> {
     }
   }
 
+  void _trackNet(HudSnapshot hud) {
+    if (hud.fetchInFlight && !_prevFetchInFlight) {
+      _fetchInFlightSince = DateTime.now();
+    } else if (!hud.fetchInFlight && _prevFetchInFlight) {
+      _fetchInFlightSince = null;
+    }
+    _prevFetchInFlight = hud.fetchInFlight;
+    final ms = hud.fetchTtfbMs;
+    if (ms != null && !hud.fetchInFlight && ms != _lastAppendedNetMs) {
+      _lastAppendedNetMs = ms;
+      _netHistory.add(ms);
+      if (_netHistory.length > _netHistoryMaxPoints) _netHistory.removeAt(0);
+    }
+  }
+
+  String _computeNetDisplay(HudSnapshot hud) {
+    if (hud.fetchInFlight) {
+      final elapsed = _fetchInFlightSince != null
+          ? DateTime.now().difference(_fetchInFlightSince!).inMilliseconds
+          : 0;
+      return '${(elapsed / 1000.0).toStringAsFixed(1)}s\u2026';
+    }
+    final ms = hud.fetchTtfbMs;
+    if (ms == null) return '--';
+    if (ms < 1000) return '${ms.round()}ms';
+    return '${(ms / 1000.0).toStringAsFixed(1)}s';
+  }
+
   void _trackBgt(HudSnapshot hud) {
     final isHidden = hud.visibility.startsWith('HID') && hud.isPlaying;
     if (isHidden && _bgHiddenSince == null) {
@@ -643,6 +679,14 @@ class _DevAudioHudState extends State<DevAudioHud> {
       buildTrendChip(_driftHistory, 'DFT', baseTextColor, alpha: 1.0),
     );
     trendChips.add(buildTrendChip(_headroomHistory, 'HD', baseTextColor));
+    trendChips.add(
+      buildTrendChip(
+        _netHistory,
+        'NET',
+        Colors.amberAccent,
+        alpha: 0.9,
+      ),
+    );
     // Standalone heartbeat removed from top row, now integrated into SIG below.
 
     for (final key in orderedKeys) {
@@ -658,6 +702,9 @@ class _DevAudioHudState extends State<DevAudioHud> {
           case 'DFT':
           case 'HD':
             chipWidth = 76;
+            break;
+          case 'NET':
+            chipWidth = 68;
             break;
           case 'DET':
             chipWidth = 38; // Slightly tighter as requested
@@ -815,6 +862,33 @@ class _DevAudioHudState extends State<DevAudioHud> {
           finalChipBgColor = Colors.amber.withValues(alpha: 0.75);
           finalBaseTextColor = Colors.black;
           finalKeyTextColor = Colors.black.withValues(alpha: 0.7);
+        }
+      } else if (key == 'NET') {
+        if (value.endsWith('\u2026')) {
+          // In-flight: amber pulse
+          finalBaseTextColor = Colors.amberAccent;
+        } else if (value != '--') {
+          // Parse ms value from display string for color thresholding
+          double? netMs;
+          if (value.endsWith('ms')) {
+            netMs = double.tryParse(value.replaceAll('ms', ''));
+          } else if (value.endsWith('s')) {
+            final sec = double.tryParse(value.replaceAll('s', ''));
+            if (sec != null) netMs = sec * 1000;
+          }
+          if (netMs != null) {
+            if (netMs < 800) {
+              finalBaseTextColor = Colors.greenAccent;
+            } else if (netMs < 2000) {
+              finalChipBgColor = Colors.orange.withValues(alpha: 0.8);
+              finalBaseTextColor = Colors.black;
+              finalKeyTextColor = Colors.black.withValues(alpha: 0.7);
+            } else {
+              finalChipBgColor = Colors.redAccent.withValues(alpha: 0.85);
+              finalBaseTextColor = Colors.white;
+              finalKeyTextColor = Colors.white.withValues(alpha: 0.8);
+            }
+          }
         }
       }
 
@@ -994,7 +1068,7 @@ class _DevAudioHudState extends State<DevAudioHud> {
         detChip = chip;
       } else if (key == 'E') {
         errorChip = chip;
-      } else if (key == 'DFT' || key == 'HD') {
+      } else if (key == 'DFT' || key == 'HD' || key == 'NET') {
         sparklineValueChips.add(chip);
       } else if (key == 'BG') {
         bgChip = chip;
@@ -1173,6 +1247,13 @@ class _DevAudioHudState extends State<DevAudioHud> {
             ? 'Enabled (effects reduced)'
             : 'Disabled';
         return 'Performance Mode: $pmDesc ($value)';
+      case 'NET':
+        if (value == '--') return 'Network TTFB: no fetch recorded yet (WebAudio engine only)';
+        if (value.endsWith('\u2026')) {
+          return 'Network TTFB: fetch in progress ($value) — time since request started';
+        }
+        return 'Network TTFB (archive.org time-to-first-byte): $value'
+            ' | Green <800ms · Orange 800ms–2s · Red >2s';
       default:
         return '$key: $value';
     }

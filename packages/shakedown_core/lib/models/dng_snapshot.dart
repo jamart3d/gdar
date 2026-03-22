@@ -18,6 +18,8 @@ class DngSnapshot {
   final DateTime? lastIssueAt;
   final String? error;
   final DateTime timestamp;
+  final double? fetchTtfbMs;
+  final bool fetchInFlight;
 
   DngSnapshot({
     required this.position,
@@ -35,6 +37,8 @@ class DngSnapshot {
     this.lastIssueMessage,
     this.lastIssueAt,
     this.error,
+    this.fetchTtfbMs,
+    this.fetchInFlight = false,
     DateTime? timestamp,
   }) : timestamp = timestamp ?? DateTime.now();
 

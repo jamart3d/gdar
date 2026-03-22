@@ -63,6 +63,11 @@
   // Processing state communicated to Dart.
   let _loadingState = 'idle';
 
+  // Fetch timing for NET HUD chip (TTFB from archive.org).
+  let _fetchStartMs = 0;
+  let _fetchInFlight = false;
+  let _lastFetchTtfbMs = null;
+
   // Callbacks registered by Dart.
   let _onStateChange = null;
   let _onTrackChange = null;
@@ -168,14 +173,14 @@
 
     _log.log('[gdar engine] Fetching', index, track.url);
 
-    // TODO(fetch-latency): capture performance.now() here as fetchStart, then
-    // record time-to-first-byte when the first reader.read() chunk arrives.
-    // Emit as `fetchTtfbMs` on the state object so the HUD can surface a
-    // NET chip/sparkline showing archive.org response quality.
-    // Requires: new field in _emitState(), gapless_player_web.dart interop,
-    // HudSnapshot.fetchTtfbMs, and a NET sparkline in dev_audio_hud.dart.
+    _fetchStartMs = performance.now();
+    _fetchInFlight = true;
+    _lastFetchTtfbMs = null;
+    _emitState();
     return fetch(track.url, { signal: controller.signal })
       .then(async r => {
+        _lastFetchTtfbMs = performance.now() - _fetchStartMs;
+        _fetchInFlight = false;
         if (!r.ok) {
           _log.error('[gdar engine] Failed to fetch track:', track.url);
           throw new Error('HTTP ' + r.status + ' fetching ' + track.url);
@@ -243,6 +248,7 @@
         return buf;
       })
       .catch(err => {
+        _fetchInFlight = false;
         delete _abortControllers[index];
         if (index === _currentIndex) _currentTrackBufferedSeconds = 0;
         if (index === _currentIndex + 1) _nextTrackBufferedSeconds = 0;
@@ -659,6 +665,8 @@
              const base = _ctx ? (_ctx.state === 'running' || _ctx.state === 'suspended' ? _ctx.state + ' (WA)' : _ctx.state) : 'none';
              return base + (hbNeeded ? ' [HBN]' : ' [HBO]') + ' v1.1.hb';
           })(),
+          fetchTtfbMs: _lastFetchTtfbMs,
+          fetchInFlight: _fetchInFlight,
         });
 
         // Update MediaSession Position State

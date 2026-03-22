@@ -294,6 +294,8 @@ class AudioProvider with ChangeNotifier {
       lastIssueMessage: _lastIssueMessage,
       lastIssueAt: _lastIssueAt,
       error: (error != null && error!.isNotEmpty) ? 'ERR' : 'OK',
+      fetchTtfbMs: _audioPlayer.fetchTtfbMs,
+      fetchInFlight: _audioPlayer.fetchInFlight,
     );
   }
 
@@ -375,6 +377,8 @@ class AudioProvider with ChangeNotifier {
           sp.hybridBackgroundMode == HybridBackgroundMode.heartbeat,
       isPlaying: isPlaying,
       isHandoffCountdown: dng.engineState == 'handoff_countdown',
+      fetchTtfbMs: dng.fetchTtfbMs,
+      fetchInFlight: dng.fetchInFlight,
     );
   }
 
