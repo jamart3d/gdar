@@ -293,7 +293,7 @@ class _ShowListCardState extends State<ShowListCard> {
         : (useMobileLayout
               ? 54.0
               : (isFruit
-                    ? 48.0
+                    ? 54.0 // Increased from 48.0 to securely clear 28px text descenders
                     : 58.0)); // v135 standard height for phone: 58.0
     final double cardHeight = baseHeight * style.effectiveScale;
     final bool isDesktopInlinePlaying =
@@ -304,9 +304,7 @@ class _ShowListCardState extends State<ShowListCard> {
                   : style.config.baseControlZoneWidth) *
               style.effectiveScale
         : (style.config.baseControlZoneWidth * style.effectiveScale);
-    final double effectiveControlZoneWidth = isDesktopInlinePlaying
-        ? (340.0 * style.effectiveScale)
-        : controlZoneWidth;
+    final double effectiveControlZoneWidth = controlZoneWidth;
 
     return Container(
       height: cardHeight,
@@ -404,35 +402,44 @@ class _ShowListCardState extends State<ShowListCard> {
                               )
                             : Row(
                                 children: [
-                                  if (settingsProvider.dateFirstInShowCard) ...[
-                                    Text(
-                                      style.formattedDate,
-                                      style: isFruit
-                                          ? style.topStyle
-                                          : style.bottomStyle,
+                                  if (isDesktopInlinePlaying) ...[
+                                    SizedBox(
+                                      width:
+                                          (isFruit ? 260.0 : 254.0) *
+                                          style.effectiveScale,
+                                      child: EmbeddedMiniPlayer(
+                                        scaleFactor:
+                                            style.effectiveScale * 0.88,
+                                        compact: true,
+                                        useRgb: style.useRgb,
+                                        showFullDuration: true,
+                                      ),
                                     ),
-                                    const SizedBox(width: 8),
+                                    SizedBox(width: 16 * style.effectiveScale),
                                   ],
-                                  Expanded(
-                                    child: Text(
-                                      widget.show.venue,
-                                      style: isFruit
-                                          ? style.bottomStyle
-                                          : style.topStyle,
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
+                                  if (isDesktopInlinePlaying) const Spacer(),
+                                  Text(
+                                    settingsProvider.dateFirstInShowCard
+                                        ? style.formattedDate
+                                        : widget.show.venue,
+                                    style: isFruit
+                                        ? style.topStyle
+                                        : style.bottomStyle,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
                                   ),
-                                  if (!settingsProvider
-                                      .dateFirstInShowCard) ...[
-                                    const SizedBox(width: 12),
-                                    Text(
-                                      style.formattedDate,
-                                      style: isFruit
-                                          ? style.topStyle
-                                          : style.bottomStyle,
-                                    ),
-                                  ],
+                                  const Spacer(),
+                                  Text(
+                                    settingsProvider.dateFirstInShowCard
+                                        ? widget.show.venue
+                                        : style.formattedDate,
+                                    style: isFruit
+                                        ? style.bottomStyle
+                                        : style.topStyle,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    textAlign: TextAlign.right,
+                                  ),
                                 ],
                               );
 
@@ -667,8 +674,6 @@ class _ShowListCardState extends State<ShowListCard> {
                     deviceService.isPwa ||
                     deviceService.isMobile) &&
                 !isTv;
-            final bool showDesktopEmbeddedPlayer =
-                kIsWeb && !useMobileLayout && !isTv && widget.isPlaying;
 
             final catalog = CatalogService();
             final bool usePremium =
@@ -971,16 +976,6 @@ class _ShowListCardState extends State<ShowListCard> {
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        if (showDesktopEmbeddedPlayer) ...[
-                          SizedBox(
-                            width: (isFruit ? 172.0 : 166.0) * effectiveScale,
-                            child: EmbeddedMiniPlayer(
-                              scaleFactor: effectiveScale * 0.88,
-                              compact: true,
-                            ),
-                          ),
-                          const SizedBox(width: 6),
-                        ],
                         if (showRating && ratingKey != null)
                           RatingControl(
                             rating: rating,

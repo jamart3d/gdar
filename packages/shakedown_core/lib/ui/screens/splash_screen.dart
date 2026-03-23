@@ -9,8 +9,10 @@ import 'package:shakedown_core/ui/navigation/route_names.dart';
 import 'package:shakedown_core/ui/screens/show_list_screen.dart';
 import 'package:shakedown_core/ui/screens/onboarding_screen.dart';
 
-import 'package:shakedown_core/ui/widgets/shakedown_title.dart';
+import 'package:shakedown_core/providers/theme_provider.dart';
+import 'package:shakedown_core/ui/screens/fruit_tab_host_screen.dart';
 import 'package:shakedown_core/services/device_service.dart';
+import 'package:shakedown_core/ui/widgets/shakedown_title.dart';
 import 'package:shakedown_core/ui/widgets/tv/tv_dual_pane_layout.dart';
 import 'package:shakedown_core/ui/styles/app_typography.dart';
 import 'package:shakedown_core/utils/font_layout_config.dart';
@@ -145,16 +147,23 @@ class _SplashScreenState extends State<SplashScreen>
         final isTv = context.read<DeviceService>().isTv;
         final settingsProvider = context.read<SettingsProvider>();
         final useSimpleTransition = settingsProvider.performanceMode;
+        final themeProvider = context.read<ThemeProvider>();
+        final isFruit = themeProvider.themeStyle == ThemeStyle.fruit;
+
         final nextScreen = isTv
             ? const TvDualPaneLayout()
             : (settingsProvider.showOnboarding
                   ? const OnboardingScreen()
-                  : const ShowListScreen());
+                  : (isFruit
+                        ? const FruitTabHostScreen()
+                        : const ShowListScreen()));
         final routeName = isTv
             ? ShakedownRouteNames.tvHome
             : (settingsProvider.showOnboarding
                   ? ShakedownRouteNames.onboarding
-                  : ShakedownRouteNames.showList);
+                  : (isFruit
+                        ? ShakedownRouteNames.fruitHome
+                        : ShakedownRouteNames.showList));
 
         Navigator.of(context).pushReplacement(
           PageRouteBuilder(
@@ -185,6 +194,9 @@ class _SplashScreenState extends State<SplashScreen>
   Widget build(BuildContext context) {
     final showListProvider = context.watch<ShowListProvider>();
     final settingsProvider = context.watch<SettingsProvider>();
+    final themeProvider = context.watch<ThemeProvider>();
+    final isFruit = themeProvider.themeStyle == ThemeStyle.fruit;
+
     final effectiveScale = FontLayoutConfig.getEffectiveScale(
       context,
       settingsProvider,
@@ -197,7 +209,12 @@ class _SplashScreenState extends State<SplashScreen>
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              const Center(child: ShakedownTitle(fontSize: 24)),
+              Center(
+                child: ShakedownTitle(
+                  fontSize: 24,
+                  fontKeyOverride: isFruit ? 'rock_salt' : null,
+                ),
+              ),
               const SizedBox(height: 40),
               AnimatedOpacity(
                 opacity: _isNavigating ? 0.0 : 1.0,

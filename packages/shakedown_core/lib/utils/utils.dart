@@ -291,7 +291,9 @@ void _showFruitMessageOverlay(BuildContext context, String message) {
                   16,
                   16,
                   16,
-                  20 + safeBottom + bottomInset,
+                  94 +
+                      safeBottom +
+                      bottomInset, // 20 + 74px to clear bottom tab bar
                 ),
                 child: ConstrainedBox(
                   constraints: const BoxConstraints(maxWidth: 560),
@@ -443,7 +445,9 @@ void _showFruitIssueOverlay(
                 16,
                 16,
                 16,
-                20 + safeBottom + bottomInset,
+                94 +
+                    safeBottom +
+                    bottomInset, // 20 + 74px to clear bottom tab bar
               ),
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 560),

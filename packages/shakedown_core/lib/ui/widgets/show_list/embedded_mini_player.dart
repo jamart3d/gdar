@@ -6,15 +6,20 @@ import 'package:shakedown_core/services/device_service.dart';
 import 'package:shakedown_core/utils/app_haptics.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:shakedown_core/ui/widgets/animated_gradient_border.dart';
 
 class EmbeddedMiniPlayer extends StatelessWidget {
   final double scaleFactor;
   final bool compact;
+  final bool useRgb;
+  final bool showFullDuration;
 
   const EmbeddedMiniPlayer({
     super.key,
     this.scaleFactor = 1.0,
     this.compact = false,
+    this.useRgb = false,
+    this.showFullDuration = false,
   });
 
   String _formatDuration(Duration duration) {
@@ -44,7 +49,7 @@ class EmbeddedMiniPlayer extends StatelessWidget {
     final titleSize = (compact ? 10.5 : 12.0) * scaleFactor;
     final timeSize = (compact ? 8.5 : 10.0) * scaleFactor;
 
-    return Container(
+    final content = Container(
       padding: EdgeInsets.symmetric(
         horizontal: horizontalPad,
         vertical: verticalPad,
@@ -52,6 +57,12 @@ class EmbeddedMiniPlayer extends StatelessWidget {
       decoration: BoxDecoration(
         color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
         borderRadius: BorderRadius.circular(16),
+        border: useRgb
+            ? null // RGB Border handles this
+            : Border.all(
+                color: colorScheme.outlineVariant.withValues(alpha: 0.5),
+                width: 1.0,
+              ),
       ),
       child: Row(
         children: [
@@ -169,7 +180,7 @@ class EmbeddedMiniPlayer extends StatelessWidget {
                           builder: (context, durSnap) {
                             final dur = durSnap.data ?? Duration.zero;
                             return Text(
-                              compact
+                              (compact && !showFullDuration)
                                   ? _formatDuration(pos)
                                   : '${_formatDuration(pos)} / ${_formatDuration(dur)}',
                               style: TextStyle(
@@ -243,5 +254,26 @@ class EmbeddedMiniPlayer extends StatelessWidget {
         ],
       ),
     );
+
+    if (useRgb) {
+      return AnimatedGradientBorder(
+        borderRadius: 16.0,
+        borderWidth: 1.5,
+        showGlow:
+            false, // Keep inner glow subtle to prevent washing out buttons
+        colors: const [
+          Colors.red,
+          Colors.yellow,
+          Colors.green,
+          Colors.cyan,
+          Colors.blue,
+          Colors.purple,
+          Colors.red,
+        ],
+        child: content,
+      );
+    }
+
+    return content;
   }
 }

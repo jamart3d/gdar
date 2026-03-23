@@ -538,6 +538,36 @@ class _AppearanceSectionState extends State<AppearanceSection> {
                         },
                         secondary: const Icon(LucideIcons.droplet),
                       ),
+                      TvSwitchListTile(
+                        dense: true,
+                        visualDensity: VisualDensity.compact,
+                        title: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            'Highlight Playing with RGB',
+                            style: Theme.of(context).textTheme.titleMedium
+                                ?.copyWith(fontSize: 16 * widget.scaleFactor),
+                          ),
+                        ),
+                        subtitle: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            'Animate border with RGB colors',
+                            style: Theme.of(context).textTheme.bodySmall
+                                ?.copyWith(fontSize: 12 * widget.scaleFactor),
+                          ),
+                        ),
+                        value: settingsProvider.highlightPlayingWithRgb,
+                        onChanged: (value) {
+                          AppHaptics.lightImpact(context.read<DeviceService>());
+                          context
+                              .read<SettingsProvider>()
+                              .toggleHighlightPlayingWithRgb();
+                        },
+                        secondary: const Icon(LucideIcons.zap),
+                      ),
                     ],
                   )
                 : const SizedBox.shrink(),
@@ -895,8 +925,7 @@ class _AppearanceSectionState extends State<AppearanceSection> {
               ),
             );
           })(),
-        if (!settingsProvider.performanceMode &&
-            settingsProvider.highlightPlayingWithRgb)
+        if (settingsProvider.highlightPlayingWithRgb)
           Padding(
             padding: const EdgeInsets.symmetric(
               horizontal: 16.0,

@@ -53,7 +53,11 @@ class ShowListScreenState extends State<ShowListScreen>
     with
         TickerProviderStateMixin,
         WidgetsBindingObserver,
+        AutomaticKeepAliveClientMixin<ShowListScreen>,
         ShowListLogicMixin<ShowListScreen> {
+  @override
+  bool get wantKeepAlive => true;
+
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _searchFocusNode = FocusNode();
   final ItemScrollController _itemScrollController = ItemScrollController();
@@ -537,6 +541,7 @@ class ShowListScreenState extends State<ShowListScreen>
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     final settingsProvider = context.watch<SettingsProvider>();
     final audioProvider = context.watch<AudioProvider>();
     final showListProvider = context.watch<ShowListProvider>();

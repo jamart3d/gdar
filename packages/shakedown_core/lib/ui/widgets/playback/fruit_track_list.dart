@@ -146,12 +146,11 @@ class _FruitTrackListState extends State<FruitTrackList> {
             controller: _scrollController,
             padding: EdgeInsets.fromLTRB(
               24.0 * widget.scaleFactor, // px-6
-              110.0 *
+              146.0 *
                   widget
-                      .scaleFactor, // Avoid overlap with fixed 80px header + breather
+                      .scaleFactor, // Avoid overlap with fixed 116px header + breather
               24.0 * widget.scaleFactor,
-              (140.0 + widget.bottomOffset) *
-                  widget.scaleFactor, // pb-tabbar + dynamic mini-player
+              widget.bottomOffset, // pb-tabbar + dynamic mini-player
             ),
             itemCount: tracks.length,
             itemBuilder: (context, i) {
@@ -216,7 +215,9 @@ class _FruitTrackListState extends State<FruitTrackList> {
         // Sticky Bottom
         if (settingsProvider.fruitStickyNowPlaying && _isOffScreenBottom)
           Positioned(
-            bottom: 100 * widget.scaleFactor, // Above tab bar
+            bottom:
+                5.0 * widget.scaleFactor +
+                MediaQuery.paddingOf(context).bottom, // Above tab bar
             left: 0,
             right: 0,
             child: FruitSurface(

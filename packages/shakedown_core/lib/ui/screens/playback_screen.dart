@@ -515,11 +515,16 @@ class PlaybackScreenState extends State<PlaybackScreen>
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          _FruitHeaderButton(
-            onTap: widget.onBackRequested ?? () => Navigator.of(context).pop(),
-            icon: LucideIcons.chevronLeft,
-            scaleFactor: scaleFactor,
-            semanticLabel: 'Back to library',
+          SizedBox(
+            width: 44,
+            height: 44,
+            child: Center(
+              child: FruitActionButton(
+                icon: LucideIcons.chevronLeft,
+                onPressed:
+                    widget.onBackRequested ?? () => Navigator.of(context).pop(),
+              ),
+            ),
           ),
           // Center: Metadata
           Expanded(
@@ -624,138 +629,143 @@ class PlaybackScreenState extends State<PlaybackScreen>
               ],
             ),
           ),
-          _FruitHeaderButton(
-            onTap: () {
-              final size = MediaQuery.sizeOf(context);
-              final double topPadding = MediaQuery.paddingOf(context).top;
+          SizedBox(
+            width: 44,
+            height: 44,
+            child: Center(
+              child: FruitActionButton(
+                icon: LucideIcons.moreHorizontal,
+                tooltip: 'Playback options',
+                onPressed: () {
+                  final size = MediaQuery.sizeOf(context);
+                  final double topPadding = MediaQuery.paddingOf(context).top;
 
-              // Force alignment to the right
-              final RelativeRect position = RelativeRect.fromLTRB(
-                size.width - 24 * scaleFactor,
-                topPadding + 70 * scaleFactor,
-                24 * scaleFactor,
-                0,
-              );
+                  final RelativeRect position = RelativeRect.fromLTRB(
+                    size.width - 24 * scaleFactor,
+                    topPadding + 70 * scaleFactor,
+                    24 * scaleFactor,
+                    0,
+                  );
 
-              showMenu(
-                context: context,
-                position: position,
-                elevation: settingsProvider.performanceMode ? 4 : 0,
-                color: settingsProvider.performanceMode
-                    ? Theme.of(context).colorScheme.surface
-                    : Theme.of(
-                        context,
-                      ).colorScheme.surface.withValues(alpha: 0.85),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(24 * scaleFactor),
-                  side: BorderSide(
-                    color: Theme.of(
-                      context,
-                    ).colorScheme.onSurface.withValues(alpha: 0.1),
-                    width: 1.0,
-                  ),
-                ),
-                items: [
-                  PopupMenuItem(
-                    onTap: () => settingsProvider.toggleFruitStickyNowPlaying(),
-                    child: SizedBox(
-                      width: 200 * scaleFactor,
-                      child: Row(
-                        children: [
-                          Icon(
-                            settingsProvider.fruitStickyNowPlaying
-                                ? LucideIcons.checkCircle2
-                                : LucideIcons.circle,
-                            size: 18 * scaleFactor,
-                            color: settingsProvider.fruitStickyNowPlaying
-                                ? Theme.of(context).colorScheme.primary
-                                : null,
-                          ),
-                          SizedBox(width: 12 * scaleFactor),
-                          Text(
-                            'Sticky Now Playing',
-                            style: TextStyle(fontSize: 14 * scaleFactor),
-                          ),
-                        ],
+                  showMenu(
+                    context: context,
+                    position: position,
+                    elevation: settingsProvider.performanceMode ? 4 : 0,
+                    color: settingsProvider.performanceMode
+                        ? Theme.of(context).colorScheme.surface
+                        : Theme.of(
+                            context,
+                          ).colorScheme.surface.withValues(alpha: 0.85),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(24 * scaleFactor),
+                      side: BorderSide(
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.onSurface.withValues(alpha: 0.1),
+                        width: 1.0,
                       ),
                     ),
-                  ),
-                  PopupMenuItem(
-                    onTap: () => settingsProvider.toggleShowTrackNumbers(),
-                    child: Row(
-                      children: [
-                        Icon(
-                          settingsProvider.showTrackNumbers
-                              ? LucideIcons.checkCircle2
-                              : LucideIcons.circle,
-                          size: 18 * scaleFactor,
-                          color: settingsProvider.showTrackNumbers
-                              ? Theme.of(context).colorScheme.primary
-                              : null,
-                        ),
-                        SizedBox(width: 12 * scaleFactor),
-                        Text(
-                          'Track Numbers',
-                          style: TextStyle(fontSize: 14 * scaleFactor),
-                        ),
-                      ],
-                    ),
-                  ),
-                  if (kIsWeb)
-                    PopupMenuItem(
-                      onTap: () {
-                        settingsProvider.toggleShowDevAudioHud();
-                        if (settingsProvider.showPlaybackMessages !=
-                            settingsProvider.showDevAudioHud) {
-                          settingsProvider.toggleShowPlaybackMessages();
-                        }
-                      },
-                      child: Row(
-                        children: [
-                          Icon(
-                            settingsProvider.showDevAudioHud
-                                ? LucideIcons.checkCircle2
-                                : LucideIcons.circle,
-                            size: 18 * scaleFactor,
-                            color: settingsProvider.showDevAudioHud
-                                ? Theme.of(context).colorScheme.primary
-                                : null,
+                    items: [
+                      PopupMenuItem(
+                        onTap: () =>
+                            settingsProvider.toggleFruitStickyNowPlaying(),
+                        child: SizedBox(
+                          width: 200 * scaleFactor,
+                          child: Row(
+                            children: [
+                              Icon(
+                                settingsProvider.fruitStickyNowPlaying
+                                    ? LucideIcons.checkCircle2
+                                    : LucideIcons.circle,
+                                size: 18 * scaleFactor,
+                                color: settingsProvider.fruitStickyNowPlaying
+                                    ? Theme.of(context).colorScheme.primary
+                                    : null,
+                              ),
+                              SizedBox(width: 12 * scaleFactor),
+                              Text(
+                                'Sticky Now Playing',
+                                style: TextStyle(fontSize: 14 * scaleFactor),
+                              ),
+                            ],
                           ),
-                          SizedBox(width: 12 * scaleFactor),
-                          Text(
-                            'Audio HUD',
-                            style: TextStyle(fontSize: 14 * scaleFactor),
-                          ),
-                        ],
+                        ),
                       ),
-                    ),
-                  PopupMenuItem(
-                    onTap: () => settingsProvider.toggleHideTrackDuration(),
-                    child: Row(
-                      children: [
-                        Icon(
-                          !settingsProvider.hideTrackDuration
-                              ? LucideIcons.checkCircle2
-                              : LucideIcons.circle,
-                          size: 18 * scaleFactor,
-                          color: !settingsProvider.hideTrackDuration
-                              ? Theme.of(context).colorScheme.primary
-                              : null,
+                      PopupMenuItem(
+                        onTap: () => settingsProvider.toggleShowTrackNumbers(),
+                        child: Row(
+                          children: [
+                            Icon(
+                              settingsProvider.showTrackNumbers
+                                  ? LucideIcons.checkCircle2
+                                  : LucideIcons.circle,
+                              size: 18 * scaleFactor,
+                              color: settingsProvider.showTrackNumbers
+                                  ? Theme.of(context).colorScheme.primary
+                                  : null,
+                            ),
+                            SizedBox(width: 12 * scaleFactor),
+                            Text(
+                              'Track Numbers',
+                              style: TextStyle(fontSize: 14 * scaleFactor),
+                            ),
+                          ],
                         ),
-                        SizedBox(width: 12 * scaleFactor),
-                        Text(
-                          'Track Duration',
-                          style: TextStyle(fontSize: 14 * scaleFactor),
+                      ),
+                      if (kIsWeb)
+                        PopupMenuItem(
+                          onTap: () {
+                            settingsProvider.toggleShowDevAudioHud();
+                            if (settingsProvider.showPlaybackMessages !=
+                                settingsProvider.showDevAudioHud) {
+                              settingsProvider.toggleShowPlaybackMessages();
+                            }
+                          },
+                          child: Row(
+                            children: [
+                              Icon(
+                                settingsProvider.showDevAudioHud
+                                    ? LucideIcons.checkCircle2
+                                    : LucideIcons.circle,
+                                size: 18 * scaleFactor,
+                                color: settingsProvider.showDevAudioHud
+                                    ? Theme.of(context).colorScheme.primary
+                                    : null,
+                              ),
+                              SizedBox(width: 12 * scaleFactor),
+                              Text(
+                                'Audio HUD',
+                                style: TextStyle(fontSize: 14 * scaleFactor),
+                              ),
+                            ],
+                          ),
                         ),
-                      ],
-                    ),
-                  ),
-                ],
-              );
-            },
-            icon: LucideIcons.moreHorizontal,
-            scaleFactor: scaleFactor,
-            semanticLabel: 'Playback options',
+                      PopupMenuItem(
+                        onTap: () => settingsProvider.toggleHideTrackDuration(),
+                        child: Row(
+                          children: [
+                            Icon(
+                              !settingsProvider.hideTrackDuration
+                                  ? LucideIcons.checkCircle2
+                                  : LucideIcons.circle,
+                              size: 18 * scaleFactor,
+                              color: !settingsProvider.hideTrackDuration
+                                  ? Theme.of(context).colorScheme.primary
+                                  : null,
+                            ),
+                            SizedBox(width: 12 * scaleFactor),
+                            Text(
+                              'Track Duration',
+                              style: TextStyle(fontSize: 14 * scaleFactor),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  );
+                },
+              ),
+            ),
           ),
         ],
       ),
@@ -966,7 +976,9 @@ class PlaybackScreenState extends State<PlaybackScreen>
       screenHeight * 0.85,
     );
 
-    const double appBarHeight = 80.0;
+    final double appBarHeight = themeProvider.themeStyle == ThemeStyle.fruit
+        ? (14.0 + 92.0)
+        : kToolbarHeight;
     final double immersiveTopPadding =
         MediaQuery.paddingOf(context).top + appBarHeight;
 
@@ -1232,9 +1244,9 @@ class PlaybackScreenState extends State<PlaybackScreen>
                   blur: 18,
                   opacity: settingsProvider.performanceMode ? 0.96 : 0.82,
                   child: Container(
-                    height: MediaQuery.paddingOf(context).top + 80,
+                    height: MediaQuery.paddingOf(context).top + 14.0 + 92.0,
                     padding: EdgeInsets.only(
-                      top: MediaQuery.paddingOf(context).top,
+                      top: MediaQuery.paddingOf(context).top + 14.0,
                     ),
                     decoration: BoxDecoration(
                       color: settingsProvider.performanceMode
@@ -1376,92 +1388,6 @@ class PlaybackScreenState extends State<PlaybackScreen>
             },
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _FruitHeaderButton extends StatefulWidget {
-  final VoidCallback onTap;
-  final IconData icon;
-  final double scaleFactor;
-  final String semanticLabel;
-
-  const _FruitHeaderButton({
-    required this.onTap,
-    required this.icon,
-    required this.scaleFactor,
-    required this.semanticLabel,
-  });
-
-  @override
-  State<_FruitHeaderButton> createState() => _FruitHeaderButtonState();
-}
-
-class _FruitHeaderButtonState extends State<_FruitHeaderButton> {
-  bool _isPressed = false;
-  bool _isFocused = false;
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final settingsProvider = context.watch<SettingsProvider>();
-    final isSimple = settingsProvider.performanceMode;
-
-    final isTv = context.watch<DeviceService>().isTv;
-
-    Widget content = SizedBox(
-      width: 44 * widget.scaleFactor,
-      height: 44 * widget.scaleFactor,
-      child: Icon(
-        widget.icon,
-        size: 24 * widget.scaleFactor,
-        color: colorScheme.onSurfaceVariant,
-      ),
-    );
-
-    if (!isSimple && !isTv) {
-      content = NeumorphicWrapper(
-        intensity: 0.6,
-        borderRadius: 12 * widget.scaleFactor,
-        child: content,
-      );
-    }
-
-    return Semantics(
-      button: true,
-      label: widget.semanticLabel,
-      child: ExcludeSemantics(
-        child: FocusableActionDetector(
-          enabled: true,
-          mouseCursor: SystemMouseCursors.click,
-          onShowFocusHighlight: (value) {
-            setState(() => _isFocused = value);
-          },
-          shortcuts: const <ShortcutActivator, Intent>{
-            SingleActivator(LogicalKeyboardKey.enter): ActivateIntent(),
-            SingleActivator(LogicalKeyboardKey.space): ActivateIntent(),
-          },
-          actions: <Type, Action<Intent>>{
-            ActivateIntent: CallbackAction<ActivateIntent>(
-              onInvoke: (_) {
-                widget.onTap();
-                return null;
-              },
-            ),
-          },
-          child: GestureDetector(
-            onTapDown: (_) => setState(() => _isPressed = true),
-            onTapUp: (_) => setState(() => _isPressed = false),
-            onTapCancel: () => setState(() => _isPressed = false),
-            onTap: widget.onTap,
-            child: AnimatedOpacity(
-              duration: const Duration(milliseconds: 100),
-              opacity: _isPressed ? 0.6 : (_isFocused ? 0.85 : 1.0),
-              child: content,
-            ),
-          ),
-        ),
       ),
     );
   }

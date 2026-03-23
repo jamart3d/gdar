@@ -18,7 +18,7 @@ import 'package:just_audio/just_audio.dart';
 
 class FruitNowPlayingCard extends StatelessWidget {
   final Show trackShow;
-  final Track track;
+  final Track? track;
   final int index;
   final double scaleFactor;
   final bool showNext;
@@ -26,7 +26,7 @@ class FruitNowPlayingCard extends StatelessWidget {
   const FruitNowPlayingCard({
     super.key,
     required this.trackShow,
-    required this.track,
+    this.track,
     required this.index,
     required this.scaleFactor,
     this.showNext = true,
@@ -68,34 +68,41 @@ class FruitNowPlayingCard extends StatelessWidget {
             Expanded(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   Row(
                     children: [
                       Expanded(
-                        child: Text(
-                          track.title,
-                          style: TextStyle(
-                            fontFamily: FontConfig.resolve('Inter'),
-                            fontSize: 15 * scaleFactor,
-                            fontWeight: FontWeight.w700,
-                            color: colorScheme.onSurface,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Flexible(
+                              child: Text(
+                                track?.title ?? 'Picking show...',
+                                style: TextStyle(
+                                  fontFamily: FontConfig.resolve('Inter'),
+                                  fontSize: 15 * scaleFactor,
+                                  fontWeight: FontWeight.w700,
+                                  color: colorScheme.onSurface,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            if (!showCompactHud) ...[
+                              SizedBox(width: 8 * scaleFactor),
+                              const Flexible(
+                                child: PlaybackMessages(
+                                  textAlign: TextAlign.left,
+                                  showDivider: false,
+                                  showDevHudInline: false,
+                                ),
+                              ),
+                            ],
+                          ],
                         ),
                       ),
-                      if (!showCompactHud) ...[
-                        SizedBox(width: 8 * scaleFactor),
-                        const Flexible(
-                          child: PlaybackMessages(
-                            textAlign: TextAlign.left,
-                            showDivider: false,
-                            showDevHudInline: false,
-                          ),
-                        ),
-                        SizedBox(width: 8 * scaleFactor),
-                      ],
+                      SizedBox(width: 8 * scaleFactor),
                       _buildDurationInfo(
                         audioProvider,
                         colorScheme,
@@ -453,14 +460,15 @@ class _LiquidTransportGlyph extends StatefulWidget {
 
 class _LiquidTransportGlyphState extends State<_LiquidTransportGlyph>
     with SingleTickerProviderStateMixin {
-  late final AnimationController _shimmerController = AnimationController(
-    vsync: this,
-    duration: const Duration(milliseconds: 1100),
-  );
+  late final AnimationController _shimmerController;
 
   @override
   void initState() {
     super.initState();
+    _shimmerController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1100),
+    );
     if (widget.isPending) {
       _shimmerController.repeat();
     }

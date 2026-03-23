@@ -74,7 +74,8 @@ class FruitTabBar extends StatelessWidget {
               isActive: selectedIndex == 0,
               scaleFactor: scaleFactor,
               onTap: () {
-                if (audioProvider.currentTrack != null) {
+                // ALLOW if currentShow is set, even if track isn't fully buffered yet
+                if (audioProvider.currentShow != null) {
                   onTabSelected(0);
                 } else {
                   showMessage(context, 'No track playing');

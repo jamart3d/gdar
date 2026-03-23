@@ -106,7 +106,7 @@ class _InactivityDetectorState extends State<InactivityDetector> {
   }
 
   bool _handleKeyEvent(KeyEvent event) {
-    if (event is KeyDownEvent) {
+    if (event is KeyDownEvent && event is! KeyRepeatEvent) {
       if (!widget.isScreensaverActive) {
         widget.inactivityService?.onUserActivity(
           'key:${event.logicalKey.keyLabel}',
@@ -120,15 +120,11 @@ class _InactivityDetectorState extends State<InactivityDetector> {
   Widget build(BuildContext context) {
     return Listener(
       behavior: HitTestBehavior.translucent,
+      // For TV we care about intentional activity, not hover/noise. Pointer
+      // move churn on real hardware can keep the timer alive forever.
       onPointerDown: (_) => widget.isScreensaverActive
           ? null
           : widget.inactivityService?.onUserActivity('pointerDown'),
-      onPointerMove: (_) => widget.isScreensaverActive
-          ? null
-          : widget.inactivityService?.onUserActivity('pointerMove'),
-      onPointerUp: (_) => widget.isScreensaverActive
-          ? null
-          : widget.inactivityService?.onUserActivity('pointerUp'),
       child: widget.child,
     );
   }

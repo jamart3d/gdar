@@ -30,6 +30,7 @@ trigger: always_on
   Keep a Changelog format.
 * **Action:** Stage pending notes in `.agent/notes/pending_release.md`
   before running shipit.
+* **Action:** In the `/shipit` workflow, ALWAYS perform a fresh version bump and rebuild; never assume the current changelog or artifact state represents the final release.
 * **Constraint:** Never write to `docs/RELEASE_NOTES.txt`. That file is
   legacy and retired.
 * **Action:** When updating `docs/PLAY_STORE_RELEASE.txt`, ALWAYS prepend the new release block to the top of the file. NEVER overwrite or replace the existing contents.

@@ -28,7 +28,7 @@ class FruitTabHostScreen extends StatefulWidget {
 }
 
 class _FruitTabHostScreenState extends State<FruitTabHostScreen> {
-  static const Map<int, int> _tabToPage = {0: 0, 1: 1, 3: 2};
+  static const Map<int, int> _tabToPage = {0: 0, 1: 1, 2: 1, 3: 2};
   static const Map<int, int> _pageToTab = {0: 0, 1: 1, 2: 3};
 
   late final PageController _pageController;
@@ -124,30 +124,27 @@ class _FruitTabHostScreenState extends State<FruitTabHostScreen> {
         }
 
         if (audioProvider.pendingRandomShowRequest != null) {
+          // but initiate the audio load.
+          if (mounted && _selectedTab == 2) _jumpToPlayTabImmediate();
+
           await audioProvider.playPendingSelection();
           audioProvider.clearPendingRandomShowRequest();
-          if (mounted && _selectedTab == 2) {
-            await Future<void>.delayed(const Duration(milliseconds: 50));
-            _jumpToPlayTabImmediate();
-          }
+          _scheduleRandomReset(showListProvider);
           return;
         }
 
-        // 3. TRIGGER SELECTION: Wait for the random show to be picked
+        // 3. TRIGGER SELECTION: Use delayPlayback for an instant UI jump
         debugPrint('Dice: Triggering playRandomShow...');
-        final picked = await audioProvider.playRandomShow();
+        final picked = await audioProvider.playRandomShow(delayPlayback: true);
 
-        if (picked == null) {
-          debugPrint(
-            'Dice: No show was picked (list might be empty or filtered).',
-          );
-        }
+        if (picked != null) {
+          // 4. TRANSITION: Jump to Playback immediately now that we have a show
+          if (mounted && _selectedTab == 2) {
+            _jumpToPlayTabImmediate();
+          }
 
-        // 4. TRANSITION: Jump to Playback only if user hasn't navigated away
-        // (guard against race: user taps Library while playRandomShow() is awaiting)
-        if (mounted && _selectedTab == 2) {
-          await Future<void>.delayed(const Duration(milliseconds: 100));
-          _jumpToPlayTabImmediate();
+          // 5. INITIATE AUDIO: Now start the actual stream loading
+          await audioProvider.playPendingSelection();
         }
 
         _scheduleRandomReset(showListProvider);
@@ -188,17 +185,6 @@ class _FruitTabHostScreenState extends State<FruitTabHostScreen> {
       );
     } else {
       _pageController.jumpToPage(pageIndex);
-    }
-
-    if (tabIndex == 1 && shouldScrollToCurrent) {
-      await _scrollLibraryToCurrentShow();
-      // Older devices may attach/build list slightly later; retry once.
-      unawaited(
-        Future<void>.delayed(const Duration(milliseconds: 250), () async {
-          if (!mounted || _selectedTab != 1) return;
-          await _scrollLibraryToCurrentShow();
-        }),
-      );
     }
   }
 
@@ -248,6 +234,11 @@ class _FruitTabHostScreenState extends State<FruitTabHostScreen> {
         onPageChanged: (page) {
           final tab = _pageToTab[page];
           if (tab != null && tab != _selectedTab) {
+            // If the user hit the Dice tab (2), we are on Page 1 (Library).
+            // But Page 1 maps back to Tab 1 by default.
+            // We MUST NOT reset _selectedTab if we are currently handling a direct dice roll
+            // or if the tab bar still shows the dice as active.
+            if (tab == 1 && (_selectedTab == 2 || _isHandlingRandomTab)) return;
             setState(() => _selectedTab = tab);
           }
         },

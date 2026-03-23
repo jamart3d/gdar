@@ -1055,9 +1055,8 @@ class SettingsProvider with ChangeNotifier {
     }
 
     if (_performanceMode) {
-      _glowMode = 0;
-      _highlightPlayingWithRgb = false;
-      _fruitEnableLiquidGlass = false;
+      // Glow and Glass are still gated in the UI, but we don't force-disable them here
+      // so their values persist when switching back.
     }
     _enableHaptics = _prefs.getBool(_enableHapticsKey) ?? true;
 
@@ -1492,7 +1491,6 @@ class SettingsProvider with ChangeNotifier {
   }
 
   void toggleHighlightPlayingWithRgb() {
-    if (_performanceMode) return;
     _updatePreference(
       _highlightPlayingWithRgbKey,
       _highlightPlayingWithRgb = !_highlightPlayingWithRgb,
@@ -1500,7 +1498,6 @@ class SettingsProvider with ChangeNotifier {
   }
 
   void setHighlightPlayingWithRgb(bool value) {
-    if (_performanceMode && value) return;
     if (_highlightPlayingWithRgb != value) {
       _highlightPlayingWithRgb = value;
       _updatePreference(_highlightPlayingWithRgbKey, _highlightPlayingWithRgb);

@@ -109,9 +109,11 @@ class _GdarTvAppState extends State<GdarTvApp> {
   }
 
   bool get _isInactivityRouteEligible {
-    if (!_hasEnteredTvMainUi) return false;
-    return _currentRouteName != ShakedownRouteNames.onboarding &&
-        _currentRouteName != ShakedownRouteNames.screensaver;
+    final routeName = _currentRouteName;
+    if (routeName == null) return false;
+    return routeName != Navigator.defaultRouteName &&
+        routeName != ShakedownRouteNames.onboarding &&
+        routeName != ShakedownRouteNames.screensaver;
   }
 
   void _handleRouteChanged(Route<dynamic>? route) {
