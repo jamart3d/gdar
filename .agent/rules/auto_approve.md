@@ -109,9 +109,11 @@ These commands are auto-approved only when executed within the specific release 
 ### `shipit`
 - Stage only the intended release files after verifying `git status`.
 - `git status`
+- `git add .`
 - `git commit -m "..."`
 - `git commit --amend`
 - `git push`
+- Chained release finalization: `git add .; git commit -m "..."; git push`
 - `flutter build appbundle --release`
 - `flutter build web --release`
 - `firebase deploy --only hosting`

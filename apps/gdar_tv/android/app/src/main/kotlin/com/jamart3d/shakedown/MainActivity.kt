@@ -149,6 +149,12 @@ class MainActivity: FlutterActivity() {
         handleDeepLink(intent)
     }
 
+    override fun onDestroy() {
+        stereoCapture.stop()
+        MediaProjectionForegroundService.stop(this)
+        super.onDestroy()
+    }
+
     private fun handleDeepLink(intent: Intent?) {
         val data: Uri? = intent?.data
         if (data != null && data.scheme == "shakedown") {

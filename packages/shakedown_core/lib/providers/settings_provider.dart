@@ -692,6 +692,9 @@ class SettingsProvider with ChangeNotifier {
     _prefs.setInt(_resumePositionMsKey, positionMs);
   }
 
+  /// Returns `true` if a resume session exists (non-destructive peek).
+  bool hasResumeSession() => _prefs.getString(_resumeSourceIdKey) != null;
+
   /// Reads and removes the saved resume session (one-shot).
   /// Returns `null` if no session was saved.
   ({String sourceId, int trackIndex, int positionMs})? consumeResumeSession() {

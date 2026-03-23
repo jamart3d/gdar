@@ -96,6 +96,7 @@ class _GdarTvAppState extends State<GdarTvApp> {
   bool _isScreensaverActive = false;
   bool _hasEnteredTvMainUi = false;
   String? _currentRouteName;
+  String? _lastInactivitySummary;
 
   void _setScreensaverActive(bool active) {
     if (!mounted) {
@@ -124,6 +125,9 @@ class _GdarTvAppState extends State<GdarTvApp> {
 
     _currentRouteName = name;
     _hasEnteredTvMainUi = hasEnteredTvMainUi;
+    debugPrint(
+      'GdarTvApp: route changed name=$name enteredTvMain=$_hasEnteredTvMainUi',
+    );
 
     if (mounted) {
       _syncInactivityService(_settingsProvider);
@@ -200,7 +204,21 @@ class _GdarTvAppState extends State<GdarTvApp> {
       Duration(minutes: settingsProvider.oilScreensaverInactivityMinutes),
     );
 
-    if (settingsProvider.useOilScreensaver && _isInactivityRouteEligible) {
+    final shouldRun =
+        settingsProvider.useOilScreensaver && _isInactivityRouteEligible;
+    final summary =
+        'enabled=${settingsProvider.useOilScreensaver} '
+        'eligible=$_isInactivityRouteEligible '
+        'enteredTvMain=$_hasEnteredTvMainUi '
+        'route=$_currentRouteName '
+        'screensaverActive=$_isScreensaverActive '
+        'timeout=${settingsProvider.oilScreensaverInactivityMinutes}m';
+    if (_lastInactivitySummary != summary) {
+      _lastInactivitySummary = summary;
+      debugPrint('GdarTvApp: inactivity sync shouldRun=$shouldRun $summary');
+    }
+
+    if (shouldRun) {
       _inactivityService.start();
     } else {
       _inactivityService.stop();

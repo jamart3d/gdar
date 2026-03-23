@@ -1005,7 +1005,7 @@ class _TvScreensaverSectionState extends State<TvScreensaverSection> {
                           const SizedBox(height: 8),
                           _ReactiveHint(
                             message:
-                                'Enhanced Audio Capture uses Android system audio capture and may show a one-time share-audio permission prompt.',
+                                'Enhanced Audio Capture uses Android system audio capture and may show a share-audio permission prompt the first time it starts in an app session.',
                             colorScheme: colorScheme,
                             textTheme: textTheme,
                             isFruit: isFruit,

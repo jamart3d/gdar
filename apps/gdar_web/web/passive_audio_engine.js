@@ -210,21 +210,8 @@
 
     // ─── Media Session API ────────────────────────────────────────────────────
 
-    let _mediaSessionRegistered = false;
-
-    /** Register action handlers once. Called from init(). */
-    function _registerMediaSessionHandlers() {
-        if (_mediaSessionRegistered) return;
-        if (window._gdarMediaSession) {
-            window._gdarMediaSession.setActionHandlers({
-                onPlay: () => api.play(),
-                onPause: () => api.pause(),
-                onNext: () => api.seekToIndex(_currentIndex + 1),
-                onPrevious: () => api.seekToIndex(Math.max(0, _currentIndex - 1)),
-            });
-        }
-        _mediaSessionRegistered = true;
-    }
+    // Action handlers are owned exclusively by the Hybrid Orchestrator.
+    // Child engines must NOT call setActionHandlers.
 
     /** Update metadata and playback state. Called on every track change. */
     function _updateMediaSession() {
@@ -302,7 +289,6 @@
         init: function () {
             if (_audio) return;
             _audio = _createAudio();
-            _registerMediaSessionHandlers();
             _log.log('[passive engine] Initialised');
         },
 

@@ -266,7 +266,7 @@ void main() {
     });
 
     testWidgets(
-      'requests stereo capture for reactive screensaver sessions and stops on dispose',
+      'requests stereo capture for reactive screensaver sessions and keeps it alive across dispose',
       (WidgetTester tester) async {
         final stereoSettings = FakeStereoScreensaverSettingsProvider(
           graphMode: 'beat_debug',
@@ -332,7 +332,7 @@ void main() {
         await tester.pumpWidget(const SizedBox.shrink());
         await tester.pump();
 
-        expect(stereoStopCount, 1);
+        expect(stereoStopCount, 0);
       },
     );
   });

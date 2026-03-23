@@ -78,11 +78,23 @@ class _GdarWebAppState extends State<GdarWebApp> {
     // Link providers for theme-specific settings resets
     ThemeProvider.getInstance?.setSettingsProvider(_settingsProvider);
 
-    // Set theme style based on URL parameter or default
+    // Apply URL-based theme override, or set first-time default.
+    // IMPORTANT: do NOT override the user's persisted preference on every
+    // reload — only force a style when an explicit URL param is present or
+    // on first launch (no saved preference yet).
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final themeProvider = _navigatorKey.currentContext?.read<ThemeProvider>();
-      if (themeProvider != null) {
-        final targetStyle = (_isAndroidStyle || isLikelyLowPowerWebDevice())
+      if (themeProvider == null) return;
+
+      if (_isAndroidStyle) {
+        // Explicit URL override → always honour
+        if (themeProvider.themeStyle != ThemeStyle.android) {
+          themeProvider.setThemeStyle(ThemeStyle.android);
+        }
+      } else if (!widget.prefs.containsKey('theme_style_preference')) {
+        // First launch — no saved preference yet → default to Fruit
+        // (or Android on low-power devices).
+        final targetStyle = isLikelyLowPowerWebDevice()
             ? ThemeStyle.android
             : ThemeStyle.fruit;
         if (themeProvider.themeStyle != targetStyle) {

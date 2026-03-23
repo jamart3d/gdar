@@ -104,6 +104,15 @@
 
 ---
 
+## 📱 Native Audio (Phone/TV) — Potential Race Conditions
+
+> **Caveat:** Found via code review, not from a reported bug. These are theoretical race conditions — no evidence they cause real-world issues yet. Low priority unless notification desync is observed on phone/TV.
+
+- [ ] **BufferAgent guard during source switching**: `BufferAgent._performRecovery()` can call `seek()` + `play()` while `_loadAndPlayAudio` is between `stop()` and `setAudioSources()`. Fix: check `_isSwitchingSource` in `BufferAgent` before performing recovery.
+- [ ] **Processing state guard during source switching**: `_listenForProcessingState` can trigger `playRandomShow()` while a source load is in progress. Fix: check `_isSwitchingSource` before triggering random show on `ProcessingState.completed`.
+
+---
+
 ## 🛠️ Generic Template Transformation
 
 - [/] **Generalize Project Metadata**: Rename `gdar` → `myapp` in `pubspec.yaml`, `README.md`, and documentation.

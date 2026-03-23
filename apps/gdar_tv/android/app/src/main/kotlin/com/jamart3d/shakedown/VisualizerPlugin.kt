@@ -566,6 +566,12 @@ class VisualizerPlugin(
 
         val pcmWaveformL = stereoCapture.waveformL
         val pcmWaveformR = stereoCapture.waveformR
+        val pcmAgeMs =
+            if (stereoCapture.lastAnalysisMs > 0L) {
+                (nowMs - stereoCapture.lastAnalysisMs).coerceAtLeast(0L).toDouble()
+            } else {
+                null
+            }
         val pcmFresh =
             stereoCapture.lastAnalysisMs > 0L &&
             (nowMs - stereoCapture.lastAnalysisMs) <= 250L
@@ -902,6 +908,10 @@ class VisualizerPlugin(
             "algoThresholds" to algoThresholds.toList(),
             "winningAlgoId" to winningAlgoId,
             "debugAudioSessionId" to currentAudioSessionId,
+            "debugPcmActive" to stereoCapture.isActive,
+            "debugPcmFresh" to pcmFresh,
+            "debugPcmAnalysisFrames" to stereoCapture.analysisFrames,
+            "debugPcmAgeMs" to pcmAgeMs,
         )
 
         eventSink?.success(data)

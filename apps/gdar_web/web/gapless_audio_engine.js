@@ -717,25 +717,11 @@
     }
   }
 
-  let _mediaSessionRegistered = false;
-
-  function _registerMediaSessionHandlers() {
-    if (_mediaSessionRegistered) return;
-    if (window._gdarMediaSession) {
-      window._gdarMediaSession.setActionHandlers({
-        onPlay: () => api.play(),
-        onPause: () => api.pause(),
-        onNext: () => api.seekToIndex(_currentIndex + 1),
-        onPrevious: () => api.seekToIndex(_currentIndex - 1),
-        onSeekTo: (e) => api.seek(e.seekTime)
-      });
-    }
-    _mediaSessionRegistered = true;
-  }
+  // Action handlers are owned exclusively by the Hybrid Orchestrator.
+  // Child engines must NOT call setActionHandlers.
 
   function _updateMediaSession() {
     if (!window._gdarMediaSession) return;
-    _registerMediaSessionHandlers();
     const track = _playlist[_currentIndex];
     if (track) {
       window._gdarMediaSession.updateMetadata({

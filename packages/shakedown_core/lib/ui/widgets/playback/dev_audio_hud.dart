@@ -347,32 +347,34 @@ class _DevAudioHudState extends State<DevAudioHud> {
 
     if (result == null) return;
     if (result is AudioEngineMode) {
+      if (result == sp.audioEngineMode) return;
       sp.setAudioEngineMode(result);
       if (context.mounted) {
         showRestartMessage(context, 'Engine change requires relaunch.');
       }
     } else if (result is HybridHandoffMode) {
+      if (result == sp.hybridHandoffMode) return;
       sp.setHybridHandoffMode(result);
       if (context.mounted) {
-        showRestartMessage(context, 'Handoff mode change requires relaunch.');
+        showMessage(context, 'Handoff: ${result.name.toUpperCase()}');
       }
     } else if (result is HybridBackgroundMode) {
+      if (result == sp.hybridBackgroundMode) return;
       sp.setHybridBackgroundMode(result);
       if (context.mounted) {
-        showRestartMessage(
-          context,
-          'Background mode change requires relaunch.',
-        );
+        showMessage(context, 'Background: ${result.name.toUpperCase()}');
       }
     } else if (result is HiddenSessionPreset) {
+      if (result == sp.hiddenSessionPreset) return;
       sp.setHiddenSessionPreset(result);
       if (context.mounted) {
         showRestartMessage(context, 'Preset change requires relaunch.');
       }
     } else if (result is int && key == 'PF') {
+      if (result == sp.webPrefetchSeconds) return;
       sp.setWebPrefetchSeconds(result);
       if (context.mounted) {
-        showRestartMessage(context, 'Prefetch window changed to ${result}s.');
+        showMessage(context, 'Prefetch: ${result}s');
       }
     }
   }

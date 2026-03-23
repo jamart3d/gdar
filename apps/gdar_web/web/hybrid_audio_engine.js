@@ -338,7 +338,7 @@
             const state = _fgEngine.getState();
             _log.log(`[hybrid] FAILURE HANDOFF: Swapping to HTML5 at pos ${state.position}`);
             _bgEngine.syncState(state.index, state.position, true);
-            _activeEngine = _bgEngine;
+            _swapEngine(_bgEngine);
             _fgEngine.stop();
         }
     }
@@ -390,7 +390,7 @@
 
             if (isReady) {
                 const swapStart = performance.now();
-                _activeEngine = _fgEngine;
+                _swapEngine(_fgEngine);
                 _log.log('[hybrid] ACTIVE ENGINE SWAPPED: Now using Web Audio (Foreground)');
                 if (_handoffCrossfadeMs > 0) {
                     _startHandoffCrossfade();
@@ -431,7 +431,7 @@
             _log.log('[hybrid] Handoff disabled via handoffMode=none. Staying on HTML5.');
             _handoffInProgress = false;
             _instantHandoffPending = false;
-            _activeEngine = _bgEngine;
+            _swapEngine(_bgEngine);
             _fgEngine.stop();
             return;
         }
@@ -444,7 +444,7 @@
             _log.log('[hybrid] Short track detected. Staying on HTML5 for instant start.');
             _handoffInProgress = false;
             _instantHandoffPending = false;
-            _activeEngine = _bgEngine;
+            _swapEngine(_bgEngine);
             _fgEngine.stop();
             return;
         }
@@ -453,7 +453,7 @@
         _log.log('[hybrid] Launching INSTANT START (HTML5) for index', index);
 
         _bgEngine.syncState(index, 0, true);
-        _activeEngine = _bgEngine;
+        _swapEngine(_bgEngine);
 
         // Silently prep foreground
         _handoffInProgress = true;
@@ -554,7 +554,21 @@
         }, 0);
     }
 
-    // --- Public API -----------------------------------------------------------
+    // --- Engine Swap & MediaSession Sync --------------------------------------
+
+    /**
+     * Sole entry point for changing the active engine.
+     * After every swap, force-syncs the MediaSession anchor so that
+     * play/pause/seek always route through the Hybrid Orchestrator.
+     */
+    function _swapEngine(engine) {
+        if (_activeEngine === engine) return;
+        _activeEngine = engine;
+        _syncMediaSession();
+        // Immediately emit a state event so the Dart HUD reflects the new
+        // active engine without waiting for the child engine's next tick.
+        _forwardState(engine.getState(), engine);
+    }
 
     function _setupMediaSession() {
         if (window._gdarMediaSession) {
@@ -567,6 +581,18 @@
             });
         }
     }
+
+    /** Force-sync: reset dedup guards, re-register handlers, push current state. */
+    function _syncMediaSession() {
+        if (!window._gdarMediaSession) return;
+        window._gdarMediaSession.forceSync();
+        _setupMediaSession();
+        const state = _activeEngine.getState();
+        window._gdarMediaSession.updatePlaybackState(_playing);
+        window._gdarMediaSession.updatePositionState(state);
+    }
+
+    // --- Public API -----------------------------------------------------------
 
     const api = {
         init: function () {
@@ -589,12 +615,12 @@
 
             if (!pure) {
                 _log.log('[hybrid] syncState: Choosing HTML5 (Background) for Instant Start');
-                _activeEngine = _bgEngine;
+                _swapEngine(_bgEngine);
                 _instantHandoffPending = shouldPlay && allowHandoff;
                 _instantHandoffIndex = index;
             } else {
                 _log.log('[hybrid] syncState: Choosing Web Audio (Foreground)');
-                _activeEngine = _fgEngine;
+                _swapEngine(_fgEngine);
                 _instantHandoffPending = false;
             }
 
@@ -627,11 +653,11 @@
                 _log.log('[hybrid] setPlaylist: Choosing HTML5 (Background) for Instant Start');
                 _instantHandoffPending = allowHandoff;
                 _instantHandoffIndex = _currentIndex;
-                _activeEngine = _bgEngine;
+                _swapEngine(_bgEngine);
             } else {
                 _log.log('[hybrid] setPlaylist: Choosing Web Audio (Foreground)');
                 _instantHandoffPending = false;
-                _activeEngine = _fgEngine;
+                _swapEngine(_fgEngine);
             }
         },
 
@@ -661,7 +687,7 @@
                 _log.log('[hybrid] Startup: Web Audio not ready. Initiating HTML5 Instant Start.');
                 _instantHandoffPending = allowHandoff;
                 _instantHandoffIndex = _currentIndex;
-                _activeEngine = _bgEngine;
+                _swapEngine(_bgEngine);
 
                 // Sync HTML5 to current position and play
                 _bgEngine.syncState(_currentIndex, fgState.position || 0, true);
@@ -727,7 +753,7 @@
 
                 _instantHandoffPending = allowHandoff;
                 _instantHandoffIndex = index;
-                _activeEngine = _bgEngine;
+                _swapEngine(_bgEngine);
 
                 _bgEngine.seekToIndex(index);
                 _fgEngine.syncState(index, 0, false); // Prepare foreground silently

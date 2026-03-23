@@ -228,6 +228,18 @@ class VisualizerAudioReactor implements AudioReactor {
           rawDebugAudioSessionId is num && rawDebugAudioSessionId >= 0
           ? rawDebugAudioSessionId.toInt()
           : null;
+      final debugPcmActive = data['debugPcmActive'] == true;
+      final debugPcmFresh = data['debugPcmFresh'] == true;
+      final rawDebugPcmAnalysisFrames = data['debugPcmAnalysisFrames'];
+      final debugPcmAnalysisFrames =
+          rawDebugPcmAnalysisFrames is num && rawDebugPcmAnalysisFrames >= 0
+          ? rawDebugPcmAnalysisFrames.toInt()
+          : null;
+      final debugPcmAgeMs = _parseOptionalDouble(
+        data['debugPcmAgeMs'],
+        min: 0.0,
+        max: 600000.0,
+      );
 
       _safeAdd(
         AudioEnergy(
@@ -256,6 +268,10 @@ class VisualizerAudioReactor implements AudioReactor {
           algoThresholds: algoThresholds,
           winningAlgoId: winningAlgoId,
           debugAudioSessionId: debugAudioSessionId,
+          debugPcmActive: debugPcmActive,
+          debugPcmFresh: debugPcmFresh,
+          debugPcmAnalysisFrames: debugPcmAnalysisFrames,
+          debugPcmAgeMs: debugPcmAgeMs,
         ),
       );
     }

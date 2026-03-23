@@ -78,6 +78,16 @@
             }
         },
 
+        /**
+         * Force-resets internal dedup state so the next update/setActionHandlers
+         * call is guaranteed to write through to the browser MediaSession.
+         * Call this after engine handoffs to ensure the anchor is authoritative.
+         */
+        forceSync: function () {
+            _lastMetadata = { title: '', artist: '', album: '' };
+            _lastPlaybackState = 'none';
+        },
+
         setActionHandlers: function (callbacks) {
             if (!('mediaSession' in navigator)) return;
 

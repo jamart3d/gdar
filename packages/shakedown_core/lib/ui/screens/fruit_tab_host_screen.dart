@@ -41,9 +41,12 @@ class _FruitTabHostScreenState extends State<FruitTabHostScreen> {
   @override
   void initState() {
     super.initState();
-    final safeInitialTab = _tabToPage.containsKey(widget.initialTab)
-        ? widget.initialTab
-        : 1;
+    // If a resume session exists (engine restart), start on PlaybackScreen
+    // so the user lands right back where they were.
+    final hasResume = context.read<SettingsProvider>().hasResumeSession();
+    final safeInitialTab = hasResume
+        ? 0
+        : (_tabToPage.containsKey(widget.initialTab) ? widget.initialTab : 1);
     _selectedTab = safeInitialTab;
     _pageController = PageController(initialPage: _tabToPage[_selectedTab]!);
 

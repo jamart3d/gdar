@@ -1589,6 +1589,12 @@ class StealGraph extends Component with HasGameReference<StealGame> {
         'PH:${formatTelemetry(energy.beatPhase)}  '
         'NXT:${formatTelemetry(energy.nextBeatMs, digits: 0)}  '
         'GRID:${formatTelemetry(energy.beatGridConfidence)}';
+    final pcmStatus = !energy.debugPcmActive
+        ? 'OFF'
+        : (energy.debugPcmFresh ? 'HOT' : 'STALE');
+    final pcmFrames = energy.debugPcmAnalysisFrames?.toString() ?? '--';
+    final pcmAge = formatTelemetry(energy.debugPcmAgeMs, digits: 0);
+    final pcmSummary = 'PCM:$pcmStatus  FR:$pcmFrames  AGE:$pcmAge';
     final panelTextLeft = startX - panelPad + 12.0;
     const panelTextWidth = totalW + panelPad * 2 - 24.0;
     final panelTop = baseY - maxH - 84.0;
@@ -1819,6 +1825,16 @@ class StealGraph extends Component with HasGameReference<StealGame> {
       col1,
       trackingLineY,
       maxWidth: 220,
+      maxLines: 1,
+      ellipsis: '...',
+    );
+    _paintDebugText(
+      canvas,
+      pcmSummary,
+      trackingStyle,
+      col3,
+      trackingLineY,
+      maxWidth: 230,
       maxLines: 1,
       ellipsis: '...',
     );

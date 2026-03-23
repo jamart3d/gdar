@@ -308,8 +308,9 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
       }
 
       // Dispose previous reactor if reinitializing with a better session ID.
+      // Keep Enhanced capture running across session-id retries so Android
+      // doesn't need to prompt again within the same app session.
       if (isRetry && _audioReactor != null) {
-        unawaited(_stopStereoCapture(resetAttempt: true));
         _audioReactor?.dispose();
         _audioReactor = null;
         _clearPushedAudioConfig();
@@ -381,7 +382,10 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
     _sessionRetryTimer?.cancel();
     HardwareKeyboard.instance.removeHandler(_handleGlobalKeyEvent);
     _wakelockService?.disable();
-    unawaited(_stopStereoCapture(resetAttempt: true));
+    // Preserve Enhanced capture across screensaver launches for the life of
+    // the app session. It is still torn down when audio reactivity is
+    // disabled, the detector switches away from Enhanced, or the activity
+    // itself is destroyed.
     _audioReactor?.dispose();
     _audioReactor = null;
     _clearPushedAudioConfig();

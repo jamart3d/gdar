@@ -85,6 +85,18 @@ class AudioEnergy {
   /// Native Android audio session currently driving the visualizer, when known.
   final int? debugAudioSessionId;
 
+  /// True when native stereo capture is currently active.
+  final bool debugPcmActive;
+
+  /// True when stereo capture analysis has updated recently enough to be usable.
+  final bool debugPcmFresh;
+
+  /// Number of native PCM analysis frames processed since capture started.
+  final int? debugPcmAnalysisFrames;
+
+  /// Milliseconds since the last native PCM analysis update.
+  final double? debugPcmAgeMs;
+
   const AudioEnergy({
     required this.bass,
     required this.mid,
@@ -111,6 +123,10 @@ class AudioEnergy {
     this.algoThresholds = const [],
     this.winningAlgoId,
     this.debugAudioSessionId,
+    this.debugPcmActive = false,
+    this.debugPcmFresh = false,
+    this.debugPcmAnalysisFrames,
+    this.debugPcmAgeMs,
   });
 
   /// Create an AudioEnergy with all values set to zero (silence)
@@ -139,7 +155,11 @@ class AudioEnergy {
       algoBaselines = const [],
       algoThresholds = const [],
       winningAlgoId = null,
-      debugAudioSessionId = null;
+      debugAudioSessionId = null,
+      debugPcmActive = false,
+      debugPcmFresh = false,
+      debugPcmAnalysisFrames = null,
+      debugPcmAgeMs = null;
 
   @override
   String toString() {

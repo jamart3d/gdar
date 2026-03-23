@@ -12,6 +12,7 @@ class InactivityService {
   final void Function() onInactivityTimeout;
   Duration _inactivityDuration;
   bool _isEnabled = false;
+  DateTime? _lastActivityLogAt;
 
   InactivityService({
     required this.onInactivityTimeout,
@@ -21,6 +22,9 @@ class InactivityService {
   void updateDuration(Duration duration) {
     if (_inactivityDuration == duration) return;
     _inactivityDuration = duration;
+    debugPrint(
+      'InactivityService: duration updated to ${_inactivityDuration.inMinutes}m',
+    );
     if (_isEnabled) {
       _resetTimer();
     }
@@ -30,25 +34,38 @@ class InactivityService {
   void start() {
     if (_isEnabled) return;
     _isEnabled = true;
+    debugPrint(
+      'InactivityService: start (${_inactivityDuration.inMinutes}m timeout)',
+    );
     _resetTimer();
   }
 
   /// Stop monitoring for inactivity.
   void stop() {
+    if (_isEnabled) {
+      debugPrint('InactivityService: stop');
+    }
     _isEnabled = false;
     _inactivityTimer?.cancel();
     _inactivityTimer = null;
   }
 
   /// Call this when user activity is detected.
-  void onUserActivity() {
+  void onUserActivity([String source = 'activity']) {
     if (!_isEnabled) return;
+    final now = DateTime.now();
+    if (_lastActivityLogAt == null ||
+        now.difference(_lastActivityLogAt!) >= const Duration(seconds: 1)) {
+      _lastActivityLogAt = now;
+      debugPrint('InactivityService: activity from $source; resetting timer');
+    }
     _resetTimer();
   }
 
   void _resetTimer() {
     _inactivityTimer?.cancel();
     _inactivityTimer = Timer(_inactivityDuration, () {
+      debugPrint('InactivityService: timeout fired');
       onInactivityTimeout();
     });
   }
@@ -91,7 +108,9 @@ class _InactivityDetectorState extends State<InactivityDetector> {
   bool _handleKeyEvent(KeyEvent event) {
     if (event is KeyDownEvent) {
       if (!widget.isScreensaverActive) {
-        widget.inactivityService?.onUserActivity();
+        widget.inactivityService?.onUserActivity(
+          'key:${event.logicalKey.keyLabel}',
+        );
       }
     }
     return false; // Let the event propagate
@@ -103,13 +122,13 @@ class _InactivityDetectorState extends State<InactivityDetector> {
       behavior: HitTestBehavior.translucent,
       onPointerDown: (_) => widget.isScreensaverActive
           ? null
-          : widget.inactivityService?.onUserActivity(),
+          : widget.inactivityService?.onUserActivity('pointerDown'),
       onPointerMove: (_) => widget.isScreensaverActive
           ? null
-          : widget.inactivityService?.onUserActivity(),
+          : widget.inactivityService?.onUserActivity('pointerMove'),
       onPointerUp: (_) => widget.isScreensaverActive
           ? null
-          : widget.inactivityService?.onUserActivity(),
+          : widget.inactivityService?.onUserActivity('pointerUp'),
       child: widget.child,
     );
   }

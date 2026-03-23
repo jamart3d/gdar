@@ -625,9 +625,9 @@
                     if (!track) return;
                     if (_onTrackChange) _onTrackChange({ from: _lastIndex, to: track.idx });
                     _lastIndex = track.idx;
-                    // Update MediaSession
-                    if ('mediaSession' in navigator && track.metadata) {
-                        navigator.mediaSession.metadata = new MediaMetadata({
+                    // Update MediaSession via centralized anchor
+                    if (window._gdarMediaSession && track.metadata) {
+                        window._gdarMediaSession.updateMetadata({
                             title: track.metadata.title || '',
                             artist: track.metadata.artist || '',
                             album: track.metadata.album || '',

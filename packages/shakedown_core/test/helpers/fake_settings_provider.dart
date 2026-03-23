@@ -590,6 +590,9 @@ class FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
   void saveResumeSession(String sourceId, int trackIndex, int positionMs) {}
 
   @override
+  bool hasResumeSession() => false;
+
+  @override
   ({String sourceId, int trackIndex, int positionMs})? consumeResumeSession() =>
       null;
 

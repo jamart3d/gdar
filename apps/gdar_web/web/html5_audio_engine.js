@@ -739,13 +739,8 @@
                 position: track.currentTime,
                 playing: !track.isPaused
             });
-            window._gdarMediaSession.setActionHandlers({
-                onPlay: () => api.play(),
-                onPause: () => api.pause(),
-                onNext: () => api.playNext(),
-                onPrevious: () => api.playPrevious(),
-                onSeekTo: (e) => api.seek(e.seekTime)
-            });
+            // Action handlers are owned exclusively by the Hybrid Orchestrator.
+            // Child engines must NOT call setActionHandlers.
         }
     }
 
